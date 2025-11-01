@@ -1,10 +1,7 @@
 name: Sync Chrry to Separate Repo
 
 on:
-  workflow_dispatch: # Manual trigger
-  push:
-    branches:
-      - chrry # Only trigger when pushing to chrry branch
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   sync-chrry:
