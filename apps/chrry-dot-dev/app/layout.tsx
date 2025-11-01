@@ -27,7 +27,9 @@ export const generateMetadata = async () => {
 
 export default async function RootLayout({
   children,
-}: Readonly<LayoutProps<"/">>) {
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   const currentMember = await getMember()
 
   return (
