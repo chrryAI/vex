@@ -2308,9 +2308,9 @@ export const createStores = async ({ user: admin }: { user: user }) => {
   }
 
   chrry = await createOrUpdateApp({
-      app: chrryPayload,
-      extends: chrryPayload.extends,
-    })
+    app: chrryPayload,
+    extends: chrryPayload.extends,
+  })
   if (!chrry) throw new Error("Failed to create or update chrry app")
 
   // Set Chrry as the main app of Chrry AI store
@@ -2426,9 +2426,9 @@ export const createStores = async ({ user: admin }: { user: user }) => {
   }
 
   atlas = await createOrUpdateApp({
-      app: atlasPayload,
-      extends: atlasPayload.extends,
-    })
+    app: atlasPayload,
+    extends: atlasPayload.extends,
+  })
 
   if (!atlas) {
     throw new Error("Atlas app not found")
@@ -2648,9 +2648,9 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
   }
 
   amsterdam = await createOrUpdateApp({
-      app: amsterdamPayload,
-      extends: amsterdamPayload.extends,
-    })
+    app: amsterdamPayload,
+    extends: amsterdamPayload.extends,
+  })
 
   if (!amsterdam) throw new Error("Failed to add Amsterdam app")
 
@@ -2894,9 +2894,9 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
   }
 
   tokyo = await createOrUpdateApp({
-      app: tokyoPayload,
-      extends: tokyoPayload.extends,
-    })
+    app: tokyoPayload,
+    extends: tokyoPayload.extends,
+  })
 
   if (!tokyo) throw new Error("Failed to add app")
 
@@ -3147,9 +3147,9 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
   }
 
   istanbul = await createOrUpdateApp({
-      app: istanbulPayload,
-      extends: istanbulPayload.extends,
-    })
+    app: istanbulPayload,
+    extends: istanbulPayload.extends,
+  })
 
   if (!istanbul) throw new Error("Failed to add app")
 
@@ -4298,9 +4298,9 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   }
 
   hungerGames = await createOrUpdateApp({
-      app: hungerGamesPayload,
-      extends: hungerGamesPayload.extends,
-    })
+    app: hungerGamesPayload,
+    extends: hungerGamesPayload.extends,
+  })
 
   if (!hungerGames)
     throw new Error("Failed to create or update Hunger Games app")
@@ -4526,9 +4526,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   zarathustra = await createOrUpdateApp({
-      app: zarathustraPayload,
-      extends: zarathustraPayload.extends,
-    })
+    app: zarathustraPayload,
+    extends: zarathustraPayload.extends,
+  })
 
   if (!zarathustra) {
     throw new Error("Zarathustra app not found")
@@ -4778,9 +4778,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   nineteen84 = await createOrUpdateApp({
-      app: nineteen84Payload,
-      extends: nineteen84Payload.extends,
-    })
+    app: nineteen84Payload,
+    extends: nineteen84Payload.extends,
+  })
 
   if (!nineteen84) {
     throw new Error("1984 app not found")
@@ -5002,9 +5002,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   meditations = await createOrUpdateApp({
-      app: meditationsPayload,
-      extends: meditationsPayload.extends,
-    })
+    app: meditationsPayload,
+    extends: meditationsPayload.extends,
+  })
 
   if (!meditations) {
     throw new Error("Meditations app not found")
@@ -5228,9 +5228,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   dune = await createOrUpdateApp({
-      app: dunePayload,
-      extends: dunePayload.extends,
-    })
+    app: dunePayload,
+    extends: dunePayload.extends,
+  })
 
   if (!dune) {
     throw new Error("Dune app not found")
@@ -5513,9 +5513,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   peach = await createOrUpdateApp({
-      app: peachPayload,
-      extends: peachPayload.extends,
-    })
+    app: peachPayload,
+    extends: peachPayload.extends,
+  })
 
   let bloom = await getApp({ slug: "bloom" })
 
@@ -5591,9 +5591,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   bloom = await createOrUpdateApp({
-      app: bloomPayload,
-      extends: bloomPayload.extends,
-    })
+    app: bloomPayload,
+    extends: bloomPayload.extends,
+  })
 
   let vault = await getApp({ slug: "vault" })
 
@@ -5669,9 +5669,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   vault = await createOrUpdateApp({
-      app: vaultPayload,
-      extends: vaultPayload.extends,
-    })
+    app: vaultPayload,
+    extends: vaultPayload.extends,
+  })
 
   // ============================================
   // VEX - Flagship AI Chat Platform
@@ -5755,9 +5755,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   claudeApp = await createOrUpdateApp({
-      app: claudeAppPayload,
-      extends: claudeAppPayload.extends,
-    })
+    app: claudeAppPayload,
+    extends: claudeAppPayload.extends,
+  })
 
   if (!claudeApp) throw new Error("Failed to create or update claude app")
 
@@ -5809,9 +5809,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
     extends: [claudeApp.id, chrry.id],
   }
   writer = await createOrUpdateApp({
-      app: writerPayload,
-      extends: writerPayload.extends,
-    })
+    app: writerPayload,
+    extends: writerPayload.extends,
+  })
 
   let reviewer = await getApp({ slug: "reviewer" })
   const reviewerSystemPrompt = `You are Review, a Claude-powered code reviewer providing comprehensive analysis of code quality, bugs, performance, security, and best practices. Offer detailed, constructive feedback with thoughtful explanations to help developers improve their code.`
@@ -5852,9 +5852,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
     },
   }
   reviewer = await createOrUpdateApp({
-      app: reviewerPayload,
-      extends: reviewerPayload.extends,
-    })
+    app: reviewerPayload,
+    extends: reviewerPayload.extends,
+  })
 
   let researcher = await getApp({ slug: "researcher" })
   const researcherSystemPrompt = `You are Research, a Claude-powered academic research assistant. Help users synthesize complex information, analyze research papers, manage citations, design methodologies, and present findings in structured academic formats. Excel at literature reviews and scholarly work.`
@@ -5895,9 +5895,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
     extends: [claudeApp.id, chrry.id],
   }
   researcher = await createOrUpdateApp({
-      app: researcherPayload,
-      extends: researcherPayload.extends,
-    })
+    app: researcherPayload,
+    extends: researcherPayload.extends,
+  })
 
   // Create Perplexity store
   const perplexityStore = await getOrCreateStore({
@@ -5975,9 +5975,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   perplexityApp = await createOrUpdateApp({
-      app: perplexityAppPayload,
-      extends: perplexityAppPayload.extends,
-    })
+    app: perplexityAppPayload,
+    extends: perplexityAppPayload.extends,
+  })
 
   if (!perplexityApp) throw new Error("Failed to add perplexity app")
 
@@ -6029,9 +6029,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
     extends: [perplexityApp.id, chrry.id],
   }
   search = await createOrUpdateApp({
-      app: searchPayload,
-      extends: searchPayload.extends,
-    })
+    app: searchPayload,
+    extends: searchPayload.extends,
+  })
 
   let news = await getApp({ slug: "news" })
   const newsSystemPrompt = `You are News, a Perplexity-powered breaking news aggregator. Deliver real-time news updates from multiple sources with fact-checking, bias detection, and historical context. Present balanced perspectives on current events.`
@@ -6072,9 +6072,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
     extends: [perplexityApp.id, chrry.id],
   }
   news = await createOrUpdateApp({
-      app: newsPayload,
-      extends: newsPayload.extends,
-    })
+    app: newsPayload,
+    extends: newsPayload.extends,
+  })
 
   let academic = await getApp({ slug: "academic" })
   const academicSystemPrompt = `You are Scholar, a Perplexity-powered academic research engine. Provide access to scholarly articles, peer-reviewed papers, and academic resources. Help students and researchers find credible information with proper citations and impact factor tracking.`
@@ -6115,9 +6115,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
     },
   }
   academic = await createOrUpdateApp({
-      app: academicPayload,
-      extends: academicPayload.extends,
-    })
+    app: academicPayload,
+    extends: academicPayload.extends,
+  })
 
   // Create DeepSeek store
   const deepseekStore = await getOrCreateStore({
@@ -6188,9 +6188,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   deepseekApp = await createOrUpdateApp({
-      app: deepseekAppPayload,
-      extends: deepseekAppPayload.extends,
-    })
+    app: deepseekAppPayload,
+    extends: deepseekAppPayload.extends,
+  })
   if (!deepseekApp) throw new Error("Failed to add deepseek app")
 
   await updateStore({
