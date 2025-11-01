@@ -240,7 +240,13 @@ export type messageActionType = {
 
 const NODE_ENV = process.env.NODE_ENV
 
-const connectionString = process.env.DB_URL!
+const connectionString = process.env.DB_URL
+
+if (!connectionString) {
+  throw new Error(
+    "DB_URL environment variable is not set. Please configure your database connection string.",
+  )
+}
 
 const client = postgres(connectionString)
 
