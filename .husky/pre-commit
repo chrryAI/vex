@@ -1,5 +1,4 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # Run linting and tests before commit
+# Using full path to pnpm since PATH may not include it in git hooks
+export PATH="/usr/local/bin:$PATH"
 pnpm run s:changed && pnpm run t && pnpm run format && pnpm run lint && pnpm run test:scss
