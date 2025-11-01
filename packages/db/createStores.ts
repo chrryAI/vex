@@ -2293,6 +2293,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       | "location"
       | "weather"
     )[],
+    placeHolder: "What can I help you with today?",
     features: {
       marketplace: true,
       storeCreation: true,
@@ -2376,6 +2377,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
     visibility: "public" as const,
     storeId: compass.id,
     systemPrompt: atlasSystemPrompt,
+    placeHolder: "Where would you like to explore?",
     tipsTitle: "Travel Tips",
     extends: [chrry.id] as string[],
     tips: [
@@ -2647,6 +2649,7 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
       | "location"
       | "weather"
     )[],
+    placeHolder: "Explore Amsterdam like a local...",
     description:
       "Your personal Amsterdam guide powered by local knowledge. Navigate canals, discover hidden gems, bike like a local, and experience the city beyond tourist traps. From museums to markets, we've got you covered.",
   }
@@ -2893,6 +2896,7 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
       | "location"
       | "weather"
     )[],
+    placeHolder: "Discover Tokyo's hidden gems...",
     description:
       "Your personal Tokyo guide powered by local knowledge. Master the train system, discover hidden neighborhoods, learn proper etiquette, and experience Tokyo beyond tourist spots. From temples to ramen, we've got you covered.",
     extends: [chrry.id, atlas.id] as string[],
@@ -3147,6 +3151,7 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
       | "location"
       | "weather"
     )[],
+    placeHolder: "Navigate Istanbul like a local...",
     description:
       "Your personal Istanbul guide powered by local knowledge. Navigate two continents, master the Bosphorus, explore Ottoman history, haggle in bazaars, and experience Turkish hospitality. From mosques to meyhanes, we've got you covered.",
     extends: [chrry.id, atlas.id] as string[],
@@ -3410,6 +3415,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
       | "location"
       | "weather"
     )[],
+    placeHolder: "Experience NYC like a New Yorker...",
     description:
       "Your personal New York guide powered by local knowledge. Master the subway, discover hidden neighborhoods, eat like a local, and experience NYC beyond Times Square. From pizza to Broadway, we've got you covered.",
     extends: [chrry.id, atlas.id] as string[],
@@ -5376,6 +5382,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
+    placeHolder: "What would you like to create today?",
     features: {
       multiAgent: true,
       threadArtifacts: true,
@@ -5485,6 +5492,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     icon: "🍑",
     storeId: lifeOS.id,
     systemPrompt: peachSystemPrompt,
+    placeHolder: "How can I help with your social life?",
     tipsTitle: "Social Tips",
     tips: [
       {
@@ -5565,6 +5573,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     backgroundColor: "#ffffff",
     icon: "🌸",
     systemPrompt: bloomSystemPrompt,
+    placeHolder: "What's your wellness goal today?",
     tipsTitle: "Wellness Tips",
     tips: [
       {
@@ -5644,6 +5653,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     highlights: vaultInstructions,
     systemPrompt: vaultSystemPrompt,
+    placeHolder: "Ask me about your finances...",
     tipsTitle: "Finance Tips",
     tips: [
       {
@@ -5727,6 +5737,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let claudeApp = await getApp({ slug: "claude" })
 
+  const claudeSystemPrompt = `You are Claude by Anthropic, a thoughtful AI assistant known for nuanced understanding and detailed responses. You excel at long-form writing, creative projects, code review, and research. Provide helpful, harmless, and honest assistance while maintaining a conversational and thoughtful tone.`
+
   const claudeAppPayload = {
     slug: "claude",
     name: "Claude",
@@ -5742,6 +5754,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     highlights: claudeCreativeInstructions,
     defaultModel: "claude" as const,
+    systemPrompt: claudeSystemPrompt,
     // Native App Store Integration
     installType: "hybrid" as const,
     appStoreUrl:
@@ -5769,6 +5782,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
+    placeHolder: "What can Claude help you with?",
     extends: [chrry.id, vex.id],
     features: {
       longFormContent: true,
@@ -5801,6 +5815,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   // ============================================
 
   let writer = await getApp({ slug: "writer" })
+  const writerSystemPrompt = `You are Writer, a Claude-powered writing assistant specializing in long-form content, creative writing, and professional documentation. Help users craft compelling narratives, polish prose, and produce high-quality written content with expert editing and thoughtful feedback.`
+
   const writerPayload = {
     slug: "writer",
     name: "Writer",
@@ -5815,11 +5831,13 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     highlights: claudeWriterInstructions,
     defaultModel: "claude" as const,
+    systemPrompt: writerSystemPrompt,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
     )[],
+    placeHolder: "What would you like to write today?",
     description:
       "Claude-powered writing assistant for long-form content, creative writing, and professional documentation. Master of nuanced prose and thoughtful analysis.",
     features: {
@@ -5842,6 +5860,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   let reviewer = await getApp({ slug: "reviewer" })
+  const reviewerSystemPrompt = `You are Review, a Claude-powered code reviewer providing comprehensive analysis of code quality, bugs, performance, security, and best practices. Offer detailed, constructive feedback with thoughtful explanations to help developers improve their code.`
+
   const reviewerPayload = {
     slug: "reviewer",
     name: "Review",
@@ -5856,11 +5876,13 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     highlights: claudeCodeReviewInstructions,
     defaultModel: "claude" as const,
+    systemPrompt: reviewerSystemPrompt,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
     )[],
+    placeHolder: "Paste code for review...",
     extends: [claudeApp.id, chrry.id],
     description:
       "Get comprehensive code reviews from Claude. Detailed analysis of bugs, performance, security, and best practices with thoughtful explanations.",
@@ -5883,6 +5905,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   let researcher = await getApp({ slug: "researcher" })
+  const researcherSystemPrompt = `You are Research, a Claude-powered academic research assistant. Help users synthesize complex information, analyze research papers, manage citations, design methodologies, and present findings in structured academic formats. Excel at literature reviews and scholarly work.`
+
   const researcherPayload = {
     slug: "researcher",
     name: "Research",
@@ -5897,11 +5921,13 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     highlights: claudeResearchInstructions,
     defaultModel: "claude" as const,
+    systemPrompt: researcherSystemPrompt,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
     )[],
+    placeHolder: "What are you researching?",
     description:
       "Claude-powered research assistant for academic work. Synthesize complex information, analyze papers, and present findings in structured formats.",
     features: {
@@ -5939,6 +5965,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let perplexityApp = await getApp({ slug: "perplexity" })
 
+  const perplexitySystemPrompt = `You are Perplexity, an AI-powered answer engine that combines real-time web search with conversational AI. Provide accurate, well-cited answers with source references. Excels at factual information, current events, and research. Always cite your sources and cross-reference multiple sources for accuracy.`
+
   const perplexityAppPayload = {
     slug: "perplexity",
     name: "Perplexity",
@@ -5953,6 +5981,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     onlyAgent: true,
     defaultModel: "perplexity" as const,
+    systemPrompt: perplexitySystemPrompt,
     highlights: perplexityGeneralInstructions,
     // Native App Store Integration
     installType: "hybrid" as const,
@@ -5981,6 +6010,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
+    placeHolder: "Search anything with AI...",
     features: {
       realTimeSearch: true,
       sourceCitations: true,
@@ -6013,6 +6043,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   // ============================================
 
   let search = await getApp({ slug: "search" })
+  const searchSystemPrompt = `You are Search, a Perplexity-powered real-time web search engine. Provide instant answers with cited sources, verifiable references, and live internet access. Always cite your sources and provide multiple perspectives.`
+
   const searchPayload = {
     slug: "search",
     name: "Search",
@@ -6026,11 +6058,13 @@ Every book, every idea, every question - examine it through the lens of life-aff
     defaultModel: "perplexity" as const,
     onlyAgent: true,
     visibility: "public" as const,
+    systemPrompt: searchSystemPrompt,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
     )[],
+    placeHolder: "Search the web...",
     highlights: perplexitySearchInstructions,
     description:
       "Real-time web search with cited sources. Get instant answers to any question with verifiable references and live internet access.",
@@ -6054,6 +6088,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   let news = await getApp({ slug: "news" })
+  const newsSystemPrompt = `You are News, a Perplexity-powered breaking news aggregator. Deliver real-time news updates from multiple sources with fact-checking, bias detection, and historical context. Present balanced perspectives on current events.`
+
   const newsPayload = {
     slug: "news",
     name: "News",
@@ -6067,11 +6103,13 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     defaultModel: "perplexity" as const,
     onlyAgent: true,
+    systemPrompt: newsSystemPrompt,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
     )[],
+    placeHolder: "What's happening today?",
     highlights: perplexityNewsInstructions,
     description:
       "Stay updated with breaking news from multiple sources. Real-time aggregation of current events with comprehensive coverage and fact-checking.",
@@ -6095,6 +6133,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   }
 
   let academic = await getApp({ slug: "academic" })
+  const academicSystemPrompt = `You are Scholar, a Perplexity-powered academic research engine. Provide access to scholarly articles, peer-reviewed papers, and academic resources. Help students and researchers find credible information with proper citations and impact factor tracking.`
+
   const academicPayload = {
     slug: "academic",
     name: "Scholar",
@@ -6108,11 +6148,13 @@ Every book, every idea, every question - examine it through the lens of life-aff
     icon: "🎓",
     visibility: "public" as const,
     defaultModel: "perplexity" as const,
+    systemPrompt: academicSystemPrompt,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
     )[],
+    placeHolder: "Search academic papers...",
     extends: [perplexityApp.id, chrry.id],
     highlights: perplexityScholarInstructions,
     description:
@@ -6151,6 +6193,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let deepseekApp = await getApp({ slug: "deepSeek" })
 
+  const deepseekSystemPrompt = `You are DeepSeek, an expert AI coding assistant specialized in software development, debugging, and technical architecture. You excel at code generation, multi-language support, algorithm design, and writing production-ready code. Provide clean, efficient solutions with best practices and detailed explanations.`
+
   const deepseekAppPayload = {
     slug: "deepSeek",
     name: "DeepSeek",
@@ -6165,6 +6209,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     defaultModel: "deepSeek" as const,
     icon: "💻",
     visibility: "public" as const,
+    systemPrompt: deepseekSystemPrompt,
     highlights: deepseekGeneralInstructions,
     // Web-only for now (no native app yet)
     installType: "web" as const,
@@ -6186,6 +6231,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
+    placeHolder: "Let's build something amazing...",
     extends: [chrry.id, vex.id],
     features: {
       codeGeneration: true,
