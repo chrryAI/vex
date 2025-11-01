@@ -1167,10 +1167,11 @@ export default function App({
             isAgentBuilder={true}
             opacity={0}
             onSave={({ content, artifacts }) => {
-              onSave?.({
-                content,
-                artifacts,
-              })
+              !isManagingApp &&
+                onSave?.({
+                  content,
+                  artifacts,
+                })
             }}
           />
         </div>
