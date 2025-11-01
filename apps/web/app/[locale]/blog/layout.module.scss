@@ -1,0 +1,25 @@
+@use "../../../app/utils.scss";
+@use "../../../app/breakpoints.scss";
+@use "../../../app/toRem.scss";
+
+.blogLayout {
+  max-width: breakpoints.$breakpoint-tablet;
+  // max-width: 1200px;
+  padding-bottom: toRem.toRem(30);
+
+  img {
+    max-width: 100%;
+    border-radius: 20px;
+    // animation: slideUp 0.3s ease-in-out;
+  }
+}
+
+.left {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-direction: row;
+}

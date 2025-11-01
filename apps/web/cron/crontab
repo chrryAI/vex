@@ -1,0 +1,2 @@
+# Run memory decay daily at 3 AM
+0 3 * * * curl -X GET https://yourdomain.com/api/cron/decay-memories -H "Authorization: Bearer ${CRON_SECRET}"

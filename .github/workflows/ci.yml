@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main, chrry]
+  pull_request:
+    branches: [main, chrry]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # 4-core runner with 16GB RAM (free tier)
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.1.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Cache Next.js builds
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/.next/cache
+            apps/chrry-dot-dev/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
+
+      - name: Build packages
+        run: pnpm turbo build --filter="@repo/db" --filter="@chrryai/chrry" --filter="@chrryai/waffles" --filter="@chrryai/pepper"
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      - name: Build web app
+        run: pnpm turbo build --filter="web"
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+          CI: true
+
+      - name: Build chrry-dot-dev app
+        run: pnpm turbo build --filter="chrrydotdev"
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+          CI: true
+
+      - name: Lint
+        run: pnpm turbo lint --continue
+        continue-on-error: true
+
+      - name: Type check
+        run: |
+          pnpm --filter "@chrryai/chrry" check-types
+          pnpm --filter "web" check-types
+          pnpm --filter "chrrydotdev" check-types
+        continue-on-error: true
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.1.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+        continue-on-error: true

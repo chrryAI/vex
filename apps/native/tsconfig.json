@@ -1,0 +1,16 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-native",
+    "baseUrl": ".",
+    "paths": {
+      "chrry": ["../../packages/ui"],
+      "chrry/*": ["../../packages/ui/*"],
+      "@repo/db": ["../../packages/db"],
+      "@repo/db/*": ["../../packages/db/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

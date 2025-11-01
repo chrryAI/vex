@@ -1,0 +1,84 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "remoteCache": {
+    "signature": true
+  },
+  "envMode": "loose",
+  "globalPassThroughEnv": ["SENTRY_AUTH_TOKEN"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "build/**", "dist/**"],
+      "persistent": false,
+      "cache": true
+    },
+    "build:chrome": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist-chrome.zip"],
+      "cache": false
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "seed": {
+      "cache": false,
+      "persistent": true
+    },
+    "generate": {
+      "cache": false,
+      "persistent": true
+    },
+    "migrate": {
+      "cache": false,
+      "persistent": true,
+      "env": ["DB_PROD_URL", "NODE_ENV"]
+    },
+
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:driverTrackingService": {
+      "cache": false,
+      "persistent": true
+    },
+    "test": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:mutate": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:update": {
+      "cache": false,
+      "persistent": true
+    },
+    "e2e": {
+      "cache": false,
+      "persistent": true
+    },
+    "native:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "native:build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "cache": false
+    },
+    "start:ws": {
+      "cache": false,
+      "persistent": true
+    },
+    "e2e:gh": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

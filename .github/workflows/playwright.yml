@@ -1,0 +1,114 @@
+name: Playwright Tests
+on:
+  # push:
+  #   branches:
+  #     - "**" # This will trigger on any branch push
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  e2e:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      TESTING_ENV: e2e
+      NEXT_PUBLIC_TESTING_ENV: e2e
+      NEXT_PUBLIC_CI: true
+      NODE_ENV: production
+      NEXT_PUBLIC_NODE_ENV: development
+      DB_URL: ${{ secrets.DB_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+      UPLOADTHING_TOKEN: ${{ secrets.UPLOADTHING_TOKEN }}
+      VEX_TEST_EMAIL: ${{ secrets.VEX_TEST_EMAIL }}
+      VEX_TEST_NAME: ${{ secrets.VEX_TEST_NAME }}
+      VEX_TEST_PASSWORD: ${{ secrets.VEX_TEST_PASSWORD }}
+      VEX_TEST_EMAIL_2: ${{ secrets.VEX_TEST_EMAIL_2 }}
+      VEX_TEST_NAME_2: ${{ secrets.VEX_TEST_NAME_2 }}
+      VEX_TEST_PASSWORD_2: ${{ secrets.VEX_TEST_PASSWORD_2 }}
+      VEX_TEST_EMAIL_3: ${{ secrets.VEX_TEST_EMAIL_3 }}
+      VEX_TEST_NAME_3: ${{ secrets.VEX_TEST_NAME_3 }}
+      VEX_TEST_PASSWORD_3: ${{ secrets.VEX_TEST_PASSWORD_3 }}
+      VEX_TEST_EMAIL_4: ${{ secrets.VEX_TEST_EMAIL_4 }}
+      VEX_TEST_NAME_4: ${{ secrets.VEX_TEST_NAME_4 }}
+      VEX_TEST_PASSWORD_4: ${{ secrets.VEX_TEST_PASSWORD_4 }}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_PRICE_PLUS_ID: ${{ secrets.STRIPE_PRICE_PLUS_ID }}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.9.0"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+
+      - name: Install dependencies
+        run: |
+          npm ci --retry=3 --timeout=60000 || npm ci --retry=3 --timeout=60000 || npm install --legacy-peer-deps
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: NODE_OPTIONS="--max-old-space-size=4096" npm run build
+
+      - name: Generate
+        run: npm run generate
+
+      - name: Migrate
+        run: npm run migrate
+
+      - name: Seed
+        run: npm run seed
+
+      - name: Start ws
+        run: nohup npm run start:ws > ws.log 2>&1 &
+
+      # - name: Test
+      #   run: npm run test
+      #   env:
+      #     NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+      #     VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }} # Ensure this is set in your repo secrets
+      #     flags: unittests # Optional: Tag this coverage report
+      #     fail_ci_if_error: true # Ensure the job fails if the upload fails
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npm run e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      # - name: "Deploy to Vercel"
+      #   run: |
+      #     prodRun=""
+      #     if [[ ${GITHUB_REF} == "refs/heads/main" ]]; then
+      #       prodRun="--prod"
+      #     fi
+
+      #     npx vercel --token ${VERCEL_TOKEN} $prodRun
+      #   env:
+      #     VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      #     VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      #     VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

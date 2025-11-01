@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Vex",
+    "slug": "vex",
+    "version": "1.1.62",
+    "scheme": "vex",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.askvex.app",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.askvex.app"
+    },
+    "newArchEnabled": true,
+    "experiments": {
+      "reactCanary": false,
+      "reactCompiler": false
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}

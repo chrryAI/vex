@@ -1,0 +1,2 @@
+# Run linting and tests before commit
+pnpm run s:changed && pnpm run t && pnpm run format && pnpm run lint && pnpm run test:scss

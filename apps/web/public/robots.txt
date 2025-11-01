@@ -1,0 +1,11 @@
+Sitemap: https://chrry.ai/api/sitemap
+User-agent: *
+Allow: /api/sitemap
+Disallow: /api/*  # Except sitemap
+Allow: /$
+Allow: /about
+Allow: /privacy
+Allow: /terms
+Allow: /why
+Allow: /threads
+Allow: /threads/*

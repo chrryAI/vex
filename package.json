@@ -1,0 +1,76 @@
+{
+  "name": "vex",
+  "private": true,
+  "version": "1.2.81",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "dev:all": "concurrently \"turbo dev --filter=wsserver\" \"turbo dev --filter=chrrydotdev\" \"turbo dev --filter=web\"",
+    "native": "cd apps/native && npm start",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "translate": "node scripts/translate.js",
+    "e2e": "turbo run e2e:gh --filter=web --log-order=stream",
+    "update-version": "node scripts/update-version.js",
+    "backfill-embeddings": "cd apps/web && npx tsx scripts/backfill-message-embeddings.ts",
+    "t": "node scripts/translate.js",
+    "i": "rm -rf node_modules && rm -rf package-lock.json && npm install --legacy-peer-deps",
+    "generate": "NODE_ENV=production turbo run generate --filter=@repo/db --log-order=stream",
+    "seed": "NODE_ENV=production turbo run seed --filter=@repo/db --log-order=stream",
+    "migrate": "NODE_ENV=production turbo run migrate --filter=@repo/db --log-order=stream",
+    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { try { require('husky').install() } catch (e) {} }\"",
+    "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
+    "check-types": "turbo run check-types",
+    "start:ws": "turbo run start --log-order=stream --filter=wsserver ",
+    "c": "bash scripts/commit-with-ai.sh",
+    "p": "npm run lint && git push",
+    "test-ai": "bash scripts/test-commit-message.sh",
+    "s": "node scripts/scss-to-universal.js",
+    "s:all": "node scripts/scss-to-universal.js --all",
+    "s:changed": "node scripts/convert-changed-scss.js",
+    "watch:scss": "node scripts/watch-scss.js",
+    "publish": "bash scripts/publish-all.sh",
+    "test:scss": "node scripts/test-scss-converter.js",
+    "test": "npm run test:scss",
+    "validate:chrry": "node scripts/validate-chrry-config.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "dotenv": "^16.0.0",
+    "husky": "^9.1.7",
+    "is-reference": "^3.0.3",
+    "openai": "^5.19.1",
+    "prettier": "^3.6.2",
+    "typescript": "5.8.3"
+  },
+  "overrides": {
+    "zod": "^4.1.5",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.12"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@9.1.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "@auth/core": "^0.37.2",
+    "@google-cloud/translate": "^9.2.0",
+    "@react-spring/native": "^10.0.3",
+    "@react-spring/web": "^10.0.3",
+    "eslint": "^9.34.0",
+    "eventsource-parser": "^3.0.3",
+    "fast-xml-parser": "^5.2.5",
+    "react-router-dom": "^7.9.4",
+    "react-tooltip": "^5.29.1",
+    "react-use-websocket": "^4.13.0",
+    "replicate": "^1.0.1",
+    "tsup": "^8.0.0",
+    "turbo": "^2.5.6"
+  }
+}

@@ -1,0 +1,91 @@
+name: Sync Waffles to chrryAI/waffles
+
+on:
+  workflow_dispatch: # Manual trigger
+  push:
+    branches:
+      - chrry
+    paths:
+      - "packages/waffles/**"
+      - ".github/workflows/sync-waffles.yml"
+
+jobs:
+  sync-waffles:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout chrryAI/waffles repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history
+          token: ${{ secrets.CHRRY_SYNC_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create fresh Waffles commit
+        run: |
+          # Create temporary directory for Waffles
+          mkdir -p /tmp/waffles-fresh
+
+          # Copy only packages/waffles contents
+          cp -r packages/waffles/* /tmp/waffles-fresh/
+          cp -r packages/waffles/.* /tmp/waffles-fresh/ 2>/dev/null || true
+
+          # Initialize fresh repo
+          cd /tmp/waffles-fresh
+          git init
+
+          # Configure Git for this repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          # Create single clean commit with current state
+          COMMIT_MSG="Update Waffles 🧇
+
+          Synced from Vex monorepo
+          Latest changes from packages/waffles"
+
+          git commit -m "$COMMIT_MSG"
+
+      - name: Push to Waffles repo
+        run: |
+          cd /tmp/waffles-fresh
+
+          # Add Waffles remote
+          git remote add origin https://x-access-token:${{ secrets.CHRRY_SYNC_TOKEN }}@github.com/chrryAI/waffles.git
+
+          # Create main branch and force push (clean history)
+          git branch -M main
+          git push -f origin main
+
+      - name: Create GitHub Release (if version changed)
+        run: |
+          cd /tmp/waffles-fresh
+
+          # Extract version from package.json
+          VERSION=$(node -p "require('./package.json').version")
+
+          # Check if tag exists
+          if ! git ls-remote --tags origin | grep -q "refs/tags/v$VERSION"; then
+            echo "Creating release for v$VERSION"
+            
+            # Create and push tag
+            git tag -a "v$VERSION" -m "Release v$VERSION"
+            git push origin "v$VERSION"
+            
+            # Create GitHub release using GitHub CLI
+            gh release create "v$VERSION" \
+              --repo chrryAI/waffles \
+              --title "🧇 Waffles v$VERSION" \
+              --notes "Release v$VERSION - Synced from Vex monorepo" \
+              --generate-notes
+          else
+            echo "Tag v$VERSION already exists, skipping release"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.CHRRY_SYNC_TOKEN }}

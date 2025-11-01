@@ -1,0 +1,25 @@
+{
+  "extends": "../../packages/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "chrry/*": ["../../packages/ui/*"],
+      "chrry-dot-dev": ["../chrry-dot-dev"],
+      "chrry-dot-dev/*": ["../chrry-dot-dev/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    "next.config.mjs",
+    ".next/types/**/*.ts",
+    "next-auth.d.ts",
+    "../../packages/ui/lib/speechLimits.ts"
+  ],
+  "exclude": ["node_modules"]
+}

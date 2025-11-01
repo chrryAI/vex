@@ -1,0 +1,26 @@
+.title {
+  padding-top: 0;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.error > p {
+  margin: 0;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
