@@ -70,6 +70,9 @@ export const getHourlyLimit = ({
   }
 }
 
+export const wait = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms))
+
 export const SPEECH_LIMITS = {
   GUEST: {
     REQUESTS_PER_HOUR: 5,

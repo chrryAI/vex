@@ -1,8 +1,6 @@
 import getGuest from "../../actions/getGuest"
 import getMember from "../../actions/getMember"
 import { after, NextResponse } from "next/server"
-import { Ratelimit } from "@upstash/ratelimit"
-import { Redis } from "@upstash/redis"
 import { v4 as uuidv4, validate } from "uuid"
 import { getPureApp, guest } from "@repo/db"
 
@@ -44,23 +42,14 @@ import {
   message,
 } from "@repo/db"
 import { user } from "@repo/db"
-import { generateText } from "ai"
-import { deepseek } from "@ai-sdk/deepseek"
-import { isE2E, isDevelopment, isOwner } from "chrry/utils"
-import { analyzeTaskAndEstimateCredits } from "chrry/utils/tokenEstimator"
+import { isE2E, isOwner } from "chrry/utils"
 import { PROMPT_LIMITS, webSearchResultType } from "@repo/db/src/schema"
 import sanitizeHtml from "sanitize-html"
 
 import { generateThreadTitle, trimTitle } from "../../../utils/titleGenerator"
 import { notifyOwnerAndCollaborations } from "../../../lib/notify"
-import { wait } from "../../../tests"
 import { processMessageForRAG } from "../../actions/ragService"
-import { upload } from "../../../lib/uploadthing-server"
-import {
-  extractPDFText,
-  isCollaborator,
-  getDailyImageLimit,
-} from "../../../lib"
+import { wait, isCollaborator, getDailyImageLimit } from "../../../lib"
 import { uploadArtifacts } from "../../actions/uploadArtifacts"
 import { checkRateLimit } from "../../../lib/rateLimiting"
 import captureException from "../../../lib/captureException"

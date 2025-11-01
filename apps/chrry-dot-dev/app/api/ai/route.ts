@@ -54,6 +54,7 @@ import {
   extractPDFText,
   GEMINI_API_KEY,
   REPLICATE_API_KEY,
+  wait,
   isCollaborator,
   getHourlyLimit,
 } from "../../../lib"
@@ -61,7 +62,6 @@ import { scanFileForMalware } from "../../../lib/security"
 import { upload } from "../../../lib/uploadthing-server"
 import slugify from "slug"
 import { notifyOwnerAndCollaborations } from "../../../lib/notify"
-import { wait } from "../../../tests"
 import { checkRateLimit } from "../../../lib/rateLimiting"
 import { captureException } from "@sentry/nextjs"
 import generateAIContent from "../../../lib/generateAIContent"
