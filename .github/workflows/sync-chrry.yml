@@ -1,7 +1,12 @@
 name: Sync Chrry to Separate Repo
 
 on:
-  workflow_dispatch: # Manual trigger only
+  workflow_dispatch: # Manual trigger
+  push:
+    branches:
+      - main # Sync to chrry repo when merged to main
+    paths:
+      - 'packages/ui/**' # Only trigger if ui package changed
 
 jobs:
   sync-chrry:
