@@ -434,7 +434,7 @@ Return ONLY valid JSON in this exact format:
     },
     {
       "id": "unique-id-2",
-      "title": "Plan {{timeOfDay}} activities 🎯",
+      "title": "Plan {{timeOfDay}} activities",
       "emoji": "🎯",
       "content": "Suggest activities for {{timeOfDay}} considering {{weather}}. Focus on user's interests and local options.",
       "confidence": 0.7,
@@ -442,7 +442,7 @@ Return ONLY valid JSON in this exact format:
     },
     {
       "id": "unique-id-3",
-      "title": "Design agent personality 🤖",
+      "title": "Design agent personality",
       "emoji": "🤖",
       "content": "You are a creative AI personality designer. Help create unique agent personalities with distinct traits, communication styles, and expertise areas.",
       "confidence": 0.9,
@@ -497,6 +497,7 @@ INSTRUCTION RULES:
 - Make each instruction UNIQUE and PERSONALIZED to this user's conversation
 - Generate all content in ${language}
 - Use similar emoji style and placeholder patterns as examples, but DIFFERENT content
+- ⚠️ IMPORTANT: DO NOT include emojis in the "title" field - they go in the separate "emoji" field only
 
 DYNAMIC PLACEHOLDER SYSTEM:
 - You can use {{placeholder}} syntax in BOTH title and content fields
