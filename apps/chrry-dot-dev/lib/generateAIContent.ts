@@ -18,7 +18,6 @@ import {
   createPlaceHolder,
   getApps,
   getApp,
-  getPureApp,
   createInstruction,
   message,
   calendarEvent,
@@ -331,32 +330,15 @@ async function generateSuggestionsAndPlaceholders({
       ? `\n\nUPCOMING CALENDAR EVENTS:\n${calendarEvents.map((e) => `- ${e.title} (${new Date(e.startTime).toLocaleDateString()})${e.location ? ` at ${e.location}` : ""}`).join("\n")}`
       : ""
 
-  // Get app-specific highlights from database (real app features!)
-  // This replaces hardcoded example instructions with actual app highlights
-  // configured by the app creator, making suggestions more relevant and accurate
-  const atlasApp = apps.items.find((a) => a.name === "Atlas")
-  const bloomApp = apps.items.find((a) => a.name === "Bloom")
-  const peachApp = apps.items.find((a) => a.name === "Peach")
-  const vaultApp = apps.items.find((a) => a.name === "Vault")
-
-  // If user is on a specific app (e.g., /atlas), prioritize its highlights
+  // Use current app's highlights as examples for AI
   // This gives the AI strong context about what features are available
-  // The app object is already passed in from the AI route
   const currentApp = app || null
-
-  const atlasHighlights = atlasApp?.highlights || []
-  const bloomHighlights = bloomApp?.highlights || []
-  const peachHighlights = peachApp?.highlights || []
-  const vaultHighlights = vaultApp?.highlights || []
+  const appHighlights = currentApp?.highlights || []
+  const appTipsTitle = currentApp?.tipsTitle || null
 
   console.log(
-    `📚 Loaded app highlights: Atlas (${atlasHighlights.length}), Bloom (${bloomHighlights.length}), Peach (${peachHighlights.length}), Vault (${vaultHighlights.length})`,
+    `🎯 Current app: ${currentApp?.name || "none"} with ${appHighlights.length} highlights${appTipsTitle ? ` and tips: "${appTipsTitle}"` : ""}`,
   )
-  if (currentApp) {
-    console.log(
-      `🎯 Current app: ${currentApp.name} with ${currentApp.highlights?.length || 0} highlights`,
-    )
-  }
 
   const suggestionsPrompt = `Based on this conversation, user memories, and calendar, generate personalized AI instruction templates AND classify the app relevance:
 
@@ -373,44 +355,27 @@ IMPORTANT: Most conversations should be classified as null (general). Only use a
 ${
   currentApp
     ? `
-🎯 CURRENT APP CONTEXT: User is on ${currentApp.name}
-⚠️ CRITICAL: Generate suggestions that align with these app highlights:
-${JSON.stringify(currentApp.highlights, null, 2)}
+🎯 CURRENT APP CONTEXT: User is on ${currentApp.name}${appTipsTitle ? ` - ${appTipsTitle}` : ""}
+⚠️ CRITICAL: Generate suggestions that align with these app highlights and features:
+${appHighlights.length > 0 ? JSON.stringify(appHighlights, null, 2) : "No highlights configured for this app"}
 
 Use these highlights as STRONG GUIDANCE for suggestion generation. The suggestions should help users accomplish tasks related to these specific features.
+Create NEW suggestions inspired by these patterns but personalized to the user's conversation.
 `
-    : ""
+    : `
+⚠️ No app context - generate general suggestions based on the conversation topics.
+`
 }
-    
-APP-SPECIFIC HIGHLIGHTS (Real features from each app - use as INSPIRATION):
-⚠️ CRITICAL: DO NOT copy these word-for-word. Use them to understand what each app CAN DO, then create PERSONALIZED suggestions based on the user's conversation.
 
-🗺️ ATLAS (Travel):
-${atlasHighlights.length > 0 ? JSON.stringify(atlasHighlights, null, 2) : "No highlights configured"}
+Generate a JSON object with TWO parts:
 
-🌸 BLOOM (AI Assistant):
-${bloomHighlights.length > 0 ? JSON.stringify(bloomHighlights, null, 2) : "No highlights configured"}
-
-🍑 PEACH (Social):
-${peachHighlights.length > 0 ? JSON.stringify(peachHighlights, null, 2) : "No highlights configured"}
-
-💰 VAULT (Finance):
-${vaultHighlights.length > 0 ? JSON.stringify(vaultHighlights, null, 2) : "No highlights configured"}
-
-Generate a JSON object with FOUR parts:
-
-1. "appClassification": Determine which LifeOS app this conversation relates to
-   - "appName": "Atlas|Peach|Bloom|Vault|null" (null if general chat)
-   - "confidence": 0.0-1.0
-   - "reasoning": "Brief explanation"
-
-2. "suggestions": Array of 7 UNIQUE, PERSONALIZED instruction templates
+1. "suggestions": Array of 7 UNIQUE, PERSONALIZED instruction templates
    ⚠️ CRITICAL: Each instruction must be DIFFERENT from the examples and from each other
    ⚠️ Base instructions on the USER'S ACTUAL conversation topics, not generic templates
    ⚠️ If user discussed specific topics (e.g., "React hooks"), create instructions about those topics
    ⚠️ DO NOT generate generic instructions like "Help with code" - be SPECIFIC
 
-3. "placeholders": Object with two placeholders:
+2. "placeholders": Object with two placeholders:
    - "home": Based on user's MEMORIES (what they care about across all conversations)
    - "thread": Based on THIS CONVERSATION (what we just discussed)
 
@@ -418,11 +383,6 @@ IMPORTANT: Keep Title length max 40 characters. Placeholders max 60 characters.
 
 Return ONLY valid JSON in this exact format:
 {
-  "appClassification": {
-    "appName": "Atlas",
-    "confidence": 0.9,
-    "reasoning": "User is discussing travel planning"
-  },
   "suggestions": [
     {
       "id": "unique-id",
@@ -463,35 +423,15 @@ PLACEHOLDER RULES:
 - Max 60 characters each
 - Use ${language} language
 
-APP CLASSIFICATION RULES:
-- Analyze the LATEST message and conversation context
-- Match against app descriptions and features
-- Return null if it's general chat (greetings, questions, simple reminders, etc.)
-- Calendar events are ONLY app-specific if they relate to that app's domain:
-  * Atlas: Trip planning, flight bookings, hotel reservations, travel itineraries
-  * Bloom: Workout sessions, meditation, health appointments, wellness activities
-  * Peach: Social meetups, friend gatherings, networking events, dates
-  * Vault: Financial meetings, budget reviews, investment discussions
-- Simple reminders (call someone, buy groceries, etc.) should be classified as null (general)
-
 INSTRUCTION RULES:
 ⚠️ CRITICAL: DO NOT COPY THE EXAMPLES! Create NEW instructions based on:
   1. User's conversation content and context
   2. User's memories and interests
   3. Calendar events and upcoming activities
-  4. The STYLE (not content) of the examples
+  4. Current app's highlights and features (if provided above)
+  5. The STYLE (not content) of the examples
 
-- If appName confidence > 0.7: Create NEW app-specific instructions inspired by the examples
-  * For Atlas: Create travel instructions relevant to user's conversation (NOT generic "plan trip")
-  * For Bloom: Create health instructions based on user's wellness interests
-  * For Peach: Create social instructions matching user's social context
-  * For Vault: Create finance instructions aligned with user's financial discussions
-  * Example: If user mentioned "Japan trip", create "Explore Tokyo neighborhoods {{flag}}" NOT "Plan trip"
-  
-- If appName confidence <= 0.7: Create NEW general instructions based on conversation topics
-  * Example: If user discussed coding, create "Debug React performance issues" NOT "Review code"
-  * Example: If user discussed writing, create "Craft engaging blog intros" NOT "Make writing engaging"
-  
+- Create instructions that align with the current app's capabilities and features
 - Set "requiresWebSearch": true for instructions needing real-time data (flights, weather, events, etc.)
 - Focus on user's SPECIFIC topics, not generic templates
 - Make each instruction UNIQUE and PERSONALIZED to this user's conversation
@@ -549,11 +489,6 @@ Return only valid JSON object.`
   })
 
   const responseSchema = z.object({
-    appClassification: z.object({
-      appName: z.string().nullable(),
-      confidence: z.number(),
-      reasoning: z.string(),
-    }),
     suggestions: z.array(
       z.object({
         id: z.string().optional(),
@@ -572,7 +507,6 @@ Return only valid JSON object.`
 
   type ResponseData = z.infer<typeof responseSchema>
   let responseData: ResponseData = {
-    appClassification: { appName: null, confidence: 0, reasoning: "" },
     suggestions: [],
     placeholders: { home: "", thread: "" },
   }
@@ -589,42 +523,20 @@ Return only valid JSON object.`
   } catch (error) {
     console.log("⚠️ Failed to parse or validate response:", error)
     responseData = {
-      appClassification: {
-        appName: null,
-        confidence: 0,
-        reasoning: "Parse error",
-      },
       suggestions: [],
       placeholders: { home: "", thread: "" },
     }
   }
 
-  const appName = responseData.appClassification.appName as
-    | "Atlas"
-    | "Peach"
-    | "Vault"
-    | "Bloom"
-    | undefined
+  // Since we always have app context, use it directly
+  const finalAppId = app?.id || null
 
-  // Handle app classification
-  let finalAppId: string | null = null
-
-  if (skipClassification && app) {
-    // Manual override: User is on /atlas, /bloom, etc.
-    finalAppId = app.id
-  } else {
-    // AI classification: Let DeepSeek analyze conversation
-    console.log(
-      `📱 AI app classification: ${responseData.appClassification.appName} (${responseData.appClassification.confidence}) - ${responseData.appClassification.reasoning}`,
-    )
-
-    if (app) {
-      finalAppId = app.id
-      await updateThread({
-        ...thread,
-        appId: app.id,
-      })
-    }
+  if (app) {
+    console.log(`🎯 Using current app: ${app.name} (${app.id})`)
+    await updateThread({
+      ...thread,
+      appId: app.id,
+    })
   }
 
   let homePlaceholder
@@ -720,14 +632,10 @@ Return only valid JSON object.`
     }
   }
 
-  // Get app ID if classification confidence is high
-  let appId: string | null = app?.id || null
-  if (!appId && appName && responseData.appClassification.confidence > 0.7) {
-    app = await getPureApp({ name: appName, isSafe: false })
-    if (app) {
-      appId = app.id
-      console.log(`✅ Instructions linked to app: ${app.name}`)
-    }
+  // Use current app ID for instructions
+  const appId: string | null = app?.id || null
+  if (appId) {
+    console.log(`✅ Instructions linked to app: ${app?.name}`)
   }
 
   // Save instructions to new instructions table (limit to 7)
@@ -804,7 +712,6 @@ Return only valid JSON object.`
           home: homePlaceholder,
           thread: threadPlaceHolder,
         },
-        appClassification: responseData.appClassification,
         instructions: createdInstructions,
       },
     },
