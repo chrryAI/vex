@@ -5414,7 +5414,7 @@ export async function getAppExtends({ appId }: { appId: string }) {
     .where(eq(appExtend.appId, appId))
 
   // Return apps with extends property set to empty array to prevent infinite recursion
-  return result.map((r) => ({ ...r.app, extends: [] }))
+  return result.map((r) => ({ ...toSafeApp({ app: r.app }), extends: [] }))
 }
 
 export async function deleteAppExtend({ appId }: { appId: string }) {
