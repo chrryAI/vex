@@ -30,8 +30,8 @@ export default function Store({
   const [storeSlug, setStoreSlug] = useState(slug || pathname.replace("/", ""))
 
   useEffect(() => {
-    setStoreSlug(pathname.replace("/", ""))
-  }, [pathname])
+    !slug && setStoreSlug(pathname.replace("/", ""))
+  }, [pathname, slug])
 
   const matchedApp = allApps?.find((app) => app?.store?.slug === storeSlug)
   const store = matchedApp?.store
