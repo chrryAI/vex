@@ -4,7 +4,7 @@ import { after, NextResponse } from "next/server"
 import { expenseCategory, expenseCategoryType } from "chrry/utils"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
-import { message } from "@repo/db"
+import { getAppExtends, message } from "@repo/db"
 
 import {
   getMemories,
@@ -582,6 +582,52 @@ export async function POST(request: Request) {
     : slug
       ? await getPureApp({ slug, isSafe: false })
       : undefined
+
+  const appExtends = app
+    ? await getAppExtends({ appId: app.id, isSafe: false })
+    : []
+
+  // Build inheritance context from parent apps
+  const inheritanceContext =
+    appExtends.length > 0
+      ? `
+## 🧬 APP INHERITANCE CHAIN
+
+You inherit capabilities from ${appExtends.length} parent app${appExtends.length > 1 ? "s" : ""}:
+
+${appExtends
+  .map(
+    (parentApp, index) => `
+### ${index + 1}. ${parentApp.name}${parentApp.title ? ` - ${parentApp.title}` : ""}
+${parentApp.description ? `${parentApp.description}\n` : ""}
+${
+  parentApp.highlights && parentApp.highlights.length > 0
+    ? `
+**Inherited Capabilities:**
+${parentApp.highlights
+  .map((h: any) => `${h.emoji || "•"} **${h.title}**: ${h.content}`)
+  .join("\n")}
+`
+    : ""
+}
+${
+  parentApp.systemPrompt
+    ? `
+**Parent's Core Behavior:**
+${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemPrompt.split("\n").length > 10 ? "\n..." : ""}
+`
+    : ""
+}`,
+  )
+  .join("\n")}
+
+**How to Use Inheritance:**
+- You have access to ALL capabilities from parent apps above
+- Combine parent features with your own unique capabilities
+- When relevant, leverage parent app's expertise and tools
+- Maintain consistency with parent app behaviors when appropriate
+`
+      : ""
 
   const isAppOwner =
     app && isOwner(app, { userId: member?.id, guestId: guest?.id })
@@ -1597,6 +1643,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   // But we keep this comment for clarity that they're part of every message
   const systemPrompt =
     baseSystemPrompt +
+    inheritanceContext +
     featureStatusContext +
     memoryContext +
     placeholderContext +

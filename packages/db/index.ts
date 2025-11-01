@@ -5404,7 +5404,13 @@ export async function createAppExtend(data: newAppExtend) {
   return result
 }
 
-export async function getAppExtends({ appId }: { appId: string }) {
+export async function getAppExtends({
+  appId,
+  isSafe = true,
+}: {
+  appId: string
+  isSafe?: boolean
+}) {
   const result = await db
     .select({
       app: apps,
@@ -5414,7 +5420,10 @@ export async function getAppExtends({ appId }: { appId: string }) {
     .where(eq(appExtend.appId, appId))
 
   // Return apps with extends property set to empty array to prevent infinite recursion
-  return result.map((r) => ({ ...toSafeApp({ app: r.app }), extends: [] }))
+  return result.map((r) => ({
+    ...(isSafe ? toSafeApp({ app: r.app }) : r.app),
+    extends: [],
+  }))
 }
 
 export async function deleteAppExtend({ appId }: { appId: string }) {
