@@ -345,33 +345,41 @@ export default function Agent({
 
       // For paid tiers (plus/pro), DeepSeek is REQUIRED
       // If no DeepSeek API key, automatically set to free tier
-      if (tier !== "free" && !apiKeys.deepseek?.trim()) {
-        appForm.setValue("tier", "free")
-      }
+      if (tier !== "free") {
+        if (!apiKeys.deepseek?.trim()) {
+          appForm.setValue("tier", "free")
+        } else {
+          if ((tier === "plus" || tier === "pro") && capabilities) {
+            // Image generation requires OpenAI
+            if (
+              capabilities.imageGeneration === true &&
+              !apiKeys.openai?.trim()
+            ) {
+              toast.error(t("OpenAI API key required for image generation"))
+              setTab("api")
+              return
+            }
 
+            // Web search requires Perplexity
+            if (
+              capabilities.webSearch === true &&
+              !apiKeys.perplexity?.trim()
+            ) {
+              toast.error(t("Perplexity API key required for web search"))
+              setTab("api")
+              return
+            }
+
+            // Voice/audio requires OpenAI
+            if (capabilities.audio === true && !apiKeys.openai?.trim()) {
+              toast.error(t("OpenAI API key required for voice capabilities"))
+              setTab("api")
+              return
+            }
+          }
+        }
+      }
       // For paid tiers (Plus/Pro), validate capability-specific API keys (only if enabled)
-      if ((tier === "plus" || tier === "pro") && capabilities) {
-        // Image generation requires OpenAI
-        if (capabilities.imageGeneration === true && !apiKeys.openai?.trim()) {
-          toast.error(t("OpenAI API key required for image generation"))
-          setTab("api")
-          return
-        }
-
-        // Web search requires Perplexity
-        if (capabilities.webSearch === true && !apiKeys.perplexity?.trim()) {
-          toast.error(t("Perplexity API key required for web search"))
-          setTab("api")
-          return
-        }
-
-        // Voice/audio requires OpenAI
-        if (capabilities.audio === true && !apiKeys.openai?.trim()) {
-          toast.error(t("OpenAI API key required for voice capabilities"))
-          setTab("api")
-          return
-        }
-      }
 
       // Check if any enabled capability is unsupported by configured agents
       if (unSupportedCapabilities) {
