@@ -192,7 +192,8 @@ export function NavigationProvider({
     searchParams.get("account") === "true",
   )
 
-  const { isExtension, isMobile, viewPortWidth, os, device } = usePlatform()
+  const { isExtension, isMobile, viewPortWidth, os, device, isStandalone } =
+    usePlatform()
 
   useEffect(() => {
     if (viewPortWidth) {
@@ -263,9 +264,16 @@ export function NavigationProvider({
     if (typeof window === "undefined") return
     !value && removeParam("showInstall")
     if (value && os === "ios" && app && session?.app?.id !== app.id) {
-      // Reload with query param to refresh manifest on ios
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.set("showInstall", "true")
+
+      // If in PWA, open in system browser instead of reloading
+      if (isStandalone) {
+        window.open(newUrl.toString(), "_blank", "noopener,noreferrer")
+        return
+      }
+
+      // In normal browser, reload with query param to refresh manifest on ios
       window.location.href = newUrl.toString()
     } else {
       setShowAddToHomeScreenInternal(value)
