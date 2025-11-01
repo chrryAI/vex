@@ -147,7 +147,11 @@ export function ChatProvider({
   const [threadId, setThreadId] = useState(getThreadId(pathname))
 
   useEffect(() => {
-    setThreadId(getThreadId(pathname))
+    const id = getThreadId(pathname)
+    if (id) {
+      setThreadId(id)
+      setIsChatFloating(false)
+    }
   }, [pathname])
 
   // Credits tracking
