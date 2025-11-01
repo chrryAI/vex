@@ -2423,12 +2423,12 @@ export const getAiAgents = async ({
   state,
   userId,
   guestId,
-  appId,
+  include: appId,
 }: {
   state?: ("active" | "testing" | "inactive")[]
   userId?: string
   guestId?: string
-  appId?: string
+  include?: string
 } = {}) => {
   const result = await db
     .select()

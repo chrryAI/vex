@@ -2,7 +2,7 @@ import { createDeepSeek } from "@ai-sdk/deepseek"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createAnthropic } from "@ai-sdk/anthropic"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { getAiAgent, app } from "@repo/db"
+import { app, getAiAgents } from "@repo/db"
 import type { LanguageModel } from "ai"
 
 /**
@@ -18,33 +18,22 @@ import type { LanguageModel } from "ai"
  * - Falls back to DeepSeek if agent not found or unsupported
  */
 export async function getModelProvider(
-  agentId: string | undefined,
   app?: app,
+  name = "deepSeek",
 ): Promise<{ provider: LanguageModel; agentName: string }> {
-  // Handle default/undefined case - try to get app's default model or fallback
-  if (!agentId || agentId === "default") {
-    // Try to get app's default model
-    if (app?.defaultModel) {
-      const defaultAgent = await getAiAgent({ name: app.defaultModel as any })
-      if (defaultAgent) {
-        agentId = defaultAgent.id
-      }
-    }
+  const agents = app ? await getAiAgents({ include: app.id }) : []
 
-    // If still no agent, use DeepSeek fallback
-    if (!agentId || agentId === "default") {
-      console.log("⚠️ No agent specified, using DeepSeek fallback")
-      const deepseekKey = app?.apiKeys?.deepseek || process.env.DEEPSEEK_API_KEY
-      const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
-      return {
-        provider: deepseekProvider("deepseek-chat"),
-        agentName: "deepSeek",
-      }
-    }
-  }
-
-  // Get the agent details
-  const agent = await getAiAgent({ id: agentId })
+  const agent = app
+    ? agents.find(
+        (a) =>
+          // Priority 1: If the specified name (default: deepSeek) has an API key AND matches this agent
+          (name &&
+            Object.keys(app.apiKeys || {}).includes(name.toLowerCase()) &&
+            a.name.toLowerCase() === name.toLowerCase()) ||
+          // Priority 2: Agent assigned to this app
+          (app && a.appId === app.id),
+      )
+    : agents.find((a) => a.name.toLowerCase() === name.toLowerCase())
 
   if (!agent) {
     // Fallback to DeepSeek if agent not found

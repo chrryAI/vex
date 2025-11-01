@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   // }
 
   const aiAgents = await getAiAgents({
-    appId: appId || undefined,
+    include: appId || undefined,
   })
   return NextResponse.json(aiAgents)
 }

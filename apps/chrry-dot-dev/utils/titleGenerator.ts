@@ -2,7 +2,14 @@ import { isE2E } from "chrry/utils"
 import { generateText } from "ai"
 import { faker } from "@faker-js/faker"
 import captureException from "../lib/captureException"
-import { getThread, getPureApp, getAiAgent } from "@repo/db"
+import {
+  getThread,
+  getPureApp,
+  getAiAgent,
+  getAiAgents,
+  app,
+  appExtend,
+} from "@repo/db"
 import { getModelProvider } from "../lib/getModelProvider"
 
 export const trimTitle = (str: string) =>
@@ -20,6 +27,18 @@ export async function generateThreadTitle({
   threadId?: string
 }): Promise<string> {
   if (isE2E) return faker.lorem.sentence()
+
+  const thread = await getThread({
+    id: threadId,
+  })
+
+  if (!thread) return ""
+
+  const app = thread.appId
+    ? await getPureApp({
+        id: thread.appId,
+      })
+    : undefined
 
   try {
     // Supported languages for title generation
@@ -68,39 +87,14 @@ Requirements:
 
 Title:`
 
-    // Extract threadId from first message if not provided
-    const extractedThreadId =
-      threadId ||
-      (messages.length > 0 &&
-      typeof messages[0] === "object" &&
-      "threadId" in messages[0]
-        ? messages[0].threadId
-        : undefined)
-
     // Get the thread and app to determine which agent to use
-    let model
-    let app
-    if (extractedThreadId) {
-      const thread = await getThread({ id: extractedThreadId })
-      if (thread?.appId) {
-        app = await getPureApp({ id: thread.appId, isSafe: false })
-      }
-
-      // Use thread's agent if available, otherwise use app's default model
-      const agentId = (thread as any)?.agentId || app?.defaultModel
-      if (agentId) {
-        const { provider } = await getModelProvider(agentId, app)
-        model = provider
-        console.log("✅ Using thread's agent for title generation")
-      }
-    }
 
     // Fallback to default if no model found
-    if (!model) {
-      const { provider } = await getModelProvider("default", app)
-      model = provider
-    }
+    const { provider: model } = await getModelProvider(app)
 
+    if (!model) {
+      return "New Conversation"
+    }
     const { text } = await generateText({
       model,
       prompt,
@@ -133,6 +127,18 @@ export async function generateThreadInstructions({
   language?: string
   threadId?: string
 }): Promise<string> {
+  const thread = await getThread({
+    id: threadId,
+  })
+
+  if (!thread) return ""
+
+  const app = thread.appId
+    ? await getPureApp({
+        id: thread.appId,
+      })
+    : undefined
+
   try {
     // Supported languages
     const languageNames: Record<string, string> = {
@@ -184,27 +190,11 @@ Write in ${languageName}. Return only the instruction text:`
         : undefined)
 
     // Get the thread and app to determine which agent to use
-    let model
-    let app
-    if (extractedThreadId) {
-      const thread = await getThread({ id: extractedThreadId })
-      if (thread?.appId) {
-        app = await getPureApp({ id: thread.appId, isSafe: false })
-      }
 
-      // Use thread's agent if available, otherwise use app's default model
-      const agentId = (thread as any)?.agentId || app?.defaultModel
-      if (agentId) {
-        const { provider } = await getModelProvider(agentId, app)
-        model = provider
-        console.log("✅ Using thread's agent for instructions generation")
-      }
-    }
+    const { provider: model } = await getModelProvider(app)
 
-    // Fallback to default if no model found
     if (!model) {
-      const { provider } = await getModelProvider("default", app)
-      model = provider
+      return ""
     }
 
     const { text } = await generateText({

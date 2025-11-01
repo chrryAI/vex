@@ -864,7 +864,7 @@ async function generateAIContent({
     .join("\n")
 
   // Get the appropriate model provider for this agent
-  const { provider: model, agentName } = await getModelProvider(agentId, app)
+  const { provider: model, agentName } = await getModelProvider(app)
   console.log(`🤖 Using ${agentName} for background processing`)
 
   // Use agent name for metadata tracking
