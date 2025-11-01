@@ -2,6 +2,18 @@
 
 > A self-sustaining AI platform powered by user-provided models
 
+[![GitHub stars](https://img.shields.io/github/stars/chrryai/vex?style=social)](https://github.com/chrryai/vex/starers)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![Open Source](https://img.shields.io/badge/Open%20Source-💝-brightgreen)](SPONSORS.md)
+
+## 💝 Support This Project
+
+Vex is pioneering AI app composition with revolutionary architecture built entirely open source by a solo developer. If you find this project valuable, please consider [becoming a sponsor](SPONSORS.md) to help sustain development.
+
+[💎 Become a Sponsor](SPONSORS.md) | [⭐ Star on GitHub](https://github.com/chrryai/vex) | [🐦 Follow on Twitter](https://twitter.com/chrryai)
+
+---
+
 ## 🚀 Revolutionary Architecture: One Codebase, Unlimited Apps
 
 Vex pioneered a breakthrough PWA architecture that enables **multiple independent apps from a single codebase**:
@@ -175,7 +187,7 @@ The revolutionary multi-app system works through:
 ```
 vex/
 ├── apps/
-│   ├── chrry-dot-dev/    # Main Next.js app (localhost:3001)
+│   ├── chrry-dot-dev/    # Api (localhost:3001)
 │   ├── web/              # Alternative frontend (localhost:3000)
 │   ├── ws/               # WebSocket server (localhost:5001)
 │   ├── extension/        # Browser extension
@@ -194,6 +206,23 @@ vex/
 - [Security Policy](SECURITY.md)
 - [API Documentation](docs/API.md)
 
+## 🏆 Sponsors
+
+Vex is made possible by generous sponsors who believe in open source innovation:
+
+### Platinum Sponsors
+*Be the first to support revolutionary AI architecture!*
+
+### Gold Sponsors
+*Your logo here - [Become a sponsor](SPONSORS.md)*
+
+### Silver Sponsors
+*Your logo here - [Become a sponsor](SPONSORS.md)*
+
+**Interested in sponsoring?** Check out our [sponsorship tiers](SPONSORS.md) and help us build the future of AI app composition.
+
+---
+
 ## License
 
 AGPL-3.0 - See [LICENSE](LICENSE)
@@ -202,5 +231,7 @@ AGPL-3.0 - See [LICENSE](LICENSE)
 
 ## Support
 
-- Email: ilian@chrry.ai
-- Issues: https://github.com/chrryai/vex/issues
+- 💝 Sponsor: [SPONSORS.md](SPONSORS.md)
+- 📧 Email: ilian@chrry.ai
+- 🐛 Issues: https://github.com/chrryai/vex/issues
+- 🐦 Twitter: [@chrryai](https://twitter.com/chrryai)
