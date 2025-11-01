@@ -2230,6 +2230,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
   let chrry = await getApp({ slug: "chrry" })
 
   const chrryPayload = {
+    ...chrry,
     slug: "chrry",
     name: "Chrry",
     subtitle: "AI App Marketplace",
@@ -2354,6 +2355,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
   let atlas = await getApp({ slug: "atlas" })
 
   const atlasPayload = {
+    ...atlas,
     slug: "atlas",
     subtitle: "AI Travel Companion",
     name: "Atlas",
@@ -2590,6 +2592,7 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
 
   let amsterdam = await getApp({ slug: "amsterdam" })
   const amsterdamPayload = {
+    ...amsterdam,
     slug: "amsterdam",
     name: "Amsterdam",
     subtitle: "Your Local AI Guide",
@@ -2835,6 +2838,7 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
 
   let tokyo = await getApp({ slug: "tokyo" })
   const tokyoPayload = {
+    ...tokyo,
     slug: "tokyo",
     name: "Tokyo",
     subtitle: "Your Local AI Guide",
@@ -3088,6 +3092,7 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
 
   let istanbul = await getApp({ slug: "istanbul" })
   const istanbulPayload = {
+    ...istanbul,
     slug: "istanbul",
     name: "Istanbul",
     subtitle: "Your Local AI Guide",
@@ -3350,6 +3355,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
 
   let newYork = await getApp({ slug: "newYork" })
   const newYorkPayload = {
+    ...newYork,
     slug: "newYork",
     name: "NewYork",
     subtitle: "Your Local AI Guide",
@@ -3539,6 +3545,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   let popcorn = await getApp({ slug: "popcorn" })
 
   const moviesPayload = {
+    ...popcorn,
     slug: "popcorn",
     name: "Popcorn",
     title: "Popcorn — Movies Spotlight",
@@ -3726,6 +3733,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   let fightClub = await getApp({ slug: "fightClub" })
 
   const fightClubPayload = {
+    ...fightClub,
     slug: "fightClub",
     name: "FightClub",
     title: "Fight Club — Underground Insights",
@@ -3892,6 +3900,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   let inception = await getApp({ slug: "inception" })
 
   const inceptionPayload = {
+    ...inception,
     slug: "inception",
     name: "Inception",
     title: "Inception — Dream Architecture",
@@ -4058,6 +4067,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   let pulpFiction = await getApp({ slug: "pulpFiction" })
 
   const pulpFictionPayload = {
+    ...pulpFiction,
     slug: "pulpFiction",
     name: "Pulp Fiction",
     title: "Pulp Fiction — Royale With Insight",
@@ -4225,6 +4235,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   let hungerGames = await getApp({ slug: "hungerGames" })
 
   const hungerGamesPayload = {
+    ...hungerGames,
     slug: "hungerGames",
     name: "HungerGames",
     placeholder: "What's your strategy for the Hunger Games?",
@@ -4467,6 +4478,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let zarathustra = await getApp({ slug: "zarathustra" })
   const zarathustraPayload = {
+    ...zarathustra,
     extends: [chrry.id] as string[],
     slug: "zarathustra",
     name: "Zarathustra",
@@ -4719,6 +4731,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let nineteen84 = await getApp({ slug: "1984" })
   const nineteen84Payload = {
+    ...nineteen84,
     slug: "1984",
     name: "1984",
     extends: [chrry.id, zarathustra.id] as string[],
@@ -4943,6 +4956,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let meditations = await getApp({ slug: "meditations" })
   const meditationsPayload = {
+    ...meditations,
     extends: [chrry.id, zarathustra.id] as string[],
     slug: "meditations",
     name: "Meditations",
@@ -5169,6 +5183,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let dune = await getApp({ slug: "dune" })
   const dunePayload = {
+    ...dune,
     extends: [chrry.id, zarathustra.id] as string[],
     slug: "dune",
     name: "Dune",
@@ -5291,6 +5306,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
   let vex = await getApp({ slug: "vex" })
 
   const vexPayload = {
+    ...vex,
     slug: "vex",
     name: "Vex",
     domain: "https://vex.chrry.ai",
@@ -5442,6 +5458,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   let peach = await getApp({ slug: "peach" })
 
   const peachPayload = {
+    ...peach,
+
     subtitle: "AI Social Network",
     slug: "peach",
     name: "Peach",
@@ -5520,6 +5538,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
   let bloom = await getApp({ slug: "bloom" })
 
   const bloomPayload = {
+    ...bloom,
     subtitle: "Health & Planet",
     name: "Bloom",
     tools: ["calendar", "location", "weather"] as (
@@ -5598,6 +5617,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   let vault = await getApp({ slug: "vault" })
 
   const vaultPayload = {
+    ...vault,
+
     subtitle: "Smart Finance",
     slug: "vault",
     name: "Vault",
@@ -5698,6 +5719,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const claudeSystemPrompt = `You are Claude by Anthropic, a thoughtful AI assistant known for nuanced understanding and detailed responses. You excel at long-form writing, creative projects, code review, and research. Provide helpful, harmless, and honest assistance while maintaining a conversational and thoughtful tone.`
 
   const claudeAppPayload = {
+    ...claudeApp,
+
     slug: "claude",
     name: "Claude",
     subtitle: "Thoughtful AI Assistant",
@@ -5774,6 +5797,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const writerSystemPrompt = `You are Writer, a Claude-powered writing assistant specializing in long-form content, creative writing, and professional documentation. Help users craft compelling narratives, polish prose, and produce high-quality written content with expert editing and thoughtful feedback.`
 
   const writerPayload = {
+    ...writer,
     slug: "writer",
     name: "Writer",
     storeId: claudeStore.id,
@@ -5817,6 +5841,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const reviewerSystemPrompt = `You are Review, a Claude-powered code reviewer providing comprehensive analysis of code quality, bugs, performance, security, and best practices. Offer detailed, constructive feedback with thoughtful explanations to help developers improve their code.`
 
   const reviewerPayload = {
+    ...reviewer,
+
     slug: "reviewer",
     name: "Review",
     storeId: claudeStore.id,
@@ -5860,6 +5886,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const researcherSystemPrompt = `You are Research, a Claude-powered academic research assistant. Help users synthesize complex information, analyze research papers, manage citations, design methodologies, and present findings in structured academic formats. Excel at literature reviews and scholarly work.`
 
   const researcherPayload = {
+    ...researcher,
+
     slug: "researcher",
     name: "Research",
     storeId: claudeStore.id,
@@ -5918,6 +5946,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const perplexitySystemPrompt = `You are Perplexity, an AI-powered answer engine that combines real-time web search with conversational AI. Provide accurate, well-cited answers with source references. Excels at factual information, current events, and research. Always cite your sources and cross-reference multiple sources for accuracy.`
 
   const perplexityAppPayload = {
+    ...perplexityApp,
+
     slug: "perplexity",
     name: "Perplexity",
     subtitle: "Real-Time AI Search",
@@ -5994,6 +6024,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const searchSystemPrompt = `You are Search, a Perplexity-powered real-time web search engine. Provide instant answers with cited sources, verifiable references, and live internet access. Always cite your sources and provide multiple perspectives.`
 
   const searchPayload = {
+    ...search,
+
     slug: "search",
     name: "Search",
     storeId: perplexityStore.id,
@@ -6037,6 +6069,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const newsSystemPrompt = `You are News, a Perplexity-powered breaking news aggregator. Deliver real-time news updates from multiple sources with fact-checking, bias detection, and historical context. Present balanced perspectives on current events.`
 
   const newsPayload = {
+    ...news,
+
     slug: "news",
     name: "News",
     storeId: perplexityStore.id,
@@ -6080,6 +6114,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const academicSystemPrompt = `You are Scholar, a Perplexity-powered academic research engine. Provide access to scholarly articles, peer-reviewed papers, and academic resources. Help students and researchers find credible information with proper citations and impact factor tracking.`
 
   const academicPayload = {
+    ...academic,
+
     slug: "academic",
     name: "Scholar",
     storeId: perplexityStore.id,
@@ -6138,6 +6174,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
   const deepseekSystemPrompt = `You are DeepSeek, an expert AI coding assistant specialized in software development, debugging, and technical architecture. You excel at code generation, multi-language support, algorithm design, and writing production-ready code. Provide clean, efficient solutions with best practices and detailed explanations.`
 
   const deepseekAppPayload = {
+    ...deepseekApp,
     slug: "deepSeek",
     name: "DeepSeek",
     subtitle: "AI Coding Assistant",
@@ -6503,6 +6540,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
   let coder = await getApp({ slug: "coder" })
   const coderPayload = {
+    ...coder,
+
     slug: "coder",
     name: "Coder",
     storeId: deepseekStore.id,
@@ -6545,6 +6584,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
   let debuggerApp = await getApp({ slug: "debugger" })
   const debuggerPayload = {
+    ...debuggerApp,
+
     slug: "debugger",
     name: "Debugger",
     storeId: deepseekStore.id,
@@ -6587,6 +6628,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
   let architect = await getApp({ slug: "architect" })
   const architectPayload = {
+    ...architect,
     slug: "architect",
     name: "Architect",
     storeId: deepseekStore.id,
