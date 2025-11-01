@@ -73,7 +73,7 @@ jobs:
 
       - name: Type check
         run: |
-          pnpm --filter "@chrryai/chrry" check-types
+          pnpm --filter "@chrryai/chrry" exec tsc --noEmit --project tsconfig.ci.json
           pnpm --filter "web" check-types
           pnpm --filter "chrrydotdev" check-types
         continue-on-error: true
