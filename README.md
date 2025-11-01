@@ -12,6 +12,7 @@ Vex pioneered a breakthrough PWA architecture that enables **multiple independen
 - **🔄 Dynamic Manifests**: Intelligent manifest generation creates separate PWA identities from one codebase
 
 **Example User Home Screen:**
+
 ```
 🌍 Atlas    - AI Travel Planner
 🍑 Peach    - Social Life Assistant
@@ -163,6 +164,7 @@ The revolutionary multi-app system works through:
    - Each installation is independent but shares infrastructure
 
 **Coming to Native**: React Native implementation will use a similar pattern where:
+
 - One app download contains all apps preloaded
 - In-app store lets users "install" (enable) specific apps
 - Each app appears as a separate section with full branding

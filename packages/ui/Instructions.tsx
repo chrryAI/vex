@@ -129,6 +129,7 @@ export default function Instructions({
     isMobileDevice,
     setShowAddToHomeScreen,
     showAddToHomeScreen,
+    pathname,
   } = useNavigationContext()
 
   // App context
