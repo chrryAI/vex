@@ -2293,7 +2293,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       | "location"
       | "weather"
     )[],
-    placeHolder: "What can I help you with today?",
+    placeholder: "What can I help you with today?",
     features: {
       marketplace: true,
       storeCreation: true,
@@ -2377,7 +2377,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
     visibility: "public" as const,
     storeId: compass.id,
     systemPrompt: atlasSystemPrompt,
-    placeHolder: "Where would you like to explore?",
+    placeholder: "Where would you like to explore?",
     tipsTitle: "Travel Tips",
     extends: [chrry.id] as string[],
     tips: [
@@ -2649,7 +2649,7 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
       | "location"
       | "weather"
     )[],
-    placeHolder: "Explore Amsterdam like a local...",
+    placeholder: "Explore Amsterdam like a local...",
     description:
       "Your personal Amsterdam guide powered by local knowledge. Navigate canals, discover hidden gems, bike like a local, and experience the city beyond tourist traps. From museums to markets, we've got you covered.",
   }
@@ -2896,7 +2896,7 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
       | "location"
       | "weather"
     )[],
-    placeHolder: "Discover Tokyo's hidden gems...",
+    placeholder: "Discover Tokyo's hidden gems...",
     description:
       "Your personal Tokyo guide powered by local knowledge. Master the train system, discover hidden neighborhoods, learn proper etiquette, and experience Tokyo beyond tourist spots. From temples to ramen, we've got you covered.",
     extends: [chrry.id, atlas.id] as string[],
@@ -3151,7 +3151,7 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
       | "location"
       | "weather"
     )[],
-    placeHolder: "Navigate Istanbul like a local...",
+    placeholder: "Navigate Istanbul like a local...",
     description:
       "Your personal Istanbul guide powered by local knowledge. Navigate two continents, master the Bosphorus, explore Ottoman history, haggle in bazaars, and experience Turkish hospitality. From mosques to meyhanes, we've got you covered.",
     extends: [chrry.id, atlas.id] as string[],
@@ -3415,7 +3415,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
       | "location"
       | "weather"
     )[],
-    placeHolder: "Experience NYC like a New Yorker...",
+    placeholder: "Experience NYC like a New Yorker...",
     description:
       "Your personal New York guide powered by local knowledge. Master the subway, discover hidden neighborhoods, eat like a local, and experience NYC beyond Times Square. From pizza to Broadway, we've got you covered.",
     extends: [chrry.id, atlas.id] as string[],
@@ -3567,6 +3567,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     backgroundColor: "#000000",
     visibility: "public" as const,
     systemPrompt: moviesSystemPrompt,
+    placeholder: "Which movie should we explore?",
     highlights: moviesInstructions,
     tipsTitle: "Cinema Tips",
     extends: [chrry.id] as string[],
@@ -3755,6 +3756,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     backgroundColor: "#000000",
     visibility: "public" as const,
     systemPrompt: fightClubSystemPrompt,
+    placeholder: "What's the first rule?",
     highlights: fightClubInstructions,
     extends: [chrry.id, popcorn.id] as string[],
     tipsTitle: "Underground Tips",
@@ -3923,6 +3925,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     backgroundColor: "#001933",
     visibility: "public" as const,
     systemPrompt: inceptionSystemPrompt,
+    placeholder: "Design a dream within a dream...",
     highlights: inceptionInstructions,
     tipsTitle: "Dream Heist Tips",
     tips: [
@@ -4090,6 +4093,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     backgroundColor: "#000000",
     visibility: "public" as const,
     systemPrompt: pulpFictionSystemPrompt,
+    placeholder: "What's your favorite Tarantino scene?",
     highlights: pulpFictionInstructions,
     tipsTitle: "Pulp Fiction Tips",
     tips: [
@@ -4246,6 +4250,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   const hungerGamesPayload = {
     slug: "hungerGames",
     name: "HungerGames",
+    placeholder: "What's your strategy for the Hunger Games?",
     title: "Hunger Games — Survival Strategy",
     subtitle: "Outthink the arena",
     domain: "https://popcorn.chrry.ai/hungerGames",
@@ -4500,6 +4505,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     icon: "📕",
     visibility: "public" as const,
     systemPrompt: zarathustraSystemPrompt,
+    placeholder: "Ask me about Nietzsche's philosophy...",
     highlights: zarathustraInstructions,
     tipsTitle: "Philosophical Insights",
     tips: [
@@ -4753,6 +4759,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     icon: "👁️",
     visibility: "public" as const,
     systemPrompt: nineteen84SystemPrompt,
+    placeholder: "Is Big Brother watching?",
     highlights: nineteen84Instructions,
     tipsTitle: "Reading Insights",
     tips: [
@@ -4978,6 +4985,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     icon: "🏛️",
     visibility: "public" as const,
     systemPrompt: meditationsSystemPrompt,
+    placeholder: "What would Marcus Aurelius say?",
     highlights: meditationsInstructions,
     tipsTitle: "Stoic Practices",
     tips: [
@@ -5205,6 +5213,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     icon: "🏜️",
     visibility: "public" as const,
     systemPrompt: duneSystemPrompt,
+    placeholder: "The spice must flow...",
     highlights: duneInstructions,
     tipsTitle: "Reading Guide",
     tips: [
@@ -5382,7 +5391,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "What would you like to create today?",
+    placeholder: "What would you like to create today?",
     features: {
       multiAgent: true,
       threadArtifacts: true,
@@ -5492,7 +5501,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     icon: "🍑",
     storeId: lifeOS.id,
     systemPrompt: peachSystemPrompt,
-    placeHolder: "How can I help with your social life?",
+    placeholder: "How can I help with your social life?",
     tipsTitle: "Social Tips",
     tips: [
       {
@@ -5573,7 +5582,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     backgroundColor: "#ffffff",
     icon: "🌸",
     systemPrompt: bloomSystemPrompt,
-    placeHolder: "What's your wellness goal today?",
+    placeholder: "What's your wellness goal today?",
     tipsTitle: "Wellness Tips",
     tips: [
       {
@@ -5653,7 +5662,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     highlights: vaultInstructions,
     systemPrompt: vaultSystemPrompt,
-    placeHolder: "Ask me about your finances...",
+    placeholder: "Ask me about your finances...",
     tipsTitle: "Finance Tips",
     tips: [
       {
@@ -5782,7 +5791,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "What can Claude help you with?",
+    placeholder: "What can Claude help you with?",
     extends: [chrry.id, vex.id],
     features: {
       longFormContent: true,
@@ -5837,7 +5846,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "What would you like to write today?",
+    placeholder: "What would you like to write today?",
     description:
       "Claude-powered writing assistant for long-form content, creative writing, and professional documentation. Master of nuanced prose and thoughtful analysis.",
     features: {
@@ -5882,7 +5891,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "Paste code for review...",
+    placeholder: "Paste code for review...",
     extends: [claudeApp.id, chrry.id],
     description:
       "Get comprehensive code reviews from Claude. Detailed analysis of bugs, performance, security, and best practices with thoughtful explanations.",
@@ -5927,7 +5936,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "What are you researching?",
+    placeholder: "What are you researching?",
     description:
       "Claude-powered research assistant for academic work. Synthesize complex information, analyze papers, and present findings in structured formats.",
     features: {
@@ -6010,7 +6019,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "Search anything with AI...",
+    placeholder: "Search anything with AI...",
     features: {
       realTimeSearch: true,
       sourceCitations: true,
@@ -6064,7 +6073,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "Search the web...",
+    placeholder: "Search the web...",
     highlights: perplexitySearchInstructions,
     description:
       "Real-time web search with cited sources. Get instant answers to any question with verifiable references and live internet access.",
@@ -6109,7 +6118,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "What's happening today?",
+    placeholder: "What's happening today?",
     highlights: perplexityNewsInstructions,
     description:
       "Stay updated with breaking news from multiple sources. Real-time aggregation of current events with comprehensive coverage and fact-checking.",
@@ -6154,7 +6163,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "Search academic papers...",
+    placeholder: "Search academic papers...",
     extends: [perplexityApp.id, chrry.id],
     highlights: perplexityScholarInstructions,
     description:
@@ -6231,7 +6240,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    placeHolder: "Let's build something amazing...",
+    placeholder: "Let's build something amazing...",
     extends: [chrry.id, vex.id],
     features: {
       codeGeneration: true,
@@ -6575,6 +6584,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     icon: "⚡",
     visibility: "public" as const,
     systemPrompt: coderSystemPrompt,
+    placeholder: "What code should I generate?",
     highlights: deepseekCoderInstructions,
     defaultModel: "deepSeek" as const,
     tools: ["calendar", "location", "weather"] as (
@@ -6618,6 +6628,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     icon: "🐛",
     visibility: "public" as const,
     systemPrompt: debuggerSystemPrompt,
+    placeholder: "Paste your error or bug...",
     highlights: deepseekDebuggerInstructions,
     defaultModel: "deepSeek" as const,
     tools: ["calendar", "location", "weather"] as (
@@ -6662,6 +6673,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
     icon: "🏗️",
     visibility: "public" as const,
     systemPrompt: architectSystemPrompt,
+    placeholder: "Describe your system architecture...",
     highlights: deepseekArchitectInstructions,
     defaultModel: "deepSeek" as const,
     tools: ["calendar", "location", "weather"] as (

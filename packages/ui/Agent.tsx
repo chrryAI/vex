@@ -344,10 +344,9 @@ export default function Agent({
       const tools = appFormWatcher.tools || []
 
       // For paid tiers (plus/pro), DeepSeek is REQUIRED
+      // If no DeepSeek API key, automatically set to free tier
       if (tier !== "free" && !apiKeys.deepseek?.trim()) {
-        toast.error(t("DeepSeek API key required for paid tiers"))
-        setTab("api")
-        return
+        appForm.setValue("tier", "free")
       }
 
       // For paid tiers (Plus/Pro), validate capability-specific API keys (only if enabled)

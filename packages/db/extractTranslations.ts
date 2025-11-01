@@ -52,7 +52,9 @@ export async function extractTranslations() {
   }
 
   // Get all apps from database
-  const appsResult = await getApps()
+  const appsResult = await getApps({
+    pageSize: 1000,
+  })
   const apps = appsResult.items
 
   console.log(`🎯 Processing ${apps.length} apps...`)
@@ -67,6 +69,10 @@ export async function extractTranslations() {
 
     if (app.description) {
       addTranslation(app.description, app.description)
+    }
+
+    if (app.placeholder) {
+      addTranslation(app.placeholder, app.placeholder)
     }
 
     if (app.tipsTitle) {

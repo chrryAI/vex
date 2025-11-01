@@ -137,7 +137,12 @@ const Thread = ({
   const { addHapticFeedback } = useTheme()
 
   // Derived from thread
-  const placeHolder = thread?.placeHolder
+  const placeHolder =
+    thread?.placeHolder ||
+    app?.placeHolder ||
+    user?.placeHolder ||
+    guest?.placeHolder
+
   const slugPath = slug ? `${slug}/` : "/"
 
   const iWillRemember = memoriesEnabled ? `, ${t("I will remember")} 💭` : ""

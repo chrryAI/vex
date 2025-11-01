@@ -238,13 +238,6 @@ export async function GET(request: Request) {
     })
 
     if (storeWithApps?.apps) {
-      // console.log(
-      //   `📦 Store ${storeWithApps.store.name} - base app:`,
-      //   storeWithApps.app?.name || "NO APP",
-      //   `appId:`,
-      //   storeWithApps.store.appId,
-      // )
-      // Map apps with their store's base app included
       const appsWithStoreApp = await Promise.all(
         storeWithApps.apps.map(async (app) => {
           // If this app IS the base app of its own store, set store.app to itself
@@ -254,9 +247,7 @@ export async function GET(request: Request) {
           if (isBaseApp) {
             // Self-reference for base apps
             storeBaseApp = app
-            // console.log(`  ✅ ${app.name} is base app of ${app?.store?.name}`)
           } else if (app?.store?.appId) {
-            // Fetch the base app for this app's store
             const baseAppData = await getApp({
               id: app?.store?.appId,
               userId: member?.id,
@@ -264,9 +255,6 @@ export async function GET(request: Request) {
               depth: 0,
             })
             storeBaseApp = baseAppData ?? null
-            // console.log(
-            //   `  📎 ${app.name} -> base app: ${baseAppData?.name || "NOT FOUND"}`,
-            // )
           }
 
           return {
@@ -281,47 +269,6 @@ export async function GET(request: Request) {
       allAppsFromAllStores.push(...appsWithStoreApp)
     }
   }
-
-  // console.log(
-  //   `✅ Collected ${allAppsFromAllStores.length} total apps from all stores`,
-  // )
-
-  // Auto-install public default apps if user doesn't have them
-  // DISABLED: Skipping auto-installs as requested
-  // if ((member?.id || guest?.id) && publicDefaultApps?.items?.length > 0) {
-  //   const installedAppIds = new Set(apps.map((app) => app.id))
-  //   const defaultAppsToInstall = publicDefaultApps.items.filter(
-  //     (app) =>
-  //       app.visibility === "public" &&
-  //       !app.userId &&
-  //       !app.guestId &&
-  //       !installedAppIds.has(app.id),
-  //   )
-
-  //   if (defaultAppsToInstall.length > 0) {
-  //     await Promise.all(
-  //       defaultAppsToInstall.map((app, index) =>
-  //         installApp({
-  //           appId: app.id,
-  //           userId: member?.id,
-  //           guestId: guest?.id,
-  //           order: apps.length + index,
-  //           isPinned: false,
-  //         }),
-  //       ),
-  //     )
-
-  //     // Refresh apps list after installation
-  //     const refreshedAppResult = await getApps({
-  //       pageSize: pageSizes.apps,
-  //       page: 1,
-  //       userId: member?.id,
-  //       guestId: guest?.id,
-  //       storeId: store?.store.id,
-  //     })
-  //     apps.splice(0, apps.length, ...refreshedAppResult.items)
-  //   }
-  // }
 
   if (!success) {
     return new Response(JSON.stringify({ error: "Too many requests" }), {

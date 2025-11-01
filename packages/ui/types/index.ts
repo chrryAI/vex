@@ -835,7 +835,11 @@ export type store = {
   app: appWithStore | null
 }
 
-export type appWithStore = app & { store?: storeWithApps }
+export type appWithStore = app & {
+  store?: storeWithApps
+  placeHolder?: placeHolder
+}
+
 export type storeWithApps = store & { apps: appWithStore[] }
 
 // Instruction types

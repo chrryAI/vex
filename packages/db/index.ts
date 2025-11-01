@@ -4277,6 +4277,11 @@ export const getApp = async ({
     user: app.user,
     guest: app.guest,
     store: storeWithApps,
+    placeHolder: await getPlaceHolder({
+      appId: app.app.id,
+      userId,
+      guestId,
+    }),
   } as appWithStore
 }
 export const getPureApp = async ({
@@ -4457,6 +4462,7 @@ export function toSafeApp({ app }: { app: app }) {
     extend: app.extend,
     pricing: app.pricing,
     tier: app.tier,
+    placeholder: app.placeholder,
   }
 
   return result
@@ -4502,7 +4508,7 @@ export const getApps = async (
     isSafe = true,
     page = 1,
     storeId,
-    pageSize = 10,
+    pageSize = 50,
   }: {
     userId?: string
     guestId?: string

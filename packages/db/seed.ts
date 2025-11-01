@@ -523,11 +523,6 @@ const prod = async () => {
 
   if (!admin) throw new Error("Admin user not found")
 
-  // Clean up existing store installs to prevent duplicates
-  console.log("🧹 Cleaning up existing store installs...")
-  await db.delete(storeInstalls)
-  console.log("✅ Store installs cleaned")
-
   const vex = await createStores({ user: admin })
   // const allInstructions = await db.select().from(instructions)
 
