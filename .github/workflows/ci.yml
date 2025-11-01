@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [chrry]  # Only build on chrry branch
+    branches: [chrry] # Only build on chrry branch
   pull_request:
     branches: [main, chrry]
   workflow_dispatch:
 
 permissions:
-  contents: write  # Allow pushing to main branch
+  contents: write # Allow pushing to main branch
 
 jobs:
   build:
@@ -35,23 +35,32 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Cache Turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
+      - name: Lint
+        run: pnpm turbo lint
 
-      - name: Cache Next.js builds
-        uses: actions/cache@v4
-        with:
-          path: |
-            apps/web/.next/cache
-            apps/chrry-dot-dev/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
+      - name: Type check
+        run: |
+          pnpm --filter "@chrryai/chrry" exec tsc --noEmit --project tsconfig.ci.json
+          pnpm --filter "web" check-types
+          pnpm --filter "chrrydotdev" check-types
+
+      # - name: Cache Turbo
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: .turbo
+      #     key: ${{ runner.os }}-turbo-${{ github.sha }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-turbo-
+
+      # - name: Cache Next.js builds
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       apps/web/.next/cache
+      #       apps/chrry-dot-dev/.next/cache
+      #     key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
 
       - name: Build packages
         run: pnpm turbo build --filter="@repo/db" --filter="@chrryai/chrry" --filter="@chrryai/waffles" --filter="@chrryai/pepper"
@@ -69,17 +78,6 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=8192
           CI: true
-
-      - name: Lint
-        run: pnpm turbo lint --continue
-        continue-on-error: true
-
-      - name: Type check
-        run: |
-          pnpm --filter "@chrryai/chrry" exec tsc --noEmit --project tsconfig.ci.json
-          pnpm --filter "web" check-types
-          pnpm --filter "chrrydotdev" check-types
-        continue-on-error: true
 
   merge-to-main:
     runs-on: ubuntu-latest

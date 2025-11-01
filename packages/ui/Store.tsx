@@ -10,12 +10,8 @@ import { useAppContext } from "./context/AppContext"
 import { appWithStore } from "./types"
 import { Div } from "./platform"
 import { useStoreStyles } from "./Store.styles"
-import { useStyles } from "./context/StylesContext"
 import { Sparkles, ArrowRight } from "./icons"
-import Logo from "./Logo"
 import { A } from "./platform"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
-import { locales } from "./locales"
 
 export default function Store({
   compact,
@@ -31,7 +27,7 @@ export default function Store({
 
   const { allApps, getAppSlug, setApp, app } = useAuth()
 
-  const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
+  const [storeSlug, setStoreSlug] = useState(slug || pathname.replace("/", ""))
 
   useEffect(() => {
     setStoreSlug(pathname.replace("/", ""))
