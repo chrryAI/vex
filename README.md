@@ -2,15 +2,37 @@
 
 > A self-sustaining AI platform powered by user-provided models
 
+## 🚀 Revolutionary Architecture: One Codebase, Unlimited Apps
+
+Vex pioneered a breakthrough PWA architecture that enables **multiple independent apps from a single codebase**:
+
+- **📱 Multi-app PWA**: Install unlimited apps on your home screen, each with unique icons and themes
+- **🏪 App Marketplace**: Users can browse and install specialized AI apps (Atlas for travel, Bloom for wellness, Vault for finance, etc.)
+- **📲 Native-like Experience**: Each app feels completely independent with its own branding and functionality
+- **🔄 Dynamic Manifests**: Intelligent manifest generation creates separate PWA identities from one codebase
+
+**Example User Home Screen:**
+```
+🌍 Atlas    - AI Travel Planner
+🍑 Peach    - Social Life Assistant
+🌸 Bloom    - Wellness Coach
+🏦 Vault    - Personal Finance Manager
+```
+
+All powered by the same infrastructure, yet each app is a fully independent PWA installation.
+
+**Coming to Native**: The same architecture extends to React Native, where users will browse and install apps from an in-app store, all preloaded in a single native app download.
+
 ## Features
 
 - 🤖 Multi-model AI support (ChatGPT, Claude, DeepSeek, Gemini, and custom models)
 - 🔌 OpenAI-compatible custom model integration
 - 💾 Smart memory and context management
-- 🎨 Cross-platform UI (Web, Extension, Native)
+- 🎨 True cross-platform (Web, PWA, Extension, iOS, Android)
 - 🔒 User-controlled API keys and data
 - 📱 Real-time collaboration
 - 🌍 Multi-language support
+- 💰 70% revenue share for app creators
 
 ## Quick Start
 
@@ -111,11 +133,40 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more detailed setup instructions.
 
 Vex is a monorepo built with:
 
-- **Frontend**: Next.js, React 19
+- **Frontend**: Next.js 15, React 19
 - **Backend**: Next.js API routes, WebSocket server
 - **Database**: PostgreSQL with Drizzle ORM
 - **AI**: Multi-provider support with custom model integration
 - **Packages**: Shared UI, routing, and testing utilities
+
+### Multi-App PWA Architecture
+
+The revolutionary multi-app system works through:
+
+1. **Dynamic Manifest Generation** (`/api/manifest/[id]/route.ts`)
+   - Each app generates a unique PWA manifest with custom icon, name, and theme
+   - Manifests are served per-app, allowing multiple PWA installations
+
+2. **App Context Detection** (`NavigationProvider.tsx`)
+   - Detects which app user is installing/running
+   - Switches themes, icons, and branding dynamically
+   - Handles PWA-to-browser transitions for multi-app installs
+
+3. **Unified Codebase** (`packages/ui`)
+   - Single component library serves all apps
+   - App-specific configurations stored in database
+   - Runtime switching between app contexts
+
+4. **App Store Pattern**
+   - Users browse available apps via the marketplace
+   - Install any app as a separate PWA on home screen
+   - Each installation is independent but shares infrastructure
+
+**Coming to Native**: React Native implementation will use a similar pattern where:
+- One app download contains all apps preloaded
+- In-app store lets users "install" (enable) specific apps
+- Each app appears as a separate section with full branding
+- Seamless switching between installed apps
 
 ### Project Structure
 
