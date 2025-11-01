@@ -18,6 +18,6 @@
     "noUncheckedIndexedAccess": true,
     "types": ["node"]
   },
-  "include": ["src/**/*", "playwright.config.ts", "tests/**/*"],
+  "include": ["src/**/*", "playwright.config.ts", "src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
