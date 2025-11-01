@@ -1,13 +1,12 @@
 import { expect, Page } from "@playwright/test"
-// Re-export modelName type for convenience
-export type modelName = "chatGPT" | "claude" | "deepSeek" | "gemini" | "flux"
 import {
   getURL,
   simulateInputPaste,
   wait,
   capitalizeFirstLetter,
   simulatePaste,
-} from "./utils"
+  modelName,
+} from ".."
 import path from "path"
 import process from "process"
 import { faker } from "@faker-js/faker"
@@ -197,8 +196,8 @@ export const chat = async ({
     })
   }
 
-  const subscribeButton = page.getByTestId("subscribe-from-chat-button")
-  await expect(subscribeButton).toBeVisible()
+  const login = page.getByTestId("login-from-chat-button")
+  await expect(login).toBeVisible()
 
   expect(await getCreditsLeft()).toBe(credits.toString())
 
@@ -223,7 +222,7 @@ export const chat = async ({
     await expect(why).not.toBeVisible()
   }
 
-  await expect(instructionButton).toBeVisible()
+  await expect(instructionButton).not.toBeVisible()
   const instructionModal = page.getByTestId("instruction-modal")
   await expect(instructionModal).not.toBeVisible()
 

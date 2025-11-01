@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.2.81",
+  "version": "1.2.84",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -10,7 +10,6 @@
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "translate": "node scripts/translate.js",
-    "e2e": "turbo run e2e:gh --filter=web --log-order=stream",
     "update-version": "node scripts/update-version.js",
     "backfill-embeddings": "cd apps/web && npx tsx scripts/backfill-message-embeddings.ts",
     "t": "node scripts/translate.js",
@@ -18,6 +17,7 @@
     "generate": "NODE_ENV=production turbo run generate --filter=@repo/db --log-order=stream",
     "seed": "NODE_ENV=production turbo run seed --filter=@repo/db --log-order=stream",
     "migrate": "NODE_ENV=production turbo run migrate --filter=@repo/db --log-order=stream",
+    "e2e": "pnpm run generate && pnpm run migrate && pnpm run seed && turbo run e2e --filter=@chrryai/waffles --log-order=stream",
     "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { try { require('husky').install() } catch (e) {} }\"",
     "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
     "check-types": "turbo run check-types",

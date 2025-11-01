@@ -1,6 +1,7 @@
 import { Page } from "@playwright/test"
-import { chat, modelName } from "./chat"
+import { chat } from "./chat"
 import { faker } from "@faker-js/faker"
+import { modelName } from ".."
 
 export const limit = async ({
   page,

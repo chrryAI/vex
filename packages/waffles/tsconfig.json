@@ -7,7 +7,7 @@
     "moduleDetection": "force",
     "lib": ["es2022", "DOM", "DOM.Iterable"],
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
@@ -15,8 +15,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "types": ["node"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "playwright.config.ts", "tests/**/*"],
   "exclude": ["node_modules", "dist"]
 }

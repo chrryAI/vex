@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "1.2.81",
+  "version": "1.2.84",
   "type": "module",
   "private": true,
   "scripts": {
@@ -10,12 +10,9 @@
     "start": "next start -p 3000 -H 0.0.0.0",
     "lint": "eslint . --max-warnings 500",
     "check-types": "tsc --noEmit",
-    "s": "curl -X POST http://localhost:3000/api/seed | jq",
-    "backfill-embeddings": "node scripts/backfill-message-embeddings.js",
     "e2e": "npm run seed && TEST_URL=http://localhost:3000 playwright test --project chromium",
     "start:gh": "next start -p 3000",
-    "e2e:gh": "TEST_URL=http://localhost:3000 playwright test --project chromium",
-    "i": "rm -rf node_modules && rm -rf package-lock.json && npm install --legacy-peer-deps"
+    "e2e:gh": "TEST_URL=http://localhost:3000 playwright test --project chromium"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.0",

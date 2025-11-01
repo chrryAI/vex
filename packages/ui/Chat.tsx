@@ -4383,6 +4383,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 )}
                 {guest && (
                   <button
+                    data-testid="login-from-chat-button"
                     onClick={() => {
                       addHapticFeedback()
                       if (guest) {

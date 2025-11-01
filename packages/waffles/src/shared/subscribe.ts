@@ -1,8 +1,7 @@
 import { expect, Page } from "@playwright/test"
 import { signIn } from "./signIn"
 import { chat } from "./chat"
-import { modelName } from "@repo/db/src/schema"
-import { isCI } from "../index"
+import { isCI, modelName } from "../index"
 
 export const subscribe = async ({
   page,
