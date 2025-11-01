@@ -99,7 +99,7 @@ const nextConfig = {
 // PWA configuration with development-aware caching
 const withPwaConfig = withPWA({
   dest: "public",
-  disable: process.env.NODE_ENV === "development" || Boolean(process.env.CI),
+  disable: process.env.NODE_ENV === "development",
   register: true,
   skipWaiting: true,
   // Only add caching in production
