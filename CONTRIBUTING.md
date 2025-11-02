@@ -165,8 +165,7 @@ To add support for a new AI provider:
 
 ## Questions?
 
-- **Discord**: [Join our community](https://discord.gg/chrry)
-- **Email**: dev@chrry.ai
+- **Email**: iliyan@chrry.ai
 - **Issues**: [GitHub Issues](https://github.com/chrryai/vex/issues)
 
 Thank you for contributing! 🚀
