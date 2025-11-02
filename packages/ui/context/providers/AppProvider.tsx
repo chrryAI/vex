@@ -438,28 +438,10 @@ export function AppProvider({
   )
 
   useEffect(() => {
-    if (!apps?.length) return
-    if (!user && !guest) return
-
     const i = user?.instructions || guest?.instructions || []
 
-    // Deduplicate instructions by ID
-    const uniqueInstructions = Array.from(
-      new Map(i.map((instruction) => [instruction.id, instruction])).values(),
-    )
-
-    if (!app) {
-      const filtered = uniqueInstructions.filter((x) => !x.appId)
-      console.log(`📋 Instructions (no app): ${filtered.length} instructions`)
-      setInstructions(filtered)
-    } else {
-      const filtered = uniqueInstructions.filter((x) => x.appId === app.id)
-      console.log(
-        `📋 Instructions for app "${app.name}" (${app.id}): ${filtered.length} instructions`,
-      )
-      setInstructions(filtered)
-    }
-  }, [user, guest, app, apps])
+    i.length && setInstructions(i)
+  }, [user, guest])
 
   const siteConfig = getSiteConfig()
 

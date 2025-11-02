@@ -579,7 +579,6 @@ export const getUser = async ({
         instructions: await getInstructions({
           userId: result.user.id,
           pageSize: 7, // 7 instructions per app
-          perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
         }),
         placeHolder: await getPlaceHolder({
           userId: result.user.id,
@@ -1799,7 +1798,6 @@ export const getGuest = async ({
         instructions: await getInstructions({
           guestId: result.id,
           pageSize: 7, // 7 instructions per app
-          perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
         }),
         placeHolder: await getPlaceHolder({
           guestId: result.id,
@@ -3886,47 +3884,6 @@ export const getInstructions = async ({
   page?: number
   perApp?: boolean // NEW: Distribute pageSize across all apps
 }) => {
-  // If perApp is true, get pageSize instructions per app
-  if (perApp) {
-    const allApps = await getApps({
-      userId,
-      guestId,
-      pageSize: 50,
-      page,
-    })
-    const appIds = [null, ...allApps.items.map((app) => app.id)] // null = general instructions
-
-    const instructionsByApp = await Promise.all(
-      appIds.map(async (currentAppId) => {
-        const conditions = []
-
-        if (userId) {
-          conditions.push(eq(instructions.userId, userId))
-        }
-
-        if (guestId) {
-          conditions.push(eq(instructions.guestId, guestId))
-        }
-
-        if (currentAppId) {
-          conditions.push(eq(instructions.appId, currentAppId))
-        } else {
-          conditions.push(isNull(instructions.appId))
-        }
-
-        return await db
-          .select()
-          .from(instructions)
-          .where(and(...conditions))
-          .orderBy(desc(instructions.createdOn))
-          .limit(pageSize) // pageSize per app (e.g., 7 per app)
-      }),
-    )
-
-    // Flatten and return (e.g., 7 × 5 = 35 instructions)
-    return instructionsByApp.flat()
-  }
-
   // Original behavior: single query with total limit
   const conditions = []
 

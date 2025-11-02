@@ -164,17 +164,12 @@ export function ChatProvider({
     deviceId,
     profile,
     fingerprint,
+    user,
+    guest,
+    session,
     ...auth
   } = useAuth()
 
-  const [session, setSession] = useState(props.session)
-
-  useEffect(() => {
-    auth.session && setSession(auth.session)
-  }, [auth.session])
-
-  const user = auth.user || session?.user
-  const guest = auth.guest || session?.guest
   const [isChatFloating, setIsChatFloating] = useState(false)
 
   // Chat state
@@ -203,8 +198,7 @@ export function ChatProvider({
     }
   }, [messages])
 
-  const { isExtension, isMobile, viewPortWidth, os, device, isStandalone } =
-    usePlatform()
+  const { isExtension, isMobile } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
@@ -424,8 +418,6 @@ export function ChatProvider({
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
 
-  const webSocketDeps = useMemo(() => [userOrGuest], [userOrGuest])
-
   const { isSmallDevice, isDrawerOpen, playNotification } = useTheme()
 
   const { notifyPresence, connected } = useWebSocket<{
@@ -447,17 +439,18 @@ export function ChatProvider({
   }>({
     token,
     deviceId,
-    deps: webSocketDeps,
+    deps: [userOrGuest, token, deviceId],
     onMessage: async ({ type, data }) => {
       if (type === "suggestions_generated") {
-        if (!token) return
         if (user) {
           const updatedUser = await actions.getUser()
-          updatedUser?.suggestions && setUser(updatedUser)
+
+          setUser(updatedUser)
         }
         if (guest) {
           const updatedGuest = await actions.getGuest()
-          updatedGuest?.suggestions && setGuest(updatedGuest)
+
+          setGuest(updatedGuest)
         }
 
         // if (data.placeholders?.app) {

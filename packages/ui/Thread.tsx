@@ -135,8 +135,8 @@ const Thread = ({
   const ph =
     thread?.placeHolder ||
     app?.placeHolder ||
-    user?.placeHolder ||
-    guest?.placeHolder
+    (user?.placeHolder?.appId === app?.id ? user?.placeHolder : null) ||
+    (guest?.placeHolder?.appId === app?.id ? guest?.placeHolder : null)
 
   const [placeHolder, setPlaceHolder] = useState(ph)
 

@@ -11,10 +11,8 @@ import {
   LoaderCircle,
   LockOpen,
   MessageCirclePlus,
-  Moon,
   PanelRight,
   Search,
-  Sun,
   Tornado,
   UserLock,
   UserRoundCog,
@@ -31,7 +29,12 @@ import {
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useNavigationContext, useApp } from "./context/providers"
+import {
+  useAuth,
+  useNavigationContext,
+  useApp,
+  useChat,
+} from "./context/providers"
 import { usePlatform, useTheme } from "./platform"
 import { animate, stagger } from "motion"
 import { useHasHydrated } from "./hooks"

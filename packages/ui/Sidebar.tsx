@@ -185,7 +185,7 @@ export const Hey = memo(
     useEffect(() => {
       setTimeout(() => {
         isSplash && isImageLoaded && isHydrated && setIsSplash(false)
-      }, 1500)
+      }, 750)
     }, [isImageLoaded, isHydrated, isSplash])
 
     return (
