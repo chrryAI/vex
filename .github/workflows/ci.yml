@@ -44,24 +44,6 @@ jobs:
           pnpm --filter "web" check-types
           pnpm --filter "chrrydotdev" check-types
 
-      # - name: Cache Turbo
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: .turbo
-      #     key: ${{ runner.os }}-turbo-${{ github.sha }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-turbo-
-
-      # - name: Cache Next.js builds
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: |
-      #       apps/web/.next/cache
-      #       apps/chrry-dot-dev/.next/cache
-      #     key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
-
       - name: Build packages
         run: pnpm turbo build --filter="@repo/db" --filter="@chrryai/chrry" --filter="@chrryai/waffles" --filter="@chrryai/pepper"
         env:
@@ -82,7 +64,7 @@ jobs:
           CI: true
 
       - name: Build WebSocket server
-        run: pnpm turbo build --filter="ws"
+        run: pnpm turbo build --filter="wsserver"
         env:
           DB_URL: ${{ secrets.DB_URL }}
           NODE_OPTIONS: --max-old-space-size=8192
