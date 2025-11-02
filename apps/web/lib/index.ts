@@ -149,11 +149,4 @@ export const getHourlyLimit = (
     return 10
   }
 }
-export const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
 export const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET
-export const CHATGPT_API_KEY = process.env.CHATGPT_API_KEY
-export const CHATGPT_API_KEY_2 = process.env.CHATGPT_API_KEY_2
-export const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY
-export const GEMINI_API_KEY = process.env.GEMINI_API_KEY
-export const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY
-export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY

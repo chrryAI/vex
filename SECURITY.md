@@ -6,7 +6,7 @@ We take the security of Vex seriously. If you discover a security vulnerability,
 
 ### How to Report
 
-**Email**: security@chrry.ai
+**Email**: iliyan@chrry.ai
 
 Please include:
 

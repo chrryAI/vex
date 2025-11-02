@@ -23,17 +23,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-
-// export async function POST(request: NextRequest) {
-//   try {
-//     const body = await request.json()
-//     const store = await createStore(body)
-//     return NextResponse.json(store, { status: 201 })
-//   } catch (error) {
-//     console.error("Error creating store:", error)
-//     return NextResponse.json(
-//       { error: "Failed to create store" },
-//       { status: 500 },
-//     )
-//   }
-// }
