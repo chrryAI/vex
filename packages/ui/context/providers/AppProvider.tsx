@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useMemo,
 } from "react"
 import {
   useLocalStorage,
@@ -60,6 +61,7 @@ interface AppStatus {
 }
 
 interface AppFormContextType {
+  setInstructions: React.Dispatch<React.SetStateAction<instruction[]>>
   baseApp?: appWithStore
   stores: Paginated<storeWithApps> | undefined
   store: storeWithApps | undefined
@@ -422,14 +424,6 @@ export function AppProvider({
     highlights: formDraft?.highlights || appForm?.watch("highlights"),
     title: formDraft?.title || appForm?.watch("title"),
   }
-
-  const [instructions, setInstructions] = useState<instruction[]>(
-    user?.instructions ||
-      guest?.instructions ||
-      (app?.highlights as instruction[]) ||
-      [],
-  )
-
   const owningApps = apps.filter((app) =>
     isOwner(app, {
       userId: user?.id,
@@ -437,13 +431,15 @@ export function AppProvider({
     }),
   )
 
-  useEffect(() => {
-    const i = user?.instructions || guest?.instructions || []
-
-    i.length && setInstructions(i)
-  }, [user, guest])
-
-  const siteConfig = getSiteConfig()
+  const contextInstructions = useMemo(
+    () =>
+      app
+        ? (user?.instructions || guest?.instructions || []).filter(
+            (i) => i.appId === app?.id,
+          )
+        : [],
+    [app?.id, user?.instructions, guest?.instructions],
+  )
 
   const appFormWatcher = {
     ...watcher,
@@ -466,6 +462,35 @@ export function AppProvider({
       !!(watcher.name && watcher.title) &&
       Object.keys(appForm?.formState.errors).length === 0,
   }
+
+  const i = useMemo(
+    () =>
+      contextInstructions.length > 0
+        ? contextInstructions
+        : app?.highlights?.length
+          ? (app.highlights as instruction[])
+          : isManagingApp && appFormWatcher?.highlights?.length
+            ? (appFormWatcher.highlights as instruction[])
+            : (getExampleInstructions({
+                slug: app?.slug || undefined,
+              }) as instruction[]),
+    [
+      contextInstructions,
+      app?.id, // IMPORTANT: Track app changes
+      app?.highlights,
+      isManagingApp,
+      JSON.stringify(watcher.highlights), // Stringify for deep comparison
+      app?.slug,
+    ],
+  )
+
+  const [instructions, setInstructions] = useState<instruction[]>(i)
+
+  useEffect(() => {
+    setInstructions(i)
+  }, [i])
+
+  const siteConfig = getSiteConfig()
 
   const suggestSaveApp = !!(
     appFormWatcher.systemPrompt && appFormWatcher.canSubmit
@@ -665,6 +690,7 @@ export function AppProvider({
         stores,
         store,
         baseApp,
+        setInstructions,
       }}
     >
       {children}

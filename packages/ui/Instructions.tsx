@@ -39,7 +39,7 @@ import {
   useData,
 } from "./context/providers"
 import { useTheme as usePlatformTheme, usePlatform } from "./platform"
-import { thread } from "./types"
+import { thread, instruction } from "./types"
 import { updateThread } from "./lib"
 import { useHasHydrated } from "./hooks"
 
@@ -126,7 +126,6 @@ export default function Instructions({
     collaborationStep,
     setCollaborationStep,
     isMemoryConsentManageVisible,
-    isMobileDevice,
     setShowAddToHomeScreen,
     showAddToHomeScreen,
     pathname,
@@ -139,6 +138,8 @@ export default function Instructions({
     app,
     appFormWatcher,
     canEditApp,
+    instructions,
+    setInstructions,
     appStatus,
     appForm,
   } = useApp()
@@ -180,7 +181,7 @@ export default function Instructions({
   }, [viewPortHeight])
 
   // Theme context
-  const { addHapticFeedback, reduceMotion } = usePlatformTheme()
+  const { addHapticFeedback, isDark, isMobileDevice } = usePlatformTheme()
 
   const isManaging = isManagingApp
 
@@ -193,8 +194,6 @@ export default function Instructions({
   useEffect(() => {
     setPlaceHolder(rest.placeholder)
   }, [rest.placeholder])
-
-  const { resolvedTheme } = useTheme()
 
   const city = user?.city || guest?.city
   const country = user?.country || guest?.country
@@ -382,34 +381,6 @@ export default function Instructions({
     input.click()
   }
 
-  const i = useMemo(
-    () =>
-      contextInstructions.length > 0
-        ? contextInstructions
-        : app?.highlights?.length
-          ? (app.highlights as instructionBase[])
-          : isManaging && appFormWatcher?.highlights?.length
-            ? (appFormWatcher.highlights as instructionBase[])
-            : getExampleInstructions({
-                slug: app?.slug || undefined,
-              }),
-    [
-      contextInstructions,
-      app?.highlights,
-      app?.id,
-      app?.slug,
-      isManaging,
-      appFormWatcher?.highlights,
-      app?.name,
-    ],
-  )
-
-  const [instructions, setInstructions] = useState<instructionBase[]>(i)
-
-  useEffect(() => {
-    setInstructions(i)
-  }, [i])
-
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [selectedEmoji, setSelectedEmoji] = useState<string>("🌸")
   const [editedTitle, setEditedTitle] = useState<string>("")
@@ -576,7 +547,11 @@ export default function Instructions({
         setInstructions((prev) =>
           prev.map((i) =>
             i.id === instruction.id
-              ? { ...i, title: instruction.title, emoji: instruction.emoji }
+              ? ({
+                  ...i,
+                  title: instruction.title,
+                  emoji: instruction.emoji,
+                } as instruction)
               : i,
           ),
         )
@@ -1265,9 +1240,9 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                       <EmojiPicker
                         onEmojiClick={handleEmojiClick}
                         theme={
-                          (resolvedTheme === "dark"
-                            ? Theme.DARK
-                            : Theme.LIGHT) as Theme | undefined
+                          (isDark ? Theme.DARK : Theme.LIGHT) as
+                            | Theme
+                            | undefined
                         }
                         searchPlaceHolder={t("Search emoji...")}
                         width={300}
