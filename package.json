@@ -48,7 +48,8 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "@types/react": "^19.1.12",
-    "@types/react-dom": "^19.1.12"
+    "@types/react-dom": "^19.1.12",
+    "minimist": "^1.2.8"
   },
   "engines": {
     "node": ">=18"
