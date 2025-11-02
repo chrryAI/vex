@@ -507,7 +507,7 @@ export async function PATCH(request: NextRequest) {
 
   await updateThread({
     ...thread,
-    appId: appId === null ? null : (appId ?? thread.appId),
+    appId: appId ?? thread.appId,
     star: star === 0 ? null : star,
     title: title || thread.title,
     visibility: visibility || thread.visibility,

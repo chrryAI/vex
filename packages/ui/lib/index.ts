@@ -449,7 +449,7 @@ export const updateThread = async ({
     files.forEach((file, index) => {
       formData.append(`artifact_${index}`, file)
     })
-    if (appId !== undefined && appId !== null) {
+    if (appId) {
       formData.append("appId", appId)
     }
     pinCharacterProfile !== undefined &&
