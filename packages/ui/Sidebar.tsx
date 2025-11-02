@@ -70,8 +70,7 @@ export const Hey = memo(
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { isHome, userNameByUrl, pathname, isSplash, setIsSplash } =
-      useNavigationContext()
+    const { isHome, pathname, isSplash, setIsSplash } = useNavigationContext()
     const { threadId } = useChat()
     const { isLoading, slug, allApps, chrry, getAppSlug, newApp, ...auth } =
       useAuth()

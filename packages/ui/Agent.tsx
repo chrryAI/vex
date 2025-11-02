@@ -56,6 +56,7 @@ import {
   useAuth,
 } from "./context/providers"
 import ThemeSwitcher from "./ThemeSwitcher"
+import { useTheme } from "./platform"
 
 export default function Agent({
   className,
@@ -75,8 +76,10 @@ export default function Agent({
 
   const { aiAgents } = useChat()
 
-  const { isMobileDevice, removeParam, searchParams, addParam, addParams } =
+  const { removeParam, searchParams, addParam, addParams } =
     useNavigationContext()
+
+  const { isMobileDevice } = useTheme()
 
   const {
     register,

@@ -9,6 +9,7 @@ import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { useData } from "./context/providers/DataProvider"
+import { useTheme } from "./platform"
 
 export default function CollaborationStatus({
   thread,
@@ -25,7 +26,7 @@ export default function CollaborationStatus({
 }) {
   const { t } = useAppContext()
   const { user, token } = useAuth()
-  const { isMobileDevice } = useNavigationContext()
+  const { isMobileDevice } = useTheme()
   const [isLoading, setIsLoading] = React.useState(false)
   const [status, setStatus] = useState<
     "active" | "pending" | "revoked" | "rejected"
