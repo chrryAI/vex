@@ -447,15 +447,12 @@ export function ChatProvider({
 
           setUser(updatedUser)
         }
+
         if (guest) {
           const updatedGuest = await actions.getGuest()
 
           setGuest(updatedGuest)
         }
-
-        // if (data.placeholders?.app) {
-        //   setApp(data.placeholders.app)
-        // }
 
         await mutate()
       }
