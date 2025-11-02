@@ -116,12 +116,17 @@ export const ChatStyleDefs = {
     borderRadius: "var(--radius)",
   },
   debateAgentButton: {
-    position: "absolute",
-    display: "flex",
-    alignItems: "center",
-    gap: 5,
-    bottom: -5,
-    right: -5,
+    base: {
+      position: "absolute",
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      bottom: -5,
+      right: -5,
+    },
+    disabled: {
+      backgroundColor: "var(--shade-1-transparent)",
+    },
   },
   scrollDownButton: {
     marginLeft: "auto",
@@ -474,9 +479,14 @@ export const ChatStyleDefs = {
     gap: 10,
   },
   agentButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: 3,
+    base: {
+      display: "flex",
+      alignItems: "center",
+      gap: 3,
+    },
+    disabled: {
+      backgroundColor: "var(--shade-1-transparent)",
+    },
   },
   agentName: {
     maxWidth: 75,
