@@ -117,7 +117,7 @@ export default function Instructions({
     deepSeekAgent,
     claudeAgent,
     favouriteAgent,
-    setShouldRefetchThread,
+    refetchThread,
   } = useChat()
 
   // Navigation context (router is the wrapper)
@@ -723,7 +723,7 @@ export default function Instructions({
           files: files,
         })
 
-        setShouldRefetchThread(true)
+        await refetchThread()
         setFilesInternal([])
 
         if (response.error) {

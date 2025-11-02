@@ -61,10 +61,7 @@ export default function Menu({
   const {
     router,
     threads,
-    isDrawerOpen,
-    setIsDrawerOpen,
-    isSmallDevice,
-    isMobileDevice,
+
     setIsNewChat,
     collaborationStatus,
     setCollaborationStatus,
@@ -87,10 +84,13 @@ export default function Menu({
   const {
     theme,
     isDark,
-    setTheme,
     addHapticFeedback,
     reduceMotion: reduceMotionContext,
     setReduceMotion,
+    isMobileDevice,
+    isDrawerOpen,
+    setIsDrawerOpen,
+    isSmallDevice,
   } = useTheme()
 
   const [previousThreads, setPreviousThreads] = useState<typeof threads>({

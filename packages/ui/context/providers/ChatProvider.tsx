@@ -6,6 +6,8 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useRef,
+  useMemo,
 } from "react"
 import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
@@ -22,6 +24,8 @@ import {
   messages,
   paginatedMessages,
 } from "../../types"
+
+import { pageSizes } from "../../utils"
 import { getThreadId } from "../../utils/url"
 import { useThreadId } from "../../utils/useThreadId"
 import {
@@ -29,10 +33,15 @@ import {
   useCookie,
   useLocalStorage,
   useNavigation,
+  usePlatform,
+  useTheme,
 } from "../../platform"
 import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import { t } from "i18next"
+import useSWR from "swr"
+import { useNavigationContext } from "./NavigationProvider"
+import { useWebSocket } from "chrry/hooks/useWebSocket"
 
 interface placeHolder {
   // TODO: Define placeHolder type
@@ -41,6 +50,19 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      hasNotification: boolean
+      nextPage: number | undefined
+      setNextPage: (nextPage: number | undefined) => void
+      scrollToBottom: (timeout?: number, force?: boolean) => void
+      status: number | null
+      error: any
+      until: number
+      setUntil: (until: number) => void
+      liked?: boolean
+      setLiked: (liked: boolean | undefined) => void
+      isLoadingMore: boolean
+      setIsLoadingMore: (isLoadingMore: boolean) => void
+      isLoading: boolean
       setIsAgentModalOpenInternal: (isAgentModalOpen: boolean) => void
       isDebateAgentModalOpen: boolean
       setIsDebateAgentModalOpen: (isDebateAgentModalOpen: boolean) => void
@@ -67,11 +89,10 @@ const ChatContext = createContext<
       hourlyUsageLeft: number
       isEmpty: boolean
       setIsEmpty: (isEmpty: boolean) => void
-      shouldRefetchThread: boolean
-      setShouldRefetchThread: (shouldRefetchThread: boolean) => void
       isChatFloating: boolean
       setIsChatFloating: (isChatFloating: boolean) => void
       input: string
+      refetchThread: () => Promise<void>
       setIsWebSearchEnabled: (isWebSearchEnabled: boolean) => void
       setInput: (input: string) => void
       placeHolder: placeHolder | undefined
@@ -81,6 +102,40 @@ const ChatContext = createContext<
       threadId?: string
       setThreadId: (threadId?: string) => void
       setThread: (thread?: thread) => void
+      userNameByUrl: string | undefined
+      isLoadingThreads: boolean
+      setIsLoadingThreads: (value: boolean) => void
+      isIncognito: boolean
+      threads: {
+        threads: (thread & {
+          lastMessage?: message
+          collaborations?: { collaboration: collaboration; user: user }[]
+        })[]
+        totalCount: number
+      }
+      setThreads: (value: {
+        threads: (thread & {
+          lastMessage?: message
+          collaborations?: { collaboration: collaboration; user: user }[]
+        })[]
+        totalCount: number
+      }) => void
+
+      wasIncognito: boolean
+      setWasIncognito: (value: boolean) => void
+      isVisitor: boolean
+      setIsVisitor: (value: boolean) => void
+      collaborationStep: number
+      setCollaborationStep: (step: number) => void
+      isNewChat: boolean
+      refetchThreads: () => Promise<void>
+      activeCollaborationThreadsCount: number
+      pendingCollaborationThreadsCount: number
+      setCollaborationStatus: (
+        status: "pending" | "active" | undefined | null,
+      ) => void
+      collaborationStatus: "pending" | "active" | undefined | null
+      setIsNewChat: (value: boolean, to?: string) => void
     }
   | undefined
 >(undefined)
@@ -103,6 +158,12 @@ export function ChatProvider({
     chrry,
     track,
     aiAgents,
+    token,
+    setProfile,
+    getAppSlug,
+    deviceId,
+    profile,
+    fingerprint,
     ...auth
   } = useAuth()
 
@@ -142,9 +203,420 @@ export function ChatProvider({
     }
   }, [messages])
 
-  const { pathname, addParams } = useNavigation()
+  const { isExtension, isMobile, viewPortWidth, os, device, isStandalone } =
+    usePlatform()
+
+  const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
+
+  let userNameByUrl: string | undefined = undefined
+
+  const { pathname, searchParams, addParams, ...router } = useNavigation()
+
+  const pathSegments = pathname.split("/").filter(Boolean)
+
+  if (pathSegments.length >= 1 && pathname.includes("/u/")) {
+    // New pattern: /u/[locale]/[username] OR /u/[username]
+    userNameByUrl = pathSegments[pathSegments.length - 1]
+  }
+
+  const [collaborationStatus, setCollaborationStatusInternal] = useState<
+    "pending" | "active" | undefined | null
+  >(
+    (searchParams.get("collaborationStatus") as "pending" | "active") ??
+      undefined,
+  )
+
+  const {
+    data: threadsData,
+    mutate: refetchThreads,
+    isLoading: isLoadingThreadsSwr,
+    error: threadsError,
+  } = useSWR(
+    shouldFetchThreads ? ["contextThreads", thread?.id, app?.id] : null,
+    () => {
+      if (!(user || guest)) return
+      return actions.getThreads({
+        onError: (status) => {
+          if (status === 429) {
+            setShouldFetchThreads(false)
+          }
+        },
+        appId: app?.id,
+        userName: userNameByUrl,
+        pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
+        sort: "bookmark", // Default to bookmarked threads first
+        collaborationStatus: collaborationStatus ?? undefined,
+        threadId:
+          !thread?.collaborations?.some(
+            (c) => user && c.user.id === user?.id,
+          ) || guest
+            ? thread?.id
+            : undefined,
+      })
+    },
+
+    {
+      onError: (error) => {
+        // Stop retrying on rate limit errors
+        if (error.message.includes("429")) {
+          setShouldFetchThreads(false)
+        }
+      },
+      // revalidateOnMount: true,
+      // revalidateOnFocus: true,
+    },
+  )
+
+  const [isLoadingThreads, setIsLoadingThreads] = useState(true)
+
+  useEffect(() => {
+    if (threadsError || !isLoadingThreadsSwr) {
+      setIsLoadingThreads(false)
+    }
+  }, [threadsError, isLoadingThreadsSwr])
+
+  const [threads, setThreads] = useState<{
+    threads: (thread & {
+      lastMessage?: message
+      collaborations?: { collaboration: collaboration; user: user }[]
+    })[]
+    totalCount: number
+  }>({
+    threads: [],
+    totalCount: 0,
+  })
+
+  const [activeCollaborationThreadsCount, setActiveCollaborationThreadsCount] =
+    useState<number>(0)
+
+  useEffect(() => {
+    if (threadsData && Array.isArray(threadsData.threads)) {
+      setThreads(threadsData)
+      setIsLoadingThreads(false)
+    }
+  }, [threadsData])
+
+  const fetchActiveCollaborationThreadsCount = async () => {
+    const threads = await actions.getThreads({
+      pageSize: 1,
+      collaborationStatus: "active",
+      appId: app?.id,
+    })
+    threads &&
+      threads.totalCount &&
+      setActiveCollaborationThreadsCount(threads.totalCount)
+  }
+
+  const [
+    pendingCollaborationThreadsCount,
+    setPendingCollaborationThreadsCount,
+  ] = useState<number>(0)
+
+  const fetchPendingCollaborationThreadsCount = async () => {
+    const threads = await actions.getThreads({
+      pageSize: 1,
+      myPendingCollaborations: true,
+      appId: app?.id,
+    })
+    threads &&
+      threads.totalCount &&
+      setPendingCollaborationThreadsCount(threads.totalCount)
+  }
+
+  const setCollaborationStatus = (
+    status: "pending" | "active" | undefined | null,
+  ) => {
+    setCollaborationStatusInternal(status)
+    fetchActiveCollaborationThreadsCount()
+    fetchPendingCollaborationThreadsCount()
+  }
+
+  useEffect(() => {
+    if (user && userNameByUrl && user.userName !== userNameByUrl) return
+    if (guest && userNameByUrl) return
+
+    if (token && !isLoadingThreads && thread?.id && (guest || user)) {
+      const collab = thread?.collaborations?.find(
+        (x) => user && x.user.id === user.id,
+      )
+
+      if (collab) {
+        if (collab.collaboration.status === "pending") {
+          setCollaborationStatus("pending")
+        }
+        if (collab.collaboration.status === "active") {
+          setCollaborationStatus("active")
+        }
+      } else if (thread?.id) {
+        refetchThreads()
+      }
+    }
+  }, [token, isLoadingThreads, thread, guest, user, userNameByUrl, pathname])
+
+  const [isNewChat, setIsNewChatInternal] = useState(false)
+
+  const [hasNotification, setHasNotification] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (pathname !== "/") return
+
+    if (!threadsData || !Array.isArray(threadsData.threads)) return
+    if (pendingCollaborationThreadsCount > 0) {
+      !hasNotification && setHasNotification(true)
+      threadsData.threads.some(
+        (thread: thread) => thread.userId === user?.id,
+      ) &&
+        collaborationStatus === undefined &&
+        setCollaborationStatus("pending")
+    }
+  }, [
+    pendingCollaborationThreadsCount,
+    threadsData,
+    collaborationStatus,
+    hasNotification,
+  ])
+
+  const [collaborationStep, setCollaborationStep] = useState(0)
+
+  const isIncognito = searchParams.get("incognito") === "true"
+
+  const [wasIncognito, setWasIncognito] = useState(isIncognito)
+
+  const [newChatTrigger, setNewChatTrigger] = useState(0)
+
+  const setIsNewChat = (
+    value: boolean,
+    to = app?.slug ? getAppSlug(app) : "/",
+  ) => {
+    if (value) {
+      // if (to === "/" || to.startsWith("/?")) {
+      //   setSlug(undefined)
+      //   setApp(undefined)
+      // }
+
+      setCollaborationStep(0)
+      setThread(undefined)
+      setProfile(undefined)
+      refetchThreads()
+      setThreadId(undefined)
+      setMessages([])
+      router.push(to)
+      isIncognito && setWasIncognito(true)
+      setCollaborationStatus(undefined)
+    }
+
+    if (value && isExtension) {
+      // Increment trigger to force useEffect to run even if isNewChat was already true
+      setNewChatTrigger((prev) => prev + 1)
+    }
+    setIsNewChatInternal(value)
+  }
+
+  useEffect(() => {
+    setWasIncognito(isIncognito)
+    if (isIncognito) {
+      // setThread(undefined)
+      setProfile(undefined)
+    }
+  }, [isIncognito])
+
+  const userOrGuest = user || guest
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
+
+  const webSocketDeps = useMemo(() => [userOrGuest], [userOrGuest])
+
+  const { isSmallDevice, isDrawerOpen, playNotification } = useTheme()
+
+  const { notifyPresence, connected } = useWebSocket<{
+    type: string
+    data: {
+      placeholders?: {
+        home: placeHolder
+        thread: placeHolder
+        app?: app
+      }
+      message?: {
+        message: message
+        user?: user
+        guest?: guest
+        aiAgent?: aiAgent
+      }
+      collaboration?: collaboration
+    }
+  }>({
+    token,
+    deviceId,
+    deps: webSocketDeps,
+    onMessage: async ({ type, data }) => {
+      if (type === "suggestions_generated") {
+        if (!token) return
+        if (user) {
+          const updatedUser = await actions.getUser()
+          updatedUser?.suggestions && setUser(updatedUser)
+        }
+        if (guest) {
+          const updatedGuest = await actions.getGuest()
+          updatedGuest?.suggestions && setGuest(updatedGuest)
+        }
+
+        // if (data.placeholders?.app) {
+        //   setApp(data.placeholders.app)
+        // }
+
+        await mutate()
+      }
+      if (
+        type === "notification" &&
+        data?.message?.message?.threadId !== threadId
+      ) {
+        playNotification()
+
+        const title = `${
+          data?.message?.message.content?.slice(0, 100) ||
+          "You have a new message"
+        } - Vex`
+
+        if (isExtension) {
+          // Extension notification using chrome.notifications
+          if (typeof chrome !== "undefined" && chrome.notifications) {
+            chrome.notifications.getPermissionLevel((level) => {
+              if (level === "granted") {
+                chrome.notifications.create({
+                  type: "basic",
+                  iconUrl: chrome.runtime.getURL("icons/icon-128.png"),
+                  title,
+                  message: title,
+                  contextMessage: "Vex",
+                  buttons: [{ title: "View" }],
+                })
+              } else {
+                console.log(
+                  "Extension notification permission not granted:",
+                  level,
+                )
+              }
+            })
+          }
+        }
+        if (
+          data?.collaboration?.status === "active" ||
+          data?.collaboration?.status === "pending"
+        ) {
+          setCollaborationStatus(data.collaboration.status)
+          !hasNotification && setHasNotification(false)
+        }
+      }
+    },
+  })
+
+  const [isVisitor, setIsVisitor] = useState(false)
+
+  useEffect(() => {
+    threadId && setIsNewChat(false)
+  }, [threadId])
+
+  useEffect(() => {
+    let visitor = false
+    if (profile?.userName) {
+      if (guest) visitor = true
+      if (user?.userName !== profile.userName) visitor = true
+    } else if (userNameByUrl) {
+      if (guest) visitor = true
+      if (user?.userName !== userNameByUrl) visitor = true
+    }
+
+    if (thread) {
+      if (user && thread.userId === user?.id) {
+        visitor = false
+      } else if (guest && thread.guestId === guest?.id) {
+        visitor = false
+      } else {
+        visitor = true
+      }
+    }
+
+    if (isNewChat) {
+      visitor = false
+    }
+
+    setIsVisitor(visitor)
+  }, [profile, guest, user, userNameByUrl, thread, isNewChat])
+
+  useEffect(() => {
+    if (!token || !fingerprint || !connected) return
+
+    const heartbeatInterval = setInterval(() => {
+      if (!connected) return
+      notifyPresence?.({
+        isOnline: navigator.onLine,
+        threadId: threadId,
+      })
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(heartbeatInterval)
+  }, [token, fingerprint, notifyPresence, threadId, connected])
+
+  useEffect(() => {
+    if (!token || !fingerprint || !connected) return
+    // Listen for navigation messages from service worker
+    const handleServiceWorkerMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === "NAVIGATE_TO_URL") {
+        window.location.href = event.data.url
+      }
+    }
+
+    const handleNetworkChange = () => {
+      notifyPresence?.({
+        isOnline: navigator.onLine,
+        threadId: threadId,
+      })
+    }
+    const handleVisibilityChange = () => {
+      notifyPresence?.({
+        isOnline: document.visibilityState === "visible",
+        threadId: threadId,
+      })
+    }
+    const handleBeforeUnload = () => {
+      notifyPresence?.({
+        isOnline: false,
+        threadId: threadId,
+      })
+    }
+
+    if (user || guest) {
+      // Initial online notification
+      notifyPresence?.({
+        isOnline: true,
+        threadId: threadId,
+      })
+
+      document.addEventListener("visibilitychange", handleVisibilityChange)
+      document.addEventListener("pagehide", handleBeforeUnload)
+      window.addEventListener("pageshow", () =>
+        notifyPresence?.({ isOnline: true }),
+      )
+
+      window.addEventListener("offline", handleNetworkChange)
+
+      // Add unload listener
+      window.addEventListener("beforeunload", handleBeforeUnload)
+      window.addEventListener("online", handleNetworkChange)
+
+      return () => {
+        // Cleanup
+        window.removeEventListener("offline", handleNetworkChange)
+        window.removeEventListener("online", handleNetworkChange)
+        document.removeEventListener("visibilitychange", handleVisibilityChange)
+        window.removeEventListener("beforeunload", handleBeforeUnload)
+        notifyPresence?.({
+          isOnline: false,
+          threadId: thread?.id,
+        })
+      }
+    }
+  }, [user, guest, threadId, connected])
 
   useEffect(() => {
     const id = getThreadId(pathname)
@@ -253,8 +725,40 @@ export function ChatProvider({
     }
   }, [thread?.placeHolder, user?.placeHolder, guest?.placeHolder, threadId])
 
-  const [shouldRefetchThread, setShouldRefetchThread] = useState(false)
+  const [shouldFetchThread, setShouldFetchThread] = useState(!thread)
 
+  const [until, setUntil] = useState<number>(1)
+  const [liked, setLiked] = useState<boolean | undefined>(undefined)
+
+  const [isLoading, setIsLoading] = useState(!!threadId)
+
+  const [status, setStatus] = useState<number | null>(null)
+
+  const {
+    data: threadSWR,
+    mutate,
+    error,
+    isLoading: isLoadingThread,
+  } = useSWR(
+    shouldFetchThread && token && threadId
+      ? ["thread", threadId, liked, until]
+      : null,
+    () => {
+      if (!threadId || !token) return
+      return actions.getThread({
+        id: threadId,
+        pageSize: until * pageSizes.threads,
+        liked: !!liked,
+        onError: (error: number) => {
+          setIsLoading(false)
+          setStatus(error)
+        },
+      })
+    },
+    {
+      // revalidateOnMount: true,
+    },
+  )
   useEffect(() => {
     if (!threadId) {
       thread && setThread(undefined)
@@ -372,7 +876,7 @@ export function ChatProvider({
     }
   }, [guest, user, app, aiAgents])
 
-  const { isDevelopment, isE2E } = useData()
+  const { isDevelopment, isE2E, actions } = useData()
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -456,9 +960,100 @@ export function ChatProvider({
     }
   }, [chrry, user, guest])
 
+  const [nextPage, setNextPage] = useState<number | undefined>(undefined)
+
+  const threadData = threadSWR || props.thread || undefined
+  const lastProcessedThreadDataRef = useRef<any>(null)
+
+  const shouldStopAutoScrollRef = useRef(false)
+
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  const scrollToBottom = (timeout = 500, force = false) => {
+    if (isChatFloating && !force) return
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
+    }, timeout)
+  }
+
+  useEffect(() => {
+    !isLoadingThread && setIsLoading(false)
+  }, [isLoadingThread])
+
+  useEffect(() => {
+    error && setIsLoading(false)
+  }, [error])
+
+  useEffect(() => {
+    if (!threadId) return
+    const serverMessages = threadData?.messages as paginatedMessages
+
+    if (threadData?.thread && Array.isArray(serverMessages.messages)) {
+      // Skip if we've already processed this exact threadData
+      if (lastProcessedThreadDataRef.current === threadData) return
+      lastProcessedThreadDataRef.current = threadData
+
+      // Simple logic: If server has messages, use them. Otherwise keep client messages.
+      if (liked) {
+        setMessages(serverMessages.messages)
+      } else if (serverMessages.messages.length > 0) {
+        // Server has data - use it as source of truth
+        setMessages(serverMessages.messages)
+      } else if (isNewChat) {
+        // New chat with no server messages - clear everything
+        setMessages([])
+      }
+      // If server is empty but not a new chat, keep existing client messages (optimistic UI)
+
+      setNextPage(threadData.messages.nextPage)
+      setThread(threadData.thread)
+
+      isNewChat && setStatus(null)
+
+      !isNewChat &&
+        threadData?.thread?.user &&
+        threadData.thread.user.id !== user?.id &&
+        setProfile(threadData.thread.user)
+
+      collaborationStatus !== "pending" &&
+        !shouldStopAutoScrollRef.current &&
+        !isLoadingMore &&
+        !(isSmallDevice && isDrawerOpen) &&
+        !isChatFloating &&
+        scrollToBottom(100)
+
+      // return () => {
+      //   setThread(undefined)
+      //   setMessages([])
+      // }
+    }
+  }, [
+    threadData,
+    isLoadingMore,
+    aiAgents,
+    user,
+    setSelectedAgent,
+    isNewChat,
+    liked,
+    shouldStopAutoScrollRef,
+    collaborationStatus,
+    isSmallDevice,
+    isDrawerOpen,
+    isChatFloating,
+    threadId,
+  ])
+
   return (
     <ChatContext.Provider
       value={{
+        status,
+        isLoadingMore,
+        setIsLoadingMore,
+        isLoading,
+        refetchThread: async () => {
+          setShouldFetchThread(true)
+          mutate()
+        },
         setIsWebSearchEnabled,
         input,
         setIsAgentModalOpen,
@@ -470,13 +1065,17 @@ export function ChatProvider({
         setPlaceHolder,
         isChatFloating,
         setIsChatFloating,
-        shouldRefetchThread,
-        setShouldRefetchThread,
         thread,
         setThread,
         threadId,
+        until,
+        liked,
+        setLiked,
+        error,
+        setUntil,
         isEmpty,
         setIsEmpty,
+        scrollToBottom,
         setThreadId,
         isWebSearchEnabled,
         selectedAgent,
@@ -499,6 +1098,31 @@ export function ChatProvider({
         setIsDebateAgentModalOpen,
         isDebateAgentModalOpen,
         setIsAgentModalOpenInternal,
+        nextPage,
+        setNextPage,
+        setIsNewChat,
+        isNewChat,
+        hasNotification,
+        isLoadingThreads,
+        setIsLoadingThreads,
+        threads,
+        setThreads,
+        wasIncognito,
+        setWasIncognito,
+        isIncognito,
+        pendingCollaborationThreadsCount,
+        activeCollaborationThreadsCount,
+        setCollaborationStatus,
+        collaborationStatus,
+        collaborationStep,
+        setCollaborationStep,
+        isVisitor,
+        setIsVisitor,
+        refetchThreads: async () => {
+          setShouldFetchThreads(true)
+          await refetchThreads()
+        },
+        userNameByUrl,
       }}
     >
       {children}

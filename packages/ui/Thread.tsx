@@ -69,22 +69,10 @@ const Thread = ({
   const { t } = useAppContext()
 
   // Auth context
-  const {
-    token,
-    user,
-    guest,
-    setProfile,
-    track,
-    isLoading: isLoadingSession,
-    memoriesEnabled,
-    allApps,
-    getAppSlug,
-  } = useAuth()
+  const { user, guest, track, memoriesEnabled } = useAuth()
 
   // Chat context
   const {
-    shouldRefetchThread,
-    setShouldRefetchThread,
     isWebSearchEnabled,
     selectedAgent,
     setSelectedAgent,
@@ -99,6 +87,18 @@ const Thread = ({
     messages,
     setMessages: setMessagesInternal,
     isChatFloating,
+    refetchThread,
+    isLoading,
+    isLoadingMore,
+    setIsLoadingMore,
+    until,
+    setUntil,
+    error,
+    scrollToBottom,
+    nextPage,
+    status,
+    liked,
+    setLiked,
   } = useChat()
 
   const { os } = usePlatform()
@@ -108,9 +108,7 @@ const Thread = ({
   // Navigation context
   const {
     router,
-    isNewChat,
     setIsNewChat,
-    isDrawerOpen,
     isVisitor,
     collaborationStatus,
     setCollaborationStatus,
@@ -120,13 +118,10 @@ const Thread = ({
     addParams,
     slug,
     isIncognito,
-    isSmallDevice,
     goToCalendar,
   } = useNavigationContext()
 
   const { threadId, creditsLeft, setCreditsLeft } = useChat()
-
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const setMessages: typeof setMessagesInternal = (messages) => {
     setMessagesInternal(messages)
@@ -134,7 +129,7 @@ const Thread = ({
 
   const { app, appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const { addHapticFeedback } = useTheme()
+  const { addHapticFeedback, isDrawerOpen } = useTheme()
 
   // Derived from thread
   const ph =
@@ -146,9 +141,7 @@ const Thread = ({
   const [placeHolder, setPlaceHolder] = useState(ph)
 
   useEffect(() => {
-    if (ph) {
-      setPlaceHolder(ph)
-    }
+    setPlaceHolder(ph)
   }, [ph])
 
   const slugPath = slug ? `${slug}/` : "/"
@@ -157,13 +150,11 @@ const Thread = ({
 
   const id = threadId
 
-  const [nextPage, setNextPage] = useState<number | undefined>(undefined)
-
   // Track if we've already auto-selected an agent for this thread
   const shouldStopAutoScrollRef = useRef(false)
 
   // Track last processed threadData to prevent re-processing
-  const lastProcessedThreadDataRef = useRef<any>(null)
+  // const lastProcessedThreadDataRef = useRef<any>(null)
 
   // Smart auto-scroll: only scroll for short responses
   const shouldAutoScroll = (currentMessage: string) => {
@@ -188,17 +179,6 @@ const Thread = ({
     threadId: id || "",
   })
 
-  const scrollToBottom = (timeout = 500, force = false) => {
-    if (isChatFloating && !force) return
-    setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
-    }, timeout)
-  }
-
-  // Track if we should stop auto-scrolling for current response
-
-  // Smart auto-scroll: only scroll for short responses
-
   const isPendingCollaboration = thread?.collaborations?.some(
     (collaboration) =>
       collaboration.user.id === user?.id &&
@@ -213,65 +193,11 @@ const Thread = ({
   //   }
   // }, [id, wasIncognito])
 
-  const [until, setUntil] = useState<number>(1)
-  const [liked, setLiked] = useState<boolean | undefined>(undefined)
-  const [deleted, setDeleted] = useState<boolean | undefined>(undefined)
-
-  const [isLoading, setIsLoading] = useState(!isHome)
-
-  useEffect(() => {
-    if (shouldRefetchThread) {
-      refetch()
-      setShouldRefetchThread(false)
-      scrollToBottom()
-    }
-  }, [shouldRefetchThread])
-
-  const [status, setStatus] = useState<number | null>(null)
-  const { actions } = useData()
-
-  const [shouldFetchThread, setShouldFetchThread] = useState(!thread)
-
-  const {
-    data: threadSWR,
-    mutate,
-    error,
-    isLoading: isLoadingThread,
-  } = useSWR(
-    shouldFetchThread && !isHome && token && id
-      ? ["thread", id, liked, until]
-      : null,
-    () => {
-      if (!id || !token) return
-      return actions.getThread({
-        id,
-        pageSize: until * pageSizes.threads,
-        liked: !!liked,
-        onError: (error: number) => {
-          setIsLoading(false)
-          setStatus(error)
-        },
-      })
-    },
-    {
-      // revalidateOnMount: true,
-    },
-  )
-
-  useEffect(() => {
-    setShouldFetchThread(true)
-  }, [router])
+  // const [deleted, setDeleted] = useState<boolean | undefined>(undefined)
 
   const refetch = () => {
-    setShouldFetchThread(true)
-    return mutate()
+    return refetchThread()
   }
-
-  const threadData = threadSWR || props.threadData || undefined
-
-  useEffect(() => {
-    !isLoadingThread && setIsLoading(false)
-  }, [isLoadingThread])
 
   const collaborator = thread && isCollaborator(thread, user?.id)
   const activeCollaborator =
@@ -310,89 +236,6 @@ const Thread = ({
             ? `${t("Updating Description and Settings recommended.")} 🧠`
             : `${t("You can save it now!")} 🚀`
       : null
-
-  useEffect(() => {
-    if (isHome) return
-    const serverMessages = threadData?.messages as paginatedMessages
-
-    if (threadData?.thread && Array.isArray(serverMessages.messages)) {
-      // Skip if we've already processed this exact threadData
-      if (lastProcessedThreadDataRef.current === threadData) return
-      lastProcessedThreadDataRef.current = threadData
-
-      // Simple logic: If server has messages, use them. Otherwise keep client messages.
-      if (liked) {
-        setMessages(serverMessages.messages)
-      } else if (serverMessages.messages.length > 0) {
-        // Server has data - use it as source of truth
-        setMessages(serverMessages.messages)
-      } else if (isNewChat) {
-        // New chat with no server messages - clear everything
-        setMessages([])
-      }
-      // If server is empty but not a new chat, keep existing client messages (optimistic UI)
-
-      setNextPage(threadData.messages.nextPage)
-      setThread(threadData.thread)
-
-      isNewChat && setStatus(null)
-
-      !isNewChat &&
-        threadData?.thread?.user &&
-        threadData.thread.user.id !== user?.id &&
-        setProfile(threadData.thread.user)
-
-      collaborationStatus !== "pending" &&
-        !shouldStopAutoScrollRef.current &&
-        !isLoadingMore &&
-        !(isSmallDevice && isDrawerOpen) &&
-        !isChatFloating &&
-        scrollToBottom(100)
-
-      // return () => {
-      //   setThread(undefined)
-      //   setMessages([])
-      // }
-    }
-  }, [
-    threadData,
-    isLoadingMore,
-    aiAgents,
-    user,
-    setSelectedAgent,
-    isNewChat,
-    liked,
-    shouldStopAutoScrollRef,
-    collaborationStatus,
-    isSmallDevice,
-    isDrawerOpen,
-    isChatFloating,
-    isHome,
-  ])
-
-  // useEffect(() => {
-  //   if (isHome) return
-  //   // Only clear message
-  //   // s if threadId changed AND first message doesn't match
-  //   // This prevents clearing when we just assigned threadId via window.history.pushState
-  //   const firstMessageThreadId =
-  //     messages[0]?.message?.threadId || messages[0]?.thread?.id
-  //   if (threadId && firstMessageThreadId && firstMessageThreadId !== threadId) {
-  //     setMessages([])
-  //   }
-  // }, [threadId, messages, isHome])
-
-  // useEffect(() => {
-  //   if (token && id && !isLoadingSession && !thread) {
-  //     refetch()
-  //   }
-  // }, [token, id, until, liked, isLoadingSession, thread])
-
-  useEffect(() => {
-    error && setIsLoading(false)
-  }, [error])
-
-  // Reset auto-selection flag when thread changes
 
   const [isGame, setIsGame] = useState(false)
 
@@ -659,7 +502,7 @@ const Thread = ({
                             className={clsx("link", styles.likeButton)}
                             onClick={() => {
                               addHapticFeedback()
-                              setLiked((prev) => !prev)
+                              setLiked(!liked)
                             }}
                           >
                             {liked ? (

@@ -7,9 +7,11 @@ import { FRONTEND_URL } from "./utils"
 import { CircleArrowLeft } from "./icons"
 import styles from "./Why.module.scss"
 import { useAuth, useNavigationContext } from "./context/providers"
+import { useTheme } from "./platform"
 
 export default function About() {
-  const { isDrawerOpen, router } = useNavigationContext()
+  const { router } = useNavigationContext()
+  const { isDrawerOpen } = useTheme()
 
   const { t } = useAppContext()
 

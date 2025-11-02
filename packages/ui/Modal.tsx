@@ -7,7 +7,7 @@ import { CircleX } from "./icons"
 import { useRouter } from "./hooks/useWindowHistory"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { useNavigation } from "./platform"
+import { useNavigation, useTheme } from "./platform"
 import { useHasHydrated } from "./hooks"
 
 export default function Modal({
@@ -45,7 +45,7 @@ export default function Modal({
   // Split contexts
   const { track } = useAuth()
   const { addParams, removeParams } = useNavigation()
-  const { isDrawerOpen } = useNavigationContext()
+  const { isDrawerOpen } = useTheme()
   const innerRef = React.useRef<HTMLDivElement>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(
     props.isModalOpen ?? false,

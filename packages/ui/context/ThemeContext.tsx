@@ -11,6 +11,7 @@ import React, {
   ReactNode,
   useMemo,
   useEffect,
+  useState,
 } from "react"
 import { usePlatform, useLocalStorage, toast } from "../platform"
 import {
@@ -38,6 +39,11 @@ export type ColorScheme = keyof typeof COLORS
 export type themeType = "dark" | "light"
 
 interface ThemeContextValue {
+  isSmallDevice: boolean
+  isMobileDevice: boolean
+  isDrawerOpen: boolean
+  setIsDrawerOpen: (isOpen: boolean) => void
+  setIsSmallDevice: (isSmallDevice: boolean) => void
   theme: Theme
   isDark: boolean
   colors: Theme
@@ -63,7 +69,8 @@ export function ThemeProvider({
   children: ReactNode
   session?: session
 }) {
-  const { isWeb } = usePlatform()
+  const { isWeb, isExtension, isAndroid, viewPortWidth, device, os } =
+    usePlatform()
   const { t } = useTranslation()
 
   // Cross-platform color scheme storage
@@ -89,9 +96,53 @@ export function ThemeProvider({
     return "dark" // Default to dark for SSR
   }
 
+  useEffect(() => {
+    if (viewPortWidth) {
+      const width = viewPortWidth
+      const isMobileOS = os && ["ios", "android"].includes(os)
+      setIsMobileDevice(width < 600 || !!(isMobileOS && device !== "desktop"))
+    }
+  }, [viewPortWidth, os, device])
+
   const [themeMode, setThemeMode] = useLocalStorage<themeType>(
     "theme",
     getInitialTheme(),
+  )
+
+  const [isSmallDevice, setIsSmallDeviceInternal] = useState(
+    viewPortWidth ? viewPortWidth < 960 : device !== "desktop",
+  )
+
+  const setIsSmallDevice = (isSmallDevice: boolean) => {
+    setIsSmallDeviceInternal(isSmallDevice)
+    setIsDrawerOpen(!isSmallDevice)
+  }
+
+  // Drawer state cookie (SSR-safe) - closed by default on server
+  const [isDrawerOpen, setIsDrawerOpen] = useState(!isSmallDevice)
+
+  // Update isSmallDevice when viewport changes
+  useEffect(() => {
+    if (viewPortWidth) {
+      const width = viewPortWidth
+      const newIsSmallDevice = width < 960
+      // Only update if actually changed
+      setIsSmallDeviceInternal((prev) => {
+        if (prev !== newIsSmallDevice) {
+          // Also update drawer state to match
+          setIsDrawerOpen(!newIsSmallDevice)
+          return newIsSmallDevice
+        }
+        return prev
+      })
+    }
+  }, [viewPortWidth])
+
+  const [isMobileDevice, setIsMobileDevice] = useState(
+    (viewPortWidth && viewPortWidth < 600) ||
+      (os && ["ios", "android"].includes(os) && device !== "desktop")
+      ? true
+      : false,
   )
 
   // Apply color scheme to HTML element (web only)
@@ -197,8 +248,6 @@ export function ThemeProvider({
     }
   }
 
-  const { isExtension, isAndroid } = usePlatform()
-
   const addHapticFeedback = (intensity = 30) => {
     if (isExtension) return
     if ("vibrate" in navigator) {
@@ -268,6 +317,11 @@ export function ThemeProvider({
     setEnableSound,
     setReduceMotion,
     addHapticFeedback,
+    isSmallDevice,
+    isMobileDevice,
+    isDrawerOpen,
+    setIsDrawerOpen,
+    setIsSmallDevice,
   }
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

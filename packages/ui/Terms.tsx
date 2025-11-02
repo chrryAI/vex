@@ -8,9 +8,11 @@ import styles from "./About.module.scss"
 import Img from "./Img"
 import { FRONTEND_URL } from "./utils"
 import { useAuth, useNavigationContext } from "./context/providers"
+import { useTheme } from "./platform"
 
 export default function Terms() {
-  const { isDrawerOpen, router } = useNavigationContext()
+  const { router } = useNavigationContext()
+  const { isDrawerOpen } = useTheme()
   const { t } = useAppContext()
 
   const { track } = useAuth()

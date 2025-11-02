@@ -52,7 +52,6 @@ export default function About() {
 
   const { t } = useAppContext()
 
-  const { addHapticFeedback } = useTheme()
   const {
     // isDrawerOpen,
     // router,
@@ -65,7 +64,8 @@ export default function About() {
     // user,
   } = usePlatform()
 
-  const { router, isDrawerOpen } = useNavigationContext()
+  const { router } = useNavigationContext()
+  const { isDrawerOpen, addHapticFeedback } = useTheme()
 
   const { captureException } = useError()
 

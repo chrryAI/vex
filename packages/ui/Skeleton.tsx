@@ -54,20 +54,14 @@ export default function Skeleton({
   const { t } = useAppContext()
 
   // Auth context
-  const { user, guest, isLoading, session } = useAuth()
 
   // Chat context
   const { isEmpty } = useChat()
 
   // Navigation context
-  const {
-    isDrawerOpen,
-    isSmallDevice,
-    setIsDrawerOpen,
-    pathname,
-    setIsNewChat,
-    hasNotification,
-  } = useNavigationContext()
+  const { pathname, setIsNewChat, hasNotification } = useNavigationContext()
+
+  const { isDrawerOpen, setIsDrawerOpen, isSmallDevice } = useTheme()
 
   const { device } = usePlatform()
 

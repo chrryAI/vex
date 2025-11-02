@@ -225,8 +225,6 @@ export default function Chat({
     hourlyLimit,
     isEmpty: empty,
     threadId,
-    setThreadId: setThreadIdContext,
-    isAgentAuthorized,
     isAgentModalOpen,
     setIsAgentModalOpen,
     isDebateAgentModalOpen,
@@ -237,7 +235,6 @@ export default function Chat({
   // Navigation context (router is the wrapper)
   const {
     router,
-    isDrawerOpen,
     isNewChat,
     isShowingCollaborate,
     collaborationStep,
@@ -276,7 +273,8 @@ export default function Chat({
   const inputRef = useRef(text || "")
 
   // Theme context
-  const { addHapticFeedback, reduceMotion, playNotification } = useTheme()
+  const { addHapticFeedback, reduceMotion, playNotification, isDrawerOpen } =
+    useTheme()
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setSelectedAgentInternal(agent)

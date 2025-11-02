@@ -21,12 +21,14 @@ Your AI app generates $10,000/month in revenue
 ### Why This Model?
 
 **Traditional Hiring:**
+
 - Fixed salary: $60,000/year ($5,000/month)
 - Cap on earnings regardless of performance
 - Company owns everything you build
 - Limited upside potential
 
 **Chrry Builder Program:**
+
 - Unlimited earning potential
 - Keep 70% of all revenue you generate
 - Own your apps and intellectual property
@@ -35,18 +37,21 @@ Your AI app generates $10,000/month in revenue
 ### Real Examples
 
 **Scenario 1: Side Project**
+
 - App: "MovieMatcher" recommendation engine
 - Users: 100 subscribers at $5/month
 - Monthly revenue: $500
 - **Your earnings: $350/month**
 
 **Scenario 2: Growing Product**
+
 - App: "CodeReviewer" AI assistant
 - Users: 1,000 subscribers at $10/month
 - Monthly revenue: $10,000
 - **Your earnings: $7,000/month** ($84k/year)
 
 **Scenario 3: Successful Platform**
+
 - App: "WritingCoach" content assistant
 - Users: 5,000 subscribers at $15/month
 - Monthly revenue: $75,000
@@ -61,6 +66,7 @@ Your AI app generates $10,000/month in revenue
 ### Technical Skills
 
 **Required:**
+
 - Strong experience with **Next.js** (App Router)
 - Proficiency in **React** and **TypeScript**
 - Understanding of modern **web architecture**
@@ -68,6 +74,7 @@ Your AI app generates $10,000/month in revenue
 - Knowledge of **testing frameworks** (Jest, Cypress, Vitest)
 
 **Nice to Have:**
+
 - AI/ML API experience (OpenAI, Anthropic, etc.)
 - Real-time systems (WebSockets)
 - Database design (PostgreSQL, Prisma, Drizzle)
@@ -77,6 +84,7 @@ Your AI app generates $10,000/month in revenue
 ### Builder Mindset
 
 We're looking for **entrepreneur-developers** who:
+
 - ✅ Think about user problems first, solutions second
 - ✅ Take ownership of entire features end-to-end
 - ✅ Iterate quickly based on user feedback
@@ -91,6 +99,7 @@ We're looking for **entrepreneur-developers** who:
 ### Platform Overview
 
 Chrry enables revolutionary **multi-app PWA architecture**:
+
 - One codebase → unlimited installable apps
 - Apps inherit from parent apps (FightClub → Popcorn → Vex)
 - Each app is a full PWA with unique icon, theme, branding
@@ -99,23 +108,27 @@ Chrry enables revolutionary **multi-app PWA architecture**:
 ### Example Projects
 
 **1. Specialized AI Assistants**
+
 - Movie recommendation engine (extends Popcorn)
 - Travel planner for specific cities (extends Atlas)
 - Wellness coach with habit tracking (extends Bloom)
 
 **2. Domain-Specific Tools**
+
 - Code review assistant
 - Writing improvement coach
 - Research paper analyzer
 - Language learning tutor
 
 **3. Creative Applications**
+
 - AI art director for specific styles
 - Music recommendation with personality
 - Recipe generator with dietary constraints
 - Fashion stylist with personal taste
 
 **4. Business Tools**
+
 - Sales email generator
 - Customer support AI
 - Meeting summarizer
@@ -132,7 +145,7 @@ const fightClubApp = {
   systemPrompt: "You are an expert on Fight Club...",
   highlights: [
     { title: "Scene Analysis", content: "Deep dive into cinematography" },
-    { title: "Philosophy", content: "Explore existential themes" }
+    { title: "Philosophy", content: "Explore existential themes" },
   ],
   placeholder: "What's the first rule?",
 }
@@ -148,6 +161,7 @@ const fightClubApp = {
 ## 📦 What Platform Provides (Your 30%)
 
 ### Infrastructure
+
 - **Database**: PostgreSQL with Drizzle ORM
 - **Caching**: Redis (Upstash)
 - **Real-time**: WebSocket server for collaboration
@@ -156,6 +170,7 @@ const fightClubApp = {
 - **Hosting**: Scalable cloud infrastructure
 
 ### AI Model Access
+
 - OpenAI (GPT-4, GPT-4 Turbo, GPT-3.5)
 - Anthropic (Claude 3 Opus, Sonnet, Haiku)
 - DeepSeek (V3, Coder)
@@ -164,6 +179,7 @@ const fightClubApp = {
 - Replicate (Image generation)
 
 ### Developer Tools
+
 - **Free testing credits**: 1,000 platform credits/month
 - **API access**: All AI models for development
 - **Builder dashboard**: Real-time revenue tracking
@@ -171,6 +187,7 @@ const fightClubApp = {
 - **A/B testing**: Built-in experimentation framework
 
 ### Business Services
+
 - **Payment processing**: Stripe integration
 - **Subscription management**: Billing, invoicing, cancellations
 - **User authentication**: Social login, OAuth
@@ -179,6 +196,7 @@ const fightClubApp = {
 - **Discovery**: App store listing and promotion
 
 ### Marketing & Growth
+
 - **Featured placement**: Top builders highlighted
 - **App store**: Built-in user discovery
 - **SEO optimization**: Automatic metadata
@@ -200,6 +218,7 @@ Send an email to: **iliyan@chrry.ai**
 **Subject:** AI App Builder Application - [Your Name]
 
 **Include:**
+
 1. **Your resume/CV** (PDF preferred)
 2. **GitHub profile** or portfolio
 3. **Brief introduction** (2-3 paragraphs):
@@ -212,6 +231,7 @@ Send an email to: **iliyan@chrry.ai**
 We'll respond with:
 
 **Question 1: Architecture Design**
+
 ```
 Design an AI app that extends existing Chrry apps. Explain:
 - What problem does it solve?
@@ -221,6 +241,7 @@ Design an AI app that extends existing Chrry apps. Explain:
 ```
 
 **Question 2: Code Challenge**
+
 ```
 Implement a simple React component that demonstrates:
 - TypeScript usage
@@ -233,6 +254,7 @@ Submit via GitHub gist or repository.
 ```
 
 **Question 3: Technical Problem**
+
 ```
 A user reports: "The AI sometimes forgets context mid-conversation."
 
@@ -246,6 +268,7 @@ Walk us through your debugging approach:
 ### Step 3: Code Review Exercise
 
 We'll provide a pull request from our actual codebase. You:
+
 1. Review the code
 2. Provide feedback
 3. Suggest improvements
@@ -254,6 +277,7 @@ We'll provide a pull request from our actual codebase. You:
 ### Step 4: Pair Programming (Optional)
 
 If you'd like, we can schedule a **written pair programming session**:
+
 - Share a VS Code Live Share link
 - Work together on a real GitHub issue
 - Communicate via chat/comments only
@@ -264,6 +288,7 @@ Or continue asynchronously via email.
 ### Step 5: Offer & Onboarding
 
 If there's a fit, we'll send:
+
 - **Builder Agreement** (revenue share terms)
 - **Onboarding checklist**
 - **Access to builder dashboard**
@@ -274,33 +299,39 @@ If there's a fit, we'll send:
 ## 📋 Builder Agreement Overview
 
 ### Revenue Split
+
 - **Your earnings**: 70% of all revenue generated by your apps
 - **Platform fee**: 30% (covers infrastructure, payments, support, discovery)
 
 ### Payment Terms
+
 - **Frequency**: Monthly via Stripe Connect
 - **Minimum payout**: $50 USD
 - **Currency**: USD (international wire transfers supported)
 - **Tax**: You're responsible for your own taxes (1099 contractor)
 
 ### Intellectual Property
+
 - **You own your apps**: Full ownership of code and concepts
 - **You own your brand**: Your name on everything you build
 - **You set roadmap**: Decide what features to build
 
 ### Platform Rights
+
 - **Usage rights**: Platform can run and host your apps
 - **Promotion rights**: Feature your apps in marketing
 - **Derivative works**: Other builders can extend your apps (you still earn)
 - **Open source**: Core platform is AGPL-3.0, your apps can be proprietary
 
 ### Termination
+
 - **Either party**: Can terminate with 30 days notice
 - **Post-termination**: You keep earning from existing subscribers for 12 months
 - **App ownership**: You retain all rights to your apps
 - **Data export**: Full user data export provided
 
 ### Non-compete
+
 - **No restrictions**: You can build for other platforms
 - **No exclusivity**: You can have other income sources
 - **No lock-in**: Leave anytime with your apps and users
@@ -310,23 +341,27 @@ If there's a fit, we'll send:
 ## 🎓 Builder Resources
 
 ### Documentation
+
 - **Architecture guide**: [github.com/chrryai/vex/docs](https://github.com/chrryai/vex)
 - **API reference**: docs.chrry.ai/api
 - **Component library**: docs.chrry.ai/components(soon)
 - **Best practices**: docs.chrry.ai/best-practices(soon)
 
 ### Code Examples
+
 - **Starter templates**: github.com/chrryai/vex/examples(soon)
 - **Sample apps**: Browse existing apps at chrry.ai/explore
 - **Open source codebase**: Full platform code available
 
 ### Community
+
 - **Discord**: Join #builders channel for peer support
 - **GitHub Discussions**: Ask questions, share ideas
 - **Monthly showcase**: Present your work to other builders
 - **Blog**: Write about your building journey
 
 ### Support
+
 - **Email**: iliyan@chrry.ai (24-hour response time)
 - **Office hours**: Weekly async Q&A sessions
 - **Documentation**: Comprehensive guides and tutorials
@@ -339,6 +374,7 @@ If there's a fit, we'll send:
 ### Builder Profile: Coming Soon!
 
 Once we have builders creating successful apps, we'll feature their stories here:
+
 - Monthly revenue achieved
 - User growth trajectory
 - Technical challenges solved
@@ -448,8 +484,8 @@ Are you ready to build the future of AI?
 
 ---
 
-*Built with ❤️ by solo developer + Claude AI*
-*Open source (AGPL-3.0) • Production ready • Already monetized*
+_Built with ❤️ by solo developer + Claude AI_
+_Open source (AGPL-3.0) • Production ready • Already monetized_
 
 ---
 
