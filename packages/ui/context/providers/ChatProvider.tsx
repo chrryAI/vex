@@ -107,19 +107,10 @@ const ChatContext = createContext<
       setIsLoadingThreads: (value: boolean) => void
       isIncognito: boolean
       threads: {
-        threads: (thread & {
-          lastMessage?: message
-          collaborations?: { collaboration: collaboration; user: user }[]
-        })[]
+        threads: thread[]
         totalCount: number
       }
-      setThreads: (value: {
-        threads: (thread & {
-          lastMessage?: message
-          collaborations?: { collaboration: collaboration; user: user }[]
-        })[]
-        totalCount: number
-      }) => void
+      setThreads: (value: { threads: thread[]; totalCount: number }) => void
 
       wasIncognito: boolean
       setWasIncognito: (value: boolean) => void
@@ -270,10 +261,7 @@ export function ChatProvider({
   }, [threadsError, isLoadingThreadsSwr])
 
   const [threads, setThreads] = useState<{
-    threads: (thread & {
-      lastMessage?: message
-      collaborations?: { collaboration: collaboration; user: user }[]
-    })[]
+    threads: thread[]
     totalCount: number
   }>({
     threads: [],

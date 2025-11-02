@@ -115,9 +115,6 @@ export const InstructionsStyleDefs = {
     alignItems: "center",
   },
   installAppButton: {},
-  installAppButtonStandalone: {
-    display: "none",
-  },
   installButton: {},
   instruction: {
     display: "none",

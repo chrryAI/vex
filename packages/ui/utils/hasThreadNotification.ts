@@ -1,14 +1,11 @@
-import type { thread, message, collaboration, user, guest } from "../types"
+import type { thread, user, guest } from "../types"
 
 export const hasThreadNotification = ({
   thread,
   guest,
   user,
 }: {
-  thread: thread & {
-    lastMessage?: message
-    collaborations?: { collaboration: collaboration; user: user }[]
-  }
+  thread: thread
   guest?: guest
   user?: user
 }) => {

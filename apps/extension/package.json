@@ -1,7 +1,7 @@
 {
   "name": "@repo/extension",
   "private": true,
-  "version": "1.2.97",
+  "version": "1.2.99",
   "type": "module",
   "scripts": {
     "dev": "node dev-watch.js",

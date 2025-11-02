@@ -4,7 +4,6 @@ import React, {
   Dispatch,
   SetStateAction,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react"
@@ -44,7 +43,6 @@ import { updateThread } from "./lib"
 import { useHasHydrated } from "./hooks"
 
 import {
-  getExampleInstructions,
   getInstructionConfig,
   isFirefox,
   MAX_FILE_SIZES,
@@ -127,17 +125,12 @@ export default function Instructions({
     setCollaborationStep,
     isMemoryConsentManageVisible,
     setShowAddToHomeScreen,
-    showAddToHomeScreen,
-    pathname,
   } = useNavigationContext()
 
   // App context
   const {
-    slug,
     isManagingApp,
-    app,
     appFormWatcher,
-    canEditApp,
     instructions,
     setInstructions,
     appStatus,
@@ -151,11 +144,11 @@ export default function Instructions({
   const { weather } = useData()
 
   // Platform context
-  const { os, isStandalone, viewPortWidth, viewPortHeight } = usePlatform()
+  const { os, isStandalone, viewPortHeight } = usePlatform()
 
   // Calculate how many instruction items to show based on viewport height
   const getVisibleInstructionCount = () => {
-    const height = viewPortHeight || 0
+    const height = (viewPortHeight || 0) + (isStandalone ? 250 : 0)
 
     if (height >= 500 && height < 600) return 1
     if (height >= 550 && height < 625) return 2
@@ -178,7 +171,7 @@ export default function Instructions({
 
   useEffect(() => {
     setVisibleInstructionCount(getVisibleInstructionCount())
-  }, [viewPortHeight])
+  }, [viewPortHeight, isStandalone])
 
   // Theme context
   const { addHapticFeedback, isDark, isMobileDevice } = usePlatformTheme()

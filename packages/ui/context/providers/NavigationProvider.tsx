@@ -1,44 +1,25 @@
 "use client"
 
-/// <reference types="chrome" />
-
 import React, {
   createContext,
   useContext,
   ReactNode,
   useState,
   useEffect,
-  useMemo,
 } from "react"
 import {
   toast,
   useNavigation,
   usePlatform,
   useOnlineStatus,
-  useTheme,
   NavigationParams,
-  NavigationOptions,
 } from "../../platform"
 import { useApp } from "./AppProvider"
 import { useChat } from "./ChatProvider"
 import { useAuth } from "./AuthProvider"
-import { useData } from "./DataProvider"
 
-import useSWR, { SWRConfig } from "swr"
-import {
-  collaboration,
-  thread,
-  message,
-  user,
-  aiAgent,
-  guest,
-  placeHolder,
-  app,
-  session,
-} from "../../types"
+import { thread, session } from "../../types"
 import { t } from "i18next"
-import { useWebSocket } from "../../hooks/useWebSocket"
-import { getSiteConfig } from "chrry/utils/siteConfig"
 import { defaultLocale } from "chrry/locales"
 
 const NavigationContext = createContext<
@@ -53,19 +34,10 @@ const NavigationContext = createContext<
       addParams: ReturnType<typeof useNavigation>["addParams"]
       removeParams: ReturnType<typeof useNavigation>["removeParams"]
       threads: {
-        threads: (thread & {
-          lastMessage?: message
-          collaborations?: { collaboration: collaboration; user: user }[]
-        })[]
+        threads: thread[]
         totalCount: number
       }
-      setThreads: (value: {
-        threads: (thread & {
-          lastMessage?: message
-          collaborations?: { collaboration: collaboration; user: user }[]
-        })[]
-        totalCount: number
-      }) => void
+      setThreads: (value: { threads: thread[]; totalCount: number }) => void
 
       wasIncognito: boolean
       setWasIncognito: (value: boolean) => void
@@ -128,86 +100,11 @@ export function NavigationProvider({
   const navigation = useNavigation()
 
   const { searchParams, pathname, ...router } = navigation
-  const getSlugFromPathname = (path: string): string | null => {
-    // Remove locale prefix if present (e.g., /ja/atlas -> /atlas)
-    const pathWithoutLocale = path.replace(/^\/[a-z]{2}\//, "/")
 
-    // Extract first path segment (could be slug or UUID)
-    const match = pathWithoutLocale.match(/^\/([^\/]+)/)
-    if (!match) return null
-
-    const segment = match[1]
-
-    // Exclude non-app routes
-    const excludedRoutes = [
-      "threads",
-      "settings",
-      "profile",
-      "apps",
-      "api",
-      "_next",
-      "signin",
-      "signup",
-      "onboarding",
-      "lifeOS",
-    ]
-    if (segment && excludedRoutes.includes(segment)) return null
-
-    return segment || null
-  }
-  const { app, apps, setApp, baseApp, storeApp } = useApp()
+  const { app } = useApp()
 
   const {
-    status,
-    isLoadingMore,
-    setIsLoadingMore,
-
-    setIsWebSearchEnabled,
-    input,
-    setIsAgentModalOpen,
-    isAgentModalOpen,
-    creditsLeft,
-    aiAgents,
-    setInput,
-    placeHolder,
-    setPlaceHolder,
-    isChatFloating,
-    setIsChatFloating,
-    thread,
-    setThread,
     threadId,
-    until,
-    liked,
-    setLiked,
-    error,
-    setUntil,
-    isEmpty,
-    setIsEmpty,
-    scrollToBottom,
-    setThreadId,
-    isWebSearchEnabled,
-    selectedAgent,
-    setSelectedAgent,
-    hitHourlyLimit,
-    debateAgent,
-    setDebateAgent,
-    isDebating,
-    setIsDebating,
-    hourlyLimit,
-    hourlyUsageLeft,
-    setCreditsLeft,
-    perplexityAgent,
-    deepSeekAgent,
-    claudeAgent,
-    favouriteAgent,
-    messages,
-    setMessages,
-    isAgentAuthorized,
-    setIsDebateAgentModalOpen,
-    isDebateAgentModalOpen,
-    setIsAgentModalOpenInternal,
-    nextPage,
-    setNextPage,
     setIsNewChat,
     isNewChat,
     hasNotification,
@@ -261,90 +158,11 @@ export function NavigationProvider({
     searchParams.get("account") === "true",
   )
 
-  const { isExtension, isMobile, viewPortWidth, os, device, isStandalone } =
-    usePlatform()
+  const { os, isStandalone } = usePlatform()
 
-  const {
-    setProfile,
-    fingerprint,
-    user,
-    guest,
-    token,
-    setUser,
-    setGuest,
-    deviceId,
-    profile,
-    isLoading,
-    slug,
-    setSlug,
-    getAppSlug,
-    language,
-  } = useAuth()
+  const { slug, setSlug, getAppSlug, language } = useAuth()
 
   const [isShowingCollaborate, setIsShowingCollaborate] = useState(false)
-
-  // const [collaborationStatus, setCollaborationStatusInternal] = useState<
-  //   "pending" | "active" | undefined | null
-  // >(
-  //   (searchParams.get("collaborationStatus") as "pending" | "active") ??
-  //     undefined,
-  // )
-
-  // const [activeCollaborationThreadsCount, setActiveCollaborationThreadsCount] =
-  //   useState<number>(0)
-  // const { actions, pageSizes } = useData()
-
-  // const fetchActiveCollaborationThreadsCount = async () => {
-  //   const threads = await actions.getThreads({
-  //     pageSize: 1,
-  //     collaborationStatus: "active",
-  //     appId: app?.id,
-  //   })
-  //   threads &&
-  //     threads.totalCount &&
-  //     setActiveCollaborationThreadsCount(threads.totalCount)
-  // }
-
-  // useEffect(() => {
-  //   if (!token) return
-  //   fetchActiveCollaborationThreadsCount()
-  //   fetchPendingCollaborationThreadsCount()
-  // }, [token])
-
-  // const [
-  //   pendingCollaborationThreadsCount,
-  //   setPendingCollaborationThreadsCount,
-  // ] = useState<number>(0)
-
-  // const fetchPendingCollaborationThreadsCount = async () => {
-  //   const threads = await actions.getThreads({
-  //     pageSize: 1,
-  //     myPendingCollaborations: true,
-  //     appId: app?.id,
-  //   })
-  //   threads &&
-  //     threads.totalCount &&
-  //     setPendingCollaborationThreadsCount(threads.totalCount)
-  // }
-
-  // const { theme, playNotification } = useTheme()
-
-  // const setCollaborationStatus = (
-  //   status: "pending" | "active" | undefined | null,
-  // ) => {
-  //   setCollaborationStatusInternal(status)
-  //   fetchActiveCollaborationThreadsCount()
-  //   fetchPendingCollaborationThreadsCount()
-  // }
-
-  // let userNameByUrl: string | undefined = undefined
-
-  // const pathSegments = pathname.split("/").filter(Boolean)
-
-  // if (pathSegments.length >= 1 && pathname.includes("/u/")) {
-  //   // New pattern: /u/[locale]/[username] OR /u/[username]
-  //   userNameByUrl = pathSegments[pathSegments.length - 1]
-  // }
 
   const [showAddToHomeScreen, setShowAddToHomeScreenInternal] = useState(
     searchParams.get("showInstall") === "true",

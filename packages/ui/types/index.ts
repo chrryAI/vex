@@ -277,7 +277,7 @@ export type thread = {
       }[]
     | null
   isMainThread: boolean
-
+  lastMessage?: message
   user?: user
   guest?: guest
   appId: string | null
