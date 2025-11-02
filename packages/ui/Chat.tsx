@@ -2534,13 +2534,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }
 
   useEffect(() => {
-    // Initialize WebSocket connection
     threadId && scrollToBottom()
   }, [threadId])
-
-  // useEffect(() => {
-  //   setIsLoading(!wsManager.connected)
-  // }, [wsManager, isLoading])
 
   const handlePaste = (e: React.ClipboardEvent) => {
     addHapticFeedback()
