@@ -235,6 +235,6 @@ AGPL-3.0 - See [LICENSE](LICENSE)
 ## Support
 
 - 💝 Sponsor: [SPONSORS.md](SPONSORS.md)
-- 📧 Email: ilian@chrry.ai
+- 📧 Email: iliyan@chrry.ai
 - 🐛 Issues: https://github.com/chrryai/vex/issues
 - 🐦 Twitter: [@chrryai](https://twitter.com/chrryai)
