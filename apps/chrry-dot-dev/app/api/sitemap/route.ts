@@ -7,7 +7,10 @@ import matter from "gray-matter"
 export const dynamic = "force-dynamic"
 
 function getBlogPosts() {
-  const BLOG_DIR = path.join(process.cwd(), "app/content/blog")
+  // Relative to web app directory (apps/web/app/content/blog)
+  // From: apps/chrry-dot-dev/app/api/sitemap
+  // To:   apps/web/app/content/blog
+  const BLOG_DIR = path.join(__dirname, "../../../../web/app/content/blog")
 
   if (!fs.existsSync(BLOG_DIR)) {
     return []
@@ -29,10 +32,14 @@ function getBlogPosts() {
     })
 }
 
-export async function GET() {
-  const baseUrl = "https://chrry.ai"
+export async function GET(request: Request) {
+  const url = new URL(request.url)
+  let chrryUrl = url.searchParams.get("chrryUrl")
+  const isVex = chrryUrl === "https://vex.chrry.ai"
 
-  const blogPosts = getBlogPosts()
+  const baseUrl = chrryUrl || "https://chrry.ai"
+
+  const blogPosts = !isVex ? [] : getBlogPosts()
 
   const staticRoutes = [
     { url: baseUrl, lastModified: new Date(), priority: 1 },
@@ -40,7 +47,7 @@ export async function GET() {
     { url: `${baseUrl}/privacy`, lastModified: new Date(), priority: 0.8 },
     { url: `${baseUrl}/terms`, lastModified: new Date(), priority: 0.8 },
     { url: `${baseUrl}/why`, lastModified: new Date(), priority: 0.8 },
-    { url: `${baseUrl}/blog`, lastModified: new Date(), priority: 0.9 },
+
     { url: `${baseUrl}/lifeOS`, lastModified: new Date(), priority: 0.9 },
     ...LANGUAGES.filter((language) => language.code !== defaultLocale).map(
       (language) => ({
@@ -49,6 +56,9 @@ export async function GET() {
         priority: 0.8,
       }),
     ),
+    ...(isVex
+      ? [{ url: `${baseUrl}/blog`, lastModified: new Date(), priority: 0.9 }]
+      : []),
     ...LANGUAGES.filter((language) => language.code !== defaultLocale).map(
       (language) => ({
         url: `${baseUrl}/${language.code}/about`,

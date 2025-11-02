@@ -184,7 +184,7 @@ export default async function ChrryAI({
         <link
           rel="sitemap"
           type="application/xml"
-          href={`${API_URL}/sitemap`}
+          href={`${API_URL}/sitemap?chrryUrl=${encodeURIComponent(CHRRY_URL)}`}
         />
 
         <AppMetadata app={app} />
