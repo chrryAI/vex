@@ -15,6 +15,7 @@ Chrry/Vex is pioneering **AI app composition** - where apps inherit and extend c
 ### 🥇 Platinum Sponsor ($1000+/month)
 
 **Benefits:**
+
 - Large logo (300px) on README and website homepage
 - Featured blog post about your company + Chrry collaboration
 - Dedicated section in documentation
@@ -32,6 +33,7 @@ Chrry/Vex is pioneering **AI app composition** - where apps inherit and extend c
 ### 🥈 Gold Sponsor ($500/month)
 
 **Benefits:**
+
 - Medium logo (200px) on README and website
 - Featured in monthly sponsor showcase
 - Logo in release notes and changelogs
@@ -48,6 +50,7 @@ Chrry/Vex is pioneering **AI app composition** - where apps inherit and extend c
 ### 🥉 Silver Sponsor ($100/month)
 
 **Benefits:**
+
 - Small logo (150px) on README
 - Listed in SPONSORS.md
 - Logo in GitHub profile
@@ -62,6 +65,7 @@ Chrry/Vex is pioneering **AI app composition** - where apps inherit and extend c
 ### ☕ Coffee Sponsor ($25/month)
 
 **Benefits:**
+
 - Name listed in SPONSORS.md
 - Sponsor badge on GitHub profile
 - My eternal gratitude 🙏
@@ -76,24 +80,28 @@ Chrry/Vex is pioneering **AI app composition** - where apps inherit and extend c
 Your sponsorship directly funds:
 
 ### **Infrastructure & Operations**
+
 - Server costs (PostgreSQL, Redis, WebSocket servers)
 - CDN and edge deployment
 - Monitoring and error tracking (Sentry)
 - Development tools and services
 
 ### **Development Time**
+
 - New features and improvements
 - Bug fixes and optimizations
 - Documentation and tutorials
 - Community support and issue triage
 
 ### **Community Growth**
+
 - Marketing and promotion
 - Conference talks and workshops
 - Educational content creation
 - Open source ecosystem contributions
 
 ### **Innovation & Research**
+
 - Experimental features
 - AI model optimization
 - Performance benchmarking
@@ -124,7 +132,9 @@ Sponsoring Chrry/Vex is perfect if you:
 ## 🎨 Special Sponsorship Opportunities
 
 ### **Infrastructure Sponsor**
+
 Partner with us to showcase your hosting/cloud platform:
+
 - Dedicated case study about our deployment
 - Performance metrics and benchmarks
 - Architecture deep-dive featuring your tech
@@ -135,7 +145,9 @@ Partner with us to showcase your hosting/cloud platform:
 ---
 
 ### **AI/ML Sponsor**
+
 Feature your AI models or services:
+
 - Integration into our agent system
 - Benchmarking and comparison content
 - Developer tutorials using your API
@@ -146,7 +158,9 @@ Feature your AI models or services:
 ---
 
 ### **Developer Tools Sponsor**
+
 Showcase how we use your tools:
+
 - Technical blog series
 - Video tutorials and demos
 - Documentation examples
@@ -171,15 +185,20 @@ Showcase how we use your tools:
 ## 🤝 How to Sponsor
 
 ### **GitHub Sponsors** (Recommended)
+
 Visit our [GitHub Sponsors page](https://github.com/sponsors/chrryAI) to choose your tier and get started.
 
 ### **Direct Partnership**
+
 For custom sponsorship arrangements or larger partnerships, contact:
+
 - Email: [your-email@example.com]
 - Twitter/X: [@chrryAI](https://twitter.com/chrryAI)
 
 ### **One-Time Donation**
+
 Prefer a one-time contribution? We accept:
+
 - GitHub Sponsors one-time payment
 - [Buy Me a Coffee](https://buymeacoffee.com/chrry)
 - Crypto: [wallet addresses]
@@ -189,16 +208,19 @@ Prefer a one-time contribution? We accept:
 ## 🎯 Current Sponsorship Goals
 
 ### **Goal 1: Full-Time Development** ($3,000/month)
+
 Enable full-time work on Chrry/Vex, accelerating feature development and community growth.
 
 **Progress:** $0 / $3,000 (0%)
 
 ### **Goal 2: Infrastructure Scaling** ($5,000/month)
+
 Upgrade infrastructure for better performance, reliability, and global reach.
 
 **Progress:** $0 / $5,000 (0%)
 
 ### **Goal 3: Team Growth** ($10,000/month)
+
 Hire contributors for design, documentation, and community management.
 
 **Progress:** $0 / $10,000 (0%)
@@ -220,16 +242,20 @@ Hire contributors for design, documentation, and community management.
 ## 🏆 Current Sponsors
 
 ### Platinum Sponsors
-*Be the first!*
+
+_Be the first!_
 
 ### Gold Sponsors
-*Be the first!*
+
+_Be the first!_
 
 ### Silver Sponsors
-*Be the first!*
+
+_Be the first!_
 
 ### Coffee Sponsors
-*Be the first!*
+
+_Be the first!_
 
 ---
 
@@ -263,4 +289,4 @@ Every sponsor, no matter the tier, makes a huge difference. You're not just supp
 
 ---
 
-*Last updated: 2025-11-02*
+_Last updated: 2025-11-02_

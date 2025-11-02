@@ -70,12 +70,14 @@ jobs:
       - name: Build web app
         run: pnpm turbo build --filter="web"
         env:
+          DB_URL: ${{ secrets.DB_URL }}
           NODE_OPTIONS: --max-old-space-size=8192
           CI: true
 
       - name: Build chrry-dot-dev app
         run: pnpm turbo build --filter="chrrydotdev"
         env:
+          DB_URL: ${{ secrets.DB_URL }}
           NODE_OPTIONS: --max-old-space-size=8192
           CI: true
 

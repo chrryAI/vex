@@ -211,13 +211,16 @@ vex/
 Vex is made possible by generous sponsors who believe in open source innovation:
 
 ### Platinum Sponsors
-*Be the first to support revolutionary AI architecture!*
+
+_Be the first to support revolutionary AI architecture!_
 
 ### Gold Sponsors
-*Your logo here - [Become a sponsor](SPONSORS.md)*
+
+_Your logo here - [Become a sponsor](SPONSORS.md)_
 
 ### Silver Sponsors
-*Your logo here - [Become a sponsor](SPONSORS.md)*
+
+_Your logo here - [Become a sponsor](SPONSORS.md)_
 
 **Interested in sponsoring?** Check out our [sponsorship tiers](SPONSORS.md) and help us build the future of AI app composition.
 

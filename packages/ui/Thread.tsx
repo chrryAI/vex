@@ -281,8 +281,6 @@ const Thread = ({
     }
   }, [messages, autoSelectedAgent, aiAgents, debateAgent])
 
-  const historyRouter = useRouter()
-
   const hasHydrated = useHasHydrated()
 
   const nameIsRequired = `👋 ${t("Name your app......")}`
