@@ -137,11 +137,19 @@ const Thread = ({
   const { addHapticFeedback } = useTheme()
 
   // Derived from thread
-  const placeHolder =
+  const ph =
     thread?.placeHolder ||
     app?.placeHolder ||
     user?.placeHolder ||
     guest?.placeHolder
+
+  const [placeHolder, setPlaceHolder] = useState(ph)
+
+  useEffect(() => {
+    if (ph) {
+      setPlaceHolder(ph)
+    }
+  }, [ph])
 
   const slugPath = slug ? `${slug}/` : "/"
 

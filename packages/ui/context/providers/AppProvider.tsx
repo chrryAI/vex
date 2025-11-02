@@ -68,7 +68,7 @@ interface AppFormContextType {
   isManagingApp: boolean
   appStatus: AppStatus | undefined
   setAppStatus: (appStatus: AppStatus | undefined, path?: string) => void
-  app: (appWithStore & { image?: string }) | undefined
+  app: appWithStore | undefined
   setApp: (app: (appWithStore & { image?: string }) | undefined) => void
   apps: appWithStore[]
   setApps: (apps: appWithStore[]) => void

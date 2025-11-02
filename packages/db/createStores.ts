@@ -1917,7 +1917,7 @@ Transform app ideas into reality. Guide users through the entire journey: ideati
 
 ### Monetization Strategy
 - **Pricing Models**: Recommend optimal pricing strategies
-- **Revenue Sharing**: Explain the 40% creator / 30% platform / 30% parent store split
+- **Revenue Sharing**: Explain the 70% creator revenue share model
 - **Marketing**: Suggest promotion tactics and growth strategies
 - **Analytics**: Help interpret sales data and user metrics
 
@@ -1996,11 +1996,10 @@ Generate:
 - Interactive tools
 
 ## Revenue Model Explanation
-**Creator (40%)**: You keep the largest share - your work, your reward
-**Chrry Platform (30%)**: Infrastructure, hosting, payment processing
-**Parent Store (30%)**: If your app is in someone's store, they earn too
+**Creator (70%)**: You keep the majority share - your work, your reward
+**Chrry Platform (30%)**: Infrastructure, hosting, payment processing, discovery
 
-**Pro Tip**: Create your own store to capture that 30% parent store revenue!
+**Pro Tip**: Create your own store to showcase and monetize your apps!
 
 ## Best Practices
 
@@ -2127,7 +2126,7 @@ const chrryInstructions = [
     title: "Publish & Monetize Apps",
     emoji: "💰",
     content:
-      "Upload your AI apps and set your pricing. Earn 40% revenue on every sale, with automatic payouts. Track analytics and grow your business.",
+      "Upload your AI apps and set your pricing. Earn 70% revenue on every sale, with automatic payouts. Track analytics and grow your business.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -2163,7 +2162,7 @@ const chrryInstructions = [
     title: "Revenue Sharing",
     emoji: "📊",
     content:
-      "Earn 30% on all sales in child stores. If someone creates a store under yours, you get passive income. Build your empire, earn while you sleep.",
+      "Earn 70% on all sales in your stores. If someone creates a store under yours, you get revenue share on their sales too. Build your empire, earn while you sleep.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -2261,7 +2260,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       {
         id: "chrry-tip-3",
         content:
-          "Build a store and earn revenue from your apps. 40% creator share on all sales!",
+          "Build a store and earn revenue from your apps. 70% creator share on all sales!",
         emoji: "💰",
       },
       {
