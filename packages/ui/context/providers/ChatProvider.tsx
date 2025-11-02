@@ -360,7 +360,22 @@ export function ChatProvider({
 
   const [collaborationStep, setCollaborationStep] = useState(0)
 
-  const isIncognito = searchParams.get("incognito") === "true"
+  const [isIncognito, setIsIncognito] = useState(
+    searchParams.get("incognito") === "true",
+  )
+
+  useEffect(() => {
+    if (isIncognito) {
+      setWasIncognito(true)
+      setIsNewChat(true, "/?incognito=true")
+    } else {
+      setWasIncognito(false)
+    }
+  }, [isIncognito])
+
+  useEffect(() => {
+    setIsIncognito(searchParams.get("incognito") === "true")
+  }, [searchParams])
 
   const [wasIncognito, setWasIncognito] = useState(isIncognito)
 
