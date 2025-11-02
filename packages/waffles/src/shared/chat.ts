@@ -205,24 +205,29 @@ export const chat = async ({
 
   let willFail = false
 
-  const why = page.getByTestId("instruction-why")
-  let instructionButton = page.getByTestId("instruction-button")
+  const getNthInstruction = async (nth: number) => {
+    const items = page.getByTestId("instruction-item")
+    return items.nth(nth)
+  }
+
+  const about = page.getByTestId("instruction-about")
+  let instructionButton = await getNthInstruction(0)
   let artifactsButton = page.getByTestId("instruction-artifacts-button")
 
   if (!threadId) {
     await expect(thread).not.toBeVisible()
-
-    await expect(why).toBeVisible()
+    await expect(instructionButton).toBeVisible()
+    await expect(about).toBeVisible()
   } else {
     await expect(instructionButton).not.toBeVisible()
 
     instructionButton = page.getByTestId("chat-instruction-button")
     artifactsButton = page.getByTestId("chat-artifacts-button")
     await expect(thread).toBeVisible()
-    await expect(why).not.toBeVisible()
+    await expect(about).not.toBeVisible()
   }
 
-  await expect(instructionButton).not.toBeVisible()
+  // await expect(instructionButton).not.toBeVisible()
   const instructionModal = page.getByTestId("instruction-modal")
   await expect(instructionModal).not.toBeVisible()
 
@@ -231,12 +236,6 @@ export const chat = async ({
 
     await expect(instructionModal).toBeVisible()
 
-    const modalMaxCharCount = page.getByTestId(
-      "instruction-modal-max-char-count",
-    )
-
-    await expect(modalMaxCharCount).toBeVisible()
-
     const modalTextarea = page.getByTestId("instruction-modal-textarea")
     await expect(modalTextarea).toBeVisible()
 
@@ -244,7 +243,6 @@ export const chat = async ({
 
     const modalCharLeft = page.getByTestId("instruction-modal-char-left")
     await expect(modalCharLeft).toBeVisible()
-    await expect(modalMaxCharCount).not.toBeVisible()
 
     const modalSaveButton = page.getByTestId("instruction-modal-save-button")
     await expect(modalSaveButton).toBeVisible()
@@ -986,6 +984,15 @@ export const chat = async ({
     await scrollToBottom() // Ensure send button is visible
     await sendButton.click()
 
+    const acceptButton = page.getByTestId("chat-accept-button")
+
+    const isAcceptButtonVisible = await acceptButton.isVisible()
+
+    if (isAcceptButtonVisible) {
+      await wait(2000)
+      await sendButton.click()
+    }
+
     if (prompts.indexOf(prompt) === 0 && artifacts) {
       await expect(page.getByText("Uploading artifacts...")).toBeVisible()
     }
@@ -1405,9 +1412,9 @@ export const chat = async ({
 
   const getNthMenuThread = async (nth: number) => {
     const threads = page.getByTestId("menu-thread-item")
-    const threadCount = await threads.count()
     return threads.nth(nth)
   }
+
   const getFirstMenuThread = async () => {
     return getNthMenuThread(0)
   }

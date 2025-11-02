@@ -1341,7 +1341,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         )}
         {!thread && showInstructions && (
           <div
-            data-testid={`${dataTestId}-instructions-list`}
+            data-testid={`${dataTestId}-list`}
             ref={instructionsListRef}
             className={clsx(styles.instructions, "instructionsList")}
           >
@@ -1354,6 +1354,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 return (
                   <button
                     key={instruction.id}
+                    data-testid={`${dataTestId}-item`}
                     className={clsx(
                       "link",
                       "instructionItem",
@@ -1398,7 +1399,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           </div>
         )}
         {!thread && !icon && showInstructions && (
-          <div data-testid={`${dataTestId}-why`} className={styles.bottom}>
+          <div data-testid={`${dataTestId}-about`} className={styles.bottom}>
             <a
               onClick={(e) => {
                 if (appStatus?.part) {

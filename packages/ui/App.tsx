@@ -1149,7 +1149,7 @@ export default function App({
           {isManagingApp && (
             <Instructions
               showButton={true}
-              dataTestId="instruction"
+              dataTestId="instruction-builder"
               opacity={0}
               onSave={({ content, artifacts }) => {
                 onSave?.({

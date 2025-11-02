@@ -2,213 +2,261 @@
 
 ```yaml
 - generic [ref=e1]:
-    - generic [ref=e5]:
-        - generic [ref=e6]:
-            - generic [ref=e7]:
-                - link "Vex Chrry" [ref=e8] [cursor=pointer]:
-                    - /url: http://localhost:3000
-                    - img "Vex" [ref=e10]
-                    - generic [ref=e11]: Chrry
-                - button [ref=e12] [cursor=pointer]:
-                    - img [ref=e13]
-            - generic [ref=e16]:
-                - link "New chat" [ref=e17] [cursor=pointer]:
-                    - /url: http://localhost:3000
-                    - img [ref=e18]
-                    - text: New chat
-                - link "Incognito Chat" [ref=e20] [cursor=pointer]:
-                    - /url: http://localhost:3000/?incognito=true
-                    - img [ref=e21]
-                    - text: Incognito Chat
-                - link "Search chats" [ref=e26] [cursor=pointer]:
-                    - /url: /threads
-                    - img [ref=e27]
-                    - text: Search chats
-                - generic [ref=e30]:
-                    - heading "Threads" [level=4] [ref=e31]:
-                        - img [ref=e32]
-                        - text: Threads
-                    - generic [ref=e35]: Nothing here yet
-                    - generic [ref=e36]:
-                        - heading "🍒 Marketplace Tips" [level=3] [ref=e37]
-                        - list [ref=e38]:
-                            - listitem [ref=e39]:
-                                - text: Browse hundreds of AI apps across different stores. Find specialized tools for any task!
-                                - generic [ref=e40]: 🛍️
-                            - listitem [ref=e41]:
-                                - text: Create your own AI app in minutes. No coding required - just describe what you want!
-                                - generic [ref=e42]: ✨
-                            - listitem [ref=e43]:
-                                - text: Build a store and earn revenue from your apps. 40% creator share on all sales!
-                                - generic [ref=e44]: 💰
-                            - listitem [ref=e45]:
-                                - text: Install apps as PWAs for native-like experience. Works on desktop, mobile, and tablets!
-                                - generic [ref=e46]: 📱
-            - generic [ref=e47]:
-                - generic [ref=e48]:
-                    - text: 2025©
-                    - button "Amsterdam" [ref=e50] [cursor=pointer]: Amsterdam
-                - generic [ref=e52]:
-                    - generic [ref=e53]:
-                        - button [ref=e54] [cursor=pointer]:
-                            - img [ref=e55]
-                            - img [ref=e57]
-                        - button [ref=e59] [cursor=pointer]:
-                            - img [ref=e60]
-                        - button [ref=e62] [cursor=pointer]:
-                            - img [ref=e63]
-                        - button [ref=e65] [cursor=pointer]:
-                            - img [ref=e66]
-                        - button [ref=e68] [cursor=pointer]:
-                            - img [ref=e69]
-                        - button [ref=e71] [cursor=pointer]:
-                            - img [ref=e72]
-                    - button "Motion" [ref=e74] [cursor=pointer]:
-                        - img [ref=e75]
-                        - text: Motion
-                - generic [ref=e76]:
-                    - link "Wannathis" [ref=e77] [cursor=pointer]:
-                        - /url: https://wannathis.one
-                        - img [ref=e78]
-                        - text: Wannathis
-                    - button "Light" [ref=e87] [cursor=pointer]:
-                        - img [ref=e88]
-                    - generic [ref=e94]: v1.2.81
-        - main [ref=e95]:
-            - generic [ref=e96]:
-                - link "Vex Chrry.dev" [ref=e98] [cursor=pointer]:
-                    - /url: https://chrry.dev
-                    - img "Vex" [ref=e100]
-                    - text: Chrry.dev
-                - generic [ref=e101]:
-                    - button "Character Profile" [ref=e103] [cursor=pointer]:
-                        - img [ref=e104]
-                    - button "Plus" [ref=e107] [cursor=pointer]: Plus
-                    - button "Register" [ref=e110] [cursor=pointer]:
-                        - img [ref=e111]
-                        - text: Register
-                    - button [ref=e114] [cursor=pointer]:
-                        - img [ref=e115]
-            - generic [ref=e119]:
-                - generic [ref=e121]:
-                    - button [ref=e122] [cursor=pointer]:
-                        - img [ref=e123]
-                    - button "Disable Memories" [ref=e126] [cursor=pointer]:
-                        - img [ref=e127]
-                        - text: Disable Memories
-                - generic [ref=e137]:
-                    - generic [ref=e138]:
-                        - heading "Vex AI App Marketplace" [level=1] [ref=e139]:
-                            - generic [ref=e140]:
-                                - img "Vex" [ref=e142]
-                                - text: AI App Marketplace
-                        - generic [ref=e143]:
-                            - generic "Clear - Tokyo, Japan" [ref=e146]:
-                                - button [ref=e147] [cursor=pointer]:
-                                    - img [ref=e148]
-                                - img [ref=e151]
-                                - generic [ref=e157]:
-                                    - generic [ref=e158]: 22°C
-                                    - button "Tokyo, Japan" [ref=e159] [cursor=pointer]
-                            - generic [ref=e160]:
-                                - button "🤯 Vex" [ref=e161] [cursor=pointer]:
-                                    - generic [ref=e162]: 🤯
-                                    - img "Vex" [ref=e164]
-                                - link "Vex Chrry" [ref=e165] [cursor=pointer]:
-                                    - /url: /explore
-                                    - img "Vex" [ref=e167]
-                                    - generic [ref=e168]: Chrry
-                                - link "Organize your life" [ref=e169] [cursor=pointer]:
-                                    - /url: http://localhost:3000/calendar
-                                - generic "Drag and drop to reorder apps" [ref=e171]:
-                                    - img [ref=e172]
-                            - generic [ref=e183]:
-                                - generic [ref=e184]:
-                                    - link "📕" [ref=e185] [cursor=pointer]:
-                                        - /url: /zarathustra
-                                        - generic [ref=e186]: 📕
-                                    - link "Vex Vex" [ref=e187] [cursor=pointer]:
-                                        - /url: /vex
-                                        - img "Vex" [ref=e189]
-                                        - generic [ref=e190]: Vex
-                                - generic [ref=e191]:
-                                    - link "Claude Claude" [ref=e192] [cursor=pointer]:
-                                        - /url: /claude
-                                        - img "Claude" [ref=e193]
-                                        - generic [ref=e195]: Claude
-                                    - link "Vex" [ref=e196] [cursor=pointer]:
-                                        - /url: /atlas
-                                        - img "Vex" [ref=e198]
-                                - generic [ref=e199]:
-                                    - link "Vex" [ref=e200] [cursor=pointer]:
-                                        - /url: /popcorn
-                                        - img "Vex" [ref=e202]
-                                    - link "Perplexity Perplexity" [ref=e203] [cursor=pointer]:
-                                        - /url: /perplexity
-                                        - img "Perplexity" [ref=e204]
-                                        - generic [ref=e206]: Perplexity
-                                - generic [ref=e207]:
-                                    - link "DeepSeek DeepSeek" [ref=e208] [cursor=pointer]:
-                                        - /url: /deepSeek
-                                        - img "DeepSeek" [ref=e209]
-                                        - generic [ref=e211]: DeepSeek
-                                    - button "Vex" [ref=e212] [cursor=pointer]:
-                                        - img "Vex" [ref=e214]
-                            - generic [ref=e217]:
-                                - generic [ref=e218]:
-                                    - button "🏪 Create Your First Store" [ref=e219] [cursor=pointer]:
-                                        - generic [ref=e220]: 🏪
-                                        - generic [ref=e221]: Create Your First Store
-                                    - button "💰 Publish & Monetize Apps" [ref=e222] [cursor=pointer]:
-                                        - generic [ref=e223]: 💰
-                                        - generic [ref=e224]: Publish & Monetize Apps
-                                    - button "🌳 Nested Store Hierarchy" [ref=e225] [cursor=pointer]:
-                                        - generic [ref=e226]: 🌳
-                                        - generic [ref=e227]: Nested Store Hierarchy
-                                    - button "🌐 Custom Domains" [ref=e228] [cursor=pointer]:
-                                        - generic [ref=e229]: 🌐
-                                        - generic [ref=e230]: Custom Domains
-                                - generic [ref=e231]:
-                                    - link "About" [ref=e232] [cursor=pointer]:
-                                        - /url: http://localhost:3000/about
-                                        - img [ref=e233]
-                                        - text: About
-                                    - link "Extension" [ref=e239] [cursor=pointer]:
-                                        - /url: https://chromewebstore.google.com/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc
-                                        - img [ref=e240]
-                                        - text: Extension
-                    - generic [ref=e243]:
-                        - heading "👋 What's on your mind?" [level=2] [ref=e245]:
-                            - generic [ref=e246]: 👋 What's on your mind?
-                        - generic [ref=e247]:
-                            - button "Enable Image Generation" [ref=e248] [cursor=pointer]:
-                                - img [ref=e249]
-                            - textbox "Ask anything..." [active] [ref=e255]
-                            - generic [ref=e256]:
-                                - generic [ref=e258]:
-                                    - button "Vex" [disabled] [ref=e259]:
-                                        - img "Vex" [ref=e261]
-                                    - button "Chrry 1.2" [disabled] [ref=e262]:
-                                        - generic [ref=e263]: Chrry 1.2
-                                - generic [ref=e264]:
-                                    - button "Web" [ref=e265] [cursor=pointer]:
-                                        - generic [ref=e266]: Web
-                                        - img [ref=e267]
-                                    - button "Attach" [ref=e271] [cursor=pointer]:
-                                        - img [ref=e272]
-                                    - button "Start voice input" [ref=e274] [cursor=pointer]:
-                                        - generic "Sound" [ref=e275]
-                        - generic [ref=e276]:
-                            - generic [ref=e277]:
-                                - img [ref=e278]
-                                - text: 1 Credit
-                            - generic [ref=e283]:
-                                - img [ref=e284]
-                                - generic [ref=e286]: 30 Credits left
-                            - button "Login" [ref=e287] [cursor=pointer]:
-                                - img [ref=e288]
-                                - text: Login
-    - button "Open Next.js Dev Tools" [ref=e296] [cursor=pointer]:
-        - img [ref=e297]
-    - alert [ref=e300]
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link "Vex Chrry" [ref=e8] [cursor=pointer]:
+          - /url: http://localhost:3000
+          - img "Vex" [ref=e10]
+          - generic [ref=e11]: Chrry
+        - button [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+      - generic [ref=e16]:
+        - link "New chat" [ref=e17] [cursor=pointer]:
+          - /url: http://localhost:3000
+          - img [ref=e18]
+          - text: New chat
+        - link "Incognito Chat" [ref=e20] [cursor=pointer]:
+          - /url: http://localhost:3000/?incognito=true
+          - img [ref=e21]
+          - text: Incognito Chat
+        - link "Search chats" [ref=e26] [cursor=pointer]:
+          - /url: /threads
+          - img [ref=e27]
+          - text: Search chats
+        - generic [ref=e30]:
+          - heading "Threads" [level=4] [ref=e31]:
+            - img [ref=e32]
+            - text: Threads
+          - generic [ref=e35]: Nothing here yet
+          - generic [ref=e36]:
+            - heading "🍒 Marketplace Tips" [level=3] [ref=e37]
+            - list [ref=e38]:
+              - listitem [ref=e39]:
+                - text: Browse hundreds of AI apps across different stores. Find specialized tools for any task!
+                - generic [ref=e40]: 🛍️
+              - listitem [ref=e41]:
+                - text: Create your own AI app in minutes. No coding required - just describe what you want!
+                - generic [ref=e42]: ✨
+              - listitem [ref=e43]:
+                - text: Build a store and earn revenue from your apps. 40% creator share on all sales!
+                - generic [ref=e44]: 💰
+              - listitem [ref=e45]:
+                - text: Install apps as PWAs for native-like experience. Works on desktop, mobile, and tablets!
+                - generic [ref=e46]: 📱
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - text: 2025©
+          - button "Amsterdam" [ref=e50] [cursor=pointer]: Amsterdam
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - button [ref=e54] [cursor=pointer]:
+              - img [ref=e55]
+              - img [ref=e57]
+            - button [ref=e59] [cursor=pointer]:
+              - img [ref=e60]
+            - button [ref=e62] [cursor=pointer]:
+              - img [ref=e63]
+            - button [ref=e65] [cursor=pointer]:
+              - img [ref=e66]
+            - button [ref=e68] [cursor=pointer]:
+              - img [ref=e69]
+            - button [ref=e71] [cursor=pointer]:
+              - img [ref=e72]
+          - button "Motion" [ref=e74] [cursor=pointer]:
+            - img [ref=e75]
+            - text: Motion
+        - generic [ref=e76]:
+          - link "Wannathis" [ref=e77] [cursor=pointer]:
+            - /url: https://wannathis.one
+            - img [ref=e78]
+            - text: Wannathis
+          - button "Light" [ref=e87] [cursor=pointer]:
+            - img [ref=e88]
+          - generic [ref=e94]: v1.3.4
+    - main [ref=e95]:
+      - generic [ref=e96]:
+        - link "Vex Chrry.dev" [ref=e98] [cursor=pointer]:
+          - /url: https://chrry.dev
+          - img "Vex" [ref=e100]
+          - text: Chrry.dev
+        - generic [ref=e101]:
+          - button "Character Profile" [ref=e103] [cursor=pointer]:
+            - img [ref=e104]
+          - button "Plus" [ref=e107] [cursor=pointer]: Plus
+          - button "Register" [ref=e110] [cursor=pointer]:
+            - img [ref=e111]
+            - text: Register
+          - button [ref=e114] [cursor=pointer]:
+            - img [ref=e115]
+      - generic [ref=e119]:
+        - generic [ref=e121]:
+          - button [ref=e122] [cursor=pointer]:
+            - img [ref=e123]
+          - button "Disable Memories" [ref=e126] [cursor=pointer]:
+            - img [ref=e127]
+            - text: Disable Memories
+        - generic [ref=e135]:
+          - generic [ref=e137]:
+            - generic [ref=e140]:
+              - button "Instructions" [ref=e141] [cursor=pointer]:
+                - img [ref=e142]
+                - text: Instructions
+                - img [ref=e150]
+              - button "Artifacts" [ref=e151] [cursor=pointer]:
+                - img [ref=e152]
+            - button "Delete" [ref=e155] [cursor=pointer]:
+              - img [ref=e156]
+              - text: Delete
+            - button "Edit" [ref=e160] [cursor=pointer]:
+              - img [ref=e161]
+              - text: Edit
+            - generic [ref=e164]:
+              - img [ref=e165]
+              - button "Share" [ref=e168] [cursor=pointer]:
+                - img [ref=e169]
+          - generic [ref=e172]:
+            - generic [ref=e173]:
+              - generic [ref=e175]:
+                - generic [ref=e176]:
+                  - generic [ref=e179]: You
+                  - generic [ref=e180]: Hello
+                  - generic [ref=e181]:
+                    - generic [ref=e182]:
+                      - button "Copy code" [ref=e183] [cursor=pointer]:
+                        - img [ref=e184]
+                      - button [ref=e187] [cursor=pointer]:
+                        - img [ref=e188]
+                      - generic [ref=e191]: 1 minute ago
+                    - generic [ref=e192]:
+                      - button "Like" [ref=e193] [cursor=pointer]:
+                        - img [ref=e194]
+                      - button "Dislike" [ref=e196] [cursor=pointer]:
+                        - img [ref=e197]
+                - button "Vex" [ref=e200] [cursor=pointer]:
+                  - img "Vex" [ref=e202]
+              - generic [ref=e204]:
+                - button "Switch from / to another agent" [ref=e205] [cursor=pointer]:
+                  - generic [ref=e206]:
+                    - img "Vex" [ref=e208]
+                    - generic [ref=e209]: Chrry
+                - generic [ref=e210]:
+                  - generic [ref=e212]: Capto vorax delinquo vitiosus debitis sed vinculum stipes combibo decor casso repudiandae vado occaecati aperiam adsum textor caput vitium ademptio arbustum saepe truculenter atque claro admoneo aeger damno amor virtus aestas ut conduco combibo repellat trucido aegrotatio casso territo tepidus ancilla virtus victoria articulus amiculum autem spiculum odio triumphus decipio eos vomica cupiditate audeo defleo compono depono strues asporto acsi nobis eum carpo apparatus bonus tepesco causa dolores corporis fugit cubo totam voluptatibus utpote cimentarius subseco cunae timor supplanto sol.
+                  - generic [ref=e213]:
+                    - generic [ref=e214]:
+                      - button "Copy code" [ref=e215] [cursor=pointer]:
+                        - img [ref=e216]
+                      - generic "DeepSeek V3" [ref=e219]:
+                        - img "DeepSeek" [ref=e220]
+                      - button [ref=e222] [cursor=pointer]:
+                        - img [ref=e223]
+                      - generic [ref=e226]: just now
+                    - generic [ref=e227]:
+                      - button "Like" [ref=e228] [cursor=pointer]:
+                        - img [ref=e229]
+                      - button "Dislike" [ref=e231] [cursor=pointer]:
+                        - img [ref=e232]
+                    - button [ref=e234] [cursor=pointer]:
+                      - img [ref=e235]
+              - generic [ref=e238]:
+                - generic [ref=e239]:
+                  - generic [ref=e242]: You
+                  - generic [ref=e243]: World
+                  - generic [ref=e244]:
+                    - generic [ref=e245]:
+                      - button "Copy code" [ref=e246] [cursor=pointer]:
+                        - img [ref=e247]
+                      - button [ref=e250] [cursor=pointer]:
+                        - img [ref=e251]
+                      - generic [ref=e254]: just now
+                    - generic [ref=e255]:
+                      - button "Like" [ref=e256] [cursor=pointer]:
+                        - img [ref=e257]
+                      - button "Dislike" [ref=e259] [cursor=pointer]:
+                        - img [ref=e260]
+                - button "Vex" [ref=e263] [cursor=pointer]:
+                  - img "Vex" [ref=e265]
+              - generic [ref=e267]:
+                - button "Switch from / to another agent" [ref=e268] [cursor=pointer]:
+                  - generic [ref=e269]:
+                    - img "Vex" [ref=e271]
+                    - generic [ref=e272]: Chrry
+                - generic [ref=e273]:
+                  - generic [ref=e275]: Excepturi concedo utrimque careo labore demitto patruus alter tunc umerus possimus aperiam aestas uterque clarus defleo arcesso est amicitia attollo ubi valde abstergo tredecim tergo vilitas assumenda candidus aestas auctus velit usque sumo ubi aegre amita tepesco ago tam ultra volubilis auctus tandem capitulus tremo modi temperantia ter vere cornu denique sed caveo urbanus templum constans deleo aperiam sufficio ager correptius universe vulgaris curtus aveho traho conspergo sublime abundans basium id vitiosus asper pax consuasor vesco facere conservo timor utpote.
+                  - generic [ref=e276]:
+                    - generic [ref=e277]:
+                      - button "Copy code" [ref=e278] [cursor=pointer]:
+                        - img [ref=e279]
+                      - generic "DeepSeek V3" [ref=e282]:
+                        - img "DeepSeek" [ref=e283]
+                      - button [ref=e285] [cursor=pointer]:
+                        - img [ref=e286]
+                      - generic [ref=e289]: just now
+                    - generic [ref=e290]:
+                      - button "Like" [ref=e291] [cursor=pointer]:
+                        - img [ref=e292]
+                      - button "Dislike" [ref=e294] [cursor=pointer]:
+                        - img [ref=e295]
+                    - button [ref=e297] [cursor=pointer]:
+                      - img [ref=e298]
+            - button "Enable Character Profiles" [ref=e301] [cursor=pointer]:
+              - img [ref=e302]
+              - text: Enable Character Profiles
+          - generic [ref=e306]:
+            - generic [ref=e309]:
+              - link "Calendar" [ref=e310] [cursor=pointer]:
+                - /url: http://localhost:3000/calendar?threadId=d07242b6-6be1-4cfc-9597-ad3e84cb6acb
+                - img "Calendar" [ref=e312]
+              - generic [ref=e315]:
+                - button [ref=e316] [cursor=pointer]:
+                  - img [ref=e317]
+                  - img [ref=e325]
+                - button "Artifacts" [ref=e326] [cursor=pointer]:
+                  - img [ref=e327]
+              - button "Disable sound" [ref=e330] [cursor=pointer]:
+                - img [ref=e331]
+              - button [active] [ref=e335] [cursor=pointer]:
+                - img [ref=e336]
+              - button "Filter" [ref=e338] [cursor=pointer]:
+                - img [ref=e339]
+                - text: Filter
+              - generic [ref=e341]:
+                - img [ref=e342]
+                - button "Share" [ref=e345] [cursor=pointer]:
+                  - img [ref=e346]
+              - generic [ref=e349]:
+                - button [ref=e350] [cursor=pointer]:
+                  - img [ref=e351]
+                - text: 2/10"
+            - generic [ref=e354]:
+              - button "Enable Image Generation" [ref=e355] [cursor=pointer]:
+                - img [ref=e356]
+              - textbox "What can I help you with today?" [ref=e362]
+              - generic [ref=e363]:
+                - generic [ref=e365]:
+                  - button "Vex" [disabled] [ref=e366]:
+                    - img "Vex" [ref=e368]
+                  - button "Chrry 1.3" [disabled] [ref=e369]:
+                    - generic [ref=e370]: Chrry 1.3
+                - generic [ref=e371]:
+                  - button "Web" [ref=e372] [cursor=pointer]:
+                    - generic [ref=e373]: Web
+                    - img [ref=e374]
+                  - button "Attach" [ref=e378] [cursor=pointer]:
+                    - img [ref=e379]
+                  - button "Start voice input" [ref=e381] [cursor=pointer]:
+                    - generic "Sound" [ref=e382]
+            - generic [ref=e383]:
+              - generic [ref=e384]:
+                - img [ref=e385]
+                - text: 1 Credit
+              - generic [ref=e390]:
+                - img [ref=e391]
+                - generic [ref=e393]: 28 Credits left
+              - button "Login" [ref=e394] [cursor=pointer]:
+                - img [ref=e395]
+                - text: Login
+  - button "Open Next.js Dev Tools" [ref=e403] [cursor=pointer]:
+    - img [ref=e404]
+  - alert [ref=e407]
 ```

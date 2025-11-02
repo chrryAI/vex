@@ -87,6 +87,7 @@ import {
   OWNER_CREDITS,
   PROMPT_LIMITS,
   apiFetch,
+  isE2E,
 } from "./utils"
 import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
@@ -697,6 +698,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           }
         })
     }
+
+    inputRef.current = value
 
     setInputInternal(value)
   }
@@ -2868,7 +2871,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 onClick={() => handleSubmit(needsReviewRef.current)}
               >
                 {needsReviewRef.current ? (
-                  <CircleCheck size={30} color="var(--accent-6)" />
+                  <span data-testid="chat-accept-button">
+                    <CircleCheck size={30} color="var(--accent-6)" />
+                  </span>
                 ) : (
                   <CircleArrowUp
                     color={
@@ -2924,14 +2929,18 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 }
               >
                 {needsReview ? (
-                  <CircleCheck size={30} color="var(--accent-6)" />
+                  <span data-testid="chat-accept-button">
+                    <CircleCheck size={30} color="var(--accent-6)" />
+                  </span>
                 ) : (
                   <div
                     className={clsx(styles.videoContainer)}
                     title={t("Sound")}
                   >
                     {needsReview ? (
-                      <CircleCheck size={30} color="var(--accent-6)" />
+                      <span data-testid="chat-accept-button">
+                        <CircleCheck size={30} color="var(--accent-6)" />
+                      </span>
                     ) : (
                       <video
                         onLoadedData={() => setIsVideoLoading(false)}

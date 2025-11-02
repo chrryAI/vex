@@ -2136,17 +2136,21 @@ export const getThreads = async ({
           ).map((c) => c.threadId)
         : undefined
 
-  // Get bookmarked thread IDs for public threads when viewing another user's profile
+  // Get bookmarked thread IDs
+  // Only filter by visibility:public if explicitly requested (viewing others' profiles)
   const bookmarkedThreadIds = !publicBookmarks
     ? []
-    : userId || userName
+    : userId || guestId
       ? (
           await db
             .select({ id: threads.id })
             .from(threads)
             .where(
               and(
-                eq(threads.visibility, "public"),
+                // Only filter public if visibility parameter is set (viewing another user)
+                visibility
+                  ? inArray(threads.visibility, visibility)
+                  : undefined,
                 sql`EXISTS (
                 SELECT 1 FROM jsonb_array_elements(${threads.bookmarks}) AS bookmark
                 WHERE ${userId ? sql`bookmark->>'userId' = ${userId}` : sql`bookmark->>'guestId' = ${guestId || ""}`}
@@ -2154,8 +2158,7 @@ export const getThreads = async ({
               ),
             )
             .orderBy(desc(threads.updatedOn))
-        ) // Add this line to sort by most recently updated
-          .map((t) => t.id)
+        ).map((t) => t.id)
       : undefined
 
   // Check if we're filtering by specific collaboration status (not showing all)
@@ -2166,9 +2169,19 @@ export const getThreads = async ({
 
   const conditionsArray = [
     finalAppIds && finalAppIds.length > 0
-      ? inArray(threads.appId, finalAppIds)
+      ? or(
+          inArray(threads.appId, finalAppIds),
+          bookmarkedThreadIds && bookmarkedThreadIds.length > 0
+            ? inArray(threads.id, bookmarkedThreadIds)
+            : sql`false`,
+        )
       : appId
-        ? eq(threads.appId, appId)
+        ? or(
+            eq(threads.appId, appId),
+            bookmarkedThreadIds && bookmarkedThreadIds.length > 0
+              ? inArray(threads.id, bookmarkedThreadIds)
+              : sql`false`,
+          )
         : undefined,
     formattedSearch
       ? sql`to_tsvector('english', ${messages.content}) @@ to_tsquery('english', ${formattedSearch})`
@@ -2244,10 +2257,18 @@ export const getThreads = async ({
       .orderBy(
         ...(sort === "bookmark"
           ? [
+              bookmarkedThreadIds && bookmarkedThreadIds.length > 0
+                ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
+                    bookmarkedThreadIds.map((id) => sql`${id}`),
+                    sql`, `,
+                  )}]::uuid[]) THEN 0 ELSE 1 END`
+                : sql`1`,
               // Main thread first for app owners
               appId || (finalAppIds && finalAppIds.length > 0)
                 ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
                 : sql`1`,
+              // Prioritize threads bookmarked by current user
+              // Then by total bookmark count (popular threads)
               sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
               desc(
                 sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
@@ -2331,10 +2352,19 @@ export const getThreads = async ({
       .orderBy(
         ...(sort === "bookmark"
           ? [
+              bookmarkedThreadIds && bookmarkedThreadIds.length > 0
+                ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
+                    bookmarkedThreadIds.map((id) => sql`${id}`),
+                    sql`, `,
+                  )}]::uuid[]) THEN 0 ELSE 1 END`
+                : sql`1`,
               // Main thread first for app owners
               appId || (finalAppIds && finalAppIds.length > 0)
                 ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
                 : sql`1`,
+              // Prioritize threads bookmarked by current user
+
+              // Then by total bookmark count (popular threads)
               sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
               desc(
                 sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
