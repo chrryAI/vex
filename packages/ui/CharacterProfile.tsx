@@ -43,7 +43,7 @@ export default function CharacterProfile({
     useAuth()
 
   // Chat context
-  const { thread, setShouldRefetchThread } = useChat()
+  const { thread, refetchThread } = useChat()
 
   const [showActions, setShowActions] = useState(props.showActions)
 
@@ -74,7 +74,7 @@ export default function CharacterProfile({
       }
 
       thread?.characterProfile?.id === characterProfile.id &&
-        setShouldRefetchThread(true)
+        (await refetchThread())
     } catch (error) {
       console.error("Error pinning thread:", error)
     } finally {
@@ -101,7 +101,7 @@ export default function CharacterProfile({
         pinned: response?.pinCharacterProfile,
       }
       thread?.characterProfile?.id === characterProfile.id &&
-        setShouldRefetchThread(true)
+        (await refetchThread())
 
       setCharacterProfile(newCharacterProfile)
     } catch (error) {
