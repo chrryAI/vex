@@ -74,3 +74,5 @@ apps/extension/focusbutton.zip
 # Translation temp files
 packages/ui/locales/en.new.json
 .iliyan
+
+*/test-results

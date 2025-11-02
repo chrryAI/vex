@@ -263,7 +263,9 @@ export default function Menu({
     const areEqual =
       previousThreads.threads.length === threads.threads.length &&
       previousThreads.threads.every(
-        (prev, i) => prev.id === threads.threads[i]?.id,
+        (prev, i) =>
+          prev.id === threads.threads[i]?.id &&
+          prev.bookmarks?.length === threads.threads[i]?.bookmarks?.length,
       )
     setTimeout(() => {
       ;(!hasAnimatedThreads || !areEqual) && animateThreads()
