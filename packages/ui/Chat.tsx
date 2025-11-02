@@ -40,6 +40,7 @@ import {
   Megaphone,
   ClockPlus,
   Star,
+  Link,
 } from "./icons"
 import { animate, stagger } from "motion"
 import "react-tooltip/dist/react-tooltip.css"
@@ -52,7 +53,7 @@ import {
   useError,
   useData,
 } from "./context/providers"
-import { useTheme, usePlatform } from "./platform"
+import { useTheme, usePlatform, Div } from "./platform"
 import type {
   message,
   aiAgent,
@@ -73,7 +74,7 @@ import Modal from "./Modal"
 import Loading from "./Loading"
 import sanitizeHtml from "sanitize-html"
 import { validate, v4 as uuidv4 } from "uuid"
-import { useCountdown } from "./hooks"
+import { useCountdown, useLocalStorage } from "./hooks"
 import toast from "react-hot-toast"
 import useSWR from "swr"
 
@@ -973,6 +974,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }
   const setIsAttaching = (attaching: boolean) => {
     if (attaching) {
+      if (!isPrivacyApproved) {
+        setNeedsReview(true)
+        return
+      }
       if (selectedAgent?.name == "flux") {
         user ? setSelectedAgent(chatGPTAgent) : setSelectedAgent(deepSeekAgent)
       }
@@ -1640,7 +1645,17 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     BrowserInstance?.storage?.local?.set?.({ messageId: message?.message?.id })
   }, [message])
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (approve?: boolean) => {
+    if (!isPrivacyApproved && !approve) {
+      setNeedsReview(true)
+      return
+    }
+
+    if (approve) {
+      setNeedsReview(false)
+      setIsPrivacyApproved(true)
+    }
+
     addHapticFeedback()
     if (
       !selectedAgent?.capabilities?.image &&
@@ -2505,6 +2520,19 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     deviceId,
   })
 
+  const [isPrivacyApproved, setIsPrivacyApproved] = useLocalStorage(
+    "isPrivacyApproved",
+    !!user,
+  )
+
+  const [needsReview, setNeedsReviewInternal] = useState(false)
+  const needsReviewRef = useRef(needsReview)
+
+  const setNeedsReview = (value: boolean) => {
+    setNeedsReviewInternal(value)
+    needsReviewRef.current = value
+  }
+
   useEffect(() => {
     // Initialize WebSocket connection
     threadId && scrollToBottom()
@@ -2812,6 +2840,127 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       return () => clearTimeout(timer)
     }
   }, [showSuggestions])
+
+  const renderSubmit = () => {
+    return (
+      <>
+        {!isAttaching && (
+          <>
+            {streamId && isStreaming ? (
+              <button
+                data-testid="chat-stop-streaming-button"
+                title={t("Stop streaming")}
+                className={clsx("link", styles.sendButton)}
+                type="button"
+                disabled={!isStreaming}
+                onClick={handleStopStreaming}
+              >
+                <CircleStop color="var(--accent-0)" size={26} />
+              </button>
+            ) : isLoading && !isStreaming ? (
+              <Loading width={28} height={28} />
+            ) : inputRef.current.trim() || files.length > 0 ? (
+              <button
+                data-testid="chat-send-button"
+                title={
+                  creditsLeft === 0
+                    ? t("credits_left", { count: creditsLeft })
+                    : needsReviewRef.current
+                      ? t("Accept and send")
+                      : t("Send")
+                }
+                className={clsx("link", styles.sendButton)}
+                type="submit"
+                disabled={getIsSendDisabled()}
+                onClick={() => handleSubmit(needsReviewRef.current)}
+              >
+                {needsReviewRef.current ? (
+                  <CircleCheck size={30} color="var(--accent-6)" />
+                ) : (
+                  <CircleArrowUp
+                    color={
+                      creditsLeft === 0
+                        ? "var(--accent-0)"
+                        : getIsSendDisabled()
+                          ? "var(--shade-3)"
+                          : "var(--accent-6)"
+                    }
+                    size={30}
+                  />
+                )}
+              </button>
+            ) : isLoading ? (
+              <Loading width={26} height={26} />
+            ) : (
+              <button
+                onClick={() => {
+                  if (!isPrivacyApproved) {
+                    if (needsReview) {
+                      // Approve and start voice conversation
+                      setIsPrivacyApproved(true)
+                      setNeedsReview(false)
+
+                      playNotification()
+                      addHapticFeedback()
+
+                      setPlayVideo(!playVideo)
+                      setIsLoading(true)
+                      startVoiceConversation()
+                    } else {
+                      setNeedsReview(true)
+                    }
+                    return
+                  }
+
+                  playNotification()
+                  addHapticFeedback()
+
+                  setPlayVideo(!playVideo)
+                  setIsLoading(true)
+                  startVoiceConversation()
+                }}
+                disabled={isVoiceDisabled || inConversationRef.current}
+                className={clsx(
+                  "link",
+                  styles.voiceButton,
+                  isListening ? styles.voiceButtonListening : "",
+                )}
+                type="button"
+                title={
+                  isListening ? t("Stop listening") : t("Start voice input")
+                }
+              >
+                {needsReview ? (
+                  <CircleCheck size={30} color="var(--accent-6)" />
+                ) : (
+                  <div
+                    className={clsx(styles.videoContainer)}
+                    title={t("Sound")}
+                  >
+                    {needsReview ? (
+                      <CircleCheck size={30} color="var(--accent-6)" />
+                    ) : (
+                      <video
+                        onLoadedData={() => setIsVideoLoading(false)}
+                        ref={videoRef}
+                        src={`${FRONTEND_URL}/video/blob.mp4`}
+                        style={{}}
+                        className={styles.video}
+                        loop
+                        autoPlay
+                        muted
+                        playsInline
+                      ></video>
+                    )}
+                  </div>
+                )}
+              </button>
+            )}
+          </>
+        )}
+      </>
+    )
+  }
 
   return (
     <>
@@ -3932,7 +4081,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     isExtension && styles.extension,
                   )}
                 >
-                  {!isLoading && !isAttaching && (
+                  {!isLoading && !isAttaching && !needsReview && (
                     <>
                       <button
                         data-testid={
@@ -4113,6 +4262,34 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         <ImageIcon size={22} color={getButtonColor("image")} />
                       </button>
                     </span>
+                  ) : needsReview ? (
+                    <a
+                      target="_blank"
+                      className="button small transparent"
+                      onClick={(e) => {
+                        if (e.metaKey || e.ctrlKey) {
+                          return
+                        }
+
+                        addHapticFeedback()
+                        if (checkIsExtension()) {
+                          e.preventDefault()
+
+                          BrowserInstance?.runtime?.sendMessage({
+                            action: "openInSameTab",
+                            url: `${FRONTEND_URL}/privacy`,
+                          })
+
+                          return
+                        }
+
+                        window.open(`${FRONTEND_URL}/privacy`, "_blank")
+                      }}
+                      href="/privacy"
+                    >
+                      <Link size={15} />
+                      {t("Privacy")}
+                    </a>
                   ) : (
                     !isLoading &&
                     !isStreaming && (
@@ -4148,115 +4325,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       <HardDrive color={"var(--shade-6)"} size={22} />
                     </button>
                   )}
-
-                  {!isAttaching && (
-                    <>
-                      {streamId && isStreaming ? (
-                        <button
-                          data-testid="chat-stop-streaming-button"
-                          title={t("Stop streaming")}
-                          className={clsx("link", styles.sendButton)}
-                          type="button"
-                          disabled={!isStreaming}
-                          onClick={handleStopStreaming}
-                        >
-                          <CircleStop color="var(--accent-0)" size={26} />
-                        </button>
-                      ) : isLoading && !isStreaming ? (
-                        <Loading width={28} height={28} />
-                      ) : inputRef.current.trim() || files.length > 0 ? (
-                        <button
-                          data-testid="chat-send-button"
-                          title={
-                            creditsLeft === 0
-                              ? t("credits_left", { count: creditsLeft })
-                              : t("Send")
-                          }
-                          className={clsx("link", styles.sendButton)}
-                          type="submit"
-                          disabled={getIsSendDisabled()}
-                          onClick={() => handleSubmit()}
-                        >
-                          <CircleArrowUp
-                            color={
-                              creditsLeft === 0
-                                ? "var(--accent-0)"
-                                : getIsSendDisabled()
-                                  ? "var(--shade-3)"
-                                  : "var(--accent-6)"
-                            }
-                            size={30}
-                          />
-                        </button>
-                      ) : isLoading ? (
-                        <Loading width={26} height={26} />
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            playNotification()
-                            addHapticFeedback()
-                            e.preventDefault()
-
-                            setPlayVideo(!playVideo)
-                            setIsLoading(true)
-                            startVoiceConversation()
-                          }}
-                          disabled={
-                            isVoiceDisabled || inConversationRef.current
-                          }
-                          className={clsx(
-                            "link",
-                            styles.voiceButton,
-                            isListening ? styles.voiceButtonListening : "",
-                          )}
-                          type="button"
-                          title={
-                            isListening
-                              ? t("Stop listening")
-                              : t("Start voice input")
-                          }
-                        >
-                          <div
-                            className={clsx(
-                              styles.videoContainer,
-                              // isVideoLoading || inConversationRef.current
-                              //   ? styles.loading
-                              //   : "",
-                            )}
-                            title={t("Sound")}
-                          >
-                            {/* <Loading
-                              color="var(--accent-1)"
-                              className={styles.loading}
-                            /> */}
-                            <video
-                              onLoadedData={() => setIsVideoLoading(false)}
-                              ref={videoRef}
-                              src={`${FRONTEND_URL}/video/blob.mp4`}
-                              style={{}}
-                              className={styles.video}
-                              loop
-                              autoPlay
-                              muted
-                              playsInline
-                            ></video>
-                          </div>
-                          {/* <AudioLines
-                              color={
-                                isListening
-                                  ? "var(--accent-4)"
-                                  : creditsLeft === 0
-                                    ? "var(--accent-0)"
-                                    : isVoiceDisabled
-                                      ? "var(--shade-3)"
-                                      : "var(--accent-6)"
-                              }
-                              size={26}
-                            /> */}
-                        </button>
-                      )}
-                    </>
-                  )}
+                  {renderSubmit()}
                 </div>
               </div>
             </div>
