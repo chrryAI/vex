@@ -1228,7 +1228,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
     if (hasPlayed) {
       setIsSpeechActive(true)
-      return
     }
 
     inConversationRef.current = true
@@ -1236,7 +1235,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     setIsLoading(true)
 
     // Start with AI greeting
-    const greeting = "Hello! How can I help you today? What's on your mind?"
 
     try {
       if (synthesis) synthesis.dispatchEvent(new Event("pause"))

@@ -1032,15 +1032,6 @@ export default function Message({
                 <Perplexity size={35} />
               ) : null}
             </>
-          ) : message.message.isStreaming ? (
-            <video
-              className={styles.video}
-              src={`${FRONTEND_URL}/video/blob.mp4`}
-              autoPlay
-              loop
-              muted
-              playsInline
-            ></video>
           ) : (
             <span className={styles.appIcon}>
               <Img app={app} showLoading={false} size={35} />
