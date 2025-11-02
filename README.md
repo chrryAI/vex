@@ -8,9 +8,9 @@
 
 ## 💝 Support This Project
 
-Vex is pioneering AI app composition with revolutionary architecture built entirely open source by a solo developer. If you find this project valuable, please consider [becoming a sponsor](SPONSORS.md) to help sustain development.
+Vex is pioneering AI app composition with revolutionary architecture built entirely open source by a solo developer. If you find this project valuable, please consider [becoming a sponsor](https://github.com/sponsors/chrryAI) to help sustain development.
 
-[💎 Become a Sponsor](SPONSORS.md) | [⭐ Star on GitHub](https://github.com/chrryai/vex) | [🐦 Follow on Twitter](https://twitter.com/chrryai)
+[💎 Become a Sponsor](https://github.com/sponsors/chrryAI) | [⭐ Star on GitHub](https://github.com/chrryai/vex) | [🐦 Follow on Twitter](https://twitter.com/chrryai)
 
 ---
 

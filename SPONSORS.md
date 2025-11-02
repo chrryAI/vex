@@ -188,6 +188,8 @@ Showcase how we use your tools:
 
 Visit our [GitHub Sponsors page](https://github.com/sponsors/chrryAI) to choose your tier and get started.
 
+[![Sponsor @chrryAI](https://img.shields.io/badge/Sponsor-%E2%9D%A4-%23db61a2.svg?style=for-the-badge&logo=GitHub&logoColor=white)](https://github.com/sponsors/chrryAI)
+
 ### **Direct Partnership**
 
 For custom sponsorship arrangements or larger partnerships, contact:
