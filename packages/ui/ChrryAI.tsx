@@ -2,21 +2,23 @@ import "chrry/globals.scss"
 import "chrry/globals.css"
 import "chrry/styles/view-transitions.css"
 
+import { ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
-
 import AppMetadata from "./AppMetadata"
-import { locale, locales } from "chrry/locales"
+import { locale, locales } from "./locales"
 import {
   CHRRY_URL,
   getMetadata,
   VERSION,
   getThreadId,
   pageSizes,
-} from "chrry/utils"
-import { getSession, getImageSrc, getThread } from "chrry/lib"
-import { getSiteConfig, getSiteTranslation } from "chrry/utils/siteConfig"
+  API_URL,
+} from "./utils"
+
+import { getSession, getThread } from "./lib"
+import { getSiteConfig, getSiteTranslation } from "./utils/siteConfig"
 import Chrry from "./Chrry"
-import { ReactNode } from "react"
+
 import {
   appWithStore,
   paginatedMessages,
@@ -172,28 +174,20 @@ export default async function ChrryAI({
       translate="no"
     >
       {/* <ServiceWorkerRegistration /> */}
-      <head>
-        <link
-          rel="apple-touch-icon"
-          href={getImageSrc({ app, size: 128 }).src}
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href={getImageSrc({ app, size: 180 }).src}
-        />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content={app?.name} />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="mobile-web-app-status-bar-style" content="default" />
+      <head suppressHydrationWarning>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
         />
         {/* Disable Google Translate to prevent hydration mismatches */}
         <meta name="google" content="notranslate" />
-        <link rel="sitemap" type="application/xml" href="/api/sitemap" />
+        <link
+          rel="sitemap"
+          type="application/xml"
+          href={`${API_URL}/sitemap`}
+        />
+
+        <AppMetadata app={app} />
         {!isDev && user?.role !== "admin" && (
           <>
             <script
@@ -203,7 +197,6 @@ export default async function ChrryAI({
             />
           </>
         )}
-        <AppMetadata app={app} />
       </head>
       <body className="loaded" suppressHydrationWarning>
         <Wrapper

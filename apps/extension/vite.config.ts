@@ -63,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: siteConfig.name,
-    version: "1.3.0",
+    version: "1.3.1",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus"] // Firefox doesn't support sidePanel permission

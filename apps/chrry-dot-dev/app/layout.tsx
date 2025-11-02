@@ -30,8 +30,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const currentMember = await getMember()
-
   return (
     <html
       lang="en"

@@ -1,7 +1,8 @@
 "use client"
 
 import { useMemo } from "react"
-import { appWithStore } from "chrry/types"
+import { appWithStore } from "./types"
+import { getImageSrc } from "./lib"
 
 // Simplified list of most common splash screens
 const splashScreenConfigs = [
@@ -49,56 +50,33 @@ const splashScreenConfigs = [
   },
 ]
 
-export default function AppMetadata({ app }: { app?: appWithStore | null }) {
+export default function AppMetadata({ app }: { app?: appWithStore }) {
   // Get slug from app prop, fallback to "vex"
-  const slug = useMemo(() => app?.slug || "vex", [app?.slug])
+  const slug = app?.slug === "chrry" ? "vex" : app?.slug || "vex"
 
   // Get title from app context, fallback to "Vex"
-  const appTitle = useMemo(() => app?.title || "Vex", [app?.title])
-
-  // Get icon from app context or use default
-  const iconHref = useMemo(
-    () =>
-      slug === "vex"
-        ? "/icons/icon-180.png"
-        : `/images/apps/${slug.toLowerCase()}.png`,
-    [slug],
-  )
 
   const basePath = `/splash_screens/${slug}`
-  const manifestPath =
-    slug === "vex" ? undefined : `/manifests/${slug}.webmanifest`
 
   // Only show splash screens for vex (main app) - other apps may not have them
-  const showSplashScreens = [
-    "vex",
-    "peach",
-    "atlas",
-    "bloom",
-    "vault",
-  ].includes(slug)
+  const showSplashScreens = slug
+    ? ["vex", "peach", "atlas", "bloom", "vault"].includes(slug)
+    : false
 
   return (
     <>
-      {/* Manifest */}
-      {manifestPath && (
-        <link key="manifest" rel="manifest" href={manifestPath} />
-      )}
-      {/* App Icon */}
-      <link key="apple-touch-icon" rel="apple-touch-icon" href={iconHref} />
+      <link rel="apple-touch-icon" href={getImageSrc({ app, size: 128 }).src} />
       <link
-        key="apple-touch-icon-180"
         rel="apple-touch-icon"
         sizes="180x180"
-        href={iconHref}
+        href={getImageSrc({ app, size: 180 }).src}
       />
-      {/* App Title */}
-      <meta
-        key="apple-mobile-web-app-title"
-        name="apple-mobile-web-app-title"
-        content={appTitle}
-      />
-      {/* Splash Screens - only for main app */}
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      <meta name="apple-mobile-web-app-title" content={app?.name} />
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="mobile-web-app-status-bar-style" content="default" />
+
       {showSplashScreens &&
         splashScreenConfigs.map((config, index) => (
           <link
