@@ -81,6 +81,13 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=8192
           CI: true
 
+      - name: Build WebSocket server
+        run: pnpm turbo build --filter="ws"
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          NODE_OPTIONS: --max-old-space-size=8192
+          CI: true
+
   merge-to-main:
     runs-on: ubuntu-latest
     needs: build
