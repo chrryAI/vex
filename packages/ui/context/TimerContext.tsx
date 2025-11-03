@@ -254,12 +254,12 @@ export function TimerContextProvider({
   const [isFinished, setIsFinished] = useState(false)
   const [isCancelled, setIsCancelled] = useState(false)
   const [activePomodoro, setActivePomodoro] = useState<number | null>(null)
-  const [tasks, setTasksInternal] = useState<{
+  const [tasks, setTasks] = useLocalStorage<{
     tasks: Task[]
     totalCount: number
     hasNextPage: boolean
     nextPage: number | null
-  }>({
+  }>("tasks", {
     tasks: [],
     totalCount: 0,
     hasNextPage: false,
@@ -309,46 +309,6 @@ export function TimerContextProvider({
         : prev
     })
   }, [timerTasks, selectedTasksFingerprint, fingerprint])
-
-  const setTasks = (
-    tasks:
-      | {
-          tasks: Task[]
-          totalCount: number
-          hasNextPage: boolean
-          nextPage: number | null
-        }
-      | SetStateAction<{
-          tasks: Task[]
-          totalCount: number
-          hasNextPage: boolean
-          nextPage: number | null
-        }>,
-  ) => {
-    if (typeof tasks === "function") {
-      setTasksInternal((a) => {
-        const b = tasks(a)
-        storage?.set({
-          tasks: b?.tasks,
-        })
-        return b
-      })
-    } else {
-      setTasksInternal(tasks)
-      storage?.set({
-        tasks: tasks?.tasks,
-      })
-    }
-  }
-
-  useEffect(() => {
-    ;(async () => {
-      const tasks = await storage?.get("tasks")
-      if (tasks && Array.isArray(tasks.tasks)) {
-        setTasks(tasks)
-      }
-    })()
-  }, [])
 
   const [presetMin1, setPresetMin1Internal] = useLocalStorage(
     "presetMin1",

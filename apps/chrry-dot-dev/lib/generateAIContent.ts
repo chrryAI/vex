@@ -1011,7 +1011,9 @@ Focus on the main discussion points, user preferences, and conversation style.`
       }
       const parsedData = JSON.parse(jsonText)
       moodData = moodSchema.parse(parsedData)
-      console.log(`🎭 Detected mood: ${moodData.type} (confidence: ${moodData.confidence})`)
+      console.log(
+        `🎭 Detected mood: ${moodData.type} (confidence: ${moodData.confidence})`,
+      )
     } catch (error) {
       console.log("⚠️ Failed to parse or validate mood:", error)
     }

@@ -135,7 +135,10 @@ export default function MoodReports({
     if (!weekMoods?.length) return []
 
     // Group moods by day and calculate average
-    const moodsByDay = new Map<string, { moods: typeof weekMoods; sum: number; count: number }>()
+    const moodsByDay = new Map<
+      string,
+      { moods: typeof weekMoods; sum: number; count: number }
+    >()
 
     weekMoods.forEach((mood) => {
       const dateKey = new Date(mood.createdOn).toLocaleDateString()
@@ -156,12 +159,18 @@ export default function MoodReports({
       .map(([date, data]) => {
         const avgValue = Math.round(data.sum / data.count)
         // Determine the most representative mood based on average
-        const avgMood = 
-          avgValue >= moodValues.happy ? "happy" :
-          avgValue >= moodValues.astonished ? "astonished" :
-          avgValue >= moodValues.thinking ? "thinking" :
-          avgValue >= moodValues.sad ? "sad" :
-          avgValue >= moodValues.angry ? "angry" : "thinking"
+        const avgMood =
+          avgValue >= moodValues.happy
+            ? "happy"
+            : avgValue >= moodValues.astonished
+              ? "astonished"
+              : avgValue >= moodValues.thinking
+                ? "thinking"
+                : avgValue >= moodValues.sad
+                  ? "sad"
+                  : avgValue >= moodValues.angry
+                    ? "angry"
+                    : "thinking"
 
         const firstMood = data.moods[0]
         if (!firstMood) return null
@@ -177,7 +186,10 @@ export default function MoodReports({
         }
       })
       .filter((mood): mood is NonNullable<typeof mood> => mood !== null)
-      .sort((a, b) => new Date(a.createdOn).getTime() - new Date(b.createdOn).getTime())
+      .sort(
+        (a, b) =>
+          new Date(a.createdOn).getTime() - new Date(b.createdOn).getTime(),
+      )
   }
 
   const getBarColor = (score: number) => {
