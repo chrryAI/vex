@@ -181,7 +181,6 @@ export default function Skeleton({
               ) : null}
               <A
                 href={`/blossom`}
-                openInNewTab
                 style={{
                   ...utilities.button.style,
                   ...utilities.transparent.style,

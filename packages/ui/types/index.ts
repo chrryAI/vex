@@ -755,7 +755,7 @@ export type app = {
   guestId: string | null
   mainThreadId: string | null
   teamId: string | null
-  tools: ("calendar" | "location" | "weather")[] | null
+  tools: ("calendar" | "location" | "weather" | "focus")[] | null
   name: string
   subtitle: string | null
   title: string

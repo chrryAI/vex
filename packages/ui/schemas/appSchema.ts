@@ -61,7 +61,7 @@ export const appSchema = z.object({
   tools: z
     .array(
       z.union([
-        z.enum(["calendar", "location", "weather"]),
+        z.enum(["calendar", "location", "weather", "focus"]),
         z.uuid("Invalid tool ID"),
       ]),
     )
