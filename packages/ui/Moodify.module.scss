@@ -16,7 +16,7 @@
   margin-bottom: 12px;
 
   &.drawerOpen {
-    left: toRem.toRem(230);
+    left: toRem.toRem(255);
   }
 
   @media all and (display-mode: standalone) {

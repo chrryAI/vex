@@ -128,25 +128,56 @@ export default function MoodReports({
     endOfWeek.setDate(startOfWeek.getDate() + 6)
     endOfWeek.setHours(23, 59, 59, 999)
 
-    return (
-      moods.moods
-        ?.filter(
-          (mood) =>
-            mood.createdOn >= startOfWeek && mood.createdOn <= endOfWeek,
-        )
-        .sort(
-          (a, b) =>
-            new Date(a.createdOn).getTime() - new Date(b.createdOn).getTime(),
-        )
-        .map((mood) => ({
-          date: new Date(mood.createdOn).toLocaleDateString(),
-          mood: mood.type,
-          emoji: getMoodEmoji(mood.type),
-          id: mood.id,
-          createdOn: mood.createdOn,
-          value: moodValues[mood.type as Mood] || 50, // Default to 50 if unknown
-        })) || []
+    const weekMoods = moods.moods?.filter(
+      (mood) => mood.createdOn >= startOfWeek && mood.createdOn <= endOfWeek,
     )
+
+    if (!weekMoods?.length) return []
+
+    // Group moods by day and calculate average
+    const moodsByDay = new Map<string, { moods: typeof weekMoods; sum: number; count: number }>()
+
+    weekMoods.forEach((mood) => {
+      const dateKey = new Date(mood.createdOn).toLocaleDateString()
+      const moodValue = moodValues[mood.type as Mood] || 50
+
+      if (!moodsByDay.has(dateKey)) {
+        moodsByDay.set(dateKey, { moods: [], sum: 0, count: 0 })
+      }
+
+      const dayData = moodsByDay.get(dateKey)!
+      dayData.moods.push(mood)
+      dayData.sum += moodValue
+      dayData.count++
+    })
+
+    // Convert to array with average mood per day
+    return Array.from(moodsByDay.entries())
+      .map(([date, data]) => {
+        const avgValue = Math.round(data.sum / data.count)
+        // Determine the most representative mood based on average
+        const avgMood = 
+          avgValue >= moodValues.happy ? "happy" :
+          avgValue >= moodValues.astonished ? "astonished" :
+          avgValue >= moodValues.thinking ? "thinking" :
+          avgValue >= moodValues.sad ? "sad" :
+          avgValue >= moodValues.angry ? "angry" : "thinking"
+
+        const firstMood = data.moods[0]
+        if (!firstMood) return null
+
+        return {
+          date,
+          mood: avgMood,
+          emoji: getMoodEmoji(avgMood),
+          id: firstMood.id,
+          createdOn: firstMood.createdOn,
+          value: avgValue,
+          moodCount: data.count, // How many moods contributed to this average
+        }
+      })
+      .filter((mood): mood is NonNullable<typeof mood> => mood !== null)
+      .sort((a, b) => new Date(a.createdOn).getTime() - new Date(b.createdOn).getTime())
   }
 
   const getBarColor = (score: number) => {
@@ -413,11 +444,14 @@ export default function MoodReports({
                   borderRadius: "var(--radius)",
                   color: "var(--foreground)",
                 }}
-                formatter={(value, name, props) => [
-                  props.payload.emoji,
-                  props.payload.mood,
-                  `Score: ${value}`,
-                ]}
+                formatter={(value, name, props) => {
+                  const moodCount = props.payload.moodCount || 1
+                  return [
+                    `${props.payload.emoji} ${props.payload.mood}`,
+                    `Score: ${value}`,
+                    moodCount > 1 ? `(avg of ${moodCount} moods)` : "",
+                  ]
+                }}
               />
               <Line
                 type="monotone"

@@ -2719,6 +2719,17 @@ export const moods = pgTable("mood", {
   taskLogId: uuid("taskLogId").references((): AnyPgColumn => taskLogs.id, {
     onDelete: "cascade",
   }),
+  messageId: uuid("messageId").references((): AnyPgColumn => messages.id, {
+    onDelete: "cascade",
+  }),
+  metadata: jsonb("metadata")
+    .$type<{
+      detectedBy?: string // "claude-3.5-sonnet"
+      confidence?: number // 0.85
+      reason?: string // "User expressed excitement..."
+      conversationContext?: string // Last 200 chars
+    }>()
+    .default({}),
 })
 
 export const tasks = pgTable("task", {

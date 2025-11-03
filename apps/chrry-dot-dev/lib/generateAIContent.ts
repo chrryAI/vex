@@ -22,6 +22,7 @@ import {
   message,
   calendarEvent,
   updateThread,
+  createMood,
   app,
   db,
 } from "@repo/db"
@@ -873,6 +874,32 @@ async function generateAIContent({
       For tags, use descriptive single words like: analytical, creative, direct, collaborative, methodical, innovative, practical, strategic, empathetic, efficient, curious, detail-oriented, big-picture, results-driven, etc.
       
       Focus ONLY on observable patterns from the USER's messages. Return only valid JSON.`
+
+    // Mood detection prompt (only if character profiles enabled)
+    const moodPrompt = `Analyze the USER's emotional state from this conversation:
+
+CONVERSATION:
+${conversationText}
+
+Detect the USER's current mood based on their language, tone, and content.
+
+Generate ONLY a valid JSON response:
+{
+  "type": "happy|sad|angry|astonished|inlove|thinking",
+  "confidence": 0.0-1.0,
+  "reason": "Brief explanation of why this mood was detected"
+}
+
+Mood definitions:
+- happy: Positive, cheerful, satisfied, excited
+- sad: Disappointed, melancholic, down, discouraged
+- angry: Frustrated, irritated, upset, annoyed
+- astonished: Surprised, amazed, shocked, impressed
+- inlove: Affectionate, passionate, romantic, deeply interested
+- thinking: Contemplative, analytical, pondering, curious
+
+Return only valid JSON.`
+
     // Generate thread summary
     const summaryPrompt = `Analyze this conversation and create a comprehensive summary:
 
@@ -918,8 +945,21 @@ Focus on the main discussion points, user preferences, and conversation style.`
       conversationStyle: z.string().optional(),
     })
 
-    // Generate summary, memories, and character profile in parallel
-    const [summaryResult, characterResult] = await Promise.all([
+    const moodSchema = z.object({
+      type: z.enum([
+        "happy",
+        "sad",
+        "angry",
+        "astonished",
+        "inlove",
+        "thinking",
+      ]),
+      confidence: z.number().min(0).max(1),
+      reason: z.string().optional(),
+    })
+
+    // Generate summary, memories, character profile, and mood in parallel
+    const [summaryResult, characterResult, moodResult] = await Promise.all([
       generateText({
         model,
         prompt: summaryPrompt,
@@ -927,6 +967,10 @@ Focus on the main discussion points, user preferences, and conversation style.`
       generateText({
         model,
         prompt: characterPrompt,
+      }),
+      generateText({
+        model,
+        prompt: moodPrompt,
       }),
     ])
 
@@ -954,6 +998,46 @@ Focus on the main discussion points, user preferences, and conversation style.`
     }
 
     // Wait for memories to be extracted and saved
+
+    // Parse mood result
+    type MoodData = z.infer<typeof moodSchema>
+    let moodData: MoodData | null = null
+    try {
+      let jsonText = moodResult.text.trim()
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "")
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
+      }
+      const parsedData = JSON.parse(jsonText)
+      moodData = moodSchema.parse(parsedData)
+      console.log(`🎭 Detected mood: ${moodData.type} (confidence: ${moodData.confidence})`)
+    } catch (error) {
+      console.log("⚠️ Failed to parse or validate mood:", error)
+    }
+
+    // Create mood in database if detected with sufficient confidence
+    if (moodData && moodData.confidence >= 0.6) {
+      try {
+        await createMood({
+          userId: userId || null,
+          guestId: guestId || null,
+          type: moodData.type,
+          messageId: latestMessage.id, // Link to the message that triggered mood detection
+          metadata: {
+            detectedBy: modelName,
+            confidence: moodData.confidence,
+            reason: moodData.reason,
+            conversationContext: conversationText.slice(-200), // Last 200 chars for context
+          },
+        })
+        console.log(
+          `✅ Created mood: ${moodData.type} (confidence: ${moodData.confidence}, reason: ${moodData.reason})`,
+        )
+      } catch (error) {
+        console.error("❌ Failed to create mood:", error)
+      }
+    }
 
     // Generate character profile for the user
 

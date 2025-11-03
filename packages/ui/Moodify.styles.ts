@@ -20,7 +20,7 @@ export const MoodifyStyleDefs = {
     marginBottom: 12,
   },
   moodifyDrawerOpen: {
-    left: 230,
+    left: 255,
   },
   moodifyChatOpen: {
     marginBottom: 0,
