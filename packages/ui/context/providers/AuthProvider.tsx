@@ -18,25 +18,21 @@ import {
   useLocalStorage,
   getExtensionId,
 } from "../../platform"
-import { COLORS, useTheme } from "../ThemeContext"
+import ago from "../../utils/timeAgo"
+import { useTheme } from "../ThemeContext"
 
 import {
   aiAgent,
-  guest,
-  subscription,
   message,
-  placeHolder,
   characterProfile,
-  app,
-  store,
   appWithStore,
-  instruction,
   user,
   Paginated,
   session,
   storeWithApps,
   sessionUser,
   sessionGuest,
+  mood,
 } from "../../types"
 import toast from "react-hot-toast"
 import { getSession } from "../../lib"
@@ -60,6 +56,19 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      isLoadingMoods: boolean
+      mood: mood | null
+      moods: {
+        moods: mood[]
+        totalCount: number
+        hasNextPage: boolean
+        nextPage: number | null
+      }
+      isLoadingMood: boolean
+      timeAgo: typeof ago
+      fetchMoods: () => Promise<void>
+      enableNotifications?: boolean
+      setEnableNotifications: (enableNotifications?: boolean) => void
       defaultInstructions: instructionBase[]
       isSavingApp: boolean
       setIsSavingApp: (isSavingApp: boolean) => void
@@ -911,6 +920,68 @@ export function AuthProvider({
 
   const hasHydrated = useHasHydrated()
 
+  const [shouldFetchMoods, setShouldFetchMoods] = useState(false)
+
+  const [moods, setMoods] = useState<{
+    moods: mood[]
+    totalCount: number
+    hasNextPage: boolean
+    nextPage: number | null
+  }>({
+    moods: [],
+    totalCount: 0,
+    hasNextPage: false,
+    nextPage: null,
+  })
+
+  const [isLoadingMood, setIsLoadingMood] = useState(true)
+  const [mood, setMood] = useState<mood | null>(null)
+
+  const { data: moodData, mutate: refetchMood } = useSWR(
+    null, // Disabled by default, fetch manually with refetchMood()
+    async () => {
+      const response = await fetch(`${API_URL}/mood`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      return response.json()
+    },
+  )
+
+  useEffect(() => {
+    if (moodData?.id) {
+      setMood(moodData)
+    }
+  }, [moodData])
+
+  const {
+    data: moodsData,
+    isLoading: isLoadingMoods,
+    mutate: refetchMoods,
+  } = useSWR(shouldFetchMoods && token ? ["moods", token] : null, async () => {
+    const response = await fetch(`${API_URL}/moods`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    return response.json()
+  })
+
+  useEffect(() => {
+    if (moodsData && Array.isArray(moodsData?.moods)) {
+      setMoods({
+        ...moodsData,
+        moods: moodsData?.moods?.map((item: mood) => ({
+          ...item,
+          createdOn: new Date(item?.createdOn || ""),
+          updatedOn: new Date(item?.updatedOn || ""),
+        })),
+      })
+    }
+  }, [moodsData])
+
   if (session?.translations && session?.locale) {
     if (!i18n.hasResourceBundle(session.locale, "translation")) {
       i18n.addResourceBundle(
@@ -1175,6 +1246,12 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        isLoadingMoods,
+        mood,
+        moods,
+        isLoadingMood,
+        enableNotifications,
+        setEnableNotifications,
         defaultInstructions,
         isSavingApp,
         setIsSavingApp,
@@ -1258,6 +1335,12 @@ export function AuthProvider({
         PROD_FRONTEND_URL,
         setApp,
         aiAgents,
+        timeAgo: (date: string | Date, locale = language || "en-US") =>
+          ago(date, locale),
+        fetchMoods: async () => {
+          setShouldFetchMoods(true)
+          refetchMoods()
+        },
       }}
     >
       {children}

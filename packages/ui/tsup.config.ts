@@ -1,4 +1,6 @@
 import { defineConfig } from "tsup"
+import { copyFileSync } from "fs"
+import { resolve } from "path"
 
 export default defineConfig({
   entry: ["index.ts"],
@@ -23,7 +25,7 @@ export default defineConfig({
   ],
   // Don't bundle CSS/SCSS - let consumers handle it
   loader: {
-    ".scss": "copy",
-    ".css": "copy",
+    ".scss": "empty", // Don't copy SCSS files, they'll be imported from source
+    ".css": "copy", // Copy regular CSS files
   },
 })

@@ -6,13 +6,22 @@
  */
 
 export const TestimonialsStyleDefs = {
+  testimonials: {
+    marginTop: 15,
+    padding: 0,
+    margin: 0,
+  },
   testimonial: {
     marginBottom: 10,
+    backgroundColor: "var(--shade-1)",
+    border: "1px solid var(--shade-2)",
+    padding: 15,
+    borderRadius: 20,
     position: "relative",
   },
   author: {
     color: "var(--shade-5)",
-    fontSize: 12,
+    fontSize: 14,
   },
 } as const
 

@@ -32,6 +32,7 @@ import { locales } from "./locales"
 // const LifeOS = lazy(() => import("./LifeOS"))
 const Store = lazy(() => import("./Store"))
 const Calendar = lazy(() => import("./Calendar"))
+const Focus = lazy(() => import("./Focus"))
 const Why = lazy(() => import("./Why"))
 const Privacy = lazy(() => import("./Privacy"))
 const Terms = lazy(() => import("./Terms"))
@@ -48,6 +49,7 @@ const ROUTES: Record<string, ComponentType<any>> = {
   calendar: Calendar,
   why: Why,
   privacy: Privacy,
+  focus: Focus,
   terms: Terms,
   about: About,
   threads: Threads,

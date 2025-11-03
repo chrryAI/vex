@@ -13,7 +13,6 @@ import {
   Coins,
   Sparkles,
 } from "./icons"
-import timeAgo from "./utils/timeAgo"
 import Modal from "./Modal"
 import { useAppContext } from "./context/AppContext"
 import {
@@ -95,6 +94,7 @@ export default function Message({
     setUser,
     setGuest,
     deviceId,
+    timeAgo,
   } = useAuth()
 
   const { isAccountVisible, setIsAccountVisible } = useNavigationContext()

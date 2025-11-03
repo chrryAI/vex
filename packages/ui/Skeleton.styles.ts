@@ -24,9 +24,6 @@ export const SkeletonStyleDefs = {
     lineHeight: 1,
     color: "var(--shade-7)",
   },
-  pageDrawerOpen: {
-    paddingLeft: 255,
-  },
   blog: {
     display: "none",
   },

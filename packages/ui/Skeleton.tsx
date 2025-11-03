@@ -107,7 +107,7 @@ export default function Skeleton({
       className={clsx(className)}
       style={{
         ...skeletonStyles.page.style,
-        ...(!isSmallDevice ? skeletonStyles.pageDrawerOpen.style : {}),
+        paddingLeft: isDrawerOpen ? 255 : 0,
       }}
     >
       <Div

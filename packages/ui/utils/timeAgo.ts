@@ -8,7 +8,7 @@ import ko from "javascript-time-ago/locale/ko"
 import de from "javascript-time-ago/locale/de"
 import zh from "javascript-time-ago/locale/zh"
 
-TimeAgo.addDefaultLocale(en)
+TimeAgo.addLocale(en)
 TimeAgo.addLocale(ja)
 TimeAgo.addLocale(es)
 TimeAgo.addLocale(pt)

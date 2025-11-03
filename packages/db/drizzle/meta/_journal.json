@@ -869,6 +869,13 @@
       "when": 1761924214798,
       "tag": "0123_stormy_eternals",
       "breakpoints": true
+    },
+    {
+      "idx": 124,
+      "version": "7",
+      "when": 1762184833073,
+      "tag": "0124_lumpy_the_hand",
+      "breakpoints": true
     }
   ]
 }

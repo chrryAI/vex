@@ -1,0 +1,229 @@
+.editTask {
+  border: none;
+  padding: 0;
+
+  input[type="text"] {
+    display: block;
+    width: 100%;
+    height: 50px;
+    padding: 13px 13px;
+    margin-bottom: 10px;
+  }
+}
+input {
+  &.inputError,
+  &.inputError:focus {
+    border-color: var(--accent-0);
+  }
+}
+
+.fieldError {
+  color: var(--accent-0);
+  font-size: 0.8rem;
+  margin: -5px 0 10px 0;
+}
+
+.editTaskButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+.cancelAndDeleteEditTaskButtons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.taskLog,
+.taskLogForm {
+  background: var(--shade-1);
+  border: 1px solid var(--shade-2);
+  padding: 15px;
+  border-radius: 20px;
+  position: relative;
+}
+
+.emojiContainer {
+  display: flex;
+  gap: 7.5px;
+  align-items: center;
+  flex-direction: row;
+  align-items: center;
+}
+.moodContainer {
+  flex: 1;
+}
+
+.editTaskTitle {
+  font-size: 22px;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.loadingTaskLogs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.taskLogFormActions,
+.editTaskLogFormActions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mobile {
+  display: inline;
+}
+.desktop {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .mobile {
+    display: none;
+  }
+
+  .desktop {
+    display: block;
+  }
+}
+
+.emoji,
+.editEmoji {
+  font-size: 24px;
+}
+
+.taskLogForm,
+.editTaskLogForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.taskLogForm {
+  margin-top: 20px;
+}
+
+.taskLogForm,
+.editTaskLogForm {
+  animation: slideUp 0.3s ease-in-out;
+}
+
+.deleteLogButton {
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.editButton {
+  position: relative;
+  left: 3px;
+  bottom: 3px;
+  font-size: 14px;
+}
+.taskLogFormGuestMessage,
+.taskLogFormMemberMessage,
+.taskLogFormTip {
+  position: relative;
+  bottom: 7px;
+  font-size: 14.5px;
+}
+.taskLogFormTextarea,
+.editTaskLogFormTextarea {
+  border-radius: 12.5px;
+  height: 80px;
+
+  font-family: var(--font-sans);
+
+  margin-bottom: 10px;
+  background-color: var(--shade-1-transparent);
+  border: 1px solid var(--accent-1);
+
+  &:hover,
+  &:focus {
+    border: 1px solid var(--accent-1);
+  }
+}
+
+.taskLogsTitle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 20px 0 10px 0;
+  font-size: 16px;
+}
+
+.taskLogs {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.loadMoreContainer {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+
+  button {
+    padding: 7px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+.submitButton,
+.cancelButton {
+  padding: 7px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.taskLogTitle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  bottom: 5px;
+}
+
+.taskLogTitleTime {
+  font-size: 12px;
+  color: var(--shade-6);
+  margin-left: auto;
+}
+
+.editLogMoodButton {
+  font-size: 13px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px); /* Start slightly below */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0); /* End at original position */
+  }
+}

@@ -43,6 +43,7 @@ export type user = {
     | "perplexity"
     | string
   timezone: string | null
+  tasksCount: number
   appleId: string | null
   migratedFromGuest: boolean
   credits: number
@@ -92,6 +93,74 @@ export type device = {
   updatedOn: Date
   fingerprint: string
 }
+export type moodType =
+  | "happy"
+  | "sad"
+  | "angry"
+  | "astonished"
+  | "inlove"
+  | "thinking"
+export type mood = {
+  userId: string | null
+  guestId: string | null
+  id: string
+  createdOn: Date
+  updatedOn: Date
+  type: moodType
+  taskLogId: string | null
+}
+export type timer = {
+  id: string
+  createdOn: Date
+  updatedOn: Date
+  fingerprint: string
+  userId: string
+  count: number
+  isCountingDown: boolean
+  preset1: number
+  preset2: number
+  preset3: number
+}
+export type task = {
+  id: string
+  userId: string | null
+  createdOn: Date
+  description: string | null
+  title: string
+  guestId: string | null
+  order: number | null
+  modifiedOn: Date
+  total:
+    | {
+        date: string
+        count: number
+      }[]
+    | null
+  selected: boolean | null
+}
+export type taskLog = {
+  userId: string | null
+  guestId: string | null
+  taskId: string
+  id: string
+  createdOn: Date
+  updatedOn: Date
+  moodId: string | null
+  mood: moodType | null
+  content: string
+}
+
+export type newTaskLog = {
+  content: string
+  taskId: string
+  id?: string | undefined
+  createdOn?: Date | undefined
+  updatedOn?: Date | undefined
+  userId?: string | null | undefined
+  guestId?: string | null | undefined
+  moodId?: string | null | undefined
+  mood?: moodType | null
+}
 
 export type newDevice = Partial<device>
 
@@ -120,6 +189,7 @@ export type guest = {
   fingerprint: string
   activeOn: Date
   email: string | null
+  tasksCount: number
   favouriteAgent:
     | "deepSeek"
     | "chatGPT"

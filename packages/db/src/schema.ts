@@ -24,6 +24,8 @@ export const GUEST_CREDITS_PER_MONTH = 30
 export const MEMBER_CREDITS_PER_MONTH = 150
 export const MAX_INSTRUCTIONS_CHAR_COUNT = 7500
 export const MAX_THREAD_TITLE_CHAR_COUNT = 100
+export const GUEST_TASKS_COUNT = 4
+export const MEMBER_TASKS_COUNT = 8
 
 export const PROMPT_LIMITS = {
   INPUT: 7000, // Max for direct input
@@ -74,6 +76,7 @@ export const users = pgTable(
       mode: "date",
       withTimezone: true,
     }),
+    tasksCount: integer("tasksCount").default(MEMBER_TASKS_COUNT).notNull(),
     userName: text("userName").notNull(),
     fileUploadsToday: integer("fileUploadsToday").default(0).notNull(),
     fileUploadsThisHour: integer("fileUploadsThisHour").default(0).notNull(),
@@ -255,6 +258,8 @@ export const guests = pgTable("guest", {
     createdOn: Date
     lastUpdated: Date
   }>(),
+
+  tasksCount: integer("tasksCount").default(GUEST_TASKS_COUNT).notNull(),
 
   memoriesEnabled: boolean("memoriesEnabled").default(true),
 
@@ -710,6 +715,9 @@ export const messages = pgTable(
       .notNull()
       .default("chat"),
     id: uuid("id").defaultRandom().notNull().primaryKey(),
+    moodId: uuid("moodId").references(() => moods.id, {
+      onDelete: "set null",
+    }),
     agentId: uuid("agentId").references(() => aiAgents.id, {
       onDelete: "cascade",
     }),
@@ -2675,6 +2683,83 @@ export const analyticsSessions = pgTable(
     index("analytics_sessions_started_idx").on(table.startedAt),
   ],
 )
+
+export const timers = pgTable("timer", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("userId")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  count: integer("count").notNull().default(0),
+  fingerprint: text("fingerprint").notNull(),
+  isCountingDown: boolean("isCountingDown").notNull().default(false),
+  preset1: integer("preset1").notNull().default(25),
+  preset2: integer("preset2").notNull().default(15),
+  preset3: integer("preset3").notNull().default(5),
+})
+export const moods = pgTable("mood", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+  type: text("type", {
+    enum: ["happy", "sad", "angry", "astonished", "inlove", "thinking"],
+  }).notNull(),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+
+  taskLogId: uuid("taskLogId").references((): AnyPgColumn => taskLogs.id, {
+    onDelete: "cascade",
+  }),
+})
+
+export const tasks = pgTable("task", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  modifiedOn: timestamp("modifiedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  total: jsonb("total").$type<{ date: string; count: number }[]>().default([]),
+  order: integer("order").default(0),
+  selected: boolean("selected").default(false),
+})
+
+export const taskLogs = pgTable("taskLog", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  taskId: uuid("taskId")
+    .references(() => tasks.id, { onDelete: "cascade" })
+    .notNull(),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+
+  moodId: uuid("moodId").references(() => moods.id, { onDelete: "cascade" }),
+
+  content: text("content").notNull(),
+  mood: text("mood", {
+    enum: ["happy", "sad", "angry", "astonished", "inlove", "thinking"],
+  }),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+})
 
 export type analyticsSession = typeof analyticsSessions.$inferSelect
 export type newAnalyticsSession = typeof analyticsSessions.$inferInsert

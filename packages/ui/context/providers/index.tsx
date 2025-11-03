@@ -29,6 +29,7 @@ import { locale } from "../../locales"
 import useSWR, { SWRConfig } from "swr"
 import { Hey } from "chrry/Sidebar"
 import { thread, paginatedMessages } from "chrry/types"
+import { TimerContext, TimerContextProvider } from "../TimerContext"
 
 interface AppProvidersProps {
   locale?: locale
@@ -132,11 +133,13 @@ export default function AppProviders({
                   <ChatProvider thread={thread} session={session}>
                     <NavigationProvider session={session}>
                       <AppContextProvider>
-                        <StylesProvider>
-                          <Hey useExtensionIcon={useExtensionIcon}>
-                            {children}
-                          </Hey>
-                        </StylesProvider>
+                        <TimerContextProvider>
+                          <StylesProvider>
+                            <Hey useExtensionIcon={useExtensionIcon}>
+                              {children}
+                            </Hey>
+                          </StylesProvider>
+                        </TimerContextProvider>
                       </AppContextProvider>
                     </NavigationProvider>
                   </ChatProvider>

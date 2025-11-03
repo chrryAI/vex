@@ -27,7 +27,6 @@ import { animate, stagger } from "motion"
 import Search from "./Search"
 import Skeleton from "./Skeleton"
 import EditThread from "./EditThread"
-import timeAgo from "./utils/timeAgo"
 import { useLocalStorage } from "./hooks"
 import Share from "./Share"
 import Bookmark from "./Bookmark"
@@ -75,6 +74,7 @@ const Threads = ({
     allApps,
     baseApp,
     getAppSlug,
+    timeAgo,
   } = useAuth()
 
   const [sortByDate, setSortByDate] = useLocalStorage("sortByDate", true)

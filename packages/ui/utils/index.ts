@@ -24,8 +24,23 @@ import { getWeatherCacheTime } from "./getWeatherCacheTime"
 import { locales } from "../locales"
 import { getSiteConfig } from "./siteConfig"
 import { getAppAndStoreSlugs, excludedSlugRoutes } from "./url"
+import replaceLinks from "./replaceLinks"
 
 export { exampleInstructions, getExampleInstructions }
+
+export const isSameDay = (date1: Date, date2: Date) => {
+  return (
+    date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear()
+  )
+}
+
+export { replaceLinks }
+
+export const GUEST_TASKS_COUNT = 4
+export const MEMBER_TASKS_COUNT = 8
+export const PLUS_TASKS_COUNT = 30
 
 export const checkIsExtension = () => {
   if (typeof chrome !== "undefined" && chrome.runtime?.id) {
@@ -210,6 +225,7 @@ export const pageSizes = {
   users: 20,
   stores: 20,
   apps: 50,
+  taskLogs: 20,
 }
 
 export const getBrowserAPI = (): BrowserAPIType | null => {
@@ -341,7 +357,7 @@ export function getFlag({ code }: { code?: string }) {
     .join("")
 }
 
-export const VERSION = "1.3.8"
+export const VERSION = "1.3.9"
 export type instructionBase = {
   id: string
   title: string

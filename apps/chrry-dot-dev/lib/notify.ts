@@ -74,6 +74,8 @@ export async function notify(
       | "suggestions_generated"
       | "calendar_event"
       | "notification"
+      | "timer"
+
     data:
       | any
       | {
@@ -81,6 +83,7 @@ export async function notify(
           chunk?: string
           isFinal: boolean
           clientId?: string
+          timer?: any
         }
   },
   callback?: (success: boolean, error?: Error) => void,
@@ -162,6 +165,8 @@ export const notifyOwnerAndCollaborations = async ({
       | "character_tag_creating"
       | "calendar_event"
       | "suggestions_generated"
+      | "timer"
+
     data:
       | any
       | {

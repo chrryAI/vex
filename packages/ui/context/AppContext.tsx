@@ -58,7 +58,7 @@ export const AppContextProvider = ({
   children: React.ReactNode
 }) => {
   const { t: i18nT } = useTranslation()
-  const { user } = useAuth()
+  const { user, language } = useAuth()
   const isE2E = process.env.NEXT_PUBLIC_TESTING_ENV === "e2e"
   const isCI = process.env.NEXT_PUBLIC_CI === "true"
 
