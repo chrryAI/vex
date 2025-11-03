@@ -2190,7 +2190,11 @@ async function getOrCreateStore(params: {
 }) {
   const { slug, existingStores, ...storeData } = params
 
-  let store = existingStores.find((s: any) => s.store.slug === slug)?.store
+  let store = existingStores.find(
+    (s: any) =>
+      s.store.slug === slug ||
+      (slug === "blossom" && s.store.slug === "explore"),
+  )?.store
 
   if (!store) {
     console.log(`🏪 Creating ${params.name} store...`)
@@ -2215,8 +2219,8 @@ export const createStores = async ({ user: admin }: { user: user }) => {
 
   // Create Chrry store
   const chrryAI = await getOrCreateStore({
-    slug: "explore",
-    name: "Chrry",
+    slug: "blossom",
+    name: "Blossom",
     title: "AI App Marketplace",
     domain: "https://chrry.ai",
     userId: admin.id,
@@ -6399,7 +6403,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
         storeId: chrryAI.id,
         appId: vex.id,
         featured: true,
-        displayOrder: 1,
+        displayOrder: 2,
         customDescription:
           "The most advanced AI chat platform with multi-agent support, thread artifacts, and real-time collaboration. Install Vex to experience the future of AI assistance.",
       })
@@ -6422,7 +6426,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
         storeId: chrryAI.id,
         appId: claudeApp.id,
         featured: true,
-        displayOrder: 2,
+        displayOrder: 1,
         customDescription:
           "Claude by Anthropic - Thoughtful AI assistant for writing, analysis, and creative work.",
       })

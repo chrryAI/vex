@@ -17,9 +17,7 @@
     margin-bottom: toRem.toRem(20);
 
     .title {
-      display: flex;
       font-size: toRem.toRem(20);
-      align-items: center;
       gap: toRem.toRem(10);
       margin: 0;
       margin-bottom: toRem.toRem(5);
@@ -67,9 +65,16 @@
   flex-wrap: wrap;
 }
 
-.titleText {
+.tryItNow {
+  margin-left: auto;
+  font-size: toRem.toRem(14);
+}
+
+.appTitle {
   display: flex;
-  align-items: center;
+}
+
+.titleText {
   gap: toRem.toRem(5);
   text-align: center;
   flex: 1;
@@ -101,18 +106,19 @@
   min-width: initial;
   flex: 1;
 
-  min-width: toRem.toRem(130);
+  .appImage {
+    max-width: toRem.toRem(40);
+    max-height: toRem.toRem(40);
 
-  //   @media (min-width: toRem.toRem(420)) {
-  //     min-width: toRem.toRem(160);
-  //   }
-
-  //   @media (min-width: toRem.toRem(440)) {
-  //     min-width: toRem.toRem(200);
-  //   }
+    @media (min-width: breakpoints.$breakpoint-mobile) {
+      max-width: toRem.toRem(80);
+      max-height: toRem.toRem(80);
+    }
+  }
 
   @media (min-width: breakpoints.$breakpoint-mobile) {
     flex: inherit;
+    min-width: toRem.toRem(130);
   }
 
   &:last-child {
@@ -134,6 +140,12 @@
     display: flex;
     flex-direction: column;
     gap: toRem.toRem(2);
+
+    display: none;
+
+    @media (min-width: breakpoints.$breakpoint-mobile) {
+      display: flex;
+    }
 
     .appName {
       font-size: toRem.toRem(16);
@@ -168,6 +180,12 @@
     }
     &.planned {
       background-color: var(--shade-3);
+    }
+
+    display: none;
+
+    @media (min-width: breakpoints.$breakpoint-mobile) {
+      display: flex;
     }
   }
 }

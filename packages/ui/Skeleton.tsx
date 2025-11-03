@@ -180,7 +180,7 @@ export default function Skeleton({
                 </Div>
               ) : null}
               <A
-                href={`https://chrry.dev`}
+                href={`/blossom`}
                 openInNewTab
                 style={{
                   ...utilities.button.style,
@@ -189,7 +189,7 @@ export default function Skeleton({
                   ...(hasHydrated && isMobile && skeletonStyles.blog.style),
                 }}
               >
-                <Img logo="chrry" size={18} /> {"Chrry.dev"}
+                <Img logo="blossom" size={22} /> {"Blossom"}
               </A>
             </Div>
             <Div style={{ ...skeletonStyles.right.style }}>

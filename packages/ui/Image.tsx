@@ -27,7 +27,7 @@ type ImageProps = {
   showLoading?: boolean
   dataTestId?: string
   src?: string
-  logo?: "lifeOS" | "isMagenta" | "isVivid" | "vex" | "chrry"
+  logo?: "lifeOS" | "isMagenta" | "isVivid" | "vex" | "chrry" | "blossom"
   icon?:
     | "spaceInvader"
     | "pacman"

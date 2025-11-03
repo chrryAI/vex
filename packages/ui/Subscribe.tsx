@@ -233,6 +233,10 @@ export default function Subscribe({
     }
   }
 
+  const [purchaseType, setPurchaseType] = useState<
+    "subscribe" | "gift" | "credits" | undefined
+  >()
+
   const verifyPayment = async (sessionId: string) => {
     track({ name: "subscribe_verify_payment" })
     const params = new URLSearchParams(window.location.search)
@@ -263,8 +267,13 @@ export default function Subscribe({
     if (data.success) {
       track({ name: "subscribe_payment_verified" })
       if (isExtensionRedirect) {
+        setPurchaseType("subscribe")
         toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
       } else {
+        setPurchaseType(
+          data.gift ? "gift" : data.credits ? "credits" : "subscribe",
+        )
+
         toast.success(
           data.gift
             ? t(`🥰 ${t("Thank you for your gift")}`)
@@ -1058,6 +1067,10 @@ export default function Subscribe({
           <Img icon="strawberry" showLoading={false} size={18} />
           {t("Plus")}
         </button>
+      )}
+
+      {purchaseType && (
+        <input data-testid="purchase-type" type="hidden" value={purchaseType} />
       )}
 
       {/* {giftedFingerPrint} */}

@@ -825,8 +825,7 @@ export default function App({
                 >
                   <Img
                     showLoading={false}
-                    logo="lifeOS"
-                    app={storeApp?.images ? storeApp : undefined}
+                    logo={app?.id === chrry?.id ? "blossom" : "lifeOS"}
                     store={store}
                     size={24}
                   />

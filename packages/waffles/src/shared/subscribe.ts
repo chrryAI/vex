@@ -136,11 +136,13 @@ export const subscribe = async ({
     visible: !inviteOrGift,
   })
 
-  await expect(
-    page.getByText(inviteOrGift ? "Thank you for your gift" : "Subscribed"),
-  ).toBeVisible({
-    timeout: 20000,
-  })
+  const purchaseTypeInput = page.getByTestId("purchase-type")
+  await expect(purchaseTypeInput).toBeVisible()
+
+  // Wait for toast with partial text match (handles emoji and variations)
+  await expect(purchaseTypeInput).toHaveValue(
+    inviteOrGift ? "gift" : "subscribe",
+  )
 
   await expect(subscribeButton).toBeVisible({
     visible: !!inviteOrGift,

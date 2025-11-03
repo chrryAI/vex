@@ -8,10 +8,10 @@ import { useAuth, useData, useNavigationContext } from "./context/providers"
 import Img from "./Image"
 import { useAppContext } from "./context/AppContext"
 import { appWithStore } from "./types"
-import { Div } from "./platform"
+import { Div, usePlatform, useTheme } from "./platform"
 import { useStoreStyles } from "./Store.styles"
 import { Sparkles, ArrowRight } from "./icons"
-import { A } from "./platform"
+import A from "./A"
 
 export default function Store({
   compact,
@@ -21,6 +21,8 @@ export default function Store({
   slug?: string
 }) {
   const { FRONTEND_URL } = useData()
+
+  const { isMobileDevice } = useTheme()
 
   const { router, setIsNewChat, pathname, searchParams } =
     useNavigationContext()
@@ -131,7 +133,10 @@ export default function Store({
                 alt="Pacman"
                 size={28}
               />
-              <Img app={store?.app} size={28} />
+
+              <A href={"/blossom"}>
+                <Img logo="blossom" size={32} />
+              </A>
               <Img
                 style={{ marginLeft: "auto" }}
                 showLoading={false}
@@ -157,7 +162,7 @@ export default function Store({
                   className={"link"}
                 >
                   {store?.name}
-                </A>
+                </A>{" "}
                 - {t(store?.title || "")}
               </span>
             </h1>
@@ -189,7 +194,12 @@ export default function Store({
                 onClick={() => setSelectedApp(app)}
               >
                 <span className={clsx(styles.badge)}>{t("live")}</span>
-                <Img app={app} alt={app.name} size={80} />
+                <Img
+                  className={clsx(styles.appImage)}
+                  app={app}
+                  alt={app.name}
+                  size={isMobileDevice ? 40 : 80}
+                />
                 <div className={styles.appInfo}>
                   <span className={styles.appName}>
                     {app.icon} {app.name}
@@ -205,8 +215,22 @@ export default function Store({
           <div key={selectedApp?.id} className={styles.footer}>
             {selectedApp && (
               <div className={styles.appDetails}>
-                <h3>
+                <h3 className={styles.appTitle}>
                   {selectedApp.icon} {selectedApp.name}
+                  <A
+                    href={getAppSlug(selectedApp)}
+                    onClick={(e) => {
+                      if (e.metaKey || e.ctrlKey) {
+                        return
+                      }
+                      e.preventDefault()
+                      setIsNewChat(true, getAppSlug(selectedApp))
+                    }}
+                    className={clsx(styles.tryItNow)}
+                  >
+                    <ArrowRight size={16} color="var(--accent-6)" />
+                    {t("Try it now!")}
+                  </A>
                 </h3>
                 <p className={styles.subtitle}>{t(selectedApp.title || "")}</p>
                 <p className={styles.description}>
@@ -276,19 +300,12 @@ export default function Store({
         {!compact && (
           <div className={styles.tetris}>
             <div style={{ display: "flex", gap: "1rem" }}>
-              <a
-                href={`${FRONTEND_URL}`}
+              <A
+                href={`/blossom`}
                 className={clsx("link", styles.hamburgerButton)}
-                onClick={(e) => {
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-                  e.preventDefault()
-                  setIsNewChat(true)
-                }}
               >
-                <Img app={baseApp} size={24} /> {baseApp?.name}
-              </a>
+                <Img logo="blossom" size={28} /> Blossom
+              </A>
               <Img
                 showLoading={false}
                 src={`${FRONTEND_URL}/images/pacman/tetris1.png`}

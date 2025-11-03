@@ -15,6 +15,7 @@ export async function generateMetadata({
   params: Promise<{ id: string; locale: string }>
 }): Promise<Metadata> {
   const { id, locale } = await params
+
   const member = await getMember()
   const guest = await getGuest()
 

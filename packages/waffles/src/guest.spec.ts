@@ -120,7 +120,7 @@ test("Chat - Hourly Limit Test", async ({ page }) => {
   await limit({ page })
 })
 
-test.only("Thread", async ({ page }) => {
+test("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, bookmark: true })
 })

@@ -22,9 +22,7 @@ export const StoreStyleDefs = {
     marginBottom: 20,
   },
   title: {
-    display: "flex",
     fontSize: 20,
-    alignItems: "center",
     gap: 10,
     margin: 0,
     marginBottom: 5,
@@ -54,13 +52,19 @@ export const StoreStyleDefs = {
     marginTop: 10,
     flexWrap: "wrap",
   },
-  titleText: {
+  tryItNow: {
+    marginLeft: "auto",
+    fontSize: 14,
+  },
+  appTitle: {
     display: "flex",
-    alignItems: "center",
+  },
+  titleText: {
     gap: 5,
     textAlign: "center",
     flex: 1,
     alignSelf: "center",
+    alignItems: "center",
     justifyContent: "center",
     fontWeight: 600,
   },
@@ -81,7 +85,7 @@ export const StoreStyleDefs = {
       padding: 10,
       paddingTop: 13,
       borderRadius: 20,
-      minWidth: 130,
+      minWidth: "initial",
       flex: 1,
       alignSelf: "flex-start",
     },
@@ -89,8 +93,12 @@ export const StoreStyleDefs = {
       outline: "2px solid var(--accent-1)",
     },
   },
+  appImage: {
+    maxWidth: 40,
+    maxHeight: 40,
+  },
   appInfo: {
-    display: "flex",
+    display: "none",
     flexDirection: "column",
     gap: 2,
   },
@@ -118,6 +126,7 @@ export const StoreStyleDefs = {
     borderRadius: 20,
     fontSize: 12,
     marginBottom: 10,
+    display: "none",
   },
   badgeInProgress: {
     backgroundColor: "var(--accent-5)",

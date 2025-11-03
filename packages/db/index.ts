@@ -77,6 +77,8 @@ export const TEST_GUEST_FINGERPRINTS =
 export const TEST_MEMBER_FINGERPRINTS =
   process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || []
 
+export const isDevelopment = process.env.NODE_ENV === "development"
+
 // Define locally to avoid circular dependency issues with chrry/utils
 export const OWNER_CREDITS = 999999
 
@@ -559,7 +561,7 @@ export const getUser = async ({
 
   // If user owns the app they're using, show infinite credits (999999)
   const creditsLeft =
-    isAppOwner && subscription?.plan === "pro"
+    isAppOwner && (subscription?.plan === "pro" || isDevelopment)
       ? OWNER_CREDITS
       : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
 
