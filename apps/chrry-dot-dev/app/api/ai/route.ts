@@ -27,6 +27,9 @@ import {
   memory,
   getPureApp,
   app,
+  getTasks,
+  getMoods,
+  getTimer,
 } from "@repo/db"
 
 import { perplexity } from "@ai-sdk/perplexity"
@@ -1155,6 +1158,29 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
 `
       : ""
 
+  // Fetch Focus data for context (tasks, moods, timer)
+  const focusTasks = app?.tools?.includes("focus")
+    ? await getTasks({
+        userId: member?.id,
+        guestId: guest?.id,
+        pageSize: 10, // Last 10 tasks
+      })
+    : null
+
+  const focusMoods = app?.tools?.includes("focus")
+    ? await getMoods({
+        userId: member?.id,
+        guestId: guest?.id,
+        pageSize: 20, // Last 20 moods for trend analysis
+      })
+    : null
+
+  const focusTimer = app?.tools?.includes("focus")
+    ? await getTimer({
+        userId: member?.id,
+      })
+    : null
+
   // Build Vault context (expenses, budgets, shared expenses)
   const vaultContext =
     app?.name === "Vault" &&
@@ -1244,6 +1270,91 @@ ${vaultSharedExpenses.sharedExpenses
 - Suggest budget adjustments based on actual spending
 - Remind about outstanding shared expenses
 - Be helpful but not judgmental about spending habits
+`
+      : ""
+
+  // Build Focus context (tasks, moods, timer settings)
+  const focusContext =
+    app?.tools?.includes("focus") &&
+    (focusTasks?.tasks.length || focusMoods?.moods.length || focusTimer)
+      ? `
+
+## 🎯 User's Focus & Wellness Overview
+
+${
+  focusTasks?.tasks.length
+    ? `### Recent Tasks (Last ${focusTasks.tasks.length})
+${focusTasks.tasks
+  .slice(0, 10)
+  .map((task) => {
+    const totalTime = task.total?.reduce((sum, t) => sum + t.count, 0) || 0
+    const hours = Math.floor(totalTime / 3600)
+    const mins = Math.floor((totalTime % 3600) / 60)
+    return `- **${task.title}** ${totalTime > 0 ? `(${hours}h ${mins}m)` : "(not started)"}`
+  })
+  .join("\n")}
+`
+    : ""
+}
+
+${
+  focusMoods?.moods.length
+    ? `### Recent Mood Trends (Last ${focusMoods.moods.length} entries)
+${(() => {
+  const moodCounts = focusMoods.moods.reduce(
+    (acc, m) => {
+      acc[m.type] = (acc[m.type] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+  const latestMood = focusMoods.moods[0]
+  if (!latestMood) return "No mood data available"
+
+  const moodEmojis = {
+    happy: "😊",
+    sad: "😢",
+    angry: "😠",
+    astonished: "😲",
+    inlove: "😍",
+    thinking: "🤔",
+  }
+  return `Latest: ${moodEmojis[latestMood.type as keyof typeof moodEmojis]} ${latestMood.type} (${new Date(latestMood.createdOn).toLocaleDateString()})
+Distribution: ${Object.entries(moodCounts)
+    .map(([mood, count]) => `${mood} (${count})`)
+    .join(", ")}`
+})()}
+`
+    : ""
+}
+
+${
+  focusTimer
+    ? `### Timer Preferences
+- Preset 1: ${focusTimer.preset1} min
+- Preset 2: ${focusTimer.preset2} min  
+- Preset 3: ${focusTimer.preset3} min
+- Total sessions: ${focusTimer.count}
+`
+    : ""
+}
+
+**How to use focus context:**
+- Suggest breaks when user seems stressed or frustrated (check mood trends)
+- Recommend focus sessions based on their timer preferences
+- Reference task progress naturally ("You've spent 2h on that project")
+- Notice mood patterns and offer wellness suggestions
+- Be supportive about productivity without being pushy
+- Correlate mood with work patterns when helpful
+
+**Mood Tracking Permission:**
+${
+  member?.characterProfilesEnabled || guest?.characterProfilesEnabled
+    ? "✅ User has enabled character profiles - you CAN create moods using the createMood tool"
+    : "⚠️ User has NOT enabled character profiles - you MUST ask for permission before logging moods. Explain that enabling character profiles allows mood tracking for better wellness insights."
+}
+
+Example: "I notice you've been feeling thinking/contemplative lately. A 25min focus session might help clear your mind!"
 `
       : ""
 
@@ -1649,6 +1760,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     placeholderContext +
     calendarContext +
     vaultContext +
+    focusContext +
     newsContext +
     // brandKnowledge +
     aiCoachContext
@@ -3299,16 +3411,18 @@ User preferences:
       }
     }
 
-    const { calendarTools, vaultTools } = getTools({
+    const { calendarTools, vaultTools, focusTools } = getTools({
       member,
       guest,
       currentThreadId,
+      currentMessageId: clientId, // Link moods to this AI response message
     })
 
-    // Combine calendar and vault tools
+    // Combine calendar, vault, and focus tools
     const allTools = {
       ...calendarTools,
       ...vaultTools,
+      ...focusTools,
     }
 
     // Special handling for DeepSeek streaming

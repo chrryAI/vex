@@ -21,6 +21,15 @@ import {
   subscription,
   guest,
   getCalendarEvents,
+  createMood,
+  updateMood,
+  createTask,
+  updateTask,
+  deleteTask,
+  getTasks,
+  getMoods,
+  getTimer,
+  updateTimer,
 } from "@repo/db"
 import { expenseCategoryType } from "chrry/utils"
 import {
@@ -34,10 +43,12 @@ export const getTools = ({
   member,
   guest,
   currentThreadId,
+  currentMessageId,
 }: {
   member?: user & { subscription?: subscription }
   guest?: guest
   currentThreadId?: string
+  currentMessageId?: string
 }) => {
   const calendarTools = {
     createCalendarEvent: {
@@ -1158,8 +1169,211 @@ export const getTools = ({
       },
     },
   }
+
+  const focusTools = {
+    createTask: {
+      description:
+        "Create a new focus task for the user. Use this when the user wants to add a task, create a to-do, or track work on something.",
+      inputSchema: z.object({
+        title: z.string().describe("The title/name of the task"),
+        description: z
+          .string()
+          .optional()
+          .describe("Optional description or notes about the task"),
+      }),
+      execute: async ({
+        title,
+        description,
+      }: {
+        title: string
+        description?: string
+      }) => {
+        console.log("✅ Creating task:", { title, description })
+
+        const task = await createTask({
+          title,
+          description,
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+
+        console.log("✅ Task created:", { id: task?.id, title: task?.title })
+        return {
+          success: true,
+          taskId: task?.id,
+          task,
+          message: `Created task "${title}" (ID: ${task?.id}). You can update or delete this task by referencing this ID.`,
+        }
+      },
+    },
+    updateTask: {
+      description:
+        "Update an existing task. Use this when the user wants to modify, rename, or change task details.",
+      inputSchema: z.object({
+        taskId: z.string().describe("The ID of the task to update"),
+        title: z.string().optional().describe("New title for the task"),
+        description: z
+          .string()
+          .optional()
+          .describe("New description for the task"),
+      }),
+      execute: async ({
+        taskId,
+        title,
+        description,
+      }: {
+        taskId: string
+        title?: string
+        description?: string
+      }) => {
+        console.log("📝 Updating task:", { taskId, title, description })
+
+        const updateData: any = { id: taskId }
+        if (title !== undefined) updateData.title = title
+        if (description !== undefined) updateData.description = description
+
+        const updated = await updateTask(updateData)
+
+        console.log("✅ Task updated:", { id: updated?.id })
+        return {
+          success: true,
+          task: updated,
+          message: `Updated task "${title || updated?.title}" (ID: ${taskId}).`,
+        }
+      },
+    },
+    deleteTask: {
+      description:
+        "Delete a task. Use this when the user wants to remove or cancel a task.",
+      inputSchema: z.object({
+        taskId: z.string().describe("The ID of the task to delete"),
+      }),
+      execute: async ({ taskId }: { taskId: string }) => {
+        console.log("🗑️ Deleting task:", { taskId })
+
+        await deleteTask({ id: taskId })
+
+        console.log("✅ Task deleted:", taskId)
+        return {
+          success: true,
+          message: `Deleted task ${taskId}.`,
+        }
+      },
+    },
+    createMood: {
+      description:
+        "Log a mood for the user. IMPORTANT: Only use this if the user has character profiles enabled (characterProfilesEnabled: true). If not enabled, you must ask the user for permission first before logging moods. Use this when the user explicitly tells you how they're feeling or wants to track their emotional state. The mood will be linked to this conversation.",
+      inputSchema: z.object({
+        type: z
+          .enum(["happy", "sad", "angry", "astonished", "inlove", "thinking"])
+          .describe(
+            "The mood type: happy (positive, cheerful), sad (down, melancholic), angry (frustrated, upset), astonished (surprised, amazed), inlove (affectionate, passionate), thinking (contemplative, analytical)",
+          ),
+      }),
+      execute: async ({
+        type,
+      }: {
+        type: "happy" | "sad" | "angry" | "astonished" | "inlove" | "thinking"
+      }) => {
+        // Check if character profiles are enabled (consent for mood tracking)
+        const characterProfilesEnabled =
+          member?.characterProfilesEnabled || guest?.characterProfilesEnabled
+
+        if (!characterProfilesEnabled) {
+          console.log(
+            "⚠️ Mood creation blocked: Character profiles not enabled",
+          )
+          return {
+            success: false,
+            requiresConsent: true,
+            message:
+              "I'd like to log your mood, but I need your permission first. Would you like to enable character profiles? This allows me to track your moods and provide better wellness insights.",
+          }
+        }
+
+        console.log("🎭 Creating mood:", { type, messageId: currentMessageId })
+
+        const mood = await createMood({
+          type,
+          userId: member?.id,
+          guestId: guest?.id,
+          messageId: currentMessageId || undefined, // Link to current message
+        })
+
+        const moodEmojis = {
+          happy: "😊",
+          sad: "😢",
+          angry: "😠",
+          astonished: "😲",
+          inlove: "😍",
+          thinking: "🤔",
+        }
+
+        console.log("✅ Mood logged:", {
+          id: mood?.id,
+          type,
+          linkedToMessage: currentMessageId,
+        })
+        return {
+          success: true,
+          moodId: mood?.id,
+          mood,
+          message: `Logged mood: ${moodEmojis[type]} ${type}. This mood is linked to our conversation.`,
+        }
+      },
+    },
+    updateTimer: {
+      description:
+        "Update the user's focus timer preferences. Use this when the user wants to change their timer presets or settings.",
+      inputSchema: z.object({
+        preset1: z
+          .number()
+          .optional()
+          .describe("First timer preset in minutes (default: 25)"),
+        preset2: z
+          .number()
+          .optional()
+          .describe("Second timer preset in minutes (default: 15)"),
+        preset3: z
+          .number()
+          .optional()
+          .describe("Third timer preset in minutes (default: 5)"),
+      }),
+      execute: async ({
+        preset1,
+        preset2,
+        preset3,
+      }: {
+        preset1?: number
+        preset2?: number
+        preset3?: number
+      }) => {
+        console.log("⏱️ Updating timer:", { preset1, preset2, preset3 })
+
+        const updateData: any = { userId: member?.id! }
+        if (preset1 !== undefined) updateData.preset1 = preset1
+        if (preset2 !== undefined) updateData.preset2 = preset2
+        if (preset3 !== undefined) updateData.preset3 = preset3
+
+        const updated = await updateTimer(updateData)
+
+        console.log("✅ Timer updated:", {
+          preset1: updated?.preset1,
+          preset2: updated?.preset2,
+          preset3: updated?.preset3,
+        })
+        return {
+          success: true,
+          timer: updated,
+          message: `Updated timer presets: ${preset1 || updated?.preset1}min, ${preset2 || updated?.preset2}min, ${preset3 || updated?.preset3}min`,
+        }
+      },
+    },
+  }
+
   return {
     calendarTools,
     vaultTools,
+    focusTools,
   }
 }

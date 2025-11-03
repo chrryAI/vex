@@ -2296,6 +2296,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "What can I help you with today?",
     features: {
@@ -2370,6 +2371,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     themeColor: "green",
     backgroundColor: "#000000",
@@ -2647,6 +2649,7 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Explore Amsterdam like a local...",
     description:
@@ -2893,6 +2896,7 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Discover Tokyo's hidden gems...",
     description:
@@ -3147,6 +3151,7 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Navigate Istanbul like a local...",
     description:
@@ -3410,6 +3415,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Experience NYC like a New Yorker...",
     description:
@@ -3618,6 +3624,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
   }
 
@@ -3806,6 +3813,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
   }
 
@@ -3973,6 +3981,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
   }
 
@@ -4140,6 +4149,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
   }
 
@@ -4308,6 +4318,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
   }
 
@@ -4535,6 +4546,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     description:
       "Your philosophical companion for Nietzsche's masterwork and beyond. Explore Übermensch, eternal recurrence, will to power, and the art of self-overcoming. From nihilism to life-affirmation, navigate deep questions with poetic wisdom.",
@@ -4788,6 +4800,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     description:
       "Your guide to Orwell's dystopian masterpiece. Analyze totalitarianism, surveillance, and the human spirit through Zarathustra's philosophical lens. From Big Brother to modern parallels, explore power, truth, and resistance.",
@@ -5013,6 +5026,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     description:
       "Your guide to Marcus Aurelius's Stoic masterwork. Learn acceptance, virtue, and inner peace through Zarathustra's lens. From memento mori to amor fati, bridge ancient wisdom with modern life.",
@@ -5240,6 +5254,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     description:
       "Your guide to Frank Herbert's epic masterwork. Explore spice, prescience, and desert power through Zarathustra's lens. From Fremen wisdom to Bene Gesserit manipulation, navigate politics, ecology, and consciousness.",
@@ -5376,6 +5391,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "What would you like to create today?",
     features: {
@@ -5474,6 +5490,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     themeColor: "orange",
     backgroundColor: "#ffffff",
@@ -5548,6 +5565,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     version: "1.0.0",
     status: "testing" as const,
@@ -5630,6 +5648,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     version: "1.0.0",
     status: "testing" as const,
@@ -5765,6 +5784,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "What can Claude help you with?",
     extends: [chrry.id, vex.id],
@@ -5819,6 +5839,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "What would you like to write today?",
     description:
@@ -5864,6 +5885,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Paste code for review...",
     extends: [claudeApp.id, chrry.id],
@@ -5909,6 +5931,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "What are you researching?",
     description:
@@ -5992,6 +6015,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Search anything with AI...",
     features: {
@@ -6046,6 +6070,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Search the web...",
     highlights: perplexitySearchInstructions,
@@ -6091,6 +6116,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "What's happening today?",
     highlights: perplexityNewsInstructions,
@@ -6136,6 +6162,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Search academic papers...",
     extends: [perplexityApp.id, chrry.id],
@@ -6212,6 +6239,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     placeholder: "Let's build something amazing...",
     extends: [chrry.id, vex.id],
@@ -6564,6 +6592,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     extends: [deepseekApp.id, chrry.id],
     description:
@@ -6608,6 +6637,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     extends: [deepseekApp.id, chrry.id],
     description:
@@ -6652,6 +6682,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
       | "calendar"
       | "location"
       | "weather"
+      | "focus"
     )[],
     description:
       "Design scalable system architectures with DeepSeek. Plan microservices, databases, APIs, and infrastructure with industry best practices.",

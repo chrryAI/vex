@@ -1535,7 +1535,7 @@ export const apps = pgTable(
     }),
 
     tools: text("tools", {
-      enum: ["calendar", "location", "weather"],
+      enum: ["calendar", "location", "weather", "focus"],
     })
       .array()
       .default([]),
