@@ -180,7 +180,6 @@ export type Task = {
 }
 
 export const STORAGE_KEY = "focusbutton_timer_state"
-
 const POMODORO_KEY = "focusbutton_active_pomodoro"
 
 // Track events with GA4
@@ -229,11 +228,15 @@ export function TimerContextProvider({
   const isExtension = usePlatform()
   const [time, setTime] = useState(0)
   const [isCountingDown, setIsCountingDown] = useState(false)
-  const [replay, setReplay] = useLocalStorage<boolean>("replay", false)
+  const [replay, setReplay] = useState<boolean>(false)
   const [timer, setTimerInternal] = useState<timer | null>(null)
 
+  // API-first: Use state instead of localStorage
+  // Timer state comes from DB via SWR, localStorage only for offline cache
+  const [timerState, setTimerState] = useState<TimerState | null>(null)
+  const [activePomodoro, setActivePomodoro] = useState<number | null>(null)
+
   const setTimer = (timer: timer | null) => {
-    if (!timer?.id) return
     setTimerInternal((prevTimer) => {
       if (
         prevTimer?.id === timer?.id &&
@@ -255,13 +258,14 @@ export function TimerContextProvider({
   const [isPaused, setIsPaused] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const [isCancelled, setIsCancelled] = useState(false)
-  const [activePomodoro, setActivePomodoro] = useState<number | null>(null)
-  const [tasks, setTasks] = useLocalStorage<{
+
+  // API-first: Tasks come from SWR, no localStorage needed
+  const [tasks, setTasks] = useState<{
     tasks: Task[]
     totalCount: number
     hasNextPage: boolean
     nextPage: number | null
-  }>("tasks", {
+  }>({
     tasks: [],
     totalCount: 0,
     hasNextPage: false,
@@ -466,6 +470,7 @@ export function TimerContextProvider({
   const isTimerEndingRef = useRef<Boolean>(false)
   const adjustIntervalRef = useRef<number | null>(null)
   const lastVisibilityUpdateRef = useRef<number>(0)
+  const hasRestoredTimerRef = useRef<boolean>(false)
 
   const [playBirds, setPlayBirds] = useState<boolean | undefined>(undefined)
 
@@ -500,12 +505,71 @@ export function TimerContextProvider({
   }, [refetchTimer])
 
   useEffect(() => {
-    if (timerData) {
+    if (timerData && !hasRestoredTimerRef.current) {
       console.log(`🚀 ~ file: TimerContext.tsx:514 ~ timerData:`, timerData)
-      // Only update if timer data actually changed
+      
+      // Mark as restored to prevent multiple initializations
+      hasRestoredTimerRef.current = true
+      
+      // Update timer object
       setTimer(timerData)
+      
+      // Restore timer state from API
+      if (timerData.isCountingDown && timerData.count > 0) {
+        setTime(timerData.count)
+        setIsCountingDown(true)
+        setIsPaused(false)
+        setIsFinished(false)
+        setStartTime(Date.now())
+        
+        // Timer will start via the isCountingDown state change
+      } else if (timerData.count > 0) {
+        // Timer is paused
+        setTime(timerData.count)
+        setIsCountingDown(false)
+        setIsPaused(true)
+        setIsFinished(false)
+      } else {
+        // Timer is at 0
+        setTime(0)
+        setIsCountingDown(false)
+        setIsPaused(false)
+        setIsFinished(true)
+      }
     }
   }, [timerData])
+
+  // Start countdown when isCountingDown is true
+  useEffect(() => {
+    if (isCountingDown && time > 0 && !timerRef.current) {
+      // Start the interval
+      timerRef.current = setInterval(() => {
+        setTime((prevTime) => {
+          const newTime = prevTime - 1
+          if (newTime <= 0) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current)
+              timerRef.current = null
+            }
+            setIsCountingDown(false)
+            setIsFinished(true)
+          }
+          return newTime
+        })
+      }, 1000)
+    } else if (!isCountingDown && timerRef.current) {
+      // Stop the interval
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+    }
+  }, [isCountingDown])
 
   useEffect(() => {
     if (!timer && token && fingerprint && user && !isLoadingTimer) {
@@ -645,17 +709,15 @@ export function TimerContextProvider({
     // Sync to WebSocket
     updateTimer(updatedTimer)
 
-    // Persist to localStorage
-    localStorage.setItem(
-      "timer_state",
-      JSON.stringify({
-        time,
-        isCountingDown,
-        isPaused,
-        startTime,
-        timestamp: now,
-      }),
-    )
+    // Persist to localStorage via hook
+    setTimerState({
+      time,
+      isCountingDown,
+      isPaused,
+      startTime,
+      timestamp: now,
+      isFinished: false,
+    })
   }, [
     time,
     isCountingDown,
@@ -703,9 +765,7 @@ export function TimerContextProvider({
     setTime(0)
 
     // Clear timer state immediately
-    if (!isExtension) {
-      localStorage.removeItem(STORAGE_KEY)
-    }
+    setTimerState(null)
 
     // Clear interval
     if (timerRef.current) {
@@ -783,14 +843,13 @@ export function TimerContextProvider({
       }, 100)
 
       // Save state to localStorage
-      const state: TimerState = {
+      setTimerState({
         time: initialTime,
         isCountingDown: true,
         isPaused: false,
         startTime: now,
         isFinished: false,
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      })
 
       trackEvent({ name: "timer_start", props: { duration: duration || time } })
     },
@@ -818,6 +877,12 @@ export function TimerContextProvider({
         count: 0,
         isCountingDown: false,
       })
+
+      setTimer({
+        ...timer,
+        count: 0,
+        isCountingDown: false,
+      })
     }
 
     setTime(0)
@@ -825,9 +890,8 @@ export function TimerContextProvider({
     setIsPaused(false)
     setIsFinished(true)
 
-    if (!isExtension) {
-      localStorage.removeItem(STORAGE_KEY)
-    }
+    // Clear timer state
+    setTimerState(null)
 
     trackEvent({ name: "timer_cancel" })
 
@@ -853,16 +917,14 @@ export function TimerContextProvider({
     }
 
     // Update local storage for web version
-    const state = {
-      type: "TIMER_UPDATE",
-      isCountingDown: false,
+    setTimerState({
       time,
+      isCountingDown: false,
       isPaused: true,
-      source: "ui",
       timestamp: Date.now(),
       startTime,
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      isFinished: false,
+    })
 
     trackEvent({ name: "timer_pause", props: { timeLeft: time } })
   }, [timer, updateTimer, time, startTime, trackEvent])
@@ -904,17 +966,17 @@ export function TimerContextProvider({
       }
 
       // Save timer state
-      const state: TimerState = {
+      setTimerState({
         time: newTime,
         isCountingDown: false,
         isPaused: true,
+        timestamp: Date.now(),
         startTime: Date.now(),
         isFinished: false,
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      })
 
       // Save active Pomodoro separately
-      localStorage.setItem(POMODORO_KEY, minutes.toString())
+      setActivePomodoro(minutes)
 
       // Track event
       trackEvent({ name: "timer_preset", props: { minutes, timeSet: newTime } })
@@ -922,36 +984,23 @@ export function TimerContextProvider({
     [isCountingDown, trackEvent],
   )
 
-  // Load active Pomodoro from storage
-  useEffect(() => {
-    const loadPomodoro = async () => {
-      const savedPomodoro = localStorage.getItem(POMODORO_KEY)
-      if (savedPomodoro) {
-        setActivePomodoro(parseInt(savedPomodoro))
-      }
-    }
-    loadPomodoro()
-  }, [isExtension])
+  // Active pomodoro is now loaded automatically via useLocalStorage hook
 
   // Set mounted state
 
   // Restore timer state on mount
   const restoreTimerState = useCallback(async () => {
     try {
-      let state: TimerState | null = null
+      // State is now loaded automatically via useLocalStorage hook
+      if (!timerState) {
+        return
+      }
+      const state = timerState
 
-      const savedState = localStorage.getItem(STORAGE_KEY)
-      if (savedState) {
-        state = JSON.parse(savedState)
-        if (!state) {
-          return
-        }
-
-        // If timer was running, calculate elapsed time
-        if (state.isCountingDown && !state.isPaused && state.startTime) {
-          const elapsedTime = Math.floor((Date.now() - state.startTime) / 1000)
-          state.time = Math.max(0, state.time - elapsedTime)
-        }
+      // If timer was running, calculate elapsed time
+      if (state.isCountingDown && !state.isPaused && state.startTime) {
+        const elapsedTime = Math.floor((Date.now() - state.startTime) / 1000)
+        state.time = Math.max(0, state.time - elapsedTime)
       }
 
       console.log("Restoring timer state:", state)
@@ -1117,34 +1166,7 @@ export function TimerContextProvider({
         return
       }
 
-      // App coming to foreground
-      const savedTimer = localStorage.getItem("focusTimer")
-      if (savedTimer) {
-        try {
-          const {
-            timeLeft,
-            startTime,
-            isCountingDown: wasCountingDown,
-            isPaused: wasPaused,
-          } = JSON.parse(savedTimer)
-
-          if (wasCountingDown && !wasPaused) {
-            console.log("App coming to foreground, restoring timer state")
-            const elapsedSeconds = Math.floor((now - startTime) / 1000)
-            const newTime = Math.max(0, timeLeft - elapsedSeconds)
-
-            if (newTime === 0) {
-              console.log("Timer completed while in background")
-            } else if (newTime > 0) {
-              // Resume countdown if time remaining
-              startCountdown(newTime)
-            }
-          }
-        } catch (error) {
-          console.error("Error parsing saved timer:", error)
-        }
-        localStorage.removeItem("focusTimer")
-      }
+      // App coming to foreground - handled by timerState from useLocalStorage
     },
     [time, isCountingDown, startCountdown],
   )
