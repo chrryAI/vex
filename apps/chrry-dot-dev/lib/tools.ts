@@ -22,13 +22,9 @@ import {
   guest,
   getCalendarEvents,
   createMood,
-  updateMood,
   createTask,
   updateTask,
   deleteTask,
-  getTasks,
-  getMoods,
-  getTimer,
   updateTimer,
 } from "@repo/db"
 import { expenseCategoryType } from "chrry/utils"
@@ -1198,6 +1194,11 @@ export const getTools = ({
           guestId: guest?.id,
         })
 
+        notify(member?.id || guest?.id || "", {
+          type: "tasks",
+          data: task,
+        })
+
         console.log("✅ Task created:", { id: task?.id, title: task?.title })
         return {
           success: true,
@@ -1234,6 +1235,11 @@ export const getTools = ({
         if (description !== undefined) updateData.description = description
 
         const updated = await updateTask(updateData)
+
+        notify(member?.id || guest?.id || "", {
+          type: "tasks",
+          data: updated,
+        })
 
         console.log("✅ Task updated:", { id: updated?.id })
         return {

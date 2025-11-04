@@ -198,6 +198,7 @@ export function TimerContextProvider({
     fingerprint,
     mood,
     setMood,
+    fetchMood,
     track: trackEvent,
   } = useAuth()
 
@@ -210,17 +211,17 @@ export function TimerContextProvider({
     selectedTasks: Task[]
     deviceId: string
   }>({
-    onMessage: (data) => {
+    onMessage: async (data) => {
       if (data?.type === "timer" && data.timer.fingerprint !== fingerprint) {
         setRemoteTimer(data.timer)
       }
 
-      if (data?.type === "timer-ai") {
-        setTimer(data.timer)
+      if (data?.type === "timer-ai" || data?.type === "tasks") {
+        await fetchTimer()
       }
 
       if (data?.type === "mood") {
-        setMood(data.mood)
+        await fetchMood()
       }
 
       if (data?.type === "selected_tasks") {
@@ -519,10 +520,10 @@ export function TimerContextProvider({
     },
   )
 
-  const fetchTimer = useCallback(async () => {
+  const fetchTimer = async () => {
     setShouldFetchTimer(true)
-    refetchTimer()
-  }, [refetchTimer])
+    shouldFetchTimer && refetchTimer()
+  }
 
   useEffect(() => {
     if (timerData && !hasRestoredTimerRef.current) {

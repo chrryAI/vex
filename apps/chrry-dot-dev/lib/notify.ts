@@ -76,6 +76,7 @@ export async function notify(
       | "notification"
       | "timer"
       | "timer-ai"
+      | "tasks"
       | "mood"
 
     data:
