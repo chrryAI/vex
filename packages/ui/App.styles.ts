@@ -33,7 +33,7 @@ export const AppStyleDefs = {
   },
   focus: {
     position: "relative",
-    marginLeft: 10,
+    right: -5,
   },
   focusTime: {
     position: "absolute",
@@ -55,15 +55,11 @@ export const AppStyleDefs = {
     gap: 10,
     margin: "0 auto",
   },
-  atlas: {
-    position: "relative",
-    right: -5,
-  },
-  atlasAtlas: {
+  focusFocus: {
     right: -3,
     top: -2,
   },
-  atlasSpaceInvader: {},
+  focusSpaceInvader: {},
   appItem: {
     position: "relative",
     flex: 1,

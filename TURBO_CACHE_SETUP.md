@@ -23,11 +23,13 @@ The CI workflow now uses Turbo Remote Cache. Just add the secret:
 **To get your token:**
 
 Option 1 - From Vercel Dashboard:
+
 1. Go to: https://vercel.com/account/tokens
 2. Create a new token (or use existing)
 3. Copy the token
 
 Option 2 - From CLI:
+
 ```bash
 # Run this to see your token
 npx turbo login --print-token
@@ -73,6 +75,7 @@ npx turbo link
 ## 📊 Benefits
 
 ### Before Remote Cache:
+
 ```
 CI Build Time: 5-10 minutes
 Coolify Deploy: 5-10 minutes
@@ -80,6 +83,7 @@ Local Build: 2-5 minutes
 ```
 
 ### After Remote Cache:
+
 ```
 CI Build Time: 30 seconds - 2 minutes ⚡ (5-10x faster!)
 Coolify Deploy: 30 seconds - 2 minutes ⚡ (5-10x faster!)
@@ -89,7 +93,9 @@ Local Build: 10-30 seconds ⚡ (10-20x faster!)
 ## 🔍 Verify It's Working
 
 ### In CI (GitHub Actions):
+
 Look for these logs:
+
 ```
 ✓ Remote caching enabled
 ✓ Cache hit for @chrryai/chrry:build
@@ -97,12 +103,15 @@ Look for these logs:
 ```
 
 ### In Coolify:
+
 Check build logs for:
+
 ```
 Remote caching enabled
 ```
 
 ### Locally:
+
 ```bash
 pnpm turbo build
 
@@ -136,16 +145,19 @@ pnpm turbo build
 ## 📈 Expected Results
 
 ### Scenario 1: No Code Changes
+
 ```
 Build time: 30 seconds (all cache hits!)
 ```
 
 ### Scenario 2: Changed One Package
+
 ```
 Build time: 1-2 minutes (only rebuilds changed package)
 ```
 
 ### Scenario 3: Changed Everything
+
 ```
 Build time: 5-10 minutes (full rebuild, but populates cache)
 ```
@@ -153,6 +165,7 @@ Build time: 5-10 minutes (full rebuild, but populates cache)
 ## 🎉 You're Done!
 
 Remote caching is now enabled for:
+
 - ✅ GitHub Actions CI
 - ⏳ Coolify (add env vars)
 - ✅ Local development

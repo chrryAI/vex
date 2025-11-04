@@ -36,8 +36,6 @@
 
 .focus {
   position: relative;
-  margin-left: toRem.toRem(10);
-
   .focusTime {
     position: absolute;
     top: toRem.toRem(-7.5);
@@ -65,11 +63,13 @@
 }
 
 .spaceInvader,
-.atlas {
+.atlas,
+.focus {
   position: relative;
   right: toRem.toRem(-5);
 
-  &.atlas {
+  &.atlas,
+  &.focus {
     right: toRem.toRem(-3.5);
     top: toRem.toRem(-2.5);
   }
