@@ -15,7 +15,8 @@
     "push": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "s": "tsx seed.ts",
-    "clear": "CLEAR=true tsx seed.ts"
+    "clear": "CLEAR=true tsx seed.ts",
+    "migrate:focusbutton": "tsx migrations/migrate-focusbutton-users.ts"
   },
   "keywords": [],
   "author": "",

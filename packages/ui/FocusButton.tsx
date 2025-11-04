@@ -1115,11 +1115,24 @@ export default function FocusButton({ className }: { className?: string }) {
                                             </span>
                                             {totalTime && totalTime > 0 ? (
                                               <span className={styles.taskTime}>
-                                                {Math.floor(totalTime / 3600) > 0 && (
-                                                  <>{Math.floor(totalTime / 3600)}h </>
+                                                {Math.floor(totalTime / 3600) >
+                                                  0 && (
+                                                  <>
+                                                    {Math.floor(
+                                                      totalTime / 3600,
+                                                    )}
+                                                    h{" "}
+                                                  </>
                                                 )}
-                                                {Math.floor((totalTime % 3600) / 60) > 0 && (
-                                                  <>{Math.floor((totalTime % 3600) / 60)}m </>
+                                                {Math.floor(
+                                                  (totalTime % 3600) / 60,
+                                                ) > 0 && (
+                                                  <>
+                                                    {Math.floor(
+                                                      (totalTime % 3600) / 60,
+                                                    )}
+                                                    m{" "}
+                                                  </>
                                                 )}
                                                 {Math.floor(totalTime % 60)}s
                                               </span>

@@ -1,10 +1,9 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import clsx from "clsx"
 import styles from "./Moodify.module.scss"
 
-import { user, guest, message } from "./types"
 import { API_URL, apiFetch } from "./utils"
 import MoodSelector from "./MoodSelector"
 import { useAppContext } from "./context/AppContext"
@@ -13,6 +12,7 @@ import { useAuth } from "./context/providers"
 import Loading from "./Loading"
 import { ChartCandlestick } from "./icons"
 import { useHasHydrated } from "./hooks"
+
 export type Mood =
   | "happy"
   | "sad"
@@ -95,72 +95,11 @@ export default function Moodify({
 
   const isHydrated = useHasHydrated()
 
-  const [isEnabled, setIsEnabled] = useState(!searchParams.get("editTask"))
-
-  useEffect(() => {
-    setIsEnabled(!!searchParams.get("editTask"))
-  }, [searchParams])
-
-  const [messages, setMessages] = useState<{
-    messages: {
-      user: user | null
-      guest: guest | null
-      messages: message
-    }[]
-    totalCount: number
-    hasNextPage: boolean
-    nextPage: number | null
-  }>({
-    messages: [],
-    totalCount: 0,
-    hasNextPage: false,
-    nextPage: null,
-  })
-
   useEffect(() => {
     if (hasReports) {
       onOpenReports?.()
     }
   }, [hasReports])
-
-  const [until, setUntil] = useState<number>(1)
-
-  const messagesRef = useRef<HTMLDivElement>(null)
-
-  const scrollToLastMessage = () => {
-    setTimeout(() => {
-      messagesRef.current?.scrollTo({
-        top: messagesRef.current.scrollHeight,
-        behavior: "smooth",
-      })
-    }, 200)
-  }
-
-  // useEffect(() => {
-  //   if (isChatOpen) {
-  //     if (hasNotification && mood !== "thinking") {
-  //       setHasNotification(false)
-  //     }
-  //   }
-  // }, [isChatOpen, hasNotification, mood])
-
-  const moodMessages: Record<Mood, string> = {
-    happy: t("mood_happy"),
-    sad: t("mood_sad"),
-    angry: t("mood_angry"),
-    astonished: t("mood_astonished"),
-    inlove: t("mood_inlove"),
-    thinking: t("mood_thinking"),
-  }
-
-  const handleMoodClick = (selectedMood: Mood) => {
-    setMood(selectedMood)
-    setIsEditing(false)
-  }
-
-  const [isEditing, setIsEditing] = useState(false)
-
-  if (!isEnabled) return null
 
   if (!isHydrated) return null
 
