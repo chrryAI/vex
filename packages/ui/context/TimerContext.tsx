@@ -507,13 +507,13 @@ export function TimerContextProvider({
   useEffect(() => {
     if (timerData && !hasRestoredTimerRef.current) {
       console.log(`🚀 ~ file: TimerContext.tsx:514 ~ timerData:`, timerData)
-      
+
       // Mark as restored to prevent multiple initializations
       hasRestoredTimerRef.current = true
-      
+
       // Update timer object
       setTimer(timerData)
-      
+
       // Restore timer state from API
       if (timerData.isCountingDown && timerData.count > 0) {
         setTime(timerData.count)
@@ -521,7 +521,7 @@ export function TimerContextProvider({
         setIsPaused(false)
         setIsFinished(false)
         setStartTime(Date.now())
-        
+
         // Timer will start via the isCountingDown state change
       } else if (timerData.count > 0) {
         // Timer is paused
@@ -562,7 +562,7 @@ export function TimerContextProvider({
       clearInterval(timerRef.current)
       timerRef.current = null
     }
-    
+
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current)

@@ -25,6 +25,10 @@ import {
   createMood,
   app,
   db,
+  getMoods,
+  getTasks,
+  getTimer,
+  getTaskLogs,
 } from "@repo/db"
 import { and, eq, isNull } from "drizzle-orm"
 import { instructions } from "@repo/db/src/schema"
@@ -331,6 +335,47 @@ async function generateSuggestionsAndPlaceholders({
       ? `\n\nUPCOMING CALENDAR EVENTS:\n${calendarEvents.map((e) => `- ${e.title} (${new Date(e.startTime).toLocaleDateString()})${e.location ? ` at ${e.location}` : ""}`).join("\n")}`
       : ""
 
+  // Bloom-specific: Add focus & productivity context
+  let bloomContext = ""
+  if (app?.slug === "bloom") {
+    try {
+      const subjectId = user?.id || guest?.id
+      if (subjectId) {
+        const [moodsData, tasksData, timer, taskLogsData] = await Promise.all([
+          getMoods({ userId: user?.id, guestId: guest?.id, pageSize: 15 }), // ~2 weeks
+          getTasks({ userId: user?.id, guestId: guest?.id, pageSize: 20 }), // Recent tasks
+          getTimer({ userId: user?.id, guestId: guest?.id }),
+          getTaskLogs({ userId: user?.id, guestId: guest?.id, pageSize: 50 }), // ~1-2 months
+        ])
+
+        const moods = moodsData?.moods || []
+        const tasks = tasksData?.tasks || []
+        const taskLogs = taskLogsData?.taskLogs || []
+
+        const avgMood =
+          moods.length > 0
+            ? (
+                moods.reduce((s: number, m: any) => s + (m.rating || 0), 0) /
+                moods.length
+              ).toFixed(1)
+            : null
+        const activeTasks = tasks.filter((t: any) => !t.completed).length
+        const focusTime = taskLogs.reduce(
+          (s: number, l: any) => s + (l.duration || 0),
+          0,
+        )
+
+        bloomContext = `\n\nBLOOM CONTEXT (Focus & Productivity):
+- Mood (7d avg): ${avgMood || "N/A"}/5
+- Active tasks: ${activeTasks}
+- Focus time (7d): ${focusTime}min
+- Timer status: ${timer?.isCountingDown ? "Running" : "Stopped"}`
+      }
+    } catch (error) {
+      console.error("Failed to fetch Bloom context:", error)
+    }
+  }
+
   // Use current app's highlights as examples for AI
   // This gives the AI strong context about what features are available
   const currentApp = app || null
@@ -347,7 +392,7 @@ CONVERSATION:
 ${conversationText.slice(-2000)} // Last 2000 chars
 
 MEMORIES:
-${memories.map((m) => `- ${m.content}`).join("\n")}${calendarContext}
+${memories.map((m) => `- ${m.content}`).join("\n")}${calendarContext}${bloomContext}
 
 AVAILABLE LIFEOS APPS (only classify if conversation is SPECIFICALLY about these domains):
 ${appDescriptions}
