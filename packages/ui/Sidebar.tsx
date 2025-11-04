@@ -77,8 +77,6 @@ export const Hey = memo(
     const { isLoading, slug, allApps, chrry, getAppSlug, newApp, ...auth } =
       useAuth()
 
-    const { isDevelopment } = useData()
-
     const { isExtension } = usePlatform()
 
     useEffect(() => {
@@ -158,10 +156,7 @@ export const Hey = memo(
     }, [])
 
     // Memoize app object to prevent unnecessary re-renders
-    const memoizedApp = useMemo(
-      () => newApp || app || chrry,
-      [app, newApp, chrry],
-    )
+    const memoizedApp = useMemo(() => newApp || app, [app, newApp])
 
     const getSplash = (isSplash: boolean) => {
       return (

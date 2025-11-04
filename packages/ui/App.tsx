@@ -26,7 +26,7 @@ import { DraggableAppItem } from "./DraggableAppItem"
 import { useAppReorder } from "./hooks/useAppReorder"
 import { Div, H1, Button, Label, Span, Input } from "./platform"
 import A from "./A"
-import { apiFetch } from "./utils"
+import { apiFetch, FRONTEND_URL, isFirefox } from "./utils"
 
 import { useStyles } from "./context/StylesContext"
 import {
@@ -48,6 +48,8 @@ interface App {
 
 // Focus button with live clock when timer is idle
 function FocusButton({ time }: { time: number }) {
+  const { isExtension, isFirefox, isWeb } = usePlatform()
+
   const [currentTime, setCurrentTime] = useState(new Date())
 
   useEffect(() => {
@@ -73,7 +75,11 @@ function FocusButton({ time }: { time: number }) {
   }
 
   return (
-    <A href={"/focus"} className={clsx("link", styles.focus)}>
+    <A
+      href={`${FRONTEND_URL}/focus`}
+      openInNewTab={isExtension && isFirefox}
+      className={clsx("link", styles.focus)}
+    >
       <span className={styles.focusTime}>{formatTime()}</span>
       <Img
         className={clsx("link", styles.focus)}
@@ -218,8 +224,6 @@ export default function App({
     storeId: store?.id,
   })
 
-  const { isWeb } = usePlatform()
-
   const [imageDimensionWarning, setImageDimensionWarning] = React.useState<
     string | null
   >(null)
@@ -233,6 +237,8 @@ export default function App({
       setImageDimensionWarning(null)
     }
   }, [app, app?.image])
+
+  const { isExtension, isFirefox, isWeb } = usePlatform()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement
@@ -877,19 +883,10 @@ export default function App({
               )
             )}
             {!isManagingApp && (
-              <a
+              <A
                 href={`${FRONTEND_URL}/calendar`}
                 title={t("Organize your life")}
-                onClick={(e) => {
-                  addHapticFeedback()
-
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-                  e.preventDefault()
-
-                  router.push("/calendar")
-                }}
+                openInNewTab={isExtension && isFirefox}
                 className={clsx("button transparent slideUp")}
               >
                 <Img
@@ -898,7 +895,7 @@ export default function App({
                   width={18}
                   height={18}
                 />
-              </a>
+              </A>
             )}
             {hasHydrated && isAppOwner && !isManagingApp ? (
               <Button

@@ -59,7 +59,7 @@ export default function Store({
 
   useEffect(() => {
     if (selectedApp && app?.id !== selectedApp.id) {
-      setApp(selectedApp)
+      // setApp(selectedApp)
     }
   }, [selectedApp, app?.id])
   // setApp is stable from context, no need in deps

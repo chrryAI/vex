@@ -1,6 +1,17 @@
 // Browser extension API type declarations
 // This allows TypeScript to recognize the 'browser' global variable
 
+// Vite environment variables
+interface ImportMetaEnv {
+  readonly VITE_BROWSER?: string
+  readonly VITE_IS_EXTENSION?: string
+  readonly VITE_EXCLUDE_FOCUS?: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+
 declare const browser:
   | {
       runtime?: {

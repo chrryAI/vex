@@ -1062,7 +1062,7 @@ export function AuthProvider({
       currentAppSlug: app?.slug,
       currentAppId: app?.id,
       baseAppSlug: baseApp?.slug,
-      willSwitch: matchedApp.id !== app?.id,
+      willSwitch: matchedApp?.id !== app?.id,
     })
 
     // Only update if the matched app is different from current app
