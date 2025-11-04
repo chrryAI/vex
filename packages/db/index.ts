@@ -72,7 +72,12 @@ import postgres from "postgres"
 import * as dotenv from "dotenv"
 import * as bcrypt from "bcrypt"
 import { appWithStore } from "chrry/types"
-import { invalidateApp, invalidateStore } from "./src/cache"
+import {
+  invalidateApp,
+  invalidateStore,
+  invalidateUser,
+  invalidateGuest,
+} from "./src/cache"
 
 dotenv.config()
 
@@ -799,6 +804,11 @@ export const createUser = async (user: newUser) => {
     })
     .returning()
 
+  // Invalidate user cache
+  if (inserted) {
+    await invalidateUser(inserted.id, inserted.email)
+  }
+
   return inserted ? await getUser({ id: inserted.id }) : undefined
 }
 
@@ -817,11 +827,21 @@ export const updateUser = async (user: user) => {
     .where(eq(users.id, user.id))
     .returning()
 
+  // Invalidate user cache
+  if (updated) {
+    await invalidateUser(updated.id, updated.email)
+  }
+
   return updated ? await getUser({ id: user.id }) : undefined
 }
 
 export const deleteUser = async (id: string) => {
   const [deleted] = await db.delete(users).where(eq(users.id, id)).returning()
+
+  // Invalidate user cache
+  if (deleted) {
+    await invalidateUser(deleted.id, deleted.email)
+  }
 
   return deleted
 }
@@ -856,6 +876,14 @@ export const createMessage = async (message: newMessage) => {
         // isWebSearchEnabled: inserted.isWebSearchEnabled || false,
       })
     }
+  }
+
+  // Invalidate user/guest cache (credits, lastMessage, character profiles changed)
+  if (inserted?.userId) {
+    await invalidateUser(inserted.userId)
+  }
+  if (inserted?.guestId) {
+    await invalidateGuest(inserted.guestId)
   }
 
   return inserted
@@ -1735,6 +1763,12 @@ export const createAccount = async (account: newAccount) => {
 
 export const createGuest = async (guest: newGuest) => {
   const [inserted] = await db.insert(guests).values(guest).returning()
+  
+  // Invalidate guest cache
+  if (inserted) {
+    await invalidateGuest(inserted.id, inserted.fingerprint)
+  }
+  
   return inserted ? await getGuest({ id: inserted.id }) : undefined
 }
 
@@ -1846,11 +1880,21 @@ export const updateGuest = async (guest: guest) => {
     .where(eq(guests.id, guest.id))
     .returning()
 
+  // Invalidate guest cache
+  if (updated) {
+    await invalidateGuest(updated.id, updated.fingerprint)
+  }
+
   return updated
 }
 
 export const deleteGuest = async ({ id }: { id: string }) => {
   const [deleted] = await db.delete(guests).where(eq(guests.id, id)).returning()
+  
+  // Invalidate guest cache
+  if (deleted) {
+    await invalidateGuest(deleted.id, deleted.fingerprint)
+  }
 
   return deleted
 }
@@ -5173,12 +5217,12 @@ export async function deleteSharedExpense({ id }: { id: string }) {
 
 export async function createStore(store: newStore) {
   const [result] = await db.insert(stores).values(store).returning()
-  
+
   // Invalidate store cache
   if (result) {
     await invalidateStore(result.id, result.slug)
   }
-  
+
   return result
 }
 
@@ -5440,12 +5484,12 @@ export async function updateStore(store: store) {
 
 export async function deleteStore({ id }: { id: string }) {
   const [deleted] = await db.delete(stores).where(eq(stores.id, id)).returning()
-  
+
   // Invalidate store cache
   if (deleted) {
     await invalidateStore(deleted.id, deleted.slug)
   }
-  
+
   return deleted
 }
 

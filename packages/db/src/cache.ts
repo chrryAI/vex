@@ -7,8 +7,7 @@ import { redis } from "./redis"
 
 // Disable cache in development for easier debugging
 const CACHE_ENABLED =
-  process.env.NODE_ENV === "production" ||
-  process.env.ENABLE_CACHE === "true"
+  process.env.NODE_ENV === "production" || process.env.ENABLE_CACHE === "true"
 
 // Cache TTLs (in seconds)
 const CACHE_TTL = {
@@ -16,6 +15,8 @@ const CACHE_TTL = {
   APPS_LIST: 60 * 2, // 2 minutes (shorter for lists)
   STORE: 60 * 10, // 10 minutes
   STORES_LIST: 60 * 5, // 5 minutes
+  USER: 60 * 2, // 2 minutes (users change more often)
+  GUEST: 60 * 2, // 2 minutes
 }
 
 // Cache key generators
@@ -28,6 +29,10 @@ export const cacheKeys = {
   storeBySlug: (slug: string) => `store:slug:${slug}`,
   stores: (userId?: string, parentStoreId?: string) =>
     `stores:${userId || "all"}:${parentStoreId || "all"}`,
+  user: (id: string) => `user:${id}`,
+  userByEmail: (email: string) => `user:email:${email}`,
+  guest: (id: string) => `guest:${id}`,
+  guestByFingerprint: (fingerprint: string) => `guest:fp:${fingerprint}`,
 }
 
 // Generic cache get/set
@@ -173,4 +178,59 @@ export async function setCachedStores(
     stores,
     CACHE_TTL.STORES_LIST,
   )
+}
+
+// User cache helpers
+export async function getCachedUser(id: string) {
+  return getCache(cacheKeys.user(id))
+}
+
+export async function setCachedUser(id: string, user: any) {
+  await setCache(cacheKeys.user(id), user, CACHE_TTL.USER)
+}
+
+export async function getCachedUserByEmail(email: string) {
+  return getCache(cacheKeys.userByEmail(email))
+}
+
+export async function setCachedUserByEmail(email: string, user: any) {
+  await setCache(cacheKeys.userByEmail(email), user, CACHE_TTL.USER)
+}
+
+export async function invalidateUser(id: string, email?: string) {
+  await deleteCache(cacheKeys.user(id))
+  if (email) {
+    await deleteCache(cacheKeys.userByEmail(email))
+  }
+}
+
+// Guest cache helpers
+export async function getCachedGuest(id: string) {
+  return getCache(cacheKeys.guest(id))
+}
+
+export async function setCachedGuest(id: string, guest: any) {
+  await setCache(cacheKeys.guest(id), guest, CACHE_TTL.GUEST)
+}
+
+export async function getCachedGuestByFingerprint(fingerprint: string) {
+  return getCache(cacheKeys.guestByFingerprint(fingerprint))
+}
+
+export async function setCachedGuestByFingerprint(
+  fingerprint: string,
+  guest: any,
+) {
+  await setCache(
+    cacheKeys.guestByFingerprint(fingerprint),
+    guest,
+    CACHE_TTL.GUEST,
+  )
+}
+
+export async function invalidateGuest(id: string, fingerprint?: string) {
+  await deleteCache(cacheKeys.guest(id))
+  if (fingerprint) {
+    await deleteCache(cacheKeys.guestByFingerprint(fingerprint))
+  }
 }
