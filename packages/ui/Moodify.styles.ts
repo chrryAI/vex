@@ -30,8 +30,8 @@ export const MoodifyStyleDefs = {
   },
   content: {
     padding: "15px 15px 10px 15px",
-    backgroundColor: "var(--background-transparent)",
-    border: "1px solid var(--shade-2-transparent)",
+    backgroundColor: "var(--shade-1)",
+    border: "1px solid var(--shade-2)",
     borderRadius: 20,
     position: "relative",
   },

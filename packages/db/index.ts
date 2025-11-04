@@ -4147,6 +4147,26 @@ export const createOrUpdateApp = async ({
   return result
 }
 
+export const createOrUpdateStoreInstall = async (
+  data: storeInstall | newStoreInstall,
+) => {
+  const existingInstall = await getStoreInstall({
+    storeId: data.storeId,
+    appId: data.appId,
+  })
+
+  if (existingInstall) {
+    return updateStoreInstall({
+      ...existingInstall,
+      ...data,
+    })
+  }
+
+  const [inserted] = await db.insert(storeInstalls).values(data).returning()
+
+  return inserted
+}
+
 export const deleteApp = async ({ id }: { id: string }) => {
   const [deleted] = await db.delete(apps).where(eq(apps.id, id)).returning()
 
@@ -5775,9 +5795,11 @@ export const getTasks = async ({
 export const getTimer = async ({
   fingerprint,
   userId,
+  guestId,
 }: {
   fingerprint?: string
   userId?: string
+  guestId?: string
 }) => {
   const result = (
     await db
@@ -5788,6 +5810,7 @@ export const getTimer = async ({
         and(
           fingerprint ? eq(timers.fingerprint, fingerprint) : undefined,
           userId ? eq(timers.userId, userId) : undefined,
+          guestId ? eq(timers.guestId, guestId) : undefined,
         ),
       )
   ).at(0)

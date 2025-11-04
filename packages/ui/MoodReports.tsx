@@ -4,13 +4,7 @@ import React, { useEffect, useState } from "react"
 import { mood } from "./types"
 import styles from "./MoodReports.module.scss"
 import { BarChart, Bar, Cell, LabelList } from "recharts"
-import {
-  ArrowLeft,
-  ArrowRight,
-  CircleX,
-  HomeIcon,
-  Presentation,
-} from "lucide-react"
+
 import { Trans, useTranslation } from "react-i18next"
 import {
   LineChart,
@@ -27,6 +21,9 @@ import { FRONTEND_URL } from "./utils"
 import { useAuth } from "./context/providers"
 import { useNavigation, useTheme } from "./platform"
 import Loading from "./Loading"
+import Img from "./Image"
+
+import { ArrowLeft, ArrowRight } from "./icons"
 
 type Mood = "happy" | "sad" | "angry" | "astonished" | "inlove" | "thinking"
 
@@ -53,6 +50,7 @@ const getMoodEmoji = (type: string) => {
 }
 export default function MoodReports({
   className,
+  onClose,
 }: {
   onClose?: () => void
   className?: string
@@ -68,7 +66,7 @@ export default function MoodReports({
     track: trackEvent,
   } = useAuth()
 
-  const { push, replace } = useNavigation()
+  const { push, addParams, removeParams } = useNavigation()
   const [isClient, setIsClient] = useState(false)
   useEffect(() => {
     setIsClient(true)
@@ -203,30 +201,7 @@ export default function MoodReports({
   useEffect(() => {
     if (!token) return
     fetchMoods()
-
-    // Get current URL params
-
-    // Notify other components
   }, [token])
-
-  // useEffect(() => {
-  //   if (!history.search.includes("moodReport=true")) {
-  //     onClose?.()
-  //   }
-  // }, [history.search])
-
-  useEffect(() => {
-    trackEvent({ name: "mood_report" })
-    // Update URL while preserving other params
-    push(`?moodReport=true`)
-    return () => {
-      const searchParams = new URLSearchParams(window.location.search)
-
-      // Add/update moodReport param
-      searchParams.delete("moodReport")
-      push(`?${searchParams.toString()}`)
-    }
-  }, [])
 
   const [currentDay, setCurrentDay] = useState(new Date())
 
@@ -339,16 +314,12 @@ export default function MoodReports({
         <button
           className={clsx(styles.close, "link")}
           onClick={() => {
-            push("?")
+            removeParams("moodReport")
+            onClose?.()
           }}
         >
-          FocusButton
-          <img
-            width={24}
-            height={24}
-            src={`${FRONTEND_URL}/icon-192.png`}
-            alt=""
-          />
+          Focus
+          <Img size={24} logo="focus" />
         </button>
       </h2>
       <div>
@@ -381,7 +352,7 @@ export default function MoodReports({
         <div className={styles.navigation}>
           <span>
             <Trans
-              i18nKey="week_of"
+              i18nKey="Week of {{date}}"
               values={{
                 date: currentWeek.toLocaleDateString(language, {
                   month: "short",
@@ -489,7 +460,7 @@ export default function MoodReports({
         <div className={styles.navigation}>
           <span>
             <Trans
-              i18nKey="week_of"
+              i18nKey="Week of {{date}}"
               values={{
                 date: currentWeek.toLocaleDateString(language, {
                   month: "short",
@@ -580,7 +551,7 @@ export default function MoodReports({
         <div className={styles.navigation}>
           <span>
             <Trans
-              i18nKey="month_of"
+              i18nKey="Month of {{date}}"
               values={{
                 date: currentMonth.toLocaleDateString(language, {
                   month: "short",

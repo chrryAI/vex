@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import getMember from "../../../actions/getMember"
 import getGuest from "../../../actions/getGuest"
-import {
-  getApp,
-  getPureApp,
-  updateApp,
-  createStoreInstall,
-  getAppExtends,
-  deleteAppExtend,
-  createAppExtend,
-  createOrUpdateApp,
-} from "@repo/db"
+import { getApp, getPureApp, getAppExtends, createOrUpdateApp } from "@repo/db"
 import { appSchema } from "chrry/schemas/appSchema"
 import captureException from "../../../../lib/captureException"
 import { deleteFile, upload } from "../../../../lib/uploadthing-server"
 import { v4 as uuid, validate } from "uuid"
 import slugify from "slug"
 import { isOwner } from "chrry/utils"
+import sanitizeHtml from "sanitize-html"
 
 export async function PATCH(
   request: NextRequest,
@@ -86,6 +78,7 @@ export async function PATCH(
       apiRateLimit,
       capabilities,
       highlights,
+      tips,
       tags,
       extends: extendsData,
       tools,
@@ -99,17 +92,28 @@ export async function PATCH(
     // Build the update data object (only include provided fields)
     const updateData: any = {}
 
-    if (name !== null) updateData.name = name
-    if (title !== null) updateData.title = title
-    if (description !== null) updateData.description = description
-    if (icon !== null) updateData.icon = icon
-    if (systemPrompt !== null) updateData.systemPrompt = systemPrompt
+    if (name !== null) updateData.name = sanitizeHtml(name)
+    if (title !== null) updateData.title = sanitizeHtml(title)
+    if (description !== null) updateData.description = sanitizeHtml(description)
+    if (icon !== null) updateData.icon = sanitizeHtml(icon)
+    if (systemPrompt !== null)
+      updateData.systemPrompt = sanitizeHtml(systemPrompt)
     if (tone !== null) updateData.tone = tone
     if (language !== null) updateData.language = language
     if (defaultModel !== null) updateData.defaultModel = defaultModel
     if (temperature !== undefined) updateData.temperature = temperature
     if (capabilities !== undefined) updateData.capabilities = capabilities
-    if (highlights !== undefined) updateData.highlights = highlights
+    if (highlights !== undefined)
+      updateData.highlights = highlights?.map((highlight: any) => ({
+        ...highlight,
+        content: sanitizeHtml(highlight?.content),
+      }))
+    if (tips !== undefined)
+      updateData.tips = tips?.map((tip: any) => ({
+        ...tip,
+        content: sanitizeHtml(tip?.content),
+      }))
+
     if (tags !== undefined) updateData.tags = tags
     if (tools !== undefined) updateData.tools = tools
     if (extendsData !== undefined) updateData.extends = extendsData

@@ -13,7 +13,7 @@ export const MemoryConsentStyleDefs = {
     maxWidth: 420,
     borderRadius: "var(--radius)",
     fontSize: 15,
-    margin: "5px auto 15px auto",
+    margin: "10px auto 15px auto",
     position: "relative",
   },
   memoryConsentManage: {

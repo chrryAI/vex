@@ -16,6 +16,9 @@ import {
   updateGuest,
   updateUser,
   db,
+  task,
+  getTask,
+  updateTask,
 } from "./db"
 import {
   addClient,
@@ -23,9 +26,69 @@ import {
   notify,
   removeClient,
 } from "./wsClients"
+import { createTimer, getTimer, getTasks, timer, updateTimer } from "./db"
 
 export const notifyClients = notify
 // import captureException from "./lib/captureException.js"
+
+// ============================================
+// BATCHED TASK UPDATES (Performance Optimization)
+// ============================================
+
+// Queue task updates to prevent DB overload
+const taskUpdateQueue = new Map<string, task>()
+let taskFlushTimeout: NodeJS.Timeout | null = null
+
+// Flush queued task updates to database
+async function flushTaskUpdates() {
+  if (taskUpdateQueue.size === 0) return
+
+  const tasksToUpdate = Array.from(taskUpdateQueue.values())
+  taskUpdateQueue.clear()
+
+  console.log(`[BATCH] Flushing ${tasksToUpdate.length} task updates`)
+
+  // Non-blocking: Don't await, fire and forget
+  Promise.all(
+    tasksToUpdate.map(async (taskData) => {
+      try {
+        const existing = await getTask({ id: taskData.id })
+        if (existing) {
+          await updateTask({
+            ...existing,
+            title: taskData.title,
+            total: taskData.total,
+            order: taskData.order,
+            modifiedOn: new Date(),
+          })
+        }
+      } catch (error) {
+        console.error(`[BATCH] Failed to update task ${taskData.id}:`, error)
+      }
+    }),
+  ).catch((error) => {
+    console.error("[BATCH] Task update batch failed:", error)
+  })
+}
+
+// Schedule task flush (debounced)
+function scheduleTaskFlush() {
+  if (taskFlushTimeout) clearTimeout(taskFlushTimeout)
+  taskFlushTimeout = setTimeout(flushTaskUpdates, 10000) // Flush every 10 seconds
+}
+
+// Graceful shutdown: flush on exit
+process.on("SIGTERM", async () => {
+  console.log("[SHUTDOWN] Flushing task updates...")
+  await flushTaskUpdates()
+  process.exit(0)
+})
+
+process.on("SIGINT", async () => {
+  console.log("[SHUTDOWN] Flushing task updates...")
+  await flushTaskUpdates()
+  process.exit(0)
+})
 
 const app = express()
 const PORT = Number(process.env.PORT) || 5001
@@ -255,6 +318,102 @@ wss.on("connection", async (ws, req) => {
       // Handle ping/pong from client
       if (type === "ping") {
         ws.send(JSON.stringify({ type: "pong", timestamp: Date.now() }))
+      }
+
+      if (type === "timer") {
+        const { timer: timerData, selectedTasks } = message
+
+        const fingerprint = deviceId
+
+        try {
+          // ============================================
+          // 1. UPDATE TIMER (Non-blocking)
+          // ============================================
+          if (member && timerData && fingerprint) {
+            // Fire and forget - don't block on DB write
+            ;(async () => {
+              try {
+                const existingTimer =
+                  (await getTimer({ fingerprint, userId: member.id })) ||
+                  (await createTimer({ fingerprint, userId: member.id }))
+
+                if (existingTimer) {
+                  await updateTimer({
+                    ...existingTimer,
+                    count: timerData.count ?? existingTimer.count,
+                    preset1: timerData.preset1 ?? existingTimer.preset1,
+                    preset2: timerData.preset2 ?? existingTimer.preset2,
+                    preset3: timerData.preset3 ?? existingTimer.preset3,
+                    isCountingDown:
+                      timerData.isCountingDown ?? existingTimer.isCountingDown,
+                    updatedOn: new Date(),
+                  })
+                }
+              } catch (error) {
+                console.error("[TIMER] Update failed:", error)
+              }
+            })()
+          }
+
+          // ============================================
+          // 2. QUEUE TASK UPDATES (Batched)
+          // ============================================
+          if (Array.isArray(selectedTasks) && selectedTasks.length > 0) {
+            // Validate and sanitize tasks
+            for (const item of selectedTasks) {
+              const { total, id, title, order } = item
+
+              // Sanitize total array
+              const sanitizedTotal = Array.isArray(total)
+                ? total.filter(
+                    (t) =>
+                      typeof t.date === "string" && !isNaN(Date.parse(t.date)),
+                  )
+                : []
+
+              // Queue for batch update (don't await)
+              taskUpdateQueue.set(id, {
+                ...item,
+                id,
+                title,
+                total: sanitizedTotal,
+                order: order ?? 0,
+                userId: member?.id || null,
+                guestId: guest?.id || null,
+              })
+            }
+
+            // Schedule flush (debounced)
+            scheduleTaskFlush()
+          }
+
+          // ============================================
+          // 3. NOTIFY OTHER CLIENTS (Immediate)
+          // ============================================
+          // Don't wait for DB - notify immediately for real-time sync
+          // Exclude sender's fingerprint to prevent infinite loops
+          notify(member?.id || guest?.id || "", {
+            type: "selected_tasks",
+            selectedTasks,
+            deviceId,
+          })
+
+          // Send acknowledgment to sender
+          ws.send(
+            JSON.stringify({
+              type: "timer_ack",
+              timestamp: Date.now(),
+            }),
+          )
+        } catch (error) {
+          console.error("[TIMER] Message handling failed:", error)
+          ws.send(
+            JSON.stringify({
+              type: "error",
+              message: "Failed to process timer update",
+            }),
+          )
+        }
       }
 
       // Handle typing notifications

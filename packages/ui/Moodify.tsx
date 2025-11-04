@@ -3,36 +3,16 @@
 import React, { useEffect, useRef, useState } from "react"
 import clsx from "clsx"
 import styles from "./Moodify.module.scss"
-import {
-  BrainCircuit,
-  BrainCog,
-  ChevronDown,
-  CircleChevronDown,
-  CircleX,
-  Loader,
-  LoaderCircle,
-  MessageCircle,
-  MousePointerClick,
-  History,
-  Send,
-  SmilePlus,
-  Circle,
-  ChartCandlestick,
-  Coins,
-} from "lucide-react"
-import { PiHandTap } from "react-icons/pi"
-import { user, guest, message } from "./types"
-import useSWR from "swr"
-import { toast } from "react-hot-toast"
-import { API_URL, FRONTEND_URL, pageSizes, replaceLinks } from "./utils"
-import { v4 as uuid } from "uuid"
 
-import ReactMarkdown from "react-markdown"
+import { user, guest, message } from "./types"
+import { API_URL, apiFetch } from "./utils"
 import MoodSelector from "./MoodSelector"
 import { useAppContext } from "./context/AppContext"
-import { useNavigation, usePlatform, useTheme } from "./platform"
+import { toast, useNavigation, usePlatform, useTheme } from "./platform"
 import { useAuth } from "./context/providers"
 import Loading from "./Loading"
+import { ChartCandlestick } from "./icons"
+import { useHasHydrated } from "./hooks"
 export type Mood =
   | "happy"
   | "sad"
@@ -60,7 +40,7 @@ export async function updateMood({
   language: string
 }) {
   try {
-    const response = await fetch(`${API_URL}/mood`, {
+    const response = await apiFetch(`${API_URL}/mood`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -78,34 +58,17 @@ export async function updateMood({
 
 export default function Moodify({
   className,
-  onOpenChat,
   onOpenReports,
   hasReports,
 }: {
   className?: string
-  onOpenChat?: () => void
   onOpenReports?: () => void
   hasReports?: boolean
 }) {
   const { isDrawerOpen } = useTheme()
 
   const { t } = useAppContext()
-  const { push, searchParams } = useNavigation()
-  const [isChatOpen, setIsChatOpenInternal] = useState<boolean | undefined>()
-
-  const setIsChatOpen = (value: boolean) => {
-    setIsChatOpenInternal(value)
-    if (value) {
-      setTimeout(() => {
-        document.body.style.overflow = "hidden"
-      }, 100)
-      push("?moodReport=true")
-    } else {
-      setTimeout(() => {
-        document.body.style.overflow = "auto"
-      }, 100)
-    }
-  }
+  const { searchParams, addParams, removeParams } = useNavigation()
 
   const {
     user,
@@ -115,27 +78,27 @@ export default function Moodify({
     isLoading: isLoadingMood,
     language,
     track: trackEvent,
+    fetchMood,
     ...rest
   } = useAuth()
 
-  const { os } = usePlatform()
+  useEffect(() => {
+    token && fetchMood()
+  }, [token])
 
-  const firstName = user ? user?.name?.split(" ")[0] : ""
+  const { os } = usePlatform()
 
   const [mood, setMood] = useState<Mood | undefined>(rest.mood?.type)
   useEffect(() => {
     rest.mood?.type && setMood(rest.mood?.type)
   }, [rest.mood])
 
-  const [isClient, setIsClient] = useState(false)
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
+  const isHydrated = useHasHydrated()
 
   const [isEnabled, setIsEnabled] = useState(!searchParams.get("editTask"))
 
   useEffect(() => {
-    setIsEnabled(!searchParams.get("editTask"))
+    setIsEnabled(!!searchParams.get("editTask"))
   }, [searchParams])
 
   const [messages, setMessages] = useState<{
@@ -162,62 +125,6 @@ export default function Moodify({
 
   const [until, setUntil] = useState<number>(1)
 
-  useEffect(() => {
-    isChatOpen === true
-      ? trackEvent({ name: "chat_open" })
-      : isChatOpen === false && trackEvent({ name: "chat_close" })
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsChatOpen(false)
-      }
-    }
-    // const handleKeyUp = (e: KeyboardEvent) => {
-    //   if (e.key === " " && !isChatOpen) {
-    //     e.preventDefault()
-    //     setIsChatOpen(true)
-    //   }
-    // }
-
-    window.addEventListener("keydown", handleKeyDown)
-    // window.addEventListener("keyup", handleKeyUp)
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-      // window.removeEventListener("keyup", handleKeyUp)
-    }
-  }, [isChatOpen])
-
-  const { data: messagesData, isLoading: isLoadingMessages } = useSWR(
-    token ? ["messages", until, token] : null,
-    async () => {
-      const params = new URLSearchParams({
-        pageSize: (until * pageSizes.messages).toString(),
-      })
-      const response = await fetch(`${API_URL}/messages?${params}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        console.error(new Error("Failed to fetch messages"))
-        // toast.error("Failed to fetch messages")
-        return {
-          messages: [],
-          totalCount: 0,
-          hasNextPage: false,
-          nextPage: null,
-        }
-      }
-
-      const messages = await response.json()
-
-      return messages
-    },
-  )
-
   const messagesRef = useRef<HTMLDivElement>(null)
 
   const scrollToLastMessage = () => {
@@ -228,21 +135,6 @@ export default function Moodify({
       })
     }, 200)
   }
-
-  useEffect(() => {
-    if (messagesData) {
-      setMessages(messagesData)
-    }
-  }, [messagesData])
-
-  useEffect(() => {
-    if (isChatOpen) {
-      onOpenChat?.()
-      scrollToLastMessage()
-    }
-  }, [isChatOpen])
-
-  const [hasNotification, setHasNotification] = useState(mood === "thinking")
 
   // useEffect(() => {
   //   if (isChatOpen) {
@@ -263,38 +155,14 @@ export default function Moodify({
 
   const handleMoodClick = (selectedMood: Mood) => {
     setMood(selectedMood)
-    setIsChatOpen(true)
     setIsEditing(false)
   }
 
-  const handleStartChat = () => {
-    document.body.style.overflow = "hidden"
-    setIsChatOpen(true)
-  }
-  const [newMessage, setNewMessage] = useState("")
-  const [loadingNewMessage, setLoadingNewMessage] = useState(false)
-
-  const chatBoxRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        chatBoxRef.current &&
-        !chatBoxRef.current.contains(event.target as Node)
-      ) {
-        setIsChatOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
-
   const [isEditing, setIsEditing] = useState(false)
 
-  if (!isClient || !isEnabled) return null
+  if (!isEnabled) return null
+
+  if (!isHydrated) return null
 
   return (
     <div
@@ -302,7 +170,6 @@ export default function Moodify({
       className={clsx(
         styles.moodify,
         className,
-        isChatOpen && styles.chatOpen,
         os && styles[os],
         isDrawerOpen && styles.drawerOpen,
       )}
@@ -349,7 +216,7 @@ export default function Moodify({
                   toast.error("Failed to update mood")
                 } else {
                   await fetchMoods()
-                  push("?moodReport=true")
+                  addParams({ moodReport: "true" })
                 }
               }}
             />

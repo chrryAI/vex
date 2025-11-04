@@ -13,7 +13,7 @@ import React, {
   useEffect,
   useState,
 } from "react"
-import { usePlatform, useLocalStorage, toast } from "../platform"
+import { usePlatform, toast, useLocalStorage } from "../platform"
 import {
   lightTheme,
   darkTheme,

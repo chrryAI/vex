@@ -10,6 +10,7 @@ import {
   store,
   updatePureApp as updateApp,
   createOrUpdateApp,
+  createOrUpdateStoreInstall,
 } from "./index"
 
 import enTranslations from "./en.json"
@@ -585,7 +586,7 @@ CUSTOM INSTRUCTIONS FOR THIS CHAT:
 Please follow these instructions throughout our conversation.
 {{/if}}`
 
-const bloomSystemPrompt = `You are Bloom, a holistic wellness and sustainability coach. Your purpose is to help users thrive physically, mentally, and environmentally while making positive impact on the planet.
+const bloomSystemPrompt = `You are Bloom, a holistic wellness and sustainability coach with powerful focus and mood tracking tools. Your purpose is to help users thrive physically, mentally, and environmentally while making positive impact on the planet.
 
 Core Principles:
 - Promote sustainable, long-term wellness habits
@@ -593,11 +594,14 @@ Core Principles:
 - Encourage progress over perfection
 - Provide evidence-based recommendations
 - Respect individual circumstances and limitations
+- Track emotional wellbeing and productivity patterns
 
 Your Expertise:
 - Fitness and movement guidance
 - Nutrition and healthy eating
 - Mental health and stress management
+- Mood tracking and emotional intelligence
+- Productivity and focus optimization
 - Sleep optimization
 - Sustainable living practices
 - Carbon footprint reduction
@@ -610,13 +614,15 @@ Communication Style:
 - Motivating without being preachy
 - Practical and realistic
 - Use nature emojis to inspire 🌸🌍
+- Proactive about tracking moods and creating wellness tasks
 
 When supporting wellness:
-1. Assess current habits and goals
-2. Identify small, sustainable changes
-3. Provide actionable steps with reasoning
-4. Track progress and celebrate wins
-5. Adjust recommendations based on feedback
+1. Assess current habits, goals, and emotional state
+2. Log moods when users express feelings (with consent)
+3. Create actionable wellness tasks with focus timers
+4. Track progress through mood reports and task completion
+5. Identify patterns between mood, productivity, and habits
+6. Adjust recommendations based on feedback and data
 
 You are {{app.name}}{{#if app.title}}, {{app.title}}{{else}}, a specialized AI assistant{{/if}}.{{#if app.description}} {{app.description}}{{else}} You help users accomplish their goals efficiently.{{/if}}
 
@@ -672,11 +678,22 @@ Use this inherited knowledge to understand your purpose and capabilities.
 - **Calendar tools**: createCalendarEvent, updateCalendarEvent, deleteCalendarEvent
 - **Location tools**: Use current location for local wellness resources and outdoor activities
 - **Weather tools**: Check weather for outdoor exercise and activity planning
+- **Focus tools**: createTask, updateTask, deleteTask, createMood, getMoods, getTimer
 
 **CRITICAL Tool Usage Rules:**
-- When creating wellness routines, ALWAYS use calendar tools to schedule activities
+- When users express emotions ("I feel stressed", "I'm happy"), ALWAYS log their mood with createMood
+- When suggesting wellness activities, CREATE tasks (not just suggest) - e.g., "Take a 15-minute walk"
+- Use focus timers for meditation, exercise, or work sessions
+- Reference mood reports to identify patterns: "I notice you felt stressed 3 times this week"
+- When creating wellness routines, use calendar tools to schedule activities
 - When suggesting outdoor activities, reference weather and location data
 - After using a tool, provide a natural conversational response about what you did
+
+**Focus Tool Examples:**
+- User: "I feel overwhelmed" → Log mood (astonished/sad) + Create task "5-minute breathing exercise" + Start 5min timer
+- User: "I'm happy today!" → Log mood (happy) + Celebrate + Ask what contributed to their happiness
+- User: "I need to focus" → Create task "Deep work session" + Start 25min Pomodoro timer
+- Check mood reports weekly to spot patterns and adjust wellness recommendations
 
 ## Cross-Conversation Memory System:
 
@@ -2292,7 +2309,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       "Developer Tools",
       "Analytics Dashboard",
     ],
-    tools: ["calendar", "location", "weather"] as (
+    tools: ["calendar", "location", "weather", "focus"] as (
       | "calendar"
       | "location"
       | "weather"
@@ -2665,20 +2682,12 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
 
   // Install Amsterdam in Compass store
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: compass.id,
       appId: amsterdam.id,
+      featured: true,
+      displayOrder: 1,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: compass.id,
-        appId: amsterdam.id,
-        featured: true,
-        displayOrder: 1,
-      })
-      console.log("✅ Amsterdam app installed in Compass store")
-    }
   }
 
   // ============================================
@@ -2913,20 +2922,12 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
 
   // Install Tokyo in Compass store
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: compass.id,
       appId: tokyo.id,
+      featured: true,
+      displayOrder: 2,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: compass.id,
-        appId: tokyo.id,
-        featured: true,
-        displayOrder: 2,
-      })
-      console.log("✅ Tokyo app installed in Compass store")
-    }
   }
 
   // ============================================
@@ -3168,20 +3169,12 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
 
   // Install Istanbul in Compass store
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: compass.id,
       appId: istanbul.id,
+      featured: true,
+      displayOrder: 3,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: compass.id,
-        appId: istanbul.id,
-        featured: true,
-        displayOrder: 3,
-      })
-      console.log("✅ Istanbul app installed in Compass store")
-    }
   }
 
   // ============================================
@@ -3434,20 +3427,12 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
 
   // Install New York in Compass store
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: compass.id,
       appId: newYork.id,
+      featured: true,
+      displayOrder: 4,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: compass.id,
-        appId: newYork.id,
-        featured: true,
-        displayOrder: 4,
-      })
-      console.log("✅ New York app installed in Compass store")
-    }
   }
 
   const movies = await getOrCreateStore({
@@ -3636,35 +3621,21 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   if (!popcorn) throw new Error("Failed to create or update Movies app")
 
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: movies.id,
       appId: popcorn.id,
+      featured: true,
+      displayOrder: 0,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: movies.id,
-        appId: popcorn.id,
-        featured: true,
-        displayOrder: 0,
-      })
-    }
   }
 
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: chrryAI.id,
       appId: popcorn.id,
+      featured: true,
+      displayOrder: 2,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: chrryAI.id,
-        appId: popcorn.id,
-        featured: true,
-        displayOrder: 0,
-      })
-    }
   }
 
   await updateStore({
@@ -3825,19 +3796,12 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   if (!fightClub) throw new Error("Failed to create or update Fight Club app")
 
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: movies.id,
       appId: fightClub.id,
+      featured: true,
+      displayOrder: 1,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: movies.id,
-        appId: fightClub.id,
-        featured: true,
-        displayOrder: 1,
-      })
-    }
   }
 
   const inceptionInstructions = [
@@ -3993,19 +3957,12 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   if (!inception) throw new Error("Failed to create or update Inception app")
 
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: movies.id,
       appId: inception.id,
+      featured: true,
+      displayOrder: 2,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: movies.id,
-        appId: inception.id,
-        featured: true,
-        displayOrder: 2,
-      })
-    }
   }
 
   const pulpFictionInstructions = [
@@ -4162,19 +4119,12 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     throw new Error("Failed to create or update Pulp Fiction app")
 
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: movies.id,
       appId: pulpFiction.id,
+      featured: true,
+      displayOrder: 3,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: movies.id,
-        appId: pulpFiction.id,
-        featured: true,
-        displayOrder: 3,
-      })
-    }
   }
 
   const hungerGamesInstructions = [
@@ -4331,19 +4281,12 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     throw new Error("Failed to create or update Hunger Games app")
 
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: movies.id,
       appId: hungerGames.id,
+      featured: true,
+      displayOrder: 4,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: movies.id,
-        appId: hungerGames.id,
-        featured: true,
-        displayOrder: 4,
-      })
-    }
   }
 
   // ============================================
@@ -4569,42 +4512,26 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   // Install Zarathustra in Books store
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: books.id,
       appId: zarathustra.id,
+      featured: true,
+      displayOrder: 0,
+      customDescription:
+        "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom. Question everything, create your own values.",
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: books.id,
-        appId: zarathustra.id,
-        featured: true,
-        displayOrder: 0,
-        customDescription:
-          "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom. Question everything, create your own values.",
-      })
-      console.log("✅ Zarathustra installed in Books store as main app")
-    }
   }
 
   // Install Zarathustra in Chrry AI store
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: chrryAI.id,
       appId: zarathustra.id,
+      featured: true,
+      displayOrder: 4,
+      customDescription:
+        "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom.",
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: chrryAI.id,
-        appId: zarathustra.id,
-        featured: true,
-        displayOrder: 4,
-        customDescription:
-          "Your philosophical companion for deep reading. Explore literature and ideas through Nietzschean wisdom.",
-      })
-      console.log("✅ Zarathustra installed in Chrry AI store")
-    }
   }
 
   // ============================================
@@ -4817,20 +4744,12 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   // Install 1984 in Books store
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: books.id,
       appId: nineteen84.id,
+      featured: true,
+      displayOrder: 1,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: books.id,
-        appId: nineteen84.id,
-        featured: true,
-        displayOrder: 1,
-      })
-      console.log("✅ 1984 app installed in Books store")
-    }
   }
 
   // ============================================
@@ -5043,20 +4962,12 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   // Install Meditations in Books store
   {
-    const storeInstall = await getStoreInstall({
+    const storeInstall = await createOrUpdateStoreInstall({
       storeId: books.id,
       appId: meditations.id,
+      featured: true,
+      displayOrder: 2,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: books.id,
-        appId: meditations.id,
-        featured: true,
-        displayOrder: 2,
-      })
-      console.log("✅ Meditations app installed in Books store")
-    }
   }
 
   // ============================================
@@ -5271,40 +5182,24 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   // Install Dune in Books store
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: books.id,
       appId: dune.id,
+      featured: true,
+      displayOrder: 3,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: books.id,
-        appId: dune.id,
-        featured: true,
-        displayOrder: 3,
-      })
-      console.log("✅ Dune app installed in Books store")
-    }
   }
 
   // Install Fight Club in Books store (bridge to Movies!)
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: books.id,
       appId: fightClub.id,
+      featured: true,
+      displayOrder: 4,
+      customDescription:
+        "Chuck Palahniuk's masterpiece through Zarathustra's lens. Explore masculinity, consumerism, and self-destruction. From Tyler Durden's philosophy to Project Mayhem, question everything.",
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: books.id,
-        appId: fightClub.id,
-        featured: true,
-        displayOrder: 4,
-        customDescription:
-          "Chuck Palahniuk's masterpiece through Zarathustra's lens. Explore masculinity, consumerism, and self-destruction. From Tyler Durden's philosophy to Project Mayhem, question everything.",
-      })
-      console.log("✅ Fight Club installed in Books store as bridge to Movies")
-    }
   }
 
   // Create LifeOS store
@@ -5387,7 +5282,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       "Guest Mode",
       "Seamless Onboarding",
     ],
-    tools: ["calendar", "location", "weather"] as (
+    tools: ["calendar", "location", "weather", "focus"] as (
       | "calendar"
       | "location"
       | "weather"
@@ -5416,19 +5311,12 @@ Every book, every idea, every question - examine it through the lens of life-aff
   if (!vex) throw new Error("Failed to create or update vex app")
 
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: lifeOS.id,
       appId: vex.id,
+      featured: true,
+      displayOrder: 0,
     })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: lifeOS.id,
-        appId: vex.id,
-        featured: true,
-        displayOrder: 0,
-      })
-    }
   }
 
   await updateStore({
@@ -5437,41 +5325,25 @@ Every book, every idea, every question - examine it through the lens of life-aff
   })
 
   {
-    const atlasStoreInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: compass.id,
       appId: atlas.id,
+      featured: true,
+      displayOrder: 0,
+      customDescription:
+        "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
     })
-
-    if (!atlasStoreInstall) {
-      await createStoreInstall({
-        storeId: compass.id,
-        appId: atlas.id,
-        featured: true,
-        displayOrder: 0,
-        customDescription:
-          "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
-      })
-      console.log("✅ Atlas installed in Compass store as main app")
-    }
   }
 
   {
-    const atlasStoreInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: chrryAI.id,
       appId: atlas.id,
+      featured: true,
+      displayOrder: 3,
+      customDescription:
+        "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
     })
-
-    if (!atlasStoreInstall) {
-      await createStoreInstall({
-        storeId: chrryAI.id,
-        appId: atlas.id,
-        featured: true,
-        displayOrder: 3,
-        customDescription:
-          "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
-      })
-      console.log("✅ Atlas installed in Chrry AI store")
-    }
   }
 
   let peach = await getApp({ slug: "peach" })
@@ -5486,7 +5358,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     version: "1.0.0",
     status: "testing" as const,
     highlights: peachInstructions,
-    tools: ["calendar", "location", "weather"] as (
+    tools: ["calendar", "location", "weather", "focus"] as (
       | "calendar"
       | "location"
       | "weather"
@@ -5555,13 +5427,15 @@ Every book, every idea, every question - examine it through the lens of life-aff
     extends: peachPayload.extends,
   })
 
+  if (!peach) throw new Error("Failed to add peach app")
+
   let bloom = await getApp({ slug: "bloom" })
 
   const bloomPayload = {
     ...bloom,
     subtitle: "Health & Planet",
     name: "Bloom",
-    tools: ["calendar", "location", "weather"] as (
+    tools: ["calendar", "location", "weather", "focus"] as (
       | "calendar"
       | "location"
       | "weather"
@@ -5584,37 +5458,44 @@ Every book, every idea, every question - examine it through the lens of life-aff
       {
         id: "bloom-tip-1",
         content:
-          "Custom workout routines that match your fitness level. No gym? No problem - I'll design home workouts!",
-        emoji: "💪",
+          "Track your mood daily and I'll spot patterns. Understanding emotional triggers is the first step to better wellbeing!",
+        emoji: "🌸",
       },
       {
         id: "bloom-tip-2",
         content:
-          "Healthy meal plans with recipes you'll actually enjoy. Tell me your diet preferences and I'll plan your week.",
-        emoji: "🥗",
+          "I create wellness tasks for you - not just suggestions! Tell me you're stressed and I'll log it + create a calming activity.",
+        emoji: "✅",
       },
       {
         id: "bloom-tip-3",
         content:
-          "Track calories and exercise in one place. I'll help you monitor progress and stay motivated!",
-        emoji: "📊",
+          "Use focus timers for meditation, exercise, or work. Pomodoro technique (25min focus) boosts productivity by 40%!",
+        emoji: "⏱️",
       },
       {
         id: "bloom-tip-4",
         content:
-          "Calculate your carbon footprint and get practical tips. Small changes make a big environmental impact!",
-        emoji: "🌍",
+          "View weekly mood reports to see what makes you happy. Data-driven wellness helps you do more of what works!",
+        emoji: "📊",
       },
       {
         id: "bloom-tip-5",
         content:
-          "Meditation and wellness routines that actually stick. Just 10 minutes daily can reduce stress by 40%!",
-        emoji: "🧘",
+          "Calculate your carbon footprint and get practical tips. Small changes make a big environmental impact!",
+        emoji: "🌍",
       },
     ],
     description:
-      "Track your wellness journey and environmental impact with AI-powered insights for a healthier you and planet.",
-    featureList: ["Health Tracking", "Carbon Footprint", "Wellness Insights"],
+      "Your AI wellness coach with mood tracking, task management, and focus tools. Track emotional patterns, create wellness habits, and achieve balance for a healthier you and planet.",
+    featureList: [
+      "Mood Tracking",
+      "Task Management",
+      "Focus Timer",
+      "Wellness Reports",
+      "Carbon Footprint",
+      "Health Insights",
+    ],
     features: {
       healthTracking: true,
       carbonFootprint: true,
@@ -5635,6 +5516,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
     extends: bloomPayload.extends,
   })
 
+  if (!bloom) throw new Error("Failed to add bloom app")
+
   let vault = await getApp({ slug: "vault" })
 
   const vaultPayload = {
@@ -5644,7 +5527,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     slug: "vault",
     name: "Vault",
     storeId: lifeOS.id,
-    tools: ["calendar", "location", "weather"] as (
+    tools: ["calendar", "location", "weather", "focus"] as (
       | "calendar"
       | "location"
       | "weather"
@@ -5715,6 +5598,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
     app: vaultPayload,
     extends: vaultPayload.extends,
   })
+
+  if (!vault) throw new Error("Failed to add vault app")
 
   // ============================================
   // VEX - Flagship AI Chat Platform
@@ -6272,33 +6157,64 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   // Install Chrry in LifeOS
   {
-    const storeInstall = await getStoreInstall({
+    await createOrUpdateStoreInstall({
       storeId: lifeOS.id,
+      appId: chrry.id,
+      featured: true,
+      displayOrder: 1,
+    })
+  }
+
+  {
+    await createOrUpdateStoreInstall({
+      storeId: lifeOS.id,
+      appId: peach.id,
+      featured: true,
+      displayOrder: 2,
+    })
+  }
+
+  {
+    await createOrUpdateStoreInstall({
+      storeId: lifeOS.id,
+      appId: bloom.id,
+      featured: true,
+      displayOrder: 3,
+    })
+  }
+
+  {
+    await createOrUpdateStoreInstall({
+      storeId: lifeOS.id,
+      appId: vault.id,
+      featured: true,
+      displayOrder: 4,
+    })
+
+    {
+      await createOrUpdateStoreInstall({
+        storeId: lifeOS.id,
+        appId: atlas.id,
+        featured: true,
+        displayOrder: 5,
+      })
+    }
+  }
+
+  // Install Chrry in Claude store
+  {
+    const storeInstall = await getStoreInstall({
+      storeId: claudeStore.id,
       appId: chrry.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: lifeOS.id,
+        storeId: claudeStore.id,
         appId: chrry.id,
-        featured: true,
-        displayOrder: 1,
-      })
-    }
-  }
-
-  {
-    const storeInstall = await getStoreInstall({
-      storeId: lifeOS.id,
-      appId: atlas.id,
-    })
-
-    if (!storeInstall) {
-      await createStoreInstall({
-        storeId: lifeOS.id,
-        appId: atlas.id,
-        featured: true,
-        displayOrder: 4,
+        customDescription:
+          "Build Claude-exclusive apps and publish to the store",
+        displayOrder: 2,
       })
     }
   }

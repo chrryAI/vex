@@ -551,6 +551,9 @@ export const messages = pgTable(
       .notNull()
       .default("chat"),
     id: uuid("id").defaultRandom().notNull().primaryKey(),
+    moodId: uuid("moodId").references(() => moods.id, {
+      onDelete: "set null",
+    }),
     agentId: uuid("agentId").references(() => aiAgents.id, {
       onDelete: "cascade",
     }),
@@ -1136,6 +1139,94 @@ export const documentSummaries = pgTable("document_summaries", {
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+})
+
+export const timers = pgTable("timer", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("userId")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  count: integer("count").notNull().default(0),
+  fingerprint: text("fingerprint").notNull(),
+  isCountingDown: boolean("isCountingDown").notNull().default(false),
+  preset1: integer("preset1").notNull().default(25),
+  preset2: integer("preset2").notNull().default(15),
+  preset3: integer("preset3").notNull().default(5),
+})
+export const moods = pgTable("mood", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+  type: text("type", {
+    enum: ["happy", "sad", "angry", "astonished", "inlove", "thinking"],
+  }).notNull(),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+
+  taskLogId: uuid("taskLogId").references((): AnyPgColumn => taskLogs.id, {
+    onDelete: "cascade",
+  }),
+  messageId: uuid("messageId").references((): AnyPgColumn => messages.id, {
+    onDelete: "cascade",
+  }),
+  metadata: jsonb("metadata")
+    .$type<{
+      detectedBy?: string // "claude-3.5-sonnet"
+      confidence?: number // 0.85
+      reason?: string // "User expressed excitement..."
+      conversationContext?: string // Last 200 chars
+    }>()
+    .default({}),
+})
+
+export const tasks = pgTable("task", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  modifiedOn: timestamp("modifiedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  total: jsonb("total").$type<{ date: string; count: number }[]>().default([]),
+  order: integer("order").default(0),
+  selected: boolean("selected").default(false),
+})
+
+export const taskLogs = pgTable("taskLog", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  taskId: uuid("taskId")
+    .references(() => tasks.id, { onDelete: "cascade" })
+    .notNull(),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+
+  moodId: uuid("moodId").references(() => moods.id, { onDelete: "cascade" }),
+
+  content: text("content").notNull(),
+  mood: text("mood", {
+    enum: ["happy", "sad", "angry", "astonished", "inlove", "thinking"],
+  }),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
 })
 
 // Message embeddings for semantic search of conversation history

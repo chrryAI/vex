@@ -7,6 +7,7 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useCallback,
 } from "react"
 import useSWR from "swr"
 import { v4 as uuidv4 } from "uuid"
@@ -43,6 +44,7 @@ import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
 import {
+  apiFetch,
   getExampleInstructions,
   instructionBase,
   isDeepEqual,
@@ -56,6 +58,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      fetchMood: () => Promise<void>
+      bloom: appWithStore | undefined
       isLoadingMoods: boolean
       mood: mood | null
       moods: {
@@ -866,57 +870,6 @@ export function AuthProvider({
   )
 
   // Handle pathname changes: extract slug and switch app
-  useEffect(() => {
-    if (!baseApp || !allApps) return
-
-    // Find app by pathname using the utility function
-    const matchedApp = findAppByPathname(pathname, allApps) || baseApp
-
-    if (matchedApp) {
-      // Pure client-side navigation - no API calls needed!
-      setApp(matchedApp)
-      setStore(matchedApp.store)
-
-      // Use the matched app's store.apps if available (has nested apps from backend)
-      // Otherwise filter allApps by store ID
-      let currentStoreApps: appWithStore[] = []
-
-      if (matchedApp?.store?.apps && matchedApp.store.apps.length > 0) {
-        // Use nested store.apps (already has all apps for this store)
-        currentStoreApps = matchedApp.store.apps
-        console.log("✅ Using nested store.apps from matchedApp")
-      } else {
-        // Fallback: filter allApps by store ID
-        currentStoreApps =
-          allApps?.filter((a) => a?.store?.id === matchedApp?.store?.id) || []
-        console.log("⚠️ Fallback: filtering allApps by store ID")
-      }
-
-      // Always add Chrry as second item if it's not in the current store
-      const chrryApp = allApps?.find((a) => a.id === chrry?.id)
-      const hasChrry = currentStoreApps.some((a) => a.id === chrry?.id)
-      let finalApps = currentStoreApps
-      if (!hasChrry && chrryApp && currentStoreApps.length > 0) {
-        // Insert Chrry as second item (index 1)
-        finalApps = [
-          currentStoreApps[0]!,
-          chrryApp,
-          ...currentStoreApps.slice(1),
-        ]
-      } else if (!hasChrry && chrryApp) {
-        // If no other apps, just add Chrry
-        finalApps = [chrryApp]
-      }
-
-      console.log("✅ Final apps after Chrry logic:", {
-        finalCount: finalApps.length,
-        finalSlugs: finalApps.map((a) => a.slug),
-      })
-
-      setApps(finalApps)
-      setSlug(getAppSlug(matchedApp) || "")
-    }
-  }, [allApps, pathname, baseApp])
 
   const hasHydrated = useHasHydrated()
 
@@ -937,10 +890,12 @@ export function AuthProvider({
   const [isLoadingMood, setIsLoadingMood] = useState(true)
   const [mood, setMood] = useState<mood | null>(null)
 
+  const [shouldFetchMood, setShouldFetchMood] = useState(false)
+
   const { data: moodData, mutate: refetchMood } = useSWR(
-    null, // Disabled by default, fetch manually with refetchMood()
+    shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
     async () => {
-      const response = await fetch(`${API_URL}/mood`, {
+      const response = await apiFetch(`${API_URL}/mood`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -949,6 +904,11 @@ export function AuthProvider({
       return response.json()
     },
   )
+
+  const fetchMood = async () => {
+    setShouldFetchMood(true)
+    shouldFetchMood && refetchMood()
+  }
 
   useEffect(() => {
     if (moodData?.id) {
@@ -961,7 +921,7 @@ export function AuthProvider({
     isLoading: isLoadingMoods,
     mutate: refetchMoods,
   } = useSWR(shouldFetchMoods && token ? ["moods", token] : null, async () => {
-    const response = await fetch(`${API_URL}/moods`, {
+    const response = await apiFetch(`${API_URL}/moods`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -1028,23 +988,89 @@ export function AuthProvider({
 
   const [aiAgents, setAiAgents] = useState<aiAgent[]>(session?.aiAgents || [])
 
-  const setAppTheme = (themeColor?: string) => {
-    setTheme(themeColor === "#ffffff" ? "light" : "dark")
-  }
+  const setAppTheme = useCallback(
+    (themeColor?: string) => {
+      setTheme(themeColor === "#ffffff" ? "light" : "dark")
+    },
+    [setTheme],
+  )
 
-  const setApp = (item: appWithStore | undefined) => {
-    setAppInternal(
-      item
-        ? {
-            ...item,
-            image: item.image || item.images?.[0]?.url,
-          }
-        : undefined,
-    )
+  const setApp = useCallback(
+    (item: appWithStore | undefined) => {
+      setAppInternal((prevApp) => {
+        const newApp = item
+          ? {
+              ...item,
+              image: item.image || item.images?.[0]?.url,
+            }
+          : undefined
 
-    item?.themeColor && setColorScheme(item?.themeColor)
-    item?.backgroundColor && setAppTheme(item.backgroundColor)
-  }
+        return newApp
+      })
+
+      // Update theme after state update (outside of setState callback)
+      if (item?.id !== app?.id) {
+        // Defer theme updates to avoid "setState during render" error
+        setTimeout(() => {
+          item?.themeColor && setColorScheme(item?.themeColor)
+          item?.backgroundColor && setAppTheme(item.backgroundColor)
+        }, 0)
+      }
+    },
+    [setColorScheme, setAppTheme, app?.id],
+  )
+
+  useEffect(() => {
+    if (!baseApp || !allApps) return
+
+    // Find app by pathname using the utility function
+    const matchedApp = findAppByPathname(pathname, allApps) || baseApp
+
+    if (matchedApp) {
+      // Pure client-side navigation - no API calls needed!
+      setApp(matchedApp)
+      setStore(matchedApp.store)
+
+      // Use the matched app's store.apps if available (has nested apps from backend)
+      // Otherwise filter allApps by store ID
+      let currentStoreApps: appWithStore[] = []
+
+      if (matchedApp?.store?.apps && matchedApp.store.apps.length > 0) {
+        // Use nested store.apps (already has all apps for this store)
+        currentStoreApps = matchedApp.store.apps
+        console.log("✅ Using nested store.apps from matchedApp")
+      } else {
+        // Fallback: filter allApps by store ID
+        currentStoreApps =
+          allApps?.filter((a) => a?.store?.id === matchedApp?.store?.id) || []
+        console.log("⚠️ Fallback: filtering allApps by store ID")
+      }
+
+      // Always add Chrry as second item if it's not in the current store
+      const chrryApp = allApps?.find((a) => a.id === chrry?.id)
+      const hasChrry = currentStoreApps.some((a) => a.id === chrry?.id)
+      let finalApps = currentStoreApps
+      if (!hasChrry && chrryApp && currentStoreApps.length > 0) {
+        // Insert Chrry as second item (index 1)
+        finalApps = [
+          currentStoreApps[0]!,
+          chrryApp,
+          ...currentStoreApps.slice(1),
+        ]
+      } else if (!hasChrry && chrryApp) {
+        // If no other apps, just add Chrry
+        finalApps = [chrryApp]
+      }
+
+      console.log("✅ Final apps after Chrry logic:", {
+        finalCount: finalApps.length,
+        finalSlugs: finalApps.map((a) => a.slug),
+      })
+
+      setApps(finalApps)
+      setSlug(getAppSlug(matchedApp) || "")
+    }
+  }, [allApps, pathname, baseApp, setApp])
 
   const [profile, setProfileInternal] = useState<user | undefined>(undefined)
 
@@ -1213,6 +1239,7 @@ export function AuthProvider({
 
   const popcorn = allApps.find((app) => app.slug === "popcorn")
   const atlas = allApps.find((app) => app.slug === "atlas")
+  const bloom = allApps.find((app) => app.slug === "bloom")
 
   const zarathustra = allApps.find((app) => app.slug === "zarathustra")
 
@@ -1319,6 +1346,7 @@ export function AuthProvider({
         apps,
         setApps,
         atlas,
+        bloom,
         popcorn,
         zarathustra,
         allApps, // All apps from all stores
@@ -1339,8 +1367,9 @@ export function AuthProvider({
           ago(date, locale),
         fetchMoods: async () => {
           setShouldFetchMoods(true)
-          refetchMoods()
+          shouldFetchMood && refetchMoods()
         },
+        fetchMood,
       }}
     >
       {children}

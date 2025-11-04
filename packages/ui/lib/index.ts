@@ -41,7 +41,14 @@ export const getImageSrc = ({
   showLoading?: boolean
   dataTestId?: string
   src?: string
-  logo?: "lifeOS" | "isMagenta" | "isVivid" | "vex" | "chrry" | "blossom"
+  logo?:
+    | "lifeOS"
+    | "isMagenta"
+    | "isVivid"
+    | "vex"
+    | "chrry"
+    | "blossom"
+    | "focus"
   icon?:
     | "spaceInvader"
     | "pacman"
@@ -89,17 +96,19 @@ export const getImageSrc = ({
     : null
 
   const logoSrc =
-    logo === "blossom"
-      ? `${BASE_URL}/images/apps/blossom.png`
-      : logo === "chrry" || store?.slug === "explore"
-        ? `${BASE_URL}/logo/cherry-500.png`
-        : logo === "lifeOS" || store?.slug === "lifeOS"
-          ? `${BASE_URL}/icons/lifeOS-128.png`
-          : logo === "vex" || store?.slug === "vex"
-            ? `${BASE_URL}/icons/icon-128.png`
-            : logo
-              ? `${BASE_URL}/icons/icon-128${logo === "isMagenta" ? "-m" : ""}${logo === "isVivid" ? "-v" : ""}.png`
-              : null // Remote web asset
+    logo === "focus"
+      ? `${BASE_URL}/images/focus.png`
+      : logo === "blossom"
+        ? `${BASE_URL}/images/apps/blossom.png`
+        : logo === "chrry" || store?.slug === "explore"
+          ? `${BASE_URL}/logo/cherry-500.png`
+          : logo === "lifeOS" || store?.slug === "lifeOS"
+            ? `${BASE_URL}/icons/lifeOS-128.png`
+            : logo === "vex" || store?.slug === "vex"
+              ? `${BASE_URL}/icons/icon-128.png`
+              : logo
+                ? `${BASE_URL}/icons/icon-128${logo === "isMagenta" ? "-m" : ""}${logo === "isVivid" ? "-v" : ""}.png`
+                : null // Remote web asset
 
   // Pick the right image size based on requested size
   // images array: [512px, 192px, 180px, 128px, 32px]

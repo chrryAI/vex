@@ -44,6 +44,7 @@ import {
   FRONTEND_URL,
   VERSION,
   API_URL,
+  apiFetch,
 } from "./utils"
 
 import sanitizeHtml from "sanitize-html"
@@ -56,10 +57,13 @@ import { useTimerContext, STORAGE_KEY } from "./context/TimerContext"
 import SwipeableTimeControl from "./SwipeableTimeControl"
 import { defaultLocale } from "./locales"
 import { useAuth } from "./context/providers"
-import { useNavigation, usePlatform, useTheme } from "./platform"
+import { Button, useNavigation, usePlatform, useTheme } from "./platform"
 import { themeType } from "./context/ThemeContext"
 import Skeleton from "./Skeleton"
 import Testimonials from "./Testimonials"
+import Img from "./Image"
+import A from "./A"
+import { useStyles } from "./context/StylesContext"
 
 const EditTask = lazy(() => import("./EditTask"))
 
@@ -92,6 +96,8 @@ export default function FocusButton({ className }: { className?: string }) {
     user,
     guest,
     language,
+    bloom,
+    getAppSlug,
   } = useAuth()
 
   const hasHydrated = useHasHydrated()
@@ -142,7 +148,7 @@ export default function FocusButton({ className }: { className?: string }) {
     }
   }, [tasks])
 
-  const { searchParams, push } = useNavigation()
+  const { searchParams, addParams, push, removeParams } = useNavigation()
 
   const isMovingItemRef = useRef(false)
   const { isDark, setTheme: setThemeInContext } = useTheme()
@@ -168,7 +174,7 @@ export default function FocusButton({ className }: { className?: string }) {
       : null
     if (editTaskId) {
       const editTask = tasks.tasks?.find((task) => task.id === editTaskId)
-      editTask ? setEditingTask(editTask) : editingTask && push("?")
+      editTask ? setEditingTask(editTask) : editingTask && push("/focus")
     }
   }, [searchParams, tasks, push, editingTask])
 
@@ -201,13 +207,10 @@ export default function FocusButton({ className }: { className?: string }) {
   useEffect(() => {
     if (showReport) {
       // Update URL with subscribe param while preserving others
-      const searchParams = new URLSearchParams(window.location.search)
-      searchParams.set("taskReport", "true")
-      window.history.pushState({}, "", `?${searchParams.toString()}`)
+      addParams({ taskReport: "true" })
     } else {
       // Remove subscribe param while preserving others
-      const searchParams = new URLSearchParams(window.location.search)
-      searchParams.delete("taskReport")
+      removeParams("taskReport")
       const newUrl = searchParams.toString()
         ? `?${searchParams.toString()}`
         : window.location.pathname
@@ -311,6 +314,8 @@ export default function FocusButton({ className }: { className?: string }) {
     handleCancel,
   ])
 
+  const { utilities } = useStyles()
+
   const updateTask = async ({
     task,
     reorder,
@@ -324,7 +329,7 @@ export default function FocusButton({ className }: { className?: string }) {
 
     try {
       const url = `${API_URL}/tasks/${task.id}?reorder=${reorder}`
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -487,6 +492,7 @@ export default function FocusButton({ className }: { className?: string }) {
                       ? styles.active
                       : time !== 0 && styles.paused
                     : undefined,
+                  "link",
                 )}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -506,6 +512,7 @@ export default function FocusButton({ className }: { className?: string }) {
                       ? styles.active
                       : time !== 0 && styles.paused
                     : undefined,
+                  "link",
                 )}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -525,6 +532,7 @@ export default function FocusButton({ className }: { className?: string }) {
                       ? styles.active
                       : time !== 0 && styles.paused
                     : undefined,
+                  "link",
                 )}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -579,7 +587,7 @@ export default function FocusButton({ className }: { className?: string }) {
                     <video
                       ref={videoRef}
                       className={styles.video}
-                      src={`${FRONTEND_URL}/blob.mp4`}
+                      src={`${FRONTEND_URL}/video/blob.mp4`}
                       autoPlay
                       loop
                       muted
@@ -827,6 +835,7 @@ export default function FocusButton({ className }: { className?: string }) {
                     isPaused || !isCountingDown
                       ? styles.startButton
                       : styles.pauseButton,
+                    "link",
                   )}
                   data-testid={`focusbutton-${isPaused || !isCountingDown ? "start" : "pause"}-button`}
                   onClick={handleClick}
@@ -856,6 +865,7 @@ export default function FocusButton({ className }: { className?: string }) {
                   className={clsx(
                     styles.cancelButton,
                     isCountingDown && styles.isCountingDown,
+                    "link",
                   )}
                   data-testid="focusbutton-cancel-button"
                   onClick={handleCancel}
@@ -934,71 +944,37 @@ export default function FocusButton({ className }: { className?: string }) {
                   </div>
                 ) : (
                   <>
-                    <div data-testid="task-reports" className={styles.top}>
-                      <button
-                        data-testid="new-task-button"
-                        className={clsx(styles.newTaskButton, "transparent")}
-                        onClick={() => {
-                          push("?addTask=true")
-                        }}
-                      >
-                        <AlarmClockCheck width={16} height={16} />
-                        {t("New task")}
-                      </button>
-                      {!isLoadingTasks && !tasks?.tasks?.length ? (
+                    <div className={styles.app}>
+                      <div data-testid="task-reports" className={styles.top}>
                         <button
-                          data-testid="show-demo-task-reports"
-                          className={clsx("link", styles.showDemoButton)}
+                          data-testid="new-task-button"
+                          className={clsx(
+                            styles.newTaskButton,
+                            "transparent link",
+                          )}
                           onClick={() => {
-                            push("?taskReport=true&showDemo=true")
+                            addParams({ addTask: "true" })
                           }}
                         >
-                          <ChartArea
-                            color={"var(--shade-6)"}
-                            width={14}
-                            height={14}
-                          />
-                          <span>{t("See Example Report")}</span>
+                          <AlarmClockCheck width={16} height={16} />
+                          {t("New task")}
                         </button>
-                      ) : (
-                        !isLoadingTasks &&
-                        tasks?.tasks?.length && (
-                          <button
-                            data-testid="task-reports-button"
-                            className={styles.reportsButton}
-                            onClick={() => setShowReport(true)}
+                        {bloom && (
+                          <A
+                            style={{
+                              ...utilities.button.style,
+                              ...utilities.inverted.style,
+                              ...utilities.small.style,
+                            }}
+                            href={getAppSlug(bloom)}
                           >
-                            {showReport ? (
-                              <Loading color="#000" width={16} height={16} />
-                            ) : (
-                              <ChartColumnBig width={16} height={16} />
-                            )}
-                            {t("Task Reports")}
-                          </button>
-                        )
-                      )}
+                            <Img size={20} app={bloom} />
+                            Bloom
+                          </A>
+                        )}
+                      </div>
                     </div>
-                    <div className={styles.app}>
-                      <a href="https://apps.apple.com/us/app/focusbutton/id6748565053?l=en-US">
-                        <FaApple
-                          name="apple1"
-                          size={20}
-                          color={isDark ? "white" : "black"}
-                        />
-                        {t("Download the App")}
-                      </a>
-                      <a
-                        href={`https://askvex.com${defaultLocale === language ? "" : `/${language}`}`}
-                      >
-                        <img
-                          width={20}
-                          height={20}
-                          src={`${FRONTEND_URL}/vex.png`}
-                          alt="Vex"
-                        />
-                        Vex
-                      </a>
-                    </div>
+
                     {tasks?.tasks?.length ? (
                       <>
                         <div data-testid="tasks" className={clsx(styles.tasks)}>
@@ -1139,11 +1115,13 @@ export default function FocusButton({ className }: { className?: string }) {
                                             </span>
                                             {totalTime && totalTime > 0 ? (
                                               <span className={styles.taskTime}>
-                                                {Math.floor(totalTime / 3600)}h{" "}
-                                                {Math.floor(
-                                                  (totalTime % 3600) / 60,
+                                                {Math.floor(totalTime / 3600) > 0 && (
+                                                  <>{Math.floor(totalTime / 3600)}h </>
                                                 )}
-                                                m {Math.floor(totalTime % 60)}s
+                                                {Math.floor((totalTime % 3600) / 60) > 0 && (
+                                                  <>{Math.floor((totalTime % 3600) / 60)}m </>
+                                                )}
+                                                {Math.floor(totalTime % 60)}s
                                               </span>
                                             ) : null}
                                           </>
@@ -1158,7 +1136,7 @@ export default function FocusButton({ className }: { className?: string }) {
                                     />
                                     <button
                                       data-testid="edit-task-button"
-                                      className={styles.editButton}
+                                      className={"link"}
                                       onClick={() => {
                                         if (
                                           selectedTasks?.some(
@@ -1193,7 +1171,12 @@ export default function FocusButton({ className }: { className?: string }) {
                               components={{
                                 register: (
                                   <button
-                                    onClick={() => push("?signIn=register")}
+                                    onClick={() =>
+                                      addParams({
+                                        subscribe: "true",
+                                        plan: "plus",
+                                      })
+                                    }
                                     className="link"
                                   />
                                 ),
@@ -1215,7 +1198,12 @@ export default function FocusButton({ className }: { className?: string }) {
                                       position: "relative",
                                       top: 1.1,
                                     }}
-                                    onClick={() => push("?subscribe=true")}
+                                    onClick={() =>
+                                      addParams({
+                                        subscribe: "true",
+                                        plus: "true",
+                                      })
+                                    }
                                     className="link"
                                   >
                                     <SmilePlus

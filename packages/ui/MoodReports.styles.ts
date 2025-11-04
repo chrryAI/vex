@@ -14,11 +14,13 @@ export const MoodReportsStyleDefs = {
     padding: "0 20px 200px 20px",
     margin: "0 auto",
     maxWidth: 500,
+    fontSize: 13,
   },
   title: {
     display: "flex",
     flexDirection: "row",
     marginTop: 0,
+    marginBottom: 15,
     alignItems: "center",
   },
   toggleDemo: {

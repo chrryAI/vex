@@ -1,3 +1,5 @@
+@use "./toRem.scss";
+
 .moodReports {
   display: flex;
   flex-direction: column;
@@ -10,6 +12,8 @@
   margin: 0 auto;
   max-width: 500px;
 
+  font-size: toRem.toRem(13);
+
   @media (min-width: 800px) {
     min-width: 500px;
   }
@@ -19,6 +23,7 @@
   display: flex;
   flex-direction: row;
   margin-top: 0;
+  margin-bottom: 15px;
 
   align-items: center;
 

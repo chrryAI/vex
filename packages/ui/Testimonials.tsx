@@ -20,13 +20,13 @@ const Testimonials = ({ className }: { className?: string }) => {
         {[
           {
             quote:
-              "FocusButton helped me finally build a daily focus habit. The mood tracker is a bonus!",
+              "Focus helped me finally build a daily focus habit. The mood tracker is a bonus!",
             author: "— Alex P.",
             emoji: "☺️",
           },
           {
             quote:
-              "I love how simple and effective FocusButton is. My productivity has doubled.",
+              "I love how simple and effective Focus is. My productivity has doubled.",
             author: "— Maria L.",
             emoji: "🚀",
           },

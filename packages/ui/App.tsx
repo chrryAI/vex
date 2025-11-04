@@ -896,6 +896,10 @@ export default function App({
                   .slice(0, 5)
                   ?.map((item, index) => {
                     const showAtlasHere = index === 1 && app?.id === chrry?.id
+                    const showFocusHere =
+                      !showAtlasHere &&
+                      index === 1 &&
+                      app?.tools?.includes("focus")
 
                     // Calculate positions for Pacman and Space Invader
                     // Show after base app (index 0) and Chrry (index 1)
@@ -1110,6 +1114,20 @@ export default function App({
                                 className={clsx("link", styles.atlas)}
                                 containerClass={clsx("link", styles.atlas)}
                                 app={atlas}
+                                width={22}
+                                height={22}
+                              />
+                            </A>
+                          )}
+                          {showFocusHere && (
+                            <A
+                              href={"/focus"}
+                              className={clsx("link", styles.atlas)}
+                            >
+                              <Img
+                                className={clsx("link", styles.atlas)}
+                                containerClass={clsx("link", styles.atlas)}
+                                logo="focus"
                                 width={22}
                                 height={22}
                               />

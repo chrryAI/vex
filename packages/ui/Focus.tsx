@@ -51,11 +51,7 @@ export default function Focus() {
                   <FocusButton />
                 </div>
               )}
-
-              <Moodify
-                onOpenReports={() => setShowMoodReports(true)}
-                onOpenChat={() => setShowMoodReports(true)}
-              />
+              <Moodify onOpenReports={() => setShowMoodReports(true)} />
             </div>
           </main>
         </>

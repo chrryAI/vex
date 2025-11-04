@@ -228,6 +228,12 @@ export const pageSizes = {
   taskLogs: 20,
 }
 
+const now = new Date()
+
+export const utcToday = new Date(
+  Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+)
+
 export const getBrowserAPI = (): BrowserAPIType | null => {
   if (typeof window === "undefined") return null
 
@@ -357,7 +363,7 @@ export function getFlag({ code }: { code?: string }) {
     .join("")
 }
 
-export const VERSION = "1.3.12"
+export const VERSION = "1.3.13"
 export type instructionBase = {
   id: string
   title: string

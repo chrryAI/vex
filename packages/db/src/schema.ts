@@ -2686,9 +2686,8 @@ export const analyticsSessions = pgTable(
 
 export const timers = pgTable("timer", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("userId")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),

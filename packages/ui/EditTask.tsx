@@ -5,9 +5,14 @@ import styles from "./EditTask.module.scss"
 import clsx from "clsx"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import toast from "react-hot-toast"
 import z from "zod"
-import { API_URL, FRONTEND_URL, pageSizes, replaceLinks } from "./utils"
+import {
+  API_URL,
+  apiFetch,
+  FRONTEND_URL,
+  pageSizes,
+  replaceLinks,
+} from "./utils"
 import Loading from "./Loading"
 import { Task } from "./FocusButton"
 import ConfirmButton from "./ConfirmButton"
@@ -28,7 +33,7 @@ import { PiHandTap } from "react-icons/pi"
 import useSWR from "swr"
 import MoodSelector from "./MoodSelector"
 import { useTranslation } from "react-i18next"
-import { useNavigation } from "./platform"
+import { toast, useNavigation } from "./platform"
 import { useAuth } from "./context/providers"
 
 const EditTaskSchema = z.object({
@@ -65,7 +70,7 @@ const EditTask = ({
   fetchTasks: () => Promise<void>
 }) => {
   const { t, i18n } = useTranslation()
-  const { push } = useNavigation()
+  const { push, addParams } = useNavigation()
   const { token, timeAgo, guest, language, track: trackEvent } = useAuth()
   const [mood, setMood] = useState<Mood | undefined>(undefined)
 
@@ -99,7 +104,7 @@ const EditTask = ({
 
   useEffect(() => {
     trackEvent({ name: "edit_task" })
-    push(`?editTask=${editingTask.id}`)
+    addParams({ editTask: editingTask.id })
   }, [])
 
   const handleMoodClick = (selectedMood: Mood) => {
@@ -134,7 +139,7 @@ const EditTask = ({
     async () => {
       const url = `${API_URL}/tasks/${editingTask.id}/taskLogs?pageSize=${until * pageSizes.taskLogs}`
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -192,7 +197,7 @@ const EditTask = ({
     trackEvent({ name: "task_edit" })
 
     try {
-      await fetch(`${API_URL}/tasks/${editingTask.id}`, {
+      await apiFetch(`${API_URL}/tasks/${editingTask.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -226,7 +231,7 @@ const EditTask = ({
     trackEvent({ name: "task_log_add" })
 
     try {
-      await fetch(`${API_URL}/taskLogs`, {
+      await apiFetch(`${API_URL}/taskLogs`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -267,7 +272,7 @@ const EditTask = ({
     trackEvent({ name: "task_log_edit" })
 
     try {
-      await fetch(`${API_URL}/taskLogs/${editingTaskLog.id}`, {
+      await apiFetch(`${API_URL}/taskLogs/${editingTaskLog.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -331,7 +336,7 @@ const EditTask = ({
               className={"transparent"}
               onClick={() => {
                 // onCancel?.()
-                push("/")
+                push("/focus")
               }}
             >
               <ArrowLeft width={16} height={16} /> {t("Back")}
@@ -345,7 +350,7 @@ const EditTask = ({
 
                 trackEvent({ name: "task_delete" })
 
-                await fetch(`${API_URL}/tasks/${editingTask.id}`, {
+                await apiFetch(`${API_URL}/tasks/${editingTask.id}`, {
                   method: "DELETE",
                   headers: {
                     "Content-Type": "application/json",
@@ -507,7 +512,7 @@ const EditTask = ({
                           trackEvent({ name: "task_log_delete" })
                           try {
                             setIsDeletingTaskLog(true)
-                            await fetch(
+                            await apiFetch(
                               `${API_URL}/taskLogs/${editingTaskLog.id}`,
                               {
                                 method: "DELETE",

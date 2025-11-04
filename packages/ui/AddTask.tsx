@@ -8,16 +8,15 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import Loading from "./Loading"
 import { Task } from "./FocusButton"
-import { toast } from "react-hot-toast"
 import sanitizeHtml from "sanitize-html"
 import { useAppContext } from "./context/AppContext"
-import { API_URL, GUEST_TASKS_COUNT } from "./utils"
+import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "./utils"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
 import { ArrowLeft } from "lucide-react"
 import { useWindowHistory } from "./hooks/useWindowHistory"
 import { useTranslation } from "react-i18next"
-import { useNavigation } from "./platform"
+import { toast, useNavigation } from "./platform"
 import { useAuth } from "./context/providers"
 
 const NewTaskSchema = z.object({
@@ -35,7 +34,7 @@ const AddTask = ({
 }) => {
   const { t } = useTranslation()
 
-  const { push } = useNavigation()
+  const { addParams, removeParams } = useNavigation()
   const {
     handleSubmit: handleNewTaskSubmit,
     formState: { errors: newTaskErrors },
@@ -50,16 +49,10 @@ const AddTask = ({
   })
 
   useEffect(() => {
-    push(`?addTask=true`)
+    addParams({ addTask: "true" })
     trackEvent({ name: "add_task" })
     return () => {
-      const searchParams = new URLSearchParams(window.location.search)
-      searchParams.delete("addTask")
-      const newUrl = searchParams.toString()
-        ? `?${searchParams.toString()}`
-        : window.location.pathname
-
-      push(newUrl)
+      removeParams("addTask")
     }
   }, [])
 
@@ -94,7 +87,7 @@ const AddTask = ({
     setIsAddingTask(true)
 
     try {
-      await fetch(`${API_URL}/tasks`, {
+      await apiFetch(`${API_URL}/tasks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

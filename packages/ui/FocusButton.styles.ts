@@ -51,17 +51,17 @@ export const FocusButtonStyleDefs = {
   },
   focusButtonMounted: {},
   focusButtonCounting: {
-    border: "1px solid var(--accent-3)",
-    boxShadow: "var(--shadow-glow)",
+    border: "1px solid var(--accent-4)",
+    boxShadow: 5,
   },
   focusButtonPaused: {
-    border: "1px solid var(--accent-1)",
+    border: "1px solid var(--orange-500)",
   },
   focusButtonFinished: {
     border: "1px solid var(--accent-4)",
   },
   pauseButton: {
-    border: "1px solid var(--accent-3) !important",
+    border: "1px solid var(--accent-4) !important",
   },
   additionalSettings: {
     display: "flex",
@@ -218,7 +218,7 @@ export const FocusButtonStyleDefs = {
     justifyContent: "center",
     color: "var(--shade-7)",
     marginBottom: 13,
-    marginTop: 8,
+    marginTop: -5,
     gap: 5,
   },
   multiTasking: {
@@ -317,11 +317,11 @@ export const FocusButtonStyleDefs = {
     border: "1px solid var(--accent-1)",
   },
   selectedTaskCounting: {
-    border: "1px solid var(--accent-3)",
-    boxShadow: "var(--shadow-glow)",
+    border: "1px solid var(--accent-4)",
+    boxShadow: 5,
   },
   selectedTaskPaused: {
-    border: "1px solid var(--accent-1)",
+    border: "1px solid var(--orange-500)",
   },
   selectedTaskFinished: {
     border: "1px solid var(--accent-4)",
