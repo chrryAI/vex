@@ -1129,7 +1129,8 @@ export default function App({
                             >
                               {time > 0 && (
                                 <span className={styles.focusTime}>
-                                  {Math.floor(time / 60)}:{String(time % 60).padStart(2, '0')}
+                                  {Math.floor(time / 60)}:
+                                  {String(time % 60).padStart(2, "0")}
                                 </span>
                               )}
                               <Img

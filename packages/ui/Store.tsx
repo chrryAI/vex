@@ -61,7 +61,7 @@ export default function Store({
     if (selectedApp && app?.id !== selectedApp.id) {
       setApp(selectedApp)
     }
-  }, [selectedApp, app])
+  }, [selectedApp, app?.id, setApp])
 
   const setSelectedApp = (app: appWithStore | undefined) => {
     if (!app?.store?.slug) return
@@ -85,7 +85,7 @@ export default function Store({
         },
       })
     }
-  }, [store?.id])
+  }, [store?.id, track])
 
   useEffect(() => {
     if (selectedApp) {
@@ -100,7 +100,7 @@ export default function Store({
         },
       })
     }
-  }, [selectedApp?.id])
+  }, [selectedApp?.id, store?.id, track])
 
   const storeStyles = useStoreStyles()
 
