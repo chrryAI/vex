@@ -6,7 +6,6 @@ import styles from "./FocusButton.module.scss"
 import { useHasHydrated } from "./hooks"
 import {
   AlarmClockCheck,
-  ChartColumnBig,
   ChevronDown,
   ChevronUp,
   CirclePause,
@@ -20,21 +19,16 @@ import {
   CircleCheck,
   Circle,
   Bird,
-  ChartArea,
   SmilePlus,
   Repeat,
-  CloudUpload,
   CloudDownload,
-  Smartphone,
 } from "lucide-react"
-import { FaGoogle, FaApple } from "react-icons/fa"
 
 import { FaDiscord } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"
 
 import { toast } from "react-hot-toast"
 import clsx from "clsx"
-import NumberFlow from "@number-flow/react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import DraggableItem from "./DraggableItem"
@@ -50,20 +44,17 @@ import {
 import sanitizeHtml from "sanitize-html"
 import Loading from "./Loading"
 import Checkbox from "./Checkbox"
-import { useWindowHistory } from "./hooks/useWindowHistory"
 import { Suspense, lazy } from "react"
 import AddTask from "./AddTask"
-import { useTimerContext, STORAGE_KEY } from "./context/TimerContext"
+import { useTimerContext } from "./context/TimerContext"
 import SwipeableTimeControl from "./SwipeableTimeControl"
-import { defaultLocale } from "./locales"
 import { useAuth } from "./context/providers"
-import { Button, useNavigation, usePlatform, useTheme } from "./platform"
+import { useNavigation, usePlatform, useTheme } from "./platform"
 import { themeType } from "./context/ThemeContext"
-import Skeleton from "./Skeleton"
-import Testimonials from "./Testimonials"
 import Img from "./Image"
 import A from "./A"
 import { useStyles } from "./context/StylesContext"
+import Testimonials from "./Testimonials"
 
 const EditTask = lazy(() => import("./EditTask"))
 

@@ -1,32 +1,64 @@
 import { z } from "zod"
+import sanitizeHtml from "sanitize-html"
+
+// Helper: Sanitized string field
+const sanitizedString = (options?: {
+  min?: number
+  max?: number
+  regex?: RegExp
+  regexMessage?: string
+  allowedTags?: string[]
+}) => {
+  let baseSchema = z.string()
+
+  // Apply validations first
+  if (options?.min) {
+    baseSchema = baseSchema.min(options.min, `Min ${options.min} characters`)
+  }
+  if (options?.max) {
+    baseSchema = baseSchema.max(options.max, `Max ${options.max} characters`)
+  }
+  if (options?.regex) {
+    baseSchema = baseSchema.regex(options.regex, options.regexMessage)
+  }
+
+  // Then apply sanitization transform
+  return baseSchema.transform((val) =>
+    sanitizeHtml(val, {
+      allowedTags: options?.allowedTags || [],
+      allowedAttributes: {},
+    }),
+  )
+}
 
 export const appSchema = z.object({
   // ID for updates (optional for new apps)
   id: z.string().optional(),
 
   // Basic Info (Tab 1)
-  name: z
-    .string()
-    .min(3, "Name is min 3 characters")
-    .max(8, "Name: maximum 8 characters")
-    .regex(/^\S+$/, "Name cannot contain spaces"),
-  title: z
-    .string()
-    .min(1, "Title is required")
-    .max(30, "Title too long (max 30)"),
-  description: z.string().max(500, "Description too long (max 500)").optional(),
+  name: sanitizedString({
+    min: 3,
+    max: 8,
+    regex: /^\S+$/,
+    regexMessage: "Name cannot contain spaces",
+  }),
+  title: sanitizedString({
+    min: 1,
+    max: 30,
+  }),
+  description: sanitizedString({ max: 500 }).optional(),
   icon: z.string().optional(),
   image: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  placeholder: z.string().max(50, "Max 50 characters").optional(),
+  placeholder: sanitizedString({ max: 50 }).optional(),
   // Highlights/Features
   highlights: z
     .array(
       z.object({
         id: z.string(),
-        title: z.string().min(1, "Highlight title required"),
-        content: z.string().optional(),
-        emoji: z.string().optional(),
+        title: sanitizedString({ min: 1 }),
+        content: sanitizedString().optional(),
+        emoji: sanitizedString().optional(),
         requiresWebSearch: z.boolean().optional(),
         appName: z.string().optional(),
       }),
@@ -37,16 +69,13 @@ export const appSchema = z.object({
     .array(
       z.object({
         id: z.string(),
-        content: z.string().optional(),
-        emoji: z.string().optional(),
+        content: sanitizedString().optional(),
+        emoji: sanitizedString().optional(),
       }),
     )
     .optional(),
   // Personality (Tab 2)
-  systemPrompt: z
-    .string()
-    .max(5000, "System prompt too long (max 5000)")
-    .optional(),
+  systemPrompt: sanitizedString({ max: 5000 }).optional(),
   tone: z
     .enum(["professional", "casual", "friendly", "technical", "creative"])
     .optional(),

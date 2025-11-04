@@ -247,9 +247,12 @@ export function AppProvider({
   const saveApp = async () => {
     try {
       setIsSavingApp(true)
+      const formValues = appForm.getValues()
+
+      // Schema already sanitizes via sanitizedString helper
       const result = canEditApp
-        ? await actions.updateApp(app.id, appForm.getValues())
-        : await actions.createApp(appForm.getValues())
+        ? await actions.updateApp(app.id, formValues)
+        : await actions.createApp(formValues)
 
       if (result?.error) {
         toast.error(result.error)

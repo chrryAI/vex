@@ -11,7 +11,6 @@ import {
   updateStore,
   createOrUpdateApp,
 } from "@repo/db"
-import sanitizeHtml from "sanitize-html"
 import { appSchema } from "chrry/schemas/appSchema"
 import captureException from "../../../lib/captureException"
 import { upload, deleteFile } from "../../../lib/uploadthing-server"
@@ -128,25 +127,20 @@ export async function POST(request: NextRequest) {
     // Handle image - accept URL from /api/image endpoint
 
     // Build the data object for validation
+    // Schema will sanitize via sanitizedString helper
     const appData = {
-      name: sanitizeHtml(name),
-      title: sanitizeHtml(title),
-      description: sanitizeHtml(description) || undefined,
-      icon: sanitizeHtml(icon) || undefined,
-      systemPrompt: sanitizeHtml(systemPrompt) || undefined,
+      name,
+      title,
+      description: description || undefined,
+      icon: icon || undefined,
+      systemPrompt: systemPrompt || undefined,
       tone: tone || undefined,
       language: language || undefined,
       defaultModel: defaultModel || undefined,
       temperature,
       capabilities,
-      highlights: highlights?.map((highlight: any) => ({
-        ...highlight,
-        content: sanitizeHtml(highlight?.content),
-      })),
-      tips: tips?.map((tip: any) => ({
-        ...tip,
-        content: sanitizeHtml(tip?.content),
-      })),
+      highlights,
+      tips,
       tags,
       tools,
       extends: extendsData,
