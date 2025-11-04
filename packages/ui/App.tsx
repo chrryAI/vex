@@ -37,6 +37,7 @@ import {
   useNavigationContext,
 } from "./context/providers"
 import { useAppContext } from "./context/AppContext"
+import { useTimerContext } from "./context/TimerContext"
 
 interface App {
   id: string
@@ -60,6 +61,8 @@ export default function App({
 }) {
   // Split contexts for better organization
   const { t } = useAppContext()
+
+  const { time } = useTimerContext()
 
   // App context
   const {
@@ -1122,11 +1125,16 @@ export default function App({
                           {showFocusHere && (
                             <A
                               href={"/focus"}
-                              className={clsx("link", styles.atlas)}
+                              className={clsx("link", styles.focus)}
                             >
+                              {time > 0 && (
+                                <span className={styles.focusTime}>
+                                  {Math.floor(time / 60)}:{String(time % 60).padStart(2, '0')}
+                                </span>
+                              )}
                               <Img
-                                className={clsx("link", styles.atlas)}
-                                containerClass={clsx("link", styles.atlas)}
+                                className={clsx("link", styles.focus)}
+                                containerClass={clsx("link", styles.focus)}
                                 logo="focus"
                                 width={22}
                                 height={22}

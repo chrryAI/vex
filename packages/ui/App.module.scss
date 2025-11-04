@@ -34,6 +34,29 @@
   padding: 0 toRem.toRem(10);
 }
 
+.focus {
+  position: relative;
+  margin-left: toRem.toRem(10);
+
+  .focusTime {
+    position: absolute;
+    top: toRem.toRem(-7.5);
+    right: toRem.toRem(-40);
+    padding: toRem.toRem(2) toRem.toRem(6);
+    background-color: var(--accent-1);
+    color: #fff;
+    border-radius: toRem.toRem(10);
+    font-size: toRem.toRem(10);
+    font-weight: 600;
+    font-family: "SF Mono", "Monaco", "Courier New", monospace;
+    letter-spacing: toRem.toRem(0.5);
+    white-space: nowrap;
+    box-shadow: 0 toRem.toRem(2) toRem.toRem(4) rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    pointer-events: none;
+  }
+}
+
 .apps {
   display: grid;
   gap: 10px;
