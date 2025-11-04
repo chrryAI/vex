@@ -293,6 +293,11 @@ export function TimerContextProvider({
 
     // Use functional update to avoid tasks dependency
     setTasks((prevTasks) => {
+      // Safety check: ensure prevTasks and prevTasks.tasks exist
+      if (!prevTasks || !prevTasks.tasks || !Array.isArray(prevTasks.tasks)) {
+        return prevTasks
+      }
+
       // Check if there are actual updates before updating
       const hasUpdates = timerTasks.some((t) => {
         const task = prevTasks.tasks.find((task) => task.id === t.id)
@@ -354,7 +359,7 @@ export function TimerContextProvider({
     lastFilteredTasksRef.current = taskIdsKey
 
     setSelectedTasksInternal((currentSelected) => {
-      if (!currentSelected || !tasks.tasks.length) return currentSelected
+      if (!currentSelected || !tasks?.tasks?.length) return currentSelected
 
       const filtered = currentSelected.filter((task) =>
         tasks.tasks.some((t) => t.id === task.id),
@@ -453,6 +458,7 @@ export function TimerContextProvider({
 
   useEffect(() => {
     if (!tasks.totalCount || selectedTasks) return
+    if (!tasks?.tasks || !Array.isArray(tasks.tasks)) return
 
     const filter = tasks.tasks.filter((task) => task.selected)
     setSelectedTasksInternal(filter)
@@ -1045,7 +1051,7 @@ export function TimerContextProvider({
         if (!audioRef.current) return
 
         try {
-          audioRef.current.src = `${FRONTEND_URL}/birds.mp3`
+          audioRef.current.src = `${FRONTEND_URL}/sounds/birds.mp3`
           audioRef.current.loop = true
           audioRef.current.volume = 0.5
 
@@ -1071,7 +1077,7 @@ export function TimerContextProvider({
 
     try {
       const audio = new Audio()
-      audio.src = `${FRONTEND_URL}/timer-end.mp3`
+      audio.src = `${FRONTEND_URL}/sounds/timer-end.mp3`
       audio.volume = 0.5
 
       // Preload and play

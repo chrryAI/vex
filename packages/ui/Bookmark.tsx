@@ -47,8 +47,8 @@ export default function Bookmark({
         ),
     )
       ? setBookmarkedInternal(true)
-      : setBookmarkedInternal(false)
-  }, [threads])
+      : setBookmarkedInternal(bookmarked)
+  }, [threads, bookmarked])
 
   const setBookmarked = async (bookmarked: boolean) => {
     setBookmarkedInternal(bookmarked)
