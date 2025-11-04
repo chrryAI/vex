@@ -472,7 +472,7 @@ export default function App({
                 </Button>
               </Div>
             )}
-            {
+            {isManagingApp && (
               <Div
                 style={appStyles.validationFeedback}
                 className={appStyles.validationFeedback.className}
@@ -509,7 +509,7 @@ export default function App({
                   )}
                 </Div>
               </Div>
-            }
+            )}
             {isManagingApp ? (
               <div className={styles.titleForm}>
                 <div className={styles.appImageContainer}>

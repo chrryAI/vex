@@ -1,23 +1,23 @@
 {
   "name": "@repo/extension",
+  "version": "1.3.31",
   "private": true,
-  "version": "1.3.30",
   "type": "module",
   "scripts": {
+    "build:all": "npm run zip:source && npm run build:firefox && npm run build:chrome",
+    "build:chrome": "rm -rf dist && tsc && vite build && npm run zip:chrome",
+    "build:chrome:dev": "rm -rf dist && tsc && vite build --mode development && npm run zip:chrome",
+    "build:dev": "rm -rf dist && tsc && vite build --mode development",
+    "build:dev:watch": "tsc && vite build --mode development --watch",
+    "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build --mode production && npm run zip:firefox",
     "dev": "node dev-watch.js",
     "dev:watch": "concurrently \"npm run build:dev:watch\" \"npm run reload:watch\"",
-    "build:dev:watch": "tsc && vite build --mode development --watch",
-    "reload:watch": "chokidar \"dist/**/*\" -c \"echo Extension updated - please refresh in Chrome\"",
-    "build:dev": "tsc && vite build --mode development",
-    "zip:chrome": "cd dist && zip -r ../dist-chrome.zip .",
-    "zip:source": "cd ../.. && zip -r apps/extension/vex.zip apps/extension packages/ui -x '*/node_modules/**' '*/dist/**' '*/.next/**' '*/.turbo/**' '*.zip' '*.env' '*.gitignore' '*.tsconfig.json' -x@.gitignore",
-    "zip:firefox": "cd dist && zip -r ../dist-firefox.zip .",
-    "build:chrome": "tsc && vite build && npm run zip:chrome",
-    "build:chrome:dev": "tsc && vite build --mode development && npm run zip:chrome",
-    "build:firefox": "npm run zip:source && tsc && VITE_BROWSER=firefox vite build --mode production && npm run zip:firefox",
-    "build:all": "npm run zip:source && npm run build:firefox && npm run build:chrome",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "reload:watch": "chokidar \"dist/**/*\" -c \"echo Extension updated - please refresh in Chrome\"",
+    "zip:chrome": "cd dist && zip -r ../dist-chrome.zip .",
+    "zip:firefox": "cd dist && zip -r ../dist-firefox.zip .",
+    "zip:source": "cd ../.. && zip -r apps/extension/vex.zip apps/extension packages/ui -x '*/node_modules/**' '*/dist/**' '*/.next/**' '*/.turbo/**' '*.zip' '*.env' '*.gitignore' '*.tsconfig.json' -x@.gitignore"
   },
   "dependencies": {
     "@chrryai/chrry": "workspace:*",
@@ -47,6 +47,7 @@
     "chokidar-cli": "^3.0.0",
     "concurrently": "^8.2.2",
     "esbuild": "^0.25.5",
+    "terser": "^5.44.0",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"
   }

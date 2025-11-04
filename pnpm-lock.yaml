@@ -437,6 +437,9 @@ importers:
       esbuild:
         specifier: ^0.25.5
         version: 0.25.11
+      terser:
+        specifier: ^5.44.0
+        version: 5.44.0
       typescript:
         specifier: ~5.8.3
         version: 5.8.3

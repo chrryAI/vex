@@ -63,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: siteConfig.name,
-    version: "1.3.30",
+    version: "1.3.31",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus"] // Firefox doesn't support sidePanel permission
@@ -253,10 +253,34 @@ export default defineConfig(({ command, mode }) => {
           // Disable code-splitting for extensions - bundle everything together
           manualChunks: undefined,
           inlineDynamicImports: true,
+          compact: true,
         },
       },
-      sourcemap: !isProduction,
-      minify: isProduction ? "esbuild" : false,
+      sourcemap: false, // Never include sourcemaps in production
+      minify: isProduction ? "terser" : false,
+      terserOptions: isProduction
+        ? {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+              pure_funcs: ["console.log", "console.debug", "console.info"],
+              passes: 3,
+              unsafe: true,
+              unsafe_comps: true,
+              unsafe_math: true,
+              unsafe_proto: true,
+              unsafe_regexp: true,
+            },
+            mangle: {
+              safari10: true,
+              toplevel: true,
+            },
+            format: {
+              comments: false,
+              ascii_only: true,
+            },
+          }
+        : undefined,
       outDir: "dist",
       emptyOutDir: true,
     },

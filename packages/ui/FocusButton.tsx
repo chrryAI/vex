@@ -134,7 +134,7 @@ export default function FocusButton({ className }: { className?: string }) {
   } = useTimerContext()
 
   useEffect(() => {
-    if (!tasks.tasks.length) {
+    if (!tasks?.tasks?.length) {
       fetchTasks()
     }
   }, [tasks])

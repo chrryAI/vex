@@ -159,23 +159,25 @@ export const Hey = memo(
 
     // Memoize app object to prevent unnecessary re-renders
     const memoizedApp = useMemo(
-      () => newApp || app,
-      [app?.id, app?.slug, app?.image, newApp],
+      () => newApp || app || chrry,
+      [app, newApp, chrry],
     )
 
+    const getSplash = (isSplash: boolean) => {
+      return (
+        <div className={clsx(styles.splash, !isSplash && styles.hidden)}>
+          <Img
+            onLoad={handleImageLoad}
+            app={memoizedApp}
+            showLoading={false}
+            size={64}
+          />
+        </div>
+      )
+    }
     // Memoize splash component to prevent re-renders
     const splash = useMemo(
-      () =>
-        memoizedApp && (
-          <div className={clsx(styles.splash, !isSplash && styles.hidden)}>
-            <Img
-              onLoad={handleImageLoad}
-              app={memoizedApp}
-              showLoading={false}
-              size={64}
-            />
-          </div>
-        ),
+      () => memoizedApp && getSplash(isSplash),
       [handleImageLoad, memoizedApp, isSplash],
     )
 
@@ -193,21 +195,25 @@ export const Hey = memo(
       <div>
         <ErrorBoundary>
           {splash}
-          <Suspense>
-            {isClientRoute ? (
-              // Client-side routes: SWAP content
-              // Check thread detail FIRST before RouteComponent
-              isThreadDetailPage && !isHome ? (
-                <Thread key={threadId} />
-              ) : RouteComponent ? (
-                <RouteComponent className={className} />
+          {isLoading ? (
+            getSplash(true)
+          ) : (
+            <Suspense>
+              {isClientRoute ? (
+                // Client-side routes: SWAP content
+                // Check thread detail FIRST before RouteComponent
+                isThreadDetailPage && !isHome ? (
+                  <Thread key={threadId} />
+                ) : RouteComponent ? (
+                  <RouteComponent className={className} />
+                ) : (
+                  isHome && <Home className={className} />
+                )
               ) : (
-                isHome && <Home className={className} />
-              )
-            ) : (
-              children
-            )}
-          </Suspense>
+                children
+              )}
+            </Suspense>
+          )}
         </ErrorBoundary>
       </div>
     )

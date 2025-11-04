@@ -837,9 +837,9 @@ export function AuthProvider({
     )
   })
 
-  const [app, setAppInternal] = useState<
+  const [app, setAppInternal] = useLocalStorage<
     (appWithStore & { image?: string }) | undefined
-  >(baseApp || session?.app)
+  >("app", baseApp || session?.app)
 
   const [apps, setApps] = useState<appWithStore[]>(store?.apps || [])
 
