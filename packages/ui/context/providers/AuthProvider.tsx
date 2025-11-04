@@ -34,6 +34,8 @@ import {
   sessionUser,
   sessionGuest,
   mood,
+  thread,
+  paginatedMessages,
 } from "../../types"
 import toast from "react-hot-toast"
 import { getSession } from "../../lib"
@@ -58,6 +60,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      thread?: thread
+      setThread: (thread?: thread) => void
       fetchMood: () => Promise<void>
       bloom: appWithStore | undefined
       isLoadingMoods: boolean
@@ -187,7 +191,7 @@ export function AuthProvider({
   signOutContext,
   error,
   locale,
-  ...rest
+  ...props
 }: {
   locale?: locale
   apiKey?: string
@@ -207,13 +211,14 @@ export function AuthProvider({
   gift?: string
   error?: string
   session?: session
+  thread?: { thread: thread; messages: paginatedMessages }
   signOutContext?: (options: {
     callbackUrl: string
     errorUrl?: string
   }) => Promise<any>
 }) {
   const [wasGifted, setWasGifted] = useState<boolean>(false)
-  const [session, setSession] = useState<session | undefined>(rest.session)
+  const [session, setSession] = useState<session | undefined>(props.session)
 
   useEffect(() => {
     if (error) {
@@ -305,7 +310,8 @@ export function AuthProvider({
       console.log("📝 Creating deviceId (no session):", deviceId)
       setDeviceIdToStorage(deviceId)
     }
-  }, [session?.deviceId, deviceId, deviceIdFromStorage, setDeviceIdToStorage])
+  }, [session?.deviceId, deviceId, deviceIdFromStorage])
+  // setDeviceIdToStorage is stable from useLocalStorage
 
   // Update deviceId from storage once loaded (only if different and no session deviceId)
   useEffect(() => {
@@ -332,7 +338,8 @@ export function AuthProvider({
     if (deviceId) {
       setDeviceIdCookie(deviceId)
     }
-  }, [deviceId, setDeviceIdCookie])
+  }, [deviceId])
+  // setDeviceIdCookie is stable from useCookie
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!session)
 
@@ -353,7 +360,8 @@ export function AuthProvider({
       setFingerprint(fp)
       // setToken(fp)
     }
-  }, [fingerprint, setFingerprint, setToken])
+  }, [fingerprint])
+  // setFingerprint/setToken are stable from useLocalStorage/useState
   const [versions, setVersions] = useState(
     session?.versions || {
       webVersion: VERSION,
@@ -1006,32 +1014,66 @@ export function AuthProvider({
             }
           : undefined
 
+        // Only update theme if app actually changed
+        if (newApp?.id !== prevApp?.id) {
+          // Defer theme updates to avoid "setState during render" error
+          setTimeout(() => {
+            newApp?.themeColor && setColorScheme(newApp.themeColor)
+            newApp?.backgroundColor && setAppTheme(newApp.backgroundColor)
+          }, 0)
+        }
+
         return newApp
       })
-
-      // Update theme after state update (outside of setState callback)
-      if (item?.id !== app?.id) {
-        // Defer theme updates to avoid "setState during render" error
-        setTimeout(() => {
-          item?.themeColor && setColorScheme(item?.themeColor)
-          item?.backgroundColor && setAppTheme(item.backgroundColor)
-        }, 0)
-      }
     },
-    [setColorScheme, setAppTheme, app?.id],
+    [setColorScheme, setAppTheme],
   )
+
+  const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
+
+  // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
     if (!baseApp || !allApps) return
 
-    // Find app by pathname using the utility function
-    const matchedApp = findAppByPathname(pathname, allApps) || baseApp
+    // Priority 1: If there's a thread, use the thread's app
+    let matchedApp: appWithStore | undefined
+    
+    if (thread?.appId) {
+      const threadApp = allApps.find((app) => app.id === thread.appId)
+      if (threadApp) {
+        matchedApp = threadApp
+        console.log("🧵 Using thread app:", threadApp.slug)
+      }
+    }
+    
+    // Priority 2: Find app by pathname
+    if (!matchedApp) {
+      matchedApp = findAppByPathname(pathname, allApps) || baseApp
+      console.log("🛣️ Using pathname app:", matchedApp?.slug)
+    }
 
-    if (matchedApp) {
-      // Pure client-side navigation - no API calls needed!
+    console.log("🔍 App detection:", {
+      pathname,
+      threadId: thread?.id,
+      threadAppId: thread?.appId,
+      matchedAppSlug: matchedApp?.slug,
+      matchedAppId: matchedApp?.id,
+      currentAppSlug: app?.slug,
+      currentAppId: app?.id,
+      baseAppSlug: baseApp?.slug,
+      willSwitch: matchedApp.id !== app?.id,
+    })
+
+    // Only update if the matched app is different from current app
+    if (matchedApp && matchedApp.id !== app?.id) {
+      console.log("🔄 Switching app:", app?.slug, "→", matchedApp.slug)
       setApp(matchedApp)
       setStore(matchedApp.store)
+    }
 
+    // Always update apps list even if app didn't change
+    if (matchedApp) {
       // Use the matched app's store.apps if available (has nested apps from backend)
       // Otherwise filter allApps by store ID
       let currentStoreApps: appWithStore[] = []
@@ -1071,7 +1113,8 @@ export function AuthProvider({
       setApps(finalApps)
       setSlug(getAppSlug(matchedApp) || "")
     }
-  }, [allApps, pathname, baseApp, setApp])
+  }, [allApps, pathname, baseApp, app?.id, thread?.appId])
+  // Thread app takes priority over pathname, then falls back to pathname detection
 
   const [profile, setProfileInternal] = useState<user | undefined>(undefined)
 
@@ -1238,6 +1281,16 @@ export function AuthProvider({
     }
   }, [sessionError])
 
+  // useEffect(() => {
+  //     if (thread) {
+  //       const threadApp = allApps.find((app) => app.id === thread.appId)
+
+  //       if (threadApp && app?.id !== threadApp?.id) {
+  //         setApp(threadApp)
+  //       }
+  //     }
+  //   }, [thread, allApps, app])
+
   const popcorn = allApps.find((app) => app.slug === "popcorn")
   const atlas = allApps.find((app) => app.slug === "atlas")
   const bloom = allApps.find((app) => app.slug === "bloom")
@@ -1341,6 +1394,8 @@ export function AuthProvider({
         isLoading,
         setIsLoading,
         signOut,
+        thread,
+        setThread,
         isExtensionRedirect,
         signInContext,
         signOutContext,

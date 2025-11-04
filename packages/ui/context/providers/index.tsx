@@ -120,6 +120,7 @@ export default function AppProviders({
         <ErrorProvider>
           <ThemeProvider session={session}>
             <AuthProvider
+              thread={thread}
               locale={locale}
               error={error}
               apiKey={apiKey}

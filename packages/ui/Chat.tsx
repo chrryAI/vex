@@ -679,26 +679,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }
 
   const setInput = (value: string) => {
-    // Detect app asynchronously - only on first message (empty thread)
-    // This allows seamless app switching while typing the first message
-    // Once conversation starts, users can manually switch apps if needed
-    if (!app || empty) {
-      !app &&
-        !appStatus?.part &&
-        !thread?.appId &&
-        getPossibleApp(value).then((detectedApp) => {
-          console.log(`🚀 Detected app:`, detectedApp)
-          if (detectedApp) {
-            console.log(
-              `✨ Auto-switching to ${detectedApp.name} (first message)`,
-            )
-            setApp(detectedApp)
-            !threadId &&
-              windowHistory.router.push(`/${detectedApp.name.toLowerCase()}`)
-          }
-        })
-    }
-
     inputRef.current = value
 
     setInputInternal(value)

@@ -158,6 +158,8 @@ export function ChatProvider({
     user,
     guest,
     session,
+    thread,
+    setThread,
     ...auth
   } = useAuth()
 
@@ -166,7 +168,6 @@ export function ChatProvider({
   // Chat state
   const [input, setInput] = useState<string>("")
   const [isEmpty, setIsEmpty] = useState(true)
-  const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
 
   const [messages, setMessages] = useState<
     {
@@ -696,16 +697,6 @@ export function ChatProvider({
   }, [appStatus?.part, guest, user])
 
   useEffect(() => {
-    if (thread) {
-      const threadApp = allApps.find((app) => app.id === thread.appId)
-
-      if (threadApp && app?.id !== threadApp?.id) {
-        setApp(threadApp)
-      }
-    }
-  }, [thread, allApps, app])
-
-  useEffect(() => {
     if (threadId) {
       thread?.placeHolder
         ? setPlaceHolder(thread?.placeHolder)
@@ -925,9 +916,8 @@ export function ChatProvider({
     hitHourlyLimit,
     user?.lastMessage?.createdOn,
     guest?.lastMessage?.createdOn,
-    user,
-    guest,
   ])
+  // user/guest removed from deps - setUser/setGuest are stable
 
   useEffect(() => {
     debateAgent && !user && guest && setDebateAgent(null)
@@ -1045,7 +1035,7 @@ export function ChatProvider({
         isLoading,
         refetchThread: async () => {
           setShouldFetchThread(true)
-          mutate()
+          shouldFetchThread && (await mutate())
         },
         setIsWebSearchEnabled,
         input,
@@ -1113,7 +1103,7 @@ export function ChatProvider({
         setIsVisitor,
         refetchThreads: async () => {
           setShouldFetchThreads(true)
-          await refetchThreads()
+          shouldFetchThreads && (await refetchThreads())
         },
         userNameByUrl,
       }}

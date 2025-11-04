@@ -61,7 +61,8 @@ export default function Store({
     if (selectedApp && app?.id !== selectedApp.id) {
       setApp(selectedApp)
     }
-  }, [selectedApp, app?.id, setApp])
+  }, [selectedApp, app?.id])
+  // setApp is stable from context, no need in deps
 
   const setSelectedApp = (app: appWithStore | undefined) => {
     if (!app?.store?.slug) return

@@ -125,11 +125,11 @@ export default function Img({
     }
   }
 
-  useEffect(() => {
-    // Reset image state when src changes
-    setImageSrc(null)
-    setError(null)
-  }, [src])
+  // useEffect(() => {
+  //   // Reset image state when src changes
+  //   setImageSrc(null)
+  //   setError(null)
+  // }, [src])
 
   useEffect(() => {
     if (inView && !imageSrc && !error) {

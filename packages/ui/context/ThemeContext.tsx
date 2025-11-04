@@ -79,9 +79,9 @@ export function ThemeProvider({
     session?.app?.themeColor || "orange",
   )
 
-  const setColorScheme = (colorScheme?: string) => {
-    if (colorScheme && Object.keys(COLORS).includes(colorScheme)) {
-      setColorSchemeInternal(colorScheme)
+  const setColorScheme = (scheme?: string) => {
+    if (scheme && Object.keys(COLORS).includes(scheme)) {
+      scheme !== colorScheme && setColorSchemeInternal(scheme)
     }
   }
 

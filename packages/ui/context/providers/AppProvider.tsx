@@ -489,9 +489,9 @@ export function AppProvider({
 
   const [instructions, setInstructions] = useState<instruction[]>(i)
 
-  useEffect(() => {
-    setInstructions(i)
-  }, [i])
+  // useEffect(() => {
+  //   setInstructions(i)
+  // }, [i])
 
   const siteConfig = getSiteConfig()
 

@@ -407,11 +407,18 @@ export const useWebSocket = <T extends { type: string }>({
 
     const checkConnection = setInterval(() => {
       const currentState = wsManager.getConnectionState()
+      const isCurrentlyConnected = wsManager.isConnected()
 
       if (currentState !== connectionStateRef.current) {
         connectionStateRef.current = currentState
 
-        setConnected(wsManager.isConnected())
+        // Only update state if connection status actually changed
+        setConnected((prev) => {
+          if (prev !== isCurrentlyConnected) {
+            return isCurrentlyConnected
+          }
+          return prev
+        })
       }
     }, 3000)
 

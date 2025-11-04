@@ -29,20 +29,21 @@ export function useLocalStorage<T>(
     (value: T | ((prev: T) => T)) => {
       try {
         // Allow value to be a function for same API as useState
-        const valueToStore =
-          value instanceof Function ? value(storedValue) : value
+        setStoredValue((prev) => {
+          const valueToStore = value instanceof Function ? value(prev) : value
 
-        // Save state
-        setStoredValue(valueToStore)
+          // Save to storage
+          storage.setItem(key, valueToStore)
 
-        // Save to storage
-        storage.setItem(key, valueToStore)
+          return valueToStore
+        })
       } catch (error) {
         console.error(`Error saving ${key} to storage:`, error)
       }
     },
-    [key, storedValue],
+    [key],
   )
+  // storedValue removed from deps to prevent infinite loop
 
   return [storedValue, setValue]
 }

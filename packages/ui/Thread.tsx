@@ -208,12 +208,16 @@ const Thread = ({
     const lastMessage = messages[messages.length - 1]
     // Only reset if not already in human mode
     if (lastMessage?.message.agentId && !autoSelectedAgent && !debateAgent) {
-      setSelectedAgent(
-        aiAgents?.find((agent) => agent.id === lastMessage?.message.agentId),
+      const agent = aiAgents?.find(
+        (agent) => agent.id === lastMessage?.message.agentId,
       )
-      setAutoSelectedAgent(true)
+      if (agent) {
+        setSelectedAgent(agent)
+        setAutoSelectedAgent(true)
+      }
     }
-  }, [messages, autoSelectedAgent, aiAgents, debateAgent])
+  }, [messages, autoSelectedAgent, debateAgent])
+  // aiAgents excluded to prevent loop, setSelectedAgent is stable
 
   const hasHydrated = useHasHydrated()
 
