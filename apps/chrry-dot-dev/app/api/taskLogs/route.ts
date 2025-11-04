@@ -4,7 +4,6 @@ import getGuest from "../../actions/getGuest"
 import {
   createMood,
   createTaskLog,
-  getLastMood,
   getMoods,
   getTask,
   getTaskLogs,
@@ -89,19 +88,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create task log" })
   }
 
-  const today = utcToday
-
+  // Create mood entry if mood is provided
   if (mood) {
-    const moodData = await getLastMood(member?.id, guest?.id)
-
-    if (!moodData) {
-      await createMood({
-        type: mood,
-        userId: member?.id,
-        taskLogId: taskLog.id,
-        guestId: guest?.id,
-      })
-    }
+    await createMood({
+      type: mood,
+      userId: member?.id,
+      taskLogId: taskLog.id,
+      guestId: guest?.id,
+    })
   }
 
   return NextResponse.json(taskLog)

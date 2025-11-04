@@ -1330,18 +1330,21 @@ Distribution: ${Object.entries(moodCounts)
 
 ${
   focusTimer
-    ? `### Timer Preferences
+    ? `### Timer Status & Preferences
+${focusTimer.isCountingDown ? "⏱️ **TIMER IS ACTIVE** - User is currently in a focus session!" : "⏸️ Timer is idle"}
 - Preset 1: ${focusTimer.preset1} min
 - Preset 2: ${focusTimer.preset2} min  
 - Preset 3: ${focusTimer.preset3} min
-- Total sessions: ${focusTimer.count}
+- Total sessions completed: ${focusTimer.count}
 `
     : ""
 }
 
 **How to use focus context:**
+- **If timer is ACTIVE:** Be brief and supportive. Don't interrupt their flow. Encourage them to stay focused.
+- **If timer is IDLE:** Suggest starting a focus session if they seem scattered or need to tackle a task.
 - Suggest breaks when user seems stressed or frustrated (check mood trends)
-- Recommend focus sessions based on their timer preferences
+- Recommend focus sessions based on their timer preferences (they prefer ${focusTimer?.preset1 || 25}min sessions)
 - Reference task progress naturally ("You've spent 2h on that project")
 - Notice mood patterns and offer wellness suggestions
 - Be supportive about productivity without being pushy
@@ -1354,7 +1357,11 @@ ${
     : "⚠️ User has NOT enabled character profiles - you MUST ask for permission before logging moods. Explain that enabling character profiles allows mood tracking for better wellness insights."
 }
 
-Example: "I notice you've been feeling thinking/contemplative lately. A 25min focus session might help clear your mind!"
+**Examples:**
+- Timer ACTIVE: "Great job staying focused! 💪 Keep it up!"
+- Timer IDLE + stressed mood: "I notice you've been feeling stressed. Want to start a ${focusTimer?.preset1 || 25}min focus session to tackle that task?"
+- Timer IDLE + good mood: "You seem energized! Perfect time for a productive focus session! 🚀"
+- After many sessions: "Wow, ${focusTimer?.count} sessions completed! You're crushing it! 🎉"
 `
       : ""
 

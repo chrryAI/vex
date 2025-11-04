@@ -12,7 +12,7 @@ import {
 } from "react"
 
 import { isSameDay, storage, FRONTEND_URL, apiFetch } from "../utils"
-import { device, timer } from "../types"
+import { device, mood, timer } from "../types"
 
 import { API_URL, useLocalStorage } from ".."
 import useSWR from "swr"
@@ -196,6 +196,8 @@ export function TimerContextProvider({
     guest,
     deviceId,
     fingerprint,
+    mood,
+    setMood,
     track: trackEvent,
   } = useAuth()
 
@@ -204,12 +206,21 @@ export function TimerContextProvider({
   const { send } = useWebSocket<{
     timer: timer
     type: string
+    mood: mood
     selectedTasks: Task[]
     deviceId: string
   }>({
     onMessage: (data) => {
       if (data?.type === "timer" && data.timer.fingerprint !== fingerprint) {
         setRemoteTimer(data.timer)
+      }
+
+      if (data?.type === "timer-ai") {
+        setTimer(data.timer)
+      }
+
+      if (data?.type === "mood") {
+        setMood(data.mood)
       }
 
       if (data?.type === "selected_tasks") {
@@ -347,6 +358,9 @@ export function TimerContextProvider({
   >(STORAGE_SELECTED_TASKS_KEY, undefined)
 
   useEffect(() => {
+    // Safety check: ensure tasks.tasks exists
+    if (!tasks?.tasks || !Array.isArray(tasks.tasks)) return
+
     // Create a stable key from task IDs to detect actual changes
     const taskIdsKey = tasks.tasks
       .map((t) => t.id)

@@ -62,6 +62,7 @@ const AuthContext = createContext<
       bloom: appWithStore | undefined
       isLoadingMoods: boolean
       mood: mood | null
+      setMood: (mood: mood | null) => void
       moods: {
         moods: mood[]
         totalCount: number
@@ -1273,6 +1274,7 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        setMood,
         isLoadingMoods,
         mood,
         moods,

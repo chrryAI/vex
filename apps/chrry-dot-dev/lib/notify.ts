@@ -75,6 +75,8 @@ export async function notify(
       | "calendar_event"
       | "notification"
       | "timer"
+      | "timer-ai"
+      | "mood"
 
     data:
       | any
@@ -165,6 +167,8 @@ export const notifyOwnerAndCollaborations = async ({
       | "character_tag_creating"
       | "calendar_event"
       | "suggestions_generated"
+      | "mood"
+      | "timer-ai"
       | "timer"
 
     data:

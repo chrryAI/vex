@@ -38,6 +38,7 @@ import {
   getNewsByCategory,
   getLatestNews,
 } from "./newsFetcher"
+import { notify } from "./notify"
 
 export const getTools = ({
   member,
@@ -1309,6 +1310,11 @@ export const getTools = ({
           thinking: "🤔",
         }
 
+        notify(member?.id! || guest?.id!, {
+          type: "mood",
+          data: mood,
+        })
+
         console.log("✅ Mood logged:", {
           id: mood?.id,
           type,
@@ -1324,8 +1330,12 @@ export const getTools = ({
     },
     updateTimer: {
       description:
-        "Update the user's focus timer preferences. Use this when the user wants to change their timer presets or settings.",
+        "Update the user's focus timer preferences or control timer state. Use this to start/stop the timer or change presets.",
       inputSchema: z.object({
+        isCountingDown: z
+          .boolean()
+          .optional()
+          .describe("Set to true to START the timer, false to STOP/PAUSE it"),
         preset1: z
           .number()
           .optional()
@@ -1340,17 +1350,26 @@ export const getTools = ({
           .describe("Third timer preset in minutes (default: 5)"),
       }),
       execute: async ({
+        isCountingDown,
         preset1,
         preset2,
         preset3,
       }: {
+        isCountingDown?: boolean
         preset1?: number
         preset2?: number
         preset3?: number
       }) => {
-        console.log("⏱️ Updating timer:", { preset1, preset2, preset3 })
+        console.log("⏱️ Updating timer:", {
+          isCountingDown,
+          preset1,
+          preset2,
+          preset3,
+        })
 
         const updateData: any = { userId: member?.id! }
+        if (isCountingDown !== undefined)
+          updateData.isCountingDown = isCountingDown
         if (preset1 !== undefined) updateData.preset1 = preset1
         if (preset2 !== undefined) updateData.preset2 = preset2
         if (preset3 !== undefined) updateData.preset3 = preset3
@@ -1358,14 +1377,31 @@ export const getTools = ({
         const updated = await updateTimer(updateData)
 
         console.log("✅ Timer updated:", {
+          isCountingDown: updated?.isCountingDown,
           preset1: updated?.preset1,
           preset2: updated?.preset2,
           preset3: updated?.preset3,
         })
+
+        notify(member?.id! || guest?.id!, {
+          type: "timer-ai",
+          data: updated,
+        })
+
+        // Build response message
+        let message = ""
+        if (isCountingDown === true) {
+          message = `⏱️ Timer started! Focus mode activated. You got this! 💪`
+        } else if (isCountingDown === false) {
+          message = `⏸️ Timer stopped. Great work! Take a break. 🎉`
+        } else if (preset1 || preset2 || preset3) {
+          message = `Updated timer presets: ${preset1 || updated?.preset1}min, ${preset2 || updated?.preset2}min, ${preset3 || updated?.preset3}min`
+        }
+
         return {
           success: true,
           timer: updated,
-          message: `Updated timer presets: ${preset1 || updated?.preset1}min, ${preset2 || updated?.preset2}min, ${preset3 || updated?.preset3}min`,
+          message,
         }
       },
     },
