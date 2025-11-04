@@ -466,7 +466,7 @@ export function AppProvider({
       Object.keys(appForm?.formState.errors).length === 0,
   }
 
-  const i = useMemo(
+  const instructionsInternal = useMemo(
     () =>
       contextInstructions.length > 0
         ? contextInstructions
@@ -487,11 +487,12 @@ export function AppProvider({
     ],
   )
 
-  const [instructions, setInstructions] = useState<instruction[]>(i)
+  const [instructions, setInstructions] =
+    useState<instruction[]>(instructionsInternal)
 
-  // useEffect(() => {
-  //   setInstructions(i)
-  // }, [i])
+  useEffect(() => {
+    setInstructions(instructionsInternal)
+  }, [instructionsInternal])
 
   const siteConfig = getSiteConfig()
 

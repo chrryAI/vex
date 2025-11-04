@@ -1038,7 +1038,7 @@ export function AuthProvider({
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
-    
+
     if (thread?.appId) {
       const threadApp = allApps.find((app) => app.id === thread.appId)
       if (threadApp) {
@@ -1046,7 +1046,7 @@ export function AuthProvider({
         console.log("🧵 Using thread app:", threadApp.slug)
       }
     }
-    
+
     // Priority 2: Find app by pathname
     if (!matchedApp) {
       matchedApp = findAppByPathname(pathname, allApps) || baseApp
