@@ -72,8 +72,12 @@ import postgres from "postgres"
 import * as dotenv from "dotenv"
 import * as bcrypt from "bcrypt"
 import { appWithStore } from "chrry/types"
+import { invalidateApp, invalidateStore } from "./src/cache"
 
 dotenv.config()
+
+// Export cache functions for external use
+export * from "./src/cache"
 
 export const TEST_MEMBER_EMAILS =
   process.env.TEST_MEMBER_EMAILS?.split(",") || []
@@ -4103,6 +4107,9 @@ export const createOrUpdateApp = async ({
     return
   }
 
+  // Invalidate app cache
+  await invalidateApp(result.id, result.slug)
+
   // Handle extends relationships
   if (extendsList && extendsList.length > 0) {
     // Delete existing extends relationships
@@ -4169,6 +4176,11 @@ export const createOrUpdateStoreInstall = async (
 
 export const deleteApp = async ({ id }: { id: string }) => {
   const [deleted] = await db.delete(apps).where(eq(apps.id, id)).returning()
+
+  // Invalidate app cache
+  if (deleted) {
+    await invalidateApp(deleted.id, deleted.slug)
+  }
 
   return deleted
 }
@@ -5161,6 +5173,12 @@ export async function deleteSharedExpense({ id }: { id: string }) {
 
 export async function createStore(store: newStore) {
   const [result] = await db.insert(stores).values(store).returning()
+  
+  // Invalidate store cache
+  if (result) {
+    await invalidateStore(result.id, result.slug)
+  }
+  
   return result
 }
 
@@ -5412,11 +5430,22 @@ export async function updateStore(store: store) {
     .where(eq(stores.id, store.id))
     .returning()
 
+  // Invalidate store cache
+  if (updated) {
+    await invalidateStore(updated.id, updated.slug)
+  }
+
   return updated
 }
 
 export async function deleteStore({ id }: { id: string }) {
   const [deleted] = await db.delete(stores).where(eq(stores.id, id)).returning()
+  
+  // Invalidate store cache
+  if (deleted) {
+    await invalidateStore(deleted.id, deleted.slug)
+  }
+  
   return deleted
 }
 
