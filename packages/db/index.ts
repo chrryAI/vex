@@ -1763,12 +1763,12 @@ export const createAccount = async (account: newAccount) => {
 
 export const createGuest = async (guest: newGuest) => {
   const [inserted] = await db.insert(guests).values(guest).returning()
-  
+
   // Invalidate guest cache
   if (inserted) {
     await invalidateGuest(inserted.id, inserted.fingerprint)
   }
-  
+
   return inserted ? await getGuest({ id: inserted.id }) : undefined
 }
 
@@ -1890,7 +1890,7 @@ export const updateGuest = async (guest: guest) => {
 
 export const deleteGuest = async ({ id }: { id: string }) => {
   const [deleted] = await db.delete(guests).where(eq(guests.id, id)).returning()
-  
+
   // Invalidate guest cache
   if (deleted) {
     await invalidateGuest(deleted.id, deleted.fingerprint)
