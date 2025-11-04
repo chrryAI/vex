@@ -46,6 +46,46 @@ interface App {
   [key: string]: unknown
 }
 
+// Focus button with live clock when timer is idle
+function FocusButton({ time }: { time: number }) {
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  useEffect(() => {
+    // Only update clock when timer is idle (time === 0)
+    if (time === 0) {
+      const interval = setInterval(() => {
+        setCurrentTime(new Date())
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [time])
+
+  const formatTime = () => {
+    if (time > 0) {
+      // Show timer countdown
+      return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
+    } else {
+      // Show current time
+      const hours = currentTime.getHours()
+      const minutes = currentTime.getMinutes()
+      return `${hours}:${String(minutes).padStart(2, "0")}`
+    }
+  }
+
+  return (
+    <A href={"/focus"} className={clsx("link", styles.focus)}>
+      <span className={styles.focusTime}>{formatTime()}</span>
+      <Img
+        className={clsx("link", styles.focus)}
+        containerClass={clsx("link", styles.focus)}
+        logo="focus"
+        width={22}
+        height={22}
+      />
+    </A>
+  )
+}
+
 export default function App({
   className,
   onSave,
@@ -1122,26 +1162,7 @@ export default function App({
                               />
                             </A>
                           )}
-                          {showFocusHere && (
-                            <A
-                              href={"/focus"}
-                              className={clsx("link", styles.focus)}
-                            >
-                              {time > 0 && (
-                                <span className={styles.focusTime}>
-                                  {Math.floor(time / 60)}:
-                                  {String(time % 60).padStart(2, "0")}
-                                </span>
-                              )}
-                              <Img
-                                className={clsx("link", styles.focus)}
-                                containerClass={clsx("link", styles.focus)}
-                                logo="focus"
-                                width={22}
-                                height={22}
-                              />
-                            </A>
-                          )}
+                          {showFocusHere && <FocusButton time={time} />}
                           {showSpaceInvaderHere && (
                             <button
                               className={clsx("link", styles.spaceInvader)}

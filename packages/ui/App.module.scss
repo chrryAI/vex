@@ -38,13 +38,13 @@
   position: relative;
   .focusTime {
     position: absolute;
-    top: toRem.toRem(-7.5);
+    top: toRem.toRem(-5);
     right: toRem.toRem(-40);
     padding: toRem.toRem(2) toRem.toRem(6);
     background-color: var(--accent-1);
     color: #fff;
     border-radius: toRem.toRem(10);
-    font-size: toRem.toRem(10);
+    font-size: toRem.toRem(8);
     font-weight: 600;
     font-family: "SF Mono", "Monaco", "Courier New", monospace;
     letter-spacing: toRem.toRem(0.5);
@@ -68,10 +68,12 @@
   position: relative;
   right: toRem.toRem(-5);
 
-  &.atlas,
-  &.focus {
+  &.atlas {
     right: toRem.toRem(-3.5);
     top: toRem.toRem(-2.5);
+  }
+  &.focus {
+    right: toRem.toRem(-3.5);
   }
   &.spaceInvader {
     animation: float 2.5s ease-in-out forwards;

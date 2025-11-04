@@ -37,13 +37,13 @@ export const AppStyleDefs = {
   },
   focusTime: {
     position: "absolute",
-    top: -7,
+    top: -5,
     right: -40,
     padding: "2px 6px",
     backgroundColor: "var(--accent-1)",
     color: "#fff",
     borderRadius: 10,
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 600,
     fontFamily: '"SF Mono", "Monaco", "Courier New", monospace',
     whiteSpace: "nowrap",
@@ -55,9 +55,12 @@ export const AppStyleDefs = {
     gap: 10,
     margin: "0 auto",
   },
-  focusFocus: {
+  focusAtlas: {
     right: -3,
     top: -2,
+  },
+  focusFocus: {
+    right: -3,
   },
   focusSpaceInvader: {},
   appItem: {

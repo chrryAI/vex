@@ -11,7 +11,7 @@ import {
   useMemo,
 } from "react"
 
-import { isSameDay, storage, FRONTEND_URL, apiFetch } from "../utils"
+import { isSameDay, FRONTEND_URL, apiFetch } from "../utils"
 import { device, mood, timer } from "../types"
 
 import { API_URL, useLocalStorage } from ".."
@@ -178,11 +178,6 @@ export type Task = {
   order: number
   selected?: boolean
 }
-
-export const STORAGE_KEY = "focusbutton_timer_state"
-const POMODORO_KEY = "focusbutton_active_pomodoro"
-
-// Track events with GA4
 
 export function TimerContextProvider({
   children,
@@ -1411,7 +1406,9 @@ export function TimerContextProvider({
 export const useTimerContext = () => {
   const context = useContext(TimerContext)
   if (context === undefined) {
-    throw new Error("useTimerContext must be used within a DriverProvider")
+    throw new Error(
+      "useTimerContext must be used within a TimerContextProvider",
+    )
   }
 
   return context
