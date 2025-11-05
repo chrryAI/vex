@@ -206,7 +206,8 @@ export function ChatProvider({
 
   let userNameByUrl: string | undefined = undefined
 
-  const { pathname, searchParams, addParams, ...router } = useNavigation()
+  const { pathname, searchParams, addParams, removeParams, ...router } =
+    useNavigation()
 
   const pathSegments = pathname.split("/").filter(Boolean)
 
@@ -397,11 +398,6 @@ export function ChatProvider({
     to = app?.slug ? getAppSlug(app) : "/",
   ) => {
     if (value) {
-      // if (to === "/" || to.startsWith("/?")) {
-      //   setSlug(undefined)
-      //   setApp(undefined)
-      // }
-
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
@@ -844,6 +840,9 @@ export function ChatProvider({
       })
   }
 
+  const [isSubscribeModalOpen, setIsSubscribeModalOpenInternal] =
+    useState(false)
+
   useEffect(() => {
     if (app?.onlyAgent) {
       const a = aiAgents.find(
@@ -853,15 +852,18 @@ export function ChatProvider({
       )
       if (!a) return
       if (!isAgentAuthorized(a)) {
-        addParams({
-          subscribe: "true",
-          plan: "member",
-        })
+        setIsSubscribeModalOpenInternal(true)
+        // !isAgentModalOpen
+        //   ? addParams({
+        //       subscribe: "true",
+        //       plan: "member",
+        //     })
+        //   : removeParams("subscribe")
         return
       }
       setSelectedAgent(a)
     }
-  }, [guest, user, app, aiAgents])
+  }, [guest, user, app, aiAgents, isSubscribeModalOpen])
 
   const { isDevelopment, isE2E, actions } = useData()
 

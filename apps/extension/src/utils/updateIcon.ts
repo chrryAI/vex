@@ -11,6 +11,7 @@ export const updateExtensionIcon = async (iconVariant?: string) => {
     peach: "icons/icon-peach-128.png",
     bloom: "icons/icon-bloom-128.png",
     vault: "icons/icon-vault-128.png",
+    vex: "icons/icon-vex-128.png",
     default: "icons/icon-128.png",
   }
 

@@ -709,10 +709,6 @@ export function AuthProvider({
     return apps.find((app) => app.slug === slugFromPath)
   }
 
-  const [store, setStore] = useState<storeWithApps | undefined>(
-    session?.app?.store,
-  )
-
   const [newApp, setNewApp] = useState<appWithStore | undefined>(undefined)
 
   const fetchSession = async (newApp?: appWithStore) => {
@@ -853,6 +849,7 @@ export function AuthProvider({
   >("app", baseApp || session?.app)
 
   const app = isExtension ? appLocal : appState
+  const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
   const setAppInternal = isExtension ? setAppLocal : setAppState
 
@@ -1038,6 +1035,8 @@ export function AuthProvider({
     [setTheme],
   )
 
+  const isAppInitialized = appLocal && appState
+
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
       setAppInternal((prevApp) => {
@@ -1060,7 +1059,7 @@ export function AuthProvider({
         return newApp
       })
     },
-    [setColorScheme, setAppTheme],
+    [setColorScheme, setAppTheme, isAppInitialized],
   )
 
   const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)

@@ -73,15 +73,15 @@ export const Hey = memo(
     useExtensionIcon?: (slug?: string) => void
   }) {
     const { isHome, pathname, isSplash, setIsSplash } = useNavigationContext()
+
     const { threadId } = useChat()
-    const { isLoading, slug, allApps, chrry, getAppSlug, newApp, ...auth } =
-      useAuth()
+    const { isLoading, chrry, session, allApps, newApp, app } = useAuth()
 
     const { isExtension } = usePlatform()
 
     useEffect(() => {
-      useExtensionIcon?.(slug)
-    }, [slug, useExtensionIcon])
+      useExtensionIcon?.(app?.slug)
+    }, [app, useExtensionIcon])
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
@@ -89,7 +89,6 @@ export const Hey = memo(
       (app) => app?.store?.slug === lastPathSegment,
     )?.store
     const config = getSiteConfig()
-    const app = config.mode === "chrryDev" ? chrry : auth.app
 
     // SSR routes that should be handled by Next.js
     // Check both exact matches and path prefixes (e.g., /blog/dear-claude)
@@ -190,7 +189,11 @@ export const Hey = memo(
       <div>
         <ErrorBoundary>
           {splash}
-          {isLoading && !app ? null : (
+          {!session && app && isExtension && app?.slug != "vex" ? (
+            <div className={clsx(styles.splash)}>
+              <Img logo="chrry" showLoading={false} size={64} />
+            </div>
+          ) : (
             <Suspense>
               {isClientRoute ? (
                 // Client-side routes: SWAP content

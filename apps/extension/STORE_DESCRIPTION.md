@@ -1,16 +1,26 @@
-# Vex - Your Personal AI Assistant 🥰
+# Chrry - AI App Marketplace 🍒
 
-Transform your browsing with an AI assistant that actually gets things done.
+Discover, create, and monetize AI apps right in your browser.
 
-Vex is your personal AI assistant that lives in your browser sidebar, designed to help you work faster and smarter while browsing the web.
+Chrry is your AI app marketplace that lives in your browser sidebar, giving you instant access to specialized AI apps for every task - from research to coding to creative work.
 
-## 🚀 What makes Vex different:
+## 🚀 What makes Chrry different:
 
-• **Personal AI Assistant** - Not just another chatbot, but a true assistant that learns your context
+• **AI App Marketplace** - Access dozens of specialized AI apps, each designed for specific tasks
+• **Multi-Model Support** - Choose from Claude, GPT-4, DeepSeek, and more for each conversation
 • **Per-Chat Instructions** - Customize AI behavior for different projects and use cases
 • **Document Memory** - Upload files that the AI remembers throughout your conversations
 • **Real-Time Collaboration** - Work with teammates in shared AI conversations
-• **Multi-Modal Support** - Handle text, images, and files seamlessly
+• **Multi-Modal Support** - Handle text, images, videos, and PDFs seamlessly
+
+## 🖱️ Right-Click Context Menu (Chrome & Firefox):
+
+• **Write a reply** - Instantly draft a response to selected text
+• **Check my grammar** - Clean up and improve selected content
+• **Summarize** - Get a concise summary of any selection
+• **Fact check** - Verify claims and extract reliable sources
+• **AI debate** - Explore multiple perspectives on highlighted text
+• **Smart sidebar opening** - On selection, Chrry opens the sidebar automatically
 
 ## 💡 Perfect for:
 
@@ -27,7 +37,7 @@ Vex is your personal AI assistant that lives in your browser sidebar, designed t
 • True data deletion when you delete conversations
 • No hidden fees or surprise charges
 
-**Why install Vex?** Stop switching between tabs and apps. Get instant AI assistance right in your sidebar while you browse, research, and work. Whether you're a student, professional, or team lead, Vex helps you stay focused and productive.
+**Why install Chrry?** Stop switching between tabs and apps. Get instant access to specialized AI apps right in your sidebar while you browse, research, and work. Whether you're a student, professional, or team lead, Chrry helps you stay focused and productive.
 
 Start with guest access - no account required. Upgrade anytime for unlimited features.
 
@@ -37,7 +47,7 @@ Start with guest access - no account required. Upgrade anytime for unlimited fea
 
 ### Short Description (132 characters max):
 
-Your personal AI assistant in the browser sidebar. Research, write, collaborate - all without leaving your current page.
+AI App Marketplace in your browser. Discover specialized AI apps for every task - research, coding, writing, and more.
 
 ### Detailed Description:
 
@@ -45,7 +55,7 @@ Use the full description above, formatted appropriately for each store's require
 
 ### Keywords:
 
-AI assistant, productivity, sidebar, research, collaboration, writing, code review, document analysis, browser extension, artificial intelligence
+AI marketplace, AI apps, productivity, sidebar, research, collaboration, writing, code review, document analysis, browser extension, artificial intelligence, multi-model AI, Claude, GPT-4, DeepSeek
 
 ### Category:
 

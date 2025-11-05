@@ -55,6 +55,7 @@ export const checkIsExtension = () => {
 export { getWeatherCacheTime }
 
 export const getExtensionUrl = () => {
+  if (typeof window === "undefined") return
   if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
     return chrome.runtime.getURL("index.html") // Chrome
   }
@@ -114,6 +115,7 @@ export const WS_URL = isTestingDevice
     : "wss://ws.chrry.dev"
 
 export const addParam = (key: string, value: string) => {
+  if (typeof window === "undefined") return
   const searchParams = new URLSearchParams(window.location.search)
   searchParams.set(key, value)
   const newUrl = searchParams.toString()
@@ -340,6 +342,7 @@ export const getMetadata = ({
 }
 
 export const removeParam = (key: string) => {
+  if (typeof window === "undefined") return
   const searchParams = new URLSearchParams(window.location.search)
   searchParams.delete(key)
   const newUrl = searchParams.toString()
@@ -363,7 +366,7 @@ export function getFlag({ code }: { code?: string }) {
     .join("")
 }
 
-export const VERSION = "1.3.35"
+export const VERSION = "1.3.36"
 export type instructionBase = {
   id: string
   title: string
