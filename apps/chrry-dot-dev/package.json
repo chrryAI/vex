@@ -6,7 +6,9 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./app/actions/getGuest/getGuest": "./app/actions/getGuest/getGuest.ts",
+    "./app/actions/getMember/getMember": "./app/actions/getMember/getMember.ts"
   },
   "scripts": {
     "dev:server": "node server.js",
