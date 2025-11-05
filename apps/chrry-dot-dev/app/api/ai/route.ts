@@ -2668,16 +2668,15 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     )
   }
 
-  const claude = await getAiAgent({
-    name: "claude",
-  })
+  if (files.length > 0 && agent.name === "sushi") {
+    const claude = await getAiAgent({
+      name: "claude",
+    })
 
-  if (!claude) {
-    console.log("❌ Claude not found")
-    return NextResponse.json({ error: "Claude not found" }, { status: 404 })
-  }
-
-  if (files.length > 0) {
+    if (!claude) {
+      console.log("❌ Claude not found")
+      return NextResponse.json({ error: "Claude not found" }, { status: 404 })
+    }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
     const claudeKey = appApiKeys.anthropic || CLAUDE_API_KEY
     if (appApiKeys.anthropic) {
