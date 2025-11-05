@@ -50,6 +50,11 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      isImageGenerationEnabled: boolean
+      setIsImageGenerationEnabled: (
+        value: boolean,
+        forAgent?: aiAgent | null,
+      ) => void
       hasNotification: boolean
       nextPage: number | undefined
       setNextPage: (nextPage: number | undefined) => void
@@ -744,6 +749,21 @@ export function ChatProvider({
   const [isWebSearchEnabled, setIsWebSearchEnabledInternal] =
     useLocalStorage<boolean>("isWebSearchEnabled", agentName === "perplexity")
 
+  const [isImageGenerationEnabled, setIsImageGenerationEnabledInternal] =
+    useState(false)
+
+  const isImageGenerationEnabledRef = useRef<boolean>(isImageGenerationEnabled)
+
+  const setIsImageGenerationEnabled = (
+    value: boolean,
+    forAgent?: aiAgent | null,
+  ) => {
+    isImageGenerationEnabledRef.current = value
+    setIsImageGenerationEnabledInternal(value)
+    console.log(`🚀 ~ file: ChatProvider.tsx:760 ~ value:`, value)
+    setSelectedAgentInternal(forAgent || sushiAgent)
+  }
+
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     if (agent === null) {
       setAgentName("")
@@ -759,6 +779,10 @@ export function ChatProvider({
     const a = returnSelectedAgent(agent)
     setSelectedAgentInternal(a)
     setAgentName(a?.name || "")
+    isImageGenerationEnabledRef.current &&
+      setIsImageGenerationEnabledInternal(
+        a?.capabilities?.imageGeneration || false,
+      )
     setIsWebSearchEnabledInternal(a?.capabilities?.webSearch || false)
   }
 
@@ -998,6 +1022,8 @@ export function ChatProvider({
   return (
     <ChatContext.Provider
       value={{
+        isImageGenerationEnabled,
+        setIsImageGenerationEnabled,
         status,
         isLoadingMore,
         setIsLoadingMore,

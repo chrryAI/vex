@@ -182,7 +182,7 @@ const create = async () => {
     version: "1.0.0",
     apiURL: "https://api.deepseek.com/v1",
     description:
-      "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs, and generates images. Powered by DeepSeek R1 + Flux.",
+      "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Use palette icon for image generation.",
     state: "active",
     creditCost: 2,
     authorization: "all",
@@ -196,7 +196,7 @@ const create = async () => {
       video: true,
       webSearch: false,
       pdf: true,
-      imageGeneration: true,
+      imageGeneration: true, // Available via UI palette icon
     },
   })
 

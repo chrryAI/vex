@@ -974,6 +974,27 @@ You can enable these in your settings anytime!"
 **USE THESE TIPS**: When appropriate, share these helpful tips with users to guide them on how to get the most value from this app. Don't dump all tips at once - mention them naturally when relevant to the conversation.
 {{/if}}
 
+{{#if agent}}
+## 🔧 Available Features:
+{{#if agent.capabilities.imageGeneration}}
+🎨 **Image Generation**: When users ask about creating images, guide them to click the palette icon (🎨) in the top-right corner of the chat to generate AI images with Flux.
+{{/if}}
+{{#if agent.capabilities.webSearch}}
+🔍 **Web Search**: When users need real-time information, guide them to click the search icon to enable web search.
+{{/if}}
+{{#if agent.capabilities.pdf}}
+📄 **PDF Analysis**: I can analyze PDF documents. Users can upload PDFs and I'll help them understand the content.
+{{/if}}
+{{#if agent.capabilities.image}}
+🖼️ **Image Analysis**: I can analyze images. Users can upload images and I'll describe and analyze them.
+{{/if}}
+{{#if agent.capabilities.video}}
+🎥 **Video Analysis**: I can analyze videos. Users can upload videos and I'll help them understand the content.
+{{/if}}
+
+**FEATURE GUIDANCE**: When users ask about capabilities you don't directly provide (like image generation or web search), politely guide them to the appropriate UI controls rather than saying "I can't do that."
+{{/if}}
+
 {{#if threadInstructions}}
 ## ⚠️ PRIORITY: CUSTOM INSTRUCTIONS FOR THIS CHAT
 
@@ -1952,6 +1973,8 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
     const agentLimits = (() => {
       switch (agent?.name) {
+        case "sushi":
+          return MAX_FILE_SIZES.sushi
         case "deepSeek":
           return MAX_FILE_SIZES.deepSeek
         case "chatGPT":
@@ -1989,31 +2012,16 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     }
 
     // Server-side file size validation (safety net)
-    const MAX_FILE_SIZE = (() => {
-      switch (agent?.name) {
-        case "deepSeek":
-          return MAX_FILE_SIZES.deepSeek
-        case "chatGPT":
-          return MAX_FILE_SIZES.chatGPT
-        case "claude":
-          return MAX_FILE_SIZES.claude
-        case "gemini":
-          return MAX_FILE_SIZES.gemini
-        default:
-          return MAX_FILE_SIZES.deepSeek
-      }
-    })()
 
     for (const file of files) {
       const fileType = file.type.toLowerCase()
       let maxSize = 0
 
-      if (fileType.startsWith("image/")) maxSize = MAX_FILE_SIZE.image
-      else if (fileType.startsWith("audio/")) maxSize = MAX_FILE_SIZE.audio
-      else if (fileType.startsWith("video/")) maxSize = MAX_FILE_SIZE.video
-      else if (fileType.startsWith("application/pdf"))
-        maxSize = MAX_FILE_SIZE.pdf
-      else if (fileType.startsWith("text/")) maxSize = MAX_FILE_SIZE.text
+      if (fileType.startsWith("image/")) maxSize = agentLimits.image
+      else if (fileType.startsWith("audio/")) maxSize = agentLimits.audio
+      else if (fileType.startsWith("video/")) maxSize = agentLimits.video
+      else if (fileType.startsWith("application/pdf")) maxSize = agentLimits.pdf
+      else if (fileType.startsWith("text/")) maxSize = agentLimits.text
 
       if (file.size > maxSize) {
         const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1)
@@ -2650,103 +2658,114 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   const appApiKeys = app?.apiKeys || {}
 
   let model
-  switch (agent.name) {
-    case "deepSeek":
-      console.log("🤖 Using DeepSeek model")
-      const deepseekKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
-      if (appApiKeys.deepseek) {
-        console.log("✅ Using app-specific DeepSeek API key")
-      }
-      const deepseekProvider = createDeepSeek({
-        apiKey: deepseekKey,
-      })
-      model = deepseekProvider(agent.modelId)
-      break
-    case "sushi":
-      console.log("🍣 Using Sushi AI (DeepSeek Reasoner + Flux)")
-      const sushiKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
-      if (appApiKeys.deepseek) {
-        console.log("✅ Using app-specific DeepSeek API key for Sushi")
-      }
-      if (!sushiKey) {
-        console.error("❌ DeepSeek API key is required for Sushi AI")
-        return NextResponse.json(
-          { error: "DeepSeek API key is required for Sushi AI" },
-          { status: 500 },
-        )
-      }
-      const sushiProvider = createDeepSeek({
-        apiKey: sushiKey,
-      })
-      model = sushiProvider(agent.modelId) // "deepseek-reasoner"
-      break
-    case "chatGPT":
-      console.log("🤖 Using ChatGPT model")
-      const openaiKey = appApiKeys.openai || CHATGPT_API_KEY
-      if (appApiKeys.openai) {
-        console.log("✅ Using app-specific OpenAI API key")
-      }
-      const openaiProvider = createOpenAI({
-        apiKey: openaiKey,
-      })
-      model = openaiProvider(agent.modelId)
 
-      break
-    case "claude":
-      console.log("🤖 Using Claude model")
-      const claudeKey = appApiKeys.anthropic || CLAUDE_API_KEY
-      if (appApiKeys.anthropic) {
-        console.log("✅ Using app-specific Claude API key")
-      }
-      const claudeProvider = createAnthropic({
-        apiKey: claudeKey,
-      })
-      model = claudeProvider(agent.modelId)
-      break
-    case "gemini":
-      console.log("🤖 Using Gemini model")
-      const geminiKey = appApiKeys.google || GEMINI_API_KEY
-      if (appApiKeys.google) {
-        console.log("✅ Using app-specific Gemini API key")
-      }
-      const geminiProvider = createGoogleGenerativeAI({
-        apiKey: geminiKey,
-      })
-      model = geminiProvider(agent.modelId)
-      break
+  console.log("🤖 Using custom OpenAI-compatible model:", agent.name)
+  if (!agent.apiURL) {
+    console.log("❌ Custom agent missing apiURL:", agent.name)
+    return NextResponse.json(
+      { error: "Custom agent requires an API URL" },
+      { status: 400 },
+    )
+  }
 
-    case "perplexity":
-      console.log("🤖 Using Perplexity Sonar model")
-      const perplexityKey =
-        appApiKeys.perplexity || process.env.PERPLEXITY_API_KEY
-      if (appApiKeys.perplexity) {
-        console.log("✅ Using app-specific Perplexity API key")
-      }
-      // Perplexity doesn't have a createPerplexity, uses env var
-      if (appApiKeys.perplexity) {
-        process.env.PERPLEXITY_API_KEY = appApiKeys.perplexity
-      }
-      model = perplexity(agent.modelId) // "sonar"
-      break
-    default:
-      if (imageGenerationEnabled) {
-        // Use DeepSeek as fallback for any text operations (like prompt enhancement)
-        const deepseekKeyFlux =
-          appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
-        const deepseekProviderFlux = createDeepSeek({
-          apiKey: deepseekKeyFlux,
+  const claude = await getAiAgent({
+    name: "claude",
+  })
+
+  if (!claude) {
+    console.log("❌ Claude not found")
+    return NextResponse.json({ error: "Claude not found" }, { status: 404 })
+  }
+
+  if (files.length > 0) {
+    console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
+    const claudeKey = appApiKeys.anthropic || CLAUDE_API_KEY
+    if (appApiKeys.anthropic) {
+      console.log("✅ Using app-specific Claude API key")
+    }
+    const claudeProvider = createAnthropic({
+      apiKey: claudeKey,
+    })
+    model = claudeProvider(claude.modelId) // Use Claude Sonnet 4 for multimodal
+  } else {
+    switch (agent.name) {
+      case "deepSeek":
+        console.log("🤖 Using DeepSeek model")
+        const deepseekKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
+        if (appApiKeys.deepseek) {
+          console.log("✅ Using app-specific DeepSeek API key")
+        }
+        const deepseekProvider = createDeepSeek({
+          apiKey: deepseekKey,
         })
-        model = deepseekProviderFlux("deepseek-reasoner")
-      } else {
-        console.log("🤖 Using custom OpenAI-compatible model:", agent.name)
-        if (!agent.apiURL) {
-          console.log("❌ Custom agent missing apiURL:", agent.name)
+        model = deepseekProvider(agent.modelId)
+        break
+      case "sushi":
+        const sushiKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
+        if (appApiKeys.deepseek) {
+          console.log("✅ Using app-specific DeepSeek API key for Sushi")
+        }
+        if (!sushiKey) {
+          console.error("❌ DeepSeek API key is required for Sushi AI")
           return NextResponse.json(
-            { error: "Custom agent requires an API URL" },
-            { status: 400 },
+            { error: "DeepSeek API key is required for Sushi AI" },
+            { status: 500 },
           )
         }
+        const sushiProvider = createDeepSeek({
+          apiKey: sushiKey,
+        })
+        model = sushiProvider(agent.modelId) // "deepseek-reasoner"
+        break
+      case "chatGPT":
+        console.log("🤖 Using ChatGPT model")
+        const openaiKey = appApiKeys.openai || CHATGPT_API_KEY
+        if (appApiKeys.openai) {
+          console.log("✅ Using app-specific OpenAI API key")
+        }
+        const openaiProvider = createOpenAI({
+          apiKey: openaiKey,
+        })
+        model = openaiProvider(agent.modelId)
 
+        break
+      case "claude":
+        console.log("🤖 Using Claude model")
+        const claudeKey = appApiKeys.anthropic || CLAUDE_API_KEY
+        if (appApiKeys.anthropic) {
+          console.log("✅ Using app-specific Claude API key")
+        }
+        const claudeProvider = createAnthropic({
+          apiKey: claudeKey,
+        })
+        model = claudeProvider(agent.modelId)
+        break
+      case "gemini":
+        console.log("🤖 Using Gemini model")
+        const geminiKey = appApiKeys.google || GEMINI_API_KEY
+        if (appApiKeys.google) {
+          console.log("✅ Using app-specific Gemini API key")
+        }
+        const geminiProvider = createGoogleGenerativeAI({
+          apiKey: geminiKey,
+        })
+        model = geminiProvider(agent.modelId)
+        break
+
+      case "perplexity":
+        console.log("🤖 Using Perplexity Sonar model")
+        const perplexityKey =
+          appApiKeys.perplexity || process.env.PERPLEXITY_API_KEY
+        if (appApiKeys.perplexity) {
+          console.log("✅ Using app-specific Perplexity API key")
+        }
+        // Perplexity doesn't have a createPerplexity, uses env var
+        if (appApiKeys.perplexity) {
+          process.env.PERPLEXITY_API_KEY = appApiKeys.perplexity
+        }
+        model = perplexity(agent.modelId) // "sonar"
+        break
+      default:
         // Parse stored format: "baseURL|apiKey"
         const [customBaseURL, customApiKey] = agent.apiURL.includes("|")
           ? agent.apiURL.split("|")
@@ -2761,9 +2780,9 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
           baseURL: customBaseURL,
         })
         model = customProvider(agent.modelId)
-      }
 
-      break
+        break
+    }
   }
 
   // Perform web search if user enabled it, agent supports it, message needs search, and no files attached
@@ -3101,7 +3120,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     console.log("🚀 Starting AI streaming...")
 
     // Special handling for Flux image generation with DeepSeek enhancement
-    if ((agent.name as string) === "flux" && imageGenerationEnabled) {
+    if (imageGenerationEnabled) {
       console.log("🎨 Hybrid DeepSeek + Flux image generation path")
 
       try {
@@ -3172,49 +3191,18 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           )
         }
 
-        // Now stream a natural response to the user while generating the image
-        const userResponsePrompt = `The user requested: "${content}"
-
-Provide a friendly, engaging response about generating this image. Be creative and descriptive about what you're creating. Keep it conversational and exciting. Don't mention technical details about prompts or models.
-
-CONVERSATION HISTORY:
-${messages
-  .slice(-5)
-  .map((msg) => `${msg.role}: ${msg.content}`)
-  .join("\n")}
-  
-User preferences:
-  - User prefers ${language} as their primary language.`
-
-        let finalText = ""
-
-        const deepseekResponseKey =
-          appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
-        const deepseekResponseProvider = createDeepSeek({
-          apiKey: deepseekResponseKey,
-        })
-        const result = streamText({
-          model: deepseekResponseProvider("deepseek-chat"),
-          maxRetries: 3,
-          messages: [{ role: "user", content: userResponsePrompt }],
-          async onFinish({ text }) {
-            finalText = text
-          },
-        })
-
-        let accumulatedContent = ""
-        const stream = result.toTextStreamResponse()
-        const reader = stream.body?.getReader()
+        // Stream the enhanced description to the user while generating the image
+        console.log("🎨 Streaming description and generating image...")
 
         const controller: StreamController = {
-          close: () => reader?.cancel(),
+          close: () => {},
           desiredSize: null,
           enqueue: () => {},
           error: () => {},
         }
         streamControllers.set(streamId, controller)
 
-        // Create AI message structure for Flux streaming chunks
+        // Create AI message structure for streaming
         const fluxStreamingMessage = {
           message: {
             id: clientId,
@@ -3231,34 +3219,30 @@ User preferences:
           thread: thread,
         }
 
+        // Stream the description in chunks
+        const descriptionChunks = aiDescription.split(" ")
         let currentChunk = 0
-
-        if (reader) {
-          while (true) {
-            if (!streamControllers.has(streamId)) {
-              console.log("Stream was stopped, breaking loop")
-              break
-            }
-            const { done, value } = await reader.read()
-            if (done) break
-
-            const chunk = new TextDecoder().decode(value)
-            await enhancedStreamChunk({
-              chunk,
-              chunkNumber: currentChunk++,
-              totalChunks: -1, // Unknown in streaming
-              streamingMessage: fluxStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-            })
+        for (const word of descriptionChunks) {
+          if (!streamControllers.has(streamId)) {
+            console.log("Stream was stopped, breaking loop")
+            break
           }
+          await enhancedStreamChunk({
+            chunk: word + " ",
+            chunkNumber: currentChunk++,
+            totalChunks: descriptionChunks.length,
+            streamingMessage: fluxStreamingMessage,
+            member,
+            guest,
+            thread,
+            clientId,
+            streamId,
+          })
+          await wait(50) // Small delay for smooth streaming
         }
 
         if (!streamControllers.has(streamId)) {
-          console.log("Stream was stopped, breaking loop")
+          console.log("Stream was stopped")
           return NextResponse.json(
             { error: "Stream was stopped" },
             { status: 400 },
@@ -3305,7 +3289,7 @@ User preferences:
         // Upload to UploadThing for permanent storage
         const { url: permanentUrl, title } = await upload({
           url: imageUrl,
-          messageId: slug(currentMessageContent.trim().substring(0, 10)),
+          messageId: slugify(currentMessageContent.trim().substring(0, 10)),
           options: {
             maxWidth: 1024,
             maxHeight: 1024,
@@ -3321,7 +3305,7 @@ User preferences:
         // Save AI response to database
         const aiMessage = await createMessage({
           id: clientId,
-          content: finalText,
+          content: aiResponseContent,
           originalContent: aiResponseContent,
           threadId: currentThreadId,
           agentId: agent.id,
@@ -3522,6 +3506,8 @@ User preferences:
 
         // Stream reasoning and answer parts
         for await (const part of result.fullStream) {
+          console.log("🔍 Stream part type:", part.type)
+
           if (!streamControllers.has(streamId)) {
             console.log("🍣 Sushi stream was stopped")
             break
@@ -3590,6 +3576,27 @@ User preferences:
 
           if (aiMessage) {
             console.log("✅ Sushi message saved to DB")
+
+            // Get full message with relations
+            const m = await getMessage({ id: aiMessage.id })
+
+            // Send stream_complete notification
+            thread &&
+              notifyOwnerAndCollaborations({
+                notifySender: true,
+                thread,
+                payload: {
+                  type: "stream_complete",
+                  data: {
+                    message: m,
+                    isFinal: true,
+                  },
+                },
+                member,
+                guest,
+              })
+
+            console.log("✅ Sushi stream_complete notification sent")
           }
         }
 

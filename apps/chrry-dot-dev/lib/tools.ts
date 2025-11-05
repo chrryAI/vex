@@ -1460,15 +1460,36 @@ export const getTools = ({
             },
           )
 
-          const imageUrl = Array.isArray(output) ? output[0] : output
+          // Extract URL from output (could be array, string, URL object, or FileOutput)
+          let imageUrl: string
+          if (Array.isArray(output)) {
+            imageUrl = output[0]
+          } else if (typeof output === "string") {
+            imageUrl = output
+          } else if (typeof (output as any)?.url === "function") {
+            // Replicate FileOutput has a url() method that returns URL object
+            const urlObj = await (output as any).url()
+            imageUrl = urlObj?.href || String(urlObj)
+          } else if ((output as any)?.href) {
+            // It's a URL object with href property
+            imageUrl = (output as any).href
+          } else if (typeof (output as any)?.url === "string") {
+            // Or it might be a string property
+            imageUrl = (output as any).url
+          } else {
+            // Fallback to string conversion
+            imageUrl = String(output)
+          }
+
           console.log("✅ Image generated:", imageUrl)
 
+          // Return a user-friendly message with the image URL
           return {
             success: true,
             imageUrl,
             prompt,
             aspectRatio,
-            message: `✨ Created image: "${prompt}"`,
+            message: `I've created a beautiful image: "${prompt}". Here it is!`,
           }
         } catch (error) {
           console.error("Failed to generate image:", error)

@@ -21,6 +21,7 @@ import {
   useApp,
   useError,
   useData,
+  useChat,
 } from "./context/providers"
 import { useTheme, usePlatform } from "./platform"
 import type {
@@ -98,7 +99,8 @@ export default function Message({
   } = useAuth()
 
   const { isAccountVisible, setIsAccountVisible } = useNavigationContext()
-
+  const { refetchThread, messages } = useChat()
+  console.log(`🚀 ~ file: Message.tsx:103 ~ thread:`, messages)
   // Navigation context (router is the wrapper)
   const { router, addParam } = useNavigationContext()
 
@@ -345,10 +347,14 @@ export default function Message({
         type === "message_update" &&
         data.message?.message.id === message.message.id
       ) {
-        setImages(data.message.message.images || [])
-        setVideo(data.message.message.video)
-        setAudio(data.message.message.audio)
-        setFiles(data.message.message.files)
+        data.message?.message.images?.length &&
+          setImages(data.message?.message.images)
+        data.message?.message.video?.length &&
+          setVideo(data.message?.message.video)
+        data.message?.message.audio?.length &&
+          setAudio(data.message?.message.audio)
+
+        await refetchThread()
       }
 
       if (
@@ -431,6 +437,12 @@ export default function Message({
       }[]
     | null
   >(message.message.audio)
+
+  useEffect(() => {
+    setVideo(message.message.video)
+    setAudio(message.message.audio)
+    setFiles(message.message.files)
+  }, [message.message.video, message.message.audio, message.message.files])
 
   const [files, setFiles] = useState<
     | {

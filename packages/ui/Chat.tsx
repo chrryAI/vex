@@ -233,6 +233,8 @@ export default function Chat({
     isDebateAgentModalOpen,
     setIsDebateAgentModalOpen,
     setIsAgentModalOpenInternal,
+    isImageGenerationEnabled,
+    setIsImageGenerationEnabled,
   } = useChat()
 
   // Navigation context (router is the wrapper)
@@ -2335,6 +2337,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           })
         }
       } else if (type === "stream_complete") {
+        console.log(`🚀 ~ file: Chat.tsx:2340 ~ type:`, type)
         const threadId = data.message?.message?.threadId
 
         isPlayingSillyPopCluster.current = false
@@ -2692,8 +2695,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     taskType: string
     warning?: string
   } | null>(null)
-
-  const isImageGenerationEnabled = selectedAgent?.name == "flux"
 
   const needSearch = needsWebSearch(inputRef.current)
 
@@ -3700,6 +3701,11 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     : t("Enable Image Generation")
                 }
                 onClick={() => {
+                  setIsImageGenerationEnabled(!isImageGenerationEnabled)
+                  console.log(
+                    `🚀 ~ file: Chat.tsx:3705 ~ isImageGenerationEnabled:`,
+                    isImageGenerationEnabled,
+                  )
                   if (selectedAgent?.name === "flux") {
                     setSelectedAgent(undefined)
                   } else {
@@ -3709,7 +3715,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
               >
                 <Palette
                   color={
-                    selectedAgent?.name === "flux"
+                    isImageGenerationEnabled
                       ? "var(--accent-1)"
                       : "var(--shade-3)"
                   }
@@ -4275,33 +4281,30 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       {t("Privacy")}
                     </a>
                   ) : (
-                    !isLoading &&
-                    !isStreaming && (
-                      <button
-                        data-testid="attach-button"
-                        title={t("Attach")}
-                        onClick={() => {
-                          addHapticFeedback()
+                    <button
+                      data-testid="attach-button"
+                      title={t("Attach")}
+                      onClick={() => {
+                        addHapticFeedback()
 
-                          // Auto-switch to Sushi for file attachments
-                          const sushiAgent = aiAgents.find(
-                            (agent) => agent.name === "sushi",
-                          )
-                          if (sushiAgent && selectedAgent?.name !== "sushi") {
-                            setSelectedAgent(sushiAgent)
-                          }
+                        // Auto-switch to Sushi for file attachments
+                        const sushiAgent = aiAgents.find(
+                          (agent) => agent.name === "sushi",
+                        )
+                        if (sushiAgent && selectedAgent?.name !== "sushi") {
+                          setSelectedAgent(sushiAgent)
+                        }
 
-                          // Open system file picker directly with all supported types
-                          triggerFileInput(
-                            "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
-                          )
-                        }}
-                        className={clsx("link", styles.attachButton)}
-                        type="submit"
-                      >
-                        <Paperclip color={"var(--accent-6)"} size={22} />
-                      </button>
-                    )
+                        // Open system file picker directly with all supported types
+                        triggerFileInput(
+                          "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                        )
+                      }}
+                      className={clsx("link", styles.attachButton)}
+                      type="submit"
+                    >
+                      <Paperclip color={"var(--accent-6)"} size={22} />
+                    </button>
                   )}
                   {/* Quota info button */}
                   {user && (

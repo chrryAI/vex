@@ -582,6 +582,13 @@ export const MAX_FILE_SIZES = {
     video: 0, // Not supported
     text: 22 * 1024 * 1024, // 22MB - matches PDF capability
   },
+  sushi: {
+    pdf: 50 * 1024 * 1024, // 50MB - GPT-5 enhanced document processing
+    image: 20 * 1024 * 1024, // 20MB - GPT-5 Vision API limit
+    audio: 25 * 1024 * 1024, // 25MB - Whisper API limit (unchanged)
+    video: 100 * 1024 * 1024, // 100MB - GPT-5 improved video processing
+    text: 50 * 1024 * 1024, // 5MB - matches PDF capability
+  },
   perplexity: {
     pdf: 0, // Not supported
     image: 0, // Not supported
