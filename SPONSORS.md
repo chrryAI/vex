@@ -202,8 +202,7 @@ For custom sponsorship arrangements or larger partnerships, contact:
 Prefer a one-time contribution? We accept:
 
 - GitHub Sponsors one-time payment
-- [Buy Me a Coffee](https://buymeacoffee.com/chrry)
-- Crypto: [wallet addresses]
+- [Buy Me a 💻](https://buymeacoffee.com/chrry)
 
 ---
 

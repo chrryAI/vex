@@ -911,6 +911,21 @@ importers:
       '@neondatabase/serverless':
         specifier: ^1.0.1
         version: 1.0.2
+      '@types/all-the-cities':
+        specifier: ^3.1.3
+        version: 3.1.3
+      '@types/bcrypt':
+        specifier: ^5.0.2
+        version: 5.0.2
+      '@types/pg':
+        specifier: ^8.15.5
+        version: 8.15.5
+      '@types/slug':
+        specifier: ^5.0.9
+        version: 5.0.9
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
       '@upstash/redis':
         specifier: ^1.35.6
         version: 1.35.6
@@ -960,18 +975,6 @@ importers:
       '@faker-js/faker':
         specifier: ^9.6.0
         version: 9.9.0
-      '@types/all-the-cities':
-        specifier: ^3.1.3
-        version: 3.1.3
-      '@types/bcrypt':
-        specifier: ^5.0.2
-        version: 5.0.2
-      '@types/pg':
-        specifier: ^8.15.5
-        version: 8.15.5
-      '@types/slug':
-        specifier: ^5.0.9
-        version: 5.0.9
       '@typescript-eslint/parser':
         specifier: ^8.34.1
         version: 8.46.2(eslint@9.38.0)(typescript@5.8.3)
