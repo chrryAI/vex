@@ -1,4 +1,4 @@
-import { getMember } from "chrry-dot-dev"
+import { getMember } from "chrrydotdev"
 import { v4 as uuidv4 } from "uuid"
 
 import {
