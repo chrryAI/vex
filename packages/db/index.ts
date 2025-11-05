@@ -1449,7 +1449,55 @@ export async function migrateUser({
     }),
   )
 
-  const instructions = await getInstructions({ guestId: guest.id })
+  const tasks = await getTasks({ guestId: guest.id, pageSize: limit })
+  await Promise.all(
+    tasks.tasks.map(async (task) => {
+      await updateTask({
+        ...task,
+        userId,
+        guestId: null,
+      })
+    }),
+  )
+
+  const guestTimer = await getTimer({ guestId: guest.id })
+
+  const memberTimer = await getTimer({ userId })
+
+  if (guestTimer && !memberTimer) {
+    await updateTimer({
+      ...guestTimer,
+      userId,
+      guestId: null,
+    })
+  }
+
+  const taskLogs = await getTaskLogs({ guestId: guest.id, pageSize: limit })
+  await Promise.all(
+    taskLogs.taskLogs.map(async (taskLog) => {
+      await updateTaskLog({
+        ...taskLog,
+        userId,
+        guestId: null,
+      })
+    }),
+  )
+
+  const moods = await getMoods({ guestId: guest.id, pageSize: limit })
+  await Promise.all(
+    moods.moods.map(async (mood) => {
+      await updateMood({
+        ...mood,
+        userId,
+        guestId: null,
+      })
+    }),
+  )
+
+  const instructions = await getInstructions({
+    guestId: guest.id,
+    pageSize: limit,
+  })
   await Promise.all(
     instructions.map(async (instruction) => {
       await updateInstruction({

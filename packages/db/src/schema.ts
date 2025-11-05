@@ -2740,12 +2740,50 @@ export const moods = pgTable("mood", {
     .default({}),
 })
 
+export const kanbanBoards = pgTable("kanbanBoard", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull().default("My Board"),
+  description: text("description"),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
+export const taskStates = pgTable("taskState", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  order: integer("order").notNull().default(0), // For column ordering
+  color: text("color").default("#6366f1"), // Optional column color
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+  kanbanBoardId: uuid("kanbanBoardId")
+    .references(() => kanbanBoards.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
 export const tasks = pgTable("task", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
   userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
   guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+  taskStateId: uuid("taskStateId").references(() => taskStates.id, {
+    onDelete: "set null",
+  }), // Which column/state this task is in
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -2753,7 +2791,7 @@ export const tasks = pgTable("task", {
     .defaultNow()
     .notNull(),
   total: jsonb("total").$type<{ date: string; count: number }[]>().default([]),
-  order: integer("order").default(0),
+  order: integer("order").default(0), // Order within the column
   selected: boolean("selected").default(false),
 })
 
