@@ -133,7 +133,7 @@ export const users = pgTable(
       mode: "date",
       withTimezone: true,
     }),
-    favouriteAgent: text("favouriteAgent").notNull().default("claude"),
+    favouriteAgent: text("favouriteAgent").notNull().default("sushi"),
     timezone: text("timezone"),
     appleId: text("appleId"),
     migratedFromGuest: boolean("migratedFromGuest").default(false).notNull(),
@@ -705,6 +705,7 @@ export type modelName =
   | "gemini"
   | "flux"
   | "perplexity"
+  | "sushi"
 
 export const messages = pgTable(
   "messages",
@@ -1680,8 +1681,16 @@ export const apps = pgTable(
       .notNull()
       .default("private"),
     defaultModel: text("defaultModel", {
-      enum: ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"],
-    }).default("claude"), // Default AI model for this app
+      enum: [
+        "deepSeek",
+        "chatGPT",
+        "claude",
+        "gemini",
+        "flux",
+        "perplexity",
+        "sushi",
+      ],
+    }).default("sushi"), // Default AI model for this app
     temperature: real("temperature").default(0.7),
 
     // Monetization

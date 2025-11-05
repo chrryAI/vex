@@ -501,6 +501,7 @@ Be helpful, concise, and friendly.${templateErrorNote}`
 }
 
 export async function POST(request: Request) {
+  console.log("🚀 POST /api/ai - Request received")
   console.time("messageProcessing")
 
   const member = await getMember(true)
@@ -575,6 +576,8 @@ export async function POST(request: Request) {
     slug,
     ...rest
   } = requestData
+
+  console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
 
   const draft = rest.draft as appFormData & {
     canSubmit?: boolean
@@ -784,6 +787,7 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
   })
 
   const agent = await getAiAgent({ id: agentId })
+  console.log(`🚀 ~ file: route.ts:787 ~ agent:`, agent?.name)
 
   if (stopStreamId && agent) {
     if (
@@ -2658,6 +2662,24 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
       })
       model = deepseekProvider(agent.modelId)
       break
+    case "sushi":
+      console.log("🍣 Using Sushi AI (DeepSeek Reasoner + Flux)")
+      const sushiKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
+      if (appApiKeys.deepseek) {
+        console.log("✅ Using app-specific DeepSeek API key for Sushi")
+      }
+      if (!sushiKey) {
+        console.error("❌ DeepSeek API key is required for Sushi AI")
+        return NextResponse.json(
+          { error: "DeepSeek API key is required for Sushi AI" },
+          { status: 500 },
+        )
+      }
+      const sushiProvider = createDeepSeek({
+        apiKey: sushiKey,
+      })
+      model = sushiProvider(agent.modelId) // "deepseek-reasoner"
+      break
     case "chatGPT":
       console.log("🤖 Using ChatGPT model")
       const openaiKey = appApiKeys.openai || CHATGPT_API_KEY
@@ -2693,23 +2715,6 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
       model = geminiProvider(agent.modelId)
       break
 
-    case "flux":
-      console.log("🎨 Using Flux model for image generation")
-      if (!imageGenerationEnabled) {
-        console.log("❌ Flux agent requires image generation to be enabled")
-        return NextResponse.json(
-          { error: "Flux agent can only be used for image generation" },
-          { status: 400 },
-        )
-      }
-      // Use DeepSeek as fallback for any text operations (like prompt enhancement)
-      const deepseekKeyFlux =
-        appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
-      const deepseekProviderFlux = createDeepSeek({
-        apiKey: deepseekKeyFlux,
-      })
-      model = deepseekProviderFlux("deepseek-reasoner")
-      break
     case "perplexity":
       console.log("🤖 Using Perplexity Sonar model")
       const perplexityKey =
@@ -2724,30 +2729,40 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
       model = perplexity(agent.modelId) // "sonar"
       break
     default:
-      // Handle custom OpenAI-compatible models
-      console.log("🤖 Using custom OpenAI-compatible model:", agent.name)
-      if (!agent.apiURL) {
-        console.log("❌ Custom agent missing apiURL:", agent.name)
-        return NextResponse.json(
-          { error: "Custom agent requires an API URL" },
-          { status: 400 },
-        )
+      if (imageGenerationEnabled) {
+        // Use DeepSeek as fallback for any text operations (like prompt enhancement)
+        const deepseekKeyFlux =
+          appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
+        const deepseekProviderFlux = createDeepSeek({
+          apiKey: deepseekKeyFlux,
+        })
+        model = deepseekProviderFlux("deepseek-reasoner")
+      } else {
+        console.log("🤖 Using custom OpenAI-compatible model:", agent.name)
+        if (!agent.apiURL) {
+          console.log("❌ Custom agent missing apiURL:", agent.name)
+          return NextResponse.json(
+            { error: "Custom agent requires an API URL" },
+            { status: 400 },
+          )
+        }
+
+        // Parse stored format: "baseURL|apiKey"
+        const [customBaseURL, customApiKey] = agent.apiURL.includes("|")
+          ? agent.apiURL.split("|")
+          : ["https://api.openai.com/v1", agent.apiURL]
+
+        console.log("🔗 Custom model base URL:", customBaseURL)
+        console.log("🎯 Custom model ID:", agent.modelId)
+        console.log("🔑 Has API key:", !!customApiKey)
+
+        const customProvider = createOpenAI({
+          apiKey: customApiKey,
+          baseURL: customBaseURL,
+        })
+        model = customProvider(agent.modelId)
       }
 
-      // Parse stored format: "baseURL|apiKey"
-      const [customBaseURL, customApiKey] = agent.apiURL.includes("|")
-        ? agent.apiURL.split("|")
-        : ["https://api.openai.com/v1", agent.apiURL]
-
-      console.log("🔗 Custom model base URL:", customBaseURL)
-      console.log("🎯 Custom model ID:", agent.modelId)
-      console.log("🔑 Has API key:", !!customApiKey)
-
-      const customProvider = createOpenAI({
-        apiKey: customApiKey,
-        baseURL: customBaseURL,
-      })
-      model = customProvider(agent.modelId)
       break
   }
 
@@ -3418,18 +3433,176 @@ User preferences:
       }
     }
 
-    const { calendarTools, vaultTools, focusTools } = getTools({
+    const { calendarTools, vaultTools, focusTools, imageTools } = getTools({
       member,
       guest,
       currentThreadId,
       currentMessageId: clientId, // Link moods to this AI response message
     })
 
-    // Combine calendar, vault, and focus tools
+    // Combine calendar, vault, focus, and image tools
     const allTools = {
       ...calendarTools,
       ...vaultTools,
       ...focusTools,
+      ...imageTools,
+    }
+
+    // Special handling for Sushi AI (unified multimodal agent)
+    if (agent.name === "sushi") {
+      console.log("=".repeat(80))
+      console.log("🍣🍣🍣 SUSHI BLOCK ENTERED 🍣🍣🍣")
+      console.log("🍣 Sushi AI - Unified multimodal agent")
+      console.log("=".repeat(80))
+
+      // Sushi uses DeepSeek Reasoner with tool calling for image generation
+      // Use the same enhanced streaming as DeepSeek for consistency
+      let finalText = ""
+      let responseMetadata: any = null
+      let toolCallsDetected = false
+      let streamCompleted = false
+
+      try {
+        console.log("🍣 Step 1: Creating streamText result...")
+        const result = streamText({
+          model,
+          messages,
+          maxRetries: 3,
+          temperature: app?.temperature ?? 0.7,
+          tools: allTools, // Includes imageTools
+          async onFinish({ text, usage, response, toolCalls, toolResults }) {
+            finalText = text
+            responseMetadata = response
+            toolCallsDetected = toolCalls && toolCalls.length > 0
+            streamCompleted = true
+            console.log("🍣 Sushi finished:", {
+              hasToolCalls: toolCallsDetected,
+              toolNames: toolCalls?.map((tc) => tc.toolName),
+              textLength: text?.length,
+            })
+          },
+        })
+        console.log("🍣 Step 2: streamText result created")
+
+        // Use fullStream to handle reasoning parts from deepseek-reasoner
+        let reasoningText = ""
+        let answerText = ""
+        let currentChunk = 0
+
+        console.log("🍣 Step 3: Setting up controller...")
+        const controller: StreamController = {
+          close: () => {}, // Will be set below
+          desiredSize: null,
+          enqueue: () => {},
+          error: () => {},
+        }
+        streamControllers.set(streamId, controller)
+        console.log("🍣 Step 4: Controller set")
+
+        // Create AI message structure for Sushi streaming chunks
+        const sushiStreamingMessage = {
+          message: {
+            id: clientId,
+            threadId: currentThreadId,
+            agentId: agent.id,
+            userId: member?.id,
+            guestId: guest?.id,
+            content: "",
+            isStreaming: true,
+          },
+          aiAgent: pauseDebate ? debateAgent : agent,
+          user: member,
+          guest: guest,
+          thread: thread,
+        }
+        console.log("🍣 Step 5: Message structure created")
+
+        console.log("🍣 Step 6: About to start fullStream loop...")
+        console.log("🍣 fullStream exists?", !!result.fullStream)
+
+        // Stream reasoning and answer parts
+        for await (const part of result.fullStream) {
+          if (!streamControllers.has(streamId)) {
+            console.log("🍣 Sushi stream was stopped")
+            break
+          }
+
+          if (part.type === "reasoning-start") {
+            console.log("🧠 Reasoning started")
+          } else if (part.type === "reasoning-delta") {
+            // DeepSeek Reasoner's thinking process chunks
+            reasoningText += part.text
+            console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
+            // Stream reasoning to frontend with special formatting
+            await enhancedStreamChunk({
+              chunk: `<reasoning>${part.text}</reasoning>`,
+              chunkNumber: currentChunk++,
+              totalChunks: -1,
+              streamingMessage: sushiStreamingMessage,
+              member,
+              guest,
+              thread,
+              streamId,
+              clientId,
+            })
+          } else if (part.type === "reasoning-end") {
+            console.log("🧠 Reasoning complete")
+          } else if (part.type === "text-delta") {
+            // Final answer text
+            answerText += part.text
+            console.log("💬 Text delta:", part.text)
+            await enhancedStreamChunk({
+              chunk: part.text,
+              chunkNumber: currentChunk++,
+              totalChunks: -1,
+              streamingMessage: sushiStreamingMessage,
+              member,
+              guest,
+              thread,
+              streamId,
+              clientId,
+            })
+          } else if (part.type === "tool-call") {
+            console.log("🛠️ Tool call:", part.toolName)
+          } else if (part.type === "finish") {
+            console.log("🏁 Stream finish event received")
+            break
+          }
+        }
+
+        console.log("🍣 Stream loop completed")
+
+        finalText = answerText || finalText
+
+        streamControllers.delete(streamId)
+
+        // Save final message to database
+        if (finalText) {
+          console.log("💾 Saving Sushi message to DB...")
+          const aiMessage = await createMessage({
+            threadId: currentThreadId,
+            agentId: agent.id,
+            userId: member?.id,
+            guestId: guest?.id,
+            content: finalText,
+            clientId,
+          })
+
+          if (aiMessage) {
+            console.log("✅ Sushi message saved to DB")
+          }
+        }
+
+        console.log("🍣 Returning success response")
+        return NextResponse.json({ success: true })
+      } catch (error: unknown) {
+        console.error("❌ Error in Sushi AI call:", error)
+        captureException(error)
+        return NextResponse.json(
+          { error: "Failed to generate response" },
+          { status: 500 },
+        )
+      }
     }
 
     // Special handling for DeepSeek streaming

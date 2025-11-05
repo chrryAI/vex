@@ -60,6 +60,12 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      appAgent?: aiAgent
+      favouriteAgent?: aiAgent
+      sushiAgent: aiAgent | undefined
+      claudeAgent: aiAgent | undefined
+      deepSeekAgent: aiAgent | undefined
+      perplexityAgent: aiAgent | undefined
       thread?: thread
       setThread: (thread?: thread) => void
       fetchMood: () => Promise<void>
@@ -810,6 +816,7 @@ export function AuthProvider({
 
   const chrry = allApps?.find((app) => !app.store?.parentStoreId)
   const vex = allApps?.find((app) => app.slug === "vex")
+  const sushi = allApps?.find((app) => app.slug === "sushi")
 
   const getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
@@ -837,9 +844,17 @@ export function AuthProvider({
     )
   })
 
-  const [app, setAppInternal] = useLocalStorage<
+  const [appState, setAppState] = useState<
+    (appWithStore & { image?: string }) | undefined
+  >(baseApp || session?.app)
+
+  const [appLocal, setAppLocal] = useLocalStorage<
     (appWithStore & { image?: string }) | undefined
   >("app", baseApp || session?.app)
+
+  const app = isExtension ? appLocal : appState
+
+  const setAppInternal = isExtension ? setAppLocal : setAppState
 
   const [apps, setApps] = useState<appWithStore[]>(store?.apps || [])
 
@@ -995,7 +1010,26 @@ export function AuthProvider({
     }
   }, [user, guest])
 
-  const [aiAgents, setAiAgents] = useState<aiAgent[]>(session?.aiAgents || [])
+  const [aiAgentsInternal, setAiAgents] = useState<aiAgent[]>(
+    session?.aiAgents || [],
+  )
+
+  const sushiAgent = aiAgentsInternal?.find((agent) => agent.name === "sushi")
+
+  const aiAgents = aiAgentsInternal.filter(
+    (agent) => agent.name !== "deepSeek" && agent.name !== "flux",
+  )
+
+  const claudeAgent = aiAgents?.find((agent) => agent.name === "claude")
+
+  const deepSeekAgent = sushiAgent // Alias: deepSeek is replaced by Sushi
+  const perplexityAgent = aiAgents?.find((agent) => agent.name === "perplexity")
+
+  const appAgent = aiAgents.find((agent) => agent.name === app?.defaultModel)
+
+  const favouriteAgent = aiAgents?.find(
+    (agent) => agent.name === (user || guest)?.favouriteAgent,
+  )
 
   const setAppTheme = useCallback(
     (themeColor?: string) => {
@@ -1327,6 +1361,12 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        claudeAgent,
+        appAgent,
+        sushiAgent,
+        deepSeekAgent,
+        favouriteAgent,
+        perplexityAgent,
         setMood,
         isLoadingMoods,
         mood,
@@ -1373,6 +1413,7 @@ export function AuthProvider({
         isGuestTest,
         isMemberTest,
         user,
+
         setUser,
         setGuest,
         isCI,

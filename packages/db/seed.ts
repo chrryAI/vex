@@ -153,7 +153,7 @@ const create = async () => {
     },
   })
 
-  const deepseekAgent = await createAiAgent({
+  await createAiAgent({
     name: "deepSeek",
     displayName: "DeepSeek V3",
     version: "3.0.0",
@@ -173,6 +173,30 @@ const create = async () => {
       webSearch: false,
       pdf: true,
       imageGeneration: false,
+    },
+  })
+
+  const sushiAgent = await createAiAgent({
+    name: "sushi",
+    displayName: "Sushi 1.0",
+    version: "1.0.0",
+    apiURL: "https://api.deepseek.com/v1",
+    description:
+      "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs, and generates images. Powered by DeepSeek R1 + Flux.",
+    state: "active",
+    creditCost: 2,
+    authorization: "all",
+    modelId: "deepseek-reasoner", // Advanced reasoning model with visible thinking
+    maxPromptSize: 128000,
+    order: 5,
+    capabilities: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: true,
     },
   })
 
@@ -246,7 +270,7 @@ const create = async () => {
     },
   })
 
-  if (!deepseekAgent) throw new Error("Failed to add agent")
+  if (!sushiAgent) throw new Error("Failed to add agent")
 
   await createEvent({ user: admin })
 
@@ -423,10 +447,10 @@ const create = async () => {
           })
           if (!userMessage) throw new Error("Failed to create user message")
         } else {
-          if (!deepseekAgent.id) throw new Error("Agent has no id")
+          if (!sushiAgent.id) throw new Error("Agent has no id")
           const agentMessage = await createMessage({
             threadId: thread.id as string,
-            agentId: deepseekAgent.id as string,
+            agentId: sushiAgent.id as string,
             userId: adminUser.id as string,
             content: msg.content as string,
             createdOn: lastMessageTime,
@@ -453,7 +477,7 @@ const create = async () => {
     {
       const message = await createMessage({
         threadId: thread.id,
-        agentId: deepseekAgent.id,
+        agentId: sushiAgent.id,
         userId: localswaphub.id,
         content: "Test Collaboration User Message",
         // createdOn: new Date(lastMessageTime),
@@ -482,7 +506,7 @@ const create = async () => {
     {
       const message = await createMessage({
         threadId: publicThread.id,
-        agentId: deepseekAgent.id,
+        agentId: sushiAgent.id,
         userId: localswaphub.id,
         content: "Test Public User Message",
         // createdOn: new Date(lastMessageTime),
@@ -621,9 +645,9 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    // await clearDb()
+    await clearDb()
 
-    // await create()
+    await create()
     process.exit(0)
   }
   // await updateInvalidDates()

@@ -58,6 +58,13 @@ export async function getModelProvider(
         provider: deepseekProvider(agent.modelId),
         agentName: agent.name,
       }
+    case "sushi":
+      const sushiKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
+      const sushiProvider = createDeepSeek({ apiKey: sushiKey })
+      return {
+        provider: sushiProvider(agent.modelId),
+        agentName: agent.name,
+      }
 
     case "chatGPT":
       const openaiKey = appApiKeys.openai || process.env.OPENAI_API_KEY

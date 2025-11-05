@@ -52,6 +52,7 @@ type ImageProps = {
     | "chrry"
     | "raspberry"
     | "strawberry"
+    | "sushi"
 
   app?: appWithStore
   width?: number | string
@@ -89,7 +90,7 @@ export default function ImageComponent(props: ImageProps) {
 
   const BASE_URL = FRONTEND_URL
 
-  const { appFormWatcher, canEditApp } = useApp()
+  const { appFormWatcher, canEditApp, chrry } = useApp()
 
   let { src, width, height, size } = getImageSrc({
     ...props,
@@ -108,7 +109,22 @@ export default function ImageComponent(props: ImageProps) {
   const color =
     COLORS[app?.themeColor as keyof typeof COLORS] || "var(--accent-6)"
 
-  if (!app?.image && app?.slug) {
+  if (!src && !app?.image && app?.slug) {
+    if (app.slug === "zarathustra") {
+      return <span style={{ fontSize: size }}>📕</span>
+    }
+
+    if (app.slug === "1984") {
+      return <span style={{ fontSize: size }}>👁️</span>
+    }
+
+    if (app.slug === "meditations") {
+      return <span style={{ fontSize: size }}>🏛️</span>
+    }
+
+    if (app.slug === "dune") {
+      return <span style={{ fontSize: size }}>🏜️</span>
+    }
     if (app?.store?.slug === "movies" && app.slug !== "popcorn") {
       if (app.slug === "fightClub") {
         return <span style={{ fontSize: size }}>🧼</span>
@@ -148,24 +164,14 @@ export default function ImageComponent(props: ImageProps) {
     if (app.slug === "newYork") {
       return <span style={{ fontSize: size }}>🗽</span>
     }
-
-    if (app.slug === "zarathustra") {
-      return <span style={{ fontSize: size }}>📕</span>
-    }
-
-    if (app.slug === "1984") {
-      return <span style={{ fontSize: size }}>👁️</span>
-    }
-
-    if (app.slug === "meditations") {
-      return <span style={{ fontSize: size }}>🏛️</span>
-    }
-
-    if (app.slug === "dune") {
-      return <span style={{ fontSize: size }}>🏜️</span>
-    }
   }
-  if (app?.onlyAgent && !app.image) {
+  if (
+    app?.onlyAgent &&
+    app?.defaultModel &&
+    ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"].includes(
+      app?.defaultModel,
+    )
+  ) {
     return app.defaultModel === "deepSeek" ? (
       <DeepSeek color={color} size={size} />
     ) : app.defaultModel === "chatGPT" ? (
@@ -193,7 +199,7 @@ export default function ImageComponent(props: ImageProps) {
       width={width}
       height={height}
       title={title}
-      src={src}
+      src={src || `${BASE_URL}/images/pacman/space-invader.png`}
       alt={alt || app?.title || logo ? "Vex" : ""}
     />
   )

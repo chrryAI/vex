@@ -190,9 +190,7 @@ export const Hey = memo(
       <div>
         <ErrorBoundary>
           {splash}
-          {isLoading ? (
-            getSplash(true)
-          ) : (
+          {isLoading && !app ? null : (
             <Suspense>
               {isClientRoute ? (
                 // Client-side routes: SWAP content

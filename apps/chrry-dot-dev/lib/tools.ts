@@ -1413,9 +1413,78 @@ export const getTools = ({
     },
   }
 
+  const imageTools = {
+    generateImage: {
+      description:
+        "Generate an image using AI based on the user's description. Use this when the user asks to create, generate, draw, design, or visualize something as an image. Examples: 'create a logo', 'draw a sunset', 'design a poster', 'show me what X looks like'.",
+      inputSchema: z.object({
+        prompt: z
+          .string()
+          .describe(
+            "Detailed description of the image to generate. Be specific about style, colors, composition, and mood.",
+          ),
+        aspectRatio: z
+          .enum(["1:1", "16:9", "9:16", "4:3", "3:4"])
+          .optional()
+          .default("1:1")
+          .describe(
+            "Aspect ratio of the generated image. Use 1:1 for square, 16:9 for landscape, 9:16 for portrait.",
+          ),
+      }),
+      execute: async ({
+        prompt,
+        aspectRatio = "1:1",
+      }: {
+        prompt: string
+        aspectRatio?: "1:1" | "16:9" | "9:16" | "4:3" | "3:4"
+      }) => {
+        console.log("🎨 Generating image:", { prompt, aspectRatio })
+
+        try {
+          const Replicate = (await import("replicate")).default
+          const replicate = new Replicate({
+            auth: process.env.REPLICATE_API_KEY,
+          })
+
+          console.log("🎨 Calling Flux via Replicate...")
+          const output = await replicate.run(
+            "black-forest-labs/flux-1.1-pro" as any,
+            {
+              input: {
+                prompt,
+                aspect_ratio: aspectRatio,
+                output_format: "webp",
+                output_quality: 90,
+                safety_tolerance: 2,
+              },
+            },
+          )
+
+          const imageUrl = Array.isArray(output) ? output[0] : output
+          console.log("✅ Image generated:", imageUrl)
+
+          return {
+            success: true,
+            imageUrl,
+            prompt,
+            aspectRatio,
+            message: `✨ Created image: "${prompt}"`,
+          }
+        } catch (error) {
+          console.error("Failed to generate image:", error)
+          return {
+            success: false,
+            error: "Failed to generate image. Please try again.",
+          }
+        }
+      },
+    },
+  }
+
   return {
     calendarTools,
     vaultTools,
     focusTools,
+    imageTools,
   }
 }

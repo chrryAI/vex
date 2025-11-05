@@ -160,6 +160,11 @@ export function ChatProvider({
     session,
     thread,
     setThread,
+    sushiAgent,
+    deepSeekAgent,
+    perplexityAgent,
+    claudeAgent,
+    favouriteAgent,
     ...auth
   } = useAuth()
 
@@ -631,19 +636,11 @@ export function ChatProvider({
 
   // AI Agents
 
-  const claudeAgent = aiAgents?.find((agent) => agent.name === "claude")
-
   const returnSelectedAgent = (
     agent: aiAgent | undefined | null,
   ): aiAgent | undefined | null => {
     if (!isAgentAuthorized(agent)) {
-      const a = isWebSearchEnabled
-        ? perplexityAgent
-        : user
-          ? favouriteAgent?.name === "perplexity"
-            ? claudeAgent
-            : favouriteAgent
-          : deepSeekAgent
+      const a = isWebSearchEnabled ? perplexityAgent : sushiAgent
 
       return a
     }
@@ -674,12 +671,6 @@ export function ChatProvider({
       : ["guest", "all"].includes(agent.authorization)
   }
 
-  const deepSeekAgent = aiAgents?.find((agent) => agent.name === "deepSeek")
-  const perplexityAgent = aiAgents?.find((agent) => agent.name === "perplexity")
-  const favouriteAgent = aiAgents?.find(
-    (agent) => agent.name === (user || guest)?.favouriteAgent,
-  )
-
   const [placeHolder, setPlaceHolder] = React.useState<placeHolder | undefined>(
     undefined,
   )
@@ -688,13 +679,9 @@ export function ChatProvider({
 
   useEffect(() => {
     if (appStatus?.part) {
-      if (user) {
-        setSelectedAgent(claudeAgent)
-      } else if (guest) {
-        setSelectedAgent(deepSeekAgent)
-      }
+      setSelectedAgent(sushiAgent)
     }
-  }, [appStatus?.part, guest, user])
+  }, [appStatus?.part])
 
   useEffect(() => {
     if (threadId) {
@@ -779,15 +766,7 @@ export function ChatProvider({
     aiAgent | undefined | null
   >("selectedAgent", returnSelectedAgent(session?.aiAgent))
   const setIsWebSearchEnabled = (value: boolean) => {
-    value
-      ? setSelectedAgent(perplexityAgent)
-      : setSelectedAgent(
-          user
-            ? favouriteAgent?.name == "perplexity"
-              ? claudeAgent
-              : favouriteAgent
-            : deepSeekAgent,
-        )
+    value ? setSelectedAgent(perplexityAgent) : setSelectedAgent(sushiAgent)
     setIsWebSearchEnabledInternal(value)
   }
 
@@ -933,16 +912,6 @@ export function ChatProvider({
     }
   }, [hitHourlyLimit])
 
-  useEffect(() => {
-    if (chrry?.id === app?.id) {
-      if (user) {
-        setSelectedAgent(claudeAgent)
-      } else if (guest) {
-        setSelectedAgent(deepSeekAgent)
-      }
-    }
-  }, [chrry, user, guest])
-
   const [nextPage, setNextPage] = useState<number | undefined>(undefined)
 
   const threadData = threadSWR || props.thread || undefined
@@ -1071,8 +1040,6 @@ export function ChatProvider({
         hourlyLimit,
         hourlyUsageLeft,
         setCreditsLeft,
-        perplexityAgent,
-        deepSeekAgent,
         claudeAgent,
         favouriteAgent,
         messages,

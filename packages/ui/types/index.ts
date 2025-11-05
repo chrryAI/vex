@@ -40,6 +40,7 @@ export type user = {
     | "claude"
     | "gemini"
     | "flux"
+    | "sushi"
     | "perplexity"
     | string
   timezone: string | null
@@ -197,6 +198,7 @@ export type guest = {
     | "gemini"
     | "flux"
     | "perplexity"
+    | "sushi"
   credits: number
   isBot: boolean
   isOnline: boolean | null
@@ -419,7 +421,14 @@ export type newCollaboration = Partial<collaboration>
 // AI Agent types
 export type aiAgent = {
   id: string
-  name: "deepSeek" | "chatGPT" | "claude" | "gemini" | "flux" | "perplexity"
+  name:
+    | "deepSeek"
+    | "chatGPT"
+    | "claude"
+    | "gemini"
+    | "flux"
+    | "perplexity"
+    | "sushi"
   displayName: string
   version: string
   apiURL: string

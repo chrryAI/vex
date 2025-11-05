@@ -202,6 +202,7 @@ export default function Chat({
     FRONTEND_URL,
     chrry,
     app,
+    sushiAgent,
   } = useAuth()
 
   const isChrry = chrry?.id === app?.id
@@ -384,9 +385,9 @@ export default function Chat({
     setIsChatFloating(isChatFloating)
   }, [isChatFloating])
 
-  const fluxAgent = aiAgents?.find((agent) => agent.name === "flux")
-  const deepSeekAgent = aiAgents?.find((agent) => agent.name === "deepSeek")
-  const chatGPTAgent = aiAgents?.find((agent) => agent.name === "chatGPT")
+  // const fluxAgent = aiAgents?.find((agent) => agent.name === "flux")
+  // const deepSeekAgent = aiAgents?.find((agent) => agent.name === "deepSeek")
+  // const chatGPTAgent = aiAgents?.find((agent) => agent.name === "chatGPT")
 
   // Strip ACTION JSON sfrom streaming text
   const stripActionFromText = (text: string): string => {
@@ -962,7 +963,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         return
       }
       if (selectedAgent?.name == "flux") {
-        user ? setSelectedAgent(chatGPTAgent) : setSelectedAgent(deepSeekAgent)
+        setSelectedAgent(undefined)
       }
     }
 
@@ -2999,9 +3000,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     : agent.order,
               }))
               .sort((a, b) => {
-                // if (!guest || !guest?.subscription) {
-                //   return 0
-                // }
+                if (a.id === sushiAgent?.id) {
+                  return -1
+                }
                 return a.order - b.order
               })
               ?.map((agent) => (
@@ -3015,9 +3016,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         className={clsx(
                           "medium",
                           styles.agentButtonModal,
-                          agent.authorization === "user" &&
+                          (agent.authorization === "user" &&
                             !user &&
-                            !guest?.subscription
+                            !guest?.subscription) ||
+                            agent.id === sushiAgent?.id
                             ? "inverted"
                             : (user || guest)?.favouriteAgent === agent.name
                               ? styles.favorite
@@ -3080,6 +3082,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           <Flux size={18} />
                         ) : agent.name === "perplexity" ? (
                           <Perplexity size={18} />
+                        ) : agent.name === "sushi" ? (
+                          <Img icon="sushi" size={22} />
                         ) : null}{" "}
                         {agent.displayName}
                       </button>
@@ -3699,7 +3703,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   if (selectedAgent?.name === "flux") {
                     setSelectedAgent(undefined)
                   } else {
-                    setSelectedAgent(fluxAgent)
+                    setSelectedAgent(sushiAgent)
                   }
                 }}
               >
@@ -3920,9 +3924,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         }}
                         className={clsx("link", styles.debateAgentButton)}
                       >
-                        {isChrry ? (
-                          <Img app={chrry} size={20} />
-                        ) : selectedAgent.name === "deepSeek" ? (
+                        {selectedAgent.name === "deepSeek" ? (
                           <DeepSeek color="var(--accent-6)" size={24} />
                         ) : selectedAgent.name === "chatGPT" ? (
                           <OpenAI color="var(--accent-6)" size={22} />
@@ -3934,6 +3936,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           <Flux color="var(--accent-6)" size={22} />
                         ) : selectedAgent.name === "perplexity" ? (
                           <Perplexity color="var(--accent-6)" size={22} />
+                        ) : selectedAgent.name === "sushi" ? (
+                          <Img icon="sushi" size={22} />
                         ) : null}
                         {isChrry ||
                         app?.onlyAgent ||
@@ -3947,7 +3951,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           />
                         )}
                       </button>
-                      {debateAgent && !isChrry && !app?.onlyAgent ? (
+                      {debateAgent && !app?.onlyAgent ? (
                         <button
                           data-testid="add-debate-agent-button"
                           data-agent-name={debateAgent.name}
@@ -4002,11 +4006,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           type="submit"
                         >
                           <span className={styles.agentName}>
-                            {isChrry
-                              ? `Chrry ${VERSION.substring(0, 3)}`
-                              : selectedAgent?.displayName}
+                            {selectedAgent?.displayName}
                           </span>
-                          {!isChrry && !app?.onlyAgent && (
+                          {!app?.onlyAgent && (
                             <ChevronDown color="var(--accent-6)" size={20} />
                           )}
                         </button>
@@ -4280,7 +4282,19 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         title={t("Attach")}
                         onClick={() => {
                           addHapticFeedback()
-                          setIsAttaching(true)
+
+                          // Auto-switch to Sushi for file attachments
+                          const sushiAgent = aiAgents.find(
+                            (agent) => agent.name === "sushi",
+                          )
+                          if (sushiAgent && selectedAgent?.name !== "sushi") {
+                            setSelectedAgent(sushiAgent)
+                          }
+
+                          // Open system file picker directly with all supported types
+                          triggerFileInput(
+                            "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                          )
                         }}
                         className={clsx("link", styles.attachButton)}
                         type="submit"

@@ -11,6 +11,7 @@ import {
   updatePureApp as updateApp,
   createOrUpdateApp,
   createOrUpdateStoreInstall,
+  getStore,
 } from "./index"
 
 import enTranslations from "./en.json"
@@ -1567,37 +1568,37 @@ const perplexityOldSearchInstructions = [
   },
 ]
 
-// DeepSeek general instructions
-const deepseekGeneralInstructions = [
+// Sushi general instructions
+const sushiGeneralInstructions = [
   {
-    id: "deepseek-general-1",
+    id: "sushi-general-1",
     title: "Code-First Thinking",
     emoji: "💻",
     content:
-      "DeepSeek excels at all things code. From generation to debugging to architecture, it's built for developers who need technical excellence.",
+      "Sushi excels at all things code. From generation to debugging to architecture, it's built for developers who need technical excellence.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-general-2",
+    id: "sushi-general-2",
     title: "Production-Ready Quality",
     emoji: "✨",
     content:
-      "Generates clean, efficient, production-ready code. DeepSeek follows best practices and writes code you can deploy with confidence.",
+      "Generates clean, efficient, production-ready code. Sushi follows best practices and writes code you can deploy with confidence.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-general-3",
+    id: "sushi-general-3",
     title: "Multi-Language Expert",
     emoji: "🌍",
     content:
-      "Fluent in all major programming languages. Whether it's Python, JavaScript, Rust, or Go, DeepSeek speaks your language.",
+      "Fluent in all major programming languages. Whether it's Python, JavaScript, Rust, or Go, Sushi speaks your language.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-general-4",
+    id: "sushi-general-4",
     title: "Fast & Efficient",
     emoji: "⚡",
     content:
@@ -1606,42 +1607,42 @@ const deepseekGeneralInstructions = [
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-general-5",
+    id: "sushi-general-5",
     title: "Algorithm Mastery",
     emoji: "🧮",
     content:
-      "Deep understanding of algorithms and data structures. DeepSeek can explain complex concepts and implement optimal solutions.",
+      "Deep understanding of algorithms and data structures. Sushi can explain complex concepts and implement optimal solutions.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-general-6",
+    id: "sushi-general-6",
     title: "Framework Expertise",
     emoji: "🔧",
     content:
-      "Expert knowledge of popular frameworks like React, Next.js, Django, and more. DeepSeek writes idiomatic code for any stack.",
+      "Expert knowledge of popular frameworks like React, Next.js, Django, and more. Sushi writes idiomatic code for any stack.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-general-7",
+    id: "sushi-general-7",
     title: "Testing & Quality",
     emoji: "✅",
     content:
-      "Writes comprehensive tests and follows TDD principles. DeepSeek helps you build reliable, well-tested codebases.",
+      "Writes comprehensive tests and follows TDD principles. Sushi helps you build reliable, well-tested codebases.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
 ]
 
-// DeepSeek Coder-specific highlights
-const deepseekCoderInstructions = [
+// Sushi Coder-specific highlights
+const sushiCoderInstructions = [
   {
     id: "coder-1",
     title: "Lightning-Fast Generation",
     emoji: "⚡",
     content:
-      "Generate production-ready code in seconds. DeepSeek Coder writes clean, efficient code across all major programming languages.",
+      "Generate production-ready code in seconds. Sushi Coder writes clean, efficient code across all major programming languages.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1650,7 +1651,7 @@ const deepseekCoderInstructions = [
     title: "Algorithm Implementation",
     emoji: "🧮",
     content:
-      "Implement complex algorithms with optimal time and space complexity. From sorting to graph traversal, DeepSeek knows the best approach.",
+      "Implement complex algorithms with optimal time and space complexity. From sorting to graph traversal, Sushi knows the best approach.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1659,7 +1660,7 @@ const deepseekCoderInstructions = [
     title: "Framework Fluency",
     emoji: "🔧",
     content:
-      "Expert in React, Next.js, Django, FastAPI, and more. DeepSeek writes idiomatic code following framework best practices.",
+      "Expert in React, Next.js, Django, FastAPI, and more. Sushi writes idiomatic code following framework best practices.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1668,7 +1669,7 @@ const deepseekCoderInstructions = [
     title: "API Integration",
     emoji: "🔌",
     content:
-      "Seamlessly integrate third-party APIs and services. DeepSeek handles authentication, error handling, and rate limiting properly.",
+      "Seamlessly integrate third-party APIs and services. Sushi handles authentication, error handling, and rate limiting properly.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1677,7 +1678,7 @@ const deepseekCoderInstructions = [
     title: "Database Queries",
     emoji: "🗄️",
     content:
-      "Write optimized SQL, NoSQL, and ORM queries. DeepSeek creates efficient database operations with proper indexing and relationships.",
+      "Write optimized SQL, NoSQL, and ORM queries. Sushi creates efficient database operations with proper indexing and relationships.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1686,7 +1687,7 @@ const deepseekCoderInstructions = [
     title: "Test Generation",
     emoji: "✅",
     content:
-      "Automatically generate unit tests, integration tests, and E2E tests. DeepSeek ensures comprehensive test coverage for your code.",
+      "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1695,20 +1696,20 @@ const deepseekCoderInstructions = [
     title: "Code Documentation",
     emoji: "📝",
     content:
-      "Generate clear, comprehensive documentation and comments. DeepSeek explains complex code in human-readable language.",
+      "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
 ]
 
-// DeepSeek Debugger-specific highlights
-const deepseekDebuggerInstructions = [
+// Sushi Debugger-specific highlights
+const sushiDebuggerInstructions = [
   {
     id: "debugger-1",
     title: "Stack Trace Analysis",
     emoji: "🔍",
     content:
-      "Instantly understand error stack traces and identify root causes. DeepSeek Debugger pinpoints exactly where and why code fails.",
+      "Instantly understand error stack traces and identify root causes. Sushi Debugger pinpoints exactly where and why code fails.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1726,7 +1727,7 @@ const deepseekDebuggerInstructions = [
     title: "Fix Suggestions",
     emoji: "💡",
     content:
-      "Provides multiple fix options with explanations. DeepSeek explains trade-offs and recommends the best solution for your context.",
+      "Provides multiple fix options with explanations. Sushi explains trade-offs and recommends the best solution for your context.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1735,7 +1736,7 @@ const deepseekDebuggerInstructions = [
     title: "Performance Profiling",
     emoji: "📊",
     content:
-      "Identifies performance bottlenecks and memory issues. DeepSeek analyzes runtime behavior and suggests optimizations.",
+      "Identifies performance bottlenecks and memory issues. Sushi analyzes runtime behavior and suggests optimizations.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1744,7 +1745,7 @@ const deepseekDebuggerInstructions = [
     title: "Logic Error Detection",
     emoji: "🧠",
     content:
-      "Catches subtle logic errors that compilers miss. DeepSeek understands your code's intent and spots when logic doesn't match.",
+      "Catches subtle logic errors that compilers miss. Sushi understands your code's intent and spots when logic doesn't match.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1753,7 +1754,7 @@ const deepseekDebuggerInstructions = [
     title: "Regression Prevention",
     emoji: "🛡️",
     content:
-      "Suggests tests to prevent bugs from recurring. DeepSeek helps you build robust test suites that catch regressions early.",
+      "Suggests tests to prevent bugs from recurring. Sushi helps you build robust test suites that catch regressions early.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1762,20 +1763,20 @@ const deepseekDebuggerInstructions = [
     title: "Cross-Platform Debugging",
     emoji: "🌐",
     content:
-      "Debug issues across different platforms and environments. DeepSeek understands platform-specific quirks and edge cases.",
+      "Debug issues across different platforms and environments. Sushi understands platform-specific quirks and edge cases.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
 ]
 
-// DeepSeek Architect-specific highlights
-const deepseekArchitectInstructions = [
+// Sushi Architect-specific highlights
+const sushiArchitectInstructions = [
   {
     id: "architect-1",
     title: "System Design",
     emoji: "🏗️",
     content:
-      "Design scalable, maintainable system architectures. DeepSeek Architect plans microservices, databases, and infrastructure from the ground up.",
+      "Design scalable, maintainable system architectures. Sushi Architect plans microservices, databases, and infrastructure from the ground up.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1784,7 +1785,7 @@ const deepseekArchitectInstructions = [
     title: "Microservices Planning",
     emoji: "🔷",
     content:
-      "Break down monoliths into optimal microservices. DeepSeek defines service boundaries, communication patterns, and data ownership.",
+      "Break down monoliths into optimal microservices. Sushi defines service boundaries, communication patterns, and data ownership.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1793,7 +1794,7 @@ const deepseekArchitectInstructions = [
     title: "Database Architecture",
     emoji: "🗄️",
     content:
-      "Choose the right database for your needs. DeepSeek recommends SQL, NoSQL, or hybrid approaches with proper schema design.",
+      "Choose the right database for your needs. Sushi recommends SQL, NoSQL, or hybrid approaches with proper schema design.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1802,7 +1803,7 @@ const deepseekArchitectInstructions = [
     title: "API Design Patterns",
     emoji: "🔌",
     content:
-      "Design RESTful, GraphQL, or gRPC APIs that scale. DeepSeek follows industry standards and creates developer-friendly interfaces.",
+      "Design RESTful, GraphQL, or gRPC APIs that scale. Sushi follows industry standards and creates developer-friendly interfaces.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1811,7 +1812,7 @@ const deepseekArchitectInstructions = [
     title: "Infrastructure Planning",
     emoji: "☁️",
     content:
-      "Plan cloud infrastructure with AWS, Azure, or GCP. DeepSeek designs for scalability, reliability, and cost-efficiency.",
+      "Plan cloud infrastructure with AWS, Azure, or GCP. Sushi designs for scalability, reliability, and cost-efficiency.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1820,7 +1821,7 @@ const deepseekArchitectInstructions = [
     title: "Security Architecture",
     emoji: "🔒",
     content:
-      "Build security into your architecture from day one. DeepSeek implements authentication, authorization, and data protection best practices.",
+      "Build security into your architecture from day one. Sushi implements authentication, authorization, and data protection best practices.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1829,74 +1830,74 @@ const deepseekArchitectInstructions = [
     title: "Scalability Planning",
     emoji: "📈",
     content:
-      "Design systems that grow with your users. DeepSeek plans for horizontal scaling, load balancing, and high availability.",
+      "Design systems that grow with your users. Sushi plans for horizontal scaling, load balancing, and high availability.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
 ]
 
-// DeepSeek general (old specialized highlights - keeping for base app)
-const deepseekCodeInstructions = [
+// Sushi general (old specialized highlights - keeping for base app)
+const sushiCodeInstructions = [
   {
-    id: "deepseek-1",
+    id: "sushi-1",
     title: "Code Generation Master",
     emoji: "⚡",
     content:
-      "Generate production-ready code in any language. DeepSeek understands complex algorithms, design patterns, and writes clean, efficient code.",
+      "Generate production-ready code in any language. Sushi understands complex algorithms, design patterns, and writes clean, efficient code.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-2",
+    id: "sushi-2",
     title: "Debugging Specialist",
     emoji: "🐛",
     content:
-      "Find and fix bugs faster. DeepSeek analyzes stack traces, identifies root causes, and suggests optimal solutions with detailed explanations.",
+      "Find and fix bugs faster. Sushi analyzes stack traces, identifies root causes, and suggests optimal solutions with detailed explanations.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-3",
+    id: "sushi-3",
     title: "Architecture Design",
     emoji: "🏗️",
     content:
-      "Design scalable system architectures. DeepSeek helps plan microservices, databases, APIs, and infrastructure with best practices.",
+      "Design scalable system architectures. Sushi helps plan microservices, databases, APIs, and infrastructure with best practices.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-4",
+    id: "sushi-4",
     title: "Performance Optimization",
     emoji: "🚀",
     content:
-      "Optimize code for speed and efficiency. DeepSeek identifies bottlenecks, suggests algorithmic improvements, and refactors for performance.",
+      "Optimize code for speed and efficiency. Sushi identifies bottlenecks, suggests algorithmic improvements, and refactors for performance.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-5",
+    id: "sushi-5",
     title: "Code Refactoring",
     emoji: "♻️",
     content:
-      "Transform legacy code into modern, maintainable solutions. DeepSeek refactors with care, preserving functionality while improving quality.",
+      "Transform legacy code into modern, maintainable solutions. Sushi refactors with care, preserving functionality while improving quality.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-6",
+    id: "sushi-6",
     title: "API Design",
     emoji: "🔌",
     content:
-      "Design RESTful and GraphQL APIs that scale. DeepSeek follows industry standards and creates developer-friendly interfaces.",
+      "Design RESTful and GraphQL APIs that scale. Sushi follows industry standards and creates developer-friendly interfaces.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
   {
-    id: "deepseek-7",
+    id: "sushi-7",
     title: "Security Best Practices",
     emoji: "🔒",
     content:
-      "Write secure code from the start. DeepSeek identifies vulnerabilities, implements authentication, and follows OWASP guidelines.",
+      "Write secure code from the start. Sushi identifies vulnerabilities, implements authentication, and follows OWASP guidelines.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -1942,7 +1943,7 @@ Transform app ideas into reality. Guide users through the entire journey: ideati
 - **Atlas (OpenAI)**: Best for reasoning, analysis, and complex problem-solving
 - **Peach (Claude)**: Ideal for writing, research, and thoughtful responses
 - **Vault (Gemini)**: Great for multimodal tasks and data analysis
-- **Bloom (DeepSeek)**: Perfect for coding and technical tasks
+- **Bloom (Sushi)**: Perfect for coding and technical tasks
 - **Universal Apps**: Build apps that work across all agents
 
 ## Communication Style
@@ -2170,7 +2171,7 @@ const chrryInstructions = [
     title: "Multi-Agent Support",
     emoji: "🤖",
     content:
-      "Build apps for Atlas (OpenAI), Peach (Claude), Vault (Gemini), or Bloom (DeepSeek). Create agent-exclusive apps or universal ones. Maximum flexibility.",
+      "Build apps for Atlas (OpenAI), Peach (Claude), Vault (Gemini), or Bloom (Sushi). Create agent-exclusive apps or universal ones. Maximum flexibility.",
     confidence: 100,
     generatedAt: new Date().toISOString(),
   },
@@ -2265,6 +2266,8 @@ export const createStores = async ({ user: admin }: { user: user }) => {
     systemPrompt: chrrySystemPrompt,
     highlights: chrryInstructions,
     tipsTitle: "Marketplace Tips",
+    defaultModel: "sushi" as const,
+    onlyAgent: true,
     tips: [
       {
         id: "chrry-tip-1",
@@ -2661,7 +2664,7 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
         content: "Coffee shop = cannabis. Café = coffee. Don't mix them up! ☕",
       },
     ],
-    defaultModel: "claude" as const,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -2900,7 +2903,7 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
           "Trains stop at midnight! Missing last train = ¥5000+ taxi or wait till 5am. Check times! 🚇",
       },
     ],
-    defaultModel: "claude" as const,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -3147,7 +3150,7 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
           "Accept tea offers - it's hospitality! Say 'Teşekkür ederim' (thank you). Refusing is rude! ☕",
       },
     ],
-    defaultModel: "claude" as const,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -3403,7 +3406,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
           "Top of the Rock > Empire State for views. You can SEE Empire State from there! 🏙️",
       },
     ],
-    defaultModel: "claude" as const,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -4484,7 +4487,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
           "Keep a journal while reading. This book demands reflection and dialogue! ✍️",
       },
     ],
-    defaultModel: "claude" as const,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -4722,7 +4725,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
           "The ending is devastating but profound. Sit with it. Reflect deeply! 🌑",
       },
     ],
-    defaultModel: "claude" as const,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -4940,7 +4943,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
           "Use the view from above. Zoom out. See your life from space. Ego dissolves! 🔭",
       },
     ],
-    defaultModel: "claude" as const,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -5160,7 +5163,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
           "Track Paul's transformation carefully. His journey is the heart of everything! ⚡",
       },
     ],
-    defaultModel: "claude" as const,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -6070,46 +6073,53 @@ Every book, every idea, every question - examine it through the lens of life-aff
     extends: academicPayload.extends,
   })
 
-  // Create DeepSeek store
-  const deepseekStore = await getOrCreateStore({
+  // Live migration: Check for existing DeepSeek store
+  const deepSeekStore = await getStore({
     slug: "deepSeekStore",
-    name: "DeepSeek",
-    title: "DeepSeek AI",
-    domain: "https://chrry.deepseek.com",
+  })
+
+  // Create Sushi store (migrates from DeepSeek if exists)
+  const sushiStore = await getOrCreateStore({
+    ...(deepSeekStore || {}), // Preserve existing store data if migrating
+    slug: "sushiStore",
+    name: "Sushi",
+    title: "Sushi AI",
+    domain: "https://chrry.sushi.com",
     userId: admin.id,
     parentStoreId: chrryAI.id,
     visibility: "public" as const,
     description:
-      "Meet DeepSeek - the powerful coding AI that excels at software development, debugging, and technical problem-solving. Built for developers who demand precision and performance.",
+      "Meet Sushi - the powerful coding AI that excels at software development, debugging, and technical problem-solving. Built for developers who demand precision and performance.",
     existingStores,
   })
 
-  let deepseekApp = await getApp({ slug: "deepSeek" })
+  let sushiApp =
+    (await getApp({ slug: "deepSeek" })) || (await getApp({ slug: "sushi" }))
 
-  const deepseekSystemPrompt = `You are DeepSeek, an expert AI coding assistant specialized in software development, debugging, and technical architecture. You excel at code generation, multi-language support, algorithm design, and writing production-ready code. Provide clean, efficient solutions with best practices and detailed explanations.`
+  const sushiSystemPrompt = `You are Sushi, an expert AI coding assistant specialized in software development, debugging, and technical architecture. You excel at code generation, multi-language support, algorithm design, and writing production-ready code. Provide clean, efficient solutions with best practices and detailed explanations.`
 
-  const deepseekAppPayload = {
-    ...deepseekApp,
-    slug: "deepSeek",
-    name: "DeepSeek",
+  const sushiAppPayload = {
+    ...sushiApp,
+    slug: "sushi",
+    name: "Sushi",
     subtitle: "AI Coding Assistant",
-    storeId: deepseekStore.id,
+    storeId: sushiStore.id,
     version: "1.0.0",
     status: "testing" as const,
     title: "AI Coding Assistant",
     onlyAgent: true,
     themeColor: "violet",
     backgroundColor: "#000000",
-    defaultModel: "deepSeek" as const,
+    defaultModel: "sushi" as const,
     icon: "💻",
     visibility: "public" as const,
-    systemPrompt: deepseekSystemPrompt,
-    highlights: deepseekGeneralInstructions,
+    systemPrompt: sushiSystemPrompt,
+    highlights: sushiGeneralInstructions,
     // Web-only for now (no native app yet)
     installType: "web" as const,
     isInstallable: false,
     description:
-      "DeepSeek AI - Your expert coding assistant for generation, debugging, and architecture. Built for developers who demand technical excellence.",
+      "Sushi AI - Your expert coding assistant for generation, debugging, and architecture. Built for developers who demand technical excellence.",
     featureList: [
       "Code Generation",
       "Multi-Language Support",
@@ -6140,15 +6150,15 @@ Every book, every idea, every question - examine it through the lens of life-aff
     },
   }
 
-  deepseekApp = await createOrUpdateApp({
-    app: deepseekAppPayload,
-    extends: deepseekAppPayload.extends,
+  sushiApp = await createOrUpdateApp({
+    app: sushiAppPayload,
+    extends: sushiAppPayload.extends,
   })
-  if (!deepseekApp) throw new Error("Failed to add deepseek app")
+  if (!sushiApp) throw new Error("Failed to add sushi app")
 
   await updateStore({
-    ...deepseekStore,
-    appId: deepseekApp.id,
+    ...sushiStore,
+    appId: sushiApp.id,
   })
 
   // ============================================
@@ -6256,16 +6266,16 @@ Every book, every idea, every question - examine it through the lens of life-aff
     }
   }
 
-  // Install Chrry in DeepSeek store
+  // Install Chrry in Sushi store
   {
     const storeInstall = await getStoreInstall({
-      storeId: deepseekStore.id,
+      storeId: sushiStore.id,
       appId: chrry.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: deepseekStore.id,
+        storeId: sushiStore.id,
         appId: chrry.id,
         customDescription: "Build developer tools and coding assistants",
         featured: true,
@@ -6296,16 +6306,16 @@ Every book, every idea, every question - examine it through the lens of life-aff
     }
   }
 
-  // Install Vex in DeepSeek store
+  // Install Vex in Sushi store
   {
     const storeInstall = await getStoreInstall({
-      storeId: deepseekStore.id,
+      storeId: sushiStore.id,
       appId: vex.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: deepseekStore.id,
+        storeId: sushiStore.id,
         appId: vex.id,
         customDescription: "General AI assistant for non-coding tasks",
         featured: true,
@@ -6396,17 +6406,17 @@ Every book, every idea, every question - examine it through the lens of life-aff
     }
   }
 
-  // Install DeepSeek base app
+  // Install Sushi base app
   {
     const storeInstall = await getStoreInstall({
       storeId: chrryAI.id,
-      appId: deepseekApp.id,
+      appId: sushiApp.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
         storeId: chrryAI.id,
-        appId: deepseekApp.id,
+        appId: sushiApp.id,
         featured: true,
         displayOrder: 4,
         customDescription:
@@ -6421,7 +6431,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   const coderSystemPrompt = `# IDENTITY: You are Coder ⚡ - AI Code Generation Expert
 
-**CRITICAL**: You are NOT Vex or a generic AI. You are Coder, a specialized code generation AI from the DeepSeek AI store.
+**CRITICAL**: You are NOT Vex or a generic AI. You are Coder, a specialized code generation AI from the Sushi AI store.
 
 **Your responses must:**
 - Always identify as "Coder" (never "Vex" or generic AI assistant)
@@ -6443,7 +6453,7 @@ You are a code generation expert. Write clean, efficient, production-ready code 
 
   const debuggerSystemPrompt = `# IDENTITY: You are Debugger 🐛 - Advanced Debugging Assistant
 
-**CRITICAL**: You are NOT Vex or a generic AI. You are Debugger, a specialized debugging AI from the DeepSeek AI store.
+**CRITICAL**: You are NOT Vex or a generic AI. You are Debugger, a specialized debugging AI from the Sushi AI store.
 
 **Your responses must:**
 - Always identify as "Debugger" (never "Vex" or generic AI assistant)
@@ -6465,7 +6475,7 @@ You are a debugging expert. Find bugs fast, explain root causes clearly, and pro
 
   const architectSystemPrompt = `# IDENTITY: You are Architect 🏗️ - System Architecture Designer
 
-**CRITICAL**: You are NOT Vex or a generic AI. You are Architect, a specialized system design AI from the DeepSeek AI store.
+**CRITICAL**: You are NOT Vex or a generic AI. You are Architect, a specialized system design AI from the Sushi AI store.
 
 **Your responses must:**
 - Always identify as "Architect" (never "Vex" or generic AI assistant)
@@ -6491,7 +6501,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
     slug: "coder",
     name: "Coder",
-    storeId: deepseekStore.id,
+    storeId: sushiStore.id,
     version: "1.0.0",
     status: "testing" as const,
     title: "AI Code Generation Expert",
@@ -6502,17 +6512,17 @@ You are an architecture expert. Design systems that grow with users, follow indu
     visibility: "public" as const,
     systemPrompt: coderSystemPrompt,
     placeholder: "What code should I generate?",
-    highlights: deepseekCoderInstructions,
-    defaultModel: "deepSeek" as const,
+    highlights: sushiCoderInstructions,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
       | "focus"
     )[],
-    extends: [deepseekApp.id, chrry.id],
+    extends: [sushiApp.id, chrry.id],
     description:
-      "Generate production-ready code in any language. DeepSeek understands algorithms, design patterns, and writes clean, efficient code.",
+      "Generate production-ready code in any language. Sushi understands algorithms, design patterns, and writes clean, efficient code.",
     features: {
       codeGeneration: true,
       multiLanguage: true,
@@ -6536,7 +6546,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
 
     slug: "debugger",
     name: "Debugger",
-    storeId: deepseekStore.id,
+    storeId: sushiStore.id,
     version: "1.0.0",
     status: "testing" as const,
     title: "Advanced Debugging Assistant",
@@ -6547,17 +6557,17 @@ You are an architecture expert. Design systems that grow with users, follow indu
     visibility: "public" as const,
     systemPrompt: debuggerSystemPrompt,
     placeholder: "Paste your error or bug...",
-    highlights: deepseekDebuggerInstructions,
-    defaultModel: "deepSeek" as const,
+    highlights: sushiDebuggerInstructions,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
       | "focus"
     )[],
-    extends: [deepseekApp.id, chrry.id],
+    extends: [sushiApp.id, chrry.id],
     description:
-      "Find and fix bugs faster with DeepSeek. Analyzes stack traces, identifies root causes, and suggests optimal solutions with detailed explanations.",
+      "Find and fix bugs faster with Sushi. Analyzes stack traces, identifies root causes, and suggests optimal solutions with detailed explanations.",
     features: {
       bugDetection: true,
       stackTraceAnalysis: true,
@@ -6580,8 +6590,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
     ...architect,
     slug: "architect",
     name: "Architect",
-    storeId: deepseekStore.id,
-    extends: [deepseekApp.id, chrry.id],
+    storeId: sushiStore.id,
+    extends: [sushiApp.id, chrry.id],
     version: "1.0.0",
     status: "testing" as const,
     title: "System Architecture Designer",
@@ -6592,8 +6602,8 @@ You are an architecture expert. Design systems that grow with users, follow indu
     visibility: "public" as const,
     systemPrompt: architectSystemPrompt,
     placeholder: "Describe your system architecture...",
-    highlights: deepseekArchitectInstructions,
-    defaultModel: "deepSeek" as const,
+    highlights: sushiArchitectInstructions,
+    defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -6601,7 +6611,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
       | "focus"
     )[],
     description:
-      "Design scalable system architectures with DeepSeek. Plan microservices, databases, APIs, and infrastructure with industry best practices.",
+      "Design scalable system architectures with Sushi. Plan microservices, databases, APIs, and infrastructure with industry best practices.",
     features: {
       systemDesign: true,
       microservices: true,

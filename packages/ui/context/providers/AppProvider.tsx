@@ -311,7 +311,12 @@ export function AppProvider({
       } finally {
         setIsRemovingApp(false)
       }
+
+      clearFormDraft()
+      return true
     }
+
+    setAppStatus(undefined)
 
     // toast.success(`${t("Deleted")} 😭`)
     clearFormDraft()
@@ -538,6 +543,7 @@ export function AppProvider({
       const newUrl = `${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/?${newSearchParams.toString()}`
       push(newUrl)
     } else {
+      push("/")
     }
   }
 

@@ -66,6 +66,7 @@ export const getImageSrc = ({
     | "chrry"
     | "raspberry"
     | "strawberry"
+    | "sushi"
 
   app?: appWithStore
   width?: number | string
@@ -92,7 +93,9 @@ export const getImageSrc = ({
                 ? `${BASE_URL}/frog.png`
                 : icon === "calendar"
                   ? `${BASE_URL}/icons/calendar-128.png`
-                  : `${BASE_URL}/icons/${icon}-128.png`
+                  : icon === "sushi"
+                    ? `${BASE_URL}/icons/sushi.png`
+                    : `${BASE_URL}/icons/${icon}-128.png`
     : null
 
   const logoSrc =
@@ -133,6 +136,7 @@ export const getImageSrc = ({
             "vex",
             "chrry",
             "popcorn",
+            "sushi",
           ].includes(app.slug)
         ? `${BASE_URL}/images/apps/${app.slug}.png`
         : getImageBySize(size) ||
@@ -141,14 +145,10 @@ export const getImageSrc = ({
             ? `${BASE_URL}/icons/${slug}-128.png`
             : canEditApp
               ? image || iconSrc
-              : iconSrc) // Remote web asset
+              : undefined) // Remote web asset
 
   const finalSrc =
-    src ||
-    logoSrc ||
-    (!app && iconSrc) ||
-    appImageSrc ||
-    `${BASE_URL}/images/pacman/space-invader.png`
+    src || logoSrc || (!app && iconSrc) || appImageSrc || undefined
 
   // Use size as the primary dimension, fallback to width/height if size not provided
   const finalWidth =
