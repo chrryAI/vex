@@ -788,7 +788,7 @@ export default function Message({
                         key={image.id}
                         src={image.url}
                         alt={image.title}
-                        width={200}
+                        size={200}
                       />
                     ))}
                   </div>
@@ -917,8 +917,7 @@ export default function Message({
                   <Img
                     className={styles.userImage}
                     src={userImage}
-                    width={40}
-                    height={40}
+                    size={40}
                     key={userImage}
                     alt={message.user?.name || ""}
                   />
@@ -927,8 +926,7 @@ export default function Message({
                     showLoading={false}
                     src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
                     alt="Space Invader"
-                    width={35}
-                    height={35}
+                    size={35}
                   />
                 )}
               </button>
