@@ -27,11 +27,11 @@
     "node-fetch": "^3.3.2",
     "postgres": "^3.4.5",
     "sanitize-html": "^2.16.0",
+    "typescript": "^5.8.3",
     "uuid": "^11.1.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.3"
+    "ts-node-dev": "^2.0.0"
   }
 }

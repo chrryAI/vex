@@ -10,6 +10,10 @@ import {
   createThread,
   createMessage,
   TEST_MEMBER_FINGERPRINTS,
+  getUsers,
+  updateUser,
+  getGuests,
+  updateGuest,
 } from "./index"
 import { eq } from "drizzle-orm"
 import {
@@ -548,6 +552,7 @@ const prod = async () => {
   if (!admin) throw new Error("Admin user not found")
 
   const vex = await createStores({ user: admin })
+
   // const allInstructions = await db.select().from(instructions)
 
   // const seen = new Map<string, string>() // Map of unique key -> instruction ID
