@@ -627,6 +627,9 @@ importers:
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
+      chrrydotdev:
+        specifier: workspace:*
+        version: link:../chrry-dot-dev
       cookie:
         specifier: ^0.7.2
         version: 0.7.2
