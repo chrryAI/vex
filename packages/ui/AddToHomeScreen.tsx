@@ -4,7 +4,7 @@ import React, { useCallback, useContext, useEffect } from "react"
 import styles from "./AddToHomeScreen.module.scss"
 import { createPortal } from "react-dom"
 import { useRef } from "react"
-import Img from "./Img"
+import Img from "./Image"
 import { CircleX, EllipsisVertical, SquarePlus, Share } from "./icons"
 import clsx from "clsx"
 import { MdAddToHomeScreen } from "react-icons/md"
@@ -16,15 +16,14 @@ import { usePlatform } from "./platform"
 import { useHasHydrated } from "./hooks"
 
 export default function AddToHomeScreen(): React.ReactPortal | null {
-  const innerRef = useRef<HTMLDivElement>(null)
   const { t } = useAppContext()
-  const { slug } = useApp()
-
+  const { app } = useApp()
+  const { os } = usePlatform()
   const { setShowAddToHomeScreen, showAddToHomeScreen } = useNavigationContext()
 
   const is = useHasHydrated()
 
-  const { os } = usePlatform()
+  const innerRef = useRef<HTMLDivElement>(null)
 
   const handleKeyDown = useCallback((event: { key: string }) => {
     if (event.key === "Escape") {
@@ -53,7 +52,7 @@ export default function AddToHomeScreen(): React.ReactPortal | null {
             <CircleX />
           </button>
           <div className={styles.logoContainer}>
-            <Logo slug={slug} className={styles.logo} size={80} />
+            <Img app={app} className={styles.logo} size={80} />
           </div>
           <div className={styles.content}>
             <h2 className={styles.title}>{t("For a better experience")}</h2>
@@ -116,6 +115,6 @@ export default function AddToHomeScreen(): React.ReactPortal | null {
         </div>
       </div>
     </div>,
-    document.body,
+    document.getElementById("skeleton") || document.body,
   )
 }
