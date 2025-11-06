@@ -74,7 +74,7 @@ import Modal from "./Modal"
 import Loading from "./Loading"
 import sanitizeHtml from "sanitize-html"
 import { validate, v4 as uuidv4 } from "uuid"
-import { useCountdown, useLocalStorage } from "./hooks"
+import { useCountdown, useHasHydrated, useLocalStorage } from "./hooks"
 import toast from "react-hot-toast"
 import useSWR from "swr"
 
@@ -98,6 +98,7 @@ import Logo from "./Logo"
 import { useWindowHistory } from "./hooks/useWindowHistory"
 import App from "./App"
 import Img from "./Image"
+import MoodSelector from "./MoodSelector"
 
 const MAX_FILES = 3
 
@@ -246,6 +247,7 @@ export default function Chat({
     setCollaborationStep,
     isIncognito,
     addParam,
+    addParams,
   } = useNavigationContext()
 
   // App context
@@ -711,6 +713,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     setMessageInternal(message)
     clientIdRef.current = message?.message?.clientId
   }
+
+  const isHydrated = useHasHydrated()
   const [isAttaching, setIsAttachingInternal] = useState(false)
   const clientIdRef = useRef<string | undefined>(uuidv4())
 
@@ -1630,6 +1634,18 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }, [message])
 
   const handleSubmit = async (approve?: boolean) => {
+    if (
+      guest &&
+      selectedAgent?.authorization &&
+      !["all", "guest"].includes(selectedAgent?.authorization)
+    ) {
+      addParams({
+        subscribe: "true",
+        plan: "member",
+      })
+
+      return
+    }
     if (!isPrivacyApproved && !approve) {
       setNeedsReview(true)
       return
@@ -2337,7 +2353,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           })
         }
       } else if (type === "stream_complete") {
-        console.log(`🚀 ~ file: Chat.tsx:2340 ~ type:`, type)
         const threadId = data.message?.message?.threadId
 
         isPlayingSillyPopCluster.current = false
@@ -2874,6 +2889,18 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
             ) : (
               <button
                 onClick={() => {
+                  if (
+                    guest &&
+                    selectedAgent?.authorization &&
+                    !["all", "guest"].includes(selectedAgent?.authorization)
+                  ) {
+                    addParams({
+                      subscribe: "true",
+                      plan: "member",
+                    })
+
+                    return
+                  }
                   if (!isPrivacyApproved) {
                     if (needsReview) {
                       // Approve and start voice conversation
@@ -3692,36 +3719,35 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 showPlaceholderGlow && styles.placeholderGlow,
               )}
             >
-              <button
-                data-testid="image-generation-button"
-                className={clsx("link", styles.imageGenerationButton)}
-                title={
-                  isImageGenerationEnabled
-                    ? t("Image Generation Enabled")
-                    : t("Enable Image Generation")
-                }
-                onClick={() => {
-                  setIsImageGenerationEnabled(!isImageGenerationEnabled)
-                  console.log(
-                    `🚀 ~ file: Chat.tsx:3705 ~ isImageGenerationEnabled:`,
-                    isImageGenerationEnabled,
-                  )
-                  if (selectedAgent?.name === "flux") {
-                    setSelectedAgent(undefined)
-                  } else {
-                    setSelectedAgent(sushiAgent)
-                  }
-                }}
-              >
-                <Palette
-                  color={
+              {selectedAgent?.capabilities.imageGeneration && (
+                <button
+                  data-testid="image-generation-button"
+                  className={clsx("link", styles.imageGenerationButton)}
+                  title={
                     isImageGenerationEnabled
-                      ? "var(--accent-1)"
-                      : "var(--shade-3)"
+                      ? t("Image Generation Enabled")
+                      : t("Enable Image Generation")
                   }
-                  size={22}
-                />
-              </button>
+                  onClick={() => {
+                    setIsImageGenerationEnabled(!isImageGenerationEnabled)
+
+                    if (selectedAgent?.name === "flux") {
+                      setSelectedAgent(undefined)
+                    } else {
+                      setSelectedAgent(sushiAgent)
+                    }
+                  }}
+                >
+                  <Palette
+                    color={
+                      isImageGenerationEnabled
+                        ? "var(--accent-1)"
+                        : "var(--shade-3)"
+                    }
+                    size={22}
+                  />
+                </button>
+              )}
               {/* File Preview Area */}
               {files.length > 0 && (
                 <div className={styles.filePreviewArea}>
@@ -3777,22 +3803,18 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
               <textarea
                 suppressHydrationWarning
                 onPaste={handlePaste}
-                rows={isChatFloating ? 1 : undefined}
+                rows={isHydrated && isChatFloating ? 1 : undefined}
                 data-testid="chat-textarea"
                 className={styles.chatTextArea}
-                // style={{
-                //   height:
-                //     input.trim().length > (isChatFloating ? 80 : 100)
-                //       ? 175
-                //       : undefined,
-                // }}
                 value={input}
                 onChange={handleInputChange}
                 name="chat"
                 id="chat"
                 placeholder={
-                  placeholder ||
-                  `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
+                  !isHydrated
+                    ? ""
+                    : placeholder ||
+                      `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
                 }
                 ref={chatInputRef}
                 disabled={disabled}
@@ -4071,7 +4093,14 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     isExtension && styles.extension,
                   )}
                 >
-                  {!isLoading && !isAttaching && !needsReview && (
+                  {/* <MoodSelector
+                    style={{
+                      fontSize: "1.3rem",
+                    }}
+                    mood={"thinking"}
+                    onMoodChange={() => {}}
+                  /> */}
+                  {!isAttaching && !needsReview && (
                     <>
                       <button
                         data-testid={

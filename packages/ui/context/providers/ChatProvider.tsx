@@ -756,8 +756,8 @@ export function ChatProvider({
   ) => {
     isImageGenerationEnabledRef.current = value
     setIsImageGenerationEnabledInternal(value)
-    console.log(`🚀 ~ file: ChatProvider.tsx:760 ~ value:`, value)
     setSelectedAgentInternal(forAgent || sushiAgent)
+    value && setDebateAgent(null)
   }
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
@@ -768,11 +768,7 @@ export function ChatProvider({
       return
     }
 
-    if (agent?.name === "flux" && debateAgent) {
-      setDebateAgent(null)
-    }
-
-    const a = returnSelectedAgent(agent)
+    const a = agent
     setSelectedAgentInternal(a)
     setAgentName(a?.name || "")
     isImageGenerationEnabledRef.current &&
@@ -784,14 +780,18 @@ export function ChatProvider({
 
   const [selectedAgent, setSelectedAgentInternal] = useLocalStorage<
     aiAgent | undefined | null
-  >("selectedAgent", returnSelectedAgent(session?.aiAgent))
+  >(
+    "selectedAgent",
+    aiAgents.find((a) => app?.defaultModel && a.name === app?.defaultModel) ||
+      favouriteAgent,
+  )
+
   const setIsWebSearchEnabled = (value: boolean) => {
     value ? setSelectedAgent(perplexityAgent) : setSelectedAgent(sushiAgent)
     setIsWebSearchEnabledInternal(value)
   }
 
   const setDebateAgent = (agent: aiAgent | undefined | null) => {
-    if (selectedAgent?.name === "flux") setSelectedAgent(undefined)
     setDebateAgentInternal(agent)
   }
 
@@ -840,30 +840,16 @@ export function ChatProvider({
       })
   }
 
-  const [isSubscribeModalOpen, setIsSubscribeModalOpenInternal] =
-    useState(false)
-
   useEffect(() => {
-    if (app?.onlyAgent) {
-      const a = aiAgents.find(
-        (agent) =>
-          app?.defaultModel &&
-          agent.name.toLowerCase() === app?.defaultModel?.toLowerCase(),
-      )
-      if (!a) return
-      if (!isAgentAuthorized(a)) {
-        setIsSubscribeModalOpenInternal(true)
-        // !isAgentModalOpen
-        //   ? addParams({
-        //       subscribe: "true",
-        //       plan: "member",
-        //     })
-        //   : removeParams("subscribe")
-        return
-      }
-      setSelectedAgent(a)
-    }
-  }, [guest, user, app, aiAgents, isSubscribeModalOpen])
+    const a = aiAgents.find(
+      (agent) =>
+        app?.defaultModel &&
+        agent.name.toLowerCase() === app?.defaultModel?.toLowerCase(),
+    )
+    if (!a) return
+
+    setSelectedAgent(a)
+  }, [app, aiAgents])
 
   const { isDevelopment, isE2E, actions } = useData()
 

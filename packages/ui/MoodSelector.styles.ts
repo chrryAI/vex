@@ -23,9 +23,7 @@ export const MoodSelectorStyleDefs = {
   desktop: {
     display: "none",
   },
-  edit: {
-    fontSize: 13,
-  },
+  edit: {},
   children: {
     fontSize: 16,
     color: "var(--foreground)",

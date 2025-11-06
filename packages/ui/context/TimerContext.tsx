@@ -415,7 +415,6 @@ export function TimerContextProvider({
           fingerprint,
         })
         lastSent.current = now
-        console.log(`🚀 ~ file: TimerContext.tsx:370 ~ now:`, now)
       }
     },
     [send, selectedTasks, token, isCountingDown, isFinished, remoteTimer],
@@ -523,8 +522,6 @@ export function TimerContextProvider({
 
   useEffect(() => {
     if (timerData && !hasRestoredTimerRef.current) {
-      console.log(`🚀 ~ file: TimerContext.tsx:514 ~ timerData:`, timerData)
-
       // Mark as restored to prevent multiple initializations
       hasRestoredTimerRef.current = true
 

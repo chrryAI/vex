@@ -12,11 +12,13 @@ export default function MoodSelector({
   onMoodChange,
   children,
   className,
+  style,
   ...rest
 }: {
   children?: React.ReactNode
   mood: Mood | undefined
   className?: string
+  style?: React.CSSProperties
   onMoodChange: (mood: Mood | undefined) => void
 }) {
   const { t } = useTranslation()
@@ -32,11 +34,14 @@ export default function MoodSelector({
   }, [rest.mood])
 
   return (
-    <div className={clsx(styles.moodSelector, className)}>
+    <div style={style} className={clsx(styles.moodSelector, className)}>
       <div className={styles.emojiContainer}>
         {mood ? (
           <button
             data-testid="moodify-reset-button"
+            style={{
+              fontSize: style?.fontSize,
+            }}
             className={clsx("link", styles.emoji)}
             onClick={() => {
               setMood(undefined)
@@ -53,6 +58,9 @@ export default function MoodSelector({
         ) : (
           <>
             <button
+              style={{
+                fontSize: style?.fontSize,
+              }}
               type="button"
               data-testid="moodify-happy-button"
               className={clsx("link", styles.emoji)}
@@ -61,6 +69,9 @@ export default function MoodSelector({
               {emojiMap["happy"]}
             </button>
             <button
+              style={{
+                fontSize: style?.fontSize,
+              }}
               type="button"
               data-testid="moodify-sad-button"
               className={clsx("link", styles.emoji)}
@@ -69,6 +80,9 @@ export default function MoodSelector({
               {emojiMap["sad"]}
             </button>
             <button
+              style={{
+                fontSize: style?.fontSize,
+              }}
               type="button"
               data-testid="moodify-angry-button"
               className={clsx("link", styles.emoji)}
@@ -77,6 +91,9 @@ export default function MoodSelector({
               {emojiMap["angry"]}
             </button>
             <button
+              style={{
+                fontSize: style?.fontSize,
+              }}
               type="button"
               data-testid="moodify-astonished-button"
               className={clsx("link", styles.emoji)}
@@ -85,6 +102,9 @@ export default function MoodSelector({
               {emojiMap["astonished"]}
             </button>
             <button
+              style={{
+                fontSize: style?.fontSize,
+              }}
               type="button"
               data-testid="moodify-inlove-button"
               className={clsx("link", styles.emoji)}
@@ -94,6 +114,9 @@ export default function MoodSelector({
             </button>
 
             <button
+              style={{
+                fontSize: style?.fontSize,
+              }}
               type="button"
               data-testid="moodify-thinking-button"
               className={clsx("link", styles.emoji)}

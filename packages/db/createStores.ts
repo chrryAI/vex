@@ -2394,6 +2394,7 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       | "focus"
     )[],
     themeColor: "green",
+    defaultModel: "sushi" as const,
     backgroundColor: "#000000",
     icon: "🌍",
     visibility: "public" as const,
@@ -5237,6 +5238,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     highlights: defaultInstructions,
     systemPrompt: vexSystemPrompt,
+    defaultModel: "sushi" as const,
     tipsTitle: "Pro Tips",
     tips: [
       {
@@ -5353,7 +5355,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   const peachPayload = {
     ...peach,
-
+    defaultModel: "sushi" as const,
     subtitle: "AI Social Network",
     slug: "peach",
     name: "Peach",
@@ -5444,6 +5446,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "weather"
       | "focus"
     )[],
+    defaultModel: "sushi" as const,
     version: "1.0.0",
     status: "testing" as const,
     title: "Personal Health assistant",
@@ -5525,7 +5528,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   const vaultPayload = {
     ...vault,
-
+    defaultModel: "sushi" as const,
     subtitle: "Smart Finance",
     slug: "vault",
     name: "Vault",

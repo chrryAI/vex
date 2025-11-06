@@ -100,7 +100,6 @@ export default function Message({
 
   const { isAccountVisible, setIsAccountVisible } = useNavigationContext()
   const { refetchThread, messages } = useChat()
-  console.log(`🚀 ~ file: Message.tsx:103 ~ thread:`, messages)
   // Navigation context (router is the wrapper)
   const { router, addParam } = useNavigationContext()
 
