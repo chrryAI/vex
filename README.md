@@ -8,13 +8,13 @@
 
 ## 💝 Support This Project
 
-Vex is pioneering AI app composition with revolutionary architecture built entirely open source by a solo developer. If you find this project valuable, please consider [becoming a sponsor](https://github.com/sponsors/chrryAI) to help sustain development.
+Vex is pioneering AI app composition with architecture built entirely open source by a solo developer. If you find this project valuable, please consider [becoming a sponsor](https://github.com/sponsors/chrryAI) to help sustain development.
 
 [💎 Become a Sponsor](https://github.com/sponsors/chrryAI) | [⭐ Star on GitHub](https://github.com/chrryai/vex) | [🐦 Follow on Twitter](https://twitter.com/chrryai)
 
 ---
 
-## 🚀 Revolutionary Architecture: One Codebase, Unlimited Apps
+## 🚀 One Codebase, Unlimited Apps
 
 Vex pioneered a breakthrough PWA architecture that enables **multiple independent apps from a single codebase**:
 
@@ -157,7 +157,7 @@ Vex is a monorepo built with:
 
 ### Multi-App PWA Architecture
 
-The revolutionary multi-app system works through:
+Multi-app system works through:
 
 1. **Dynamic Manifest Generation** (`/api/manifest/[id]/route.ts`)
    - Each app generates a unique PWA manifest with custom icon, name, and theme
@@ -215,7 +215,7 @@ Vex is made possible by generous sponsors who believe in open source innovation:
 
 ### Platinum Sponsors
 
-_Be the first to support revolutionary AI architecture!_
+_Be the first to support!_
 
 ### Gold Sponsors
 

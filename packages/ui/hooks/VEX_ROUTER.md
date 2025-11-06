@@ -20,7 +20,7 @@ Modern React routers are slow, bloated, and frustrating:
 
 ## The Solution
 
-`@vex/router` is a revolutionary hybrid router that combines:
+`@vex/router` is a hybrid router that combines:
 
 - ⚡️ **0ms navigation** - Instant client-side routing
 - 🎨 **Native View Transitions** - Smooth, platform-aware animations
@@ -322,7 +322,7 @@ router.push("/calendar")
 
 ### The Story
 
-This router was born from frustration with Next.js App Router's slow navigation. What started as a bug fix became a revolutionary architecture:
+This router was born from frustration with Next.js App Router's slow navigation. What started as a bug fix became an architecture:
 
 1. **Day 1**: React Router breaks
 2. **Day 2**: Try custom solution

@@ -3,7 +3,6 @@ import getMember from "../../actions/getMember"
 import getGuest from "../../actions/getGuest"
 import { type UserType, checkSpeechLimits } from "../../../lib"
 import { updateGuest, updateUser } from "@repo/db"
-import { isDevelopment, isE2E } from "chrry/utils"
 import { checkRateLimit } from "../../../lib/rateLimiting"
 import captureException from "../../../lib/captureException"
 
