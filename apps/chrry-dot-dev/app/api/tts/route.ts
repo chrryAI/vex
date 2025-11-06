@@ -32,16 +32,16 @@ export async function POST(request: NextRequest) {
 
     // Default greeting messages by language
     const defaultGreetings = {
-      en: "I'm Cherry, your personal AI assistant! How can I help you today?",
-      de: "Ich bin Cherry, Ihr persönlicher KI-Assistent! Wie kann ich Ihnen heute helfen?",
-      fr: "Je suis Cherry, votre assistant personnel IA ! Comment puis-je vous aider aujourd'hui ?",
-      es: "¡Soy Cherry, tu asistente personal de IA! ¿Cómo puedo ayudarte hoy?",
-      ja: "私はCherry、あなたのパーソナルAIアシスタントです！今日はどのようにお手伝いできますか？",
-      ko: "저는 Cherry, 당신의 개인 AI 비서입니다! 오늘 어떻게 도와드릴까요?",
-      pt: "Eu sou o Cherry, seu assistente pessoal de IA! Como posso ajudá-lo hoje?",
-      zh: "我是Cherry，您的个人人工智能助理！今天我可以为您做些什么？",
-      nl: "Ik ben Cherry, uw persoonlijke AI-assistent! Hoe kan ik u vandaag helpen?",
-      tr: "Ben Cherry, kişisel yapay zeka asistanınız! Bugün size nasıl yardımcı olabilirim?",
+      en: "I'm Sushi, your personal AI assistant! How can I help you today?",
+      de: "Ich bin Sushi, Ihr persönlicher KI-Assistent! Wie kann ich Ihnen heute helfen?",
+      fr: "Je suis Sushi, votre assistant personnel IA ! Comment puis-je vous aider aujourd'hui ?",
+      es: "¡Soy Sushi, tu asistente personal de IA! ¿Cómo puedo ayudarte hoy?",
+      ja: "私はSushi、あなたのパーソナルAIアシスタントです！今日はどのようにお手伝いできますか？",
+      ko: "저는 Sushi, 당신의 개인 AI 비서입니다! 오늘 어떻게 도와드릴까요?",
+      pt: "Eu sou o Sushi, seu assistente pessoal de IA! Como posso ajudá-lo hoje?",
+      zh: "我是Sushi，您的个人人工智能助理！今天我可以为您做些什么？",
+      nl: "Ik ben Sushi, uw persoonlijke AI-assistent! Hoe kan ik u vandaag helpen?",
+      tr: "Ben Sushi, kişisel yapay zeka asistanınız! Bugün size nasıl yardımcı olabilirim?",
     }
 
     const finalText =
