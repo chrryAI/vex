@@ -852,9 +852,11 @@ export const getTasks = async ({
 export const getTimer = async ({
   fingerprint,
   userId,
+  guestId,
 }: {
   fingerprint?: string
   userId?: string
+  guestId?: string
 }) => {
   const result = (
     await db
@@ -865,6 +867,7 @@ export const getTimer = async ({
         and(
           fingerprint ? eq(timers.fingerprint, fingerprint) : undefined,
           userId ? eq(timers.userId, userId) : undefined,
+          guestId ? eq(timers.guestId, guestId) : undefined,
         ),
       )
   ).at(0)

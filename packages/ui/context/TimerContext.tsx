@@ -200,14 +200,14 @@ export function TimerContextProvider({
   const { enableSound } = useTheme()
 
   const { send } = useWebSocket<{
-    timer: timer
+    timer: timer & { deviceId?: string }
     type: string
     mood: mood
     selectedTasks: Task[]
     deviceId: string
   }>({
     onMessage: async (data) => {
-      if (data?.type === "timer" && data.timer.fingerprint !== fingerprint) {
+      if (data?.type === "timer" && data.timer.deviceId !== deviceId) {
         setRemoteTimer(data.timer)
       }
 

@@ -1143,9 +1143,8 @@ export const documentSummaries = pgTable("document_summaries", {
 
 export const timers = pgTable("timer", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("userId")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
+  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -1159,6 +1158,7 @@ export const timers = pgTable("timer", {
   preset2: integer("preset2").notNull().default(15),
   preset3: integer("preset3").notNull().default(5),
 })
+
 export const moods = pgTable("mood", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),

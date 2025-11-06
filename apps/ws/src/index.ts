@@ -323,19 +323,26 @@ wss.on("connection", async (ws, req) => {
       if (type === "timer") {
         const { timer: timerData, selectedTasks } = message
 
-        const fingerprint = deviceId
+        const fingerprint = member?.fingerprint || guest?.fingerprint
 
         try {
           // ============================================
           // 1. UPDATE TIMER (Non-blocking)
           // ============================================
-          if (member && timerData && fingerprint) {
+          if ((member || guest) && timerData && fingerprint) {
             // Fire and forget - don't block on DB write
             ;(async () => {
               try {
                 const existingTimer =
-                  (await getTimer({ fingerprint, userId: member.id })) ||
-                  (await createTimer({ fingerprint, userId: member.id }))
+                  (await getTimer({
+                    userId: member?.id,
+                    guestId: guest?.id,
+                  })) ||
+                  (await createTimer({
+                    fingerprint,
+                    userId: member?.id,
+                    guestId: guest?.id,
+                  }))
 
                 if (existingTimer) {
                   await updateTimer({

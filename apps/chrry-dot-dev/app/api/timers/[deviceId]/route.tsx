@@ -21,15 +21,19 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid deviceId" })
   }
 
+  const fingerprint = member?.fingerprint || guest?.fingerprint
+
+  if (!fingerprint) {
+    return NextResponse.json({ error: "Invalid fingerprint" })
+  }
+
   const timer =
     (await getTimer({
-      fingerprint: deviceId,
       userId: member?.id,
       guestId: guest?.id,
     })) ||
     (await createTimer({
-      fingerprint: deviceId,
-      userId: member?.id,
+      fingerprint,
       guestId: guest?.id,
     }))
 
@@ -71,7 +75,7 @@ export const PATCH = async (request: Request) => {
 
   notify(member?.id || guest?.id!, {
     type: "timer",
-    data: updatedTimer,
+    data: { ...updatedTimer, deviceId: id },
   })
 
   return NextResponse.json(updatedTimer)
