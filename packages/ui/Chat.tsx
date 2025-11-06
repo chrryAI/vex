@@ -43,7 +43,6 @@ import {
   Link,
 } from "./icons"
 import { animate, stagger } from "motion"
-import "react-tooltip/dist/react-tooltip.css"
 import { useAppContext } from "./context/AppContext"
 import {
   useAuth,
