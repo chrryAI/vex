@@ -170,7 +170,9 @@ export default function Instructions({
   )
 
   useEffect(() => {
-    setVisibleInstructionCount(getVisibleInstructionCount())
+    setTimeout(() => {
+      setVisibleInstructionCount(getVisibleInstructionCount())
+    }, 50)
   }, [viewPortHeight, isStandalone])
 
   // Theme context
