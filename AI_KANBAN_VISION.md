@@ -14,9 +14,11 @@ Transform the existing FocusButton task management into an AI-powered project or
 ## 🎯 Key Features
 
 ### 1. AI Task Breakdown
+
 **User Input**: "Build a landing page"
 
 **AI Output**:
+
 ```
 ┌─────────────────┬─────────────────┬─────────────────┐
 │   📋 Todo       │ 🔄 In Progress  │ ✅ Done         │
@@ -33,6 +35,7 @@ Suggested order: Design → Copy → CTA → Mobile → SEO
 ```
 
 **AI Capabilities**:
+
 - Analyze project scope from natural language
 - Break down into actionable subtasks
 - Estimate time based on historical data
@@ -44,6 +47,7 @@ Suggested order: Design → Copy → CTA → Mobile → SEO
 ### 2. AI Auto-Assignment (Team Mode)
 
 **Team Context**:
+
 ```typescript
 {
   ibrahim: {
@@ -72,6 +76,7 @@ Suggested order: Design → Copy → CTA → Mobile → SEO
 ```
 
 **AI Assignment Logic**:
+
 ```
 Task: "Design hero section"
 → Assigned to: Ibrahim (frontend + design skills, available now)
@@ -91,6 +96,7 @@ Task: "Deploy to production"
 ### 3. AI Progress Monitoring
 
 **Real-time Analysis**:
+
 ```typescript
 // AI tracks:
 {
@@ -115,9 +121,10 @@ Task: "Deploy to production"
 ```
 
 **AI Intervention**:
+
 ```
 🤖 AI Notice:
-"Hey Ibrahim, I noticed you've been on 'Design hero section' for 2h 
+"Hey Ibrahim, I noticed you've been on 'Design hero section' for 2h
 without commits. Common issues with hero sections:
 
 1. ✅ Responsive layout challenges
@@ -137,39 +144,46 @@ Want me to move this to 'Blocked' and notify the team?"
 ### 4. AI Context Collection & Learning
 
 **Data Collected**:
+
 ```typescript
 interface TaskEvent {
   taskId: string
   events: Array<{
-    type: 'created' | 'assigned' | 'started' | 'blocked' | 'ai_helped' | 'completed'
+    type:
+      | "created"
+      | "assigned"
+      | "started"
+      | "blocked"
+      | "ai_helped"
+      | "completed"
     timestamp: Date
-    actor: 'user' | 'ai' | 'team_member'
+    actor: "user" | "ai" | "team_member"
     metadata: {
       // For 'created'
-      source?: 'user_request' | 'ai_suggestion' | 'template'
+      source?: "user_request" | "ai_suggestion" | "template"
       originalPrompt?: string
-      
+
       // For 'assigned'
       assignedTo?: string
       assignmentReason?: string
       aiConfidence?: number
-      
+
       // For 'blocked'
-      blockerType?: 'technical' | 'dependency' | 'clarification' | 'external'
+      blockerType?: "technical" | "dependency" | "clarification" | "external"
       blockerDescription?: string
-      
+
       // For 'ai_helped'
-      suggestionType?: 'code' | 'guidance' | 'resource' | 'connection'
+      suggestionType?: "code" | "guidance" | "resource" | "connection"
       suggestionAccepted?: boolean
       helpfulness?: number // 1-5 rating
-      
+
       // For 'completed'
       actualTime?: number
       qualityScore?: number
       userSatisfaction?: number
     }
   }>
-  
+
   aiLearnings: {
     estimateAccuracy: number // 0-1
     blockerPredictionAccuracy: number
@@ -181,6 +195,7 @@ interface TaskEvent {
 ```
 
 **AI Learning Examples**:
+
 ```typescript
 // Pattern Recognition
 {
@@ -219,6 +234,7 @@ interface TaskEvent {
 ## 🚀 Implementation Phases
 
 ### Phase 1: Foundation (Week 1-2)
+
 **Goal**: Basic kanban view with existing task data
 
 - [ ] Add view toggle (List ↔ Kanban)
@@ -228,6 +244,7 @@ interface TaskEvent {
 - [ ] Auto-start timer on drag to "In Progress"
 
 **Data Model**:
+
 ```typescript
 // Use existing schema with minimal changes
 - taskStateId: uuid (references taskStates)
@@ -238,9 +255,11 @@ interface TaskEvent {
 ---
 
 ### Phase 2: AI Task Breakdown (Week 3-4)
+
 **Goal**: AI creates tasks from natural language
 
 **Features**:
+
 - [ ] Natural language task input
 - [ ] AI analyzes and breaks down into subtasks
 - [ ] AI estimates time per task
@@ -248,6 +267,7 @@ interface TaskEvent {
 - [ ] User can edit/approve AI suggestions
 
 **Example Flow**:
+
 ```
 User: "I need to build a blog with comments"
 
@@ -279,6 +299,7 @@ Want me to create this board?"
 ```
 
 **API Integration**:
+
 ```typescript
 // AI endpoint
 POST /api/ai/create-board
@@ -308,9 +329,11 @@ Response:
 ---
 
 ### Phase 3: Team Collaboration (Week 5-6)
+
 **Goal**: Multi-user boards with AI assignment
 
 **Features**:
+
 - [ ] Invite team members to boards
 - [ ] Real-time collaboration (WebSocket)
 - [ ] AI analyzes team skills and availability
@@ -319,6 +342,7 @@ Response:
 - [ ] Activity feed and notifications
 
 **Team Profile**:
+
 ```typescript
 interface TeamMember {
   id: string
@@ -345,47 +369,48 @@ interface TeamMember {
 ```
 
 **AI Assignment Algorithm**:
+
 ```typescript
 function assignTask(task: Task, team: TeamMember[]): Assignment {
   // Score each team member
-  const scores = team.map(member => ({
+  const scores = team.map((member) => ({
     member,
     score: calculateScore(task, member),
-    reasoning: generateReasoning(task, member)
+    reasoning: generateReasoning(task, member),
   }))
-  
+
   // Sort by score
   scores.sort((a, b) => b.score - a.score)
-  
+
   return {
     assignedTo: scores[0].member,
     confidence: scores[0].score,
     reasoning: scores[0].reasoning,
-    alternatives: scores.slice(1, 3) // Show top 3
+    alternatives: scores.slice(1, 3), // Show top 3
   }
 }
 
 function calculateScore(task: Task, member: TeamMember): number {
   let score = 0
-  
+
   // Skill match (40%)
-  const skillMatch = task.requiredSkills.filter(s => 
-    member.skills.includes(s)
-  ).length / task.requiredSkills.length
+  const skillMatch =
+    task.requiredSkills.filter((s) => member.skills.includes(s)).length /
+    task.requiredSkills.length
   score += skillMatch * 0.4
-  
+
   // Availability (30%)
   const availability = member.availability.hoursPerDay / 8
   score += availability * 0.3
-  
+
   // Historical performance (20%)
   const performance = member.metrics.completionRate
   score += performance * 0.2
-  
+
   // Current workload (10% - inverse)
   const workload = getCurrentWorkload(member)
   score += (1 - workload) * 0.1
-  
+
   return score
 }
 ```
@@ -393,9 +418,11 @@ function calculateScore(task: Task, member: TeamMember): number {
 ---
 
 ### Phase 4: AI Monitoring & Intervention (Week 7-8)
+
 **Goal**: AI actively helps during task execution
 
 **Features**:
+
 - [ ] Real-time progress tracking
 - [ ] Blocker detection
 - [ ] Proactive AI suggestions
@@ -404,6 +431,7 @@ function calculateScore(task: Task, member: TeamMember): number {
 - [ ] AI-powered help system
 
 **Blocker Detection**:
+
 ```typescript
 interface BlockerDetection {
   taskId: string
@@ -470,23 +498,24 @@ interface BlockerDetection {
 ```
 
 **AI Intervention Flow**:
+
 ```typescript
 // 1. Detect potential blocker
 if (isTaskPotentiallyBlocked(task)) {
   // 2. Analyze context
   const context = await analyzeTaskContext(task)
-  
+
   // 3. Generate suggestions
   const suggestions = await generateSuggestions(task, context)
-  
+
   // 4. Notify user (non-intrusive)
   await notifyUser({
-    type: 'gentle_nudge',
+    type: "gentle_nudge",
     message: `I noticed you might be stuck on "${task.title}". Need help?`,
     suggestions,
-    actions: ['get_help', 'mark_blocked', 'dismiss']
+    actions: ["get_help", "mark_blocked", "dismiss"],
   })
-  
+
   // 5. Learn from response
   await trackUserResponse(task, suggestions)
 }
@@ -495,9 +524,11 @@ if (isTaskPotentiallyBlocked(task)) {
 ---
 
 ### Phase 5: Advanced AI Features (Week 9-12)
+
 **Goal**: Predictive intelligence and automation
 
 **Features**:
+
 - [ ] Predictive analytics (project completion forecasts)
 - [ ] Automatic task prioritization
 - [ ] Smart sprint planning
@@ -506,19 +537,20 @@ if (isTaskPotentiallyBlocked(task)) {
 - [ ] AI-powered retrospectives
 
 **Predictive Analytics**:
+
 ```typescript
 interface ProjectForecast {
   projectId: string
   currentProgress: number // 0-1
   estimatedCompletion: Date
   confidence: number // 0-1
-  
+
   predictions: {
     bestCase: Date
     worstCase: Date
     mostLikely: Date
   }
-  
+
   risks: Array<{
     type: string
     description: string
@@ -526,7 +558,7 @@ interface ProjectForecast {
     impact: 'low' | 'medium' | 'high'
     mitigation: string
   }>
-  
+
   recommendations: Array<{
     action: string
     expectedImpact: string
@@ -540,13 +572,13 @@ interface ProjectForecast {
   currentProgress: 0.45,
   estimatedCompletion: "2024-11-09",
   confidence: 0.78,
-  
+
   predictions: {
     bestCase: "2024-11-08",
     worstCase: "2024-11-12",
     mostLikely: "2024-11-09"
   },
-  
+
   risks: [
     {
       type: "team_capacity",
@@ -563,7 +595,7 @@ interface ProjectForecast {
       mitigation: "Break down into smaller tasks or use existing library"
     }
   ],
-  
+
   recommendations: [
     {
       action: "Prioritize deployment automation setup",
@@ -584,6 +616,7 @@ interface ProjectForecast {
 ## 💰 Monetization Strategy
 
 ### Free Tier
+
 - Basic kanban view (3 columns)
 - Manual task creation
 - Up to 20 tasks
@@ -591,6 +624,7 @@ interface ProjectForecast {
 - 7-day history
 
 ### Plus ($9/month)
+
 - **AI Task Breakdown** ✨
 - Unlimited tasks
 - Custom columns
@@ -599,6 +633,7 @@ interface ProjectForecast {
 - Priority support
 
 ### Team ($29/month per 5 users)
+
 - **AI Auto-Assignment** ✨
 - **Team Collaboration** ✨
 - Real-time sync
@@ -608,6 +643,7 @@ interface ProjectForecast {
 - Admin controls
 
 ### Enterprise (Custom pricing)
+
 - **Custom AI Training** ✨
 - **Advanced Predictions** ✨
 - **API Access** ✨
@@ -622,18 +658,21 @@ interface ProjectForecast {
 ## 🎯 Success Metrics
 
 ### User Engagement
+
 - **Task completion rate**: Target 80%+
 - **AI suggestion acceptance**: Target 60%+
 - **Daily active users**: Track growth
 - **Time saved per user**: Target 2h/week
 
 ### AI Performance
+
 - **Estimate accuracy**: Target 85%+
 - **Blocker prediction accuracy**: Target 70%+
 - **Assignment satisfaction**: Target 4/5 stars
 - **AI helpfulness rating**: Target 4.5/5 stars
 
 ### Business Metrics
+
 - **Free to Plus conversion**: Target 5%
 - **Plus to Team conversion**: Target 15%
 - **Monthly recurring revenue**: Track growth
@@ -644,18 +683,21 @@ interface ProjectForecast {
 ## 🔮 Future Vision
 
 ### Year 1
+
 - Launch AI task breakdown
 - Team collaboration features
 - Mobile app (iOS/Android)
 - 10,000 active users
 
 ### Year 2
+
 - Advanced AI predictions
 - Integration marketplace (Jira, Asana, GitHub)
 - Voice commands
 - 100,000 active users
 
 ### Year 3
+
 - AI agents that complete tasks
 - Multi-project orchestration
 - Enterprise features
@@ -666,6 +708,7 @@ interface ProjectForecast {
 ## 🛠️ Technical Architecture
 
 ### Frontend
+
 ```
 React + TypeScript
 - Kanban view component
@@ -676,6 +719,7 @@ React + TypeScript
 ```
 
 ### Backend
+
 ```
 Node.js + Express
 - REST API
@@ -686,6 +730,7 @@ Node.js + Express
 ```
 
 ### AI Layer
+
 ```
 - Claude/GPT-4 for task breakdown
 - Custom ML models for predictions
@@ -695,6 +740,7 @@ Node.js + Express
 ```
 
 ### Database
+
 ```
 PostgreSQL (Drizzle ORM)
 - Tasks & boards
@@ -708,18 +754,21 @@ PostgreSQL (Drizzle ORM)
 ## 📚 Resources
 
 ### Similar Products (Learn From)
+
 - Linear (AI features)
 - Notion AI (task breakdown)
 - Height (AI project management)
 - Asana Intelligence
 
 ### Technical References
+
 - OpenAI Assistants API
 - Anthropic Claude API
 - WebSocket best practices
 - Real-time collaboration patterns
 
 ### Design Inspiration
+
 - Linear's UI/UX
 - Notion's AI integration
 - Height's kanban view

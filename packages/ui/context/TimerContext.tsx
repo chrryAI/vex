@@ -294,7 +294,7 @@ export function TimerContextProvider({
     // Prevent processing the same fingerprint twice
     if (lastProcessedFingerprintRef.current === selectedTasksFingerprint) return
 
-    if (!timerTasks.length) return
+    if (!timerTasks?.length) return
 
     lastProcessedFingerprintRef.current = selectedTasksFingerprint
 
@@ -369,7 +369,8 @@ export function TimerContextProvider({
     lastFilteredTasksRef.current = taskIdsKey
 
     setSelectedTasksInternal((currentSelected) => {
-      if (!currentSelected || !tasks?.tasks?.length) return currentSelected
+      if (!currentSelected?.length || !tasks?.tasks?.length)
+        return currentSelected
 
       const filtered = currentSelected.filter((task) =>
         tasks.tasks.some((t) => t.id === task.id),
@@ -377,8 +378,8 @@ export function TimerContextProvider({
 
       // Only update if there are actual changes
       if (
-        filtered.length !== currentSelected.length ||
-        filtered.some(
+        filtered?.length !== currentSelected?.length ||
+        filtered?.some(
           (t, i) => currentSelected[i] && t.id !== currentSelected[i].id,
         )
       ) {
