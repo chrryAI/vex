@@ -246,7 +246,6 @@ export default function Chat({
     collaborationStep,
     setCollaborationStep,
     isIncognito,
-    addParam,
     addParams,
   } = useNavigationContext()
 
@@ -1697,7 +1696,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     shouldStopRef.current = false
 
     if (requiresSignin && !user) {
-      addParam("signIn", "login")
+      addParams({ signIn: "login" })
       return
     }
 
@@ -3519,7 +3518,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     className="button transparent"
                     onClick={() => {
                       addHapticFeedback()
-                      addParam("signIn", "register")
+                      addParams({ signIn: "register" })
                     }}
                   >
                     <Logo isVivid size={19} /> {t("Sign up for 4x more usage")}
@@ -3534,7 +3533,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       {
                         addHapticFeedback()
                         setIsSpeechActive(false)
-                        addParam("subscribe", "true")
+                        addParams({ subscribe: "true" })
                       }
                     }}
                   >
@@ -4396,7 +4395,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         <button
                           onClick={() => {
                             addHapticFeedback()
-                            addParam("subscribe", "true")
+                            addParams({ subscribe: "true" })
                           }}
                           className="link"
                         >
@@ -4467,14 +4466,13 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   <button
                     data-testid="subscribe-from-chat-button"
                     onClick={() => {
-                      addHapticFeedback()
                       track({
                         name: "subscribe-from-chat-click",
                         props: {
                           threadId: threadId,
                         },
                       })
-                      addParam("subscribe", "true")
+                      addParams({ subscribe: "true" })
                     }}
                     className={clsx("link", styles.subscribeButton)}
                   >
@@ -4485,12 +4483,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   <button
                     data-testid="login-from-chat-button"
                     onClick={() => {
-                      addHapticFeedback()
-                      if (guest) {
-                        addParam("signIn", "login")
-                        return
-                      }
-                      addParam("subscribe", "true")
+                      addParams({ signIn: "login" })
                     }}
                     className={clsx("link", styles.loginButton)}
                   >

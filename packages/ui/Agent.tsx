@@ -454,7 +454,7 @@ export default function Agent({
         }
       }
       setTabInternal(value)
-      value !== "settings" && addParam("tab", value)
+      value !== "settings" && addParams({ tab: value })
     } else {
       removeParam("tab")
     }

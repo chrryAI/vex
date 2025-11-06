@@ -101,7 +101,7 @@ export default function Message({
   const { isAccountVisible, setIsAccountVisible } = useNavigationContext()
   const { refetchThread, messages } = useChat()
   // Navigation context (router is the wrapper)
-  const { router, addParam } = useNavigationContext()
+  const { router, addParams } = useNavigationContext()
 
   // App context
   const { slug, apps, setApp, app } = useApp()
@@ -661,8 +661,7 @@ export default function Message({
                   return
                 }
 
-                addParam("subscribe", "true")
-                addParam("plan", "member")
+                addParams({ subscribe: "true", plan: "member" })
               }}
               type="button"
               className={"link"}
@@ -701,8 +700,7 @@ export default function Message({
                     return
                   }
 
-                  addParam("subscribe", "true")
-                  addParam("plan", "member")
+                  addParams({ subscribe: "true", plan: "member" })
                 }}
                 type="button"
                 className={"link"}
@@ -906,8 +904,7 @@ export default function Message({
                     return
                   }
 
-                  addParam("subscribe", "true")
-                  addParam("plan", "member")
+                  addParams({ subscribe: "true", plan: "member" })
                 }}
                 type="button"
                 className={"link"}

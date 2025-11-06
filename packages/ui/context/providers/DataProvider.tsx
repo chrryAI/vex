@@ -216,7 +216,7 @@ export function DataProvider({
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.3.38"
+  const VERSION = "1.3.39"
 
   const [weather, setWeather] = useLocalStorage<
     | {

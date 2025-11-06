@@ -31,7 +31,7 @@ export default function Search({
   dataTestId?: string
   onChange?: (search: string) => void
 }) {
-  const { addParam } = useNavigationContext()
+  const { addParams } = useNavigationContext()
   const searchParams = useSearchParams()
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -56,7 +56,7 @@ export default function Search({
   const handleSearch = useDebouncedCallback((search?: string) => {
     nprogress.start()
     onChange?.(search || "")
-    addParam(paramName, search || "")
+    addParams({ [paramName]: search || "" })
     nprogress.done()
   }, 600)
 
