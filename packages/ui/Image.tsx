@@ -86,11 +86,9 @@ export default function ImageComponent(props: ImageProps) {
     onLoad,
   } = props
 
-  const { isExtension } = usePlatform()
-
   const BASE_URL = FRONTEND_URL
 
-  const { appFormWatcher, canEditApp, chrry } = useApp()
+  const { appFormWatcher, canEditApp } = useApp()
 
   let { src, width, height, size } = getImageSrc({
     ...props,

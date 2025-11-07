@@ -17,6 +17,7 @@ import Link from "next/link"
 import { FRONTEND_URL } from "chrry/utils"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import { notFound } from "next/navigation"
+import { headers } from "next/headers"
 
 export async function generateMetadata({
   params,
@@ -65,7 +66,11 @@ export default async function BlogPost({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const siteConfig = getSiteConfig()
+  // Get hostname for domain-based detection
+  const headersList = await headers()
+  const hostname = headersList.get("host") || ""
+  
+  const siteConfig = getSiteConfig(hostname)
   if (siteConfig.mode !== "vex") {
     return notFound()
   }

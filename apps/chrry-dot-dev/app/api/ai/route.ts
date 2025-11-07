@@ -1183,16 +1183,19 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
 `
       : ""
 
+  const hasFocus =
+    app?.slug === "focus" ||
+    appExtends.find((extend) => extend.slug === "focus")
   // Fetch Focus data for context (tasks, moods, timer)
-  const focusTasks = app?.tools?.includes("focus")
+  const focusTasks = hasFocus
     ? await getTasks({
         userId: member?.id,
         guestId: guest?.id,
-        pageSize: 10, // Last 10 tasks
+        pageSize: 30, // Last 30 tasks
       })
     : null
 
-  const focusMoods = app?.tools?.includes("focus")
+  const focusMoods = hasFocus
     ? await getMoods({
         userId: member?.id,
         guestId: guest?.id,
@@ -1200,7 +1203,7 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
       })
     : null
 
-  const focusTimer = app?.tools?.includes("focus")
+  const focusTimer = hasFocus
     ? await getTimer({
         userId: member?.id,
       })
@@ -1300,7 +1303,7 @@ ${vaultSharedExpenses.sharedExpenses
 
   // Build Focus context (tasks, moods, timer settings)
   const focusContext =
-    app?.tools?.includes("focus") &&
+    hasFocus &&
     (focusTasks?.tasks.length || focusMoods?.moods.length || focusTimer)
       ? `
 

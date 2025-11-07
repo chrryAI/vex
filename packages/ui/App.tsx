@@ -161,6 +161,7 @@ export default function App({
   const popcorn = apps.find((app) => app.slug === "popcorn")
   const vex = apps.find((app) => app.slug === "vex")
   const atlas = apps.find((app) => app.slug === "atlas")
+  const focus = apps.find((app) => app.slug === "focus")
 
   const getApps = () => {
     return apps
@@ -171,6 +172,7 @@ export default function App({
           ? false
           : true,
       )
+      .filter((item) => item.id !== focus?.id)
       .sort((a, b) => {
         const aIsStoreBase =
           a.id === a.store?.appId && a.store?.id === currentStoreId
@@ -910,6 +912,8 @@ export default function App({
               >
                 <Settings2 size={24} color="var(--accent-1)" />
               </Button>
+            ) : app?.id === chrry?.id && focus ? (
+              <FocusButton time={time} />
             ) : (
               hasHydrated &&
               !canEditApp &&
@@ -936,10 +940,7 @@ export default function App({
                   .slice(0, 5)
                   ?.map((item, index) => {
                     const showAtlasHere = index === 1 && app?.id === chrry?.id
-                    const showFocusHere =
-                      !showAtlasHere &&
-                      index === 1 &&
-                      app?.tools?.includes("focus")
+                    const showFocusHere = focus && !showAtlasHere && index === 1
 
                     // Calculate positions for Pacman and Space Invader
                     // Show after base app (index 0) and Chrry (index 1)

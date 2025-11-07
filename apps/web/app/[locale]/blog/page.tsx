@@ -13,6 +13,7 @@ import { LANGUAGES } from "chrry/locales"
 import { defaultLocale } from "chrry/locales"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import { notFound } from "next/navigation"
+import { headers } from "next/headers"
 
 export async function generateMetadata() {
   const title = "Blog - Vex"
@@ -58,7 +59,11 @@ function getBlogPosts() {
 }
 
 export default async function BlogPage() {
-  const siteConfig = getSiteConfig()
+  // Get hostname for domain-based detection
+  const headersList = await headers()
+  const hostname = headersList.get("host") || ""
+  
+  const siteConfig = getSiteConfig(hostname)
   if (siteConfig.mode !== "vex") {
     return notFound()
   }

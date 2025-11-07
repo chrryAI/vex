@@ -1,4 +1,4 @@
-export type SiteMode = "chrryDev" | "vex" | "chrryAI" | "chrryStore"
+export type SiteMode = "chrryDev" | "vex" | "chrryAI" | "chrryStore" | "focus"
 
 export interface SiteConfig {
   mode: SiteMode
@@ -244,6 +244,58 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Chrry platformu ile özel alan adları, gelir paylaşımı ve analizlere sahip markalı AI mağazaları oluşturun.",
     },
   },
+  focus: {
+    en: {
+      title: "Focus - AI Productivity Assistant",
+      description:
+        "Master your time and achieve your goals with AI-powered focus sessions, task management, and productivity insights.",
+    },
+    de: {
+      title: "Focus - KI-Produktivitätsassistent",
+      description:
+        "Meistere deine Zeit und erreiche deine Ziele mit KI-gestützten Fokus-Sessions, Aufgabenverwaltung und Produktivitätseinblicken.",
+    },
+    fr: {
+      title: "Focus - Assistant de productivité IA",
+      description:
+        "Maîtrisez votre temps et atteignez vos objectifs avec des sessions de concentration IA, gestion des tâches et insights de productivité.",
+    },
+    ja: {
+      title: "Focus - AI生産性アシスタント",
+      description:
+        "AIを活用した集中セッション、タスク管理、生産性インサイトで時間を管理し、目標を達成しましょう。",
+    },
+    ko: {
+      title: "Focus - AI 생산성 어시스턴트",
+      description:
+        "AI 기반 집중 세션, 작업 관리, 생산성 인사이트로 시간을 마스터하고 목표를 달성하세요.",
+    },
+    pt: {
+      title: "Focus - Assistente de Produtividade IA",
+      description:
+        "Domine seu tempo e alcance seus objetivos com sessões de foco IA, gerenciamento de tarefas e insights de produtividade.",
+    },
+    es: {
+      title: "Focus - Asistente de Productividad IA",
+      description:
+        "Domina tu tiempo y alcanza tus metas con sesiones de enfoque IA, gestión de tareas e insights de productividad.",
+    },
+    zh: {
+      title: "Focus - AI 生产力助手",
+      description:
+        "通过 AI 驱动的专注会话、任务管理和生产力洞察，掌控时间并实现目标。",
+    },
+    nl: {
+      title: "Focus - AI-productiviteitsassistent",
+      description:
+        "Beheers je tijd en bereik je doelen met AI-aangedreven focussessies, taakbeheer en productiviteitsinzichten.",
+    },
+    tr: {
+      title: "Focus - Yapay Zekâ Üretkenlik Asistanı",
+      description:
+        "Yapay zeka destekli odaklanma oturumları, görev yönetimi ve üretkenlik içgörüleriyle zamanınızı yönetin ve hedeflerinize ulaşın.",
+    },
+  },
 }
 
 export function getSiteTranslation(
@@ -254,12 +306,46 @@ export function getSiteTranslation(
   return catalog[locale] ?? catalog.en
 }
 
+export function detectSiteModeDomain(hostname?: string): SiteMode {
+  // Get hostname from parameter or window (client-side)
+  const host =
+    hostname || (typeof window !== "undefined" ? window.location.hostname : "")
+
+  // Domain-based detection
+  if (host.includes("chrry.dev")) {
+    return "chrryDev"
+  }
+
+  // Focus custom domain (add your custom domain here)
+  if (host.includes("focus.chrry.ai") || host.includes("focusbutton.com")) {
+    return "focus"
+  }
+
+  // chrry.ai and all subdomains (bloom.chrry.ai, vault.chrry.ai, etc.)
+  if (host.includes("chrry.ai") && !host.includes("vex.chrry.ai")) {
+    return "chrryAI"
+  }
+
+  // Store domains
+  if (host.includes("chrry.store")) {
+    return "chrryStore"
+  }
+
+  // Default to vex (vex.chrry.ai or localhost)
+  return "vex"
+}
+
 /**
  * Detect which site we're running on
  * @param hostname - Optional hostname for SSR (prevents hydration mismatch)
  */
 export function detectSiteMode(hostname?: string): SiteMode {
-  // Check environment variable first (most reliable)
+  const mode = detectSiteModeDomain(hostname)
+  if (mode) {
+    return mode
+  }
+
+  // Check environment variable fallback
   if (process.env.NEXT_PUBLIC_SITE_MODE === "chrryDev") {
     return "chrryDev"
   }
@@ -272,14 +358,29 @@ export function detectSiteMode(hostname?: string): SiteMode {
     return "chrryStore"
   }
 
+  if (process.env.NEXT_PUBLIC_SITE_MODE === "focus") {
+    return "focus"
+  }
+
   return "vex"
 }
 
 /**
  * Get site configuration based on current domain
+ * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
-export function getSiteConfig(m?: string): SiteConfig {
-  const mode = m || detectSiteMode()
+export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
+  // If it's a valid SiteMode, use it directly
+  const validModes: SiteMode[] = [
+    "chrryDev",
+    "chrryAI",
+    "chrryStore",
+    "vex",
+    "focus",
+  ]
+  const mode = validModes.includes(hostnameOrMode as SiteMode)
+    ? (hostnameOrMode as SiteMode)
+    : detectSiteMode(hostnameOrMode)
 
   if (mode === "chrryDev") {
     return {
@@ -436,6 +537,84 @@ export function getSiteConfig(m?: string): SiteConfig {
           description: "APIs and SDKs for developers",
           icon: "🛠️",
           link: "/docs/api",
+          isOpenSource: false,
+        },
+      ],
+    }
+  }
+
+  if (mode === "focus") {
+    return {
+      mode: "focus",
+      slug: "focus",
+      storeSlug: "blossom",
+      name: "Focus",
+      domain: "focus.chrry.ai",
+      email: "iliyan@chrry.ai",
+      url: "https://focus.chrry.ai",
+      description:
+        "AI-powered productivity assistant that helps you focus, manage tasks, and achieve your goals. Smart time tracking, task breakdown, and focus sessions designed for deep work.",
+      logo: "⏱️",
+      primaryColor: "#3B82F6", // Blue
+      links: {
+        github: "https://github.com/chrryAI/chrry",
+        docs: "https://focus.chrry.ai/docs",
+      },
+      features: [
+        {
+          title: "Focus Timer",
+          description: "Pomodoro and custom focus sessions",
+          icon: "⏱️",
+          link: "/timer",
+          isOpenSource: false,
+        },
+        {
+          title: "Task Management",
+          description: "Organize and track your tasks",
+          icon: "✅",
+          link: "/tasks",
+          isOpenSource: false,
+        },
+        {
+          title: "AI Task Breakdown",
+          description: "Break complex projects into steps",
+          icon: "🤖",
+          link: "/ai",
+          isOpenSource: false,
+        },
+        {
+          title: "Time Tracking",
+          description: "Track time across all your tasks",
+          icon: "📊",
+          link: "/analytics",
+          isOpenSource: false,
+        },
+        {
+          title: "Progress Analytics",
+          description: "Visualize your productivity patterns",
+          icon: "📈",
+          link: "/progress",
+          isOpenSource: false,
+        },
+        {
+          title: "Goal Setting",
+          description: "Set and achieve your goals",
+          icon: "🎯",
+          link: "/goals",
+          isOpenSource: false,
+        },
+        {
+          title: "Productivity Insights",
+          description: "AI-powered productivity tips",
+          icon: "💡",
+          link: "/insights",
+          isOpenSource: false,
+        },
+        {
+          title: "Deep Work Mode",
+          description: "Eliminate distractions and focus",
+          icon: "🧠",
+          link: "/deep-work",
           isOpenSource: false,
         },
       ],

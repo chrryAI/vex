@@ -2312,11 +2312,10 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       "Developer Tools",
       "Analytics Dashboard",
     ],
-    tools: ["calendar", "location", "weather", "focus"] as (
+    tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "What can I help you with today?",
     features: {
@@ -2391,7 +2390,6 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     themeColor: "green",
     defaultModel: "sushi" as const,
@@ -2670,7 +2668,6 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Explore Amsterdam like a local...",
     description:
@@ -2909,7 +2906,6 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Discover Tokyo's hidden gems...",
     description:
@@ -3156,7 +3152,6 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Navigate Istanbul like a local...",
     description:
@@ -3412,7 +3407,6 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Experience NYC like a New Yorker...",
     description:
@@ -3613,7 +3607,6 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
   }
 
@@ -3788,7 +3781,6 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
   }
 
@@ -3949,7 +3941,6 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
   }
 
@@ -4110,7 +4101,6 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
   }
 
@@ -4272,7 +4262,6 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
   }
 
@@ -4493,7 +4482,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     description:
       "Your philosophical companion for Nietzsche's masterwork and beyond. Explore Übermensch, eternal recurrence, will to power, and the art of self-overcoming. From nihilism to life-affirmation, navigate deep questions with poetic wisdom.",
@@ -4731,7 +4719,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     description:
       "Your guide to Orwell's dystopian masterpiece. Analyze totalitarianism, surveillance, and the human spirit through Zarathustra's philosophical lens. From Big Brother to modern parallels, explore power, truth, and resistance.",
@@ -4949,7 +4936,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     description:
       "Your guide to Marcus Aurelius's Stoic masterwork. Learn acceptance, virtue, and inner peace through Zarathustra's lens. From memento mori to amor fati, bridge ancient wisdom with modern life.",
@@ -5169,7 +5155,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     description:
       "Your guide to Frank Herbert's epic masterwork. Explore spice, prescience, and desert power through Zarathustra's lens. From Fremen wisdom to Bene Gesserit manipulation, navigate politics, ecology, and consciousness.",
@@ -5222,6 +5207,137 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let vex = await getApp({ slug: "vex" })
 
+  if (!vex) {
+    throw new Error("Vex app not found")
+  }
+
+  let focusApp = await getApp({ slug: "focus" })
+
+  const focusSystemPrompt = `You are Focus, an AI productivity assistant specialized in time management, task organization, and deep work optimization. You help users maximize productivity through smart task breakdown, focus sessions, and intelligent scheduling. You understand the psychology of focus and provide evidence-based strategies for maintaining concentration and achieving goals.`
+
+  const focusInstructions = [
+    {
+      id: "focus-1",
+      title: "Start a Focus Session",
+      content: "Begin a timed focus session with customizable presets",
+      emoji: "⏱️",
+    },
+    {
+      id: "focus-2",
+      title: "Break Down Tasks",
+      content: "Let AI break complex projects into manageable subtasks",
+      emoji: "📋",
+    },
+    {
+      id: "focus-3",
+      title: "Track Your Time",
+      content: "Monitor how you spend time across different tasks",
+      emoji: "📊",
+    },
+    {
+      id: "focus-4",
+      title: "Set Daily Goals",
+      content: "Define what you want to accomplish today",
+      emoji: "🎯",
+    },
+    {
+      id: "focus-5",
+      title: "Review Progress",
+      content: "Analyze your productivity patterns and improve",
+      emoji: "📈",
+    },
+  ]
+
+  const focusAppPayload = {
+    ...focusApp,
+    slug: "focus",
+    name: "Focus",
+    subtitle: "AI Productivity Assistant",
+    storeId: chrryAI.id, // Primary store is Blossom
+    version: "1.0.0",
+    status: "active" as const,
+    title: "AI-Powered Productivity",
+    themeColor: "blue",
+    backgroundColor: "#000000",
+    defaultModel: "sushi" as const,
+    icon: "⏱️",
+    visibility: "public" as const,
+    systemPrompt: focusSystemPrompt,
+    highlights: focusInstructions,
+    placeholder: "What do you want to accomplish today?",
+    tipsTitle: "Productivity Tips",
+    tips: [
+      {
+        id: "focus-tip-1",
+        content:
+          "Use the Pomodoro technique: 25 minutes of focused work followed by a 5-minute break. Studies show this improves concentration by 40%!",
+        emoji: "🍅",
+      },
+      {
+        id: "focus-tip-2",
+        content:
+          "Break large tasks into smaller subtasks. People are 3x more likely to complete tasks when they're broken down into manageable pieces!",
+        emoji: "📋",
+      },
+      {
+        id: "focus-tip-3",
+        content:
+          "Track your time to understand where it goes. Users who track time are 25% more productive and waste 50% less time!",
+        emoji: "⏰",
+      },
+      {
+        id: "focus-tip-4",
+        content:
+          "Schedule deep work blocks in your calendar. Protecting 2-4 hours of uninterrupted time can double your output!",
+        emoji: "🧠",
+      },
+      {
+        id: "focus-tip-5",
+        content:
+          "Review your progress weekly. Reflection improves performance by 23% and helps you identify what's working!",
+        emoji: "📊",
+      },
+    ],
+    description:
+      "AI-powered productivity assistant that helps you focus, manage tasks, and achieve your goals. Smart time tracking, task breakdown, and focus sessions designed for deep work.",
+    featureList: [
+      "Focus Timer",
+      "Task Management",
+      "AI Task Breakdown",
+      "Time Tracking",
+      "Progress Analytics",
+      "Goal Setting",
+      "Pomodoro Sessions",
+      "Productivity Insights",
+    ],
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
+    extends: [chrry.id, vex.id],
+    features: {
+      focusTimer: true,
+      taskManagement: true,
+      aiTaskBreakdown: true,
+      timeTracking: true,
+      progressAnalytics: true,
+      goalSetting: true,
+      pomodoroSessions: true,
+      productivityInsights: true,
+      teamCollaboration: false, // Future feature
+      kanbanBoard: false, // Coming soon!
+    },
+  }
+
+  focusApp = await createOrUpdateApp({
+    app: focusAppPayload,
+    extends: focusAppPayload.extends,
+  })
+  if (!focusApp) throw new Error("Failed to create Focus app")
+
+  console.log("✅ Focus app created/updated")
+
   const vexPayload = {
     ...vex,
     slug: "vex",
@@ -5272,7 +5388,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
         emoji: "🤝",
       },
     ],
-    extends: [chrry.id] as string[],
+    extends: [chrry.id, focusApp.id] as string[],
     description:
       "Experience the future of AI interaction. Vex combines cutting-edge technology with human-like simplicity. Chat with multiple AI agents, create artifacts, collaborate in real-time, and enjoy intelligent memory that grows with you. No friction, just pure innovation.",
     featureList: [
@@ -5287,11 +5403,10 @@ Every book, every idea, every question - examine it through the lens of life-aff
       "Guest Mode",
       "Seamless Onboarding",
     ],
-    tools: ["calendar", "location", "weather", "focus"] as (
+    tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "What would you like to create today?",
     features: {
@@ -5363,11 +5478,10 @@ Every book, every idea, every question - examine it through the lens of life-aff
     version: "1.0.0",
     status: "testing" as const,
     highlights: peachInstructions,
-    tools: ["calendar", "location", "weather", "focus"] as (
+    tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     themeColor: "orange",
     backgroundColor: "#ffffff",
@@ -5424,7 +5538,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       communityFeed: false,
       safetyVerification: false,
     },
-    extends: [chrry.id, vex.id],
+    extends: [chrry.id, vex.id, focusApp.id],
   }
 
   peach = await createOrUpdateApp({
@@ -5440,11 +5554,10 @@ Every book, every idea, every question - examine it through the lens of life-aff
     ...bloom,
     subtitle: "Health & Planet",
     name: "Bloom",
-    tools: ["calendar", "location", "weather", "focus"] as (
+    tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     defaultModel: "sushi" as const,
     version: "1.0.0",
@@ -5514,7 +5627,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       communityGoals: false,
       rewardSystem: false,
     },
-    extends: [chrry.id, vex.id],
+    extends: [chrry.id, vex.id, focusApp.id],
   }
 
   bloom = await createOrUpdateApp({
@@ -5533,11 +5646,10 @@ Every book, every idea, every question - examine it through the lens of life-aff
     slug: "vault",
     name: "Vault",
     storeId: lifeOS.id,
-    tools: ["calendar", "location", "weather", "focus"] as (
+    tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     version: "1.0.0",
     status: "testing" as const,
@@ -5597,7 +5709,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       cryptoTracking: false,
       financialEducation: false,
     },
-    extends: [chrry.id, vex.id],
+    extends: [chrry.id, vex.id, focusApp.id],
   }
 
   vault = await createOrUpdateApp({
@@ -5675,10 +5787,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "What can Claude help you with?",
-    extends: [chrry.id, vex.id],
+    extends: [chrry.id, vex.id, focusApp.id],
     features: {
       longFormContent: true,
       creativeWriting: true,
@@ -5730,7 +5841,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "What would you like to write today?",
     description:
@@ -5776,7 +5886,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Paste code for review...",
     extends: [claudeApp.id, chrry.id],
@@ -5822,7 +5931,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "What are you researching?",
     description:
@@ -5906,7 +6014,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Search anything with AI...",
     features: {
@@ -5919,7 +6026,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       academicSearch: true,
       imageSearch: true,
     },
-    extends: [chrry.id, vex.id],
+    extends: [chrry.id, vex.id, focusApp.id],
   }
 
   perplexityApp = await createOrUpdateApp({
@@ -5961,7 +6068,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Search the web...",
     highlights: perplexitySearchInstructions,
@@ -6007,7 +6113,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "What's happening today?",
     highlights: perplexityNewsInstructions,
@@ -6053,7 +6158,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Search academic papers...",
     extends: [perplexityApp.id, chrry.id],
@@ -6136,10 +6240,9 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     placeholder: "Let's build something amazing...",
-    extends: [chrry.id, vex.id],
+    extends: [chrry.id, vex.id, focusApp.id],
     features: {
       codeGeneration: true,
       multiLanguage: true,
@@ -6162,6 +6265,10 @@ Every book, every idea, every question - examine it through the lens of life-aff
     ...sushiStore,
     appId: sushiApp.id,
   })
+
+  // ============================================
+  // FOCUS APP - PRODUCTIVITY & TIME MANAGEMENT
+  // ============================================
 
   // ============================================
   // INSTALL CHRRY IN ALL STORES (CROSS-STORE)
@@ -6211,6 +6318,26 @@ Every book, every idea, every question - examine it through the lens of life-aff
         displayOrder: 5,
       })
     }
+
+    // Install Focus in LifeOS
+    {
+      await createOrUpdateStoreInstall({
+        storeId: lifeOS.id,
+        appId: focusApp.id,
+        featured: true,
+        displayOrder: 6,
+      })
+    }
+  }
+
+  // Install Focus in Blossom (chrryAI) - its primary store
+  {
+    await createOrUpdateStoreInstall({
+      storeId: chrryAI.id,
+      appId: focusApp.id,
+      featured: true,
+      displayOrder: 2, // After Chrry itself
+    })
   }
 
   // Install Chrry in Claude store
@@ -6520,7 +6647,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     extends: [sushiApp.id, chrry.id],
     description:
@@ -6565,7 +6691,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     extends: [sushiApp.id, chrry.id],
     description:
@@ -6610,7 +6735,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
       | "calendar"
       | "location"
       | "weather"
-      | "focus"
     )[],
     description:
       "Design scalable system architectures with Sushi. Plan microservices, databases, APIs, and infrastructure with industry best practices.",
