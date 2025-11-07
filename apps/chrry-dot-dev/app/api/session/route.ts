@@ -301,13 +301,7 @@ export async function GET(request: Request) {
 
     const aiAgent = agentNameParam
       ? await getAiAgent({
-          name: agentNameParam as
-            | "deepSeek"
-            | "chatGPT"
-            | "claude"
-            | "gemini"
-            | "flux"
-            | "perplexity",
+          name: agentNameParam,
         })
       : null
 

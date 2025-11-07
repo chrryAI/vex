@@ -276,7 +276,7 @@ export const guests = pgTable("guest", {
     lastGenerated?: string
   }>(),
 
-  favouriteAgent: text("favouriteAgent").notNull().default("deepSeek"),
+  favouriteAgent: text("favouriteAgent").notNull().default("sushi"),
 
   credits: integer("credits").default(GUEST_CREDITS_PER_MONTH).notNull(),
   isBot: boolean("isBot").default(false).notNull(),
@@ -1680,17 +1680,7 @@ export const apps = pgTable(
     })
       .notNull()
       .default("private"),
-    defaultModel: text("defaultModel", {
-      enum: [
-        "deepSeek",
-        "chatGPT",
-        "claude",
-        "gemini",
-        "flux",
-        "perplexity",
-        "sushi",
-      ],
-    }).default("sushi"), // Default AI model for this app
+    defaultModel: text("defaultModel").default("sushi"), // Default AI model for this app
     temperature: real("temperature").default(0.7),
 
     // Monetization

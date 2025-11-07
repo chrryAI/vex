@@ -22,15 +22,7 @@ export async function PATCH(request: NextRequest) {
   try {
     await updateGuest({
       ...guest,
-      favouriteAgent: [
-        "deepSeek",
-        "chatGPT",
-        "claude",
-        "gemini",
-        "flux",
-      ].includes(favouriteAgent)
-        ? favouriteAgent
-        : guest.favouriteAgent,
+      favouriteAgent: favouriteAgent ?? guest.favouriteAgent,
       characterProfilesEnabled:
         characterProfilesEnabled ?? guest.characterProfilesEnabled,
       memoriesEnabled: memoriesEnabled ?? guest.memoriesEnabled,

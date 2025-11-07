@@ -111,15 +111,7 @@ export async function PATCH(request: NextRequest) {
       characterProfilesEnabled:
         characterProfilesEnabled ?? member.characterProfilesEnabled,
       memoriesEnabled: memoriesEnabled ?? member.memoriesEnabled,
-      favouriteAgent: [
-        "deepSeek",
-        "chatGPT",
-        "claude",
-        "gemini",
-        "flux",
-      ].includes(favouriteAgent)
-        ? favouriteAgent
-        : member.favouriteAgent,
+      favouriteAgent: favouriteAgent ?? member.favouriteAgent,
       city: city ?? member.city,
       country: country ?? member.country,
     })

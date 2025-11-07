@@ -2604,14 +2604,7 @@ export const getAiAgent = async ({
   name,
 }: {
   id?: string
-  name?:
-    | "deepSeek"
-    | "chatGPT"
-    | "claude"
-    | "gemini"
-    | "flux"
-    | "perplexity"
-    | "sushi"
+  name?: string
 }) => {
   const [result] = await db
     .select()

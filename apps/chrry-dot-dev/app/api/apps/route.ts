@@ -385,15 +385,7 @@ export async function POST(request: NextRequest) {
           | ("calendar" | "location" | "weather")[]
           | null
           | undefined,
-        defaultModel: validationResult.data.defaultModel as
-          | "deepSeek"
-          | "chatGPT"
-          | "claude"
-          | "gemini"
-          | "flux"
-          | "perplexity"
-          | null
-          | undefined,
+        defaultModel: validationResult.data.defaultModel,
         images: images.length > 0 ? images : undefined,
         apiKeys: apiKeys || undefined,
       },

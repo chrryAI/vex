@@ -126,11 +126,7 @@ export const users = pgTable(
       mode: "date",
       withTimezone: true,
     }),
-    favouriteAgent: text("favouriteAgent", {
-      enum: ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"],
-    })
-      .notNull()
-      .default("claude"),
+    favouriteAgent: text("favouriteAgent").notNull().default("sushi"),
     timezone: text("timezone"),
     appleId: text("appleId"),
     migratedFromGuest: boolean("migratedFromGuest").default(false).notNull(),
@@ -270,11 +266,7 @@ export const guests = pgTable("guest", {
     lastGenerated?: string
   }>(),
 
-  favouriteAgent: text("favouriteAgent", {
-    enum: ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"],
-  })
-    .notNull()
-    .default("deepSeek"),
+  favouriteAgent: text("favouriteAgent").notNull().default("sushi"),
 
   credits: integer("credits").default(GUEST_CREDITS_PER_MONTH).notNull(),
   isBot: boolean("isBot").default(false).notNull(),
@@ -484,9 +476,7 @@ export const collaborations = pgTable("collaborations", {
 
 export const aiAgents = pgTable("aiAgents", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
-  name: text("name", {
-    enum: ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"],
-  }).notNull(),
+  name: text("name").notNull(),
   displayName: text("displayName").notNull(),
   version: text("version").notNull(),
   apiURL: text("apiURL").notNull(),
@@ -540,7 +530,13 @@ export type taskAnalysis = {
   confidence: number
 }
 
-export type modelName = "chatGPT" | "claude" | "deepSeek" | "gemini" | "flux"
+export type modelName =
+  | "chatGPT"
+  | "claude"
+  | "deepSeek"
+  | "gemini"
+  | "flux"
+  | "sushi"
 
 export const messages = pgTable(
   "messages",
@@ -820,9 +816,7 @@ export const apps = pgTable(
     })
       .notNull()
       .default("private"),
-    defaultModel: text("defaultModel", {
-      enum: ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"],
-    }).default("claude"), // Default AI model for this app
+    defaultModel: text("defaultModel").default("sushi"), // Default AI model for this app
     temperature: real("temperature").default(0.7),
 
     // Monetization

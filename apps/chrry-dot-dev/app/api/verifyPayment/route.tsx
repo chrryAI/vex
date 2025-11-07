@@ -151,10 +151,6 @@ export async function POST(request: Request) {
           ...guest,
           credits: newCredits,
           subscribedOn: new Date(),
-          favouriteAgent:
-            guest.favouriteAgent === "deepSeek"
-              ? "claude"
-              : guest.favouriteAgent,
         })
       }
 

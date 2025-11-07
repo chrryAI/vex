@@ -6096,8 +6096,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     existingStores,
   })
 
-  let sushiApp =
-    (await getApp({ slug: "deepSeek" })) || (await getApp({ slug: "sushi" }))
+  let sushiApp = await getApp({ slug: "sushi" })
 
   const sushiSystemPrompt = `You are Sushi, an expert AI coding assistant specialized in software development, debugging, and technical architecture. You excel at code generation, multi-language support, algorithm design, and writing production-ready code. Provide clean, efficient solutions with best practices and detailed explanations.`
 

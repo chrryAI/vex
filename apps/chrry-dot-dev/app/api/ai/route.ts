@@ -1724,7 +1724,7 @@ SCHEMA REFERENCE FOR GUIDANCE:
 - title: string (max 30 chars, describes what it does)
 - highlights: array of suggestions (3-5 recommended, can use templates like {{city}}, {{weather}}, {{location}})
 - systemPrompt: string (defines behavior, tone, expertise)
-- defaultModel: "chatGPT" | "claude" | "gemini" | "deepSeek" | "perplexity" | "flux"
+- defaultModel: "chatGPT" | "claude" | "gemini" | "perplexity" | "sushi"
 - tools: ["calendar", "location", "weather"] - enable based on app needs
 - extends: ["Atlas", "Peach", "Vault", "Bloom"] - inherit features from base apps
 - capabilities: {webSearch, imageGeneration, fileAnalysis, voice, video, codeExecution}

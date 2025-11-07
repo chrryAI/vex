@@ -387,10 +387,6 @@ export default function Chat({
     setIsChatFloating(isChatFloating)
   }, [isChatFloating])
 
-  // const fluxAgent = aiAgents?.find((agent) => agent.name === "flux")
-  // const deepSeekAgent = aiAgents?.find((agent) => agent.name === "deepSeek")
-  // const chatGPTAgent = aiAgents?.find((agent) => agent.name === "chatGPT")
-
   // Strip ACTION JSON sfrom streaming text
   const stripActionFromText = (text: string): string => {
     // Check if there's a complete ACTION JSON at the end
@@ -3012,19 +3008,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     ? agent.id !== debateAgent.id
                     : true,
               )
-              .map((agent) => ({
-                ...agent,
-                order:
-                  !user && (!guest || !guest?.subscription)
-                    ? agent.name === "perplexity"
-                      ? 0
-                      : agent.name === "deepSeek"
-                        ? 1
-                        : agent.name === "flux"
-                          ? 2
-                          : 3
-                    : agent.order,
-              }))
               .sort((a, b) => {
                 if (a.id === sushiAgent?.id) {
                   return -1
