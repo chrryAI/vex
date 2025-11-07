@@ -189,12 +189,6 @@ export default function Agent({
       app.tools?.includes("weather"),
   )
 
-  const focusRequiredApp = apps.find(
-    (app) =>
-      appForm?.watch("extends")?.includes(app.name) &&
-      app.tools?.includes("focus"),
-  )
-
   const aiAgent = aiAgents?.find(
     (a) =>
       a.name.toLowerCase() === appForm?.watch("defaultModel")?.toLowerCase(),
@@ -266,9 +260,6 @@ export default function Agent({
     if (calendarRequiredApp) {
       requiredTools.add("calendar")
     }
-    if (focusRequiredApp) {
-      requiredTools.add("focus")
-    }
 
     const newTools = Array.from(requiredTools)
     if (
@@ -283,7 +274,6 @@ export default function Agent({
     calendarRequiredApp,
     locationRequiredApp,
     weatherRequiredApp,
-    focusRequiredApp,
   ])
 
   const [tab, setTabInternal] = useState<
@@ -571,6 +561,8 @@ export default function Agent({
                           <Flux color="var(--accent-6)" size={25} />
                         ) : appFormWatcher.defaultModel === "perplexity" ? (
                           <Perplexity color="var(--accent-6)" size={25} />
+                        ) : appFormWatcher.defaultModel === "sushi" ? (
+                          <Img icon="sushi" size={25} />
                         ) : null}
                       </>{" "}
                       {t("Default Model")}
@@ -582,12 +574,11 @@ export default function Agent({
                         <Select
                           className={styles.select}
                           options={[
+                            { value: "sushi", label: "Sushi" },
                             { value: "claude", label: "Claude" },
                             { value: "chatGPT", label: "ChatGPT" },
-                            { value: "deepSeek", label: "DeepSeek" },
                             { value: "gemini", label: "Gemini" },
                             { value: "perplexity", label: "Perplexity" },
-                            { value: "flux", label: "Flux" },
                             // { value: "new", label: "(New)" },
                           ]}
                           id="defaultModel"
@@ -1067,42 +1058,6 @@ export default function Agent({
                               }}
                             >
                               ☁️ {t("Weather")}
-                            </Checkbox>
-                          </label>
-                        </>
-                      )}
-                    />
-
-                    <Controller
-                      name="tools"
-                      control={control}
-                      render={({ field }) => (
-                        <>
-                          <label
-                            className={styles.checkboxLabel}
-                            onClick={(e) => {
-                              if (focusRequiredApp) {
-                                e.preventDefault()
-                                toast.error(
-                                  t(
-                                    "Focus required because you are using {{app}}",
-                                    { app: focusRequiredApp.name },
-                                  ),
-                                )
-                              }
-                            }}
-                          >
-                            <Checkbox
-                              checked={field.value?.includes("focus") || false}
-                              disabled={!!focusRequiredApp}
-                              onChange={(e) => {
-                                const newValue = e.target.checked
-                                  ? [...(field.value || []), "focus"]
-                                  : field.value?.filter((t) => t !== "focus")
-                                field.onChange(newValue)
-                              }}
-                            >
-                              🎯 {t("Focus")}
                             </Checkbox>
                           </label>
                         </>

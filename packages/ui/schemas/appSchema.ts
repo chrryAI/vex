@@ -80,7 +80,7 @@ export const appSchema = z.object({
     .enum(["professional", "casual", "friendly", "technical", "creative"])
     .optional(),
   language: z.string().optional(),
-  defaultModel: z.string().optional(),
+  defaultModel: z.string().optional().default("sushi"),
   temperature: z
     .number()
     .min(0, "Temperature must be 0-2")
@@ -90,7 +90,7 @@ export const appSchema = z.object({
   tools: z
     .array(
       z.union([
-        z.enum(["calendar", "location", "weather", "focus"]),
+        z.enum(["calendar", "location", "weather"]),
         z.uuid("Invalid tool ID"),
       ]),
     )

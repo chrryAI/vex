@@ -234,7 +234,7 @@ Priority Order:
 // packages/ui/utils/siteConfig.ts
 
 if (
-  host.includes("focus.chrry.ai") || 
+  host.includes("focus.chrry.ai") ||
   host.includes("getfocus.ai") ||
   host.includes("yourfocus.com") // Add your domain
 ) {
@@ -320,12 +320,14 @@ curl https://yourfocus.com
 ## 🎨 Branding Differences
 
 ### **Focus**
+
 - **Color**: Blue (#3B82F6) - Calm, focused
 - **Icon**: ⏱️ - Timer/productivity
 - **Vibe**: Minimalist, distraction-free
 - **Target**: Individual productivity users
 
 ### **Chrry AI**
+
 - **Color**: Pink (#E91E63) - Vibrant, creative
 - **Icon**: 🍒 - Playful, memorable
 - **Vibe**: Marketplace, discovery
@@ -340,9 +342,15 @@ curl https://yourfocus.com
 ```html
 <!-- When on focus.chrry.ai -->
 <title>Focus - AI Productivity Assistant</title>
-<meta name="description" content="Master your time and achieve your goals with AI-powered focus sessions, task management, and productivity insights." />
+<meta
+  name="description"
+  content="Master your time and achieve your goals with AI-powered focus sessions, task management, and productivity insights."
+/>
 <meta property="og:title" content="Focus - AI Productivity Assistant" />
-<meta property="og:description" content="AI-powered productivity assistant..." />
+<meta
+  property="og:description"
+  content="AI-powered productivity assistant..."
+/>
 <meta property="og:url" content="https://focus.chrry.ai" />
 <link rel="canonical" href="https://focus.chrry.ai" />
 ```

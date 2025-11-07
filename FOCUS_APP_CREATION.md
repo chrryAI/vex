@@ -28,7 +28,7 @@ Focus has been upgraded from a simple tool to a **full-featured productivity app
 ```
 You are Focus, an AI productivity assistant specialized in:
 - Time management
-- Task organization  
+- Task organization
 - Deep work optimization
 - Smart task breakdown
 - Focus sessions
@@ -79,24 +79,24 @@ features: {
 tips: [
   {
     emoji: "🍅",
-    content: "Pomodoro: 25min work + 5min break = 40% better concentration"
+    content: "Pomodoro: 25min work + 5min break = 40% better concentration",
   },
   {
-    emoji: "📋", 
-    content: "Break tasks down = 3x more likely to complete"
+    emoji: "📋",
+    content: "Break tasks down = 3x more likely to complete",
   },
   {
     emoji: "⏰",
-    content: "Track time = 25% more productive, 50% less waste"
+    content: "Track time = 25% more productive, 50% less waste",
   },
   {
     emoji: "🧠",
-    content: "2-4h deep work blocks = double your output"
+    content: "2-4h deep work blocks = double your output",
   },
   {
     emoji: "📊",
-    content: "Weekly reviews = 23% performance improvement"
-  }
+    content: "Weekly reviews = 23% performance improvement",
+  },
 ]
 ```
 
@@ -146,6 +146,7 @@ tips: [
 ### **Homepage**
 
 When users visit `/focus`:
+
 1. See Focus timer front and center
 2. Quick access to tasks
 3. AI chat for productivity questions
@@ -195,6 +196,7 @@ Ready to start? I'll track your time on each!"
 ## 🔮 Future Features (Roadmap)
 
 ### **Phase 1: Current** ✅
+
 - Focus timer with presets
 - Task management
 - Time tracking
@@ -202,6 +204,7 @@ Ready to start? I'll track your time on each!"
 - Progress analytics
 
 ### **Phase 2: Kanban Integration** 🚧
+
 ```typescript
 kanbanBoard: true,
 features: {
@@ -213,6 +216,7 @@ features: {
 ```
 
 ### **Phase 3: Team Collaboration** 🚧
+
 ```typescript
 teamCollaboration: true,
 features: {
@@ -224,6 +228,7 @@ features: {
 ```
 
 ### **Phase 4: Gamification** 🎮
+
 ```typescript
 gamification: true,
 features: {
@@ -239,20 +244,24 @@ features: {
 ## 📊 Integration Points
 
 ### **Extends**
+
 ```typescript
 extends: [chrry.id, vex.id]
 ```
 
 Focus inherits features from:
+
 - **Chrry**: Marketplace, monetization, analytics
 - **Vex**: Core platform, auth, data sync
 
 ### **Tools Available**
+
 ```typescript
 tools: ["calendar", "location", "weather"]
 ```
 
 Focus can access:
+
 - **Calendar**: Schedule focus sessions
 - **Location**: Context-aware suggestions
 - **Weather**: Optimize work based on conditions
@@ -262,11 +271,13 @@ Focus can access:
 ## 💰 Monetization
 
 ### **Free Tier**
+
 - Basic focus timer
 - Up to 10 tasks
 - 7-day history
 
 ### **Plus Tier** ($9/month)
+
 - **Unlimited tasks** ✨
 - **AI task breakdown** ✨
 - **Advanced analytics** ✨
@@ -274,6 +285,7 @@ Focus can access:
 - **Export data**
 
 ### **Team Tier** ($29/month for 5 users)
+
 - All Plus features
 - **Team collaboration** ✨
 - **Shared boards** ✨
@@ -285,17 +297,20 @@ Focus can access:
 ## 🎯 Success Metrics
 
 ### **User Engagement**
+
 - Daily active users
 - Average session length
 - Tasks completed per user
 - Timer usage frequency
 
 ### **AI Performance**
+
 - Task breakdown acceptance rate
 - AI suggestion helpfulness
 - Time estimate accuracy
 
 ### **Business Metrics**
+
 - Free to Plus conversion: Target 5%
 - Plus retention: Target 80%
 - Monthly recurring revenue growth
@@ -307,6 +322,7 @@ Focus can access:
 ### **Database Schema**
 
 Focus uses existing tables:
+
 - `tasks` - Task management
 - `timer` - Focus sessions
 - `taskLogs` - Time tracking
@@ -323,6 +339,7 @@ Focus uses existing tables:
 ### **Real-time Sync**
 
 WebSocket integration for:
+
 - Timer synchronization across devices
 - Task updates
 - Mood tracking
@@ -370,6 +387,7 @@ Focus is now a **complete productivity app** with:
 ✅ Extensible architecture
 
 **Next Steps**:
+
 1. Run seed script
 2. Test Focus app
 3. Add Kanban board (Phase 2)

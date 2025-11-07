@@ -9,6 +9,7 @@ Consolidated from multiple servers to **one server** that automatically detects 
 ## ✅ What Changed
 
 ### **Before: Multi-Server Setup**
+
 ```
 Server 1: chrry.ai (NEXT_PUBLIC_API_URL=https://chrry.ai/api)
 Server 2: vex.chrry.ai (NEXT_PUBLIC_API_URL=https://vex.chrry.ai/api)
@@ -16,6 +17,7 @@ Server 3: focus.chrry.ai (needs new env vars)
 ```
 
 ### **After: Single Server**
+
 ```
 One Server: Detects domain automatically
 ├─ chrry.ai → chrryAI mode
@@ -97,8 +99,12 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     : detectSiteMode(hostnameOrMode)
 
   // Return config based on mode
-  if (mode === "chrryDev") { /* ... */ }
-  if (mode === "chrryAI") { /* ... */ }
+  if (mode === "chrryDev") {
+    /* ... */
+  }
+  if (mode === "chrryAI") {
+    /* ... */
+  }
   // etc.
 }
 ```
@@ -108,12 +114,14 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 ## 🎯 Usage in SSR (Server-Side Rendering)
 
 ### **Client-Side** (Automatic)
+
 ```typescript
 // No hostname needed - uses window.location.hostname
 const siteConfig = getSiteConfig()
 ```
 
 ### **Server-Side** (Pass hostname)
+
 ```typescript
 import { headers } from "next/headers"
 
@@ -121,14 +129,14 @@ export default async function Page() {
   // Get hostname from request headers
   const headersList = await headers()
   const hostname = headersList.get("host") || ""
-  
+
   // Pass to getSiteConfig for proper detection
   const siteConfig = getSiteConfig(hostname)
-  
+
   if (siteConfig.mode !== "vex") {
     return notFound()
   }
-  
+
   // ... rest of component
 }
 ```
@@ -138,16 +146,19 @@ export default async function Page() {
 ## 📍 Updated Files
 
 ### **1. packages/ui/utils/siteConfig.ts**
+
 - ✅ Added `detectSiteModeDomain()` for pure domain detection
 - ✅ Updated `detectSiteMode()` to try domain first, then env vars
 - ✅ Updated `getSiteConfig()` to accept hostname or mode string
 
 ### **2. apps/web/app/[locale]/blog/page.tsx**
+
 - ✅ Import `headers` from `next/headers`
 - ✅ Get hostname from request headers
 - ✅ Pass hostname to `getSiteConfig(hostname)`
 
 ### **3. apps/web/app/[locale]/blog/[id]/page.tsx**
+
 - ✅ Import `headers` from `next/headers`
 - ✅ Get hostname from request headers
 - ✅ Pass hostname to `getSiteConfig(hostname)`
@@ -157,6 +168,7 @@ export default async function Page() {
 ## 🚀 Benefits
 
 ### **1. Automatic Subdomain Support**
+
 ```
 ✅ focus.chrry.ai - Works automatically
 ✅ bloom.chrry.ai - Works automatically
@@ -165,6 +177,7 @@ export default async function Page() {
 ```
 
 ### **2. No Environment Variables Needed**
+
 ```
 Before:
 - NEXT_PUBLIC_SITE_MODE=chrryAI
@@ -175,6 +188,7 @@ After:
 ```
 
 ### **3. Single Deployment**
+
 ```
 One build → Deploy once → Works everywhere
 - chrry.ai ✅
@@ -184,6 +198,7 @@ One build → Deploy once → Works everywhere
 ```
 
 ### **4. Simplified Infrastructure**
+
 ```
 Before: 3+ servers
 After: 1 server
@@ -287,6 +302,7 @@ vault.chrry.ai
 ## 🔐 Security Considerations
 
 ### **1. Hostname Validation**
+
 ```typescript
 // Always validate hostname from headers
 const hostname = headersList.get("host") || ""
@@ -296,6 +312,7 @@ const sanitized = hostname.replace(/[^a-z0-9.-]/gi, "")
 ```
 
 ### **2. CORS Configuration**
+
 ```typescript
 // Allow all chrry.ai subdomains
 const allowedOrigins = [
@@ -307,6 +324,7 @@ const allowedOrigins = [
 ```
 
 ### **3. SSL/TLS**
+
 ```
 All domains must use HTTPS in production
 - chrry.ai → HTTPS ✅
@@ -319,6 +337,7 @@ All domains must use HTTPS in production
 ## 📊 Performance
 
 ### **Before: Multi-Server**
+
 ```
 Request → DNS → Load Balancer → Server 1 (chrry.ai)
 Request → DNS → Load Balancer → Server 2 (vex.chrry.ai)
@@ -328,6 +347,7 @@ Total: 3 servers, 3 deployments, 3x maintenance
 ```
 
 ### **After: Single Server**
+
 ```
 Request → DNS → Load Balancer → Single Server
                                  ├─ Detect domain
@@ -338,6 +358,7 @@ Total: 1 server, 1 deployment, 1x maintenance
 ```
 
 ### **Metrics**
+
 - **Latency**: Same (domain detection is <1ms)
 - **Throughput**: Same (single server handles all)
 - **Cost**: 66% reduction
@@ -348,11 +369,13 @@ Total: 1 server, 1 deployment, 1x maintenance
 ## 🚢 Deployment
 
 ### **1. Build Once**
+
 ```bash
 npm run build
 ```
 
 ### **2. Deploy Once**
+
 ```bash
 # Deploy to single server
 vercel deploy --prod
@@ -361,6 +384,7 @@ npm run deploy
 ```
 
 ### **3. Configure DNS**
+
 ```
 chrry.ai → Server IP
 *.chrry.ai → Server IP (wildcard)
@@ -369,6 +393,7 @@ chrry.dev → Server IP
 ```
 
 ### **4. Test All Domains**
+
 ```bash
 curl https://chrry.ai
 curl https://focus.chrry.ai
@@ -381,6 +406,7 @@ curl https://chrry.dev
 ## 🎉 Summary
 
 ### **What We Achieved**
+
 ✅ Single server for all domains
 ✅ Automatic subdomain detection
 ✅ No environment variables needed
@@ -391,6 +417,7 @@ curl https://chrry.dev
 ✅ Future-proof for new apps
 
 ### **How It Works**
+
 1. Request comes to server
 2. Server reads `host` header
 3. `detectSiteModeDomain()` checks hostname
@@ -399,6 +426,7 @@ curl https://chrry.dev
 6. App renders with correct branding
 
 ### **Next Steps**
+
 1. ✅ Domain detection implemented
 2. ✅ SSR support added
 3. 🚧 Deploy to production

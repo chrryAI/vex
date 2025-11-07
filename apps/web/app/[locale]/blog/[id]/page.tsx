@@ -69,7 +69,7 @@ export default async function BlogPost({
   // Get hostname for domain-based detection
   const headersList = await headers()
   const hostname = headersList.get("host") || ""
-  
+
   const siteConfig = getSiteConfig(hostname)
   if (siteConfig.mode !== "vex") {
     return notFound()
