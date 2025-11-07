@@ -5311,7 +5311,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "location"
       | "weather"
     )[],
-    extends: [chrry.id],
+    extends: vex ? [vex.id, chrry.id] : [chrry.id],
     features: {
       focusTimer: true,
       taskManagement: true,
@@ -6850,11 +6850,6 @@ You are an architecture expert. Design systems that grow with users, follow indu
   //     productivity: true,
   //   },
   // })
-
-  await createOrUpdateApp({
-    app: focusAppPayload,
-    extends: focusAppPayload.extends.concat(vex.id),
-  })
 
   return { vex }
 }

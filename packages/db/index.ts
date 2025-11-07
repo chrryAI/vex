@@ -5282,6 +5282,7 @@ export async function getStores({
   appId,
   isSafe = false,
   includePublic = true,
+  ownerId,
 }: {
   page?: number
   pageSize?: number
@@ -5290,7 +5291,11 @@ export async function getStores({
   appId?: string
   isSafe?: boolean
   includePublic?: boolean
+  ownerId?: string
 }) {
+  // Check if current user/guest is the owner
+  const isOwner = ownerId && (userId === ownerId || guestId === ownerId)
+
   const conditions = and(
     // If includePublic is true, return public stores OR user's stores
     includePublic
@@ -5298,10 +5303,28 @@ export async function getStores({
           eq(stores.visibility, "public"),
           userId ? eq(stores.userId, userId) : undefined,
           guestId ? eq(stores.guestId, guestId) : undefined,
+          // If ownerId provided and not the current user, include owner's public stores only
+          ownerId && !isOwner
+            ? and(
+                or(
+                  eq(stores.userId, ownerId),
+                  eq(stores.guestId, ownerId),
+                ),
+                eq(stores.visibility, "public"),
+              )
+            : undefined,
+          // If ownerId provided and IS the current user, include all owner's stores (public + private)
+          ownerId && isOwner
+            ? or(eq(stores.userId, ownerId), eq(stores.guestId, ownerId))
+            : undefined,
         )
       : or(
           userId ? eq(stores.userId, userId) : undefined,
           guestId ? eq(stores.guestId, guestId) : undefined,
+          // If ownerId provided and IS the current user, include all owner's stores
+          ownerId && isOwner
+            ? or(eq(stores.userId, ownerId), eq(stores.guestId, ownerId))
+            : undefined,
         ),
     appId ? eq(stores.appId, appId) : undefined,
   )

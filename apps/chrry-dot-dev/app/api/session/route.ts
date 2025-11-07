@@ -218,10 +218,15 @@ export async function GET(request: Request) {
     : storeApp
 
   // Fetch ALL stores to get apps from all stores (for client-only navigation)
+  // Strategy:
+  // 1. Pass current user/guest to get their stores + public stores
+  // 2. Pass ownerId (app owner) to also include app owner's public stores
+  // 3. If current user IS the app owner, they get all owner's stores (public + private)
   const allStores = await getStores({
     pageSize: 100,
     userId: member?.id,
     guestId: guest?.id,
+    ownerId: app?.userId || app?.guestId || undefined,
   })
 
   // Collect all apps from all stores
@@ -294,8 +299,6 @@ export async function GET(request: Request) {
     }
 
     const url = new URL(request.url)
-
-    const cookieStore = await cookies()
 
     const agentNameParam = url.searchParams.get("agent")
 
