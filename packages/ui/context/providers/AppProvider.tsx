@@ -397,7 +397,7 @@ export function AppProvider({
         description: app.description || "",
         tone: app.tone || "professional",
         language: app.language || "en",
-        defaultModel: app.defaultModel || "claude",
+        defaultModel: app.defaultModel || "sushi",
         temperature: app.temperature || 0.7,
         pricing: app.pricing || "free",
         backgroundColor: app.backgroundColor || "#000000",

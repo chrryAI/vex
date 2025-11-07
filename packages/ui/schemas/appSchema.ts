@@ -80,7 +80,7 @@ export const appSchema = z.object({
     .enum(["professional", "casual", "friendly", "technical", "creative"])
     .optional(),
   language: z.string().optional(),
-  defaultModel: z.string().optional().default("sushi"),
+  defaultModel: z.string().optional(),
   temperature: z
     .number()
     .min(0, "Temperature must be 0-2")
