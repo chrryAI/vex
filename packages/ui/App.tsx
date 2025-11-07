@@ -166,6 +166,7 @@ export default function App({
   const getApps = () => {
     return apps
       .filter((item) => item.id !== store?.appId && item.id !== chrry?.id)
+      .filter((item) => item.id !== focus?.id)
       .filter((item) =>
         app?.id === chrry?.id &&
         ["atlas", "popcorn", "zarathustra"].includes(item.slug)
