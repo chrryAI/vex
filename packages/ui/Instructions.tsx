@@ -61,7 +61,6 @@ import EmojiPicker, {
   Theme,
   SuggestionMode,
 } from "emoji-picker-react"
-import { useTheme } from "next-themes"
 import Agent from "./Agent"
 import { useLocalStorage } from "./hooks"
 

@@ -2,14 +2,14 @@
 
 import React from "react"
 import styles from "./Testimonials.module.scss"
-import { useTheme } from "next-themes"
 import { ChartColumnBig } from "lucide-react"
 import { Quote } from "lucide-react"
 import clsx from "clsx"
 import { useTranslation } from "react-i18next"
+import { useTheme } from "./platform"
 
 const Testimonials = ({ className }: { className?: string }) => {
-  const { resolvedTheme } = useTheme()
+  const { isDark } = useTheme()
   const { t } = useTranslation()
   return (
     <section
@@ -42,17 +42,12 @@ const Testimonials = ({ className }: { className?: string }) => {
               <Quote
                 size={22}
                 strokeWidth={1.25}
-                fill={
-                  resolvedTheme === "dark" ? "var(--shade-1)" : "var(--shade-1)"
-                }
+                fill={isDark ? "var(--shade-1)" : "var(--shade-1)"}
                 style={{
                   position: "absolute",
                   top: "-7px",
                   right: "-7px",
-                  color:
-                    resolvedTheme === "dark"
-                      ? "var(--shade-4)"
-                      : "var(--shade-3)",
+                  color: isDark ? "var(--shade-4)" : "var(--shade-3)",
                   backdropFilter: "blur(15px)",
                 }}
               />
