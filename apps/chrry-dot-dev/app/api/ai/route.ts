@@ -2148,17 +2148,31 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
       )
     }
 
+    // Helper to detect text files by extension
+    const isTextFile = (filename: string): boolean => {
+      const textExtensions = [
+        ".txt", ".md", ".json", ".csv", ".xml", ".html", ".css",
+        ".js", ".ts", ".tsx", ".jsx", ".py", ".java", ".c", ".cpp",
+        ".h", ".hpp", ".cs", ".php", ".rb", ".go", ".rs", ".swift",
+        ".kt", ".scala", ".sh", ".yaml", ".yml", ".toml", ".ini",
+        ".conf", ".log", ".sql", ".r", ".m", ".pl", ".lua", ".dart",
+        ".vue", ".svelte", ".astro", ".graphql", ".proto", ".tf",
+      ]
+      return textExtensions.some(ext => filename.toLowerCase().endsWith(ext))
+    }
+
     // Server-side file size validation (safety net)
 
     for (const file of files) {
       const fileType = file.type.toLowerCase()
+      const isText = fileType.startsWith("text/") || isTextFile(file.name)
       let maxSize = 0
 
       if (fileType.startsWith("image/")) maxSize = agentLimits.image
       else if (fileType.startsWith("audio/")) maxSize = agentLimits.audio
       else if (fileType.startsWith("video/")) maxSize = agentLimits.video
       else if (fileType.startsWith("application/pdf")) maxSize = agentLimits.pdf
-      else if (fileType.startsWith("text/")) maxSize = agentLimits.text
+      else if (isText) maxSize = agentLimits.text
 
       if (file.size > maxSize) {
         const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1)
@@ -2203,9 +2217,10 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
         const arrayBuffer = await file.arrayBuffer()
         const base64 = Buffer.from(arrayBuffer).toString("base64")
         const mimeType = file.type
+        const isText = mimeType.startsWith("text/") || isTextFile(file.name)
 
         console.log(
-          `✅ Processed ${file.name} (${mimeType}, ${(file.size / 1024).toFixed(1)}KB)`,
+          `✅ Processed ${file.name} (${mimeType || 'detected as text'}, ${(file.size / 1024).toFixed(1)}KB)`,
         )
 
         return {
@@ -2217,10 +2232,10 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
                 ? "video"
                 : mimeType.startsWith("application/pdf")
                   ? "pdf"
-                  : mimeType.startsWith("text/")
+                  : isText
                     ? "text"
                     : "file",
-          mimeType,
+          mimeType: mimeType || "text/plain", // Default to text/plain for code files
           data: base64,
           filename: file.name,
           size: file.size,
