@@ -192,8 +192,9 @@ export async function GET(request: Request) {
     ? decodeURIComponent(chrryUrlFromParams)
     : CHRRY_URL
 
-  chrryUrl =
-    chrryUrl === "https://focus.chrry.ai" ? "https://chrry.ai" : chrryUrl
+  const isFocus = chrryUrl === "https://focus.chrry.ai"
+
+  chrryUrl = isFocus ? "https://chrry.ai" : chrryUrl
 
   const chrryStore = await getStore({
     domain: chrryUrl,
@@ -224,7 +225,9 @@ export async function GET(request: Request) {
       })) || chrryStore
     : chrryStore
 
-  const storeApp = store?.app
+  const storeApp = isFocus
+    ? store?.apps.find((app) => app.slug === "focus")
+    : store?.app
 
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
