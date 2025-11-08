@@ -88,7 +88,24 @@ export default function FocusButton({ className }: { className?: string }) {
     language,
     bloom,
     getAppSlug,
+    allApps,
   } = useAuth()
+
+  const { searchParams, addParams, push, setParams } = useNavigation()
+
+  const [appId, setAppId] = useState<string | null>(searchParams.get("appId"))
+
+  useEffect(() => {
+    setAppId(searchParams.get("appId"))
+  }, [searchParams])
+
+  const refApp = allApps.find((app) => app.id === appId) || bloom
+
+  useEffect(() => {
+    if (appId) {
+      setParams({ appId })
+    }
+  }, [appId])
 
   const hasHydrated = useHasHydrated()
 
@@ -136,8 +153,6 @@ export default function FocusButton({ className }: { className?: string }) {
       fetchTasks()
     }
   }, [tasks])
-
-  const { searchParams, addParams, push, removeParams } = useNavigation()
 
   const isMovingItemRef = useRef(false)
   const { isDark, setTheme: setThemeInContext } = useTheme()
@@ -849,17 +864,17 @@ export default function FocusButton({ className }: { className?: string }) {
                           <AlarmClockCheck width={16} height={16} />
                           {t("New task")}
                         </button>
-                        {bloom && (
+                        {refApp && (
                           <A
                             style={{
                               ...utilities.button.style,
                               ...utilities.inverted.style,
                               ...utilities.small.style,
                             }}
-                            href={getAppSlug(bloom)}
+                            href={getAppSlug(refApp)}
                           >
-                            <Img size={20} app={bloom} />
-                            Bloom
+                            <Img size={20} app={refApp} />
+                            {refApp.name}
                           </A>
                         )}
                       </div>

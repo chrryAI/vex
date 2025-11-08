@@ -2151,14 +2151,52 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     // Helper to detect text files by extension
     const isTextFile = (filename: string): boolean => {
       const textExtensions = [
-        ".txt", ".md", ".json", ".csv", ".xml", ".html", ".css",
-        ".js", ".ts", ".tsx", ".jsx", ".py", ".java", ".c", ".cpp",
-        ".h", ".hpp", ".cs", ".php", ".rb", ".go", ".rs", ".swift",
-        ".kt", ".scala", ".sh", ".yaml", ".yml", ".toml", ".ini",
-        ".conf", ".log", ".sql", ".r", ".m", ".pl", ".lua", ".dart",
-        ".vue", ".svelte", ".astro", ".graphql", ".proto", ".tf",
+        ".txt",
+        ".md",
+        ".json",
+        ".csv",
+        ".xml",
+        ".html",
+        ".css",
+        ".js",
+        ".ts",
+        ".tsx",
+        ".jsx",
+        ".py",
+        ".java",
+        ".c",
+        ".cpp",
+        ".h",
+        ".hpp",
+        ".cs",
+        ".php",
+        ".rb",
+        ".go",
+        ".rs",
+        ".swift",
+        ".kt",
+        ".scala",
+        ".sh",
+        ".yaml",
+        ".yml",
+        ".toml",
+        ".ini",
+        ".conf",
+        ".log",
+        ".sql",
+        ".r",
+        ".m",
+        ".pl",
+        ".lua",
+        ".dart",
+        ".vue",
+        ".svelte",
+        ".astro",
+        ".graphql",
+        ".proto",
+        ".tf",
       ]
-      return textExtensions.some(ext => filename.toLowerCase().endsWith(ext))
+      return textExtensions.some((ext) => filename.toLowerCase().endsWith(ext))
     }
 
     // Server-side file size validation (safety net)
@@ -2220,7 +2258,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
         const isText = mimeType.startsWith("text/") || isTextFile(file.name)
 
         console.log(
-          `✅ Processed ${file.name} (${mimeType || 'detected as text'}, ${(file.size / 1024).toFixed(1)}KB)`,
+          `✅ Processed ${file.name} (${mimeType || "detected as text"}, ${(file.size / 1024).toFixed(1)}KB)`,
         )
 
         return {

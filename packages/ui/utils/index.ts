@@ -143,7 +143,9 @@ export const FRONTEND_URL = isTestingDevice
   ? `http://192.168.2.27:${FE_PORT}`
   : isDevelopment
     ? `http://localhost:${FE_PORT}`
-    : CHRRY_URL
+    : typeof window !== "undefined"
+      ? window.location.origin
+      : CHRRY_URL
 
 export const PROD_FRONTEND_URL = CHRRY_URL
 
