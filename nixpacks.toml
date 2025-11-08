@@ -1,2 +1,12 @@
 [phases.setup]
-nixPkgs = ["nodejs", "nodePackages.npm", "ffmpeg"]
+nixPkgs = ["nodejs_22", "ffmpeg"]
+nixLibs = []
+
+[phases.install]
+cmds = ["corepack enable", "corepack prepare pnpm@9.1.2 --activate", "pnpm install --frozen-lockfile"]
+
+[phases.build]
+cmds = ["pnpm run build"]
+
+[start]
+cmd = "pnpm start"
