@@ -48,6 +48,7 @@ import { cookies } from "next/headers"
 import { appWithStore } from "chrry/types"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "chrry/utils/url"
 import { locales } from "chrry/locales"
+import { getSiteConfig } from "chrry/utils/siteConfig"
 
 const hasThreadNotification = lib.hasThreadNotification
 
@@ -192,12 +193,10 @@ export async function GET(request: Request) {
     ? decodeURIComponent(chrryUrlFromParams)
     : CHRRY_URL
 
-  const isFocus = chrryUrl === "https://focus.chrry.ai"
-
-  chrryUrl = isFocus ? "https://chrry.ai" : chrryUrl
+  const siteConfig = getSiteConfig(chrryUrl)
 
   const chrryStore = await getStore({
-    domain: chrryUrl,
+    domain: siteConfig.store,
     userId: member?.id,
     guestId: guest?.id,
     depth: 1, // Populate one level of nested store.apps
@@ -208,8 +207,8 @@ export async function GET(request: Request) {
   }
 
   const slug = getAppAndStoreSlugs(pathname, {
-    defaultAppSlug: chrryStore?.app?.slug,
-    defaultStoreSlug: chrryStore?.store?.slug,
+    defaultAppSlug: siteConfig.slug,
+    defaultStoreSlug: siteConfig.storeSlug,
     excludedRoutes: excludedSlugRoutes,
     locales,
   })
@@ -225,9 +224,14 @@ export async function GET(request: Request) {
       })) || chrryStore
     : chrryStore
 
-  const storeApp = isFocus
-    ? store?.apps.find((app) => app.slug === "focus")
-    : store?.app
+  const storeApp =
+    store?.app?.slug === siteConfig.slug
+      ? store?.app
+      : store?.apps.find((app) => app.slug === siteConfig.slug)
+
+  if (!storeApp) {
+    return NextResponse.json({ error: "Store app not found" }, { status: 404 })
+  }
 
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
