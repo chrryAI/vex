@@ -10,7 +10,7 @@ import {
   LogIn,
   UserRoundPlus,
 } from "./icons"
-import { apiFetch } from "./utils"
+import { apiFetch, CHRRY_URL, isDevelopment } from "./utils"
 import { FaGoogle, FaApple } from "react-icons/fa"
 
 export type DesktopAuthHandler = {
@@ -59,7 +59,6 @@ export default function SignIn({
 }) {
   const isExtension = checkIsExtension()
 
-  const siteConfig = getSiteConfig()
   const isAppleSignInAvailable = true
 
   const {
@@ -160,8 +159,7 @@ export default function SignIn({
       }
     }
 
-    // Use siteConfig.url for white-label specific URLs
-    const baseUrl = siteConfig.url || window.location.origin
+    const baseUrl = FRONTEND_URL
 
     const errorUrl = new URL(baseUrl + "/?signIn=login&error")
     // Create URLs for both success and error cases
