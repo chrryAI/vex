@@ -127,21 +127,25 @@ curl -I https://chrry.ai
 ## Benefits
 
 ### 1. Simplified Infrastructure ✅
+
 - One Coolify deployment instead of three
 - No Docker containers to manage
 - Single codebase, single deployment
 
 ### 2. Cost Savings 💰
+
 - Reduced memory usage (one Node.js process)
 - Lower CPU usage
 - Simpler monitoring
 
 ### 3. Easier Maintenance 🛠️
+
 - One deployment to update
 - Consistent configuration
 - Easier debugging
 
 ### 4. Dynamic Routing 🎯
+
 ```typescript
 // App automatically detects domain
 const siteConfig = getSiteConfig(hostname)
@@ -189,13 +193,13 @@ Same process for focus.chrry.ai and chrry.ai!
 
 ## Port Mapping
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| Nginx | 80 | HTTP (redirects to HTTPS) |
-| Nginx | 443 | HTTPS (SSL) |
-| Web App | 3008 | All web domains (Coolify) |
-| API | 3001 | chrry.dev API (Coolify) |
-| ~~Docker~~ | ~~3009~~ | ~~Removed~~ ❌ |
+| Service    | Port     | Purpose                   |
+| ---------- | -------- | ------------------------- |
+| Nginx      | 80       | HTTP (redirects to HTTPS) |
+| Nginx      | 443      | HTTPS (SSL)               |
+| Web App    | 3008     | All web domains (Coolify) |
+| API        | 3001     | chrry.dev API (Coolify)   |
+| ~~Docker~~ | ~~3009~~ | ~~Removed~~ ❌            |
 
 ---
 
