@@ -11,14 +11,13 @@ import {
   useMemo,
 } from "react"
 
-import { isSameDay, FRONTEND_URL, apiFetch } from "../utils"
+import { isSameDay, FRONTEND_URL, apiFetch, API_URL } from "../utils"
 import { device, mood, timer } from "../types"
 
-import { API_URL, useLocalStorage } from ".."
 import useSWR from "swr"
 import { useWebSocket } from "../hooks/useWebSocket"
 import { useAuth } from "./providers"
-import { usePlatform, useTheme } from "chrry/platform"
+import { useLocalStorage, usePlatform, useTheme } from "../platform"
 
 export const STORAGE_SELECTED_TASKS_KEY = "selectedTasks"
 
