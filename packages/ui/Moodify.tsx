@@ -12,14 +12,9 @@ import { useAuth } from "./context/providers"
 import Loading from "./Loading"
 import { ChartCandlestick } from "./icons"
 import { useHasHydrated } from "./hooks"
+import { moodType } from "./types"
 
-export type Mood =
-  | "happy"
-  | "sad"
-  | "angry"
-  | "astonished"
-  | "inlove"
-  | "thinking"
+export type Mood = moodType
 
 export const emojiMap: Record<Mood, string> = {
   happy: "😊",

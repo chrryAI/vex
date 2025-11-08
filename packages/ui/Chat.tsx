@@ -98,6 +98,7 @@ import { useWindowHistory } from "./hooks/useWindowHistory"
 import App from "./App"
 import Img from "./Image"
 import MoodSelector from "./MoodSelector"
+import { emojiMap, Mood } from "./Moodify"
 
 const MAX_FILES = 3
 
@@ -203,7 +204,12 @@ export default function Chat({
     chrry,
     app,
     sushiAgent,
+    mood,
+    updateMood,
+    editTask,
   } = useAuth()
+
+  const [isSelectingMood, setIsSelectingMood] = useState(false)
 
   const isChrry = chrry?.id === app?.id
 
@@ -294,8 +300,6 @@ export default function Chat({
     })
   }
 
-  const windowHistory = useWindowHistory()
-
   const setIsWebSearchEnabled = (value: boolean) => {
     setWebSearchEnabledInternal(value)
     value && chatInputRef.current?.focus()
@@ -373,7 +377,7 @@ export default function Chat({
   const shouldUseCompactMode = compactMode || hasBottomOffset
   // || windowHeight < 600 // Not at bottom or mobile
 
-  const isChatFloating = !empty && (!showChatInput || shouldUseCompactMode)
+  const isChatFloating = shouldUseCompactMode || (!empty && !showChatInput)
 
   useEffect(() => {
     if (process.env.NODE_ENV !== "production") {
@@ -709,6 +713,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }
 
   const isHydrated = useHasHydrated()
+  useEffect(() => {
+    editTask && (clientIdRef.current = editTask)
+  }, [editTask])
   const [isAttaching, setIsAttachingInternal] = useState(false)
   const clientIdRef = useRef<string | undefined>(uuidv4())
 
@@ -1799,6 +1806,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           "imageGenerationEnabled",
           JSON.stringify(isImageGenerationEnabled),
         )
+        mood && formData.append("moodId", mood.id)
         formData.append("actionEnabled", JSON.stringify(isExtension))
         formData.append("instructions", instruction)
         formData.append("language", language)
@@ -1827,6 +1835,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           attachmentType: "file",
           clientId: clientIdRef.current,
           appId: app?.id,
+          moodId: mood?.id,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -2831,7 +2840,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   const renderSubmit = () => {
     return (
       <>
-        {!isAttaching && (
+        {!isSelectingMood && (
           <>
             {streamId && isStreaming ? (
               <button
@@ -3558,8 +3567,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 os && styles[os],
               )}
             >
-              <div className={styles.topInner}>{Top}</div>
-              {isChatFloating && (
+              {Top && <div className={styles.topInner}>{Top}</div>}
+              {hasBottomOffset && (
                 <button
                   className={clsx("link", styles.scrollDownButton)}
                   onClick={showInputAndScrollToBottom}
@@ -4074,14 +4083,26 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     isExtension && styles.extension,
                   )}
                 >
-                  {/* <MoodSelector
-                    style={{
-                      fontSize: "1.3rem",
-                    }}
-                    mood={"thinking"}
-                    onMoodChange={() => {}}
-                  /> */}
-                  {!isAttaching && !needsReview && (
+                  {app?.features?.moodTracking && (
+                    <MoodSelector
+                      showEdit={false}
+                      style={{
+                        fontSize: "1.3rem",
+                      }}
+                      key={mood?.type}
+                      mood={mood?.type}
+                      onSelectingMood={(v) => {
+                        setIsSelectingMood(v)
+                      }}
+                      onMoodChange={async (newMood) => {
+                        if (mood?.type !== newMood) {
+                          await updateMood({ type: newMood })
+                          toast.success(emojiMap[newMood])
+                        }
+                      }}
+                    />
+                  )}
+                  {!isSelectingMood && !needsReview && (
                     <>
                       <button
                         data-testid={
@@ -4291,33 +4312,35 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       {t("Privacy")}
                     </a>
                   ) : (
-                    <button
-                      data-testid="attach-button"
-                      title={t("Attach")}
-                      onClick={() => {
-                        addHapticFeedback()
+                    !isSelectingMood && (
+                      <button
+                        data-testid="attach-button"
+                        title={t("Attach")}
+                        onClick={() => {
+                          addHapticFeedback()
 
-                        // Auto-switch to Sushi for file attachments
-                        const sushiAgent = aiAgents.find(
-                          (agent) => agent.name === "sushi",
-                        )
-                        if (sushiAgent && selectedAgent?.name !== "sushi") {
-                          setSelectedAgent(sushiAgent)
-                        }
+                          // Auto-switch to Sushi for file attachments
+                          const sushiAgent = aiAgents.find(
+                            (agent) => agent.name === "sushi",
+                          )
+                          if (sushiAgent && selectedAgent?.name !== "sushi") {
+                            setSelectedAgent(sushiAgent)
+                          }
 
-                        // Open system file picker directly with all supported types
-                        triggerFileInput(
-                          "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
-                        )
-                      }}
-                      className={clsx("link", styles.attachButton)}
-                      type="submit"
-                    >
-                      <Paperclip color={"var(--accent-6)"} size={22} />
-                    </button>
+                          // Open system file picker directly with all supported types
+                          triggerFileInput(
+                            "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                          )
+                        }}
+                        className={clsx("link", styles.attachButton)}
+                        type="submit"
+                      >
+                        <Paperclip color={"var(--accent-6)"} size={22} />
+                      </button>
+                    )
                   )}
                   {/* Quota info button */}
-                  {user && (
+                  {user && !isSelectingMood && (
                     <button
                       onClick={async (e) => {
                         addHapticFeedback()

@@ -2,7 +2,7 @@ import getGuest from "../../actions/getGuest"
 import getMember from "../../actions/getMember"
 import { after, NextResponse } from "next/server"
 import { v4 as uuidv4, validate } from "uuid"
-import { getPureApp, guest } from "@repo/db"
+import { getMood, getPureApp, getTask, guest } from "@repo/db"
 
 // Initialize with a pretrained model
 
@@ -473,6 +473,7 @@ export async function POST(request: Request) {
     // Handle file uploads
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
+      moodId: formData.get("moodId") as string,
       appId: formData.get("appId") as string,
       content: formData.get("content") as string,
       agentId: formData.get("agentId") as string,
@@ -536,8 +537,13 @@ export async function POST(request: Request) {
     imageGenerationEnabled,
     clientId,
     deviceId,
+    moodId,
     ...rest
   } = requestData
+
+  const task = clientId ? await getTask({ id: clientId }) : undefined
+
+  const mood = moodId ? await getMood({ id: moodId }) : undefined
 
   const app = appId ? await getPureApp({ id: appId }) : undefined
   console.log(`🚀 ~ file: route.ts:543 ~ appId:`, appId, app?.name)
@@ -646,6 +652,7 @@ export async function POST(request: Request) {
     let threadTitle = trimTitle(messageContent)
 
     const newThread = await createThread({
+      id: task?.id,
       title: threadTitle,
       aiResponse: "", // Will be updated when AI responds
       userId: member?.id,
@@ -723,6 +730,7 @@ export async function POST(request: Request) {
 
   if (isAgent && selectedAgent) {
     const agentMessage = await createMessage({
+      moodId: mood?.id,
       id: validate(clientId) ? clientId : uuidv4(),
       content: messageContent,
       threadId: currentThreadId,
@@ -756,6 +764,7 @@ export async function POST(request: Request) {
 
   const userMessage = await createMessage({
     content: messageContent,
+    moodId: mood?.id,
     threadId: currentThreadId,
     userId: member?.id,
     guestId: guest?.id,

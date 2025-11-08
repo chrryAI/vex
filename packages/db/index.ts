@@ -5306,10 +5306,7 @@ export async function getStores({
           // If ownerId provided and not the current user, include owner's public stores only
           ownerId && !isOwner
             ? and(
-                or(
-                  eq(stores.userId, ownerId),
-                  eq(stores.guestId, ownerId),
-                ),
+                or(eq(stores.userId, ownerId), eq(stores.guestId, ownerId)),
                 eq(stores.visibility, "public"),
               )
             : undefined,

@@ -11,7 +11,7 @@ import MoodReports from "./MoodReports"
 import Moodify from "./Moodify"
 import FocusButton from "./FocusButton"
 
-export default function Focus() {
+export default function Focus({ children }: { children?: React.ReactNode }) {
   const { searchParams } = useNavigation()
 
   const [showMoodReports, setShowMoodReports] = useState(() => {
@@ -51,7 +51,8 @@ export default function Focus() {
                   <FocusButton />
                 </div>
               )}
-              <Moodify onOpenReports={() => setShowMoodReports(true)} />
+              {children}
+              {/* <Moodify onOpenReports={() => setShowMoodReports(true)} /> */}
             </div>
           </main>
         </>

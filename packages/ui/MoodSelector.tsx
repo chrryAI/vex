@@ -1,40 +1,74 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import styles from "./MoodSelector.module.scss"
 import clsx from "clsx"
 import { PiHandTap } from "react-icons/pi"
 import { MousePointerClick } from "lucide-react"
 import { Mood, emojiMap } from "./Moodify"
 import { useTranslation } from "react-i18next"
+import { moodType } from "./types"
 
 export default function MoodSelector({
   onMoodChange,
   children,
   className,
   style,
+  showEdit = true,
+  onSelectingMood,
   ...rest
 }: {
+  showEdit?: boolean
   children?: React.ReactNode
-  mood: Mood | undefined
+  mood: moodType | undefined
   className?: string
   style?: React.CSSProperties
-  onMoodChange: (mood: Mood | undefined) => void
+  onMoodChange: (mood: moodType) => void
+  onSelectingMood?: (value: boolean) => void
 }) {
   const { t } = useTranslation()
+  const [lastMood, setLastMoodInternal] = useState<Mood | undefined>(rest.mood)
+
+  const setLastMood = (mood: Mood | undefined) => {
+    if (mood === "thinking") return
+    setLastMoodInternal(mood)
+  }
+
   const [mood, setMoodInternal] = useState<Mood | undefined>(rest.mood)
 
   const setMood = (mood: Mood | undefined) => {
+    onSelectingMood?.(!mood)
+    mood && setLastMood(mood)
     setMoodInternal(mood)
-    onMoodChange(mood)
+    mood && mood !== lastMood && mood !== "thinking" && onMoodChange(mood)
   }
 
   useEffect(() => {
     setMoodInternal(rest.mood)
+    setLastMood(rest.mood)
   }, [rest.mood])
 
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        lastMood && setMood(lastMood)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
   return (
-    <div style={style} className={clsx(styles.moodSelector, className)}>
+    <div
+      ref={ref}
+      style={style}
+      className={clsx(styles.moodSelector, className)}
+    >
       <div className={styles.emojiContainer}>
         {mood ? (
           <button
@@ -52,7 +86,7 @@ export default function MoodSelector({
             {children ? (
               <div className={styles.children}>{children}</div>
             ) : (
-              <span className={styles.edit}>{t("Edit")}</span>
+              showEdit && <span className={styles.edit}>{t("Edit")}</span>
             )}
           </button>
         ) : (
@@ -122,13 +156,15 @@ export default function MoodSelector({
               className={clsx("link", styles.emoji)}
               onClick={() => setMood("thinking")}
             >
-              <>
-                <PiHandTap strokeWidth={1.5} className={styles.mobile} />
-                <MousePointerClick
-                  strokeWidth={1.5}
-                  className={styles.desktop}
-                />
-              </>
+              {showEdit && (
+                <>
+                  <PiHandTap strokeWidth={1.5} className={styles.mobile} />
+                  <MousePointerClick
+                    strokeWidth={1.5}
+                    className={styles.desktop}
+                  />
+                </>
+              )}
             </button>
           </>
         )}

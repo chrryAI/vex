@@ -622,6 +622,7 @@ export function ChatProvider({
     const id = getThreadId(pathname)
     if (id) {
       setThreadId(id)
+      setShouldFetchThread(true)
       setIsChatFloating(false)
     }
   }, [pathname])
@@ -698,6 +699,10 @@ export function ChatProvider({
   }, [thread?.placeHolder, user?.placeHolder, guest?.placeHolder, threadId])
 
   const [shouldFetchThread, setShouldFetchThread] = useState(!thread)
+  console.log(
+    `🚀 ~ file: ChatProvider.tsx:701 ~ shouldFetchThread:`,
+    shouldFetchThread,
+  )
 
   const [until, setUntil] = useState<number>(1)
   const [liked, setLiked] = useState<boolean | undefined>(undefined)

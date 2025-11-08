@@ -88,6 +88,8 @@ interface AppFormContextType {
   owningApps: appWithStore[]
   storeApp: appWithStore | undefined
   chrry: appWithStore | undefined
+  sushi: appWithStore | undefined
+  focus: appWithStore | undefined
   appForm: ReturnType<typeof useForm<appFormData>>
   appFormWatcher: {
     id?: string
@@ -164,6 +166,8 @@ export function AppProvider({
     isSavingApp,
     setIsSavingApp,
     defaultInstructions,
+    sushi,
+    focus,
   } = useAuth()
   const { actions } = useData()
 
@@ -688,6 +692,8 @@ export function AppProvider({
         canEditApp,
         isAppOwner,
         slug,
+        sushi,
+        focus,
         setSlug,
         saveApp,
         suggestSaveApp,

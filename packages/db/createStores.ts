@@ -5323,6 +5323,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       productivityInsights: true,
       teamCollaboration: false, // Future feature
       kanbanBoard: false, // Coming soon!
+      moodTracking: true,
     },
   }
 
@@ -5785,7 +5786,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       | "weather"
     )[],
     placeholder: "What can Claude help you with?",
-    extends: [chrry.id, vex.id, focusApp.id],
+    extends: [chrry.id, vex.id],
     features: {
       longFormContent: true,
       creativeWriting: true,
@@ -6022,7 +6023,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
       academicSearch: true,
       imageSearch: true,
     },
-    extends: [chrry.id, vex.id, focusApp.id],
+    extends: [chrry.id, vex.id],
   }
 
   perplexityApp = await createOrUpdateApp({

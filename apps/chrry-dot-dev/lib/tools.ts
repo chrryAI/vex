@@ -26,6 +26,8 @@ import {
   updateTask,
   deleteTask,
   updateTimer,
+  getLastMood,
+  updateMood,
 } from "@repo/db"
 import { expenseCategoryType } from "chrry/utils"
 import {
@@ -1298,14 +1300,30 @@ export const getTools = ({
           }
         }
 
-        console.log("🎭 Creating mood:", { type, messageId: currentMessageId })
+        let mood = await getLastMood(member?.id, guest?.id)
 
-        const mood = await createMood({
-          type,
-          userId: member?.id,
-          guestId: guest?.id,
-          messageId: currentMessageId || undefined, // Link to current message
-        })
+        // Check if last mood was created today
+        const now = new Date()
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const isToday = mood && new Date(mood.createdOn) >= today
+
+        if (mood && isToday) {
+          // Update today's mood
+          const updatedMood = await updateMood({
+            ...mood,
+            type,
+            updatedOn: new Date(),
+          })
+
+          mood = updatedMood
+        } else {
+          // Create new mood (first mood today or no mood exists)
+          mood = await createMood({
+            type,
+            userId: member?.id,
+            guestId: guest?.id,
+          })
+        }
 
         const moodEmojis = {
           happy: "😊",

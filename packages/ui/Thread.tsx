@@ -42,6 +42,11 @@ import EnableSound from "./EnableSound"
 import MemoryConsent from "./MemoryConsent"
 import Img from "./Img"
 import { useHasHydrated } from "./hooks"
+import { lazy, Suspense } from "react"
+
+// Lazy load Focus only on web (not extension) to reduce bundle size
+// This component includes timer, tasks, moods, and analytics - heavy dependencies
+const Focus = lazy(() => import("./Focus"))
 
 declare module "./hooks/useWindowHistory" {
   interface NavigateOptions {
@@ -127,9 +132,13 @@ const Thread = ({
     setMessagesInternal(messages)
   }
 
-  const { app, appStatus, appFormWatcher, suggestSaveApp } = useApp()
+  const { app, focus, appStatus, appFormWatcher, suggestSaveApp } = useApp()
+
+  const isFocus = focus && focus?.id === app?.id
+  const showFocus = !threadId && isFocus && isEmpty
 
   const { addHapticFeedback, isDrawerOpen } = useTheme()
+  const { isExtension } = usePlatform()
 
   // Derived from thread
   const ph =
@@ -249,10 +258,8 @@ const Thread = ({
     setIsEmpty(!messages.length)
   }, [messages.length])
 
-  return (
-    <Skeleton>
-      <MemoryConsent />
-
+  const render = () => {
+    return (
       <div
         data-thread-title={thread?.title}
         data-testid={id ? "thread" : isHome ? "home" : undefined}
@@ -394,7 +401,7 @@ const Thread = ({
                 <div className={styles.chatContainer}>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
-                    // compactMode
+                    compactMode={isFocus}
                     onTyping={notifyTyping}
                     disabled={isPendingCollaboration}
                     placeholder={
@@ -593,7 +600,9 @@ const Thread = ({
                       )
                     }
                     thread={thread}
-                    showSuggestions={!isLoading && messages.length === 0}
+                    showSuggestions={
+                      !showFocus && !isLoading && messages.length === 0
+                    }
                     onToggleGame={(on) => setIsGame(on)}
                     showGreeting={!id && !isLoading && messages.length === 0}
                     className={styles.chat}
@@ -868,6 +877,20 @@ const Thread = ({
           </>
         )}
       </div>
+    )
+  }
+
+  // Only load Focus on web (not extension) and after hydration
+  const shouldLoadFocus = showFocus && hasHydrated && isEmpty && !threadId
+
+  return shouldLoadFocus ? (
+    <Suspense fallback={<Loading fullScreen />}>
+      <Focus>{render()}</Focus>
+    </Suspense>
+  ) : (
+    <Skeleton>
+      <MemoryConsent />
+      {render()}
     </Skeleton>
   )
 }

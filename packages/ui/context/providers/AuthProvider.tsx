@@ -36,6 +36,7 @@ import {
   mood,
   thread,
   paginatedMessages,
+  moodType,
 } from "../../types"
 import toast from "react-hot-toast"
 import { getSession } from "../../lib"
@@ -60,6 +61,10 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      editTask?: string
+      updateMood: ({ type }: { type: moodType }) => Promise<void>
+      focus: appWithStore | undefined
+      sushi: appWithStore | undefined
       appAgent?: aiAgent
       favouriteAgent?: aiAgent
       sushiAgent: aiAgent | undefined
@@ -384,6 +389,14 @@ export function AuthProvider({
 
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
+
+  const [editTask, setEditTask] = useState<string | undefined>(
+    searchParams.get("editTask") || undefined,
+  )
+
+  useEffect(() => {
+    setEditTask(searchParams.get("editTask") || undefined)
+  }, [searchParams])
 
   const fingerprintParam = searchParams.get("fp") || ""
 
@@ -813,6 +826,7 @@ export function AuthProvider({
   const chrry = allApps?.find((app) => !app.store?.parentStoreId)
   const vex = allApps?.find((app) => app.slug === "vex")
   const sushi = allApps?.find((app) => app.slug === "sushi")
+  const focus = allApps?.find((app) => app.slug === "focus")
 
   const getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
@@ -911,7 +925,7 @@ export function AuthProvider({
   const [isLoadingMood, setIsLoadingMood] = useState(true)
   const [mood, setMood] = useState<mood | null>(null)
 
-  const [shouldFetchMood, setShouldFetchMood] = useState(false)
+  const [shouldFetchMood, setShouldFetchMood] = useState(true)
 
   const { data: moodData, mutate: refetchMood } = useSWR(
     shouldFetchMood && token ? ["mood", token] : null, // Disabled by default, fetch manually with refetchMood()
@@ -949,6 +963,26 @@ export function AuthProvider({
     })
     return response.json()
   })
+
+  const updateMood = async ({ type }: { type: moodType }) => {
+    const result = await apiFetch(`${API_URL}/mood`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ type }),
+    })
+
+    const data = await result.json()
+
+    if (data?.error) {
+      toast.error(data.error)
+      return
+    }
+
+    refetchMood()
+    refetchMoods()
+  }
 
   useEffect(() => {
     if (moodsData && Array.isArray(moodsData?.moods)) {
@@ -1360,6 +1394,8 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        focus,
+        sushi,
         claudeAgent,
         appAgent,
         sushiAgent,
@@ -1412,7 +1448,7 @@ export function AuthProvider({
         isGuestTest,
         isMemberTest,
         user,
-
+        editTask,
         setUser,
         setGuest,
         isCI,
@@ -1446,6 +1482,7 @@ export function AuthProvider({
         bloom,
         popcorn,
         zarathustra,
+        updateMood,
         allApps, // All apps from all stores
         refetchSession: async (newApp?: appWithStore) => {
           await fetchSession(newApp)

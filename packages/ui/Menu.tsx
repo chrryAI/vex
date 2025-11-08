@@ -330,32 +330,26 @@ export default function Menu({
             )}
           >
             <div className={styles.menuItems}>
-              {app?.slug != "focus" && (
-                <a
-                  data-testid="new-chat-button"
-                  href={FRONTEND_URL}
-                  onClick={(e) => {
-                    track({
-                      name: "new-chat-click",
-                    })
-                    if (e.metaKey || e.ctrlKey) {
-                      return
-                    }
-                    e.preventDefault()
+              <a
+                data-testid="new-chat-button"
+                href={FRONTEND_URL}
+                onClick={(e) => {
+                  track({
+                    name: "new-chat-click",
+                  })
+                  if (e.metaKey || e.ctrlKey) {
+                    return
+                  }
+                  e.preventDefault()
 
-                    isSmallDevice ? toggleMenu() : addHapticFeedback()
-                    setIsNewChat(true)
-                    reload()
-                  }}
-                  className={clsx(
-                    "button",
-                    "transparent",
-                    styles.menuItemButton,
-                  )}
-                >
-                  <MessageCirclePlus size={18} /> {t("New chat")}
-                </a>
-              )}
+                  isSmallDevice ? toggleMenu() : addHapticFeedback()
+                  setIsNewChat(true)
+                  reload()
+                }}
+                className={clsx("button", "transparent", styles.menuItemButton)}
+              >
+                <MessageCirclePlus size={18} /> {t("New chat")}
+              </a>
               <a
                 href={
                   isStandalone ? undefined : `${FRONTEND_URL}/?incognito=true`
