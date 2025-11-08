@@ -137,14 +137,22 @@ export async function GET(request: Request) {
   let cookieDomain: string | undefined = undefined
 
   if (referer && process.env.NODE_ENV === "production") {
-    if (referer.includes("vex.chrry.ai")) {
-      cookieDomain = ".chrry.ai" // vex.chrry.ai shares cookies with chrry.ai
-    } else if (referer.includes("chrry.ai")) {
-      cookieDomain = ".chrry.ai"
-    } else if (referer.includes("askvex.com")) {
-      cookieDomain = ".askvex.com"
-    } else if (referer.includes("chrry.dev")) {
-      cookieDomain = ".chrry.dev"
+    try {
+      const refererUrl = new URL(referer)
+      const hostname = refererUrl.hostname
+      
+      // Use exact hostname match or subdomain check (not .includes())
+      if (hostname === "vex.chrry.ai" || hostname.endsWith(".vex.chrry.ai")) {
+        cookieDomain = ".chrry.ai" // vex.chrry.ai shares cookies with chrry.ai
+      } else if (hostname === "chrry.ai" || hostname.endsWith(".chrry.ai")) {
+        cookieDomain = ".chrry.ai"
+      } else if (hostname === "askvex.com" || hostname.endsWith(".askvex.com")) {
+        cookieDomain = ".askvex.com"
+      } else if (hostname === "chrry.dev" || hostname.endsWith(".chrry.dev")) {
+        cookieDomain = ".chrry.dev"
+      }
+    } catch {
+      // Invalid URL, leave cookieDomain undefined
     }
   }
 
@@ -159,7 +167,9 @@ export async function GET(request: Request) {
       const translationsModule = await import(`chrry/locales/${locale}.json`)
       translations = translationsModule.default || translationsModule
     } catch (error) {
-      console.error(`Failed to load locale: ${locale}`, error)
+      // Sanitize locale for logging
+      const safeLocale = String(locale).replace(/[^\w-]/g, "_")
+      console.error(`Failed to load locale: ${safeLocale}`, error)
       try {
         const enModule = await import(`chrry/locales/en.json`)
         translations = enModule.default || enModule

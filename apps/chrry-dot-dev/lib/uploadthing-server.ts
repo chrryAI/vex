@@ -65,12 +65,12 @@ export async function upload({
   try {
     // Validate URL to prevent SSRF attacks
     const parsedUrl = new URL(url)
-    
+
     // Only allow HTTPS URLs
     if (parsedUrl.protocol !== "https:") {
       throw new Error("Only HTTPS URLs are allowed")
     }
-    
+
     // Whitelist allowed domains (add your trusted domains here)
     const allowedDomains = [
       "replicate.delivery", // Replicate temporary files
@@ -78,18 +78,19 @@ export async function upload({
       "utfs.io", // UploadThing
       "uploadthing.com",
     ]
-    
+
     const isAllowedDomain = allowedDomains.some(
       (domain) =>
-        parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`)
+        parsedUrl.hostname === domain ||
+        parsedUrl.hostname.endsWith(`.${domain}`),
     )
-    
+
     if (!isAllowedDomain) {
       throw new Error(
-        `URL domain not allowed. Only ${allowedDomains.join(", ")} are permitted`
+        `URL domain not allowed. Only ${allowedDomains.join(", ")} are permitted`,
       )
     }
-    
+
     // Prevent access to private IP ranges
     const hostname = parsedUrl.hostname
     const privateIpPatterns = [
@@ -102,11 +103,11 @@ export async function upload({
       /^fc00:/, // IPv6 private
       /^fe80:/, // IPv6 link-local
     ]
-    
+
     if (privateIpPatterns.some((pattern) => pattern.test(hostname))) {
       throw new Error("Access to private IP addresses is not allowed")
     }
-    
+
     // Download the file
     const response = await fetch(url)
     if (!response.ok)

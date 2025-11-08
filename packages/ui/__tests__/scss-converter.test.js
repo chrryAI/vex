@@ -5,7 +5,7 @@
 
 const fs = require("fs")
 const path = require("path")
-const { execSync } = require("child_process")
+const { execFileSync } = require("child_process")
 
 describe("SCSS to TypeScript Converter", () => {
   const testScssPath = path.join(__dirname, "TestComponent.module.scss")
@@ -17,7 +17,8 @@ describe("SCSS to TypeScript Converter", () => {
 
   beforeAll(() => {
     // Generate the test output
-    execSync(`node ${scriptPath} ${testScssPath} ${testOutputPath}`)
+    // Use execFileSync to prevent shell injection
+    execFileSync("node", [scriptPath, testScssPath, testOutputPath])
   })
 
   afterAll(() => {

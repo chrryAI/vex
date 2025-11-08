@@ -37,6 +37,16 @@ export async function generateMetadata() {
   return metadata
 }
 
+// Sanitize text to prevent XSS
+function sanitizeText(text: string): string {
+  return text
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;")
+}
+
 function getBlogPosts() {
   const BLOG_DIR = path.join(process.cwd(), `app/content/blog`)
 
@@ -49,9 +59,9 @@ function getBlogPosts() {
       const content = fs.readFileSync(filePath, "utf-8")
       const { data } = matter(content)
       return {
-        slug: file.replace(".md", ""),
-        title: data.title || "Untitled",
-        excerpt: data.excerpt || "No excerpt available",
+        slug: sanitizeText(file.replace(".md", "")),
+        title: sanitizeText(data.title || "Untitled"),
+        excerpt: sanitizeText(data.excerpt || "No excerpt available"),
         date: data.date || new Date().toISOString().split("T")[0],
       }
     })

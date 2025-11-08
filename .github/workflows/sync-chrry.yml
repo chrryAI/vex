@@ -8,6 +8,9 @@ on:
     paths:
       - 'packages/ui/**' # Only trigger if ui package changed
 
+permissions:
+  contents: read
+
 jobs:
   sync-chrry:
     runs-on: ubuntu-latest

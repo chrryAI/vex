@@ -775,16 +775,15 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
               const errorNode = doc.querySelector("parsererror")
               if (errorNode) {
                 console.warn("XML parsing error:", errorNode.textContent)
-                // Fallback to text extraction
-                const textContent = xmlBufferRef.current
-                  .replace(/<[^>]*>/g, "")
-                  .replace(/\s+/g, " ")
-                  .trim()
+                // Fallback to text extraction using DOMParser
+                const tempDiv = document.createElement("div")
+                tempDiv.textContent = xmlBufferRef.current // Use textContent to safely extract text
+                const textContent = tempDiv.textContent || ""
                 xmlBufferRef.current = ""
-                return textContent
+                return textContent.replace(/\s+/g, " ").trim()
               }
 
-              // Extract text content from parsed XML
+              // Extract text content from parsed XML (textContent is safe)
               const textContent = doc.documentElement.textContent || ""
               const cleanedContent = textContent.replace(/\s+/g, " ").trim()
 
@@ -792,11 +791,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
               return cleanedContent
             } catch (e) {
               console.warn("XML parsing failed:", e)
-              // Fallback to regex-based cleaning
-              const textContent = xmlBufferRef.current
-                .replace(/<[^>]*>/g, "")
-                .replace(/\s+/g, " ")
-                .trim()
+              // Fallback to safe text extraction
+              const tempDiv = document.createElement("div")
+              tempDiv.textContent = xmlBufferRef.current
+              const textContent = (tempDiv.textContent || "").replace(/\s+/g, " ").trim()
               xmlBufferRef.current = ""
               return textContent
             }
@@ -887,17 +885,11 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           }
           return null
         } catch (e) {
-          // Fallback to regex-based cleaning if DOM parsing fails
-          const cleanedContent = log
-            .replace(/<[^>]*>/g, "") // Remove all XML tags including incomplete ones
-            .replace(/</g, "") // Remove any remaining < characters
-            .replace(/>/g, "") // Remove any remaining > characters
-            .replace(
-              /\b(root|summary|title|url|overview|navigation|menu|cookies|notifications|core_features|feature|step|action|result|name|thought|task|agent|node)\b/gi,
-              "",
-            ) // Remove XML tag names that appear as text
+          // Fallback to safe text extraction using DOM
+          const tempDiv = document.createElement("div")
+          tempDiv.textContent = log // Use textContent to safely extract text without HTML
+          const cleanedContent = (tempDiv.textContent || "")
             .replace(/\n\s*\n/g, "\n") // Remove extra blank lines
-            .replace(/^\s+|\s+$/g, "") // Trim whitespace
             .trim()
 
           if (cleanedContent.length > 20) {

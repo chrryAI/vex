@@ -9,6 +9,9 @@ on:
       - "packages/waffles/**"
       - ".github/workflows/sync-waffles.yml"
 
+permissions:
+  contents: read
+
 jobs:
   sync-waffles:
     runs-on: ubuntu-latest

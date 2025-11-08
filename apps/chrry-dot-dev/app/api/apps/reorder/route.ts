@@ -173,8 +173,10 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch (error) {
-        console.error(`❌ Error processing app ${item.appId}:`, error)
-        results.errors.push(`Failed to process app ${item.appId}`)
+        // Sanitize appId for logging
+        const safeAppId = String(item.appId).replace(/[^\w-]/g, "_")
+        console.error(`❌ Error processing app ${safeAppId}:`, error)
+        results.errors.push(`Failed to process app ${safeAppId}`)
       }
     }
 

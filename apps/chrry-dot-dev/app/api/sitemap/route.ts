@@ -32,12 +32,43 @@ function getBlogPosts() {
     })
 }
 
+// Escape XML special characters to prevent XSS
+function escapeXml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;")
+}
+
+// Validate and sanitize URL
+function sanitizeUrl(url: string | null): string {
+  if (!url) return "https://chrry.ai"
+  
+  try {
+    const parsed = new URL(url)
+    // Only allow HTTPS URLs from trusted domains
+    if (parsed.protocol !== "https:") return "https://chrry.ai"
+    
+    const allowedDomains = ["chrry.ai", "vex.chrry.ai"]
+    if (!allowedDomains.includes(parsed.hostname)) {
+      return "https://chrry.ai"
+    }
+    
+    return parsed.origin
+  } catch {
+    return "https://chrry.ai"
+  }
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url)
   let chrryUrl = url.searchParams.get("chrryUrl")
-  const isVex = chrryUrl === "https://vex.chrry.ai"
-
-  const baseUrl = chrryUrl || "https://chrry.ai"
+  
+  // Sanitize the URL to prevent XSS
+  const baseUrl = sanitizeUrl(chrryUrl)
+  const isVex = baseUrl === "https://vex.chrry.ai"
 
   const blogPosts = !isVex ? [] : getBlogPosts()
 
@@ -101,7 +132,7 @@ export async function GET(request: Request) {
     .map(
       (route) => `
     <url>
-      <loc>${route.url}</loc>
+      <loc>${escapeXml(route.url)}</loc>
       <lastmod>${route.lastModified.toISOString()}</lastmod>
       <priority>${route.priority}</priority>
     </url>`,

@@ -8,6 +8,9 @@ on:
     paths:
       - "packages/pepper/**" # Only when pepper changes
 
+permissions:
+  contents: read
+
 jobs:
   sync-pepper:
     runs-on: ubuntu-latest

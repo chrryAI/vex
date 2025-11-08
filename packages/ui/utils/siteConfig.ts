@@ -311,23 +311,28 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
   const host =
     hostname || (typeof window !== "undefined" ? window.location.hostname : "")
 
-  // Domain-based detection
-  if (host.includes("chrry.dev")) {
+  // Helper function to check if hostname matches or is subdomain of domain
+  const matchesDomain = (host: string, domain: string): boolean => {
+    return host === domain || host.endsWith(`.${domain}`)
+  }
+
+  // Domain-based detection (use exact match or subdomain check)
+  if (matchesDomain(host, "chrry.dev")) {
     return "chrryDev"
   }
 
   // Focus custom domain (add your custom domain here)
-  if (host.includes("focus.chrry.ai") || host.includes("focusbutton.com")) {
+  if (host === "focus.chrry.ai" || matchesDomain(host, "focusbutton.com")) {
     return "focus"
   }
 
   // chrry.ai and all subdomains (bloom.chrry.ai, vault.chrry.ai, etc.)
-  if (host.includes("chrry.ai") && !host.includes("vex.chrry.ai")) {
+  if (matchesDomain(host, "chrry.ai") && host !== "vex.chrry.ai") {
     return "chrryAI"
   }
 
   // Store domains
-  if (host.includes("chrry.store")) {
+  if (matchesDomain(host, "chrry.store")) {
     return "chrryStore"
   }
 
