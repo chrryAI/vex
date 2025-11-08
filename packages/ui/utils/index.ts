@@ -378,7 +378,7 @@ export function getFlag({ code }: { code?: string }) {
     .join("")
 }
 
-export const VERSION = "1.3.60"
+export const VERSION = "1.3.61"
 export type instructionBase = {
   id: string
   title: string
