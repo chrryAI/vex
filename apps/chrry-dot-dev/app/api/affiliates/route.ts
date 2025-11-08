@@ -6,10 +6,16 @@ import {
   getAffiliatePayouts,
 } from "@repo/db"
 import getMember from "../../actions/getMember"
-import { CHRRY_URL, FRONTEND_URL } from "chrry/utils"
+import { FRONTEND_URL } from "chrry/utils"
+import { getSiteConfig } from "chrry/utils/siteConfig"
+import { headers } from "next/headers"
 
 // GET - Get affiliate stats for current user
 export async function GET(request: NextRequest) {
+  const headersList = await headers()
+  const hostname = headersList.get("host") || ""
+
+  const siteConfig = getSiteConfig(hostname)
   try {
     const member = await getMember()
 
@@ -105,6 +111,11 @@ export async function GET(request: NextRequest) {
 // POST - Create or get affiliate link
 export async function POST(request: NextRequest) {
   try {
+    const headersList = await headers()
+    const hostname = headersList.get("host") || ""
+
+    const siteConfig = getSiteConfig(hostname)
+
     const member = await getMember()
 
     if (!member) {
@@ -120,7 +131,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: "Affiliate link already exists",
-        affiliateLink: `${CHRRY_URL}?ref=${existing.code}`,
+        affiliateLink: `${siteConfig.url}?ref=${existing.code}`,
         code: existing.code,
         stats: {
           clicks: existing.clicks,
@@ -147,7 +158,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Affiliate link created successfully",
-      affiliateLink: `${CHRRY_URL}?ref=${code}`,
+      affiliateLink: `${siteConfig.url}?ref=${code}`,
       code: code,
       stats: {
         clicks: 0,

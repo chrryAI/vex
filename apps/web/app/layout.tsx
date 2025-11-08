@@ -29,15 +29,20 @@ import {
   TEST_MEMBER_EMAILS,
   TEST_MEMBER_FINGERPRINTS,
 } from "@repo/db"
-import { CHRRY_URL, generateAppMetadata } from "chrry/utils"
+import { generateAppMetadata } from "chrry/utils"
 import { Providers } from "../components/Providers"
 import { NextIntlClientProvider } from "next-intl"
+import { getSiteConfig } from "chrry/utils/siteConfig"
 
 export const generateMetadata = async () => {
+  const headersList = await headers()
+  const hostname = headersList.get("host") || ""
+
+  const siteConfig = getSiteConfig(hostname)
   const locale = (await getLocale()) as locale
 
   const store = await getStore({
-    domain: CHRRY_URL,
+    domain: siteConfig.url,
     depth: 1, // Populate one level of nested store.apps
   })
 
@@ -55,7 +60,7 @@ export const generateMetadata = async () => {
     locale,
     app,
     store: app.store,
-    currentDomain: CHRRY_URL,
+    currentDomain: siteConfig.url,
   })
 }
 
