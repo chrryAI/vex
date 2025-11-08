@@ -6,7 +6,7 @@ on:
     branches:
       - main # Sync to chrry repo when merged to main
     paths:
-      - 'packages/ui/**' # Only trigger if ui package changed
+      - "packages/ui/**" # Only trigger if ui package changed
 
 permissions:
   contents: read
