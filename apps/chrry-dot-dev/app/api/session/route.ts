@@ -27,12 +27,7 @@ import * as lib from "../../../lib"
 import { validate as validateUuid } from "uuid"
 import { UAParser } from "ua-parser-js"
 
-import {
-  isDevelopment,
-  VERSION,
-  CHRRY_URL,
-  getSlugFromPathname,
-} from "chrry/utils"
+import { isDevelopment, VERSION, getSlugFromPathname } from "chrry/utils"
 import { checkRateLimit } from "../../../lib/rateLimiting"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -191,7 +186,7 @@ export async function GET(request: Request) {
 
   let chrryUrl = chrryUrlFromParams
     ? decodeURIComponent(chrryUrlFromParams)
-    : CHRRY_URL
+    : process.env.CHRRY_URL
 
   const siteConfig = getSiteConfig(chrryUrl)
 

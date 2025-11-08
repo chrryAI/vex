@@ -64,12 +64,12 @@ curl -I https://focusbutton.com
 
 ### URL Mapping
 
-| Original URL | Redirects To |
-|--------------|--------------|
-| http://focusbutton.com | https://focusbutton.com (SSL upgrade) |
-| https://focusbutton.com | https://focus.chrry.ai |
-| https://www.focusbutton.com | https://focus.chrry.ai |
-| https://focusbutton.com/focus | https://focus.chrry.ai/focus |
+| Original URL                  | Redirects To                          |
+| ----------------------------- | ------------------------------------- |
+| http://focusbutton.com        | https://focusbutton.com (SSL upgrade) |
+| https://focusbutton.com       | https://focus.chrry.ai                |
+| https://www.focusbutton.com   | https://focus.chrry.ai                |
+| https://focusbutton.com/focus | https://focus.chrry.ai/focus          |
 
 ### Architecture
 
@@ -83,11 +83,11 @@ The Focus button in the app now uses smart routing:
 
 ```typescript
 // If on focus.chrry.ai
-href="/focus"  // → https://focus.chrry.ai/focus
+href = "/focus" // → https://focus.chrry.ai/focus
 
 // If on chrry.ai or vex.chrry.ai
-href="/vex/focus"  // → https://vex.chrry.ai/vex/focus
-href="/chrry/focus"  // → https://chrry.ai/chrry/focus
+href = "/vex/focus" // → https://vex.chrry.ai/vex/focus
+href = "/chrry/focus" // → https://chrry.ai/chrry/focus
 ```
 
 ## DNS Setup
@@ -102,6 +102,7 @@ www.focusbutton.com  CNAME  focusbutton.com
 ## SSL Certificates
 
 Certificates are already in place:
+
 - `/etc/letsencrypt/live/focusbutton.com/fullchain.pem`
 - `/etc/letsencrypt/live/focusbutton.com/privkey.pem`
 

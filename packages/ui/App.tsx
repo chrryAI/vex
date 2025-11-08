@@ -49,7 +49,7 @@ interface App {
 // Focus button with live clock when timer is idle
 function FocusButton({ time }: { time: number }) {
   const { isExtension, isFirefox, isWeb } = usePlatform()
-  const { baseApp } = useAuth()
+  const { baseApp, focus, getAppSlug } = useAuth()
 
   const [currentTime, setCurrentTime] = useState(new Date())
 
@@ -75,9 +75,13 @@ function FocusButton({ time }: { time: number }) {
     }
   }
 
+  if (!focus) {
+    return null
+  }
+
   return (
     <A
-      href={baseApp?.slug === "focus" ? "/focus" : `/${baseApp?.slug}/focus`}
+      href={getAppSlug(focus)}
       openInNewTab={isExtension && isFirefox}
       className={clsx("link", styles.focus)}
     >

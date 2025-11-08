@@ -69,10 +69,19 @@ const isProduction =
   process.env.NODE_ENV === "production" ||
   process.env.NEXT_PUBLIC_NODE_ENV === "production"
 
-const siteConfig = getSiteConfig()
+// Get hostname from window if available (client-side)
+const getClientHostname = () => {
+  if (typeof window !== "undefined") {
+    return window.location.hostname
+  }
+  return undefined
+}
 
+// Priority: env var > dynamic detection > hardcoded fallback
 export const CHRRY_URL =
-  siteConfig.url || process.env.NEXT_PUBLIC_CHRRY_URL || "https://chrry.ai"
+  process.env.NEXT_PUBLIC_CHRRY_URL ||
+  (getClientHostname() ? getSiteConfig(getClientHostname()).url : undefined) ||
+  "https://chrry.ai"
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99
@@ -369,7 +378,7 @@ export function getFlag({ code }: { code?: string }) {
     .join("")
 }
 
-export const VERSION = "1.3.58"
+export const VERSION = "1.3.59"
 export type instructionBase = {
   id: string
   title: string
@@ -388,9 +397,10 @@ export type instructionBase = {
 export const getSlugFromPathname = (
   path: string,
 ): { appSlug: string; storeSlug: string } => {
+  const config = getSiteConfig(getClientHostname())
   return getAppAndStoreSlugs(path, {
-    defaultAppSlug: siteConfig.slug,
-    defaultStoreSlug: siteConfig.storeSlug,
+    defaultAppSlug: config.slug,
+    defaultStoreSlug: config.storeSlug,
     excludedRoutes: excludedSlugRoutes,
     locales,
   })
