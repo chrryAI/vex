@@ -18,5 +18,5 @@ export async function GET(request: NextRequest) {
 
   // Let NextAuth handle it
   const { GET: nextAuthGET } = await import("../../[...nextauth]/route")
-  return nextAuthGET(request, { params: { nextauth: ["callback", "google"] } })
+  return nextAuthGET(request)
 }

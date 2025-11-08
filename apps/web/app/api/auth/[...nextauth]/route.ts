@@ -11,17 +11,17 @@ async function handler(req: Request) {
   const headersList = await headers()
   const host = headersList.get("host") || ""
   const protocol = process.env.NODE_ENV === "production" ? "https" : "http"
-  
+
   // Get site-specific URL
   const siteConfig = getSiteConfig(host)
   const baseUrl = siteConfig.url || `${protocol}://${host}`
-  
+
   // Override NEXTAUTH_URL for this request
   process.env.NEXTAUTH_URL = baseUrl
-  
+
   // Create handler with updated config
   const nextAuthHandler = NextAuth(authOptions)
-  
+
   return nextAuthHandler(req)
 }
 
