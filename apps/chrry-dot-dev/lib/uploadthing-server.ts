@@ -63,6 +63,50 @@ export async function upload({
   context?: "chat" | "apps" // Use "apps" for app profile images
 }): Promise<{ url: string; width?: number; height?: number; title?: string }> {
   try {
+    // Validate URL to prevent SSRF attacks
+    const parsedUrl = new URL(url)
+    
+    // Only allow HTTPS URLs
+    if (parsedUrl.protocol !== "https:") {
+      throw new Error("Only HTTPS URLs are allowed")
+    }
+    
+    // Whitelist allowed domains (add your trusted domains here)
+    const allowedDomains = [
+      "replicate.delivery", // Replicate temporary files
+      "replicate.com",
+      "utfs.io", // UploadThing
+      "uploadthing.com",
+    ]
+    
+    const isAllowedDomain = allowedDomains.some(
+      (domain) =>
+        parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`)
+    )
+    
+    if (!isAllowedDomain) {
+      throw new Error(
+        `URL domain not allowed. Only ${allowedDomains.join(", ")} are permitted`
+      )
+    }
+    
+    // Prevent access to private IP ranges
+    const hostname = parsedUrl.hostname
+    const privateIpPatterns = [
+      /^127\./, // localhost
+      /^10\./, // private class A
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // private class B
+      /^192\.168\./, // private class C
+      /^169\.254\./, // link-local
+      /^::1$/, // IPv6 localhost
+      /^fc00:/, // IPv6 private
+      /^fe80:/, // IPv6 link-local
+    ]
+    
+    if (privateIpPatterns.some((pattern) => pattern.test(hostname))) {
+      throw new Error("Access to private IP addresses is not allowed")
+    }
+    
     // Download the file
     const response = await fetch(url)
     if (!response.ok)
@@ -137,7 +181,9 @@ export async function upload({
       }
 
       // Convert processed image back to buffer
-      processedBuffer = await processedImage.png().toBuffer()
+      const imageBuffer = await processedImage.png().toBuffer()
+      // Convert Buffer to ArrayBuffer
+      processedBuffer = new Uint8Array(imageBuffer).buffer
     }
 
     const file = new File([processedBuffer], fileName, {
