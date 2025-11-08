@@ -69,7 +69,10 @@ const isProduction =
   process.env.NODE_ENV === "production" ||
   process.env.NEXT_PUBLIC_NODE_ENV === "production"
 
-export const CHRRY_URL = process.env.NEXT_PUBLIC_CHRRY_URL || "https://chrry.ai"
+const siteConfig = getSiteConfig()
+
+export const CHRRY_URL =
+  siteConfig.url || process.env.NEXT_PUBLIC_CHRRY_URL || "https://chrry.ai"
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99
@@ -366,7 +369,7 @@ export function getFlag({ code }: { code?: string }) {
     .join("")
 }
 
-export const VERSION = "1.3.54"
+export const VERSION = "1.3.55"
 export type instructionBase = {
   id: string
   title: string
@@ -385,8 +388,6 @@ export type instructionBase = {
 export const getSlugFromPathname = (
   path: string,
 ): { appSlug: string; storeSlug: string } => {
-  const siteConfig = getSiteConfig()
-
   return getAppAndStoreSlugs(path, {
     defaultAppSlug: siteConfig.slug,
     defaultStoreSlug: siteConfig.storeSlug,

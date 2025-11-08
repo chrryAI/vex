@@ -48,6 +48,7 @@ import { getSiteConfig } from "../../utils/siteConfig"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
 import {
   apiFetch,
+  CHRRY_URL,
   getExampleInstructions,
   getThreadId,
   instructionBase,
@@ -283,12 +284,6 @@ export function AuthProvider({
   const FE_PORT = process.env.NEXT_PUBLIC_FE_PORT || "3000"
   const API_PORT = process.env.API_PORT || "3001"
   const isTestingDevice = false && isDevelopment
-
-  const CHRRY_URL = process.env.NEXT_PUBLIC_CHRRY_URL
-    ? process.env.NEXT_PUBLIC_CHRRY_URL
-    : isExtension
-      ? "https://vex.chrry.ai"
-      : "https://chrry.ai"
 
   const chrryUrl = CHRRY_URL
 
