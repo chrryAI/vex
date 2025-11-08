@@ -5,9 +5,8 @@ import styles from "./MoodSelector.module.scss"
 import clsx from "clsx"
 import { PiHandTap } from "react-icons/pi"
 import { MousePointerClick } from "lucide-react"
-import { Mood, emojiMap } from "./Moodify"
 import { useTranslation } from "react-i18next"
-import { moodType } from "./types"
+import { emojiMap, moodType } from "./types"
 
 export default function MoodSelector({
   onMoodChange,
@@ -26,17 +25,22 @@ export default function MoodSelector({
   onMoodChange: (mood: moodType) => void
   onSelectingMood?: (value: boolean) => void
 }) {
+  const withDefaultMood = rest.mood || "thinking"
   const { t } = useTranslation()
-  const [lastMood, setLastMoodInternal] = useState<Mood | undefined>(rest.mood)
+  const [lastMood, setLastMoodInternal] = useState<moodType | undefined>(
+    withDefaultMood,
+  )
 
-  const setLastMood = (mood: Mood | undefined) => {
+  const setLastMood = (mood: moodType | undefined) => {
     if (mood === "thinking") return
     setLastMoodInternal(mood)
   }
 
-  const [mood, setMoodInternal] = useState<Mood | undefined>(rest.mood)
+  const [mood, setMoodInternal] = useState<moodType | undefined>(
+    withDefaultMood,
+  )
 
-  const setMood = (mood: Mood | undefined) => {
+  const setMood = (mood: moodType | undefined) => {
     onSelectingMood?.(!mood)
     mood && setLastMood(mood)
     setMoodInternal(mood)
@@ -44,9 +48,9 @@ export default function MoodSelector({
   }
 
   useEffect(() => {
-    setMoodInternal(rest.mood)
-    setLastMood(rest.mood)
-  }, [rest.mood])
+    setMoodInternal(withDefaultMood)
+    setLastMood(withDefaultMood)
+  }, [withDefaultMood])
 
   const ref = useRef<HTMLDivElement>(null)
 

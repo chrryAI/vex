@@ -2,7 +2,7 @@ import getGuest from "../../actions/getGuest"
 import getMember from "../../actions/getMember"
 import { after, NextResponse } from "next/server"
 import { v4 as uuidv4, validate } from "uuid"
-import { getMood, getPureApp, getTask, guest } from "@repo/db"
+import { getMood, getPureApp, getTask, guest, updateTask } from "@repo/db"
 
 // Initialize with a pretrained model
 
@@ -489,6 +489,7 @@ export async function POST(request: Request) {
       attachmentType: formData.get("attachmentType") as string,
       clientId: formData.get("clientId") as string,
       deviceId: formData.get("deviceId") as string,
+      taskId: formData.get("taskId") as string,
     }
 
     // Extract files from form data
@@ -537,11 +538,12 @@ export async function POST(request: Request) {
     imageGenerationEnabled,
     clientId,
     deviceId,
+    taskId,
     moodId,
     ...rest
   } = requestData
 
-  const task = clientId ? await getTask({ id: clientId }) : undefined
+  const task = taskId ? await getTask({ id: taskId }) : undefined
 
   const mood = moodId ? await getMood({ id: moodId }) : undefined
 
@@ -652,7 +654,7 @@ export async function POST(request: Request) {
     let threadTitle = trimTitle(messageContent)
 
     const newThread = await createThread({
-      id: task?.id,
+      taskId: task?.id,
       title: threadTitle,
       aiResponse: "", // Will be updated when AI responds
       userId: member?.id,
@@ -668,6 +670,12 @@ export async function POST(request: Request) {
         { status: 500 },
       )
     }
+
+    task &&
+      (await updateTask({
+        ...task,
+        threadId: newThread.id,
+      }))
 
     currentThreadId = newThread.id
 

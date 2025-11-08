@@ -41,7 +41,6 @@ import {
   appExtend,
   tasks,
   timers,
-  taskLogs,
   moods,
 } from "./src/schema"
 import { v4 as uuidv4 } from "uuid"
@@ -234,9 +233,6 @@ export type newTask = typeof tasks.$inferInsert
 
 export type timer = typeof timers.$inferSelect
 export type newTimer = typeof timers.$inferInsert
-
-export type taskLog = typeof taskLogs.$inferSelect
-export type newTaskLog = typeof taskLogs.$inferInsert
 
 export type mood = typeof moods.$inferSelect
 export type newMood = typeof moods.$inferInsert
@@ -1082,6 +1078,9 @@ export const getMessages = async ({
           name: message.user?.name,
           image: message.user?.image,
         },
+        mood: await getMood({
+          id: message.message.id,
+        }),
       })),
     ),
     totalCount,
@@ -1471,17 +1470,6 @@ export async function migrateUser({
       guestId: null,
     })
   }
-
-  const taskLogs = await getTaskLogs({ guestId: guest.id, pageSize: limit })
-  await Promise.all(
-    taskLogs.taskLogs.map(async (taskLog) => {
-      await updateTaskLog({
-        ...taskLog,
-        userId,
-        guestId: null,
-      })
-    }),
-  )
 
   const moods = await getMoods({ guestId: guest.id, pageSize: limit })
   await Promise.all(
@@ -2091,12 +2079,14 @@ export const getThread = async ({
   guestId,
   isMainThread,
   appId,
+  taskId,
 }: {
   id?: string
   userId?: string
   guestId?: string
   isMainThread?: boolean
   appId?: string
+  taskId?: string
 }) => {
   const [result] = await db
     .select()
@@ -2108,6 +2098,7 @@ export const getThread = async ({
         isMainThread ? eq(threads.isMainThread, isMainThread) : undefined,
         userId ? eq(threads.userId, userId) : undefined,
         guestId ? eq(threads.guestId, guestId) : undefined,
+        taskId ? eq(threads.taskId, taskId) : undefined,
       ),
     )
     .leftJoin(apps, eq(threads.appId, apps.id))
@@ -5731,18 +5722,29 @@ export const createMood = async (mood: newMood) => {
   return inserted ? await getMood({ id: inserted.id }) : undefined
 }
 
-export const getMood = async ({ id }: { id: string }) => {
+export const getMood = async ({
+  id,
+  taskId,
+}: {
+  id?: string
+  taskId?: string
+}) => {
   const result = (
     await db
       .select()
       .from(moods)
       .leftJoin(messages, eq(moods.id, messages.moodId))
-      .leftJoin(taskLogs, eq(moods.taskLogId, taskLogs.id))
-      .where(eq(moods.id, id))
+      .leftJoin(tasks, eq(moods.taskId, tasks.id))
+      .where(
+        and(
+          id ? eq(moods.id, id) : undefined,
+          taskId ? eq(moods.taskId, taskId) : undefined,
+        ),
+      )
   ).at(0)
 
   return result
-    ? { ...result.mood, message: result.messages, taskLog: result.taskLog }
+    ? { ...result.mood, message: result.messages, task: result.task }
     : undefined
 }
 
@@ -5864,8 +5866,27 @@ export const createTask = async (task: newTask) => {
   return inserted
 }
 
-export const getTask = async ({ id }: { id: string }) => {
-  const result = (await db.select().from(tasks).where(eq(tasks.id, id))).at(0)
+export const getTask = async ({
+  id,
+  userId,
+  guestId,
+}: {
+  id?: string
+  userId?: string
+  guestId?: string
+}) => {
+  const result = (
+    await db
+      .select()
+      .from(tasks)
+      .where(
+        and(
+          id ? eq(tasks.id, id) : undefined,
+          userId ? eq(tasks.userId, userId) : undefined,
+          guestId ? eq(tasks.guestId, guestId) : undefined,
+        ),
+      )
+  ).at(0)
 
   return result
 }
@@ -5926,7 +5947,12 @@ export const getTasks = async ({
   const nextPage = hasNextPage ? page + 1 : null
 
   return {
-    tasks: result,
+    tasks: await Promise.all(
+      result.map(async (task) => ({
+        ...task,
+        mood: await getMood({ taskId: task.id }),
+      })),
+    ),
     totalCount,
     hasNextPage,
     nextPage,
@@ -5983,91 +6009,6 @@ export const deleteTimer = async ({ id }: { id: string }) => {
   const [deleted] = await db.delete(timers).where(eq(timers.id, id)).returning()
 
   return deleted
-}
-
-export const createTaskLog = async (taskLog: newTaskLog) => {
-  const [inserted] = await db.insert(taskLogs).values(taskLog).returning()
-  return inserted
-}
-
-export const updateTaskLog = async (taskLog: taskLog) => {
-  const [updated] = await db
-    .update(taskLogs)
-    .set(taskLog)
-    .where(eq(taskLogs.id, taskLog.id))
-    .returning()
-
-  return updated
-}
-
-export const deleteTaskLog = async ({ id }: { id: string }) => {
-  const [deleted] = await db
-    .delete(taskLogs)
-    .where(eq(taskLogs.id, id))
-    .returning()
-
-  return deleted
-}
-
-export const getTaskLog = async ({ id }: { id: string }) => {
-  const result = (
-    await db.select().from(taskLogs).where(eq(taskLogs.id, id))
-  ).at(0)
-
-  return result
-}
-
-export const getTaskLogs = async ({
-  page = 1,
-  userId,
-  guestId,
-  taskId,
-  hasMood,
-  ...rest
-}: {
-  page?: number
-  pageSize?: number
-  userId?: string
-  guestId?: string
-  taskId?: string
-  hasMood?: boolean
-} = {}) => {
-  const pageSize = rest.pageSize || 100
-
-  const conditionsArray = [
-    userId ? eq(taskLogs.userId, userId) : undefined,
-    guestId ? eq(taskLogs.guestId, guestId) : undefined,
-    taskId ? eq(taskLogs.taskId, taskId) : undefined,
-    hasMood ? isNotNull(taskLogs.mood) : undefined,
-  ]
-
-  const conditions = and(...conditionsArray.filter(Boolean))
-
-  const result = await db
-    .select()
-    .from(taskLogs)
-    .where(conditions)
-    .limit(pageSize)
-    .offset((page - 1) * pageSize)
-    .orderBy(desc(taskLogs.createdOn))
-
-  const totalCount =
-    (
-      await db
-        .select({ count: count(taskLogs.id) })
-        .from(taskLogs)
-        .where(conditions)
-    )[0]?.count ?? 0
-
-  const hasNextPage = totalCount > page * pageSize
-  const nextPage = hasNextPage ? page + 1 : null
-
-  return {
-    taskLogs: result,
-    totalCount,
-    hasNextPage,
-    nextPage,
-  }
 }
 
 // Export API key utilities

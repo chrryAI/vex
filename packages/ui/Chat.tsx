@@ -53,13 +53,14 @@ import {
   useData,
 } from "./context/providers"
 import { useTheme, usePlatform, Div } from "./platform"
-import type {
-  message,
-  aiAgent,
-  user,
-  guest,
-  thread,
-  collaboration,
+import {
+  type message,
+  type aiAgent,
+  type user,
+  type guest,
+  type thread,
+  type collaboration,
+  emojiMap,
 } from "./types"
 import {
   DeepSeek,
@@ -98,7 +99,6 @@ import { useWindowHistory } from "./hooks/useWindowHistory"
 import App from "./App"
 import Img from "./Image"
 import MoodSelector from "./MoodSelector"
-import { emojiMap, Mood } from "./Moodify"
 
 const MAX_FILES = 3
 
@@ -206,7 +206,8 @@ export default function Chat({
     sushiAgent,
     mood,
     updateMood,
-    editTask,
+    taskId,
+    fetchTasks,
   } = useAuth()
 
   const [isSelectingMood, setIsSelectingMood] = useState(false)
@@ -713,9 +714,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }
 
   const isHydrated = useHasHydrated()
-  useEffect(() => {
-    editTask && (clientIdRef.current = editTask)
-  }, [editTask])
+
   const [isAttaching, setIsAttachingInternal] = useState(false)
   const clientIdRef = useRef<string | undefined>(uuidv4())
 
@@ -1806,6 +1805,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           "imageGenerationEnabled",
           JSON.stringify(isImageGenerationEnabled),
         )
+        taskId && formData.append("taskId", taskId)
         mood && formData.append("moodId", mood.id)
         formData.append("actionEnabled", JSON.stringify(isExtension))
         formData.append("instructions", instruction)
@@ -1836,6 +1836,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           clientId: clientIdRef.current,
           appId: app?.id,
           moodId: mood?.id,
+          taskId,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -1884,6 +1885,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       } | null = result.message
 
       setMessage(userMessage)
+      // Refresh tasks list after first message to task (to get newly created threadId)
+      !threadId && taskId && fetchTasks()
       // playNotification()
 
       // const clientId = message?.message?.clientId

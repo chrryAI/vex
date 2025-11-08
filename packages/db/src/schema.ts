@@ -548,6 +548,7 @@ export const threads = pgTable("threads", {
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  taskId: uuid("taskId").references(() => tasks.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   aiResponse: text("aiResponse").notNull(),
   isIncognito: boolean("isIncognito").notNull().default(false),
@@ -2714,7 +2715,7 @@ export const moods = pgTable("mood", {
     .defaultNow()
     .notNull(),
 
-  taskLogId: uuid("taskLogId").references((): AnyPgColumn => taskLogs.id, {
+  taskId: uuid("taskId").references((): AnyPgColumn => tasks.id, {
     onDelete: "cascade",
   }),
   messageId: uuid("messageId").references((): AnyPgColumn => messages.id, {
@@ -2783,6 +2784,9 @@ export const tasks = pgTable("task", {
   total: jsonb("total").$type<{ date: string; count: number }[]>().default([]),
   order: integer("order").default(0), // Order within the column
   selected: boolean("selected").default(false),
+  threadId: uuid("threadId").references((): AnyPgColumn => threads.id, {
+    onDelete: "cascade",
+  }),
 })
 
 export const taskLogs = pgTable("taskLog", {

@@ -4,10 +4,12 @@ import {
   getCharacterProfile,
   getInvitation,
   getMessages,
+  getTask,
   getThread,
   getUser,
   updateCharacterProfile,
   updateInvitation,
+  updateTask,
   updateThread,
 } from "@repo/db"
 import { getSiteConfig } from "chrry/utils/siteConfig"
@@ -301,6 +303,12 @@ export async function PATCH(request: NextRequest) {
     )
   }
 
+  const task = thread?.taskId
+    ? await getTask({
+        id: thread.taskId,
+      })
+    : undefined
+
   const invitation = member?.email
     ? await getInvitation({
         email: member.email,
@@ -462,15 +470,24 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
+    const newTitle = await generateThreadTitle({
+      messages: messages.messages.map((m) => m.message.content),
+      instructions,
+      language,
+      threadId: id,
+    })
+
+    if (task) {
+      await updateTask({
+        ...task,
+        title: newTitle,
+      })
+    }
+
     return NextResponse.json({
       thread: {
         ...thread,
-        title: await generateThreadTitle({
-          messages: messages.messages.map((m) => m.message.content),
-          instructions,
-          language,
-          threadId: id,
-        }),
+        title: newTitle,
       },
       titleGenerationsRemaining: rateLimitResult.remaining,
     })
@@ -502,6 +519,13 @@ export async function PATCH(request: NextRequest) {
         }),
       },
       titleGenerationsRemaining: rateLimitResult.remaining,
+    })
+  }
+
+  if (task) {
+    await updateTask({
+      ...task,
+      title: title || thread.title,
     })
   }
 

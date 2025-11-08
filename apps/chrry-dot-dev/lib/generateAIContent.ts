@@ -28,7 +28,6 @@ import {
   getMoods,
   getTasks,
   getTimer,
-  getTaskLogs,
 } from "@repo/db"
 import { and, eq, isNull } from "drizzle-orm"
 import { instructions } from "@repo/db/src/schema"
@@ -341,16 +340,14 @@ async function generateSuggestionsAndPlaceholders({
     try {
       const subjectId = user?.id || guest?.id
       if (subjectId) {
-        const [moodsData, tasksData, timer, taskLogsData] = await Promise.all([
+        const [moodsData, tasksData, timer] = await Promise.all([
           getMoods({ userId: user?.id, guestId: guest?.id, pageSize: 15 }), // ~2 weeks
           getTasks({ userId: user?.id, guestId: guest?.id, pageSize: 20 }), // Recent tasks
           getTimer({ userId: user?.id, guestId: guest?.id }),
-          getTaskLogs({ userId: user?.id, guestId: guest?.id, pageSize: 50 }), // ~1-2 months
         ])
 
         const moods = moodsData?.moods || []
         const tasks = tasksData?.tasks || []
-        const taskLogs = taskLogsData?.taskLogs || []
 
         const avgMood =
           moods.length > 0
@@ -360,7 +357,7 @@ async function generateSuggestionsAndPlaceholders({
               ).toFixed(1)
             : null
         const activeTasks = tasks.filter((t: any) => !t.completed).length
-        const focusTime = taskLogs.reduce(
+        const focusTime = tasks.reduce(
           (s: number, l: any) => s + (l.duration || 0),
           0,
         )

@@ -8,7 +8,6 @@ import Loading from "./Loading"
 import { useNavigation } from "./platform"
 import clsx from "clsx"
 import MoodReports from "./MoodReports"
-import Moodify from "./Moodify"
 import FocusButton from "./FocusButton"
 
 export default function Focus({ children }: { children?: React.ReactNode }) {

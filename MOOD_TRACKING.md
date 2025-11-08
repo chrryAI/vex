@@ -9,6 +9,7 @@ Focus app includes **inline mood tracking** that allows users to set their curre
 ## 🎯 Features
 
 ### **1. Inline Mood Selector**
+
 ```typescript
 // In Chat component
 {app?.features?.moodTracking && (
@@ -23,17 +24,19 @@ Focus app includes **inline mood tracking** that allows users to set their curre
 ```
 
 ### **2. Available Moods**
+
 ```typescript
-type Mood = 
-  | "happy"     // 😊
-  | "sad"       // 😢
-  | "angry"     // 😡
+type Mood =
+  | "happy" // 😊
+  | "sad" // 😢
+  | "angry" // 😡
   | "astonished" // 😰
-  | "inlove"    // 😍
-  | "thinking"  // 🤔 (default)
+  | "inlove" // 😍
+  | "thinking" // 🤔 (default)
 ```
 
 ### **3. Smart Update Logic**
+
 ```typescript
 // If last mood was created TODAY → Update it
 // If last mood was yesterday or older → Create new one
@@ -99,6 +102,7 @@ await createMessage({
 ## 🎨 UI Flow
 
 ### **Initial State**
+
 ```
 ┌─────────────────────────────────┐
 │  😊 [Mood] [Attach] [Send]      │
@@ -108,6 +112,7 @@ await createMessage({
 ```
 
 ### **Selecting Mood**
+
 ```
 ┌─────────────────────────────────┐
 │  😊 😢 😡 😰 😍 🤔              │
@@ -119,6 +124,7 @@ await createMessage({
 ```
 
 ### **Mood Selected**
+
 ```
 ┌─────────────────────────────────┐
 │  😊 [Attach] [Send]             │
@@ -133,6 +139,7 @@ await createMessage({
 ## 📊 Data Structure
 
 ### **Mood Table**
+
 ```typescript
 {
   id: string
@@ -145,11 +152,12 @@ await createMessage({
 ```
 
 ### **Message Table**
+
 ```typescript
 {
   id: string
   content: string
-  moodId: string | null  // ← Links to mood
+  moodId: string | null // ← Links to mood
   threadId: string
   userId: string | null
   guestId: string | null
@@ -162,6 +170,7 @@ await createMessage({
 ## 🔄 Update Logic
 
 ### **Scenario 1: First Mood Today**
+
 ```typescript
 // 9:00 AM - User sets mood to "happy"
 lastMood: null
@@ -181,6 +190,7 @@ Result: One mood entry for the day
 ```
 
 ### **Scenario 2: Next Day**
+
 ```typescript
 // Yesterday - Last mood was "sad"
 lastMood: { id: "mood-1", createdOn: yesterday }
@@ -194,6 +204,7 @@ Result: New mood entry for new day
 ```
 
 ### **Scenario 3: Multiple Updates Same Day**
+
 ```typescript
 // Today
 9:00 AM → Create mood-1 (happy)
@@ -210,18 +221,21 @@ Result: One mood entry, last state = "happy"
 ## 🎯 Benefits
 
 ### **For Users**
+
 - ✅ **One mood per day** - Simple mental model
 - ✅ **Easy to update** - Just click new mood
 - ✅ **No clutter** - Clean mood history
 - ✅ **Daily tracking** - See mood over time
 
 ### **For Database**
+
 - ✅ **Less bloat** - One entry per day vs. many
 - ✅ **Easier queries** - Simple pagination
 - ✅ **Better performance** - Fewer rows to scan
 - ✅ **Clean data** - No duplicate entries
 
 ### **For AI**
+
 - ✅ **Current mood** - Always up-to-date
 - ✅ **Context-aware** - Responds appropriately
 - ✅ **Empathetic** - Adjusts tone based on mood
@@ -232,6 +246,7 @@ Result: One mood entry, last state = "happy"
 ## 🔐 Privacy
 
 ### **Mood Data**
+
 ```typescript
 // Moods are private
 - Only visible to owner (user or guest)
@@ -241,6 +256,7 @@ Result: One mood entry, last state = "happy"
 ```
 
 ### **Message Association**
+
 ```typescript
 // Mood is linked to message
 - AI can see mood for context
@@ -254,6 +270,7 @@ Result: One mood entry, last state = "happy"
 ## 📈 Analytics (Future)
 
 ### **Mood Trends**
+
 ```typescript
 // Track mood over time
 - Daily mood chart
@@ -263,12 +280,13 @@ Result: One mood entry, last state = "happy"
 ```
 
 ### **Insights**
+
 ```typescript
 // AI-powered insights
-- "You're happiest on Fridays"
-- "Mood improves after exercise"
-- "Stress peaks on Mondays"
-- "Suggest activities to improve mood"
+;-"You're happiest on Fridays" -
+  "Mood improves after exercise" -
+  "Stress peaks on Mondays" -
+  "Suggest activities to improve mood"
 ```
 
 ---
@@ -276,6 +294,7 @@ Result: One mood entry, last state = "happy"
 ## 🎨 UI States
 
 ### **Button States**
+
 ```typescript
 // When selecting mood
 {!isSelectingMood && (
@@ -291,12 +310,13 @@ Result: One mood entry, last state = "happy"
 ```
 
 ### **Click Outside to Cancel**
+
 ```typescript
 // MoodSelector
 useEffect(() => {
   function handleClickOutside(event) {
     if (!ref.current.contains(event.target)) {
-      setMood(originalMood)  // Revert
+      setMood(originalMood) // Revert
       onMoodChange(originalMood)
     }
   }
@@ -309,6 +329,7 @@ useEffect(() => {
 ## 🚀 API Endpoints
 
 ### **POST /api/mood**
+
 ```typescript
 // Update or create mood
 Request:
@@ -327,6 +348,7 @@ Response:
 ```
 
 ### **GET /api/mood**
+
 ```typescript
 // Get current mood
 Response:
@@ -344,6 +366,7 @@ Response:
 ## 🎯 Integration Points
 
 ### **Focus App**
+
 ```typescript
 // Focus app has mood tracking enabled
 features: {
@@ -356,9 +379,10 @@ features: {
 ```
 
 ### **AI Context**
+
 ```typescript
 // AI receives mood in system prompt
-const moodContext = mood 
+const moodContext = mood
   ? `User's current mood: ${emojiMap[mood.type]} (${mood.type})`
   : ""
 
@@ -376,7 +400,7 @@ if (mood.type === "sad") {
 
 ```typescript
 // User's mood over a week
-[
+;[
   { date: "2025-11-01", mood: "happy", updatedAt: "10:30" },
   { date: "2025-11-02", mood: "thinking", updatedAt: "09:15" },
   { date: "2025-11-03", mood: "sad", updatedAt: "14:20" },
@@ -394,6 +418,7 @@ if (mood.type === "sad") {
 ## ✅ Summary
 
 ### **What We Built**
+
 - ✅ Inline mood selector in chat
 - ✅ Smart update logic (one mood per day)
 - ✅ Click outside to cancel
@@ -403,6 +428,7 @@ if (mood.type === "sad") {
 - ✅ Privacy-first design
 
 ### **Benefits**
+
 - ✅ Better AI responses (mood-aware)
 - ✅ Cleaner database (no bloat)
 - ✅ Simpler pagination (one per day)
@@ -410,6 +436,7 @@ if (mood.type === "sad") {
 - ✅ Great UX (inline, fast, intuitive)
 
 ### **Future Enhancements**
+
 - 📊 Mood analytics dashboard
 - 📈 Mood trends and patterns
 - 💡 AI-powered mood insights

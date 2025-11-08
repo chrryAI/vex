@@ -49,9 +49,11 @@ import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
 import {
   apiFetch,
   getExampleInstructions,
+  getThreadId,
   instructionBase,
   isDeepEqual,
 } from "../../utils"
+import { Task } from "../TimerContext"
 
 // Constants (shared with DataProvider)
 
@@ -61,7 +63,25 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
-      editTask?: string
+      isLoadingTasks: boolean
+      fetchTasks: () => Promise<void>
+      tasks: {
+        tasks: Task[]
+        totalCount: number
+        hasNextPage: boolean
+        nextPage: number | null
+      }
+      setTasks: React.Dispatch<
+        React.SetStateAction<{
+          tasks: Task[]
+          totalCount: number
+          hasNextPage: boolean
+          nextPage: number | null
+        }>
+      >
+      threadId?: string
+      setThreadId: (threadId?: string) => void
+      taskId?: string
       updateMood: ({ type }: { type: moodType }) => Promise<void>
       focus: appWithStore | undefined
       sushi: appWithStore | undefined
@@ -390,12 +410,12 @@ export function AuthProvider({
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
 
-  const [editTask, setEditTask] = useState<string | undefined>(
-    searchParams.get("editTask") || undefined,
+  const [taskId, setTaskId] = useState<string | undefined>(
+    searchParams.get("taskId") || undefined,
   )
 
   useEffect(() => {
-    setEditTask(searchParams.get("editTask") || undefined)
+    setTaskId(searchParams.get("taskId") || undefined)
   }, [searchParams])
 
   const fingerprintParam = searchParams.get("fp") || ""
@@ -1097,11 +1117,32 @@ export function AuthProvider({
   )
 
   const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
+  const [threadId, setThreadId] = useState(getThreadId(pathname))
+
+  const [tasks, setTasks] = useState<{
+    tasks: Task[]
+    totalCount: number
+    hasNextPage: boolean
+    nextPage: number | null
+  }>({
+    tasks: [],
+    totalCount: 0,
+    hasNextPage: false,
+    nextPage: null,
+  })
+
+  useEffect(() => {
+    if (!threadId) {
+      setThread(undefined)
+    }
+  }, [threadId])
+
+  const [isLoadingTasks, setIsLoadingTasks] = useState(true)
 
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
-    if (!baseApp || !allApps) return
+    if (!baseApp || !allApps || (!thread && threadId)) return
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
@@ -1122,8 +1163,8 @@ export function AuthProvider({
 
     console.log("🔍 App detection:", {
       pathname,
-      threadId: thread?.id,
-      threadAppId: thread?.appId,
+      // threadId: thread?.id,
+      // threadAppId: thread?.appId,
       matchedAppSlug: matchedApp?.slug,
       matchedAppId: matchedApp?.id,
       currentAppSlug: app?.slug,
@@ -1180,7 +1221,7 @@ export function AuthProvider({
       setApps(finalApps)
       setSlug(getAppSlug(matchedApp) || "")
     }
-  }, [allApps, pathname, baseApp, app?.id, thread?.appId])
+  }, [allApps, pathname, baseApp, app?.id, thread, threadId])
   // Thread app takes priority over pathname, then falls back to pathname detection
 
   const [profile, setProfileInternal] = useState<user | undefined>(undefined)
@@ -1220,6 +1261,35 @@ export function AuthProvider({
   }, [track])
 
   const [isSavingApp, setIsSavingApp] = useState(false)
+
+  const [shouldFetchTasks, setShouldFetchTasks] = useState(false)
+
+  const { data: tasksData, mutate: refetchTasks } = useSWR(
+    token && shouldFetchTasks ? ["tasks"] : null, // Disabled by default, fetch manually with refetchTasks()
+    async () => {
+      const response = await apiFetch(`${API_URL}/tasks`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const data = await response.json()
+      return data
+    },
+  )
+
+  useEffect(() => {
+    if (tasksData) {
+      Array.isArray(tasksData?.tasks) && setTasks(tasksData)
+      setIsLoadingTasks(false)
+    }
+  }, [tasksData])
+
+  const fetchTasks = async () => {
+    setShouldFetchTasks(true)
+    shouldFetchTasks && refetchTasks()
+  }
 
   // Handle session data updates
   useEffect(() => {
@@ -1394,6 +1464,13 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        isLoadingTasks,
+        fetchTasks,
+        tasks,
+        setTasks,
+        threadId,
+        setThreadId,
+        taskId,
         focus,
         sushi,
         claudeAgent,
@@ -1448,7 +1525,6 @@ export function AuthProvider({
         isGuestTest,
         isMemberTest,
         user,
-        editTask,
         setUser,
         setGuest,
         isCI,

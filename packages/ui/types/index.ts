@@ -756,6 +756,15 @@ export type characterProfile = {
 
 export type newCharacterProfile = Partial<characterProfile>
 
+export const emojiMap: Record<moodType, string> = {
+  happy: "😊",
+  sad: "😢",
+  angry: "😠",
+  astonished: "😲",
+  inlove: "😍",
+  thinking: "🤔",
+}
+
 // App types
 export type app = {
   id: string

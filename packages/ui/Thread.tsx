@@ -74,7 +74,7 @@ const Thread = ({
   const { t } = useAppContext()
 
   // Auth context
-  const { user, guest, track, memoriesEnabled } = useAuth()
+  const { user, guest, track, memoriesEnabled, taskId } = useAuth()
 
   // Chat context
   const {
@@ -104,6 +104,7 @@ const Thread = ({
     status,
     liked,
     setLiked,
+    placeHolderText,
   } = useChat()
 
   const { os } = usePlatform()
@@ -134,24 +135,18 @@ const Thread = ({
 
   const { app, focus, appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const isFocus = focus && focus?.id === app?.id
+  const [isFocus, setIsFocus] = useState(focus && focus?.id === app?.id)
+
+  useEffect(() => {
+    setIsFocus(focus && focus?.id === app?.id)
+  }, [focus, app])
+
   const showFocus = !threadId && isFocus && isEmpty
 
   const { addHapticFeedback, isDrawerOpen } = useTheme()
   const { isExtension } = usePlatform()
 
   // Derived from thread
-  const ph =
-    thread?.placeHolder ||
-    app?.placeHolder ||
-    (user?.placeHolder?.appId === app?.id ? user?.placeHolder : null) ||
-    (guest?.placeHolder?.appId === app?.id ? guest?.placeHolder : null)
-
-  const [placeHolder, setPlaceHolder] = useState(ph)
-
-  useEffect(() => {
-    setPlaceHolder(ph)
-  }, [ph])
 
   const slugPath = slug ? `${slug}/` : "/"
 
@@ -409,7 +404,7 @@ const Thread = ({
                         ? appFormPlaceholder
                         : !!appStatus?.part
                           ? `${t("Ask anything, I will explain")} 💭`
-                          : (t(placeHolder?.text || app?.placeholder || "") ??
+                          : (t(placeHolderText || "") ??
                             (selectedAgent?.capabilities.imageGeneration
                               ? t("Describe anything...")
                               : isWebSearchEnabled
@@ -604,7 +599,7 @@ const Thread = ({
                       !showFocus && !isLoading && messages.length === 0
                     }
                     onToggleGame={(on) => setIsGame(on)}
-                    showGreeting={!id && !isLoading && messages.length === 0}
+                    showGreeting={isEmpty}
                     className={styles.chat}
                     onStreamingStop={async (message) => {
                       message?.message?.clientId &&
@@ -628,6 +623,7 @@ const Thread = ({
                         console.log("✅ Adding user message to state")
                         scrollToBottom(500, true)
                         shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
+
                         if (
                           !msg.message.message.selectedAgentId &&
                           isOwner(msg.message.message, {
@@ -881,7 +877,7 @@ const Thread = ({
   }
 
   // Only load Focus on web (not extension) and after hydration
-  const shouldLoadFocus = showFocus && hasHydrated && isEmpty && !threadId
+  const shouldLoadFocus = showFocus && isEmpty && !threadId
 
   return shouldLoadFocus ? (
     <Suspense fallback={<Loading fullScreen />}>

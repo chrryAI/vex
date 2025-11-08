@@ -10,7 +10,6 @@ import {
   pushSubscriptions,
   subscriptions,
   systemLogs,
-  taskLogs,
   tasks,
   threads,
   timers,
@@ -100,9 +99,6 @@ export type newTask = typeof tasks.$inferInsert
 
 export type timer = typeof timers.$inferSelect
 export type newTimer = typeof timers.$inferInsert
-
-export type taskLog = typeof taskLogs.$inferSelect
-export type newTaskLog = typeof taskLogs.$inferInsert
 
 export type mood = typeof moods.$inferSelect
 export type newMood = typeof moods.$inferInsert
@@ -653,13 +649,10 @@ export const getMood = async ({ id }: { id: string }) => {
       .select()
       .from(moods)
       .leftJoin(messages, eq(moods.id, messages.moodId))
-      .leftJoin(taskLogs, eq(moods.taskLogId, taskLogs.id))
       .where(eq(moods.id, id))
   ).at(0)
 
-  return result
-    ? { ...result.mood, message: result.messages, taskLog: result.taskLog }
-    : undefined
+  return result ? { ...result.mood, message: result.messages } : undefined
 }
 
 export const updateMood = async (mood: mood) => {
@@ -899,89 +892,4 @@ export const deleteTimer = async ({ id }: { id: string }) => {
   const [deleted] = await db.delete(timers).where(eq(timers.id, id)).returning()
 
   return deleted
-}
-
-export const createTaskLog = async (taskLog: newTaskLog) => {
-  const [inserted] = await db.insert(taskLogs).values(taskLog).returning()
-  return inserted
-}
-
-export const updateTaskLog = async (taskLog: taskLog) => {
-  const [updated] = await db
-    .update(taskLogs)
-    .set(taskLog)
-    .where(eq(taskLogs.id, taskLog.id))
-    .returning()
-
-  return updated
-}
-
-export const deleteTaskLog = async ({ id }: { id: string }) => {
-  const [deleted] = await db
-    .delete(taskLogs)
-    .where(eq(taskLogs.id, id))
-    .returning()
-
-  return deleted
-}
-
-export const getTaskLog = async ({ id }: { id: string }) => {
-  const result = (
-    await db.select().from(taskLogs).where(eq(taskLogs.id, id))
-  ).at(0)
-
-  return result
-}
-
-export const getTaskLogs = async ({
-  page = 1,
-  userId,
-  guestId,
-  taskId,
-  hasMood,
-  ...rest
-}: {
-  page?: number
-  pageSize?: number
-  userId?: string
-  guestId?: string
-  taskId?: string
-  hasMood?: boolean
-} = {}) => {
-  const pageSize = rest.pageSize || 100
-
-  const conditionsArray = [
-    userId ? eq(taskLogs.userId, userId) : undefined,
-    guestId ? eq(taskLogs.guestId, guestId) : undefined,
-    taskId ? eq(taskLogs.taskId, taskId) : undefined,
-    hasMood ? isNotNull(taskLogs.mood) : undefined,
-  ]
-
-  const conditions = and(...conditionsArray.filter(Boolean))
-
-  const result = await db
-    .select()
-    .from(taskLogs)
-    .where(conditions)
-    .limit(pageSize)
-    .offset((page - 1) * pageSize)
-    .orderBy(desc(taskLogs.createdOn))
-
-  const totalCount =
-    (
-      await db
-        .select({ count: count(taskLogs.id) })
-        .from(taskLogs)
-        .where(conditions)
-    )[0]?.count ?? 0
-
-  const hasNextPage = totalCount > page * pageSize
-  const nextPage = hasNextPage ? page + 1 : null
-
-  return {
-    taskLogs: result,
-    totalCount,
-    hasNextPage,
-    nextPage,
-  }
 }

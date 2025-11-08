@@ -48,15 +48,13 @@ import { Suspense, lazy } from "react"
 import AddTask from "./AddTask"
 import { useTimerContext } from "./context/TimerContext"
 import SwipeableTimeControl from "./SwipeableTimeControl"
-import { useAuth } from "./context/providers"
+import { useAuth, useChat } from "./context/providers"
 import { useNavigation, usePlatform, useTheme } from "./platform"
 import { themeType } from "./context/ThemeContext"
 import Img from "./Image"
 import A from "./A"
 import { useStyles } from "./context/StylesContext"
 import Testimonials from "./Testimonials"
-
-const EditTask = lazy(() => import("./EditTask"))
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -72,6 +70,7 @@ export type Task = {
   description?: string
   total?: { date: string; count: number }[]
   order: number
+  threadId?: string
 }
 
 const MAX_TIME = 3600 // 60 minutes in seconds
@@ -130,7 +129,6 @@ export default function FocusButton({ className }: { className?: string }) {
     selectedTasks,
     setSelectedTasks,
     remoteTimer,
-    isCancelled,
   } = useTimerContext()
 
   useEffect(() => {
@@ -143,6 +141,7 @@ export default function FocusButton({ className }: { className?: string }) {
 
   const isMovingItemRef = useRef(false)
   const { isDark, setTheme: setThemeInContext } = useTheme()
+  const { setPlaceHolderText, setSelectedAgent } = useChat()
 
   const adjustIntervalRef = useRef<number | null>(null)
   const secondsUpButtonRef = useRef<HTMLButtonElement>(null)
@@ -150,64 +149,42 @@ export default function FocusButton({ className }: { className?: string }) {
   const minutesUpButtonRef = useRef<HTMLButtonElement>(null)
   const minutesDownButtonRef = useRef<HTMLButtonElement>(null)
 
-  const [showExtensionToast, setShowExtensionToast] = useState<number | 0>(
-    Infinity,
-  )
-  const [editingTask, setEditingTask] = useState<Task | undefined>(undefined)
-  const [showSettings, setShowSettings] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
-
-  const lastUpdateRef = useRef(0)
-
-  useEffect(() => {
-    const editTaskId = searchParams.get("editTask")
-      ? searchParams.get("editTask")
-      : null
-    if (editTaskId) {
-      const editTask = tasks.tasks?.find((task) => task.id === editTaskId)
-      editTask ? setEditingTask(editTask) : editingTask && push("/focus")
+  const setEditingTask = (task: Task | undefined) => {
+    if (task?.threadId) {
+      push(`/threads/${task.threadId}`)
+    } else if (task?.id) {
+      setPlaceHolderText(
+        t(`What did you work on for "{{title}}"? Share your progress...`, {
+          title: task.title,
+        }),
+      )
+      addParams({ taskId: task?.id })
     }
-  }, [searchParams, tasks, push, editingTask])
+  }
 
+  // Cleanup: Reset placeholder when component unmounts
   useEffect(() => {
-    !isCancelled && isFinished && !isExtension && setShowExtensionToast(3500)
-  }, [isFinished, isCancelled])
+    return () => {
+      setPlaceHolderText(undefined)
+    }
+  }, [])
+
+  const [showSettings, setShowSettings] = useState(false)
+  const isMounted = useHasHydrated()
 
   const [addingTask, setAddingTask] = useState(
     searchParams.get("addTask") === "true",
   )
 
-  const [showReport, setShowReport] = useState(
-    searchParams.get("taskReport") === "true",
-  )
+  useEffect(() => {
+    setAddingTask(searchParams.get("addTask") === "true")
+  }, [searchParams.get("addTask")])
 
   useEffect(() => {
     if (showSettings) {
       trackEvent({ name: "settings" })
     }
   }, [showSettings])
-
-  useEffect(() => {
-    if (!searchParams.get("editTask")) {
-      setEditingTask(undefined)
-    }
-    setAddingTask(searchParams.get("addTask") === "true")
-    setShowReport(searchParams.get("taskReport") === "true")
-  }, [searchParams])
-
-  useEffect(() => {
-    if (showReport) {
-      // Update URL with subscribe param while preserving others
-      addParams({ taskReport: "true" })
-    } else {
-      // Remove subscribe param while preserving others
-      removeParams("taskReport")
-      const newUrl = searchParams.toString()
-        ? `?${searchParams.toString()}`
-        : window.location.pathname
-      window.history.replaceState({}, "", newUrl)
-    }
-  }, [showReport])
 
   const setTheme = (theme: themeType) => {
     setThemeInContext(theme)
@@ -436,445 +413,405 @@ export default function FocusButton({ className }: { className?: string }) {
     )
   }
 
-  if (showReport) {
-    return (
-      <div className={clsx(styles.page, className)}>
-        <Suspense
-          fallback={
-            <span
-              style={{
-                width: "100%",
-                height: "10vh",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Loading />
-            </span>
-          }
-        >
-          🌸 Soon!
-          {/* <TaskReports
-            tasks={tasks.tasks}
-            isLoadingTasks={isLoadingTasks}
-            onClose={() => setShowReport(false)}
-          /> */}
-        </Suspense>
-      </div>
-    )
-  }
-
   const showControls = time > 0
 
   return (
     <div className={clsx(styles.page, className)}>
       <div className={clsx(styles.container)}>
-        {!editingTask && (
-          <main className={styles.main}>
-            <div data-testid="pomodoro" className={styles.pomodoro}>
-              <button
-                data-testid="preset-1"
-                data-preset-min-1={presetMin1}
-                className={clsx(
-                  styles.timeAdjust,
-                  activePomodoro === presetMin1
-                    ? isCountingDown && !isPaused
-                      ? styles.active
-                      : time !== 0 && styles.paused
-                    : undefined,
-                  "link",
-                )}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handlePresetTime(presetMin1)
-                }}
-              >
-                {presetMin1}
-                {t("min")}
-              </button>
-              <button
-                data-preset-min-2={presetMin2}
-                data-testid="preset-2"
-                className={clsx(
-                  styles.timeAdjust,
-                  activePomodoro === presetMin2
-                    ? isCountingDown && !isPaused
-                      ? styles.active
-                      : time !== 0 && styles.paused
-                    : undefined,
-                  "link",
-                )}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handlePresetTime(presetMin2)
-                }}
-              >
-                {presetMin2}
-                {t("min")}
-              </button>
-              <button
-                data-preset-min-3={presetMin3}
-                data-testid="preset-3"
-                className={clsx(
-                  styles.timeAdjust,
-                  activePomodoro === presetMin3
-                    ? isCountingDown && !isPaused
-                      ? styles.active
-                      : time !== 0 && styles.paused
-                    : undefined,
-                  "link",
-                )}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handlePresetTime(presetMin3)
-                }}
-              >
-                {presetMin3}
-                {t("min")}
-              </button>
-            </div>
-            <span className={styles.greeting}>
-              <>
-                <span>{t("Let’s focus")}</span>
-                <div
-                  className={clsx(
-                    styles.letsFocusContainer,
-                    isDark && styles.dark,
-                  )}
-                  onClick={() => {
-                    if (videoRef.current && os === "ios") {
-                      !playKitasaku
-                        ? videoRef.current.play().catch((error: any) => {
-                            console.error(error)
-                          })
-                        : videoRef.current.pause()
-                    }
-                    setPlayKitasaku(!playKitasaku)
-                  }}
-                >
-                  {user?.name ? (
-                    <span className={styles.userName}>
-                      {user.name.split(" ")[0]}
-                    </span>
-                  ) : (
-                    ""
-                  )}
-                  <div className={styles.videoContainer} title="Kitasaku">
-                    {!playKitasaku ? (
-                      <CirclePlay
-                        className={styles.videoPlay}
-                        color="var(--shade-5)"
-                        size={16}
-                      />
-                    ) : (
-                      <CirclePause
-                        className={styles.videoPause}
-                        color="var(--shade-5)"
-                        size={16}
-                      />
-                    )}
-
-                    <video
-                      ref={videoRef}
-                      className={styles.video}
-                      src={`${FRONTEND_URL}/video/blob.mp4`}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    ></video>
-                  </div>
-                </div>
-              </>
-            </span>
-            <div
-              data-testid="focusbutton"
+        <main className={styles.main}>
+          <div data-testid="pomodoro" className={styles.pomodoro}>
+            <button
+              data-testid="preset-1"
+              data-preset-min-1={presetMin1}
               className={clsx(
-                styles.focusButton,
-                isMounted && styles.mounted,
-                isCountingDown && !isPaused && styles.counting,
-                isPaused && styles.paused,
-                isFinished && styles.finished,
+                styles.timeAdjust,
+                activePomodoro === presetMin1
+                  ? isCountingDown && !isPaused
+                    ? styles.active
+                    : time !== 0 && styles.paused
+                  : undefined,
+                "link",
               )}
+              onClick={(e) => {
+                e.stopPropagation()
+                handlePresetTime(presetMin1)
+              }}
             >
-              <div className={styles.headerContainer}>
-                <button
-                  data-testid="settings-button"
-                  title={t("Settings")}
-                  className={styles.showSettings}
-                  onClick={() => setShowSettings(true)}
-                >
-                  <SettingsIcon size={22} />
-                </button>
-                <button
-                  title={t("Replay")}
-                  className={clsx(styles.replay, replay && styles.active)}
-                  onClick={() => setReplay(!replay)}
-                >
-                  <Repeat size={22} />
-                </button>
-              </div>
-
+              {presetMin1}
+              {t("min")}
+            </button>
+            <button
+              data-preset-min-2={presetMin2}
+              data-testid="preset-2"
+              className={clsx(
+                styles.timeAdjust,
+                activePomodoro === presetMin2
+                  ? isCountingDown && !isPaused
+                    ? styles.active
+                    : time !== 0 && styles.paused
+                  : undefined,
+                "link",
+              )}
+              onClick={(e) => {
+                e.stopPropagation()
+                handlePresetTime(presetMin2)
+              }}
+            >
+              {presetMin2}
+              {t("min")}
+            </button>
+            <button
+              data-preset-min-3={presetMin3}
+              data-testid="preset-3"
+              className={clsx(
+                styles.timeAdjust,
+                activePomodoro === presetMin3
+                  ? isCountingDown && !isPaused
+                    ? styles.active
+                    : time !== 0 && styles.paused
+                  : undefined,
+                "link",
+              )}
+              onClick={(e) => {
+                e.stopPropagation()
+                handlePresetTime(presetMin3)
+              }}
+            >
+              {presetMin3}
+              {t("min")}
+            </button>
+          </div>
+          <span className={styles.greeting}>
+            <>
+              <span>{t("Let’s focus")}</span>
               <div
-                data-time={time}
-                data-testid="time"
-                className={styles.timeDisplay}
+                className={clsx(
+                  styles.letsFocusContainer,
+                  isDark && styles.dark,
+                )}
+                onClick={() => {
+                  if (videoRef.current && os === "ios") {
+                    !playKitasaku
+                      ? videoRef.current.play().catch((error: any) => {
+                          console.error(error)
+                        })
+                      : videoRef.current.pause()
+                  }
+                  setPlayKitasaku(!playKitasaku)
+                }}
               >
-                <div
-                  className={styles.time}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                >
-                  <SwipeableTimeControl
-                    style={{ userSelect: "none" }}
-                    value={Math.floor(time / 60)}
-                    onValueChange={(newMinutes) => {
-                      const newTime = Math.min(
-                        newMinutes * 60 + (time % 60),
-                        MAX_TIME,
-                      )
-                      setTime(newTime)
-                    }}
-                    Up={
-                      <button
-                        ref={minutesUpButtonRef}
-                        className={styles.timeAdjust}
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => {
-                          e.stopPropagation()
-                          if (e.pointerType === "mouse" && e.buttons !== 1)
-                            return
-                          startAdjustment(1, true)
-                        }}
-                        onPointerUp={(e) => {
-                          e.stopPropagation()
-                          stopAdjustment()
-                        }}
-                        onPointerLeave={(e) => {
-                          e.stopPropagation()
-                          if (adjustIntervalRef.current) stopAdjustment()
-                        }}
-                      >
-                        <ChevronUp size={18} />
-                      </button>
-                    }
-                    Down={
-                      <button
-                        ref={minutesDownButtonRef}
-                        className={styles.timeAdjust}
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => {
-                          e.stopPropagation()
-                          if (e.pointerType === "mouse" && e.buttons !== 1)
-                            return
-                          startAdjustment(-1, true)
-                        }}
-                        onPointerUp={(e) => {
-                          e.stopPropagation()
-                          stopAdjustment()
-                        }}
-                        onPointerLeave={(e) => {
-                          e.stopPropagation()
-                          if (adjustIntervalRef.current) stopAdjustment()
-                        }}
-                      >
-                        <ChevronDown size={18} />
-                      </button>
-                    }
-                    time={time}
-                  />
-                  <span className={styles.separator}>:</span>
-                  <SwipeableTimeControl
-                    Up={
-                      <button
-                        ref={secondsUpButtonRef}
-                        className={styles.timeAdjust}
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => {
-                          e.stopPropagation()
-                          if (e.pointerType === "mouse" && e.buttons !== 1)
-                            return
-                          startAdjustment(1, false)
-                        }}
-                        onPointerUp={(e) => {
-                          e.stopPropagation()
-                          stopAdjustment()
-                        }}
-                        onPointerLeave={(e) => {
-                          e.stopPropagation()
-                          if (adjustIntervalRef.current) stopAdjustment()
-                        }}
-                      >
-                        <ChevronUp size={18} />
-                      </button>
-                    }
-                    isMinute={false}
-                    Down={
-                      <button
-                        ref={secondsDownButtonRef}
-                        className={styles.timeAdjust}
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => {
-                          e.stopPropagation()
-                          if (e.pointerType === "mouse" && e.buttons !== 1)
-                            return
-                          startAdjustment(-1, false)
-                        }}
-                        onPointerUp={(e) => {
-                          e.stopPropagation()
-                          stopAdjustment()
-                        }}
-                        onPointerLeave={(e) => {
-                          e.stopPropagation()
-                          if (adjustIntervalRef.current) stopAdjustment()
-                        }}
-                      >
-                        <ChevronDown size={18} />
-                      </button>
-                    }
-                    value={time % 60}
-                    onValueChange={(newSeconds) => {
-                      const newTime = Math.min(
-                        Math.floor(time / 60) * 60 + newSeconds,
-                        MAX_TIME,
-                      )
-                      setTime(newTime)
-                    }}
-                    time={time}
-                  />
+                {user?.name ? (
+                  <span className={styles.userName}>
+                    {user.name.split(" ")[0]}
+                  </span>
+                ) : (
+                  ""
+                )}
+                <div className={styles.videoContainer} title="Kitasaku">
+                  {!playKitasaku ? (
+                    <CirclePlay
+                      className={styles.videoPlay}
+                      color="var(--shade-5)"
+                      size={16}
+                    />
+                  ) : (
+                    <CirclePause
+                      className={styles.videoPause}
+                      color="var(--shade-5)"
+                      size={16}
+                    />
+                  )}
+
+                  <video
+                    ref={videoRef}
+                    className={styles.video}
+                    src={`${FRONTEND_URL}/video/blob.mp4`}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  ></video>
                 </div>
               </div>
-              <div className={styles.footerContainer}>
-                <button
-                  title={isDark ? t("Light") : t("Dark")}
-                  className={clsx(
-                    styles.themeToggle,
-                    isDark ? styles.dark : styles.light,
-                  )}
-                >
-                  {isDark ? (
-                    <Sun
-                      className={styles.sun}
-                      size={22}
-                      onClick={() => {
-                        setTheme("light")
-                      }}
-                    />
-                  ) : (
-                    <Moon
-                      className={styles.moon}
-                      size={22}
-                      onClick={() => {
-                        setTheme("dark")
-                      }}
-                    />
-                  )}
-                </button>
-                <button
-                  title={playBirds ? t("Pause sound") : t("Play sound")}
-                  onClick={() => setPlayBirds(!playBirds)}
-                  className={clsx(
-                    styles.birdButton,
-                    playBirds && styles.active,
-                  )}
-                >
-                  <Bird
-                    color={
-                      isCountingDown && playBirds
-                        ? "var(--accent-4)"
-                        : undefined
-                    }
-                    size={22}
-                  />
-                </button>
-              </div>
-            </div>
-            {remoteTimer?.count &&
-            remoteTimer?.isCountingDown &&
-            !isCountingDown &&
-            !isPaused ? (
+            </>
+          </span>
+          <div
+            data-testid="focusbutton"
+            className={clsx(
+              styles.focusButton,
+              isMounted && styles.mounted,
+              isCountingDown && !isPaused && styles.counting,
+              isPaused && styles.paused,
+              isFinished && styles.finished,
+            )}
+          >
+            <div className={styles.headerContainer}>
               <button
-                onClick={() => {
-                  setTime(remoteTimer.count)
-                }}
-                title={t("Continue on this device")}
-                className="transparent"
-                style={{
-                  fontSize: 12,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  padding: "4px 7px",
-                  borderWidth: 1.25,
-                  fontFamily: "var(--font-mono)",
-                  gap: 5,
-                  alignContent: "center",
-                  alignSelf: "center",
-                  justifyContent: "center",
+                data-testid="settings-button"
+                title={t("Settings")}
+                className={styles.showSettings}
+                onClick={() => setShowSettings(true)}
+              >
+                <SettingsIcon size={22} />
+              </button>
+              <button
+                title={t("Replay")}
+                className={clsx(styles.replay, replay && styles.active)}
+                onClick={() => setReplay(!replay)}
+              >
+                <Repeat size={22} />
+              </button>
+            </div>
+
+            <div
+              data-time={time}
+              data-testid="time"
+              className={styles.timeDisplay}
+            >
+              <div
+                className={styles.time}
+                onClick={(e) => {
+                  e.stopPropagation()
                 }}
               >
-                <CloudDownload color="var(--accent-6)" size={18} />
-                {formatTime(remoteTimer?.count || 0)}
-              </button>
-            ) : null}
-            {showControls && (
-              <div className={clsx(styles.controls)}>
-                <button
-                  className={clsx(
-                    styles.controlButton,
-                    isPaused || !isCountingDown
-                      ? styles.startButton
-                      : styles.pauseButton,
-                    "link",
-                  )}
-                  data-testid={`focusbutton-${isPaused || !isCountingDown ? "start" : "pause"}-button`}
-                  onClick={handleClick}
-                >
-                  {isPaused || !isCountingDown ? (
-                    <>
-                      <CirclePlay
-                        className={styles.controlIcon}
-                        color="var(--accent-4)"
-                        width={20}
-                        height={20}
-                      />
-                      <span>{t("Start")}</span>
-                    </>
-                  ) : (
-                    <>
-                      <CirclePause
-                        className={styles.controlIcon}
-                        width={20}
-                        height={20}
-                      />
-                      <span>{t("Pause")}</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  className={clsx(
-                    styles.cancelButton,
-                    isCountingDown && styles.isCountingDown,
-                    "link",
-                  )}
-                  data-testid="focusbutton-cancel-button"
-                  onClick={handleCancel}
-                >
-                  <CircleX
-                    className={styles.controlIcon}
-                    width={20}
-                    height={20}
-                  />
-                  <span>{t("Cancel")}</span>
-                </button>
+                <SwipeableTimeControl
+                  style={{ userSelect: "none" }}
+                  value={Math.floor(time / 60)}
+                  onValueChange={(newMinutes) => {
+                    const newTime = Math.min(
+                      newMinutes * 60 + (time % 60),
+                      MAX_TIME,
+                    )
+                    setTime(newTime)
+                  }}
+                  Up={
+                    <button
+                      ref={minutesUpButtonRef}
+                      className={styles.timeAdjust}
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => {
+                        e.stopPropagation()
+                        if (e.pointerType === "mouse" && e.buttons !== 1) return
+                        startAdjustment(1, true)
+                      }}
+                      onPointerUp={(e) => {
+                        e.stopPropagation()
+                        stopAdjustment()
+                      }}
+                      onPointerLeave={(e) => {
+                        e.stopPropagation()
+                        if (adjustIntervalRef.current) stopAdjustment()
+                      }}
+                    >
+                      <ChevronUp size={18} />
+                    </button>
+                  }
+                  Down={
+                    <button
+                      ref={minutesDownButtonRef}
+                      className={styles.timeAdjust}
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => {
+                        e.stopPropagation()
+                        if (e.pointerType === "mouse" && e.buttons !== 1) return
+                        startAdjustment(-1, true)
+                      }}
+                      onPointerUp={(e) => {
+                        e.stopPropagation()
+                        stopAdjustment()
+                      }}
+                      onPointerLeave={(e) => {
+                        e.stopPropagation()
+                        if (adjustIntervalRef.current) stopAdjustment()
+                      }}
+                    >
+                      <ChevronDown size={18} />
+                    </button>
+                  }
+                  time={time}
+                />
+                <span className={styles.separator}>:</span>
+                <SwipeableTimeControl
+                  Up={
+                    <button
+                      ref={secondsUpButtonRef}
+                      className={styles.timeAdjust}
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => {
+                        e.stopPropagation()
+                        if (e.pointerType === "mouse" && e.buttons !== 1) return
+                        startAdjustment(1, false)
+                      }}
+                      onPointerUp={(e) => {
+                        e.stopPropagation()
+                        stopAdjustment()
+                      }}
+                      onPointerLeave={(e) => {
+                        e.stopPropagation()
+                        if (adjustIntervalRef.current) stopAdjustment()
+                      }}
+                    >
+                      <ChevronUp size={18} />
+                    </button>
+                  }
+                  isMinute={false}
+                  Down={
+                    <button
+                      ref={secondsDownButtonRef}
+                      className={styles.timeAdjust}
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => {
+                        e.stopPropagation()
+                        if (e.pointerType === "mouse" && e.buttons !== 1) return
+                        startAdjustment(-1, false)
+                      }}
+                      onPointerUp={(e) => {
+                        e.stopPropagation()
+                        stopAdjustment()
+                      }}
+                      onPointerLeave={(e) => {
+                        e.stopPropagation()
+                        if (adjustIntervalRef.current) stopAdjustment()
+                      }}
+                    >
+                      <ChevronDown size={18} />
+                    </button>
+                  }
+                  value={time % 60}
+                  onValueChange={(newSeconds) => {
+                    const newTime = Math.min(
+                      Math.floor(time / 60) * 60 + newSeconds,
+                      MAX_TIME,
+                    )
+                    setTime(newTime)
+                  }}
+                  time={time}
+                />
               </div>
-            )}
-          </main>
-        )}
+            </div>
+            <div className={styles.footerContainer}>
+              <button
+                title={isDark ? t("Light") : t("Dark")}
+                className={clsx(
+                  styles.themeToggle,
+                  isDark ? styles.dark : styles.light,
+                )}
+              >
+                {isDark ? (
+                  <Sun
+                    className={styles.sun}
+                    size={22}
+                    onClick={() => {
+                      setTheme("light")
+                    }}
+                  />
+                ) : (
+                  <Moon
+                    className={styles.moon}
+                    size={22}
+                    onClick={() => {
+                      setTheme("dark")
+                    }}
+                  />
+                )}
+              </button>
+              <button
+                title={playBirds ? t("Pause sound") : t("Play sound")}
+                onClick={() => setPlayBirds(!playBirds)}
+                className={clsx(styles.birdButton, playBirds && styles.active)}
+              >
+                <Bird
+                  color={
+                    isCountingDown && playBirds ? "var(--accent-4)" : undefined
+                  }
+                  size={22}
+                />
+              </button>
+            </div>
+          </div>
+          {remoteTimer?.count &&
+          remoteTimer?.isCountingDown &&
+          !isCountingDown &&
+          !isPaused ? (
+            <button
+              onClick={() => {
+                setTime(remoteTimer.count)
+              }}
+              title={t("Continue on this device")}
+              className="transparent"
+              style={{
+                fontSize: 12,
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "4px 7px",
+                borderWidth: 1.25,
+                fontFamily: "var(--font-mono)",
+                gap: 5,
+                alignContent: "center",
+                alignSelf: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CloudDownload color="var(--accent-6)" size={18} />
+              {formatTime(remoteTimer?.count || 0)}
+            </button>
+          ) : null}
+          {showControls && (
+            <div className={clsx(styles.controls)}>
+              <button
+                className={clsx(
+                  styles.controlButton,
+                  isPaused || !isCountingDown
+                    ? styles.startButton
+                    : styles.pauseButton,
+                  "link",
+                )}
+                data-testid={`focusbutton-${isPaused || !isCountingDown ? "start" : "pause"}-button`}
+                onClick={handleClick}
+              >
+                {isPaused || !isCountingDown ? (
+                  <>
+                    <CirclePlay
+                      className={styles.controlIcon}
+                      color="var(--accent-4)"
+                      width={20}
+                      height={20}
+                    />
+                    <span>{t("Start")}</span>
+                  </>
+                ) : (
+                  <>
+                    <CirclePause
+                      className={styles.controlIcon}
+                      width={20}
+                      height={20}
+                    />
+                    <span>{t("Pause")}</span>
+                  </>
+                )}
+              </button>
+              <button
+                className={clsx(
+                  styles.cancelButton,
+                  isCountingDown && styles.isCountingDown,
+                  "link",
+                )}
+                data-testid="focusbutton-cancel-button"
+                onClick={handleCancel}
+              >
+                <CircleX
+                  className={styles.controlIcon}
+                  width={20}
+                  height={20}
+                />
+                <span>{t("Cancel")}</span>
+              </button>
+            </div>
+          )}
+        </main>
         <div className={styles.taskSection}>
           {(() => {
-            if (addingTask && !isLoadingTasks) {
+            if (addingTask) {
               return (
                 <AddTask
                   totalTasksCount={tasks?.tasks?.length || 0}
@@ -886,44 +823,6 @@ export default function FocusButton({ className }: { className?: string }) {
                     setAddingTask(false)
                   }}
                 />
-              )
-            }
-
-            if (editingTask) {
-              return (
-                <Suspense
-                  fallback={
-                    <span
-                      style={{
-                        width: "100%",
-                        height: "10vh",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Loading />
-                    </span>
-                  }
-                >
-                  <EditTask
-                    onCancel={() => setEditingTask(undefined)}
-                    onDelete={() => {
-                      setTasks((prevTasks) => ({
-                        ...prevTasks,
-                        tasks: prevTasks.tasks.filter(
-                          (task) => task.id !== editingTask.id,
-                        ),
-                      }))
-
-                      setEditingTask(undefined)
-                    }}
-                    fetchTasks={async () => {
-                      await fetchTasks()
-                    }}
-                    editingTask={editingTask}
-                  />
-                </Suspense>
               )
             }
 

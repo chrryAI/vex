@@ -54,10 +54,6 @@ export function generateAppMetadata({
       (app.slug === "chrry" ? "" : " | Chrry"),
     description: description,
     manifest: `${API_URL}/manifest/${app.id}`,
-    themeColor:
-      COLORS[app.themeColor as keyof typeof COLORS] ||
-      app.themeColor ||
-      "#f87171",
     icons: [
       ...(icon32
         ? [{ rel: "icon", url: icon32, sizes: "32x32", type: "image/png" }]

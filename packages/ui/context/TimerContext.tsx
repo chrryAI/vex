@@ -188,13 +188,14 @@ export function TimerContextProvider({
     token,
     enableNotifications,
     user,
-    guest,
     deviceId,
     fingerprint,
-    mood,
-    setMood,
     fetchMood,
     track: trackEvent,
+    tasks,
+    setTasks,
+    isLoadingTasks,
+    fetchTasks,
   } = useAuth()
 
   const { enableSound } = useTheme()
@@ -265,19 +266,6 @@ export function TimerContextProvider({
   const [isPaused, setIsPaused] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const [isCancelled, setIsCancelled] = useState(false)
-
-  // API-first: Tasks come from SWR, no localStorage needed
-  const [tasks, setTasks] = useState<{
-    tasks: Task[]
-    totalCount: number
-    hasNextPage: boolean
-    nextPage: number | null
-  }>({
-    tasks: [],
-    totalCount: 0,
-    hasNextPage: false,
-    nextPage: null,
-  })
 
   const [selectedTasksFingerprint, setSelectedTasksFingerprint] = useState<
     string | undefined
@@ -590,45 +578,6 @@ export function TimerContextProvider({
       fetchTimer()
     }
   }, [fingerprint, token, user, timer, isLoadingTimer])
-
-  const [shouldFetchTasks, setShouldFetchTasks] = useState(false)
-
-  const { data: tasksData, mutate: refetchTasks } = useSWR(
-    token && shouldFetchTasks ? ["tasks"] : null, // Disabled by default, fetch manually with refetchTasks()
-    async () => {
-      const response = await apiFetch(`${API_URL}/tasks`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await response.json()
-      return data
-    },
-  )
-
-  const fetchTasks = async () => {
-    setShouldFetchTasks(true)
-    shouldFetchTasks && refetchTasks()
-  }
-
-  const [isLoadingTasks, setIsLoadingTasks] = useState(true)
-
-  // Only run this effect if tasks are reordered, added, or deleted
-
-  useEffect(() => {
-    if (tasksData) {
-      Array.isArray(tasksData?.tasks) && setTasks(tasksData)
-      setIsLoadingTasks(false)
-    }
-  }, [tasksData])
-
-  useEffect(() => {
-    if (token) {
-      fetchTasks()
-    }
-  }, [token])
 
   useEffect(() => {
     if (!token) return
@@ -1319,7 +1268,6 @@ export function TimerContextProvider({
       stopAdjustment,
       startAdjustment,
       playTimerEnd,
-      isLoadingTasks,
       playBirds,
       setPlayBirds,
       activePomodoro,
@@ -1348,6 +1296,7 @@ export function TimerContextProvider({
       handleResume,
       isCancelled,
       fetchTasks,
+      isLoadingTasks,
       fetchTimer,
     }),
     [
@@ -1365,6 +1314,7 @@ export function TimerContextProvider({
       startAdjustment,
       playTimerEnd,
       isLoadingTasks,
+      fetchTasks,
       playBirds,
       activePomodoro,
       time,
@@ -1382,7 +1332,6 @@ export function TimerContextProvider({
       handlePause,
       handleResume,
       isCancelled,
-      fetchTasks,
       fetchTimer,
     ],
   )

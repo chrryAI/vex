@@ -8,8 +8,6 @@ export async function POST(request: Request) {
   const req = await request.json()
   const { title, total, order } = req
 
-  const language = req.language || "en"
-
   if (!title) {
     return NextResponse.json({ error: "Title is required" }, { status: 400 })
   }

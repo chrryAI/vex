@@ -380,6 +380,7 @@ export const threads = pgTable("threads", {
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  taskId: uuid("taskId").references(() => tasks.id, { onDelete: "cascade" }),
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -1167,9 +1168,6 @@ export const moods = pgTable("mood", {
     .defaultNow()
     .notNull(),
 
-  taskLogId: uuid("taskLogId").references((): AnyPgColumn => taskLogs.id, {
-    onDelete: "cascade",
-  }),
   messageId: uuid("messageId").references((): AnyPgColumn => messages.id, {
     onDelete: "cascade",
   }),
@@ -1198,29 +1196,7 @@ export const tasks = pgTable("task", {
   total: jsonb("total").$type<{ date: string; count: number }[]>().default([]),
   order: integer("order").default(0),
   selected: boolean("selected").default(false),
-})
-
-export const taskLogs = pgTable("taskLog", {
-  id: uuid("id").defaultRandom().notNull().primaryKey(),
-  taskId: uuid("taskId")
-    .references(() => tasks.id, { onDelete: "cascade" })
-    .notNull(),
-  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-
-  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-
-  moodId: uuid("moodId").references(() => moods.id, { onDelete: "cascade" }),
-
-  content: text("content").notNull(),
-  mood: text("mood", {
-    enum: ["happy", "sad", "angry", "astonished", "inlove", "thinking"],
+  threadId: uuid("threadId").references(() => threads.id, {
+    onDelete: "cascade",
   }),
-  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
-  guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
 })
-
-// Message embeddings for semantic search of conversation history

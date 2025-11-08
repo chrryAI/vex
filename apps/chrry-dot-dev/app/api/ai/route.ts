@@ -1,10 +1,9 @@
 import getGuest from "../../actions/getGuest"
 import getMember from "../../actions/getMember"
 import { after, NextResponse } from "next/server"
-import { expenseCategory, expenseCategoryType } from "chrry/utils"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
-import { getAppExtends, message } from "@repo/db"
+import { getAppExtends } from "@repo/db"
 
 import {
   getMemories,
@@ -28,6 +27,7 @@ import {
   getPureApp,
   app,
   getTasks,
+  getTask,
   getMoods,
   getTimer,
 } from "@repo/db"
@@ -639,17 +639,20 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
     app && isOwner(app, { userId: member?.id, guestId: guest?.id })
 
   // Recursively build knowledge base from app.extends chain (max 5 levels)
-  const buildAppKnowledgeBase = async (
-    currentApp: typeof app,
-    depth = 0,
-  ): Promise<{
-    messages: (typeof message)[]
-    memories: memory[]
-    instructions: string
-    artifacts: any[]
-  }> => {
+  const buildAppKnowledgeBase = async (currentApp: typeof app, depth = 0) => {
     if (!currentApp || depth >= 5) {
-      return { messages: [], memories: [], instructions: "", artifacts: [] }
+      return {
+        messages: {
+          messages: [],
+          totalCount: 0,
+          hasNextPage: false,
+          nextPage: null,
+        },
+        memories: [],
+        instructions: "",
+        artifacts: [],
+        task: undefined,
+      }
     }
 
     // Get main thread for current app
@@ -657,6 +660,14 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
       appId: currentApp.id,
       isMainThread: true,
     })
+
+    const task = thread
+      ? await getTask({
+          userId: member?.id,
+          guestId: guest?.id,
+          id: thread.id,
+        })
+      : undefined
 
     // Auto-set main thread if owner and not set
     const hasMainThread = isAppOwner && !!currentApp.mainThreadId
@@ -682,11 +693,9 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
     // Get thread data
     const messagesData = thread
       ? await getMessages({ threadId: thread.id, pageSize: 20 })
-      : null
+      : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
-    const messages = Array.isArray(messagesData)
-      ? messagesData
-      : messagesData?.messages || []
+    const messages = messagesData.messages || []
 
     // Only main app (depth 0) provides instructions and artifacts
     const instructions = depth === 0 ? thread?.instructions || "" : ""
@@ -703,10 +712,16 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 
     // Recursively get parent apps knowledge if extend exists (array of parent IDs)
     let parentKnowledge = {
-      messages: [] as any[],
+      messages: {
+        messages: [],
+        totalCount: 0,
+        hasNextPage: false,
+        nextPage: null,
+      } as Awaited<ReturnType<typeof getMessages>>,
       memories: [] as any[],
       instructions: "",
       artifacts: [] as any[],
+      task: undefined as typeof task,
     }
 
     if (
@@ -719,7 +734,9 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
         const parentApp = await getPureApp({ id: parentId })
         if (parentApp) {
           const parentData = await buildAppKnowledgeBase(parentApp, depth + 1)
-          parentKnowledge.messages.push(...parentData.messages)
+          parentKnowledge.messages.messages.push(
+            ...parentData.messages.messages,
+          )
           parentKnowledge.memories.push(...parentData.memories)
           parentKnowledge.instructions =
             parentKnowledge.instructions || parentData.instructions
@@ -730,10 +747,22 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 
     // Merge current and parent knowledge
     return {
-      messages: [...messages, ...parentKnowledge.messages],
+      messages: {
+        messages: [...messages, ...parentKnowledge.messages.messages],
+        totalCount: messages.length + parentKnowledge.messages.messages.length,
+        hasNextPage: false,
+        nextPage: null,
+      },
       memories: [...memories, ...parentKnowledge.memories],
       instructions: instructions || parentKnowledge.instructions,
       artifacts: [...artifacts, ...parentKnowledge.artifacts],
+      task: depth === 0 ? task : undefined, // Only include task from main app
+    } as {
+      messages: Awaited<ReturnType<typeof getMessages>>
+      memories: memory[]
+      instructions: string
+      artifacts: any[]
+      task?: Awaited<ReturnType<typeof getTask>>
     }
   }
 
@@ -835,6 +864,15 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
       { error: "You don't have permission to access this thread" },
       { status: 403 }, // 403 Forbidden is more appropriate than 401
     )
+  }
+
+  const moodEmojis = {
+    happy: "😊",
+    sad: "😢",
+    angry: "😠",
+    astonished: "😲",
+    inlove: "😍",
+    thinking: "🤔",
   }
 
   const streamId = uuidv4()
@@ -1339,14 +1377,6 @@ ${(() => {
   const latestMood = focusMoods.moods[0]
   if (!latestMood) return "No mood data available"
 
-  const moodEmojis = {
-    happy: "😊",
-    sad: "😢",
-    angry: "😠",
-    astonished: "😲",
-    inlove: "😍",
-    thinking: "🤔",
-  }
   return `Latest: ${moodEmojis[latestMood.type as keyof typeof moodEmojis]} ${latestMood.type} (${new Date(latestMood.createdOn).toLocaleDateString()})
 Distribution: ${Object.entries(moodCounts)
     .map(([mood, count]) => `${mood} (${count})`)
@@ -1393,6 +1423,106 @@ ${
 `
       : ""
 
+  // Build Task context (if current thread has a taskId, it's a task thread)
+  const currentTask = appKnowledge?.task
+  const taskMessages = appKnowledge?.messages?.messages || []
+  const taskContext =
+    currentTask && message.thread.taskId
+      ? `
+
+## 📋 Current Task Context
+
+**🎯 IMPORTANT: The user is actively working on THIS SPECIFIC TASK right now.**
+
+**When the user asks "which task am I working on?" or "what am I working on?", the answer is:**
+**"${currentTask.title}"**
+
+### Task Details
+- **Title:** ${currentTask.title}
+- **ID:** ${currentTask.id}
+- **Created:** ${new Date(currentTask.createdOn).toLocaleDateString()}
+${currentTask.description ? `- **Description:** ${currentTask.description}` : ""}
+- **Status:** 🟢 ACTIVELY WORKING ON THIS TASK (this thread is linked to this task)
+
+### Work History (${taskMessages.length} messages in this task)
+${
+  taskMessages.length > 0
+    ? taskMessages
+        .slice(0, 10)
+        .map((msg, idx) => {
+          const moodEmoji = msg?.mood
+            ? moodEmojis[msg.mood.type as keyof typeof moodEmojis]
+            : ""
+          const timeAgo = Math.floor(
+            msg.message.createdOn.getTime() / (1000 * 60 * 60),
+          )
+          const preview =
+            msg.message.content.slice(0, 60) +
+            (msg.message.content.length > 60 ? "..." : "")
+          return `${idx + 1}. ${moodEmoji} **${preview}** (${timeAgo}h ago)`
+        })
+        .join("\n")
+    : "No messages yet in this task"
+}
+
+### Total Time Invested
+${(() => {
+  const totalSeconds =
+    currentTask.total?.reduce((sum, t) => sum + (t.count || 0), 0) || 0
+  const hours = Math.floor(totalSeconds / 3600)
+  const mins = Math.floor((totalSeconds % 3600) / 60)
+  return hours > 0 || mins > 0
+    ? `⏱️ ${hours}h ${mins}m spent on this task`
+    : "⏱️ No time tracked yet"
+})()}
+
+### Mood Journey
+${(() => {
+  const moods =
+    taskMessages
+      .map((msg) => msg.mood)
+      .filter(Boolean)
+      .slice(0, 5) || []
+  if (moods.length === 0) return "No mood data for this task"
+
+  const moodEmojis = {
+    happy: "😊",
+    sad: "😢",
+    angry: "😠",
+    astonished: "😲",
+    inlove: "😍",
+    thinking: "🤔",
+  }
+  return moods
+    .map((m) => moodEmojis[m?.type as keyof typeof moodEmojis])
+    .join(" → ")
+})()}
+
+**How to use task context:**
+- **CRITICAL:** When user asks "which task am I working on?", respond: "You're working on '${currentTask.title}'"
+- **DO NOT** list all their tasks - they're asking about THIS SPECIFIC task
+- **DO NOT** say "none of them are marked as in progress" - THIS task IS in progress (they're chatting about it)
+- Reference the task naturally: "For your '${currentTask.title}' task..."
+- Acknowledge their work history: "I see you've logged ${taskMessages.length} messages"
+- Notice mood patterns: "I notice your mood changed from X to Y while working on this"
+- Suggest next steps based on conversation and progress
+- Be specific and actionable - they want help with THIS task
+- If they seem stuck (angry/sad moods), offer debugging help
+- If making progress (happy moods), encourage and suggest next milestones
+- Reference time invested to show you understand their commitment
+
+**Examples:**
+- "I see you've spent ${(() => {
+          const totalSeconds =
+            currentTask.total?.reduce((sum, t) => sum + (t.count || 0), 0) || 0
+          const hours = Math.floor(totalSeconds / 3600)
+          return hours
+        })()} hours on '${currentTask.title}'. Let's make this time count!"
+- "Your last message shows you were ${taskMessages[0]?.mood?.type || "thinking"}. What's the current blocker?"
+- "Based on your ${taskMessages.length} messages, you're making steady progress. What's next?"
+`
+      : ""
+
   // Get news context based on app
   const newsContext = await getNewsContext(slug)
 
@@ -1406,7 +1536,10 @@ ${
   // Check if this is the first message in the app's main thread (user just started using their new app)
   const hasMainThread = isAppOwner && !!app?.mainThreadId
   const isFirstAppMessage =
-    app && isAppOwner && !hasMainThread && appKnowledge?.messages.length === 0
+    app &&
+    isAppOwner &&
+    !hasMainThread &&
+    appKnowledge?.messages.totalCount === 0
 
   // AI Coach Context - Guide users through app creation OR first-time app usage
   let aiCoachContext = ""
@@ -1796,6 +1929,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     calendarContext +
     vaultContext +
     focusContext +
+    taskContext +
     newsContext +
     // brandKnowledge +
     aiCoachContext

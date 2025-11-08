@@ -50,6 +50,8 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      placeHolderText: string | undefined
+      setPlaceHolderText: (placeHolderText: string | undefined) => void
       isImageGenerationEnabled: boolean
       setIsImageGenerationEnabled: (
         value: boolean,
@@ -101,7 +103,7 @@ const ChatContext = createContext<
       setIsWebSearchEnabled: (isWebSearchEnabled: boolean) => void
       setInput: (input: string) => void
       placeHolder: placeHolder | undefined
-      setPlaceHolder: (placeHolder: placeHolder | undefined) => void
+      setPlaceHolder: (placeHolder?: placeHolder) => void
       creditsLeft?: number
       thread?: thread
       threadId?: string
@@ -170,7 +172,8 @@ export function ChatProvider({
     perplexityAgent,
     claudeAgent,
     favouriteAgent,
-    ...auth
+    threadId,
+    setThreadId,
   } = useAuth()
 
   const [isChatFloating, setIsChatFloating] = useState(false)
@@ -194,11 +197,11 @@ export function ChatProvider({
 
   useEffect(() => {
     if (messages.length > 0) {
-      setIsEmpty(false)
+      isEmpty && setIsEmpty(false)
     } else {
-      setIsEmpty(true)
+      !isEmpty && setIsEmpty(true)
     }
-  }, [messages])
+  }, [messages, isEmpty])
 
   const { isExtension, isMobile } = usePlatform()
 
@@ -425,8 +428,6 @@ export function ChatProvider({
   }, [isIncognito])
 
   const userOrGuest = user || guest
-
-  const [threadId, setThreadId] = useState(getThreadId(pathname))
 
   const { isSmallDevice, isDrawerOpen, playNotification } = useTheme()
 
@@ -673,9 +674,25 @@ export function ChatProvider({
       : ["guest", "all"].includes(agent.authorization)
   }
 
-  const [placeHolder, setPlaceHolder] = React.useState<placeHolder | undefined>(
-    undefined,
+  const ph =
+    thread?.placeHolder ||
+    app?.placeHolder ||
+    (user?.placeHolder?.appId === app?.id ? user?.placeHolder : null) ||
+    (guest?.placeHolder?.appId === app?.id ? guest?.placeHolder : null)
+
+  const [placeHolder, setPlaceHolder] = useState<placeHolder | undefined>(
+    ph || undefined,
   )
+
+  const [placeHolderText, setPlaceHolderText] = React.useState<
+    string | undefined
+  >(placeHolder?.text)
+
+  useEffect(() => {
+    if (placeHolder) {
+      setPlaceHolderText(placeHolder.text)
+    }
+  }, [placeHolder])
 
   const { appStatus } = useApp()
 
@@ -699,15 +716,15 @@ export function ChatProvider({
   }, [thread?.placeHolder, user?.placeHolder, guest?.placeHolder, threadId])
 
   const [shouldFetchThread, setShouldFetchThread] = useState(!thread)
-  console.log(
-    `🚀 ~ file: ChatProvider.tsx:701 ~ shouldFetchThread:`,
-    shouldFetchThread,
-  )
 
   const [until, setUntil] = useState<number>(1)
   const [liked, setLiked] = useState<boolean | undefined>(undefined)
 
   const [isLoading, setIsLoading] = useState(!!threadId)
+
+  useEffect(() => {
+    setIsLoading(!!threadId)
+  }, [threadId])
 
   const [status, setStatus] = useState<number | null>(null)
 
@@ -720,9 +737,10 @@ export function ChatProvider({
     shouldFetchThread && token && threadId
       ? ["thread", threadId, liked, until]
       : null,
-    () => {
-      if (!threadId || !token) return
-      return actions.getThread({
+    async () => {
+      if (!threadId) return
+
+      const threadData = await actions.getThread({
         id: threadId,
         pageSize: until * pageSizes.threads,
         liked: !!liked,
@@ -731,16 +749,15 @@ export function ChatProvider({
           setStatus(error)
         },
       })
+
+      setIsLoading(false)
+
+      return threadData
     },
     {
       // revalidateOnMount: true,
     },
   )
-  useEffect(() => {
-    if (!threadId) {
-      thread && setThread(undefined)
-    }
-  }, [threadId, thread])
 
   const [agentName, setAgentName] = useCookie(
     "agentName",
@@ -946,10 +963,6 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    !isLoadingThread && setIsLoading(false)
-  }, [isLoadingThread])
-
-  useEffect(() => {
     error && setIsLoading(false)
   }, [error])
 
@@ -1015,6 +1028,8 @@ export function ChatProvider({
   return (
     <ChatContext.Provider
       value={{
+        placeHolderText,
+        setPlaceHolderText,
         isImageGenerationEnabled,
         setIsImageGenerationEnabled,
         status,
