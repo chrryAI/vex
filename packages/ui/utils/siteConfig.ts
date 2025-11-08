@@ -322,6 +322,10 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
     return "chrryDev"
   }
 
+  if (matchesDomain(host, "vex.chrry.ai")) {
+    return "vex"
+  }
+
   // Focus custom domain (add your custom domain here)
   if (host === "focus.chrry.ai" || matchesDomain(host, "focusbutton.com")) {
     return "focus"
