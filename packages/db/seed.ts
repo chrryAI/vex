@@ -650,9 +650,9 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    await clearDb()
+    // await clearDb()
 
-    await create()
+    // await create()
     process.exit(0)
   }
   // await updateInvalidDates()

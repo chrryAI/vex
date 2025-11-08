@@ -794,7 +794,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
               // Fallback to safe text extraction
               const tempDiv = document.createElement("div")
               tempDiv.textContent = xmlBufferRef.current
-              const textContent = (tempDiv.textContent || "").replace(/\s+/g, " ").trim()
+              const textContent = (tempDiv.textContent || "")
+                .replace(/\s+/g, " ")
+                .trim()
               xmlBufferRef.current = ""
               return textContent
             }

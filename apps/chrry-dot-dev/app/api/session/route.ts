@@ -140,13 +140,16 @@ export async function GET(request: Request) {
     try {
       const refererUrl = new URL(referer)
       const hostname = refererUrl.hostname
-      
+
       // Use exact hostname match or subdomain check (not .includes())
       if (hostname === "vex.chrry.ai" || hostname.endsWith(".vex.chrry.ai")) {
         cookieDomain = ".chrry.ai" // vex.chrry.ai shares cookies with chrry.ai
       } else if (hostname === "chrry.ai" || hostname.endsWith(".chrry.ai")) {
         cookieDomain = ".chrry.ai"
-      } else if (hostname === "askvex.com" || hostname.endsWith(".askvex.com")) {
+      } else if (
+        hostname === "askvex.com" ||
+        hostname.endsWith(".askvex.com")
+      ) {
         cookieDomain = ".askvex.com"
       } else if (hostname === "chrry.dev" || hostname.endsWith(".chrry.dev")) {
         cookieDomain = ".chrry.dev"

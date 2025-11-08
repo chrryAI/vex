@@ -45,17 +45,17 @@ function escapeXml(unsafe: string): string {
 // Validate and sanitize URL
 function sanitizeUrl(url: string | null): string {
   if (!url) return "https://chrry.ai"
-  
+
   try {
     const parsed = new URL(url)
     // Only allow HTTPS URLs from trusted domains
     if (parsed.protocol !== "https:") return "https://chrry.ai"
-    
+
     const allowedDomains = ["chrry.ai", "vex.chrry.ai"]
     if (!allowedDomains.includes(parsed.hostname)) {
       return "https://chrry.ai"
     }
-    
+
     return parsed.origin
   } catch {
     return "https://chrry.ai"
@@ -65,7 +65,7 @@ function sanitizeUrl(url: string | null): string {
 export async function GET(request: Request) {
   const url = new URL(request.url)
   let chrryUrl = url.searchParams.get("chrryUrl")
-  
+
   // Sanitize the URL to prevent XSS
   const baseUrl = sanitizeUrl(chrryUrl)
   const isVex = baseUrl === "https://vex.chrry.ai"

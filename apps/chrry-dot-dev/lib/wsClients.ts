@@ -73,9 +73,7 @@ export function notify(userOrGuestId: string, data: any) {
 
   // Sanitize userOrGuestId for logging (prevent format string injection)
   const safeId = String(userOrGuestId).replace(/[^\w-]/g, "_")
-  console.log(
-    `Notified ${sent}/${fingerprints.size} connections for ${safeId}`,
-  )
+  console.log(`Notified ${sent}/${fingerprints.size} connections for ${safeId}`)
 }
 
 export function notifyUsers(data: any) {

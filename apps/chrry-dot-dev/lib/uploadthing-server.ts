@@ -109,7 +109,7 @@ export async function upload({
     }
 
     // Download the file
-    const response = await fetch(url)
+    const response = await fetch(parsedUrl)
     if (!response.ok)
       throw new Error(`Failed to download file: ${response.status}`)
 
