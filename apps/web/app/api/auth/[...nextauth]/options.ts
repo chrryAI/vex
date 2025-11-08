@@ -19,6 +19,7 @@ import {
 } from "@repo/db"
 import { AuthOptions } from "next-auth"
 import { isDevelopment, isE2E, isValidUsername } from "chrry/utils"
+import { getSiteConfig } from "chrry/utils/siteConfig"
 import captureException from "../../../../lib/captureException"
 
 // Generate unique username from name
@@ -184,6 +185,31 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Extract hostname from baseUrl to get site-specific config
+      try {
+        const baseUrlObj = new URL(baseUrl)
+        const siteConfig = getSiteConfig(baseUrlObj.hostname)
+        const siteBaseUrl = siteConfig.url || baseUrl
+
+        // If url is relative, prepend site-specific base URL
+        if (url.startsWith("/")) {
+          return `${siteBaseUrl}${url}`
+        }
+
+        // If url is absolute and on same domain, allow it
+        const urlObj = new URL(url)
+        if (urlObj.hostname === baseUrlObj.hostname) {
+          return url
+        }
+
+        // Otherwise, redirect to site-specific base URL
+        return siteBaseUrl
+      } catch (error) {
+        console.error("Redirect callback error:", error)
+        return baseUrl
+      }
+    },
     async session({ session, user, token }: any) {
       try {
         if (token) {
