@@ -1,7 +1,8 @@
 import { UTApi } from "uploadthing/server"
 import sharp from "sharp"
 import captureException from "./captureException"
-
+import dns from "dns"
+import net from "net"
 // Two separate UploadThing accounts
 const chatUtapi = new UTApi({
   token: process.env.UPLOADTHING_TOKEN, // For chat messages/files
@@ -106,6 +107,40 @@ export async function upload({
 
     if (privateIpPatterns.some((pattern) => pattern.test(hostname))) {
       throw new Error("Access to private IP addresses is not allowed")
+    }
+
+    // Resolve DNS for hostname to check resolved IPs against private ranges
+    let addresses
+    try {
+      addresses = await dns.promises.lookup(parsedUrl.hostname, { all: true })
+    } catch (e) {
+      throw new Error("Failed to resolve image hosting domain")
+    }
+    // Checks for private/reserved/public addresses by inspecting resolved IPs
+    const isIpPrivate = (ip: string) => {
+      if (net.isIPv4(ip)) {
+        // 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16
+        return (
+          ip.startsWith("10.") ||
+          /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip) ||
+          ip.startsWith("192.168.") ||
+          ip.startsWith("127.") ||
+          ip.startsWith("169.254.")
+        )
+      } else if (net.isIPv6(ip)) {
+        // IPv6: localhost (::1), link-local (fe80::/10), private (fc00::/7)
+        return (
+          ip === "::1" ||
+          ip.startsWith("fc00:") ||
+          ip.startsWith("fd00:") || // part of IPv6 private range
+          ip.startsWith("fe80:")
+        )
+      }
+      return false
+    }
+    // If ANY resolved IP is private, abort!
+    if (addresses.some((addr) => isIpPrivate(addr.address))) {
+      throw new Error("Resolved address is private or local; access denied")
     }
 
     // Download the file
