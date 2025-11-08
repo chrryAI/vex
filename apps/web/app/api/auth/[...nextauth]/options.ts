@@ -190,7 +190,6 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      if (isDevelopment) return process.env.AUTH_URL || "http://localhost:3000"
       // Extract hostname from baseUrl to get site-specific config
       try {
         const baseUrlObj = new URL(baseUrl)
