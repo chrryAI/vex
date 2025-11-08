@@ -58,7 +58,7 @@ const nextConfig = {
     // Add path aliases to match tsconfig
     config.resolve.alias = {
       ...config.resolve.alias,
-      "chrry": "@chrryai/chrry",
+      chrry: "@chrryai/chrry",
     }
 
     // Silence package warnings (they're wrapped in try-catch)
@@ -173,10 +173,10 @@ export default {
   ...finalConfig,
   compiler: {
     // ssr: !isDevelopment,
-    // removeConsole: false,
-    removeConsole:
-      process.env.TESTING_ENV === "e2e"
-        ? false
-        : process.env.NODE_ENV === "production",
+    removeConsole: false,
+    // removeConsole:
+    //   process.env.TESTING_ENV === "e2e"
+    //     ? false
+    //     : process.env.NODE_ENV === "production",
   },
 }
