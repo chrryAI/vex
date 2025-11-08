@@ -77,7 +77,7 @@ function FocusButton({ time }: { time: number }) {
 
   return (
     <A
-      href={`${baseApp?.slug === "focus" ? "" : baseApp?.slug}/focus`}
+      href={baseApp?.slug === "focus" ? "/focus" : `/${baseApp?.slug}/focus`}
       openInNewTab={isExtension && isFirefox}
       className={clsx("link", styles.focus)}
     >
