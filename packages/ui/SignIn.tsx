@@ -171,8 +171,6 @@ export default function SignIn({
         : baseUrl,
     )
 
-    console.log("WTF?", JSON.stringify({ successUrl, from: FRONTEND_URL }))
-
     if (E2E) {
       if (user?.fingerprint) {
         successUrl.searchParams.set("fp", user.fingerprint)
