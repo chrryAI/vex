@@ -856,6 +856,9 @@ export function AuthProvider({
   }
 
   const baseApp = allApps?.find((item) => {
+    if (chrryUrl === "https://focus.chrry.ai") {
+      return item.slug === "focus"
+    }
     // Must be the main app (not a sub-app)
     if (item.id !== item.store?.appId) return false
 
