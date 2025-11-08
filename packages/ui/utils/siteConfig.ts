@@ -6,6 +6,7 @@ export interface SiteConfig {
   storeSlug: string
   name: string
   domain: string
+  store: string
   url: string
   description: string
   email: string
@@ -392,7 +393,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       mode: "chrryDev",
       slug: "chrryDev",
       storeSlug: "chrry",
-
+      store: "https://chrry.dev",
       name: "Chrry",
       domain: "chrry.dev",
       url: "https://chrry.dev",
@@ -472,12 +473,13 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   if (mode === "chrryAI") {
     return {
       slug: "chrry",
-      storeSlug: "chrry",
+      storeSlug: "blossom",
       mode: "chrryAI",
       name: "Chrry",
       domain: "chrry.ai",
       email: "iliyan@chrry.ai",
       url: "https://chrry.ai",
+      store: "https://chrry.ai",
       description:
         "AI App Marketplace - Discover, create, and monetize AI apps",
       logo: "🍒",
@@ -555,6 +557,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       storeSlug: "blossom",
       name: "Focus",
       domain: "focus.chrry.ai",
+      store: "https://chrry.ai",
       email: "iliyan@chrry.ai",
       url: "https://focus.chrry.ai",
       description:
@@ -634,6 +637,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     storeSlug: "lifeOS",
     name: "Vex",
     domain: "vex.chrry.ai",
+    store: "https://vex.chrry.ai",
     email: "iliyan@chrry.ai",
     description: "Your AI-Powered Life",
     logo: "🤖",
