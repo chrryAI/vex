@@ -160,14 +160,17 @@ export default function SignIn({
       }
     }
 
-    const errorUrl = new URL(window.location.origin + "/?signIn=login&error")
+    // Use siteConfig.url for white-label specific URLs
+    const baseUrl = siteConfig.url || window.location.origin
+
+    const errorUrl = new URL(baseUrl + "/?signIn=login&error")
     // Create URLs for both success and error cases
     const successUrl = new URL(
       callbackUrl
         ? isCallbackUrlURI
           ? callbackUrl
-          : window.location.origin + callbackUrl
-        : window.location.origin,
+          : baseUrl + callbackUrl
+        : baseUrl,
     )
 
     if (E2E) {
