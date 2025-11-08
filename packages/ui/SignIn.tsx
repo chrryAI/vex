@@ -171,9 +171,7 @@ export default function SignIn({
         : baseUrl,
     )
 
-    successUrl &&
-      user?.role === "admin" &&
-      toast.success(JSON.stringify({ successUrl, from: FRONTEND_URL }))
+    console.log("WTF?", JSON.stringify({ successUrl, from: FRONTEND_URL }))
 
     if (E2E) {
       if (user?.fingerprint) {
