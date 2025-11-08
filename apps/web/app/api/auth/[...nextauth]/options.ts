@@ -18,9 +18,13 @@ import {
   updateUser,
 } from "@repo/db"
 import { AuthOptions } from "next-auth"
-import { isDevelopment, isE2E, isValidUsername } from "chrry/utils"
+import { isValidUsername } from "chrry/utils"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import captureException from "../../../../lib/captureException"
+
+const isDevelopment =
+  process.env.NODE_ENV === "development" ||
+  process.env.NEXT_PUBLIC_NODE_ENV === "development"
 
 // Generate unique username from name
 async function generateUniqueUsername(
