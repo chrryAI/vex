@@ -173,10 +173,9 @@ export default {
   ...finalConfig,
   compiler: {
     // ssr: !isDevelopment,
-    removeConsole: false,
-    // removeConsole:
-    //   process.env.TESTING_ENV === "e2e"
-    //     ? false
-    //     : process.env.NODE_ENV === "production",
+    removeConsole:
+      process.env.TESTING_ENV === "e2e"
+        ? false
+        : process.env.NODE_ENV === "production",
   },
 }
