@@ -185,10 +185,18 @@ export async function GET(request: Request) {
   const headers = request.headers
 
   const pathname = headers.get("x-pathname") || "/"
-  let chrryUrl = url.searchParams.get("chrryUrl")
+
+  const chrryUrlFromParams = url.searchParams.get("chrryUrl")
+
+  let chrryUrl = chrryUrlFromParams
+    ? decodeURIComponent(chrryUrlFromParams)
+    : CHRRY_URL
+
+  chrryUrl =
+    chrryUrl === "https://focus.chrry.ai" ? "https://chrry.ai" : chrryUrl
 
   const chrryStore = await getStore({
-    domain: chrryUrl ? decodeURIComponent(chrryUrl) : CHRRY_URL,
+    domain: chrryUrl,
     userId: member?.id,
     guestId: guest?.id,
     depth: 1, // Populate one level of nested store.apps

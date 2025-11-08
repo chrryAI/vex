@@ -6,14 +6,7 @@ import { ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
 import AppMetadata from "./AppMetadata"
 import { locale, locales } from "./locales"
-import {
-  CHRRY_URL,
-  getMetadata,
-  VERSION,
-  getThreadId,
-  pageSizes,
-  API_URL,
-} from "./utils"
+import { getMetadata, VERSION, getThreadId, pageSizes, API_URL } from "./utils"
 
 import { getSession, getThread } from "./lib"
 import { getSiteConfig, getSiteTranslation } from "./utils/siteConfig"
@@ -107,6 +100,8 @@ export default async function ChrryAI({
     headersList.get("x-device-id") ||
     uuidv4()
 
+  const hostname = headersList.get("host") || ""
+
   const fingerprint =
     cookieStore.get("fingerprint")?.value || headersList.get("x-fp") || uuidv4()
 
@@ -123,7 +118,7 @@ export default async function ChrryAI({
   const viewPortHeight = cookieStore.get("viewPortHeight")?.value || ""
 
   // Check for app route from middleware
-  const siteConfig = getSiteConfig()
+  const siteConfig = getSiteConfig(hostname)
 
   // Call API session endpoint
   const session = await getSession({
@@ -137,7 +132,7 @@ export default async function ChrryAI({
     routeType,
     translate: true,
     locale,
-    chrryUrl: CHRRY_URL,
+    chrryUrl: siteConfig.url,
     screenWidth: Number(viewPortWidth),
     screenHeight: Number(viewPortHeight),
     userAgent: headersList.get("user-agent") || `Chrry/${VERSION}`,
@@ -184,7 +179,7 @@ export default async function ChrryAI({
         <link
           rel="sitemap"
           type="application/xml"
-          href={`${API_URL}/sitemap?chrryUrl=${encodeURIComponent(CHRRY_URL)}`}
+          href={`${API_URL}/sitemap?chrryUrl=${encodeURIComponent(siteConfig.url)}`}
         />
 
         <AppMetadata app={app} />
