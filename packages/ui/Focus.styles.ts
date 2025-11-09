@@ -14,7 +14,6 @@ export const FocusStyleDefs = {
     display: "flex",
     flexDirection: "column",
     gap: 20,
-    minHeight: "100vh",
   },
   moodReports: {
     paddingTop: 0,
@@ -56,7 +55,6 @@ export const FocusStyleDefs = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    height: "100vh",
   },
 } as const
 

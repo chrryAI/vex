@@ -2640,7 +2640,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   const initialHeight = useRef<number | null>(null)
 
   useEffect(() => {
-    if (!input) return
     if (chatInputRef.current) {
       const el = chatInputRef.current
 
@@ -2657,10 +2656,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       const maxHeight = newHeight
       el.style.height = Math.min(newHeight, maxHeight) + "px"
 
-      // Check if exceeded
+      // Check if exceeded (works for both input and placeholder)
       setExceededInitial(el.scrollHeight > (initialHeight.current + 30 || 0))
     }
-  }, [input, isChatFloating, device])
+  }, [input, placeholder, compactMode])
 
   const getIsSendDisabled = () =>
     (inputRef.current.trim() === "" && files.length === 0) ||
