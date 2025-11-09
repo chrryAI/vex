@@ -44,7 +44,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
   try {
     const cached = await redis.get(key)
     if (!cached) return null
-    
+
     // Cache hit - no logging to avoid massive production logs
     try {
       return JSON.parse(cached) as T
