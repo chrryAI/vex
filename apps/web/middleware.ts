@@ -88,6 +88,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
       "x-pathname",
       "x-locale",
       "x-app-id",
+      "x-source",
     ].join(", "),
   )
   response.headers.set(

@@ -160,7 +160,8 @@ export const Hey = memo(
         <div className={clsx(styles.splash, !isSplash && styles.hidden)}>
           <Img
             onLoad={handleImageLoad}
-            app={memoizedApp}
+            app={app}
+            logo={!app ? "blossom" : undefined}
             showLoading={false}
             size={64}
           />
@@ -169,8 +170,8 @@ export const Hey = memo(
     }
     // Memoize splash component to prevent re-renders
     const splash = useMemo(
-      () => memoizedApp && getSplash(isSplash),
-      [handleImageLoad, memoizedApp, isSplash],
+      () => getSplash(isSplash),
+      [handleImageLoad, isSplash],
     )
 
     // useEffect(() => {
@@ -178,35 +179,35 @@ export const Hey = memo(
     // }, [newApp])
 
     useEffect(() => {
-      setTimeout(() => {
-        isSplash && isImageLoaded && isHydrated && setIsSplash(false)
-      }, 750)
-    }, [isImageLoaded, isHydrated, isSplash])
+      isSplash && isImageLoaded && isHydrated && setIsSplash(!allApps.length)
+    }, [isImageLoaded, isHydrated, isSplash, allApps])
 
     return (
       <div>
         <ErrorBoundary>
-          {splash}
           {!app ? (
             <div className={clsx(styles.splash)}>
               <Img logo="blossom" showLoading={false} size={64} />
             </div>
           ) : (
-            <Suspense>
-              {isClientRoute ? (
-                // Client-side routes: SWAP content
-                // Check thread detail FIRST before RouteComponent
-                isThreadDetailPage && !isHome ? (
-                  <Thread key={threadId} />
-                ) : RouteComponent ? (
-                  <RouteComponent className={className} />
+            <>
+              {splash}
+              <Suspense>
+                {isClientRoute ? (
+                  // Client-side routes: SWAP content
+                  // Check thread detail FIRST before RouteComponent
+                  isThreadDetailPage && !isHome ? (
+                    <Thread key={threadId} />
+                  ) : RouteComponent ? (
+                    <RouteComponent className={className} />
+                  ) : (
+                    isHome && <Home className={className} />
+                  )
                 ) : (
-                  isHome && <Home className={className} />
-                )
-              ) : (
-                children
-              )}
-            </Suspense>
+                  children
+                )}
+              </Suspense>
+            </>
           )}
         </ErrorBoundary>
       </div>

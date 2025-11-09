@@ -367,7 +367,7 @@ export function AuthProvider({
   }, [deviceId])
   // setDeviceIdCookie is stable from useCookie
 
-  const [shouldFetchSession, setShouldFetchSession] = useState(!session)
+  const [shouldFetchSession, setShouldFetchSession] = useState(true)
 
   const [fingerprint, setFingerprint] = useLocalStorage<string | undefined>(
     "fingerprint",
