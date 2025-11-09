@@ -43,11 +43,17 @@ export async function getCache<T>(key: string): Promise<T | null> {
 
   try {
     const cached = await redis.get(key)
-    if (cached) {
-      // Cache hit - no logging to avoid massive production logs
+    if (!cached) return null
+    
+    // Cache hit - no logging to avoid massive production logs
+    try {
       return JSON.parse(cached) as T
+    } catch (parseError) {
+      console.error(`❌ Cache JSON parse error for ${key}:`, parseError)
+      // Invalid JSON in cache, delete it
+      await redis.del(key)
+      return null
     }
-    return null
   } catch (error) {
     console.error(`❌ Cache GET error for ${key}:`, error)
     return null
