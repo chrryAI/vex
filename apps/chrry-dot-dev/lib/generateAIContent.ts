@@ -667,6 +667,7 @@ Return only valid JSON object.`
         userId: user?.id || null,
         guestId: guest?.id || null,
         threadId: thread.id,
+        appId: finalAppId || null, // ✅ Link to app
         metadata: {
           generatedBy: modelName,
           history: [],
