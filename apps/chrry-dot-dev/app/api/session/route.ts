@@ -282,7 +282,13 @@ export async function GET(request: Request) {
           let storeBaseApp: appWithStore | null = null
           if (isBaseApp) {
             // Self-reference for base apps
-            storeBaseApp = app
+            storeBaseApp =
+              (await getApp({
+                id: app.id,
+                userId: member?.id,
+                guestId: guest?.id,
+                depth: 1,
+              })) || null
           } else if (app?.store?.appId) {
             const baseAppData = await getApp({
               id: app?.store?.appId,
