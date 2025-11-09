@@ -816,7 +816,6 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
   })
 
   const agent = await getAiAgent({ id: agentId })
-  console.log(`🚀 ~ file: route.ts:787 ~ agent:`, agent?.name)
 
   if (stopStreamId && agent) {
     if (
