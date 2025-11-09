@@ -4365,8 +4365,12 @@ export const getApp = async ({
 
   // Check if user owns any apps to determine cache strategy
   const isAppOwner =
-    (userId && (await db.select().from(apps).where(eq(apps.userId, userId)).limit(1)).length > 0) ||
-    (guestId && (await db.select().from(apps).where(eq(apps.guestId, guestId)).limit(1)).length > 0)
+    (userId &&
+      (await db.select().from(apps).where(eq(apps.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (await db.select().from(apps).where(eq(apps.guestId, guestId)).limit(1))
+        .length > 0)
 
   // Use shared cache key for public apps if user doesn't own any apps
   // Otherwise use user-specific key (they might have user-specific data like placeholders)
@@ -4475,8 +4479,8 @@ export const getApp = async ({
     }),
   } as appWithStore
 
-  // Cache the result (5 minutes TTL)
-  await setCache(cacheKey, result, 60 * 5)
+  // Cache the result (5 minutes TTL) - fire and forget
+  setCache(cacheKey, result, 60 * 5)
 
   return result
 }
@@ -5308,8 +5312,17 @@ export async function getStores({
 }) {
   // Check if user owns any stores to determine cache strategy
   const isStoreOwner =
-    (userId && (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1)).length > 0) ||
-    (guestId && (await db.select().from(stores).where(eq(stores.guestId, guestId)).limit(1)).length > 0)
+    (userId &&
+      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (
+        await db
+          .select()
+          .from(stores)
+          .where(eq(stores.guestId, guestId))
+          .limit(1)
+      ).length > 0)
 
   // Use shared cache key for public stores if user doesn't own any stores
   // Otherwise use user-specific key
@@ -5436,8 +5449,8 @@ export async function getStores({
     nextPage,
   }
 
-  // Cache the result (5 minutes TTL for store lists)
-  await setCache(cacheKey, storesResult, 60 * 5)
+  // Cache the result (5 minutes TTL for store lists) - fire and forget
+  setCache(cacheKey, storesResult, 60 * 5)
 
   return storesResult
 }
@@ -5465,8 +5478,17 @@ export async function getStore({
 }) {
   // Check if user owns any stores to determine cache strategy
   const isStoreOwner =
-    (userId && (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1)).length > 0) ||
-    (guestId && (await db.select().from(stores).where(eq(stores.guestId, guestId)).limit(1)).length > 0)
+    (userId &&
+      (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))
+        .length > 0) ||
+    (guestId &&
+      (
+        await db
+          .select()
+          .from(stores)
+          .where(eq(stores.guestId, guestId))
+          .limit(1)
+      ).length > 0)
 
   // Use shared cache key for public stores if user doesn't own any stores
   // Otherwise use user-specific key
@@ -5588,8 +5610,8 @@ export async function getStore({
     apps: appsWithNestedStores,
   }
 
-  // Cache the result (10 minutes TTL for stores)
-  await setCache(cacheKey, storeResult, 60 * 10)
+  // Cache the result (10 minutes TTL for stores) - fire and forget
+  setCache(cacheKey, storeResult, 60 * 10)
 
   return storeResult
 }
