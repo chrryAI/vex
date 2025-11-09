@@ -42,11 +42,12 @@ export async function getCache<T>(key: string): Promise<T | null> {
   }
 
   try {
-    const cached = await redis.get<T>(key)
+    const cached = await redis.get(key)
     if (cached) {
       console.log(`✅ Cache HIT: ${key}`)
+      return JSON.parse(cached) as T
     }
-    return cached
+    return null
   } catch (error) {
     console.error(`❌ Cache GET error for ${key}:`, error)
     return null
