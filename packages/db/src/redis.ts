@@ -28,8 +28,13 @@ export const upstashRedis = {
       return value as TData
     }
   },
-  set: async (key: string, value: any, options?: { ex?: number }): Promise<"OK"> => {
-    const stringValue = typeof value === "string" ? value : JSON.stringify(value)
+  set: async (
+    key: string,
+    value: any,
+    options?: { ex?: number },
+  ): Promise<"OK"> => {
+    const stringValue =
+      typeof value === "string" ? value : JSON.stringify(value)
     if (options?.ex) {
       await redisClient.setex(key, options.ex, stringValue)
     } else {
