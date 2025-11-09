@@ -598,7 +598,7 @@ export function AuthProvider({
   const track = ({
     name,
     url,
-    domain = "askvex.com",
+    domain = siteConfig.domain,
     props = {},
   }: {
     name: string
@@ -847,7 +847,7 @@ export function AuthProvider({
     // Map askvex.com and vex.chrry.ai as equivalent domains
     if (
       store?.domain === "https://vex.chrry.ai" ||
-      store?.domain === "https://vex.chrry.ai"
+      store?.domain === "https://askvex.com"
     ) {
       return ["https://vex.chrry.ai"]
     }
@@ -856,8 +856,11 @@ export function AuthProvider({
   }
 
   const baseApp = allApps?.find((item) => {
-    if (chrryUrl === "https://focus.chrry.ai") {
-      return item.slug === "focus"
+    if (
+      siteConfig.slug === item.slug &&
+      item.store?.slug === siteConfig.storeSlug
+    ) {
+      return true
     }
     // Must be the main app (not a sub-app)
     if (item.id !== item.store?.appId) return false

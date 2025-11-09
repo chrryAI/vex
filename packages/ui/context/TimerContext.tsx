@@ -540,38 +540,6 @@ export function TimerContextProvider({
     }
   }, [timerData])
 
-  // Start countdown when isCountingDown is true
-  useEffect(() => {
-    if (isCountingDown && time > 0 && !timerRef.current) {
-      // Start the interval
-      timerRef.current = setInterval(() => {
-        setTime((prevTime) => {
-          const newTime = prevTime - 1
-          if (newTime <= 0) {
-            if (timerRef.current) {
-              clearInterval(timerRef.current)
-              timerRef.current = null
-            }
-            setIsCountingDown(false)
-            setIsFinished(true)
-          }
-          return newTime
-        })
-      }, 1000)
-    } else if (!isCountingDown && timerRef.current) {
-      // Stop the interval
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-    }
-  }, [isCountingDown])
-
   useEffect(() => {
     if (!timer && token && fingerprint && user && !isLoadingTimer) {
       fetchTimer()
@@ -794,10 +762,13 @@ export function TimerContextProvider({
 
           setTime((prevTime) => {
             const newTime = Math.max(0, prevTime - elapsedTime)
+            console.log(`🚀 ~ file: TimerContext.tsx:797 ~ newTime:`, newTime)
 
-            if (newTime === 0) {
+            if (newTime === 0 && prevTime > 0) {
               clearInterval(timerRef.current)
               timerRef.current = null
+              // Trigger timer end after state update
+              setTimeout(() => handleTimerEnd(), 0)
             }
             return newTime
           })
@@ -1027,14 +998,14 @@ export function TimerContextProvider({
 
   const playTimerEnd = useCallback(async () => {
     // Only play sound in web mode, extension handles it via offscreen document
-    if (isExtension || !enableSound) {
+    if (!enableSound) {
       return
     }
 
     try {
       const audio = new Audio()
       audio.src = `${FRONTEND_URL}/sounds/timer-end.mp3`
-      audio.volume = 0.5
+      audio.volume = 0.9
 
       // Preload and play
       audio.load()

@@ -548,7 +548,6 @@ export async function POST(request: Request) {
   const mood = moodId ? await getMood({ id: moodId }) : undefined
 
   const app = appId ? await getPureApp({ id: appId }) : undefined
-  console.log(`🚀 ~ file: route.ts:543 ~ appId:`, appId, app?.name)
 
   if (stopStreamId) {
     const controller = streamControllers.get(stopStreamId)

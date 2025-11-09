@@ -44,7 +44,7 @@ export default defineConfig(({ command, mode }) => {
     VITE_BROWSER: env.VITE_BROWSER || process.env.VITE_BROWSER,
   })
 
-  const siteConfig = getSiteConfig("chrryAI")
+  const siteConfig = getSiteConfig("focus")
 
   const getHostPermissions = () => {
     // Always include both production and localhost
@@ -63,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: "1.3.67",
+    version: siteConfig.version || "1.3.68",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus"] // Firefox doesn't support sidePanel permission

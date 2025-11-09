@@ -145,8 +145,6 @@ export const FRONTEND_URL = isTestingDevice
     ? `http://localhost:${FE_PORT}`
     : CHRRY_URL
 
-console.log(`🚀 ~ file: index.ts:145 ~ isDevelopment:`, isDevelopment)
-
 export const PROD_FRONTEND_URL = CHRRY_URL
 
 export const API_URL = isTestingDevice
@@ -380,7 +378,9 @@ export function getFlag({ code }: { code?: string }) {
     .join("")
 }
 
-export const VERSION = "1.3.67"
+const config = getSiteConfig(getClientHostname())
+
+export const VERSION = config.version || "1.3.68"
 export type instructionBase = {
   id: string
   title: string
@@ -399,7 +399,6 @@ export type instructionBase = {
 export const getSlugFromPathname = (
   path: string,
 ): { appSlug: string; storeSlug: string } => {
-  const config = getSiteConfig(getClientHostname())
   return getAppAndStoreSlugs(path, {
     defaultAppSlug: config.slug,
     defaultStoreSlug: config.storeSlug,

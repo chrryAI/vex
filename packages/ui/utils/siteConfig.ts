@@ -9,6 +9,7 @@ export interface SiteConfig {
   store: string
   url: string
   description: string
+  version?: string
   email: string
   logo: string
   primaryColor: string
@@ -558,6 +559,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return {
       mode: "focus",
       slug: "focus",
+      version: "26.10.19",
       storeSlug: "blossom",
       name: "Focus",
       domain: "focus.chrry.ai",
@@ -565,7 +567,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       email: "iliyan@chrry.ai",
       url: "https://focus.chrry.ai",
       description:
-        "AI-powered productivity assistant that helps you focus, manage tasks, and achieve your goals. Smart time tracking, task breakdown, and focus sessions designed for deep work.",
+        "AI-powered Pomodoro timer with task management and mood tracking. Stay focused, productive, and mindful while you work.",
       logo: "⏱️",
       primaryColor: "#3B82F6", // Blue
       links: {
