@@ -4,6 +4,7 @@ import Redis from "ioredis"
 const redisClient = new Redis(
   process.env.REDIS_URL || "redis://coolify-redis:6379",
   {
+    password: process.env.REDIS_PASSWORD, // Add password support
     maxRetriesPerRequest: 3,
     retryStrategy(times: number) {
       const delay = Math.min(times * 50, 2000)
@@ -44,5 +45,8 @@ export const upstashRedis = {
   },
   eval: async (script: string, keys: string[], args: string[]) => {
     return redisClient.eval(script, keys.length, ...keys, ...args)
+  },
+  evalsha: async (sha: string, keys: string[], args: string[]) => {
+    return redisClient.evalsha(sha, keys.length, ...keys, ...args)
   },
 }
