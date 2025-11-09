@@ -762,7 +762,6 @@ export function TimerContextProvider({
 
           setTime((prevTime) => {
             const newTime = Math.max(0, prevTime - elapsedTime)
-            console.log(`🚀 ~ file: TimerContext.tsx:797 ~ newTime:`, newTime)
 
             if (newTime === 0 && prevTime > 0) {
               clearInterval(timerRef.current)

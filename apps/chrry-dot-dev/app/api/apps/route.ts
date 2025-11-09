@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Parse JSON body
     const body = await request.json()
-    console.log("📦 Received app data:", JSON.stringify(body, null, 2))
+    // console.log("📦 Received app data:", JSON.stringify(body, null, 2))
 
     // Extract fields from JSON
     const {
