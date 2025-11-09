@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.3.66",
+  "version": "1.3.67",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -32,7 +32,8 @@
     "publish": "bash scripts/publish-all.sh",
     "test:scss": "node scripts/test-scss-converter.js",
     "test": "npm run test:scss",
-    "validate:chrry": "node scripts/validate-chrry-config.js"
+    "validate:chrry": "node scripts/validate-chrry-config.js",
+    "generate:icons": "bash scripts/generate-app-icons.sh"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

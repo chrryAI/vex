@@ -63,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: "1.3.66",
+    version: "1.3.67",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus"] // Firefox doesn't support sidePanel permission
@@ -73,10 +73,10 @@ export default defineConfig(({ command, mode }) => {
       default_title: siteConfig.name,
     },
     icons: {
-      16: "icons/icon-16.png",
-      32: "icons/icon-32.png",
-      48: "icons/icon-48.png",
-      128: "icons/icon-128.png",
+      16: `icons/${siteConfig.slug}-icon-16.png`,
+      32: `icons/${siteConfig.slug}-icon-32.png`,
+      48: `icons/${siteConfig.slug}-icon-48.png`,
+      128: `icons/${siteConfig.slug}-icon-128.png`,
     },
     background: isFirefox
       ? {
@@ -92,10 +92,10 @@ export default defineConfig(({ command, mode }) => {
             default_panel: "index.html",
             default_title: siteConfig.name,
             default_icon: {
-              16: "icons/icon-16.png",
-              32: "icons/icon-32.png",
-              48: "icons/icon-48.png",
-              128: "icons/icon-128.png",
+              16: `icons/${siteConfig.slug}-icon-16.png`,
+              32: `icons/${siteConfig.slug}-icon-32.png`,
+              48: `icons/${siteConfig.slug}-icon-48.png`,
+              128: `icons/${siteConfig.slug}-icon-128.png`,
             },
           },
         }

@@ -2657,18 +2657,27 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         initialHeight.current = el.scrollHeight
       }
 
-      // Reset height to auto, then expand
-      el.style.height = "auto"
-      const newHeight = el.scrollHeight
+      // Only adjust height if there's actual input
+      if (input) {
+        // Reset height to auto, then expand
+        el.style.height = "auto"
+        const newHeight = el.scrollHeight
 
-      // For extensions, cap the max height to prevent very tall initial height
-      const maxHeight = newHeight
-      el.style.height = Math.min(newHeight, maxHeight) + "px"
+        // For extensions, cap the max height to prevent very tall initial height
+        const maxHeight = newHeight
+        el.style.height = Math.min(newHeight, maxHeight) + "px"
 
-      // Check if exceeded (works for both input and placeholder)
-      setExceededInitial(el.scrollHeight > (initialHeight.current + 30 || 0))
+        // Check if exceeded (works for both input and placeholder)
+        setExceededInitial(el.scrollHeight > (initialHeight.current + 30 || 0))
+      } else {
+        // Reset to initial height when input is empty
+        if (initialHeight.current) {
+          el.style.height = initialHeight.current + "px"
+        }
+        setExceededInitial(false)
+      }
     }
-  }, [input, placeholder, compactMode])
+  }, [input])
 
   const getIsSendDisabled = () =>
     (inputRef.current.trim() === "" && files.length === 0) ||

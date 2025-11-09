@@ -876,15 +876,18 @@ export function AuthProvider({
     (appWithStore & { image?: string }) | undefined
   >(baseApp || session?.app)
 
-  const [appLocal, setAppLocal] = useLocalStorage<
-    (appWithStore & { image?: string }) | undefined
-  >("app", baseApp || session?.app)
+  // const [appLocal, setAppLocal] = useLocalStorage<
+  //   (appWithStore & { image?: string }) | undefined
+  // >("app", baseApp || session?.app)
 
-  const app = isExtension ? appLocal : appState
+  // Revisit this
+  // const app = isExtension ? appLocal : appState
+  // const setAppInternal = isExtension ? setAppLocal : setAppState
+
+  const app = appState
+  const setAppInternal = setAppState
+
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
-
-  const setAppInternal = isExtension ? setAppLocal : setAppState
-
   const [apps, setApps] = useState<appWithStore[]>(store?.apps || [])
 
   useEffect(() => {
@@ -1087,8 +1090,6 @@ export function AuthProvider({
     [setTheme],
   )
 
-  const isAppInitialized = appLocal && appState
-
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
       setAppInternal((prevApp) => {
@@ -1111,7 +1112,7 @@ export function AuthProvider({
         return newApp
       })
     },
-    [setColorScheme, setAppTheme, isAppInitialized],
+    [setColorScheme, setAppTheme],
   )
 
   const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
