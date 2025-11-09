@@ -2132,6 +2132,9 @@ export const getThread = async ({
         }),
         placeHolder: await getPlaceHolder({
           threadId: result.threads.id,
+          appId: result.threads.appId || undefined,
+          userId: result.threads.userId || undefined,
+          guestId: result.threads.guestId || undefined,
         }),
         app: result.threads.appId
           ? await getApp({
@@ -3947,6 +3950,10 @@ export const getPlaceHolder = async ({
   guestId?: string
   appId?: string
 }) => {
+  if (!userId && !guestId) {
+    return
+  }
+
   const [placeholder] = await db
     .select()
     .from(placeHolders)

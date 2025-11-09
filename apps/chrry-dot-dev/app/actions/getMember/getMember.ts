@@ -19,18 +19,6 @@ export default async function getMember(
     let user = await getUser({ email: byEmail })
 
     if (user) {
-      // Check if user owns the current app for infinite credits
-      const app = await getApp({ member: user })
-
-      if (app) {
-        const isAppOwner = isOwner(app, { userId: user.id })
-
-        // Override creditsLeft if user owns the app
-        if (isAppOwner) {
-          user.creditsLeft = OWNER_CREDITS
-        }
-      }
-
       return {
         ...user,
         token,
@@ -44,18 +32,6 @@ export default async function getMember(
   if (session?.user?.email) {
     let user = await getUser({ email: session.user.email })
     if (user) {
-      // Check if user owns the current app for infinite credits
-      const app = await getApp({ member: user })
-
-      if (app) {
-        const isAppOwner = isOwner(app, { userId: user.id })
-
-        // Override creditsLeft if user owns the app
-        if (isAppOwner) {
-          user.creditsLeft = OWNER_CREDITS
-        }
-      }
-
       return {
         ...user,
         token: session.token,
@@ -94,6 +70,7 @@ export default async function getMember(
       const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
       if (decoded.email) {
         const user = await getUser({ email: decoded.email })
+
         if (user) {
           return {
             ...user,
