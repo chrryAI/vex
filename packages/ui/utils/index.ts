@@ -111,7 +111,7 @@ export function getThreadId(pathname?: string): string | undefined {
 // export const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV !== "production"
 
 export const isDevelopment = checkIsExtension()
-  ? ["ihkpepnfnhmdkmpgfdnfbllldbgabbad"].some((id) =>
+  ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>
       getExtensionUrl().includes(id),
     )
   : !isProduction
@@ -143,9 +143,9 @@ export const FRONTEND_URL = isTestingDevice
   ? `http://192.168.2.27:${FE_PORT}`
   : isDevelopment
     ? `http://localhost:${FE_PORT}`
-    : typeof window !== "undefined"
-      ? window.location.origin
-      : CHRRY_URL
+    : CHRRY_URL
+
+console.log(`🚀 ~ file: index.ts:145 ~ isDevelopment:`, isDevelopment)
 
 export const PROD_FRONTEND_URL = CHRRY_URL
 
@@ -380,7 +380,7 @@ export function getFlag({ code }: { code?: string }) {
     .join("")
 }
 
-export const VERSION = "1.3.66"
+export const VERSION = "1.3.67"
 export type instructionBase = {
   id: string
   title: string

@@ -187,9 +187,9 @@ export const Hey = memo(
       <div>
         <ErrorBoundary>
           {splash}
-          {!session && app && isExtension && app?.slug != "vex" ? (
+          {!app ? (
             <div className={clsx(styles.splash)}>
-              <Img logo="chrry" showLoading={false} size={64} />
+              <Img logo="blossom" showLoading={false} size={64} />
             </div>
           ) : (
             <Suspense>
