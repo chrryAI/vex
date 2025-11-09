@@ -1942,6 +1942,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           isImageGenerationEnabled.toString(),
         )
 
+        placeholder && formData.append("placeholder", placeholder)
+
         weather && formData.append("weather", JSON.stringify(weather))
 
         formData.append("attachmentType", "file")
@@ -1970,6 +1972,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           isSpeechActive,
           deviceId,
           weather,
+          placeholder,
           appId: app?.id,
           draft:
             app?.id === chrry?.id && suggestSaveApp && appStatus?.part
