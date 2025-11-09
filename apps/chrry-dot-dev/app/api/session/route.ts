@@ -228,6 +228,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Store app not found" }, { status: 404 })
   }
 
+  const baseApp = await getApp({
+    id: storeApp.id,
+    userId: member?.id,
+    guestId: guest?.id,
+    depth: 1, // Populate one level of nested store.apps
+    // Don't pass storeId - let getApp determine the correct store context
+  })
+
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
   let app = slugParam
@@ -237,8 +245,8 @@ export async function GET(request: Request) {
         guestId: guest?.id,
         depth: 1, // Populate one level of nested store.apps
         // Don't pass storeId - let getApp determine the correct store context
-      })) || storeApp
-    : storeApp
+      })) || baseApp
+    : baseApp
 
   // Fetch ALL stores to get apps from all stores (for client-only navigation)
   // Strategy:
