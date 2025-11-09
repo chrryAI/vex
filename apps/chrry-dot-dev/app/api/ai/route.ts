@@ -530,6 +530,7 @@ export async function POST(request: Request) {
     // Handle file uploads
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
+      placeholder: formData.get("placeholder") as string,
       appId: formData.get("appId") as string,
       slug: formData.get("slug") as string,
       selectedAgentId: (formData.get("selectedAgentId") as string) || "",
@@ -574,6 +575,7 @@ export async function POST(request: Request) {
     isSpeechActive,
     weather,
     slug,
+    placeholder,
     ...rest
   } = requestData
 
@@ -804,9 +806,10 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
   }
 
   // Get placeholder context for AI awareness
-  const homePlaceholder = await getPlaceHolder({
+  const appPlaceholder = await getPlaceHolder({
     userId: member?.id,
     guestId: guest?.id,
+    appId: app?.id,
   })
 
   const threadPlaceholder = await getPlaceHolder({
@@ -1118,15 +1121,26 @@ You can enable these in your settings anytime!"
 
   // Add placeholder context for AI awareness
   const placeholderContext =
-    homePlaceholder || threadPlaceholder
+    placeholder || appPlaceholder || threadPlaceholder
       ? `
 
 ## PERSONALIZED CONVERSATION STARTERS:
+${
+  placeholder
+    ? `🎯 **Current Context**: The user is responding to this placeholder you suggested: "${placeholder}"
+This is the conversation starter that prompted their message. Keep this context in mind when responding.
+`
+    : ""
+}${
+          appPlaceholder || threadPlaceholder
+            ? `
 You recently generated these personalized suggestions for the user:
-${homePlaceholder ? `- Home placeholder: "${homePlaceholder.text}"` : ""}
+${appPlaceholder ? `- App placeholder: "${appPlaceholder.text}"` : ""}
 ${threadPlaceholder ? `- Thread placeholder: "${threadPlaceholder.text}"` : ""}
 
-These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.
+These reflect the user's interests and recent conversations. If the user seems uncertain about what to discuss or asks for suggestions, you can naturally reference these topics. Be conversational about it - don't just list them, weave them into your response naturally.`
+            : ""
+        }
 `
       : ""
 
