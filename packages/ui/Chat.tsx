@@ -242,6 +242,8 @@ export default function Chat({
     setIsAgentModalOpenInternal,
     isImageGenerationEnabled,
     setIsImageGenerationEnabled,
+    setShouldFocus,
+    shouldFocus,
   } = useChat()
 
   // Navigation context (router is the wrapper)
@@ -290,7 +292,7 @@ export default function Chat({
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setSelectedAgentInternal(agent)
-    chatInputRef.current?.focus()
+    setShouldFocus(true)
     track({
       name: "agent-selected",
       props: {
@@ -301,9 +303,16 @@ export default function Chat({
     })
   }
 
+  useEffect(() => {
+    if (shouldFocus) {
+      chatInputRef.current?.focus()
+      setShouldFocus(false)
+    }
+  }, [shouldFocus])
+
   const setIsWebSearchEnabled = (value: boolean) => {
     setWebSearchEnabledInternal(value)
-    value && chatInputRef.current?.focus()
+    value && setShouldFocus(true)
   }
 
   // Scroll detection for auto-hide chat input
@@ -1065,7 +1074,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   // Remove specific file
   const removeFile = (index: number) => {
     setFilesInternal((prev) => prev.filter((_, i) => i !== index))
-    device === "desktop" && chatInputRef.current?.focus()
+    device === "desktop" && setShouldFocus(true)
   }
 
   useEffect(() => {
@@ -1727,7 +1736,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     }
 
     setInput("")
-    device === "desktop" && chatInputRef.current?.focus()
+    device === "desktop" && setShouldFocus(true)
     setIsLoading(true)
 
     playNotification()
@@ -2539,7 +2548,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
   const handlePaste = (e: React.ClipboardEvent) => {
     addHapticFeedback()
-    device === "desktop" && chatInputRef.current?.focus()
+    device === "desktop" && setShouldFocus(true)
 
     if (e.clipboardData.files.length > 0) {
       const imageFiles = Array.from(e.clipboardData.files).filter((file) =>
@@ -2681,7 +2690,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }, [])
 
   useEffect(() => {
-    device === "desktop" && chatInputRef.current?.focus()
+    device === "desktop" && setShouldFocus(true)
   }, [device])
 
   useEffect(() => {
