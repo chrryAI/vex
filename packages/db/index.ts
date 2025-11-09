@@ -2210,7 +2210,7 @@ export const getThreads = async ({
   // If appId is provided, check if it's the store's main app and get all sub-app IDs
   let finalAppIds = appIds
   if (appId && !appIds) {
-    const app = await getApp({ id: appId })
+    const app = await getApp({ id: appId, userId, guestId })
     if (app) {
       // Only aggregate threads if this IS the store's main app
       if (app?.store?.appId === appId) {
@@ -4340,24 +4340,7 @@ export const getApp = async ({
         userId ? eq(apps.userId, userId) : undefined,
         // Guest's own apps
         guestId ? eq(apps.guestId, guestId) : undefined,
-        // System apps (no owner)
-        and(isNull(apps.userId), isNull(apps.guestId)),
-        // Installed apps (via installs table)
-        // userId || guestId
-        //   ? exists(
-        //       db
-        //         .select()
-        //         .from(installs)
-        //         .where(
-        //           and(
-        //             eq(installs.appId, apps.id),
-        //             userId ? eq(installs.userId, userId) : undefined,
-        //             guestId ? eq(installs.guestId, guestId) : undefined,
-        //             isNull(installs.uninstalledAt),
-        //           ),
-        //         ),
-        //     )
-        //   : undefined,
+        eq(apps.visibility, "public"),
       )
 
   const [app] = await db
@@ -5379,7 +5362,9 @@ export async function getStores({
         team: row.teams,
         app: row.app,
         apps: await Promise.all(
-          appsResult.items.map((app) => getApp({ id: app.id })!),
+          appsResult.items.map(
+            (app) => getApp({ id: app.id, userId, guestId })!,
+          ),
         ),
       }
     }),

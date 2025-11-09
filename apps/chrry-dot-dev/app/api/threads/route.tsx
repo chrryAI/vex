@@ -64,12 +64,12 @@ export async function GET(request: Request) {
 
   const app = appId
     ? validate(appId)
-      ? await getApp({ id: appId })
-      : await getApp({ slug: appId })
+      ? await getApp({ id: appId, userId: member?.id, guestId: guest?.id })
+      : await getApp({ slug: appId, userId: member?.id, guestId: guest?.id })
     : slug
       ? validate(slug)
-        ? await getApp({ id: slug })
-        : await getApp({ slug })
+        ? await getApp({ id: slug, userId: member?.id, guestId: guest?.id })
+        : await getApp({ slug, userId: member?.id, guestId: guest?.id })
       : undefined
 
   // Sanitize username input

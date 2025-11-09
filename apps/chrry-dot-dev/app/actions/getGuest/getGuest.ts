@@ -25,40 +25,12 @@ export default async function getGuest(debug = false) {
 
       let result = await getGuestDB({ fingerprint: fp })
 
-      if (result) {
-        // Check if guest owns the current app for infinite credits
-        const app = await getApp({ guest: result })
-
-        if (app) {
-          const isAppOwner = isOwner(app, { guestId: result.id })
-
-          // Override creditsLeft if guest owns the app
-          if (isAppOwner) {
-            result.creditsLeft = OWNER_CREDITS
-          }
-        }
-      }
       if (!result) {
         const fingerprint =
           cookieStore.get("fingerprint")?.value || headersList.get("x-fp")!
 
         if (fingerprint) {
           let result = await getGuestDB({ fingerprint })
-
-          if (result) {
-            // Check if guest owns the current app for infinite credits
-            const app = await getApp({ guest: result })
-
-            if (app) {
-              const isAppOwner = isOwner(app, { guestId: result.id })
-
-              // Override creditsLeft if guest owns the app
-              if (isAppOwner) {
-                result.creditsLeft = OWNER_CREDITS
-              }
-            }
-          }
-
           return result || undefined
         }
       }
