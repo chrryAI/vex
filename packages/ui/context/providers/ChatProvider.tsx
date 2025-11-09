@@ -694,11 +694,18 @@ export function ChatProvider({
     string | undefined
   >(placeHolder?.text)
 
+  console.log(
+    `🚀 ~ file: ChatProvider.tsx:694 ~ placeHolderText:`,
+    placeHolderText,
+  )
+
   useEffect(() => {
-    if (placeHolder) {
+    if (placeHolder?.text) {
       setPlaceHolderText(placeHolder.text)
+    } else if (app?.placeholder) {
+      setPlaceHolderText(app?.placeholder)
     }
-  }, [placeHolder])
+  }, [placeHolder, app])
 
   const { appStatus } = useApp()
 
@@ -707,19 +714,6 @@ export function ChatProvider({
       setSelectedAgent(sushiAgent)
     }
   }, [appStatus?.part])
-
-  useEffect(() => {
-    if (threadId) {
-      thread?.placeHolder
-        ? setPlaceHolder(thread?.placeHolder)
-        : setPlaceHolder(undefined)
-      return
-    }
-    const newPlaceHolder = user?.placeHolder || guest?.placeHolder
-    if (newPlaceHolder) {
-      setPlaceHolder(newPlaceHolder)
-    }
-  }, [thread?.placeHolder, user?.placeHolder, guest?.placeHolder, threadId])
 
   const [shouldFetchThread, setShouldFetchThread] = useState(!thread)
 
