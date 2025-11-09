@@ -676,11 +676,7 @@ export function ChatProvider({
       : ["guest", "all"].includes(agent.authorization)
   }
 
-  const ph =
-    thread?.placeHolder ||
-    app?.placeHolder ||
-    (user?.placeHolder?.appId === app?.id ? user?.placeHolder : null) ||
-    (guest?.placeHolder?.appId === app?.id ? guest?.placeHolder : null)
+  const ph = thread?.placeHolder || app?.placeHolder
 
   const [placeHolder, setPlaceHolder] = useState<placeHolder | undefined>(
     ph || undefined,

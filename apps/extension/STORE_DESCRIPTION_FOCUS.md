@@ -50,7 +50,7 @@ Focus is a Pomodoro timer extension designed to help you work in focused interva
 • **Guest Access** - Try it free, no account required
 • **Member Access** - Access to Sushi, Claude, Gemini, ChatGPT and Perplexity
 
-• **Plus (€9.99/mo)** - 2000 AI message credits,  advanced analytics
+• **Plus (€9.99/mo)** - 2000 AI message credits, advanced analytics
 • **Pro (€19.99/mo)** - 5000 AI message credits, Priority access, team features
 • **Pay-as-you-go** - Buy credits when you need them
 
