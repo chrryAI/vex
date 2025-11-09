@@ -694,11 +694,6 @@ export function ChatProvider({
     string | undefined
   >(placeHolder?.text)
 
-  console.log(
-    `🚀 ~ file: ChatProvider.tsx:694 ~ placeHolderText:`,
-    placeHolderText,
-  )
-
   useEffect(() => {
     if (placeHolder?.text) {
       setPlaceHolderText(placeHolder.text)
