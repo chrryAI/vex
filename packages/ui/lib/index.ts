@@ -947,6 +947,7 @@ export const getSession = async ({
   screenHeight,
   translate,
   locale,
+  source = "client",
 }: {
   appId?: string
   pathname?: string
@@ -967,6 +968,7 @@ export const getSession = async ({
   screenHeight?: number
   translate?: boolean
   locale?: string
+  source?: string
 }) => {
   if (!deviceId) {
     return
@@ -985,12 +987,14 @@ export const getSession = async ({
     ...(translate ? { translate: "true" } : {}),
     ...(isStandalone ? { isStandalone: "true" } : {}),
     ...(locale ? { locale } : {}),
+    ...(source ? { source } : {}),
   })
 
   const response = await fetch(`${API_URL}/session?${params}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "x-device-id": deviceId,
+      ...(source ? { "x-source": source } : {}),
       ...(screenWidth ? { "x-screen-width": screenWidth?.toString() } : {}),
       ...(screenHeight ? { "x-screen-height": screenHeight?.toString() } : {}),
       "x-timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,

@@ -135,6 +135,7 @@ export default async function ChrryAI({
     chrryUrl: siteConfig.url,
     screenWidth: Number(viewPortWidth),
     screenHeight: Number(viewPortHeight),
+    source: "layout",
     userAgent: headersList.get("user-agent") || `Chrry/${VERSION}`,
   })
 

@@ -85,6 +85,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
       "x-app-slug",
       "x-store-slug",
       "x-route-type",
+      "x-source",
       "x-pathname",
       "x-locale",
       "x-app-id",
