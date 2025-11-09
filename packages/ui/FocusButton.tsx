@@ -156,7 +156,7 @@ export default function FocusButton({ className }: { className?: string }) {
 
   const isMovingItemRef = useRef(false)
   const { isDark, setTheme: setThemeInContext } = useTheme()
-  const { setPlaceHolderText, placeHolderText } = useChat()
+  const { setPlaceHolderText, placeHolderText, setShouldFocus } = useChat()
 
   const adjustIntervalRef = useRef<number | null>(null)
   const secondsUpButtonRef = useRef<HTMLButtonElement>(null)
@@ -174,10 +174,11 @@ export default function FocusButton({ className }: { className?: string }) {
     } else if (task?.id) {
       setOriginalPlaceHolderText(placeHolderText)
       setPlaceHolderText(
-        t(`What did you work on for "{{title}}"? Share your progress...`, {
+        `${t(`What did you work on for "{{title}}"? Share your progress...`, {
           title: task.title,
-        }),
+        })} 🌸`,
       )
+      setShouldFocus(true)
       addParams({ taskId: task?.id })
       setIsEditingTask(true)
     } else {

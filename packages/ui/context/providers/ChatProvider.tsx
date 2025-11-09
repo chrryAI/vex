@@ -50,6 +50,8 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      shouldFocus: boolean
+      setShouldFocus: (shouldFocus: boolean) => void
       placeHolderText: string | undefined
       setPlaceHolderText: (placeHolderText: string | undefined) => void
       isImageGenerationEnabled: boolean
@@ -694,6 +696,8 @@ export function ChatProvider({
     string | undefined
   >(placeHolder?.text)
 
+  const [shouldFocus, setShouldFocus] = useState(false)
+
   useEffect(() => {
     if (placeHolder?.text) {
       setPlaceHolderText(placeHolder.text)
@@ -1023,6 +1027,8 @@ export function ChatProvider({
   return (
     <ChatContext.Provider
       value={{
+        shouldFocus,
+        setShouldFocus,
         placeHolderText,
         setPlaceHolderText,
         isImageGenerationEnabled,
