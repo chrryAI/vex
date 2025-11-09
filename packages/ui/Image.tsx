@@ -107,60 +107,61 @@ export default function ImageComponent(props: ImageProps) {
   const color =
     COLORS[app?.themeColor as keyof typeof COLORS] || "var(--accent-6)"
 
+  const emojiSize = size <= 24 ? size * 0.85 : size
   if (!src && !app?.image && app?.slug) {
     if (app.slug === "zarathustra") {
-      return <span style={{ fontSize: size }}>📕</span>
+      return <span style={{ fontSize: emojiSize }}>📕</span>
     }
 
     if (app.slug === "1984") {
-      return <span style={{ fontSize: size }}>👁️</span>
+      return <span style={{ fontSize: emojiSize }}>👁️</span>
     }
 
     if (app.slug === "meditations") {
-      return <span style={{ fontSize: size }}>🏛️</span>
+      return <span style={{ fontSize: emojiSize }}>🏛️</span>
     }
 
     if (app.slug === "dune") {
-      return <span style={{ fontSize: size }}>🏜️</span>
+      return <span style={{ fontSize: emojiSize }}>🏜️</span>
     }
     if (app?.store?.slug === "movies" && app.slug !== "popcorn") {
       if (app.slug === "fightClub") {
-        return <span style={{ fontSize: size }}>🧼</span>
+        return <span style={{ fontSize: emojiSize }}>🧼</span>
       }
 
       if (app.slug === "inception") {
-        return <span style={{ fontSize: size }}>🌀</span>
+        return <span style={{ fontSize: emojiSize }}>🌀</span>
       }
 
       if (app.slug === "pulpFiction") {
-        return <span style={{ fontSize: size }}>🍔</span>
+        return <span style={{ fontSize: emojiSize }}>🍔</span>
       }
 
       if (app.slug === "hungerGames") {
-        return <span style={{ fontSize: size }}>🏹</span>
+        return <span style={{ fontSize: emojiSize }}>🏹</span>
       }
 
       return <Clapperboard color={color} size={size} />
     }
 
     if (app.slug === "amsterdam") {
-      return <span style={{ fontSize: size }}>🇳🇱</span>
+      return <span style={{ fontSize: emojiSize }}>🇳🇱</span>
     }
 
     if (app.slug === "tokyo") {
-      return <span style={{ fontSize: size }}>🇯🇵</span>
+      return <span style={{ fontSize: emojiSize }}>🇯🇵</span>
     }
 
     if (app.slug === "paris") {
-      return <span style={{ fontSize: size }}>🇫🇷</span>
+      return <span style={{ fontSize: emojiSize }}>🇫🇷</span>
     }
 
     if (app.slug === "istanbul") {
-      return <span style={{ fontSize: size }}>🇹🇷</span>
+      return <span style={{ fontSize: emojiSize }}>🇹🇷</span>
     }
 
     if (app.slug === "newYork") {
-      return <span style={{ fontSize: size }}>🗽</span>
+      return <span style={{ fontSize: emojiSize }}>🗽</span>
     }
   }
   if (
