@@ -360,6 +360,8 @@ export async function POST(request: NextRequest) {
 
     // Check if slug is unique within the store
     const existingAppInStore = await getApp({
+      userId: member?.id,
+      guestId: guest?.id,
       slug: appSlug,
     })
 
