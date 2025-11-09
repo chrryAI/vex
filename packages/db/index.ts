@@ -76,6 +76,8 @@ import {
   invalidateStore,
   invalidateUser,
   invalidateGuest,
+  getCache,
+  setCache,
 } from "./src/cache"
 
 dotenv.config()
@@ -140,6 +142,24 @@ export type newVerificationToken = typeof verificationTokens.$inferInsert
 
 export type store = typeof stores.$inferSelect
 export type newStore = typeof stores.$inferInsert
+
+// Store with related data
+export type storeWithRelations = {
+  store: store
+  user: user | null
+  guest: guest | null
+  team: team | null
+  app: appWithStore | undefined
+  apps: appWithStore[]
+}
+
+// Stores list result
+export type storesListResult = {
+  stores: storeWithRelations[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}
 
 export type guest = typeof guests.$inferSelect
 export type newGuest = typeof guests.$inferInsert
@@ -4343,6 +4363,23 @@ export const getApp = async ({
         eq(apps.visibility, "public"),
       )
 
+  // Check if user owns any apps to determine cache strategy
+  const isAppOwner =
+    (userId && (await db.select().from(apps).where(eq(apps.userId, userId)).limit(1)).length > 0) ||
+    (guestId && (await db.select().from(apps).where(eq(apps.guestId, guestId)).limit(1)).length > 0)
+
+  // Use shared cache key for public apps if user doesn't own any apps
+  // Otherwise use user-specific key (they might have user-specific data like placeholders)
+  const cacheKey = isAppOwner
+    ? `app:${id || slug || name}:user:${userId}:guest:${guestId}:store:${storeId || "none"}:depth:${depth}`
+    : `app:${id || slug || name}:public:store:${storeId || "none"}:depth:${depth}`
+
+  // Try cache first
+  const cached = await getCache<appWithStore>(cacheKey)
+  if (cached) {
+    return cached
+  }
+
   const [app] = await db
     .select({
       app: apps,
@@ -4423,7 +4460,7 @@ export const getApp = async ({
       }
     : undefined
 
-  return {
+  const result = {
     ...(isSafe ? (toSafeApp({ app: app.app }) as app) : app.app),
     extends: await getAppExtends({
       appId: app.app.id,
@@ -4437,6 +4474,11 @@ export const getApp = async ({
       guestId,
     }),
   } as appWithStore
+
+  // Cache the result (5 minutes TTL)
+  await setCache(cacheKey, result, 60 * 5)
+
+  return result
 }
 export const getPureApp = async ({
   name,
@@ -5264,6 +5306,23 @@ export async function getStores({
   includePublic?: boolean
   ownerId?: string
 }) {
+  // Check if user owns any stores to determine cache strategy
+  const isStoreOwner =
+    (userId && (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1)).length > 0) ||
+    (guestId && (await db.select().from(stores).where(eq(stores.guestId, guestId)).limit(1)).length > 0)
+
+  // Use shared cache key for public stores if user doesn't own any stores
+  // Otherwise use user-specific key
+  const cacheKey = isStoreOwner
+    ? `stores:user:${userId}:guest:${guestId}:app:${appId || "all"}:owner:${ownerId || "none"}:public:${includePublic}:page:${page}:size:${pageSize}`
+    : `stores:public:app:${appId || "all"}:owner:${ownerId || "none"}:public:${includePublic}:page:${page}:size:${pageSize}`
+
+  // Try cache first
+  const cached = await getCache<storesListResult>(cacheKey)
+  if (cached) {
+    return cached
+  }
+
   // Check if current user/guest is the owner
   const isOwner = ownerId && (userId === ownerId || guestId === ownerId)
 
@@ -5370,12 +5429,17 @@ export async function getStores({
     }),
   )
 
-  return {
+  const storesResult = {
     stores: cleanedStores,
     totalCount,
     hasNextPage,
     nextPage,
   }
+
+  // Cache the result (5 minutes TTL for store lists)
+  await setCache(cacheKey, storesResult, 60 * 5)
+
+  return storesResult
 }
 
 export async function getStore({
@@ -5399,6 +5463,23 @@ export async function getStore({
   depth?: number
   parentStoreId?: string | null
 }) {
+  // Check if user owns any stores to determine cache strategy
+  const isStoreOwner =
+    (userId && (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1)).length > 0) ||
+    (guestId && (await db.select().from(stores).where(eq(stores.guestId, guestId)).limit(1)).length > 0)
+
+  // Use shared cache key for public stores if user doesn't own any stores
+  // Otherwise use user-specific key
+  const cacheKey = isStoreOwner
+    ? `store:${id || slug || domain || appId}:user:${userId}:guest:${guestId}:depth:${depth}:parent:${parentStoreId || "none"}`
+    : `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
+
+  // Try cache first
+  const cached = await getCache<storeWithRelations>(cacheKey)
+  if (cached) {
+    return cached
+  }
+
   // Map vex.chrry.ai and askvex.com to the vex store
   let effectiveSlug = slug
   let effectiveDomain = domain
@@ -5492,7 +5573,7 @@ export async function getStore({
       } as appWithStore)
     : undefined
 
-  return {
+  const storeResult = {
     store: result.stores,
     user:
       result.user && isSafe && !isOwner
@@ -5506,6 +5587,11 @@ export async function getStore({
     app: appWithStore,
     apps: appsWithNestedStores,
   }
+
+  // Cache the result (10 minutes TTL for stores)
+  await setCache(cacheKey, storeResult, 60 * 10)
+
+  return storeResult
 }
 
 export async function updateStore(store: store) {
