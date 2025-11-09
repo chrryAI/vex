@@ -3917,16 +3917,19 @@ export const getPlaceHolders = async ({
   threadId,
   userId,
   guestId,
+  appId,
 }: {
   threadId?: string
   userId?: string
   guestId?: string
+  appId?: string
 }) => {
   const result = await db
     .select()
     .from(placeHolders)
     .where(
       and(
+        appId ? eq(placeHolders.appId, appId) : undefined,
         threadId ? eq(placeHolders.threadId, threadId) : undefined,
         userId ? eq(placeHolders.userId, userId) : undefined,
         guestId ? eq(placeHolders.guestId, guestId) : undefined,
@@ -3969,19 +3972,6 @@ export const getPlaceHolder = async ({
       ),
     )
     .orderBy(desc(placeHolders.createdOn))
-
-  return placeholder
-}
-
-export const getPlaceHolderByThreadId = async ({
-  threadId,
-}: {
-  threadId: string
-}) => {
-  const [placeholder] = await db
-    .select()
-    .from(placeHolders)
-    .where(eq(placeHolders.threadId, threadId))
 
   return placeholder
 }
