@@ -684,6 +684,12 @@ export function ChatProvider({
     ph || undefined,
   )
 
+  useEffect(() => {
+    if (ph) {
+      setPlaceHolder(ph)
+    }
+  }, [ph])
+
   const [placeHolderText, setPlaceHolderText] = React.useState<
     string | undefined
   >(placeHolder?.text)

@@ -258,7 +258,6 @@ export const FocusButtonStyleDefs = {
     padding: 10,
     marginTop: 5,
     fontSize: "1rem",
-    paddingBottom: 200,
   },
   addTask: {
     marginBottom: 10,
