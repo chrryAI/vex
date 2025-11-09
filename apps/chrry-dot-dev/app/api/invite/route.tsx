@@ -6,7 +6,7 @@ import Invite from "../../../components/emails/Invite"
 import getMember from "../../actions/getMember"
 import getGuest from "../../actions/getGuest"
 import { Ratelimit } from "@upstash/ratelimit"
-import { Redis } from "@upstash/redis"
+import { upstashRedis } from "@repo/db"
 import { isDevelopment, isE2E } from "chrry/utils"
 import nodemailer from "nodemailer"
 import { createInvitation, getInvitation } from "@repo/db"
@@ -17,10 +17,7 @@ export async function POST(request: NextRequest) {
   const siteConfig = getSiteConfig()
   if (!(isDevelopment || isE2E)) {
     const ratelimit = new Ratelimit({
-      redis: new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL!,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-      }),
+      redis: upstashRedis,
       limiter: Ratelimit.slidingWindow(60, "1 m"), // 240 requests per minute (supports real-time collaboration auth)
     })
     const ip = request.headers.get("x-forwarded-for") || "127.0.0.1"

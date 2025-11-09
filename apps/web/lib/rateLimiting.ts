@@ -1,12 +1,12 @@
 import { Ratelimit } from "@upstash/ratelimit"
-import { Redis } from "@upstash/redis"
-import { type user, type guest, type subscription, type app } from "@repo/db"
+import {
+  type user,
+  type guest,
+  type subscription,
+  type app,
+  upstashRedis as redis,
+} from "@repo/db"
 import { isDevelopment, isE2E, isOwner } from "chrry/utils"
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
 
 const RATE_LIMITS = {
   anonymous: {
