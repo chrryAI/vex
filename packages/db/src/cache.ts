@@ -44,7 +44,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
   try {
     const cached = await redis.get(key)
     if (cached) {
-      console.log(`✅ Cache HIT: ${key}`)
+      // Cache hit - no logging to avoid massive production logs
       return JSON.parse(cached) as T
     }
     return null
@@ -65,7 +65,7 @@ export async function setCache<T>(
 
   try {
     await redis.setex(key, ttl, JSON.stringify(value))
-    console.log(`✅ Cache SET: ${key} (TTL: ${ttl}s)`)
+    // Cache set - no logging to avoid massive production logs
   } catch (error) {
     console.error(`❌ Cache SET error for ${key}:`, error)
   }
@@ -78,7 +78,7 @@ export async function deleteCache(key: string): Promise<void> {
 
   try {
     await redis.del(key)
-    console.log(`🗑️ Cache DELETE: ${key}`)
+    // Cache delete - no logging to avoid verbose logs
   } catch (error) {
     console.error(`❌ Cache DELETE error for ${key}:`, error)
   }
@@ -93,7 +93,7 @@ export async function deleteCachePattern(pattern: string): Promise<void> {
     const keys = await redis.keys(pattern)
     if (keys.length > 0) {
       await redis.del(...keys)
-      console.log(`🗑️ Cache DELETE pattern: ${pattern} (${keys.length} keys)`)
+      // Cache pattern delete - no logging to avoid verbose logs
     }
   } catch (error) {
     console.error(`❌ Cache DELETE pattern error for ${pattern}:`, error)
