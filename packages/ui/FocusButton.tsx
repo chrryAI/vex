@@ -55,6 +55,7 @@ import Img from "./Image"
 import A from "./A"
 import { useStyles } from "./context/StylesContext"
 import Testimonials from "./Testimonials"
+import { getSiteConfig } from "./utils/siteConfig"
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -431,7 +432,10 @@ export default function FocusButton({ className }: { className?: string }) {
           >
             <FaXTwitter size={12} />
           </a>{" "}
-          , <span className={styles.version}>v{VERSION}</span>
+          ,{" "}
+          <span className={styles.version}>
+            v{getSiteConfig("focus").version}
+          </span>
         </div>
       </div>
     )
@@ -573,14 +577,14 @@ export default function FocusButton({ className }: { className?: string }) {
               <button
                 data-testid="settings-button"
                 title={t("Settings")}
-                className={styles.showSettings}
+                className={clsx(styles.showSettings, "link")}
                 onClick={() => setShowSettings(true)}
               >
                 <SettingsIcon size={22} />
               </button>
               <button
                 title={t("Replay")}
-                className={clsx(styles.replay, replay && styles.active)}
+                className={clsx(styles.replay, replay && styles.active, "link")}
                 onClick={() => setReplay(!replay)}
               >
                 <Repeat size={22} />
@@ -719,6 +723,7 @@ export default function FocusButton({ className }: { className?: string }) {
                 className={clsx(
                   styles.themeToggle,
                   isDark ? styles.dark : styles.light,
+                  "link",
                 )}
               >
                 {isDark ? (
@@ -742,7 +747,11 @@ export default function FocusButton({ className }: { className?: string }) {
               <button
                 title={playBirds ? t("Pause sound") : t("Play sound")}
                 onClick={() => setPlayBirds(!playBirds)}
-                className={clsx(styles.birdButton, playBirds && styles.active)}
+                className={clsx(
+                  styles.birdButton,
+                  playBirds && styles.active,
+                  "link",
+                )}
               >
                 <Bird
                   color={

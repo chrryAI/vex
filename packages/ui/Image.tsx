@@ -87,7 +87,6 @@ export default function ImageComponent(props: ImageProps) {
   } = props
 
   const BASE_URL = FRONTEND_URL
-  console.log(`🚀 ~ file: Image.tsx:90 ~ BASE_URL:`, BASE_URL)
 
   const { appFormWatcher, canEditApp } = useApp()
 
