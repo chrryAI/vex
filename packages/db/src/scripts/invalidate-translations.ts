@@ -2,10 +2,10 @@
 /**
  * Script to invalidate translations cache
  * Only runs in production/server environments
- * 
+ *
  * Usage:
  *   NODE_ENV=production pnpm tsx packages/db/src/scripts/invalidate-translations.ts [locale]
- * 
+ *
  * Examples:
  *   NODE_ENV=production pnpm tsx packages/db/src/scripts/invalidate-translations.ts      # Invalidate all locales
  *   NODE_ENV=production pnpm tsx packages/db/src/scripts/invalidate-translations.ts en   # Invalidate only English
@@ -24,7 +24,7 @@ async function main() {
   }
 
   console.log("🗑️  Invalidating translations cache...")
-  
+
   if (locale) {
     console.log(`   Locale: ${locale}`)
     await invalidateTranslations(locale)
@@ -32,7 +32,7 @@ async function main() {
     console.log("   All locales")
     await invalidateTranslations()
   }
-  
+
   console.log("✅ Translations cache invalidated successfully")
   process.exit(0)
 }
