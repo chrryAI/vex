@@ -379,13 +379,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (member?.role === "admin" && !isDevelopment) {
-      return NextResponse.json(
-        { error: "Use seed API for deleting apps" },
-        { status: 403 },
-      )
-    }
-
     const { slug: appSlug } = await params
 
     // Get existing app
@@ -404,6 +397,13 @@ export async function DELETE(
     // Verify ownership
     if (!isOwner(existingApp, { userId: member?.id, guestId: guest?.id })) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    if (member?.role === "admin" && !isDevelopment) {
+      return NextResponse.json(
+        { error: "Use seed API for deleting apps" },
+        { status: 403 },
+      )
     }
 
     // Delete associated images

@@ -4530,24 +4530,7 @@ export const getPureApp = async ({
         userId ? eq(apps.userId, userId) : undefined,
         // Guest's own apps
         guestId ? eq(apps.guestId, guestId) : undefined,
-        // System apps (no owner)
-        and(isNull(apps.userId), isNull(apps.guestId)),
-        // Installed apps (via installs table)
-        userId || guestId
-          ? exists(
-              db
-                .select()
-                .from(installs)
-                .where(
-                  and(
-                    eq(installs.appId, apps.id),
-                    userId ? eq(installs.userId, userId) : undefined,
-                    guestId ? eq(installs.guestId, guestId) : undefined,
-                    isNull(installs.uninstalledAt),
-                  ),
-                ),
-            )
-          : undefined,
+        eq(apps.visibility, "public"),
       )
 
   const [app] = await db

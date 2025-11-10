@@ -5,7 +5,7 @@ import {
   getStores,
   updateStore,
   createStoreInstall,
-  getPureApp as getApp,
+  getPureApp,
   getStoreInstall,
   store,
   updatePureApp as updateApp,
@@ -2227,13 +2227,27 @@ async function getOrCreateStore(params: {
   return store as store
 }
 
-export const createStores = async ({ user: admin }: { user: user }) => {
+export const createStores = async ({
+  user: admin,
+  isProd,
+}: {
+  user: user
+  isProd?: boolean
+}) => {
   // Fetch all existing stores once
   const existingStoresResult = await getStores({
     userId: admin.id,
     includePublic: false,
   })
   const existingStores = existingStoresResult.stores
+
+  const getApp = async ({ slug }: { slug: string }) => {
+    const app = await getPureApp({ slug })
+    if (!app && isProd) throw new Error(`App ${slug} not found`)
+    return app
+  }
+
+  let chrry = await getApp({ slug: "chrry" })
 
   // Create Chrry store
   const chrryAI = await getOrCreateStore({
@@ -2247,8 +2261,6 @@ export const createStores = async ({ user: admin }: { user: user }) => {
       "Discover, create, and monetize AI apps. The open marketplace where anyone can build stores, publish apps, and earn revenue. Your gateway to the AI ecosystem.",
     existingStores,
   })
-
-  let chrry = await getApp({ slug: "chrry" })
 
   const chrryPayload = {
     ...chrry,

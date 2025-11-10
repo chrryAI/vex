@@ -98,20 +98,6 @@ export default function FocusButton({ className }: { className?: string }) {
 
   const { searchParams, addParams, push, setParams } = useNavigation()
 
-  const [appId, setAppId] = useState<string | null>(searchParams.get("appId"))
-
-  useEffect(() => {
-    setAppId(searchParams.get("appId"))
-  }, [searchParams])
-
-  const refApp = allApps.find((app) => app.id === appId) || focus
-
-  useEffect(() => {
-    if (appId) {
-      setParams({ appId })
-    }
-  }, [appId])
-
   const hasHydrated = useHasHydrated()
 
   const { os, isExtension } = usePlatform()
@@ -886,7 +872,7 @@ export default function FocusButton({ className }: { className?: string }) {
                           <AlarmClockCheck width={16} height={16} />
                           {t("New task")}
                         </button>
-                        {refApp && (
+                        {focus && (
                           <A
                             style={{
                               ...utilities.button.style,
@@ -895,14 +881,14 @@ export default function FocusButton({ className }: { className?: string }) {
                             }}
                             onClick={() => {
                               setShowFocus(false)
-                              refApp?.id === focus?.id
+                              app?.id === focus?.id
                                 ? setShowFocus(false)
-                                : push(getAppSlug(refApp))
+                                : push(getAppSlug(focus))
                             }}
                             // href={getAppSlug(refApp)}
                           >
-                            <Img size={20} app={refApp} />
-                            {refApp.name}
+                            <Img size={20} app={focus} />
+                            {focus.name}
                           </A>
                         )}
                       </div>

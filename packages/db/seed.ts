@@ -339,7 +339,7 @@ const create = async () => {
   // --- BEGIN meaningful threads/messages/AI agent seeding ---
 
   for (const adminUser of [admin]) {
-    const foo = process.env.TESTING_ENV === "e2e"
+    const foo = true || process.env.TESTING_ENV === "e2e"
     if (foo) return
 
     // Pool of user prompts and AI responses
@@ -551,7 +551,7 @@ const prod = async () => {
 
   if (!admin) throw new Error("Admin user not found")
 
-  const vex = await createStores({ user: admin })
+  const vex = await createStores({ user: admin, isProd: true })
 
   // const allInstructions = await db.select().from(instructions)
 
