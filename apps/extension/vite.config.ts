@@ -44,7 +44,7 @@ export default defineConfig(({ command, mode }) => {
     VITE_BROWSER: env.VITE_BROWSER || process.env.VITE_BROWSER,
   })
 
-  const siteConfig = getSiteConfig("focus")
+  const siteConfig = getSiteConfig("chrryAI")
 
   const getHostPermissions = () => {
     // Always include both production and localhost
