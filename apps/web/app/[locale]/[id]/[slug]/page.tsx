@@ -9,6 +9,7 @@ import { validate } from "uuid"
 import { headers } from "next/headers"
 import { generateAppMetadata } from "chrry/utils"
 import { storeWithApps } from "chrry/types"
+import { getTranslations } from "chrry/lib"
 
 export async function generateMetadata({
   params,
@@ -45,6 +46,8 @@ export async function generateMetadata({
     }
   }
 
+  const translations = await getTranslations({ locale })
+
   // Get the current domain from request headers
   const headersList = await headers()
   const host = headersList.get("host") || "chrry.ai"
@@ -52,6 +55,7 @@ export async function generateMetadata({
   const currentDomain = `${protocol}://${host}`
 
   return generateAppMetadata({
+    translations,
     app,
     store: store.store as unknown as storeWithApps,
     locale,

@@ -33,6 +33,7 @@ import { generateAppMetadata } from "chrry/utils"
 import { Providers } from "../components/Providers"
 import { NextIntlClientProvider } from "next-intl"
 import { getSiteConfig } from "chrry/utils/siteConfig"
+import { getTranslations } from "chrry/lib"
 
 export const generateMetadata = async () => {
   const headersList = await headers()
@@ -56,7 +57,10 @@ export const generateMetadata = async () => {
     return generateMeta({ locale })
   }
 
+  const translations = await getTranslations({ locale })
+
   return generateAppMetadata({
+    translations,
     locale,
     app,
     store: app.store,
