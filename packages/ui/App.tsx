@@ -82,7 +82,7 @@ function FocusButton({ time }: { time: number }) {
   return (
     <A
       onClick={() => setShowFocus(true)}
-      href={`${getAppSlug(focus)}?appId=${app?.id}`}
+      href={`${getAppSlug(focus)}`}
       openInNewTab={isExtension && isFirefox}
       className={clsx("link", styles.focus)}
     >
