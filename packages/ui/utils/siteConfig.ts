@@ -309,6 +309,7 @@ export function getSiteTranslation(
 }
 
 export function detectSiteModeDomain(hostname?: string): SiteMode {
+  const defaultMode = "vex"
   // Get hostname from parameter or window (client-side)
   const rawHost =
     hostname || (typeof window !== "undefined" ? window.location.hostname : "")
@@ -326,15 +327,16 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
     }
   }
 
+  if (!host) {
+    return defaultMode
+  }
+
   // Helper function to check if hostname matches or is subdomain of domain
   const matchesDomain = (host: string, domain: string): boolean => {
     return host === domain || host.endsWith(`.${domain}`)
   }
 
   // Domain-based detection (use exact match or subdomain check)
-  if (matchesDomain(host, "chrry.dev")) {
-    return "chrryDev"
-  }
 
   if (matchesDomain(host, "vex.chrry.ai")) {
     return "vex"
@@ -350,13 +352,17 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
     return "chrryAI"
   }
 
+  if (matchesDomain(host, "chrry.dev")) {
+    return "chrryDev"
+  }
+
   // Store domains
   if (matchesDomain(host, "chrry.store")) {
     return "chrryStore"
   }
 
-  // Default to vex (vex.chrry.ai or localhost)
-  return "vex"
+  // Default to defaultMode (vex.chrry.ai or localhost)
+  return defaultMode
 }
 
 /**
