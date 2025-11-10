@@ -7,7 +7,7 @@ import captureException from "../../../../lib/captureException"
 import { deleteFile, upload } from "../../../../lib/uploadthing-server"
 import { v4 as uuid, validate } from "uuid"
 import slugify from "slug"
-import { isOwner } from "chrry/utils"
+import { isDevelopment, isOwner } from "chrry/utils"
 
 export async function PATCH(
   request: NextRequest,
@@ -377,6 +377,13 @@ export async function DELETE(
 
     if (!member && !guest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (member?.role === "admin" && !isDevelopment) {
+      return NextResponse.json(
+        { error: "Use seed API for deleting apps" },
+        { status: 403 },
+      )
     }
 
     const { slug: appSlug } = await params
