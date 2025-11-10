@@ -64,6 +64,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      setShowFocus: (showFocus: boolean) => void
+      showFocus: boolean
       isLoadingTasks: boolean
       fetchTasks: () => Promise<void>
       tasks: {
@@ -891,6 +893,8 @@ export function AuthProvider({
     )
   })
 
+  const [threadId, setThreadId] = useState(getThreadId(pathname))
+
   const [appState, setAppState] = useState<
     (appWithStore & { image?: string }) | undefined
   >(session?.app || baseApp)
@@ -905,6 +909,15 @@ export function AuthProvider({
 
   const app = appState
   const setAppInternal = setAppState
+
+  const canShowFocus = !!focus && app?.id === focus.id && !threadId
+
+  const [showFocus, setShowFocus] = useLocalStorage<boolean>(
+    "showFocus",
+    canShowFocus,
+  )
+
+  console.log(`🚀 ~ file: AuthProvider.tsx:914 ~ showFocus:`, showFocus)
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
   const [apps, setApps] = useState<appWithStore[]>(store?.apps || [])
@@ -1131,7 +1144,6 @@ export function AuthProvider({
   )
 
   const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
-  const [threadId, setThreadId] = useState(getThreadId(pathname))
 
   const [tasks, setTasks] = useState<{
     tasks: Task[]
@@ -1466,6 +1478,8 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        showFocus,
+        setShowFocus,
         isLoadingTasks,
         fetchTasks,
         tasks,

@@ -100,6 +100,8 @@
 .content {
   display: flex;
   flex-direction: column;
+  max-height: 75dvh;
+  overflow-y: auto;
 
   &.scrollable {
     overflow-y: auto;

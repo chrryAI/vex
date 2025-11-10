@@ -79,6 +79,8 @@ export const ModalStyleDefs = {
   content: {
     display: "flex",
     flexDirection: "column",
+    maxHeight: "75dvh",
+    overflowY: "auto",
   },
   contentScrollable: {
     overflowY: "auto",

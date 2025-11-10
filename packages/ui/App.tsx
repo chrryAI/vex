@@ -49,7 +49,7 @@ interface App {
 // Focus button with live clock when timer is idle
 function FocusButton({ time }: { time: number }) {
   const { isExtension, isFirefox, isWeb } = usePlatform()
-  const { app, focus, getAppSlug } = useAuth()
+  const { app, focus, getAppSlug, setShowFocus } = useAuth()
 
   const [currentTime, setCurrentTime] = useState(new Date())
 
@@ -81,6 +81,7 @@ function FocusButton({ time }: { time: number }) {
 
   return (
     <A
+      onClick={() => setShowFocus(true)}
       href={`${getAppSlug(focus)}?appId=${app?.id}`}
       openInNewTab={isExtension && isFirefox}
       className={clsx("link", styles.focus)}
@@ -162,18 +163,19 @@ export default function App({
   const { addHapticFeedback } = useTheme()
   const currentStoreId = store?.id
 
+  const focus = apps.find((app) => app.slug === "focus")
+
   const chrry = apps.find((app) => app.slug === "chrry")
   const popcorn = apps.find((app) => app.slug === "popcorn")
   const vex = apps.find((app) => app.slug === "vex")
   const atlas = apps.find((app) => app.slug === "atlas")
-  const focus = apps.find((app) => app.slug === "focus")
 
   const getApps = () => {
     return apps
       .filter((item) => item.id !== store?.appId && item.id !== chrry?.id)
       .filter((item) => item.id !== focus?.id)
       .filter((item) =>
-        app?.id === chrry?.id &&
+        (app?.id === chrry?.id || app?.id === focus?.id) &&
         ["atlas", "popcorn", "zarathustra"].includes(item.slug)
           ? false
           : true,
