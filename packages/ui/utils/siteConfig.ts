@@ -310,8 +310,21 @@ export function getSiteTranslation(
 
 export function detectSiteModeDomain(hostname?: string): SiteMode {
   // Get hostname from parameter or window (client-side)
-  const host =
+  const rawHost =
     hostname || (typeof window !== "undefined" ? window.location.hostname : "")
+
+  let host = rawHost?.trim().toLowerCase()
+
+  if (host?.includes("://")) {
+    try {
+      host = new URL(host).hostname.toLowerCase()
+    } catch {
+      host = host
+        ?.replace(/^https?:\/\//i, "")
+        .split("/")[0]
+        .toLowerCase()
+    }
+  }
 
   // Helper function to check if hostname matches or is subdomain of domain
   const matchesDomain = (host: string, domain: string): boolean => {
@@ -343,7 +356,7 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
   }
 
   // Default to vex (vex.chrry.ai or localhost)
-  return "focus"
+  return "vex"
 }
 
 /**
@@ -368,9 +381,20 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     "vex",
     "focus",
   ]
-  const mode = validModes.includes(hostnameOrMode as SiteMode)
-    ? (hostnameOrMode as SiteMode)
-    : detectSiteMode(hostnameOrMode)
+
+  // Extract hostname from URL if needed
+  let hostname = hostnameOrMode
+  if (hostnameOrMode && hostnameOrMode.includes("://")) {
+    try {
+      hostname = new URL(hostnameOrMode).hostname
+    } catch {
+      hostname = hostnameOrMode
+    }
+  }
+
+  const mode = validModes.includes(hostname as SiteMode)
+    ? (hostname as SiteMode)
+    : detectSiteMode(hostname)
 
   if (mode === "chrryDev") {
     return {

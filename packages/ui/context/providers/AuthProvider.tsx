@@ -895,29 +895,17 @@ export function AuthProvider({
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
 
-  const [appState, setAppState] = useState<
+  const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
   >(session?.app || baseApp)
 
-  // const [appLocal, setAppLocal] = useLocalStorage<
-  //   (appWithStore & { image?: string }) | undefined
-  // >("app", baseApp || session?.app)
-
-  // Revisit this
-  // const app = isExtension ? appLocal : appState
-  // const setAppInternal = isExtension ? setAppLocal : setAppState
-
-  const app = appState
-  const setAppInternal = setAppState
-
   const canShowFocus = !!focus && app?.id === focus.id && !threadId
 
-  const [showFocus, setShowFocus] = useLocalStorage<boolean>(
-    "showFocus",
-    canShowFocus,
-  )
+  const [showFocus, setShowFocus] = useState(canShowFocus)
 
-  console.log(`🚀 ~ file: AuthProvider.tsx:914 ~ showFocus:`, showFocus)
+  useEffect(() => {
+    setShowFocus(canShowFocus)
+  }, [canShowFocus])
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
   const [apps, setApps] = useState<appWithStore[]>(store?.apps || [])

@@ -74,7 +74,15 @@ const Thread = ({
   const { t } = useAppContext()
 
   // Auth context
-  const { user, guest, track, memoriesEnabled, ...auth } = useAuth()
+  const {
+    user,
+    guest,
+    track,
+    memoriesEnabled,
+    showFocus,
+    setShowFocus,
+    ...auth
+  } = useAuth()
 
   // Chat context
   const {
@@ -135,14 +143,6 @@ const Thread = ({
   }
 
   const { app, focus, appStatus, appFormWatcher, suggestSaveApp } = useApp()
-
-  const [isFocus, setIsFocus] = useState(focus && focus?.id === app?.id)
-
-  useEffect(() => {
-    setIsFocus(focus && focus?.id === app?.id)
-  }, [focus, app])
-
-  const showFocus = auth.showFocus && isFocus && isEmpty
 
   const { addHapticFeedback, isDrawerOpen } = useTheme()
   const { isExtension } = usePlatform()
@@ -253,9 +253,6 @@ const Thread = ({
   useEffect(() => {
     setIsEmpty(!messages.length)
   }, [messages.length])
-
-  const shouldLoadFocus =
-    showFocus && isEmpty && !threadId && !appStatus?.part && showFocus
 
   const render = () => {
     return (
@@ -400,7 +397,7 @@ const Thread = ({
                 <div className={styles.chatContainer}>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
-                    compactMode={shouldLoadFocus}
+                    compactMode={showFocus}
                     onTyping={notifyTyping}
                     disabled={isPendingCollaboration}
                     placeholder={
@@ -600,7 +597,7 @@ const Thread = ({
                     }
                     thread={thread}
                     showSuggestions={
-                      !shouldLoadFocus && !isLoading && messages.length === 0
+                      !showFocus && !isLoading && messages.length === 0
                     }
                     onToggleGame={(on) => setIsGame(on)}
                     showGreeting={isEmpty}
@@ -882,7 +879,7 @@ const Thread = ({
 
   // Only load Focus on web (not extension) and after hydration
 
-  return shouldLoadFocus ? (
+  return showFocus ? (
     <Suspense fallback={<Loading fullScreen />}>
       <Focus>{render()}</Focus>
     </Suspense>
