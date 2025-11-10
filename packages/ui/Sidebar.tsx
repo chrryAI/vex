@@ -73,7 +73,7 @@ export const Hey = memo(
     const { isHome, pathname, isSplash, setIsSplash } = useNavigationContext()
 
     const { threadId } = useChat()
-    const { allApps, app } = useAuth()
+    const { allApps, app, chrry } = useAuth()
 
     const { isExtension } = usePlatform()
 
@@ -102,6 +102,8 @@ export const Hey = memo(
       excludedRoutes: excludedSlugRoutes,
       locales,
     })
+
+    const isChrry = app && app.slug === "chrry"
 
     const isAppSlug =
       !!appSlug && allApps.some((candidate) => candidate.slug === appSlug)
@@ -155,10 +157,10 @@ export const Hey = memo(
         <div className={clsx(styles.splash, !isSplash && styles.hidden)}>
           <Img
             onLoad={() => setIsImageLoaded(true)}
-            app={app}
-            logo={!app ? "blossom" : undefined}
+            app={isChrry ? undefined : app}
+            logo={isChrry ? "blossom" : undefined}
             showLoading={false}
-            size={64}
+            size={isChrry ? 72 : 64}
           />
         </div>
       )
