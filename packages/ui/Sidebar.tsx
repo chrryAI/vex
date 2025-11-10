@@ -77,10 +77,6 @@ export const Hey = memo(
 
     const { isExtension } = usePlatform()
 
-    useEffect(() => {
-      useExtensionIcon?.(app?.slug)
-    }, [app, useExtensionIcon])
-
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
     const store = allApps?.find(
@@ -171,6 +167,11 @@ export const Hey = memo(
     useEffect(() => {
       isSplash && isImageLoaded && isHydrated && setIsSplash(!allApps.length)
     }, [isImageLoaded, isHydrated, isSplash, allApps])
+
+    useEffect(() => {
+      app?.slug && useExtensionIcon?.(app?.slug)
+      console.log(`🚀 ~ file: Sidebar.tsx:175 ~  app?.slug:`, app?.slug)
+    }, [app, useExtensionIcon])
 
     return (
       <div>

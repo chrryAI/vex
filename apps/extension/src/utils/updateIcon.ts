@@ -6,7 +6,13 @@ import { browserAPI } from "../browser-api"
  */
 export const updateExtensionIcon = async (iconVariant?: string) => {
   // Default to 'vex' if no variant provided
-  const appSlug = iconVariant || "vex"
+  let appSlug = iconVariant || "blossom"
+
+  if (
+    !["atlas", "peach", "vault", "bloom", "focus", "sushi"].includes(appSlug)
+  ) {
+    appSlug = "blossom"
+  }
 
   try {
     // Chrome/Edge API
@@ -19,7 +25,7 @@ export const updateExtensionIcon = async (iconVariant?: string) => {
           128: `icons/${appSlug}-icon-128.png`,
         },
       })
-      console.log("🎨 Extension icon updated to:", appSlug)
+      console.log("🎨 Extension icon updated to:", iconVariant, appSlug)
     }
   } catch (error) {
     console.error("Failed to update extension icon:", error)

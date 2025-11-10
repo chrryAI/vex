@@ -47,12 +47,16 @@ import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
 import {
+  API_URL,
   apiFetch,
   CHRRY_URL,
+  FRONTEND_URL,
   getExampleInstructions,
   getThreadId,
   instructionBase,
   isDeepEqual,
+  PROD_FRONTEND_URL,
+  WS_URL,
 } from "../../utils"
 import { Task } from "../TimerContext"
 
@@ -290,30 +294,6 @@ export function AuthProvider({
   const isTestingDevice = false && isDevelopment
 
   const chrryUrl = CHRRY_URL
-
-  const FRONTEND_URL = isTestingDevice
-    ? `http://192.168.2.27:${FE_PORT}`
-    : env === "development"
-      ? `http://localhost:${FE_PORT}`
-      : chrryUrl
-
-  const PROD_FRONTEND_URL = chrryUrl
-
-  const WS_URL = isTestingDevice
-    ? "ws://192.168.2.27:5001"
-    : env === "development"
-      ? "ws://localhost:5001"
-      : process.env.NEXT_PUBLIC_WS_URL
-        ? process.env.NEXT_PUBLIC_WS_URL
-        : "wss://ws.chrry.dev"
-
-  const API_URL = isTestingDevice
-    ? `http://192.168.2.27:${API_PORT}/api`
-    : isDevelopment
-      ? `http://localhost:${API_PORT}/api`
-      : process.env.NEXT_PUBLIC_API_URL
-        ? process.env.NEXT_PUBLIC_API_URL
-        : "https://chrry.dev/api"
 
   // Generate a stable deviceId immediately (don't wait for session or storage)
   const initialDeviceId = useRef<string>(uuidv4())
@@ -763,7 +743,7 @@ export function AuthProvider({
   )
 
   useEffect(() => {
-    if (allAppsSwr) {
+    if (allAppsSwr && Array.isArray(allAppsSwr)) {
       setAllApps(allAppsSwr)
     }
   }, [allAppsSwr])

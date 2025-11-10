@@ -59,11 +59,16 @@ export default defineConfig(({ command, mode }) => {
     return permissions.filter(Boolean)
   }
 
+  const getIconPath = (size: 16 | 32 | 48 | 128) =>
+    siteConfig.slug === "vex" || siteConfig.slug === "chrry"
+      ? `icons/blossom-icon-${size}.png`
+      : `icons/${siteConfig.slug}-icon-${size}.png`
+
   // Manifest base
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.3.87",
+    version: siteConfig.version || "1.3.88",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus"] // Firefox doesn't support sidePanel permission
@@ -73,10 +78,10 @@ export default defineConfig(({ command, mode }) => {
       default_title: siteConfig.name,
     },
     icons: {
-      16: `icons/${siteConfig.slug}-icon-16.png`,
-      32: `icons/${siteConfig.slug}-icon-32.png`,
-      48: `icons/${siteConfig.slug}-icon-48.png`,
-      128: `icons/${siteConfig.slug}-icon-128.png`,
+      16: getIconPath(16),
+      32: getIconPath(32),
+      48: getIconPath(48),
+      128: getIconPath(128),
     },
     background: isFirefox
       ? {

@@ -9,9 +9,6 @@ export const useExtensionIcon = (slug?: string) => {
   useEffect(() => {
     if (slug) {
       updateExtensionIcon(slug)
-    } else {
-      // Reset to default when no app selected
-      updateExtensionIcon()
     }
   }, [slug])
 }
