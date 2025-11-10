@@ -872,7 +872,8 @@ export function AuthProvider({
     return store.domain ? [store.domain] : []
   }
 
-  const baseApp = (allApps || [session?.app])?.find((item) => {
+  const baseApp = (allApps.length ? allApps : [session?.app])?.find((item) => {
+    if (!item) return false
     if (
       siteConfig.slug === item.slug &&
       item.store?.slug === siteConfig.storeSlug

@@ -231,26 +231,6 @@ export async function GET(request: Request) {
       })) || baseApp
     : baseApp
 
-  // Fetch ALL stores to get apps from all stores (for client-only navigation)
-  // Strategy:
-  // 1. Pass current user/guest to get their stores + public stores
-  // 2. Pass ownerId (app owner) to also include app owner's public stores
-  // 3. If current user IS the app owner, they get all owner's stores (public + private)
-  const allStores =
-    source === "layout"
-      ? {
-          stores: [],
-        }
-      : await getStores({
-          pageSize: 50,
-          userId: member?.id,
-          guestId: guest?.id,
-          ownerId: app?.userId || app?.guestId || undefined,
-        })
-
-  // Collect all apps from all stores
-  // console.log(`🔄 Collecting apps from ${allStores.stores.length} stores`)
-
   if (!success) {
     return new Response(JSON.stringify({ error: "Too many requests" }), {
       status: 429,

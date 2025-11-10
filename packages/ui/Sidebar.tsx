@@ -147,9 +147,6 @@ export const Hey = memo(
     const [isImageLoaded, setIsImageLoaded] = useState(false)
 
     // Memoize onLoad callback to prevent flickering
-    const handleImageLoad = useCallback(() => {
-      setIsImageLoaded(true)
-    }, [])
 
     // Memoize app object to prevent unnecessary re-renders
 
@@ -157,7 +154,7 @@ export const Hey = memo(
       return (
         <div className={clsx(styles.splash, !isSplash && styles.hidden)}>
           <Img
-            onLoad={handleImageLoad}
+            onLoad={() => setIsImageLoaded(true)}
             app={app}
             logo={!app ? "blossom" : undefined}
             showLoading={false}
@@ -167,10 +164,7 @@ export const Hey = memo(
       )
     }
     // Memoize splash component to prevent re-renders
-    const splash = useMemo(
-      () => getSplash(isSplash),
-      [handleImageLoad, isSplash],
-    )
+    const splash = getSplash(isSplash)
 
     useEffect(() => {
       isSplash && isImageLoaded && isHydrated && setIsSplash(!allApps.length)
