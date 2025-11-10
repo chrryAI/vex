@@ -216,7 +216,7 @@ export function DataProvider({
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.3.87"
+  const VERSION = "1.3.88"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -460,13 +460,7 @@ export function DataProvider({
         }
       }
     },
-    onErrorRetry: (
-      error: any,
-      key: string,
-      config: any,
-      revalidate: any,
-      { retryCount }: any,
-    ) => {
+    onErrorRetry: (error: any, revalidate: any, { retryCount }: any) => {
       // Don't retry on 429 errors
       if (error?.status === 429) return
 
@@ -522,10 +516,6 @@ export function DataProvider({
         method: "GET",
       })
       return await res.json()
-    },
-    {
-      // revalidateOnMount: true,
-      // revalidateOnFocus: true,
     },
   )
 
