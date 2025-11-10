@@ -73,7 +73,7 @@ export const Hey = memo(
     const { isHome, pathname, isSplash, setIsSplash } = useNavigationContext()
 
     const { threadId } = useChat()
-    const { isLoading, chrry, session, allApps, newApp, app } = useAuth()
+    const { allApps, newApp, app } = useAuth()
 
     const { isExtension } = usePlatform()
 
@@ -86,7 +86,6 @@ export const Hey = memo(
     const store = allApps?.find(
       (app) => app?.store?.slug === lastPathSegment,
     )?.store
-    const config = getSiteConfig()
 
     // SSR routes that should be handled by Next.js
     // Check both exact matches and path prefixes (e.g., /blog/dear-claude)
@@ -153,7 +152,6 @@ export const Hey = memo(
     }, [])
 
     // Memoize app object to prevent unnecessary re-renders
-    const memoizedApp = useMemo(() => newApp || app, [app, newApp])
 
     const getSplash = (isSplash: boolean) => {
       return (
@@ -173,10 +171,6 @@ export const Hey = memo(
       () => getSplash(isSplash),
       [handleImageLoad, isSplash],
     )
-
-    // useEffect(() => {
-    //   setIsSplash(!!newApp)
-    // }, [newApp])
 
     useEffect(() => {
       isSplash && isImageLoaded && isHydrated && setIsSplash(!allApps.length)
