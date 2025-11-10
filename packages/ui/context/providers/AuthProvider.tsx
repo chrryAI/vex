@@ -872,7 +872,7 @@ export function AuthProvider({
     return store.domain ? [store.domain] : []
   }
 
-  const baseApp = (allApps.length ? allApps : [session?.app])?.find((item) => {
+  const baseApp = allApps?.find((item) => {
     if (!item) return false
     if (
       siteConfig.slug === item.slug &&
@@ -895,7 +895,7 @@ export function AuthProvider({
 
   const [appState, setAppState] = useState<
     (appWithStore & { image?: string }) | undefined
-  >(baseApp || session?.app)
+  >(session?.app || baseApp)
 
   // const [appLocal, setAppLocal] = useLocalStorage<
   //   (appWithStore & { image?: string }) | undefined
