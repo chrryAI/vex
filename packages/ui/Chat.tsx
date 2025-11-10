@@ -4100,25 +4100,32 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     isExtension && styles.extension,
                   )}
                 >
-                  {app?.features?.moodTracking && (
-                    <MoodSelector
-                      showEdit={false}
-                      style={{
-                        fontSize: "1.3rem",
-                      }}
-                      key={mood?.type}
-                      mood={mood?.type}
-                      onSelectingMood={(v) => {
-                        setIsSelectingMood(v)
-                      }}
-                      onMoodChange={async (newMood) => {
-                        if (mood?.type !== newMood) {
-                          await updateMood({ type: newMood })
-                          toast.success(emojiMap[newMood])
-                        }
-                      }}
-                    />
-                  )}
+                  <div
+                    style={{
+                      top: "0.11rem",
+                      position: "relative",
+                    }}
+                  >
+                    {app?.features?.moodTracking && (
+                      <MoodSelector
+                        showEdit={false}
+                        style={{
+                          fontSize: "1.35rem",
+                        }}
+                        key={mood?.type}
+                        mood={mood?.type}
+                        onSelectingMood={(v) => {
+                          setIsSelectingMood(v)
+                        }}
+                        onMoodChange={async (newMood) => {
+                          if (mood?.type !== newMood) {
+                            await updateMood({ type: newMood })
+                            toast.success(emojiMap[newMood])
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
                   {!isSelectingMood && !needsReview && (
                     <>
                       <button
@@ -4142,17 +4149,19 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           setIsWebSearchEnabled(!isWebSearchEnabled)
                         }}
                       >
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color:
-                              isWebSearchEnabled || needSearch
-                                ? "var(--accent-6)"
-                                : "var(--shade-3)",
-                          }}
-                        >
-                          {isExtension || t("Web")}
-                        </span>
+                        {app?.features?.moodTracking ? null : (
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color:
+                                isWebSearchEnabled || needSearch
+                                  ? "var(--accent-6)"
+                                  : "var(--shade-3)",
+                            }}
+                          >
+                            {t("Web")}
+                          </span>
+                        )}
 
                         {selectedAgent?.capabilities?.webSearch ? (
                           <Globe
