@@ -43,6 +43,7 @@ export function Providers({
     <Chrry
       apiKey={apiKey}
       translations={translations}
+      locale={language}
       viewPortWidth={viewPortWidth}
       viewPortHeight={viewPortHeight}
       thread={thread}
