@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { appWithStore, storeWithApps, store } from "../types"
 import { COLORS } from "chrry/context/ThemeContext"
-import { t } from "./t"
+import { t as tFunc } from "./t"
 import { locale } from "../locales"
 
 /**
@@ -21,11 +21,13 @@ export function generateAppMetadata({
   store,
   locale = "en",
   currentDomain,
+  translations,
 }: {
   app: appWithStore
   store: storeWithApps
   locale?: locale | string
   currentDomain: string
+  translations: Record<string, any>
 }): Metadata {
   const title = app.name || app.title || "Chrry App"
   const description = app.description || `${title} - AI-powered agent on Chrry`
@@ -48,9 +50,12 @@ export function generateAppMetadata({
   const storeName = store.name || "Chrry"
   const canonicalUrl = `${currentDomain}/${storeSlug}/${app.slug}`
 
+  const t = (key: string) => {
+    return tFunc(translations)(key)
+  }
   return {
     title:
-      `${app.name} - ${t(app.title, locale)}` +
+      `${app.name} - ${t(app.title)}` +
       (app.slug === "chrry" ? "" : " | Chrry"),
     description: description,
     manifest: `${API_URL}/manifest/${app.id}`,
