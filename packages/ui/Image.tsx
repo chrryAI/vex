@@ -98,33 +98,52 @@ export default function ImageComponent(props: ImageProps) {
     PROD_FRONTEND_URL,
   })
 
+  const isAgent =
+    app?.onlyAgent &&
+    app?.defaultModel &&
+    ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"].includes(
+      app?.defaultModel,
+    )
+
+  const isEmoji =
+    !src &&
+    app?.slug &&
+    (app?.store?.slug === "movies" ||
+      app?.slug === "books" ||
+      app?.slug === "compass") &&
+    app.slug !== "popcorn" &&
+    app.slug !== "atlas"
+
   useEffect(() => {
-    setTimeout(() => {
+    if (isEmoji || isAgent) {
       onLoad?.()
-    }, 500)
-  }, [app?.onlyAgent && !app.image])
+    }
+  }, [isEmoji, isAgent])
 
   const color =
     COLORS[app?.themeColor as keyof typeof COLORS] || "var(--accent-6)"
 
   const emojiSize = size <= 24 ? size * 0.85 : size
-  if (!src && !app?.image && app?.slug) {
-    if (app.slug === "zarathustra") {
-      return <span style={{ fontSize: emojiSize }}>📕</span>
+  if (isEmoji) {
+    if (app?.store?.slug === "books") {
+      if (app.slug === "zarathustra") {
+        return <span style={{ fontSize: emojiSize }}>📕</span>
+      }
+
+      if (app.slug === "1984") {
+        return <span style={{ fontSize: emojiSize }}>👁️</span>
+      }
+
+      if (app.slug === "meditations") {
+        return <span style={{ fontSize: emojiSize }}>🏛️</span>
+      }
+
+      if (app.slug === "dune") {
+        return <span style={{ fontSize: emojiSize }}>🏜️</span>
+      }
     }
 
-    if (app.slug === "1984") {
-      return <span style={{ fontSize: emojiSize }}>👁️</span>
-    }
-
-    if (app.slug === "meditations") {
-      return <span style={{ fontSize: emojiSize }}>🏛️</span>
-    }
-
-    if (app.slug === "dune") {
-      return <span style={{ fontSize: emojiSize }}>🏜️</span>
-    }
-    if (app?.store?.slug === "movies" && app.slug !== "popcorn") {
+    if (app?.store?.slug === "movies") {
       if (app.slug === "fightClub") {
         return <span style={{ fontSize: emojiSize }}>🧼</span>
       }
@@ -144,33 +163,30 @@ export default function ImageComponent(props: ImageProps) {
       return <Clapperboard color={color} size={size} />
     }
 
-    if (app.slug === "amsterdam") {
-      return <span style={{ fontSize: emojiSize }}>🇳🇱</span>
-    }
+    if (app?.store?.slug === "compass") {
+      if (app.slug === "amsterdam") {
+        return <span style={{ fontSize: emojiSize }}>🇳🇱</span>
+      }
 
-    if (app.slug === "tokyo") {
-      return <span style={{ fontSize: emojiSize }}>🇯🇵</span>
-    }
+      if (app.slug === "tokyo") {
+        return <span style={{ fontSize: emojiSize }}>🇯🇵</span>
+      }
 
-    if (app.slug === "paris") {
-      return <span style={{ fontSize: emojiSize }}>🇫🇷</span>
-    }
+      if (app.slug === "paris") {
+        return <span style={{ fontSize: emojiSize }}>🇫🇷</span>
+      }
 
-    if (app.slug === "istanbul") {
-      return <span style={{ fontSize: emojiSize }}>🇹🇷</span>
-    }
+      if (app.slug === "istanbul") {
+        return <span style={{ fontSize: emojiSize }}>🇹🇷</span>
+      }
 
-    if (app.slug === "newYork") {
-      return <span style={{ fontSize: emojiSize }}>🗽</span>
+      if (app.slug === "newYork") {
+        return <span style={{ fontSize: emojiSize }}>🗽</span>
+      }
     }
   }
-  if (
-    app?.onlyAgent &&
-    app?.defaultModel &&
-    ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"].includes(
-      app?.defaultModel,
-    )
-  ) {
+
+  if (isAgent) {
     return app.defaultModel === "deepSeek" ? (
       <DeepSeek color={color} size={size} />
     ) : app.defaultModel === "chatGPT" ? (
