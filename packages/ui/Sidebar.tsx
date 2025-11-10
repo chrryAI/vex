@@ -73,7 +73,7 @@ export const Hey = memo(
     const { isHome, pathname, isSplash, setIsSplash } = useNavigationContext()
 
     const { threadId } = useChat()
-    const { allApps, newApp, app } = useAuth()
+    const { allApps, app } = useAuth()
 
     const { isExtension } = usePlatform()
 
