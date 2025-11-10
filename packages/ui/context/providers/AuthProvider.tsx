@@ -369,7 +369,7 @@ export function AuthProvider({
   }, [deviceId])
   // setDeviceIdCookie is stable from useCookie
 
-  const [shouldFetchSession, setShouldFetchSession] = useState(true)
+  const [shouldFetchSession, setShouldFetchSession] = useState(!session)
 
   const [fingerprint, setFingerprint] = useLocalStorage<string | undefined>(
     "fingerprint",
@@ -751,16 +751,14 @@ export function AuthProvider({
     await refetchSession()
   }
 
-  const {
-    data: allAppsSwr,
-    mutate: refetchAllApps,
-    isLoading: isAllAppsLoading,
-    error: allAppsError,
-  } = useSWR(token ? ["allApps", token] : null, async () => {
-    if (!token) return null
-    const apps = await getApps({ token })
-    return apps
-  })
+  const { data: allAppsSwr } = useSWR(
+    token ? ["allApps", token] : null,
+    async () => {
+      if (!token) return null
+      const apps = await getApps({ token })
+      return apps
+    },
+  )
 
   useEffect(() => {
     if (allAppsSwr) {
@@ -1158,7 +1156,7 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
-    if (!baseApp || !allApps || (!thread && threadId)) return
+    if (!baseApp || !allApps.length || (!thread && threadId)) return
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
@@ -1431,16 +1429,6 @@ export function AuthProvider({
       }
     }
   }, [sessionError])
-
-  // useEffect(() => {
-  //     if (thread) {
-  //       const threadApp = allApps.find((app) => app.id === thread.appId)
-
-  //       if (threadApp && app?.id !== threadApp?.id) {
-  //         setApp(threadApp)
-  //       }
-  //     }
-  //   }, [thread, allApps, app])
 
   const popcorn = allApps.find((app) => app.slug === "popcorn")
   const atlas = allApps.find((app) => app.slug === "atlas")
