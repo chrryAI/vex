@@ -322,8 +322,8 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
     } catch {
       host = host
         ?.replace(/^https?:\/\//i, "")
-        .split("/")[0]
-        .toLowerCase()
+        ?.split("/")[0]
+        ?.toLowerCase()
     }
   }
 
