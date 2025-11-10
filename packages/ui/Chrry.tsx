@@ -14,8 +14,10 @@ export default function Chrry({
   apiKey,
   signOutContext,
   locale,
+  translations,
   useExtensionIcon,
 }: {
+  translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
   locale?: locale
   thread?: { thread: thread; messages: paginatedMessages }
@@ -53,6 +55,7 @@ export default function Chrry({
       apiKey={apiKey}
       signOutContext={signOutContext}
       thread={thread}
+      translations={translations}
     >
       {children}
     </AppProviders>

@@ -17,6 +17,7 @@ const CACHE_TTL = {
   STORES_LIST: 60 * 5, // 5 minutes
   USER: 60 * 2, // 2 minutes (users change more often)
   GUEST: 60 * 2, // 2 minutes
+  TRANSLATIONS: 60 * 60 * 24, // 24 hours (translations rarely change)
 }
 
 // Cache key generators
@@ -33,6 +34,7 @@ export const cacheKeys = {
   userByEmail: (email: string) => `user:email:${email}`,
   guest: (id: string) => `guest:${id}`,
   guestByFingerprint: (fingerprint: string) => `guest:fp:${fingerprint}`,
+  translations: (locale: string) => `translations:${locale}`,
 }
 
 // Generic cache get/set
@@ -239,5 +241,30 @@ export async function invalidateGuest(id: string, fingerprint?: string) {
   await deleteCache(cacheKeys.guest(id))
   if (fingerprint) {
     await deleteCache(cacheKeys.guestByFingerprint(fingerprint))
+  }
+}
+
+// Translations cache helpers
+export async function getCachedTranslations(locale: string) {
+  return getCache<Record<string, any>>(cacheKeys.translations(locale))
+}
+
+export async function setCachedTranslations(
+  locale: string,
+  translations: Record<string, any>,
+) {
+  await setCache(
+    cacheKeys.translations(locale),
+    translations,
+    CACHE_TTL.TRANSLATIONS,
+  )
+}
+
+export async function invalidateTranslations(locale?: string) {
+  if (locale) {
+    await deleteCache(cacheKeys.translations(locale))
+  } else {
+    // Invalidate all translations
+    await deleteCachePattern("translations:*")
   }
 }

@@ -1027,17 +1027,39 @@ export type ApiActions = ReturnType<typeof getActions>
 export const getApps = async ({
   API_URL = utils.API_URL,
   token,
+  appId,
 }: {
   API_URL?: string
-  token?: string
-} = {}) => {
-  const response = await fetch(`${API_URL}/apps`, {
+  token: string
+  appId?: string
+}) => {
+  const params = new URLSearchParams()
+  appId && params.append("appId", appId)
+  const response = await fetch(`${API_URL}/apps?${params}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   })
   const data = await response.json()
-  return data as Paginated<appWithStore>
+  return data as appWithStore[]
+}
+
+export const getTranslations = async ({
+  API_URL = utils.API_URL,
+  token,
+  locale,
+}: {
+  API_URL?: string
+  token?: string
+  locale?: string
+} = {}) => {
+  const response = await fetch(`${API_URL}/translations?locale=${locale}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  const data = await response.json()
+  return data as Record<string, any>
 }
 
 export const getActions = ({
@@ -1061,6 +1083,8 @@ export const getActions = ({
       onError?: (status: number) => void
       slug?: "Atlas" | "Peach" | "Vault" | "Bloom" | string | null
     }) => getThreads({ token, ...params, API_URL }),
+    getTranslations: (params?: { locale?: string }) =>
+      getTranslations({ token, ...params, API_URL }),
     getThread: (params: {
       pageSize?: number
       id: string

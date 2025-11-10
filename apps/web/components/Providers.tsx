@@ -21,6 +21,7 @@ export function Providers({
   viewPortHeight,
   thread,
   session,
+  translations,
 }: {
   children: React.ReactNode
   apiKey?: string
@@ -28,6 +29,7 @@ export function Providers({
   viewPortHeight?: string
   session?: any
   thread?: { thread: thread; messages: paginatedMessages }
+  translations?: Record<string, any>
 }) {
   const { useRouter: useI18nRouter } = createNavigation({ locales })
   const i18nRouter = useI18nRouter()
@@ -38,27 +40,26 @@ export function Providers({
   )
 
   return (
-    <NextIntlClientProvider messages={{}} locale={language}>
-      <Chrry
-        apiKey={apiKey}
-        viewPortWidth={viewPortWidth}
-        viewPortHeight={viewPortHeight}
-        thread={thread}
-        session={session}
-        onSetLanguage={(path, lang) => {
-          setLanguage(lang)
-          i18nRouter.replace(path, { locale: lang })
-        }}
-        signInContext={(provider, options) => {
-          return signInContext(provider, {
-            blankTarget: true,
-            callbackUrl: options.callbackUrl,
-          })
-        }}
-        signOutContext={signOutContext}
-      >
-        {children}
-      </Chrry>
-    </NextIntlClientProvider>
+    <Chrry
+      apiKey={apiKey}
+      translations={translations}
+      viewPortWidth={viewPortWidth}
+      viewPortHeight={viewPortHeight}
+      thread={thread}
+      session={session}
+      onSetLanguage={(path, lang) => {
+        setLanguage(lang)
+        i18nRouter.replace(path, { locale: lang })
+      }}
+      signInContext={(provider, options) => {
+        return signInContext(provider, {
+          blankTarget: true,
+          callbackUrl: options.callbackUrl,
+        })
+      }}
+      signOutContext={signOutContext}
+    >
+      {children}
+    </Chrry>
   )
 }
