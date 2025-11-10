@@ -319,11 +319,8 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
   if (host?.includes("://")) {
     try {
       host = new URL(host).hostname.toLowerCase()
-    } catch {
-      host = host
-        ?.replace(/^https?:\/\//i, "")
-        ?.split("/")[0]
-        ?.toLowerCase()
+    } catch (e) {
+      console.log("Error parsing URL:", e)
     }
   }
 
