@@ -171,7 +171,8 @@ export async function GET(request: Request) {
     ? decodeURIComponent(chrryUrlFromParams)
     : process.env.CHRRY_URL
 
-  const siteConfig = getSiteConfig(chrryUrl)
+  const siteConfig = getSiteConfig(chrryUrl, true)
+  console.log(`🚀 ~ file: route.ts:176 ~ siteConfig:`, siteConfig.name)
 
   const chrryStore = await getStore({
     domain: siteConfig.store,

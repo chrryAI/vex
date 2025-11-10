@@ -895,7 +895,7 @@ export default function FocusButton({ className }: { className?: string }) {
                             }}
                             onClick={() => {
                               setShowFocus(false)
-                              app?.id === focus?.id
+                              refApp?.id === focus?.id
                                 ? setShowFocus(false)
                                 : push(getAppSlug(refApp))
                             }}
