@@ -74,7 +74,7 @@ const Thread = ({
   const { t } = useAppContext()
 
   // Auth context
-  const { user, guest, track, memoriesEnabled, taskId } = useAuth()
+  const { user, guest, track, memoriesEnabled, ...auth } = useAuth()
 
   // Chat context
   const {
@@ -125,6 +125,7 @@ const Thread = ({
     slug,
     isIncognito,
     goToCalendar,
+    pathname,
   } = useNavigationContext()
 
   const { threadId, creditsLeft, setCreditsLeft } = useChat()
@@ -141,7 +142,7 @@ const Thread = ({
     setIsFocus(focus && focus?.id === app?.id)
   }, [focus, app])
 
-  const showFocus = !threadId && isFocus && isEmpty
+  const showFocus = auth.showFocus && isFocus && isEmpty
 
   const { addHapticFeedback, isDrawerOpen } = useTheme()
   const { isExtension } = usePlatform()
@@ -252,6 +253,9 @@ const Thread = ({
   useEffect(() => {
     setIsEmpty(!messages.length)
   }, [messages.length])
+
+  const shouldLoadFocus =
+    showFocus && isEmpty && !threadId && !appStatus?.part && showFocus
 
   const render = () => {
     return (
@@ -396,7 +400,7 @@ const Thread = ({
                 <div className={styles.chatContainer}>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
-                    compactMode={isFocus}
+                    compactMode={shouldLoadFocus}
                     onTyping={notifyTyping}
                     disabled={isPendingCollaboration}
                     placeholder={
@@ -596,7 +600,7 @@ const Thread = ({
                     }
                     thread={thread}
                     showSuggestions={
-                      !showFocus && !isLoading && messages.length === 0
+                      !shouldLoadFocus && !isLoading && messages.length === 0
                     }
                     onToggleGame={(on) => setIsGame(on)}
                     showGreeting={isEmpty}
@@ -877,7 +881,6 @@ const Thread = ({
   }
 
   // Only load Focus on web (not extension) and after hydration
-  const shouldLoadFocus = showFocus && isEmpty && !threadId
 
   return shouldLoadFocus ? (
     <Suspense fallback={<Loading fullScreen />}>

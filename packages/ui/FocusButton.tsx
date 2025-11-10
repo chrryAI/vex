@@ -86,10 +86,14 @@ export default function FocusButton({ className }: { className?: string }) {
     setEnableNotifications,
     user,
     guest,
-    language,
+    baseApp,
     bloom,
+    app,
     getAppSlug,
     allApps,
+    focus,
+    setShowFocus,
+    showFocus,
   } = useAuth()
 
   const { searchParams, addParams, push, setParams } = useNavigation()
@@ -100,7 +104,7 @@ export default function FocusButton({ className }: { className?: string }) {
     setAppId(searchParams.get("appId"))
   }, [searchParams])
 
-  const refApp = allApps.find((app) => app.id === appId) || bloom
+  const refApp = allApps.find((app) => app.id === appId) || focus
 
   useEffect(() => {
     if (appId) {
@@ -889,7 +893,13 @@ export default function FocusButton({ className }: { className?: string }) {
                               ...utilities.inverted.style,
                               ...utilities.small.style,
                             }}
-                            href={getAppSlug(refApp)}
+                            onClick={() => {
+                              setShowFocus(false)
+                              app?.id === focus?.id
+                                ? setShowFocus(false)
+                                : push(getAppSlug(refApp))
+                            }}
+                            // href={getAppSlug(refApp)}
                           >
                             <Img size={20} app={refApp} />
                             {refApp.name}

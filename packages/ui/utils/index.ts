@@ -79,7 +79,6 @@ const getClientHostname = () => {
 
 // Priority: env var > dynamic detection > hardcoded fallback
 export const CHRRY_URL =
-  process.env.NEXT_PUBLIC_CHRRY_URL ||
   (getClientHostname() ? getSiteConfig(getClientHostname()).url : undefined) ||
   "https://chrry.ai"
 
@@ -380,7 +379,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.3.79"
+export const VERSION = config.version || "1.3.80"
 export type instructionBase = {
   id: string
   title: string

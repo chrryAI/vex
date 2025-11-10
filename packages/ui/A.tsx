@@ -44,8 +44,9 @@ export default function Anchor({
       {...props}
       target={target}
       onClick={(e) => {
+        props.onClick?.(e)
+
         if (clientOnly) {
-          props.onClick?.(e)
           return
         }
         // Allow meta/ctrl+click to open in new tab

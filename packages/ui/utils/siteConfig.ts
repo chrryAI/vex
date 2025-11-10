@@ -343,7 +343,7 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
   }
 
   // Default to vex (vex.chrry.ai or localhost)
-  return "vex"
+  return "focus"
 }
 
 /**
@@ -352,28 +352,7 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
  */
 export function detectSiteMode(hostname?: string): SiteMode {
   const mode = detectSiteModeDomain(hostname)
-  if (mode) {
-    return mode
-  }
-
-  // Check environment variable fallback
-  if (process.env.NEXT_PUBLIC_SITE_MODE === "chrryDev") {
-    return "chrryDev"
-  }
-
-  if (process.env.NEXT_PUBLIC_SITE_MODE === "chrryAI") {
-    return "chrryAI"
-  }
-
-  if (process.env.NEXT_PUBLIC_SITE_MODE === "chrryStore") {
-    return "chrryStore"
-  }
-
-  if (process.env.NEXT_PUBLIC_SITE_MODE === "focus") {
-    return "focus"
-  }
-
-  return "vex"
+  return mode
 }
 
 /**

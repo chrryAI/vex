@@ -8,6 +8,10 @@ export async function GET(request: NextRequest) {
     const member = await getMember()
     const guest = await getGuest()
 
+    if (!member && !guest) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const stores = await getStores({
       userId: member?.id,
       guestId: guest?.id,
