@@ -161,25 +161,6 @@ export async function GET(request: Request) {
 
   const source = url.searchParams.get("source")
 
-  let translations: Record<string, any> = {}
-
-  if (translate) {
-    try {
-      const translationsModule = await import(`chrry/locales/${locale}.json`)
-      translations = translationsModule.default || translationsModule
-    } catch (error) {
-      // Sanitize locale for logging
-      const safeLocale = String(locale).replace(/[^\w-]/g, "_")
-      console.error(`Failed to load locale: ${safeLocale}`, error)
-      try {
-        const enModule = await import(`chrry/locales/en.json`)
-        translations = enModule.default || enModule
-      } catch (fallbackError) {
-        console.error("Failed to load fallback locale (en)", fallbackError)
-        translations = {}
-      }
-    }
-  }
   const headers = request.headers
 
   const pathname = headers.get("x-pathname") || "/"
@@ -268,56 +249,7 @@ export async function GET(request: Request) {
         })
 
   // Collect all apps from all stores
-  const allAppsFromAllStores: appWithStore[] = []
   // console.log(`🔄 Collecting apps from ${allStores.stores.length} stores`)
-
-  for (const storeItem of allStores.stores) {
-    if (storeItem?.apps) {
-      if (!storeItem.apps.length) {
-        continue
-      }
-      const appsWithStoreApp = await Promise.all(
-        storeItem.apps.map(async (app) => {
-          if (!app) {
-            return null
-          }
-          // If this app IS the base app of its own store, set store.app to itself
-          const isBaseApp = app?.id === app?.store?.appId
-
-          let storeBaseApp: appWithStore | null = null
-          if (isBaseApp) {
-            // Self-reference for base apps
-            storeBaseApp =
-              (await getApp({
-                id: app?.id,
-                userId: member?.id,
-                guestId: guest?.id,
-                depth: 1,
-              })) || null
-          } else if (app?.store?.appId) {
-            const baseAppData = await getApp({
-              id: app?.store?.appId,
-              userId: member?.id,
-              guestId: guest?.id,
-              depth: 0,
-            })
-            storeBaseApp = baseAppData ?? null
-          }
-
-          return {
-            ...app,
-            store: {
-              ...app?.store,
-              app: storeBaseApp,
-            },
-          } as appWithStore
-        }),
-      )
-      allAppsFromAllStores.push(
-        ...appsWithStoreApp.map((app) => app as appWithStore),
-      )
-    }
-  }
 
   if (!success) {
     return new Response(JSON.stringify({ error: "Too many requests" }), {
@@ -656,7 +588,6 @@ export async function GET(request: Request) {
 
       const response = setFingerprintCookie(
         NextResponse.json({
-          translations,
           locale,
           TEST_MEMBER_FINGERPRINTS,
           TEST_GUEST_FINGERPRINTS,
@@ -664,7 +595,6 @@ export async function GET(request: Request) {
           device,
           os,
           browser,
-          apps: allAppsFromAllStores,
           aiAgent,
           versions,
           guest: null,
@@ -827,7 +757,6 @@ export async function GET(request: Request) {
 
       const response = setFingerprintCookie(
         NextResponse.json({
-          translations,
           locale,
           TEST_MEMBER_FINGERPRINTS,
           TEST_GUEST_FINGERPRINTS,
@@ -836,7 +765,6 @@ export async function GET(request: Request) {
           os,
           browser,
           app,
-          apps: allAppsFromAllStores,
           aiAgent,
           versions,
           guest: {
@@ -880,7 +808,6 @@ export async function GET(request: Request) {
 
     const response = setFingerprintCookie(
       NextResponse.json({
-        translations,
         locale,
         TEST_MEMBER_FINGERPRINTS,
         TEST_GUEST_FINGERPRINTS,
@@ -890,7 +817,6 @@ export async function GET(request: Request) {
         browser,
         aiAgent,
         app,
-        apps: allAppsFromAllStores,
         versions,
         aiAgents,
         guest: {

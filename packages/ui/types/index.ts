@@ -271,7 +271,6 @@ export type session = {
   fingerprint?: string
   token?: string
   aiAgents?: aiAgent[]
-  translations?: Record<string, string>
   migratedFromGuest?: boolean
   hasNotifications?: boolean
   createdOn?: string
@@ -282,7 +281,6 @@ export type session = {
     totalCount: number
   }
   stores?: Paginated<storeWithApps>
-  apps: appWithStore[]
   versions: {
     webVersion: string
     firefoxVersion: string

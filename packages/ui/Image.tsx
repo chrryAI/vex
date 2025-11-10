@@ -109,10 +109,8 @@ export default function ImageComponent(props: ImageProps) {
     !src &&
     app?.slug &&
     (app?.store?.slug === "movies" ||
-      app?.slug === "books" ||
-      app?.slug === "compass") &&
-    app.slug !== "popcorn" &&
-    app.slug !== "atlas"
+      app?.store?.slug === "books" ||
+      app?.store?.slug === "compass")
 
   useEffect(() => {
     if (isEmoji || isAgent) {

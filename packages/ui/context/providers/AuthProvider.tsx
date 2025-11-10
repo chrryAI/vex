@@ -39,7 +39,7 @@ import {
   moodType,
 } from "../../types"
 import toast from "react-hot-toast"
-import { getSession } from "../../lib"
+import { getApps, getSession } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { locale, locales } from "../../locales"
@@ -223,8 +223,10 @@ export function AuthProvider({
   signOutContext,
   error,
   locale,
+  translations,
   ...props
 }: {
+  translations?: Record<string, any>
   locale?: locale
   apiKey?: string
   signInContext?: (
@@ -750,6 +752,23 @@ export function AuthProvider({
   }
 
   const {
+    data: allAppsSwr,
+    mutate: refetchAllApps,
+    isLoading: isAllAppsLoading,
+    error: allAppsError,
+  } = useSWR(token ? ["allApps", token] : null, async () => {
+    if (!token) return null
+    const apps = await getApps({ token })
+    return apps
+  })
+
+  useEffect(() => {
+    if (allAppsSwr) {
+      setAllApps(allAppsSwr)
+    }
+  }, [allAppsSwr])
+
+  const {
     data: sessionSwr,
     mutate: refetchSession,
     isLoading: isSessionLoading,
@@ -834,9 +853,7 @@ export function AuthProvider({
 
   const sessionData = sessionSwr || session
 
-  const [allApps, setAllApps] = useState<appWithStore[]>(
-    sessionData?.apps || [],
-  )
+  const [allApps, setAllApps] = useState<appWithStore[]>([])
 
   const chrry = allApps?.find((app) => !app.store?.parentStoreId)
   const vex = allApps?.find((app) => app.slug === "vex")
@@ -1021,16 +1038,12 @@ export function AuthProvider({
     }
   }, [moodsData])
 
-  if (session?.translations && session?.locale) {
-    if (!i18n.hasResourceBundle(session.locale, "translation")) {
-      i18n.addResourceBundle(
-        session.locale,
-        "translation",
-        session.translations,
-      )
+  if (translations && locale) {
+    if (!i18n.hasResourceBundle(locale, "translation")) {
+      i18n.addResourceBundle(locale, "translation", translations)
     }
-    if (i18n.language !== session.locale && !hasHydrated) {
-      i18n.changeLanguage(session.locale)
+    if (i18n.language !== locale && !hasHydrated) {
+      i18n.changeLanguage(locale)
     }
   }
 
@@ -1322,8 +1335,6 @@ export function AuthProvider({
       // setApps(sessionData.app?.store.apps || [])
 
       sessionData.aiAgents && setAiAgents(sessionData.aiAgents)
-
-      sessionData.apps.length > 0 && setAllApps(sessionData.apps)
 
       if (sessionData.app) {
         setApp(sessionData.app)

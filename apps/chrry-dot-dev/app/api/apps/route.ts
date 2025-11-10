@@ -17,25 +17,84 @@ import { upload, deleteFile } from "../../../lib/uploadthing-server"
 import slugify from "slug"
 import { v4 as uuid } from "uuid"
 import { reorderApps } from "chrry/lib"
+import { getStores } from "@repo/db"
+import { appWithStore } from "chrry/types"
 
 export async function GET(request: NextRequest) {
-  try {
-    const member = await getMember()
-    const guest = await getGuest()
+  const appId = request.nextUrl.searchParams.get("appId")
 
-    const result = await getApps({
-      page: 1,
-      pageSize: 100,
-      userId: member?.id,
-      guestId: guest?.id,
-    })
+  const member = await getMember()
+  const guest = await getGuest()
 
-    return NextResponse.json(result)
-  } catch (error) {
-    console.error("Error fetching apps:", error)
-    captureException(error)
-    return NextResponse.json({ error: "Failed to fetch apps" }, { status: 500 })
+  const app = appId
+    ? await getApp({
+        id: appId,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1,
+      })
+    : undefined
+
+  const allStores = await getStores({
+    pageSize: 50,
+    userId: member?.id,
+    guestId: guest?.id,
+    ownerId: app?.userId || app?.guestId || undefined,
+  })
+
+  // Collect all apps from all stores
+  const allAppsFromAllStores: appWithStore[] = []
+  // console.log(`🔄 Collecting apps from ${allStores.stores.length} stores`)
+
+  for (const storeItem of allStores.stores) {
+    if (storeItem?.apps) {
+      if (!storeItem.apps.length) {
+        continue
+      }
+      const appsWithStoreApp = await Promise.all(
+        storeItem.apps.map(async (app) => {
+          if (!app) {
+            return null
+          }
+          // If this app IS the base app of its own store, set store.app to itself
+          const isBaseApp = app?.id === app?.store?.appId
+
+          let storeBaseApp: appWithStore | null = null
+          if (isBaseApp) {
+            // Self-reference for base apps
+            storeBaseApp =
+              (await getApp({
+                id: app?.id,
+                userId: member?.id,
+                guestId: guest?.id,
+                depth: 1,
+              })) || null
+          } else if (app?.store?.appId) {
+            const baseAppData = await getApp({
+              id: app?.store?.appId,
+              userId: member?.id,
+              guestId: guest?.id,
+              depth: 0,
+            })
+            storeBaseApp = baseAppData ?? null
+          }
+
+          return {
+            ...app,
+            store: {
+              ...app?.store,
+              app: storeBaseApp,
+            },
+          } as appWithStore
+        }),
+      )
+      allAppsFromAllStores.push(
+        ...appsWithStoreApp.map((app) => app as appWithStore),
+      )
+    }
   }
+
+  return NextResponse.json(allAppsFromAllStores)
 }
 
 export async function POST(request: NextRequest) {

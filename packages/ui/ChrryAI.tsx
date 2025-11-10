@@ -8,7 +8,7 @@ import AppMetadata from "./AppMetadata"
 import { locale, locales } from "./locales"
 import { getMetadata, VERSION, getThreadId, pageSizes, API_URL } from "./utils"
 
-import { getSession, getThread } from "./lib"
+import { getSession, getThread, getTranslations } from "./lib"
 import { getSiteConfig, getSiteTranslation } from "./utils/siteConfig"
 import Chrry from "./Chrry"
 
@@ -37,6 +37,7 @@ type WrapperProps = {
   viewPortWidth?: string
   viewPortHeight?: string
   session?: session
+  translations?: Record<string, any>
   locale?: locale
   thread?: { thread: thread; messages: paginatedMessages }
 }
@@ -53,6 +54,7 @@ export default async function ChrryAI({
     viewPortWidth,
     viewPortHeight,
     session,
+    translations,
     locale,
     thread,
   }) => (
@@ -63,6 +65,7 @@ export default async function ChrryAI({
       viewPortWidth={viewPortWidth}
       viewPortHeight={viewPortHeight}
       session={session}
+      translations={translations}
     >
       {children}
     </Chrry>
@@ -121,23 +124,30 @@ export default async function ChrryAI({
   const siteConfig = getSiteConfig(hostname)
 
   // Call API session endpoint
-  const session = await getSession({
-    appId,
-    deviceId,
-    fingerprint,
-    token: apiKey,
-    appSlug,
-    agentName,
-    pathname,
-    routeType,
-    translate: true,
-    locale,
-    chrryUrl: siteConfig.url,
-    screenWidth: Number(viewPortWidth),
-    screenHeight: Number(viewPortHeight),
-    source: "layout",
-    userAgent: headersList.get("user-agent") || `Chrry/${VERSION}`,
-  })
+  const [session, translations] = await Promise.all([
+    getSession({
+      appId,
+      deviceId,
+      fingerprint,
+      token: apiKey,
+      appSlug,
+      agentName,
+      pathname,
+      routeType,
+      translate: true,
+      locale,
+      chrryUrl: siteConfig.url,
+      screenWidth: Number(viewPortWidth),
+      screenHeight: Number(viewPortHeight),
+      source: "layout",
+      userAgent: headersList.get("user-agent") || `Chrry/${VERSION}`,
+    }),
+
+    getTranslations({
+      token: apiKey,
+      locale,
+    }),
+  ])
 
   if (session && "error" in session) {
     console.error(session.error)
@@ -200,6 +210,7 @@ export default async function ChrryAI({
           apiKey={apiKey}
           viewPortWidth={viewPortWidth}
           viewPortHeight={viewPortHeight}
+          translations={translations}
           session={session && "app" in session ? session : undefined}
           locale={locale}
         >

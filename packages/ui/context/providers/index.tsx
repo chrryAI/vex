@@ -32,6 +32,7 @@ import { thread, paginatedMessages } from "chrry/types"
 import { TimerContext, TimerContextProvider } from "../TimerContext"
 
 interface AppProvidersProps {
+  translations?: Record<string, any>
   locale?: locale
   apiKey?: string
   children: ReactNode
@@ -74,6 +75,7 @@ export default function AppProviders({
   viewPortHeight,
   thread,
   locale,
+  translations,
   useExtensionIcon,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
@@ -120,6 +122,7 @@ export default function AppProviders({
         <ErrorProvider>
           <ThemeProvider session={session}>
             <AuthProvider
+              translations={translations}
               thread={thread}
               locale={locale}
               error={error}
