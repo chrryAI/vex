@@ -4100,32 +4100,34 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     isExtension && styles.extension,
                   )}
                 >
-                  <div
-                    style={{
-                      top: "0.11rem",
-                      position: "relative",
-                    }}
-                  >
-                    {app?.features?.moodTracking && (
-                      <MoodSelector
-                        showEdit={false}
-                        style={{
-                          fontSize: "1.35rem",
-                        }}
-                        key={mood?.type}
-                        mood={mood?.type}
-                        onSelectingMood={(v) => {
-                          setIsSelectingMood(v)
-                        }}
-                        onMoodChange={async (newMood) => {
-                          if (mood?.type !== newMood) {
-                            await updateMood({ type: newMood })
-                            toast.success(emojiMap[newMood])
-                          }
-                        }}
-                      />
-                    )}
-                  </div>
+                  {isHydrated && (
+                    <div
+                      style={{
+                        top: "0.15rem",
+                        position: "relative",
+                      }}
+                    >
+                      {app?.features?.moodTracking && (
+                        <MoodSelector
+                          showEdit={false}
+                          style={{
+                            fontSize: "1.40rem",
+                          }}
+                          key={mood?.type}
+                          mood={mood?.type}
+                          onSelectingMood={(v) => {
+                            setIsSelectingMood(v)
+                          }}
+                          onMoodChange={async (newMood) => {
+                            if (mood?.type !== newMood) {
+                              await updateMood({ type: newMood })
+                              toast.success(emojiMap[newMood])
+                            }
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
                   {!isSelectingMood && !needsReview && (
                     <>
                       <button
