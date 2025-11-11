@@ -562,18 +562,9 @@ export default function Message({
 
     return (
       <ConfirmButton
+        processing={isDeleting}
         data-testid="delete-message"
         className={clsx("link", styles.deleteButton)}
-        confirm={
-          <>
-            {isDeleting ? (
-              <Loading color="var(--accent-0)" width={18} height={16} />
-            ) : (
-              <Trash2 color="var(--accent-0)" size={18} />
-            )}
-            {t("Are you sure?")}
-          </>
-        }
         onConfirm={async function () {
           setIsDeleting(true)
 

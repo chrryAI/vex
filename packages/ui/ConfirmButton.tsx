@@ -2,9 +2,15 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "./platform"
+import Loading from "./Loading"
+import { Trash2 } from "lucide-react"
 
 const ConfirmButton = ({
-  children,
+  children = (
+    <>
+      <Trash2 color="var(--accent-1)" size={16} />
+    </>
+  ),
   confirm,
   onConfirm,
   transparent,
@@ -15,10 +21,11 @@ const ConfirmButton = ({
   disabled,
   confirmTitle,
   onClick,
+  processing,
   ...rest
 }: {
-  children: React.ReactNode
-  confirm: React.ReactNode
+  children?: React.ReactNode
+  confirm?: React.ReactNode
   className?: string
   onConfirm: () => void
   transparent?: boolean
@@ -28,6 +35,7 @@ const ConfirmButton = ({
   style?: React.CSSProperties
   title?: string
   confirmTitle?: string
+  processing?: boolean
   onClick?: () => void
 }): React.ReactElement => {
   const [sure, setSure] = useState(false)
@@ -78,7 +86,23 @@ const ConfirmButton = ({
       }}
       {...rest}
     >
-      <>{sure ? confirm : children}</>
+      <>
+        {sure ? (
+          confirm ? (
+            confirm
+          ) : (
+            <>
+              {processing ? (
+                <Loading color="var(--accent-0)" size={16} />
+              ) : (
+                <>🔥</>
+              )}
+            </>
+          )
+        ) : (
+          children
+        )}
+      </>
     </Button>
   )
 }
