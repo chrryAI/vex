@@ -8,6 +8,7 @@ import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import { validate } from "uuid"
 import { headers } from "next/headers"
+import { API_URL } from "chrry/utils"
 
 export async function generateMetadata({
   params,
@@ -94,7 +95,7 @@ export async function generateMetadata({
   return {
     title: `${title} | Vex`,
     description: description,
-    manifest: `/api/manifest/${id}`,
+    manifest: `${API_URL}/manifest/${id}`,
     themeColor: themeColor,
     icons: [
       ...(icon32
