@@ -175,7 +175,7 @@ export default async function ChrryAI({
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <title>API Connection Error</title>
           <style>{`
-            body {
+            body, html {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
               max-width: 800px;
               margin: 40px auto;
