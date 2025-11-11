@@ -580,7 +580,7 @@ export default function Message({
               toast.error(response.error)
             } else {
               await onDelete?.({ id: message.message.id })
-              toast.success(t("Message deleted successfully"))
+              toast.success(t("Deleted"))
             }
           } catch (error) {
             captureException(error)

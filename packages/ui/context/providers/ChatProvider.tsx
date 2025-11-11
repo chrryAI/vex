@@ -412,6 +412,7 @@ export function ChatProvider({
       router.push(to)
       isIncognito && setWasIncognito(true)
       setCollaborationStatus(undefined)
+      setIsChatFloating(false)
     }
 
     if (value && isExtension) {
