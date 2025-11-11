@@ -565,7 +565,7 @@
   "Remove Image": "Resmi Kaldır",
   "about.intro2": "Sohbet başına talimatlar, belge hafızası için konu kalıntıları ve gerçek zamanlı işbirliği özellikleri ile. Vex bağlamınızı öğrenir, dosyalarınızı hatırlar ve ekibinizle birlikte çalışır.",
   "DeepSeek consumes {{deepSeek}}, Flux {{flux}}, Claude {{claude}}, ChatGPT {{chatGPT}}, Perplexity {{perplexity}} credits": "DeepSeek {{deepSeek}}, Flux {{flux}}, Claude {{claude}}, ChatGPT {{chatGPT}}, Perplexity {{perplexity}} kredi tüketir",
-  "Access to AI models": "AI modellerine erişim (Claude, ChatGPT, Gemini, Perplexity, DeepSeek, Flux)",
+  "Access to AI models": "AI modellerine erişim (Claude, ChatGPT, Gemini, Perplexity, 🍣 Sushi)",
   "ImageGeneration": "Görüntü Oluşturma",
   "Search anything...": "Bir şey arayın...",
   "credits_plural": "{{count}} kredi",
@@ -1681,5 +1681,8 @@
   "Seamlessly integrate third-party APIs and services. Sushi handles authentication, error handling, and rate limiting properly.": "Üçüncü taraf API'leri ve hizmetleri sorunsuz bir şekilde entegre edin. Sushi, kimlik doğrulamayı, hata işlemeyi ve oran sınırlamayı doğru bir şekilde ele alır.",
   "Write optimized SQL, NoSQL, and ORM queries. Sushi creates efficient database operations with proper indexing and relationships.": "Optimize edilmiş SQL, NoSQL ve ORM sorguları yazın. Sushi, uygun indeksleme ve ilişkilerle verimli veritabanı işlemleri oluşturur.",
   "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.": "Birim testlerini, entegrasyon testlerini ve E2E testlerini otomatik olarak oluşturun. Sushi, kodunuz için kapsamlı test kapsamını sağlar.",
-  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Açık, kapsamlı belgeler ve yorumlar oluşturun. Sushi, karmaşık kodu insanların okuyabileceği dilde açıklar."
+  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Açık, kapsamlı belgeler ve yorumlar oluşturun. Sushi, karmaşık kodu insanların okuyabileceği dilde açıklar.",
+  "Create apps in your store with unlimited collaboration": "Mağazanızda sınırsız işbirliği ile uygulamalar oluşturun",
+  "Create custom AI apps with team collaboration": "Takım işbirliği ile özel AI uygulamaları oluşturun",
+  "Unlimited stores with nested apps": "İç içe uygulamalarla sınırsız mağaza"
 }

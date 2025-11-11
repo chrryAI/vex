@@ -1682,5 +1682,8 @@
   "Seamlessly integrate third-party APIs and services. Sushi handles authentication, error handling, and rate limiting properly.": "无缝集成第三方 API 和服务。Vex 正确处理身份验证、错误处理和速率限制。",
   "Write optimized SQL, NoSQL, and ORM queries. Sushi creates efficient database operations with proper indexing and relationships.": "编写优化的 SQL、NoSQL 和 ORM 查询。Vex 通过正确的索引和关系创建高效的数据库操作。",
   "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.": "自动生成单元测试、集成测试和端到端测试。Vex 确保您的代码具有全面的测试覆盖率。",
-  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "生成清晰、全面的文档和注释。Vex 用人类可读的语言解释复杂的代码。"
+  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "生成清晰、全面的文档和注释。Vex 用人类可读的语言解释复杂的代码。",
+  "Create apps in your store with unlimited collaboration": "在您的商店中创建应用，无限制地进行协作",
+  "Create custom AI apps with team collaboration": "与团队协作创建定制的AI应用",
+  "Unlimited stores with nested apps": "无限制的商店与嵌套应用"
 }

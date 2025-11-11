@@ -565,7 +565,7 @@
   "Remove Image": "Afbeelding verwijderen",
   "about.intro2": "Met instructies per chat, thread-artefacten voor documentgeheugen en realtime samenwerkingsfuncties. Vex leert uw context, onthoudt uw bestanden en werkt samen met uw team.",
   "DeepSeek consumes {{deepSeek}}, Flux {{flux}}, Claude {{claude}}, ChatGPT {{chatGPT}}, Perplexity {{perplexity}} credits": "DeepSeek verbruikt {{deepSeek}}, Flux {{flux}}, Claude {{claude}}, ChatGPT {{chatGPT}}, Perplexity {{perplexity}} credits",
-  "Access to AI models": "Toegang tot de nieuwste AI-modellen (Claude, ChatGPT, Gemini, Perplexity, DeepSeek, Flux)",
+  "Access to AI models": "Toegang tot de nieuwste AI-modellen (Claude, ChatGPT, Gemini, Perplexity, 🍣 Sushi)",
   "ImageGeneration": "Afbeelding Generatie",
   "Search anything...": "Zoek iets...",
   "credits_plural": "{{count}} credits",
@@ -1682,5 +1682,8 @@
   "Seamlessly integrate third-party APIs and services. Sushi handles authentication, error handling, and rate limiting properly.": "Integreer naadloos API's en diensten van derden. Sushi handelt authenticatie, foutafhandeling en rate limiting correct af.",
   "Write optimized SQL, NoSQL, and ORM queries. Sushi creates efficient database operations with proper indexing and relationships.": "Schrijf geoptimaliseerde SQL, NoSQL en ORM queries. Sushi creëert efficiënte database operaties met juiste indexering en relaties.",
   "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.": "Genereer automatisch unit tests, integratietests en E2E tests. Sushi zorgt voor een uitgebreide testdekking voor uw code.",
-  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Genereer duidelijke, uitgebreide documentatie en opmerkingen. Sushi legt complexe code uit in menselijk leesbare taal."
+  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Genereer duidelijke, uitgebreide documentatie en opmerkingen. Sushi legt complexe code uit in menselijk leesbare taal.",
+  "Create apps in your store with unlimited collaboration": "Maak apps in uw winkel met onbeperkte samenwerking",
+  "Create custom AI apps with team collaboration": "Maak aangepaste AI-apps met team samenwerking",
+  "Unlimited stores with nested apps": "Onbeperkte winkels met geneste apps"
 }

@@ -5219,7 +5219,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
 
   let vex = await getApp({ slug: "vex" })
 
-  let focusApp = await getApp({ slug: "focus" })
+  let focus = await getApp({ slug: "focus" })
 
   const focusSystemPrompt = `You are Focus, an advanced AI productivity assistant that combines deep work methodology, cognitive psychology, and time management science to help users achieve peak performance.
 
@@ -5293,8 +5293,21 @@ You have access to calendar, location, and weather tools to provide context-awar
     },
   ]
 
+  let wine = await getOrCreateStore({
+    slug: "wine",
+    name: "Wine",
+    title: "Grape Advertising Platform",
+    domain: "https://wine.chrry.ai",
+    userId: admin.id,
+    parentStoreId: blossom.id,
+    visibility: "public" as const,
+    description:
+      "Complete advertising ecosystem with AI-powered campaign management, content analysis, and privacy-first targeting. Create ads, monetize content, and earn credits—all without tracking.",
+    existingStores,
+  })
+
   const focusAppPayload = {
-    ...focusApp,
+    ...focus,
     slug: "focus",
     name: "Focus",
     subtitle: "AI Productivity Assistant",
@@ -5376,11 +5389,11 @@ You have access to calendar, location, and weather tools to provide context-awar
     },
   }
 
-  focusApp = await createOrUpdateApp({
+  focus = await createOrUpdateApp({
     app: focusAppPayload,
     extends: focusAppPayload.extends,
   })
-  if (!focusApp) throw new Error("Failed to create Focus app")
+  if (!focus) throw new Error("Failed to create Focus app")
 
   console.log("✅ Focus app created/updated")
 
@@ -5619,7 +5632,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
         emoji: "🤝",
       },
     ],
-    extends: [chrry.id, focusApp.id] as string[],
+    extends: [chrry.id, focus.id] as string[],
     description:
       "Experience the future of AI interaction. Vex combines cutting-edge technology with human-like simplicity. Chat with multiple AI agents, create artifacts, collaborate in real-time, and enjoy intelligent memory that grows with you. No friction, just pure innovation.",
     featureList: [
@@ -5667,6 +5680,13 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
       appId: vex.id,
       featured: true,
       displayOrder: 0,
+    })
+
+    await createOrUpdateStoreInstall({
+      storeId: wine.id,
+      appId: vex.id,
+      featured: true,
+      displayOrder: 1,
     })
   }
 
@@ -5771,7 +5791,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
       communityFeed: false,
       safetyVerification: false,
     },
-    extends: [chrry.id, vex.id, focusApp.id],
+    extends: [chrry.id, vex.id, focus.id],
   }
 
   peach = await createOrUpdateApp({
@@ -5860,7 +5880,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
       communityGoals: false,
       rewardSystem: false,
     },
-    extends: [chrry.id, vex.id, focusApp.id],
+    extends: [chrry.id, vex.id, focus.id],
   }
 
   bloom = await createOrUpdateApp({
@@ -5870,6 +5890,196 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
 
   if (!bloom) throw new Error("Failed to add bloom app")
 
+  if (!wine) throw new Error("Failed to create Wine store")
+
+  // ============================================
+  // PEAR - Feedback-as-a-Service Platform
+  // ============================================
+
+  let pearApp = await getApp({ slug: "pear" })
+
+  const pearSystemPrompt = `You are Pear, an AI-powered feedback platform that connects product creators with real users for authentic video feedback.
+
+Your role is to help users:
+1. **Creators**: Set up feedback campaigns with predefined steps, budget allocation, and target criteria
+2. **Reviewers**: Find relevant feedback opportunities, complete tasks, and earn money
+3. **Both**: Manage feedback wallets, track earnings, and optimize campaigns
+
+Key Features:
+- **Campaign Creation**: Help creators define feedback steps, questions, and budget per completion
+- **Smart Matching**: Connect reviewers with relevant products based on their profile and interests
+- **Video Recording**: Guide reviewers through structured feedback sessions with screen + camera recording
+- **Quality Control**: Ensure feedback meets campaign requirements before payment release
+- **Budget Management**: Track campaign spending, reviewer earnings, and payment schedules
+- **Embeddable Widget**: Generate code for website integration to collect feedback directly
+- **Analytics**: Show creators feedback insights, completion rates, and ROI metrics
+
+Privacy & Trust:
+- Reviewers control what they share and when
+- Creators get authentic, unbiased feedback
+- Payments are escrowed until feedback is approved
+- All recordings are encrypted and only shared with campaign creators
+
+Be helpful, clear, and guide users through creating campaigns or completing feedback tasks efficiently.`
+
+  const pearInstructions = [
+    {
+      id: "pear-1",
+      title: "Create a Feedback Campaign",
+      content:
+        "Set up a campaign in minutes: define your product/feature, create 3-5 feedback questions, set your budget per completion ($5-50), and target criteria (demographics, experience level). I'll help you craft questions that get actionable insights. Campaigns with clear steps get 3x more completions!",
+      emoji: "🎯",
+    },
+    {
+      id: "pear-2",
+      title: "Earn Money Giving Feedback",
+      content:
+        "Browse available campaigns, pick ones matching your interests, complete the feedback steps (usually 10-20 minutes), record your screen + camera, and earn $5-50 per completion. Top reviewers earn $500+/month by providing thoughtful, detailed feedback. Your feedback wallet tracks all earnings!",
+      emoji: "💰",
+    },
+    {
+      id: "pear-3",
+      title: "Embed Feedback Widget on Your Site",
+      content:
+        "Get a simple code snippet to add Pear feedback collection to your website. Users can give feedback directly without leaving your site. Perfect for beta testing, feature launches, or continuous user research. Widget campaigns get 5x more responses than email surveys!",
+      emoji: "🔌",
+    },
+    {
+      id: "pear-4",
+      title: "Video + Screen Recording Made Easy",
+      content:
+        "Our guided recording flow captures screen activity and your face/voice simultaneously. No technical setup needed—just click record and follow the prompts. Creators get rich, contextual feedback they can watch and share with their team. Video feedback is 10x more valuable than text!",
+      emoji: "🎥",
+    },
+    {
+      id: "pear-5",
+      title: "Quality Control & Payment Protection",
+      content:
+        "All feedback is reviewed before payment release. Creators can request revisions if feedback doesn't meet requirements. Reviewers get paid within 24 hours of approval. Escrow system protects both sides—creators get quality feedback, reviewers get guaranteed payment!",
+      emoji: "✅",
+    },
+    {
+      id: "pear-6",
+      title: "Smart Matching Algorithm",
+      content:
+        "I match reviewers with campaigns based on their profile, past feedback quality, and interests. Creators get relevant users who actually understand their product. Reviewers see campaigns they're qualified for. Better matches = better feedback = higher approval rates!",
+      emoji: "🤝",
+    },
+    {
+      id: "pear-7",
+      title: "Analytics & Insights Dashboard",
+      content:
+        "Track campaign performance: completion rate, average feedback quality score, time to complete, and ROI. See common themes across feedback videos, identify pain points, and export insights. Creators using analytics improve products 2x faster than those who don't!",
+      emoji: "📊",
+    },
+  ]
+
+  const pearAppPayload = {
+    ...pearApp,
+    slug: "pear",
+    name: "Pear",
+    subtitle: "Feedback-as-a-Service",
+    storeId: wine.id,
+    version: "1.0.0",
+    status: "active" as const,
+    title: "Get Paid for Feedback",
+    themeColor: "green",
+    backgroundColor: "#0a1f0a",
+    defaultModel: "sushi" as const,
+    icon: "🍐",
+    visibility: "public" as const,
+    systemPrompt: pearSystemPrompt,
+    highlights: pearInstructions,
+    placeholder: "Create a feedback campaign or find opportunities to earn...",
+    tipsTitle: "Feedback Tips",
+    tips: [
+      {
+        id: "pear-tip-1",
+        content:
+          "Creators: Ask specific questions! 'What confused you?' gets better feedback than 'What do you think?' Specific questions get 4x more actionable insights!",
+        emoji: "💡",
+      },
+      {
+        id: "pear-tip-2",
+        content:
+          "Reviewers: Think out loud while recording! Share your first impressions, confusion, and 'aha' moments. Authentic reactions are worth more than polished reviews!",
+        emoji: "🎤",
+      },
+      {
+        id: "pear-tip-3",
+        content:
+          "Budget $10-20 per feedback for quality responses. Higher budgets attract experienced reviewers who give detailed, thoughtful feedback. ROI is 10x on average!",
+        emoji: "💵",
+      },
+      {
+        id: "pear-tip-4",
+        content:
+          "Embed the widget during beta launches or feature releases. Real-time feedback from actual users beats internal testing every time. Fix issues before they become problems!",
+        emoji: "🚀",
+      },
+      {
+        id: "pear-tip-5",
+        content:
+          "Reviewers: Build your reputation! High-quality feedback unlocks premium campaigns with higher payouts. Top reviewers get invited to exclusive opportunities!",
+        emoji: "⭐",
+      },
+    ],
+    description:
+      "Revolutionary feedback platform connecting product creators with real users. Creators set up campaigns with video recording steps and budget. Reviewers earn money by providing authentic feedback. Embeddable widget for website integration. Privacy-first with escrow payments.",
+    featureList: [
+      "Campaign Creation",
+      "Video + Screen Recording",
+      "Feedback Wallet",
+      "Smart Matching",
+      "Embeddable Widget",
+      "Quality Control",
+      "Analytics Dashboard",
+      "Escrow Payments",
+      "Budget Management",
+      "Reviewer Profiles",
+    ],
+    tools: [] as ("calendar" | "location" | "weather")[],
+    extends: vex ? [vex.id, chrry.id] : [chrry.id],
+    features: {
+      campaignCreation: true,
+      videoRecording: true,
+      screenRecording: true,
+      feedbackWallet: true,
+      smartMatching: true,
+      embeddableWidget: true,
+      qualityControl: true,
+      analyticsDashboard: true,
+      escrowPayments: true,
+      budgetManagement: true,
+      reviewerProfiles: true,
+      websiteIntegration: true,
+    },
+  }
+
+  pearApp = await createOrUpdateApp({
+    app: pearAppPayload,
+    extends: pearAppPayload.extends,
+  })
+  if (!pearApp) throw new Error("Failed to create Pear app")
+
+  // Install Pear to Wine store
+  await createOrUpdateStoreInstall({
+    storeId: wine.id,
+    appId: pearApp.id,
+    featured: true,
+    displayOrder: 2,
+  })
+
+  // Install Grape app to Wine store
+  await createOrUpdateStoreInstall({
+    storeId: wine.id,
+    appId: grapeApp.id,
+    featured: true,
+    displayOrder: 3,
+  })
+
+  console.log("✅ Pear app created/updated")
+
   let vault = await getApp({ slug: "vault" })
 
   const vaultPayload = {
@@ -5878,7 +6088,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
     subtitle: "Smart Finance",
     slug: "vault",
     name: "Vault",
-    storeId: lifeOS.id,
+    storeId: wine.id,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -5942,7 +6152,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
       cryptoTracking: false,
       financialEducation: false,
     },
-    extends: [chrry.id, vex.id, focusApp.id],
+    extends: [chrry.id, vex.id, focus.id],
   }
 
   vault = await createOrUpdateApp({
@@ -5952,12 +6162,32 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
 
   if (!vault) throw new Error("Failed to add vault app")
 
+  await updateStore({
+    ...wine,
+    appId: vault.id,
+  })
+  // ============================================
+  // WINE - Grape Advertising Platform Store
+  // ============================================
+
+  // Create Wine store with Vault as default app
+
+  // Install Wine store to Blossom for discoverability
+
+  console.log("✅ Wine store created with Vault and Grape")
+
   // ============================================
   // VEX - Flagship AI Chat Platform
   // ============================================
 
   if (!vex) throw new Error("Failed to create Vex app")
 
+  await createOrUpdateStoreInstall({
+    storeId: wine.id,
+    appId: vex.id,
+    featured: true,
+    displayOrder: 1,
+  })
   // Create Claude store
   const claudeStore = await getOrCreateStore({
     slug: "claudeStore",
@@ -6475,7 +6705,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
       | "weather"
     )[],
     placeholder: "Let's build something amazing...",
-    extends: [chrry.id, vex.id, focusApp.id],
+    extends: [chrry.id, vex.id, focus.id],
     features: {
       codeGeneration: true,
       multiLanguage: true,
@@ -6556,7 +6786,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
     {
       await createOrUpdateStoreInstall({
         storeId: lifeOS.id,
-        appId: focusApp.id,
+        appId: focus.id,
         featured: true,
         displayOrder: 6,
       })
@@ -6567,7 +6797,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
   {
     await createOrUpdateStoreInstall({
       storeId: blossom.id,
-      appId: focusApp.id,
+      appId: focus.id,
       featured: true,
       displayOrder: 2, // After Chrry itself
     })

@@ -1,0 +1,20 @@
+@use "./toRem.scss";
+.icons {
+  display: flex;
+  justify-content: center;
+  gap: toRem.toRem(16);
+
+  img {
+    border-radius: toRem.toRem(40);
+    border: toRem.toRem(1) dashed var(--accent-1);
+    padding: toRem.toRem(20);
+    flex: 1;
+    max-width: 100%;
+  }
+}
+
+.option {
+  .title {
+    margin-bottom: toRem.toRem(8);
+  }
+}

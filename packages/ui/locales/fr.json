@@ -565,7 +565,7 @@
   "Remove Image": "Supprimer l'image",
   "about.intro2": "Avec des instructions par chat, des éléments de fil pour la mémoire des documents et des fonctionnalités de collaboration en temps réel. Vex apprend votre contexte, se souvient de vos fichiers et travaille avec votre équipe.",
   "DeepSeek consumes {{deepSeek}}, Flux {{flux}}, Claude {{claude}}, ChatGPT {{chatGPT}}, Perplexity {{perplexity}} credits": "DeepSeek consomme {{deepSeek}}, Flux {{flux}}, Claude {{claude}}, ChatGPT {{chatGPT}}, Perplexity {{perplexity}} crédits",
-  "Access to AI models": "Accès aux derniers modèles d'IA (Claude, ChatGPT, Gemini, Perplexity, DeepSeek, Flux)",
+  "Access to AI models": "Accès aux derniers modèles d'IA (Claude, ChatGPT, Gemini, Perplexity, 🍣 Sushi)",
   "ImageGeneration": "Génération d'Image",
   "Search anything...": "Recherchez n'importe quoi...",
   "credits_plural": "{{count}} crédits",
@@ -1681,5 +1681,8 @@
   "Seamlessly integrate third-party APIs and services. Sushi handles authentication, error handling, and rate limiting properly.": "Intégrez sans problème les API et services tiers. Vex gère correctement l'authentification, la gestion des erreurs et la limitation du débit.",
   "Write optimized SQL, NoSQL, and ORM queries. Sushi creates efficient database operations with proper indexing and relationships.": "Écrivez des requêtes SQL, NoSQL et ORM optimisées. Vex crée des opérations de base de données efficaces avec un indexation et des relations appropriées.",
   "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.": "Générez automatiquement des tests unitaires, des tests d'intégration et des tests E2E. Vex assure une couverture de test complète pour votre code.",
-  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Générez une documentation et des commentaires clairs et complets. Vex explique le code complexe dans un langage compréhensible par l'homme."
+  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Générez une documentation et des commentaires clairs et complets. Vex explique le code complexe dans un langage compréhensible par l'homme.",
+  "Create apps in your store with unlimited collaboration": "Créez des applications dans votre boutique avec une collaboration illimitée",
+  "Create custom AI apps with team collaboration": "Créez des applications IA personnalisées avec la collaboration de l'équipe",
+  "Unlimited stores with nested apps": "Boutiques illimitées avec des applications imbriquées"
 }
