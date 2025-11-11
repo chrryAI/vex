@@ -1,7 +1,7 @@
 import React from "react"
 import styles from "./Grape.module.scss"
 import clsx from "clsx"
-import { Button, Div, Span, useNavigation } from "./platform"
+import { Button, Div, Span, useLocalStorage, useNavigation } from "./platform"
 import { Coins } from "./icons"
 import { COLORS } from "./context/ThemeContext"
 import { useState, useEffect } from "react"
@@ -32,13 +32,9 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
   const { user, guest } = useAuth()
 
   // Load role from localStorage or user/guest data
-  const [userRole, setUserRole] = useState<UserRole | null>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("grapeRole")
-      return stored as UserRole | null
-    }
-    return null
-  })
+  const [userRole, setUserRole] = useLocalStorage<UserRole>("grapeRole", "both")
+
+  const [option, setOption] = useState<UserRole>("consumer")
 
   const [currentView, setCurrentView] = useState<GrapeView>("onboarding")
 
@@ -64,37 +60,36 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
 
   const handleRoleSelect = (role: UserRole) => {
     setUserRole(role)
-    if (typeof window !== "undefined") {
-      localStorage.setItem("grapeRole", role)
-    }
-    // TODO: Update user/guest in database with grapeRole field
   }
 
   const renderOnboarding = () => (
     <section>
       <header>
-        <h2>Welcome to Grape 🍇</h2>
-        <p>Choose how you want to use Grape:</p>
+        {/* <p>Choose how you want to use Grape:</p> */}
+        <div className={styles.icons}>
+          <Img icon="pacman" size={128} />
+          <Img icon="spaceInvader" size={128} />
+        </div>
       </header>
 
       <article>
-        <button onClick={() => handleRoleSelect("consumer")}>
-          <span>👤</span>
-          <h3>I want to earn</h3>
-          <p>View relevant ads and earn credits for your attention</p>
-        </button>
+        {option === "consumer" && (
+          <div
+            className={clsx(styles.option, styles.consumer)}
+            onClick={() => handleRoleSelect("consumer")}
+          >
+            <h3 className={styles.title}>I want to earn 💰</h3>
+            <p>View relevant ads and earn credits for your attention</p>
+          </div>
+        )}
 
-        <button onClick={() => handleRoleSelect("advertiser")}>
-          <span>📢</span>
-          <h3>I want to advertise</h3>
-          <p>Create campaigns and reach engaged audiences</p>
-        </button>
-
-        <button onClick={() => handleRoleSelect("both")}>
-          <span>🔄</span>
-          <h3>Both</h3>
-          <p>Earn from ads and run your own campaigns</p>
-        </button>
+        {option === "advertiser" && (
+          <button onClick={() => handleRoleSelect("advertiser")}>
+            <span>📢</span>
+            <h3>I want to advertise</h3>
+            <p>Create campaigns and reach engaged audiences</p>
+          </button>
+        )}
       </article>
     </section>
   )
@@ -332,8 +327,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
 
         <button
           onClick={() => {
-            setUserRole(null)
-            localStorage.removeItem("grapeRole")
+            setUserRole("both")
             setCurrentView("onboarding")
           }}
         >

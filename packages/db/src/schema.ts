@@ -139,6 +139,11 @@ export const users = pgTable(
     migratedFromGuest: boolean("migratedFromGuest").default(false).notNull(),
     credits: integer("credits").default(MEMBER_CREDITS_PER_MONTH).notNull(),
     adConsent: boolean("adConsent").default(false).notNull(), // Grape ad consent
+
+    // Stripe Connect for payouts (Pear feedback, affiliate commissions)
+    stripeCustomerId: text("stripeCustomerId"), // For payments TO platform
+    stripeConnectAccountId: text("stripeConnectAccountId"), // For payouts TO user
+    stripeConnectOnboarded: boolean("stripeConnectOnboarded").default(false),
   },
   (table) => [
     uniqueIndex("user_name_idx").on(table.userName),
@@ -147,7 +152,8 @@ export const users = pgTable(
       "gin",
       sql`(
       setweight(to_tsvector('english', ${table.name}), 'A') ||
-      setweight(to_tsvector('english', ${table.email}), 'B')
+      setweight(to_tsvector('english', ${table.userName}), 'B') ||
+      setweight(to_tsvector('english', ${table.email}), 'C')
   )`,
     ),
   ],
@@ -315,6 +321,10 @@ export const guests = pgTable("guest", {
 
   timezone: text("timezone"),
   adConsent: boolean("adConsent").default(false).notNull(), // Grape ad consent
+
+  // Stripe Connect for payouts (Pear feedback earnings)
+  stripeConnectAccountId: text("stripeConnectAccountId"), // For payouts TO guest
+  stripeConnectOnboarded: boolean("stripeConnectOnboarded").default(false),
 })
 
 // teams/Teams for collaborative agent management
@@ -1975,6 +1985,76 @@ export const apps = pgTable(
     },
   ],
 )
+
+// Add to schema.ts:
+
+export const feedbackCampaignStatusEnum = pgEnum("feedbackCampaignStatus", [
+  "draft",
+  "active",
+  "paused",
+  "completed",
+])
+
+export const feedbackCampaigns = pgTable("feedbackCampaign", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: text("type", { enum: ["app", "website", "product"] })
+    .notNull()
+    .default("website"),
+  url: text("url"), // Product/app URL
+  budget: integer("budget").notNull(), // Total budget in cents
+  pricePerCompletion: integer("pricePerCompletion").notNull(), // Payment per feedback
+  targetCompletions: integer("targetCompletions").notNull(),
+  currentCompletions: integer("currentCompletions").default(0),
+  status: feedbackCampaignStatusEnum("status").notNull().default("draft"),
+  embedCode: text("embedCode"), // For website widget
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
+export const feedbackTasks = pgTable("feedbackTask", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  campaignId: uuid("campaignId")
+    .notNull()
+    .references(() => feedbackCampaigns.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  order: integer("order").notNull(),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
+export const feedbackSubmissionStatusEnum = pgEnum("feedbackSubmissionStatus", [
+  "pending",
+  "approved",
+  "rejected",
+  "revision_requested",
+])
+
+export const feedbackSubmissions = pgTable("feedbackSubmission", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  campaignId: uuid("campaignId")
+    .notNull()
+    .references(() => feedbackCampaigns.id, { onDelete: "cascade" }),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  videoUrl: text("videoUrl").notNull(), // Uploaded video recording
+  status: feedbackSubmissionStatusEnum("status").notNull().default("pending"),
+  paymentReleased: boolean("paymentReleased").default(false),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  approvedOn: timestamp("approvedOn", { mode: "date", withTimezone: true }),
+})
 
 export const appOrders = pgTable(
   "appOrders",
