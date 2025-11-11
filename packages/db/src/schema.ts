@@ -138,6 +138,7 @@ export const users = pgTable(
     appleId: text("appleId"),
     migratedFromGuest: boolean("migratedFromGuest").default(false).notNull(),
     credits: integer("credits").default(MEMBER_CREDITS_PER_MONTH).notNull(),
+    adConsent: boolean("adConsent").default(false).notNull(), // Grape ad consent
   },
   (table) => [
     uniqueIndex("user_name_idx").on(table.userName),
@@ -313,6 +314,7 @@ export const guests = pgTable("guest", {
   }),
 
   timezone: text("timezone"),
+  adConsent: boolean("adConsent").default(false).notNull(), // Grape ad consent
 })
 
 // teams/Teams for collaborative agent management
@@ -1510,6 +1512,188 @@ export const affiliateReferrals = pgTable(
     index("affiliate_referrals_guest_idx").on(table.referredGuestId),
     index("affiliate_referrals_subscription_idx").on(table.subscriptionId),
     index("affiliate_referrals_status_idx").on(table.status),
+  ],
+)
+
+// Grape Advertising System Tables
+export const adCampaigns = pgTable(
+  "adCampaigns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    // Advertiser (user who created the campaign)
+    userId: uuid("userId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    // Campaign thread for AI conversation and artifacts
+    threadId: uuid("threadId").references(() => threads.id, {
+      onDelete: "set null",
+    }),
+
+    // Critical campaign info
+    name: text("name").notNull(), // Campaign name
+    status: text("status", {
+      enum: ["draft", "active", "paused", "completed", "archived"],
+    })
+      .notNull()
+      .default("draft"),
+
+    // Budget & Pricing
+    budget: integer("budget").default(0).notNull(), // Total budget in cents
+    spent: integer("spent").default(0).notNull(), // Amount spent in cents
+    pricingModel: text("pricingModel", {
+      enum: ["cpv", "cpc", "cpa"], // Cost per view, click, action
+    })
+      .notNull()
+      .default("cpv"),
+    pricePerUnit: integer("pricePerUnit").default(2).notNull(), // Price in cents (e.g., $0.02 = 2 cents)
+
+    // Performance metrics (critical for dashboard)
+    views: integer("views").default(0).notNull(),
+    clicks: integer("clicks").default(0).notNull(),
+    conversions: integer("conversions").default(0).notNull(),
+
+    // Targeting (stored as JSONB for flexibility)
+    targetCategories: jsonb("targetCategories").$type<string[]>(), // Content categories
+
+    // Timestamps
+    startDate: timestamp("startDate", { mode: "date", withTimezone: true }),
+    endDate: timestamp("endDate", { mode: "date", withTimezone: true }),
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("ad_campaigns_user_idx").on(table.userId),
+    index("ad_campaigns_status_idx").on(table.status),
+    index("ad_campaigns_thread_idx").on(table.threadId),
+    index("ad_campaigns_pricing_idx").on(table.pricingModel),
+  ],
+)
+
+export const adCreatives = pgTable(
+  "adCreatives",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    campaignId: uuid("campaignId")
+      .references(() => adCampaigns.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Ad content (AI-generated or manual)
+    headline: text("headline").notNull(),
+    body: text("body"),
+    cta: text("cta"), // Call to action
+    imageUrl: text("imageUrl"),
+    targetUrl: text("targetUrl"), // Where clicks go
+
+    // Performance for A/B testing
+    views: integer("views").default(0).notNull(),
+    clicks: integer("clicks").default(0).notNull(),
+    conversions: integer("conversions").default(0).notNull(),
+
+    // Status
+    status: text("status", {
+      enum: ["active", "paused", "archived"],
+    })
+      .notNull()
+      .default("active"),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("ad_creatives_campaign_idx").on(table.campaignId),
+    index("ad_creatives_status_idx").on(table.status),
+  ],
+)
+
+export const adViews = pgTable(
+  "adViews",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    campaignId: uuid("campaignId")
+      .references(() => adCampaigns.id, { onDelete: "cascade" })
+      .notNull(),
+    creativeId: uuid("creativeId")
+      .references(() => adCreatives.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Viewer (who saw the ad)
+    userId: uuid("userId").references(() => users.id, { onDelete: "set null" }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "set null",
+    }),
+
+    // Context (privacy-first - no personal data)
+    contentUrl: text("contentUrl"), // Where ad was shown
+    contentCategory: text("contentCategory"), // Content topic
+
+    // Earnings for viewer
+    earningAmount: integer("earningAmount").default(0).notNull(), // In cents
+    paid: boolean("paid").default(false).notNull(),
+
+    // Interaction
+    clicked: boolean("clicked").default(false).notNull(),
+    clickedOn: timestamp("clickedOn", { mode: "date", withTimezone: true }),
+    converted: boolean("converted").default(false).notNull(),
+    convertedOn: timestamp("convertedOn", { mode: "date", withTimezone: true }),
+
+    viewedOn: timestamp("viewedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("ad_views_campaign_idx").on(table.campaignId),
+    index("ad_views_creative_idx").on(table.creativeId),
+    index("ad_views_user_idx").on(table.userId),
+    index("ad_views_guest_idx").on(table.guestId),
+    index("ad_views_clicked_idx").on(table.clicked),
+    index("ad_views_converted_idx").on(table.converted),
+    index("ad_views_viewed_on_idx").on(table.viewedOn),
+    index("ad_views_category_idx").on(table.contentCategory),
+  ],
+)
+
+export const adEarnings = pgTable(
+  "adEarnings",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    // Earner (viewer or publisher)
+    userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+
+    // Earnings summary
+    totalEarnings: integer("totalEarnings").default(0).notNull(), // In cents
+    paidOut: integer("paidOut").default(0).notNull(), // In cents
+    pendingPayout: integer("pendingPayout").default(0).notNull(), // In cents
+
+    // Stats
+    totalViews: integer("totalViews").default(0).notNull(),
+    totalClicks: integer("totalClicks").default(0).notNull(),
+
+    // Timestamps
+    lastPayoutOn: timestamp("lastPayoutOn", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("ad_earnings_user_idx").on(table.userId),
+    index("ad_earnings_guest_idx").on(table.guestId),
   ],
 )
 

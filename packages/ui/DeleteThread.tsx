@@ -4,7 +4,7 @@ import { Trash2, CircleX } from "./icons"
 import toast from "react-hot-toast"
 import ConfirmButton from "./ConfirmButton"
 import Loading from "./Loading"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { apiFetch } from "./utils"
 
@@ -35,9 +35,8 @@ export default function DeleteThread({
           {isDeleting ? (
             <Loading color="var(--accent-0)" width={16} height={16} />
           ) : (
-            <Trash2 color="var(--accent-0)" size={16} />
+            <span>🔥</span>
           )}
-          {t("Are you sure?")}
         </>
       }
       onConfirm={async () => {
@@ -69,7 +68,7 @@ export default function DeleteThread({
         }
       }}
     >
-      <CircleX color="var(--accent-0)" size={16} /> {t("Delete")}
+      <Trash2 color={COLORS.red} size={16} />
     </ConfirmButton>
   )
 }

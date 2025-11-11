@@ -2250,7 +2250,7 @@ export const createStores = async ({
   let chrry = await getApp({ slug: "chrry" })
 
   // Create Chrry store
-  const chrryAI = await getOrCreateStore({
+  const blossom = await getOrCreateStore({
     slug: "blossom",
     name: "Blossom",
     title: "AI App Marketplace",
@@ -2267,7 +2267,7 @@ export const createStores = async ({
     slug: "chrry",
     name: "Chrry",
     subtitle: "AI App Marketplace",
-    storeId: chrryAI.id,
+    storeId: blossom.id,
     version: "1.0.0",
     status: "active" as const,
     title: "AI App Marketplace",
@@ -2351,19 +2351,19 @@ export const createStores = async ({
 
   // Set Chrry as the main app of Chrry AI store
   await updateStore({
-    ...chrryAI,
+    ...blossom,
     appId: chrry.id,
   })
 
   {
     const storeInstall = await getStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: chrry.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: chrryAI.id,
+        storeId: blossom.id,
         appId: chrry.id,
         featured: true,
         displayOrder: 0,
@@ -2379,7 +2379,7 @@ export const createStores = async ({
     name: "Compass",
     title: "Travel & Exploration",
     domain: "https://compass.chrry.ai",
-    parentStoreId: chrryAI.id,
+    parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
     description:
@@ -3450,7 +3450,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
     name: "Popcorn",
     title: "Popcorn — Cinema Universe",
     domain: "https://popcorn.chrry.ai",
-    parentStoreId: chrryAI.id,
+    parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
     description:
@@ -3640,7 +3640,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
 
   {
     await createOrUpdateStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: popcorn.id,
       featured: true,
       displayOrder: 2,
@@ -4302,7 +4302,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     name: "Books",
     title: "Philosophy & Literature",
     domain: "https://books.chrry.ai",
-    parentStoreId: chrryAI.id,
+    parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
     description:
@@ -4529,7 +4529,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
   // Install Zarathustra in Chrry AI store
   {
     await createOrUpdateStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: zarathustra.id,
       featured: true,
       displayOrder: 4,
@@ -5209,7 +5209,7 @@ Every book, every idea, every question - examine it through the lens of life-aff
     name: "LifeOS",
     title: "Your AI-Powered Life",
     domain: "https://vex.chrry.ai",
-    parentStoreId: chrryAI.id,
+    parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
     description:
@@ -5298,7 +5298,7 @@ You have access to calendar, location, and weather tools to provide context-awar
     slug: "focus",
     name: "Focus",
     subtitle: "AI Productivity Assistant",
-    storeId: chrryAI.id, // Primary store is Blossom
+    storeId: blossom.id, // Primary store is Blossom
     version: "1.0.0",
     status: "active" as const,
     title: "AI-Powered Productivity",
@@ -5383,6 +5383,191 @@ You have access to calendar, location, and weather tools to provide context-awar
   if (!focusApp) throw new Error("Failed to create Focus app")
 
   console.log("✅ Focus app created/updated")
+
+  // Create Grape app
+  let grapeApp = await getApp({ slug: "grape" })
+
+  const grapeSystemPrompt = `You are Grape, an AI-powered advertising platform that revolutionizes digital advertising through privacy-first technology, contextual intelligence, and fair value exchange.
+
+Your core capabilities:
+- **AI Ad Generation**: Create compelling, conversion-optimized ads from simple prompts. Generate headlines, copy, CTAs, and visual concepts tailored to target audiences and platforms.
+- **Content Analysis**: Analyze any text content to understand context, topics, sentiment, and audience intent. Match ads to content without tracking users.
+- **Shared Memory Intelligence**: Learn from cross-advertiser data to improve ad relevance. Understand what works for different content types, audiences, and contexts without compromising privacy.
+- **Campaign Strategy**: Help advertisers define target audiences, set budgets, choose pricing models (CPV, CPC, CPA), and optimize campaigns based on performance data.
+- **Revenue Optimization**: Advise publishers on ad placement, content strategy, and earning potential. Help users maximize earnings from viewing ads.
+- **Performance Analytics**: Provide real-time insights on views, clicks, conversions, CTR, engagement rates, and ROI. Identify trends and suggest optimizations.
+- **A/B Testing**: Design and analyze split tests for ad creative, copy, targeting, and placement to maximize performance.
+
+Your advertising philosophy:
+- **Privacy-first**: No cookies, no cross-site tracking, no personal data collection. Context over identity.
+- **Fair value exchange**: Users earn for their attention. Advertisers pay for genuine engagement. Publishers earn from quality content.
+- **Transparency**: Clear pricing, honest metrics, no hidden fees. Users see exactly what they earn.
+- **Quality over quantity**: Relevant ads that add value, not spam. Better targeting through AI, not surveillance.
+- **Shared learning**: Collective intelligence improves everyone's results while protecting individual privacy.
+
+How you help different users:
+- **Advertisers**: Create campaigns, generate ad creative, optimize targeting, analyze performance, scale what works
+- **Publishers**: Integrate ad widgets, maximize earnings, improve content strategy, understand audience value
+- **Viewers**: Discover relevant products/services, earn credits for attention, control ad experience, maintain privacy
+
+You have access to memory tools to build shared intelligence across advertisers. Use memories to:
+- Store successful ad patterns (what headlines work for tech products, what CTAs convert for SaaS, etc.)
+- Learn content-to-ad mappings (fitness content → health products, coding tutorials → developer tools)
+- Track performance trends (seasonal patterns, audience preferences, emerging topics)
+- Share insights while protecting individual advertiser data
+
+Be strategic, data-driven, creative, and always focused on win-win-win outcomes for advertisers, publishers, and users.`
+
+  const grapeInstructions = [
+    {
+      id: "grape-1",
+      title: "Create Your First Ad Campaign",
+      content:
+        "Launch a campaign in minutes with AI assistance. Tell me your product, target audience, and goals—I'll generate compelling ad copy, suggest optimal pricing (CPV starting at $0.02), recommend content categories, and set up tracking. Perfect for startups, SaaS products, e-commerce, or services. Advertisers using AI-generated ads see 3x higher CTR than manual creation.",
+      emoji: "🚀",
+    },
+    {
+      id: "grape-2",
+      title: "Generate High-Converting Ad Creative",
+      content:
+        "Describe your product or service, and I'll create multiple ad variations with attention-grabbing headlines, persuasive copy, strong CTAs, and visual concepts. I'll tailor messaging to different audience segments and platforms. A/B test variations to find winners. AI-generated ads reduce creative costs by 80% while improving performance by 40%.",
+      emoji: "✨",
+    },
+    {
+      id: "grape-3",
+      title: "Integrate Ad Widget on Your Site",
+      content:
+        "Monetize your content with privacy-first ads in under 5 minutes. I'll generate a simple embed code, analyze your content to attract relevant advertisers, optimize ad placement for engagement without disrupting UX, and track earnings in real-time. Publishers earn $2-15 per 1000 views depending on content quality and niche. No cookies, no tracking, no hassle.",
+      emoji: "💰",
+    },
+    {
+      id: "grape-4",
+      title: "Optimize Campaign Performance",
+      content:
+        "Get AI-powered insights to improve your ad results. I'll analyze CTR, conversion rates, cost per acquisition, audience engagement patterns, and content performance. Receive specific recommendations: adjust targeting, refine copy, test new placements, scale winning ads, pause underperformers. Data-driven optimization increases ROI by 2-5x on average.",
+      emoji: "📈",
+    },
+    {
+      id: "grape-5",
+      title: "Discover Earning Opportunities",
+      content:
+        "Learn how to maximize your earnings as a viewer or publisher. I'll show you high-value content categories (tech, finance, health earn 3-5x more), optimal viewing strategies, publisher best practices, and trending topics. Track your earnings, set goals, and get personalized tips. Top viewers earn $50-200/month, top publishers earn $500-5000/month.",
+      emoji: "🍇",
+    },
+    {
+      id: "grape-6",
+      title: "Leverage Shared Memory Intelligence",
+      content:
+        "Benefit from collective advertiser knowledge without sharing your data. I'll use cross-campaign insights to suggest proven ad formats, identify high-performing content matches, predict seasonal trends, and recommend targeting strategies. Shared memory improves ad relevance by 60% while maintaining complete privacy. Your campaigns get smarter as the network grows.",
+      emoji: "🧠",
+    },
+    {
+      id: "grape-7",
+      title: "Analyze Content for Ad Opportunities",
+      content:
+        "Upload or paste any text content, and I'll analyze topics, audience intent, engagement potential, and ad relevance scores. Get recommendations for: which advertisers to attract, optimal ad density, expected earnings, content improvements to increase value. Publishers using content analysis earn 40% more by attracting premium advertisers.",
+      emoji: "🔍",
+    },
+  ]
+
+  const grapeAppPayload = {
+    ...grapeApp,
+    slug: "grape",
+    name: "Grape",
+    subtitle: "AI Ad Platform",
+    storeId: blossom.id, // Primary store is Blossom (marketplace/monetization)
+    version: "1.0.0",
+    status: "active" as const,
+    title: "Privacy-First AI Advertising",
+    themeColor: "purple",
+    backgroundColor: "#000000",
+    defaultModel: "sushi" as const,
+    icon: "🍇",
+    visibility: "public" as const,
+    systemPrompt: grapeSystemPrompt,
+    highlights: grapeInstructions,
+    placeholder: "Create an ad, analyze content, or optimize your campaign...",
+    tipsTitle: "Advertising Tips",
+    tips: [
+      {
+        id: "grape-tip-1",
+        content:
+          "Start with CPV (cost per view) pricing at $0.02-0.05. It's lower risk than CPC and builds brand awareness. Users earn credits, you get guaranteed visibility!",
+        emoji: "💡",
+      },
+      {
+        id: "grape-tip-2",
+        content:
+          "Use AI to generate 5-10 ad variations, then A/B test them. The winning ad often performs 2-3x better than your first draft!",
+        emoji: "🎯",
+      },
+      {
+        id: "grape-tip-3",
+        content:
+          "Target content, not people. Ads matched to relevant content get 4x higher engagement than demographic targeting—and it's privacy-friendly!",
+        emoji: "🔒",
+      },
+      {
+        id: "grape-tip-4",
+        content:
+          "Publishers: Place ads after the first paragraph or at natural content breaks. Mid-content ads get 60% more views than sidebar ads!",
+        emoji: "📍",
+      },
+      {
+        id: "grape-tip-5",
+        content:
+          "Viewers earn more by engaging with relevant ads. The grape icon shows your earning potential—higher quality content = higher payouts!",
+        emoji: "🍇",
+      },
+    ],
+    description:
+      "Revolutionary AI-powered advertising platform with privacy-first technology, contextual targeting, and fair value exchange. Advertisers create campaigns, publishers monetize content, users earn credits—all without tracking or cookies.",
+    featureList: [
+      "AI Ad Generation",
+      "Content Analysis",
+      "Privacy-First Targeting",
+      "Shared Memory Intelligence",
+      "Campaign Management",
+      "Performance Analytics",
+      "A/B Testing",
+      "Revenue Tracking",
+      "Widget Integration",
+      "Earnings Dashboard",
+    ],
+    tools: [] as ("calendar" | "location" | "weather")[],
+    extends: vex ? [vex.id, chrry.id] : [chrry.id],
+    features: {
+      aiAdGeneration: true,
+      contentAnalysis: true,
+      privacyFirstTargeting: true,
+      sharedMemory: true,
+      campaignManagement: true,
+      performanceAnalytics: true,
+      abTesting: true,
+      revenueTracking: true,
+      widgetIntegration: true,
+      earningsDashboard: true,
+      crossSiteTracking: false, // Never!
+      cookieTracking: false, // Privacy-first
+      userProfiling: false, // Context over identity
+    },
+  }
+
+  grapeApp = await createOrUpdateApp({
+    app: grapeAppPayload,
+    extends: grapeAppPayload.extends,
+  })
+  if (!grapeApp) throw new Error("Failed to create Grape app")
+
+  // Install Grape to Blossom store for discoverability
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: grapeApp.id,
+    featured: true,
+    displayOrder: 2,
+  })
+
+  console.log("✅ Grape app created/updated")
 
   const vexPayload = {
     ...vex,
@@ -5503,7 +5688,7 @@ You have access to calendar, location, and weather tools to provide context-awar
 
   {
     await createOrUpdateStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: atlas.id,
       featured: true,
       displayOrder: 3,
@@ -5511,6 +5696,8 @@ You have access to calendar, location, and weather tools to provide context-awar
         "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
     })
   }
+
+  // Note: Grape is already in Blossom store via storeId, no need for explicit install
 
   let peach = await getApp({ slug: "peach" })
 
@@ -5778,7 +5965,7 @@ You have access to calendar, location, and weather tools to provide context-awar
     title: "Claude",
     domain: "https://chhry.claude.ai",
     userId: admin.id,
-    parentStoreId: chrryAI.id,
+    parentStoreId: blossom.id,
     visibility: "public" as const,
     description:
       "Experience Claude by Anthropic - the AI assistant known for thoughtful, nuanced responses. Perfect for writing, analysis, and creative projects that require depth and understanding.",
@@ -6005,7 +6192,7 @@ You have access to calendar, location, and weather tools to provide context-awar
     title: "Perplexity AI",
     domain: "https://chrry.perplexity.ai",
     userId: admin.id,
-    parentStoreId: chrryAI.id,
+    parentStoreId: blossom.id,
     visibility: "public" as const,
     description:
       "Discover Perplexity - the AI-powered answer engine that combines search with conversational AI. Get accurate, cited answers to your questions with real-time web access.",
@@ -6239,7 +6426,7 @@ You have access to calendar, location, and weather tools to provide context-awar
     title: "Sushi AI",
     domain: "https://chrry.sushi.com",
     userId: admin.id,
-    parentStoreId: chrryAI.id,
+    parentStoreId: blossom.id,
     visibility: "public" as const,
     description:
       "Meet Sushi - the powerful coding AI that excels at software development, debugging, and technical problem-solving. Built for developers who demand precision and performance.",
@@ -6379,7 +6566,7 @@ You have access to calendar, location, and weather tools to provide context-awar
   // Install Focus in Blossom (chrryAI) - its primary store
   {
     await createOrUpdateStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: focusApp.id,
       featured: true,
       displayOrder: 2, // After Chrry itself
@@ -6523,13 +6710,13 @@ You have access to calendar, location, and weather tools to provide context-awar
 
   {
     const storeInstall = await getStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: vex.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: chrryAI.id,
+        storeId: blossom.id,
         appId: vex.id,
         featured: true,
         displayOrder: 2,
@@ -6546,13 +6733,13 @@ You have access to calendar, location, and weather tools to provide context-awar
   // Install Claude base app
   {
     const storeInstall = await getStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: claudeApp.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: chrryAI.id,
+        storeId: blossom.id,
         appId: claudeApp.id,
         featured: true,
         displayOrder: 1,
@@ -6565,13 +6752,13 @@ You have access to calendar, location, and weather tools to provide context-awar
   // Install Perplexity base app
   {
     const storeInstall = await getStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: perplexityApp.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: chrryAI.id,
+        storeId: blossom.id,
         appId: perplexityApp.id,
         featured: true,
         displayOrder: 3,
@@ -6584,13 +6771,13 @@ You have access to calendar, location, and weather tools to provide context-awar
   // Install Sushi base app
   {
     const storeInstall = await getStoreInstall({
-      storeId: chrryAI.id,
+      storeId: blossom.id,
       appId: sushiApp.id,
     })
 
     if (!storeInstall) {
       await createStoreInstall({
-        storeId: chrryAI.id,
+        storeId: blossom.id,
         appId: sushiApp.id,
         featured: true,
         displayOrder: 4,

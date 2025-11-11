@@ -183,8 +183,7 @@ export default function EditThread({
           <Pencil size={12} color="var(--accent-1)" />
         ) : (
           <>
-            <Pencil size={12} color="var(--accent-1)" />
-            {t("Edit")}
+            <Pencil size={14} color="var(--accent-1)" />
           </>
         )}
       </button>

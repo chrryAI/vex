@@ -11,6 +11,7 @@ import {
   ArrowRight,
   CircleCheck,
   CircleMinus,
+  Coins,
   Grip,
   Info,
   Pencil,
@@ -36,8 +37,9 @@ import {
   useData,
   useNavigationContext,
 } from "./context/providers"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
+import Grape from "./Grape"
 
 interface App {
   id: string
@@ -169,16 +171,22 @@ export default function App({
   const popcorn = apps.find((app) => app.slug === "popcorn")
   const vex = apps.find((app) => app.slug === "vex")
   const atlas = apps.find((app) => app.slug === "atlas")
+  const grape = apps.find((app) => app.slug === "grape")
+
+  const isBlossom = !store?.parentStoreId
 
   const getApps = () => {
     return apps
-      .filter((item) => item.id !== store?.appId && item.id !== chrry?.id)
-      .filter((item) => item.id !== focus?.id)
-      .filter((item) =>
-        (app?.id === chrry?.id || app?.id === focus?.id) &&
-        ["atlas", "popcorn", "zarathustra"].includes(item.slug)
-          ? false
-          : true,
+      .filter(
+        (item) =>
+          item.id !== store?.appId &&
+          item.id !== chrry?.id &&
+          item.id !== grape?.id &&
+          (isBlossom
+            ? item.id !== atlas?.id &&
+              item.id !== zarathustra?.id &&
+              item.id !== popcorn?.id
+            : true),
       )
       .filter((item) => item.id !== focus?.id)
       .sort((a, b) => {
@@ -920,6 +928,24 @@ export default function App({
               >
                 <Settings2 size={24} color="var(--accent-1)" />
               </Button>
+            ) : user?.role === "admin" && grape ? (
+              <>
+                {app?.id === grape.id ? (
+                  <Grape />
+                ) : (
+                  <A
+                    style={{
+                      position: "relative",
+                      bottom: "0.75rem",
+                      left: "0.5rem",
+                      fontSize: "1.4rem",
+                    }}
+                    href={getAppSlug(grape)}
+                  >
+                    🍇
+                  </A>
+                )}
+              </>
             ) : app?.id === chrry?.id && focus ? (
               <FocusButton time={time} />
             ) : (
@@ -954,8 +980,12 @@ export default function App({
                     // Show after base app (index 0) and Chrry (index 1)
                     const showPacmanHere = index === 2
                     const showSpaceInvaderHere = index === 3
+                    const showChrryHere =
+                      index === 0 && chrry && app?.id !== chrry.id
                     const showZarathustraHere =
-                      index === 0 && store?.appId !== zarathustra?.id
+                      !showChrryHere &&
+                      index === 0 &&
+                      store?.appId !== zarathustra?.id
 
                     return (
                       <DraggableAppItem
@@ -969,37 +999,35 @@ export default function App({
                         className={clsx(styles.appItem)}
                       >
                         <>
-                          {index === 0 &&
-                            chrry &&
-                            storeApp?.id !== chrry.id && (
-                              <A
-                                href={getAppSlug(chrry)}
-                                onClick={(e) => {
-                                  if (isManagingApp) {
-                                    e.preventDefault()
-                                    return
-                                  }
-
-                                  if (e.metaKey || e.ctrlKey) {
-                                    return
-                                  }
+                          {showChrryHere && (
+                            <A
+                              href={getAppSlug(chrry)}
+                              onClick={(e) => {
+                                if (isManagingApp) {
                                   e.preventDefault()
+                                  return
+                                }
 
-                                  setIsNewChat(true, getAppSlug(chrry))
-                                }}
+                                if (e.metaKey || e.ctrlKey) {
+                                  return
+                                }
+                                e.preventDefault()
+
+                                setIsNewChat(true, getAppSlug(chrry))
+                              }}
+                              className={clsx("link", styles.chrry)}
+                            >
+                              <Img
                                 className={clsx("link", styles.chrry)}
-                              >
-                                <Img
-                                  className={clsx("link", styles.chrry)}
-                                  containerClass={clsx("link", styles.chrry)}
-                                  logo="chrry"
-                                  alt="Chrry"
-                                  title={"Chrry"}
-                                  width={28}
-                                  height={28}
-                                />
-                              </A>
-                            )}
+                                containerClass={clsx("link", styles.chrry)}
+                                logo="chrry"
+                                alt="Chrry"
+                                title={"Chrry"}
+                                width={28}
+                                height={28}
+                              />
+                            </A>
+                          )}
 
                           {showZarathustraHere &&
                             zarathustra &&

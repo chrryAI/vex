@@ -49,6 +49,7 @@ export const getImageSrc = ({
     | "chrry"
     | "blossom"
     | "focus"
+    | "grape"
   icon?:
     | "spaceInvader"
     | "pacman"
@@ -103,15 +104,17 @@ export const getImageSrc = ({
       ? `${BASE_URL}/images/focus.png`
       : logo === "blossom"
         ? `${BASE_URL}/images/apps/blossom.png`
-        : logo === "chrry" || store?.slug === "explore"
-          ? `${BASE_URL}/logo/cherry-500.png`
-          : logo === "lifeOS" || store?.slug === "lifeOS"
-            ? `${BASE_URL}/icons/lifeOS-128.png`
-            : logo === "vex" || store?.slug === "vex"
-              ? `${BASE_URL}/icons/icon-128.png`
-              : logo
-                ? `${BASE_URL}/icons/icon-128${logo === "isMagenta" ? "-m" : ""}${logo === "isVivid" ? "-v" : ""}.png`
-                : null // Remote web asset
+        : logo === "grape"
+          ? `${BASE_URL}/images/apps/grape.png`
+          : logo === "chrry" || store?.slug === "explore"
+            ? `${BASE_URL}/logo/cherry-500.png`
+            : logo === "lifeOS" || store?.slug === "lifeOS"
+              ? `${BASE_URL}/icons/lifeOS-128.png`
+              : logo === "vex" || store?.slug === "vex"
+                ? `${BASE_URL}/icons/icon-128.png`
+                : logo
+                  ? `${BASE_URL}/icons/icon-128${logo === "isMagenta" ? "-m" : ""}${logo === "isVivid" ? "-v" : ""}.png`
+                  : null // Remote web asset
 
   // Pick the right image size based on requested size
   // images array: [512px, 192px, 180px, 128px, 32px]
@@ -138,6 +141,7 @@ export const getImageSrc = ({
             "popcorn",
             "sushi",
             "focus",
+            "grape",
           ].includes(app.slug)
         ? `${BASE_URL}/images/apps/${app.slug}.png`
         : getImageBySize(size) ||

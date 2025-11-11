@@ -156,6 +156,91 @@ export const uploadArtifacts = async ({
           captureException(error)
           console.error("PDF extraction failed:", error)
         }
+      } else if (file.type === "image") {
+        // Upload image
+        const uploadResult = await upload({
+          url: `data:${file.mimeType};base64,${file.data}`,
+          messageId: slugify(file.filename.substring(0, 10)),
+          options: {
+            title: file.filename,
+            type: "image",
+          },
+        })
+
+        uploadedFiles.push({
+          url: uploadResult.url,
+          name: file.filename,
+          size: file.size,
+          type: "image",
+          id: uuidv4(),
+        })
+
+        // Process image for RAG (vision models can analyze it)
+        !isE2E &&
+          (await processFileForRAG({
+            content: `[Image: ${file.filename}]`,
+            filename: file.filename,
+            fileType: "image",
+            fileSizeBytes: file.size,
+            messageId: messageIdForRAG,
+            threadId: thread.id,
+            userId: member?.id,
+            guestId: guest?.id,
+          }))
+      } else if (file.type === "video") {
+        // Upload video
+        const uploadResult = await upload({
+          url: `data:${file.mimeType};base64,${file.data}`,
+          messageId: slugify(file.filename.substring(0, 10)),
+          options: {
+            title: file.filename,
+            type: "video",
+          },
+        })
+
+        uploadedFiles.push({
+          url: uploadResult.url,
+          name: file.filename,
+          size: file.size,
+          type: "video",
+          id: uuidv4(),
+        })
+      } else if (file.type === "audio") {
+        // Upload audio
+        const uploadResult = await upload({
+          url: `data:${file.mimeType};base64,${file.data}`,
+          messageId: slugify(file.filename.substring(0, 10)),
+          options: {
+            title: file.filename,
+            type: "audio",
+          },
+        })
+
+        uploadedFiles.push({
+          url: uploadResult.url,
+          name: file.filename,
+          size: file.size,
+          type: "audio",
+          id: uuidv4(),
+        })
+      } else {
+        // Handle other file types (code files, etc.) as text
+        const uploadResult = await upload({
+          url: `data:${file.mimeType};base64,${file.data}`,
+          messageId: slugify(file.filename.substring(0, 10)),
+          options: {
+            title: file.filename,
+            type: "text",
+          },
+        })
+
+        uploadedFiles.push({
+          url: uploadResult.url,
+          name: file.filename,
+          size: file.size,
+          type: "text",
+          id: uuidv4(),
+        })
       }
     }
   }

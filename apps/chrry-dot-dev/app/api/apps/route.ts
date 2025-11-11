@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
           if (!app) {
             return null
           }
+
           // If this app IS the base app of its own store, set store.app to itself
           const isBaseApp = app?.id === app?.store?.appId
 
