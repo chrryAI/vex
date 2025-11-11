@@ -1164,6 +1164,7 @@ export function AuthProvider({
       currentAppSlug: app?.slug,
       currentAppId: app?.id,
       baseAppSlug: baseApp?.slug,
+      storeId: matchedApp?.store,
       willSwitch: matchedApp?.id !== app?.id,
     })
 
@@ -1318,7 +1319,6 @@ export function AuthProvider({
       if (sessionData.app) {
         setApp(sessionData.app)
         setStore(sessionData.app.store)
-
         // 🔍 LOG: Check apps being set from session data
         console.log("🔄 Processing Session Data - Apps:", {
           totalApps: sessionData.app.store?.apps?.length || 0,

@@ -44,6 +44,7 @@ import {
 } from "./icons"
 import { animate, stagger } from "motion"
 import { useAppContext } from "./context/AppContext"
+import { validateFile, formatFileSize } from "./utils/fileValidation"
 import {
   useAuth,
   useChat,
@@ -996,48 +997,29 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     const validFiles: File[] = []
 
     for (const file of newFiles) {
-      const fileType = file.type.toLowerCase()
-      let isSupported = false
-      let maxSize = 0
+      // Validate file using utility function
+      const validation = validateFile(
+        file,
+        selectedAgent?.capabilities,
+        selectedAgent?.name as any, // Pass agent model for size limits
+      )
 
-      if (fileType.startsWith("image/") && selectedAgent?.capabilities.image) {
-        isSupported = true
-        maxSize = getMaxFileSize(fileType)
-      } else if (
-        fileType.startsWith("audio/") &&
-        selectedAgent?.capabilities.audio
-      ) {
-        isSupported = true
-        maxSize = getMaxFileSize(fileType)
-      } else if (
-        fileType.startsWith("video/") &&
-        selectedAgent?.capabilities.video
-      ) {
-        isSupported = true
-        maxSize = getMaxFileSize(fileType)
-      } else if (
-        fileType.startsWith("application/pdf") &&
-        selectedAgent?.capabilities.pdf
-      ) {
-        isSupported = true
-        maxSize = getMaxFileSize(fileType)
-      }
-
-      if (!isSupported) {
+      if (!validation.isSupported) {
         toast.error(
           `${file.name}: File type not supported by ${selectedAgent?.displayName}`,
         )
-        return false
+        continue // Skip this file but continue processing others
       }
 
-      if (file.size > maxSize) {
-        const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1)
-        toast.error(`${file.name}: File too large. Max size: ${maxSizeMB}MB`)
+      if (file.size > validation.maxSize) {
+        toast.error(
+          `${file.name}: File too large. Max size: ${formatFileSize(validation.maxSize)}`,
+        )
         continue
       }
 
       // Compress images to reduce token usage
-      if (fileType.startsWith("image/")) {
+      if (validation.fileCategory === "image") {
         console.log(`🖼️ Processing image: ${file.name} (${file.size} bytes)`)
         try {
           const compressedFile = await compressImage(file, 400, 0.6) // More aggressive compression

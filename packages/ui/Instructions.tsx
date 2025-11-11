@@ -25,9 +25,14 @@ import {
   Circle,
   ArrowRight,
   CircleCheck,
+  ImageIcon,
+  VideoIcon,
+  Music,
+  FileText,
 } from "./icons"
 import Modal from "./Modal"
 import { apiFetch } from "./utils"
+import { formatFileSize } from "./utils/fileValidation"
 import { useAppContext } from "./context/AppContext"
 import {
   useAuth,
@@ -193,24 +198,13 @@ export default function Instructions({
   const country = user?.country || guest?.country
 
   const productionExtensions = ["chrome", "firefox"]
-  const MAX_FILES = 5
+  const MAX_FILES = 10
   const [selectedInstruction, setSelectedInstructionInternal] =
     useState<instructionBase | null>(null)
 
   const setSelectedInstruction = (instruction: instructionBase | null) => {
     setSelectedInstructionInternal(instruction)
     instruction && setIsOpen(true)
-  }
-  const getMaxFileSize = (fileType: string) => {
-    // Conservative limits based on agent capabilities and token limits
-    const limits = MAX_FILE_SIZES
-
-    const agentLimits = user ? limits.chatGPT : limits.deepSeek
-
-    if (fileType.startsWith("text/")) return agentLimits.text
-    if (fileType.startsWith("application/pdf")) return agentLimits.pdf
-
-    return 0
   }
 
   const [files, setFilesInternal] = useState<File[]>([])
@@ -248,103 +242,123 @@ export default function Instructions({
       return
     }
 
-    if (!selectedAgent) {
-      toast.error("Please select an AI agent")
-      return
-    }
+    // For artifacts/RAG content, use generous limits since any agent can access them later
+    const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB per file
+    const MAX_TOTAL_SIZE = 500 * 1024 * 1024 // 500MB total
 
-    // Get agent-specific limits
-    const agentLimits =
-      MAX_FILE_SIZES[selectedAgent.name as keyof typeof MAX_FILE_SIZES] ||
-      MAX_FILE_SIZES.deepSeek
-
-    // Calculate maximum total size from agent's individual file limits
-    const MAX_TOTAL_FILE_SIZE =
-      Math.max(agentLimits.pdf, agentLimits.text) * MAX_FILES // Multiply by max number of files allowed
-
-    // Calculate individual file size limits for ALL files
-    const maxIndividualFileSizes = f.reduce(
-      (acc, file) => acc + getMaxFileSize(file.type),
-      0,
-    )
-
-    // Calculate total file size for ALL files
-    const totalFileSize = f.reduce((acc, file) => acc + file.size, 0)
-
-    // Check individual file size limits
-    if (totalFileSize > maxIndividualFileSizes) {
-      const maxIndividualSizeMB = (
-        maxIndividualFileSizes /
-        (1024 * 1024)
-      ).toFixed(1)
+    // Check individual file sizes
+    const oversizedFile = f.find((file) => file.size > MAX_FILE_SIZE)
+    if (oversizedFile) {
       toast.error(
-        `Total file size exceeds individual limits: ${maxIndividualSizeMB}MB`,
+        `${oversizedFile.name}: File too large. Max size: ${formatFileSize(MAX_FILE_SIZE)}`,
       )
       return
     }
 
-    // Check total file size limit
-    if (totalFileSize > MAX_TOTAL_FILE_SIZE) {
-      const maxTotalSizeMB = (MAX_TOTAL_FILE_SIZE / (1024 * 1024)).toFixed(1)
-      const currentTotalSizeMB = (totalFileSize / (1024 * 1024)).toFixed(1)
+    // Check total file size
+    const totalFileSize = f.reduce((acc, file) => acc + file.size, 0)
+    if (totalFileSize > MAX_TOTAL_SIZE) {
       toast.error(
-        `Total file size (${currentTotalSizeMB}MB) exceeds maximum limit of ${maxTotalSizeMB}MB`,
+        `Total file size (${formatFileSize(totalFileSize)}) exceeds maximum limit of ${formatFileSize(MAX_TOTAL_SIZE)}`,
       )
       return
     }
 
     setFilesInternal(f)
   }
+  // Image compression function
+  const compressImage = (
+    file: File,
+    maxWidth: number,
+    quality: number,
+  ): Promise<File> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas")
+        let width = img.width
+        let height = img.height
+
+        // Calculate new dimensions while maintaining aspect ratio
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        const ctx = canvas.getContext("2d")
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height)
+        }
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              })
+              resolve(compressedFile)
+            } else {
+              resolve(file)
+            }
+          },
+          "image/jpeg",
+          quality,
+        )
+      }
+
+      img.onerror = () => {
+        resolve(file)
+      }
+
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   const handleFileSelect = async (selectedFiles: FileList | null) => {
     if (!selectedFiles) return
 
     const newFiles = Array.from(selectedFiles)
-
-    // File size limits to prevent token overflow (conservative estimates)
-
-    // Validate against agent capabilities and file size
     const validFiles: File[] = []
+    const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB per file
 
     for (const file of newFiles) {
-      const fileType = file.type.toLowerCase()
-      let isSupported = false
-      let maxSize = 0
-
-      if (
-        fileType.startsWith("application/pdf") &&
-        selectedAgent?.capabilities.pdf
-      ) {
-        isSupported = true
-        maxSize = getMaxFileSize(fileType)
-      }
-
-      if (
-        fileType.startsWith("text/plain") &&
-        selectedAgent?.capabilities.text
-      ) {
-        isSupported = true
-        maxSize = getMaxFileSize(fileType)
-      }
-
-      if (!isSupported) {
+      // Check file size
+      if (file.size > MAX_FILE_SIZE) {
         toast.error(
-          `${file.name}: File type not supported by ${selectedAgent?.displayName}`,
+          `${file.name}: File too large. Max size: ${formatFileSize(MAX_FILE_SIZE)}`,
         )
-        return false
-      }
-
-      validFiles.push(file)
-
-      if (file.size > maxSize) {
-        const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1)
-        toast.error(`${file.name}: File too large. Max size: ${maxSizeMB}MB`)
         continue
       }
 
-      // Compress images to reduce token usage
+      // Compress images to reduce storage and improve performance
+      const fileType = file.type.toLowerCase()
+      if (fileType.startsWith("image/")) {
+        console.log(`🖼️ Processing image: ${file.name} (${file.size} bytes)`)
+        try {
+          const compressedFile = await compressImage(file, 800, 0.7)
+          const reduction = (
+            ((file.size - compressedFile.size) / file.size) *
+            100
+          ).toFixed(1)
+          console.log(
+            `🗜️ Compressed ${file.name}: ${file.size} → ${compressedFile.size} bytes (${reduction}% reduction)`,
+          )
+          validFiles.push(compressedFile)
+        } catch (error) {
+          console.error("❌ Image compression failed:", error)
+          validFiles.push(file) // Use original if compression fails
+        }
+      } else {
+        validFiles.push(file)
+      }
     }
 
-    setFiles((prev) => [...prev, ...validFiles].slice(0, 5))
+    setFiles((prev) => [...prev, ...validFiles].slice(0, MAX_FILES))
 
     if (validFiles.length > 0) {
       toast.success(`${validFiles.length} file(s) selected`)
@@ -1015,10 +1029,40 @@ export default function Instructions({
                   )
                 })}
                 {files.map((file, index) => {
+                  const fileType = file.type.toLowerCase()
+                  const isImage = fileType.startsWith("image/")
+                  const isVideo = fileType.startsWith("video/")
+                  const isAudio = fileType.startsWith("audio/")
+                  const isPDF = fileType === "application/pdf"
+                  const isText =
+                    fileType.startsWith("text/") ||
+                    file.name.match(
+                      /\.(txt|md|json|csv|xml|html|css|js|ts|tsx|jsx|py|java|c|cpp|h|hpp|cs|php|rb|go|rs|swift|kt|scala|sh|yaml|yml|toml|ini|conf|log)$/i,
+                    )
+
                   return (
                     <div key={index} className={styles.filePreview}>
                       <div className={styles.filePreviewIcon}>
-                        <FileIcon size={16} />
+                        {isImage ? (
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              objectFit: "cover",
+                              borderRadius: "4px",
+                            }}
+                          />
+                        ) : isVideo ? (
+                          <VideoIcon size={16} />
+                        ) : isAudio ? (
+                          <Music size={16} />
+                        ) : isPDF || isText ? (
+                          <FileText size={16} />
+                        ) : (
+                          <FileIcon size={16} />
+                        )}
                       </div>
 
                       <div className={styles.filePreviewInfo}>
@@ -1026,7 +1070,7 @@ export default function Instructions({
                           {file.name}
                         </div>
                         <div className={styles.filePreviewSize}>
-                          {(file.size / 1024).toFixed(1)}KB
+                          {formatFileSize(file.size)}
                         </div>
                       </div>
 
@@ -1094,7 +1138,9 @@ export default function Instructions({
                   <button
                     data-testid={`${dataTestId}-artifacts-upload-button`}
                     onClick={() =>
-                      triggerFileInput("application/pdf, .txt, .md")
+                      triggerFileInput(
+                        "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                      )
                     }
                     className={clsx("inverted", styles.uploadButton)}
                   >

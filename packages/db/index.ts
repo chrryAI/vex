@@ -4723,26 +4723,17 @@ export const getApps = async (
     storeDefaultAppId = store[0]?.appId || undefined
     storeIds.push(storeId)
 
-    // Build parent store chain (walk up the tree)
-    let currentParentId = store[0]?.parentStoreId
-    while (currentParentId) {
-      storeIds.push(currentParentId)
-      const parentStore = await db
-        .select({ parentStoreId: stores.parentStoreId })
-        .from(stores)
-        .where(eq(stores.id, currentParentId))
-        .limit(1)
-      currentParentId = parentStore[0]?.parentStoreId || null
-    }
+    // Note: We no longer automatically inherit apps from parent stores
+    // Apps from parent stores must be explicitly installed via storeInstalls
   }
 
   const conditions = and(
-    // Filter by storeId if provided - include apps from store chain OR installed apps
+    // Filter by storeId if provided - include apps that belong to this store OR are explicitly installed
     storeId
       ? or(
-          // Apps in current store or any parent store
-          storeIds.length > 0 ? inArray(apps.storeId, storeIds) : undefined,
-          // Apps installed via storeInstalls
+          // Apps that directly belong to this store
+          eq(apps.storeId, storeId),
+          // Apps installed via storeInstalls (can be from any store)
           exists(
             db
               .select()

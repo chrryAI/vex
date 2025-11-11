@@ -664,3 +664,16 @@ export { getHourlyLimit } from "./getHourlyLimit"
 
 // Export generateAppMetadata
 export { generateAppMetadata } from "./generateAppMetadata"
+
+// Export file validation utilities
+export {
+  validateFile,
+  getMaxFileSize,
+  isTextFile,
+  formatFileSize,
+} from "./fileValidation"
+export type {
+  FileValidationResult,
+  AgentCapabilities,
+  AgentModel,
+} from "./fileValidation"

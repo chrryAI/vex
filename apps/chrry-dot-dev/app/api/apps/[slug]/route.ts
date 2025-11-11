@@ -218,7 +218,7 @@ export async function PATCH(
       shouldUpdateImages = true
     }
     // If new image URL provided, process it
-    else if (imageUrl && imageUrl.startsWith("http")) {
+    else if (imageUrl && imageUrl.startsWith("https://")) {
       try {
         console.log("📸 Processing updated app image from URL:", imageUrl)
 
