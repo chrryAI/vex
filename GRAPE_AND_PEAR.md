@@ -5,6 +5,7 @@
 **Grape** 🍇 and **Pear** 🍐 are Chrry's revolutionary monetization systems that prove AI platforms can be ethical, transparent, and profitable without compromising user privacy or experience.
 
 **The Philosophy:**
+
 - **AI-First**: AI enhances every interaction
 - **Not AI-Only**: Humans provide value through feedback and curation
 - **Win-Win-Win**: Users earn, advertisers get insights, platform grows
@@ -16,6 +17,7 @@
 Grape is Chrry's **privacy-first, context-aware advertising system** that integrates ads naturally into the AI experience without tracking or surveillance.
 
 **Key Principles:**
+
 - ✅ **No Tracking** - Zero cookies, no cross-site tracking
 - ✅ **Context-Only** - Ads based on current conversation, not history
 - ✅ **User Consent** - Explicit opt-in required
@@ -36,7 +38,7 @@ Grape is Chrry's **privacy-first, context-aware advertising system** that integr
 const enableAds = async () => {
   await updateUser({
     ...user,
-    adConsent: true
+    adConsent: true,
   })
 }
 ```
@@ -49,14 +51,14 @@ const adContext = {
   topic: "React Native development",
   intent: "learning",
   sentiment: "curious",
-  expertise: "intermediate"
+  expertise: "intermediate",
 }
 
 // Match ads based on context (no user tracking)
 const relevantAds = await matchAds({
   context: adContext,
   appId: app.id,
-  language: user.language
+  language: user.language,
 })
 ```
 
@@ -68,11 +70,11 @@ const relevantAds = await matchAds({
 User: "I'm building a React Native app"
 
 AI: "Great! I can help with that. Here are some resources:
-     
+
      📚 React Navigation docs
      🎨 UI component libraries
      🔧 Debugging tools
-     
+
      💡 Sponsored: Expo - Build React Native apps faster
         Try Expo's managed workflow for simplified development
         [Learn More]"
@@ -104,15 +106,15 @@ AI: "Great! I can help with that. Here are some resources:
 const contextualAds = {
   // Developer tools
   "react native": ["Expo", "React Navigation", "VS Code extensions"],
-  
+
   // Productivity
   "focus timer": ["Notion", "Todoist", "RescueTime"],
-  
+
   // Travel
   "tokyo trip": ["Airbnb", "JR Pass", "Booking.com"],
-  
+
   // AI/ML
-  "machine learning": ["Coursera", "Hugging Face", "Replicate"]
+  "machine learning": ["Coursera", "Hugging Face", "Replicate"],
 }
 ```
 
@@ -124,7 +126,7 @@ if (app.slug === "bloom") {
   ads = [
     "Notion - All-in-one workspace",
     "Todoist - Task management",
-    "Forest - Focus timer app"
+    "Forest - Focus timer app",
   ]
 }
 
@@ -133,7 +135,7 @@ if (app.slug === "atlas") {
   ads = [
     "Airbnb - Unique stays",
     "Skyscanner - Cheap flights",
-    "Rome2rio - Travel planning"
+    "Rome2rio - Travel planning",
   ]
 }
 ```
@@ -160,7 +162,7 @@ if (user.adConsent && weather?.city) {
   ads = [
     `Restaurants in ${weather.city}`,
     `Events near ${weather.city}`,
-    `Services in ${weather.city}`
+    `Services in ${weather.city}`,
   ]
 }
 ```
@@ -168,6 +170,7 @@ if (user.adConsent && weather?.city) {
 ### Advertiser Benefits
 
 **For Advertisers:**
+
 - 🎯 **Precise Targeting** - Context-aware, not creepy
 - 📊 **Real Metrics** - Actual engagement, not vanity metrics
 - 💰 **Performance-Based** - Pay for results, not impressions
@@ -175,12 +178,13 @@ if (user.adConsent && weather?.city) {
 - 🔒 **Brand Safety** - AI-moderated, safe environment
 
 **Pricing Model:**
+
 ```typescript
 const pricing = {
-  cpm: 5.00,        // Cost per 1000 impressions
-  cpc: 0.50,        // Cost per click
-  cpa: 25.00,       // Cost per acquisition
-  minBudget: 500    // Minimum monthly budget
+  cpm: 5.0, // Cost per 1000 impressions
+  cpc: 0.5, // Cost per click
+  cpa: 25.0, // Cost per acquisition
+  minBudget: 500, // Minimum monthly budget
 }
 ```
 
@@ -191,6 +195,7 @@ const pricing = {
 Pear is Chrry's **feedback-to-earnings system** where users get paid for providing valuable feedback on products, services, and content.
 
 **Key Principles:**
+
 - ✅ **Quality Over Quantity** - Thoughtful feedback earns more
 - ✅ **AI-Verified** - Spam and low-quality filtered out
 - ✅ **Fair Payouts** - Transparent, predictable earnings
@@ -210,15 +215,15 @@ const feedbackOpportunities = {
     {
       id: "fb-123",
       product: "New React Native UI library",
-      payout: 5.00,
+      payout: 5.0,
       estimatedTime: "10 minutes",
       questions: [
         "How intuitive is the API?",
         "Would you use this in production?",
-        "What features are missing?"
-      ]
-    }
-  ]
+        "What features are missing?",
+      ],
+    },
+  ],
 }
 ```
 
@@ -226,19 +231,19 @@ const feedbackOpportunities = {
 
 ```typescript
 // User provides feedback through conversation
-User: "I tried the new UI library. The API is clean but 
-       documentation is lacking. I'd use it for side projects 
+User: "I tried the new UI library. The API is clean but
+       documentation is lacking. I'd use it for side projects
        but not production yet."
 
-AI: "Thanks for the detailed feedback! 
-     
+AI: "Thanks for the detailed feedback!
+
      📝 Your response covers:
      ✅ API quality (positive)
      ✅ Documentation (needs improvement)
      ✅ Production readiness (not yet)
-     
+
      Estimated earnings: $5.00
-     
+
      Would you like to add more details?"
 ```
 
@@ -247,21 +252,21 @@ AI: "Thanks for the detailed feedback!
 ```typescript
 // AI verifies feedback quality
 const feedbackQuality = {
-  length: "adequate",          // 50+ words
-  specificity: "high",          // Concrete examples
-  actionability: "high",        // Clear suggestions
-  sentiment: "balanced",        // Not just praise/criticism
-  expertise: "demonstrated",    // Shows knowledge
-  score: 9.2 / 10
+  length: "adequate", // 50+ words
+  specificity: "high", // Concrete examples
+  actionability: "high", // Clear suggestions
+  sentiment: "balanced", // Not just praise/criticism
+  expertise: "demonstrated", // Shows knowledge
+  score: 9.2 / 10,
 }
 
 // High-quality feedback earns full payout
 if (feedbackQuality.score >= 8.0) {
   payout = fullAmount
 } else if (feedbackQuality.score >= 6.0) {
-  payout = fullAmount * 0.7  // 70% for decent feedback
+  payout = fullAmount * 0.7 // 70% for decent feedback
 } else {
-  payout = 0  // Low quality rejected
+  payout = 0 // Low quality rejected
 }
 ```
 
@@ -284,7 +289,7 @@ const onboardToStripe = async () => {
       transfers: { requested: true }
     }
   })
-  
+
   await updateUser({
     ...user,
     stripeConnectAccountId: account.id
@@ -312,31 +317,31 @@ const processPayout = async () => {
 const feedbackTypes = {
   // Product feedback
   product: {
-    payout: 5.00,
+    payout: 5.0,
     time: "10 min",
-    questions: ["Usability", "Features", "Pricing"]
+    questions: ["Usability", "Features", "Pricing"],
   },
-  
+
   // Content feedback
   content: {
-    payout: 2.00,
+    payout: 2.0,
     time: "5 min",
-    questions: ["Quality", "Accuracy", "Relevance"]
+    questions: ["Quality", "Accuracy", "Relevance"],
   },
-  
+
   // Service feedback
   service: {
-    payout: 10.00,
+    payout: 10.0,
     time: "15 min",
-    questions: ["Experience", "Support", "Value"]
+    questions: ["Experience", "Support", "Value"],
   },
-  
+
   // Beta testing
   beta: {
-    payout: 25.00,
+    payout: 25.0,
     time: "30 min",
-    questions: ["Bugs", "UX", "Performance"]
-  }
+    questions: ["Bugs", "UX", "Performance"],
+  },
 }
 ```
 
@@ -348,13 +353,13 @@ const userExpertise = {
   skills: ["React Native", "TypeScript", "UI/UX"],
   interests: ["Productivity", "AI", "Travel"],
   experience: "intermediate",
-  languages: ["English", "Spanish"]
+  languages: ["English", "Spanish"],
 }
 
 // Only show relevant feedback opportunities
-const matchedOpportunities = feedbackRequests.filter(request => {
-  return request.requiredSkills.some(skill => 
-    userExpertise.skills.includes(skill)
+const matchedOpportunities = feedbackRequests.filter((request) => {
+  return request.requiredSkills.some((skill) =>
+    userExpertise.skills.includes(skill),
   )
 })
 ```
@@ -364,20 +369,20 @@ const matchedOpportunities = feedbackRequests.filter(request => {
 ```typescript
 // User's Pear earnings
 const earnings = {
-  total: 245.00,
-  pending: 35.00,
-  paid: 210.00,
-  thisMonth: 45.00,
+  total: 245.0,
+  pending: 35.0,
+  paid: 210.0,
+  thisMonth: 45.0,
   lastPayout: {
-    amount: 50.00,
+    amount: 50.0,
     date: "2025-11-01",
-    status: "completed"
+    status: "completed",
   },
   breakdown: {
-    productFeedback: 150.00,
-    contentReview: 45.00,
-    betaTesting: 50.00
-  }
+    productFeedback: 150.0,
+    contentReview: 45.0,
+    betaTesting: 50.0,
+  },
 }
 ```
 
@@ -407,6 +412,7 @@ if (reputation.level === "Expert") {
 ### Requestor Benefits
 
 **For Companies Requesting Feedback:**
+
 - 🎯 **Targeted Experts** - Get feedback from your exact audience
 - 🤖 **AI-Filtered** - Only high-quality responses
 - ⚡ **Fast Turnaround** - Hours, not weeks
@@ -414,13 +420,14 @@ if (reputation.level === "Expert") {
 - 📊 **Actionable Insights** - AI summarizes key themes
 
 **Pricing:**
+
 ```typescript
 const requestorPricing = {
-  productFeedback: 10.00,    // $10 per response (user gets $5)
-  contentReview: 4.00,       // $4 per response (user gets $2)
-  betaTesting: 50.00,        // $50 per tester (user gets $25)
-  minResponses: 10,          // Minimum 10 responses
-  platformFee: 0.50          // 50% platform fee
+  productFeedback: 10.0, // $10 per response (user gets $5)
+  contentReview: 4.0, // $4 per response (user gets $2)
+  betaTesting: 50.0, // $50 per tester (user gets $25)
+  minResponses: 10, // Minimum 10 responses
+  platformFee: 0.5, // 50% platform fee
 }
 ```
 
@@ -441,6 +448,7 @@ Provide feedback and earn $25!
 ```
 
 **Flow:**
+
 1. User sees Grape ad for beta testing
 2. Clicks "Try Beta & Earn"
 3. Tests product for 30 minutes
@@ -451,25 +459,26 @@ Provide feedback and earn $25!
 ### Revenue Model
 
 **Platform Revenue:**
+
 ```typescript
 const revenueModel = {
   // Grape (Ads)
   grapeRevenue: {
-    cpm: 5.00,           // Platform keeps 100%
-    cpc: 0.50,           // Platform keeps 100%
-    cpa: 25.00,          // Platform keeps 100%
-    monthlyEstimate: 50000  // $50k/month at scale
+    cpm: 5.0, // Platform keeps 100%
+    cpc: 0.5, // Platform keeps 100%
+    cpa: 25.0, // Platform keeps 100%
+    monthlyEstimate: 50000, // $50k/month at scale
   },
-  
+
   // Pear (Feedback)
   pearRevenue: {
-    platformFee: 0.50,   // 50% of feedback payout
-    perResponse: 5.00,   // User gets $5, platform gets $5
-    monthlyEstimate: 25000  // $25k/month at scale
+    platformFee: 0.5, // 50% of feedback payout
+    perResponse: 5.0, // User gets $5, platform gets $5
+    monthlyEstimate: 25000, // $25k/month at scale
   },
-  
+
   // Total
-  totalMonthly: 75000    // $75k/month potential
+  totalMonthly: 75000, // $75k/month potential
 }
 ```
 
@@ -496,7 +505,7 @@ const grapeAds = pgTable("grape_ads", {
   clicks: integer("clicks").default(0),
   conversions: integer("conversions").default(0),
   status: text("status", { enum: ["active", "paused", "ended"] }),
-  createdOn: timestamp("createdOn").defaultNow()
+  createdOn: timestamp("createdOn").defaultNow(),
 })
 
 // Pear Feedback
@@ -509,7 +518,7 @@ const pearFeedback = pgTable("pear_feedback", {
   qualityScore: real("qualityScore"), // 0-10
   payout: integer("payout"), // cents
   status: text("status", { enum: ["pending", "approved", "rejected", "paid"] }),
-  createdOn: timestamp("createdOn").defaultNow()
+  createdOn: timestamp("createdOn").defaultNow(),
 })
 
 // Pear Payouts
@@ -518,9 +527,11 @@ const pearPayouts = pgTable("pear_payouts", {
   userId: uuid("userId").references(() => users.id),
   amount: integer("amount").notNull(), // cents
   stripeTransferId: text("stripeTransferId"),
-  status: text("status", { enum: ["pending", "processing", "completed", "failed"] }),
+  status: text("status", {
+    enum: ["pending", "processing", "completed", "failed"],
+  }),
   requestedOn: timestamp("requestedOn").defaultNow(),
-  completedOn: timestamp("completedOn")
+  completedOn: timestamp("completedOn"),
 })
 ```
 
@@ -568,12 +579,14 @@ Response: {
 ### 1. Ethical Monetization
 
 **Traditional Ad Networks:**
+
 - ❌ Track users across sites
 - ❌ Build invasive profiles
 - ❌ Sell personal data
 - ❌ Manipulative targeting
 
 **Grape:**
+
 - ✅ Zero tracking
 - ✅ Context-only matching
 - ✅ User consent required
@@ -582,11 +595,13 @@ Response: {
 ### 2. Value Exchange
 
 **Traditional Ads:**
+
 - Users see ads → Get nothing
 - Advertisers pay → Hope for results
 - Platform profits → Users exploited
 
 **Grape + Pear:**
+
 - Users see relevant ads → Can earn via Pear
 - Advertisers pay → Get quality feedback
 - Platform profits → Users profit too
@@ -594,12 +609,14 @@ Response: {
 ### 3. AI-First, Not AI-Only
 
 **AI-Only Platform:**
+
 - AI does everything
 - No human input
 - Generic responses
 - No real-world validation
 
 **Chrry (AI-First):**
+
 - AI enhances interactions
 - Humans provide feedback (Pear)
 - Personalized experiences
@@ -608,12 +625,14 @@ Response: {
 ### 4. Open Source Transparency
 
 **Closed Ad Networks:**
+
 - Black box algorithms
 - Hidden fees
 - Opaque targeting
 - No accountability
 
 **Grape (Open Source):**
+
 - Public algorithms
 - Transparent fees
 - Clear targeting rules
@@ -638,6 +657,7 @@ Response: {
 ## Conclusion
 
 **Grape** 🍇 and **Pear** 🍐 prove that AI platforms can be:
+
 - ✅ **Profitable** - $75k/month potential
 - ✅ **Ethical** - No tracking, full transparency
 - ✅ **User-Friendly** - Native, non-intrusive
@@ -648,7 +668,7 @@ Response: {
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: November 11, 2025*  
-*Author: Iliyan Velinov*  
-*Systems: Grape (Ad Network) + Pear (Feedback Marketplace)*
+_Document Version: 1.0_  
+_Last Updated: November 11, 2025_  
+_Author: Iliyan Velinov_  
+_Systems: Grape (Ad Network) + Pear (Feedback Marketplace)_

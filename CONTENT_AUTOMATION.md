@@ -9,6 +9,7 @@ Chrry has completely eliminated traditional content management systems through *
 ## The Problem with Traditional CMS
 
 ### Traditional Approach (WordPress, Contentful, Strapi):
+
 ```
 1. Content Manager creates generic templates
 2. Developer hardcodes suggestions
@@ -18,6 +19,7 @@ Chrry has completely eliminated traditional content management systems through *
 ```
 
 **Problems:**
+
 - ❌ Generic, one-size-fits-all content
 - ❌ Manual creation and updates
 - ❌ No personalization
@@ -25,6 +27,7 @@ Chrry has completely eliminated traditional content management systems through *
 - ❌ High maintenance cost
 
 ### Chrry's Approach (AI-Powered Automation):
+
 ```
 1. User has conversation
 2. AI analyzes conversation + memories + context
@@ -34,6 +37,7 @@ Chrry has completely eliminated traditional content management systems through *
 ```
 
 **Benefits:**
+
 - ✅ Personalized for each user
 - ✅ Fully automated
 - ✅ Always fresh and relevant
@@ -50,6 +54,7 @@ Automatically extracts and categorizes memories from conversations without any m
 **Two Types of Memories:**
 
 #### A. User Memories (Personal)
+
 ```typescript
 {
   category: "preference" | "relationship" | "goal",
@@ -64,6 +69,7 @@ Automatically extracts and categorizes memories from conversations without any m
 ```
 
 #### B. App Memories (Institutional)
+
 ```typescript
 {
   category: "fact" | "instruction" | "context",
@@ -78,6 +84,7 @@ Automatically extracts and categorizes memories from conversations without any m
 ```
 
 **Automation Flow:**
+
 ```
 Conversation → AI Analysis → Memory Extraction → Categorization → Storage
                                                                       ↓
@@ -86,25 +93,26 @@ Conversation → AI Analysis → Memory Extraction → Categorization → Storag
 ```
 
 **Code Example:**
+
 ```typescript
 // Automatically extract memories from conversation
 const memories = await extractMemories(conversationText, model)
 
 // AI categorizes each memory
 for (const memory of memories) {
-  const isAppMemory = 
-    appId && 
-    (memory.category === "fact" || 
-     memory.category === "instruction" || 
-     memory.category === "context")
-  
+  const isAppMemory =
+    appId &&
+    (memory.category === "fact" ||
+      memory.category === "instruction" ||
+      memory.category === "context")
+
   // Save to appropriate scope
   await createMemory({
     userId: isAppMemory ? null : userId,
     appId: isAppMemory ? appId : null,
     content: memory.content,
     category: memory.category,
-    importance: memory.importance
+    importance: memory.importance,
   })
 }
 ```
@@ -115,49 +123,46 @@ for (const memory of memories) {
 Generates personalized action suggestions based on conversation context, user memories, and app features.
 
 **Traditional CMS:**
+
 ```javascript
 // Hardcoded suggestions (same for everyone)
-const suggestions = [
-  "Create a new task",
-  "Start a timer",
-  "View your calendar"
-]
+const suggestions = ["Create a new task", "Start a timer", "View your calendar"]
 ```
 
 **Chrry's AI Automation:**
+
 ```typescript
 // AI generates personalized suggestions
 const suggestions = await generateSuggestions({
-  conversationText,      // What user just discussed
-  memories,              // User's history and preferences
-  appHighlights,         // Current app's features
-  calendarEvents,        // Upcoming events
-  language,              // User's language
-  currentContext         // Time, location, weather
-})
-
-// Result: Unique suggestions for each user
-[
-  {
+  conversationText, // What user just discussed
+  memories, // User's history and preferences
+  appHighlights, // Current app's features
+  calendarEvents, // Upcoming events
+  language, // User's language
+  currentContext, // Time, location, weather
+})[
+  // Result: Unique suggestions for each user
+  ({
     title: "Debug React hooks in {{city}} {{flag}}",
     emoji: "🐛",
     content: "Help debug React hooks issue discussed earlier",
     confidence: 0.9,
-    requiresWebSearch: false
+    requiresWebSearch: false,
   },
   {
     title: "Find TypeScript resources for {{timeOfDay}}",
     emoji: "📚",
     content: "Curate TypeScript learning resources based on your skill level",
     confidence: 0.85,
-    requiresWebSearch: true
-  }
+    requiresWebSearch: true,
+  })
 ]
 ```
 
 **Key Features:**
 
 #### A. Context-Aware Placeholders
+
 ```typescript
 // Dynamic placeholders replaced at runtime
 const placeholders = {
@@ -172,7 +177,7 @@ const placeholders = {
 }
 
 // Suggestions adapt to user's context
-"Find restaurants in {{city}} {{flag}}" 
+"Find restaurants in {{city}} {{flag}}"
   → "Find restaurants in Tokyo 🇯🇵"
 
 "Plan {{timeOfDay}} activities {{weatherEmoji}}"
@@ -180,6 +185,7 @@ const placeholders = {
 ```
 
 #### B. App-Specific Suggestions
+
 ```typescript
 // AI aligns suggestions with current app's features
 if (currentApp.slug === "bloom") {
@@ -187,7 +193,7 @@ if (currentApp.slug === "bloom") {
   suggestions = [
     "Start a 25min focus session",
     "Review your weekly progress",
-    "Analyze your productivity patterns"
+    "Analyze your productivity patterns",
   ]
 }
 
@@ -196,12 +202,13 @@ if (currentApp.slug === "atlas") {
   suggestions = [
     "Find hidden gems in {{city}}",
     "Plan your {{timeOfDay}} itinerary",
-    "Discover local food spots {{weatherEmoji}}"
+    "Discover local food spots {{weatherEmoji}}",
   ]
 }
 ```
 
 #### C. Web Search Integration
+
 ```typescript
 {
   title: "Check flight prices to {{city}}",
@@ -224,6 +231,7 @@ Generates personalized conversation starters that evolve with user behavior.
 **Two Types of Placeholders:**
 
 #### A. Home Placeholder (Cross-Conversation)
+
 ```typescript
 // Based on user's recurring interests from ALL conversations
 {
@@ -235,6 +243,7 @@ Generates personalized conversation starters that evolve with user behavior.
 ```
 
 #### B. Thread Placeholder (Conversation-Specific)
+
 ```typescript
 // Based on THIS specific conversation
 {
@@ -246,6 +255,7 @@ Generates personalized conversation starters that evolve with user behavior.
 ```
 
 **Placeholder History:**
+
 ```typescript
 // Chrry maintains history of placeholders
 const placeholderHistory = {
@@ -254,14 +264,14 @@ const placeholderHistory = {
     {
       text: "Let's build that React app! ⚛️",
       generatedAt: "2025-11-10T10:00:00Z",
-      topicKeywords: ["react", "components", "hooks"]
+      topicKeywords: ["react", "components", "hooks"],
     },
     {
       text: "Want to learn TypeScript? 📘",
       generatedAt: "2025-11-09T15:30:00Z",
-      topicKeywords: ["typescript", "types", "interfaces"]
-    }
-  ]
+      topicKeywords: ["typescript", "types", "interfaces"],
+    },
+  ],
 }
 ```
 
@@ -271,6 +281,7 @@ const placeholderHistory = {
 Automatically builds personality profiles for each user based on their communication patterns.
 
 **Generated Profile:**
+
 ```typescript
 {
   name: "The Strategic Planner",
@@ -288,6 +299,7 @@ Automatically builds personality profiles for each user based on their communica
 ```
 
 **Usage:**
+
 - AI adapts responses to match user's communication style
 - Suggestions align with user's expertise level
 - Content tone matches user's preferences
@@ -298,8 +310,9 @@ Automatically builds personality profiles for each user based on their communica
 Detects user's emotional state from conversation and adapts accordingly.
 
 **Mood Types:**
+
 ```typescript
-type Mood = 
+type Mood =
   | "happy"       // Positive, cheerful, satisfied
   | "sad"         // Disappointed, melancholic
   | "angry"       // Frustrated, irritated
@@ -316,6 +329,7 @@ type Mood =
 ```
 
 **Adaptive Behavior:**
+
 ```typescript
 if (mood.type === "frustrated" && mood.confidence > 0.7) {
   // Adjust AI tone to be more supportive
@@ -336,6 +350,7 @@ if (mood.type === "happy" && mood.confidence > 0.8) {
 Automatically determines which app is most relevant to the conversation.
 
 **Classification Logic:**
+
 ```typescript
 // AI analyzes conversation and classifies app relevance
 const classification = await classifyApp({
@@ -356,17 +371,18 @@ const classification = await classifyApp({
 ```
 
 **Context Enrichment:**
+
 ```typescript
 // For Bloom (productivity app)
 const bloomContext = {
-  avgMood: 4.2,              // 7-day mood average
-  activeTasks: 12,           // Current active tasks
-  focusTime: 450,            // Minutes focused (7 days)
-  timerStatus: "running"     // Current timer state
+  avgMood: 4.2, // 7-day mood average
+  activeTasks: 12, // Current active tasks
+  focusTime: 450, // Minutes focused (7 days)
+  timerStatus: "running", // Current timer state
 }
 
 // AI uses this context for suggestions
-"You've focused for 450min this week! 🎯 Ready for another session?"
+;("You've focused for 450min this week! 🎯 Ready for another session?")
 ```
 
 ## Automation Architecture
@@ -438,14 +454,15 @@ generateAIContent({
   thread,
   user,
   conversationHistory,
-  latestMessage
-}).catch(error => {
+  latestMessage,
+}).catch((error) => {
   // Silent failure - user already got their response
   console.error("Background processing failed:", error)
 })
 ```
 
 **Benefits:**
+
 - ✅ Zero latency for user
 - ✅ Rich personalization happens in background
 - ✅ Failures don't affect user experience
@@ -456,6 +473,7 @@ generateAIContent({
 ### Smart Model Selection
 
 **DeepSeek for Background Processing:**
+
 ```typescript
 // Use cost-efficient DeepSeek for automation
 const model = getModelProvider("deepseek-chat")
@@ -466,6 +484,7 @@ const model = getModelProvider("deepseek-chat")
 ```
 
 **Custom Agent for User Responses:**
+
 ```typescript
 // Use app's selected agent for user-facing responses
 const model = getModelProvider(app.selectedAgent)
@@ -476,6 +495,7 @@ const model = getModelProvider(app.selectedAgent)
 ```
 
 **Cost Comparison:**
+
 ```
 Traditional CMS:
 - Content Manager: $60,000/year
@@ -498,9 +518,9 @@ Savings: $202,800/year (97% reduction)
 ```typescript
 // Users control their data
 const userSettings = {
-  memoriesEnabled: true,        // Save personal memories
+  memoriesEnabled: true, // Save personal memories
   characterProfilesEnabled: true, // Build personality profile
-  moodTrackingEnabled: true     // Track emotional state
+  moodTrackingEnabled: true, // Track emotional state
 }
 
 // Privacy-first approach
@@ -514,12 +534,14 @@ if (!user.memoriesEnabled) {
 ### Data Scoping
 
 **User Memories:**
+
 - Scoped to individual user
 - Respects privacy settings
 - Can be deleted by user
 - Not shared across users
 
 **App Memories:**
+
 - Scoped to app (all users benefit)
 - No personal information
 - Improves app intelligence
@@ -530,11 +552,12 @@ if (!user.memoriesEnabled) {
 ### Example 1: Developer Using Vex
 
 **Conversation:**
+
 ```
-User: "I'm building a React Native app with TypeScript. 
+User: "I'm building a React Native app with TypeScript.
        Need help with navigation."
 
-AI: "I can help with React Navigation! What specific 
+AI: "I can help with React Navigation! What specific
      issue are you facing?"
 
 User: "How do I pass params between screens?"
@@ -543,49 +566,52 @@ User: "How do I pass params between screens?"
 **Automated Content Generation:**
 
 **Memories Created:**
+
 ```typescript
-[
+;[
   {
     category: "expertise",
     content: "Working with React Native and TypeScript",
     importance: 8,
-    scope: "user"
+    scope: "user",
   },
   {
     category: "context",
     content: "Common pattern: React Navigation param passing",
     importance: 7,
-    scope: "app" // Helps ALL users of Vex
-  }
+    scope: "app", // Helps ALL users of Vex
+  },
 ]
 ```
 
 **Suggestions Generated:**
+
 ```typescript
-[
+;[
   {
     title: "Debug React Navigation params",
     emoji: "🧭",
     content: "Help debug parameter passing between screens in React Navigation",
-    confidence: 0.95
+    confidence: 0.95,
   },
   {
     title: "TypeScript types for navigation",
     emoji: "📘",
     content: "Generate TypeScript type definitions for React Navigation routes",
-    confidence: 0.9
+    confidence: 0.9,
   },
   {
     title: "Find React Native resources in {{city}}",
     emoji: "📱",
     content: "Discover local React Native meetups and resources",
     confidence: 0.7,
-    requiresWebSearch: true
-  }
+    requiresWebSearch: true,
+  },
 ]
 ```
 
 **Placeholders Created:**
+
 ```typescript
 {
   home: "Ready to continue that React Native project? 📱",
@@ -596,10 +622,11 @@ User: "How do I pass params between screens?"
 ### Example 2: Traveler Using Atlas
 
 **Conversation:**
+
 ```
 User: "I'm visiting Tokyo next week. What should I see?"
 
-AI: "Tokyo is amazing! Are you interested in traditional 
+AI: "Tokyo is amazing! Are you interested in traditional
      culture, modern attractions, or food?"
 
 User: "Definitely food! I love ramen and sushi."
@@ -608,57 +635,61 @@ User: "Definitely food! I love ramen and sushi."
 **Automated Content Generation:**
 
 **Memories Created:**
+
 ```typescript
-[
+;[
   {
     category: "preference",
     content: "Loves ramen and sushi",
     importance: 9,
-    scope: "user"
+    scope: "user",
   },
   {
     category: "goal",
     content: "Planning trip to Tokyo",
     importance: 8,
-    scope: "user"
+    scope: "user",
   },
   {
     category: "fact",
     content: "Best ramen spots in Tokyo: Ichiran, Afuri, Tsuta",
     importance: 7,
-    scope: "app" // Helps ALL Atlas users
-  }
+    scope: "app", // Helps ALL Atlas users
+  },
 ]
 ```
 
 **Suggestions Generated:**
+
 ```typescript
-[
+;[
   {
     title: "Find best ramen in {{city}} {{flag}}",
     emoji: "🍜",
-    content: "Discover top-rated ramen shops in Tokyo based on your preferences",
+    content:
+      "Discover top-rated ramen shops in Tokyo based on your preferences",
     confidence: 0.95,
-    requiresWebSearch: true
+    requiresWebSearch: true,
   },
   {
     title: "Plan {{timeOfDay}} food tour {{weatherEmoji}}",
     emoji: "🗺️",
     content: "Create a personalized food tour for your Tokyo visit",
     confidence: 0.9,
-    requiresWebSearch: true
+    requiresWebSearch: true,
   },
   {
     title: "Sushi etiquette guide",
     emoji: "🍣",
     content: "Learn proper sushi dining etiquette for your Tokyo trip",
     confidence: 0.85,
-    requiresWebSearch: false
-  }
+    requiresWebSearch: false,
+  },
 ]
 ```
 
 **Placeholders Created:**
+
 ```typescript
 {
   home: "Ready to plan your Tokyo food adventure? 🍜",
@@ -669,10 +700,11 @@ User: "Definitely food! I love ramen and sushi."
 ### Example 3: Productivity User Using Bloom
 
 **Conversation:**
+
 ```
 User: "I can't focus today. Too many distractions."
 
-AI: "I understand. Let's break this down. What's your 
+AI: "I understand. Let's break this down. What's your
      most important task right now?"
 
 User: "I need to finish this report by 5pm."
@@ -681,6 +713,7 @@ User: "I need to finish this report by 5pm."
 **Automated Content Generation:**
 
 **Mood Detected:**
+
 ```typescript
 {
   type: "frustrated",
@@ -690,6 +723,7 @@ User: "I need to finish this report by 5pm."
 ```
 
 **Character Profile Updated:**
+
 ```typescript
 {
   traits: {
@@ -701,31 +735,33 @@ User: "I need to finish this report by 5pm."
 ```
 
 **Suggestions Generated:**
+
 ```typescript
-[
+;[
   {
     title: "Start 25min focus session",
     emoji: "⏱️",
     content: "Begin a Pomodoro session to focus on your report",
-    confidence: 0.95
+    confidence: 0.95,
   },
   {
     title: "Break report into subtasks",
     emoji: "📋",
     content: "Divide your report into manageable chunks",
-    confidence: 0.9
+    confidence: 0.9,
   },
   {
     title: "Find quiet workspace in {{city}}",
     emoji: "🤫",
     content: "Discover quiet cafes or coworking spaces nearby",
     confidence: 0.75,
-    requiresWebSearch: true
-  }
+    requiresWebSearch: true,
+  },
 ]
 ```
 
 **Placeholders Created:**
+
 ```typescript
 {
   home: "Ready to tackle that report? You've got this! 💪",
@@ -745,7 +781,7 @@ async function generateAIContent({
   conversationHistory,
   latestMessage,
   language,
-  app
+  app,
 }: {
   thread: Thread
   user?: User
@@ -757,40 +793,40 @@ async function generateAIContent({
 }) {
   // 1. Get cost-efficient model for background processing
   const { provider: model, agentName } = await getModelProvider(app)
-  
+
   // 2. Extract conversation text
   const conversationText = conversationHistory
-    .map(msg => `${msg.role}: ${msg.content}`)
+    .map((msg) => `${msg.role}: ${msg.content}`)
     .join("\n")
-  
+
   // 3. Parallel AI processing
   const [memories, characterProfile, mood, suggestions] = await Promise.all([
     extractAndSaveMemories(conversationText, model),
     generateCharacterProfile(conversationText, model),
     detectMood(conversationText, model),
-    generateSuggestions(conversationText, memories, app, model)
+    generateSuggestions(conversationText, memories, app, model),
   ])
-  
+
   // 4. Save to database
   await Promise.all([
     saveMemories(memories, user, guest, app),
     saveCharacterProfile(characterProfile, user, guest),
     saveMood(mood, user, guest, latestMessage),
-    saveSuggestions(suggestions, user, guest, app)
+    saveSuggestions(suggestions, user, guest, app),
   ])
-  
+
   // 5. Generate placeholders
   const placeholders = await generatePlaceholders({
     memories,
     conversationText,
     language,
-    model
+    model,
   })
-  
+
   // 6. Notify user (real-time update)
   notifyUser({
     type: "content_updated",
-    data: { suggestions, placeholders, characterProfile }
+    data: { suggestions, placeholders, characterProfile },
   })
 }
 ```
@@ -798,6 +834,7 @@ async function generateAIContent({
 ### Prompt Engineering
 
 **Memory Extraction Prompt:**
+
 ```typescript
 const memoryPrompt = `Based on this conversation, extract meaningful memories:
 
@@ -829,6 +866,7 @@ Generate ONLY valid JSON array (max 5 memories):
 ```
 
 **Suggestion Generation Prompt:**
+
 ```typescript
 const suggestionsPrompt = `Generate personalized AI instruction templates:
 
@@ -836,7 +874,7 @@ CONVERSATION:
 ${conversationText}
 
 MEMORIES:
-${memories.map(m => `- ${m.content}`).join("\n")}
+${memories.map((m) => `- ${m.content}`).join("\n")}
 
 CURRENT APP: ${app.name}
 APP FEATURES: ${app.highlights}
@@ -862,6 +900,7 @@ Generate 7 unique suggestions in JSON format:
 ## Performance Metrics
 
 ### Speed
+
 - **Memory extraction**: ~2-3 seconds
 - **Suggestion generation**: ~3-4 seconds
 - **Character profile**: ~2-3 seconds
@@ -869,12 +908,14 @@ Generate 7 unique suggestions in JSON format:
 - **User response time**: 0ms (non-blocking)
 
 ### Accuracy
+
 - **Memory categorization**: 94% accuracy
 - **Mood detection**: 87% accuracy (confidence > 0.7)
 - **App classification**: 91% accuracy
 - **Suggestion relevance**: 89% user satisfaction
 
 ### Cost
+
 - **Per conversation**: ~$0.002 (DeepSeek)
 - **Per 1000 conversations**: ~$2
 - **Monthly (10k conversations)**: ~$20
@@ -885,43 +926,47 @@ Generate 7 unique suggestions in JSON format:
 ## Future Enhancements
 
 ### 1. Multi-Modal Content Generation
+
 ```typescript
 // Generate images, videos, audio
 const visualContent = await generateVisuals({
   conversationContext,
   userPreferences,
-  appTheme
+  appTheme,
 })
 ```
 
 ### 2. Predictive Suggestions
+
 ```typescript
 // Predict what user will need BEFORE they ask
 const predictedNeeds = await predictUserNeeds({
   historicalPatterns,
   currentContext,
   timeOfDay,
-  location
+  location,
 })
 ```
 
 ### 3. Cross-App Memory Sharing
+
 ```typescript
 // Share relevant memories across apps
 const crossAppMemories = await getRelevantMemories({
   currentApp: "atlas",
   relatedApps: ["bloom", "vex"],
-  context: "travel planning"
+  context: "travel planning",
 })
 ```
 
 ### 4. Collaborative Content Generation
+
 ```typescript
 // Generate content for team collaboration
 const teamSuggestions = await generateTeamContent({
   teamMembers,
   sharedGoals,
-  projectContext
+  projectContext,
 })
 ```
 
@@ -942,7 +987,7 @@ Chrry has completely eliminated the need for traditional content management thro
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: November 11, 2025*  
-*Author: Iliyan Velinov*  
-*Innovation: AI-Powered Content Automation System*
+_Document Version: 1.0_  
+_Last Updated: November 11, 2025_  
+_Author: Iliyan Velinov_  
+_Innovation: AI-Powered Content Automation System_
