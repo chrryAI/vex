@@ -243,7 +243,7 @@ export default async function ChrryAI({
           <div className="error-container">
             <h1>🚨 API Connection Error</h1>
             <p>Unable to connect to the API server. This usually means:</p>
-            
+
             <div className="info-section">
               <strong>API Endpoint:</strong> <code>{API_URL}</code>
               <span className="status-badge status-error">UNREACHABLE</span>
@@ -267,18 +267,31 @@ export default async function ChrryAI({
             <div className="info-section">
               <strong>Debug Info:</strong>
               <ul>
-                <li><strong>Site:</strong> {siteConfig.url}</li>
-                <li><strong>Hostname:</strong> {hostname}</li>
-                <li><strong>App Slug:</strong> {appSlug || "(none)"}</li>
-                <li><strong>Locale:</strong> {locale}</li>
-                <li><strong>Version:</strong> {VERSION}</li>
+                <li>
+                  <strong>Site:</strong> {siteConfig.url}
+                </li>
+                <li>
+                  <strong>Hostname:</strong> {hostname}
+                </li>
+                <li>
+                  <strong>App Slug:</strong> {appSlug || "(none)"}
+                </li>
+                <li>
+                  <strong>Locale:</strong> {locale}
+                </li>
+                <li>
+                  <strong>Version:</strong> {VERSION}
+                </li>
               </ul>
             </div>
 
             <div className="info-section">
               <strong>Quick Fixes:</strong>
               <ul>
-                <li>Check if <code>{API_URL.replace("/api", "")}</code> is accessible</li>
+                <li>
+                  Check if <code>{API_URL.replace("/api", "")}</code> is
+                  accessible
+                </li>
                 <li>Verify Cloudflare DNS records for both domains</li>
                 <li>Check API server logs in Coolify</li>
                 <li>Restart the web app to clear DNS cache</li>
@@ -300,10 +313,19 @@ export default async function ChrryAI({
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <title>Session Error</title>
         </head>
-        <body style={{ fontFamily: "system-ui", padding: "40px", maxWidth: "600px", margin: "0 auto" }}>
+        <body
+          style={{
+            fontFamily: "system-ui",
+            padding: "40px",
+            maxWidth: "600px",
+            margin: "0 auto",
+          }}
+        >
           <h1 style={{ color: "#ef4444" }}>Session Error</h1>
           <p>{session.error}</p>
-          <p style={{ fontSize: "14px", color: "#666" }}>Status: {session.status}</p>
+          <p style={{ fontSize: "14px", color: "#666" }}>
+            Status: {session.status}
+          </p>
         </body>
       </html>
     )
