@@ -1019,7 +1019,7 @@ export const getSession = async ({
         status: 429,
       }
     }
-    
+
     // Return error with status for other non-OK responses
     const text = await response.text()
     return {
@@ -1035,7 +1035,7 @@ export const getSession = async ({
   } catch (error) {
     const text = await response.text()
     throw new Error(
-      `Failed to parse API response as JSON. Got: ${text.substring(0, 200)}... (Full URL: ${API_URL}/session)`
+      `Failed to parse API response as JSON. Got: ${text.substring(0, 200)}... (Full URL: ${API_URL}/session)`,
     )
   }
 }
