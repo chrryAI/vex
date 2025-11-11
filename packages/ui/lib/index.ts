@@ -1019,11 +1019,25 @@ export const getSession = async ({
         status: 429,
       }
     }
+    
+    // Return error with status for other non-OK responses
+    const text = await response.text()
+    return {
+      error: `API error (${response.status}): ${text.substring(0, 200)}`,
+      status: response.status,
+    }
   }
 
-  const result = await response.json()
-
-  return result as session | { error?: string; status?: number }
+  // Try to parse JSON, catch if it's HTML or invalid
+  try {
+    const result = await response.json()
+    return result as session | { error?: string; status?: number }
+  } catch (error) {
+    const text = await response.text()
+    throw new Error(
+      `Failed to parse API response as JSON. Got: ${text.substring(0, 200)}... (Full URL: ${API_URL}/session)`
+    )
+  }
 }
 
 export type ApiActions = ReturnType<typeof getActions>
