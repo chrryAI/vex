@@ -123,35 +123,190 @@ export default async function ChrryAI({
   // Check for app route from middleware
   const siteConfig = getSiteConfig(hostname)
 
-  // Call API session endpoint
-  const [session, translations] = await Promise.all([
-    getSession({
-      appId,
-      deviceId,
-      fingerprint,
-      token: apiKey,
-      appSlug,
-      agentName,
-      pathname,
-      routeType,
-      translate: true,
-      locale,
-      chrryUrl: siteConfig.url,
-      screenWidth: Number(viewPortWidth),
-      screenHeight: Number(viewPortHeight),
-      source: "layout",
-      userAgent: headersList.get("user-agent") || `Chrry/${VERSION}`,
-    }),
+  let session:
+    | session
+    | {
+        error?: string
+        status?: number
+      }
+    | undefined
+  let translations: Record<string, any> | undefined
+  let apiError: Error | null = null
 
-    getTranslations({
-      token: apiKey,
-      locale,
-    }),
-  ])
+  try {
+    const [sessionResult, translationsResult] = await Promise.all([
+      getSession({
+        appId,
+        deviceId,
+        fingerprint,
+        token: apiKey,
+        appSlug,
+        agentName,
+        pathname,
+        routeType,
+        translate: true,
+        locale,
+        chrryUrl: siteConfig.url,
+        screenWidth: Number(viewPortWidth),
+        screenHeight: Number(viewPortHeight),
+        source: "layout",
+        userAgent: headersList.get("user-agent") || `Chrry/${VERSION}`,
+      }),
 
+      getTranslations({
+        token: apiKey,
+        locale,
+      }),
+    ])
+
+    session = sessionResult
+    translations = translationsResult
+  } catch (error) {
+    console.error("❌ API Error:", error)
+    apiError = error as Error
+  }
+
+  // Show detailed error page if API failed
+  if (apiError) {
+    return (
+      <html lang={locale}>
+        <head>
+          <meta charSet="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>API Connection Error</title>
+          <style>{`
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              max-width: 800px;
+              margin: 40px auto;
+              padding: 20px;
+              background: #0a0a0a;
+              color: #e5e5e5;
+            }
+            .error-container {
+              background: #1a1a1a;
+              border: 1px solid #333;
+              border-radius: 8px;
+              padding: 24px;
+            }
+            h1 {
+              color: #ef4444;
+              margin: 0 0 16px 0;
+              font-size: 24px;
+            }
+            .error-message {
+              background: #2a2a2a;
+              padding: 16px;
+              border-radius: 4px;
+              margin: 16px 0;
+              font-family: monospace;
+              font-size: 14px;
+              overflow-x: auto;
+            }
+            .info-section {
+              margin: 16px 0;
+              padding: 12px;
+              background: #1f1f1f;
+              border-radius: 4px;
+            }
+            .info-section strong {
+              color: #60a5fa;
+            }
+            .status-badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: 600;
+              margin-left: 8px;
+            }
+            .status-error {
+              background: #ef4444;
+              color: white;
+            }
+            ul {
+              margin: 8px 0;
+              padding-left: 20px;
+            }
+            li {
+              margin: 4px 0;
+            }
+            code {
+              background: #2a2a2a;
+              padding: 2px 6px;
+              border-radius: 3px;
+              font-size: 13px;
+            }
+          `}</style>
+        </head>
+        <body>
+          <div className="error-container">
+            <h1>🚨 API Connection Error</h1>
+            <p>Unable to connect to the API server. This usually means:</p>
+            
+            <div className="info-section">
+              <strong>API Endpoint:</strong> <code>{API_URL}</code>
+              <span className="status-badge status-error">UNREACHABLE</span>
+            </div>
+
+            <div className="error-message">
+              <strong>Error:</strong> {apiError.message}
+            </div>
+
+            <div className="info-section">
+              <strong>Common Causes:</strong>
+              <ul>
+                <li>DNS not propagated yet (wait 5-10 minutes)</li>
+                <li>API server is down or restarting</li>
+                <li>Cloudflare DNS records not configured correctly</li>
+                <li>SSL/TLS certificate issues</li>
+                <li>CORS configuration blocking the request</li>
+              </ul>
+            </div>
+
+            <div className="info-section">
+              <strong>Debug Info:</strong>
+              <ul>
+                <li><strong>Site:</strong> {siteConfig.url}</li>
+                <li><strong>Hostname:</strong> {hostname}</li>
+                <li><strong>App Slug:</strong> {appSlug || "(none)"}</li>
+                <li><strong>Locale:</strong> {locale}</li>
+                <li><strong>Version:</strong> {VERSION}</li>
+              </ul>
+            </div>
+
+            <div className="info-section">
+              <strong>Quick Fixes:</strong>
+              <ul>
+                <li>Check if <code>{API_URL.replace("/api", "")}</code> is accessible</li>
+                <li>Verify Cloudflare DNS records for both domains</li>
+                <li>Check API server logs in Coolify</li>
+                <li>Restart the web app to clear DNS cache</li>
+              </ul>
+            </div>
+          </div>
+        </body>
+      </html>
+    )
+  }
+
+  // Show session error if API returned an error
   if (session && "error" in session) {
-    console.error(session.error)
-    return <div>{session.error}</div>
+    console.error("Session error:", session.error)
+    return (
+      <html lang={locale}>
+        <head>
+          <meta charSet="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Session Error</title>
+        </head>
+        <body style={{ fontFamily: "system-ui", padding: "40px", maxWidth: "600px", margin: "0 auto" }}>
+          <h1 style={{ color: "#ef4444" }}>Session Error</h1>
+          <p>{session.error}</p>
+          <p style={{ fontSize: "14px", color: "#666" }}>Status: {session.status}</p>
+        </body>
+      </html>
+    )
   }
 
   let app: appWithStore | undefined
