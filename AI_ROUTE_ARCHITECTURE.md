@@ -5,6 +5,7 @@
 The `/api/ai` route is the **single, unified entry point** for all AI interactions in Chrry. This 4,446-line powerhouse handles everything from simple chat to complex multi-modal interactions.
 
 **What makes it special:**
+
 - ✅ **100% Open Source** - Every line is public
 - ✅ **Universal Interface** - One endpoint for all AI
 - ✅ **App Extensibility** - Infinite inheritance chains
@@ -25,18 +26,18 @@ Apps inherit capabilities from parents (max 5 levels):
 ```typescript
 const buildAppKnowledgeBase = async (currentApp, depth = 0) => {
   if (!currentApp || depth >= 5) return emptyKnowledge
-  
+
   // Get current app knowledge
   const thread = await getThread({ appId: currentApp.id })
   const messages = await getMessages({ threadId: thread.id })
-  
+
   // Recursively get parent knowledge
   for (const parentId of currentApp.extend) {
     const parentApp = await getPureApp({ id: parentId })
     const parentData = await buildAppKnowledgeBase(parentApp, depth + 1)
     // Merge knowledge
   }
-  
+
   return combinedKnowledge
 }
 ```
@@ -58,7 +59,7 @@ const memories = await getMemories({
   guestId,
   appId,
   scatterAcrossThreads: true,
-  excludeThreadId: currentThread
+  excludeThreadId: currentThread,
 })
 ```
 
@@ -75,9 +76,9 @@ const stream = new ReadableStream({
       tools,
       onChunk: ({ chunk }) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`))
-      }
+      },
     })
-  }
+  },
 })
 ```
 
@@ -98,13 +99,14 @@ Dynamic tools per app/agent:
 const tools = {
   createTask: z.object({ title: z.string() }),
   startTimer: z.object({ duration: z.number() }),
-  generateImage: z.object({ prompt: z.string() })
+  generateImage: z.object({ prompt: z.string() }),
 }
 ```
 
 ### 7. Rate Limiting
 
 Multi-tier quotas:
+
 - Free: 50/hour
 - Plus: 200/hour
 - Pro: 1000/hour
@@ -124,21 +126,23 @@ after(async () => {
 ## App-Specific Personalization
 
 ### Bloom (Productivity)
+
 ```typescript
 const bloomContext = {
   avgMood: 4.2,
   activeTasks: 12,
   focusTime: 450,
-  timerStatus: "running"
+  timerStatus: "running",
 }
 ```
 
 ### Atlas (Travel)
+
 ```typescript
 const atlasContext = {
   location: "Tokyo, Japan 🇯🇵",
   weather: "15°C ☀️",
-  timeOfDay: "morning"
+  timeOfDay: "morning",
 }
 ```
 
@@ -163,7 +167,7 @@ Every feature, every optimization, every security measure is public and auditabl
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: November 11, 2025*  
-*Author: Iliyan Velinov*  
-*File: /apps/chrry-dot-dev/app/api/ai/route.ts (4,446 lines)*
+_Document Version: 1.0_  
+_Last Updated: November 11, 2025_  
+_Author: Iliyan Velinov_  
+_File: /apps/chrry-dot-dev/app/api/ai/route.ts (4,446 lines)_

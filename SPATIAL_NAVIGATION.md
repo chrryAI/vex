@@ -9,6 +9,7 @@ Focus introduces a revolutionary **N-dimensional spatial navigation system** tha
 ### 1. Store-Based Apps (Base Apps)
 
 **Store-based apps** are the foundation of spatial navigation. They serve as:
+
 - **Navigation anchors** - Entry points to each store's universe
 - **Context carriers** - Maintain the parent store reference
 - **Breadcrumb generators** - Create the "back" navigation path
@@ -22,12 +23,13 @@ interface App {
 }
 
 interface Store {
-    app: App
-    slug: string
+  app: App
+  slug: string
 }
 ```
 
 **Key Properties:**
+
 - Each store MUST have at least one base app
 - Base apps appear in the navigation bar
 - Base apps enable cross-store navigation
@@ -38,6 +40,7 @@ interface Store {
 The system operates in three distinct navigation states:
 
 #### State A: Store Home (Base App Active)
+
 ```
 Current Location: Vex Store (base app)
 Visible Buttons: [Blossom] [Perplexity] [Sushi] [Claude]
@@ -45,6 +48,7 @@ Hidden: Vex (you're already here)
 ```
 
 #### State B: In-Store App Navigation
+
 ```
 Current Location: Blossom Store → Chrry App
 Visible Buttons: [Vex] [Blossom] [Sushi] [Claude]
@@ -53,6 +57,7 @@ Note: Blossom button appears (back to store home)
 ```
 
 #### State C: Cross-Store Navigation
+
 ```
 Current Location: Perplexity Store (from Blossom)
 Visible Buttons: [Vex] [Blossom] [Chrry] [Claude]
@@ -63,6 +68,7 @@ New: Blossom (back path)
 ## Navigation Rules
 
 ### Rule 1: Same-Store App Switching
+
 ```typescript
 if (clickedApp.store === currentStore) {
   // SWITCH app within current store
@@ -73,12 +79,14 @@ if (clickedApp.store === currentStore) {
 ```
 
 **Behavior:**
+
 - Button morphs to show store base app
 - App switches without navigation
 - Store context preserved
 - Spatial memory maintained
 
 **Example:**
+
 ```
 Location: Blossom Store
 Click: Chrry (same store)
@@ -87,6 +95,7 @@ Result: Switch to Chrry app
 ```
 
 ### Rule 2: Cross-Store Navigation
+
 ```typescript
 if (clickedApp.store !== currentStore) {
   // NAVIGATE to different store
@@ -97,12 +106,14 @@ if (clickedApp.store !== currentStore) {
 ```
 
 **Behavior:**
+
 - Navigate to target store
 - Current store button appears (back path)
 - Target store button disappears (you're there)
 - Full context switch
 
 **Example:**
+
 ```
 Location: Blossom Store
 Click: Sushi (different store)
@@ -112,6 +123,7 @@ Result: Navigate to Sushi Store
 ```
 
 ### Rule 3: Chrry Anchor Navigation
+
 ```typescript
 // Chrry is always the home anchor
 if (clickedApp.name === "Chrry") {
@@ -121,6 +133,7 @@ if (clickedApp.name === "Chrry") {
 ```
 
 **Behavior:**
+
 - Always returns to original store (home base)
 - Resets navigation stack
 - Clears spatial memory
@@ -138,16 +151,16 @@ const StoreApp = useCallback(
         href={getAppSlug(storeApp)}
         onClick={(e) => {
           e.preventDefault()
-          
+
           // Update spatial memory
           setIsNewChat(true, getAppSlug(storeApp))
-          
+
           // Haptic feedback
           addHapticFeedback()
-          
+
           // Clear app status
           setAppStatus(undefined)
-          
+
           // Handle meta/ctrl for power users
           if (e.metaKey || e.ctrlKey) {
             return // Open in new context
@@ -176,7 +189,7 @@ interface SpatialState {
 // Update navigation state
 function updateSpatialState(targetApp: App) {
   const isSameStore = targetApp.store === currentStore
-  
+
   if (isSameStore) {
     // Same store - switch app
     return {
@@ -186,7 +199,7 @@ function updateSpatialState(targetApp: App) {
       visibleButtons: [
         ...otherStoreApps,
         currentStore.baseApp, // Show store home button
-      ]
+      ],
     }
   } else {
     // Different store - navigate
@@ -195,9 +208,9 @@ function updateSpatialState(targetApp: App) {
       currentStore: targetApp.store,
       navigationStack: [...navigationStack, currentStore],
       visibleButtons: [
-        ...otherStoreApps.filter(a => a.store !== targetApp.store),
+        ...otherStoreApps.filter((a) => a.store !== targetApp.store),
         currentStore.baseApp, // Show back button
-      ]
+      ],
     }
   }
 }
@@ -209,24 +222,24 @@ function updateSpatialState(targetApp: App) {
 function getVisibleButtons(
   currentStore: Store,
   currentApp: App,
-  allStoreApps: App[]
+  allStoreApps: App[],
 ): App[] {
-  return allStoreApps.filter(app => {
+  return allStoreApps.filter((app) => {
     // Hide current store's base app (you're already there)
     if (app.store === currentStore && app.isBaseApp) {
       return false
     }
-    
+
     // Show all other store base apps
     if (app.isBaseApp) {
       return true
     }
-    
+
     // Show current app if not base app (for back navigation)
     if (app.id === currentApp.id && !currentApp.isBaseApp) {
       return true
     }
-    
+
     return false
   })
 }
@@ -235,6 +248,7 @@ function getVisibleButtons(
 ## User Experience Flow
 
 ### Journey 1: Deep Nesting
+
 ```
 1. Start: Vex Store (home)
    Buttons: [Blossom] [Perplexity] [Sushi] [Claude]
@@ -242,33 +256,34 @@ function getVisibleButtons(
 2. Click: Blossom
    Navigate to: Blossom Store
    Buttons: [Vex] [Perplexity] [Sushi] [Claude]
-   
+
 3. Click: Chrry (in Blossom)
    Switch to: Chrry app
    Buttons: [Vex] [Blossom] [Sushi] [Claude]
-   
+
 4. Click: Perplexity
    Navigate to: Perplexity Store
    Buttons: [Vex] [Blossom] [Chrry] [Claude]
-   
+
 5. Click: Vex
    Navigate back to: Vex Store (home)
    Buttons: [Blossom] [Perplexity] [Sushi] [Claude]
 ```
 
 ### Journey 2: Cross-Store App Discovery
+
 ```
 1. Location: Blossom Store
    Discover: New app "Focus" in Sushi Store
-   
+
 2. Click: Sushi button
    Navigate to: Sushi Store
    See: Focus app available
-   
+
 3. Click: Focus app
    Switch to: Focus (within Sushi Store)
    Buttons: [Vex] [Blossom] [Sushi] [Claude]
-   
+
 4. Click: Blossom
    Navigate back to: Blossom Store
    Context: Preserved, ready to continue
@@ -277,53 +292,64 @@ function getVisibleButtons(
 ## Advantages Over Traditional Navigation
 
 ### vs Apple Watch OS
-| Feature | Apple Watch | Focus Spatial Nav |
-|---------|-------------|-------------------|
-| Depth | 1 level | Infinite |
-| Cross-navigation | ❌ | ✅ |
-| Context preservation | ❌ | ✅ |
-| Dynamic UI | ❌ | ✅ |
-| Spatial memory | ❌ | ✅ |
+
+| Feature              | Apple Watch | Focus Spatial Nav |
+| -------------------- | ----------- | ----------------- |
+| Depth                | 1 level     | Infinite          |
+| Cross-navigation     | ❌          | ✅                |
+| Context preservation | ❌          | ✅                |
+| Dynamic UI           | ❌          | ✅                |
+| Spatial memory       | ❌          | ✅                |
 
 ### vs Browser Tabs
-| Feature | Browser Tabs | Focus Spatial Nav |
-|---------|--------------|-------------------|
-| Nesting | ❌ | ✅ |
-| Context switching | Manual | Automatic |
-| Spatial awareness | ❌ | ✅ |
-| Back navigation | Linear | Multi-dimensional |
+
+| Feature           | Browser Tabs | Focus Spatial Nav |
+| ----------------- | ------------ | ----------------- |
+| Nesting           | ❌           | ✅                |
+| Context switching | Manual       | Automatic         |
+| Spatial awareness | ❌           | ✅                |
+| Back navigation   | Linear       | Multi-dimensional |
 
 ### vs Traditional Sidebar
-| Feature | Sidebar | Focus Spatial Nav |
-|---------|---------|-------------------|
-| Space efficiency | Low | High |
-| Context clarity | Low | High |
-| Navigation speed | Slow | Fast |
-| Cognitive load | High | Low |
+
+| Feature          | Sidebar | Focus Spatial Nav |
+| ---------------- | ------- | ----------------- |
+| Space efficiency | Low     | High              |
+| Context clarity  | Low     | High              |
+| Navigation speed | Slow    | Fast              |
+| Cognitive load   | High    | Low               |
 
 ## Design Principles
 
 ### 1. Self-Documenting Interface
+
 The navigation bar itself communicates:
+
 - **What's visible** = Where you can go
 - **What's missing** = Where you are
 - **What appears** = Where you came from
 
 ### 2. Zero Cognitive Load
+
 Users never need to remember:
+
 - Where they are (missing button shows location)
 - Where they came from (new button shows back path)
 - Where they can go (visible buttons show options)
 
 ### 3. Infinite Scalability
+
 The system supports:
+
 - Unlimited stores
 - Unlimited apps per store
 - Unlimited nesting depth
 - Unlimited cross-store navigation
 
 ### 4. Context Preservation
+
 Every navigation maintains:
+
 - Current store context
 - Current app state
 - Navigation history
@@ -334,6 +360,7 @@ Every navigation maintains:
 ### For Store Creators
 
 **1. Always Define a Base App**
+
 ```typescript
 const store = {
   id: "my-store",
@@ -342,24 +369,26 @@ const store = {
     id: "my-store-home",
     name: "My Store",
     isBaseApp: true,
-    store: "my-store"
-  }
+    store: "my-store",
+  },
 }
 ```
 
 **2. Install Cross-Store Apps**
+
 ```typescript
 // Allow users to install apps from other stores
 const installedApps = [
   ...myStoreApps,
-  ...crossStoreApps.filter(app => app.isBaseApp)
+  ...crossStoreApps.filter((app) => app.isBaseApp),
 ]
 ```
 
 **3. Preserve Spatial Context**
+
 ```typescript
 // Always pass store context
-<StoreApp 
+<StoreApp
   storeApp={currentStore.baseApp}
   onNavigate={handleSpatialNavigation}
 />
@@ -368,6 +397,7 @@ const installedApps = [
 ### For App Developers
 
 **1. Respect Store Context**
+
 ```typescript
 // Check if app belongs to current store
 const isSameStore = app.store === currentStore
@@ -381,6 +411,7 @@ if (isSameStore) {
 ```
 
 **2. Clean Up State**
+
 ```typescript
 // Always clean up before navigation
 setAppStatus(undefined)
@@ -389,6 +420,7 @@ addHapticFeedback()
 ```
 
 **3. Support Power Users**
+
 ```typescript
 // Handle meta/ctrl for advanced navigation
 if (e.metaKey || e.ctrlKey) {
@@ -400,12 +432,14 @@ if (e.metaKey || e.ctrlKey) {
 ## Future Enhancements
 
 ### 1. Visual Spatial Memory
+
 ```
 Show minimap of navigation path:
 Vex → Blossom → Perplexity → [You are here]
 ```
 
 ### 2. Gesture Navigation
+
 ```
 Swipe left: Back to previous store
 Swipe right: Forward in history
@@ -413,6 +447,7 @@ Pinch: Zoom to store overview
 ```
 
 ### 3. Navigation Analytics
+
 ```
 Track:
 - Most used navigation paths
@@ -421,6 +456,7 @@ Track:
 ```
 
 ### 4. Smart Suggestions
+
 ```
 Based on navigation history:
 "You often go from Blossom → Perplexity"
@@ -439,6 +475,7 @@ Focus's spatial navigation system represents a paradigm shift in how users inter
 ...we've created the first truly N-dimensional navigation system for productivity applications.
 
 This architecture enables:
+
 - ✅ Infinite store nesting
 - ✅ Seamless cross-store navigation
 - ✅ Perfect context preservation
@@ -449,7 +486,7 @@ This architecture enables:
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: November 11, 2025*  
-*Author: Iliyan Velinov*  
-*Patent Pending: Spatial Navigation System for Multi-Dimensional App Ecosystems*
+_Document Version: 1.0_  
+_Last Updated: November 11, 2025_  
+_Author: Iliyan Velinov_  
+_Patent Pending: Spatial Navigation System for Multi-Dimensional App Ecosystems_
