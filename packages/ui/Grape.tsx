@@ -327,9 +327,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
             <input type="checkbox" />
             Enable ad consent
           </label>
-          <small>
-            Allow Grape to analyze content and show relevant ads
-          </small>
+          <small>Allow Grape to analyze content and show relevant ads</small>
         </div>
 
         <button
