@@ -222,6 +222,23 @@ export async function PATCH(
       try {
         console.log("📸 Processing updated app image from URL:", imageUrl)
 
+        // Validate URL to prevent SSRF attacks
+        const parsedUrl = new URL(imageUrl)
+        const ALLOWED_HOSTNAMES = [
+          "utfs.io",
+          "uploadthing.com",
+          "images.unsplash.com",
+          "cdn.jsdelivr.net",
+        ]
+        const isAllowed = ALLOWED_HOSTNAMES.some(
+          (hostname) =>
+            parsedUrl.hostname === hostname ||
+            parsedUrl.hostname.endsWith(`.${hostname}`),
+        )
+        if (!isAllowed) {
+          throw new Error(`Image host not allowed: ${parsedUrl.hostname}`)
+        }
+
         // Delete old images
         if (existingApp.images && existingApp.images.length > 0) {
           for (const img of existingApp.images) {
