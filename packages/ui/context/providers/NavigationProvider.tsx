@@ -132,8 +132,11 @@ export function NavigationProvider({
     router.push(url)
   }
 
+  const { slug, setSlug, getAppSlug, language, setThreadId } = useAuth()
+
   const goToThreads = () => {
     const appSlug = app ? getAppSlug(app, "") : undefined
+    setThreadId(undefined)
     router.push(appSlug ? `/${appSlug}/threads` : "/threads")
   }
 
@@ -159,8 +162,6 @@ export function NavigationProvider({
   )
 
   const { os, isStandalone } = usePlatform()
-
-  const { slug, setSlug, getAppSlug, language } = useAuth()
 
   const [isShowingCollaborate, setIsShowingCollaborate] = useState(false)
 
