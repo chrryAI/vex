@@ -91,29 +91,13 @@ export default function CollaborationStatus({
             title={isMobileDevice ? t("Reject") : undefined}
             confirmTitle={isMobileDevice ? t("Are you sure?") : undefined}
             className="link"
-            confirm={
-              <>
-                <Trash2 color="var(--accent-0)" size={iconSize} />
-                <span>{t("Are you sure?")}</span>
-              </>
-            }
+            processing={isLoading && status === "rejected"}
             onConfirm={() => handleStatusChange("rejected")}
           >
-            {isIcon ? (
-              isLoading && status === "rejected" ? (
-                <Loading width={iconSize} height={iconSize} />
-              ) : (
-                <CircleX color="var(--accent-0)" size={iconSize} />
-              )
+            {isLoading && status === "rejected" ? (
+              <Loading width={iconSize} height={iconSize} />
             ) : (
-              <>
-                {isLoading && status === "rejected" ? (
-                  <Loading width={iconSize} height={iconSize} />
-                ) : (
-                  <CircleX color="var(--accent-0)" size={iconSize} />
-                )}
-                <span>{t("Reject")}</span>
-              </>
+              <CircleX color="var(--accent-0)" size={iconSize} />
             )}
           </ConfirmButton>
           <button
@@ -124,21 +108,10 @@ export default function CollaborationStatus({
             disabled={isLoading}
             onClick={() => handleStatusChange("active")}
           >
-            {isIcon ? (
-              isLoading && status === "active" ? (
-                <Loading width={iconSize} height={iconSize} />
-              ) : (
-                <CircleCheck color="var(--accent-4)" size={iconSize} />
-              )
+            {isLoading && status === "active" ? (
+              <Loading width={iconSize} height={iconSize} />
             ) : (
-              <>
-                {isLoading && status === "active" ? (
-                  <Loading width={iconSize} height={iconSize} />
-                ) : (
-                  <Check color="var(--accent-4)" size={iconSize} />
-                )}
-                <span>{t("Accept")}</span>
-              </>
+              <CircleCheck color="var(--accent-4)" size={iconSize} />
             )}
           </button>
         </>
@@ -148,12 +121,7 @@ export default function CollaborationStatus({
           title={isMobileDevice ? t("Leave") : undefined}
           style={{ fontSize }}
           className="link"
-          confirm={
-            <>
-              <Trash2 color="var(--accent-0)" size={iconSize} />
-              {t("Are you sure?")}
-            </>
-          }
+          processing={isLoading && status === "revoked"}
           onConfirm={() => handleStatusChange("revoked")}
         >
           <>
