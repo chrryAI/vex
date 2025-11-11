@@ -95,7 +95,7 @@ const ConfirmButton = ({
               {processing ? (
                 <Loading color="var(--accent-0)" size={16} />
               ) : (
-                <>🔥</>
+                <span style={{ width: "16px", height: "16px" }}>🔥</span>
               )}
             </>
           )
