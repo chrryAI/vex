@@ -941,18 +941,26 @@ export const getMessage = async ({
       )
   ).at(0)
 
+  const user = result?.user
+    ? {
+        id: result.user?.id,
+        userName: result.user?.userName,
+        name: result.user?.name,
+        image: result.user?.image,
+      }
+    : undefined
+
+  const guest = result?.guest
+    ? {
+        id: result.guest?.id,
+      }
+    : undefined
+
   return result
     ? {
         ...result,
-        user: {
-          id: result.user?.id,
-          createdOn: result.user?.createdOn,
-          updatedOn: result.user?.updatedOn,
-          userName: result.user?.userName,
-          name: result.user?.name,
-          image: result.user?.image,
-          // isOnline: result.user?.isOnline,
-        },
+        user,
+        guest,
       }
     : undefined
 }

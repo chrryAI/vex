@@ -1075,7 +1075,7 @@ You can enable these in your settings anytime!"
 - User prefers {{language}} as their primary language.
 - Timezone: {{timezone}}`
 
-  const userName = (member as any)?.name || (guest as any)?.name
+  const userName = message?.user?.name || undefined
 
   // Render system prompt using Handlebars template
   const baseSystemPrompt = renderSystemPrompt({
