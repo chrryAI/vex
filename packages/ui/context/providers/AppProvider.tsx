@@ -136,13 +136,7 @@ interface AppFormContextType {
 
 const AppFormContext = createContext<AppFormContextType | undefined>(undefined)
 
-export function AppProvider({
-  children,
-  ...rest
-}: {
-  children: ReactNode
-  session?: session
-}) {
+export function AppProvider({ children }: { children: ReactNode }) {
   const {
     token,
     user,

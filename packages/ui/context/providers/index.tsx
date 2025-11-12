@@ -132,11 +132,11 @@ export default function AppProviders({
               signOutContext={signOutContext}
               session={session}
             >
-              <DataProvider session={session}>
-                <AppProvider session={session}>
-                  <ChatProvider thread={thread} session={session}>
+              <DataProvider>
+                <AppProvider>
+                  <ChatProvider>
                     <TimerContextProvider>
-                      <NavigationProvider session={session}>
+                      <NavigationProvider>
                         <AppContextProvider>
                           <StylesProvider>
                             <Hey useExtensionIcon={useExtensionIcon}>

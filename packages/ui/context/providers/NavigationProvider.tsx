@@ -80,13 +80,7 @@ const NavigationContext = createContext<
   | undefined
 >(undefined)
 
-export function NavigationProvider({
-  children,
-  session,
-}: {
-  children: ReactNode
-  session?: session
-}) {
+export function NavigationProvider({ children }: { children: ReactNode }) {
   // TODO: Move navigation logic here
 
   const addParam = (key: string, value: string) => {
@@ -132,7 +126,8 @@ export function NavigationProvider({
     router.push(url)
   }
 
-  const { slug, setSlug, getAppSlug, language, setThreadId } = useAuth()
+  const { slug, setSlug, getAppSlug, language, setThreadId, session } =
+    useAuth()
 
   const goToThreads = () => {
     const appSlug = app ? getAppSlug(app, "") : undefined
