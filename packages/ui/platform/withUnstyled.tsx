@@ -1,7 +1,3 @@
-/**
- * Higher-order component to add unstyled prop to Tamagui components
- * Removes all default Tamagui styles while preserving functionality
- */
 import React from "react"
 
 export function withUnstyled<T extends React.ElementType>(Component: T) {

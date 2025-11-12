@@ -223,12 +223,11 @@ export function conditionalStyle(condition: boolean, style: any) {
 }
 
 /**
- * Create platform styles (identity function - Tamagui handles optimization)
+ * Create platform styles (identity function
  * Kept for API compatibility
  */
 export function createPlatformStyles<T extends Record<string, any>>(
   styles: T,
 ): T {
-  // Tamagui handles style optimization internally
   return styles
 }

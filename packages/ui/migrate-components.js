@@ -35,7 +35,7 @@ const EXCLUDE_DIRS = [
 ];
 
 const EXCLUDE_FILES = [
-  'package.json', 'tsconfig.json', 'eslint.config.mjs', 'tamagui.config.ts',
+  'package.json', 'tsconfig.json', 'eslint.config.mjs',
   'i18n.ts', 'locales.ts', 'selectStyles.ts', 'globals.css', 'globals.scss',
   'globals.d.ts', 'scss-modules.d.ts', 'breakpoints.scss', 'toRem.scss',
   'utils.scss', 'utils.module.scss', 'utils.styles.ts'
