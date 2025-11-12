@@ -44,7 +44,8 @@ export default defineConfig(({ command, mode }) => {
     VITE_BROWSER: env.VITE_BROWSER || process.env.VITE_BROWSER,
   })
 
-  const siteConfig = getSiteConfig("chrryAI")
+  const siteConfig = getSiteConfig()
+  const chrry = getSiteConfig("chrryAI")
 
   const getHostPermissions = () => {
     // Always include both production and localhost
@@ -67,7 +68,7 @@ export default defineConfig(({ command, mode }) => {
   // Manifest base
   const manifestBase = {
     manifest_version: 3,
-    name: `${siteConfig.name} 🍒`,
+    name: `${siteConfig.name === "Vex" ? "Chrry" : siteConfig.name} 🍒`,
     version: siteConfig.version || "1.4.0",
     description: siteConfig.description,
     permissions: isFirefox
@@ -117,7 +118,7 @@ export default defineConfig(({ command, mode }) => {
         ...manifestBase,
         browser_specific_settings: {
           gecko: {
-            id: "vex@chrry.ai",
+            id: "iliyan@chrry.ai",
             strict_min_version: "109.0",
           },
         },

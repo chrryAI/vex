@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>vex</string>
-          <string>com.askvex.app</string>
+          <string>ai.chrry</string>
         </array>
       </dict>
     </array>

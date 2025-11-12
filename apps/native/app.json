@@ -1,27 +1,22 @@
 {
   "expo": {
-    "name": "Vex",
-    "slug": "vex",
+    "name": "Chrry",
+    "slug": "chrry",
     "version": "1.1.62",
-    "scheme": "vex",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "scheme": "chrry",
+    "platforms": ["ios", "android"],
     "ios": {
-      "bundleIdentifier": "com.askvex.app",
+      "bundleIdentifier": "ai.chrry",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.askvex.app"
+      "package": "ai.chrry"
     },
     "newArchEnabled": true,
     "experiments": {
       "reactCanary": false,
       "reactCompiler": false
     },
-    "plugins": [
-      "expo-asset"
-    ]
+    "plugins": ["expo-asset"]
   }
 }

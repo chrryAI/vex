@@ -38,4 +38,20 @@ config.transformer.getTransformOptions = async () => ({
   },
 })
 
+// Force transpilation of problematic node_modules packages
+config.transformer.unstable_allowRequireContext = true
+config.resolver.sourceExts.push("cjs")
+
+// Disable React DevTools to prevent EventTarget class errors in Hermes
+// Return a mock module that provides no-op functions
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === 'react-devtools-core' || moduleName.includes('react-devtools')) {
+    return {
+      type: 'sourceFile',
+      filePath: require.resolve('./devtools-mock.js'),
+    }
+  }
+  return context.resolveRequest(context, moduleName, platform)
+}
+
 module.exports = config

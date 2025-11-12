@@ -533,9 +533,6 @@ importers:
       react:
         specifier: 19.2.0
         version: 19.2.0
-      react-devtools-core:
-        specifier: ^7.0.1
-        version: 7.0.1
       react-dom:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
@@ -545,6 +542,9 @@ importers:
       react-native-gesture-handler:
         specifier: ~2.20.2
         version: 2.20.2(react-native@0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@types/react@19.0.14)(react@19.2.0))(react@19.2.0)
+      react-native-is-edge-to-edge:
+        specifier: ^1.0.0
+        version: 1.2.1(react-native@0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@types/react@19.0.14)(react@19.2.0))(react@19.2.0)
       react-native-reanimated:
         specifier: ^3.17.0
         version: 3.19.4(@babel/core@7.28.5)(react-native@0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@types/react@19.0.14)(react@19.2.0))(react@19.2.0)
@@ -582,6 +582,12 @@ importers:
       '@babel/core':
         specifier: ^7.24.0
         version: 7.28.5
+      '@babel/plugin-transform-class-properties':
+        specifier: ^7.27.1
+        version: 7.27.1(@babel/core@7.28.5)
+      '@babel/plugin-transform-private-methods':
+        specifier: ^7.27.1
+        version: 7.27.1(@babel/core@7.28.5)
       '@types/react':
         specifier: ~19.0.0
         version: 19.0.14
@@ -10959,9 +10965,6 @@ packages:
 
   react-devtools-core@6.1.5:
     resolution: {integrity: sha512-ePrwPfxAnB+7hgnEr8vpKxL9cmnp7F322t8oqcPshbIQQhDKgFDW4tjhF2wjVbdXF9O/nyuy3sQWd9JGpiLPvA==}
-
-  react-devtools-core@7.0.1:
-    resolution: {integrity: sha512-C3yNvRHaizlpiASzy7b9vbnBGLrhvdhl1CbdU6EnZgxPNbai60szdLtl+VL76UNOt5bOoVTOz5rNWZxgGt+Gsw==}
 
   react-dnd-html5-backend@16.0.1:
     resolution: {integrity: sha512-Wu3dw5aDJmOGw8WjH1I1/yTH+vlXEL4vmjk5p+MHxP8HuHJS1lAGeIdG/hze1AvNeXWo/JgULV87LyQOr+r5jw==}
@@ -25351,14 +25354,6 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  react-devtools-core@7.0.1:
-    dependencies:
-      shell-quote: 1.8.3
-      ws: 7.5.10
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
   react-dnd-html5-backend@16.0.1:
     dependencies:
       dnd-core: 16.0.1
@@ -25506,6 +25501,11 @@ snapshots:
       react-native: 0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@types/react@19.0.14)(react@19.2.0)
 
   react-native-is-edge-to-edge@1.1.7(react-native@0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@types/react@19.0.14)(react@19.2.0))(react@19.2.0):
+    dependencies:
+      react: 19.2.0
+      react-native: 0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@types/react@19.0.14)(react@19.2.0)
+
+  react-native-is-edge-to-edge@1.2.1(react-native@0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@types/react@19.0.14)(react@19.2.0))(react@19.2.0):
     dependencies:
       react: 19.2.0
       react-native: 0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@types/react@19.0.14)(react@19.2.0)

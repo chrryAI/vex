@@ -1,4 +1,4 @@
-package com.askvex.app
+package ai.chrry
 
 import android.app.Application
 import android.content.res.Configuration
