@@ -6088,7 +6088,8 @@ Be helpful, clear, and guide users through creating campaigns or completing feed
     subtitle: "Smart Finance",
     slug: "vault",
     name: "Vault",
-    storeId: wine.id,
+    // storeId: wine.id,
+    storeId: lifeOS.id,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
