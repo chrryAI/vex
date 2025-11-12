@@ -1,3 +1,15 @@
+import './polyfills'
+
+// Disable React DevTools to prevent Hermes EventTarget errors
+if (typeof global !== 'undefined') {
+  global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+    supportsFiber: true,
+    inject: () => {},
+    onCommitFiberRoot: () => {},
+    onCommitFiberUnmount: () => {},
+  }
+}
+
 import { registerRootComponent } from 'expo'
 
 import App from './App'

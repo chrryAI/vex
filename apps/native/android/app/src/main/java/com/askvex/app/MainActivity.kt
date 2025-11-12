@@ -1,4 +1,4 @@
-package com.askvex.app
+package ai.chrry
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
