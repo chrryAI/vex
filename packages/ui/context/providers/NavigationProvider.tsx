@@ -172,17 +172,16 @@ export function NavigationProvider({
   const setShowAddToHomeScreen = (value: boolean) => {
     if (typeof window === "undefined") return
     !value && removeParam("showInstall")
-    if (value && os === "ios" && app && session?.app?.id !== app.id) {
+    if (
+      !isStandalone &&
+      value &&
+      os === "ios" &&
+      app &&
+      session?.app?.id !== app.id
+    ) {
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.set("showInstall", "true")
 
-      // If in PWA, open in system browser instead of reloading
-      if (isStandalone) {
-        window.open(newUrl.toString(), "_blank", "noopener,noreferrer")
-        return
-      }
-
-      // In normal browser, reload with query param to refresh manifest on ios
       window.location.href = newUrl.toString()
     } else {
       setShowAddToHomeScreenInternal(value)
