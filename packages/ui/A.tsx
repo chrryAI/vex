@@ -1,6 +1,5 @@
 import React from "react"
 import { A, useNavigation, usePlatform, useTheme } from "./platform"
-import { useAppContext } from "./context/AppContext"
 import { useData } from "./context/providers"
 
 export default function Anchor({

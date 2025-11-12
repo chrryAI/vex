@@ -486,8 +486,8 @@ const parseScss = (scssContent) => {
       const cssProp = propMatch[1].trim()
       const cssValue = propMatch[2].trim()
 
-      const tamaguiProp = propertyMap[cssProp]
-      if (tamaguiProp && cssValue && !cssValue.includes("@")) {
+      const styleProp = propertyMap[cssProp]
+      if (styleProp && cssValue && !cssValue.includes("@")) {
         // Handle shorthand padding/margin (e.g., "5px 10px")
         if (
           (cssProp === "padding" || cssProp === "margin") &&
@@ -500,7 +500,7 @@ const parseScss = (scssContent) => {
               return Math.round(parseFloat(num)) + "px"
             },
           )
-          styleObj.base[tamaguiProp] = `'${processedValue}'`
+          styleObj.base[styleProp] = `'${processedValue}'`
         }
         // Handle border shorthand (e.g., "1px solid var(--shade-2)")
         else if (cssProp === "border" && cssValue.includes(" ")) {
@@ -513,9 +513,9 @@ const parseScss = (scssContent) => {
           )
           styleObj.base.border = `'${processedValue}'`
         } else {
-          const tamaguiValue = convertValue(tamaguiProp, cssValue)
-          if (tamaguiValue !== null && tamaguiValue !== undefined) {
-            styleObj.base[tamaguiProp] = tamaguiValue
+          const styleValue = convertValue(styleProp, cssValue)
+          if (styleValue !== null && styleValue !== undefined) {
+            styleObj.base[styleProp] = styleValue
           }
         }
       }
