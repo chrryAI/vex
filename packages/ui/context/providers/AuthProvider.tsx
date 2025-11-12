@@ -206,6 +206,7 @@ const AuthContext = createContext<
       user?: sessionUser
       session?: session
       guest?: sessionGuest
+      threadData?: { thread: thread; messages: paginatedMessages }
       signInPart: "login" | "register" | "credentials" | undefined
       setToken: (token?: string) => void
       setSignInPart: (
@@ -1515,6 +1516,7 @@ export function AuthProvider({
         baseApp,
         hasNotifications,
         guest,
+        threadData: props.thread,
         session,
         token,
         signInPart,

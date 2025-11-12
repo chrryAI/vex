@@ -159,13 +159,7 @@ export const isDevelopment = isExtension
 
 export const MONTHLY_GUEST_CREDITS = 30
 
-export function DataProvider({
-  children,
-  ...rest
-}: {
-  children: ReactNode
-  session?: session
-}) {
+export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const expenseCategory = [
     "food",
     "transport",
@@ -180,7 +174,6 @@ export function DataProvider({
 
   const { user, deviceId, guest, chrryUrl, app, ...auth } = useAuth()
   const { captureException } = useError()
-  const [session, setSession] = useState(rest?.session || auth.session)
 
   const CREDITS_PRICE = 5.0
   // Affiliate code management
@@ -205,10 +198,6 @@ export function DataProvider({
     return affiliateCodeData.code
   }, [affiliateCodeData, setAffiliateCodeData])
 
-  useEffect(() => {
-    auth.session && setSession(auth.session)
-  }, [auth.session])
-
   const [instructions, setInstructions] = useState<instruction[]>([])
   const [affiliateStats, setAffiliateStats] = useState<
     affiliateStats | null | undefined
@@ -216,7 +205,7 @@ export function DataProvider({
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.3.99"
+  const VERSION = "1.4.0"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -243,7 +232,7 @@ export function DataProvider({
     setToken,
     TEST_GUEST_FINGERPRINTS,
     TEST_MEMBER_FINGERPRINTS,
-    TEST_MEMBER_EMAILS,
+    session,
   } = useAuth()
 
   const siteConfig = getSiteConfig()

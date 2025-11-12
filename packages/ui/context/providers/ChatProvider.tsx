@@ -142,11 +142,8 @@ const ChatContext = createContext<
 
 export function ChatProvider({
   children,
-  ...props
 }: {
   children: ReactNode
-  session?: session
-  thread?: { thread: thread; messages: paginatedMessages }
 }): React.JSX.Element {
   // Get auth data
   const {
@@ -176,6 +173,7 @@ export function ChatProvider({
     favouriteAgent,
     threadId,
     setThreadId,
+    ...auth
   } = useAuth()
 
   const [isChatFloating, setIsChatFloating] = useState(false)
@@ -195,7 +193,7 @@ export function ChatProvider({
       aiAgent?: aiAgent
       thread?: thread
     }[]
-  >(props.thread?.messages.messages || [])
+  >(auth.threadData?.messages.messages || [])
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -944,7 +942,7 @@ export function ChatProvider({
 
   const [nextPage, setNextPage] = useState<number | undefined>(undefined)
 
-  const threadData = threadSWR || props.thread || undefined
+  const threadData = threadSWR || auth.threadData || undefined
   const lastProcessedThreadDataRef = useRef<any>(null)
 
   const shouldStopAutoScrollRef = useRef(false)
