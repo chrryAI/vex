@@ -6,18 +6,38 @@
  */
 
 export const GrapeStyleDefs = {
+  grapeModal: {
+    fontSize: 14,
+  },
   icons: {
     display: "flex",
     justifyContent: "center",
     gap: 16,
+    marginTop: 10,
+  },
+  icon: {
     borderRadius: 40,
-    border: "1px dashed var(--accent-1)",
+    outline: 1,
     padding: 20,
-    flex: 1,
     maxWidth: "100%",
+    flex: 1,
+  },
+  iconSelected: {
+    outline: 2,
   },
   title: {
-    marginBottom: 8,
+    marginBottom: 5,
+  },
+  actions: {
+    marginTop: 20,
+    paddingTop: 10,
+  },
+  adConsent: {
+    display: "flex",
+    gap: 16,
+  },
+  adConsentAdConsent: {
+    flex: 1,
   },
 } as const
 
