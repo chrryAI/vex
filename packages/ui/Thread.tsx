@@ -10,19 +10,16 @@ import {
   message,
   thread,
   user,
-  messages,
   paginatedMessages,
 } from "./types"
 import { useAppContext } from "./context/AppContext"
 import {
   useAuth,
   useChat,
-  useData,
   useNavigationContext,
   useApp,
 } from "./context/providers"
 import { A, usePlatform, useTheme } from "./platform"
-import { getThread } from "./lib"
 import Loading from "./Loading"
 import { FRONTEND_URL, isCollaborator, isOwner, pageSizes } from "./utils"
 import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
@@ -32,12 +29,10 @@ import Skeleton from "./Skeleton"
 import DeleteThread from "./DeleteThread"
 import Instructions from "./Instructions"
 import EditThread from "./EditThread"
-import { useRouter } from "./hooks/useWindowHistory"
 import Share from "./Share"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
-import useSWR from "swr"
 import EnableSound from "./EnableSound"
 import MemoryConsent from "./MemoryConsent"
 import Img from "./Img"
@@ -48,22 +43,11 @@ import { lazy, Suspense } from "react"
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
 const Focus = lazy(() => import("./Focus"))
 
-declare module "./hooks/useWindowHistory" {
-  interface NavigateOptions {
-    state?: {
-      preservedThread?: thread & { likeCount: number }
-    }
-  }
-}
-
-let cycleIndex = 0
-
 type ThreadWithLikeCount = thread & { likeCount: number }
 
 const Thread = ({
   className,
   isHome,
-  ...props
 }: {
   className?: string
   isHome?: boolean
@@ -74,15 +58,12 @@ const Thread = ({
   const { t } = useAppContext()
 
   // Auth context
-  const {
-    user,
-    guest,
-    track,
-    memoriesEnabled,
-    showFocus,
-    setShowFocus,
-    ...auth
-  } = useAuth()
+  const { user, guest, track, memoriesEnabled, setShowFocus, ...auth } =
+    useAuth()
+
+  const [isEmpty, setIsEmpty] = useState(true)
+
+  const showFocus = auth.showFocus && isEmpty
 
   // Chat context
   const {
@@ -117,8 +98,6 @@ const Thread = ({
 
   const { os } = usePlatform()
 
-  const [isEmpty, setIsEmpty] = useState(true)
-
   // Navigation context
   const {
     router,
@@ -133,7 +112,6 @@ const Thread = ({
     slug,
     isIncognito,
     goToCalendar,
-    pathname,
   } = useNavigationContext()
 
   const { threadId, creditsLeft, setCreditsLeft } = useChat()
@@ -142,10 +120,9 @@ const Thread = ({
     setMessagesInternal(messages)
   }
 
-  const { app, focus, appStatus, appFormWatcher, suggestSaveApp } = useApp()
+  const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
   const { addHapticFeedback, isDrawerOpen } = useTheme()
-  const { isExtension } = usePlatform()
 
   // Derived from thread
 
@@ -190,16 +167,6 @@ const Thread = ({
       collaboration.collaboration.status !== "active",
   )
 
-  // useEffect(() => {
-  //   if (!id || (!id && wasIncognito)) {
-  //     setThread(undefined)
-  //     setMessages([])
-  //     setWasIncognito(false)
-  //   }
-  // }, [id, wasIncognito])
-
-  // const [deleted, setDeleted] = useState<boolean | undefined>(undefined)
-
   const refetch = () => {
     return refetchThread()
   }
@@ -226,7 +193,7 @@ const Thread = ({
 
   const hasHydrated = useHasHydrated()
 
-  const nameIsRequired = `👋 ${t("Name your app......")}`
+  const nameIsRequired = `👋 ${t("Name your app...")}`
   const titleIsRequired = `✍️ ${t("Give it a title...")}`
 
   // Only show app creation warnings when actually in app creation mode

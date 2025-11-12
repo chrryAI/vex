@@ -67,8 +67,26 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
       <header>
         {/* <p>Choose how you want to use Grape:</p> */}
         <div className={styles.icons}>
-          <Img icon="pacman" size={128} />
-          <Img icon="spaceInvader" size={128} />
+          <button
+            className={clsx(
+              "link",
+              styles.icon,
+              option === "consumer" && styles.selected,
+            )}
+            onClick={() => setOption("consumer")}
+          >
+            <Img icon="pacman" size={128} />
+          </button>
+          <button
+            className={clsx(
+              "link",
+              styles.icon,
+              option === "advertiser" && styles.selected,
+            )}
+            onClick={() => setOption("advertiser")}
+          >
+            <Img icon="spaceInvader" size={128} />
+          </button>
         </div>
       </header>
 
@@ -76,7 +94,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
         {option === "consumer" && (
           <div
             className={clsx(styles.option, styles.consumer)}
-            onClick={() => handleRoleSelect("consumer")}
+            // onClick={() => handleRoleSelect("consumer")}
           >
             <h3 className={styles.title}>I want to earn 💰</h3>
             <p>View relevant ads and earn credits for your attention</p>
@@ -84,12 +102,30 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
         )}
 
         {option === "advertiser" && (
-          <button onClick={() => handleRoleSelect("advertiser")}>
-            <span>📢</span>
-            <h3>I want to advertise</h3>
+          <div
+            className={clsx(styles.option, styles.advertiser)}
+            // onClick={() => setOption("advertiser")}
+          >
+            <h3 className={styles.title}>I want to advertise 📢</h3>
             <p>Create campaigns and reach engaged audiences</p>
-          </button>
+          </div>
         )}
+        <div className={styles.actions}>
+          {user && user.adConsent ? (
+            <button>Continue</button>
+          ) : (
+            <div className={styles.adConsent}>
+              <p>Some info and privacy link</p>
+              <button>Accept</button>
+            </div>
+          )}
+          {guest ? (
+            <>
+              <button>Create Account</button>
+              <button>Sign In</button>
+            </>
+          ) : null}
+        </div>
       </article>
     </section>
   )
@@ -465,6 +501,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
           isModalOpen={isModalOpen}
           onToggle={(open) => setIsModalOpen(open)}
           title="Grape"
+          className={styles.grapeModal}
         >
           <main>{renderContent()}</main>
           {renderFooter()}

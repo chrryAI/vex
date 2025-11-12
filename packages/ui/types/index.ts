@@ -9,6 +9,9 @@ export type user = {
   isLinkedToApple?: boolean
   hasRefreshToken?: boolean
   id: string
+  adConsent?: boolean
+  stripeConnectAccountId?: string
+  stripeConnectOnboarded?: boolean
   name: string | null
   email: string
   emailVerified: Date | null
@@ -191,6 +194,7 @@ export type guest = {
   activeOn: Date
   email: string | null
   tasksCount: number
+  adConsent?: boolean
   favouriteAgent:
     | "deepSeek"
     | "chatGPT"
