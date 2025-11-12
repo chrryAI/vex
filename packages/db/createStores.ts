@@ -4045,7 +4045,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   const pulpFictionPayload = {
     ...pulpFiction,
     slug: "pulpFiction",
-    name: "Pulp Fiction",
+    name: "PulpFiction",
     title: "Pulp Fiction — Royale With Insight",
     subtitle: "Non-Linear Storytelling",
     domain: "https://popcorn.chrry.ai/pulpFiction",

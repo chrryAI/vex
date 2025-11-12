@@ -114,10 +114,7 @@ export default function GrapeAdvertiserDashboard() {
     )
   }
 
-  if (
-    loadingGrapeStats ||
-    (grapeStats && !grapeStats?.hasAdvertiserAccount)
-  ) {
+  if (loadingGrapeStats || (grapeStats && !grapeStats?.hasAdvertiserAccount)) {
     return (
       <div className={styles.affiliate}>
         <div className={styles.loading}>
@@ -291,7 +288,9 @@ export default function GrapeAdvertiserDashboard() {
               <li>{t("Context-aware targeting (no tracking)")}</li>
               <li>{t("Performance-based pricing (CPC/CPM)")}</li>
               <li>{t("Real-time analytics and reporting")}</li>
-              <li>{t("Minimum budget: {{amount}}", { amount: "€500/month" })}</li>
+              <li>
+                {t("Minimum budget: {{amount}}", { amount: "€500/month" })}
+              </li>
             </ul>
           </div>
 

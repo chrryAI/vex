@@ -109,7 +109,7 @@ export default function Instructions({
   const { defaultInstructions, instructions: contextInstructions } = useApp()
 
   // Auth context
-  const { token, language, user, guest } = useAuth()
+  const { token, language, user, guest, baseApp } = useAuth()
 
   // Chat context
   const {
@@ -1499,7 +1499,11 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 ) : !isFirefox && productionExtensions.includes("chrome") ? (
                   <a
                     target="_blank"
-                    href="https://chromewebstore.google.com/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc"
+                    href={
+                      baseApp?.slug === "focus"
+                        ? "https://chromewebstore.google.com/detail/focus-%F0%9F%8D%92/nkomoiomfaeodakglkihapminhpgnibl"
+                        : "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
+                    }
                     className={clsx("button small", styles.installButton)}
                   >
                     <FaChrome size={18} />
