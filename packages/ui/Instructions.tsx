@@ -109,7 +109,7 @@ export default function Instructions({
   const { defaultInstructions, instructions: contextInstructions } = useApp()
 
   // Auth context
-  const { token, language, user, guest, baseApp } = useAuth()
+  const { token, language, user, guest, app, focus } = useAuth()
 
   // Chat context
   const {
@@ -1500,7 +1500,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   <a
                     target="_blank"
                     href={
-                      baseApp?.slug === "focus"
+                      app?.id === focus?.id
                         ? "https://chromewebstore.google.com/detail/focus-%F0%9F%8D%92/nkomoiomfaeodakglkihapminhpgnibl"
                         : "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
                     }
