@@ -42,7 +42,11 @@ import {
   useError,
   useData,
 } from "./context/providers"
-import { useTheme as usePlatformTheme, usePlatform } from "./platform"
+import {
+  useTheme as usePlatformTheme,
+  usePlatform,
+  getExtensionId,
+} from "./platform"
 import { thread, instruction } from "./types"
 import { updateThread } from "./lib"
 import { useHasHydrated } from "./hooks"
@@ -68,6 +72,7 @@ import EmojiPicker, {
 } from "emoji-picker-react"
 import Agent from "./Agent"
 import { useLocalStorage } from "./hooks"
+import A from "./A"
 
 export default function Instructions({
   className,
@@ -109,7 +114,7 @@ export default function Instructions({
   const { defaultInstructions, instructions: contextInstructions } = useApp()
 
   // Auth context
-  const { token, language, user, guest, app, focus } = useAuth()
+  const { token, language, user, guest, app, focus, baseApp } = useAuth()
 
   // Chat context
   const {
@@ -318,6 +323,13 @@ export default function Instructions({
       img.src = URL.createObjectURL(file)
     })
   }
+
+  const extensionUrl =
+    app?.id === focus?.id
+      ? "https://chromewebstore.google.com/detail/focus-%F0%9F%8D%92/nkomoiomfaeodakglkihapminhpgnibl"
+      : "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
+
+  const extensionId = getExtensionId()
 
   const handleFileSelect = async (selectedFiles: FileList | null) => {
     if (!selectedFiles) return
@@ -1469,7 +1481,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             </a>
             {appStatus?.part ? (
               <Agent />
-            ) : isExtension ? null : (
+            ) : extensionId && extensionUrl.includes(extensionId) ? null : (
               <>
                 {os && ["ios", "android"].includes(os) ? (
                   <button
@@ -1496,28 +1508,15 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     )}{" "}
                     {t("Install")}
                   </button>
-                ) : !isFirefox && productionExtensions.includes("chrome") ? (
-                  <a
-                    target="_blank"
-                    href={
-                      app?.id === focus?.id
-                        ? "https://chromewebstore.google.com/detail/focus-%F0%9F%8D%92/nkomoiomfaeodakglkihapminhpgnibl"
-                        : "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
-                    }
+                ) : productionExtensions.includes("chrome") ? (
+                  <A
+                    openInNewTab
+                    href={extensionUrl}
                     className={clsx("button small", styles.installButton)}
                   >
                     <FaChrome size={18} />
                     {t("Extension")}
-                  </a>
-                ) : isFirefox && productionExtensions.includes("firefox") ? (
-                  <a
-                    target="_blank"
-                    href="https://addons.mozilla.org/en-US/firefox/addon/vex"
-                    className={clsx("button small", styles.installButton)}
-                  >
-                    <FaFirefox size={18} />
-                    {t("Add-on")}
-                  </a>
+                  </A>
                 ) : null}
               </>
             )}

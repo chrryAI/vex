@@ -16,7 +16,7 @@ import { RiNextjsFill } from "react-icons/ri"
 import { BiLogoPostgresql } from "react-icons/bi"
 
 import { SiCssmodules, SiJest, SiDrizzle, SiTypescript } from "react-icons/si"
-import { FaChrome, FaFirefox } from "react-icons/fa"
+import { FaChrome } from "react-icons/fa"
 import clsx from "clsx"
 import Logo from "./Logo"
 import Img from "./Image"
@@ -427,27 +427,6 @@ export default function About() {
                 className={styles.video}
                 controls
                 src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOWTxc2Y6sD5zVU8hPgdAmWQy4qXa0KuL2HE7e`}
-              />
-            </div>
-
-            <div>
-              <h3 style={{ display: "flex" }}>
-                {t("about.platforms.firefox.title")}
-                <a
-                  style={{ marginLeft: "auto" }}
-                  target="_blank"
-                  href="https://addons.mozilla.org/en-US/firefox/addon/vex"
-                  className={clsx("button small", styles.installButton)}
-                >
-                  <FaFirefox size={18} />
-                  {t("Install")}
-                </a>
-              </h3>
-              <p>{t("about.platforms.firefox.content")}</p>
-              <video
-                className={styles.video}
-                controls
-                src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOPpTJtj5mvZ0Y8iWC57kp1lcG4ExKLJo3NHbf`}
               />
             </div>
           </div>
