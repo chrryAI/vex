@@ -61,6 +61,9 @@ interface AppStatus {
 }
 
 interface AppFormContextType {
+  hasCustomInstructions: boolean
+  isAppInstructions: boolean
+  toggleInstructions: (item?: appWithStore) => void
   setInstructions: React.Dispatch<React.SetStateAction<instruction[]>>
   baseApp?: appWithStore
   stores: Paginated<storeWithApps> | undefined
@@ -471,12 +474,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const instructionsInternal = useMemo(
     () =>
-      contextInstructions.length > 0
-        ? contextInstructions
-        : app?.highlights?.length
-          ? (app.highlights as instruction[])
-          : isManagingApp && appFormWatcher?.highlights?.length
-            ? (appFormWatcher.highlights as instruction[])
+      isManagingApp && appFormWatcher?.highlights?.length
+        ? (appFormWatcher.highlights as instruction[])
+        : contextInstructions.length > 0
+          ? contextInstructions
+          : app?.highlights?.length
+            ? (app.highlights as instruction[])
             : (getExampleInstructions({
                 slug: app?.slug || undefined,
               }) as instruction[]),
@@ -497,6 +500,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setInstructions(instructionsInternal)
   }, [instructionsInternal])
 
+  const hasCustomInstructions = contextInstructions.some(
+    (i) => !app?.highlights?.some((h) => h.id === i.id),
+  )
+
+  const isAppInstructions = contextInstructions.every((i) =>
+    app?.highlights?.some((h) => h.id === i.id),
+  )
+
+  const toggleInstructions = (item = app) => {
+    if (item) {
+      setInstructions((item.highlights as instruction[]) || [])
+    } else {
+      setInstructions(instructionsInternal)
+    }
+  }
   const siteConfig = getSiteConfig()
 
   const suggestSaveApp = !!(
@@ -672,6 +690,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         storeApp,
         chrry,
+        toggleInstructions,
         defaultInstructions,
         instructions,
         appStatus,
@@ -701,6 +720,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         store,
         baseApp,
         setInstructions,
+        isAppInstructions,
+        hasCustomInstructions,
       }}
     >
       {children}

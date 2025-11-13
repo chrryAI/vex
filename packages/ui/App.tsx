@@ -15,6 +15,7 @@ import {
   Grip,
   Info,
   Pencil,
+  RefreshCw,
   Settings2,
   Trash2,
 } from "./icons"
@@ -138,6 +139,8 @@ export default function App({
     baseApp,
     isAppOwner,
     storeApp,
+    hasCustomInstructions,
+    toggleInstructions,
   } = useApp()
 
   // Auth context
@@ -1200,12 +1203,16 @@ export default function App({
                           {showSpaceInvaderHere && (
                             <button
                               className={clsx("link", styles.spaceInvader)}
-                              onClick={() =>
+                              onClick={() => {
+                                if (hasCustomInstructions) {
+                                  toggleInstructions()
+                                  return
+                                }
                                 setAppStatus({
                                   step: canEditApp ? "update" : "add",
                                   part: "name",
                                 })
-                              }
+                              }}
                             >
                               <Img
                                 className={clsx("link", styles.spaceInvader)}
@@ -1216,6 +1223,17 @@ export default function App({
                                 width={26}
                                 height={26}
                               />
+                              {hasCustomInstructions && (
+                                <RefreshCw
+                                  size={12}
+                                  style={{
+                                    position: "absolute",
+                                    bottom: 0,
+                                    right: "-1.2rem",
+                                    color: "var(--accent-1)",
+                                  }}
+                                />
+                              )}
                             </button>
                           )}
                         </>
