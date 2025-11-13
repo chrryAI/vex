@@ -1,5 +1,4 @@
-import { eq, desc, sql, cosineDistance } from "drizzle-orm"
-import { db } from "@repo/db"
+import { db, sql, eq, desc, cosineDistance } from "@repo/db"
 import {
   documentChunks,
   documentSummaries,
