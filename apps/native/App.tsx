@@ -21,7 +21,7 @@ const ANIMATIONS: AnimationPreset[] = [
   "wiggle",
 ]
 
-export default function VexNativeApp() {
+export default function ChrryNativeApp() {
   const [currentAnimation, setCurrentAnimation] =
     useState<AnimationPreset>("slideUp")
   const [imageKey, setImageKey] = useState(0)

@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Vex.app"
-               BlueprintName = "Vex"
-               ReferencedContainer = "container:Vex.xcodeproj">
+               BuildableName = "Chrry.app"
+               BlueprintName = "Chrry"
+               ReferencedContainer = "container:Chrry.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "VexTests.xctest"
-               BlueprintName = "VexTests"
-               ReferencedContainer = "container:Vex.xcodeproj">
+               BuildableName = "ChrryTests.xctest"
+               BlueprintName = "ChrryTests"
+               ReferencedContainer = "container:Chrry.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Vex.app"
-            BlueprintName = "Vex"
-            ReferencedContainer = "container:Vex.xcodeproj">
+            BuildableName = "Chrry.app"
+            BlueprintName = "Chrry"
+            ReferencedContainer = "container:Chrry.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Vex.app"
-            BlueprintName = "Vex"
-            ReferencedContainer = "container:Vex.xcodeproj">
+            BuildableName = "Chrry.app"
+            BlueprintName = "Chrry"
+            ReferencedContainer = "container:Chrry.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
