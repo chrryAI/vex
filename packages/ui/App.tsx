@@ -1218,11 +1218,11 @@ export default function App({
                               />
                               {hasCustomInstructions && (
                                 <RefreshCw
-                                  size={12}
+                                  size={10}
                                   style={{
                                     position: "absolute",
                                     bottom: 0,
-                                    right: "-1rem",
+                                    right: "-0.8rem",
                                     color: "var(--accent-1)",
                                   }}
                                 />

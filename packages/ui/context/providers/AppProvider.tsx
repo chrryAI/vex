@@ -495,6 +495,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [instructions, setInstructions] =
     useState<instruction[]>(instructionsInternal)
+  
+  const [showingCustom, setShowingCustom] = useState(false)
 
   useEffect(() => {
     setInstructions(instructionsInternal)
@@ -509,10 +511,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const toggleInstructions = (item = app) => {
-    if (!hasCustomInstructions) {
+    if (!hasCustomInstructions) return // Nothing to toggle
+    
+    // Toggle between custom and app instructions
+    if (showingCustom) {
+      // Switch to app instructions
+      if (item?.highlights?.length) {
+        setInstructions(item.highlights as instruction[])
+      }
+      setShowingCustom(false)
+    } else {
+      // Switch to custom instructions
       setInstructions(contextInstructions)
-    } else if (item?.highlights?.length) {
-      setInstructions(item?.highlights as instruction[])
+      setShowingCustom(true)
     }
   }
   const siteConfig = getSiteConfig()
