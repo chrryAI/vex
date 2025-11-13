@@ -127,15 +127,21 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url)
 
-  // Detect domain for cookies from Referer or Origin header
+  // Detect domain for cookies from chrryUrl (for extensions), Referer, or Origin header
+  const chrryUrlFromParams = url.searchParams.get("chrryUrl")
   const referer =
     request.headers.get("referer") || request.headers.get("origin")
   let cookieDomain: string | undefined = undefined
 
-  if (referer && process.env.NODE_ENV === "production") {
+  // Priority: chrryUrl (for extensions) > referer (for web)
+  const sourceUrl = chrryUrlFromParams
+    ? decodeURIComponent(chrryUrlFromParams)
+    : referer
+
+  if (sourceUrl && process.env.NODE_ENV === "production") {
     try {
-      const refererUrl = new URL(referer)
-      const hostname = refererUrl.hostname
+      const parsedUrl = new URL(sourceUrl)
+      const hostname = parsedUrl.hostname
 
       // Use exact hostname match or subdomain check (not .includes())
       if (hostname === "vex.chrry.ai" || hostname.endsWith(".vex.chrry.ai")) {
@@ -149,6 +155,11 @@ export async function GET(request: Request) {
         cookieDomain = ".askvex.com"
       } else if (hostname === "chrry.dev" || hostname.endsWith(".chrry.dev")) {
         cookieDomain = ".chrry.dev"
+      } else if (
+        hostname === "focus.chrry.ai" ||
+        hostname.endsWith(".focus.chrry.ai")
+      ) {
+        cookieDomain = ".chrry.ai" // focus.chrry.ai shares cookies with chrry.ai
       }
     } catch {
       // Invalid URL, leave cookieDomain undefined
@@ -165,8 +176,7 @@ export async function GET(request: Request) {
 
   const pathname = headers.get("x-pathname") || "/"
 
-  const chrryUrlFromParams = url.searchParams.get("chrryUrl")
-
+  // Use chrryUrlFromParams already extracted above for cookie domain detection
   let chrryUrl = chrryUrlFromParams
     ? decodeURIComponent(chrryUrlFromParams)
     : process.env.CHRRY_URL
