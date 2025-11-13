@@ -87,7 +87,7 @@ dotenv.config()
 // Export cache functions and redis instance for external use
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
-export { sql, eq, desc, and, cosineDistance, notInArray }
+export { sql, eq, desc, and, isNull, cosineDistance, notInArray }
 
 export const TEST_MEMBER_EMAILS =
   process.env.TEST_MEMBER_EMAILS?.split(",") || []
