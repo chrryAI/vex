@@ -8,7 +8,7 @@ import { deleteFile, upload } from "../../../../lib/uploadthing-server"
 import { v4 as uuid, validate } from "uuid"
 import slugify from "slug"
 import { isDevelopment, isOwner } from "chrry/utils"
-import { parse as parseDomain } from "tldts";
+import { parse as parseDomain } from "tldts"
 
 export async function PATCH(
   request: NextRequest,
@@ -231,12 +231,13 @@ export async function PATCH(
           "images.unsplash.com",
           "cdn.jsdelivr.net",
         ]
-        const parsedDomain = parseDomain(parsedUrl.hostname);
+        const parsedDomain = parseDomain(parsedUrl.hostname)
         // parsedDomain.domain + '.' + parsedDomain.publicSuffix gives the registrable root domain
-        const rootDomain = parsedDomain.domain && parsedDomain.publicSuffix
-          ? `${parsedDomain.domain}.${parsedDomain.publicSuffix}`
-          : parsedUrl.hostname;
-        const isAllowed = ALLOWED_HOSTNAMES.includes(rootDomain);
+        const rootDomain =
+          parsedDomain.domain && parsedDomain.publicSuffix
+            ? `${parsedDomain.domain}.${parsedDomain.publicSuffix}`
+            : parsedUrl.hostname
+        const isAllowed = ALLOWED_HOSTNAMES.includes(rootDomain)
         if (!isAllowed) {
           throw new Error(`Image host not allowed: ${rootDomain}`)
         }
