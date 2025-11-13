@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import getMember from "../../../actions/getMember"
 import getGuest from "../../../actions/getGuest"
-import { createAppOrder, installApp, getInstall, db } from "@repo/db"
+import { createAppOrder, installApp, getInstall, db, and, eq } from "@repo/db"
 import { appOrders, storeInstalls, apps } from "@repo/db/src/schema"
-import { and, eq } from "drizzle-orm"
 import captureException from "../../../../lib/captureException"
 
 interface ReorderItem {
