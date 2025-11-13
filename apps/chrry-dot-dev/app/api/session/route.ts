@@ -177,6 +177,7 @@ export async function GET(request: Request) {
   const locale = url.searchParams.get("locale") || "en"
 
   const appType = url.searchParams.get("app")
+  const appId = url.searchParams.get("appId")
   const isExtension = appType === "extension"
 
   const headers = request.headers
@@ -208,33 +209,34 @@ export async function GET(request: Request) {
     locales,
   })
 
-  const slugParam = slug?.appSlug
+  const appFromParams = appId ? await getApp({ id: appId }) : undefined
 
-  const store = slugParam
-    ? (await getStore({
-        slug: slugParam,
+  const slugParam = appFromParams ? appFromParams.slug : slug?.appSlug
+
+  const store = appFromParams?.store
+    ? await getStore({
+        id: appFromParams.store.id,
         userId: member?.id,
         guestId: guest?.id,
         depth: 1, // Populate one level of nested store.apps
-      })) || chrryStore
-    : chrryStore
+      })
+    : slugParam
+      ? (await getStore({
+          slug: slugParam,
+          userId: member?.id,
+          guestId: guest?.id,
+          depth: 1, // Populate one level of nested store.apps
+        })) || chrryStore
+      : chrryStore
 
-  const storeApp =
-    store?.app?.slug === siteConfig.slug
-      ? store?.app
-      : store?.apps.find((app) => app.slug === siteConfig.slug)
-
-  if (!storeApp) {
-    return NextResponse.json({ error: "Store app not found" }, { status: 404 })
-  }
-
-  const baseApp = await getApp({
-    id: storeApp.id,
-    userId: member?.id,
-    guestId: guest?.id,
-    depth: 1, // Populate one level of nested store.apps
-    // Don't pass storeId - let getApp determine the correct store context
-  })
+  // Find base app by siteConfig.slug (e.g., "focus" for focus.chrry.ai)
+  // This may differ from store's default app (store.app)
+  const baseApp =
+    store?.apps?.find(
+      (app) =>
+        app.slug === siteConfig.slug &&
+        app.store?.slug === siteConfig.storeSlug,
+    ) || store?.app
 
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug

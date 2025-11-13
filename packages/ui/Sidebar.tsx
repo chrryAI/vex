@@ -16,7 +16,7 @@ import {
   useNavigationContext,
   useData,
 } from "./context/providers"
-import { useTheme, usePlatform } from "./platform"
+import { useTheme, usePlatform, useLocalStorage } from "./platform"
 
 import clsx from "clsx"
 import styles from "./Sidebar.module.scss"
@@ -27,6 +27,8 @@ import Home from "./Home"
 import { getSiteConfig } from "./utils/siteConfig"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
 import { locales } from "./locales"
+import { appWithStore } from "./types"
+import { getImageSrc } from "./lib"
 
 // Lazy load less frequently used components to reduce initial bundle
 // const LifeOS = lazy(() => import("./LifeOS"))
@@ -70,12 +72,23 @@ export const Hey = memo(
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { isHome, pathname, isSplash, setIsSplash } = useNavigationContext()
+    const { isHome, pathname, isSplash, setIsSplash, router } =
+      useNavigationContext()
+
+    const { isExtension, isStorageReady } = usePlatform()
+
+    const [pathnameLocal, setPathnameLocal] = useLocalStorage<
+      string | undefined
+    >("pathname", isExtension ? pathname : undefined)
+
+    useEffect(() => {
+      if (isExtension) {
+        setPathnameLocal(pathname)
+      }
+    }, [pathname, isExtension])
 
     const { threadId } = useChat()
-    const { allApps, app, chrry } = useAuth()
-
-    const { isExtension } = usePlatform()
+    const { allApps, app, findAppByPathname } = useAuth()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
@@ -99,16 +112,23 @@ export const Hey = memo(
       locales,
     })
 
+    const pathWithoutLocale = pathname
+      .replace(/^\/[a-z]{2}\//, "/")
+      .slice(1)
+      .split("?")[0]
+
+    useEffect(() => {
+      if (pathnameLocal && isExtension && pathnameLocal !== "/") {
+        router.push(pathnameLocal)
+      }
+    }, [pathnameLocal, isExtension])
+
     const isChrry = app && app.slug === "chrry"
 
     const isAppSlug =
       !!appSlug && allApps.some((candidate) => candidate.slug === appSlug)
 
     // Extract path without locale for route matching (e.g., /ja/affiliate/dashboard -> affiliate/dashboard)
-    const pathWithoutLocale = pathname
-      .replace(/^\/[a-z]{2}\//, "/")
-      .slice(1)
-      .split("?")[0]
 
     // Check if current route is a store slug by checking all apps
     const isStorePage = !!store
@@ -152,7 +172,9 @@ export const Hey = memo(
       return (
         <div className={clsx(styles.splash, !isSplash && styles.hidden)}>
           <Img
-            onLoad={() => setIsImageLoaded(true)}
+            onLoad={(src) => {
+              setIsImageLoaded(true)
+            }}
             app={isChrry ? undefined : app}
             logo={isChrry ? "blossom" : undefined}
             showLoading={false}
@@ -170,7 +192,6 @@ export const Hey = memo(
 
     useEffect(() => {
       app?.slug && useExtensionIcon?.(app?.slug)
-      console.log(`🚀 ~ file: Sidebar.tsx:175 ~  app?.slug:`, app?.slug)
     }, [app, useExtensionIcon])
 
     return (

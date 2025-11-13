@@ -44,6 +44,9 @@ function runBuild() {
 // UI package changes will require manual rebuild
 const watchPaths = [
   path.join(__dirname, "src"),
+  path.join(__dirname, "../../packages/ui"),
+  path.join(__dirname, "package.json"),
+  path.join(__dirname, "vite.config.ts"),
 ]
 
 console.log("👀 Watching for changes in:")

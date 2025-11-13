@@ -61,7 +61,7 @@ type ImageProps = {
   style?: React.CSSProperties
   alt?: string
   containerClass?: string
-  onLoad?: () => void
+  onLoad?: (src?: string) => void
   store?: store
   PROD_FRONTEND_URL?: string
   FRONTEND_URL?: string
