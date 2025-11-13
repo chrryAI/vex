@@ -10,6 +10,7 @@ import {
   useContext,
   useMemo,
 } from "react"
+import type { ReactElement, ReactNode } from "react"
 
 import { isSameDay, FRONTEND_URL, apiFetch, API_URL } from "../utils"
 import { device, mood, timer } from "../types"
@@ -181,8 +182,8 @@ export type Task = {
 export function TimerContextProvider({
   children,
 }: {
-  children: React.ReactNode
-}) {
+  children: ReactNode
+}): ReactElement {
   const {
     token,
     enableNotifications,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, type ReactElement } from "react"
 import { app } from "@repo/db"
 import { appWithStore } from "chrry/types"
 
@@ -50,7 +50,11 @@ const splashScreenConfigs = [
   },
 ]
 
-export default function AppMetadata({ app }: { app?: appWithStore | null }) {
+export default function AppMetadata({
+  app,
+}: {
+  app?: appWithStore | null
+}): ReactElement {
   // Get slug from app prop, fallback to "vex"
   const slug = useMemo(() => app?.slug || "vex", [app?.slug])
 

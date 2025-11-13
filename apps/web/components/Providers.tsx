@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactElement, ReactNode } from "react"
 import "chrry/i18n"
 
 import { createNavigation } from "next-intl/navigation"
@@ -23,14 +24,14 @@ export function Providers({
   session,
   translations,
 }: {
-  children: React.ReactNode
+  children: ReactNode
   apiKey?: string
   viewPortWidth?: string
   viewPortHeight?: string
   session?: any
   thread?: { thread: thread; messages: paginatedMessages }
   translations?: Record<string, any>
-}) {
+}): ReactElement {
   const { useRouter: useI18nRouter } = createNavigation({ locales })
   const i18nRouter = useI18nRouter()
 
