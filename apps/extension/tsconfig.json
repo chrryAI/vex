@@ -27,6 +27,6 @@
       "chrry/*": ["../../packages/ui/*"]
     }
   },
-  "include": ["/*.**"],
+  "include": ["src/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

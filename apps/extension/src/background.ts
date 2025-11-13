@@ -37,7 +37,7 @@ browser.runtime.onMessage.addListener((request: unknown) => {
 })
 
 // Handle context menu actions and sidebar close messages
-browser.runtime.onMessage.addListener(async (request: unknown, sender) => {
+browser.runtime.onMessage.addListener(async (request: unknown) => {
   const req = request as MessageRequest
 
   // Handle sidebar close message

@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
 import { platformStorage, storage } from "./storage"
+import { extensions } from "chrry/utils/siteConfig"
 
 // Cookie options
 export interface CookieOptions {
@@ -92,29 +93,48 @@ async function getCookie(key: string): Promise<string | null> {
   // Extension: Try chrome.cookies API first
   if (isBrowserExtension()) {
     try {
+      // Use the website URLs, not current tab
+      const websiteUrls = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://focus.chrry.ai",
+        "https://vex.chrry.ai",
+        "https://chrry.dev",
+      ]
+
       // Chrome extension cookies API
-      if (
-        typeof chrome !== "undefined" &&
-        chrome.cookies &&
-        window.location?.href
-      ) {
-        return new Promise((resolve) => {
-          chrome.cookies.get(
-            { url: window.location.href, name: key },
-            (cookie) => {
-              resolve(cookie?.value || null)
+      if (typeof chrome !== "undefined" && chrome.cookies) {
+        for (const url of websiteUrls) {
+          const cookie = await new Promise<chrome.cookies.Cookie | null>(
+            (resolve) => {
+              chrome.cookies.get({ url, name: key }, (cookie) => {
+                if (chrome.runtime.lastError) {
+                  resolve(null)
+                } else {
+                  resolve(cookie)
+                }
+              })
             },
           )
-        })
+
+          if (cookie?.value) {
+            return cookie.value
+          }
+        }
+        // No cookie found, fall back to localStorage
+        return await storage.getItem(key)
       }
 
       // Firefox extension cookies API
       if (typeof browser !== "undefined" && (browser as any).cookies) {
-        const cookie = await (browser as any).cookies.get({
-          url: window.location.href,
-          name: key,
-        })
-        return cookie?.value || null
+        for (const url of websiteUrls) {
+          const cookie = await (browser as any).cookies.get({ url, name: key })
+          if (cookie?.value) {
+            return cookie.value
+          }
+        }
+        // No cookie found, fall back to localStorage
+        return await storage.getItem(key)
       }
     } catch {
       // Fall through to localStorage
@@ -174,23 +194,33 @@ async function setCookieValue(
           chromeSameSite = options.sameSite
         }
 
-        return new Promise((resolve) => {
-          chrome.cookies.set(
-            {
-              url: window.location.href,
-              name: key,
-              value: value,
-              expirationDate: options.expires
-                ? Math.floor(options.expires.getTime() / 1000)
-                : undefined,
-              path: options.path,
-              domain: options.domain,
-              secure: options.secure,
-              sameSite: chromeSameSite,
-            },
-            () => resolve(),
-          )
-        })
+        // Add all domains that have host permissions
+        const websiteUrls = [
+          "http://localhost:3000",
+          "http://localhost:3001",
+          ...extensions,
+        ]
+
+        for (const url of websiteUrls) {
+          await new Promise<void>((resolve) => {
+            chrome.cookies.set(
+              {
+                url,
+                name: key,
+                value: value,
+                expirationDate: options.expires
+                  ? Math.floor(options.expires.getTime() / 1000)
+                  : undefined,
+                path: options.path,
+                domain: options.domain,
+                secure: options.secure,
+                sameSite: chromeSameSite,
+              },
+              () => resolve(),
+            )
+          })
+        }
+        return
       }
 
       // Firefox extension cookies API
