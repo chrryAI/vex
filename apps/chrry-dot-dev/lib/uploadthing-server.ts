@@ -72,15 +72,18 @@ export async function upload({
       throw new Error("Only HTTPS URLs are allowed")
     }
 
-    // Whitelist allowed domains (add your trusted domains here)
-    const allowedDomains = [
+    // Whitelist allowed domains
+    // Only allow images from trusted hosts (add your domains as needed)
+    const ALLOWED_HOSTNAMES = [
       "replicate.delivery", // Replicate temporary files
       "replicate.com",
       "utfs.io", // UploadThing
       "uploadthing.com",
+      // Add more trusted domains here as needed
     ]
 
-    const isAllowedDomain = allowedDomains.some(
+    // Check if hostname matches allowed domains (including subdomains)
+    const isAllowedDomain = ALLOWED_HOSTNAMES.some(
       (domain) =>
         parsedUrl.hostname === domain ||
         parsedUrl.hostname.endsWith(`.${domain}`),
@@ -88,7 +91,7 @@ export async function upload({
 
     if (!isAllowedDomain) {
       throw new Error(
-        `URL domain not allowed. Only ${allowedDomains.join(", ")} are permitted`,
+        `URL domain not allowed. Only ${ALLOWED_HOSTNAMES.join(", ")} are permitted`,
       )
     }
 
