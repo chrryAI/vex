@@ -37,18 +37,15 @@ export const extensions = [
 
 export const getCurrentExtension = (domain?: string): string[] => {
   const mode = detectSiteMode(domain)
-  const mainUrl = mode === "vex"
-    ? "https://vex.chrry.ai"
-    : mode === "focus"
-      ? "https://focus.chrry.ai"
-      : "https://chrry.ai"
-  
+  const mainUrl =
+    mode === "vex"
+      ? "https://vex.chrry.ai"
+      : mode === "focus"
+        ? "https://focus.chrry.ai"
+        : "https://chrry.ai"
+
   // Return array with main URL plus localhost for development
-  return [
-    mainUrl,
-    "http://localhost:3000",
-    "http://localhost:3001",
-  ]
+  return [mainUrl, "http://localhost:3000", "http://localhost:3001"]
 }
 
 type SiteTranslation = {
@@ -332,7 +329,7 @@ export function getSiteTranslation(
 }
 
 export function detectSiteModeDomain(hostname?: string): SiteMode {
-  const defaultMode = "focus"
+  const defaultMode = "vex"
   // Get hostname from parameter or window (client-side)
   const rawHost =
     hostname || (typeof window !== "undefined" ? window.location.hostname : "")
@@ -589,7 +586,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return {
       mode: "focus",
       slug: "focus",
-      version: "26.10.23",
+      version: "26.10.24",
       storeSlug: "blossom",
       name: "Focus",
       domain: "focus.chrry.ai",
