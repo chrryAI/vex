@@ -346,7 +346,6 @@ export function AuthProvider({
 
   // Sync deviceId to cookie once loaded
   useEffect(() => {
-    if (isExtension) return
     if (deviceId) {
       setDeviceIdCookie(deviceId)
     }

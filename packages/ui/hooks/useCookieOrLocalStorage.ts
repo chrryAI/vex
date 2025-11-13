@@ -10,7 +10,9 @@ export default function useCookieOrLocalStorage(
   const [cookie, setCookieInternal] = useCookie(key, initialValue)
   const [local, setLocalInternal] = useLocalStorage(key, initialValue)
 
-  const state = isExtension || isNative ? local : cookie
+  // Extensions/native: read from cookie (cross-site), write to localStorage
+  // Web: read and write to cookie
+  const state = isExtension || isNative ? (cookie || local) : cookie
 
   const setState = (value: any) => {
     if (isExtension || isNative) {
