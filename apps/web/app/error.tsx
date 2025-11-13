@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, type ReactElement } from "react"
 import { ShieldX } from "chrry/icons"
 import styles from "./error.module.scss"
 import * as Sentry from "@sentry/nextjs"
@@ -11,7 +11,7 @@ export default function Error({
   error,
 }: {
   error: Error & { digest?: string }
-}) {
+}): ReactElement {
   useEffect(() => {
     console.error(error)
     Sentry.captureException(error)

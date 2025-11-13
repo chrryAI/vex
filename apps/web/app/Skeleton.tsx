@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactElement, ReactNode } from "react"
 import Skeleton from "chrry/Skeleton"
 
 export default function SkeletonComponent({
@@ -8,9 +9,9 @@ export default function SkeletonComponent({
   showThreads = true,
 }: {
   className?: string
-  children?: React.ReactNode
+  children?: ReactNode
   showThreads?: boolean
-}) {
+}): ReactElement {
   return (
     <Skeleton
       className={className}
