@@ -1,7 +1,6 @@
 import Parser from "rss-parser"
-import { db } from "@repo/db"
+import { db, eq, and, desc, sql } from "@repo/db"
 import { newsArticles } from "@repo/db/src/schema"
-import { eq, and, desc, sql } from "drizzle-orm"
 
 const parser = new Parser()
 
