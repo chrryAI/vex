@@ -61,6 +61,7 @@ interface AppStatus {
 }
 
 interface AppFormContextType {
+  showingCustom: boolean
   hasCustomInstructions: boolean
   isAppInstructions: boolean
   toggleInstructions: (item?: appWithStore) => void
@@ -699,6 +700,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppFormContext.Provider
       value={{
+        showingCustom,
         storeApp,
         chrry,
         toggleInstructions,
