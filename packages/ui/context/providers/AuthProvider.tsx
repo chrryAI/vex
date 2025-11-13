@@ -49,6 +49,7 @@ import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
 import {
   API_URL,
   apiFetch,
+  BrowserInstance,
   CHRRY_URL,
   FRONTEND_URL,
   getExampleInstructions,
@@ -68,6 +69,10 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      findAppByPathname: (
+        path: string,
+        apps: appWithStore[],
+      ) => appWithStore | undefined
       setShowFocus: (showFocus: boolean) => void
       showFocus: boolean
       isLoadingTasks: boolean
@@ -126,6 +131,7 @@ const AuthContext = createContext<
       userBaseApp: appWithStore | undefined
       guestBaseApp: appWithStore | undefined
       vex: appWithStore | undefined
+      lastAppId?: string
       zarathustra: appWithStore | undefined
       atlas: appWithStore | undefined
       popcorn: appWithStore | undefined
@@ -726,6 +732,9 @@ export function AuthProvider({
 
   const [newApp, setNewApp] = useState<appWithStore | undefined>(undefined)
 
+  // Get isStorageReady from platform context
+  const { isStorageReady } = usePlatform()
+
   const fetchSession = async (newApp?: appWithStore) => {
     if (newApp) {
       setNewApp(newApp)
@@ -757,15 +766,24 @@ export function AuthProvider({
     isLoading: isSessionLoading,
     error: sessionError,
   } = useSWR(
-    (fingerprint || token) && deviceId && shouldFetchSession
+    (isExtension ? isStorageReady : true) &&
+      (fingerprint || token) &&
+      deviceId &&
+      shouldFetchSession
       ? ["session", env]
       : null,
     async () => {
+      console.log(
+        `🚀 ~ file: AuthProvider.tsx:770 ~ isStorageReady:`,
+        isStorageReady,
+        newApp?.id || lastAppId || app?.id,
+      )
+
       // Don't pass appSlug - let the API determine base app by domain
       // Call the API action
       const result = await getSession({
         deviceId,
-        appId: newApp?.id || app?.id,
+        appId: newApp?.id || lastAppId || app?.id,
         fingerprint,
         app: isBrowserExtension() ? "extension" : isStandalone ? "pwa" : "web",
         gift,
@@ -801,6 +819,7 @@ export function AuthProvider({
       // 🔍 LOG: Check what apps are returned from session API
       const sessionResult = result as session
       console.log("📦 Session API Response - Apps:", {
+        app: sessionResult.app.name,
         totalApps: sessionResult.app?.store?.apps?.length || 0,
         apps: sessionResult.app?.store?.apps?.map((a: any) => ({
           slug: a.slug,
@@ -883,6 +902,13 @@ export function AuthProvider({
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
   >(session?.app || baseApp)
+
+  const [lastAppId, setLastAppId] = useLocalStorage<string | undefined>(
+    "lastAppId",
+    undefined,
+  )
+
+  // Sync app.id to lastAppId for extensions
 
   const canShowFocus = !!focus && app?.id === focus.id && !threadId
 
@@ -1093,6 +1119,7 @@ export function AuthProvider({
 
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
+      isExtension && item?.id !== baseApp?.id && setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
           ? {
@@ -1113,7 +1140,7 @@ export function AuthProvider({
         return newApp
       })
     },
-    [setColorScheme, setAppTheme],
+    [setColorScheme, setAppTheme, baseApp],
   )
 
   const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
@@ -1221,7 +1248,16 @@ export function AuthProvider({
       setApps(finalApps)
       setSlug(getAppSlug(matchedApp) || "")
     }
-  }, [allApps, pathname, baseApp, app?.id, thread, threadId])
+  }, [
+    allApps,
+    pathname,
+    baseApp,
+    app?.id,
+    thread,
+    threadId,
+    lastAppId,
+    isExtension,
+  ])
   // Thread app takes priority over pathname, then falls back to pathname detection
 
   const [profile, setProfileInternal] = useState<user | undefined>(undefined)
@@ -1549,6 +1585,7 @@ export function AuthProvider({
         popcorn,
         zarathustra,
         updateMood,
+        lastAppId,
         allApps, // All apps from all stores
         refetchSession: async (newApp?: appWithStore) => {
           await fetchSession(newApp)
@@ -1561,6 +1598,7 @@ export function AuthProvider({
         WS_URL,
         FRONTEND_URL,
         PROD_FRONTEND_URL,
+        findAppByPathname,
         setApp,
         aiAgents,
         timeAgo: (date: string | Date, locale = language || "en-US") =>

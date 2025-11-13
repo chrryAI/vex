@@ -111,6 +111,7 @@ export interface PlatformContextValue {
   isDesktop: boolean
   viewPortWidth: number
   viewPortHeight: number
+  isStorageReady: boolean
 
   styleRegistry: Map<string, Record<string, any>>
   updateStyleRegistry: (newRegistry: Map<string, Record<string, any>>) => void
@@ -345,6 +346,33 @@ export function PlatformProvider({
     return null
   })()
 
+  // Track if storage is ready (for extensions with async storage)
+  const [isStorageReady, setIsStorageReady] = useState(!_isBrowserExtension())
+
+  useEffect(() => {
+    if (!_isBrowserExtension()) {
+      setIsStorageReady(true)
+      return
+    }
+
+    // For extensions, check if storage API is initialized
+    const checkStorageReady = async () => {
+      try {
+        if (BrowserInstance?.storage?.local) {
+          // Try to read from storage to verify it's ready
+          await BrowserInstance.storage.local.get("_storage_check")
+          setIsStorageReady(true)
+        }
+      } catch (error) {
+        console.error("Extension storage not ready:", error)
+        // Retry after a short delay
+        setTimeout(checkStorageReady, 100)
+      }
+    }
+
+    checkStorageReady()
+  }, [BrowserInstance])
+
   const value: PlatformContextValue = {
     platform: platform === "native" ? "android" : platform,
     browser,
@@ -369,6 +397,7 @@ export function PlatformProvider({
     isMobile,
     isTablet,
     isDesktop,
+    isStorageReady,
     styleRegistry,
     updateStyleRegistry,
     BrowserInstance,
