@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@repo/db"
 import { messages, messageEmbeddings } from "@repo/db/src/schema"
-import { eq, notInArray, sql } from "drizzle-orm"
+import { eq, notInArray, sql } from "@repo/db"
 import getMember from "../../actions/getMember"
 import { processMessageForRAG } from "../../actions/ragService"
 
