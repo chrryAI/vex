@@ -1,3 +1,4 @@
+import type { ReactElement } from "react"
 import fs from "fs"
 import path from "path"
 import matter from "gray-matter"
@@ -68,7 +69,7 @@ function getBlogPosts() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
-export default async function BlogPage() {
+export default async function BlogPage(): Promise<ReactElement> {
   // Get hostname for domain-based detection
   const headersList = await headers()
   const hostname = headersList.get("host") || ""
