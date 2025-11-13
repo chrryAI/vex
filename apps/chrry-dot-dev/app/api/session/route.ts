@@ -62,7 +62,11 @@ const setFingerprintCookie = (
   response: NextResponse,
   fingerprint: string,
   domain?: string,
+  isExtension?: boolean,
 ) => {
+  // Extensions manage their own storage - don't set web cookies
+  if (isExtension) return response
+
   response.cookies.set("fingerprint", fingerprint, {
     httpOnly: true, // 👈 Make it read-only from client-side JS
     secure: process.env.NODE_ENV === "production",
@@ -78,7 +82,11 @@ const setDeviceIdCookie = (
   response: NextResponse,
   deviceId: string,
   domain?: string,
+  isExtension?: boolean,
 ) => {
+  // Extensions manage their own storage - don't set web cookies
+  if (isExtension) return response
+
   response.cookies.set("deviceId", deviceId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -166,11 +174,10 @@ export async function GET(request: Request) {
     }
   }
 
-  const translate = url.searchParams.get("translate") === "true"
-
   const locale = url.searchParams.get("locale") || "en"
 
-  const source = url.searchParams.get("source")
+  const appType = url.searchParams.get("app")
+  const isExtension = appType === "extension"
 
   const headers = request.headers
 
@@ -603,8 +610,9 @@ export async function GET(request: Request) {
         }),
         fingerprint!,
         cookieDomain,
+        isExtension,
       )
-      return setDeviceIdCookie(response, deviceId!, cookieDomain)
+      return setDeviceIdCookie(response, deviceId!, cookieDomain, isExtension)
     }
 
     let existingGuest = gift
@@ -769,9 +777,10 @@ export async function GET(request: Request) {
         }),
         fingerprint!,
         cookieDomain,
+        isExtension,
       )
 
-      return setDeviceIdCookie(response, deviceId!, cookieDomain)
+      return setDeviceIdCookie(response, deviceId!, cookieDomain, isExtension)
     }
 
     const newGuest = await createGuest({
@@ -819,8 +828,9 @@ export async function GET(request: Request) {
       }),
       fingerprint!,
       cookieDomain,
+      isExtension,
     )
-    return setDeviceIdCookie(response, deviceId!, cookieDomain)
+    return setDeviceIdCookie(response, deviceId!, cookieDomain, isExtension)
   } catch (error) {
     console.error("Error handling guest:", error)
     return NextResponse.json({ error: "Internal server error" })
