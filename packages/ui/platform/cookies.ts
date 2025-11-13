@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
 import { platformStorage, storage } from "./storage"
+import { getCurrentExtension } from "chrry/utils/siteConfig"
 
 // Cookie options
 export interface CookieOptions {
@@ -93,13 +94,7 @@ async function getCookie(key: string): Promise<string | null> {
   if (isBrowserExtension()) {
     try {
       // Use the website URLs, not current tab
-      const websiteUrls = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "https://focus.chrry.ai",
-        "https://vex.chrry.ai",
-        "https://chrry.dev",
-      ]
+      const websiteUrls = getCurrentExtension()
 
       // Chrome extension cookies API
       if (typeof chrome !== "undefined" && chrome.cookies) {

@@ -757,7 +757,9 @@ export function AuthProvider({
     isLoading: isSessionLoading,
     error: sessionError,
   } = useSWR(
-    fingerprint && deviceId && shouldFetchSession ? ["session", env] : null,
+    (fingerprint || token) && deviceId && shouldFetchSession
+      ? ["session", env]
+      : null,
     async () => {
       // Don't pass appSlug - let the API determine base app by domain
       // Call the API action

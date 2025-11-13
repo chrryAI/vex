@@ -1204,14 +1204,7 @@ export default function App({
                             <button
                               className={clsx("link", styles.spaceInvader)}
                               onClick={() => {
-                                if (hasCustomInstructions) {
-                                  toggleInstructions()
-                                  return
-                                }
-                                setAppStatus({
-                                  step: canEditApp ? "update" : "add",
-                                  part: "name",
-                                })
+                                toggleInstructions()
                               }}
                             >
                               <Img
@@ -1229,7 +1222,7 @@ export default function App({
                                   style={{
                                     position: "absolute",
                                     bottom: 0,
-                                    right: "-1.2rem",
+                                    right: "-1rem",
                                     color: "var(--accent-1)",
                                   }}
                                 />

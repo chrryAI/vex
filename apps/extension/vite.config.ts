@@ -5,7 +5,11 @@ import { mkdirSync, existsSync, writeFileSync } from "fs"
 import * as esbuild from "esbuild"
 import { viteStaticCopy } from "vite-plugin-static-copy"
 import type { PluginOption } from "vite"
-import { extensions, getSiteConfig } from "../../packages/ui/utils/siteConfig"
+import {
+  extensions,
+  getCurrentExtension,
+  getSiteConfig,
+} from "../../packages/ui/utils/siteConfig"
 
 function chromeExtensionPlugin(): PluginOption {
   return {
@@ -44,15 +48,14 @@ export default defineConfig(({ command, mode }) => {
     VITE_BROWSER: env.VITE_BROWSER || process.env.VITE_BROWSER,
   })
 
-  const siteConfig = getSiteConfig("focus")
-  const chrry = getSiteConfig("chrryAI")
+  const siteConfig = getSiteConfig()
 
   const getHostPermissions = () => {
     // Always include both production and localhost
     // Extension will check at runtime which one is available
     const permissions = [
       `https://${siteConfig.domain}/*`,
-      ...extensions.map((url) => `${url}/*`),
+      `https://chrry.dev/*`,
       mode === "development" && "http://localhost:3000/*",
       mode === "development" && "http://localhost:3001/*",
       // Add other dev URLs if needed
@@ -71,7 +74,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name === "Vex" ? "Chrry" : siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.4.8",
+    version: siteConfig.version || "1.4.11",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus"] // Firefox doesn't support sidePanel permission

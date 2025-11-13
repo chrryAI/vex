@@ -509,10 +509,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const toggleInstructions = (item = app) => {
-    if (item) {
-      setInstructions((item.highlights as instruction[]) || [])
-    } else {
-      setInstructions(instructionsInternal)
+    if (!hasCustomInstructions) {
+      setInstructions(contextInstructions)
+    } else if (item?.highlights?.length) {
+      setInstructions(item?.highlights as instruction[])
     }
   }
   const siteConfig = getSiteConfig()
