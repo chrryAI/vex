@@ -35,6 +35,22 @@ export const extensions = [
   "https://chrry.ai",
 ]
 
+export const getCurrentExtension = (domain?: string): string[] => {
+  const mode = detectSiteMode(domain)
+  const mainUrl = mode === "vex"
+    ? "https://vex.chrry.ai"
+    : mode === "focus"
+      ? "https://focus.chrry.ai"
+      : "https://chrry.ai"
+  
+  // Return array with main URL plus localhost for development
+  return [
+    mainUrl,
+    "http://localhost:3000",
+    "http://localhost:3001",
+  ]
+}
+
 type SiteTranslation = {
   title: string
   description: string
@@ -374,7 +390,17 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
  * @param hostname - Optional hostname for SSR (prevents hydration mismatch)
  */
 export function detectSiteMode(hostname?: string): SiteMode {
-  const mode = detectSiteModeDomain(hostname)
+  const validModes: SiteMode[] = [
+    "chrryDev",
+    "chrryAI",
+    "chrryStore",
+    "vex",
+    "focus",
+  ]
+  const mode = validModes.includes(hostname as SiteMode)
+    ? (hostname as SiteMode)
+    : detectSiteModeDomain(hostname)
+
   return mode
 }
 
@@ -384,13 +410,6 @@ export function detectSiteMode(hostname?: string): SiteMode {
  */
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // If it's a valid SiteMode, use it directly
-  const validModes: SiteMode[] = [
-    "chrryDev",
-    "chrryAI",
-    "chrryStore",
-    "vex",
-    "focus",
-  ]
 
   // Extract hostname from URL if needed
   let hostname = hostnameOrMode
@@ -402,9 +421,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     }
   }
 
-  const mode = validModes.includes(hostname as SiteMode)
-    ? (hostname as SiteMode)
-    : detectSiteMode(hostname)
+  const mode = detectSiteMode(hostname)
 
   if (mode === "chrryDev") {
     return {
