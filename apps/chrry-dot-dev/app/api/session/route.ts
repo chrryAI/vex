@@ -26,6 +26,7 @@ import * as lib from "../../../lib"
 
 import { validate as validateUuid } from "uuid"
 import { UAParser } from "ua-parser-js"
+import arcjet, { detectBot } from "@arcjet/next"
 
 import { isDevelopment, VERSION, getSlugFromPathname } from "chrry/utils"
 import { checkRateLimit } from "../../../lib/rateLimiting"
@@ -122,7 +123,30 @@ const isValidFingerprint = (fp: string | null): boolean => {
   return fp.length >= minLength && fp.length <= maxLength && validChars.test(fp)
 }
 
+// Initialize Arcjet with bot detection
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    detectBot({
+      mode: process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN", // Block in prod, log in dev
+      allow: [
+        "CATEGORY:SEARCH_ENGINE", // Allow Google, Bing, etc.
+      ],
+    }),
+  ],
+})
+
 export async function GET(request: Request) {
+  // Arcjet bot detection - block bots from creating guest accounts
+  const decision = await aj.protect(request)
+
+  if (decision.isDenied()) {
+    return NextResponse.json(
+      { error: "Bot detected", reason: decision.reason },
+      { status: 403 },
+    )
+  }
+
   const versions = {
     webVersion: VERSION,
     firefoxVersion: "1.1.47",
