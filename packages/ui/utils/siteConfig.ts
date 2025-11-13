@@ -28,6 +28,13 @@ export interface SiteConfig {
   }>
 }
 
+export const extensions = [
+  "https://focus.chrry.ai",
+  "https://chrry.dev",
+  "https://vex.chrry.ai",
+  "https://chrry.ai",
+]
+
 type SiteTranslation = {
   title: string
   description: string
@@ -309,7 +316,7 @@ export function getSiteTranslation(
 }
 
 export function detectSiteModeDomain(hostname?: string): SiteMode {
-  const defaultMode = "focus"
+  const defaultMode = "vex"
   // Get hostname from parameter or window (client-side)
   const rawHost =
     hostname || (typeof window !== "undefined" ? window.location.hostname : "")
@@ -565,7 +572,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return {
       mode: "focus",
       slug: "focus",
-      version: "26.10.20",
+      version: "26.10.21",
       storeSlug: "blossom",
       name: "Focus",
       domain: "focus.chrry.ai",

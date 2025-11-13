@@ -19,9 +19,10 @@ function runBuild() {
   isBuilding = true
   console.log("\n🔨 Building extension...")
 
-  buildProcess = spawn("npm", ["run", "build:dev"], {
+  buildProcess = spawn("pnpm", ["build:dev"], {
     stdio: "inherit",
     cwd: __dirname,
+    shell: true,
   })
 
   buildProcess.on("close", (code) => {
@@ -39,12 +40,10 @@ function runBuild() {
   })
 }
 
-// Watch for changes in src directory and package files
+// Watch for changes in src directory only
+// UI package changes will require manual rebuild
 const watchPaths = [
   path.join(__dirname, "src"),
-  path.join(__dirname, "../../packages/ui"),
-  path.join(__dirname, "package.json"),
-  path.join(__dirname, "vite.config.ts"),
 ]
 
 console.log("👀 Watching for changes in:")

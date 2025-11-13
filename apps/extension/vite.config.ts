@@ -5,7 +5,7 @@ import { mkdirSync, existsSync, writeFileSync } from "fs"
 import * as esbuild from "esbuild"
 import { viteStaticCopy } from "vite-plugin-static-copy"
 import type { PluginOption } from "vite"
-import { getSiteConfig } from "../../packages/ui/utils/siteConfig"
+import { extensions, getSiteConfig } from "../../packages/ui/utils/siteConfig"
 
 function chromeExtensionPlugin(): PluginOption {
   return {
@@ -52,7 +52,9 @@ export default defineConfig(({ command, mode }) => {
     // Extension will check at runtime which one is available
     const permissions = [
       `https://${siteConfig.domain}/*`,
+      ...extensions.map((url) => `${url}/*`),
       mode === "development" && "http://localhost:3000/*",
+      mode === "development" && "http://localhost:3001/*",
       // Add other dev URLs if needed
       // "http://localhost:5001/*"
     ]
@@ -69,7 +71,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name === "Vex" ? "Chrry" : siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.4.1",
+    version: siteConfig.version || "1.4.3",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus"] // Firefox doesn't support sidePanel permission

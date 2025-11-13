@@ -1,13 +1,13 @@
 {
   "name": "@repo/extension",
-  "version": "1.4.1",
+  "version": "1.4.3",
   "private": true,
   "type": "module",
   "scripts": {
     "build:all": "npm run zip:source && npm run build:firefox && npm run build:chrome",
-    "build:chrome": "rm -rf dist && tsc && vite build && npm run zip:chrome",
+    "build:chrome": "rm -rf dist && vite build && npm run zip:chrome",
     "build:chrome:dev": "rm -rf dist && tsc && vite build --mode development && npm run zip:chrome",
-    "build:dev": "rm -rf dist && tsc && vite build --mode development",
+    "build:dev": "rm -rf dist && vite build --mode development",
     "build:dev:watch": "tsc && vite build --mode development --watch",
     "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build --mode production && npm run zip:firefox",
     "dev": "node dev-watch.js",
