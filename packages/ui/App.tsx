@@ -140,6 +140,7 @@ export default function App({
     isAppOwner,
     storeApp,
     hasCustomInstructions,
+    showingCustom,
     toggleInstructions,
   } = useApp()
 
@@ -1202,6 +1203,11 @@ export default function App({
                           {showFocusHere && <FocusButton time={time} />}
                           {showSpaceInvaderHere && (
                             <button
+                              key={
+                                showingCustom
+                                  ? "customInstructions"
+                                  : "appInstructions"
+                              }
                               className={clsx("link", styles.spaceInvader)}
                               onClick={() => {
                                 toggleInstructions()
@@ -1219,10 +1225,12 @@ export default function App({
                               {hasCustomInstructions && (
                                 <RefreshCw
                                   size={10}
+                                  strokeWidth={3}
                                   style={{
                                     position: "absolute",
-                                    bottom: 0,
-                                    right: "-0.8rem",
+                                    bottom: 1,
+                                    right: -13,
+                                    zIndex: -1,
                                     color: "var(--accent-1)",
                                   }}
                                 />
