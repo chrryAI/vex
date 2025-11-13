@@ -360,9 +360,14 @@ export function AuthProvider({
   )
 
   // Local state for token and versions (no dependency on DataProvider)
-  const [token, setToken] = useState<string | undefined>(
+  const [token, setTokenInternal] = useCookie(
+    "token",
     apiKey || session?.user?.token || session?.guest?.fingerprint,
   )
+
+  const setToken = (token?: string) => {
+    setTokenInternal(token || "")
+  }
 
   // Generate fingerprint if missing (for guests)
   useEffect(() => {
@@ -479,10 +484,7 @@ export function AuthProvider({
     session?.guest,
   )
   const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
-  const [agentName, setAgentName] = useCookie(
-    "agentName",
-    session?.aiAgent?.name,
-  )
+  const [agentName, setAgentName] = useState(session?.aiAgent?.name)
   const trackEvent = ({
     name,
     url,
