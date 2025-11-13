@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from "uuid"
 import {
   isBrowserExtension,
   useNavigation,
-  useCookie,
+  useCookieOrLocalStorage,
   usePlatform,
   useLocalStorage,
   getExtensionId,
@@ -342,10 +342,11 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [, setDeviceIdCookie] = useCookie("deviceId", "")
+  const [, setDeviceIdCookie] = useCookieOrLocalStorage("deviceId", "")
 
   // Sync deviceId to cookie once loaded
   useEffect(() => {
+    if (isExtension) return
     if (deviceId) {
       setDeviceIdCookie(deviceId)
     }
@@ -360,7 +361,7 @@ export function AuthProvider({
   )
 
   // Local state for token and versions (no dependency on DataProvider)
-  const [token, setTokenInternal] = useCookie(
+  const [token, setTokenInternal] = useCookieOrLocalStorage(
     "token",
     apiKey || session?.user?.token || session?.guest?.fingerprint,
   )
