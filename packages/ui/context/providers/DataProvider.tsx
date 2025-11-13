@@ -19,7 +19,7 @@ import { useAuth } from "./AuthProvider"
 
 import {
   toast,
-  useCookie,
+  useCookieOrLocalStorage,
   useLocalStorage,
   useNavigation,
 } from "../../platform"
@@ -205,7 +205,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.4.12"
+  const VERSION = "1.4.13"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -395,7 +395,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   }, [searchParams, affiliateCode, setAffiliateCodeData, user, token])
 
   const RELEASE_TIMESTAMP = "2025-09-14T09:48:29.393Z" // Move to constants
-  const [createdOn, setCreatedOn] = useCookie("createdOn", "")
+  const [createdOn, setCreatedOn] = useCookieOrLocalStorage("createdOn", "")
 
   useEffect(() => {
     if (createdOn === "") {

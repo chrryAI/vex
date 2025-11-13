@@ -117,6 +117,7 @@ export * from "./navigation"
 export * from "./cookies"
 export { Toast, VexToast } from "./ToastComponent"
 export { default as toast } from "./toast"
+export { default as useCookieOrLocalStorage } from "../hooks/useCookieOrLocalStorage"
 
 // Client-side router
 export {

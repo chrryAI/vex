@@ -168,6 +168,7 @@ async function setCookieValue(
 
   // Extension: persist in extension storage rather than web cookies
   if (isBrowserExtension()) {
+    console.log("Setting cookie in extension storage:", key, value)
     storage.setItem(key, value)
     return
   }
