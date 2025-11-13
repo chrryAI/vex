@@ -64,11 +64,13 @@ export async function upload({
   }
   context?: "chat" | "apps" // Use "apps" for app profile images
 }): Promise<{ url: string; width?: number; height?: number; title?: string }> {
+  // Only allow images from trusted hosts (add your domains as needed)
   const ALLOWED_HOSTNAMES = [
-    "utfs.io",
+    "replicate.delivery", // Replicate temporary files
+    "replicate.com",
+    "utfs.io", // UploadThing
     "uploadthing.com",
-    "images.unsplash.com",
-    "cdn.jsdelivr.net",
+    // Add more trusted domains here as needed
   ]
   try {
     // Validate URL to prevent SSRF attacks
@@ -89,14 +91,6 @@ export async function upload({
     if (!isAllowed) {
       throw new Error(`Image host not allowed: ${rootDomain}`)
     }
-    // Only allow images from trusted hosts (add your domains as needed)
-    const ALLOWED_HOSTNAMES = [
-      "replicate.delivery", // Replicate temporary files
-      "replicate.com",
-      "utfs.io", // UploadThing
-      "uploadthing.com",
-      // Add more trusted domains here as needed
-    ]
 
     // Check if hostname matches allowed domains (including subdomains)
     const isAllowedDomain = ALLOWED_HOSTNAMES.some(
