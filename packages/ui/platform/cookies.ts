@@ -8,7 +8,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
 import { platformStorage, storage } from "./storage"
-import { extensions } from "chrry/utils/siteConfig"
 
 // Cookie options
 export interface CookieOptions {
@@ -172,78 +171,8 @@ async function setCookieValue(
     return
   }
 
-  // Extension: Try chrome.cookies API first
+  // Extension: persist in extension storage rather than web cookies
   if (isBrowserExtension()) {
-    try {
-      // Chrome extension cookies API
-      if (
-        typeof chrome !== "undefined" &&
-        chrome.cookies &&
-        window.location?.href
-      ) {
-        // Map sameSite to Chrome's expected values
-        let chromeSameSite:
-          | "strict"
-          | "lax"
-          | "no_restriction"
-          | "unspecified"
-          | undefined
-        if (options.sameSite === "none") {
-          chromeSameSite = "no_restriction"
-        } else if (options.sameSite) {
-          chromeSameSite = options.sameSite
-        }
-
-        // Add all domains that have host permissions
-        const websiteUrls = [
-          "http://localhost:3000",
-          "http://localhost:3001",
-          ...extensions,
-        ]
-
-        for (const url of websiteUrls) {
-          await new Promise<void>((resolve) => {
-            chrome.cookies.set(
-              {
-                url,
-                name: key,
-                value: value,
-                expirationDate: options.expires
-                  ? Math.floor(options.expires.getTime() / 1000)
-                  : undefined,
-                path: options.path,
-                domain: options.domain,
-                secure: options.secure,
-                sameSite: chromeSameSite,
-              },
-              () => resolve(),
-            )
-          })
-        }
-        return
-      }
-
-      // Firefox extension cookies API
-      if (typeof browser !== "undefined" && (browser as any).cookies) {
-        await (browser as any).cookies.set({
-          url: window.location.href,
-          name: key,
-          value: value,
-          expirationDate: options.expires
-            ? Math.floor(options.expires.getTime() / 1000)
-            : undefined,
-          path: options.path,
-          domain: options.domain,
-          secure: options.secure,
-          sameSite: options.sameSite,
-        })
-        return
-      }
-    } catch {
-      // Fall through to localStorage
-    }
-
-    // Fallback to localStorage for extensions
     storage.setItem(key, value)
     return
   }

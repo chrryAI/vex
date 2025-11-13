@@ -30,7 +30,6 @@ import { getThreadId } from "../../utils/url"
 import { useThreadId } from "../../utils/useThreadId"
 import {
   toast,
-  useCookie,
   useLocalStorage,
   useNavigation,
   usePlatform,
@@ -753,10 +752,7 @@ export function ChatProvider({
     },
   )
 
-  const [agentName, setAgentName] = useCookie(
-    "agentName",
-    session?.aiAgent?.name,
-  )
+  const [agentName, setAgentName] = useState(session?.aiAgent?.name || "")
 
   const [isWebSearchEnabled, setIsWebSearchEnabledInternal] =
     useLocalStorage<boolean>("isWebSearchEnabled", agentName === "perplexity")
