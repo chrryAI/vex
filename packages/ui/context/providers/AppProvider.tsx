@@ -495,7 +495,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [instructions, setInstructions] =
     useState<instruction[]>(instructionsInternal)
-  
+
   const [showingCustom, setShowingCustom] = useState(false)
 
   useEffect(() => {
@@ -512,7 +512,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const toggleInstructions = (item = app) => {
     if (!hasCustomInstructions) return // Nothing to toggle
-    
+
     // Toggle between custom and app instructions
     if (showingCustom) {
       // Switch to app instructions
