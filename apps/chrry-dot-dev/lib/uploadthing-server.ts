@@ -3,6 +3,7 @@ import sharp from "sharp"
 import captureException from "./captureException"
 import dns from "dns"
 import net from "net"
+import { parse as parseDomain } from "tldts"
 // Two separate UploadThing accounts
 const chatUtapi = new UTApi({
   token: process.env.UPLOADTHING_TOKEN, // For chat messages/files
@@ -63,6 +64,12 @@ export async function upload({
   }
   context?: "chat" | "apps" // Use "apps" for app profile images
 }): Promise<{ url: string; width?: number; height?: number; title?: string }> {
+  const ALLOWED_HOSTNAMES = [
+    "utfs.io",
+    "uploadthing.com",
+    "images.unsplash.com",
+    "cdn.jsdelivr.net",
+  ]
   try {
     // Validate URL to prevent SSRF attacks
     const parsedUrl = new URL(url)
@@ -72,7 +79,16 @@ export async function upload({
       throw new Error("Only HTTPS URLs are allowed")
     }
 
-    // Whitelist allowed domains
+    // Domain root allowlist via tldts
+    const parsedDomain = parseDomain(parsedUrl.hostname)
+    const rootDomain =
+      parsedDomain.domain && parsedDomain.publicSuffix
+        ? `${parsedDomain.domain}.${parsedDomain.publicSuffix}`
+        : parsedUrl.hostname
+    const isAllowed = ALLOWED_HOSTNAMES.includes(rootDomain)
+    if (!isAllowed) {
+      throw new Error(`Image host not allowed: ${rootDomain}`)
+    }
     // Only allow images from trusted hosts (add your domains as needed)
     const ALLOWED_HOSTNAMES = [
       "replicate.delivery", // Replicate temporary files
