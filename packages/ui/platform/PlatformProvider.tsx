@@ -303,7 +303,7 @@ export function PlatformProvider({
     updateViewportDimensions()
 
     // Debounce resize to prevent excessive re-renders and Suspense triggers
-    let timeoutId: NodeJS.Timeout
+    let timeoutId: ReturnType<typeof setTimeout>
     const debouncedUpdate = () => {
       clearTimeout(timeoutId)
       timeoutId = setTimeout(updateViewportDimensions, 150)
