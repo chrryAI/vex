@@ -1,3 +1,4 @@
+import type { ReactElement, ReactNode } from "react"
 import { getMember } from "chrrydotdev"
 import { v4 as uuidv4 } from "uuid"
 
@@ -71,8 +72,8 @@ export const generateMetadata = async () => {
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
-}>) {
+  children: ReactNode
+}>): Promise<ReactElement> {
   const currentMember = await getMember()
   const headersList = await headers()
 

@@ -2,7 +2,7 @@ import "chrry/globals.scss"
 import "chrry/globals.css"
 import "chrry/styles/view-transitions.css"
 
-import { ReactNode } from "react"
+import type { ReactElement, ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
 import AppMetadata from "./AppMetadata"
 import { locale, locales } from "./locales"
@@ -57,7 +57,7 @@ export default async function ChrryAI({
     translations,
     locale,
     thread,
-  }) => (
+  }: WrapperProps): ReactElement => (
     <Chrry
       thread={thread}
       locale={locale}
@@ -71,9 +71,9 @@ export default async function ChrryAI({
     </Chrry>
   ),
 }: {
-  children: React.ReactNode
+  children: ReactNode
   apiKey: string
-  Wrapper?: (props: WrapperProps) => ReactNode
+  Wrapper?: (props: WrapperProps) => ReactElement
   locale: locale
 
   headersList: {
@@ -83,7 +83,7 @@ export default async function ChrryAI({
   cookieStore: {
     get(key: string): { readonly value?: string } | undefined
   }
-}) {
+}): Promise<ReactElement> {
   const pathname = headersList.get("x-pathname") || ""
 
   const threadId = getThreadId(pathname)
