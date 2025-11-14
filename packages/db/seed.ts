@@ -14,8 +14,11 @@ import {
   updateUser,
   getGuests,
   updateGuest,
+  getGuest,
+  deleteGuest,
+  getTasks,
 } from "./index"
-import { eq } from "drizzle-orm"
+import { eq, and, isNull, sql, inArray } from "drizzle-orm"
 import {
   users,
   messages,
@@ -79,6 +82,58 @@ const VEX_TEST_PASSWORD_3 = process.env.VEX_TEST_PASSWORD_3!
 const VEX_TEST_EMAIL_4 = process.env.VEX_TEST_EMAIL_4!
 const VEX_TEST_NAME_4 = process.env.VEX_TEST_NAME_4!
 const VEX_TEST_PASSWORD_4 = process.env.VEX_TEST_PASSWORD_4!
+
+async function clearGuests() {
+  const batchSize = 500
+  let totalDeleted = 0
+  let hasMore = true
+
+  while (hasMore) {
+    // Find inactive guests (no subscription, no messages, no tasks)
+    const inactiveGuests = await db
+      .select({ id: guests.id, ip: guests.ip })
+      .from(guests)
+      .leftJoin(subscriptions, eq(subscriptions.guestId, guests.id))
+      .leftJoin(messages, eq(messages.guestId, guests.id))
+      .leftJoin(sql`task`, sql`task."guestId" = ${guests.id}`)
+      .where(
+        and(
+          isNull(subscriptions.id),
+          isNull(messages.id),
+          sql`task.id IS NULL`,
+        ),
+      )
+      .groupBy(guests.id, guests.ip)
+      .limit(batchSize)
+
+    if (inactiveGuests.length === 0) {
+      hasMore = false
+      break
+    }
+
+    // Delete batch
+    const idsToDelete = inactiveGuests.map((g) => g.id)
+    await db.delete(guests).where(inArray(guests.id, idsToDelete))
+
+    totalDeleted += inactiveGuests.length
+    console.log(
+      `🧹 Deleted batch of ${inactiveGuests.length} guests (total: ${totalDeleted})`,
+    )
+
+    // Show some IPs from this batch
+    inactiveGuests.slice(0, 5).forEach((guest) => {
+      console.log(`  - ${guest.ip}`)
+    })
+
+    if (inactiveGuests.length < batchSize) {
+      hasMore = false
+    }
+  }
+
+  console.log(
+    `✅ Cleanup complete! Deleted ${totalDeleted} inactive bot guests`,
+  )
+}
 
 const create = async () => {
   if (isProd) {
@@ -547,11 +602,13 @@ const create = async () => {
 
 const prod = async () => {
   // Check if admin user already exists
-  let admin = await getUser({ email: VEX_TEST_EMAIL })
+  // let admin = await getUser({ email: VEX_TEST_EMAIL })
 
-  if (!admin) throw new Error("Admin user not found")
+  // if (!admin) throw new Error("Admin user not found")
 
-  const vex = await createStores({ user: admin, isProd: true })
+  // Delete inactive bot guests in batches
+  await clearGuests()
+  // const vex = await createStores({ user: admin, isProd: true })
 
   // const allInstructions = await db.select().from(instructions)
 
