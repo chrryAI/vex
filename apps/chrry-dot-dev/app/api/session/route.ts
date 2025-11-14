@@ -138,13 +138,15 @@ const aj = arcjet({
 
 export async function GET(request: Request) {
   // Arcjet bot detection - block bots from creating guest accounts
-  const decision = await aj.protect(request)
+  if (!isDevelopment) {
+    const decision = await aj.protect(request)
 
-  if (decision.isDenied()) {
-    return NextResponse.json(
-      { error: "Bot detected", reason: decision.reason },
-      { status: 403 },
-    )
+    if (decision.isDenied()) {
+      return NextResponse.json(
+        { error: "Bot detected", reason: decision.reason },
+        { status: 403 },
+      )
+    }
   }
 
   const versions = {

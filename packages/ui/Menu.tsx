@@ -797,7 +797,7 @@ export default function Menu({
                     return
                   }
                 }}
-                href={`https://wannathis.one`}
+                href={`https://wannathis.one?ref=${app?.slug}`}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
