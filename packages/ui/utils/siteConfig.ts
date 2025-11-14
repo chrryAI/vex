@@ -37,7 +37,7 @@ export const extensions = [
   "https://chrry.ai",
 ]
 
-export const getCurrentExtensionUrl = (domain?: string): string => {
+export const getCurrentExtensionUrl = (domain?: string): string[] => {
   const mode = detectSiteMode(domain)
   const mainUrl =
     mode === "vex"
@@ -46,8 +46,14 @@ export const getCurrentExtensionUrl = (domain?: string): string => {
         ? "https://focus.chrry.ai"
         : "https://chrry.ai"
 
-  // Return array with main URL plus localhost for development
-  return isDevelopment ? FRONTEND_URL : mainUrl
+  // Development: only use localhost
+  if (isDevelopment) {
+    return [FRONTEND_URL]
+  }
+
+  // Production: current mode first, then other extensions as fallbacks
+  const urls = [mainUrl, ...extensions.filter((url) => url !== mainUrl)]
+  return urls
 }
 
 type SiteTranslation = {
