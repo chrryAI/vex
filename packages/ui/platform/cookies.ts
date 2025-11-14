@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
 import { storage } from "./storage"
 import { getCurrentExtensionUrl } from "chrry/utils/siteConfig"
+import { validate } from "uuid"
 
 // Cookie options
 export interface CookieOptions {
@@ -99,9 +100,10 @@ async function getCookie(key: string): Promise<string | null> {
   if (isBrowserExtension()) {
     try {
       // Use the website URLs, not current tab
-      const websiteUrls = [getCurrentExtensionUrl()]
+      const websiteUrls = getCurrentExtensionUrl()
       console.log(`🚀 ~ file: cookies.ts:101 ~ websiteUrls:`, websiteUrls)
 
+      const final = []
       // Chrome extension cookies API
       if (typeof chrome !== "undefined" && chrome.cookies) {
         for (const url of websiteUrls) {
@@ -118,15 +120,19 @@ async function getCookie(key: string): Promise<string | null> {
           )
 
           if (cookie?.value) {
-            console.log(
-              `🚀 ~ file: cookies.ts:123 ~ cookie?.value:`,
-              cookie?.value,
-              url,
-            )
-            return cookie.value
+            final.push(cookie?.value)
           }
         }
-        // No cookie found, fall back to localStorage
+        // Smart selection: for tokens, pick the longest (likely valid JWT)
+        // For fingerprint/deviceId (UUIDs), pick first valid one
+        // For others, use localStorage
+        if (final.length) {
+          if (key === "token") {
+            return final.sort((a, b) => b.length - a.length)[0] || null // Longest token
+          }
+
+          return final[0] || null // First found for other cookies
+        }
         return await storage.getItem(key)
       }
 
