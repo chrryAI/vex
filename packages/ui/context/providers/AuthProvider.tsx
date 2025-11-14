@@ -18,6 +18,7 @@ import {
   usePlatform,
   useLocalStorage,
   getExtensionId,
+  useCookie,
 } from "../../platform"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
@@ -302,61 +303,23 @@ export function AuthProvider({
 
   const chrryUrl = CHRRY_URL
 
-  // Generate a stable deviceId immediately (don't wait for session or storage)
-  const initialDeviceId = useRef<string>(uuidv4())
-
-  // Sync with localStorage
-  const [deviceIdFromStorage, setDeviceIdToStorage] = useLocalStorage<string>(
+  const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
-    initialDeviceId.current,
+    session?.deviceId,
   )
 
-  // Use session deviceId if available, otherwise use storage or generated
-  const [deviceId, setDeviceIdState] = useState<string>(
-    session?.deviceId || deviceIdFromStorage || initialDeviceId.current,
-  )
+  const { isStorageReady } = usePlatform()
 
-  // Update deviceId when session.deviceId becomes available
   useEffect(() => {
-    if (session?.deviceId && session.deviceId !== deviceId) {
-      console.log("📝 Updating deviceId from session:", session.deviceId)
-      setDeviceIdState(session.deviceId)
-      setDeviceIdToStorage(session.deviceId)
-    } else if (!session?.deviceId && deviceId !== deviceIdFromStorage) {
-      // No session deviceId - ensure we have one in storage
-      console.log("📝 Creating deviceId (no session):", deviceId)
-      setDeviceIdToStorage(deviceId)
+    if (!deviceId && isStorageReady) {
+      console.log("📝 Updating deviceId from session:", session?.deviceId)
+      setDeviceId(uuidv4())
     }
-  }, [session?.deviceId, deviceId, deviceIdFromStorage])
-  // setDeviceIdToStorage is stable from useLocalStorage
-
-  // Update deviceId from storage once loaded (only if different and no session deviceId)
-  useEffect(() => {
-    if (
-      deviceIdFromStorage &&
-      deviceIdFromStorage !== deviceId &&
-      !session?.deviceId
-    ) {
-      console.log("📝 Updating deviceId from storage:", deviceIdFromStorage)
-      setDeviceIdState(deviceIdFromStorage)
-    }
-  }, [deviceIdFromStorage, session?.deviceId])
-
-  const [reactedMessages, setReactedMessages] = useState<message[]>([])
+  }, [deviceId, setDeviceId, isStorageReady])
 
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
   >("enableNotifications", true)
-
-  const [, setDeviceIdCookie] = useCookieOrLocalStorage("deviceId", "")
-
-  // Sync deviceId to cookie once loaded
-  useEffect(() => {
-    if (deviceId) {
-      setDeviceIdCookie(deviceId)
-    }
-  }, [deviceId])
-  // setDeviceIdCookie is stable from useCookie
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!session)
 
@@ -733,7 +696,6 @@ export function AuthProvider({
   const [newApp, setNewApp] = useState<appWithStore | undefined>(undefined)
 
   // Get isStorageReady from platform context
-  const { isStorageReady } = usePlatform()
 
   const fetchSession = async (newApp?: appWithStore) => {
     if (newApp) {
