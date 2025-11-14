@@ -6,7 +6,7 @@
   margin: 0 auto;
   flex-direction: column;
   display: flex;
-  padding: toRem.toRem(40) toRem.toRem(10) toRem.toRem(20) toRem.toRem(10);
+  padding: toRem.toRem(5) toRem.toRem(10) toRem.toRem(20) toRem.toRem(10);
 }
 
 .logo {
@@ -19,6 +19,7 @@
 .header {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
 }
 
 .description {
@@ -52,9 +53,10 @@
 .vex {
   display: flex;
   align-items: center;
-  gap: toRem.toRem(10);
+  gap: toRem.toRem(7);
   margin-top: toRem.toRem(10);
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .featureTitle {

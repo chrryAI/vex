@@ -3,7 +3,7 @@
 import React from "react"
 import { getSiteConfig } from "./utils/siteConfig"
 import { ExternalLink, Github, Package } from "./icons"
-import styles from "./Chrry.module.scss"
+import styles from "./ChrryDotDev.module.scss"
 import { useData } from "./context/providers"
 import A from "./A"
 
