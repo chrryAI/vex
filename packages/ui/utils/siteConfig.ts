@@ -330,6 +330,8 @@ export function getSiteTranslation(
 
 export function detectSiteModeDomain(hostname?: string): SiteMode {
   const defaultMode = "vex"
+  // const defaultMode = "focus"
+
   // Get hostname from parameter or window (client-side)
   const rawHost =
     hostname || (typeof window !== "undefined" ? window.location.hostname : "")
@@ -586,7 +588,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return {
       mode: "focus",
       slug: "focus",
-      version: "26.10.29",
+      version: "26.10.30",
       storeSlug: "blossom",
       name: "Focus",
       domain: "focus.chrry.ai",
