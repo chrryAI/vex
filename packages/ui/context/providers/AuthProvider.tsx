@@ -323,7 +323,7 @@ export function AuthProvider({
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!session)
 
-  const [fingerprint, setFingerprint] = useLocalStorage<string | undefined>(
+  const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
     session?.guest?.fingerprint || session?.user?.fingerprint || undefined,
   )
@@ -332,6 +332,7 @@ export function AuthProvider({
   const [token, setTokenInternal] = useCookieOrLocalStorage(
     "token",
     apiKey || session?.user?.token || session?.guest?.fingerprint,
+    true,
   )
 
   const setToken = (token?: string) => {
