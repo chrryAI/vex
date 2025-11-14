@@ -1,3 +1,5 @@
+import { FRONTEND_URL, isDevelopment } from "."
+
 export type SiteMode = "chrryDev" | "vex" | "chrryAI" | "chrryStore" | "focus"
 
 export interface SiteConfig {
@@ -35,7 +37,7 @@ export const extensions = [
   "https://chrry.ai",
 ]
 
-export const getCurrentExtension = (domain?: string): string[] => {
+export const getCurrentExtensionUrl = (domain?: string): string => {
   const mode = detectSiteMode(domain)
   const mainUrl =
     mode === "vex"
@@ -45,7 +47,7 @@ export const getCurrentExtension = (domain?: string): string[] => {
         : "https://chrry.ai"
 
   // Return array with main URL plus localhost for development
-  return [mainUrl, "http://localhost:3000", "http://localhost:3001"]
+  return isDevelopment ? FRONTEND_URL : mainUrl
 }
 
 type SiteTranslation = {

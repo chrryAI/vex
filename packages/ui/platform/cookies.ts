@@ -7,8 +7,8 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
-import { platformStorage, storage } from "./storage"
-import { getCurrentExtension } from "chrry/utils/siteConfig"
+import { storage } from "./storage"
+import { getCurrentExtensionUrl } from "chrry/utils/siteConfig"
 
 // Cookie options
 export interface CookieOptions {
@@ -90,11 +90,17 @@ async function getCookie(key: string): Promise<string | null> {
     return storage.getItem(key)
   }
 
+  console.log(
+    `🚀 ~ file: cookies.ts:95 ~ isBrowserExtension():`,
+    isBrowserExtension(),
+  )
+
   // Extension: Try chrome.cookies API first
   if (isBrowserExtension()) {
     try {
       // Use the website URLs, not current tab
-      const websiteUrls = getCurrentExtension()
+      const websiteUrls = [getCurrentExtensionUrl()]
+      console.log(`🚀 ~ file: cookies.ts:101 ~ websiteUrls:`, websiteUrls)
 
       // Chrome extension cookies API
       if (typeof chrome !== "undefined" && chrome.cookies) {
@@ -112,6 +118,11 @@ async function getCookie(key: string): Promise<string | null> {
           )
 
           if (cookie?.value) {
+            console.log(
+              `🚀 ~ file: cookies.ts:123 ~ cookie?.value:`,
+              cookie?.value,
+              url,
+            )
             return cookie.value
           }
         }

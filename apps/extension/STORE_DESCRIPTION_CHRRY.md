@@ -74,4 +74,5 @@ AI marketplace, AI apps, productivity, sidebar, research, collaboration, writing
 **Side Panel:** Display the AI interface in your browser sidebar for easy access
 **Tabs:** Detect current page context for relevant AI assistance
 **Context Menus:** Right-click integration for quick AI actions
+**Cookies:** Read your web session to maintain seamless authentication across browser and extension
 **Host Permissions (chrry.ai, chrry.dev):** Connect to Chrry's AI services and load resources
