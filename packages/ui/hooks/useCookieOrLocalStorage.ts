@@ -5,28 +5,36 @@ import { useEffect } from "react"
 export default function useCookieOrLocalStorage(
   key: string,
   initialValue: any,
+  canReadCookie: boolean = false,
 ) {
   const { isExtension, isNative } = usePlatform()
 
   const [cookie, setCookieInternal] = useCookie(key, initialValue)
-  const [local, setLocalInternal] = useLocalStorage(key, cookie)
+  canReadCookie &&
+    console.log(`🚀 ~ file: useCookieOrLocalStorage.ts:13 ~ cookie:`, cookie)
+  const [local, setLocalInternal] = useLocalStorage(
+    key,
+    canReadCookie ? cookie : initialValue,
+  )
 
   useEffect(() => {
-    if (isExtension || isNative) {
-      setLocalInternal(cookie)
+    if (!canReadCookie) {
+      return
     }
-  }, [cookie])
+
+    cookie && setLocalInternal(cookie)
+  }, [cookie, canReadCookie])
 
   // Extensions/native: read from cookie (cross-site), write to localStorage
   // Web: read and write to cookie
   const state = isExtension || isNative ? local : cookie
 
   const setState = (value: any) => {
-    if (isExtension || isNative) {
-      setLocalInternal(value)
-    } else {
+    if (!isExtension && !isNative) {
       setCookieInternal(value)
     }
+
+    setLocalInternal(value)
   }
 
   return [state, setState] as const
