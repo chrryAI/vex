@@ -91,17 +91,11 @@ async function getCookie(key: string): Promise<string | null> {
     return storage.getItem(key)
   }
 
-  console.log(
-    `🚀 ~ file: cookies.ts:95 ~ isBrowserExtension():`,
-    isBrowserExtension(),
-  )
-
   // Extension: Try chrome.cookies API first
   if (isBrowserExtension()) {
     try {
       // Use the website URLs, not current tab
       const websiteUrls = getCurrentExtensionUrl()
-      console.log(`🚀 ~ file: cookies.ts:101 ~ websiteUrls:`, websiteUrls)
 
       const final = []
       // Chrome extension cookies API
