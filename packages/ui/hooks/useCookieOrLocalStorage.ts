@@ -10,8 +10,6 @@ export default function useCookieOrLocalStorage(
   const { isExtension, isNative } = usePlatform()
 
   const [cookie, setCookieInternal] = useCookie(key, initialValue)
-  canReadCookie &&
-    console.log(`🚀 ~ file: useCookieOrLocalStorage.ts:13 ~ cookie:`, cookie)
   const [local, setLocalInternal] = useLocalStorage(
     key,
     canReadCookie ? cookie : initialValue,

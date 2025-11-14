@@ -76,11 +76,11 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name === "Vex" ? "Chrry" : siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.4.20",
+    version: siteConfig.version || "1.4.21",
     description: siteConfig.description,
     permissions: isFirefox
-      ? ["storage", "tabs", "contextMenus"] // Firefox doesn't support sidePanel permission
-      : ["storage", "sidePanel", "tabs", "contextMenus"],
+      ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
+      : ["storage", "sidePanel", "tabs", "contextMenus", "cookies"],
     host_permissions: getHostPermissions(),
     action: {
       default_title: siteConfig.name,
