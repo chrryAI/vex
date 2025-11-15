@@ -797,7 +797,7 @@ export default function Menu({
                     return
                   }
                 }}
-                href={`https://wannathis.one?ref=${app?.slug}`}
+                href={`https://wannathis.one/?via=iliyan&ref=${app?.slug}`}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
