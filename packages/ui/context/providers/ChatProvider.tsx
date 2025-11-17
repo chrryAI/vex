@@ -407,6 +407,7 @@ export function ChatProvider({
       setThreadId(undefined)
       setMessages([])
       router.push(to)
+      setStatus(null)
       isIncognito && setWasIncognito(true)
       setCollaborationStatus(undefined)
       setIsChatFloating(false)
@@ -957,7 +958,11 @@ export function ChatProvider({
   }, [error])
 
   useEffect(() => {
-    if (!threadId) return
+    if (!threadId) {
+      setStatus(null)
+      return
+    }
+
     const serverMessages = threadData?.messages as paginatedMessages
 
     if (threadData?.thread && Array.isArray(serverMessages.messages)) {

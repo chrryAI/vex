@@ -1,0 +1,168 @@
+{
+  "name": "sushi-coder",
+  "displayName": "Sushi Coder",
+  "description": "AI-powered coding assistant with multimodal support and model selection",
+  "version": "0.0.1",
+  "publisher": "sushi",
+  "icon": "resources/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "ai",
+    "assistant",
+    "copilot",
+    "coding",
+    "multimodal",
+    "sushi"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sushi.openChat",
+        "title": "Sushi: Open Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "sushi.explainCode",
+        "title": "Sushi: Explain Selected Code",
+        "icon": "$(question)"
+      },
+      {
+        "command": "sushi.refactorCode",
+        "title": "Sushi: Refactor Code",
+        "icon": "$(wrench)"
+      },
+      {
+        "command": "sushi.generateTests",
+        "title": "Sushi: Generate Tests",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "sushi.fixCode",
+        "title": "Sushi: Fix Code",
+        "icon": "$(lightbulb)"
+      },
+      {
+        "command": "sushi.screenshotToCode",
+        "title": "Sushi: Screenshot to Code",
+        "icon": "$(device-camera)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sushi-sidebar",
+          "title": "Sushi Coder",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "sushi-sidebar": [
+        {
+          "type": "webview",
+          "id": "sushi.chatView",
+          "name": "Chat"
+        },
+        {
+          "id": "sushi.filesView",
+          "name": "Modified Files"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "sushi.explainCode",
+          "when": "editorHasSelection",
+          "group": "sushi@1"
+        },
+        {
+          "command": "sushi.refactorCode",
+          "when": "editorHasSelection",
+          "group": "sushi@2"
+        },
+        {
+          "command": "sushi.fixCode",
+          "when": "editorHasSelection",
+          "group": "sushi@3"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Sushi Coder",
+      "properties": {
+        "sushi.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for Sushi services"
+        },
+        "sushi.defaultModel": {
+          "type": "string",
+          "default": "gpt-4o-mini",
+          "enum": [
+            "gpt-4-turbo",
+            "gpt-4o-mini",
+            "claude-3-opus",
+            "claude-3-haiku",
+            "deepseek-coder",
+            "qwen-vl",
+            "janus-pro",
+            "ollama-local"
+          ],
+          "description": "Default AI model to use"
+        },
+        "sushi.autoSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically save files after AI modifications"
+        },
+        "sushi.showDiff": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show diff before applying changes"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.0",
+    "css-loader": "^6.8.1",
+    "sass": "^1.69.0",
+    "sass-loader": "^13.3.2",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.0",
+    "vsce": "^2.15.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@chrryai/chrry": "workspace:*",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  }
+}

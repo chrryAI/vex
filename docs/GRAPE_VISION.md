@@ -27,6 +27,7 @@ Together, they create a complete ecosystem that makes invisible attention theft 
 ### What Are Grape Glasses?
 
 AI-powered smart glasses that passively detect and count advertisements in your environment:
+
 - Billboards and posters
 - TV and screen ads
 - Phone and computer ads
@@ -36,6 +37,7 @@ AI-powered smart glasses that passively detect and count advertisements in your 
 ### Core Features
 
 #### 1. **Real-Time Ad Detection**
+
 ```
 Visual Detection:
 - Logo recognition (YOLOv8, MobileNet)
@@ -50,6 +52,7 @@ Audio Detection:
 ```
 
 #### 2. **Exposure Tracking**
+
 ```
 Metrics Tracked:
 - Total ads seen per day/week/month
@@ -61,6 +64,7 @@ Metrics Tracked:
 ```
 
 #### 3. **Cognitive Pollution Index (CPI)**
+
 ```
 Your unique attention metric:
 - Combines ad count, duration, and engagement
@@ -75,6 +79,7 @@ Like:
 ```
 
 #### 4. **Privacy-First Architecture**
+
 ```
 On-Device Processing:
 - All ML inference runs locally
@@ -92,6 +97,7 @@ Optional Cloud:
 ### Hardware Specifications
 
 #### MVP Prototype (€500-800)
+
 ```
 - Base: Modified smart glasses frame
 - Camera: Wide-angle USB camera (60-90° FOV)
@@ -104,6 +110,7 @@ Optional Cloud:
 ```
 
 #### Production Target (€150-250 BOM)
+
 ```
 - Custom frame + integrated electronics
 - Optimized camera module
@@ -117,6 +124,7 @@ Optional Cloud:
 ### Software Stack
 
 #### Edge ML Pipeline
+
 ```typescript
 // Capture → Pre-filter → Detect → Aggregate → Sync
 
@@ -142,6 +150,7 @@ Optional Cloud:
 ```
 
 #### Companion App (Vex Integration)
+
 ```
 Built as Vex PWA:
 - Today view: Total ads, CPI score, timeline
@@ -156,30 +165,35 @@ Built as Vex PWA:
 ### Use Cases
 
 #### 1. **Personal Awareness**
+
 ```
 "I saw 247 ads today. That's 6 hours this week."
 → Behavior change: Install ad blockers, avoid ad-heavy routes
 ```
 
 #### 2. **Productivity Optimization**
+
 ```
 "My CPI spikes between 2-4pm (YouTube breaks)"
 → Schedule deep work during low-ad periods
 ```
 
 #### 3. **Parental Control**
+
 ```
 "My child saw 89 ads in 3 hours of screen time"
 → Adjust content sources, set limits
 ```
 
 #### 4. **Research & Advocacy**
+
 ```
 "Average user in NYC sees 400 ads/day"
 → Regulatory evidence, class action lawsuits
 ```
 
 #### 5. **Urban Planning**
+
 ```
 "Times Square: 1,200 ads/hour exposure"
 → City regulations on billboard density
@@ -196,6 +210,7 @@ A revolutionary advertising model built into Vex where users **choose** when to 
 ### How It Works
 
 #### User Flow
+
 ```
 1. User clicks 🍇 emoji in Vex
    → "I consent to see ads right now"
@@ -217,6 +232,7 @@ A revolutionary advertising model built into Vex where users **choose** when to 
 ```
 
 #### Advertiser Flow
+
 ```
 1. Create campaign
    → Set budget, target audience, payout
@@ -237,6 +253,7 @@ A revolutionary advertising model built into Vex where users **choose** when to 
 ### Economics
 
 #### Payment Model
+
 ```
 Advertiser pays: $2.00 per engaged view
 User receives:   $1.70 (85%)
@@ -250,6 +267,7 @@ Why advertisers pay more:
 ```
 
 #### User Earnings Potential
+
 ```
 Casual (10 sessions/month):  $15-20/month
 Active (daily sessions):     $50-60/month
@@ -262,6 +280,7 @@ Annual potential:
 ```
 
 #### Platform Revenue
+
 ```
 At 100k users (10 sessions/month):
 - 1M ad views/month
@@ -277,10 +296,11 @@ At 1M users:
 ### Key Features
 
 #### 1. **Smart Matching Algorithm**
+
 ```typescript
 function matchAdsToUser(user, availableAds) {
   return availableAds
-    .map(ad => ({
+    .map((ad) => ({
       ad,
       score: calculateRelevance({
         userInterests: user.interests,
@@ -289,7 +309,7 @@ function matchAdsToUser(user, availableAds) {
         adQuality: ad.qualityScore,
         payout: ad.payoutPerView,
         timing: user.currentContext,
-      })
+      }),
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 10)
@@ -297,6 +317,7 @@ function matchAdsToUser(user, availableAds) {
 ```
 
 #### 2. **Grape Wallet**
+
 ```
 Features:
 - Real-time balance tracking
@@ -310,6 +331,7 @@ Features:
 ```
 
 #### 3. **Quality Control**
+
 ```
 For Users:
 - Rate ads (1-5 stars)
@@ -325,6 +347,7 @@ For Advertisers:
 ```
 
 #### 4. **Privacy Protection**
+
 ```
 No Tracking:
 - Users self-select interests
@@ -342,6 +365,7 @@ Transparency:
 ### Competitive Advantages
 
 #### vs Google Ads
+
 ```
 Google Ads:
 - Forced impressions
@@ -359,6 +383,7 @@ Grape:
 ```
 
 #### vs Brave Browser
+
 ```
 Brave:
 - Browser-only
@@ -437,8 +462,10 @@ const voluntaryAds = {
 
 // Combined insights
 const insights = {
-  message: "You saw 247 involuntary ads today (CPI: 78) but earned $0. You saw 5 voluntary ads and earned $8.50. Voluntary ads are 49x more efficient for your time.",
-  recommendation: "Block involuntary ads and increase Grape sessions to 2/day to earn $100/month while reducing CPI to <20.",
+  message:
+    "You saw 247 involuntary ads today (CPI: 78) but earned $0. You saw 5 voluntary ads and earned $8.50. Voluntary ads are 49x more efficient for your time.",
+  recommendation:
+    "Block involuntary ads and increase Grape sessions to 2/day to earn $100/month while reducing CPI to <20.",
 }
 ```
 
@@ -466,6 +493,7 @@ Perfect for mission-driven project:
 ### What's Open Source?
 
 #### Fully Open
+
 ```
 ✅ Grape Glasses firmware
 ✅ ML models and training code
@@ -477,6 +505,7 @@ Perfect for mission-driven project:
 ```
 
 #### Partially Open
+
 ```
 🔓 Grape Platform core (AGPL)
 🔓 Matching algorithm (core open, optimizations proprietary)
@@ -484,6 +513,7 @@ Perfect for mission-driven project:
 ```
 
 #### Closed (Business Logic)
+
 ```
 🔒 Payment processing (PCI compliance)
 🔒 Fraud detection (security)
@@ -493,6 +523,7 @@ Perfect for mission-driven project:
 ### Community Contributions
 
 #### How to Contribute
+
 ```
 1. Hardware:
    - Improve glasses design
@@ -524,6 +555,7 @@ Perfect for mission-driven project:
 ## Roadmap
 
 ### Phase 1: MVP (Months 1-3)
+
 ```
 Grape Glasses:
 - ✅ Prototype hardware (Pi Zero + camera)
@@ -541,6 +573,7 @@ Grape Platform:
 ```
 
 ### Phase 2: Beta (Months 4-6)
+
 ```
 Grape Glasses:
 - Custom frame design
@@ -558,6 +591,7 @@ Grape Platform:
 ```
 
 ### Phase 3: Launch (Months 7-9)
+
 ```
 Grape Glasses:
 - Kickstarter campaign
@@ -575,6 +609,7 @@ Grape Platform:
 ```
 
 ### Phase 4: Scale (Months 10-12)
+
 ```
 Grape Glasses:
 - Retail partnerships
@@ -592,6 +627,7 @@ Grape Platform:
 ```
 
 ### Phase 5: Movement (Year 2+)
+
 ```
 Both:
 - 1M+ users
@@ -608,6 +644,7 @@ Both:
 ### Revenue Streams
 
 #### 1. **Platform Fees (Primary)**
+
 ```
 15% of all ad transactions
 - Sustainable at scale
@@ -616,6 +653,7 @@ Both:
 ```
 
 #### 2. **Grape Plus Subscription**
+
 ```
 $5/month for users:
 - Higher payout (90% vs 85%)
@@ -626,6 +664,7 @@ $5/month for users:
 ```
 
 #### 3. **Hardware Sales**
+
 ```
 Grape Glasses:
 - $299 retail price
@@ -635,6 +674,7 @@ Grape Glasses:
 ```
 
 #### 4. **Advertiser Tools**
+
 ```
 Grape Pro ($99/mo):
 - Advanced analytics
@@ -645,6 +685,7 @@ Grape Pro ($99/mo):
 ```
 
 #### 5. **Data Insights (Ethical)**
+
 ```
 Aggregated, anonymized data:
 - Urban ad density maps
@@ -657,6 +698,7 @@ Aggregated, anonymized data:
 ### Unit Economics
 
 #### Per User (Annual)
+
 ```
 Revenue:
 - Platform fees: $45 (300 sessions × $2 × 15%)
@@ -673,6 +715,7 @@ Profit: $25-85/user/year
 ```
 
 #### At Scale (1M users)
+
 ```
 Revenue:
 - Platform fees: $45M/year
@@ -701,6 +744,7 @@ Profit: $22M/year + hardware
 Grape is more than a product—it's a movement to reclaim human attention from corporate exploitation.
 
 #### Core Principles
+
 ```
 1. Attention is valuable
    → Users should be compensated
@@ -744,6 +788,7 @@ Economic Level:
 ### Success Metrics
 
 #### Year 1
+
 ```
 - 50k Grape Glasses sold
 - 100k Grape Platform users
@@ -753,6 +798,7 @@ Economic Level:
 ```
 
 #### Year 3
+
 ```
 - 500k Grape Glasses sold
 - 1M Grape Platform users
@@ -763,6 +809,7 @@ Economic Level:
 ```
 
 #### Year 5
+
 ```
 - 2M Grape Glasses sold
 - 5M Grape Platform users
@@ -881,6 +928,7 @@ table grape_glass_sessions {
 ### Privacy Guarantees
 
 #### Grape Glasses
+
 ```
 ✅ On-device ML inference
 ✅ No raw images stored
@@ -893,6 +941,7 @@ table grape_glass_sessions {
 ```
 
 #### Grape Platform
+
 ```
 ✅ No tracking cookies
 ✅ No shadow profiles
@@ -936,6 +985,7 @@ Data:
 ### Compliance
 
 #### Recording Laws
+
 ```
 Varies by jurisdiction:
 - Public spaces: Generally legal
@@ -950,6 +1000,7 @@ Solution:
 ```
 
 #### Advertising Regulations
+
 ```
 FTC Compliance:
 - Clear disclosure of paid ads
@@ -965,6 +1016,7 @@ Platform Responsibilities:
 ```
 
 #### Data Protection
+
 ```
 GDPR (EU):
 - Lawful basis for processing
@@ -1057,6 +1109,7 @@ A: Use our SDK. Track ad exposure in your app. Offer Grape as alternative. Share
 **We're building Grape in public. Here's how you can help:**
 
 #### 1. **Star the Repo**
+
 ```
 github.com/chrryai/grape
 → Show support
@@ -1065,6 +1118,7 @@ github.com/chrryai/grape
 ```
 
 #### 2. **Beta Test**
+
 ```
 Sign up: grape.chrry.ai/beta
 → Test glasses prototype
@@ -1073,6 +1127,7 @@ Sign up: grape.chrry.ai/beta
 ```
 
 #### 3. **Contribute**
+
 ```
 → Code (ML, hardware, app)
 → Research (ad exposure studies)
@@ -1081,6 +1136,7 @@ Sign up: grape.chrry.ai/beta
 ```
 
 #### 4. **Spread the Word**
+
 ```
 → Share on social media
 → Write blog posts
@@ -1089,6 +1145,7 @@ Sign up: grape.chrry.ai/beta
 ```
 
 #### 5. **Invest/Partner**
+
 ```
 → Angel investment
 → Strategic partnerships
@@ -1121,6 +1178,7 @@ Sign up: grape.chrry.ai/beta
 ## Acknowledgments
 
 Inspired by:
+
 - The quantified self movement
 - Privacy-first technology
 - Open source collaboration
@@ -1128,6 +1186,7 @@ Inspired by:
 - User empowerment principles
 
 Built with:
+
 - Vex AI platform
 - Open source ML models
 - Community contributions

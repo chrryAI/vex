@@ -603,29 +603,22 @@ const create = async () => {
 const prod = async () => {
   // Check if admin user already exists
   // let admin = await getUser({ email: VEX_TEST_EMAIL })
-
   // if (!admin) throw new Error("Admin user not found")
-
   // Delete inactive bot guests in batches
   await clearGuests()
   // const vex = await createStores({ user: admin, isProd: true })
-
   // const allInstructions = await db.select().from(instructions)
-
   // const seen = new Map<string, string>() // Map of unique key -> instruction ID
   // const duplicateIds: string[] = []
-
   // for (const instruction of allInstructions) {
   //   // Create unique key based on userId/guestId + appId + title + content
   //   const key = `${instruction.userId || ""}-${instruction.guestId || ""}-${instruction.appId || ""}-${instruction.title}-${instruction.content}`
-
   //   if (
   //     // instruction.title === "Plan afternoon trip under €1000 💰" &&
   //     instruction.userId === admin.id
   //   ) {
   //     console.log("my in.", instruction)
   //   }
-
   //   // if (seen.has(key)) {
   //   //   // This is a duplicate, mark for deletion
   //   //   duplicateIds.push(instruction.id)
@@ -636,7 +629,6 @@ const prod = async () => {
   //   //   seen.set(key, instruction.id)
   //   // }
   // }
-
   // if (duplicateIds.length > 0) {
   //   console.log(`🗑️  Removing ${duplicateIds.length} duplicate instructions...`)
   //   for (const id of duplicateIds) {
