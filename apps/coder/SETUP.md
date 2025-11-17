@@ -3,6 +3,7 @@
 ## ✅ What We Built
 
 A VS Code extension that **reuses your existing Chrry React UI** with:
+
 - Full React support in webview
 - Same UI as browser extension
 - File system access
@@ -37,16 +38,19 @@ apps/coder/
 ## 🎯 How It Works
 
 ### 1. **Extension Host** (`extension.ts`)
+
 - Registers commands (explain, refactor, fix, etc.)
 - Creates webview with React UI
 - Handles VS Code API (files, editor, workspace)
 
 ### 2. **Webview** (`webview/index.tsx`)
+
 - **Imports your existing `@repo/ui/Chrry` component**
 - Renders same UI as browser extension
 - Bridges VS Code API to React
 
 ### 3. **Webpack** (`webpack.config.js`)
+
 - Bundles extension code (Node.js target)
 - Bundles React UI (Web target)
 - Resolves `@repo/ui` and `@repo/db` packages
@@ -63,6 +67,7 @@ npm install
 ```
 
 This installs:
+
 - VS Code types
 - React & React DOM
 - Webpack & loaders
@@ -75,6 +80,7 @@ npm run compile
 ```
 
 This creates:
+
 - `dist/extension.js` - Extension code
 - `dist/webview.js` - Your Chrry UI bundled
 
@@ -114,6 +120,7 @@ Users configure in VS Code settings:
 ### Extension Manifest
 
 `package.json` defines:
+
 - Commands (explain, refactor, etc.)
 - Sidebar view (chat interface)
 - Context menu items
@@ -129,7 +136,7 @@ Your `@chrryai/chrry` Chrry component works **as-is** in VS Code!
 
 ```tsx
 // webview/index.tsx
-import { Chrry } from '@chrryai/chrry'
+import { Chrry } from "@chrryai/chrry"
 
 function App() {
   return (
@@ -151,6 +158,7 @@ function App() {
 ### What Gets Bundled
 
 Webpack bundles:
+
 - Your entire `@chrryai/chrry` package
 - All React components
 - All styles (SCSS)
@@ -166,27 +174,27 @@ Into single `dist/webview.js` file.
 
 ```typescript
 // In your Chrry UI, you can now:
-const content = await fileSystem.readFile('/path/to/file.ts')
-await fileSystem.writeFile('/path/to/file.ts', newContent)
+const content = await fileSystem.readFile("/path/to/file.ts")
+await fileSystem.writeFile("/path/to/file.ts", newContent)
 ```
 
 ### Storage API
 
 ```typescript
 // Works like localStorage
-storage.setItem('key', 'value')
-const value = storage.getItem('key')
+storage.setItem("key", "value")
+const value = storage.getItem("key")
 ```
 
 ### Message Passing
 
 ```typescript
 // Send to extension host
-vscode.postMessage({ type: 'chat', message: 'Hello' })
+vscode.postMessage({ type: "chat", message: "Hello" })
 
 // Receive from extension host
-window.addEventListener('message', (event) => {
-  if (event.data.type === 'response') {
+window.addEventListener("message", (event) => {
+  if (event.data.type === "response") {
     // Handle AI response
   }
 })
@@ -217,6 +225,7 @@ npm run publish
 ```
 
 Requires:
+
 1. VS Code publisher account
 2. Personal access token
 3. Update version in `package.json`
@@ -226,6 +235,7 @@ Requires:
 ## 🎯 Features Implemented
 
 ### ✅ Commands
+
 - Explain selected code
 - Refactor code
 - Generate tests
@@ -233,18 +243,22 @@ Requires:
 - Screenshot to code
 
 ### ✅ Context Menu
+
 - Right-click on code → Sushi actions
 
 ### ✅ Sidebar
+
 - Chat interface (your Chrry UI)
 - Modified files tree view
 
 ### ✅ File Operations
+
 - Read workspace files
 - Write files with diff preview
 - Auto-save option
 
 ### ✅ Model Selection
+
 - Choose AI model from UI
 - Cost tracking
 - Multiple providers (OpenAI, Anthropic, Deepseek, etc.)
@@ -256,6 +270,7 @@ Requires:
 ### Phase 1: Enhance Chrry UI for VS Code
 
 You mentioned you'll improve existing screens to support:
+
 - ✅ File system access (done via bridge)
 - ✅ Agent process status (add to Chrry UI)
 - ✅ File diff view (add to Chrry UI)
@@ -279,6 +294,7 @@ You mentioned you'll improve existing screens to support:
 ## 🐛 Current Lint Errors
 
 The lint errors you see are expected until you run `npm install`:
+
 - `Cannot find module 'vscode'` → Fixed after install
 - `Cannot find module 'react'` → Fixed after install
 - Missing icon → Add `resources/icon.png`
@@ -288,21 +304,25 @@ The lint errors you see are expected until you run `npm install`:
 ## 💡 Key Advantages
 
 ### 1. **Code Reuse**
+
 - Same Chrry UI across web, browser extension, VS Code
 - One codebase, three platforms
 - Consistent UX
 
 ### 2. **Full React Support**
+
 - Not limited to simple HTML
 - Your entire component library works
 - All your styles work
 
 ### 3. **File System Access**
+
 - Read/write any file in workspace
 - Full context for AI
 - Better than web-based tools
 
 ### 4. **Native Integration**
+
 - Context menu items
 - Keyboard shortcuts
 - Editor integration
@@ -313,6 +333,7 @@ The lint errors you see are expected until you run `npm install`:
 ## 🎉 Summary
 
 **You now have:**
+
 1. ✅ VS Code extension scaffold
 2. ✅ React webview using your Chrry UI
 3. ✅ File system bridge
@@ -320,6 +341,7 @@ The lint errors you see are expected until you run `npm install`:
 5. ✅ Ready for development
 
 **Next:**
+
 1. Run `npm install`
 2. Run `npm run compile`
 3. Press F5 to test

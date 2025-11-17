@@ -46,6 +46,7 @@ Your AI-powered coding assistant with multimodal support, model selection, and c
 ### Context Menu Actions
 
 Right-click on selected code:
+
 - **Explain Code**: Get detailed explanation
 - **Refactor Code**: Improve code quality
 - **Fix Code**: Auto-fix errors and issues
@@ -67,15 +68,18 @@ Right-click on selected code:
 ## Model Selection
 
 ### Premium ($$$)
+
 - **GPT-4 Turbo**: Best quality, vision support - $0.01/1K tokens
 - **Claude 3 Opus**: Excellent for code review - $0.015/1K tokens
 
 ### Balanced ($$) - Recommended
+
 - **GPT-4o Mini**: Great balance, vision - $0.00015/1K tokens ⭐
 - **Claude 3 Haiku**: Fast responses - $0.00025/1K tokens
 - **Deepseek Coder**: Specialized for code - $0.00014/1K tokens 🔥
 
 ### Budget ($)
+
 - **Qwen VL**: Cheap multimodal - $0.0001/1K tokens
 - **Janus Pro**: Your multimodal - $0.0002/1K tokens
 - **Ollama Local**: FREE, offline 🎉
