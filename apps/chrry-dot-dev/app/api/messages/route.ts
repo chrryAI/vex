@@ -54,6 +54,7 @@ import { uploadArtifacts } from "../../actions/uploadArtifacts"
 import { checkRateLimit } from "../../../lib/rateLimiting"
 import captureException from "../../../lib/captureException"
 import { scanFileForMalware } from "../../../lib/security"
+import { trackSignup } from "../../../lib/ads"
 
 // Enhanced streaming helper for consistent E2E testing across all AI models
 
@@ -705,6 +706,15 @@ export async function POST(request: Request) {
       threadId: currentThreadId,
       title: threadTitle,
     })
+
+    // Track thread creation as usage conversion (shows engagement)
+    if (member?.id || guest?.id) {
+      const trackingId = member?.id || guest?.id || "unknown"
+      await trackSignup(trackingId).catch((err) =>
+        console.error("Failed to track thread creation:", err),
+      )
+      console.log("🎯 Tracked thread creation:", trackingId)
+    }
   } else {
     // await new Promise((resolve) => setTimeout(resolve, 7000))
   }
