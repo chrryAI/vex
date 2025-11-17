@@ -21,6 +21,7 @@ import { AuthOptions } from "next-auth"
 import { isValidUsername } from "chrry/utils"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import captureException from "../../../../lib/captureException"
+import { trackSignup } from "../../../../lib/ads"
 
 const isDevelopment =
   process.env.NODE_ENV === "development" ||
@@ -322,6 +323,13 @@ export const authOptions: AuthOptions = {
             userName: await generateUniqueUsername(profile.name || user.name),
             // ...other fields
           })
+
+          // Track signup conversion (server-side, zero client tracking)
+          if (createdUser?.id) {
+            await trackSignup(createdUser.id).catch((err) =>
+              console.error("Failed to track signup:", err),
+            )
+          }
         } else if (!dbUser.appleId) {
           // Update user to include appleId
           await updateUser({ ...dbUser, appleId: profile.sub })
@@ -387,6 +395,13 @@ export const authOptions: AuthOptions = {
               userName: await generateUniqueUsername(profile.name || user.name),
             })
             console.log("✅ Google sign-in: Created new user", createdUser?.id)
+
+            // Track signup conversion (server-side, zero client tracking)
+            if (createdUser?.id) {
+              await trackSignup(createdUser.id).catch((err) =>
+                console.error("Failed to track signup:", err),
+              )
+            }
           }
 
           console.log("✅ Google sign-in successful")

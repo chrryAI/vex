@@ -33,6 +33,7 @@ import {
 } from "@repo/db/src/schema"
 import { v4 as uuidv4 } from "uuid"
 import { capitalizeFirstLetter, FRONTEND_URL, isE2E } from "chrry/utils"
+import { trackPurchase } from "../../../lib/ads"
 
 export async function POST(request: Request) {
   const body = await request.json()
@@ -330,6 +331,14 @@ export async function POST(request: Request) {
           // Don't fail the payment if affiliate processing fails
         }
       }
+
+      // Track Google Ads conversion (server-side, zero client tracking)
+      const purchaseAmount = plan === "plus" ? 9.99 : 19.99
+      const purchaseUserId = user?.id || guest?.id || "unknown"
+      await trackPurchase(purchaseUserId, purchaseAmount, session.id).catch(
+        (err) => console.error("Failed to track purchase:", err),
+      )
+
       return NextResponse.json({
         success: true,
         type: "subscription",
@@ -506,6 +515,15 @@ export async function POST(request: Request) {
           })
         }
       }
+
+      // Track Google Ads conversion (server-side, zero client tracking)
+      const creditPurchaseAmount = (session.amount_total || 0) / 100 // Convert cents to euros
+      const creditPurchaseUserId = user?.id || guest?.id || "unknown"
+      await trackPurchase(
+        creditPurchaseUserId,
+        creditPurchaseAmount,
+        session.id,
+      ).catch((err) => console.error("Failed to track purchase:", err))
 
       return NextResponse.json({
         success: true,

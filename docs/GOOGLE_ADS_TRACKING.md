@@ -3,6 +3,7 @@
 ## Overview
 
 Track Google Ads conversions **without any client-side tracking**:
+
 - ✅ No cookies
 - ✅ No consent banners
 - ✅ No JavaScript tracking
@@ -122,6 +123,7 @@ User Action → Your Server → Google Ads API → Track Conversion Only
 ```
 
 **Key Difference:**
+
 - No browser tracking
 - No cookies
 - No personal data sent
@@ -145,6 +147,7 @@ User Action → Your Server → Google Ads API → Track Conversion Only
 ```
 
 **What's NOT sent:**
+
 - ❌ IP address
 - ❌ User agent
 - ❌ Cookies
@@ -152,6 +155,7 @@ User Action → Your Server → Google Ads API → Track Conversion Only
 - ❌ Personal data
 
 **What IS sent:**
+
 - ✅ Conversion happened
 - ✅ Value (for ROAS)
 - ✅ Transaction ID (deduplication)
@@ -161,18 +165,21 @@ User Action → Your Server → Google Ads API → Track Conversion Only
 ## Benefits
 
 ### For Users
+
 - ✅ Zero tracking
 - ✅ No cookies
 - ✅ No consent needed
 - ✅ Maximum privacy
 
 ### For You
+
 - ✅ Google Ads can optimize
 - ✅ Track conversions
 - ✅ Measure ROAS
 - ✅ No compliance issues
 
 ### For Google Ads
+
 - ✅ Knows which clicks convert
 - ✅ Can optimize bidding
 - ✅ Can target better
@@ -201,6 +208,7 @@ console.log("Conversion tracked:", result)
 ### 3. Check Campaign Performance
 
 After 24-48 hours:
+
 - Conversions should appear in campaign data
 - Google Ads will start optimizing
 - ROAS data will be available
@@ -210,6 +218,7 @@ After 24-48 hours:
 ## Expected Results
 
 ### Before (No Tracking)
+
 ```
 Clicks: 1000
 Conversions: Unknown
@@ -219,6 +228,7 @@ Optimization: Random
 ```
 
 ### After (Server-Side Tracking)
+
 ```
 Clicks: 1000
 Conversions: 50 (tracked)
@@ -232,17 +242,20 @@ Optimization: Data-driven
 ## Privacy Compliance
 
 ### GDPR ✅
+
 - No personal data collected
 - No cookies
 - No consent needed
 - Server-side only
 
 ### CCPA ✅
+
 - No tracking of California residents
 - No sale of personal data
 - No behavioral tracking
 
 ### Your Zero-Tracker Policy ✅
+
 - No client-side tracking
 - No JavaScript tags
 - No cookies
@@ -285,6 +298,7 @@ console.log(`[Google Ads] Tracked conversion: ${transactionId}`)
 ### Conversions Not Showing Up
 
 1. **Check Environment Variables**
+
    ```bash
    echo $GOOGLE_ADS_CONVERSION_ID
    ```
@@ -313,12 +327,14 @@ console.log(`[Google Ads] Tracked conversion: ${transactionId}`)
 ## Summary
 
 **What You Get:**
+
 - ✅ Zero client-side tracking (maintains your policy)
 - ✅ Google Ads optimization (fixes your campaign)
 - ✅ Privacy compliant (no consent needed)
 - ✅ Easy to implement (30 minutes)
 
 **Next Steps:**
+
 1. Get conversion IDs from Google Ads
 2. Add to `.env`
 3. Call `trackSignup()` / `trackPurchase()` in your API routes
