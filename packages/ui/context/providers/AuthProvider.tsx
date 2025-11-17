@@ -700,6 +700,7 @@ export function AuthProvider({
 
   const fetchSession = async (newApp?: appWithStore) => {
     if (newApp) {
+      await refetchApps()
       setNewApp(newApp)
     }
 
@@ -708,7 +709,7 @@ export function AuthProvider({
     await refetchSession()
   }
 
-  const { data: allAppsSwr } = useSWR(
+  const { data: allAppsSwr, mutate: refetchApps } = useSWR(
     token ? ["allApps", token] : null,
     async () => {
       if (!token) return null
@@ -1365,7 +1366,6 @@ export function AuthProvider({
     }))
 
   useEffect(() => {
-    if (!vex) return
     const created = allApps?.some((app) => app.id === newApp?.id)
     if (newApp && created && app?.id !== newApp.id) {
       const finalURL = getAppSlug(newApp)
@@ -1388,7 +1388,7 @@ export function AuthProvider({
         router.push(`${finalURL}`)
       }
     }
-  }, [newApp, app, allApps, vex])
+  }, [newApp, app, allApps])
 
   const lastRateLimitErrorRef = useRef<string | null>(null)
 
