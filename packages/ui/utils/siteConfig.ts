@@ -1,6 +1,16 @@
 import { FRONTEND_URL, isDevelopment } from "."
 
-export type SiteMode = "chrryDev" | "vex" | "chrryAI" | "chrryStore" | "focus"
+export type SiteMode =
+  | "chrryDev"
+  | "vex"
+  | "chrryAI"
+  | "chrryStore"
+  | "focus"
+  | "atlas"
+  | "istanbul"
+  | "amsterdam"
+  | "tokyo"
+  | "newYork"
 
 export interface SiteConfig {
   mode: SiteMode
@@ -326,6 +336,266 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Yapay zeka destekli odaklanma oturumları, görev yönetimi ve üretkenlik içgörüleriyle zamanınızı yönetin ve hedeflerinize ulaşın.",
     },
   },
+  atlas: {
+    en: {
+      title: "Atlas - Geographic AI Memory Layer",
+      description:
+        "Save locations with AI context, create geo-tagged notes, and discover local AI resources. Your intelligent geographic companion.",
+    },
+    de: {
+      title: "Atlas - Geografische KI-Gedächtnisebene",
+      description:
+        "Speichern Sie Orte mit KI-Kontext, erstellen Sie geo-markierte Notizen und entdecken Sie lokale KI-Ressourcen. Ihr intelligenter geografischer Begleiter.",
+    },
+    fr: {
+      title: "Atlas - Couche de mémoire géographique IA",
+      description:
+        "Enregistrez des lieux avec contexte IA, créez des notes géo-marquées et découvrez des ressources IA locales. Votre compagnon géographique intelligent.",
+    },
+    ja: {
+      title: "Atlas - 地理的AIメモリレイヤー",
+      description:
+        "AIコンテキストで場所を保存し、ジオタグ付きメモを作成し、ローカルAIリソースを発見。あなたのインテリジェントな地理的コンパニオン。",
+    },
+    ko: {
+      title: "Atlas - 지리적 AI 메모리 레이어",
+      description:
+        "AI 컨텍스트로 위치를 저장하고, 지오태그된 노트를 만들고, 로컬 AI 리소스를 발견하세요. 당신의 지능형 지리적 동반자.",
+    },
+    pt: {
+      title: "Atlas - Camada de Memória Geográfica IA",
+      description:
+        "Salve locais com contexto de IA, crie notas geolocalizadas e descubra recursos de IA locais. Seu companheiro geográfico inteligente.",
+    },
+    es: {
+      title: "Atlas - Capa de Memoria Geográfica IA",
+      description:
+        "Guarda ubicaciones con contexto IA, crea notas geoetiquetadas y descubre recursos de IA locales. Tu compañero geográfico inteligente.",
+    },
+    zh: {
+      title: "Atlas - 地理AI记忆层",
+      description:
+        "使用AI上下文保存位置，创建地理标记笔记，发现本地AI资源。您的智能地理伴侣。",
+    },
+    nl: {
+      title: "Atlas - Geografische AI-geheugenlaag",
+      description:
+        "Bewaar locaties met AI-context, maak geo-getagde notities en ontdek lokale AI-bronnen. Jouw intelligente geografische metgezel.",
+    },
+    tr: {
+      title: "Atlas - Coğrafi Yapay Zeka Hafıza Katmanı",
+      description:
+        "Yapay zeka bağlamıyla konumları kaydedin, coğrafi etiketli notlar oluşturun ve yerel yapay zeka kaynaklarını keşfedin. Akıllı coğrafi arkadaşınız.",
+    },
+  },
+  istanbul: {
+    en: {
+      title: "Istanbul - AI Assistant for Turkey",
+      description:
+        "Your personal AI assistant designed for Istanbul and Turkey. Chat in Turkish, collaborate locally, and get things done faster.",
+    },
+    de: {
+      title: "Istanbul - KI-Assistent für die Türkei",
+      description:
+        "Dein persönlicher KI-Assistent für Istanbul und die Türkei. Chatte auf Türkisch, arbeite lokal zusammen und erledige Aufgaben schneller.",
+    },
+    fr: {
+      title: "Istanbul - Assistant IA pour la Turquie",
+      description:
+        "Votre assistant IA personnel conçu pour Istanbul et la Turquie. Chattez en turc, collaborez localement et accomplissez plus rapidement.",
+    },
+    ja: {
+      title: "Istanbul - トルコ向けAIアシスタント",
+      description:
+        "イスタンブールとトルコ向けに設計されたパーソナルAIアシスタント。トルコ語でチャットし、ローカルで協力し、より速く作業を完了。",
+    },
+    ko: {
+      title: "Istanbul - 터키를 위한 AI 어시스턴트",
+      description:
+        "이스탄불과 터키를 위해 설계된 개인 AI 어시스턴트. 터키어로 채팅하고, 현지에서 협업하며, 더 빠르게 작업을 완료하세요.",
+    },
+    pt: {
+      title: "Istanbul - Assistente de IA para a Turquia",
+      description:
+        "Seu assistente de IA pessoal projetado para Istambul e Turquia. Converse em turco, colabore localmente e realize tarefas mais rapidamente.",
+    },
+    es: {
+      title: "Istanbul - Asistente de IA para Turquía",
+      description:
+        "Tu asistente de IA personal diseñado para Estambul y Turquía. Chatea en turco, colabora localmente y completa tareas más rápido.",
+    },
+    zh: {
+      title: "Istanbul - 土耳其AI助手",
+      description:
+        "为伊斯坦布尔和土耳其设计的个人AI助手。用土耳其语聊天，本地协作，更快地完成任务。",
+    },
+    nl: {
+      title: "Istanbul - AI-assistent voor Turkije",
+      description:
+        "Je persoonlijke AI-assistent ontworpen voor Istanbul en Turkije. Chat in het Turks, werk lokaal samen en voltooi taken sneller.",
+    },
+    tr: {
+      title: "Istanbul - Türkiye için Yapay Zeka Asistanı",
+      description:
+        "İstanbul ve Türkiye için tasarlanmış kişisel yapay zeka asistanınız. Türkçe sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
+    },
+  },
+  amsterdam: {
+    en: {
+      title: "Amsterdam - AI Assistant for Netherlands",
+      description:
+        "Your personal AI assistant designed for Amsterdam and the Netherlands. Chat in Dutch, collaborate locally, and get things done faster.",
+    },
+    de: {
+      title: "Amsterdam - KI-Assistent für die Niederlande",
+      description:
+        "Dein persönlicher KI-Assistent für Amsterdam und die Niederlande. Chatte auf Niederländisch, arbeite lokal zusammen und erledige Aufgaben schneller.",
+    },
+    fr: {
+      title: "Amsterdam - Assistant IA pour les Pays-Bas",
+      description:
+        "Votre assistant IA personnel conçu pour Amsterdam et les Pays-Bas. Chattez en néerlandais, collaborez localement et accomplissez plus rapidement.",
+    },
+    ja: {
+      title: "Amsterdam - オランダ向けAIアシスタント",
+      description:
+        "アムステルダムとオランダ向けに設計されたパーソナルAIアシスタント。オランダ語でチャットし、ローカルで協力し、より速く作業を完了。",
+    },
+    ko: {
+      title: "Amsterdam - 네덜란드를 위한 AI 어시스턴트",
+      description:
+        "암스테르담과 네덜란드를 위해 설계된 개인 AI 어시스턴트. 네덜란드어로 채팅하고, 현지에서 협업하며, 더 빠르게 작업을 완료하세요.",
+    },
+    pt: {
+      title: "Amsterdam - Assistente de IA para os Países Baixos",
+      description:
+        "Seu assistente de IA pessoal projetado para Amsterdã e os Países Baixos. Converse em holandês, colabore localmente e realize tarefas mais rapidamente.",
+    },
+    es: {
+      title: "Amsterdam - Asistente de IA para los Países Bajos",
+      description:
+        "Tu asistente de IA personal diseñado para Ámsterdam y los Países Bajos. Chatea en neerlandés, colabora localmente y completa tareas más rápido.",
+    },
+    zh: {
+      title: "Amsterdam - 荷兰AI助手",
+      description:
+        "为阿姆斯特丹和荷兰设计的个人AI助手。用荷兰语聊天，本地协作，更快地完成任务。",
+    },
+    nl: {
+      title: "Amsterdam - AI-assistent voor Nederland",
+      description:
+        "Je persoonlijke AI-assistent ontworpen voor Amsterdam en Nederland. Chat in het Nederlands, werk lokaal samen en voltooi taken sneller.",
+    },
+    tr: {
+      title: "Amsterdam - Hollanda için Yapay Zeka Asistanı",
+      description:
+        "Amsterdam ve Hollanda için tasarlanmış kişisel yapay zeka asistanınız. Felemenkçe sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
+    },
+  },
+  tokyo: {
+    en: {
+      title: "Tokyo - AI Assistant for Japan",
+      description:
+        "Your personal AI assistant designed for Tokyo and Japan. Chat in Japanese, collaborate locally, and get things done faster.",
+    },
+    de: {
+      title: "Tokyo - KI-Assistent für Japan",
+      description:
+        "Dein persönlicher KI-Assistent für Tokio und Japan. Chatte auf Japanisch, arbeite lokal zusammen und erledige Aufgaben schneller.",
+    },
+    fr: {
+      title: "Tokyo - Assistant IA pour le Japon",
+      description:
+        "Votre assistant IA personnel conçu pour Tokyo et le Japon. Chattez en japonais, collaborez localement et accomplissez plus rapidement.",
+    },
+    ja: {
+      title: "Tokyo - 日本向けAIアシスタント",
+      description:
+        "東京と日本向けに設計されたパーソナルAIアシスタント。日本語でチャットし、ローカルで協力し、より速く作業を完了。",
+    },
+    ko: {
+      title: "Tokyo - 일본을 위한 AI 어시스턴트",
+      description:
+        "도쿄와 일본을 위해 설계된 개인 AI 어시스턴트. 일본어로 채팅하고, 현지에서 협업하며, 더 빠르게 작업을 완료하세요.",
+    },
+    pt: {
+      title: "Tokyo - Assistente de IA para o Japão",
+      description:
+        "Seu assistente de IA pessoal projetado para Tóquio e Japão. Converse em japonês, colabore localmente e realize tarefas mais rapidamente.",
+    },
+    es: {
+      title: "Tokyo - Asistente de IA para Japón",
+      description:
+        "Tu asistente de IA personal diseñado para Tokio y Japón. Chatea en japonés, colabora localmente y completa tareas más rápido.",
+    },
+    zh: {
+      title: "Tokyo - 日本AI助手",
+      description:
+        "为东京和日本设计的个人AI助手。用日语聊天，本地协作，更快地完成任务。",
+    },
+    nl: {
+      title: "Tokyo - AI-assistent voor Japan",
+      description:
+        "Je persoonlijke AI-assistent ontworpen voor Tokyo en Japan. Chat in het Japans, werk lokaal samen en voltooi taken sneller.",
+    },
+    tr: {
+      title: "Tokyo - Japonya için Yapay Zeka Asistanı",
+      description:
+        "Tokyo ve Japonya için tasarlanmış kişisel yapay zeka asistanınız. Japonca sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
+    },
+  },
+  newYork: {
+    en: {
+      title: "New York - AI Assistant for NYC",
+      description:
+        "Your personal AI assistant designed for New York City and the USA. Chat, collaborate locally, and get things done faster in the city that never sleeps.",
+    },
+    de: {
+      title: "New York - KI-Assistent für NYC",
+      description:
+        "Dein persönlicher KI-Assistent für New York City und die USA. Chatte, arbeite lokal zusammen und erledige Aufgaben schneller in der Stadt, die niemals schläft.",
+    },
+    fr: {
+      title: "New York - Assistant IA pour NYC",
+      description:
+        "Votre assistant IA personnel conçu pour New York et les États-Unis. Chattez, collaborez localement et accomplissez plus rapidement dans la ville qui ne dort jamais.",
+    },
+    ja: {
+      title: "New York - ニューヨーク向けAIアシスタント",
+      description:
+        "ニューヨーク市とアメリカ向けに設計されたパーソナルAIアシスタント。眠らない街でチャット、ローカル協力、より速く作業を完了。",
+    },
+    ko: {
+      title: "New York - 뉴욕을 위한 AI 어시스턴트",
+      description:
+        "뉴욕시와 미국을 위해 설계된 개인 AI 어시스턴트. 잠들지 않는 도시에서 채팅하고, 현지에서 협업하며, 더 빠르게 작업을 완료하세요.",
+    },
+    pt: {
+      title: "New York - Assistente de IA para NYC",
+      description:
+        "Seu assistente de IA pessoal projetado para Nova York e os EUA. Converse, colabore localmente e realize tarefas mais rapidamente na cidade que nunca dorme.",
+    },
+    es: {
+      title: "New York - Asistente de IA para NYC",
+      description:
+        "Tu asistente de IA personal diseñado para Nueva York y EE.UU. Chatea, colabora localmente y completa tareas más rápido en la ciudad que nunca duerme.",
+    },
+    zh: {
+      title: "New York - 纽约AI助手",
+      description:
+        "为纽约市和美国设计的个人AI助手。在不夜城中聊天、本地协作、更快地完成任务。",
+    },
+    nl: {
+      title: "New York - AI-assistent voor NYC",
+      description:
+        "Je persoonlijke AI-assistent ontworpen voor New York City en de VS. Chat, werk lokaal samen en voltooi taken sneller in de stad die nooit slaapt.",
+    },
+    tr: {
+      title: "New York - New York için Yapay Zeka Asistanı",
+      description:
+        "New York City ve ABD için tasarlanmış kişisel yapay zeka asistanınız. Hiç uyumayan şehirde sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
+    },
+  },
 }
 
 export function getSiteTranslation(
@@ -388,6 +658,23 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
     return "chrryStore"
   }
 
+  // City subdomains
+  if (host === "atlas.chrry.ai") {
+    return "atlas"
+  }
+  if (host === "istanbul.chrry.ai") {
+    return "istanbul"
+  }
+  if (host === "amsterdam.chrry.ai") {
+    return "amsterdam"
+  }
+  if (host === "tokyo.chrry.ai") {
+    return "tokyo"
+  }
+  if (host === "newyork.chrry.ai") {
+    return "newYork"
+  }
+
   // Default to defaultMode (vex.chrry.ai or localhost)
   return defaultMode
 }
@@ -403,6 +690,11 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "chrryStore",
     "vex",
     "focus",
+    "atlas",
+    "istanbul",
+    "amsterdam",
+    "tokyo",
+    "newYork",
   ]
   const mode = validModes.includes(hostname as SiteMode)
     ? (hostname as SiteMode)
@@ -666,6 +958,273 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
           description: "Eliminate distractions and focus",
           icon: "🧠",
           link: "/deep-work",
+          isOpenSource: false,
+        },
+      ],
+    }
+  }
+
+  // Atlas configuration
+  if (mode === "atlas") {
+    return {
+      mode: "atlas",
+      slug: "atlas",
+      storeSlug: "compass",
+      name: "Atlas",
+      domain: "atlas.chrry.ai",
+      url: "https://atlas.chrry.ai",
+      store: "https://chrry.ai",
+      email: "iliyan@chrry.ai",
+      description:
+        "Your intelligent geographic companion. Save locations with AI context, create geo-tagged notes, and discover local AI resources.",
+      logo: "🌍",
+      primaryColor: "#10B981", // Green
+      links: {
+        github: "https://github.com/chrryai/vex",
+        docs: "https://atlas.chrry.ai/docs",
+      },
+      features: [
+        {
+          title: "Geo-Tagged Memory",
+          description: "Save locations with AI context",
+          icon: "📍",
+          link: "/memory",
+          isOpenSource: false,
+        },
+        {
+          title: "Travel Planning",
+          description: "Smart itineraries and local insights",
+          icon: "✈️",
+          link: "/travel",
+          isOpenSource: false,
+        },
+        {
+          title: "Local Discovery",
+          description: "Find authentic spots locals love",
+          icon: "🗺️",
+          link: "/discover",
+          isOpenSource: false,
+        },
+        {
+          title: "Weather Integration",
+          description: "Real-time weather for your locations",
+          icon: "🌤️",
+          link: "/weather",
+          isOpenSource: false,
+        },
+        {
+          title: "Browser Extension",
+          description: "Access Atlas from anywhere",
+          icon: "🔌",
+          link: "https://chrome.google.com/webstore",
+          isOpenSource: false,
+        },
+      ],
+    }
+  }
+
+  // Istanbul configuration
+  if (mode === "istanbul") {
+    return {
+      mode: "istanbul",
+      slug: "istanbul",
+      storeSlug: "comapss",
+      name: "Istanbul",
+      domain: "istanbul.chrry.ai",
+      url: "https://istanbul.chrry.ai",
+      store: "https://chrry.ai",
+      email: "iliyan@chrry.ai",
+      description:
+        "Your personal AI assistant designed for Istanbul and Turkey. Chat in Turkish, collaborate locally, and get things done faster.",
+      logo: "🇹🇷",
+      primaryColor: "#E30A17", // Turkish red
+      links: {
+        github: "https://github.com/chrryai/vex",
+        docs: "https://istanbul.chrry.ai/docs",
+      },
+      features: [
+        {
+          title: "Turkish Language Support",
+          description: "Native Turkish AI assistance",
+          icon: "🗣️",
+          link: "/language",
+          isOpenSource: false,
+        },
+        {
+          title: "Local Insights",
+          description: "Istanbul-specific recommendations",
+          icon: "🕌",
+          link: "/local",
+          isOpenSource: false,
+        },
+        {
+          title: "Turkish Lira Pricing",
+          description: "Local currency and payment methods",
+          icon: "💰",
+          link: "/pricing",
+          isOpenSource: false,
+        },
+        {
+          title: "Local Collaboration",
+          description: "Connect with Turkish users",
+          icon: "👥",
+          link: "/community",
+          isOpenSource: false,
+        },
+      ],
+    }
+  }
+
+  // Amsterdam configuration
+  if (mode === "amsterdam") {
+    return {
+      mode: "amsterdam",
+      slug: "amsterdam",
+      storeSlug: "comapss",
+      name: "Amsterdam",
+      domain: "amsterdam.chrry.ai",
+      url: "https://amsterdam.chrry.ai",
+      store: "https://chrry.ai",
+      email: "iliyan@chrry.ai",
+      description:
+        "Your personal AI assistant designed for Amsterdam and the Netherlands. Chat in Dutch, collaborate locally, and get things done faster.",
+      logo: "🇳🇱",
+      primaryColor: "#FF6B35", // Dutch orange
+      links: {
+        github: "https://github.com/chrryai/vex",
+        docs: "https://amsterdam.chrry.ai/docs",
+      },
+      features: [
+        {
+          title: "Dutch Language Support",
+          description: "Native Dutch AI assistance",
+          icon: "🗣️",
+          link: "/language",
+          isOpenSource: false,
+        },
+        {
+          title: "Local Insights",
+          description: "Amsterdam-specific recommendations",
+          icon: "🚲",
+          link: "/local",
+          isOpenSource: false,
+        },
+        {
+          title: "Euro Pricing",
+          description: "Local currency and payment methods",
+          icon: "💰",
+          link: "/pricing",
+          isOpenSource: false,
+        },
+        {
+          title: "Local Collaboration",
+          description: "Connect with Dutch users",
+          icon: "👥",
+          link: "/community",
+          isOpenSource: false,
+        },
+      ],
+    }
+  }
+
+  // Tokyo configuration
+  if (mode === "tokyo") {
+    return {
+      mode: "tokyo",
+      slug: "tokyo",
+      storeSlug: "compass",
+      name: "Tokyo",
+      domain: "tokyo.chrry.ai",
+      url: "https://tokyo.chrry.ai",
+      store: "https://chrry.ai",
+      email: "iliyan@chrry.ai",
+      description:
+        "Your personal AI assistant designed for Tokyo and Japan. Chat in Japanese, collaborate locally, and get things done faster.",
+      logo: "🇯🇵",
+      primaryColor: "#BC002D", // Japanese red
+      links: {
+        github: "https://github.com/chrryai/vex",
+        docs: "https://tokyo.chrry.ai/docs",
+      },
+      features: [
+        {
+          title: "Japanese Language Support",
+          description: "Native Japanese AI assistance",
+          icon: "🗣️",
+          link: "/language",
+          isOpenSource: false,
+        },
+        {
+          title: "Local Insights",
+          description: "Tokyo-specific recommendations",
+          icon: "🗼",
+          link: "/local",
+          isOpenSource: false,
+        },
+        {
+          title: "Yen Pricing",
+          description: "Local currency and payment methods",
+          icon: "💰",
+          link: "/pricing",
+          isOpenSource: false,
+        },
+        {
+          title: "Local Collaboration",
+          description: "Connect with Japanese users",
+          icon: "👥",
+          link: "/community",
+          isOpenSource: false,
+        },
+      ],
+    }
+  }
+
+  // New York configuration
+  if (mode === "newYork") {
+    return {
+      mode: "newYork",
+      slug: "newYork",
+      storeSlug: "chrry",
+      name: "New York",
+      domain: "newyork.chrry.ai",
+      url: "https://newyork.chrry.ai",
+      store: "https://chrry.ai",
+      email: "iliyan@chrry.ai",
+      description:
+        "Your personal AI assistant designed for New York City and the USA. Chat, collaborate locally, and get things done faster in the city that never sleeps.",
+      logo: "🗽",
+      primaryColor: "#0039A6", // NYC blue
+      links: {
+        github: "https://github.com/chrryai/vex",
+        docs: "https://newyork.chrry.ai/docs",
+      },
+      features: [
+        {
+          title: "NYC Local Insights",
+          description: "New York-specific recommendations",
+          icon: "🏙️",
+          link: "/local",
+          isOpenSource: false,
+        },
+        {
+          title: "USD Pricing",
+          description: "US currency and payment methods",
+          icon: "💰",
+          link: "/pricing",
+          isOpenSource: false,
+        },
+        {
+          title: "Local Collaboration",
+          description: "Connect with NYC users",
+          icon: "👥",
+          link: "/community",
+          isOpenSource: false,
+        },
+        {
+          title: "24/7 Support",
+          description: "Always available in the city that never sleeps",
+          icon: "🌃",
+          link: "/support",
           isOpenSource: false,
         },
       ],
