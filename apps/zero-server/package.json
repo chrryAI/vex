@@ -17,10 +17,10 @@
     "dotenv": "^16.4.5",
     "postgres": "^3.4.4",
     "drizzle-zero": "^0.16.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.19"
   },
   "devDependencies": {
-    "@types/node": "^20.11.19",
     "tsx": "^4.7.1"
   }
 }

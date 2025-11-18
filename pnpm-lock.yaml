@@ -981,6 +981,9 @@ importers:
       '@rocicorp/zero':
         specifier: ^0.22.2025081301
         version: 0.22.3000000000(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(typescript@5.8.3)
+      '@types/node':
+        specifier: ^20.11.19
+        version: 20.19.23
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
@@ -994,9 +997,6 @@ importers:
         specifier: ^5.3.3
         version: 5.8.3
     devDependencies:
-      '@types/node':
-        specifier: ^20.11.19
-        version: 20.19.23
       tsx:
         specifier: ^4.7.1
         version: 4.20.6
