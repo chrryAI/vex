@@ -44,7 +44,7 @@ async function generateUniqueUsername(
 
   // Check if username exists (checks both users and stores)
   const exists = async (username: string): Promise<boolean> => {
-    const existingUser = await getUser({ userName: username })
+    const existingUser = await getUser({ userName: username, skipCache: true })
     if (existingUser) return true
 
     const existingStore = await getStore({ slug: username })
@@ -101,6 +101,7 @@ export const authOptions: AuthOptions = {
         }
 
         const user = await getUser({
+          skipCache: true,
           email,
         })
 
@@ -335,10 +336,10 @@ export const authOptions: AuthOptions = {
 
       if (account?.provider === "apple" && profile?.sub) {
         // Try to find user by appleId
-        let dbUser = await getUser({ appleId: profile.sub })
+        let dbUser = await getUser({ appleId: profile.sub, skipCache: true })
         if (!dbUser && user.email) {
           // Fallback: try to find by email
-          dbUser = await getUser({ email: user.email })
+          dbUser = await getUser({ email: user.email, skipCache: true })
         }
         if (!dbUser) {
           // Create user with appleId
@@ -382,7 +383,7 @@ export const authOptions: AuthOptions = {
           })
 
           // Check if user exists in database
-          const dbUser = await getUser({ email: user.email })
+          const dbUser = await getUser({ email: user.email, skipCache: true })
 
           if (dbUser) {
             await updateUser({
