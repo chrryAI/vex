@@ -33,8 +33,8 @@ export default function Store({
   const { router, setIsNewChat, pathname, searchParams } =
     useNavigationContext()
 
-  const { allApps, getAppSlug } = useAuth()
-  const { currentStore: store, setStoreSlug } = useApp()
+  const { getAppSlug } = useAuth()
+  const { currentStore: store } = useApp()
 
   const apps = store?.apps
 
@@ -59,7 +59,6 @@ export default function Store({
     if (!app?.slug) return
 
     setSelectedAppInternal(app)
-    setStoreSlug(app.store.slug)
 
     router.push(`/${app.store.slug}?app=${app.slug}`)
   }

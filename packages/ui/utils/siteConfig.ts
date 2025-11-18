@@ -16,6 +16,7 @@ export interface SiteConfig {
   mode: SiteMode
   slug: string
   storeSlug: string
+  favicon?: string
   name: string
   domain: string
   store: string
@@ -732,6 +733,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       mode: "chrryDev",
       slug: "chrryDev",
       storeSlug: "chrry",
+      favicon: "chrry",
       store: "https://chrry.dev",
       name: "Chrry",
       domain: "chrry.dev",
@@ -812,6 +814,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   if (mode === "chrryAI") {
     return {
       slug: "chrry",
+      favicon: "chrry",
       storeSlug: "blossom",
       mode: "chrryAI",
       name: "Chrry",
@@ -891,6 +894,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
   if (mode === "focus") {
     return {
+      favicon: "focus",
       mode: "focus",
       slug: "focus",
       version: "26.10.32",
@@ -972,6 +976,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Atlas configuration
   if (mode === "atlas") {
     return {
+      favicon: "atlas",
       mode: "atlas",
       slug: "atlas",
       storeSlug: "compass",
@@ -1031,6 +1036,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Istanbul configuration
   if (mode === "istanbul") {
     return {
+      favicon: "atlas",
       mode: "istanbul",
       slug: "istanbul",
       storeSlug: "compass",
@@ -1083,6 +1089,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Amsterdam configuration
   if (mode === "amsterdam") {
     return {
+      favicon: "atlas",
       mode: "amsterdam",
       slug: "amsterdam",
       storeSlug: "compass",
@@ -1135,6 +1142,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Tokyo configuration
   if (mode === "tokyo") {
     return {
+      favicon: "atlas",
       mode: "tokyo",
       slug: "tokyo",
       storeSlug: "compass",
@@ -1187,6 +1195,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // New York configuration
   if (mode === "newYork") {
     return {
+      favicon: "atlas",
       mode: "newYork",
       slug: "newYork",
       storeSlug: "compass",
@@ -1241,6 +1250,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     url: "https://vex.chrry.ai",
     mode: "vex",
     slug: "vex",
+    favicon: "vex",
     storeSlug: "lifeOS",
     name: "Vex",
     domain: "vex.chrry.ai",

@@ -453,14 +453,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [app?.id, user?.instructions, guest?.instructions],
   )
 
-  const [storeSlug, setStoreSlug] = useState(slug || pathname.replace("/", ""))
+  const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
 
   useEffect(() => {
-    !slug && setStoreSlug(pathname.replace("/", ""))
-  }, [pathname, slug])
+    setStoreSlug(pathname.replace("/", ""))
+  }, [pathname])
 
-  const matchedApp = allApps?.find((app) => app?.store?.slug === storeSlug)
-  const currentStore = matchedApp?.store
+  const currentStore = useMemo(() => {
+    const matchedApp = allApps?.find(
+      (app) => app?.store?.slug === pathname.replace("/", ""),
+    )
+    return matchedApp?.store
+  }, [pathname, allApps])
 
   const appFormWatcher = {
     ...watcher,
@@ -691,7 +695,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       newFavicon.href = faviconUrl
     } else {
       // Reset to default
-      newFavicon.href = `/${siteConfig.mode}.ico`
+      newFavicon.href = `/${siteConfig.favicon}.ico`
     }
 
     // Apple touch icon uses 180px version

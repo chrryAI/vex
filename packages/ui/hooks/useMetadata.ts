@@ -88,8 +88,7 @@ export function useStoreMetadata(store?: storeWithApps) {
     store?.name,
     store?.slug,
     store?.description,
-    store?.images,
-    store?.app,
+    store?.app?.id,
     i18n.language,
   ])
 }
@@ -181,7 +180,7 @@ export function useAppMetadata(app?: appWithStore, enabled = true) {
     app?.slug,
     app?.title,
     app?.description,
-    app?.images,
+    app?.store?.id,
     app?.store?.name,
     app?.store?.slug,
     i18n.language,
