@@ -1,6 +1,6 @@
 /**
  * Zero Client Utilities
- * 
+ *
  * This file exports the Zero schema and client creation function.
  * Permissions are defined SERVER-SIDE only when the Zero server is implemented.
  */
@@ -12,9 +12,9 @@ export { schema, type Schema }
 
 /**
  * Permissions are defined SERVER-SIDE only!
- * 
+ *
  * When you implement the Zero server, you'll define permissions like this:
- * 
+ *
  * const server = createZeroServer({
  *   schema,
  *   permissions: (context) => ({
@@ -27,7 +27,7 @@ export { schema, type Schema }
  *     // ... more permissions
  *   }),
  * })
- * 
+ *
  * See AUTHENTICATION.md for full examples.
  */
 

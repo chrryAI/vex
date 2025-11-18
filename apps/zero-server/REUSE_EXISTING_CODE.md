@@ -3,6 +3,7 @@
 ## 🎯 **Key Principle: Don't Duplicate Code!**
 
 Your `@repo/db` package already has **all the database functions you need**:
+
 - ✅ `createMessage`, `updateMessage`, `deleteMessage`
 - ✅ `createThread`, `updateThread`, `deleteThread`
 - ✅ `createTask`, `updateTask`, `deleteTask`
@@ -25,11 +26,11 @@ import { createMessage, type newMessage } from "@repo/db"
 export const mutators = {
   createMessage: async (
     args: Omit<newMessage, "userId" | "guestId">,
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     // Determine if user or guest
     const isUser = userID.startsWith("user_")
-    
+
     // ✅ Call your existing function!
     const message = await createMessage({
       ...args,
@@ -43,6 +44,7 @@ export const mutators = {
 ```
 
 **Benefits:**
+
 - ✅ Uses existing `createMessage` from `@repo/db`
 - ✅ All existing logic preserved (credit tracking, cache invalidation, etc.)
 - ✅ No code duplication
@@ -74,6 +76,7 @@ export const mutators = {
 ```
 
 **Problems:**
+
 - ❌ Duplicates database logic
 - ❌ Misses credit tracking (`logCreditUsage`)
 - ❌ Misses cache invalidation (`invalidateUser`, `invalidateGuest`)
@@ -114,7 +117,7 @@ export const mutators = {
   // ✅ Messages
   createMessage: async (
     args: Omit<newMessage, "userId" | "guestId">,
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     const isUser = userID.startsWith("user_")
     const message = await createMessage({
@@ -127,7 +130,7 @@ export const mutators = {
 
   deleteMessage: async (
     { messageId }: { messageId: string },
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     const deleted = await deleteMessage({ id: messageId })
     return { success: !!deleted }
@@ -136,7 +139,7 @@ export const mutators = {
   // ✅ Threads
   createThread: async (
     args: Omit<newThread, "userId" | "guestId">,
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     const isUser = userID.startsWith("user_")
     const thread = await createThread({
@@ -149,7 +152,7 @@ export const mutators = {
 
   archiveThread: async (
     { threadId }: { threadId: string },
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     // Get existing thread first
     const existingThread = await getThread({ id: threadId })
@@ -165,7 +168,7 @@ export const mutators = {
   // ✅ Users
   updateProfile: async (
     args: Partial<user>,
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     if (args.id && args.id !== userID) {
       throw new Error("Cannot update another user's profile")
@@ -181,7 +184,7 @@ export const mutators = {
   // ✅ Tasks
   createTask: async (
     args: Omit<newTask, "userId" | "guestId">,
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     const isUser = userID.startsWith("user_")
     const task = await createTask({
@@ -194,7 +197,7 @@ export const mutators = {
 
   updateTask: async (
     args: Partial<task> & { id: string },
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     // Get existing task first
     const existingTask = await getTask({ id: args.id })
@@ -209,7 +212,7 @@ export const mutators = {
 
   deleteTask: async (
     { taskId }: { taskId: string },
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     const deleted = await deleteTask({ id: taskId })
     return { success: !!deleted }
@@ -218,7 +221,7 @@ export const mutators = {
   // ✅ Moods
   createMood: async (
     args: Omit<newMood, "userId" | "guestId">,
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     const isUser = userID.startsWith("user_")
     const mood = await createMood({
@@ -231,7 +234,7 @@ export const mutators = {
 
   updateMood: async (
     args: Partial<mood> & { id: string },
-    { userID }: { userID: string }
+    { userID }: { userID: string },
   ) => {
     const existingMood = await getMood({ id: args.id })
     if (!existingMood) throw new Error("Mood not found")
@@ -250,6 +253,7 @@ export const mutators = {
 ## 🎯 **What Gets Preserved When You Reuse Functions**
 
 ### **1. Credit Tracking**
+
 ```typescript
 // Your existing createMessage already does this:
 await logCreditUsage({
@@ -264,6 +268,7 @@ await logCreditUsage({
 ```
 
 ### **2. Cache Invalidation**
+
 ```typescript
 // Your existing createMessage already does this:
 if (inserted?.userId) {
@@ -275,6 +280,7 @@ if (inserted?.guestId) {
 ```
 
 ### **3. Business Logic**
+
 ```typescript
 // Your existing functions already handle:
 // - Ownership verification
@@ -289,6 +295,7 @@ if (inserted?.guestId) {
 ## 📊 **Comparison**
 
 ### **Reusing Existing Functions (✅ Recommended)**
+
 ```typescript
 const message = await createMessage({
   ...args,
@@ -298,6 +305,7 @@ const message = await createMessage({
 ```
 
 **Result:**
+
 - ✅ 3 lines of code
 - ✅ All existing logic preserved
 - ✅ Credit tracking works
@@ -305,6 +313,7 @@ const message = await createMessage({
 - ✅ Easy to maintain
 
 ### **Rewriting Logic (❌ Not Recommended)**
+
 ```typescript
 const messageId = crypto.randomUUID()
 await db.insert(schema.messages).values({
@@ -324,6 +333,7 @@ await invalidateUser(userID)
 ```
 
 **Result:**
+
 - ❌ 50+ lines of code
 - ❌ Duplicates existing logic
 - ❌ Easy to miss features
@@ -334,18 +344,21 @@ await invalidateUser(userID)
 ## 🚀 **Summary**
 
 ### **DO:**
+
 - ✅ Import functions from `@repo/db`
 - ✅ Call existing functions in mutators
 - ✅ Add `userID` from auth context
 - ✅ Keep mutators thin (just auth + call existing function)
 
 ### **DON'T:**
+
 - ❌ Rewrite database logic in mutators
 - ❌ Duplicate credit tracking
 - ❌ Duplicate cache invalidation
 - ❌ Duplicate business logic
 
 ### **Pattern:**
+
 ```typescript
 // Zero mutator = Auth check + Call existing function
 mutator: async (args, { userID }) => {
