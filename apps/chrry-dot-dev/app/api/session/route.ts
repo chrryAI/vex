@@ -168,6 +168,7 @@ export async function GET(request: Request) {
   const getMember = () => getMemberAction({ full: true, skipCache: true })
 
   let member = await getMember()
+  console.log(`🚀 ~ file: route.ts:171 ~ member:`, member)
   const guest = !member ? await getGuestAction({ skipCache: true }) : undefined
   const { success } = await checkRateLimit(request, { member, guest })
 

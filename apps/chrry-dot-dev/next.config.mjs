@@ -1,21 +1,52 @@
 // Suppress ECONNRESET errors in development (from browser extensions/aborted requests)
-if (process.env.NODE_ENV !== 'production') {
-  const originalEmit = process.emit
-  process.emit = function (event, ...args) {
+import EventEmitter from "events"
+
+if (process.env.NODE_ENV !== "production") {
+  const originalEmit = EventEmitter.prototype.emit
+
+  EventEmitter.prototype.emit = function (event, ...args) {
     // Suppress ECONNRESET and EPIPE errors from aborted connections
-    const error = args[0]
-    if (error?.code === 'ECONNRESET' || error?.code === 'EPIPE') {
-      return false
+    if (event === "error") {
+      const error = args[0]
+      if (
+        error?.code === "ECONNRESET" ||
+        error?.code === "EPIPE" ||
+        error?.message?.includes("aborted")
+      ) {
+        console.log(
+          "⚠️ Suppressed connection error:",
+          error?.code || error?.message,
+        )
+        return false
+      }
     }
-    return originalEmit.apply(process, [event, ...args])
+    return originalEmit.apply(this, [event, ...args])
   }
 
-  // Also suppress unhandled rejections for these errors
-  process.on('unhandledRejection', (reason) => {
-    if (reason?.code === 'ECONNRESET' || reason?.code === 'EPIPE') {
+  // Also catch uncaught exceptions
+  process.on("uncaughtException", (error) => {
+    if (
+      error?.code === "ECONNRESET" ||
+      error?.code === "EPIPE" ||
+      error?.message?.includes("aborted")
+    ) {
+      console.log(
+        "⚠️ Suppressed uncaught exception:",
+        error?.code || error?.message,
+      )
       return
     }
-    console.error('Unhandled Rejection:', reason)
+    console.error("Uncaught Exception:", error)
+    process.exit(1)
+  })
+
+  // Also suppress unhandled rejections for these errors
+  process.on("unhandledRejection", (reason) => {
+    if (reason?.code === "ECONNRESET" || reason?.code === "EPIPE") {
+      console.log("⚠️ Suppressed unhandled rejection:", reason?.code)
+      return
+    }
+    console.error("Unhandled Rejection:", reason)
   })
 }
 
@@ -43,11 +74,11 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/api/:path*',
+        source: "/api/:path*",
         headers: [
           {
-            key: 'Content-Type',
-            value: 'application/json',
+            key: "Content-Type",
+            value: "application/json",
           },
         ],
       },
@@ -57,7 +88,7 @@ const nextConfig = {
     // Add path aliases to match tsconfig
     config.resolve.alias = {
       ...config.resolve.alias,
-      "chrry": "@chrryai/chrry",
+      chrry: "@chrryai/chrry",
     }
 
     // Suppress OpenTelemetry warnings from Sentry instrumentation
