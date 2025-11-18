@@ -100,6 +100,13 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Handle OPTIONS preflight requests FIRST (before any other checks)
+  if (request.method === "OPTIONS") {
+    const response = new NextResponse(null, { status: 200 })
+    setCorsHeaders(response, request)
+    return response
+  }
+
   if (staticPatterns.some((pattern) => pathname.startsWith(pattern))) {
     const response = NextResponse.next()
     setCorsHeaders(response, request)
@@ -162,13 +169,6 @@ export default async function middleware(request: NextRequest) {
     setCorsHeaders(response, request)
     response.headers.set("x-pathname", pathname)
     response.headers.set("x-route-type", "client-side")
-    return response
-  }
-
-  // Handle OPTIONS preflight requests
-  if (request.method === "OPTIONS") {
-    const response = new NextResponse(null, { status: 200 })
-    setCorsHeaders(response, request)
     return response
   }
 
