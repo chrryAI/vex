@@ -607,7 +607,7 @@ export function getSiteTranslation(
 }
 
 export function detectSiteModeDomain(hostname?: string): SiteMode {
-  const defaultMode = "istanbul"
+  const defaultMode = "atlas"
   // const defaultMode = "focus"
 
   // Get hostname from parameter or window (client-side)
@@ -889,7 +889,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return {
       mode: "focus",
       slug: "focus",
-      version: "26.10.30",
+      version: "26.10.31",
       storeSlug: "blossom",
       name: "Focus",
       domain: "focus.chrry.ai",
