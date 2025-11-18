@@ -450,31 +450,61 @@ export const authOptions: AuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: isDevelopment
+        ? "next-auth.session-token"
+        : "__Secure-next-auth.session-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: !isDevelopment,
+        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain in production
+      },
+    },
+    callbackUrl: {
+      name: isDevelopment
+        ? "next-auth.callback-url"
+        : "__Secure-next-auth.callback-url",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: !isDevelopment,
+        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain
+      },
+    },
+    csrfToken: {
+      name: isDevelopment
+        ? "next-auth.csrf-token"
+        : "__Host-next-auth.csrf-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: !isDevelopment,
+        // Note: __Host- prefix requires domain to be undefined for security
+        domain: undefined,
       },
     },
     pkceCodeVerifier: {
       name: "next-auth.pkce.code_verifier",
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        sameSite: isDevelopment ? "lax" : "none",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: !isDevelopment,
+        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain
       },
     },
     state: {
       name: "next-auth.state",
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        sameSite: isDevelopment ? "lax" : "none",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: !isDevelopment,
         maxAge: 900,
+        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain
       },
     },
   },
