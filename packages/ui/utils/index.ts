@@ -665,6 +665,9 @@ export { getHourlyLimit } from "./getHourlyLimit"
 // Export generateAppMetadata
 export { generateAppMetadata } from "./generateAppMetadata"
 
+// Export generateStoreMetadata
+export { generateStoreMetadata } from "./generateStoreMetadata"
+
 // Export file validation utilities
 export {
   validateFile,

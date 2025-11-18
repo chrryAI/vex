@@ -4,7 +4,12 @@ import React, { useEffect, useState } from "react"
 import styles from "./Store.module.scss"
 import clsx from "clsx"
 import Skeleton from "./Skeleton"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import {
+  useApp,
+  useAuth,
+  useData,
+  useNavigationContext,
+} from "./context/providers"
 import Img from "./Image"
 import { useAppContext } from "./context/AppContext"
 import { appWithStore } from "./types"
@@ -12,6 +17,7 @@ import { Div, usePlatform, useTheme } from "./platform"
 import { useStoreStyles } from "./Store.styles"
 import { Sparkles, ArrowRight } from "./icons"
 import A from "./A"
+import { useStoreMetadata } from "./hooks/useMetadata"
 
 export default function Store({
   compact,
@@ -27,21 +33,12 @@ export default function Store({
   const { router, setIsNewChat, pathname, searchParams } =
     useNavigationContext()
 
-  const { allApps, getAppSlug, setApp, app } = useAuth()
-
-  const [storeSlug, setStoreSlug] = useState(slug || pathname.replace("/", ""))
-
-  useEffect(() => {
-    !slug && setStoreSlug(pathname.replace("/", ""))
-  }, [pathname, slug])
-
-  const matchedApp = allApps?.find((app) => app?.store?.slug === storeSlug)
-  const store = matchedApp?.store
+  const { allApps, getAppSlug } = useAuth()
+  const { currentStore: store, setStoreSlug } = useApp()
 
   const apps = store?.apps
 
   // Get the base app - either from store.app or find it in the apps array
-  const baseApp = store?.app || apps?.find((app) => app?.id === store?.appId)
 
   const { t } = useAppContext()
   const { track } = useAuth()
@@ -95,6 +92,9 @@ export default function Store({
       })
     }
   }, [selectedApp?.id, store?.id, track])
+
+  // Dynamically update page metadata for client-side navigation
+  useStoreMetadata(store)
 
   const storeStyles = useStoreStyles()
 

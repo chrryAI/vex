@@ -36,7 +36,7 @@ import CollaborationStatus from "./CollaborationStatus"
 import EnableSound from "./EnableSound"
 import MemoryConsent from "./MemoryConsent"
 import Img from "./Img"
-import { useHasHydrated } from "./hooks"
+import { useAppMetadata, useHasHydrated, useThreadMetadata } from "./hooks"
 import { lazy, Suspense } from "react"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
@@ -123,6 +123,9 @@ const Thread = ({
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
   const { addHapticFeedback, isDrawerOpen } = useTheme()
+
+  // Update thread metadata dynamically
+  useThreadMetadata(thread)
 
   // Derived from thread
 
