@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server"
-import getMember from "../../actions/getMember"
+import getMemberAction from "../../actions/getMember"
 import {
   createGuest,
   deleteThread,
   getCreditTransactions,
   getCreditUsage,
-  getGuest as getGuestDb,
+  getGuest,
   getThreads,
   migrateUser,
   updateGuest,
@@ -39,12 +39,22 @@ import {
 } from "@repo/db/src/schema"
 
 import captureException from "../../../lib/captureException"
-import getGuest from "../../actions/getGuest"
+import getGuestAction from "../../actions/getGuest"
 import { cookies } from "next/headers"
 import { appWithStore } from "chrry/types"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "chrry/utils/url"
 import { locales } from "chrry/locales"
 import { getSiteConfig } from "chrry/utils/siteConfig"
+
+const getGuestDb = ({
+  email,
+  fingerprint,
+  id,
+}: {
+  email?: string
+  fingerprint?: string
+  id?: string
+}) => getGuest({ skipCache: true, email, fingerprint, id })
 
 const hasThreadNotification = lib.hasThreadNotification
 
@@ -155,8 +165,10 @@ export async function GET(request: Request) {
     chromeVersion: "1.1.47",
   }
 
-  let member = await getMember(true)
-  const guest = !member ? await getGuest() : undefined
+  const getMember = () => getMemberAction({ full: true, skipCache: true })
+
+  let member = await getMember()
+  const guest = !member ? await getGuestAction({ skipCache: true }) : undefined
   const { success } = await checkRateLimit(request, { member, guest })
 
   const url = new URL(request.url)
@@ -530,7 +542,7 @@ export async function GET(request: Request) {
           })
         }
 
-        member = await getMember(true)
+        member = await getMember()
       } else if (member.creditsLeft === 0) {
         await updateUser({
           ...member,
@@ -542,7 +554,7 @@ export async function GET(request: Request) {
                 : MEMBER_CREDITS_PER_MONTH,
         })
 
-        member = await getMember(true)
+        member = await getMember()
       }
 
       if (!member) {
@@ -586,7 +598,7 @@ export async function GET(request: Request) {
 
           member.migratedFromGuest = true
           migratedFromGuest = true
-          member = await getMember(true)
+          member = await getMember()
         }
       }
 

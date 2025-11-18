@@ -11,20 +11,25 @@ import { isOwner, OWNER_CREDITS } from "chrry/utils"
 import { authOptions } from "../../api/auth/[...nextauth]/options"
 import { decode } from "next-auth/jwt"
 
-export default async function getMember(
-  exposePassword = false,
-  byEmail?: string,
-) {
+export default async function getMember({
+  byEmail,
+  full,
+  skipCache,
+}: {
+  byEmail?: string
+  full?: boolean
+  skipCache?: boolean
+} = {}) {
   if (byEmail) {
     const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
-    let user = await getUser({ email: byEmail })
+    let user = await getUser({ email: byEmail, skipCache })
 
     if (user) {
       return {
         ...user,
         token,
         sessionCookie: undefined, // No session cookie when fetching by email
-        password: exposePassword ? user.password : null,
+        password: full ? user.password : null,
       }
     }
     return
@@ -56,7 +61,7 @@ export default async function getMember(
 
         if (decodedToken?.email) {
           console.log("✅ Successfully decoded session token")
-          const user = await getUser({ email: decodedToken.email })
+          const user = await getUser({ email: decodedToken.email, skipCache })
 
           if (user) {
             // Generate token from decoded session
@@ -69,7 +74,7 @@ export default async function getMember(
               ...user,
               token,
               sessionCookie,
-              password: exposePassword ? user.password : null,
+              password: full ? user.password : null,
             }
           }
         }
@@ -82,7 +87,7 @@ export default async function getMember(
   // Fallback to getServerSession if direct decode didn't work
   const session = (await getServerSession(authOptions as any)) as Session
   if (session?.user?.email) {
-    let user = await getUser({ email: session.user.email })
+    let user = await getUser({ email: session.user.email, skipCache })
     if (user) {
       // Generate token if not present in session (fallback)
       const token =
@@ -96,7 +101,7 @@ export default async function getMember(
         ...user,
         token,
         sessionCookie, // Include the raw session cookie if it exists
-        password: exposePassword ? user.password : null,
+        password: full ? user.password : null,
       }
     }
 
@@ -118,12 +123,12 @@ export default async function getMember(
       if (token.split(".").length !== 3) {
         const fp = authHeader.replace("Bearer ", "")
 
-        let result = await getUser({ apiKey: fp })
+        let result = await getUser({ apiKey: fp, skipCache })
         if (result) {
           return {
             ...result,
             token,
-            password: exposePassword ? result.password : null,
+            password: full ? result.password : null,
           }
         }
 
@@ -133,13 +138,13 @@ export default async function getMember(
       // Verify and decode the token
       const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
       if (decoded.email) {
-        const user = await getUser({ email: decoded.email })
+        const user = await getUser({ email: decoded.email, skipCache })
 
         if (user) {
           return {
             ...user,
             token,
-            password: exposePassword ? user.password : null,
+            password: full ? user.password : null,
           }
         }
         return

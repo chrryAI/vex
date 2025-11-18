@@ -43,7 +43,9 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const guest = await getGuestAction()
+  const guest = await getGuestAction({
+    skipCache: true,
+  })
 
   if (!guest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

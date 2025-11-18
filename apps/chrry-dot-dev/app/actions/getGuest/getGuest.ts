@@ -1,15 +1,11 @@
 import { getGuest as getGuestDB } from "@repo/db"
 import { cookies, headers } from "next/headers"
-import getMember from "../getMember"
 import captureException from "../../../lib/captureException"
-import getApp from "../getApp"
-import { isOwner, OWNER_CREDITS } from "chrry/utils"
 import { validate } from "uuid"
 
-export default async function getGuest(debug = false) {
-  const member = await getMember()
-  if (member) return
-
+export default async function getGuest({
+  skipCache,
+}: { skipCache?: boolean } = {}) {
   try {
     const cookieStore = await cookies()
     const headersList = await headers()
@@ -23,7 +19,7 @@ export default async function getGuest(debug = false) {
         return
       }
 
-      let result = await getGuestDB({ fingerprint: fp })
+      let result = await getGuestDB({ fingerprint: fp, skipCache })
 
       if (!result) {
         const fingerprint =
