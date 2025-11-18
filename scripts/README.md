@@ -5,12 +5,14 @@ Launch a new city subdomain in 30 seconds.
 ## Prerequisites
 
 1. **Cloudflare API credentials**
+
    ```bash
    export CLOUDFLARE_ZONE_ID='your-zone-id'
    export CLOUDFLARE_TOKEN='your-api-token'
    ```
 
 2. **SSH access to production server**
+
    ```bash
    ssh root@162.55.97.114
    ```
@@ -33,6 +35,7 @@ chmod +x scripts/add-city.sh
 ## Examples
 
 ### European Cities
+
 ```bash
 # Berlin, Germany
 ./scripts/add-city.sh berlin Germany 🇩🇪 "#000000" German
@@ -51,6 +54,7 @@ chmod +x scripts/add-city.sh
 ```
 
 ### Asian Cities
+
 ```bash
 # Mumbai, India
 ./scripts/add-city.sh mumbai India 🇮🇳 "#FF9933" Hindi
@@ -66,6 +70,7 @@ chmod +x scripts/add-city.sh
 ```
 
 ### American Cities
+
 ```bash
 # Los Angeles, USA
 ./scripts/add-city.sh losangeles USA 🇺🇸 "#005A9C" English
@@ -97,11 +102,13 @@ The script performs 6 automated steps:
 ## After Running
 
 1. **Seed the database**
+
    ```bash
    pnpm dbs
    ```
 
 2. **Verify the subdomain**
+
    ```bash
    curl -I https://berlin.chrry.ai
    ```
@@ -114,12 +121,14 @@ The script performs 6 automated steps:
 ## Architecture
 
 ### Multi-Tenant White-Label
+
 - **Single codebase** → Multiple brands
 - **Single server** → Multiple subdomains
 - **Single database** → Isolated data
 - **Zero marginal cost** → Infinite scalability
 
 ### How It Works
+
 ```
 berlin.chrry.ai
     ↓
@@ -137,6 +146,7 @@ Returns Berlin branding
 ## Troubleshooting
 
 ### DNS not propagating
+
 ```bash
 # Check DNS
 dig berlin.chrry.ai
@@ -146,6 +156,7 @@ curl -H "Cache-Control: no-cache" https://berlin.chrry.ai
 ```
 
 ### SSL certificate failed
+
 ```bash
 # SSH to server
 ssh root@162.55.97.114
@@ -155,6 +166,7 @@ certbot --nginx -d berlin.chrry.ai
 ```
 
 ### Nginx config error
+
 ```bash
 # SSH to server
 ssh root@162.55.97.114
@@ -167,6 +179,7 @@ tail -f /var/log/nginx/error.log
 ```
 
 ### Site mode not detected
+
 ```bash
 # Check siteConfig.ts
 grep "berlin" packages/ui/utils/siteConfig.ts
@@ -178,20 +191,24 @@ pnpm vs
 ## Scaling Strategy
 
 ### Phase 1: Top 10 Cities (Week 1)
+
 - New York, London, Tokyo, Paris, Berlin
 - Istanbul, Amsterdam, Singapore, Dubai, Sydney
 
 ### Phase 2: Top 50 Cities (Month 1)
+
 - All major European capitals
 - Top US cities (LA, Chicago, Miami, SF, etc.)
 - Top Asian cities (Seoul, Bangkok, Mumbai, etc.)
 
 ### Phase 3: Top 100 Cities (Month 3)
+
 - Regional hubs worldwide
 - Emerging markets (Africa, South America)
 - Tourist destinations
 
 ### Phase 4: 1000+ Cities (Year 1)
+
 - Every city with 1M+ population
 - White-label partnerships
 - User-generated cities
@@ -199,6 +216,7 @@ pnpm vs
 ## Economics
 
 ### Cost Per City
+
 - DNS: $0 (Cloudflare free tier)
 - SSL: $0 (Let's Encrypt)
 - Server: $0 (same server)
@@ -206,11 +224,13 @@ pnpm vs
 - **Total: $0**
 
 ### Revenue Per City
+
 - 10,000 users × $5/month = $50,000/month
 - 100 cities = $5M/month
 - 1,000 cities = $50M/month
 
 ### Time Investment
+
 - Manual: 2 hours per city
 - Automated: 30 seconds per city
 - **4,800x faster**
@@ -218,6 +238,7 @@ pnpm vs
 ## Future Enhancements
 
 ### 1. Web UI
+
 ```typescript
 // Admin panel at /admin/cities
 <form onSubmit={launchCity}>
@@ -228,6 +249,7 @@ pnpm vs
 ```
 
 ### 2. AI-Powered
+
 ```bash
 # Just say: "Launch Berlin"
 ./scripts/ai-city.sh "Launch Berlin"
@@ -235,6 +257,7 @@ pnpm vs
 ```
 
 ### 3. User-Generated
+
 ```typescript
 // Let users launch their own cities
 <button onClick={() => launchCity("mycity")}>
@@ -243,6 +266,7 @@ pnpm vs
 ```
 
 ### 4. Marketplace
+
 - Cities can be bought/sold
 - Revenue sharing with city owners
 - White-label partnerships
@@ -261,4 +285,4 @@ pnpm vs
 
 ---
 
-*Built with ❤️ by the Chrry team*
+_Built with ❤️ by the Chrry team_
