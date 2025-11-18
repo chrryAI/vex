@@ -4461,6 +4461,7 @@ export const getApp = async ({
   storeId,
   isSafe = true,
   depth = 0,
+  storeDomain,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
   id?: string
@@ -4470,6 +4471,7 @@ export const getApp = async ({
   storeId?: string
   isSafe?: boolean
   depth?: number
+  storeDomain?: string
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -4512,8 +4514,8 @@ export const getApp = async ({
   // Use shared cache key for public apps if user doesn't own any apps
   // Otherwise use user-specific key (they might have user-specific data like placeholders)
   const cacheKey = isAppOwner
-    ? `app:${id || slug || name}:user:${userId}:guest:${guestId}:store:${storeId || "none"}:depth:${depth}`
-    : `app:${id || slug || name}:public:store:${storeId || "none"}:depth:${depth}`
+    ? `app:${id || slug || name}:user:${userId}:guest:${guestId}:store:${storeId || "none"}:storeDomain:${storeDomain || "none"}:depth:${depth}`
+    : `app:${id || slug || name}:public:store:${storeId || "none"}:storeDomain:${storeDomain || "none"}:depth:${depth}`
 
   // Try cache first
   const cached = await getCache<appWithStore>(cacheKey)
@@ -4521,21 +4523,32 @@ export const getApp = async ({
     return cached
   }
 
-  const [app] = await db
+  // Build query with conditional store join
+  let query = db
     .select({
       app: apps,
       user: users,
       guest: guests,
+      store: storeDomain ? stores : sql`NULL`.as("store"),
     })
     .from(apps)
     .leftJoin(users, eq(apps.userId, users.id))
     .leftJoin(guests, eq(apps.guestId, guests.id))
-    .where(
-      and(
-        appConditions.length > 0 ? and(...appConditions) : undefined,
-        accessConditions,
-      ),
+
+  // Only add store join if storeDomain is provided
+  if (storeDomain) {
+    query = query.leftJoin(
+      stores,
+      and(eq(apps.storeId, stores.id), eq(stores.domain, storeDomain)),
     )
+  }
+
+  const [app] = await query.where(
+    and(
+      appConditions.length > 0 ? and(...appConditions) : undefined,
+      accessConditions,
+    ),
+  )
 
   if (!app) return undefined
 
@@ -4587,9 +4600,14 @@ export const getApp = async ({
     }
   }
 
-  const storeData = targetStoreId
-    ? await getStore({ id: targetStoreId, userId, guestId, depth })
-    : undefined
+  // If storeDomain was provided and we got store data from the join, use it
+  // Otherwise, fetch store data separately
+  const storeData =
+    storeDomain && app.store
+      ? await getStore({ domain: storeDomain, userId, guestId, depth })
+      : targetStoreId
+        ? await getStore({ id: targetStoreId, userId, guestId, depth })
+        : undefined
 
   // Build store with apps array for hyperlink navigation
   const storeWithApps = storeData
