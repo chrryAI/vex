@@ -26,7 +26,7 @@ export function createZeroClient() {
   useEffect(() => {
     async function init() {
       const session = await getSession()
-      
+
       const z = new Zero({
         server: process.env.NEXT_PUBLIC_ZERO_SERVER_URL!,
         schema,
@@ -61,7 +61,7 @@ These run on **every query** to filter data:
 // apps/zero-server/src/index.ts (when Zero server is implemented)
 const server = createZeroServer({
   schema,
-  
+
   // Row-level security
   permissions: {
     messages: {
@@ -74,7 +74,7 @@ const server = createZeroServer({
         return row.userId === userID || row.guestId === userID
       },
     },
-    
+
     threads: {
       read: (row, { userID }) => {
         return row.userId === userID || row.guestId === userID
@@ -83,7 +83,7 @@ const server = createZeroServer({
         return row.userId === userID || row.guestId === userID
       },
     },
-    
+
     users: {
       // Can only read own profile
       read: (row, { userID }) => row.id === userID,
@@ -95,6 +95,7 @@ const server = createZeroServer({
 ```
 
 **How it works:**
+
 - ✅ User A queries messages → Only sees their messages
 - ✅ User B queries messages → Only sees their messages
 - ❌ User A cannot see User B's messages
@@ -122,18 +123,20 @@ import {
 
 const server = createZeroServer({
   schema,
-  permissions: { /* ... */ },
-  
+  permissions: {
+    /* ... */
+  },
+
   // Custom authenticated mutations - REUSE existing DB functions!
   mutators: {
     // Create a message (authenticated)
     createMessage: async (
       args: Omit<newMessage, "userId" | "guestId">,
-      { userID }
+      { userID },
     ) => {
       // Determine if user or guest
       const isUser = userID.startsWith("user_")
-      
+
       // Call your existing createMessage function!
       const message = await createMessage({
         ...args,
@@ -147,10 +150,10 @@ const server = createZeroServer({
     // Create a thread (authenticated)
     createThread: async (
       args: Omit<newThread, "userId" | "guestId">,
-      { userID }
+      { userID },
     ) => {
       const isUser = userID.startsWith("user_")
-      
+
       // Call your existing createThread function!
       const thread = await createThread({
         ...args,
@@ -162,10 +165,7 @@ const server = createZeroServer({
     },
 
     // Update user profile (authenticated)
-    updateProfile: async (
-      args: Partial<user>,
-      { userID }
-    ) => {
+    updateProfile: async (args: Partial<user>, { userID }) => {
       // Verify user is updating their own profile
       if (args.id && args.id !== userID) {
         throw new Error("Cannot update another user's profile")
@@ -181,10 +181,7 @@ const server = createZeroServer({
     },
 
     // Delete message (authenticated)
-    deleteMessage: async (
-      { messageId }: { messageId: string },
-      { userID }
-    ) => {
+    deleteMessage: async ({ messageId }: { messageId: string }, { userID }) => {
       // Call your existing deleteMessage function!
       // It already handles ownership verification
       const deleted = await deleteMessage({ id: messageId })
@@ -281,7 +278,7 @@ mutators: {
       where: (m, { eq, and, or }) =>
         and(
           eq(m.id, messageId),
-          or(eq(m.userId, userID), eq(m.guestId, userID))
+          or(eq(m.userId, userID), eq(m.guestId, userID)),
         ),
     })
 
