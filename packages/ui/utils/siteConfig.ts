@@ -48,13 +48,14 @@ export const extensions = [
 ]
 
 export const getCurrentExtensionUrl = (domain?: string): string[] => {
-  const mode = detectSiteMode(domain)
-  const mainUrl =
-    mode === "vex"
-      ? "https://vex.chrry.ai"
-      : mode === "focus"
-        ? "https://focus.chrry.ai"
-        : "https://chrry.ai"
+  const vex = getSiteConfig("vex").url
+  const chrry = getSiteConfig("chrryAI").url
+  const atlas = getSiteConfig("atlas").url
+  const istanbul = getSiteConfig("istanbul").url
+  const amsterdam = getSiteConfig("amsterdam").url
+  const tokyo = getSiteConfig("tokyo").url
+  const newYork = getSiteConfig("newYork").url
+  const focus = getSiteConfig("focus").url
 
   // Development: only use localhost
   if (isDevelopment) {
@@ -62,7 +63,7 @@ export const getCurrentExtensionUrl = (domain?: string): string[] => {
   }
 
   // Production: current mode first, then other extensions as fallbacks
-  const urls = [mainUrl, ...extensions.filter((url) => url !== mainUrl)]
+  const urls = [vex, chrry, atlas, istanbul, amsterdam, tokyo, newYork, focus]
   return urls
 }
 
