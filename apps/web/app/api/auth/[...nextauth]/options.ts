@@ -306,11 +306,11 @@ export const authOptions: AuthOptions = {
       })
 
       if (account?.provider === "apple" && profile?.sub) {
-        // Try to find user by appleId
-        let dbUser = await getUser({ appleId: profile.sub })
+        // Try to find user by appleId (skip cache for fresh data during OAuth)
+        let dbUser = await getUser({ appleId: profile.sub, skipCache: true })
         if (!dbUser && user.email) {
           // Fallback: try to find by email
-          dbUser = await getUser({ email: user.email })
+          dbUser = await getUser({ email: user.email, skipCache: true })
         }
         if (!dbUser) {
           // Create user with appleId
@@ -353,8 +353,8 @@ export const authOptions: AuthOptions = {
             userId: user.id,
           })
 
-          // Check if user exists in database
-          const dbUser = await getUser({ email: user.email })
+          // Check if user exists in database (skip cache for fresh data during OAuth)
+          const dbUser = await getUser({ email: user.email, skipCache: true })
 
           if (dbUser) {
             await updateUser({

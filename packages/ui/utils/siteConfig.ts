@@ -47,7 +47,7 @@ export const extensions = [
   "https://chrry.ai",
 ]
 
-export const getCurrentExtensionUrl = (domain?: string): string[] => {
+export const getExtensionUrls = (domain?: string): string[] => {
   const vex = getSiteConfig("vex").url
   const chrry = getSiteConfig("chrryAI").url
   const atlas = getSiteConfig("atlas").url

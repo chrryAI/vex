@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
 import { storage } from "./storage"
-import { getCurrentExtensionUrl } from "chrry/utils/siteConfig"
+import { getExtensionUrls } from "chrry/utils/siteConfig"
 import { validate } from "uuid"
 
 // Cookie options
@@ -95,7 +95,7 @@ async function getCookie(key: string): Promise<string | null> {
   if (isBrowserExtension()) {
     try {
       // Use the website URLs, not current tab
-      const websiteUrls = getCurrentExtensionUrl()
+      const websiteUrls = getExtensionUrls()
 
       const final = []
       // Chrome extension cookies API
