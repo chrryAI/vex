@@ -32,14 +32,46 @@ export default async function getMember(
   if (session?.user?.email) {
     let user = await getUser({ email: session.user.email })
     if (user) {
+      // Generate token if not present in session (fallback)
+      const token =
+        session.token ||
+        jwt.sign(
+          { email: session.user.email, sub: user.id },
+          process.env.NEXTAUTH_SECRET!,
+        )
+
       return {
         ...user,
-        token: session.token,
+        token,
         password: exposePassword ? user.password : null,
       }
     }
 
     return
+  }
+
+  // Fallback: Check if session cookie exists (indicates user is authenticated)
+  // Even if getServerSession() failed, the cookie presence means they're logged in
+  try {
+    const headersList = await headers()
+    const cookieHeader = headersList.get("cookie")
+
+    if (cookieHeader) {
+      // Look for __Secure-next-auth.session-token or next-auth.session-token
+      const hasSessionCookie =
+        cookieHeader.includes("__Secure-next-auth.session-token=") ||
+        cookieHeader.includes("next-auth.session-token=")
+
+      if (hasSessionCookie) {
+        console.log(
+          "⚠️ Session cookie exists but getServerSession() returned null",
+        )
+        console.log("This might indicate a session callback issue")
+        // Could retry getServerSession() here or log for debugging
+      }
+    }
+  } catch (error) {
+    console.error("Error checking session cookie:", error)
   }
 
   try {
