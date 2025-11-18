@@ -61,6 +61,8 @@ interface AppStatus {
 }
 
 interface AppFormContextType {
+  setStoreSlug: (storeSlug: string) => void
+  currentStore: storeWithApps | undefined
   showingCustom: boolean
   hasCustomInstructions: boolean
   isAppInstructions: boolean
@@ -171,7 +173,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const { t } = useTranslation()
 
-  const { searchParams, push } = useNavigation()
+  const { searchParams, push, pathname } = useNavigation()
 
   // useEffect(() => {
   //   session?.apps.length && setApps(session?.apps)
@@ -451,6 +453,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [app?.id, user?.instructions, guest?.instructions],
   )
 
+  const [storeSlug, setStoreSlug] = useState(slug || pathname.replace("/", ""))
+
+  useEffect(() => {
+    !slug && setStoreSlug(pathname.replace("/", ""))
+  }, [pathname, slug])
+
+  const matchedApp = allApps?.find((app) => app?.store?.slug === storeSlug)
+  const currentStore = matchedApp?.store
+
   const appFormWatcher = {
     ...watcher,
     image: appForm.watch("image"),
@@ -700,6 +711,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppFormContext.Provider
       value={{
+        currentStore,
         showingCustom,
         storeApp,
         chrry,
@@ -735,6 +747,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setInstructions,
         isAppInstructions,
         hasCustomInstructions,
+        setStoreSlug,
       }}
     >
       {children}

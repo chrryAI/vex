@@ -5,6 +5,8 @@ import { defaultLocale } from "./locales"
 import Thread from "./Thread"
 import { app } from "./types"
 import { useAuth } from "./context/providers"
+import { useApp } from "./context/providers"
+import { useAppMetadata } from "./hooks"
 
 export default function Home({
   className,
@@ -14,7 +16,10 @@ export default function Home({
   app?: app
   slug?: string
 }): React.ReactElement {
-  const { language } = useAuth()
+  const { language, threadId } = useAuth()
+  const { currentStore: store, app } = useApp()
+
+  useAppMetadata(app, !store && !threadId)
 
   return (
     <div

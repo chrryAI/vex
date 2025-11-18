@@ -30,3 +30,8 @@ export { useLocalStorage, useHasHydrated, useCountdown }
 export { useDeviceInfo } from "./useDeviceInfo"
 export { usePWAInstall } from "./usePWAInstall"
 export { default as useCookieOrLocalStorage } from "./useCookieOrLocalStorage"
+export {
+  useStoreMetadata,
+  useAppMetadata,
+  useThreadMetadata,
+} from "./useMetadata"
