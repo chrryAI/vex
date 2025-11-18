@@ -15,6 +15,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       allow: "/",
       disallow: ["/api/*"],
     },
-    sitemap: `https://chrry.dev/api/sitemap?chrryUrl=${fullUrl}`,
+    sitemap: `${fullUrl}/sitemap.xml`,
   }
 }

@@ -364,11 +364,7 @@ export default async function ChrryAI({
         />
         {/* Disable Google Translate to prevent hydration mismatches */}
         <meta name="google" content="notranslate" />
-        <link
-          rel="sitemap"
-          type="application/xml"
-          href={`${API_URL}/sitemap?chrryUrl=${encodeURIComponent(siteConfig.url)}`}
-        />
+        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
         <AppMetadata app={app} />
         {!isDev && user?.role !== "admin" && (
