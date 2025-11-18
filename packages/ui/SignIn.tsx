@@ -159,7 +159,9 @@ export default function SignIn({
       }
     }
 
-    const baseUrl = FRONTEND_URL
+    // For OAuth (Google/Apple), always use chrry.ai as callback to avoid URL limit issues
+    // We'll redirect back to the original subdomain after auth
+    const baseUrl = isDevelopment ? FRONTEND_URL : "https://chrry.ai"
 
     const errorUrl = new URL(baseUrl + "/?signIn=login&error")
     // Create URLs for both success and error cases
@@ -179,6 +181,12 @@ export default function SignIn({
       }
     } else {
       successUrl.searchParams.set("welcome", "true")
+    }
+
+    // Store original subdomain URL for post-OAuth redirect
+    // This allows us to use a single OAuth callback URL (chrry.ai) for all subdomains
+    if (!isDevelopment && CHRRY_URL !== "https://chrry.ai") {
+      successUrl.searchParams.set("chrryUrl", encodeURIComponent(CHRRY_URL))
     }
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")

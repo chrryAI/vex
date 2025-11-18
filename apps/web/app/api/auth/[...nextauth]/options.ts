@@ -193,6 +193,35 @@ export const authOptions: AuthOptions = {
     async redirect({ url, baseUrl }) {
       // Extract hostname from baseUrl to get site-specific config
       try {
+        const urlObj = new URL(url)
+
+        // Check if there's a chrryUrl parameter (original subdomain to redirect back to)
+        // This handles the case where OAuth callback goes to chrry.ai but user came from atlas.chrry.ai
+        const chrryUrl = urlObj.searchParams.get("chrryUrl")
+        if (chrryUrl) {
+          try {
+            const decodedChrryUrl = decodeURIComponent(chrryUrl)
+            const targetUrl = new URL(decodedChrryUrl)
+
+            // Preserve other query params (welcome, fp, etc.)
+            urlObj.searchParams.delete("chrryUrl")
+            urlObj.searchParams.forEach((value, key) => {
+              targetUrl.searchParams.set(key, value)
+            })
+
+            // Preserve the path from the original URL
+            targetUrl.pathname = urlObj.pathname
+
+            console.log(
+              "🔄 Redirecting from OAuth callback to original subdomain:",
+              targetUrl.toString(),
+            )
+            return targetUrl.toString()
+          } catch (e) {
+            console.error("Failed to parse chrryUrl:", e)
+          }
+        }
+
         const baseUrlObj = new URL(baseUrl)
         const siteConfig = getSiteConfig(baseUrlObj.hostname)
         const siteBaseUrl = siteConfig.url || baseUrl
@@ -203,7 +232,6 @@ export const authOptions: AuthOptions = {
         }
 
         // If url is absolute and on same domain, allow it
-        const urlObj = new URL(url)
         if (urlObj.hostname === baseUrlObj.hostname) {
           return url
         }
@@ -306,11 +334,11 @@ export const authOptions: AuthOptions = {
       })
 
       if (account?.provider === "apple" && profile?.sub) {
-        // Try to find user by appleId (skip cache for fresh data during OAuth)
-        let dbUser = await getUser({ appleId: profile.sub, skipCache: true })
+        // Try to find user by appleId
+        let dbUser = await getUser({ appleId: profile.sub })
         if (!dbUser && user.email) {
           // Fallback: try to find by email
-          dbUser = await getUser({ email: user.email, skipCache: true })
+          dbUser = await getUser({ email: user.email })
         }
         if (!dbUser) {
           // Create user with appleId
@@ -353,8 +381,8 @@ export const authOptions: AuthOptions = {
             userId: user.id,
           })
 
-          // Check if user exists in database (skip cache for fresh data during OAuth)
-          const dbUser = await getUser({ email: user.email, skipCache: true })
+          // Check if user exists in database
+          const dbUser = await getUser({ email: user.email })
 
           if (dbUser) {
             await updateUser({
