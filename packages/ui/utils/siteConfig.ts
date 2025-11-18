@@ -698,11 +698,14 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "tokyo",
     "newYork",
   ]
-  const mode = validModes.includes(hostname as SiteMode)
-    ? (hostname as SiteMode)
-    : detectSiteModeDomain(hostname)
 
-  return mode
+  // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
+  if (hostname && validModes.includes(hostname as SiteMode)) {
+    return hostname as SiteMode
+  }
+
+  // Otherwise, detect from domain (e.g., "atlas.chrry.ai" -> "atlas")
+  return detectSiteModeDomain(hostname)
 }
 
 /**
