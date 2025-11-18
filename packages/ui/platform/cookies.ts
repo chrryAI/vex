@@ -164,57 +164,11 @@ async function getCookie(key: string): Promise<string | null> {
 }
 
 /**
- * Set cookie across all subdomains (extension only)
- * This is a fallback/enhancement to server-level cross-subdomain cookies
- */
-async function setCookieAllSubdomains(
-  key: string,
-  value: string,
-  options: CookieOptions = {},
-): Promise<void> {
-  if (!isBrowserExtension()) return
-
-  const urls = getCurrentExtensionUrl() // All your subdomains
-
-  for (const url of urls) {
-    try {
-      if (typeof chrome !== "undefined" && chrome.cookies) {
-        await new Promise<void>((resolve, reject) => {
-          chrome.cookies.set(
-            {
-              url,
-              name: key,
-              value,
-              domain: ".chrry.ai", // ✅ Cross-subdomain
-              path: "/",
-              secure: true,
-              sameSite: "lax",
-              expirationDate: options.maxAge
-                ? Math.floor(Date.now() / 1000) + options.maxAge
-                : undefined,
-            },
-            (cookie) => {
-              if (chrome.runtime.lastError) {
-                console.warn(
-                  `Failed to set cookie for ${url}:`,
-                  chrome.runtime.lastError,
-                )
-                reject(chrome.runtime.lastError)
-              } else {
-                resolve()
-              }
-            },
-          )
-        })
-      }
-    } catch (error) {
-      console.error(`Failed to set cookie for ${url}:`, error)
-    }
-  }
-}
-
-/**
  * Set cookie value (cross-platform)
+ *
+ * Note: For cross-subdomain authentication, the server (NextAuth) already sets
+ * cookies with domain=".chrry.ai", so they work across all subdomains automatically.
+ * No need to duplicate that logic here.
  */
 async function setCookieValue(
   key: string,
@@ -227,15 +181,12 @@ async function setCookieValue(
     return
   }
 
-  // Extension: persist in extension storage AND set cross-subdomain cookies
+  // Extension: persist in extension storage
+  // Note: Server already sets cross-subdomain cookies (domain=".chrry.ai")
+  // so we don't need to duplicate that here
   if (isBrowserExtension()) {
     console.log("Setting cookie in extension storage:", key, value)
     storage.setItem(key, value)
-
-    // Also set cross-subdomain cookies for session tokens
-    if (key.includes("session-token") || key.includes("auth")) {
-      await setCookieAllSubdomains(key, value, options)
-    }
     return
   }
 
