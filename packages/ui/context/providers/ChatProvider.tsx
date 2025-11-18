@@ -954,8 +954,8 @@ export function ChatProvider({
   }
 
   useEffect(() => {
-    error && setIsLoading(false)
-  }, [error])
+    isLoading && error && setIsLoading(false)
+  }, [error, isLoading])
 
   useEffect(() => {
     if (!threadId) {
