@@ -737,12 +737,6 @@ export function AuthProvider({
       ? ["session", env]
       : null,
     async () => {
-      console.log(
-        `🚀 ~ file: AuthProvider.tsx:770 ~ isStorageReady:`,
-        isStorageReady,
-        newApp?.id || lastAppId || app?.id,
-      )
-
       // Don't pass appSlug - let the API determine base app by domain
       // Call the API action
       const result = await getSession({

@@ -607,7 +607,7 @@ export function getSiteTranslation(
 }
 
 export function detectSiteModeDomain(hostname?: string): SiteMode {
-  const defaultMode = "vex"
+  const defaultMode = "istanbul"
   // const defaultMode = "focus"
 
   // Get hostname from parameter or window (client-side)
@@ -635,6 +635,22 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
 
   // Domain-based detection (use exact match or subdomain check)
 
+  if (matchesDomain(host, "atlas.chrry.ai")) {
+    return "atlas"
+  }
+  if (matchesDomain(host, "istanbul.chrry.ai")) {
+    return "istanbul"
+  }
+  if (matchesDomain(host, "amsterdam.chrry.ai")) {
+    return "amsterdam"
+  }
+  if (matchesDomain(host, "tokyo.chrry.ai")) {
+    return "tokyo"
+  }
+  if (matchesDomain(host, "newyork.chrry.ai")) {
+    return "newYork"
+  }
+
   if (matchesDomain(host, "vex.chrry.ai")) {
     return "vex"
   }
@@ -659,21 +675,6 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
   }
 
   // City subdomains
-  if (host === "atlas.chrry.ai") {
-    return "atlas"
-  }
-  if (host === "istanbul.chrry.ai") {
-    return "istanbul"
-  }
-  if (host === "amsterdam.chrry.ai") {
-    return "amsterdam"
-  }
-  if (host === "tokyo.chrry.ai") {
-    return "tokyo"
-  }
-  if (host === "newyork.chrry.ai") {
-    return "newYork"
-  }
 
   // Default to defaultMode (vex.chrry.ai or localhost)
   return defaultMode
@@ -973,7 +974,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       name: "Atlas",
       domain: "atlas.chrry.ai",
       url: "https://atlas.chrry.ai",
-      store: "https://chrry.ai",
+      store: "https://atlas.chrry.ai",
       email: "iliyan@chrry.ai",
       description:
         "Your intelligent geographic companion. Save locations with AI context, create geo-tagged notes, and discover local AI resources.",
@@ -1028,11 +1029,11 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return {
       mode: "istanbul",
       slug: "istanbul",
-      storeSlug: "comapss",
+      storeSlug: "compass",
       name: "Istanbul",
       domain: "istanbul.chrry.ai",
       url: "https://istanbul.chrry.ai",
-      store: "https://chrry.ai",
+      store: "https://atlas.chrry.ai",
       email: "iliyan@chrry.ai",
       description:
         "Your personal AI assistant designed for Istanbul and Turkey. Chat in Turkish, collaborate locally, and get things done faster.",
@@ -1080,11 +1081,11 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return {
       mode: "amsterdam",
       slug: "amsterdam",
-      storeSlug: "comapss",
+      storeSlug: "compass",
       name: "Amsterdam",
       domain: "amsterdam.chrry.ai",
       url: "https://amsterdam.chrry.ai",
-      store: "https://chrry.ai",
+      store: "https://atlas.chrry.ai",
       email: "iliyan@chrry.ai",
       description:
         "Your personal AI assistant designed for Amsterdam and the Netherlands. Chat in Dutch, collaborate locally, and get things done faster.",
@@ -1136,7 +1137,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       name: "Tokyo",
       domain: "tokyo.chrry.ai",
       url: "https://tokyo.chrry.ai",
-      store: "https://chrry.ai",
+      store: "https://atlas.chrry.ai",
       email: "iliyan@chrry.ai",
       description:
         "Your personal AI assistant designed for Tokyo and Japan. Chat in Japanese, collaborate locally, and get things done faster.",
@@ -1184,11 +1185,11 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return {
       mode: "newYork",
       slug: "newYork",
-      storeSlug: "chrry",
+      storeSlug: "compass",
       name: "New York",
       domain: "newyork.chrry.ai",
       url: "https://newyork.chrry.ai",
-      store: "https://chrry.ai",
+      store: "https://atlas.chrry.ai",
       email: "iliyan@chrry.ai",
       description:
         "Your personal AI assistant designed for New York City and the USA. Chat, collaborate locally, and get things done faster in the city that never sleeps.",
