@@ -110,14 +110,16 @@ export default function About() {
               <h3>{t("ai_debate_title")}</h3>
               <p>{t("ai_debate_description")}</p>
             </div>
-            <div>
-              <h3>🌟 {t("LifeOS App Ecosystem")}</h3>
-              <p>
-                {t(
-                  "Beyond chat, we're building specialized AI apps: Peach (social networking), Atlas (travel), Bloom (health & sustainability), and Vault (finance). Each app leverages your existing AI conversations to provide personalized experiences no competitor can offer.",
-                )}
-              </p>
-            </div>
+            {siteConfig.mode === "vex" && (
+              <div>
+                <h3>🌟 {t("LifeOS App Ecosystem")}</h3>
+                <p>
+                  {t(
+                    "Beyond chat, we're building specialized AI apps: Peach (social networking), Atlas (travel), Bloom (health & sustainability), and Vault (finance). Each app leverages your existing AI conversations to provide personalized experiences no competitor can offer.",
+                  )}
+                </p>
+              </div>
+            )}
             <div>
               <h3>🎁 {t("guest_subscriptions_title")}</h3>
               <p>{t("guest_subscriptions_description")}</p>
