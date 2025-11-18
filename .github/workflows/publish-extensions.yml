@@ -17,6 +17,19 @@ permissions:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        site: [atlas, focus, vex]
+        include:
+          - site: atlas
+            chrome_extension_id_secret: CHROME_EXTENSION_ID_ATLAS
+            firefox_addon_id_secret: FIREFOX_ADDON_ID_ATLAS
+          - site: focus
+            chrome_extension_id_secret: CHROME_EXTENSION_ID_FOCUS
+            firefox_addon_id_secret: FIREFOX_ADDON_ID_FOCUS
+          - site: vex
+            chrome_extension_id_secret: CHROME_EXTENSION_ID_VEX
+            firefox_addon_id_secret: FIREFOX_ADDON_ID_VEX
 
     steps:
       - name: Checkout code
@@ -31,47 +44,32 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build extensions
+      - name: Build Chrome extension for ${{ matrix.site }}
         run: |
           cd apps/extension
-          npm run build:all
-
-      - name: Create source code archive for Firefox
-        run: |
-          # Create vex.zip with only extension source code (not entire monorepo)
-          cd apps/extension
-          zip -r vex.zip . ../../../packages/ui \
-            -x '*/node_modules/**' \
-            -x '*/dist/**' \
-            -x '*/.next/**' \
-            -x '*/.turbo/**' \
-            -x '*.zip' \
-            -x '*.env' \
-            -x '*.gitignore' \
-            -x '*.tsconfig.json'
-          mv vex.zip ../../
+          MODE=${{ matrix.site }} npm run build:chrome
+        env:
+          MODE: ${{ matrix.site }}
 
       - name: Verify build artifacts exist
         run: |
           set -e
           echo "::group::List artifacts"
           ls -lah apps/extension | sed 's/^/apps\/extension: /'
-          ls -lah | sed 's/^/repo-root: /'
           echo "::endgroup::"
           test -f apps/extension/dist-chrome.zip || (echo "Missing apps/extension/dist-chrome.zip" && exit 1)
-          test -f apps/extension/dist-firefox.zip || (echo "Missing apps/extension/dist-firefox.zip" && exit 1)
-          test -f vex.zip || (echo "Missing root vex.zip (source)" && exit 1)
 
-      - name: Check Chrome Web Store secrets
+      - name: Check Chrome Web Store secrets for ${{ matrix.site }}
         id: check-chrome-secrets
         run: |
-          if [[ -z "${{ secrets.CHROME_CLIENT_ID }}" || -z "${{ secrets.CHROME_CLIENT_SECRET }}" || -z "${{ secrets.CHROME_REFRESH_TOKEN }}" || -z "${{ secrets.CHROME_EXTENSION_ID }}" ]]; then
+          EXTENSION_ID="${{ secrets[matrix.chrome_extension_id_secret] }}"
+          if [[ -z "${{ secrets.CHROME_CLIENT_ID }}" || -z "${{ secrets.CHROME_CLIENT_SECRET }}" || -z "${{ secrets.CHROME_REFRESH_TOKEN }}" || -z "$EXTENSION_ID" ]]; then
             echo "chrome_secrets_available=false" >> $GITHUB_OUTPUT
-            echo "❌ Chrome Web Store secrets not configured. Skipping Chrome upload."
-            echo "Required secrets: CHROME_CLIENT_ID, CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN, CHROME_EXTENSION_ID"
+            echo "❌ Chrome Web Store secrets not configured for ${{ matrix.site }}. Skipping Chrome upload."
+            echo "Required secrets: CHROME_CLIENT_ID, CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN, ${{ matrix.chrome_extension_id_secret }}"
           else
             echo "chrome_secrets_available=true" >> $GITHUB_OUTPUT
-            echo "✅ Chrome Web Store secrets found"
+            echo "✅ Chrome Web Store secrets found for ${{ matrix.site }}"
           fi
 
       - name: Debug Chrome Extension Files
@@ -87,7 +85,7 @@ jobs:
           echo "---------------------------------"
           echo "::endgroup::"
 
-      - name: Create Chrome Extension Keys JSON
+      - name: Create Chrome Extension Keys JSON for ${{ matrix.site }}
         id: create-chrome-json
         if: steps.check-chrome-secrets.outputs.chrome_secrets_available == 'true'
         run: |
@@ -95,77 +93,23 @@ jobs:
             --arg clientId "${{ secrets.CHROME_CLIENT_ID }}" \
             --arg clientSecret "${{ secrets.CHROME_CLIENT_SECRET }}" \
             --arg refreshToken "${{ secrets.CHROME_REFRESH_TOKEN }}" \
-            --arg extId "${{ secrets.CHROME_EXTENSION_ID }}" \
-            '{
-              "$schema": "https://github.com/PlasmoHQ/bpp/raw/main/keys.schema.json",
-              "chrome": {
-                "zip": "dist-chrome.zip",
-                "clientId": $clientId,
-                "clientSecret": $clientSecret,
-                "refreshToken": $refreshToken,
-                "extId": $extId
-              }
-            }')
+            --arg extId "${{ secrets[matrix.chrome_extension_id_secret] }}" \
+            '{\n              "$schema": "https://github.com/PlasmoHQ/bpp/raw/main/keys.schema.json",\n              "chrome": {\n                "zip": "dist-chrome.zip",\n                "clientId": $clientId,\n                "clientSecret": $clientSecret,\n                "refreshToken": $refreshToken,\n                "extId": $extId\n              }\n            }')
           echo "CHROME_KEYS_JSON<<EOF" >> $GITHUB_ENV
           echo "$JSON_CONTENT" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-          echo "::group::Debug Chrome Keys JSON"
+          echo "::group::Debug Chrome Keys JSON for ${{ matrix.site }}"
           echo "Generated chrome-keys.json content:"
           echo "$JSON_CONTENT"
           echo "::endgroup::"
 
-      - name: Upload Chrome Extension to Web Store (PlasmoHQ/bpp)
+      - name: Upload ${{ matrix.site }} Chrome Extension to Web Store
         if: steps.check-chrome-secrets.outputs.chrome_secrets_available == 'true'
         uses: PlasmoHQ/bpp@v3
         with:
           keys: ${{ env.CHROME_KEYS_JSON }}
           chrome-file: apps/extension/dist-chrome.zip
-          verbose: true
-
-      - name: Check Firefox AMO secrets
-        id: check-firefox-secrets
-        run: |
-          if [[ -z "${{ secrets.FIREFOX_API_KEY }}" || -z "${{ secrets.FIREFOX_API_SECRET }}" ]]; then
-            echo "firefox_secrets_available=false" >> $GITHUB_OUTPUT
-            echo "❌ Firefox AMO secrets not configured. Skipping Firefox upload."
-            echo "Required secrets: FIREFOX_API_KEY, FIREFOX_API_SECRET"
-          else
-            echo "firefox_secrets_available=true" >> $GITHUB_OUTPUT
-            echo "✅ Firefox AMO secrets found"
-          fi
-
-      - name: Create Firefox Extension Keys JSON
-        if: steps.check-firefox-secrets.outputs.firefox_secrets_available == 'true'
-        run: |
-          JSON_CONTENT=$(jq -n \
-            --arg apiKey "${{ secrets.FIREFOX_API_KEY }}" \
-            --arg apiSecret "${{ secrets.FIREFOX_API_SECRET }}" \
-            '{
-              "$schema": "https://github.com/PlasmoHQ/bpp/raw/main/keys.schema.json",
-              "firefox": {
-                "file": "dist-firefox.zip",
-                "sourceFile": "vex.zip",
-                "apiKey": $apiKey,
-                "apiSecret": $apiSecret
-              }
-            }')
-          echo "FIREFOX_KEYS_JSON<<EOF" >> $GITHUB_ENV
-          echo "$JSON_CONTENT" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-          echo "::group::Debug Firefox Keys JSON"
-          echo "Generated firefox-keys.json content:"
-          echo "$JSON_CONTENT"
-          echo "::endgroup::"
-
-      - name: Upload Firefox Extension to AMO
-        if: steps.check-firefox-secrets.outputs.firefox_secrets_available == 'true'
-        uses: PlasmoHQ/bpp@v3
-        with:
-          keys: ${{ env.FIREFOX_KEYS_JSON }}
-          firefox-file: apps/extension/dist-firefox.zip
-          source: vex.zip
           verbose: true
 
       - name: Create GitHub Release
@@ -174,36 +118,24 @@ jobs:
         with:
           files: |
             apps/extension/dist-chrome.zip
-            apps/extension/dist-firefox.zip
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_unmatched_files: false
 
-      - name: Publishing Summary
+      - name: Publishing Summary for ${{ matrix.site }}
         if: always()
         run: |
-          echo "## 📦 Extension Publishing Summary"
+          echo "## 📦 ${{ matrix.site }} Extension Publishing Summary"
           echo ""
           if [[ "${{ steps.check-chrome-secrets.outputs.chrome_secrets_available }}" == "true" ]]; then
-            echo "✅ Chrome Web Store: Published"
-            echo "   🔗 https://chrome.google.com/webstore/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc"
+            echo "✅ Chrome Web Store: Published (${{ matrix.site }})"
           else
             echo "⏭️  Chrome Web Store: Skipped (missing secrets)"
             echo "   ℹ️  Configure these secrets to enable Chrome publishing:"
-            echo "      - CHROME_EXTENSION_ID"
-            echo "      - CHROME_CLIENT_ID" 
+            echo "      - CHROME_CLIENT_ID"
             echo "      - CHROME_CLIENT_SECRET"
             echo "      - CHROME_REFRESH_TOKEN"
-          fi
-          echo ""
-          if [[ "${{ steps.check-firefox-secrets.outputs.firefox_secrets_available }}" == "true" ]]; then
-            echo "✅ Firefox AMO: Published"
-            echo "   🔗 https://addons.mozilla.org/en-US/firefox/addon/vex"
-          else
-            echo "⏭️  Firefox AMO: Skipped (missing secrets)"
-            echo "   ℹ️  Configure these secrets to enable Firefox publishing:"
-            echo "      - FIREFOX_API_KEY"
-            echo "      - FIREFOX_API_SECRET"
+            echo "      - ${{ matrix.chrome_extension_id_secret }}"
           fi
           echo ""
           echo "✅ GitHub Release: Created with extension files"

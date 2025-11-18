@@ -37,7 +37,9 @@ export default defineConfig(({ command, mode }) => {
     env.VITE_BROWSER === "firefox" || process.env.VITE_BROWSER === "firefox"
   const isProduction = command === "build"
 
-  const siteConfig = getSiteConfig()
+  // Use MODE env var if set, otherwise use vite mode, otherwise default to vex
+  const siteMode = process.env.MODE || mode || "vex"
+  const siteConfig = getSiteConfig(siteMode)
 
   console.log("🔧 Build config:", {
     mode,
