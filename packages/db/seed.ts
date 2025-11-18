@@ -602,11 +602,11 @@ const create = async () => {
 
 const prod = async () => {
   // Check if admin user already exists
-  // let admin = await getUser({ email: VEX_TEST_EMAIL })
-  // if (!admin) throw new Error("Admin user not found")
+  let admin = await getUser({ email: VEX_TEST_EMAIL })
+  if (!admin) throw new Error("Admin user not found")
   // Delete inactive bot guests in batches
-  await clearGuests()
-  // const vex = await createStores({ user: admin, isProd: true })
+  // await clearGuests()
+  const vex = await createStores({ user: admin, isProd: true })
   // const allInstructions = await db.select().from(instructions)
   // const seen = new Map<string, string>() // Map of unique key -> instruction ID
   // const duplicateIds: string[] = []

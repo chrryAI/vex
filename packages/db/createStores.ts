@@ -12,6 +12,7 @@ import {
   createOrUpdateApp,
   createOrUpdateStoreInstall,
   getStore,
+  eq,
 } from "./index"
 
 import enTranslations from "./en.json"
@@ -21,6 +22,7 @@ import {
   type instructionBase,
 } from "./getExampleInstructions"
 import { extractTranslations } from "./extractTranslations"
+import { stores, users, guests, teams, apps } from "./src/schema"
 
 const translateInstruction = (instruction: instructionBase) => ({
   ...instruction,
@@ -2204,15 +2206,21 @@ async function getOrCreateStore(params: {
   visibility: "public" | "private"
   description: string
   parentStoreId?: string
-  existingStores: any[]
 }) {
-  const { slug, existingStores, ...storeData } = params
+  if (!db) throw new Error("DB not initialized")
 
-  let store = existingStores.find(
-    (s: any) =>
-      s.store.slug === slug ||
-      (slug === "blossom" && s.store.slug === "explore"),
-  )?.store
+  const { slug, ...storeData } = params
+
+  const existingStoresResult = await db
+    .select()
+    .from(stores)
+    .leftJoin(users, eq(stores.userId, users.id))
+    .leftJoin(guests, eq(stores.guestId, guests.id))
+    .leftJoin(apps, eq(stores.appId, apps.id))
+
+  let store = existingStoresResult.find(
+    (s: any) => s.stores.slug === slug,
+  )?.stores
 
   if (!store) {
     console.log(`🏪 Creating ${params.name} store...`)
@@ -2224,7 +2232,7 @@ async function getOrCreateStore(params: {
     console.log(`✅ ${params.name} store already exists, skipping creation`)
   }
 
-  return store as store
+  return (await getStore({ id: store.id }))?.store as store
 }
 
 export const createStores = async ({
@@ -2234,16 +2242,12 @@ export const createStores = async ({
   user: user
   isProd?: boolean
 }) => {
+  if (!db) throw new Error("DB not initialized")
   // Fetch all existing stores once
-  const existingStoresResult = await getStores({
-    userId: admin.id,
-    includePublic: false,
-  })
-  const existingStores = existingStoresResult.stores
 
   const getApp = async ({ slug }: { slug: string }) => {
     const app = await getPureApp({ slug })
-    if (!app && isProd) throw new Error(`App ${slug} not found`)
+    // if (!app && isProd) throw new Error(`App ${slug} not found`)
     return app
   }
 
@@ -2259,7 +2263,6 @@ export const createStores = async ({
     visibility: "public" as const,
     description:
       "Discover, create, and monetize AI apps. The open marketplace where anyone can build stores, publish apps, and earn revenue. Your gateway to the AI ecosystem.",
-    existingStores,
   })
 
   const chrryPayload = {
@@ -2378,13 +2381,12 @@ export const createStores = async ({
     slug: "compass",
     name: "Compass",
     title: "Travel & Exploration",
-    domain: "https://compass.chrry.ai",
+    domain: "https://atlas.chrry.ai",
     parentStoreId: blossom.id,
     userId: admin.id,
     visibility: "public" as const,
     description:
       "Your gateway to global exploration. Discover city guides, travel companions, and location-based AI assistants for every destination worldwide.",
-    existingStores,
   })
 
   let atlas = await getApp({ slug: "atlas" })
@@ -2392,6 +2394,7 @@ export const createStores = async ({
   const atlasPayload = {
     ...atlas,
     slug: "atlas",
+    domain: "https://atlas.chrry.ai",
     subtitle: "AI Travel Companion",
     name: "Atlas",
     version: "1.0.0",
@@ -2631,6 +2634,7 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
     ...amsterdam,
     slug: "amsterdam",
     name: "Amsterdam",
+    domain: "https://amsterdam.chrry.ai",
     subtitle: "Your Local AI Guide",
     storeId: compass.id,
     version: "1.0.0",
@@ -2868,6 +2872,7 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
   const tokyoPayload = {
     ...tokyo,
     slug: "tokyo",
+    domain: "https://tokyo.chrry.ai",
     name: "Tokyo",
     subtitle: "Your Local AI Guide",
     storeId: compass.id,
@@ -3114,6 +3119,7 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
   const istanbulPayload = {
     ...istanbul,
     slug: "istanbul",
+    domain: "https://istanbul.chrry.ai",
     name: "Istanbul",
     subtitle: "Your Local AI Guide",
     storeId: compass.id,
@@ -3368,6 +3374,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
   let newYork = await getApp({ slug: "newYork" })
   const newYorkPayload = {
     ...newYork,
+    domain: "https://newyork.chrry.ai",
     slug: "newYork",
     name: "NewYork",
     subtitle: "Your Local AI Guide",
@@ -3455,7 +3462,6 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
     visibility: "public" as const,
     description:
       "Step into popcorn, the premier hub for iconic films, genre-defining storytelling, and cinematic AI companions that decode every frame.",
-    existingStores,
   })
 
   const moviesInstructions = [
@@ -4307,7 +4313,6 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     visibility: "public" as const,
     description:
       "Your philosophical companion for deep reading. Explore literature, philosophy, and ideas through the lens of Nietzsche's Zarathustra. From classics to modern thought.",
-    existingStores,
   })
 
   // ============================================
@@ -5214,7 +5219,6 @@ Every book, every idea, every question - examine it through the lens of life-aff
     visibility: "public" as const,
     description:
       "One platform, infinite possibilities. Experience the future of AI-integrated living with apps that understand you",
-    existingStores,
   })
 
   let vex = await getApp({ slug: "vex" })
@@ -5303,7 +5307,6 @@ You have access to calendar, location, and weather tools to provide context-awar
     visibility: "public" as const,
     description:
       "Complete advertising ecosystem with AI-powered campaign management, content analysis, and privacy-first targeting. Create ads, monetize content, and earn credits—all without tracking.",
-    existingStores,
   })
 
   const focusAppPayload = {
@@ -6194,13 +6197,12 @@ Be helpful, clear, and guide users through creating campaigns or completing feed
     slug: "claudeStore",
     name: "Claude",
     title: "Claude",
-    domain: "https://chhry.claude.ai",
+    domain: "https://claude.chrry.ai",
     userId: admin.id,
     parentStoreId: blossom.id,
     visibility: "public" as const,
     description:
       "Experience Claude by Anthropic - the AI assistant known for thoughtful, nuanced responses. Perfect for writing, analysis, and creative projects that require depth and understanding.",
-    existingStores,
   })
 
   let claudeApp = await getApp({ slug: "claude" })
@@ -6427,7 +6429,6 @@ Be helpful, clear, and guide users through creating campaigns or completing feed
     visibility: "public" as const,
     description:
       "Discover Perplexity - the AI-powered answer engine that combines search with conversational AI. Get accurate, cited answers to your questions with real-time web access.",
-    existingStores,
   })
 
   let perplexityApp = await getApp({ slug: "perplexity" })
@@ -6661,7 +6662,6 @@ Be helpful, clear, and guide users through creating campaigns or completing feed
     visibility: "public" as const,
     description:
       "Meet Sushi - the powerful coding AI that excels at software development, debugging, and technical problem-solving. Built for developers who demand precision and performance.",
-    existingStores,
   })
 
   let sushiApp = await getApp({ slug: "sushi" })
