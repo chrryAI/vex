@@ -141,6 +141,8 @@ const aj = arcjet({
       mode: process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN", // Block in prod, log in dev
       allow: [
         "CATEGORY:SEARCH_ENGINE", // Allow Google, Bing, etc.
+        "CATEGORY:PREVIEW", // Allow link preview bots (Twitter, Slack, etc.)
+        "CATEGORY:MONITOR", // Allow uptime monitors
       ],
     }),
   ],
@@ -152,10 +154,22 @@ export async function GET(request: Request) {
     const decision = await aj.protect(request)
 
     if (decision.isDenied()) {
+      console.log("🤖 Bot detected:", {
+        reason: decision.reason,
+        userAgent: request.headers.get("user-agent"),
+        ip: decision.ip,
+      })
       return NextResponse.json(
         { error: "Bot detected", reason: decision.reason },
         { status: 403 },
       )
+    }
+
+    // Log allowed bots for debugging
+    if (decision.isAllowed() && decision.reason.isBot?.()) {
+      console.log("✅ Allowed bot:", {
+        userAgent: request.headers.get("user-agent"),
+      })
     }
   }
 
@@ -168,7 +182,6 @@ export async function GET(request: Request) {
   const getMember = () => getMemberAction({ full: true, skipCache: true })
 
   let member = await getMember()
-  console.log(`🚀 ~ file: route.ts:171 ~ member:`, member)
   const guest = !member ? await getGuestAction({ skipCache: true }) : undefined
   const { success } = await checkRateLimit(request, { member, guest })
 
