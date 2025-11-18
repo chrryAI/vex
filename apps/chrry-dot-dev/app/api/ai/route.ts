@@ -504,7 +504,7 @@ export async function POST(request: Request) {
   console.log("🚀 POST /api/ai - Request received")
   console.time("messageProcessing")
 
-  const member = await getMember(true)
+  const member = await getMember({ full: true })
   const guest = member ? undefined : await getGuest()
 
   if (!member && !guest) {

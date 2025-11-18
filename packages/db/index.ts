@@ -124,6 +124,23 @@ declare global {
 export type user = typeof users.$inferSelect
 export type newUser = typeof users.$inferInsert
 
+// Enriched user type returned by getUser with all computed fields
+export type userWithRelations = user & {
+  isLinkedToGoogle: boolean
+  isLinkedToApple: boolean
+  hasCalendarScope: boolean
+  hasRefreshToken: boolean
+  messagesLastHour: number
+  creditsLeft: number
+  instructions: instruction[]
+  placeHolder: placeHolder | undefined
+  memoriesCount: number | undefined
+  characterProfiles: characterProfile[]
+  lastMessage: string | undefined
+  messageCount: number | undefined
+  subscription: subscription | undefined
+}
+
 export type appOrder = typeof appOrders.$inferSelect
 export type newAppOrder = typeof appOrders.$inferInsert
 
@@ -167,6 +184,19 @@ export type storesListResult = {
 
 export type guest = typeof guests.$inferSelect
 export type newGuest = typeof guests.$inferInsert
+
+// Enriched guest type returned by getGuest with all computed fields
+export type guestWithRelations = guest & {
+  memoriesCount: number | undefined
+  messagesLastHour: number
+  creditsLeft: number
+  instructions: instruction[]
+  placeHolder: placeHolder | undefined
+  characterProfiles: characterProfile[]
+  lastMessage: string | undefined
+  messageCount: number | undefined
+  subscription: subscription | undefined
+}
 
 export type subscription = typeof subscriptions.$inferSelect
 export type newSubscription = typeof subscriptions.$inferInsert
@@ -503,6 +533,7 @@ export const getUser = async ({
   userName,
   apiKey,
   app,
+  skipCache = false,
 }: {
   email?: string
   id?: string
@@ -515,7 +546,30 @@ export const getUser = async ({
   userName?: string
   apiKey?: string
   app?: app | null
+  skipCache?: boolean
 }) => {
+  // Generate cache key based on lookup method (must match invalidation keys)
+  const cacheKey = id
+    ? `user:${id}`
+    : email
+      ? `user:email:${email}`
+      : appleId
+        ? `user:appleId:${appleId}`
+        : fingerprint
+          ? `user:fingerprint:${fingerprint}`
+          : userName
+            ? `user:userName:${userName}`
+            : apiKey
+              ? `user:apiKey:${apiKey}`
+              : null
+
+  // Skip cache if requested (e.g., for session updates) or no valid cache key
+  if (!skipCache && cacheKey) {
+    const cached = await getCache<userWithRelations>(cacheKey)
+    if (cached) {
+      return cached
+    }
+  }
   const result = (
     await db
       .select()
@@ -611,7 +665,7 @@ export const getUser = async ({
       ? OWNER_CREDITS
       : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
 
-  return result
+  const userData = result
     ? {
         isLinkedToGoogle: !!googleAccount,
         isLinkedToApple: !!appleAccount,
@@ -645,6 +699,13 @@ export const getUser = async ({
         ...result.user,
       }
     : undefined
+
+  // Cache the enriched user data
+  if (userData && cacheKey) {
+    await setCache(cacheKey, userData, 60 * 5) // Cache for 5 minutes
+  }
+
+  return userData
 }
 
 export const getCharacterProfiles = async ({
@@ -826,7 +887,14 @@ export const createUser = async (user: newUser) => {
 
   // Invalidate user cache
   if (inserted) {
-    await invalidateUser(inserted.id, inserted.email)
+    await invalidateUser(
+      inserted.id,
+      inserted.email,
+      inserted.appleId ?? undefined,
+      inserted.fingerprint ?? undefined,
+      inserted.userName ?? undefined,
+      inserted.apiKey ?? undefined,
+    )
   }
 
   return inserted ? await getUser({ id: inserted.id }) : undefined
@@ -849,7 +917,14 @@ export const updateUser = async (user: user) => {
 
   // Invalidate user cache
   if (updated) {
-    await invalidateUser(updated.id, updated.email)
+    await invalidateUser(
+      updated.id,
+      updated.email,
+      updated.appleId ?? undefined,
+      updated.fingerprint ?? undefined,
+      updated.userName ?? undefined,
+      updated.apiKey ?? undefined,
+    )
   }
 
   return updated ? await getUser({ id: user.id }) : undefined
@@ -860,7 +935,14 @@ export const deleteUser = async (id: string) => {
 
   // Invalidate user cache
   if (deleted) {
-    await invalidateUser(deleted.id, deleted.email)
+    await invalidateUser(
+      deleted.id,
+      deleted.email,
+      deleted.appleId ?? undefined,
+      deleted.fingerprint ?? undefined,
+      deleted.userName ?? undefined,
+      deleted.apiKey ?? undefined,
+    )
   }
 
   return deleted
@@ -1834,7 +1916,12 @@ export const createGuest = async (guest: newGuest) => {
 
   // Invalidate guest cache
   if (inserted) {
-    await invalidateGuest(inserted.id, inserted.fingerprint)
+    await invalidateGuest(
+      inserted.id,
+      inserted.fingerprint ?? undefined,
+      inserted.ip ?? undefined,
+      inserted.email ?? undefined,
+    )
   }
 
   return inserted ? await getGuest({ id: inserted.id }) : undefined
@@ -1847,6 +1934,7 @@ export const getGuest = async ({
   isBot,
   email,
   app,
+  skipCache = false,
 }: {
   id?: string
   ip?: string
@@ -1854,7 +1942,27 @@ export const getGuest = async ({
   isBot?: boolean
   email?: string
   app?: app | null
+  skipCache?: boolean
 }) => {
+  // Generate cache key based on lookup method (must match invalidation keys)
+  const cacheKey = id
+    ? `guest:${id}`
+    : fingerprint
+      ? `guest:fp:${fingerprint}`
+      : ip
+        ? `guest:ip:${ip}`
+        : email
+          ? `guest:email:${email}`
+          : null
+
+  // Skip cache if requested (e.g., for session updates) or no valid cache key
+  if (!skipCache && cacheKey) {
+    const cached = await getCache<guestWithRelations>(cacheKey)
+    if (cached) {
+      return cached
+    }
+  }
+
   const conditionsArray = [
     id ? eq(guests.id, id) : undefined,
     ip ? eq(guests.ip, ip) : undefined,
@@ -1911,7 +2019,7 @@ export const getGuest = async ({
     ? OWNER_CREDITS
     : Math.max(result ? result.credits - creditsSpent : 0, 0)
 
-  return result
+  const guestData = result
     ? {
         ...result,
         memoriesCount,
@@ -1939,6 +2047,13 @@ export const getGuest = async ({
         subscription: await getSubscription({ guestId: result.id }),
       }
     : null
+
+  // Cache the enriched guest data
+  if (guestData && cacheKey) {
+    await setCache(cacheKey, guestData, 60 * 5) // Cache for 5 minutes
+  }
+
+  return guestData
 }
 
 export const updateGuest = async (guest: guest) => {
@@ -1950,7 +2065,12 @@ export const updateGuest = async (guest: guest) => {
 
   // Invalidate guest cache
   if (updated) {
-    await invalidateGuest(updated.id, updated.fingerprint)
+    await invalidateGuest(
+      updated.id,
+      updated.fingerprint ?? undefined,
+      updated.ip ?? undefined,
+      updated.email ?? undefined,
+    )
   }
 
   return updated
@@ -1961,7 +2081,12 @@ export const deleteGuest = async ({ id }: { id: string }) => {
 
   // Invalidate guest cache
   if (deleted) {
-    await invalidateGuest(deleted.id, deleted.fingerprint)
+    await invalidateGuest(
+      deleted.id,
+      deleted.fingerprint ?? undefined,
+      deleted.ip ?? undefined,
+      deleted.email ?? undefined,
+    )
   }
 
   return deleted

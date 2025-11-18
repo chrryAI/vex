@@ -28,7 +28,7 @@ interface WeatherApiResponse {
 }
 
 export async function GET(request: NextRequest) {
-  const member = await getMember(true)
+  const member = await getMember({ full: true })
   const guest = await getGuest(true)
 
   if (!member && !guest) {

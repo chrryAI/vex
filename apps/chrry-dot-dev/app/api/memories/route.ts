@@ -9,7 +9,7 @@ import {
 } from "@repo/db"
 
 export async function GET() {
-  const member = await getMember(true)
+  const member = await getMember({ full: true })
   const guest = member ? undefined : await getGuest()
 
   if (!member && !guest) {
@@ -31,7 +31,7 @@ export async function GET() {
 }
 
 export async function DELETE() {
-  const member = await getMember(true)
+  const member = await getMember({ full: true })
   const guest = member ? undefined : await getGuest()
 
   if (!member && !guest) {

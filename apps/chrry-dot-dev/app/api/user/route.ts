@@ -15,7 +15,7 @@ import Stripe from "stripe"
 import { deleteFile } from "../../../lib/uploadthing-server"
 
 export async function GET() {
-  const member = await getMember()
+  const member = await getMember({ skipCache: true })
 
   if (!member) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const member = await getMember(true)
+  const member = await getMember({ full: true })
 
   const {
     language,

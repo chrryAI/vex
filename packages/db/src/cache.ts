@@ -206,10 +206,29 @@ export async function setCachedUserByEmail(email: string, user: any) {
   await setCache(cacheKeys.userByEmail(email), user, CACHE_TTL.USER)
 }
 
-export async function invalidateUser(id: string, email?: string) {
+export async function invalidateUser(
+  id: string,
+  email?: string,
+  appleId?: string,
+  fingerprint?: string,
+  userName?: string,
+  apiKey?: string,
+) {
   await deleteCache(cacheKeys.user(id))
   if (email) {
     await deleteCache(cacheKeys.userByEmail(email))
+  }
+  if (appleId) {
+    await deleteCache(`user:appleId:${appleId}`)
+  }
+  if (fingerprint) {
+    await deleteCache(`user:fingerprint:${fingerprint}`)
+  }
+  if (userName) {
+    await deleteCache(`user:userName:${userName}`)
+  }
+  if (apiKey) {
+    await deleteCache(`user:apiKey:${apiKey}`)
   }
 }
 
@@ -237,10 +256,21 @@ export async function setCachedGuestByFingerprint(
   )
 }
 
-export async function invalidateGuest(id: string, fingerprint?: string) {
+export async function invalidateGuest(
+  id: string,
+  fingerprint?: string,
+  ip?: string,
+  email?: string,
+) {
   await deleteCache(cacheKeys.guest(id))
   if (fingerprint) {
     await deleteCache(cacheKeys.guestByFingerprint(fingerprint))
+  }
+  if (ip) {
+    await deleteCache(`guest:ip:${ip}`)
+  }
+  if (email) {
+    await deleteCache(`guest:email:${email}`)
   }
 }
 
