@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
   const urlParams = new URL(url)
   const appId = urlParams.searchParams.get("appId")
 
-  // const member = await getMember()
-  // const guest = await getGuest()
+  const member = await getMember()
+  const guest = await getGuest()
 
   // BACKWARD COMPATIBLE FIX AFTER RELEASE ALL PLATFORMS
   // if (!member && !guest) {
