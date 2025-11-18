@@ -128,7 +128,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # WebSocket timeouts
         proxy_read_timeout 86400;
         proxy_send_timeout 86400;
@@ -183,7 +183,7 @@ const [messages] = useQuery(
   zero.query.message
     .where("threadId", threadId)
     .related("sender")
-    .orderBy("createdAt", "desc")
+    .orderBy("createdAt", "desc"),
 )
 
 // Messages update automatically when anyone sends a message!
@@ -216,6 +216,7 @@ For high traffic, consider:
 ## Cost Estimate
 
 **Hetzner VPS:**
+
 - CX11 (2GB RAM, 1 vCPU): €4.15/month
 - CX21 (4GB RAM, 2 vCPU): €5.83/month
 - CX31 (8GB RAM, 2 vCPU): €10.59/month

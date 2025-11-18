@@ -3,11 +3,13 @@
 ## ✅ **What's Working:**
 
 ### **1. Schema Auto-Generation**
+
 ```bash
 npm run generate
 ```
 
 **Output:**
+
 - ✅ Automatically generates `zero-schema.gen.ts` from your Drizzle schema
 - ✅ Includes 4 tables: `guests`, `messages`, `threads`, `users`
 - ✅ All relationships preserved
@@ -57,9 +59,7 @@ const zero = new Zero({
 
 // Query messages (syncs automatically!)
 const [messages] = useQuery(
-  zero.query.messages
-    .where("threadId", threadId)
-    .orderBy("createdAt", "desc")
+  zero.query.messages.where("threadId", threadId).orderBy("createdAt", "desc"),
 )
 
 // That's it! No API routes needed!
@@ -70,6 +70,7 @@ const [messages] = useQuery(
 **Target: Messages**
 
 **Before (Current):**
+
 ```typescript
 // API Route: /api/messages/route.ts (~200 lines)
 export async function GET(request: Request) {
@@ -86,6 +87,7 @@ const { data: messages } = useSWR(`/api/messages?threadId=${threadId}`, fetcher)
 ```
 
 **After (With Zero):**
+
 ```typescript
 // No API route needed!
 
@@ -94,7 +96,7 @@ const [messages] = useQuery(
   zero.query.messages
     .where("threadId", threadId)
     .related("sender")
-    .orderBy("createdAt", "desc")
+    .orderBy("createdAt", "desc"),
 )
 
 // Updates automatically via WebSocket!
@@ -123,6 +125,7 @@ apps/zero-server/
 ## 🔥 **Key Benefits:**
 
 ### **1. No Manual Schema Writing**
+
 ```bash
 # Update Drizzle schema
 vim packages/db/src/schema.ts
@@ -135,17 +138,19 @@ npm run generate
 ```
 
 ### **2. Type-Safe Queries**
+
 ```typescript
 // TypeScript knows all your tables/columns!
 const [messages] = useQuery(
   zero.query.messages
-    .where("threadId", threadId)  // ✅ Type-checked!
-    .related("sender")             // ✅ Relationship exists!
-    .orderBy("createdAt", "desc")  // ✅ Column exists!
+    .where("threadId", threadId) // ✅ Type-checked!
+    .related("sender") // ✅ Relationship exists!
+    .orderBy("createdAt", "desc"), // ✅ Column exists!
 )
 ```
 
 ### **3. Real-Time by Default**
+
 ```typescript
 // No WebSocket setup needed!
 // When anyone sends a message, it appears instantly!
@@ -155,6 +160,7 @@ const [messages] = useQuery(zero.query.messages.where(...))
 ```
 
 ### **4. Offline-First**
+
 ```typescript
 // Data cached in IndexedDB
 // Works offline!
@@ -166,6 +172,7 @@ const [messages] = useQuery(zero.query.messages.where(...))
 ## 💡 **Migration Strategy:**
 
 ### **Phase 1: Prototype (Week 1-2)**
+
 - ✅ Schema generation working
 - □ Sign up for Zero Cloud
 - □ Connect Postgres database
@@ -173,12 +180,14 @@ const [messages] = useQuery(zero.query.messages.where(...))
 - □ Measure performance
 
 ### **Phase 2: Parallel Run (Week 3-4)**
+
 - □ Run Zero alongside existing API
 - □ Migrate non-critical features
 - □ Monitor stability
 - □ Compare performance
 
 ### **Phase 3: Full Migration (Week 5-12)**
+
 - □ Migrate all features
 - □ Delete API routes
 - □ Deploy to production
@@ -189,6 +198,7 @@ const [messages] = useQuery(zero.query.messages.where(...))
 ## 📈 **Expected Results:**
 
 ### **Code Reduction:**
+
 ```
 DELETE /api/messages/route.ts     (~200 lines)
 DELETE /api/threads/route.ts      (~150 lines)
@@ -199,6 +209,7 @@ TOTAL DELETED: ~950 lines for just messages!
 ```
 
 ### **Performance:**
+
 ```
 Before:
 - First load: 500ms (API call)
@@ -216,6 +227,7 @@ After:
 ## 🚀 **Next Action:**
 
 **Sign up for Zero Cloud:**
+
 1. Go to https://zero.rocicorp.dev/
 2. Create account
 3. Create new project
