@@ -8,11 +8,13 @@ import { CircleArrowLeft } from "./icons"
 import styles from "./Why.module.scss"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { useTheme } from "./platform"
+import { getSiteConfig } from "./utils/siteConfig"
 
 export default function About() {
   const { router } = useNavigationContext()
   const { isDrawerOpen } = useTheme()
 
+  const siteConfig = getSiteConfig()
   const { t } = useAppContext()
 
   const { track } = useAuth()
@@ -46,28 +48,30 @@ export default function About() {
         </section>
 
         {/* LifeOS Vision */}
-        <section>
-          <h2>🌟 {t("lifeos.revolution.title")}</h2>
-          <p>{t("lifeos.revolution.intro1")}</p>
-          <p>{t("lifeos.revolution.intro2")}</p>
-          <div>
-            <h4>🎯 {t("lifeos.unique.title")}</h4>
-            <ul>
-              <li>
-                <strong>{t("lifeos.unique.cross_app")}</strong>
-              </li>
-              <li>
-                <strong>{t("lifeos.unique.guest_first")}</strong>
-              </li>
-              <li>
-                <strong>{t("lifeos.unique.privacy")}</strong>
-              </li>
-              <li>
-                <strong>{t("lifeos.unique.ecosystem")}</strong>
-              </li>
-            </ul>
-          </div>
-        </section>
+        {siteConfig.mode === "vex" && (
+          <section>
+            <h2>🌟 {t("lifeos.revolution.title")}</h2>
+            <p>{t("lifeos.revolution.intro1")}</p>
+            <p>{t("lifeos.revolution.intro2")}</p>
+            <div>
+              <h4>🎯 {t("lifeos.unique.title")}</h4>
+              <ul>
+                <li>
+                  <strong>{t("lifeos.unique.cross_app")}</strong>
+                </li>
+                <li>
+                  <strong>{t("lifeos.unique.guest_first")}</strong>
+                </li>
+                <li>
+                  <strong>{t("lifeos.unique.privacy")}</strong>
+                </li>
+                <li>
+                  <strong>{t("lifeos.unique.ecosystem")}</strong>
+                </li>
+              </ul>
+            </div>
+          </section>
+        )}
 
         {/* Unique Advantages */}
         <section>
