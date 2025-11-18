@@ -28,6 +28,7 @@ const staticPatterns = [
   "/logo",
   "/icons",
   "/sounds",
+  "/sitemap",
   "/video",
   "/((?!_next|api|favicon.ico|manifest.webmanifest|sw.js|icon-|blob\.mp4|kitasaku\.mp3|birds\.mp3|timer-end\.mp3|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)",
 ]
@@ -203,7 +204,7 @@ export const config = {
   // Include API routes and static assets (icons, images, logos) for CORS headers
   matcher: [
     "/(en|de|fr|ja|ko|pt|es|zh|nl|tr)/:path*",
-    "/((?!_next/static|_next/image|manifest.webmanifest|sw.js|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp|.*\\.ico).*)",
+    "/((?!_next/static|_next/image|manifest.webmanifest|sw.js|sitemap.xml|robots.txt|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp|.*\\.ico).*)",
     "/api/:path*",
     "/icons/:path*",
     "/images/:path*",

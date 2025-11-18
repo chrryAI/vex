@@ -48,8 +48,12 @@ function sanitizeUrl(url: string | null): string {
 
   try {
     const parsed = new URL(url)
-    // Only allow HTTPS URLs from trusted domains
-    if (parsed.protocol !== "https:") return "https://chrry.ai"
+    // Allow HTTP for localhost, HTTPS for production
+    const isLocalhost =
+      parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1"
+    if (!isLocalhost && parsed.protocol !== "https:") {
+      return "https://chrry.ai"
+    }
 
     const allowedDomains = [
       "chrry.ai",
@@ -60,6 +64,8 @@ function sanitizeUrl(url: string | null): string {
       "amsterdam.chrry.ai",
       "tokyo.chrry.ai",
       "newyork.chrry.ai",
+      "localhost",
+      "127.0.0.1",
     ]
     if (!allowedDomains.includes(parsed.hostname)) {
       return "https://chrry.ai"
