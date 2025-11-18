@@ -1,4 +1,4 @@
-import { getApp, getStore } from "@repo/db"
+import { getStore } from "@repo/db"
 import Home from "chrry/Home"
 import React from "react"
 import getMember from "../../../actions/getMember"
@@ -10,6 +10,7 @@ import { headers } from "next/headers"
 import { generateAppMetadata } from "chrry/utils"
 import { storeWithApps } from "chrry/types"
 import { getTranslations } from "chrry/lib"
+import getApp from "../../../actions/getApp"
 
 export async function generateMetadata({
   params,
@@ -21,29 +22,10 @@ export async function generateMetadata({
   // Note: Reserved paths (threads, about, etc.) are handled by middleware
   // and never reach this route. This page only handles store apps.
 
-  const member = await getMember()
-  const guest = await getGuest()
-
-  // id is the store slug/id, slug is the app slug
-  const store = !validate(id)
-    ? await getStore({ slug: id, userId: member?.id, guestId: guest?.id })
-    : await getStore({ id, userId: member?.id, guestId: guest?.id })
-
-  if (!store) {
-    return {
-      description: "The requested store could not be found.",
-    }
-  }
-
   // Find the app in the store by slug
-  const app = !validate(id)
-    ? store.apps?.find((a) => a.slug === slug)
-    : await getApp({ id, userId: member?.id, guestId: guest?.id })
-
+  const app = await getApp()
   if (!app) {
-    return {
-      description: "The requested app could not be found.",
-    }
+    return notFound()
   }
 
   const translations = await getTranslations({ locale })
@@ -57,7 +39,6 @@ export async function generateMetadata({
   return generateAppMetadata({
     translations,
     app,
-    store: store.store as unknown as storeWithApps,
     locale,
     currentDomain,
   })
@@ -68,27 +49,7 @@ export default async function AppInStorePage({
 }: {
   params: Promise<{ id: string; slug: string }>
 }) {
-  const { id, slug } = await params
-
-  // Note: Reserved paths (threads, about, etc.) are handled by middleware
-  // and never reach this route. This page only handles store apps.
-
-  const member = await getMember()
-  const guest = await getGuest()
-
-  // id is the store slug/id, slug is the app slug
-  const store = !validate(id)
-    ? await getStore({ slug: id, userId: member?.id, guestId: guest?.id })
-    : await getStore({ id, userId: member?.id, guestId: guest?.id })
-
-  if (!store) {
-    return notFound()
-  }
-
-  const app = !validate(id)
-    ? store.apps?.find((a) => a.slug === slug)
-    : await getApp({ id, userId: member?.id, guestId: guest?.id })
-
+  const app = await getApp()
   if (!app) {
     return notFound()
   }

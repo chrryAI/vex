@@ -18,13 +18,13 @@ import { locale } from "../locales"
  */
 export function generateAppMetadata({
   app,
-  store,
   locale = "en",
   currentDomain,
   translations,
+  ...rest
 }: {
   app: appWithStore
-  store: storeWithApps
+  store?: storeWithApps
   locale?: locale | string
   currentDomain: string
   translations: Record<string, any>
@@ -35,6 +35,8 @@ export function generateAppMetadata({
   const isProduction =
     process.env.NODE_ENV === "production" ||
     process.env.NEXT_PUBLIC_NODE_ENV === "production"
+
+  const store = rest.store || app.store!
 
   const API_URL = !isProduction
     ? "http://localhost:3001/api"
@@ -54,9 +56,7 @@ export function generateAppMetadata({
     return tFunc(translations)(key)
   }
   return {
-    title:
-      `${app.name} - ${t(app.title)}` +
-      (app.slug === "chrry" ? "" : " | Chrry"),
+    title: `${t(app.name)} - ${t(app.title)} - ${storeName}`,
     description: description,
     manifest: `${API_URL}/manifest/${app.id}`,
     icons: [
@@ -102,7 +102,7 @@ export function generateAppMetadata({
     },
     twitter: {
       card: "summary",
-      title: `${title} | ${storeName} | Chrry`,
+      title: `${title} | ${storeName}`,
       description: description,
       images: [ogImage],
     },

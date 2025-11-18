@@ -13,6 +13,7 @@ import {
   getSubscriptions,
   getThreads,
   getUser,
+  getApp,
   updateGuest,
   updateThread,
   updateUser,
@@ -43,18 +44,13 @@ export const generateMetadata = async () => {
   const siteConfig = getSiteConfig(hostname)
   const locale = (await getLocale()) as locale
 
-  const store = await getStore({
-    domain: siteConfig.url,
+  const app = await getApp({
+    slug: siteConfig.slug,
+    storeDomain: siteConfig.store,
     depth: 1, // Populate one level of nested store.apps
   })
 
-  if (!store?.app || !store.store) {
-    return generateMeta({ locale })
-  }
-
-  const app = store.app
-
-  if (!app.store) {
+  if (!app || !app.store) {
     return generateMeta({ locale })
   }
 

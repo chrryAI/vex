@@ -4,10 +4,10 @@ import { headers } from "next/headers"
 import { validate } from "uuid"
 import { getApp } from "@repo/db"
 import { user, guest } from "@repo/db"
+import getMember from "./getMember"
+import getGuest from "./getGuest"
 
 export default async function getAppAction({
-  member,
-  guest,
   ...rest
 }: {
   member?: user
@@ -15,7 +15,10 @@ export default async function getAppAction({
   appId?: string
   appSlug?: string
   routeType?: string
-}) {
+} = {}) {
+  const member = await getMember()
+  const guest = await getGuest()
+
   const headersList = await headers()
   const appId = rest.appId || headersList.get("x-app-id")
 
