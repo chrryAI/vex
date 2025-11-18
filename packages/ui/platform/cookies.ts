@@ -117,6 +117,13 @@ async function getCookie(key: string): Promise<string | null> {
             final.push(cookie?.value)
           }
         }
+
+        // Mark cookies as ready after first successful check
+        // This helps AuthProvider know when it's safe to fetch session
+        if (key === "token") {
+          storage.setItem("_cookiesReady", "true")
+        }
+
         // Smart selection: for tokens, pick the longest (likely valid JWT)
         // For fingerprint/deviceId (UUIDs), pick first valid one
         // For others, use localStorage

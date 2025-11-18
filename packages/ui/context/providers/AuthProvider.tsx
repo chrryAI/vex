@@ -18,7 +18,7 @@ import {
   usePlatform,
   useLocalStorage,
   getExtensionId,
-  useCookie,
+  storage,
 } from "../../platform"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
@@ -334,6 +334,38 @@ export function AuthProvider({
     apiKey || session?.user?.token || session?.guest?.fingerprint,
     true,
   )
+
+  // Track if cookies/storage are ready (important for extensions)
+  const [isCookieReady, setIsCookieReady] = useState(false)
+
+  useEffect(() => {
+    // For extensions, check if cookies have been loaded from chrome.cookies API
+    // The getCookie function sets "_cookiesReady" flag after first token check
+    // For web, cookies are immediately available
+    if (isExtension) {
+      const checkCookiesReady = async () => {
+        const ready = await storage.getItem("_cookiesReady")
+        if (ready === "true") {
+          setIsCookieReady(true)
+        } else {
+          // Poll every 50ms until cookies are ready (max 2 seconds)
+          let attempts = 0
+          const interval = setInterval(async () => {
+            attempts++
+            const ready = await storage.getItem("_cookiesReady")
+            if (ready === "true" || attempts > 40) {
+              setIsCookieReady(true)
+              clearInterval(interval)
+            }
+          }, 50)
+          return () => clearInterval(interval)
+        }
+      }
+      checkCookiesReady()
+    } else {
+      setIsCookieReady(true)
+    }
+  }, [isExtension])
 
   const setToken = (token?: string) => {
     setTokenInternal(token || "")
@@ -730,7 +762,7 @@ export function AuthProvider({
     isLoading: isSessionLoading,
     error: sessionError,
   } = useSWR(
-    (isExtension ? isStorageReady : true) &&
+    (isExtension ? isStorageReady && isCookieReady : true) &&
       (fingerprint || token) &&
       deviceId &&
       shouldFetchSession
