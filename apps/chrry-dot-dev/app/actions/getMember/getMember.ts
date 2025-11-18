@@ -9,6 +9,7 @@ import captureException from "../../../lib/captureException"
 import getApp from "../getApp"
 import { isOwner, OWNER_CREDITS } from "chrry/utils"
 import { authOptions } from "../../api/auth/[...nextauth]/options"
+import { decode } from "next-auth/jwt"
 
 export default async function getMember(
   exposePassword = false,
@@ -22,12 +23,63 @@ export default async function getMember(
       return {
         ...user,
         token,
+        sessionCookie: undefined, // No session cookie when fetching by email
         password: exposePassword ? user.password : null,
       }
     }
     return
   }
 
+  // Try to decode session cookie directly if getServerSession fails
+  let sessionCookie: string | undefined
+  let decodedToken: any = null
+
+  try {
+    const headersList = await headers()
+    const cookieHeader = headersList.get("cookie")
+
+    if (cookieHeader) {
+      // Look for __Secure-next-auth.session-token or next-auth.session-token
+      const sessionTokenMatch =
+        cookieHeader.match(/__Secure-next-auth\.session-token=([^;]+)/) ||
+        cookieHeader.match(/next-auth\.session-token=([^;]+)/)
+
+      if (sessionTokenMatch) {
+        sessionCookie = decodeURIComponent(sessionTokenMatch[1]!)
+        console.log("✅ Found session cookie, attempting to decode...")
+
+        // Try to decode the session token
+        decodedToken = await decode({
+          token: sessionCookie,
+          secret: process.env.NEXTAUTH_SECRET!,
+        })
+
+        if (decodedToken?.email) {
+          console.log("✅ Successfully decoded session token")
+          const user = await getUser({ email: decodedToken.email })
+
+          if (user) {
+            // Generate token from decoded session
+            const token = jwt.sign(
+              { email: decodedToken.email, sub: user.id },
+              process.env.NEXTAUTH_SECRET!,
+            )
+
+            return {
+              ...user,
+              token,
+              sessionCookie,
+              password: exposePassword ? user.password : null,
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error decoding session cookie:", error)
+  }
+
+  // Fallback to getServerSession if direct decode didn't work
   const session = (await getServerSession(authOptions as any)) as Session
   if (session?.user?.email) {
     let user = await getUser({ email: session.user.email })
@@ -43,6 +95,7 @@ export default async function getMember(
       return {
         ...user,
         token,
+        sessionCookie, // Include the raw session cookie if it exists
         password: exposePassword ? user.password : null,
       }
     }
@@ -52,27 +105,6 @@ export default async function getMember(
 
   // Fallback: Check if session cookie exists (indicates user is authenticated)
   // Even if getServerSession() failed, the cookie presence means they're logged in
-  try {
-    const headersList = await headers()
-    const cookieHeader = headersList.get("cookie")
-
-    if (cookieHeader) {
-      // Look for __Secure-next-auth.session-token or next-auth.session-token
-      const hasSessionCookie =
-        cookieHeader.includes("__Secure-next-auth.session-token=") ||
-        cookieHeader.includes("next-auth.session-token=")
-
-      if (hasSessionCookie) {
-        console.log(
-          "⚠️ Session cookie exists but getServerSession() returned null",
-        )
-        console.log("This might indicate a session callback issue")
-        // Could retry getServerSession() here or log for debugging
-      }
-    }
-  } catch (error) {
-    console.error("Error checking session cookie:", error)
-  }
 
   try {
     // Check for token in Authorization header
