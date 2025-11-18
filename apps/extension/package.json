@@ -9,7 +9,7 @@
     "build:chrome:dev": "rm -rf dist && tsc && vite build --mode development && npm run zip:chrome",
     "build:dev": "rm -rf dist && vite build --mode development",
     "build:dev:watch": "tsc && vite build --mode development --watch",
-    "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build --mode production && npm run zip:firefox",
+    "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build && npm run zip:firefox",
     "dev": "node dev-watch.js",
     "dev:watch": "concurrently \"npm run build:dev:watch\" \"npm run reload:watch\"",
     "lint": "eslint .",

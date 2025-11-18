@@ -138,7 +138,7 @@ const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
     detectBot({
-      mode: process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN", // Block in prod, log in dev
+      mode: "DRY_RUN", // Temporarily set to DRY_RUN to allow Google verification
       allow: [
         "CATEGORY:SEARCH_ENGINE", // Allow Google, Bing, etc.
         "CATEGORY:PREVIEW", // Allow link preview bots (Twitter, Slack, etc.)
