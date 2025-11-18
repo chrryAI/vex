@@ -1,0 +1,16 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://chrry.ai/api/sitemap-index
+Sitemap: https://vex.chrry.ai/api/sitemap?chrryUrl=https://vex.chrry.ai
+Sitemap: https://focus.chrry.ai/api/sitemap?chrryUrl=https://focus.chrry.ai
+Sitemap: https://atlas.chrry.ai/api/sitemap?chrryUrl=https://atlas.chrry.ai
+Sitemap: https://istanbul.chrry.ai/api/sitemap?chrryUrl=https://istanbul.chrry.ai
+Sitemap: https://amsterdam.chrry.ai/api/sitemap?chrryUrl=https://amsterdam.chrry.ai
+Sitemap: https://tokyo.chrry.ai/api/sitemap?chrryUrl=https://tokyo.chrry.ai
+Sitemap: https://newyork.chrry.ai/api/sitemap?chrryUrl=https://newyork.chrry.ai
+
+# Crawl delay (be nice to servers)
+Crawl-delay: 1

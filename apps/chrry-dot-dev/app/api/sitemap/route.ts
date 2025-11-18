@@ -51,7 +51,16 @@ function sanitizeUrl(url: string | null): string {
     // Only allow HTTPS URLs from trusted domains
     if (parsed.protocol !== "https:") return "https://chrry.ai"
 
-    const allowedDomains = ["chrry.ai", "vex.chrry.ai"]
+    const allowedDomains = [
+      "chrry.ai",
+      "vex.chrry.ai",
+      "focus.chrry.ai",
+      "atlas.chrry.ai",
+      "istanbul.chrry.ai",
+      "amsterdam.chrry.ai",
+      "tokyo.chrry.ai",
+      "newyork.chrry.ai",
+    ]
     if (!allowedDomains.includes(parsed.hostname)) {
       return "https://chrry.ai"
     }
