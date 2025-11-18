@@ -984,6 +984,9 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
+      drizzle-zero:
+        specifier: ^0.16.2
+        version: 0.16.2(@rocicorp/zero@0.22.3000000000(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(typescript@5.8.3))(@types/pg@8.15.6)(drizzle-orm@0.44.7(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.6)(pg@8.16.3)(postgres@3.4.7))(pg@8.16.3)(postgres@3.4.7)(prettier@3.6.2)
       postgres:
         specifier: ^3.4.4
         version: 3.4.7
@@ -991,9 +994,6 @@ importers:
       '@types/node':
         specifier: ^20.11.19
         version: 20.19.23
-      drizzle-zero:
-        specifier: ^0.16.2
-        version: 0.16.2(@rocicorp/zero@0.22.3000000000(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(typescript@5.8.3))(@types/pg@8.15.6)(drizzle-orm@0.44.7(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.6)(pg@8.16.3)(postgres@3.4.7))(pg@8.16.3)(postgres@3.4.7)(prettier@3.6.2)
       tsx:
         specifier: ^4.7.1
         version: 4.20.6
