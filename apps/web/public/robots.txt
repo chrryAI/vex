@@ -1,11 +1,2 @@
-Sitemap: https://chrry.ai/api/sitemap
-User-agent: *
-Allow: /api/sitemap
-Disallow: /api/*  # Except sitemap
-Allow: /$
-Allow: /about
-Allow: /privacy
-Allow: /terms
-Allow: /why
-Allow: /threads
-Allow: /threads/*
+# This file is now handled by app/robots.ts for dynamic subdomain support
+# Each subdomain will automatically get its own robots.txt with the correct sitemap
