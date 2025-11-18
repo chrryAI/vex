@@ -470,7 +470,7 @@ export const authOptions: AuthOptions = {
         sameSite: "lax",
         path: "/",
         secure: !isDevelopment,
-        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain
+        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain in production
       },
     },
     csrfToken: {
@@ -493,7 +493,7 @@ export const authOptions: AuthOptions = {
         sameSite: isDevelopment ? "lax" : "none",
         path: "/",
         secure: !isDevelopment,
-        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain
+        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain in production
       },
     },
     state: {
@@ -504,7 +504,7 @@ export const authOptions: AuthOptions = {
         path: "/",
         secure: !isDevelopment,
         maxAge: 900,
-        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain
+        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain in production
       },
     },
   },
