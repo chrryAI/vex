@@ -50,6 +50,9 @@ importers:
       turbo:
         specifier: ^2.5.6
         version: 2.5.8
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
     devDependencies:
       concurrently:
         specifier: ^9.2.1
@@ -69,9 +72,6 @@ importers:
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
-      typescript:
-        specifier: 5.8.3
-        version: 5.8.3
 
   apps/blossom:
     dependencies:
