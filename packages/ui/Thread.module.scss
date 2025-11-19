@@ -3,7 +3,10 @@
 
 .thread {
   max-width: breakpoints.$breakpoint-mobile;
-  margin: toRem.toRem(5) auto 0 auto;
+  margin-top: toRem.toRem(5);
+  margin-right: auto;
+  margin-bottom: 0;
+  margin-left: auto;
 
   display: flex;
   flex-direction: column;
@@ -94,5 +97,3 @@
   display: flex;
   gap: toRem.toRem(5);
 }
-
-
