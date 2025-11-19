@@ -1,33 +1,35 @@
 "use client"
 import React, { useEffect } from "react"
-import clsx from "clsx"
-import styles from "./Bookmark.module.scss"
 import type { thread } from "./types"
-import { useAppContext } from "./context/AppContext"
 import { isOwner } from "./utils"
 import { updateThread } from "./lib"
 import { Star } from "./icons"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { useNavigation } from "./platform"
+import { Button } from "./platform"
+import { useBookmarkStyles } from "./Bookmark.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function Bookmark({
-  className,
   thread,
   size = 14,
   onClick,
   children,
   onSave,
   dataTestId,
+  style,
 }: {
   defaultBookmarked?: boolean
-  className?: string
   thread: thread
   size?: number
   children?: React.ReactNode
   onClick?: (bookmarked: boolean) => void
   onSave?: () => void
   dataTestId: string
+  style?: React.CSSProperties
 }) {
+  const styles = useBookmarkStyles()
+  const { utilities } = useStyles()
+
   const { token, user, guest } = useAuth()
 
   const { threads } = useNavigationContext()
@@ -66,14 +68,14 @@ export default function Bookmark({
   }
 
   return (
-    <button
+    <Button
       onClick={() => setBookmarked(!bookmarked)}
-      className={clsx(
-        "link",
-        styles.star,
-        bookmarked && styles.active,
-        className,
-      )}
+      style={{
+        ...utilities.link.style,
+        ...styles.star.style,
+        ...(bookmarked && styles.starActive.style),
+        ...style,
+      }}
       data-testid={`${dataTestId}-${bookmarked ? "bookmarked" : "not-bookmarked"}`}
     >
       {bookmarked ? (
@@ -82,6 +84,6 @@ export default function Bookmark({
         <Star size={size} color="var(--shade-3)" />
       )}
       {children}
-    </button>
+    </Button>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import clsx from "clsx"
-import styles from "./Skeleton.module.scss"
+// import styles from "./Skeleton.module.scss"
 import Menu from "./Menu"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
@@ -20,6 +20,7 @@ import {
   usePreviousPathname,
   usePlatform,
   VexToast,
+  Span,
 } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import {
@@ -137,7 +138,7 @@ export default function Skeleton({
               ...(isStandalone && skeletonStyles.headerStandalone.style),
               ...(isEmpty && skeletonStyles.headerEmpty.style),
             }}
-            className={clsx(hasHydrated && device && styles[device])}
+            // className={clsx(hasHydrated && device && styles[device])}
           >
             <Div style={{ ...skeletonStyles.hamburgerMenu.style }}>
               {!isDrawerOpen && (
@@ -148,7 +149,9 @@ export default function Skeleton({
                   }}
                   onClick={toggleMenu}
                 >
-                  {hasNotification && <span className={styles.notification} />}
+                  {hasNotification && (
+                    <Span style={{ ...skeletonStyles.notification.style }} />
+                  )}
                   <CircleEllipsis color="var(--accent-1)" size={24} />
                 </Button>
               )}
@@ -190,11 +193,11 @@ export default function Skeleton({
             </Div>
             <Div style={{ ...skeletonStyles.right.style }}>
               <CharacterProfiles />
-              <Subscribe className={styles.subscribeDesktop} />
+              <Subscribe />
 
-              <SignIn showSignIn={false} className={styles.signIn} />
+              <SignIn showSignIn={false} />
 
-              <LanguageSwitcher className={styles.languageSwitcher} />
+              <LanguageSwitcher />
             </Div>
           </Div>
           <Div style={{ ...skeletonStyles.contentContainer.style }}>

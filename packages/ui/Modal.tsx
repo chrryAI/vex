@@ -1,15 +1,17 @@
 "use client"
 import React, { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
-import styles from "./Modal.module.scss"
+// import styles from "./Modal.module.scss"
 import clsx from "clsx"
 import { CircleX } from "./icons"
 import { useRouter } from "./hooks/useWindowHistory"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { useNavigation, useTheme } from "./platform"
+import { Button, Div, H4, useNavigation, useTheme, Video } from "./platform"
 import { useHasHydrated } from "./hooks"
 import { FRONTEND_URL } from "./utils"
+import { useModalStyles } from "./Modal.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function Modal({
   title,
@@ -24,6 +26,7 @@ export default function Modal({
   borderHeader = true,
   dataTestId,
   hideOnClickOutside = true,
+  style,
   ...props
 }: {
   hideOnClickOutside?: boolean
@@ -42,7 +45,10 @@ export default function Modal({
   borderHeader?: boolean
   icon?: React.ReactNode | "blob"
   dataTestId?: string
+  style?: React.CSSProperties
 }) {
+  const styles = useModalStyles()
+  const { utilities } = useStyles()
   // Split contexts
   const { track } = useAuth()
   const { addParams, removeParams } = useNavigation()
@@ -141,63 +147,70 @@ export default function Modal({
     hasHydrated &&
     isModalOpen &&
     createPortal(
-      <div className={clsx(styles.modal)} role="dialog" aria-modal="true">
-        <div
-          className={clsx(
-            styles.main,
-            className,
-            isDrawerOpen && styles.isDrawerOpen,
-          )}
+      <Div
+        style={{ ...styles.modal.style, ...style }}
+        className={clsx(styles.modal)}
+        role="dialog"
+        aria-modal="true"
+      >
+        <Div
+          style={{
+            ...styles.main.style,
+            ...(isDrawerOpen ? styles.mainIsDrawerOpen.style : {}),
+          }}
         >
-          <div
+          <Div
             data-testid={dataTestId}
             className={clsx(styles.inner)}
             ref={innerRef}
           >
-            <h4
-              className={clsx(
-                styles.header,
-                borderHeader && styles.borderHeader,
-              )}
+            <H4
+              style={{
+                ...styles.header.style,
+                ...(borderHeader ? styles.headerBorderHeader.style : {}),
+              }}
             >
               {icon === "blob" ? (
-                <video
-                  className={styles.video}
+                <Video
+                  style={styles.video.style}
                   src={`${FRONTEND_URL}/video/blob.mp4`}
                   autoPlay
                   loop
                   muted
                   playsInline
-                ></video>
+                ></Video>
               ) : (
                 icon
               )}
-              <div className={styles.title}>{title}</div>
+              <Div style={styles.title.style}>{title}</Div>
 
               {hasCloseButton && (
-                <button
+                <Button
                   data-testid={
                     dataTestId
                       ? `${dataTestId}-close-button`
                       : "modal-close-button"
                   }
-                  className={clsx(styles.close, "link")}
+                  style={{ ...styles.close.style, ...utilities.link.style }}
                   onClick={() => {
                     onToggle ? onToggle?.(false) : setIsModalOpen(false)
                   }}
                 >
                   <CircleX size={24} />
-                </button>
+                </Button>
               )}
-            </h4>
-            <div
-              className={clsx(styles.content, scrollable && styles.scrollable)}
+            </H4>
+            <Div
+              style={{
+                ...styles.content.style,
+                ...(scrollable ? styles.contentScrollable.style : {}),
+              }}
             >
               {children}
-            </div>
-          </div>
-        </div>
-      </div>,
+            </Div>
+          </Div>
+        </Div>
+      </Div>,
       document.getElementById("skeleton") || document.body,
     )
   )

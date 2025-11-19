@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
 import { thread, MAX_THREAD_TITLE_CHAR_COUNT } from "./types"
-import styles from "./EditThread.module.scss"
+// import styles from "./EditThread.module.scss"
 import clsx from "clsx"
 import { Pencil, Sparkles } from "./icons"
 import Modal from "./Modal"
@@ -10,23 +10,29 @@ import { updateThread } from "./lib"
 import toast from "react-hot-toast"
 import DeleteThread from "./DeleteThread"
 import { useAuth, useError, useNavigationContext } from "./context/providers"
+import { useEditThreadStyles } from "./EditThread.styles"
+import { Button, Div, Span } from "./platform"
+import TextArea from "antd/es/input/TextArea"
+import { useStyles } from "./context/StylesContext"
 
 export default function EditThread({
-  className,
   onSave,
   isIcon,
   refetch,
   onDelete,
   thread,
+  style,
   ...rest
 }: {
-  className?: string
+  style?: React.CSSProperties
   thread: thread
   isIcon?: boolean
   onDelete?: () => void
   onSave?: ({ title }: { title: string }) => void
   refetch?: () => Promise<void>
 }) {
+  const styles = useEditThreadStyles()
+  const { utilities } = useStyles()
   const { refetchThreads } = useNavigationContext()
 
   const { t } = useAppContext()
@@ -92,28 +98,27 @@ export default function EditThread({
       <Modal
         borderHeader={false}
         isModalOpen={isModalOpen}
-        className={styles.modal}
+        style={styles.modal.style}
         icon={<Pencil size={20} color="var(--accent-6)" />}
         title={
           <>
             Edit Thread
-            <div className={styles.right}>
+            <Div style={utilities.right.style}>
               {charCount === 0 ? (
-                <span className={clsx(styles.maxCharCount)}>
-                  {maxCharCount}
-                </span>
+                <Span style={styles.maxCharCount.style}>{maxCharCount}</Span>
               ) : (
-                <span
-                  className={clsx(
-                    styles.charLeft,
-                    maxCharCount - charCount < 50 && styles.orange,
-                    charCount > maxCharCount && styles.red,
-                  )}
+                <Span
+                  style={{
+                    ...styles.charLeft.style,
+                    ...(maxCharCount - charCount < 50 &&
+                      styles.maxCharCountOrange),
+                    ...(charCount > maxCharCount && styles.maxCharCountRed),
+                  }}
                 >
                   {charCount}/{maxCharCount}
-                </span>
+                </Span>
               )}
-            </div>
+            </Div>
           </>
         }
         hasCloseButton
@@ -122,19 +127,18 @@ export default function EditThread({
           name: "edit_thread",
         }}
       >
-        <div className={styles.editThreadContainer}>
-          <textarea
+        <Div style={styles.editThreadContainer.style}>
+          <TextArea
             data-testid="edit-thread-textarea"
             onChange={(e) => setTitle(e.target.value)}
-            className={styles.editThreadInput}
+            style={styles.editThreadInput.style}
             value={title}
-          ></textarea>
-        </div>
-        <div className={styles.actions}>
-          <button
+          />
+        </Div>
+        <Div style={styles.actions.style}>
+          <Button
             data-testid="edit-thread-generate-title-button"
             onClick={() => handleSave({ regenerateTitle: true })}
-            className="inverted"
           >
             {isGeneratingTitle ? (
               <Loading width={14} height={14} />
@@ -144,7 +148,7 @@ export default function EditThread({
                 {t("Generate")}
               </>
             )}
-          </button>
+          </Button>
 
           <DeleteThread
             onDelete={async () => {
@@ -152,15 +156,18 @@ export default function EditThread({
               onDelete?.()
               //   setIsModalOpen(false)
             }}
-            className={styles.deleteThread}
+            style={styles.deleteThread.style}
             id={thread.id}
           />
-          <button onClick={() => setIsModalOpen(false)} className="inverted">
+          <Button
+            onClick={() => setIsModalOpen(false)}
+            style={utilities.inverted.style}
+          >
             {t("Close")}
-          </button>
+          </Button>
 
           {isAllowed && (
-            <button
+            <Button
               data-testid="edit-thread-save-button"
               className=""
               onClick={() => handleSave()}
@@ -170,14 +177,17 @@ export default function EditThread({
               ) : (
                 t("Save")
               )}
-            </button>
+            </Button>
           )}
-        </div>
+        </Div>
       </Modal>
-      <button
+      <Button
         data-testid="edit-thread-button"
         onClick={() => setIsModalOpen(true)}
-        className={clsx(isIcon ? "link" : "transparent small", className)}
+        style={{
+          ...(isIcon ? utilities.link.style : utilities.transparent.style),
+          ...style,
+        }}
       >
         {isIcon ? (
           <Pencil size={12} color="var(--accent-1)" />
@@ -186,7 +196,7 @@ export default function EditThread({
             <Pencil size={14} color="var(--accent-1)" />
           </>
         )}
-      </button>
+      </Button>
     </>
   )
 }

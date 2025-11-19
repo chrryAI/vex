@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 import clsx from "clsx"
-import styles from "./Share.module.scss"
+// import styles from "./Share.module.scss"
 import { collaboration, thread, user } from "./types"
 import {
   Circle,
@@ -36,24 +36,29 @@ import {
   useNavigationContext,
 } from "./context/providers"
 import { apiFetch } from "./utils"
+import { useShareStyles } from "./Share.styles"
+import { useStyles } from "./context/StylesContext"
+import { Button, Div, Input, P, Span } from "./platform"
 
 export default function Share({
-  className,
   size,
   onChangeVisibility,
   thread,
   onCollaborationChange,
+  style,
   ...rest
 }: {
   dataTestId?: string
   thread: thread
-  className?: string
+  style?: React.CSSProperties
   size?: number
   onCollaborationChange?: (
     collaborations?: { collaboration: collaboration; user: user }[],
   ) => void
   onChangeVisibility?: (visibility: "private" | "protected" | "public") => void
 }) {
+  const styles = useShareStyles()
+  const { utilities } = useStyles()
   const dataTestId = rest.dataTestId ? `${rest.dataTestId}-` : ""
 
   const [isOpen, setIsOpen] = useState(false)
@@ -314,7 +319,7 @@ export default function Share({
   }
   return (
     <>
-      <div
+      <Div
         key={dataTestId}
         style={{
           display: "inline-flex",
@@ -322,8 +327,8 @@ export default function Share({
           gap: 7.5,
           fontSize: 12,
           color: "var(--accent-1)",
+          ...style,
         }}
-        className={clsx(styles.shareContainer, className)}
       >
         {thread.visibility === "public" ? (
           <LockOpen
@@ -338,17 +343,21 @@ export default function Share({
         ) : (
           <LockIcon color="var(--shade-3)" size={size ? size - 3 : undefined} />
         )}
-        <button
+        <Button
           title={t("Share")}
           data-testid={`${dataTestId}share-button`}
           onClick={() => {
             setIsOpen(true)
           }}
-          className={clsx("link", styles.share, className)}
+          style={{
+            ...utilities.link.style,
+            ...styles.share.style,
+            ...style,
+          }}
         >
           <ShareIcon strokeWidth={2.5} size={size} />
-        </button>
-      </div>
+        </Button>
+      </Div>
       <Modal
         dataTestId={`${dataTestId}share-modal`}
         isModalOpen={isOpen}
@@ -356,41 +365,40 @@ export default function Share({
           setIsOpen(open)
         }}
         title={t("Share Thread")}
-        className={styles.shareModal}
         hasCloseButton
         icon={
           loading ? <Loading width={22} height={22} /> : <ShareIcon size={20} />
         }
       >
-        <div className={styles.shareModalContent}>
+        <Div style={styles.shareModalContent.style}>
           {isCollaborating ? (
             <>
-              <div className={styles.shareModalInputContainer}>
-                <input
+              <Div style={styles.shareModalInputContainer}>
+                <Input
                   data-testid={`${dataTestId}share-input`}
-                  className={styles.shareModalInput}
+                  style={styles.shareModalInput.style}
                   type="text"
-                  defaultValue={`${FRONTEND_URL}/threads/${thread.id}`}
+                  value={`${FRONTEND_URL}/threads/${thread.id}`}
                 />
-                <button
+                <Button
                   data-testid={`${dataTestId}share-copy-button`}
-                  className="inverted"
+                  style={utilities.inverted.style}
                   onClick={copyToClipboard}
                 >
                   <Copy size={14} /> {t("Copy")}
-                </button>
-              </div>
-              <div className={styles.collaborateInputContainer}>
-                <input
+                </Button>
+              </Div>
+              <Div style={styles.collaborateInputContainer}>
+                <Input
                   type="email"
                   data-testid={`${dataTestId}collaborate-input`}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className={styles.collaborateInput}
+                  style={styles.collaborateInput.style}
                   placeholder={t("Find by username or email")}
                 />
                 {isInviting ? (
-                  <button
+                  <Button
                     data-testid={`${dataTestId}collaborate-add-button`}
                     onClick={() => handleInvite()}
                   >
@@ -399,10 +407,10 @@ export default function Share({
                     ) : (
                       t("Invite")
                     )}
-                  </button>
+                  </Button>
                 ) : (
                   search && (
-                    <button
+                    <Button
                       data-testid={`${dataTestId}collaborate-add-button`}
                       onClick={() => handleSearch()}
                     >
@@ -411,20 +419,19 @@ export default function Share({
                       ) : (
                         t("Add")
                       )}
-                    </button>
+                    </Button>
                   )
                 )}
-              </div>
+              </Div>
               {collaborations?.length > 0 && (
-                <div className={styles.collaborators}>
+                <Div style={styles.collaborators.style}>
                   {collaborations.map((collaboration) => (
-                    <div
+                    <Div
                       key={`${collaboration.user.id}-${collaboration.collaboration.status}`}
-                      className={styles.collaborator}
+                      style={styles.collaborator.style}
                     >
                       {collaboration.user.image ? (
                         <Img
-                          className={styles.collaboratorImage}
                           src={collaboration.user.image}
                           width={20}
                           height={20}
@@ -433,19 +440,19 @@ export default function Share({
                       ) : (
                         <CircleUserRound size={20} />
                       )}
-                      <div className={styles.collaboratorDetails}>
-                        <p
+                      <Div>
+                        <P
                           data-testid={`${dataTestId}collaborator-name`}
-                          className={styles.collaboratorName}
+                          style={styles.collaboratorName.style}
                         >
                           {collaboration.user.name} (
                           {collaboration.user.userName})
-                        </p>
-                        <p
+                        </P>
+                        <P
                           data-testid={`${dataTestId}collaborator-email`}
-                          className={styles.collaboratorEmail}
+                          style={styles.collaboratorEmail.style}
                         >
-                          <span className={styles.collaboratorStatus}>
+                          <Span style={styles.collaboratorStatus.style}>
                             {collaboration.collaboration.status ===
                             "pending" ? (
                               <Circle size={12} color="var(--accent-1)" />
@@ -455,20 +462,20 @@ export default function Share({
                             ) : (
                               <CircleCheck size={12} color="var(--accent-4)" />
                             )}
-                            <span
+                            <Span
                               data-testid={`${dataTestId}collaborator-status`}
                             >
                               {collaboration.collaboration.status}
-                            </span>
+                            </Span>
                             {collaboration.user.email}
-                          </span>
-                        </p>
-                      </div>
-                      <div className={clsx(styles.collaboratorActions)}>
+                          </Span>
+                        </P>
+                      </Div>
+                      <Div className={clsx(styles.collaboratorActions)}>
                         <ConfirmButton
                           dataTestId={`${dataTestId}collaborator-revoke-button`}
                           disabled={isRevoking}
-                          className="transparent"
+                          style={utilities.transparent.style}
                           confirm={
                             <>
                               {isRevoking ? (
@@ -485,25 +492,25 @@ export default function Share({
                         >
                           {t("Revoke")}
                         </ConfirmButton>
-                      </div>
-                    </div>
+                      </Div>
+                    </Div>
                   ))}
-                </div>
+                </Div>
               )}
 
-              <div className={styles.collaborateFooter}>
-                <button
-                  className="transparent"
+              <Div style={styles.collaborateFooter.style}>
+                <Button
+                  style={utilities.transparent.style}
                   onClick={() => {
                     setIsCollaborating(false)
                   }}
                 >
                   {t("Back")}
-                </button>
+                </Button>
 
                 {collaborations?.length > 0 && (
                   <ConfirmButton
-                    className="transparent"
+                    style={utilities.transparent.style}
                     confirm={
                       <>
                         {isDeleting ? (
@@ -523,47 +530,51 @@ export default function Share({
                   </ConfirmButton>
                 )}
                 {visibility !== "private" && (
-                  <button
-                    className="transparent"
+                  <Button
+                    style={utilities.transparent.style}
                     onClick={() => {
                       handleVisibilityChange("private")
                     }}
                   >
                     <LockIcon size={14} />
                     {t("Make it private")}
-                  </button>
+                  </Button>
                 )}
                 {visibility !== "public" && (
-                  <button
-                    className="inverted"
+                  <Button
+                    style={utilities.inverted.style}
                     onClick={() => {
                       handleVisibilityChange("public")
                     }}
                   >
                     <Rss size={14} />
                     {t("Make it public")}
-                  </button>
+                  </Button>
                 )}
-              </div>
+              </Div>
             </>
           ) : (
             <>
               {visibility !== "private" && (
-                <div className={styles.shareModalInputContainer}>
-                  <input
-                    className={styles.shareModalInput}
+                <Div style={styles.shareModalInputContainer.style}>
+                  <Input
+                    style={styles.shareModalInput.style}
                     type="text"
-                    defaultValue={`${FRONTEND_URL}/threads/${thread.id}`}
+                    value={`${FRONTEND_URL}/threads/${thread.id}`}
                   />
-                  <button className="inverted" onClick={copyToClipboard}>
+                  <Button
+                    style={utilities.inverted.style}
+                    onClick={copyToClipboard}
+                  >
                     <Copy size={14} /> {t("Copy")}
-                  </button>
-                </div>
+                  </Button>
+                </Div>
               )}
-              <div className={styles.shareModalDescription}>
+              <Div style={styles.shareModalDescription.style}>
                 {visibility === "private" ? (
                   <>
-                    <button
+                    <Button
+                      style={utilities.transparent.style}
                       data-testid={`${dataTestId}collaborate-button`}
                       onClick={() => {
                         setIsCollaborating(true)
@@ -571,44 +582,44 @@ export default function Share({
                     >
                       <UsersRound size={14} />
                       {t("Collaborate")}
-                    </button>
-                    <button
-                      className="inverted"
+                    </Button>
+                    <Button
+                      style={utilities.inverted.style}
                       onClick={() => {
                         handleVisibilityChange("protected")
                       }}
                     >
                       <Link2 size={14} />
                       {t("Get shareable link")}
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <button
-                      className="transparent"
+                    <Button
+                      style={utilities.transparent.style}
                       onClick={() => {
                         handleVisibilityChange("private")
                       }}
                     >
                       <LockIcon size={14} />
                       {t("Make it private")}
-                    </button>
+                    </Button>
                     {visibility === "protected" && (
-                      <button
+                      <Button
                         onClick={() => {
                           handleVisibilityChange("public")
                         }}
                       >
                         <Rss size={14} />
                         {t("Make it public")}
-                      </button>
+                      </Button>
                     )}
                   </>
                 )}
-              </div>
+              </Div>
             </>
           )}
-        </div>
+        </Div>
       </Modal>
     </>
   )
