@@ -53,6 +53,7 @@ export interface ButtonProps extends BaseProps {
   onClick?: () => void
   disabled?: boolean
   title?: string
+  id?: string
   "aria-label"?: string
   "aria-disabled"?: boolean
 }
@@ -66,7 +67,15 @@ export interface LinkProps extends BaseProps {
 }
 
 export interface InputProps extends BaseProps {
-  type?: "text" | "email" | "password" | "number" | "tel" | "url" | "search"
+  type?:
+    | "text"
+    | "email"
+    | "password"
+    | "number"
+    | "tel"
+    | "url"
+    | "search"
+    | "hidden"
   placeholder?: string
   value?: string
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void
