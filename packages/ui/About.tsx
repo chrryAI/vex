@@ -11,7 +11,6 @@ import {
   Shell,
   UserRoundPlus,
 } from "./icons"
-import styles from "./About.module.scss"
 import { RiNextjsFill } from "react-icons/ri"
 import { BiLogoPostgresql } from "react-icons/bi"
 
@@ -27,10 +26,26 @@ import {
   useError,
   useNavigationContext,
 } from "./context/providers"
-import { useNavigation, usePlatform, useTheme } from "./platform"
+import {
+  Button,
+  Div,
+  H1,
+  H2,
+  H3,
+  H4,
+  P,
+  Section,
+  Span,
+  useNavigation,
+  usePlatform,
+  useTheme,
+  Video,
+} from "./platform"
 import { getSiteConfig } from "./utils/siteConfig"
 import { Claude, DeepSeek } from "@lobehub/icons"
 import A from "./A"
+import { useAboutStyles } from "./About.styles"
+import { useStyles } from "./context/StylesContext"
 export default function About() {
   const {
     // track,
@@ -45,6 +60,9 @@ export default function About() {
   } = useAuth()
 
   const config = getSiteConfig()
+
+  const styles = useAboutStyles()
+  const { utilities } = useStyles()
 
   const isChrryAI = config.mode === "chrryAI"
 
@@ -94,19 +112,18 @@ export default function About() {
 
   return (
     <Skeleton>
-      <div
-        className={clsx(styles.about)}
+      <Div
         style={{
           maxWidth: 800,
           margin: isDrawerOpen ? undefined : "0 auto",
           padding: "0 0px 20px 0px",
         }}
       >
-        <h1 style={{ marginTop: 0 }}>
-          <button className="link" onClick={() => router.push("/")}>
+        <H1 style={{ marginTop: 0 }}>
+          <Button onClick={() => router.push("/")}>
             <CircleArrowLeft color="var(--accent-1)" size={24} />
-          </button>{" "}
-          <span
+          </Button>
+          <Span
             onClick={() => {
               if (user?.role === "admin") {
                 captureException(new Error("About Vex"))
@@ -114,10 +131,10 @@ export default function About() {
             }}
           >
             {t("About Vex")}
-          </span>
-        </h1>
-        <section style={{ marginBottom: 15 }}>
-          <p>
+          </Span>
+        </H1>
+        <Section style={{ marginBottom: 15 }}>
+          <P>
             <a
               onClick={(e) => {
                 addHapticFeedback()
@@ -191,67 +208,70 @@ export default function About() {
             <a href="https://x.com/askvexai">@askvexAI</a>
             {", "}
             <a href="mailto:iliyan@chrry.ai">iliyan@chrry.ai</a>
-          </p>
-        </section>
+          </P>
+        </Section>
 
-        <section>
-          <p>🥰 {t("about.intro")}</p>
-          <p style={{ marginTop: "1rem" }}>{t("about.intro2")}</p>
-        </section>
+        <Section>
+          <P>🥰 {t("about.intro")}</P>
+          <P style={{ marginTop: "1rem" }}>{t("about.intro2")}</P>
+        </Section>
 
         {/* Dynamic Apps Section */}
         {apps && apps.length > 0 && (
-          <section>
-            <h2>
+          <Section>
+            <H2>
               {config.logo} {t("Available Apps")}
-            </h2>
-            <p>{t("Discover AI-powered apps from our store")}</p>
-            <div className={styles.apps}>
+            </H2>
+            <P>{t("Discover AI-powered apps from our store")}</P>
+            <Div style={styles.apps.style}>
               {apps.map((app) => (
-                <div
+                <Div
                   key={app.id}
-                  className={styles.app}
+                  style={styles.app.style}
                   onClick={() => setApp(app)}
                 >
-                  <h4>
+                  <H4>
                     <span style={{ fontSize: 30 }}>
                       {<Img app={app} size={30} />}
                     </span>
                     {app.title || app.name}
-                  </h4>
-                  <p className={styles.appDescription}>
+                  </H4>
+                  <P style={styles.appDescription.style}>
                     {app.description || t("No description available")}
-                  </p>
-                </div>
+                  </P>
+                </Div>
               ))}
-            </div>
-          </section>
+            </Div>
+          </Section>
         )}
 
-        <section>
-          <h2>{t("about.approach.title")}</h2>
-          <p>{t("about.approach.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("about.approach.title")}</H2>
+          <P>{t("about.approach.content")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("about.transparency.title")}</h2>
-          <p>{t("about.transparency.intro")}</p>
-          <ul>
-            <li>{t("about.transparency.items.pricing")}</li>
-            <li>{t("about.transparency.items.usage")}</li>
-            <li>{t("about.transparency.items.communication")}</li>
-            <li>{t("about.transparency.items.data")}</li>
-          </ul>
-        </section>
+        <Section>
+          <H2>{t("about.transparency.title")}</H2>
+          <P>{t("about.transparency.intro")}</P>
+          <Div>
+            <P>{t("about.transparency.items.pricing")}</P>
+            <P>{t("about.transparency.items.usage")}</P>
+            <P>{t("about.transparency.items.communication")}</P>
+            <P>{t("about.transparency.items.data")}</P>
+          </Div>
+        </Section>
 
-        <h2 style={{ fontSize: 28 }}>{t("All Plans")}</h2>
-        <section>
-          <h2>
+        <H2 style={{ fontSize: 28 }}>{t("All Plans")}</H2>
+        <Section>
+          <H2>
             <Logo size={24} /> {config.name} {t("Free")}
             {!user && (
-              <button
-                className="inverted"
-                style={{ marginLeft: "auto", fontSize: 14 }}
+              <Button
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 14,
+                  ...utilities.inverted.style,
+                }}
                 onClick={() => {
                   if (checkIsExtension()) {
                     BrowserInstance?.runtime?.sendMessage({
@@ -265,21 +285,21 @@ export default function About() {
                 }}
               >
                 <UserRoundPlus size={16} /> {t("Register")}
-              </button>
+              </Button>
             )}
-          </h2>
+          </H2>
           {memberFeatures.map((feature) => (
-            <span key={feature.text}>
+            <Span key={feature.text}>
               {" "}
               {feature.emoji} {feature.text}
-            </span>
+            </Span>
           ))}
-        </section>
+        </Section>
 
-        <section>
-          <h2>
+        <Section>
+          <H2>
             <Img size={24} icon="chrry" /> {config.name} {t("Credits")}
-            <button
+            <Button
               onClick={() => {
                 if (checkIsExtension()) {
                   BrowserInstance?.runtime?.sendMessage({
@@ -291,27 +311,30 @@ export default function About() {
                 }
                 router.push("/about?subscribe=true&plan=credits")
               }}
-              className="inverted"
-              style={{ marginLeft: "auto", fontSize: 14 }}
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.inverted.style,
+              }}
             >
               {t("credits_pricing", {
                 credits: ADDITIONAL_CREDITS,
                 price: `${CREDITS_PRICE}.00`,
               })}
-            </button>
-          </h2>
+            </Button>
+          </H2>
           {creditsFeatures.map((feature) => (
-            <span key={feature.text}>
+            <Span key={feature.text}>
               {" "}
               {feature.emoji} {feature.text}
-            </span>
+            </Span>
           ))}
-        </section>
+        </Section>
 
-        <section>
-          <h2>
+        <Section>
+          <H2>
             <Img size={24} icon="strawberry" /> {config.name} {t("Plus")}
-            <span
+            <Span
               title={t("Most popular")}
               style={{
                 color: "var(--accent-1)",
@@ -321,8 +344,8 @@ export default function About() {
               }}
             >
               <BadgeCheck size={20} />
-            </span>
-            <button
+            </Span>
+            <Button
               onClick={() => {
                 if (checkIsExtension()) {
                   BrowserInstance?.runtime?.sendMessage({
@@ -334,27 +357,30 @@ export default function About() {
                 }
                 router.push("/about?subscribe=true&plan=plus")
               }}
-              className="inverted"
-              style={{ marginLeft: "auto", fontSize: 14 }}
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.inverted.style,
+              }}
             >
               €
               {t("{{price}}/month", {
                 price: PLUS_PRICE,
               })}
-            </button>
-          </h2>
+            </Button>
+          </H2>
           {plusFeatures.map((feature) => (
-            <span key={feature.text}>
+            <Span key={feature.text}>
               {" "}
               {feature.emoji} {feature.text}
-            </span>
+            </Span>
           ))}
-        </section>
+        </Section>
 
-        <section>
-          <h2>
+        <Section>
+          <H2>
             <Img size={24} icon="raspberry" /> {config.name} {t("Pro")}
-            <button
+            <Button
               onClick={() => {
                 if (checkIsExtension()) {
                   BrowserInstance?.runtime?.sendMessage({
@@ -366,200 +392,200 @@ export default function About() {
                 }
                 router.push("/about?subscribe=true&plan=pro")
               }}
-              className="inverted"
-              style={{ marginLeft: "auto", fontSize: 14 }}
+              style={{
+                marginLeft: "auto",
+                fontSize: 14,
+                ...utilities.inverted.style,
+              }}
             >
               €
               {t("{{price}}/month", {
                 price: PRO_PRICE,
               })}
-            </button>
-          </h2>
+            </Button>
+          </H2>
           {proFeatures.map((feature) => (
-            <span key={feature.text}>
+            <Span key={feature.text}>
               {" "}
               {feature.emoji} {feature.text}
-            </span>
+            </Span>
           ))}
-        </section>
+        </Section>
 
-        <section>
-          <h2>{t("about.platforms.title")}</h2>
-          <p>{t("about.platforms.content")}</p>
+        <Section>
+          <H2>{t("about.platforms.title")}</H2>
+          <P>{t("about.platforms.content")}</P>
 
-          <div>
-            <div>
-              <h3>{t("about.platforms.web.title")}</h3>
-              <p>{t("about.platforms.web.content")}</p>
-              <video
-                className={styles.video}
+          <Div>
+            <Div>
+              <H3>{t("about.platforms.web.title")}</H3>
+              <P>{t("about.platforms.web.content")}</P>
+              <Video
+                style={styles.video.style}
                 controls
                 src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOL8j2AfbZ5dgLDCVo4JzBsXqI3MrF8KatARwv`}
               />
-            </div>
+            </Div>
 
-            <div>
-              <h3>{t("about.platforms.pwa.title")}</h3>
-              <p>{t("about.platforms.pwa.content")}</p>
+            <Div>
+              <H3>{t("about.platforms.pwa.title")}</H3>
+              <P>{t("about.platforms.pwa.content")}</P>
 
-              <video
-                className={styles.video}
+              <Video
+                style={styles.video.style}
                 controls
                 src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOTAEfNuXpQy4HJYn8fWo1mFVRaG7eqCiD3A5l`}
               />
-            </div>
+            </Div>
 
-            <div>
-              <h3 style={{ display: "flex" }}>
+            <Div>
+              <H3 style={{ display: "flex" }}>
                 {t("about.platforms.chrome.title")}{" "}
                 <a
                   target="_blank"
-                  style={{ marginLeft: "auto" }}
+                  style={{
+                    marginLeft: "auto",
+                    ...utilities.button.style,
+                    ...utilities.small.style,
+                  }}
                   href="https://chromewebstore.google.com/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc"
-                  className={clsx("button small", styles.installButton)}
                 >
                   <FaChrome size={18} />
                   {t("Install")}
                 </a>
-              </h3>
-              <p>{t("about.platforms.chrome.content")} </p>
-              <video
-                className={styles.video}
+              </H3>
+              <P>{t("about.platforms.chrome.content")} </P>
+              <Video
+                style={styles.video.style}
                 controls
                 src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOWTxc2Y6sD5zVU8hPgdAmWQy4qXa0KuL2HE7e`}
               />
-            </div>
-          </div>
-        </section>
+            </Div>
+          </Div>
+        </Section>
 
         {/* <section>
           <h2>{t("about.team.title")}</h2>
           <p>{t("about.team.content")}</p>
         </section> */}
 
-        <div className={styles.ossWrapper}>
-          <h2 className={styles.ossTitle}>{t("Open Source")}</h2>
-          <div
-            style={{ marginBottom: "1.5rem" }}
-            className={styles.ossContainer}
-          >
-            <div className={styles.oss}>
+        <Div style={styles.ossWrapper.style}>
+          <H2>{t("Open Source")}</H2>
+          <Div style={{ ...styles.ossContainer.style, marginBottom: "1.5rem" }}>
+            <Div style={styles.oss.style}>
               <SiTypescript style={{ width: 40, height: 40 }} />
-              <a
+              <A
                 href="https://www.typescriptlang.org"
                 target="_blank"
                 rel="nofollow"
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 TypeScript
-              </a>
-            </div>
-            <div className={styles.oss}>
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
               <RiNextjsFill style={{ width: 40, height: 40 }} />
-              <a
+              <A
                 href="https://nextjs.org"
                 target="_blank"
                 rel="nofollow"
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 Next.js
-              </a>
-            </div>
-            <div className={styles.oss}>
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
               <BiLogoPostgresql style={{ width: 40, height: 40 }} />
-              <a
+              <A
                 href="https://www.postgresql.org"
                 target="_blank"
                 rel="nofollow"
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 PostgreSQL
-              </a>
-            </div>
-            <div className={styles.oss}>
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
               <DeepSeek color={COLORS.purple} size={40} />
-              <a
+              <A
                 href="https://www.deepseek.com"
                 target="_blank"
                 rel="nofollow"
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 DeepSeek
-              </a>
-            </div>
-          </div>
+              </A>
+            </Div>
+          </Div>
 
-          <div className={styles.ossContainer}>
-            <div className={styles.oss}>
+          <Div style={styles.ossContainer.style}>
+            <Div style={styles.oss.style}>
               <SiJest style={{ width: 40, height: 40 }} />
-              <a
+              <A
                 href="https://jestjs.io"
                 target="_blank"
                 rel="nofollow"
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 Jest
-              </a>
-            </div>
-            <div className={styles.oss}>
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
               <SiCssmodules style={{ width: 40, height: 40 }} />
-              <a
+              <A
                 href="https://github.com/css-modules/css-modules"
                 target="_blank"
                 rel="nofollow"
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 CSS Modules
-              </a>
-            </div>
-            <div className={styles.oss}>
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
               <Shell style={{ width: 40, height: 40 }} />
-              <a
+              <A
                 href="https://lucide.dev"
                 target="_blank"
                 rel="nofollow"
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 Lucide
-              </a>
-            </div>
-          </div>
-        </div>
-        <div className={styles.ossWrapper}>
-          <h2 className={styles.ossTitle}>{t("Team")}</h2>
-          <div
-            style={{ marginBottom: "1.5rem" }}
-            className={styles.ossContainer}
-          >
-            <div className={styles.oss}>
+              </A>
+            </Div>
+          </Div>
+        </Div>
+        <Div style={styles.ossWrapper.style}>
+          <H2>{t("Team")}</H2>
+          <Div style={{ ...styles.ossContainer.style, marginBottom: "1.5rem" }}>
+            <Div style={styles.oss.style}>
               <Img icon="spaceInvader" size={40} />
               <A
                 href="https://i.chrry.dev"
                 openInNewTab
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 iliyan@chrry.ai
               </A>
-            </div>
-            <div className={styles.oss}>
+            </Div>
+            <Div style={styles.oss.style}>
               <Claude color={COLORS.orange} size={40} />
               <A
                 href="https://claude.ai"
                 target="_blank"
                 rel="nofollow"
-                className={styles.ossLink}
+                style={styles.ossLink.style}
               >
                 Claude
               </A>
-            </div>
-          </div>
-        </div>
+            </Div>
+          </Div>
+        </Div>
 
-        <div className={styles.lastUpdated}>
+        <Div style={styles.lastUpdated.style}>
           <Img src={`${FRONTEND_URL}/hamster.png`} width={24} height={24} />
           {t("about.last_updated", { date: "September 29, 2025" })}
-        </div>
-      </div>
+        </Div>
+      </Div>
     </Skeleton>
   )
 }
