@@ -7,7 +7,7 @@ import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
 import { useAppContext } from "./context/AppContext"
 import { CircleEllipsis, NotebookPen } from "./icons"
-import { useHasHydrated } from '../ui/hooks'
+import { useHasHydrated } from "../ui/hooks"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { useEffect } from "react"
 import Img from "./Image"

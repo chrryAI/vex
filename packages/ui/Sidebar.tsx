@@ -16,10 +16,10 @@ import {
   useNavigationContext,
   useData,
 } from "./context/providers"
-import { useTheme, usePlatform, useLocalStorage } from "./platform"
+import { useTheme, usePlatform, useLocalStorage, Div } from "./platform"
 
 import clsx from "clsx"
-import styles from "./Sidebar.module.scss"
+import { useSidebarStyles } from "./Sidebar.styles"
 import { useHasHydrated } from "./hooks"
 import { ErrorBoundary } from "./ErrorBoundary"
 import Thread from "./Thread"
@@ -76,6 +76,7 @@ export const Hey = memo(
       useNavigationContext()
 
     const { isExtension, isStorageReady } = usePlatform()
+    const styles = useSidebarStyles()
 
     const [pathnameLocal, setPathnameLocal] = useLocalStorage<
       string | undefined
@@ -169,8 +170,17 @@ export const Hey = memo(
     // Memoize app object to prevent unnecessary re-renders
 
     const getSplash = (isSplash: boolean) => {
+      const splashStyle = styles.splash
+      const hiddenStyle = styles.splashHidden
+      
       return (
-        <div className={clsx(styles.splash, !isSplash && styles.hidden)}>
+        <Div 
+          style={{
+            ...splashStyle.style,
+            ...(!isSplash ? hiddenStyle.style : {})
+          }}
+          className={clsx(splashStyle.className, !isSplash && hiddenStyle.className)}
+        >
           <Img
             onLoad={(src) => {
               setIsImageLoaded(true)
@@ -180,7 +190,7 @@ export const Hey = memo(
             showLoading={false}
             size={isChrry ? 72 : 64}
           />
-        </div>
+        </Div>
       )
     }
     // Memoize splash component to prevent re-renders
@@ -195,12 +205,12 @@ export const Hey = memo(
     }, [app, useExtensionIcon])
 
     return (
-      <div>
+      <Div>
         <ErrorBoundary>
           {!app ? (
-            <div className={clsx(styles.splash)}>
+            <Div {...styles.splash}>
               <Img logo="blossom" showLoading={false} size={64} />
-            </div>
+            </Div>
           ) : (
             <>
               {splash}
@@ -222,7 +232,7 @@ export const Hey = memo(
             </>
           )}
         </ErrorBoundary>
-      </div>
+      </Div>
     )
   },
   (prevProps, nextProps) => {

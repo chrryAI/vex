@@ -34,10 +34,9 @@ function App(): React.JSX.Element {
 
   return (
     <View>
-      <AppProviders
-    >
-      <Text>App</Text>
-    </AppProviders>
+      <AppProviders>
+        <Text>App</Text>
+      </AppProviders>
     </View>
   );
 }

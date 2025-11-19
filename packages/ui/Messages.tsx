@@ -56,6 +56,7 @@ export default forwardRef<
       characterProfile?: characterProfile
     }
     onCharacterProfileUpdate?: () => void
+    style?: React.CSSProperties
   }
 >(function Messages(
   {
@@ -74,6 +75,7 @@ export default forwardRef<
     thread,
     isHome,
     onCharacterProfileUpdate,
+    style,
   },
   ref,
 ) {
@@ -152,6 +154,7 @@ export default forwardRef<
       className={clsx(styles.messagesContainer, className)}
       id={id}
       ref={ref}
+      style={style}
     >
       {nextPage && (
         <div className={styles.loadMoreContainer}>

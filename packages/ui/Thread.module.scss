@@ -95,17 +95,4 @@
   gap: toRem.toRem(5);
 }
 
-.messages {
-}
 
-.chatContainer {
-  &.empty {
-    .chat {
-      // @media (min-height: breakpoints.$breakpoint-mobile) {
-      //   padding: 0;
-      //   position: static;
-      //   transform: none;
-      // }
-    }
-  }
-}

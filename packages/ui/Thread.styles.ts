@@ -64,9 +64,6 @@ export const ThreadStyleDefs = {
     alignItems: "center",
     gap: 5,
   },
-  messages: {},
-  chatContainer: {},
-  chat: {},
 } as const
 
 import { createUnifiedStyles } from "./styles/createUnifiedStyles"
