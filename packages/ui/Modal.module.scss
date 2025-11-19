@@ -77,10 +77,6 @@
         align-items: center;
         gap: toRem.toRem(5);
       }
-
-      &.borderHeader {
-        border-bottom: toRem.toRem(1) dashed var(--shade-2);
-      }
     }
 
     width: 100%;
@@ -88,6 +84,10 @@
     @media (min-width: toRem.toRem(431)) {
       width: inherit;
     }
+  }
+
+  .borderHeader {
+    border-bottom: toRem.toRem(1) dashed var(--shade-2);
   }
 
   .close {
