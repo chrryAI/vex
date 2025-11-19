@@ -4,16 +4,21 @@ import React, { useEffect } from "react"
 import Skeleton from "./Skeleton"
 import { useAppContext } from "./context/AppContext"
 import { CircleArrowLeft } from "./icons"
-import styles from "./About.module.scss"
+// import styles from "./About.module.scss"
 import Img from "./Img"
 import { FRONTEND_URL } from "./utils"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { useTheme } from "./platform"
+import { Button, Div, H1, H2, P, Section, useTheme } from "./platform"
+import { useAboutStyles } from "./About.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function Terms() {
   const { router } = useNavigationContext()
   const { isDrawerOpen } = useTheme()
   const { t } = useAppContext()
+
+  const styles = useAboutStyles()
+  const { utilities } = useStyles()
 
   const { track } = useAuth()
 
@@ -25,55 +30,58 @@ export default function Terms() {
 
   return (
     <Skeleton>
-      <div
-        className={styles.about}
+      <Div
         style={{
+          ...styles.about.style,
           maxWidth: 800,
           margin: isDrawerOpen ? undefined : "0 auto",
           padding: "0 0px 20px 0px",
         }}
       >
-        <h1 style={{ marginTop: 0 }}>
-          <button className="link" onClick={() => router.push("/about")}>
+        <H1 style={{ marginTop: 0 }}>
+          <Button
+            style={utilities.link.style}
+            onClick={() => router.push("/about")}
+          >
             <CircleArrowLeft color="var(--accent-1)" size={24} />
-          </button>{" "}
+          </Button>{" "}
           {t("Terms of Use")}
-        </h1>
+        </H1>
 
-        <section>
-          <h2>{t("terms.acceptance.title")}</h2>
-          <p>{t("terms.acceptance.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("terms.acceptance.title")}</H2>
+          <P>{t("terms.acceptance.content")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("terms.tracking.title")}</h2>
-          <p>{t("terms.tracking.content2")}</p>
-        </section>
+        <Section>
+          <H2>{t("terms.tracking.title")}</H2>
+          <P>{t("terms.tracking.content2")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("terms.agentic.title")}</h2>
-          <p>{t("terms.agentic.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("terms.agentic.title")}</H2>
+          <P>{t("terms.agentic.content")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("terms.pricing.title")}</h2>
-          <p>{t("terms.pricing.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("terms.pricing.title")}</H2>
+          <P>{t("terms.pricing.content")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("terms.liability.title")}</h2>
-          <p>{t("terms.liability.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("terms.liability.title")}</H2>
+          <P>{t("terms.liability.content")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("terms.changes.title")}</h2>
-          <p>{t("terms.changes.content")}</p>
-        </section>
-        <div className={styles.lastUpdated}>
+        <Section>
+          <H2>{t("terms.changes.title")}</H2>
+          <P>{t("terms.changes.content")}</P>
+        </Section>
+        <Div style={styles.lastUpdated.style}>
           <Img src={`${FRONTEND_URL}/frog.png`} width={24} height={24} />
           {t("terms.last_updated", { date: "August 4, 2025" })}
-        </div>
-      </div>
+        </Div>
+      </Div>
     </Skeleton>
   )
 }

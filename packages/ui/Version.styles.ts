@@ -22,6 +22,12 @@ export const VersionStyleDefs = {
     alignItems: "center",
     gap: 5,
   },
+  updateModalTitle: {
+    fontWeight: "bold",
+  },
+  installAppButton: {},
+  standalone: {},
+  installButton: {},
 } as const
 
 import { createUnifiedStyles } from "./styles/createUnifiedStyles"

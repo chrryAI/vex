@@ -5,10 +5,12 @@ import Modal from "./Modal"
 import clsx from "clsx"
 import { FaApple, FaAndroid, FaChrome, FaFirefox } from "react-icons/fa"
 import Img from "./Img"
-import styles from "./Version.module.scss"
+// import styles from "./Version.module.scss"
 import { useTranslation } from "react-i18next"
-import { usePlatform } from "./platform"
+import { Button, Div, Span, usePlatform, Video } from "./platform"
 import A from "./A"
+import { useVersionStyles } from "./Version.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function Version() {
   const {
@@ -26,8 +28,11 @@ export default function Version() {
 
   const { FRONTEND_URL } = useData()
 
+  const styles = useVersionStyles()
+  const { utilities } = useStyles()
+
   return (
-    <div>
+    <Div>
       {/* <NextTopLoader color="#197ef4" /> */}
       {needsUpdateModalOpen && versions && (
         <Modal
@@ -38,39 +43,39 @@ export default function Version() {
             setNeedsUpdateModalOpen(open)
           }}
           icon={
-            <video
-              className={styles.video}
+            <Video
+              style={styles.video.style}
               src={`${FRONTEND_URL}/video/blob.mp4`}
               autoPlay
               loop
               muted
               playsInline
-            ></video>
+            />
           }
           title={
-            <div className={styles.updateModalTitle}>{t("Thinking")}...</div>
+            <Div style={styles.updateModalTitle.style}>{t("Thinking")}...</Div>
           }
         >
-          <div className={styles.updateModalDescription}>
+          <Div style={styles.updateModalDescription.style}>
             <Img src={`${FRONTEND_URL}/hamster.png`} width={24} height={24} />
-            <span>
+            <Span>
               {t("Let's update your app to the latest version")}{" "}
               {isStandalone
                 ? null
                 : isFirefox
                   ? versions.firefoxVersion
                   : versions.chromeVersion}
-            </span>
-          </div>
-          <div className={styles.updateModalButtons}>
+            </Span>
+          </Div>
+          <Div style={styles.updateModalButtons.style}>
             {os && ["ios", "android"].includes(os) ? (
-              <button
-                className={clsx(
-                  "small",
-                  styles.installAppButton,
-                  isStandalone ? styles.standalone : undefined,
-                )}
-                onClick={(e) => {
+              <Button
+                style={{
+                  ...utilities.small.style,
+                  ...styles.installAppButton.style,
+                  ...(isStandalone ? styles.standalone.style : {}),
+                }}
+                onClick={() => {
                   setShowAddToHomeScreen(true)
                   setNeedsUpdateModalOpen(false)
                 }}
@@ -87,9 +92,9 @@ export default function Version() {
                   <FaAndroid size={18} />
                 )}{" "}
                 {t("Install")}
-              </button>
+              </Button>
             ) : !isFirefox ? (
-              <a
+              <A
                 onClick={(e) => {
                   if (isExtension) {
                     BrowserInstance?.runtime?.sendMessage({
@@ -101,24 +106,32 @@ export default function Version() {
                   }
                 }}
                 href="https://chromewebstore.google.com/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc"
-                className={clsx("button small", styles.installButton)}
+                style={{
+                  ...utilities.button.style,
+                  ...utilities.small.style,
+                  ...styles.installButton.style,
+                }}
               >
                 <FaChrome size={18} />
                 {t("Install")}
-              </a>
+              </A>
             ) : isFirefox ? (
               <A
                 openInNewTab
                 href="https://addons.mozilla.org/en-US/firefox/addon/vex"
-                className={clsx("button small", styles.installButton)}
+                style={{
+                  ...utilities.button.style,
+                  ...utilities.small.style,
+                  ...styles.installButton.style,
+                }}
               >
                 <FaFirefox size={18} />
                 {t("Install")}
               </A>
             ) : null}
-          </div>
+          </Div>
         </Modal>
       )}
-    </div>
+    </Div>
   )
 }

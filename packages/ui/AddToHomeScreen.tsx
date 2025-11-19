@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useCallback, useContext, useEffect } from "react"
-import styles from "./AddToHomeScreen.module.scss"
 import { createPortal } from "react-dom"
 import { useRef } from "react"
 import Img from "./Image"
@@ -12,14 +11,19 @@ import { useAppContext } from "./context/AppContext"
 import { FRONTEND_URL } from "./utils"
 import Logo from "./Logo"
 import { useApp, useNavigationContext } from "./context/providers"
-import { usePlatform } from "./platform"
+import { Button, Div, H2, P, Span, usePlatform } from "./platform"
 import { useHasHydrated } from "./hooks"
+import { useAddToHomeScreenStyles } from "./AddToHomeScreen.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function AddToHomeScreen(): React.ReactPortal | null {
   const { t } = useAppContext()
   const { app } = useApp()
   const { os } = usePlatform()
   const { setShowAddToHomeScreen, showAddToHomeScreen } = useNavigationContext()
+
+  const styles = useAddToHomeScreenStyles()
+  const { utilities } = useStyles()
 
   const is = useHasHydrated()
 
@@ -42,79 +46,79 @@ export default function AddToHomeScreen(): React.ReactPortal | null {
   if (!is || !showAddToHomeScreen) return null
 
   return createPortal(
-    <div className={styles.addToHomeScreen} role="dialog" aria-modal="true">
-      <div className={styles.main}>
-        <div className={styles.inner} ref={innerRef}>
-          <button
-            className={clsx(styles.close, "link")}
+    <Div style={styles.addToHomeScreen.style} role="dialog" aria-modal="true">
+      <Div style={styles.main.style}>
+        <Div style={styles.inner.style} ref={innerRef}>
+          <Button
+            style={{ ...styles.close.style, ...utilities.link.style }}
             onClick={() => setShowAddToHomeScreen(false)}
           >
             <CircleX />
-          </button>
-          <div className={styles.logoContainer}>
-            <Img app={app} className={styles.logo} size={80} />
-          </div>
-          <div className={styles.content}>
-            <h2 className={styles.title}>{t("For a better experience")}</h2>
+          </Button>
+          <Div style={styles.logoContainer.style}>
+            <Img app={app} size={80} />
+          </Div>
+          <Div style={styles.content.style}>
+            <H2 style={styles.title.style}>{t("For a better experience")}</H2>
             {os === "android" ? (
               <>
-                <p className={styles.share}>
+                <P style={styles.share.style}>
                   {t("Tap the icon in the browser bar")}
                   <EllipsisVertical />
-                </p>
-                <div>
-                  <div className={styles.selectAddToHomeScreen}>
-                    <span>{t("Tap")}</span>
-                    <span className={styles.addHomeScreenAndroid}>
+                </P>
+                <Div>
+                  <Div style={styles.selectAddToHomeScreen.style}>
+                    <Span>{t("Tap")}</Span>
+                    <Span style={styles.addHomeScreenAndroid.style}>
                       {t("Add to Home Screen")}
-                      <span className={styles.icon}>
+                      <Span style={styles.icon.style}>
                         <MdAddToHomeScreen />
-                      </span>
-                    </span>
-                  </div>
-                  <p className={styles.scrollDown}>
+                      </Span>
+                    </Span>
+                  </Div>
+                  <P style={styles.scrollDown.style}>
                     {t("You may need to scroll down to find this option")}
-                  </p>
-                  <p className={styles.quickAccess}>
+                  </P>
+                  <P style={styles.quickAccess.style}>
                     {t(
                       "An icon will appear on your home screen for quick access to this app",
                     )}
-                  </p>
-                </div>
+                  </P>
+                </Div>
               </>
             ) : os === "ios" ? (
               <>
-                <p className={styles.share}>
+                <P style={styles.share.style}>
                   {t("Tap the share button in your browser")}
-                  <span className={styles.icon}>
+                  <Span style={styles.icon.style}>
                     <Share />
-                  </span>
-                </p>
-                <div>
-                  <div className={styles.selectAddToHomeScreen}>
+                  </Span>
+                </P>
+                <Div>
+                  <Div style={styles.selectAddToHomeScreen.style}>
                     {t("Select 'Add to Home Screen' from the menu")}
-                  </div>
-                  <span className={styles.addHomeScreen}>
+                  </Div>
+                  <Span style={styles.addHomeScreen.style}>
                     {t("Add to Home Screen")}
-                    <span className={styles.icon}>
+                    <Span style={styles.icon.style}>
                       <SquarePlus />
-                    </span>
-                  </span>
-                </div>
-                <p className={styles.scrollDown}>
+                    </Span>
+                  </Span>
+                </Div>
+                <P style={styles.scrollDown.style}>
                   {t("You may need to scroll down to find this option")}
-                </p>
-                <p className={styles.quickAccess}>
+                </P>
+                <P style={styles.quickAccess.style}>
                   {t(
                     "An icon will appear on your home screen for quick access to this app",
                   )}
-                </p>
+                </P>
               </>
             ) : null}
-          </div>
-        </div>
-      </div>
-    </div>,
+          </Div>
+        </Div>
+      </Div>
+    </Div>,
     document.getElementById("skeleton") || document.body,
   )
 }
