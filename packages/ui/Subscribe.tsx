@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from "react"
-import styles from "./Subscribe.module.scss"
+// import styles from "./Subscribe.module.scss"
 
 import { user, subscription } from "./types"
 import { animate, stagger } from "motion"
@@ -11,7 +11,7 @@ import {
   useData,
   useError,
 } from "./context/providers"
-import { Div, usePlatform, useTheme } from "./platform"
+import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
 
 import clsx from "clsx"
 import {
@@ -40,10 +40,11 @@ import Logo from "./Logo"
 import Img from "./Image"
 import { getFeatures } from "./utils/subscription"
 import A from "./A"
+import { useSubscribeStyles } from "./Subscribe.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function Subscribe({
   customerEmail,
-  className,
   style,
 }: {
   customerEmail?: string // Optional for existing customers
@@ -52,6 +53,9 @@ export default function Subscribe({
   className?: string
   style?: React.CSSProperties
 }) {
+  const styles = useSubscribeStyles()
+  const { utilities } = useStyles()
+
   const [loading, setLoading] = useState(false)
   const [isGifting, setIsGifting] = useState(false)
 
@@ -501,7 +505,6 @@ export default function Subscribe({
         dataTestId="subscribe-modal"
         isModalOpen={isModalOpen}
         params="?subscribe=true"
-        className={styles.subscribeModal}
         onToggle={(open) => setIsModalOpen(open)}
         title={
           <>
@@ -534,8 +537,11 @@ export default function Subscribe({
           </>
         }
       >
-        <div key={`selectedPlan-${selectedPlan}`} className={styles.plans}>
-          <button
+        <Div
+          key={`selectedPlan-${selectedPlan}`}
+          style={{ ...styles.plans.style }}
+        >
+          <Button
             onClick={() => {
               addHapticFeedback()
               setSelectedPlan("member")
@@ -543,62 +549,71 @@ export default function Subscribe({
               setIsGifting(false)
               setIsInviting(false)
             }}
-            className={clsx(
-              selectedPlan === "member" ? "inverted" : "transparent",
-            )}
+            style={{
+              ...(selectedPlan === "member"
+                ? utilities.inverted.style
+                : utilities.transparent.style),
+            }}
           >
             <UsersRound size={14} /> {t("Free")}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => {
               addHapticFeedback()
               setSelectedPlan("credits")
               setIsGifting(false)
               setIsInviting(false)
             }}
-            className={clsx(
-              selectedPlan === "credits" ? "inverted" : "transparent",
-            )}
+            style={{
+              ...(selectedPlan === "credits"
+                ? utilities.inverted.style
+                : utilities.transparent.style),
+            }}
           >
             <Coins size={14} /> {t("Credits")}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => {
               addHapticFeedback()
               setSelectedPlan("plus")
               setIsGifting(false)
               setIsInviting(false)
             }}
-            className={clsx(
-              selectedPlan === "plus" ? "inverted" : "transparent",
-            )}
+            style={{
+              ...(selectedPlan === "plus"
+                ? utilities.inverted.style
+                : utilities.transparent.style),
+            }}
           >
             <Plus size={14} /> {t("Plus")}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => {
               addHapticFeedback()
               setSelectedPlan("pro")
               setIsGifting(false)
               setIsInviting(false)
             }}
-            className={clsx(
-              selectedPlan === "pro" ? "inverted" : "transparent",
-            )}
+            style={{
+              ...(selectedPlan === "pro"
+                ? utilities.inverted.style
+                : utilities.transparent.style),
+            }}
           >
             <SmilePlus size={14} /> {t("Pro")}
-          </button>
-        </div>
-        <ul
+          </Button>
+        </Div>
+        <Div
           data-testid={`subscribe-features`}
-          className={clsx(styles.features, "features")}
+          className={"features"}
+          style={{ ...styles.features.style }}
         >
-          <li className={clsx(styles.feature, "feature")}>
+          <Div className={clsx(styles.feature, "feature")}>
             <A href={"mailto:iliyan@chrry.ai"} className={"link"}>
               <Img logo="isVivid" icon="heart" width={16} height={16} />
               {t("Need a white label like Vex?")}
             </A>
-          </li>
+          </Div>
           {(selectedPlan === "plus"
             ? plusFeatures
             : selectedPlan === "member"
@@ -609,9 +624,13 @@ export default function Subscribe({
                   ? creditsFeatures
                   : []
           ).map((feature, i) => (
-            <li className={clsx(styles.feature, "feature")} key={i}>
+            <Div
+              className={"feature"}
+              style={{ ...styles.feature.style }}
+              key={i}
+            >
               {feature.emoji} {feature.text}
-            </li>
+            </Div>
           ))}
           {affiliateCode ? (
             (selectedPlan === "plus" ||
@@ -626,13 +645,13 @@ export default function Subscribe({
             )
           ) : (
             <>
-              <li className={clsx(styles.feature, "feature")}>
+              <Div className={clsx(styles.feature, "feature")}>
                 <A openInNewTab href={"https://chrry.dev"} className={"link"}>
                   <Img logo="chrry" width={16} height={16} />
                   {t("Open Source")}
                 </A>
-              </li>
-              <li className={clsx(styles.feature, "feature")}>
+              </Div>
+              <Div className={clsx(styles.feature, "feature")}>
                 <A
                   style={{
                     color: "#f87171",
@@ -648,16 +667,16 @@ export default function Subscribe({
                   />{" "}
                   {t("Affiliate")}
                 </A>
-              </li>
+              </Div>
             </>
           )}
-        </ul>
+        </Div>
 
-        <div className={styles.gift}>
+        <Div style={{ ...styles.gift.style }}>
           {userToGift?.subscription && selectedPlan !== "credits" ? (
-            <div className={styles.userToGift}>
+            <Div style={{ ...styles.userToGift.style }}>
               <button
-                className={clsx("transparent", styles.backButton)}
+                style={{ ...styles.backButton.style }}
                 onClick={() => {
                   addHapticFeedback()
                   setUserToGift(null)
@@ -669,27 +688,30 @@ export default function Subscribe({
               <p>
                 {userToGift?.email} {t(`already subscribed`)}
               </p>
-            </div>
+            </Div>
           ) : userToGift ? (
-            <div>
-              <div className={styles.userToGift}>
-                <button
-                  className={clsx("transparent", styles.backButton)}
+            <Div style={{ ...styles.userToGift.style }}>
+              <Div style={{ ...styles.userToGift.style }}>
+                <Button
+                  style={{ ...styles.backButton.style }}
                   onClick={() => {
                     addHapticFeedback()
                     setUserToGift(null)
                   }}
                 >
                   <ArrowLeft size={20} />
-                </button>
-                <p className={styles.collaboratorEmail}>{userToGift?.email}</p>
-              </div>
-            </div>
+                </Button>
+                <P>{userToGift?.email}</P>
+              </Div>
+            </Div>
           ) : (
             isGifting && (
-              <div className={styles.invite}>
-                <button
-                  className={clsx("transparent", styles.backButton)}
+              <Div style={{ ...styles.invite.style }}>
+                <Button
+                  style={{
+                    ...utilities.transparent.style,
+                    ...styles.backButton.style,
+                  }}
                   onClick={() => {
                     addHapticFeedback()
                     setIsGifting(false)
@@ -699,11 +721,11 @@ export default function Subscribe({
                   }}
                 >
                   <ArrowLeft size={20} />
-                </button>
+                </Button>
 
-                <input
+                <Input
                   data-testid="subscribe-gift-input"
-                  className={styles.inviteInput}
+                  style={{ ...styles.inviteInput.style }}
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value)
@@ -712,7 +734,7 @@ export default function Subscribe({
                   type="email"
                   placeholder={`🥰 ${t("Search by email")}*`}
                 />
-                <button
+                <Button
                   data-testid="subscribe-gift-search"
                   onClick={() => {
                     addHapticFeedback()
@@ -726,13 +748,13 @@ export default function Subscribe({
                       <Search size={22} />
                     </>
                   )}
-                </button>
-              </div>
+                </Button>
+              </Div>
             )
           )}
-        </div>
+        </Div>
 
-        <div className={styles.checkoutButtonContainer}>
+        <Div style={{ ...styles.checkoutButtonContainer.style }}>
           {selectedPlan !== "member" ? (
             <>
               {canDowngradeToPlus() && (
@@ -769,13 +791,13 @@ export default function Subscribe({
                 </ConfirmButton>
               )}
               {canUpgradeToPro() && (
-                <button
+                <Button
                   data-testid="subscribe-checkout"
                   onClick={() => {
                     addHapticFeedback()
                     handlePlanChange("pro")
                   }}
-                  className={clsx(styles.checkoutButton)}
+                  style={{ ...styles.checkoutButton.style }}
                 >
                   {loading && part === "subscription" ? (
                     <Loading size={20} color="#fff" />
@@ -787,16 +809,16 @@ export default function Subscribe({
                       })}
                     </>
                   )}
-                </button>
+                </Button>
               )}
               {canBuyCredits() || canSubscribe() ? (
-                <button
+                <Button
                   data-testid="subscribe-checkout"
                   onClick={() => {
                     addHapticFeedback()
                     handleCheckout("subscription")
                   }}
-                  className={clsx(styles.checkoutButton)}
+                  style={{ ...styles.checkoutButton.style }}
                 >
                   {loading && part === "subscription" ? (
                     <Loading color="#fff" />
@@ -825,27 +847,27 @@ export default function Subscribe({
                       )}
                     </>
                   )}
-                </button>
+                </Button>
               ) : (
                 hasCurrentPlan() && (
                   <>
                     {!user && guest?.subscription && (
-                      <button
+                      <Button
                         onClick={() => {
                           addHapticFeedback()
                           setSignInPart("register")
                         }}
-                        className={clsx("link", styles.button)}
+                        style={{ ...utilities.link.style }}
                       >
                         <LogIn size={20} />
                         {t("Migrate your subscription")}
-                      </button>
+                      </Button>
                     )}
                     <ConfirmButton
-                      className={clsx(
-                        "transparent",
-                        styles.cancelSubscriptionButton,
-                      )}
+                      style={{
+                        ...utilities.transparent.style,
+                        ...styles.cancelSubscriptionButton.style,
+                      }}
                       confirm={
                         <>
                           {isDeletingSubscription ? (
@@ -885,19 +907,19 @@ export default function Subscribe({
                     >
                       <CircleX size={16} color="var(--accent-0)" />{" "}
                       {t("Cancel subscription")}
-                      <span style={{ marginLeft: "auto", fontSize: 13 }}>
+                      <Span style={{ marginLeft: "auto", fontSize: 13 }}>
                         €
                         {t("{{price}}/month", {
                           price:
                             selectedPlan === "pro" ? PRO_PRICE : PLUS_PRICE,
                         })}
-                      </span>
+                      </Span>
                     </ConfirmButton>
                   </>
                 )
               )}
               {shouldShowGift() && (
-                <div
+                <Div
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -905,17 +927,20 @@ export default function Subscribe({
                   }}
                 >
                   {isInviting && (
-                    <button
-                      className={clsx("transparent", styles.backButton)}
+                    <Button
+                      style={{
+                        ...utilities.transparent.style,
+                        ...styles.backButton.style,
+                      }}
                       onClick={() => {
                         addHapticFeedback()
                         setIsInviting(false)
                       }}
                     >
                       <ArrowLeft size={22} />
-                    </button>
+                    </Button>
                   )}
-                  <button
+                  <Button
                     data-testid="subscribe-gift"
                     data-part={isInviting ? "invite" : "gift"}
                     onClick={() => {
@@ -927,7 +952,10 @@ export default function Subscribe({
 
                       handleCheckout("gift")
                     }}
-                    className={clsx("inverted", styles.giftButton)}
+                    style={{
+                      ...utilities.inverted.style,
+                      ...styles.giftButton.style,
+                    }}
                   >
                     {loading && part === "gift" ? (
                       <Loading width={22} height={22} />
@@ -937,58 +965,61 @@ export default function Subscribe({
                         <span> {isInviting ? t("Invite") : t("Gift")}</span>
                       </>
                     )}
-                  </button>
-                </div>
+                  </Button>
+                </Div>
               )}
             </>
           ) : guest ? (
             <>
-              <button
+              <Button
                 onClick={() => {
                   addHapticFeedback()
                   setSignInPart("register")
                 }}
-                className={clsx("inverted", styles.button)}
+                style={{ ...utilities.inverted.style, ...styles.button.style }}
               >
                 <UserRoundPlus size={20} />
                 {t("Register")}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   addHapticFeedback()
                   setSignInPart("login")
                 }}
-                className={clsx("link", styles.button)}
+                style={{ ...utilities.link.style, ...styles.button.style }}
               >
                 <LogIn size={18} />
                 {"Login"}
-              </button>
+              </Button>
             </>
           ) : (
             !user?.subscription && (
-              <button
+              <Button
                 data-testid="current-plan"
-                className={clsx("transparent", styles.currentPlanButton)}
+                style={{
+                  ...utilities.transparent.style,
+                  ...styles.currentPlanButton.style,
+                }}
               >
                 <UserRound size={20} /> {t("Current Plan")}
-              </button>
+              </Button>
             )
           )}
-        </div>
+        </Div>
         {isGifting ? (
-          <div className={styles.subscribeAsGuest}>
+          <Div style={{ ...styles.subscribeAsGuest.style }}>
             *
             {t(
               selectedPlan === "credits"
                 ? "You can gift credits to anyone with an email"
                 : "You can gift subscription anyone with an email",
             )}
-          </div>
+          </Div>
         ) : !user && (selectedPlan === "pro" || selectedPlan === "plus") ? (
           guest?.subscription ? (
             <></>
           ) : (
-            <div className={styles.subscribeAsGuest}>
+            <Div style={{ ...styles.subscribeAsGuest.style }}>
               {t("Subscribe as guest!")}
               <button
                 onClick={() => {
@@ -1001,7 +1032,7 @@ export default function Subscribe({
                 {t("Already have an account?")}
               </button>
               <p>*{t("You can migrate your account whenever you want")}</p>
-            </div>
+            </Div>
           )
         ) : null}
       </Modal>
@@ -1012,7 +1043,7 @@ export default function Subscribe({
             if (!subs) return
 
             return (
-              <button
+              <Button
                 onClick={() => {
                   if (isExtension) {
                     BrowserInstance?.runtime?.sendMessage({
@@ -1026,7 +1057,7 @@ export default function Subscribe({
                   setIsModalOpen(true)
                 }}
                 data-testid={`${subs.plan}-button`}
-                className={clsx(styles.plusButton, className)}
+                style={{ ...styles.plusButton.style, ...style }}
               >
                 <Img
                   icon={subs.plan === "pro" ? "raspberry" : "strawberry"}
@@ -1034,7 +1065,7 @@ export default function Subscribe({
                   size={18}
                 />
                 {t(subs.plan === "pro" ? "Pro" : "Plus")}
-              </button>
+              </Button>
             )
           })()}
 
@@ -1043,7 +1074,7 @@ export default function Subscribe({
         )} */}
         </>
       ) : (
-        <button
+        <Button
           data-gifted-fingerprint={giftedFingerPrint}
           data-testid={`subscribe-button`}
           id="subscribeButton"
@@ -1060,19 +1091,19 @@ export default function Subscribe({
             setIsModalOpen(true)
           }}
           disabled={loading}
-          className={clsx(
-            "transparent small",
-            styles.subscribeButton,
-            className,
-          )}
+          style={{
+            ...utilities.transparent.style,
+            ...utilities.small.style,
+            ...styles.subscribeButton.style,
+          }}
         >
           <Img icon="strawberry" showLoading={false} size={18} />
           {t("Plus")}
-        </button>
+        </Button>
       )}
 
       {purchaseType && (
-        <input data-testid="purchase-type" type="hidden" value={purchaseType} />
+        <Input data-testid="purchase-type" type="hidden" value={purchaseType} />
       )}
 
       {/* {giftedFingerPrint} */}
