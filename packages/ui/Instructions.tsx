@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react"
-import styles from "./Instructions.module.scss"
+// import styles from "./Instructions.module.scss"
 import clsx from "clsx"
 import {
   ArrowLeft,
@@ -25,7 +25,6 @@ import {
   Circle,
   ArrowRight,
   CircleCheck,
-  ImageIcon,
   VideoIcon,
   Music,
   FileText,
@@ -46,6 +45,11 @@ import {
   useTheme as usePlatformTheme,
   usePlatform,
   getExtensionId,
+  Div,
+  Button,
+  Span,
+  Input,
+  TextArea,
 } from "./platform"
 import { thread, instruction } from "./types"
 import { updateThread } from "./lib"
@@ -73,6 +77,8 @@ import EmojiPicker, {
 import Agent from "./Agent"
 import { useLocalStorage } from "./hooks"
 import A from "./A"
+import { useInstructionsStyles } from "./Instructions.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function Instructions({
   className,
@@ -110,6 +116,10 @@ export default function Instructions({
   const { t } = useAppContext()
   const { isExtension } = usePlatform()
   const { FRONTEND_URL, API_URL } = useData()
+
+  const styles = useInstructionsStyles()
+
+  const { utilities } = useStyles()
 
   const { defaultInstructions, instructions: contextInstructions } = useApp()
 
@@ -874,59 +884,49 @@ export default function Instructions({
   }
 
   return (
-    <div data-testid={`${dataTestId}`}>
+    <Div data-testid={`${dataTestId}`}>
       {isAppDescriptionOpen && (
         <Modal
-          className={styles.modal}
+          style={{
+            ...styles.modal.style,
+          }}
           isModalOpen={true}
           hideOnClickOutside={false}
           hasCloseButton={true}
           onToggle={(open) => {
             setIsAppDescriptionOpen(open)
           }}
-          icon={
-            <video
-              className={styles.video}
-              src={`${FRONTEND_URL}/video/blob.mp4`}
-              autoPlay
-              loop
-              muted
-              playsInline
-            ></video>
-          }
-          title={
-            <div className={styles.updateModalTitle}>{t("Thinking")}...</div>
-          }
+          icon={"blob"}
+          title={<Div>{t("Thinking")}...</Div>}
         >
-          <div className={styles.updateModalDescription}>
-            <textarea
+          <Div style={styles.updateModalDescription.style}>
+            <TextArea
               id="description"
               {...appForm?.register("description")}
-              className={styles.instructionsTextarea}
+              style={styles.instructionsTextarea.style}
               placeholder={t(
                 "Your intelligent {{agent}} that learns your preferences and provides personalized recommendations.",
                 { agent: appForm?.watch("name") || "assistant" },
               )}
             />
-            <div className={styles.updateModalButtons}>
-              <button
+            <Div style={styles.updateModalButtons.style}>
+              <Button
                 onClick={() => {
                   toast.success(t("Saved"))
                   setIsAppDescriptionOpen(false)
                 }}
-                className={clsx("inverted")}
                 disabled={appForm?.watch("description") === ""}
               >
                 {t("Save")}
-              </button>
-            </div>
-          </div>
+              </Button>
+            </Div>
+          </Div>
         </Modal>
       )}
       <Modal
         dataTestId={`${dataTestId}-modal`}
         borderHeader={isArtifactsOpen ? true : true}
-        className={styles.modal}
+        style={styles.modal.style}
         hasCloseButton
         hideOnClickOutside={false}
         isModalOpen={isOpen || isArtifactsOpen}
@@ -935,35 +935,37 @@ export default function Instructions({
             {isArtifactsOpen ? (
               <>
                 <TestTubeDiagonal color="var(--accent-4)" size={24} />
-                <span>{t("Artifacts")}</span>
+                <Span>{t("Artifacts")}</Span>
               </>
             ) : (
               <>
                 <Brain color="var(--accent-6)" size={24} />
-                <span>{t("Instructions")}</span>
+                <Span>{t("Instructions")}</Span>
               </>
             )}
 
             {canUpdate && !isArtifactsOpen && (
-              <div className={styles.right}>
+              <Div style={styles.right.style}>
                 {charCount === 0 ? (
-                  <span
+                  <Span
                     data-testid={`${dataTestId}-modal-max-char-count`}
-                    className={clsx(styles.maxCharCount)}
+                    style={styles.maxCharCount.style}
                   >
                     {maxCharCount}
-                  </span>
+                  </Span>
                 ) : (
-                  <span
+                  <Span
                     data-testid={`${dataTestId}-modal-char-left`}
-                    className={clsx(
-                      styles.charLeft,
-                      maxCharCount - charCount < 50 && styles.orange,
-                      charCount > maxCharCount && styles.red,
-                    )}
+                    style={{
+                      ...styles.charLeft.style,
+                      ...(maxCharCount - charCount < 50 &&
+                        styles.maxCharCountOrange.style),
+                      ...(charCount > maxCharCount &&
+                        styles.maxCharCountRed.style),
+                    }}
                   >
                     {charCount}/{maxCharCount}
-                  </span>
+                  </Span>
                 )}
                 {thread?.instructions || (isManaging && content.length) ? (
                   <ConfirmButton
@@ -985,7 +987,7 @@ export default function Instructions({
                     <Trash2 color="var(--accent-1)" size={16} />
                   </ConfirmButton>
                 ) : null}
-              </div>
+              </Div>
             )}
           </>
         }
@@ -996,48 +998,54 @@ export default function Instructions({
         }}
       >
         {isArtifactsOpen ? (
-          <div className={styles.artifactsContent}>
-            <div className={styles.artifactsDescription}>
+          <Div>
+            <Div>
               {t(
                 "Upload PDF or text content here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.",
               )}
-            </div>
+            </Div>
             {(files.length || threadArtifacts.length) > 0 && (
-              <div className={styles.filePreviewArea}>
+              <Div style={styles.filePreviewArea.style}>
                 {threadArtifacts.map((file, index) => {
                   return (
-                    <div key={index} className={styles.filePreview}>
-                      <div className={styles.filePreviewIcon}>
+                    <Div key={index} style={styles.filePreview.style}>
+                      <Div style={styles.filePreviewIcon.style}>
                         <FileIcon size={16} />
-                      </div>
+                      </Div>
 
-                      <div className={styles.filePreviewInfo}>
-                        <a
+                      <Div style={styles.filePreviewInfo.style}>
+                        <A
                           href={file.url}
-                          className={clsx(styles.filePreviewName, "link")}
+                          style={{
+                            ...utilities.link.style,
+                            ...styles.filePreviewName.style,
+                          }}
                           target="_blank"
                         >
                           {file.name}
-                        </a>
-                        <div className={styles.filePreviewSize}>
+                        </A>
+                        <Div style={styles.filePreviewSize.style}>
                           {(file.size / 1024).toFixed(1)}KB
-                        </div>
-                      </div>
+                        </Div>
+                      </Div>
 
                       {deletingId === file.id ? (
                         <Loading width={18} height={18} />
                       ) : (
-                        <button
+                        <Button
                           data-testid={`${dataTestId}-file-preview-clear`}
                           type="button"
                           onClick={() => handleDeleteFile(file.id)}
-                          className={clsx("link", styles.filePreviewClear)}
+                          style={{
+                            ...utilities.link.style,
+                            ...styles.filePreviewClear.style,
+                          }}
                           title="Remove file"
                         >
                           <CircleX size={18} />
-                        </button>
+                        </Button>
                       )}
-                    </div>
+                    </Div>
                   )
                 })}
                 {files.map((file, index) => {
@@ -1053,8 +1061,8 @@ export default function Instructions({
                     )
 
                   return (
-                    <div key={index} className={styles.filePreview}>
-                      <div className={styles.filePreviewIcon}>
+                    <Div key={index} style={styles.filePreview.style}>
+                      <Div style={styles.filePreviewIcon.style}>
                         {isImage ? (
                           <img
                             src={URL.createObjectURL(file)}
@@ -1075,47 +1083,50 @@ export default function Instructions({
                         ) : (
                           <FileIcon size={16} />
                         )}
-                      </div>
+                      </Div>
 
-                      <div className={styles.filePreviewInfo}>
-                        <div className={styles.filePreviewName}>
+                      <Div style={styles.filePreviewInfo.style}>
+                        <Div style={styles.filePreviewName.style}>
                           {file.name}
-                        </div>
-                        <div className={styles.filePreviewSize}>
+                        </Div>
+                        <Div style={styles.filePreviewSize.style}>
                           {formatFileSize(file.size)}
-                        </div>
-                      </div>
+                        </Div>
+                      </Div>
 
-                      <button
+                      <Button
                         data-testid={`${dataTestId}-file-preview-clear`}
                         type="button"
                         onClick={() => removeFile(index)}
-                        className={clsx("link", styles.filePreviewClear)}
+                        style={{
+                          ...utilities.link.style,
+                          ...styles.filePreviewClear.style,
+                        }}
                         title="Remove file"
                       >
                         <CircleX size={18} />
-                      </button>
-                    </div>
+                      </Button>
+                    </Div>
                   )
                 })}
-              </div>
+              </Div>
             )}
 
-            <div className={styles.actions}>
-              <div className={styles.fileUploader}>
+            <Div style={styles.actions.style}>
+              <Div style={styles.fileUploader.style}>
                 <>
-                  <button
+                  <Button
                     data-testid={`${dataTestId}-artifacts-back-button`}
                     onClick={() => {
                       addHapticFeedback()
                       setIsArtifactsOpen(false)
                       setIsOpen(true)
                     }}
-                    className={clsx("transparent", styles.uploadButton)}
+                    style={{ ...utilities.link.style }}
                   >
                     <ArrowLeft size={16} />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     data-testid={`${dataTestId}-artifacts-paste-button`}
                     onClick={async () => {
                       addHapticFeedback()
@@ -1142,31 +1153,31 @@ export default function Instructions({
                         )
                       }
                     }}
-                    className={clsx("inverted", styles.uploadButton)}
+                    style={{ ...utilities.link.style }}
                   >
                     <Copy size={16} />
                     {t("Paste")}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     data-testid={`${dataTestId}-artifacts-upload-button`}
                     onClick={() =>
                       triggerFileInput(
                         "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
                       )
                     }
-                    className={clsx("inverted", styles.uploadButton)}
+                    style={{ ...utilities.link.style }}
                   >
                     <FileUp size={16} />
                     {t("Upload")}
-                  </button>
+                  </Button>
                   {isAllowed && (
-                    <button
+                    <Button
                       disabled={(!content && isManaging) || isSaving}
-                      className={clsx(
-                        (!content && isManaging) || isSaving
-                          ? "transparent"
-                          : "",
-                      )}
+                      style={{
+                        ...((!content && isManaging) || isSaving
+                          ? utilities.transparent.style
+                          : {}),
+                      }}
                       data-testid={`${dataTestId}-modal-save-button`}
                       onClick={() =>
                         selectedInstruction
@@ -1179,18 +1190,18 @@ export default function Instructions({
                       ) : (
                         t("Save")
                       )}
-                    </button>
+                    </Button>
                   )}
                 </>
-              </div>
-            </div>
-          </div>
+              </Div>
+            </Div>
+          </Div>
         ) : (
           <>
             {isManaging && selectedInstruction && (
-              <div className={styles.titleField}>
-                <span style={{ fontSize: "1.5rem" }}>{selectedEmoji}</span>
-                <input
+              <Div style={styles.titleField.style}>
+                <Span style={{ fontSize: "1.5rem" }}>{selectedEmoji}</Span>
+                <Input
                   title={t("Feature title")}
                   id="featureTitle"
                   value={t(editedTitle)}
@@ -1198,15 +1209,15 @@ export default function Instructions({
                   type="text"
                   placeholder={t("Feature title")}
                 />
-              </div>
+              </Div>
             )}
-            <textarea
+            <TextArea
               disabled={!canUpdate}
               data-testid={`${dataTestId}-modal-textarea`}
               id="instructions"
               onChange={(e) => setContent(e.target.value)}
               value={t(content, isManaging ? undefined : instructionConfig)}
-              className={styles.instructionsTextarea}
+              style={styles.instructionsTextarea.style}
               placeholder={
                 placeHolder ||
                 (collaborationStep === 1
@@ -1234,22 +1245,22 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           </>
         )}
         {!isArtifactsOpen && (
-          <span className={styles.tip}>
+          <Span style={styles.tip.style}>
             <BrainCircuit size={16} color="var(--accent-6)" />
-            <span>
+            <Span>
               {canUpdate
                 ? t(`Give Vex something to remember`)
                 : t(`Only owner can update instructions`)}
-            </span>
-          </span>
+            </Span>
+          </Span>
         )}
         {canUpdate && !isArtifactsOpen && (
-          <div className={styles.footer}>
+          <Div style={styles.footer.style}>
             {thread && (
-              <button
+              <Button
                 data-testid={`${dataTestId}-modal-regenerate-button`}
                 onClick={() => handleSave({ regenerateInstructions: true })}
-                className="inverted"
+                style={{ ...utilities.inverted.style }}
               >
                 {isGeneratingInstructions ? (
                   <Loading width={14} height={14} />
@@ -1259,28 +1270,28 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     {t("Generate")}
                   </>
                 )}
-              </button>
+              </Button>
             )}
-            <div className={styles.actions}>
-              <button
+            <Div style={styles.actions.style}>
+              <Button
                 data-testid={`${dataTestId}-modal-artifacts-button`}
                 onClick={() => {
                   setIsArtifactsOpen(true)
                 }}
-                className="inverted"
+                style={{ ...utilities.inverted.style }}
               >
                 <TestTubeDiagonal size={14} color="var(--accent-4)" />
                 {isMobileDevice ? null : t("Artifacts")}
-              </button>
+              </Button>
 
               {isManaging && (
-                <div
+                <Div
                   style={{
                     position: "relative",
                   }}
                 >
                   {showEmojiPicker && (
-                    <div
+                    <Div
                       style={{
                         position: "absolute",
                         bottom: "100%",
@@ -1306,24 +1317,26 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                         lazyLoadEmojis={true}
                         suggestedEmojisMode={SuggestionMode.RECENT}
                       />
-                    </div>
+                    </Div>
                   )}
-                  <button
+                  <Button
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="inverted"
+                    style={{ ...utilities.inverted.style }}
                   >
                     {selectedEmoji} {isMobileDevice ? null : t("Emoji")}
-                  </button>
-                </div>
+                  </Button>
+                </Div>
               )}
 
               {isAllowed && (
-                <button
+                <Button
                   data-testid={`${dataTestId}-modal-save-button`}
                   disabled={(!content && isManaging) || isSaving}
-                  className={clsx(
-                    (!content && isManaging) || isSaving ? "transparent" : "",
-                  )}
+                  style={{
+                    ...((!content && isManaging) || isSaving
+                      ? utilities.transparent.style
+                      : {}),
+                  }}
                   onClick={() =>
                     handleSave({
                       instruction: selectedInstruction || undefined,
@@ -1335,21 +1348,21 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   ) : (
                     t("Save")
                   )}
-                </button>
+                </Button>
               )}
-            </div>
-          </div>
+            </Div>
+          </Div>
         )}
       </Modal>
-      <div className={styles.instructionsContainer}>
+      <Div style={styles.instructionsContainer.style}>
         {showButton && (
-          <div
+          <Div
             style={{
+              ...styles.instructionsButtonContainer.style,
               marginBottom: !thread && !icon ? "0.8rem" : undefined,
             }}
-            className={styles.instructionsButtonContainer}
           >
-            <button
+            <Button
               data-testid={`${dataTestId}-button`}
               onClick={() => {
                 // Clear content if it matches the currently selected instruction
@@ -1363,13 +1376,15 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 setSelectedInstruction(null)
                 setIsOpen(true)
               }}
-              className={clsx(
-                icon ? "link" : "inverted",
-                "instructionsButton",
-                styles.instructionsButton,
-                className,
-                icon && styles.icon,
-              )}
+              style={{
+                ...(icon
+                  ? {
+                      ...utilities.link.style,
+                      ...styles.instructionsButtonIcon.style,
+                    }
+                  : utilities.inverted.style),
+                ...styles.instructionsButton.style,
+              }}
             >
               <Brain color="var(--accent-6)" size={16} />
               {!icon ? (
@@ -1379,27 +1394,24 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               ) : (
                 <Plus size={12} />
               )}
-            </button>
-            <button
+            </Button>
+            <Button
               title={t("Artifacts")}
               data-testid={`${dataTestId}-artifacts-button`}
               onClick={() => {
                 addHapticFeedback()
                 setIsArtifactsOpen(true)
               }}
-              className={clsx(
-                icon ? "link" : "transparent",
-                styles.artifactsButton,
-                className,
-                icon && styles.icon,
-              )}
+              style={{
+                ...(icon ? utilities.link.style : utilities.transparent.style),
+              }}
             >
               <TestTubeDiagonal size={15} color="var(--accent-4)" />
-            </button>
-          </div>
+            </Button>
+          </Div>
         )}
         {!thread && showInstructions && (
-          <div
+          <Div
             data-testid={`${dataTestId}-list`}
             ref={instructionsListRef}
             className={clsx(styles.instructions, "instructionsList")}
@@ -1411,17 +1423,15 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               )
               .map((instruction) => {
                 return (
-                  <button
+                  <Button
                     key={instruction.id}
                     data-testid={`${dataTestId}-item`}
-                    className={clsx(
-                      "link",
-                      "instructionItem",
-                      styles.instruction,
-                      isStandalone ? styles.standalone : undefined,
-                      selectedInstruction?.id === instruction.id &&
-                        styles.selected,
-                    )}
+                    style={{
+                      ...styles.instruction.style,
+                      ...(selectedInstruction?.id === instruction.id
+                        ? styles.instructionSelected.style
+                        : {}),
+                    }}
                     onClick={() => {
                       setSelectedInstruction(instruction)
                       if (instruction.requiresWebSearch) {
@@ -1429,15 +1439,15 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                       }
                     }}
                   >
-                    <span className={styles.instructionEmoji}>
+                    <Span style={styles.instructionEmoji.style}>
                       {instruction.emoji}
-                    </span>
-                    <span className={styles.instructionTitle}>
+                    </Span>
+                    <Span style={styles.instructionTitle.style}>
                       {t(
                         instruction.title,
                         isManaging ? undefined : instructionConfig,
                       )}
-                    </span>
+                    </Span>
                     {isManaging && (
                       <>
                         {getCurrentSuggestionStep(instruction) ===
@@ -1452,45 +1462,29 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                         ) : null}
                       </>
                     )}
-                  </button>
+                  </Button>
                 )
               })}
-          </div>
+          </Div>
         )}
         {!thread && !icon && showInstructions && (
-          <div data-testid={`${dataTestId}-about`} className={styles.bottom}>
-            <a
-              onClick={(e) => {
-                if (appStatus?.part) {
-                  e.preventDefault()
-                  setIsAppDescriptionOpen(true)
-                  return
-                }
-                addHapticFeedback()
-                if (e.metaKey || e.ctrlKey) {
-                  return
-                }
-                e.preventDefault()
-                router.push("/about")
-              }}
-              href={isStandalone ? undefined : `${FRONTEND_URL}/about`}
-            >
+          <Div data-testid={`${dataTestId}-about`} style={styles.bottom.style}>
+            <A href={"/about"}>
               <MousePointerClick color="var(--accent-1)" size={26} />
 
               {t(appStatus?.part ? "Description" : "About")}
-            </a>
+            </A>
             {appStatus?.part ? (
               <Agent />
             ) : extensionId && extensionUrl.includes(extensionId) ? null : (
               <>
                 {os && ["ios", "android"].includes(os) ? (
-                  <button
-                    className={clsx(
-                      "small",
-                      styles.installAppButton,
-                      isStandalone ? styles.standalone : undefined,
-                    )}
-                    onClick={(e) => {
+                  <Button
+                    style={{
+                      ...utilities.small.style,
+                      ...styles.installAppButton.style,
+                    }}
+                    onClick={() => {
                       addHapticFeedback()
                       setShowAddToHomeScreen(true)
                     }}
@@ -1505,9 +1499,9 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                       />
                     ) : (
                       <FaAndroid size={18} />
-                    )}{" "}
+                    )}
                     {t("Install")}
-                  </button>
+                  </Button>
                 ) : productionExtensions.includes("chrome") ? (
                   <A
                     openInNewTab
@@ -1520,9 +1514,9 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 ) : null}
               </>
             )}
-          </div>
+          </Div>
         )}
-      </div>
-    </div>
+      </Div>
+    </Div>
   )
 }

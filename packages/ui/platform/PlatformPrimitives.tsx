@@ -22,7 +22,9 @@ interface BaseProps {
   children?: React.ReactNode
 }
 
-export interface BoxProps extends BaseProps {
+export interface BoxProps
+  extends BaseProps,
+    Omit<React.HTMLAttributes<HTMLDivElement>, keyof BaseProps | "onClick"> {
   as?:
     | "div"
     | "section"
@@ -74,6 +76,22 @@ export interface InputProps extends BaseProps {
   title?: string
   required?: boolean
   disabled?: boolean
+}
+
+export interface TextAreaProps extends BaseProps {
+  placeholder?: string
+  value?: string
+  onChange?: (e: ChangeEvent<HTMLTextAreaElement>) => void
+  onChangeText?: (text: string) => void
+  name?: string
+  id?: string
+  title?: string
+  required?: boolean
+  disabled?: boolean
+  rows?: number
+  maxLength?: number
+  autoFocus?: boolean
+  "data-testid"?: string
 }
 
 export interface ScrollViewProps extends BaseProps {
@@ -322,6 +340,55 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   },
 )
 Input.displayName = "Input"
+
+export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
+  (
+    {
+      className,
+      style,
+      placeholder,
+      value,
+      onChange,
+      onChangeText,
+      name,
+      id,
+      title,
+      required,
+      disabled,
+      rows = 4,
+      maxLength,
+      autoFocus,
+      ...props
+    },
+    ref,
+  ) => {
+    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+      onChange?.(e)
+      onChangeText?.(e.target.value)
+    }
+
+    return (
+      <textarea
+        ref={ref}
+        className={className}
+        style={style as CSSProperties}
+        placeholder={placeholder}
+        value={value}
+        onChange={handleChange}
+        name={name}
+        id={id}
+        title={title}
+        required={required}
+        disabled={disabled}
+        rows={rows}
+        maxLength={maxLength}
+        autoFocus={autoFocus}
+        {...props}
+      />
+    )
+  },
+)
+TextArea.displayName = "TextArea"
 
 export const ScrollView = forwardRef<HTMLDivElement, ScrollViewProps>(
   (

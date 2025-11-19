@@ -63,6 +63,7 @@ export {
   Button,
   Link,
   Input,
+  TextArea,
   ScrollView,
   Image,
   // Semantic aliases
@@ -94,9 +95,13 @@ export {
   type ButtonProps,
   type LinkProps,
   type InputProps,
+  type TextAreaProps,
   type ScrollViewProps,
   type ImageProps,
 } from "./PlatformPrimitives"
+
+// Video Component (auto-resolves to .web.tsx or .native.tsx)
+export { default as Video, type VideoProps } from "./Video"
 
 // High-Performance List Component
 export { FlashList, type FlashListProps } from "./FlashList"

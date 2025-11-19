@@ -11,10 +11,12 @@ import { apiFetch } from "./utils"
 export default function DeleteThread({
   className,
   onDelete,
+  style,
   id,
 }: {
   className?: string
   onDelete?: () => void
+  style?: React.CSSProperties
   id: string
 }) {
   const [isDeleting, setIsDeleting] = useState(false)
@@ -30,6 +32,7 @@ export default function DeleteThread({
     <ConfirmButton
       dataTestId="delete-thread-button"
       className={clsx("transparent small", className)}
+      style={style}
       confirm={
         <>
           {isDeleting ? (

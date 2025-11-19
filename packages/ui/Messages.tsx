@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useState, useMemo } from "react"
-import styles from "./Messages.module.scss"
+// import styles from "./Messages.module.scss"
 import type {
   aiAgent,
   guest,
@@ -11,7 +11,7 @@ import type {
 } from "./types"
 import Message from "./Message"
 import clsx from "clsx"
-import { CircleX, Loader, Sparkles } from "./icons"
+import { CircleX, Loader, Sparkles, VideoIcon } from "./icons"
 import { useAppContext } from "./context/AppContext"
 import {
   useAuth,
@@ -19,10 +19,12 @@ import {
   useNavigationContext,
   useApp,
 } from "./context/providers"
-import { useTheme } from "./platform"
+import { Button, Div, useTheme, Video } from "./platform"
 import CharacterProfile from "./CharacterProfile"
 import { useWebSocket } from "./hooks/useWebSocket"
 import { isOwner } from "./utils"
+import { useMessagesStyles } from "./Messages.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default forwardRef<
   HTMLDivElement,
@@ -79,6 +81,8 @@ export default forwardRef<
   },
   ref,
 ) {
+  const styles = useMessagesStyles()
+  const { utilities } = useStyles()
   // Split contexts for better organization
   const { t } = useAppContext()
 
@@ -150,32 +154,27 @@ export default forwardRef<
 
   if (!showEmptyState && messages?.length === 0) return null
   return (
-    <div
-      className={clsx(styles.messagesContainer, className)}
-      id={id}
-      ref={ref}
-      style={style}
-    >
+    <Div style={{ ...styles.messagesContainer, ...style }} id={id} ref={ref}>
       {nextPage && (
-        <div className={styles.loadMoreContainer}>
-          <button
-            className={clsx("xSmall transparent", styles.loadMoreButton)}
+        <Div style={{ ...styles.loadMoreContainer.style }}>
+          <Button
+            style={{ ...utilities.xSmall, ...utilities.transparent }}
             onClick={() => {
               setIsLoadingMore?.(true)
               setUntil?.((until || 1) + 1)
             }}
           >
-            <Loader size={16} className="spin" />
-            Load Older
-          </button>
-        </div>
+            <Loader size={16} />
+            {t("Load Older")}
+          </Button>
+        </Div>
       )}
       {messages?.length === 0 && showEmptyState && (
-        <div className={styles.emptyContainer}>
+        <Div style={{ ...styles.emptyContainer.style }}>
           {emptyMessage || t("Nothing here yet")}
-        </div>
+        </Div>
       )}
-      <div className={styles.messages}>
+      <Div style={{ ...styles.messages.style }}>
         {messages
           ?.sort(
             (a, b) =>
@@ -193,17 +192,17 @@ export default forwardRef<
               />
             )
           })}
-      </div>
+      </Div>
       {appStatus?.part || suggestSaveApp ? (
-        <div className={styles.enableCharacterProfilesContainer}>
-          <button
+        <Div style={{ ...styles.enableCharacterProfilesContainer.style }}>
+          <Button
             disabled={isUpdating}
             onClick={async () => {
               addHapticFeedback()
 
               router.push("/?step=add&part=title")
             }}
-            className={clsx("inverted", styles.enableCharacterProfiles)}
+            style={{ ...utilities.inverted.style }}
           >
             <Sparkles
               color="var(--accent-1)"
@@ -211,20 +210,20 @@ export default forwardRef<
               size={16}
             />
             {t("Back to Agent Builder")}{" "}
-          </button>
-        </div>
+          </Button>
+        </Div>
       ) : (
         <>
-          <div className={styles.enableCharacterProfilesContainer}>
+          <Div style={{ ...styles.enableCharacterProfilesContainer.style }}>
             {!characterProfilesEnabled &&
             !isStreaming &&
             messages?.some((message) => !!message.message.agentId) ? (
-              <button
+              <Button
                 disabled={isUpdating}
                 onClick={async () => {
                   setShowCharacterProfiles(true)
                 }}
-                className={clsx("inverted", styles.enableCharacterProfiles)}
+                style={{ ...utilities.inverted.style }}
               >
                 {isUpdating ? (
                   <CircleX size={16} color="var(--accent-6)" />
@@ -236,27 +235,25 @@ export default forwardRef<
                   />
                 )}
                 {t("Enable Character Profiles")}
-              </button>
+              </Button>
             ) : null}
-          </div>
+          </Div>
 
           {threadId &&
           !isStreaming &&
           characterProfilesEnabled &&
           loadingCharacterProfile?.threadId === threadId ? (
-            <div
-              className={clsx(styles.characterProfileContainer, styles.loading)}
-            >
-              <video
-                className={styles.video}
+            <Div style={{ ...styles.characterProfileContainer.style }}>
+              <Video
+                style={{ ...styles.video.style }}
                 src={`${FRONTEND_URL}/video/blob.mp4`}
                 autoPlay
                 loop
                 muted
                 playsInline
-              ></video>
+              />
               {t("Generating character tags...")}
-            </div>
+            </Div>
           ) : characterProfile &&
             characterProfilesEnabled &&
             (isOwner(characterProfile, {
@@ -264,10 +261,10 @@ export default forwardRef<
               guestId: guest?.id,
             }) ||
               characterProfile.visibility === "public") ? (
-            <div className={styles.characterProfileContainer}>
-              <div className={styles.tags}>
+            <Div style={{ ...styles.characterProfileContainer.style }}>
+              <Div style={{ ...styles.tags.style }}>
                 {characterProfile.tags?.join(", ")}
-              </div>
+              </Div>
               <CharacterProfile
                 onCharacterProfileUpdate={() => {
                   onCharacterProfileUpdate?.()
@@ -275,10 +272,10 @@ export default forwardRef<
                 characterProfile={characterProfile}
                 showActions={true}
               />
-            </div>
+            </Div>
           ) : null}
         </>
       )}
-    </div>
+    </Div>
   )
 })

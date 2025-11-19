@@ -11,7 +11,7 @@ import {
   useData,
   useError,
 } from "./context/providers"
-import { usePlatform, useTheme } from "./platform"
+import { Div, usePlatform, useTheme } from "./platform"
 
 import clsx from "clsx"
 import {
@@ -44,11 +44,13 @@ import A from "./A"
 export default function Subscribe({
   customerEmail,
   className,
+  style,
 }: {
   customerEmail?: string // Optional for existing customers
   onSuccess?: () => void
   onCancel?: () => void
   className?: string
+  style?: React.CSSProperties
 }) {
   const [loading, setLoading] = useState(false)
   const [isGifting, setIsGifting] = useState(false)
@@ -492,7 +494,7 @@ export default function Subscribe({
       !userToGift?.subscription)
 
   return (
-    <>
+    <Div style={style}>
       <Modal
         hideOnClickOutside={false}
         hasCloseButton
@@ -1074,6 +1076,6 @@ export default function Subscribe({
       )}
 
       {/* {giftedFingerPrint} */}
-    </>
+    </Div>
   )
 }

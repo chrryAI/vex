@@ -13,7 +13,9 @@ export const SkeletonStyleDefs = {
     alignItems: "flex-start",
     position: "relative",
   },
-  subscribe: {},
+  subscribe: {
+    left: 0,
+  },
   brand: {
     fontWeight: "bold",
     margin: 0,
