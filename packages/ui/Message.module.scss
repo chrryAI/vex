@@ -114,7 +114,44 @@
   gap: toRem.toRem(5);
 }
 
-.userMessage,
+.userMessage {
+  display: flex;
+  flex-direction: column;
+  padding: toRem.toRem(10);
+  width: auto;
+  font-size: toRem.toRem(15);
+  min-width: toRem.toRem(200);
+
+  background-color: var(--shade-1);
+  border: toRem.toRem(1) solid var(--shade-2);
+
+  border-radius: var(--radius);
+  padding: toRem.toRem(10);
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  box-shadow: 0 0 toRem.toRem(5) var(--shade-2);
+
+  &:not(.android) {
+    animation: slideUp 0.4s ease forwards;
+    @include utils.respect-reduced-motion;
+  }
+
+  &.owner {
+    align-self: flex-end;
+  }
+}
+
+.agentMessageTime,
+.userMessageTime {
+  display: none;
+
+  @media (min-width: breakpoints.$breakpoint-mobile) {
+    display: flex;
+  }
+}
+
 .agentMessage {
   display: flex;
   flex-direction: column;
@@ -122,49 +159,19 @@
   width: auto;
   font-size: toRem.toRem(15);
   min-width: toRem.toRem(200);
-  .agentMessageTime,
-  .userMessageTime {
-    display: none;
 
-    @media (min-width: breakpoints.$breakpoint-mobile) {
-      display: flex;
-    }
-  }
+  background-color: var(--shade-1);
+  border: toRem.toRem(1) solid var(--shade-2);
 
-  &.agentMessage {
-    align-self: flex-start;
-    border-radius: toRem.toRem(15);
-    border: toRem.toRem(1) solid var(--shade-2);
-    box-shadow: 0 0 toRem.toRem(5) var(--shade-2);
-    width: 100%;
-    box-sizing: border-box;
-    overflow-wrap: break-word;
-    &:not(.android) {
-      animation: slideUp 0.4s ease forwards;
-      @include utils.respect-reduced-motion;
-    }
-  }
-
-  &.userMessage {
-    background-color: var(--shade-1);
-    border: toRem.toRem(1) solid var(--shade-2);
-
-    border-radius: var(--radius);
-    padding: toRem.toRem(10);
-    position: relative;
-    width: 100%;
-    box-sizing: border-box;
-    overflow-wrap: break-word;
-    box-shadow: 0 0 toRem.toRem(5) var(--shade-2);
-
-    &:not(.android) {
-      animation: slideUp 0.4s ease forwards;
-      @include utils.respect-reduced-motion;
-    }
-
-    &.owner {
-      align-self: flex-end;
-    }
+  align-self: flex-start;
+  border-radius: toRem.toRem(15);
+  box-shadow: 0 0 toRem.toRem(5) var(--shade-2);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  &:not(.android) {
+    animation: slideUp 0.4s ease forwards;
+    @include utils.respect-reduced-motion;
   }
 }
 
@@ -178,6 +185,7 @@
   display: flex;
   align-items: center;
   gap: toRem.toRem(5);
+  margin-bottom: toRem.toRem(5);
 }
 
 .agentMessageImages {

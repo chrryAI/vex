@@ -239,9 +239,7 @@ const Thread = ({
           ...styles.thread.style,
           ...(isEmpty && hasHydrated && styles.threadEmpty.style),
           ...{
-            maxWidth: isSmallDevice
-              ? BREAKPOINTS.tablet - 100
-              : BREAKPOINTS.tablet,
+            maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
           },
         }}
       >

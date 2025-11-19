@@ -638,59 +638,63 @@ export default function Message({
           style={{
             ...styles.userMessageContainer.style,
             ...(owner && styles.owner.style),
+            flexDirection: !isMobileDevice ? "row" : "column",
           }}
         >
-          <Span
-            style={{
-              ...styles.userIcon.style,
-              ...(owner && styles.owner.style),
-            }}
-          >
-            {owner && (
-              <Span style={styles.userMessageTime.style}>
-                {timeAgo(message.message.createdOn, language)}
-              </Span>
-            )}
-
-            <Button
-              onClick={() => {
-                if (user) {
-                  setIsAccountVisible(true)
-
-                  return
-                }
-
-                addParams({ subscribe: "true", plan: "member" })
+          {isMobileDevice && (
+            <Span
+              style={{
+                ...styles.userIcon.style,
+                ...(owner && styles.owner.style),
               }}
-              type="button"
-              style={utilities.link.style}
             >
-              {userImage ? (
-                <Img
-                  style={styles.userImage.style}
-                  src={userImage}
-                  key={userImage}
-                  width={40}
-                  height={40}
-                  alt={message.user?.name || ""}
-                />
-              ) : (
-                <Img
-                  showLoading={false}
-                  src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
-                  alt="Space Invader"
-                  width={35}
-                  height={35}
-                />
+              {owner && (
+                <Span style={styles.userMessageTime.style}>
+                  {timeAgo(message.message.createdOn, language)}
+                </Span>
               )}
-            </Button>
-            {!owner && (
-              <Span style={styles.userMessageTime.style}>
-                {timeAgo(message.message.createdOn, language)}
-              </Span>
-            )}
-          </Span>
-          {!owner && !isMobileDevice && (
+
+              <Button
+                onClick={() => {
+                  if (user) {
+                    setIsAccountVisible(true)
+
+                    return
+                  }
+
+                  addParams({ subscribe: "true", plan: "member" })
+                }}
+                type="button"
+                style={utilities.link.style}
+              >
+                {userImage ? (
+                  <Img
+                    style={styles.userImage.style}
+                    src={userImage}
+                    key={userImage}
+                    width={40}
+                    height={40}
+                    alt={message.user?.name || ""}
+                  />
+                ) : (
+                  <Img
+                    showLoading={false}
+                    src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
+                    alt="Space Invader"
+                    width={35}
+                    height={35}
+                  />
+                )}
+              </Button>
+              {!owner && (
+                <Span style={styles.userMessageTime.style}>
+                  {timeAgo(message.message.createdOn, language)}
+                </Span>
+              )}
+            </Span>
+          )}
+
+          {!owner && isMobileDevice && (
             <Span
               style={{
                 ...styles.userIcon.style,
@@ -976,7 +980,10 @@ export default function Message({
       </Modal>
       <Div
         data-testid="agent-message"
-        style={styles.messageContainer.style}
+        style={{
+          ...styles.messageContainer.style,
+          flexDirection: !isMobileDevice ? "row" : "column",
+        }}
         key={message.message.id}
       >
         {isMobileDevice && (
@@ -1183,6 +1190,8 @@ export default function Message({
                       <Flux color="var(--accent-6)" size={19} />
                     ) : agent?.name === "perplexity" ? (
                       <Perplexity color="var(--accent-6)" size={19} />
+                    ) : agent?.name === "sushi" ? (
+                      <Img icon="sushi" size={19} />
                     ) : null}
                   </Span>
                 )}
