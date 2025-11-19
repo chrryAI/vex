@@ -86,26 +86,39 @@ export const MessageStyleDefs = {
     flexDirection: "column",
     gap: 5,
   },
+  userMessage: {
+    display: "flex",
+    flexDirection: "column",
+    padding: 10,
+    width: "100%",
+    fontSize: 15,
+    minWidth: 200,
+    backgroundColor: "var(--shade-1)",
+    border: "1px solid var(--shade-2)",
+    borderRadius: "var(--radius)",
+    position: "relative",
+    boxShadow: 5,
+    alignSelf: "flex-end",
+  },
+  agentMessageTime: {
+    alignSelf: "center",
+  },
   userMessageTime: {
     fontSize: 12,
     color: "var(--shade-6)",
   },
   agentMessage: {
-    alignSelf: "flex-start",
-    borderRadius: 15,
-    border: "1px solid var(--shade-2)",
-    boxShadow: 5,
+    display: "flex",
+    flexDirection: "column",
+    padding: 10,
     width: "100%",
-  },
-  userMessage: {
+    fontSize: 15,
+    minWidth: 200,
     backgroundColor: "var(--shade-1)",
     border: "1px solid var(--shade-2)",
-    borderRadius: "var(--radius)",
-    padding: 10,
-    position: "relative",
-    width: "100%",
+    alignSelf: "flex-start",
+    borderRadius: 15,
     boxShadow: 5,
-    alignSelf: "flex-end",
   },
   userImage: {
     borderRadius: "50%",
@@ -116,6 +129,7 @@ export const MessageStyleDefs = {
     display: "flex",
     alignItems: "center",
     gap: 5,
+    marginBottom: 5,
   },
   agentMessageImages: {
     display: "flex",
@@ -200,9 +214,6 @@ export const MessageStyleDefs = {
     flexDirection: "column",
   },
   userMessageTimeUserMessageTime: {
-    alignSelf: "center",
-  },
-  agentMessageTime: {
     alignSelf: "center",
   },
   agentMessageTimeUserMessageTime: {
