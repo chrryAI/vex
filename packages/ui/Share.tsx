@@ -7,7 +7,6 @@ import { collaboration, thread, user } from "./types"
 import {
   Circle,
   CircleCheck,
-  CircleUser,
   CircleUserRound,
   CircleX,
   Copy,
@@ -19,22 +18,15 @@ import {
   Trash2,
   UserLock,
   UsersRound,
-  X,
 } from "./icons"
 import Modal from "./Modal"
 import toast from "react-hot-toast"
 import { useAppContext } from "./context/AppContext"
-import Checkbox from "./Checkbox"
-import { updateCollaboration, updateThread } from "./lib"
+import { updateThread } from "./lib"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import Img from "./Img"
-import {
-  useAuth,
-  useChat,
-  useData,
-  useNavigationContext,
-} from "./context/providers"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
 import { apiFetch } from "./utils"
 import { useShareStyles } from "./Share.styles"
 import { useStyles } from "./context/StylesContext"

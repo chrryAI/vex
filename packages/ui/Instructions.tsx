@@ -50,6 +50,7 @@ import {
   Span,
   Input,
   TextArea,
+  toRem,
 } from "./platform"
 import { thread, instruction } from "./types"
 import { updateThread } from "./lib"
@@ -1414,7 +1415,10 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           <Div
             data-testid={`${dataTestId}-list`}
             ref={instructionsListRef}
-            className={clsx(styles.instructions, "instructionsList")}
+            style={{
+              ...styles.instructionsContainer.style,
+              gap: isMobileDevice ? toRem(5) : toRem(7.5),
+            }}
           >
             {instructions
               .slice(
@@ -1427,10 +1431,12 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     key={instruction.id}
                     data-testid={`${dataTestId}-item`}
                     style={{
+                      ...utilities.link.style,
                       ...styles.instruction.style,
                       ...(selectedInstruction?.id === instruction.id
                         ? styles.instructionSelected.style
                         : {}),
+                      fontSize: isMobileDevice ? 14 : 15,
                     }}
                     onClick={() => {
                       setSelectedInstruction(instruction)
