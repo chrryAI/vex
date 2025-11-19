@@ -1,34 +1,21 @@
 "use client"
 
 import styles from "./AffiliateDashboard.module.scss"
-import React, { useEffect, useState } from "react"
-import { COLORS, useAppContext } from "chrry/context/AppContext"
-import toast from "react-hot-toast"
+import React, { useState } from "react"
+import { COLORS, useAppContext } from "./context/AppContext"
 import {
-  Copy,
   TrendingUp,
-  Users,
-  DollarSign,
   MousePointerClick,
   Coins,
-  UserRoundPlus,
-  UserPlus,
-  SmilePlus,
   CircleArrowLeft,
-  Link,
-  Clock,
   Eye,
   Award,
-  Zap,
-} from "chrry/icons"
-import Logo from "chrry/Logo"
-import Loading from "chrry/Loading"
+} from "./icons"
+import Logo from "./Logo"
+import Loading from "./Loading"
 import clsx from "clsx"
-import Img from "chrry/Img"
-import { apiFetch } from "chrry/utils"
-import useSWR from "swr"
-import { useNavigation, useTheme } from "chrry/platform"
-import { useAuth, useData, useNavigationContext } from "chrry/context/providers"
+import { useTheme } from "./platform"
+import { useAuth, useNavigationContext } from "./context/providers"
 import Skeleton from "./Skeleton"
 
 interface GrapeConsumerStats {

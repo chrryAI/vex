@@ -346,7 +346,6 @@ const Thread = ({
                     )
                 }}
                 ref={messagesRef}
-                style={styles.messages.style}
                 messages={messages}
                 setIsLoadingMore={setIsLoadingMore}
                 setUntil={setUntil}
@@ -357,10 +356,10 @@ const Thread = ({
             {(!isVisitor ||
               collaborator ||
               thread?.visibility === "public") && (
-              <Div style={styles.chatContainer.style}>
+              <Div>
                 {/* Typing indicator for collaborative threads */}
 
-                <Div style={styles.chatContainer.style}>
+                <Div>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
                     compactMode={showFocus}
@@ -415,14 +414,12 @@ const Thread = ({
 
                                 router.push(`${slugPath}?step=add&part=title`)
                               }}
-                              style={
-                                {
-                                  ...utilities.button.style,
-                                  ...utilities.transparent.style,
-                                  ...utilities.link.style,
-                                  ...utilities.xSmall.style,
-                                }
-                              }
+                              style={{
+                                ...utilities.button.style,
+                                ...utilities.transparent.style,
+                                ...utilities.link.style,
+                                ...utilities.xSmall.style,
+                              }}
                             >
                               <Img
                                 showLoading={false}
@@ -446,14 +443,12 @@ const Thread = ({
 
                                 goToCalendar()
                               }}
-                              style={
-                                {
-                                  ...utilities.button.style,
-                                  ...utilities.transparent.style,
-                                  ...utilities.link.style,
-                                  ...utilities.xSmall.style,
-                                }
-                              }
+                              style={{
+                                ...utilities.button.style,
+                                ...utilities.transparent.style,
+                                ...utilities.link.style,
+                                ...utilities.xSmall.style,
+                              }}
                             >
                               <Img
                                 showLoading={false}
@@ -536,7 +531,7 @@ const Thread = ({
                             style={styles.hourlyLimit.style}
                           >
                             {!user?.subscription || !guest?.subscription ? (
-                              <Button 
+                              <Button
                                 onClick={() => {
                                   addHapticFeedback()
                                   if (guest) {
@@ -574,7 +569,6 @@ const Thread = ({
                     }
                     onToggleGame={(on) => setIsGame(on)}
                     showGreeting={isEmpty}
-                    style={styles.chat.style}
                     onStreamingStop={async (message) => {
                       message?.message?.clientId &&
                         setMessages((prev) => {

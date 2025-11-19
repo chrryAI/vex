@@ -1,6 +1,5 @@
 import { Metadata } from "next"
 import { appWithStore, storeWithApps, store } from "../types"
-import { COLORS } from "chrry/context/ThemeContext"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
 

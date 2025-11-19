@@ -2,7 +2,7 @@
 
 import styles from "./AffiliateDashboard.module.scss"
 import React, { useEffect, useState } from "react"
-import { COLORS, useAppContext } from "chrry/context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import toast from "react-hot-toast"
 import {
   Copy,
@@ -19,16 +19,16 @@ import {
   Clock,
   Twitter,
   Share,
-} from "chrry/icons"
-import Logo from "chrry/Logo"
-import Loading from "chrry/Loading"
+} from "./icons"
+import Logo from "./Logo"
+import Loading from "./Loading"
 import clsx from "clsx"
-import Img from "chrry/Img"
-import { apiFetch } from "chrry/utils"
+import Img from "./Image"
+import { apiFetch } from "./utils"
 import useSWR from "swr"
 import { FaTwitter, FaLinkedin, FaFacebook } from "react-icons/fa"
-import { useNavigation, useTheme } from "chrry/platform"
-import { useAuth, useData, useNavigationContext } from "chrry/context/providers"
+import { useNavigation, useTheme } from "./platform"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
 import Skeleton from "./Skeleton"
 
 interface AffiliateStats {

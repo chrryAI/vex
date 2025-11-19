@@ -2,7 +2,7 @@
 
 import styles from "./Affiliate.module.scss"
 import React, { useState } from "react"
-import { COLORS, useAppContext } from "chrry/context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import toast from "react-hot-toast"
 import {
   TrendingUp,
@@ -10,12 +10,12 @@ import {
   Coins,
   UserRoundPlus,
   SmilePlus,
-} from "chrry/icons"
-import Logo from "chrry/Logo"
+} from "./icons"
+import Logo from "./Logo"
 import clsx from "clsx"
-import Img from "chrry/Image"
-import { useAuth, useData } from "chrry/context/providers"
-import { useNavigation, usePlatform, useTheme } from "chrry/platform"
+import Img from "./Image"
+import { useAuth, useData } from "./context/providers"
+import { useNavigation, usePlatform, useTheme } from "./platform"
 import { useHasHydrated } from "./hooks"
 import Skeleton from "./Skeleton"
 import { getSiteConfig } from "./utils/siteConfig"
