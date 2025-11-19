@@ -101,8 +101,7 @@ export function useAppMetadata(app?: appWithStore, enabled = true) {
   const { i18n } = useTranslation()
 
   useEffect(() => {
-    if (!enabled) return
-    if (typeof document === "undefined" || !app) return
+    if (!enabled || typeof document === "undefined" || !app) return
 
     const locale = i18n.language || "en"
     const currentDomain =
