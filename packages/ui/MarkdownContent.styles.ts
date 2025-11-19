@@ -77,15 +77,16 @@ export const MarkdownContentStyleDefs = {
       textDecorationLine: "none",
     },
   },
+  list: {
+    marginBottom: "1rem",
+    paddingLeft: "1.5rem",
+  },
   orderedList: {
     marginBottom: "1rem",
     paddingLeft: "1.5rem",
   },
   listItem: {
     marginBottom: "0.5rem",
-  },
-  heading4: {
-    fontSize: "1rem",
   },
   heading1: {
     fontSize: "1.5rem",
@@ -95,6 +96,9 @@ export const MarkdownContentStyleDefs = {
   },
   heading3: {
     fontSize: "1.1rem",
+  },
+  heading4: {
+    fontSize: "1rem",
   },
   blockquote: {
     paddingLeft: "1rem",
@@ -110,6 +114,11 @@ export const MarkdownContentStyleDefs = {
   },
   tableHead: {
     backgroundColor: "var(--shade-2)",
+  },
+  tableHeader: {
+    border: "1px solid var(--shade-3)",
+    padding: 1,
+    textAlign: "left",
   },
   tableCell: {
     border: "1px solid var(--shade-3)",

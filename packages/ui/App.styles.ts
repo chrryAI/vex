@@ -35,26 +35,28 @@ export const AppStyleDefs = {
     position: "relative",
     right: -5,
   },
-  focusTime: {
-    position: "absolute",
-    top: -5,
-    right: -40,
-    padding: "2px 6px",
-    backgroundColor: "var(--accent-1)",
-    color: "#fff",
-    borderRadius: 10,
-    fontSize: 8,
-    fontWeight: 600,
-    fontFamily: '"SF Mono", "Monaco", "Courier New", monospace',
-    whiteSpace: "nowrap",
-    boxShadow: 2,
-    zIndex: 1,
-  },
   apps: {
     display: "grid",
     gap: 10,
     margin: "0 auto",
   },
+  spaceInvader: {
+    position: "relative",
+    right: -3,
+    top: -2,
+  },
+  atlas: {
+    position: "relative",
+    right: -5,
+  },
+  atlasAtlas: {
+    right: -3,
+    top: -2,
+  },
+  atlasFocus: {
+    right: -3,
+  },
+  atlasSpaceInvader: {},
   focusAtlas: {
     right: -3,
     top: -2,
@@ -172,6 +174,12 @@ export const AppStyleDefs = {
   },
   infoError: {
     color: "var(--accent-0)",
+  },
+  namePreview: {
+    marginBottom: 4,
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
   },
   agentNameForm: {
     marginBottom: 4,

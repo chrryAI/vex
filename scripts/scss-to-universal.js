@@ -262,6 +262,61 @@ const parseScss = (scssContent) => {
   // Remove @include statements
   scssContent = scssContent.replace(/@include[^;]+;/g, "")
 
+  // CRITICAL: Split comma-separated selectors BEFORE flattening
+  // This ensures .userIcon, .agentIcon both get their own entries
+  const splitCommaSeparatedSelectors = (scss) => {
+    let result = scss
+    // Match class definitions with comma-separated selectors (including multi-line)
+    // Pattern: .class1,\s*.class2\s*{  or  .class1, .class2, .class3 {
+    const commaRegex = /(\.[a-zA-Z0-9_-]+(?:\s*,\s*\.[a-zA-Z0-9_-]+)+)\s*\{/g
+    let match
+    const replacements = []
+
+    while ((match = commaRegex.exec(scss)) !== null) {
+      const selectorGroup = match[1]
+      // Extract all class names from the group
+      const classMatches = selectorGroup.match(/\.([a-zA-Z0-9_-]+)/g)
+      if (classMatches && classMatches.length > 1) {
+        const names = classMatches.map((c) => c.substring(1)) // Remove the dot
+        const startIndex = match.index
+        const openBrace = scss.indexOf("{", startIndex)
+
+        // Find matching closing brace
+        let braceCount = 1
+        let endIndex = openBrace + 1
+        while (braceCount > 0 && endIndex < scss.length) {
+          if (scss[endIndex] === "{") braceCount++
+          if (scss[endIndex] === "}") braceCount--
+          endIndex++
+        }
+
+        if (braceCount === 0) {
+          const content = scss.substring(openBrace + 1, endIndex - 1)
+          // Create duplicate blocks for each class name
+          let duplicated = ""
+          for (const name of names) {
+            duplicated += `\n.${name} { ${content} }\n`
+          }
+          replacements.push({
+            start: startIndex,
+            end: endIndex,
+            replacement: duplicated,
+          })
+        }
+      }
+    }
+
+    // Apply replacements in reverse order
+    for (let i = replacements.length - 1; i >= 0; i--) {
+      const { start, end, replacement } = replacements[i]
+      result = result.substring(0, start) + replacement + result.substring(end)
+    }
+
+    return result
+  }
+
+  scssContent = splitCommaSeparatedSelectors(scssContent)
+
   // Flatten nested classes by extracting them to top level with unique names
   // Handles &.modifier syntax by creating parentModifier class names
   const flattenNested = (scss) => {
@@ -339,7 +394,12 @@ const parseScss = (scssContent) => {
             "",
           )
 
-          // Rebuild parent class with clean content
+          // IMPORTANT: Check if parent has any actual properties (not just whitespace/nested classes)
+          const hasParentProps =
+            cleanContent.trim().replace(/\s+/g, " ").length > 0
+
+          // Always keep the parent class definition, even if it only has nested modifiers
+          // This ensures comma-separated selectors like .userIcon, .agentIcon are both preserved
           const replacement = `.${className} { ${cleanContent.trim()} }${extracted}`
 
           result =
@@ -430,7 +490,7 @@ const parseScss = (scssContent) => {
 
   scssContent = flattenNested(scssContent)
 
-  // Match top-level class definitions only
+  // Match top-level class definitions (comma-separated selectors already split)
   const classRegex = /\.([a-zA-Z0-9_-]+)\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g
   let match
 

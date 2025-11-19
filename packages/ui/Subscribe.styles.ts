@@ -6,7 +6,22 @@
  */
 
 export const SubscribeStyleDefs = {
-  subscribeButton: {},
+  subscribeButton: {
+    base: {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      backgroundColor: "var(--background)",
+      border: "1px solid var(--accent-1) !important",
+      boxShadow: "none",
+      padding: "5px 10px",
+      color: "var(--foreground)",
+    },
+    disabled: {
+      backgroundColor: "var(--background)",
+      color: "var(--shade-6)",
+    },
+  },
   subscribeButtonIsDrawerOpen: {
     position: "relative",
     left: 125,
@@ -14,6 +29,7 @@ export const SubscribeStyleDefs = {
   checkout: {
     display: "inline-flex",
   },
+  svg: {},
   plusButton: {
     base: {
       display: "flex",
@@ -30,7 +46,6 @@ export const SubscribeStyleDefs = {
       color: "var(--shade-6)",
     },
   },
-  svg: {},
   button: {
     display: "flex",
     width: "100%",
@@ -153,6 +168,26 @@ export const SubscribeStyleDefs = {
     marginTop: 15,
     marginBottom: 3,
     color: "var(--shade-7)",
+  },
+  giftButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    flex: 1,
+    justifyContent: "center",
+    fontSize: 16,
+    width: "100%",
+    padding: 10,
+  },
+  currentPlanButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    flex: 1,
+    justifyContent: "center",
+    fontSize: 16,
+    width: "100%",
+    padding: 10,
   },
   cancelSubscriptionButton: {
     display: "flex",

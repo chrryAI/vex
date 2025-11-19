@@ -44,8 +44,7 @@ export const ChatStyleDefs = {
     },
   },
   sendButton: {
-    position: "relative",
-    right: -2,
+    display: "flex",
   },
   hourlyLimit: {
     fontSize: 12,
@@ -149,6 +148,19 @@ export const ChatStyleDefs = {
     marginTop: 0,
     marginBottom: 13,
   },
+  collaborationTooltip: {
+    alignItems: "center",
+    justifyContent: "center",
+    display: "flex",
+    position: "relative",
+    bottom: 5,
+    backgroundColor: "var(--shade-2-transparent)",
+    border: "1px solid var(--shade-2)",
+    zIndex: 9999,
+    borderRadius: "var(--radius)",
+    padding: 10,
+    marginBottom: 10,
+  },
   shareTooltip: {
     alignItems: "center",
     justifyContent: "center",
@@ -197,6 +209,12 @@ export const ChatStyleDefs = {
     justifyContent: "center",
     alignItems: "center",
     gap: 8,
+  },
+  subscribeButton: {
+    fontSize: 13,
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
   },
   loginButton: {
     fontSize: 13,
@@ -343,6 +361,9 @@ export const ChatStyleDefs = {
     right: 0,
     display: "flex",
     alignItems: "flex-end",
+  },
+  attachButton: {
+    display: "flex",
   },
   voiceButton: {
     display: "flex",

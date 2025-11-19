@@ -85,6 +85,9 @@ export const FocusButtonStyleDefs = {
     height: 30,
     borderRadius: "50%",
   },
+  videoPlay: {
+    display: "inline-flex",
+  },
   videoPause: {
     display: "inline-flex",
   },
@@ -147,6 +150,16 @@ export const FocusButtonStyleDefs = {
     gap: 42,
     alignItems: "center",
   },
+  controls: {
+    gap: 15,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  controlsVisible: {
+    display: "flex",
+  },
   pomodoro: {
     gap: 10,
     padding: "5px 10px",
@@ -184,6 +197,19 @@ export const FocusButtonStyleDefs = {
     alignItems: "center",
     gap: 10,
   },
+  showSettings: {
+    base: {
+      color: "var(--shade-4)",
+      padding: 0,
+      backgroundColor: "var(--background)",
+      border: "none",
+      boxShadow: "none",
+    },
+    hover: {
+      color: "var(--shade-4)",
+      backgroundColor: "var(--background)",
+    },
+  },
   replay: {
     base: {
       color: "var(--shade-4)",
@@ -202,6 +228,13 @@ export const FocusButtonStyleDefs = {
   },
   footerContainerActive: {
     color: "var(--accent-1)",
+  },
+  discord: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 5,
+    position: "relative",
+    top: 4,
   },
   x: {
     top: 1,
@@ -238,19 +271,19 @@ export const FocusButtonStyleDefs = {
     alignItems: "center",
     gap: 2,
   },
-  seconds: {
+  minutes: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "column",
     backgroundColor: "var(--background)",
   },
-  controls: {
-    gap: 15,
+  seconds: {
     display: "flex",
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "column",
+    backgroundColor: "var(--background)",
   },
   taskSection: {
     maxWidth: 420,
@@ -355,6 +388,11 @@ export const FocusButtonStyleDefs = {
     gap: 5,
     flex: 1,
   },
+  addTaskButtons: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+  },
   editTaskButtons: {
     display: "flex",
     alignItems: "center",
@@ -371,11 +409,56 @@ export const FocusButtonStyleDefs = {
     alignItems: "center",
     gap: 8,
   },
-  reportsButton: {
-    padding: "8px 12px",
+  cancelEditTaskButton: {
+    base: {
+      backgroundColor: "var(--background)",
+      color: "var(--foreground)",
+      boxShadow: "none",
+      border: "1px solid var(--shade-2)",
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+    },
+    hover: {
+      backgroundColor: "var(--foreground)",
+      color: "var(--background)",
+    },
+  },
+  cancelAddTaskButton: {
+    base: {
+      backgroundColor: "var(--background)",
+      color: "var(--foreground)",
+      boxShadow: "none",
+      border: "1px solid var(--shade-2)",
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+    },
+    hover: {
+      backgroundColor: "var(--foreground)",
+      color: "var(--background)",
+    },
   },
   deleteTaskButton: {
     marginLeft: "auto",
+  },
+  closeSettingsButton: {
+    base: {
+      backgroundColor: "var(--background)",
+      color: "var(--foreground)",
+      boxShadow: "none",
+      border: "1px solid var(--shade-2)",
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+    },
+    hover: {
+      backgroundColor: "var(--foreground)",
+      color: "var(--background)",
+    },
+  },
+  reportsButton: {
+    padding: "8px 12px",
   },
   dragHandle: {
     marginLeft: "auto",

@@ -6,6 +6,11 @@
  */
 
 export const AboutStyleDefs = {
+  ossLink: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+  },
   oss: {
     display: "flex",
     alignItems: "center",

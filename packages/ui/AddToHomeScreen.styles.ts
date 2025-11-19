@@ -66,7 +66,7 @@ export const AddToHomeScreenStyleDefs = {
     width: 24,
     height: 24,
   },
-  share: {
+  addHomeScreen: {
     display: "flex",
     gap: 10,
     alignItems: "center",
@@ -79,6 +79,17 @@ export const AddToHomeScreenStyleDefs = {
   },
   addHomeScreenAndroid: {
     marginTop: 0,
+  },
+  share: {
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
+    border: "1px solid var(--shade-2)",
+    backgroundColor: "var(--background)",
+    marginTop: 10,
+    borderRadius: 10,
+    width: "fit-content",
+    padding: "5px 8px",
   },
   selectAddToHomeScreen: {
     display: "flex",

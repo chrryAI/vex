@@ -76,6 +76,12 @@ export const SignInStyleDefs = {
     justifyContent: "center",
     gap: 20,
   },
+  appleButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 13,
+  },
   close: {
     display: "flex",
     position: "absolute",

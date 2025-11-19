@@ -9,6 +9,7 @@ import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { useNavigation, useTheme } from "./platform"
 import { useHasHydrated } from "./hooks"
+import { FRONTEND_URL } from "./utils"
 
 export default function Modal({
   title,
@@ -39,7 +40,7 @@ export default function Modal({
   }
   scrollable?: boolean
   borderHeader?: boolean
-  icon?: React.ReactNode
+  icon?: React.ReactNode | "blob"
   dataTestId?: string
 }) {
   // Split contexts
@@ -159,7 +160,18 @@ export default function Modal({
                 borderHeader && styles.borderHeader,
               )}
             >
-              {icon}
+              {icon === "blob" ? (
+                <video
+                  className={styles.video}
+                  src={`${FRONTEND_URL}/video/blob.mp4`}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                ></video>
+              ) : (
+                icon
+              )}
               <div className={styles.title}>{title}</div>
 
               {hasCloseButton && (
