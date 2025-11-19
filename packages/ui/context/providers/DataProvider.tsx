@@ -26,8 +26,8 @@ import {
 import useSWR from "swr"
 import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
 import { useError } from "./ErrorProvider"
-import { getSiteConfig } from "chrry/utils/siteConfig"
-import { apiFetch } from "chrry/utils"
+import { getSiteConfig } from "../../utils/siteConfig"
+import { apiFetch } from "../../utils"
 
 export type affiliateStats = {
   hasAffiliateLink: boolean
@@ -205,7 +205,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.4.32"
+  const VERSION = "1.4.33"
 
   const [weather, setWeather] = useLocalStorage<
     | {

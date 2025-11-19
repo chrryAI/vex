@@ -40,7 +40,7 @@ import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import { t } from "i18next"
 import useSWR from "swr"
 import { useNavigationContext } from "./NavigationProvider"
-import { useWebSocket } from "chrry/hooks/useWebSocket"
+import { useWebSocket } from "../../hooks/useWebSocket"
 
 interface placeHolder {
   // TODO: Define placeHolder type

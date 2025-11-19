@@ -32,8 +32,8 @@ export const WeatherStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "chrry/styles/createUnifiedStyles"
-import { useInteractiveStyles } from "chrry/styles/useInteractiveStyles"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
+import { useInteractiveStyles } from "./styles/useInteractiveStyles"
 
 export const WeatherStyles = createUnifiedStyles(WeatherStyleDefs)
 

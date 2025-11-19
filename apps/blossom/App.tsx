@@ -14,6 +14,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import AppProviders from '../../packages/ui/context/providers';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -32,16 +33,12 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <View style={styles.container}>
-        <Text>Blossom App</Text>
-        <Text>Runtime Error Fixed! 🌸</Text>
-      </View>
-    </SafeAreaView>
+    <View>
+      <AppProviders
+    >
+      <Text>App</Text>
+    </AppProviders>
+    </View>
   );
 }
 
