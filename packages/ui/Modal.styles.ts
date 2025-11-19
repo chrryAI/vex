@@ -20,6 +20,12 @@ export const ModalStyleDefs = {
     backgroundColor: "var(--overlay)",
     fontSize: 16,
   },
+  video: {
+    width: 35,
+    height: 35,
+    borderRadius: "50%",
+    backgroundColor: "black",
+  },
   main: {
     margin: "0 auto",
     width: "100%",

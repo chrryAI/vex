@@ -54,6 +54,16 @@ export const ThreadStyleDefs = {
     justifyContent: "center",
     alignItems: "center",
   },
+  loadingContainer: {
+    display: "flex",
+    justifyContent: "center",
+    marginTop: 30,
+    width: "100%",
+    height: "100%",
+    flex: 1,
+    alignItems: "center",
+    gap: 5,
+  },
   errorContainer: {
     display: "flex",
     justifyContent: "center",

@@ -16,16 +16,12 @@ export const MessageStyleDefs = {
     backgroundColor: "black",
   },
   userMessage: {
-    backgroundColor: "var(--shade-1)",
-    border: "1px solid var(--shade-2)",
-    borderRadius: "var(--radius)",
+    display: "none",
+    flexDirection: "column",
     padding: 10,
-    position: "relative",
-    width: "100%",
-    boxShadow: 5,
-  },
-  userMessageOwner: {
-    alignSelf: "flex-end",
+    width: "auto",
+    fontSize: 15,
+    minWidth: 200,
   },
   updateModalDescription: {
     display: "flex",
@@ -63,7 +59,7 @@ export const MessageStyleDefs = {
     color: "var(--accent-1)",
   },
   agentMessage: {
-    display: "flex",
+    display: "none",
     flexDirection: "column",
     padding: 10,
     width: "auto",
@@ -105,9 +101,6 @@ export const MessageStyleDefs = {
     display: "flex",
     flexDirection: "column",
     gap: 5,
-  },
-  userMessageTime: {
-    display: "none",
   },
   userImage: {
     borderRadius: "50%",
@@ -155,6 +148,31 @@ export const MessageStyleDefs = {
       backgroundColor: "rgba(0, 0, 0, 0.9)",
     },
   },
+  placeholder: {
+    borderRadius: 13,
+    width: "100%",
+    height: "100%",
+    minWidth: 300,
+    minHeight: 300,
+    backgroundColor: "var(--shade-2)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  agentMessageImageContainer: {
+    borderRadius: 13,
+    width: "100%",
+    height: "100%",
+    minWidth: 300,
+    minHeight: 300,
+    backgroundColor: "var(--shade-2)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  userMessageContent: {
+    color: "var(--shade-7)",
+  },
   agentMessageContent: {
     display: "flex",
     flexDirection: "column",
@@ -164,11 +182,24 @@ export const MessageStyleDefs = {
     display: "flex",
     flexDirection: "column",
   },
+  messageContainer: {
+    display: "flex",
+    gap: 8,
+    alignItems: "flex-start",
+    flexDirection: "column",
+  },
   userMessageContainer: {
     display: "flex",
     gap: 8,
     alignItems: "flex-start",
     flexDirection: "column",
+  },
+  userMessageTime: {
+    fontSize: 12,
+    color: "var(--shade-6)",
+  },
+  userMessageTimeUserMessageTime: {
+    alignSelf: "center",
   },
   agentMessageTime: {
     alignSelf: "center",
@@ -202,6 +233,22 @@ export const MessageStyleDefs = {
   agent: {
     display: "flex",
     alignItems: "center",
+  },
+  userIcon: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    color: "var(--accent-1)",
+  },
+  userIconAgentIcon: {
+    color: "var(--accent-6)",
+  },
+  userIconTablet: {
+    display: "none",
+    alignSelf: "flex-start",
+  },
+  userIconMobile: {
+    display: "flex",
   },
   agentIcon: {
     display: "flex",

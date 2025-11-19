@@ -1,7 +1,8 @@
+"use client"
 import { LoaderCircle } from "./icons"
-import styles from "./Loading.module.scss"
-import clsx from "clsx"
 import { useHasHydrated } from "./hooks"
+import { useLoadingStyles } from "./Loading.styles"
+import { Div } from "./platform"
 
 export default function Loading({
   className,
@@ -19,9 +20,11 @@ export default function Loading({
   fullScreen?: boolean
 }): React.ReactElement | null {
   const isHydrated = useHasHydrated()
+
+  const styles = useLoadingStyles()
   const LoadingWrapper = ({ children }: { children: React.ReactNode }) =>
     fullScreen ? (
-      <div className={styles.loadingWrapper}>{children}</div>
+      <Div style={styles.loadingWrapper.style}>{children}</Div>
     ) : (
       <>{children}</>
     )
@@ -34,7 +37,7 @@ export default function Loading({
       <LoaderCircle
         width={width || size || 24}
         height={height || size || 24}
-        className={clsx(styles.loadingCircle, className)}
+        style={styles.loadingCircle.style}
         color={color as any}
         data-testid="imgLoading"
       />

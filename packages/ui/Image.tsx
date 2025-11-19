@@ -1,6 +1,6 @@
 "use client"
 import { app, appWithStore, store } from "./types"
-import { PROD_FRONTEND_URL, FRONTEND_URL } from "chrry/utils"
+import { PROD_FRONTEND_URL, FRONTEND_URL } from "./utils"
 
 import React, { useEffect } from "react"
 import Img from "./Img"

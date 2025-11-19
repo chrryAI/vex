@@ -6,9 +6,16 @@
  */
 
 export const ShareStyleDefs = {
+  shareModalInputContainer: {
+    display: "flex",
+    gap: 10,
+  },
   collaborateInputContainer: {
     display: "flex",
     gap: 10,
+  },
+  shareModalInput: {
+    flex: 1,
   },
   collaborateInput: {
     flex: 1,

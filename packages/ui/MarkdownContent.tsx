@@ -20,6 +20,7 @@ interface MarkdownContentProps {
   content: string
   className?: string
   "data-testid"?: string
+  style?: React.CSSProperties
   webSearchResults?: Array<{
     title: string
     url: string
@@ -115,6 +116,7 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
   content,
   className,
   "data-testid": dataTestId,
+  style,
   webSearchResults,
 }) => {
   const [isMounted, setIsMounted] = useState(false)
@@ -132,6 +134,7 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
 
   return (
     <Div
+      style={style}
       data-testid={dataTestId}
       className={`${styles.markdownContent} ${className || ""}`}
     >

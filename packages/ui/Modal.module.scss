@@ -16,6 +16,14 @@
   font-size: toRem.toRem(16);
 }
 
+.video {
+  width: toRem.toRem(35);
+  height: toRem.toRem(35);
+  border-radius: 50%;
+  background-color: black;
+  object-fit: cover;
+}
+
 .main {
   margin: 0 auto;
   width: auto;

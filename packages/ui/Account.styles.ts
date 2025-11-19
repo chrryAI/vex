@@ -74,11 +74,11 @@ export const AccountStyleDefs = {
     alignItems: "flex-start",
     flexDirection: "column",
   },
-  accountLinked: {
-    justifyContent: "flex-start",
-  },
   linkAccount: {
     marginLeft: "auto",
+  },
+  accountLinked: {
+    justifyContent: "flex-start",
   },
   cookieConsent: {
     maxWidth: 400,

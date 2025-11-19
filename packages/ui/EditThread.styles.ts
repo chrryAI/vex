@@ -31,6 +31,17 @@ export const EditThreadStyleDefs = {
   deleteThread: {
     marginLeft: "auto",
   },
+  charLeft: {
+    color: "var(--accent-4)",
+    fontSize: 11,
+    fontWeight: "normal",
+  },
+  charLeftOrange: {
+    color: "var(--accent-1)",
+  },
+  charLeftRed: {
+    color: "var(--accent-0)",
+  },
   maxCharCount: {
     color: "var(--accent-4)",
     fontSize: 11,

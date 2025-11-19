@@ -1,4 +1,4 @@
-import styles from "./Message.module.scss"
+// import styles from "./Message.module.scss"
 import clsx from "clsx"
 import {
   Download,
@@ -23,7 +23,7 @@ import {
   useData,
   useChat,
 } from "./context/providers"
-import { useTheme, usePlatform } from "./platform"
+import { useTheme, usePlatform, Div, Button, Span } from "./platform"
 import type {
   message,
   aiAgent,
@@ -59,6 +59,9 @@ import { AudioPlayer } from "react-audio-play"
 import { checkSpeechLimits } from "./lib/speechLimits"
 import { stripMarkdown } from "./lib/stripMarkdown"
 import Logo from "./Logo"
+import { useMessageStyles } from "./Message.styles"
+import { useStyles } from "./context/StylesContext"
+import A from "./A"
 
 export default function Message({
   onDelete,
@@ -83,6 +86,7 @@ export default function Message({
 }): React.ReactElement | null {
   // Split contexts for better organization
   const { t } = useAppContext()
+  const { utilities } = useStyles()
 
   // Auth context
   const {
@@ -97,6 +101,8 @@ export default function Message({
     deviceId,
     timeAgo,
   } = useAuth()
+
+  const styles = useMessageStyles()
 
   const { isAccountVisible, setIsAccountVisible } = useNavigationContext()
   const { refetchThread, messages } = useChat()
@@ -476,11 +482,11 @@ export default function Message({
       return null
 
     return (
-      <div className={styles.likeButtons}>
-        <button
+      <Div style={styles.likeButtons.style}>
+        <Button
           data-testid={`${liked ? "unlike-button" : "like-button"}`}
           title={liked ? t("Unlike") : t("Like")}
-          className={clsx("link", styles.likeButton)}
+          style={utilities.link.style}
           onClick={toggleLike}
         >
           {liked ? (
@@ -488,12 +494,12 @@ export default function Message({
           ) : (
             <ThumbsUp color="var(--shade-3)" size={16} />
           )}
-        </button>
+        </Button>
 
-        <button
+        <Button
           data-testid={`${disliked ? "undislike-button" : "dislike-button"}`}
           title={disliked ? t("Unlike") : t("Dislike")}
-          className={clsx("link", styles.dislikeButton)}
+          style={utilities.link.style}
           onClick={toggleDislike}
         >
           {disliked ? (
@@ -501,8 +507,8 @@ export default function Message({
           ) : (
             <ThumbsDown color="var(--shade-3)" size={16} />
           )}
-        </button>
-      </div>
+        </Button>
+      </Div>
     )
   }
 
@@ -564,7 +570,7 @@ export default function Message({
       <ConfirmButton
         processing={isDeleting}
         data-testid="delete-message"
-        className={clsx("link", styles.deleteButton)}
+        style={utilities.link.style}
         onConfirm={async function () {
           setIsDeleting(true)
 
@@ -610,7 +616,7 @@ export default function Message({
 
   if (!message.message.agentId) {
     return (
-      <div className={styles.message} data-testid="message">
+      <Div style={styles.message.style} data-testid="message">
         {selectedFile && (
           <Modal
             hasCloseButton
@@ -626,25 +632,27 @@ export default function Message({
             <div>{selectedFile.data}</div>
           </Modal>
         )}
-        <div
+        <Div
           data-testid={user?.id ? "user-message" : "guest-message"}
           key={message.message.id}
-          className={clsx(styles.userMessageContainer, owner && styles.owner)}
+          style={{
+            ...styles.userMessageContainer.style,
+            ...(owner && styles.owner.style),
+          }}
         >
-          <span
-            className={clsx(
-              styles.userIcon,
-              styles.mobile,
-              owner && styles.owner,
-            )}
+          <Span
+            style={{
+              ...styles.userIcon.style,
+              ...(owner && styles.owner.style),
+            }}
           >
             {owner && (
-              <span className={styles.userMessageTime}>
+              <Span style={styles.userMessageTime.style}>
                 {timeAgo(message.message.createdOn, language)}
-              </span>
+              </Span>
             )}
 
-            <button
+            <Button
               onClick={() => {
                 if (user) {
                   setIsAccountVisible(true)
@@ -655,11 +663,11 @@ export default function Message({
                 addParams({ subscribe: "true", plan: "member" })
               }}
               type="button"
-              className={"link"}
+              style={utilities.link.style}
             >
               {userImage ? (
                 <Img
-                  className={styles.userImage}
+                  style={styles.userImage.style}
                   src={userImage}
                   key={userImage}
                   width={40}
@@ -675,15 +683,20 @@ export default function Message({
                   height={35}
                 />
               )}
-            </button>
+            </Button>
             {!owner && (
-              <span className={styles.userMessageTime}>
+              <Span style={styles.userMessageTime.style}>
                 {timeAgo(message.message.createdOn, language)}
-              </span>
+              </Span>
             )}
-          </span>
+          </Span>
           {!owner && (
-            <span className={clsx(styles.userIcon, styles.tablet)}>
+            <Span
+              style={{
+                ...styles.userIcon.style,
+                ...styles.userIconTablet.style,
+              }}
+            >
               <button
                 onClick={() => {
                   if (user) {
@@ -698,7 +711,7 @@ export default function Message({
               >
                 {userImage ? (
                   <Img
-                    className={styles.userImage}
+                    style={styles.userImage.style}
                     src={userImage}
                     width={40}
                     height={40}
@@ -715,11 +728,11 @@ export default function Message({
                   />
                 )}
               </button>
-            </span>
+            </Span>
           )}
-          <div className={clsx(styles.userMessage, owner && styles.owner)}>
-            <span className={styles.name}>
-              <div
+          <Div className={clsx(styles.userMessage, owner && styles.owner)}>
+            <Span style={styles.name.style}>
+              <Div
                 className={clsx(
                   styles.presenceIndicator,
                   // Show online if: current user, actively typing, or in online users list
@@ -736,39 +749,36 @@ export default function Message({
                 )}
               />
               {
-                <span className={styles.nameWithPresence}>
+                <Span style={styles.nameWithPresence.style}>
                   {owner
                     ? t("You")
                     : message.user?.name || message.user?.email || t("Guest")}
-                </span>
+                </Span>
               }
               {isTyping && (
-                <div data-testid="typing-indicator" className={styles.dots}>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
+                <Div data-testid="typing-indicator" style={styles.dots.style}>
+                  <Span></Span>
+                  <Span></Span>
+                  <Span></Span>
+                </Div>
               )}
-            </span>
+            </Span>
             {remoteDeleted ? (
-              <div
-                style={{ marginTop: 5 }}
-                className={styles.userMessageContent}
-              >
-                <span>
+              <Div style={{ ...styles.userMessageContent.style, marginTop: 5 }}>
+                <Span>
                   {t(
                     !threadOwner
                       ? "Thread owner deleted this message"
                       : "Message deleted permanently",
                   )}
-                </span>
-              </div>
+                </Span>
+              </Div>
             ) : (
               <>
                 {images?.length ? (
-                  <div
+                  <Div
                     data-testid="user-message-images"
-                    className={styles.userMessageImages}
+                    style={styles.userMessageImages.style}
                   >
                     {images.map((image) => (
                       <Img
@@ -779,15 +789,15 @@ export default function Message({
                         size={200}
                       />
                     ))}
-                  </div>
+                  </Div>
                 ) : null}
                 {audio?.length ? (
-                  <div
+                  <Div
                     data-testid="user-message-audios"
-                    className={styles.userMessageAudio}
+                    style={styles.userMessageAudio.style}
                   >
                     {audio.map((audio) => (
-                      <div data-testid="user-message-audio" key={audio.id}>
+                      <Div data-testid="user-message-audio" key={audio.id}>
                         <AudioPlayer
                           src={audio.url}
                           color="var(--accent-1)"
@@ -798,50 +808,53 @@ export default function Message({
                             padding: "0 20px",
                           }}
                         />
-                      </div>
+                      </Div>
                     ))}
-                  </div>
+                  </Div>
                 ) : null}
                 {video?.length ? (
-                  <div
+                  <Div
                     data-testid="user-message-videos"
-                    className={styles.userMessageVideo}
+                    style={styles.userMessageVideo.style}
                   >
                     {video.map((video) => (
-                      <div data-testid="user-message-video" key={video.id}>
+                      <Div data-testid="user-message-video" key={video.id}>
                         <video controls src={video.url} />
-                      </div>
+                      </Div>
                     ))}
-                  </div>
+                  </Div>
                 ) : null}
                 {files?.length ? (
-                  <div
+                  <Div
                     data-testid="user-message-files"
-                    className={styles.userMessageFiles}
+                    style={styles.userMessageFiles.style}
                   >
                     {files.map((file) => {
                       if (file.type === "pdf") {
                         return (
-                          <a
+                          <A
                             data-testid="user-message-pdf"
                             key={file.id}
                             href={file.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={clsx(
-                              "button inverted",
-                              styles.userMessageFile,
-                            )}
+                            style={{
+                              ...utilities.button.style,
+                              ...utilities.inverted.style,
+                            }}
                           >
                             <FileText size={16} />
                             {file.name}
-                          </a>
+                          </A>
                         )
                       } else {
                         return (
-                          <button
+                          <Button
                             data-testid="user-message-text"
-                            className={clsx("inverted", styles.userMessageFile)}
+                            style={{
+                              ...utilities.button.style,
+                              ...utilities.inverted.style,
+                            }}
                             onClick={() => {
                               addHapticFeedback()
                               setSelectedFile(file)
@@ -849,15 +862,15 @@ export default function Message({
                             key={file.id}
                           >
                             <FileText size={16} /> {file.name}
-                          </button>
+                          </Button>
                         )
                       }
                     })}
-                  </div>
+                  </Div>
                 ) : null}
                 <MarkdownContent
                   data-testid="user-message-content"
-                  className={styles.userMessageContent}
+                  style={styles.userMessageContent.style}
                   content={message.message.content}
                   webSearchResults={
                     message.message.webSearchResult || undefined
@@ -865,30 +878,28 @@ export default function Message({
                 />
               </>
             )}
-            <div className={styles.footer}>
-              <div className={styles.left}>
-                <button
+            <Div style={styles.footer.style}>
+              <Div style={styles.left.style}>
+                <Button
                   onClick={() => copyToClipboard(message.message.content)}
-                  className={clsx(
-                    "link",
-                    styles.copyButton,
-                    copied && styles.copied,
-                  )}
+                  style={{
+                    ...utilities.link.style,
+                  }}
                   title="Copy code"
                 >
                   {copied ? <Check size={18} /> : <Copy size={18} />}
-                </button>
+                </Button>
                 {getDeleteMessage()}
-                <span className={clsx(styles.userMessageTime)}>
+                <Span className={clsx(styles.userMessageTime)}>
                   {timeAgo(message.message.createdOn, language)}
-                </span>
-              </div>
+                </Span>
+              </Div>
               {getLikeButtons()}
-            </div>
-          </div>
+            </Div>
+          </Div>
           {owner && (
-            <span className={clsx(styles.userIcon, styles.tablet)}>
-              <button
+            <Span style={styles.userIconTablet.style}>
+              <Button
                 onClick={() => {
                   if (user) {
                     setIsAccountVisible(true)
@@ -898,11 +909,13 @@ export default function Message({
                   addParams({ subscribe: "true", plan: "member" })
                 }}
                 type="button"
-                className={"link"}
+                style={{
+                  ...utilities.link.style,
+                }}
               >
                 {userImage ? (
                   <Img
-                    className={styles.userImage}
+                    style={styles.userImage.style}
                     src={userImage}
                     size={40}
                     key={userImage}
@@ -916,64 +929,54 @@ export default function Message({
                     size={35}
                   />
                 )}
-              </button>
-            </span>
+              </Button>
+            </Span>
           )}
-        </div>
-      </div>
+        </Div>
+      </Div>
     )
   }
 
   const agent = message.aiAgent
 
   return (
-    <div className={styles.message} data-testid="message">
+    <Div style={styles.message.style} data-testid="message">
       <Modal
         isModalOpen={isAppSelectOpen}
         hasCloseButton={true}
         onToggle={(open) => {
           setIsAppSelectOpen(open)
         }}
-        icon={
-          <video
-            className={styles.video}
-            src={`${FRONTEND_URL}/video/blob.mp4`}
-            autoPlay
-            loop
-            muted
-            playsInline
-          ></video>
-        }
-        title={
-          <div className={styles.updateModalTitle}>
-            {t(isUpdatingApp ? "Updating..." : "Switch agent")}
-          </div>
-        }
+        icon={"blob"}
+        title={<Div>{t(isUpdatingApp ? "Updating..." : "Switch agent")}</Div>}
       >
-        <div className={styles.updateModalDescription}>
+        <Div style={styles.updateModalDescription}>
           {apps?.map((app) => (
-            <div className={styles.updateModalDescriptionItem} key={app.id}>
-              <button
+            <Div style={styles.updateModalDescriptionItem.style} key={app.id}>
+              <Button
                 disabled={isUpdatingApp}
                 onClick={() => handleUpdateAgent(app)}
-                className={clsx("link", styles.updateModalDescriptionButton)}
+                style={{
+                  ...utilities.link.style,
+                  ...styles.updateModalDescriptionButton.style,
+                }}
               >
                 <Img app={app} showLoading={false} size={50} />
-                <div>{app.name}</div>
-              </button>
-              <span>
-                <span>{app.description}</span>
-              </span>
-            </div>
+                <Div>{app.name}</Div>
+              </Button>
+              <Div>
+                <Div>{app.description}</Div>
+              </Div>
+            </Div>
           ))}
-        </div>
+        </Div>
       </Modal>
-      <div
+      <Div
         data-testid="agent-message"
-        className={styles.messageContainer}
+        style={styles.messageContainer.style}
         key={message.message.id}
       >
-        <span className={clsx(styles.agentIcon, styles.mobile)}>
+        <Span style={styles.agentIcon.style}>
           {agent && message.message.debateAgentId ? (
             <>
               {agent.name === "deepSeek" ? (
@@ -993,11 +996,11 @@ export default function Message({
           ) : (
             <Img app={app} showLoading={false} size={35} />
           )}
-          <span className={clsx(styles.agentMessageTime)}>
+          <Span style={styles.agentMessageTime.style}>
             {timeAgo(message.message.createdOn, language)}
-          </span>
-        </span>
-        <button
+          </Span>
+        </Span>
+        <Button
           aria-label={t("Switch from {{slug}} to another agent", {
             slug,
           })}
@@ -1011,7 +1014,11 @@ export default function Message({
 
             setIsAppSelectOpen(true)
           }}
-          className={clsx("link", styles.agentIcon, styles.tablet)}
+          style={{
+            ...utilities.link.style,
+            ...styles.agentIcon.style,
+            ...styles.agentIconTablet.style,
+          }}
         >
           {agent && message.message.debateAgentId ? (
             <>
@@ -1030,58 +1037,57 @@ export default function Message({
               ) : null}
             </>
           ) : (
-            <span className={styles.appIcon}>
+            <Span style={styles.appIcon.style}>
               <Img app={app} showLoading={false} size={35} />
-              <span>{app?.name || "Vex"}</span>
-            </span>
+              <Span>{app?.name || "Vex"}</Span>
+            </Span>
           )}
-        </button>
+        </Button>
         {message.message.isStreaming &&
         message.message.content.trim() === "" ? (
-          <div className={styles.thinking}>
+          <Div style={styles.thinking.style}>
             <Img
               src={`${FRONTEND_URL}/${evenChance ? "frog" : "hamster"}.png`}
               width={21}
               height={21}
             />
-            <span>
+            <Span>
               {t(
                 message.message.isImageGenerationEnabled
                   ? "Processing"
                   : "Thinking",
               )}
-            </span>
-            <div data-testid="typing-indicator" className={styles.dots}>
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </div>
+            </Span>
+            <Div data-testid="typing-indicator" style={styles.dots.style}>
+              <Span></Span>
+              <Span></Span>
+              <Span></Span>
+            </Div>
+          </Div>
         ) : (
-          <div className={clsx(styles.agentMessage, os && styles[os])}>
-            <div className={styles.agentMessageContent}>
+          <Div style={styles.agentMessage.style}>
+            <Div style={styles.agentMessageContent.style}>
               {message.message.isStreaming &&
               message.message.isImageGenerationEnabled ? (
-                <div className={styles.agentMessageImages}>
-                  <div className={styles.placeholder}>
+                <Div style={styles.agentMessageImages.style}>
+                  <Div style={styles.placeholder.style}>
                     <Loading />
-                  </div>
-                </div>
+                  </Div>
+                </Div>
               ) : message.message.images &&
                 message.message.images?.length > 0 ? (
-                <div className={styles.agentMessageImages}>
+                <Div style={styles.agentMessageImages.style}>
                   {message.message.images.map((image) => (
-                    <div key={image.url} className={styles.imageContainer}>
+                    <Div key={image.url} style={styles.imageContainer.style}>
                       <Img
-                        containerClass={styles.agentMessageImageContainer}
-                        className={styles.agentMessageImage}
+                        style={styles.agentMessageImageContainer.style}
                         src={image.url}
                         alt=""
                         width={"100%"}
                         height={"100%"}
                       />
-                      <button
-                        className={styles.downloadButton}
+                      <Button
+                        style={styles.downloadButton.style}
                         onClick={() =>
                           downloadImage(
                             image.url,
@@ -1091,17 +1097,17 @@ export default function Message({
                         title={t("Download image")}
                       >
                         <Download size={16} />
-                      </button>
-                    </div>
+                      </Button>
+                    </Div>
                   ))}
-                </div>
+                </Div>
               ) : null}
               {message.message.content === "🐹 Done!" ? (
-                <div
+                <Div
                   style={{ display: "flex", alignItems: "center", gap: "2rem" }}
                 >
-                  <span>{t("🐹 Done!")}</span>
-                </div>
+                  <Span>{t("🐹 Done!")}</Span>
+                </Div>
               ) : (
                 <MarkdownContent
                   content={message.message.content}
@@ -1110,70 +1116,55 @@ export default function Message({
                   }
                 />
               )}
-            </div>
+            </Div>
             {isSearchStart ||
             (message.message.isStreaming &&
               message.message.isWebSearchEnabled) ? (
-              <div className={styles.agentWebStreaming}>
+              <Div style={styles.agentWebStreaming.style}>
                 <Loading width={16} height={16} />{" "}
                 <GlobeIcon color="var(--accent-1)" size={16} />{" "}
                 {t("Analyzing...")}
-              </div>
+              </Div>
             ) : (
               webSearchResult.length > 0 && (
-                <div
+                <Div
                   data-testid="web-search-results"
-                  className={styles.webSearchResults}
+                  style={styles.webSearchResults.style}
                 >
                   {webSearchResult.map((result) => (
-                    <div
-                      data-testid="web-search-result"
-                      key={result.url}
-                      className={styles.webSearchResult}
-                    >
-                      <a
-                        onClick={(e) => {
-                          addHapticFeedback()
-                          if (checkIsExtension()) {
-                            e.preventDefault()
-                            BrowserInstance?.runtime?.sendMessage({
-                              action: "openInSameTab",
-                              url: result.url,
-                            })
-                          }
-                        }}
-                        className={styles.webSearchResultTitle}
+                    <Div data-testid="web-search-result" key={result.url}>
+                      <A
+                        openInNewTab
+                        style={styles.webSearchResultTitle.style}
                         href={result.url}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         <GlobeIcon size={18} />
                         {result.title}
-                      </a>
-                      <p className={styles.webSearchResultSnippet}>
+                      </A>
+                      <Span style={styles.webSearchResultSnippet.style}>
                         {result.snippet}
-                      </p>
-                    </div>
+                      </Span>
+                    </Div>
                   ))}
-                </div>
+                </Div>
               )
             )}
-            <div className={styles.footer}>
-              <div className={styles.left}>
-                <button
+            <Div style={styles.footer.style}>
+              <Div style={styles.left.style}>
+                <Button
                   onClick={() => copyToClipboard(message.message.content)}
-                  className={clsx(
-                    "link",
-                    styles.copyButton,
-                    copied && styles.copied,
-                  )}
+                  style={{
+                    ...utilities.link.style,
+                  }}
                   title="Copy code"
                 >
                   {copied ? <Check size={18} /> : <Copy size={18} />}
-                </button>
+                </Button>
 
                 {!message.message.debateAgentId && (
-                  <span className={styles.agent} title={agent?.displayName}>
+                  <Span style={styles.agent.style} title={agent?.displayName}>
                     {agent?.name === "deepSeek" ? (
                       <DeepSeek color="var(--accent-6)" size={19} />
                     ) : agent?.name === "chatGPT" ? (
@@ -1187,25 +1178,26 @@ export default function Message({
                     ) : agent?.name === "perplexity" ? (
                       <Perplexity color="var(--accent-6)" size={19} />
                     ) : null}
-                  </span>
+                  </Span>
                 )}
                 {getDeleteMessage()}
 
-                <span className={clsx(styles.agentMessageTime)}>
+                <Span style={styles.agentMessageTime.style}>
                   {timeAgo(message.message.createdOn, language)}
-                </span>
-              </div>
+                </Span>
+              </Div>
 
               {getLikeButtons()}
 
-              <button
+              <Button
+                disabled={isSpeechLoading}
                 style={{
+                  ...utilities.link.style,
+                  ...styles.playButton.style,
                   color: message.message.images?.length
                     ? "var(--accent-1)"
                     : undefined,
                 }}
-                disabled={isSpeechLoading}
-                className={clsx("link", styles.playButton)}
                 onClick={() => {
                   addHapticFeedback()
                   if (requiresLogin) {
@@ -1240,7 +1232,7 @@ export default function Message({
                 ) : message.message.images?.length ? (
                   <>
                     <Sparkles
-                      className={styles.sparklesButton}
+                      style={styles.sparklesButton.style}
                       fill="var(--accent-1)"
                       size={18}
                     />
@@ -1249,11 +1241,11 @@ export default function Message({
                 ) : (
                   <Play size={18} />
                 )}
-              </button>
-            </div>
-          </div>
+              </Button>
+            </Div>
+          </Div>
         )}
-      </div>
-    </div>
+      </Div>
+    </Div>
   )
 }

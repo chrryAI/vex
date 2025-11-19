@@ -23,6 +23,13 @@ export const MoodReportsStyleDefs = {
     marginBottom: 15,
     alignItems: "center",
   },
+  close: {
+    marginLeft: "auto",
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    fontSize: 13,
+  },
   toggleDemo: {
     fontSize: 12,
   },
@@ -60,6 +67,9 @@ export const MoodReportsStyleDefs = {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 10,
+  },
+  next: {
+    display: "inline-flex",
   },
   previous: {
     display: "inline-flex",
