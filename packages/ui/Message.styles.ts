@@ -15,14 +15,6 @@ export const MessageStyleDefs = {
     borderRadius: "50%",
     backgroundColor: "black",
   },
-  userMessage: {
-    display: "none",
-    flexDirection: "column",
-    padding: 10,
-    width: "auto",
-    fontSize: 15,
-    minWidth: 200,
-  },
   updateModalDescription: {
     display: "flex",
     flexDirection: "row",
@@ -57,14 +49,6 @@ export const MessageStyleDefs = {
   },
   sparklesButton: {
     color: "var(--accent-1)",
-  },
-  agentMessage: {
-    display: "none",
-    flexDirection: "column",
-    padding: 10,
-    width: "auto",
-    fontSize: 15,
-    minWidth: 200,
   },
   userMessageFiles: {
     margin: "8px 0 5px 0",
@@ -101,6 +85,27 @@ export const MessageStyleDefs = {
     display: "flex",
     flexDirection: "column",
     gap: 5,
+  },
+  userMessageTime: {
+    fontSize: 12,
+    color: "var(--shade-6)",
+  },
+  agentMessage: {
+    alignSelf: "flex-start",
+    borderRadius: 15,
+    border: "1px solid var(--shade-2)",
+    boxShadow: 5,
+    width: "100%",
+  },
+  userMessage: {
+    backgroundColor: "var(--shade-1)",
+    border: "1px solid var(--shade-2)",
+    borderRadius: "var(--radius)",
+    padding: 10,
+    position: "relative",
+    width: "100%",
+    boxShadow: 5,
+    alignSelf: "flex-end",
   },
   userImage: {
     borderRadius: "50%",
@@ -193,10 +198,6 @@ export const MessageStyleDefs = {
     gap: 8,
     alignItems: "flex-start",
     flexDirection: "column",
-  },
-  userMessageTime: {
-    fontSize: 12,
-    color: "var(--shade-6)",
   },
   userMessageTimeUserMessageTime: {
     alignSelf: "center",

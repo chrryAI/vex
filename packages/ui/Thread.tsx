@@ -39,6 +39,7 @@ import Img from "./Img"
 import { useAppMetadata, useHasHydrated, useThreadMetadata } from "./hooks"
 import { lazy, Suspense } from "react"
 import { useStyles } from "./context/StylesContext"
+import { BREAKPOINTS } from "./styles/breakpoints"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
@@ -126,7 +127,7 @@ const Thread = ({
 
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const { addHapticFeedback, isDrawerOpen } = useTheme()
+  const { addHapticFeedback, isDrawerOpen, isSmallDevice } = useTheme()
 
   // Update thread metadata dynamically
   useThreadMetadata(thread)
@@ -236,7 +237,10 @@ const Thread = ({
         data-testid={id ? "thread" : isHome ? "home" : undefined}
         style={{
           ...styles.thread.style,
-          ...(isEmpty && styles.threadEmpty.style),
+          ...(isEmpty && hasHydrated && styles.threadEmpty.style),
+          ...{
+            maxWidth: BREAKPOINTS.tablet,
+          },
         }}
       >
         {!isVisitor && (
