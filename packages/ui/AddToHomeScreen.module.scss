@@ -13,6 +13,7 @@
   z-index: 1001;
   position: fixed;
   background: var(--overlay);
+  padding: toRem.toRem(10);
 
   .main {
     margin: 0 auto;
@@ -69,51 +70,6 @@
         width: fit-content;
       }
 
-      .content {
-        .icon {
-          width: 24px;
-          height: 24px;
-        }
-        > p {
-          margin: 0 0 10px 0;
-          display: flex;
-          gap: 10px;
-          align-items: center;
-        }
-        > div {
-          margin: 0 0 10px 0;
-        }
-        .addHomeScreen,
-        .addHomeScreenAndroid,
-        .share {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-          border: 1px solid var(--shade-2);
-          background-color: var(--background);
-          margin-top: 10px;
-          border-radius: 10px;
-          width: fit-content;
-          padding: 5px 8px;
-        }
-
-        .addHomeScreenAndroid {
-          margin-top: 0;
-        }
-
-        .selectAddToHomeScreen {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-        }
-        .quickAccess {
-          font-size: 14px;
-        }
-        .scrollDown {
-          font-weight: bold;
-        }
-      }
-
       @include utils.respect-reduced-motion;
     }
   }
@@ -122,5 +78,54 @@
     font-size: 20px;
     font-weight: bold;
     margin: 0 0 10px 0;
+  }
+}
+
+.innerContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  .icon {
+    width: 24px;
+    height: 24px;
+  }
+  > p {
+    margin: 0 0 10px 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  > div {
+    margin: 0 0 10px 0;
+  }
+  .addHomeScreen,
+  .addHomeScreenAndroid,
+  .share {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border: 1px solid var(--shade-2);
+    background-color: var(--background);
+    margin-top: 10px;
+    border-radius: 10px;
+    width: fit-content;
+    padding: 5px 8px;
+  }
+
+  .addHomeScreenAndroid {
+    margin-top: 0;
+  }
+
+  .selectAddToHomeScreen {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .quickAccess {
+    font-size: 14px;
+  }
+  .scrollDown {
+    font-weight: bold;
   }
 }

@@ -58,7 +58,9 @@ export default function AddToHomeScreen(): React.ReactPortal | null {
           <Div style={styles.logoContainer.style}>
             <Img app={app} size={80} />
           </Div>
-          <Div style={styles.content.style}>
+          <Div
+            style={{ ...styles.innerContent.style, alignItems: "flex-start" }}
+          >
             <H2 style={styles.title.style}>{t("For a better experience")}</H2>
             {os === "android" ? (
               <>

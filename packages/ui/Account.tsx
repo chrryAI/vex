@@ -246,7 +246,11 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
     <>
       <Button
         data-testid="account-button"
-        style={{ ...style }}
+        style={{
+          ...utilities.transparent.style,
+          ...utilities.small.style,
+          ...style,
+        }}
         onClick={() => {
           addHapticFeedback()
           setIsModalOpen(true)
