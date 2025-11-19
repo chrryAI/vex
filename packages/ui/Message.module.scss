@@ -15,28 +15,6 @@
   object-fit: cover;
 }
 
-.userMessage {
-  background-color: var(--shade-1);
-  border: toRem.toRem(1) solid var(--shade-2);
-
-  border-radius: var(--radius);
-  padding: toRem.toRem(10);
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-  overflow-wrap: break-word;
-  box-shadow: 0 0 toRem.toRem(5) var(--shade-2);
-
-  &:not(.android) {
-    animation: slideUp 0.4s ease forwards;
-    @include utils.respect-reduced-motion;
-  }
-
-  &.owner {
-    align-self: flex-end;
-  }
-}
-
 .updateModalDescription {
   display: flex;
   flex-direction: row;
@@ -85,21 +63,6 @@
   color: var(--accent-1);
   animation: pulse 1s ease-in-out;
   @include utils.respect-reduced-motion;
-}
-
-.agentMessage {
-  background-color: var(--shade-1);
-  align-self: flex-start;
-  border-radius: toRem.toRem(15);
-  border: toRem.toRem(1) solid var(--shade-2);
-  box-shadow: 0 0 toRem.toRem(5) var(--shade-2);
-  width: 100%;
-  box-sizing: border-box;
-  overflow-wrap: break-word;
-  &:not(.android) {
-    animation: slideUp 0.4s ease forwards;
-    @include utils.respect-reduced-motion;
-  }
 }
 
 .userMessageFiles {
@@ -165,6 +128,42 @@
 
     @media (min-width: breakpoints.$breakpoint-mobile) {
       display: flex;
+    }
+  }
+
+  &.agentMessage {
+    align-self: flex-start;
+    border-radius: toRem.toRem(15);
+    border: toRem.toRem(1) solid var(--shade-2);
+    box-shadow: 0 0 toRem.toRem(5) var(--shade-2);
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    &:not(.android) {
+      animation: slideUp 0.4s ease forwards;
+      @include utils.respect-reduced-motion;
+    }
+  }
+
+  &.userMessage {
+    background-color: var(--shade-1);
+    border: toRem.toRem(1) solid var(--shade-2);
+
+    border-radius: var(--radius);
+    padding: toRem.toRem(10);
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    box-shadow: 0 0 toRem.toRem(5) var(--shade-2);
+
+    &:not(.android) {
+      animation: slideUp 0.4s ease forwards;
+      @include utils.respect-reduced-motion;
+    }
+
+    &.owner {
+      align-self: flex-end;
     }
   }
 }

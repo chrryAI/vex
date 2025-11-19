@@ -730,7 +730,12 @@ export default function Message({
               </button>
             </Span>
           )}
-          <Div className={clsx(styles.userMessage, owner && styles.owner)}>
+          <Div
+            style={{
+              ...styles.userMessage.style,
+              ...(owner && styles.owner.style),
+            }}
+          >
             <Span style={styles.name.style}>
               <Div
                 className={clsx(
