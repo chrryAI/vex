@@ -594,7 +594,7 @@ export default function Subscribe({
           <li className={clsx(styles.feature, "feature")}>
             <A href={"mailto:iliyan@chrry.ai"} className={"link"}>
               <Img logo="isVivid" icon="heart" width={16} height={16} />
-              {t("Need a white label like Vex? ")}&#8594; iliyan@chrry.ai
+              {t("Need a white label like Vex?")}
             </A>
           </li>
           {(selectedPlan === "plus"
