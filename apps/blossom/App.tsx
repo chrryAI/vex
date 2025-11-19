@@ -38,10 +38,8 @@ function App(): React.JSX.Element {
         backgroundColor={backgroundStyle.backgroundColor}
       />
       <View style={styles.container}>
-        <Text >Blossom App</Text>
-        <Text >
-          Runtime Error Fixed! 🌸
-        </Text>
+        <Text>Blossom App</Text>
+        <Text>Runtime Error Fixed! 🌸</Text>
       </View>
     </SafeAreaView>
   );
