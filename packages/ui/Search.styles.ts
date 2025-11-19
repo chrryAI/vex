@@ -29,8 +29,8 @@ export const SearchStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "chrry/styles/createUnifiedStyles"
-import { createStyleHook } from "chrry/styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
+import { createStyleHook } from "./styles/createStyleHook"
 
 export const SearchStyles = createUnifiedStyles(SearchStyleDefs)
 

@@ -61,7 +61,7 @@ setTimeout(() => (overlay.style.opacity = "0"), 75)
 ### Basic Theme Switch
 
 ```typescript
-import { applyThemeToDOM, darkTheme, lightTheme } from "chrry/styles/theme"
+import { applyThemeToDOM, darkTheme, lightTheme } from "./styles/theme"
 
 // With transition (works in all browsers)
 applyThemeToDOM(darkTheme, true)
@@ -73,7 +73,7 @@ applyThemeToDOM(darkTheme, false)
 ### App Branding
 
 ```typescript
-import { createBrandTheme, useTheme, applyThemeToDOM } from "chrry/styles/theme"
+import { createBrandTheme, useTheme, applyThemeToDOM } from "./styles/theme"
 
 const baseTheme = useTheme()
 const atlasTheme = createBrandTheme(baseTheme, "#00A6FF")
@@ -85,7 +85,7 @@ applyThemeToDOM(atlasTheme, true)
 ### System Theme Sync
 
 ```typescript
-import { subscribeToThemeChanges, applyThemeToDOM } from "chrry/styles/theme"
+import { subscribeToThemeChanges, applyThemeToDOM } from "./styles/theme"
 
 const cleanup = subscribeToThemeChanges((theme) => {
   applyThemeToDOM(theme, true) // Smooth transition

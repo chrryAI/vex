@@ -2,15 +2,14 @@
 
 import clsx from "clsx"
 import styles from "./Skeleton.module.scss"
-import Menu from "chrry/Menu"
-import SignIn from "chrry/SignIn"
-import Subscribe from "chrry/Subscribe"
-import { useAppContext } from "chrry/context/AppContext"
+import Menu from "./Menu"
+import SignIn from "./SignIn"
+import Subscribe from "./Subscribe"
+import { useAppContext } from "./context/AppContext"
 import { CircleEllipsis, NotebookPen } from "./icons"
-import { useHasHydrated } from "chrry/hooks"
-import Loading from "chrry/Loading"
+import { useHasHydrated } from '../ui/hooks'
 import LanguageSwitcher from "./LanguageSwitcher"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import Img from "./Image"
 import CharacterProfiles from "./CharacterProfiles"
 import {
@@ -18,8 +17,6 @@ import {
   Div,
   H1,
   Main,
-  useLocalStorage,
-  useNavigation,
   usePreviousPathname,
   usePlatform,
   VexToast,

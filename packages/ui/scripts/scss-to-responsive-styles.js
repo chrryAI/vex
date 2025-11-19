@@ -152,8 +152,8 @@ export const StyleDefs = {\n`
   }
   
   output += `} as const\n\n`
-  output += `import { createUnifiedStyles } from "chrry/styles/createUnifiedStyles"\n`
-  output += `import { createStyleHook } from "chrry/styles/createStyleHook"\n\n`
+  output += `import { createUnifiedStyles } from "./styles/createUnifiedStyles"\n`
+  output += `import { createStyleHook } from "./styles/createStyleHook"\n\n`
   output += `export const Styles = createUnifiedStyles(StyleDefs)\n\n`
   output += `type StylesHook = {\n`
   output += `  [K in keyof typeof StyleDefs]: {\n`

@@ -26,7 +26,7 @@ import { COLORS, useTheme } from "../ThemeContext"
 import { useData } from "./DataProvider"
 import { instructionBase } from "../../utils/getExampleInstructions"
 import { session, Paginated, storeWithApps } from "../../types"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { getSiteConfig } from "../../utils/siteConfig"
 
 export { COLORS } from "../ThemeContext"
 

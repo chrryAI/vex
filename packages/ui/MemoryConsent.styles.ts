@@ -39,8 +39,8 @@ export const MemoryConsentStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "chrry/styles/createUnifiedStyles"
-import { createStyleHook } from "chrry/styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles"
+import { createStyleHook } from "./styles/createStyleHook"
 
 export const MemoryConsentStyles = createUnifiedStyles(MemoryConsentStyleDefs)
 

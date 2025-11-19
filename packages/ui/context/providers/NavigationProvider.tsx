@@ -20,7 +20,7 @@ import { useAuth } from "./AuthProvider"
 
 import { thread, session } from "../../types"
 import { t } from "i18next"
-import { defaultLocale } from "chrry/locales"
+import { defaultLocale } from "../../locales"
 
 const NavigationContext = createContext<
   | {

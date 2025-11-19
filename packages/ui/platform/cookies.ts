@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
 import { storage } from "./storage"
-import { getExtensionUrls } from "chrry/utils/siteConfig"
+import { getExtensionUrls } from  '../utils/siteConfig'
 import { validate } from "uuid"
 
 // Cookie options
