@@ -83,7 +83,7 @@ export default function About() {
   } = usePlatform()
 
   const { router } = useNavigationContext()
-  const { isDrawerOpen, addHapticFeedback } = useTheme()
+  const { isDrawerOpen, addHapticFeedback, isMobileDevice } = useTheme()
 
   const { captureException } = useError()
 
@@ -119,8 +119,11 @@ export default function About() {
           padding: "0 0px 20px 0px",
         }}
       >
-        <H1 style={{ marginTop: 0 }}>
-          <Button onClick={() => router.push("/")}>
+        <H1 style={{ display: "flex", gap: 5, marginTop: 0 }}>
+          <Button
+            style={{ ...utilities.link.style }}
+            onClick={() => router.push("/")}
+          >
             <CircleArrowLeft color="var(--accent-1)" size={24} />
           </Button>
           <Span
@@ -230,7 +233,15 @@ export default function About() {
                   style={styles.app.style}
                   onClick={() => setApp(app)}
                 >
-                  <H4>
+                  <H4
+                    style={{
+                      display: "flex",
+                      gap: 5,
+                      alignItems: "center",
+                      margin: 0,
+                      padding: 0,
+                    }}
+                  >
                     <span style={{ fontSize: 30 }}>
                       {<Img app={app} size={30} />}
                     </span>
@@ -263,8 +274,8 @@ export default function About() {
 
         <H2 style={{ fontSize: 28 }}>{t("All Plans")}</H2>
         <Section>
-          <H2>
-            <Logo size={24} /> {config.name} {t("Free")}
+          <H2 style={styles.h2.style}>
+            <Logo size={24} /> {t("Free")}
             {!user && (
               <Button
                 style={{
@@ -297,8 +308,8 @@ export default function About() {
         </Section>
 
         <Section>
-          <H2>
-            <Img size={24} icon="chrry" /> {config.name} {t("Credits")}
+          <H2 style={styles.h2.style}>
+            <Img size={24} icon="chrry" /> {t("Credits")}
             <Button
               onClick={() => {
                 if (checkIsExtension()) {
@@ -332,8 +343,8 @@ export default function About() {
         </Section>
 
         <Section>
-          <H2>
-            <Img size={24} icon="strawberry" /> {config.name} {t("Plus")}
+          <H2 style={styles.h2.style}>
+            <Img size={24} icon="strawberry" /> {t("Plus")}
             <Span
               title={t("Most popular")}
               style={{
@@ -378,8 +389,8 @@ export default function About() {
         </Section>
 
         <Section>
-          <H2>
-            <Img size={24} icon="raspberry" /> {config.name} {t("Pro")}
+          <H2 style={styles.h2.style}>
+            <Img size={24} icon="raspberry" /> {t("Pro")}
             <Button
               onClick={() => {
                 if (checkIsExtension()) {
@@ -469,9 +480,21 @@ export default function About() {
           <p>{t("about.team.content")}</p>
         </section> */}
 
-        <Div style={styles.ossWrapper.style}>
+        <Div
+          style={{
+            ...styles.ossWrapper.style,
+          }}
+        >
           <H2>{t("Open Source")}</H2>
-          <Div style={{ ...styles.ossContainer.style, marginBottom: "1.5rem" }}>
+          <Div
+            style={{
+              ...styles.ossContainer.style,
+              marginBottom: "1.5rem",
+              ...(isMobileDevice
+                ? undefined
+                : styles.ossContainerDesktop.style),
+            }}
+          >
             <Div style={styles.oss.style}>
               <SiTypescript style={{ width: 40, height: 40 }} />
               <A
@@ -518,7 +541,14 @@ export default function About() {
             </Div>
           </Div>
 
-          <Div style={styles.ossContainer.style}>
+          <Div
+            style={{
+              ...styles.ossContainer.style,
+              ...(isMobileDevice
+                ? undefined
+                : styles.ossContainerDesktop.style),
+            }}
+          >
             <Div style={styles.oss.style}>
               <SiJest style={{ width: 40, height: 40 }} />
               <A
@@ -556,7 +586,15 @@ export default function About() {
         </Div>
         <Div style={styles.ossWrapper.style}>
           <H2>{t("Team")}</H2>
-          <Div style={{ ...styles.ossContainer.style, marginBottom: "1.5rem" }}>
+          <Div
+            style={{
+              ...styles.ossContainer.style,
+              marginBottom: "1.5rem",
+              ...(isMobileDevice
+                ? undefined
+                : styles.ossContainerDesktop.style),
+            }}
+          >
             <Div style={styles.oss.style}>
               <Img icon="spaceInvader" size={40} />
               <A

@@ -52,9 +52,7 @@ export default function Version() {
               playsInline
             />
           }
-          title={
-            <Div style={styles.updateModalTitle.style}>{t("Thinking")}...</Div>
-          }
+          title={<Div>{t("Thinking")}...</Div>}
         >
           <Div style={styles.updateModalDescription.style}>
             <Img src={`${FRONTEND_URL}/hamster.png`} width={24} height={24} />
@@ -72,8 +70,6 @@ export default function Version() {
               <Button
                 style={{
                   ...utilities.small.style,
-                  ...styles.installAppButton.style,
-                  ...(isStandalone ? styles.standalone.style : {}),
                 }}
                 onClick={() => {
                   setShowAddToHomeScreen(true)
@@ -109,7 +105,6 @@ export default function Version() {
                 style={{
                   ...utilities.button.style,
                   ...utilities.small.style,
-                  ...styles.installButton.style,
                 }}
               >
                 <FaChrome size={18} />
@@ -122,7 +117,6 @@ export default function Version() {
                 style={{
                   ...utilities.button.style,
                   ...utilities.small.style,
-                  ...styles.installButton.style,
                 }}
               >
                 <FaFirefox size={18} />
