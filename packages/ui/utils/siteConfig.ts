@@ -609,7 +609,7 @@ export function getSiteTranslation(
 }
 
 export function detectSiteModeDomain(hostname?: string): SiteMode {
-  const defaultMode = "focus"
+  const defaultMode = "vex"
   // const defaultMode = "amsterdam"
 
   // Get hostname from parameter or window (client-side)

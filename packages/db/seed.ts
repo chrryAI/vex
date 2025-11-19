@@ -395,7 +395,7 @@ const create = async () => {
 
   for (const adminUser of [admin]) {
     const foo = true || process.env.TESTING_ENV === "e2e"
-    if (foo) return
+    // if (foo) return
 
     // Pool of user prompts and AI responses
     const prompts = [

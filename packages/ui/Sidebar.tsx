@@ -179,10 +179,6 @@ export const Hey = memo(
             ...splashStyle.style,
             ...(!isSplash ? hiddenStyle.style : {}),
           }}
-          className={clsx(
-            splashStyle.className,
-            !isSplash && hiddenStyle.className,
-          )}
         >
           <Img
             onLoad={(src) => {

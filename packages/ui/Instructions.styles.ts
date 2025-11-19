@@ -59,7 +59,7 @@ export const InstructionsStyleDefs = {
     justifyContent: "center",
     alignItems: "center",
     gap: 10,
-    marginTop: 10,
+    margin: "10px 0 20px 0",
   },
   tip: {
     color: "var(--shade-8)",
@@ -128,7 +128,6 @@ export const InstructionsStyleDefs = {
   installAppButton: {},
   installButton: {},
   instruction: {
-    display: "none",
     alignItems: "center",
     gap: 5,
     color: "var(--shade-7)",

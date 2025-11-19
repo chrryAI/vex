@@ -71,7 +71,7 @@
   justify-content: center;
   align-items: center;
   gap: toRem.toRem(10);
-  margin-top: toRem.toRem(10);
+  margin: toRem.toRem(10) 0 toRem.toRem(20) 0;
 }
 
 .tip {
@@ -151,7 +151,6 @@
 }
 
 .instruction {
-  display: none;
   align-items: center;
   gap: toRem.toRem(5);
   color: var(--shade-7) !important;
@@ -159,31 +158,9 @@
   text-align: center !important;
   max-width: 100%;
 
-  &:nth-child(1),
-  &:nth-child(2),
-  &:nth-child(3) {
-    @media (min-height: toRem.toRem(550)) {
-      display: flex;
-    }
-  }
-
-  &:nth-child(4) {
-    @media (min-height: toRem.toRem(650)) {
-      display: flex;
-    }
-  }
-
   &.selected {
     color: var(--accent-6);
   }
-
-  // &.standalone {
-  //   @media (min-height: breakpoints.$breakpoint-mobile) {
-  //     &:nth-child(5) {
-  //       display: flex;
-  //     }
-  //   }
-  // }
 
   @media (min-height: toRem.toRem(750)) {
     @media all and (display-mode: standalone) {
