@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { Palette, Clock } from "./icons"
 import styles from "./QuotaDisplay.module.scss"
 import { useAuth } from "./context/providers"
-import { apiFetch } from "chrry/utils"
+import { apiFetch } from "./utils"
 
 interface QuotaInfo {
   images?: {

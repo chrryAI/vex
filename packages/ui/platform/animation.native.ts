@@ -13,7 +13,8 @@ export const MotiImage = animated(Image)
 export const MotiScrollView = animated(ScrollView)
 
 // Mock AnimatePresence for now (react-spring doesn't have a direct equivalent in the same way)
-export const AnimatePresence = ({ children }: { children: React.ReactNode }) => children
+export const AnimatePresence = ({ children }: { children: React.ReactNode }) =>
+  children
 
 /**
  * Animate function (compatible with motion API)

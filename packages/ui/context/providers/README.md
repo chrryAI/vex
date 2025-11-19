@@ -9,7 +9,7 @@
 ### Basic Setup
 
 ```tsx
-import { DataProvider } from "chrry/context/providers"
+import { DataProvider } from "./context/providers"
 
 function App() {
   const [token, setToken] = useState<string | null>(null)
@@ -31,7 +31,7 @@ function App() {
 ### With Authentication Flow
 
 ```tsx
-import { DataProvider } from "chrry/context/providers"
+import { DataProvider } from "./context/providers"
 
 function App() {
   const [token, setToken] = useState<string | null>(null)
@@ -66,7 +66,7 @@ function App() {
 ### Accessing Context
 
 ```tsx
-import { useData } from "chrry/context/providers"
+import { useData } from "./context/providers"
 
 function MyComponent() {
   const {
@@ -257,7 +257,7 @@ function Example() {
 ## 🎨 Complete Example
 
 ```tsx
-import { DataProvider, useData } from "chrry/context/providers"
+import { DataProvider, useData } from "./context/providers"
 import { useState, useEffect } from "react"
 
 // Root App Component

@@ -1,6 +1,6 @@
 "use client"
 
-import { apiFetch } from "chrry/utils"
+import { apiFetch } from "../utils"
 import { useState, useEffect } from "react"
 
 export function useOnlineStatus() {

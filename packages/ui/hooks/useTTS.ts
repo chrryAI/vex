@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react"
 import { useAuth, useError } from "../context/providers"
-import { apiFetch } from "chrry/utils"
+import { apiFetch } from "../utils"
 
 interface TTSResponse {
   audio?: string

@@ -1,6 +1,6 @@
 import React from "react"
 import AppProviders from "./context/providers"
-import { session, thread, paginatedMessages } from "chrry/types"
+import { session, thread, paginatedMessages } from "./types"
 import { locale } from "./locales"
 
 export default function Chrry({

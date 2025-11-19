@@ -1,5 +1,5 @@
-import "chrry/globals.scss"
-import "chrry/globals.css"
+import "./globals.scss"
+import "./globals.css"
 import "./styles/view-transitions.css"
 
 import type { ReactElement, ReactNode } from "react"

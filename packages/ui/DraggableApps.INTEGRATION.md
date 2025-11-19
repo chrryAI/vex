@@ -176,10 +176,10 @@ function MyApps() {
 
 ```tsx
 import { useState, useCallback } from "react"
-import { DraggableAppList } from "chrry/DraggableAppList"
-import { DraggableAppItem } from "chrry/DraggableAppItem"
-import { useAppReorder } from "chrry/hooks/useAppReorder"
-import { useAppContext } from "chrry/context/AppContext"
+import { DraggableAppList } from "./DraggableAppList"
+import { DraggableAppItem } from "./DraggableAppItem"
+import { useAppReorder } from "./hooks/useAppReorder"
+import { useAppContext } from "./context/AppContext"
 
 export default function App() {
   const { apps: initialApps } = useAppContext()
