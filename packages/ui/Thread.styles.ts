@@ -8,7 +8,10 @@
 export const ThreadStyleDefs = {
   thread: {
     maxWidth: 600,
-    margin: "5px auto 0 auto",
+    marginTop: 5,
+    marginRight: "auto",
+    marginBottom: 0,
+    marginLeft: "auto",
     display: "flex",
     flexDirection: "column",
     gap: 10,
