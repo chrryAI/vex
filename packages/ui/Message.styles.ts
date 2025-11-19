@@ -244,10 +244,6 @@ export const MessageStyleDefs = {
   userIconAgentIcon: {
     color: "var(--accent-6)",
   },
-  userIconTablet: {
-    display: "none",
-    alignSelf: "flex-start",
-  },
   userIconMobile: {
     display: "flex",
   },
@@ -259,10 +255,6 @@ export const MessageStyleDefs = {
   },
   agentIconAgentIcon: {
     color: "var(--accent-6)",
-  },
-  agentIconTablet: {
-    display: "none",
-    alignSelf: "flex-start",
   },
   agentIconMobile: {
     display: "flex",

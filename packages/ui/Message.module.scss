@@ -320,10 +320,10 @@
     align-self: flex-end;
   }
 
-  &.tablet {
-    display: none;
-    align-self: flex-start;
-  }
+  // &.tablet {
+  //   display: none;
+  //   align-self: flex-start;
+  // }
 
   &.mobile {
     display: flex;
@@ -334,14 +334,14 @@
     }
   }
 
-  @media (min-width: breakpoints.$breakpoint-mobile) {
-    &.mobile {
-      display: none;
-    }
-    &.tablet {
-      display: flex;
-    }
-  }
+  // @media (min-width: breakpoints.$breakpoint-mobile) {
+  //   &.mobile {
+  //     display: none;
+  //   }
+  //   &.tablet {
+  //     display: flex;
+  //   }
+  // }
 }
 
 .webSearchResults {

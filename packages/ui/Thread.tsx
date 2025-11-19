@@ -239,7 +239,9 @@ const Thread = ({
           ...styles.thread.style,
           ...(isEmpty && hasHydrated && styles.threadEmpty.style),
           ...{
-            maxWidth: BREAKPOINTS.tablet,
+            maxWidth: isSmallDevice
+              ? BREAKPOINTS.tablet - 100
+              : BREAKPOINTS.tablet,
           },
         }}
       >

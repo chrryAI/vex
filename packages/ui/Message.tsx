@@ -119,7 +119,7 @@ export default function Message({
   const { os } = usePlatform()
 
   // Theme context
-  const { addHapticFeedback } = useTheme()
+  const { addHapticFeedback, isMobileDevice } = useTheme()
 
   const ownerId = user?.id || guest?.id
 
@@ -690,14 +690,13 @@ export default function Message({
               </Span>
             )}
           </Span>
-          {!owner && (
+          {!owner && !isMobileDevice && (
             <Span
               style={{
                 ...styles.userIcon.style,
-                ...styles.userIconTablet.style,
               }}
             >
-              <button
+              <Button
                 onClick={() => {
                   if (user) {
                     setIsAccountVisible(true)
@@ -707,7 +706,7 @@ export default function Message({
                   addParams({ subscribe: "true", plan: "member" })
                 }}
                 type="button"
-                className={"link"}
+                style={utilities.link.style}
               >
                 {userImage ? (
                   <Img
@@ -727,7 +726,7 @@ export default function Message({
                     height={35}
                   />
                 )}
-              </button>
+              </Button>
             </Span>
           )}
           <Div
@@ -738,23 +737,22 @@ export default function Message({
           >
             <Span style={styles.name.style}>
               <Div
-                className={clsx(
-                  styles.presenceIndicator,
-                  // Show online if: current user, actively typing, or in online users list
-                  isTyping ||
-                    message.user?.id === ownerId ||
-                    message.guest?.id === ownerId ||
-                    onlineUsers.some(
-                      (u) =>
-                        u.userId === message.user?.id ||
-                        u.guestId === message.guest?.id,
-                    )
-                    ? styles.online
-                    : styles.offline,
-                )}
+                style={{
+                  ...styles.presenceIndicator.style,
+                  ...(isTyping ||
+                  message.user?.id === ownerId ||
+                  message.guest?.id === ownerId ||
+                  onlineUsers.some(
+                    (u) =>
+                      u.userId === message.user?.id ||
+                      u.guestId === message.guest?.id,
+                  )
+                    ? styles.online.style
+                    : styles.offline.style),
+                }}
               />
               {
-                <Span style={styles.nameWithPresence.style}>
+                <Span style={{ ...styles.nameWithPresence.style }}>
                   {owner
                     ? t("You")
                     : message.user?.name || message.user?.email || t("Guest")}
@@ -895,15 +893,15 @@ export default function Message({
                   {copied ? <Check size={18} /> : <Copy size={18} />}
                 </Button>
                 {getDeleteMessage()}
-                <Span className={clsx(styles.userMessageTime)}>
+                <Span style={styles.userMessageTime.style}>
                   {timeAgo(message.message.createdOn, language)}
                 </Span>
               </Div>
               {getLikeButtons()}
             </Div>
           </Div>
-          {owner && (
-            <Span style={styles.userIconTablet.style}>
+          {owner && !isMobileDevice && (
+            <Span>
               <Button
                 onClick={() => {
                   if (user) {
@@ -981,73 +979,76 @@ export default function Message({
         style={styles.messageContainer.style}
         key={message.message.id}
       >
-        <Span style={styles.agentIcon.style}>
-          {agent && message.message.debateAgentId ? (
-            <>
-              {agent.name === "deepSeek" ? (
-                <DeepSeek size={35} />
-              ) : agent.name === "chatGPT" ? (
-                <OpenAI size={35} />
-              ) : agent.name === "claude" ? (
-                <Claude size={35} />
-              ) : agent.name === "gemini" ? (
-                <Gemini size={35} />
-              ) : agent.name === "flux" ? (
-                <Flux size={35} />
-              ) : agent.name === "perplexity" ? (
-                <Perplexity size={35} />
-              ) : null}
-            </>
-          ) : (
-            <Img app={app} showLoading={false} size={35} />
-          )}
-          <Span style={styles.agentMessageTime.style}>
-            {timeAgo(message.message.createdOn, language)}
-          </Span>
-        </Span>
-        <Button
-          aria-label={t("Switch from {{slug}} to another agent", {
-            slug,
-          })}
-          title={t("Switch from {{slug}} to another agent", {
-            slug,
-          })}
-          onClick={() => {
-            // if (message.message.isStreaming) {
-            //   return
-            // }
-
-            setIsAppSelectOpen(true)
-          }}
-          style={{
-            ...utilities.link.style,
-            ...styles.agentIcon.style,
-            ...styles.agentIconTablet.style,
-          }}
-        >
-          {agent && message.message.debateAgentId ? (
-            <>
-              {agent.name === "deepSeek" ? (
-                <DeepSeek size={35} />
-              ) : agent.name === "chatGPT" ? (
-                <OpenAI size={35} />
-              ) : agent.name === "claude" ? (
-                <Claude size={35} />
-              ) : agent.name === "gemini" ? (
-                <Gemini size={35} />
-              ) : agent.name === "flux" ? (
-                <Flux size={35} />
-              ) : agent.name === "perplexity" ? (
-                <Perplexity size={35} />
-              ) : null}
-            </>
-          ) : (
-            <Span style={styles.appIcon.style}>
+        {isMobileDevice && (
+          <Span style={styles.agentIcon.style}>
+            {agent && message.message.debateAgentId ? (
+              <>
+                {agent.name === "deepSeek" ? (
+                  <DeepSeek size={35} />
+                ) : agent.name === "chatGPT" ? (
+                  <OpenAI size={35} />
+                ) : agent.name === "claude" ? (
+                  <Claude size={35} />
+                ) : agent.name === "gemini" ? (
+                  <Gemini size={35} />
+                ) : agent.name === "flux" ? (
+                  <Flux size={35} />
+                ) : agent.name === "perplexity" ? (
+                  <Perplexity size={35} />
+                ) : null}
+              </>
+            ) : (
               <Img app={app} showLoading={false} size={35} />
-              <Span>{app?.name || "Vex"}</Span>
+            )}
+            <Span style={styles.agentMessageTime.style}>
+              {timeAgo(message.message.createdOn, language)}
             </Span>
-          )}
-        </Button>
+          </Span>
+        )}
+        {!isMobileDevice && (
+          <Button
+            aria-label={t("Switch from {{slug}} to another agent", {
+              slug,
+            })}
+            title={t("Switch from {{slug}} to another agent", {
+              slug,
+            })}
+            onClick={() => {
+              // if (message.message.isStreaming) {
+              //   return
+              // }
+
+              setIsAppSelectOpen(true)
+            }}
+            style={{
+              ...utilities.link.style,
+              ...styles.agentIcon.style,
+            }}
+          >
+            {agent && message.message.debateAgentId ? (
+              <>
+                {agent.name === "deepSeek" ? (
+                  <DeepSeek size={35} />
+                ) : agent.name === "chatGPT" ? (
+                  <OpenAI size={35} />
+                ) : agent.name === "claude" ? (
+                  <Claude size={35} />
+                ) : agent.name === "gemini" ? (
+                  <Gemini size={35} />
+                ) : agent.name === "flux" ? (
+                  <Flux size={35} />
+                ) : agent.name === "perplexity" ? (
+                  <Perplexity size={35} />
+                ) : null}
+              </>
+            ) : (
+              <Span style={styles.appIcon.style}>
+                <Img app={app} showLoading={false} size={35} />
+                <Span>{app?.name || "Vex"}</Span>
+              </Span>
+            )}
+          </Button>
+        )}
         {message.message.isStreaming &&
         message.message.content.trim() === "" ? (
           <Div style={styles.thinking.style}>

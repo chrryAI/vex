@@ -1,5 +1,4 @@
 import { UtilsStyleDefs } from "../utils.styles"
-import { AppStyleDefs } from "../App.styles"
 
 /**
  * Extract utility class names from a merged style object
@@ -27,41 +26,32 @@ export function extractUtilityClassNames(
       // Check if this utility's properties are present in the merged style
       let matchCount = 0
       let totalProps = 0
+      let allPropsPresent = true
 
       for (const [key, value] of Object.entries(utilityStyles)) {
         if (key === "className") continue
         totalProps++
 
+        // If a property defined in the utility is MISSING in the style,
+        // we cannot apply this utility class safely (it would inject the missing prop)
+        if (!(key in style)) {
+          allPropsPresent = false
+          break
+        }
+
         // Check if this property exists in the merged style with the same value
-        if (key in style && style[key] === value) {
+        if (style[key] === value) {
           matchCount++
         }
       }
 
-      // If most properties match, this utility was likely spread
-      if (totalProps > 0 && matchCount >= Math.ceil(totalProps * 0.5)) {
+      // If all properties are present AND most match, this utility was likely spread
+      if (
+        allPropsPresent &&
+        totalProps > 0 &&
+        matchCount >= Math.ceil(totalProps * 0.5)
+      ) {
         classNames.add(utilityName)
-      }
-    }
-
-    // Check all known app styles
-    for (const [styleName, styleDef] of Object.entries(AppStyleDefs)) {
-      const styleProps = "base" in styleDef ? (styleDef as any).base : styleDef
-
-      let matchCount = 0
-      let totalProps = 0
-
-      for (const [key, value] of Object.entries(styleProps)) {
-        if (key === "className") continue
-        totalProps++
-
-        if (key in style && style[key] === value) {
-          matchCount++
-        }
-      }
-
-      if (totalProps > 0 && matchCount >= Math.ceil(totalProps * 0.5)) {
-        classNames.add(styleName)
       }
     }
 
