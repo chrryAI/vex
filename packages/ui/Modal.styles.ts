@@ -66,7 +66,7 @@ export const ModalStyleDefs = {
     alignItems: "center",
     gap: 5,
   },
-  headerBorderHeader: {},
+  borderHeader: {},
   close: {
     display: "flex",
   },

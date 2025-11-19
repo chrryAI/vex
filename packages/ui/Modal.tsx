@@ -4,10 +4,17 @@ import { createPortal } from "react-dom"
 // import styles from "./Modal.module.scss"
 import clsx from "clsx"
 import { CircleX } from "./icons"
-import { useRouter } from "./hooks/useWindowHistory"
-import { useAppContext } from "./context/AppContext"
-import { useAuth, useNavigationContext } from "./context/providers"
-import { Button, Div, H4, useNavigation, useTheme, Video } from "./platform"
+import { useAuth } from "./context/providers"
+import {
+  Button,
+  Div,
+  H4,
+  toRem,
+  useNavigation,
+  usePlatform,
+  useTheme,
+  Video,
+} from "./platform"
 import { useHasHydrated } from "./hooks"
 import { FRONTEND_URL } from "./utils"
 import { useModalStyles } from "./Modal.styles"
@@ -18,7 +25,6 @@ export default function Modal({
   hasCloseButton,
   children,
   onToggle,
-  className,
   event,
   params,
   icon,
@@ -36,7 +42,6 @@ export default function Modal({
   children: React.ReactNode
   title: React.ReactNode
   onToggle?: (open: boolean) => void
-  className?: string
   event?: {
     name: string
     props?: Record<string, any>
@@ -47,6 +52,7 @@ export default function Modal({
   dataTestId?: string
   style?: React.CSSProperties
 }) {
+  const { viewPortHeight, viewPortWidth } = usePlatform()
   const styles = useModalStyles()
   const { utilities } = useStyles()
   // Split contexts
@@ -149,7 +155,6 @@ export default function Modal({
     createPortal(
       <Div
         style={{ ...styles.modal.style, ...style }}
-        className={clsx(styles.modal)}
         role="dialog"
         aria-modal="true"
       >
@@ -157,17 +162,27 @@ export default function Modal({
           style={{
             ...styles.main.style,
             ...(isDrawerOpen ? styles.mainIsDrawerOpen.style : {}),
+            maxWidth: viewPortWidth < 501 ? "100%" : toRem(450),
+            minWidth: viewPortWidth > 501 ? toRem(450) : undefined,
+            width:
+              viewPortWidth < 431
+                ? "inherit"
+                : viewPortWidth < 501
+                  ? "100%"
+                  : "auto",
           }}
         >
           <Div
             data-testid={dataTestId}
-            className={clsx(styles.inner)}
+            style={styles.inner.style}
             ref={innerRef}
           >
             <H4
               style={{
                 ...styles.header.style,
-                ...(borderHeader ? styles.headerBorderHeader.style : {}),
+                ...(borderHeader
+                  ? { borderBottom: "1px dashed var(--shade-2)" }
+                  : {}),
               }}
             >
               {icon === "blob" ? (
