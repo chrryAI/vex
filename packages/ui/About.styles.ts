@@ -26,6 +26,10 @@ export const AboutStyleDefs = {
     gap: 15,
     flexDirection: "column",
   },
+  ossContainerDesktop: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   apps: {
     display: "flex",
     flexWrap: "wrap",
@@ -39,17 +43,22 @@ export const AboutStyleDefs = {
       padding: 15,
       border: "1px dashed var(--shade-2)",
       borderRadius: 20,
+      display: "flex",
+      flexDirection: "column",
+      gap: 5,
       margin: 0,
       fontSize: 15,
       marginBottom: 8,
-      display: "flex",
-      alignItems: "center",
-      gap: 5,
     },
     hover: {
       border: "1px solid var(--accent-1)",
       backgroundColor: "var(--shade-1)",
     },
+  },
+  h2: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
   },
   signInButton: {
     marginLeft: "auto",
@@ -75,9 +84,6 @@ export const AboutStyleDefs = {
     alignItems: "center",
     gap: 5,
     marginTop: 20,
-  },
-  about: {
-    fontSize: 15,
   },
 } as const
 

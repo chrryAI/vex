@@ -32,7 +32,6 @@ export default function Terms() {
     <Skeleton>
       <Div
         style={{
-          ...styles.about.style,
           maxWidth: 800,
           margin: isDrawerOpen ? undefined : "0 auto",
           padding: "0 0px 20px 0px",
