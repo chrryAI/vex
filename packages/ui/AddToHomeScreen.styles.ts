@@ -18,6 +18,7 @@ export const AddToHomeScreenStyleDefs = {
     zIndex: 1001,
     position: "fixed",
     backgroundColor: "var(--overlay)",
+    padding: 10,
   },
   main: {
     margin: "0 auto",
@@ -56,11 +57,17 @@ export const AddToHomeScreenStyleDefs = {
     height: "fit-content",
     width: "fit-content",
   },
-  content: {
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
     margin: "0 0 10px 0",
+  },
+  innerContent: {
     display: "flex",
-    gap: 10,
+    flexDirection: "column",
     alignItems: "center",
+    margin: "0 0 10px 0",
+    gap: 10,
   },
   icon: {
     width: 24,
@@ -101,11 +108,6 @@ export const AddToHomeScreenStyleDefs = {
   },
   scrollDown: {
     fontWeight: "bold",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    margin: "0 0 10px 0",
   },
 } as const
 
