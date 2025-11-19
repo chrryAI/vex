@@ -58,7 +58,7 @@ export const AppContextProvider = ({
   children: React.ReactNode
 }) => {
   const { t: i18nT } = useTranslation()
-  const { user, language } = useAuth()
+  const { user, allApps, atlas } = useAuth()
   const isE2E = process.env.NEXT_PUBLIC_TESTING_ENV === "e2e"
   const isCI = process.env.NEXT_PUBLIC_CI === "true"
 
@@ -98,11 +98,14 @@ export const AppContextProvider = ({
       }
     }
 
+    const app = allApps.find((a) => a.slug === config.slug)
+
+    // Fallback for cities
+    const name =
+      app && atlas && app.store?.appId === atlas.id ? "Atlas" : config.name
     // 🎯 MAGIC: Replace "Vex" with dynamic app name from site config
     // This makes ALL translations white-label ready automatically!
-    return result
-      .replace(/Vex/g, config.name)
-      .replace(/vex/g, config.name.toLowerCase())
+    return result.replace(/Vex/g, name).replace(/vex/g, name.toLowerCase())
   }
 
   return (
