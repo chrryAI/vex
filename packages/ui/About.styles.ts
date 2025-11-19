@@ -76,6 +76,9 @@ export const AboutStyleDefs = {
     gap: 5,
     marginTop: 20,
   },
+  about: {
+    fontSize: 15,
+  },
 } as const
 
 import { createUnifiedStyles } from "./styles/createUnifiedStyles"

@@ -1,21 +1,11 @@
 "use client"
 import React, { useEffect, useState } from "react"
-import styles from "./Account.module.scss"
-import clsx from "clsx"
-import {
-  UserRound,
-  LogOut,
-  AtSign,
-  Trash2,
-  CircleUserRound,
-  Pencil,
-} from "./icons"
+import { UserRound, LogOut, AtSign, Trash2, Pencil } from "./icons"
 import { CircleX } from "./icons"
 
 import { FaGoogle, FaApple } from "react-icons/fa"
 import {
   apiFetch,
-  // API_URL,
   BrowserInstance,
   checkIsExtension,
   isValidUsername,
@@ -34,13 +24,19 @@ import {
   useError,
   useData,
 } from "./context/providers"
-import { useTheme } from "./platform"
-import { getUser, removeUser, uploadUserImage } from "./lib"
+import { Button, Div, Input, useTheme } from "./platform"
+import { uploadUserImage } from "./lib"
 import Img from "./Img"
 import CharacterProfiles from "./CharacterProfiles"
 import Checkbox from "./Checkbox"
-export default function Account({ className }: { className?: string }) {
+import { useAccountStyles } from "./Account.styles"
+import { useStyles } from "./context/StylesContext"
+
+export default function Account({ style }: { style?: React.CSSProperties }) {
   const { push } = useRouter()
+
+  const styles = useAccountStyles()
+  const { utilities } = useStyles()
 
   // Split contexts for better organization
   const { t } = useAppContext()
@@ -248,9 +244,9 @@ export default function Account({ className }: { className?: string }) {
 
   return (
     <>
-      <button
+      <Button
         data-testid="account-button"
-        className={clsx(styles.accountButton, className)}
+        style={{ ...style }}
         onClick={() => {
           addHapticFeedback()
           setIsModalOpen(true)
@@ -258,7 +254,7 @@ export default function Account({ className }: { className?: string }) {
       >
         <UserRound size={16} />
         {t("Account")}
-      </button>
+      </Button>
       <Modal
         params="?account=true"
         hideOnClickOutside={false}
@@ -272,14 +268,14 @@ export default function Account({ className }: { className?: string }) {
         }
         isModalOpen={isModalOpen}
       >
-        <div className={styles.accountContainer}>
-          <div>
+        <Div style={styles.accountContainer.style}>
+          <Div>
             {!user ? (
               <Loading />
             ) : (
-              <div>
-                <div className={styles.email}>
-                  <div className={styles.userImageContainer}>
+              <Div>
+                <Div style={styles.email.style}>
+                  <Div style={styles.userImageContainer.style}>
                     <input
                       key={inputKey}
                       ref={fileInputRef}
@@ -288,16 +284,19 @@ export default function Account({ className }: { className?: string }) {
                       style={{ display: "none" }}
                       onChange={handleFileChange}
                     />
-                    <button
+                    <Button
                       disabled={isUploading}
                       title={t("Edit Image")}
                       aria-label={t("Edit Image")}
                       onClick={() => triggerFileInput()}
-                      className={clsx("link", styles.userImageWrapper)}
+                      style={{
+                        ...utilities.link.style,
+                        ...styles.userImageWrapper.style,
+                      }}
                     >
                       {user?.image ? (
                         <Img
-                          className={styles.userImage}
+                          style={styles.userImage.style}
                           src={user.image}
                           width={50}
                           height={50}
@@ -313,24 +312,25 @@ export default function Account({ className }: { className?: string }) {
                         />
                       )}
 
-                      <span
-                        className={clsx(
-                          "button transparent",
-                          styles.editImageButton,
-                        )}
+                      <Div
+                        style={{
+                          ...utilities.button.style,
+                          ...utilities.transparent.style,
+                          ...styles.editImageButton.style,
+                        }}
                       >
                         {isUploading ? (
                           <Loading width={12} height={12} />
                         ) : (
                           <Pencil size={12} />
                         )}
-                      </span>
-                    </button>
+                      </Div>
+                    </Button>
 
                     {user.image && (
-                      <button
+                      <Button
                         title={t("Remove Image")}
-                        className="link"
+                        style={utilities.link.style}
                         onClick={async () => {
                           if (!token) return
                           try {
@@ -353,32 +353,34 @@ export default function Account({ className }: { className?: string }) {
                         }}
                       >
                         <CircleX size={16} />
-                      </button>
+                      </Button>
                     )}
-                  </div>
+                  </Div>
                   {user?.email} <CharacterProfiles />
-                </div>
-                <div className={styles.userNameContainer}>
+                </Div>
+                <Div style={styles.userNameContainer.style}>
                   <AtSign size={24} />
-                  <input
+                  <Input
                     onChange={(e) => setUserName(e.target.value)}
-                    className={styles.userName}
                     value={userName}
                     placeholder={t("Let's set a username")}
                     type="text"
                   />
-                  <button onClick={handleUsernameSubmit} disabled={isSaving}>
+                  <Button onClick={handleUsernameSubmit} disabled={isSaving}>
                     {isSaving ? <Loading width={20} height={20} /> : t("Save")}
-                  </button>
-                </div>
-              </div>
+                  </Button>
+                </Div>
+              </Div>
             )}
-          </div>
+          </Div>
 
-          <div data-testid="account-email" className={styles.deleteAccount}>
+          <Div data-testid="account-email" style={styles.deleteAccount.style}>
             {!isExtension && (
               <ConfirmButton
-                className={clsx(styles.deleteAccountButton, "transparent")}
+                style={{
+                  ...styles.deleteAccountButton.style,
+                  ...utilities.transparent.style,
+                }}
                 confirm={
                   <>
                     <Trash2 size={16} /> {t("Are you sure?")}
@@ -411,22 +413,25 @@ export default function Account({ className }: { className?: string }) {
                 {t("Delete account")}
               </ConfirmButton>
             )}
-          </div>
+          </Div>
 
-          <div className={styles.accounts}>
+          <Div style={styles.accounts.style}>
             {user?.isLinkedToGoogle ? (
-              <div className={styles.accountLinked}>
+              <Div style={styles.accountLinked.style}>
                 <FaGoogle /> {t("Google account linked")}
-              </div>
+              </Div>
             ) : (
               <>
                 {isOAuthAccountNotLinkedError && (
-                  <div className={styles.accountLinkError}>
+                  <Div>
                     {t("Failed to link Google account, please try again")}
-                  </div>
+                  </Div>
                 )}
-                <button
-                  className={clsx(styles.linkAccount, "inverted")}
+                <Button
+                  style={{
+                    ...styles.linkAccount.style,
+                    ...utilities.inverted.style,
+                  }}
                   onClick={() => {
                     addHapticFeedback()
                     signInContext?.("google", {
@@ -436,22 +441,22 @@ export default function Account({ className }: { className?: string }) {
                   }}
                 >
                   <FaGoogle /> {t("Link Google account")}
-                </button>
+                </Button>
               </>
             )}
             {isExtension ? null : user?.isLinkedToApple ? (
-              <div className={styles.accountLinked}>
+              <Div style={styles.accountLinked.style}>
                 <FaApple /> {t("Apple account linked")}
-              </div>
+              </Div>
             ) : isAppleAvailable ? (
               <>
                 {isOAuthAccountNotLinkedError && (
-                  <div className={styles.accountLinkError}>
+                  <Div>
                     {t("Failed to link Apple account, please try again")}
-                  </div>
+                  </Div>
                 )}
-                <button
-                  className={styles.linkAccount}
+                <Button
+                  style={styles.linkAccount.style}
                   onClick={() =>
                     signInContext?.("apple", {
                       callbackUrl: window.location.href,
@@ -461,12 +466,12 @@ export default function Account({ className }: { className?: string }) {
                 >
                   <FaApple style={{ position: "relative", bottom: 1 }} />{" "}
                   {t("Link Apple account")}
-                </button>
+                </Button>
               </>
             ) : null}
-          </div>
+          </Div>
 
-          <div className={styles.actions}>
+          <Div style={styles.actions.style}>
             {user?.role === "admin" && (
               <Checkbox
                 checked={env === "production"}
@@ -481,9 +486,9 @@ export default function Account({ className }: { className?: string }) {
                 {t("Prod")}
               </Checkbox>
             )}
-            <button
+            <Button
               data-testid="account-logout-button"
-              className={clsx(styles.logoutButton, "link")}
+              style={{ ...styles.logoutButton.style, ...utilities.link.style }}
               onClick={handleLogout}
             >
               {isLoggingOut ? (
@@ -494,9 +499,9 @@ export default function Account({ className }: { className?: string }) {
                 </>
               )}
               {t("Logout")}
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Div>
+        </Div>
       </Modal>
     </>
   )
