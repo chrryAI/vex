@@ -27,7 +27,7 @@ import { AppProvider } from "./AppProvider"
 import { AppContextProvider } from "../AppContext"
 import { locale } from "../../locales"
 import useSWR, { SWRConfig } from "swr"
-import { thread, paginatedMessages } from '../../types'
+import { thread, paginatedMessages } from "../../types"
 import { TimerContext, TimerContextProvider } from "../TimerContext"
 import { Hey } from "../../Sidebar"
 

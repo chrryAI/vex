@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import clsx from "clsx"
-import styles from "./Thread.module.scss"
+import { useThreadStyles } from "./Thread.styles"
 import {
   aiAgent,
   collaboration,
@@ -19,7 +19,7 @@ import {
   useNavigationContext,
   useApp,
 } from "./context/providers"
-import { A, usePlatform, useTheme } from "./platform"
+import { A, usePlatform, useTheme, Div, Button, Span } from "./platform"
 import Loading from "./Loading"
 import { FRONTEND_URL, isCollaborator, isOwner, pageSizes } from "./utils"
 import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
@@ -38,6 +38,7 @@ import MemoryConsent from "./MemoryConsent"
 import Img from "./Img"
 import { useAppMetadata, useHasHydrated, useThreadMetadata } from "./hooks"
 import { lazy, Suspense } from "react"
+import { useStyles } from "./context/StylesContext"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
@@ -54,6 +55,9 @@ const Thread = ({
   threadId?: string
   threadData?: { thread: thread; messages: paginatedMessages }
 }) => {
+  // Initialize unified styles hook
+  const styles = useThreadStyles()
+
   // Split contexts for better organization
   const { t } = useAppContext()
 
@@ -219,6 +223,7 @@ const Thread = ({
   const [isGame, setIsGame] = useState(false)
 
   const [collaborationVersion, setCollaborationVersion] = useState(0)
+  const { utilities } = useStyles()
 
   useEffect(() => {
     setIsEmpty(!messages.length)
@@ -226,21 +231,19 @@ const Thread = ({
 
   const render = () => {
     return (
-      <div
+      <Div
         data-thread-title={thread?.title}
         data-testid={id ? "thread" : isHome ? "home" : undefined}
-        className={clsx(
-          styles.thread,
-          className,
-          hitHourlyLimit && styles.hitHourlyLimit,
-          isEmpty && styles.empty,
-        )}
+        style={{
+          ...styles.thread.style,
+          ...(isEmpty && styles.threadEmpty.style),
+        }}
       >
         {!isVisitor && (
-          <div className={styles.headers}>
+          <Div style={styles.headers.style}>
             {thread && (
               <>
-                <div className={styles.header}>
+                <Div style={styles.header.style}>
                   <Instructions
                     onSave={(data) => {
                       setThread({
@@ -290,29 +293,29 @@ const Thread = ({
                     size={15}
                     thread={thread}
                   />
-                </div>
+                </Div>
               </>
             )}
-          </div>
+          </Div>
         )}
 
         {isLoading && !isLoadingMore && isEmpty ? (
-          <div className={styles.loadingContainer}>
+          <Div style={styles.errorContainer.style}>
             <Loading />
-          </div>
+          </Div>
         ) : error ? (
-          <div className={styles.errorContainer}>
+          <Div style={styles.errorContainer.style}>
             <CircleX color="var(--accent-0)" size={20} /> Something went wrong,
             please try again later
-          </div>
+          </Div>
         ) : status === 404 ? (
-          <div className={styles.errorContainer}>
+          <Div style={styles.errorContainer.style}>
             <InfoIcon color="var(--accent-1)" size={20} /> Thread not found
-          </div>
+          </Div>
         ) : status === 401 ? (
-          <div className={styles.errorContainer}>
+          <Div style={styles.errorContainer.style}>
             <InfoIcon color="var(--accent-1)" size={20} /> Unauthorized
-          </div>
+          </Div>
         ) : (
           <>
             {isGame ? null : (
@@ -343,7 +346,7 @@ const Thread = ({
                     )
                 }}
                 ref={messagesRef}
-                className={styles.messages}
+                style={styles.messages.style}
                 messages={messages}
                 setIsLoadingMore={setIsLoadingMore}
                 setUntil={setUntil}
@@ -354,17 +357,10 @@ const Thread = ({
             {(!isVisitor ||
               collaborator ||
               thread?.visibility === "public") && (
-              <div
-                className={clsx(
-                  styles.chatContainer,
-                  os && styles[os],
-                  isDrawerOpen && styles.drawerOpen,
-                  isEmpty && styles.empty,
-                )}
-              >
+              <Div style={styles.chatContainer.style}>
                 {/* Typing indicator for collaborative threads */}
 
-                <div className={styles.chatContainer}>
+                <Div style={styles.chatContainer.style}>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
                     compactMode={showFocus}
@@ -404,9 +400,9 @@ const Thread = ({
                     }
                     Top={
                       thread && (
-                        <div className={styles.chatTop}>
+                        <Div style={styles.chatTop.style}>
                           {suggestSaveApp ? (
-                            <a
+                            <A
                               href={`${FRONTEND_URL}/?step=add&part=title`}
                               title={t("Build your app")}
                               onClick={(e) => {
@@ -419,10 +415,14 @@ const Thread = ({
 
                                 router.push(`${slugPath}?step=add&part=title`)
                               }}
-                              className={clsx(
-                                "button link xSmall transparent",
-                                styles.collaborateButton,
-                              )}
+                              style={
+                                {
+                                  ...utilities.button.style,
+                                  ...utilities.transparent.style,
+                                  ...utilities.link.style,
+                                  ...utilities.xSmall.style,
+                                }
+                              }
                             >
                               <Img
                                 showLoading={false}
@@ -431,7 +431,7 @@ const Thread = ({
                                 width={16}
                                 height={16}
                               />
-                            </a>
+                            </A>
                           ) : (
                             <A
                               href={`${FRONTEND_URL}/calendar${threadId ? `?threadId=${threadId}` : ""}`}
@@ -446,10 +446,14 @@ const Thread = ({
 
                                 goToCalendar()
                               }}
-                              className={clsx(
-                                "button link xSmall transparent",
-                                styles.collaborateButton,
-                              )}
+                              style={
+                                {
+                                  ...utilities.button.style,
+                                  ...utilities.transparent.style,
+                                  ...utilities.link.style,
+                                  ...utilities.xSmall.style,
+                                }
+                              }
                             >
                               <Img
                                 showLoading={false}
@@ -524,16 +528,15 @@ const Thread = ({
                               !collaborationStatus && refetchThreads()
                               refetch()
                             }}
-                            className={styles.collaborationStatus}
                             thread={thread}
                           />
-                          <span
+                          <Span
                             data-testid="hourly-limit-info"
                             data-hourly-left={hourlyUsageLeft}
-                            className={styles.hourlyLimit}
+                            style={styles.hourlyLimit.style}
                           >
                             {!user?.subscription || !guest?.subscription ? (
-                              <button
+                              <Button 
                                 onClick={() => {
                                   addHapticFeedback()
                                   if (guest) {
@@ -547,22 +550,22 @@ const Thread = ({
                                     subscribe: "true",
                                   })
                                 }}
-                                className="link"
+                                style={utilities.link.style}
                               >
                                 <ClockPlus size={16} />
-                              </button>
+                              </Button>
                             ) : (
                               <Clock color="var(--accent-1)" size={16} />
                             )}
                             {hitHourlyLimit && (
-                              <span style={{ fontSize: "1rem" }}>😅</span>
+                              <Span style={{ fontSize: "1rem" }}>😅</Span>
                             )}
                             {user?.messagesLastHour ||
                               guest?.messagesLastHour ||
                               0}
                             /{hourlyLimit}"
-                          </span>
-                        </div>
+                          </Span>
+                        </Div>
                       )
                     }
                     thread={thread}
@@ -571,7 +574,7 @@ const Thread = ({
                     }
                     onToggleGame={(on) => setIsGame(on)}
                     showGreeting={isEmpty}
-                    className={styles.chat}
+                    style={styles.chat.style}
                     onStreamingStop={async (message) => {
                       message?.message?.clientId &&
                         setMessages((prev) => {
@@ -838,12 +841,12 @@ const Thread = ({
                       }
                     }}
                   />
-                </div>
-              </div>
+                </Div>
+              </Div>
             )}
           </>
         )}
-      </div>
+      </Div>
     )
   }
 

@@ -121,6 +121,7 @@ export default function Chat({
   placeholder,
   compactMode,
   onTyping,
+  style,
   requiresSignin,
 }: {
   requiresSignin?: boolean
@@ -160,6 +161,7 @@ export default function Chat({
     isWebSearchEnabled?: boolean
     isImageGenerationEnabled?: boolean
   }) => void
+  style?: React.CSSProperties
   onStreamingStop?: (
     message?: {
       message: message

@@ -542,7 +542,7 @@ const generateCode = (styles, inputFile) => {
     .replace(/^([a-z])/, (g) => g.toUpperCase())
 
   // Always use chrry/styles for consistent imports across all files
-  const stylesImportPath = "chrry/styles"
+  const stylesImportPath = "./styles"
 
   let code = `/**
  * Generated from ${path.basename(inputFile)}
