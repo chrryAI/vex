@@ -1,14 +1,11 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import clsx from "clsx"
-import styles from "./Threads.module.scss"
 import { collaboration, thread, user } from "../ui/types"
 import { useAppContext } from "./context/AppContext"
 import Loading from "./Loading"
 import useSWR from "swr"
 import {
-  ArrowLeft,
   AtSign,
   BellDot,
   CalendarIcon,
@@ -17,12 +14,7 @@ import {
   StarIcon,
   UsersRound,
 } from "./icons"
-import {
-  BrowserInstance,
-  checkIsExtension,
-  FRONTEND_URL,
-  pageSizes,
-} from "./utils"
+import { pageSizes } from "./utils"
 import { animate, stagger } from "motion"
 import Search from "./Search"
 import Skeleton from "./Skeleton"
@@ -31,15 +23,9 @@ import { useLocalStorage } from "./hooks"
 import Share from "./Share"
 import Bookmark from "./Bookmark"
 import Img from "./Image"
-import Logo from "./Logo"
-import {
-  useApp,
-  useAuth,
-  useChat,
-  useData,
-  useNavigationContext,
-} from "./context/providers"
-import { useTheme } from "./platform"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { A, Button, Div, H2, P, Span, useTheme } from "./platform"
+import { useThreadsStyles } from "./Threads.styles"
 
 const Threads = ({
   className,
@@ -76,6 +62,8 @@ const Threads = ({
     getAppSlug,
     timeAgo,
   } = useAuth()
+
+  const styles = useThreadsStyles()
 
   const [sortByDate, setSortByDate] = useLocalStorage("sortByDate", true)
 
@@ -150,7 +138,7 @@ const Threads = ({
         appId: app?.id,
         search,
         sort: sortByDate ? "date" : "bookmark",
-        userName,
+        // userName,
         collaborationStatus: collaborationStatus ?? undefined,
       })
     },
@@ -225,7 +213,7 @@ const Threads = ({
       setThreads(threadsData)
       setIsLoading(false)
 
-      setProfile(threadsData.user || threadsData?.threads?.[0]?.user)
+      // setProfile(threadsData.user || threadsData?.threads?.[0]?.user)
     }
   }, [threadsData, user])
 
@@ -244,11 +232,11 @@ const Threads = ({
 
   return (
     <Skeleton>
-      <div className={clsx(styles.threads, className)}>
-        <h2 className={clsx(styles.threadsTitle)}>
+      <Div style={{ ...styles.threads.style }}>
+        <H2 style={{ ...styles.threadsTitle.style }}>
           {profile?.image ? (
             <Img
-              className={styles.profileImage}
+              style={{ ...styles.profileImage.style }}
               src={profile?.image!}
               width={22}
               height={22}
@@ -273,8 +261,8 @@ const Threads = ({
               {t("back to Vex").replace("Vex", baseApp?.name || "")}
             </a>
           )}
-        </h2>
-        <div className={styles.characterProfiles}>
+        </H2>
+        <Div style={{ ...styles.characterProfiles.style }}>
           {(profile?.characterProfiles || [])
             .slice(0, 3)
             .map((characterProfile) => (
@@ -296,21 +284,20 @@ const Threads = ({
                 {characterProfile.name}
               </a>
             ))}
-        </div>
-        <div className={clsx(styles.searchContainer)}>
+        </Div>
+        <Div style={{ ...styles.searchContainer.style }}>
           <>
             <Search
               dataTestId="threads-search"
-              className={clsx(styles.searchInput)}
               placeholder={t("Search threads...")}
               scroll={false}
               onChange={(search) => setSearch(search)}
             />
             {!isVisitor && (
               <>
-                <button
+                <Button
                   data-testid="threads-collaboration"
-                  className={clsx("inverted")}
+                  className={"inverted"}
                   title={t("Pending Collaborations")}
                   onClick={() => {
                     setIsLoading(true)
@@ -327,9 +314,9 @@ const Threads = ({
                     }
                     size={20}
                   />
-                </button>
-                <button
-                  className={clsx("inverted")}
+                </Button>
+                <Button
+                  className={"inverted"}
                   title={t("Active Collaborations")}
                   onClick={() => {
                     setIsLoading(true)
@@ -346,11 +333,11 @@ const Threads = ({
                     }
                     size={20}
                   />
-                </button>
-                <button
+                </Button>
+                <Button
                   data-testid={`threads-sort-button-${sortByDate ? "date" : "star"}`}
                   title={!sortByDate ? t("Sort by date") : t("Sort by star")}
-                  className={clsx("inverted", styles.sortButton)}
+                  className={"inverted"}
                   onClick={() => {
                     setSortByDate(!sortByDate)
                   }}
@@ -364,31 +351,31 @@ const Threads = ({
                       size={20}
                     />
                   )}
-                </button>
+                </Button>
               </>
             )}
           </>
-        </div>
+        </Div>
         {isLoading && !isLoadingMore && !search ? (
-          <div className={clsx(styles.loadingContainer)}>
+          <Div style={{ ...styles.loadingContainer.style }}>
             <Loading />
-          </div>
+          </Div>
         ) : (
           <>
-            <div
+            <Div
               data-testid="threads-container"
-              className={clsx(styles.threadsContainer, "threadList")}
+              style={{ ...styles.threadsContainer.style }}
             >
               {sortedThreads.map((thread) => (
-                <div
+                <Div
                   data-testid="threads-item"
                   ref={(el) => {
                     threadRefs.current[thread.id] = el
                   }}
-                  className={clsx(styles.threadItem, "threadsItem")}
+                  className={"threadsItem"}
                   key={thread.id}
                 >
-                  <div className={clsx(styles.threadItemTitle)}>
+                  <Div style={{ ...styles.threadItemTitle.style }}>
                     {!isVisitor && (
                       <EditThread
                         refetch={async () => {
@@ -401,7 +388,7 @@ const Threads = ({
                     {(() => {
                       const url = `/threads/${thread.id}`
                       return (
-                        <a
+                        <A
                           data-testid="threads-item-title"
                           onClick={(e) => {
                             if (e.metaKey || e.ctrlKey) {
@@ -412,10 +399,9 @@ const Threads = ({
                           }}
                           href={url}
                           key={thread.id}
-                          className={clsx(styles.threadItem)}
                         >
                           {thread.title}
-                        </a>
+                        </A>
                       )
                     })()}
 
@@ -429,48 +415,38 @@ const Threads = ({
                         thread={thread}
                       />
                     )}
-                    <div className={clsx(styles.right)}>
-                      <span className={clsx(styles.threadItemDate)}>
+                    <Div style={{ ...styles.right.style }}>
+                      <Span style={{ ...styles.threadItemDate.style }}>
                         {timeAgo(thread.createdOn, language)}
-                      </span>
-                      {!isVisitor && (
-                        <Share
-                          className={clsx(styles.share)}
-                          thread={thread}
-                          size={13}
-                        />
-                      )}
-                    </div>
-                  </div>
+                      </Span>
+                      {!isVisitor && <Share thread={thread} size={13} />}
+                    </Div>
+                  </Div>
 
-                  <p className={clsx(styles.threadAiResponse)}>
+                  <Span style={{ ...styles.threadAiResponse.style }}>
                     {thread.aiResponse}
-                  </p>
-                </div>
+                  </Span>
+                </Div>
               ))}
-              {threads.threads.length === 0 && (
-                <p className={clsx(styles.noThreads)}>
-                  {t("Nothing here yet")}
-                </p>
-              )}
+              {threads.threads.length === 0 && <P>{t("Nothing here yet")}</P>}
               {threads.hasNextPage && (
-                <div className={clsx(styles.loadMoreButtonContainer)}>
+                <Div style={{ ...styles.loadMoreButtonContainer.style }}>
                   <button
                     onClick={() => {
                       setIsLoadingMore(true)
                       setUntil(until + 1)
                     }}
-                    className={clsx("transparent", styles.loadMoreButton)}
+                    style={{ ...styles.loadMoreButton.style }}
                   >
                     <LoaderCircle size={18} />
                     {t("Load more")}
                   </button>
-                </div>
+                </Div>
               )}
-            </div>
+            </Div>
           </>
         )}
-      </div>
+      </Div>
     </Skeleton>
   )
 }

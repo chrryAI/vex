@@ -58,7 +58,7 @@ const NavigationContext = createContext<
       isShowingCollaborate: boolean
       refetchThreads: () => Promise<void>
       setIsShowingCollaborate: (value: boolean) => void
-      goToThreads: () => void
+      goToThreads: (params?: Record<string, string>) => void
       getStoreSlug: (slug: string) => string
       goToThread: (threadId: string) => void
       goToApp: (slug: string) => void
@@ -129,10 +129,16 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const { slug, setSlug, getAppSlug, language, setThreadId, session } =
     useAuth()
 
-  const goToThreads = () => {
+  const goToThreads = (params?: Record<string, string>) => {
     const appSlug = app ? getAppSlug(app, "") : undefined
     setThreadId(undefined)
-    router.push(appSlug ? `/${appSlug}/threads` : "/threads")
+
+    const url = new URLSearchParams(params)
+    router.push(
+      appSlug
+        ? `/${appSlug}/threads${params ? "?" + url : ""}`
+        : `/threads${params ? "?" + url : ""}`,
+    )
   }
 
   const getStoreSlug = (slug: string) => {

@@ -138,19 +138,43 @@ const convertValue = (property, value) => {
   }
 
   // Handle SCSS functions: toRem.toRem(8.5) → 8, toRem.toRem(-15) → -15
+  // Handle multiple calls in one value: "toRem.toRem(10) toRem.toRem(20)" → "10px 20px"
   if (value.includes("toRem.toRem(")) {
-    const match = value.match(/toRem\.toRem\((-?[0-9.]+)\)/)
-    if (match) {
-      return Math.round(parseFloat(match[1]))
+    // Replace all occurrences
+    const converted = value.replace(
+      /toRem\.toRem\((-?[0-9.]+)\)/g,
+      (match, num) => {
+        return Math.round(parseFloat(num))
+      },
+    )
+
+    // If the result contains spaces (multiple values), keep as string
+    if (converted.includes(" ")) {
+      // Add 'px' suffix to each number for web compatibility
+      const withPx = converted.replace(/(\d+)/g, "$1px")
+      return `"${withPx}"`
     }
+
+    // Single value - return as number
+    return Math.round(parseFloat(converted))
   }
 
   // Handle toRem(8.5) → 8, toRem(-15) → -15
   if (value.includes("toRem(")) {
-    const match = value.match(/toRem\((-?[0-9.]+)\)/)
-    if (match) {
-      return Math.round(parseFloat(match[1]))
+    // Replace all occurrences
+    const converted = value.replace(/toRem\((-?[0-9.]+)\)/g, (match, num) => {
+      return Math.round(parseFloat(num))
+    })
+
+    // If the result contains spaces (multiple values), keep as string
+    if (converted.includes(" ")) {
+      // Add 'px' suffix to each number for web compatibility
+      const withPx = converted.replace(/(\d+)/g, "$1px")
+      return `"${withPx}"`
     }
+
+    // Single value - return as number
+    return Math.round(parseFloat(converted))
   }
 
   // Handle clamp() - keep as string for web compatibility
@@ -614,8 +638,11 @@ const generateCode = (styles, inputFile) => {
     .replace(/-([a-z])/g, (g) => g[1].toUpperCase())
     .replace(/^([a-z])/, (g) => g.toUpperCase())
 
-  // Always use chrry/styles for consistent imports across all files
-  const stylesImportPath = "./styles"
+  // Calculate relative path to styles directory based on file location
+  const inputDir = path.dirname(inputFile)
+  const baseDir = path.resolve(__dirname, "../packages/ui")
+  const relativeDir = path.relative(inputDir, baseDir)
+  const stylesImportPath = relativeDir ? `${relativeDir}/styles` : "./styles"
 
   let code = `/**
  * Generated from ${path.basename(inputFile)}

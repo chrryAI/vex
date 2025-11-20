@@ -39,31 +39,41 @@ function normalizeValue(prop: string, value: any): any {
     return value
   }
 
-  if (typeof value === "string" && value.endsWith("px")) {
-    return parseInt(value)
-  }
-
-  if (typeof value === "string" && value.endsWith("rem")) {
-    return Math.round(parseFloat(value) * 16)
-  }
-
-  if (typeof value === "string" && value.endsWith("em")) {
-    return Math.round(parseFloat(value) * 16)
-  }
-
+  // First, unwrap quoted strings
+  let unwrappedValue = value
   if (
     typeof value === "string" &&
     (value.startsWith("'") || value.startsWith('"'))
   ) {
-    return value.slice(1, -1)
+    unwrappedValue = value.slice(1, -1)
+  }
+
+  // Check if this is a multi-value property (contains spaces)
+  // e.g., "10px 20px 30px 40px" for padding
+  if (typeof unwrappedValue === "string" && unwrappedValue.includes(" ")) {
+    // Keep multi-value strings as-is for web compatibility
+    return unwrappedValue
+  }
+
+  // Single value conversions
+  if (typeof unwrappedValue === "string" && unwrappedValue.endsWith("px")) {
+    return parseInt(unwrappedValue)
+  }
+
+  if (typeof unwrappedValue === "string" && unwrappedValue.endsWith("rem")) {
+    return Math.round(parseFloat(unwrappedValue) * 16)
+  }
+
+  if (typeof unwrappedValue === "string" && unwrappedValue.endsWith("em")) {
+    return Math.round(parseFloat(unwrappedValue) * 16)
   }
 
   // For web: keep CSS variables as-is
   // For native: would need to resolve to actual colors from theme
   // This is a web-first implementation
-  if (typeof value === "string" && value.includes("var(--")) {
-    return value // Keep as-is for web
+  if (typeof unwrappedValue === "string" && unwrappedValue.includes("var(--")) {
+    return unwrappedValue // Keep as-is for web
   }
 
-  return value
+  return unwrappedValue
 }

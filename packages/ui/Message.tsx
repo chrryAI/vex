@@ -1191,7 +1191,7 @@ export default function Message({
                     ) : agent?.name === "perplexity" ? (
                       <Perplexity color="var(--accent-6)" size={19} />
                     ) : agent?.name === "sushi" ? (
-                      <Img icon="sushi" size={19} />
+                      <Img icon="sushi" showLoading={false} size={19} />
                     ) : null}
                   </Span>
                 )}
