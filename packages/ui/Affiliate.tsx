@@ -1,6 +1,5 @@
 "use client"
 
-import styles from "./Affiliate.module.scss"
 import React, { useState } from "react"
 import { COLORS, useAppContext } from "./context/AppContext"
 import toast from "react-hot-toast"
@@ -11,20 +10,35 @@ import {
   UserRoundPlus,
   SmilePlus,
 } from "./icons"
-import Logo from "./Logo"
 import clsx from "clsx"
 import Img from "./Image"
 import { useAuth, useData } from "./context/providers"
-import { useNavigation, usePlatform, useTheme } from "./platform"
+import {
+  Button,
+  Div,
+  H1,
+  H2,
+  H3,
+  P,
+  Strong,
+  useNavigation,
+  usePlatform,
+  useTheme,
+} from "./platform"
 import { useHasHydrated } from "./hooks"
 import Skeleton from "./Skeleton"
 import { getSiteConfig } from "./utils/siteConfig"
 import { apiFetch } from "./utils"
+import { useAffiliateStyles } from "./Affiliate.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function Affiliate() {
   const { user, token, API_URL, FRONTEND_URL } = useAuth()
   const router = useNavigation()
   const { t } = useAppContext()
+
+  const styles = useAffiliateStyles()
+  const { utilities } = useStyles()
 
   const is = useHasHydrated()
 
@@ -70,9 +84,9 @@ export default function Affiliate() {
 
   return (
     <Skeleton>
-      <div className={styles.affiliate}>
-        <div className={styles.marketing}>
-          <div className={styles.hero}>
+      <Div style={styles.affiliate.style}>
+        <Div>
+          <Div style={styles.hero.style}>
             <Img
               showLoading={false}
               src={`${FRONTEND_URL}/images/pacman/heart.png`}
@@ -80,109 +94,127 @@ export default function Affiliate() {
               width={50}
               height={50}
             />
-            <h1> {t("{{app}} Affiliate Program", { app: config.name })}</h1>
+            <H1 style={styles.h1.style}>
+              {" "}
+              {t("{{app}} Affiliate Program", { app: config.name })}
+            </H1>
 
-            <p className={styles.subtitle}>
+            <P style={styles.subtitle.style}>
               {t(
                 "Earn {{commission}} commission by sharing {{app}} with your audience",
                 { commission: "20%", app: config.name },
               )}
-            </p>
+            </P>
 
             {loadingAffiliateStats
               ? null
               : affiliateStats?.hasAffiliateLink && (
-                  <button
-                    className={clsx(styles.goToDashboard, "inverted")}
+                  <Button
+                    style={{
+                      ...styles.goToDashboard.style,
+                      ...utilities.inverted.style,
+                    }}
                     onClick={() => {
                       router.push("/affiliate/dashboard")
                     }}
                   >
                     <TrendingUp size={16} /> {t("Go to Dashboard")}
-                  </button>
+                  </Button>
                 )}
-          </div>
+          </Div>
 
-          <div className={styles.benefits}>
-            <h2>🤩 {t("Why Join?")}</h2>
-            <div className={styles.benefitGrid}>
-              <div className={styles.benefit}>
+          <Div style={styles.benefits.style}>
+            <H2 style={styles.h2.style}>🤩 {t("Why Join?")}</H2>
+            <Div style={styles.benefitGrid.style}>
+              <Div style={styles.benefit.style}>
                 <Coins color={COLORS.blue} size={32} />
-                <h3> {t("20% Commission")}</h3>
-                <p>{t("Earn 20% recurring commission on all referrals")}</p>
-              </div>
-              <div className={styles.benefit}>
+                <H3 style={styles.h3.style}> {t("20% Commission")}</H3>
+                <P>{t("Earn 20% recurring commission on all referrals")}</P>
+              </Div>
+              <Div style={styles.benefit.style}>
                 <UserRoundPlus color={COLORS.orange} size={32} />
-                <h3> {t("30% Bonus Credits")}</h3>
-                <p>
+                <H3 style={styles.h3.style}> {t("30% Bonus Credits")}</H3>
+                <P>
                   {t("Your referrals get 30% bonus credits on their purchase")}
-                </p>
-              </div>
-              <div className={styles.benefit}>
+                </P>
+              </Div>
+              <Div style={styles.benefit.style}>
                 <TrendingUp color={COLORS.green} size={32} />
-                <h3> {t("Real-Time Dashboard")}</h3>
-                <p>
+                <H3 style={styles.h3.style}> {t("Real-Time Dashboard")}</H3>
+                <P>
                   {t("Track clicks, conversions, and earnings in real-time")}
-                </p>
-              </div>
-              <div className={styles.benefit}>
+                </P>
+              </Div>
+              <Div style={styles.benefit.style}>
                 <MousePointerClick color={COLORS.violet} size={32} />
-                <h3> {t("30-Day Cookie")}</h3>
-                <p>
+                <H3 style={styles.h3.style}> {t("30-Day Cookie")}</H3>
+                <P>
                   {t("Get credit for conversions up to 30 days after click")}
-                </p>
-              </div>
-            </div>
-          </div>
+                </P>
+              </Div>
+            </Div>
+          </Div>
 
-          <div className={styles.earnings}>
-            <h2>💰 {t("Potential Earnings")}</h2>
-            <div className={styles.earningsGrid}>
-              <div className={clsx(styles.earningCard, styles.plus)}>
+          <Div style={styles.earnings.style}>
+            <H2 style={styles.earningsh2.style}>
+              💰 {t("Potential Earnings")}
+            </H2>
+            <Div style={styles.earningsGrid.style}>
+              <Div
+                style={{
+                  ...styles.earningCard.style,
+                  ...styles.earningCardPlus.style,
+                }}
+              >
                 <Img icon="strawberry" size={40} />
 
-                <h3> {t("Plus Plan")}</h3>
-                <div className={styles.price}>
+                <H3 style={styles.earningCardh3.style}> {t("Plus")}</H3>
+                <Div style={styles.price.style}>
                   {t("{{price}}/month", { price: "€9.99" })}
-                </div>
-                <div className={styles.commission}>
-                  <strong>
+                </Div>
+                <Div style={styles.commission.style}>
+                  <Strong>
                     {t("{{commission}}/month per subscriber", {
                       commission: "€1.99",
                     })}
-                  </strong>
-                </div>
-                <p className={styles.detail}>
+                  </Strong>
+                </Div>
+                <P style={styles.detail.style}>
                   {t("{{commission}} of {{price}}/month recurring", {
                     commission: "20%",
                     price: "€9.99",
                   })}
-                </p>
-              </div>
-              <div className={clsx(styles.earningCard, styles.pro)}>
+                </P>
+              </Div>
+              <Div
+                style={{
+                  ...styles.earningCard.style,
+                  ...styles.earningCardPro.style,
+                }}
+              >
                 <Img icon="raspberry" size={40} />
-                <h3> {t("Pro Plan")}</h3>
-                <div className={styles.price}>
+                <H3> {t("Pro")}</H3>
+                <Div style={styles.price.style}>
                   {t("{{price}}/month", { price: "€19.99" })}
-                </div>
-                <div className={styles.commission}>
-                  <strong>
+                </Div>
+                <Div style={styles.commission.style}>
+                  <Strong>
                     {t("{{commission}}/month per subscriber", {
                       commission: "€3.99",
                     })}
-                  </strong>
-                </div>
-                <p className={styles.detail}>
+                  </Strong>
+                </Div>
+                <P style={styles.detail.style}>
                   {t("{{commission}} of {{price}}/month recurring", {
                     commission: "20%",
                     price: "€19.99",
                   })}
-                </p>
-              </div>
-            </div>
-            <div className={styles.example}>
-              <p>
-                <strong>{t("Example")}:</strong>{" "}
+                </P>
+              </Div>
+            </Div>
+            <Div style={styles.example.style}>
+              <P>
+                <Strong>{t("Example")}:</Strong>{" "}
                 {t(
                   "Refer {{count}} Pro users = {{commission}}/month recurring",
                   {
@@ -190,41 +222,41 @@ export default function Affiliate() {
                     commission: "€39.90",
                   },
                 )}
-              </p>
-            </div>
-          </div>
+              </P>
+            </Div>
+          </Div>
 
-          <div className={styles.howItWorks}>
-            <h2> {t("How It Works")}</h2>
-            <div className={styles.steps}>
-              <div className={styles.step}>
-                <div className={styles.stepNumber}>1</div>
-                <h3> {t("Get Your Link")}</h3>
-                <p> {t("Create your unique affiliate link instantly")}</p>
-              </div>
-              <div className={styles.step}>
-                <div className={styles.stepNumber}>2</div>
-                <h3> {t("Share")}</h3>
-                <p>
+          <Div style={styles.howItWorks.style}>
+            <H2> {t("How It Works")}</H2>
+            <Div style={styles.steps.style}>
+              <Div style={styles.step.style}>
+                <Div style={styles.stepNumber.style}>1</Div>
+                <H3> {t("Get Your Link")}</H3>
+                <P> {t("Create your unique affiliate link instantly")}</P>
+              </Div>
+              <Div style={styles.step.style}>
+                <Div style={styles.stepNumber.style}>2</Div>
+                <H3> {t("Share")}</H3>
+                <P>
                   {" "}
                   {t(
                     "Share with your audience on social media, blog, or email",
                   )}
-                </p>
-              </div>
-              <div className={styles.step}>
-                <div className={styles.stepNumber}>3</div>
-                <h3> {t("Earn")}</h3>
-                <p>
+                </P>
+              </Div>
+              <Div style={styles.step.style}>
+                <Div style={styles.stepNumber.style}>3</Div>
+                <H3> {t("Earn")}</H3>
+                <P>
                   {t("Get {{commission}} commission when they subscribe", {
                     commission: "20%",
                   })}
-                </p>
-              </div>
-            </div>
-          </div>
+                </P>
+              </Div>
+            </Div>
+          </Div>
 
-          <div className={styles.cta}>
+          <Div style={styles.cta.style}>
             {!affiliateStats?.hasAffiliateLink && (
               <button
                 className={clsx("button inverted large", styles.joinButton)}
@@ -239,9 +271,9 @@ export default function Affiliate() {
                     : t("Sign In to Join")}
               </button>
             )}
-          </div>
-        </div>
-      </div>
+          </Div>
+        </Div>
+      </Div>
     </Skeleton>
   )
 }

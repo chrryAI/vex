@@ -6,6 +6,13 @@
  */
 
 export const AffiliateStyleDefs = {
+  affiliate: {
+    width: "100%",
+    maxWidth: 800,
+    margin: "0 auto",
+    padding: 5,
+    marginBottom: 20,
+  },
   loading: {
     textAlign: "center",
     marginTop: 50,
@@ -17,9 +24,27 @@ export const AffiliateStyleDefs = {
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
+  },
+  h1: {
     margin: 0,
-    color: "var(--text-secondary)",
+    color: "#f87171",
+  },
+  subtitle: {
     fontSize: 16,
+    color: "var(--text-secondary)",
+  },
+  benefits: {
+    margin: "20px 0 10px 0",
+  },
+  h2: {
+    textAlign: "center",
+    margin: "0 0 30px 0",
+  },
+  benefitGrid: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+    fontSize: 14,
   },
   benefit: {
     base: {
@@ -33,11 +58,21 @@ export const AffiliateStyleDefs = {
       width: "50%",
       color: "var(--text-secondary)",
       marginBottom: "1rem",
-      margin: "10px 0",
     },
     hover: {
       borderStyle: "solid",
     },
+  },
+  h3: {
+    margin: "10px 0",
+  },
+  earnings: {
+    marginBottom: 20,
+  },
+  earningsh2: {
+    textAlign: "center",
+    margin: "25px 0",
+    fontSize: 28,
   },
   earningsGrid: {
     display: "flex",
@@ -58,8 +93,6 @@ export const AffiliateStyleDefs = {
     justifyContent: "center",
     backgroundColor: "var(--shade-1)",
     maxWidth: "47%",
-    margin: "10px 0",
-    fontSize: 22,
   },
   commission: {
     color: "#f5a623",
@@ -75,11 +108,17 @@ export const AffiliateStyleDefs = {
   earningCardPro: {
     border: "2px solid #f5a623",
   },
+  earningCardh3: {
+    margin: "10px 0",
+    fontSize: 22,
+  },
   example: {
     textAlign: "center",
     padding: 10,
     marginTop: 10,
     borderRadius: 12,
+  },
+  strong: {
     color: "var(--primary)",
   },
   howItWorks: {

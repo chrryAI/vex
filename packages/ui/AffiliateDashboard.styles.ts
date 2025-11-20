@@ -6,28 +6,66 @@
  */
 
 export const AffiliateDashboardStyleDefs = {
+  affiliate: {
+    width: "100%",
+    maxWidth: 800,
+    margin: "0 auto",
+    padding: 5,
+    marginBottom: 20,
+  },
   loading: {
     textAlign: "center",
     marginTop: 50,
   },
+  dashboard: {},
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  h1: {
+    marginTop: 5,
+    marginBottom: 0,
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
+  status: {},
   statusBadge: {
     padding: "2px 8px",
     borderRadius: 20,
     fontSize: 13,
-    backgroundColor: "var(--shade-2)",
+  },
+  active: {
+    backgroundColor: "var(--accent-4)",
     color: "white",
   },
+  inactive: {
+    backgroundColor: "var(--shade-2)",
+  },
   linkSection: {
-    marginBottom: "0.5rem",
+    marginBottom: 30,
     backgroundColor: "var(--background-secondary)",
-    fontSize: "0.9rem",
+  },
+  linkSectionH2: {
+    fontSize: "1.5rem",
+    marginBottom: "1rem",
+  },
+  linkBox: {
     display: "flex",
     alignItems: "center",
     gap: 13,
+    marginBottom: "0.5rem",
     flexWrap: "wrap",
     justifyContent: "center",
+  },
+  linkInput: {
     flex: 1,
+  },
+  copyButton: {},
+  linkHelp: {
     color: "var(--accent-1)",
+    fontSize: "0.9rem",
     marginTop: 5,
     textAlign: "center",
   },
@@ -118,8 +156,11 @@ export const AffiliateDashboardStyleDefs = {
     fontWeight: "bold",
   },
   referralsSection: {
-    marginBottom: "1rem",
+    marginBottom: "3rem",
+  },
+  referralsSectionH2: {
     fontSize: "1.5rem",
+    marginBottom: "1rem",
     textAlign: "center",
     margin: "20px 0",
   },
@@ -150,6 +191,27 @@ export const AffiliateDashboardStyleDefs = {
   referralValue: {
     fontSize: "2rem",
     fontWeight: "bold",
+    color: "var(--primary)",
+  },
+  info: {
+    backgroundColor: "var(--shade-1)",
+    padding: 15,
+    border: "1px solid var(--shade-2)",
+    borderRadius: 20,
+  },
+  infoH3: {
+    fontSize: "1.3rem",
+    margin: 0,
+  },
+  infoUl: {
+    padding: 0,
+    margin: 0,
+    marginTop: 5,
+  },
+  infoUlLi: {
+    lineHeight: 1.8,
+  },
+  infoUlLiStrong: {
     color: "var(--primary)",
   },
   footer: {
