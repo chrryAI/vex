@@ -42,7 +42,7 @@ export interface BoxProps
 
 export interface TextProps extends BaseProps {
   as?: "span" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent<HTMLSpanElement>) => void
   title?: string
   handlers?: any
   state?: any
@@ -76,6 +76,8 @@ export interface InputProps extends BaseProps {
     | "url"
     | "search"
     | "hidden"
+    | "range"
+
   placeholder?: string
   value?: string
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void
@@ -85,6 +87,12 @@ export interface InputProps extends BaseProps {
   title?: string
   required?: boolean
   disabled?: boolean
+  min?: string | number
+  max?: string | number
+  step?: string | number
+  maxLength?: number
+  autoComplete?: string
+  autoFocus?: boolean
 }
 
 export interface TextAreaProps extends BaseProps {

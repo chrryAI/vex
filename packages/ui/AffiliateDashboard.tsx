@@ -24,40 +24,10 @@ import Skeleton from "./Skeleton"
 import { useAffiliateDashboardStyles } from "./AffiliateDashboard.styles"
 import { useStyles } from "./context/StylesContext"
 
-interface AffiliateStats {
-  hasAffiliateLink: boolean
-  code?: string
-  affiliateLink?: string
-  stats?: {
-    clicks: number
-    conversions: number
-    totalRevenue: number
-    commissionEarned: number
-    commissionPaid: number
-    commissionPending: number
-    commissionRate: number
-    status: string
-  }
-  referrals?: {
-    total: number
-    pending: number
-    converted: number
-    paid: number
-  }
-  createdOn?: string
-  pendingPayout?: {
-    id: string
-    amount: number
-    status: string
-    requestedOn: string
-  }
-}
-
 export default function AffiliateDashboard() {
   const { t } = useAppContext()
 
   const styles = useAffiliateDashboardStyles()
-  const { utilities } = useStyles()
 
   const { affiliateStats, refetchAffiliateData, loadingAffiliateStats } =
     useData()

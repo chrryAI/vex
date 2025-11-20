@@ -13,6 +13,7 @@ export default function Select({
   value,
   name,
   onChange,
+  style,
   id,
   ...rest
 }: {
@@ -22,6 +23,7 @@ export default function Select({
   value?: string
   options: { value: string; label: string }[]
   defaultValue?: string
+  style?: React.CSSProperties
   onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }) {
   return (
@@ -29,7 +31,7 @@ export default function Select({
       <select
         name={name}
         id={id}
-        className={clsx(styles.type)}
+        style={style}
         defaultValue={defaultValue}
         value={value}
         onChange={onChange}

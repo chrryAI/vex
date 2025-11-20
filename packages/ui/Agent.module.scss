@@ -27,18 +27,18 @@
 }
 
 .tabButton {
-  &.currentTab {
-    font-size: toRem.toRem(13);
-    margin: 0 toRem.toRem(5);
-    transform: scale(1.1);
-  }
-
   &:not(.currentTab):hover {
     transition: all 0.2s ease;
 
     transform: scale(1.1);
     transition: transform 0.2s ease;
   }
+}
+
+.currentTab {
+  font-size: toRem.toRem(13);
+  margin: 0 toRem.toRem(5);
+  transform: scale(1.1);
 }
 
 .placeholder {
@@ -87,14 +87,16 @@ span.required {
 .apiKeys {
   display: flex;
   gap: toRem.toRem(10);
-  & > div {
-    flex: 1;
-    & > label {
-      display: flex;
-      align-items: center;
-      gap: toRem.toRem(5);
-    }
-  }
+}
+
+.apiKeysDiv {
+  flex: 1;
+}
+
+.apiKeysLabel {
+  display: flex;
+  align-items: center;
+  gap: toRem.toRem(5);
 }
 
 .field {
@@ -183,6 +185,9 @@ span.required {
   font-size: toRem.toRem(12);
   color: var(--accent-1);
   animation: slideDown 0.2s ease-out;
+}
+
+.error {
 }
 
 @keyframes slideDown {
