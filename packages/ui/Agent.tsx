@@ -1174,7 +1174,14 @@ export default function Agent({
             {tab === "monetization" && (
               <>
                 {/* Tab 4: Monetization */}
-                <Div style={{ ...styles.field.style }}>
+                <Div
+                  style={{
+                    ...styles.field.style,
+                    ...styles.firstChild.style,
+                    ...utilities.row.style,
+                    ...styles.bordered.style,
+                  }}
+                >
                   <Button
                     onClick={() => {
                       addParams({
@@ -1192,7 +1199,6 @@ export default function Agent({
                       isMagenta={appFormWatcher.tier === "plus"}
                       size={28}
                     />
-                    Vex{" "}
                     {t(capitalizeFirstLetter(appFormWatcher.tier || "Free"))}
                   </Button>
                   <Controller
@@ -1227,10 +1233,8 @@ export default function Agent({
                 {/* Info section for all tiers */}
                 <Div
                   style={{
-                    borderTop: "1px solid var(--shade-2-transparent)",
-                    position: "relative",
-                    paddingTop: "0.5rem",
-                    top: "-0.8rem",
+                    ...styles.field.style,
+                    ...styles.lastChild.style,
                   }}
                 >
                   {appFormWatcher.tier === "free" ? (
