@@ -460,9 +460,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [pathname])
 
   const currentStore = useMemo(() => {
-    const matchedApp = allApps?.find(
-      (app) => app?.store?.slug === pathname.replace("/", ""),
-    )
+    // Extract last path segment to handle language prefixes (e.g., /en/store-slug -> store-slug)
+    const pathSegments = pathname.split("/").filter(Boolean)
+    const lastSegment = pathSegments[pathSegments.length - 1] || ""
+
+    const matchedApp = allApps?.find((app) => app?.store?.slug === lastSegment)
     return matchedApp?.store
   }, [pathname, allApps])
 
