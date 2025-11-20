@@ -33,7 +33,7 @@ export const AppStyleDefs = {
   },
   focus: {
     position: "relative",
-    right: -5,
+    marginLeft: 10,
   },
   focusTime: {
     position: "absolute",
@@ -53,15 +53,12 @@ export const AppStyleDefs = {
   apps: {
     display: "grid",
     gap: 10,
+    gridTemplateColumns: "repeat(2, 1fr)",
     margin: "0 auto",
   },
   spaceInvader: {
     position: "relative",
-    right: -5,
-  },
-  spaceInvaderAtlas: {
-    right: -3,
-    top: -2,
+    marginLeft: 10,
   },
   spaceInvaderFocus: {
     right: -3,
@@ -69,20 +66,13 @@ export const AppStyleDefs = {
   spaceInvaderSpaceInvader: {},
   atlas: {
     position: "relative",
-    right: -5,
-  },
-  atlasAtlas: {
-    right: -3,
-    top: -2,
+    marginLeft: 10,
+    top: -5,
   },
   atlasFocus: {
     right: -3,
   },
   atlasSpaceInvader: {},
-  focusAtlas: {
-    right: -3,
-    top: -2,
-  },
   focusFocus: {
     right: -3,
   },
@@ -94,15 +84,21 @@ export const AppStyleDefs = {
   },
   pacMan: {
     position: "relative",
-    left: -5,
     bottom: 0,
     marginLeft: "auto",
+    marginRight: 10,
   },
   chrry: {
     position: "relative",
     right: 3,
     marginLeft: "auto",
-    marginRight: 4,
+    marginRight: 8,
+  },
+  popcorn: {
+    position: "relative",
+    right: 3,
+    marginLeft: "auto",
+    marginRight: 8,
   },
   zarathustra: {
     position: "relative",

@@ -1430,6 +1430,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   <Button
                     key={instruction.id}
                     data-testid={`${dataTestId}-item`}
+                    className="link"
                     style={{
                       ...utilities.link.style,
                       ...styles.instruction.style,

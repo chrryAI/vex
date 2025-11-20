@@ -394,6 +394,11 @@ select {
   flex-wrap: wrap;
 }
 
+.ghost:hover {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
 .column {
   display: flex !important;
   flex-direction: column !important;

@@ -17,6 +17,7 @@ export const WhyStyleDefs = {
     flexDirection: "column",
   },
   features: {
+    gridTemplateColumns: 250,
     gap: 20,
   },
   feature: {
