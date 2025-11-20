@@ -2,6 +2,8 @@
 
 **Production-ready React component library for building AI applications**
 
+./packages/ui/\*.tsx
+
 [![npm](https://img.shields.io/npm/v/@chrryai/chrry)](https://www.npmjs.com/package/@chrryai/chrry)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)

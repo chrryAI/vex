@@ -105,6 +105,9 @@ export {
 // Video Component (auto-resolves to .web.tsx or .native.tsx)
 export { default as Video, type VideoProps } from "./Video"
 
+// FilePicker Component (auto-resolves to .web.tsx or .native.tsx)
+export { default as FilePicker, type FilePickerProps } from "./FilePicker"
+
 // High-Performance List Component
 export { FlashList, type FlashListProps } from "./FlashList"
 
