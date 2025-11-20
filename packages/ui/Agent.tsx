@@ -18,7 +18,6 @@ import {
   VectorSquare,
   Webhook,
 } from "./icons"
-// import styles from "./Agent.module.scss"
 import Img from "./Image"
 import {
   capitalizeFirstLetter,
@@ -506,6 +505,15 @@ export default function Agent({
                   type="text"
                   placeholder={t("Name your app......")}
                 />
+                {!appFormWatcher.name ? (
+                  <Span style={styles.errorMessage.style}>
+                    {t("Name: minimum 3 characters")}
+                  </Span>
+                ) : errors.name?.message ? (
+                  <Span style={styles.errorMessage.style}>
+                    {t(errors.name.message)}
+                  </Span>
+                ) : null}
               </Div>
             ) : (
               t("System Prompt")
@@ -525,15 +533,6 @@ export default function Agent({
 
                 {/* Tab 2: Personality */}
                 <Div style={styles.tabContent.style}>
-                  {!appFormWatcher.name ? (
-                    <Span style={styles.errorMessage.style}>
-                      {t("Name: minimum 3 characters")}
-                    </Span>
-                  ) : errors.name?.message ? (
-                    <Span style={styles.errorMessage.style}>
-                      {t(errors.name.message)}
-                    </Span>
-                  ) : null}
                   <Div
                     style={{ ...utilities.row.style, ...styles.bordered.style }}
                   >
@@ -905,18 +904,21 @@ export default function Agent({
             )}
             {tab === "extends" && (
               <>
-                <Div style={{ ...styles.field.style }}>
+                <Div>
                   <Span
                     style={{
                       ...styles.label.style,
                       ...utilities.row.style,
+                      ...styles.firstChild.style,
                       ...styles.bordered.style,
                     }}
                   >
                     <Blocks size={18} color="var(--accent-6)" />
                     {t("Extend")}
                   </Span>
-                  <Div style={utilities.row.style}>
+                  <Div
+                    style={{ ...styles.field.style, ...utilities.row.style }}
+                  >
                     <Controller
                       name="extends"
                       control={control}
@@ -990,16 +992,17 @@ export default function Agent({
                       ...styles.bordered.style,
                     }}
                   >
-                    <label
+                    <Label
                       style={{
                         ...styles.label.style,
+                        ...styles.field.style,
                         ...utilities.row.style,
                       }}
                       htmlFor="visibility"
                     >
                       <GlobeLock size={18} color="var(--accent-6)" />
                       {t("Visibility")}
-                    </label>
+                    </Label>
                     <Controller
                       name="visibility"
                       control={control}
@@ -1022,6 +1025,7 @@ export default function Agent({
                   <Span
                     style={{
                       ...styles.label.style,
+                      ...styles.field.style,
                       ...utilities.row.style,
                       ...styles.bordered.style,
                     }}
@@ -1029,7 +1033,13 @@ export default function Agent({
                     <VectorSquare size={18} color="var(--accent-6)" />
                     {t("Tools")}
                   </Span>
-                  <Div style={{ ...utilities.row.style }}>
+                  <Div
+                    style={{
+                      ...styles.field.style,
+                      ...utilities.row.style,
+                      ...styles.lastChild.style,
+                    }}
+                  >
                     <Controller
                       name="tools"
                       control={control}

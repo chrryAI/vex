@@ -135,6 +135,7 @@ export const AgentStyleDefs = {
   errorMessage: {
     fontSize: 12,
     color: "var(--accent-1)",
+    fontWeight: "normal",
   },
   error: {},
 } as const

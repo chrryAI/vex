@@ -189,6 +189,7 @@ span.required {
   font-size: toRem.toRem(12);
   color: var(--accent-1);
   animation: slideDown 0.2s ease-out;
+  font-weight: normal;
 }
 
 .error {
