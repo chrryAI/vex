@@ -1,8 +1,6 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-// import styles from "./Menu.module.scss"
-import clsx from "clsx"
 import {
   ArrowLeft,
   AtSign,
@@ -86,7 +84,7 @@ export default function Menu({
   const { app } = useApp()
 
   // Platform context
-  const { os, isStandalone } = usePlatform()
+  const { viewPortHeight, isStandalone } = usePlatform()
 
   // Theme context
   const {
@@ -331,11 +329,15 @@ export default function Menu({
           <Div
             style={{
               ...styles.menuContent.style,
-              ...(isDrawerOpen && styles.open.style),
-              ...(isDrawerOpen && styles.closed.style),
             }}
           >
-            <Div style={styles.menuItems.style}>
+            <Div
+              style={{
+                ...styles.menuItems.style,
+                display: "flex",
+                marginTop: viewPortHeight > 700 ? "1rem" : undefined,
+              }}
+            >
               <A
                 data-testid="new-chat-button"
                 href={FRONTEND_URL}
@@ -404,7 +406,7 @@ export default function Menu({
                 <Div
                   style={{
                     ...styles.threads.style,
-                    ...(isLoadingThreads && styles.loading.style),
+                    ...(isLoadingThreads ? styles.loading.style : {}),
                   }}
                 >
                   <H4 style={styles.threadsTitle.style}>
@@ -556,7 +558,10 @@ export default function Menu({
                     <>
                       <Div
                         ref={timelineListRef}
-                        className={clsx(styles.threadsList, "menuThreadList")}
+                        className="menuThreadList"
+                        style={{
+                          ...styles.threadsList.style,
+                        }}
                       >
                         {threads.threads.map((thread) => (
                           <Div
@@ -604,12 +609,15 @@ export default function Menu({
                                 ) : null}
                               </Span>
                             ) : null}
-
                             {(() => {
                               const url = `/threads/${thread.id}`
 
                               return (
                                 <A
+                                  className="link"
+                                  style={{
+                                    ...styles.threadItem.style,
+                                  }}
                                   data-testid={`thread-link-${thread.id}`}
                                   onClick={(e) => {
                                     track({
@@ -633,7 +641,6 @@ export default function Menu({
                                 </A>
                               )
                             })()}
-
                             {collaborationStatus === "pending" ? (
                               <CollaborationStatus
                                 dataTestId="menu"
