@@ -12,14 +12,13 @@ import {
   Coins,
   GlobeLock,
   MicVocal,
-  Palette,
   Settings2,
   Sparkles,
   ThermometerSun,
   VectorSquare,
   Webhook,
 } from "./icons"
-import styles from "./Agent.module.scss"
+// import styles from "./Agent.module.scss"
 import Img from "./Image"
 import {
   capitalizeFirstLetter,
@@ -48,7 +47,16 @@ import {
   Perplexity,
 } from "@lobehub/icons"
 import Logo from "./Logo"
-import { usePlatform } from "./platform"
+import {
+  Button,
+  Div,
+  Input,
+  Label,
+  Span,
+  usePlatform,
+  TextArea,
+  P,
+} from "./platform"
 import {
   useChat,
   useNavigationContext,
@@ -57,17 +65,19 @@ import {
 } from "./context/providers"
 import ThemeSwitcher from "./ThemeSwitcher"
 import { useTheme } from "./platform"
+import { useAgentStyles } from "./Agent.styles"
+import { useStyles } from "./context/StylesContext"
 
 export default function Agent({
-  className,
-  isUpdate = false,
+  style,
 }: {
-  className?: string
   initialData?: Partial<appFormData>
   isUpdate?: boolean
+  style?: React.CSSProperties
 }) {
   const { device } = usePlatform()
-
+  const styles = useAgentStyles()
+  const { utilities } = useStyles()
   const { t } = useAppContext()
   const { chrry, baseApp, token } = useAuth()
 
@@ -452,8 +462,11 @@ export default function Agent({
 
   return (
     <>
-      <button
-        className={clsx("small", styles.settingsButton)}
+      <Button
+        style={{
+          ...styles.settingsButton.style,
+          ...utilities.small.style,
+        }}
         onClick={() => {
           setAppStatus({
             part: "settings",
@@ -461,7 +474,7 @@ export default function Agent({
         }}
       >
         <Settings2 size={18} /> {t("Settings")}
-      </button>
+      </Button>
       {hasHydrated && (
         <Modal
           hasCloseButton
@@ -477,7 +490,7 @@ export default function Agent({
           }
           title={
             tab !== "systemPrompt" ? (
-              <div className={styles.titleContainer}>
+              <Div style={styles.titleContainer.style}>
                 <input
                   autoComplete="false"
                   {...register("name")}
@@ -485,12 +498,12 @@ export default function Agent({
                   id="name"
                   className={clsx(
                     styles.titleInput,
-                    errors.name?.message && styles.error,
+                    errors.name?.message && styles.error.style,
                   )}
                   type="text"
                   placeholder={t("Name your app......")}
                 />
-              </div>
+              </Div>
             ) : (
               t("System Prompt")
             )
@@ -499,41 +512,41 @@ export default function Agent({
           onToggle={(open) => {
             setIsModalOpen(open)
           }}
-          className={clsx(styles.modal, className)}
+          style={{ ...styles.modal.style, ...style }}
         >
-          <div className={styles.modalContent}>
+          <Div style={styles.modalContent.style}>
             {/* Form */}
             {tab === "settings" && (
-              <div className={styles.form}>
+              <Div>
                 {/* Tab 1: Basic Info */}
 
                 {/* Tab 2: Personality */}
-                <div className={styles.tabContent}>
+                <Div style={styles.tabContent.style}>
                   {!appFormWatcher.name ? (
-                    <span className={styles.errorMessage}>
+                    <Span style={styles.errorMessage.style}>
                       {t("Name: minimum 3 characters")}
-                    </span>
+                    </Span>
                   ) : errors.name?.message ? (
-                    <span className={styles.errorMessage}>
+                    <Span style={styles.errorMessage.style}>
                       {t(errors.name.message)}
-                    </span>
+                    </Span>
                   ) : null}
-                  <div className={clsx(styles.field, "row")}>
+                  <Div style={styles.field.style}>
                     <Controller
                       name={"backgroundColor"}
                       control={control}
                       render={({ field }) => (
-                        <span className={clsx(styles.label, "row")}>
+                        <Span style={styles.label.style}>
                           <ThemeSwitcher
                             size={26}
                             onThemeChange={field.onChange}
                           />
                           {t("Theme & Color")}
-                        </span>
+                        </Span>
                       )}
                     />
 
-                    <div className={clsx(styles.colorOptions, "right")}>
+                    <Div style={styles.colorOptions.style}>
                       <Controller
                         name={"themeColor"}
                         control={control}
@@ -541,13 +554,10 @@ export default function Agent({
                           <ColorScheme onChange={field.onChange} />
                         )}
                       />
-                    </div>
-                  </div>
-                  <div className={clsx(styles.field, "row")}>
-                    <label
-                      className={clsx(clsx(styles.label, "row"))}
-                      htmlFor="defaultModel"
-                    >
+                    </Div>
+                  </Div>
+                  <Div style={styles.field.style}>
+                    <Label style={styles.label.style} htmlFor="defaultModel">
                       <>
                         {appFormWatcher.defaultModel === "deepSeek" ? (
                           <DeepSeek color="var(--accent-6)" size={25} />
@@ -566,13 +576,13 @@ export default function Agent({
                         ) : null}
                       </>{" "}
                       {t("Default Model")}
-                    </label>
+                    </Label>
                     <Controller
                       name="defaultModel"
                       control={control}
                       render={({ field }) => (
                         <Select
-                          className={styles.select}
+                          style={styles.select.style}
                           options={[
                             { value: "sushi", label: "Sushi" },
                             { value: "claude", label: "Claude" },
@@ -595,19 +605,19 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
-                  <div className={clsx(styles.field, "row")}>
-                    <label className={clsx(styles.label, "row")} htmlFor="tone">
+                  <Div style={styles.field.style}>
+                    <Label style={styles.label.style} htmlFor="tone">
                       <MicVocal size={18} color="var(--accent-6)" />
                       {t("Tone")}
-                    </label>
+                    </Label>
                     <Controller
                       name="tone"
                       control={control}
                       render={({ field }) => (
                         <Select
-                          className={styles.select}
+                          style={styles.select.style}
                           options={[
                             {
                               value: "professional",
@@ -624,18 +634,15 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
-                  <div className={clsx(styles.field, "row")}>
-                    <label
-                      className={clsx(styles.label, "row")}
-                      htmlFor="temperature"
-                    >
+                  <Div style={styles.field.style}>
+                    <Label style={styles.label.style} htmlFor="temperature">
                       <ThermometerSun size={18} color="var(--accent-6)" />
                       {t("Temperature")}: {watch("temperature")}
-                    </label>
-                    <input
-                      className={clsx(styles.range)}
+                    </Label>
+                    <Input
+                      style={styles.range.style}
                       id="temperature"
                       type="range"
                       min="0"
@@ -643,22 +650,19 @@ export default function Agent({
                       step="0.1"
                       {...register("temperature", { valueAsNumber: true })}
                     />
-                  </div>
+                  </Div>
 
-                  <div className={clsx(styles.field)}>
-                    <label
-                      className={clsx(styles.label, "row")}
-                      htmlFor="placeholder"
-                    >
+                  <Div style={styles.field.style}>
+                    <Label style={styles.label.style} htmlFor="placeholder">
                       <Sparkles
                         size={20}
                         color="var(--accent-1)"
                         fill="var(--accent-1)"
                       />
                       {t("Default Input Placeholder")}
-                    </label>
-                    <input
-                      className={clsx(styles.placeholder)}
+                    </Label>
+                    <Input
+                      style={styles.placeholder.style}
                       id="placeholder"
                       placeholder={t(
                         `${t("e.g., Plan your dream vacation with me")} ✈️`,
@@ -666,22 +670,19 @@ export default function Agent({
                       type="text"
                       {...register("placeholder")}
                     />
-                  </div>
+                  </Div>
                   {/* Tab 3: Capabilities */}
-                  <div className={clsx(styles.field, "row")}>
-                    <label
-                      className={clsx(styles.label, "row")}
-                      htmlFor="capabilities"
-                    >
+                  <Div style={styles.field.style}>
+                    <Label style={styles.label.style} htmlFor="capabilities">
                       <Boxes size={18} color="var(--accent-6)" />
                       {t("Capabilities")}
-                    </label>
-                    <div className="row">
+                    </Label>
+                    <Div style={styles.field.style}>
                       <Controller
                         name="capabilities.webSearch"
                         control={control}
                         render={({ field }) => (
-                          <label
+                          <Label
                             onClick={(e) => {
                               if (aiAgent?.capabilities?.webSearch === true) {
                                 e.preventDefault()
@@ -702,14 +703,14 @@ export default function Agent({
                             >
                               <span>{t("Web Search")}</span>
                             </Checkbox>
-                          </label>
+                          </Label>
                         )}
                       />
                       <Controller
                         name="capabilities.imageGeneration"
                         control={control}
                         render={({ field }) => (
-                          <label
+                          <Label
                             onClick={(e) => {
                               if (
                                 aiAgent?.capabilities?.imageGeneration === true
@@ -732,14 +733,14 @@ export default function Agent({
                             >
                               <span>{t("ImageGeneration")}</span>
                             </Checkbox>
-                          </label>
+                          </Label>
                         )}
                       />
                       <Controller
                         name="capabilities.pdf"
                         control={control}
                         render={({ field }) => (
-                          <label
+                          <Label
                             onClick={(e) => {
                               if (aiAgent?.capabilities?.pdf === true) {
                                 e.preventDefault()
@@ -758,14 +759,14 @@ export default function Agent({
                             >
                               <span>{t("File Analysis")}</span>
                             </Checkbox>
-                          </label>
+                          </Label>
                         )}
                       />
                       <Controller
                         name="capabilities.audio"
                         control={control}
                         render={({ field }) => (
-                          <label
+                          <Label
                             onClick={(e) => {
                               if (aiAgent?.capabilities?.audio === true) {
                                 e.preventDefault()
@@ -784,14 +785,14 @@ export default function Agent({
                             >
                               <span>{t("Voice")}</span>
                             </Checkbox>
-                          </label>
+                          </Label>
                         )}
                       />
                       <Controller
                         name="capabilities.video"
                         control={control}
                         render={({ field }) => (
-                          <label
+                          <Label
                             onClick={(e) => {
                               if (aiAgent?.capabilities?.video === true) {
                                 e.preventDefault()
@@ -810,14 +811,14 @@ export default function Agent({
                             >
                               <span>{t("Video")}</span>
                             </Checkbox>
-                          </label>
+                          </Label>
                         )}
                       />
                       <Controller
                         name="capabilities.codeExecution"
                         control={control}
                         render={({ field }) => (
-                          <label
+                          <Label
                             onClick={(e) => {
                               if (
                                 aiAgent?.capabilities?.codeExecution === true
@@ -840,22 +841,24 @@ export default function Agent({
                             >
                               <span>{t("Code Execution")}</span>
                             </Checkbox>
-                          </label>
+                          </Label>
                         )}
                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </Div>
+                  </Div>
+                </Div>
+              </Div>
             )}
             {tab === "extends" && (
               <>
-                <div className={clsx(styles.field)}>
-                  <span className={clsx(styles.label, "row")}>
+                <Div style={styles.field.style}>
+                  <Span
+                    style={{ ...utilities.row.style, ...styles.label.style }}
+                  >
                     <Blocks size={18} color="var(--accent-6)" />
                     {t("Extend")}
-                  </span>
-                  <div className={"row"}>
+                  </Span>
+                  <Div style={utilities.row.style}>
                     <Controller
                       name="extends"
                       control={control}
@@ -878,7 +881,7 @@ export default function Agent({
                                 field.value?.includes(app.id)
 
                               return (
-                                <label key={app.id || app.name}>
+                                <Label key={app.id || app.name}>
                                   <Checkbox
                                     checked={checked}
                                     // disabled={isDisabled || isChrry}
@@ -914,17 +917,19 @@ export default function Agent({
                                   >
                                     {app.icon} {app.name}
                                   </Checkbox>
-                                </label>
+                                </Label>
                               )
                             })}
                           </>
                         )
                       }}
                     />
-                  </div>
-                  <div className={clsx(styles.field, "row")}>
+                  </Div>
+                  <Div
+                    style={{ ...styles.field.style, ...utilities.row.style }}
+                  >
                     <label
-                      className={clsx(styles.label, "row")}
+                      style={{ ...styles.label.style, ...utilities.row.style }}
                       htmlFor="visibility"
                     >
                       <GlobeLock size={18} color="var(--accent-6)" />
@@ -935,7 +940,7 @@ export default function Agent({
                       control={control}
                       render={({ field }) => (
                         <Select
-                          className={styles.select}
+                          style={{ ...styles.select.style }}
                           id="visibility"
                           options={[
                             { value: "private", label: t("Private") },
@@ -947,23 +952,25 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
-                  <span className={clsx(styles.label, "row")}>
+                  <Span
+                    style={{ ...styles.label.style, ...utilities.row.style }}
+                  >
                     <VectorSquare size={18} color="var(--accent-6)" />
                     {t("Tools")}
-                  </span>
-                  <div className={clsx("row", "right")}>
+                  </Span>
+                  <Div
+                    style={{ ...styles.field.style, ...utilities.row.style }}
+                  >
                     <Controller
                       name="tools"
                       control={control}
                       render={({ field }) => (
                         <>
-                          <label
-                            className={styles.checkboxLabel}
-                            onClick={(e) => {
+                          <Label
+                            onClick={() => {
                               if (calendarRequiredApp) {
-                                e.preventDefault()
                                 toast.error(
                                   t(
                                     "Calendar required because you are using {{app}}",
@@ -989,12 +996,10 @@ export default function Agent({
                             >
                               📅 {t("Calendar")}
                             </Checkbox>
-                          </label>
-                          <label
-                            className={styles.checkboxLabel}
-                            onClick={(e) => {
+                          </Label>
+                          <Label
+                            onClick={() => {
                               if (isLocationRequired || locationRequiredApp) {
-                                e.preventDefault()
                                 toast.error(
                                   t(
                                     isLocationRequired
@@ -1024,12 +1029,10 @@ export default function Agent({
                             >
                               🌍 {t("Location")}
                             </Checkbox>
-                          </label>
-                          <label
-                            className={styles.checkboxLabel}
-                            onClick={(e) => {
+                          </Label>
+                          <Label
+                            onClick={() => {
                               if (isWeatherRequired || weatherRequiredApp) {
-                                e.preventDefault()
                                 toast.error(
                                   t(
                                     isWeatherRequired
@@ -1059,18 +1062,18 @@ export default function Agent({
                             >
                               ☁️ {t("Weather")}
                             </Checkbox>
-                          </label>
+                          </Label>
                         </>
                       )}
                     />
-                  </div>
-                </div>
+                  </Div>
+                </Div>
               </>
             )}
 
             {tab === "systemPrompt" && (
-              <div className={styles.field}>
-                <textarea
+              <Div style={{ ...styles.field.style }}>
+                <TextArea
                   id="systemPrompt"
                   {...register("systemPrompt")}
                   placeholder={`🎯 ${t("You are a specialized AI assistant with expertise in [your domain].")}
@@ -1088,14 +1091,14 @@ export default function Agent({
 🎯 ${t("Always prioritize [user's main goal or value].")}`}
                   rows={12}
                 />
-              </div>
+              </Div>
             )}
 
             {tab === "monetization" && (
               <>
                 {/* Tab 4: Monetization */}
-                <div className={clsx(styles.field, "row")}>
-                  <button
+                <Div style={{ ...styles.field.style }}>
+                  <Button
                     onClick={() => {
                       addParams({
                         subscribe: "true",
@@ -1114,13 +1117,13 @@ export default function Agent({
                     />
                     Vex{" "}
                     {t(capitalizeFirstLetter(appFormWatcher.tier || "Free"))}
-                  </button>
+                  </Button>
                   <Controller
                     name="tier"
                     control={control}
                     render={({ field }) => (
                       <Select
-                        className={styles.select}
+                        style={{ ...styles.select.style }}
                         id="tier"
                         options={[
                           { value: "free", label: t("Free") },
@@ -1142,10 +1145,10 @@ export default function Agent({
                       />
                     )}
                   />
-                </div>
+                </Div>
 
                 {/* Info section for all tiers */}
-                <div
+                <Div
                   style={{
                     borderTop: "1px solid var(--shade-2-transparent)",
                     position: "relative",
@@ -1154,10 +1157,10 @@ export default function Agent({
                   }}
                 >
                   {appFormWatcher.tier === "free" ? (
-                    <>
+                    <Div>
                       <p>🌍 {t("free_tier_title")}</p>
                       <p>{t("free_tier_description")}</p>
-                      <div
+                      <Div
                         style={{
                           marginTop: "1rem",
                         }}
@@ -1168,23 +1171,23 @@ export default function Agent({
                           <li>{t("free_tier_benefit_2")}</li>
                           <li>{t("free_tier_benefit_3")}</li>
                         </ul>
-                      </div>
-                    </>
+                      </Div>
+                    </Div>
                   ) : (
-                    <div className={clsx("column")}>
-                      <p>
+                    <Div style={{ ...utilities.column.style }}>
+                      <P>
                         💎{" "}
                         {appFormWatcher.tier === "plus"
                           ? t("paid_tier_requires_plus")
                           : t("paid_tier_requires_pro")}
-                      </p>
-                      <p>{t("paid_tier_subscription_required")}</p>
-                      <div
+                      </P>
+                      <P>{t("paid_tier_subscription_required")}</P>
+                      <Div
                         style={{
                           marginTop: "1rem",
                         }}
                       >
-                        <p
+                        <P
                           style={{
                             margin: 0,
                             fontSize: "0.85rem",
@@ -1192,8 +1195,8 @@ export default function Agent({
                           }}
                         >
                           🤝 {t("revenue_share_title")}
-                        </p>
-                        <p
+                        </P>
+                        <P
                           style={{
                             margin: "0.5rem 0 0 0",
                             fontSize: "0.8rem",
@@ -1209,8 +1212,8 @@ export default function Agent({
                                 price: PRO_PRICE,
                                 earn: (PRO_PRICE * 0.7).toFixed(2),
                               })}
-                        </p>
-                        <p
+                        </P>
+                        <P
                           style={{
                             margin: "0.25rem 0 0 0",
                             fontSize: "0.75rem",
@@ -1218,36 +1221,36 @@ export default function Agent({
                           }}
                         >
                           {t("revenue_share_coming_soon")}
-                        </p>
-                      </div>
+                        </P>
+                      </Div>
                       {appFormWatcher.tier === "pro" && (
-                        <div>
-                          <p>✨ {t("pro_unlimited_title")}</p>
-                          <p>{t("pro_unlimited_description")}</p>
-                        </div>
+                        <Div>
+                          <P>✨ {t("pro_unlimited_title")}</P>
+                          <P>{t("pro_unlimited_description")}</P>
+                        </Div>
                       )}
-                    </div>
+                    </Div>
                   )}
-                </div>
+                </Div>
                 {appFormWatcher.tier !== "free" && (
-                  <div className={clsx("row")}>
-                    <div>
-                      <p>🔑 {t("byok_title")}</p>
-                      <p>{t("byok_description")}</p>
-                    </div>
-                  </div>
+                  <Div style={{ ...styles.field.style }}>
+                    <Div>
+                      <P>🔑 {t("byok_title")}</P>
+                      <P>{t("byok_description")}</P>
+                    </Div>
+                  </Div>
                 )}
               </>
             )}
             {tab === "api" && (
               <>
                 {/* API Keys Section (BYOK) */}
-                <div className={clsx("row", styles.apiKeys)}>
+                <Div style={{ ...styles.apiKeys.style }}>
                   {/* OpenAI Key */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <OpenAI /> OpenAI (ChatGPT)
-                    </label>
+                    </Label>
                     <Controller
                       name="apiKeys.openai"
                       control={control}
@@ -1260,13 +1263,13 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
                   {/* Anthropic Key */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Claude /> Anthropic (Claude)
-                    </label>
+                    </Label>
                     <Controller
                       name="apiKeys.anthropic"
                       control={control}
@@ -1279,13 +1282,13 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
                   {/* Google Key */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Gemini /> Google (Gemini)
-                    </label>
+                    </Label>
                     <Controller
                       name="apiKeys.google"
                       control={control}
@@ -1298,18 +1301,18 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
                   {/* DeepSeek Key - REQUIRED for paid tiers */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <DeepSeek /> DeepSeek{" "}
                       {appFormWatcher.tier !== "free" && (
                         <span style={{ color: "var(--accent-1)" }}>
                           *{t("Required")}
                         </span>
                       )}
-                    </label>
+                    </Label>
                     <Controller
                       name="apiKeys.deepseek"
                       control={control}
@@ -1329,13 +1332,13 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
                   {/* Perplexity Key */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Perplexity /> Perplexity
-                    </label>
+                    </Label>
                     <Controller
                       name="apiKeys.perplexity"
                       control={control}
@@ -1348,13 +1351,13 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
                   {/* Replicate Key */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Flux /> Replicate (Flux)
-                    </label>
+                    </Label>
                     <Controller
                       name="apiKeys.replicate"
                       control={control}
@@ -1367,10 +1370,10 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
-                </div>{" "}
+                  </Div>
+                </Div>
                 {appFormWatcher.tier !== "free" && !isMobileDevice && (
-                  <div
+                  <Div
                     style={{
                       paddingTop: "0.5rem",
                       borderTop: "1px solid var(--shade-2-transparent)",
@@ -1378,10 +1381,10 @@ export default function Agent({
                   >
                     <p>⚠️ {t("byok_required_title")}</p>
                     <p>{t("byok_required_description")}</p>
-                  </div>
+                  </Div>
                 )}
                 {appFormWatcher.tier === "free" && (
-                  <div
+                  <Div
                     style={{
                       marginTop: "1rem",
                       padding: "0.75rem",
@@ -1389,7 +1392,7 @@ export default function Agent({
                       borderRadius: "20px",
                     }}
                   >
-                    <p
+                    <P
                       style={{
                         margin: 0,
                         fontSize: "0.75rem",
@@ -1397,20 +1400,22 @@ export default function Agent({
                       }}
                     >
                       💡 {t("byok_optional_free")}
-                    </p>
-                  </div>
+                    </P>
+                  </Div>
                 )}
               </>
             )}
 
             {tab === "customModel" && (
               <>
-                <div className={clsx("row", styles.apiKeys)}>
+                <Div
+                  style={{ ...utilities.row.style, ...styles.apiKeys.style }}
+                >
                   {/* Model Name */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Brain size={18} /> {t("Model Name")}
-                    </label>
+                    </Label>
                     <Controller
                       name="name"
                       control={customAgentForm.control}
@@ -1432,13 +1437,13 @@ export default function Agent({
                         {customAgentForm.formState.errors.name.message}
                       </span>
                     )}
-                  </div>
+                  </Div>
 
                   {/* Display Name */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Sparkles size={18} /> {t("Display Name")}
-                    </label>
+                    </Label>
                     <Controller
                       name="displayName"
                       control={customAgentForm.control}
@@ -1450,13 +1455,13 @@ export default function Agent({
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
                   {/* API URL */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Webhook size={18} /> {t("API URL")}
-                    </label>
+                    </Label>
                     <Controller
                       name="apiURL"
                       control={customAgentForm.control}
@@ -1469,45 +1474,45 @@ export default function Agent({
                       )}
                     />
                     {customAgentForm.formState.errors.apiURL && (
-                      <span
+                      <Span
                         style={{
                           color: "var(--accent-1)",
                           fontSize: "0.85rem",
                         }}
                       >
                         {customAgentForm.formState.errors.apiURL.message}
-                      </span>
+                      </Span>
                     )}
-                  </div>
+                  </Div>
 
                   {/* Model ID */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Brain size={18} /> {t("Model ID")}
-                    </label>
+                    </Label>
                     <Controller
                       name="modelId"
                       control={customAgentForm.control}
                       render={({ field }) => (
-                        <input
+                        <Input
                           type="text"
                           {...field}
                           placeholder="gpt-4, claude-3-opus, etc."
                         />
                       )}
                     />
-                  </div>
+                  </Div>
 
                   {/* API Key */}
-                  <div className={clsx("column")}>
-                    <label>
+                  <Div style={{ ...utilities.column.style }}>
+                    <Label>
                       <Webhook size={18} /> {t("API Key")}
-                    </label>
+                    </Label>
                     <Controller
                       name="apiKey"
                       control={customAgentForm.control}
                       render={({ field }) => (
-                        <input
+                        <Input
                           type="password"
                           {...field}
                           placeholder="sk-..."
@@ -1515,33 +1520,36 @@ export default function Agent({
                       )}
                     />
                     {customAgentForm.formState.errors.apiKey && (
-                      <span
+                      <Span
                         style={{
                           color: "var(--accent-1)",
                           fontSize: "0.85rem",
                         }}
                       >
                         {customAgentForm.formState.errors.apiKey.message}
-                      </span>
+                      </Span>
                     )}
-                  </div>
-                </div>
+                  </Div>
+                </Div>
 
-                <div
-                  className="row"
-                  style={{ gap: "0.5rem", marginTop: "1rem" }}
+                <Div
+                  style={{
+                    gap: "0.5rem",
+                    marginTop: "1rem",
+                    ...utilities.row.style,
+                  }}
                 >
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       customAgentForm.reset()
                       setTab("settings")
                     }}
-                    className="inverted"
+                    style={{ ...utilities.inverted.style }}
                   >
                     {t("Cancel")}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={customAgentForm.handleSubmit(async (data) => {
                       try {
@@ -1586,38 +1594,41 @@ export default function Agent({
                     })}
                   >
                     {t("Create Model")}
-                  </button>
-                </div>
+                  </Button>
+                </Div>
               </>
             )}
 
-            <div
-              style={{ borderTop: tab === "systemPrompt" ? "none" : undefined }}
-              className={styles.footer}
+            <Div
+              style={{
+                borderTop: tab === "systemPrompt" ? "none" : undefined,
+                ...styles.footer.style,
+              }}
             >
               <>
-                <button
-                  className={clsx(
-                    styles.tabButton,
-                    "inverted",
-                    "small",
-                    tab === "settings" ? styles.currentTab : undefined,
-                  )}
+                <Button
+                  style={{
+                    ...styles.tabButton.style,
+
+                    ...utilities.inverted.style,
+                    ...utilities.small.style,
+                    ...(tab === "settings"
+                      ? styles.currentTab.style
+                      : undefined),
+                  }}
                   type="button"
                   onClick={() => {
                     setTab("settings")
                   }}
                 >
                   <Settings2 size={16} /> {t("Settings")}
-                </button>
+                </Button>
               </>
-              <button
-                className={clsx(
-                  styles.tabButton,
-                  "small",
-                  tab === "extends" ? styles.currentTab : undefined,
-                )}
+              <Button
                 style={{
+                  ...styles.tabButton.style,
+                  ...utilities.small.style,
+                  ...(tab === "extends" ? styles.currentTab.style : undefined),
                   backgroundColor: "var(--accent-7)",
                 }}
                 onClick={() => {
@@ -1627,43 +1638,41 @@ export default function Agent({
               >
                 <Blocks size={16} />
                 {t("Extend")}
-              </button>
+              </Button>
 
-              <button
-                className={clsx(
-                  styles.tabButton,
-                  "small",
-                  tab === "monetization" ? styles.currentTab : undefined,
-                )}
+              <Button
                 onClick={() => {
                   setTab("monetization")
                 }}
                 type="button"
                 style={{
                   backgroundColor: "var(--accent-4)",
+                  ...styles.tabButton.style,
+                  ...utilities.small.style,
+                  ...(tab === "monetization"
+                    ? styles.currentTab.style
+                    : undefined),
                 }}
               >
                 <Coins size={16} /> {t("Monetization")}
-              </button>
+              </Button>
 
-              <button
-                className={clsx(
-                  styles.tabButton,
-                  "small",
-                  tab === "api" ? styles.currentTab : undefined,
-                )}
+              <Button
                 onClick={() => {
                   setTab("api")
                 }}
                 type="button"
                 style={{
+                  ...styles.tabButton.style,
+                  ...utilities.small.style,
+                  ...(tab === "api" ? styles.currentTab.style : undefined),
                   backgroundColor: "var(--accent-1)",
                 }}
               >
                 <Webhook size={16} /> {t("API")}
-              </button>
+              </Button>
               {tab !== "systemPrompt" && (
-                <button
+                <Button
                   onClick={() => {
                     setTab("systemPrompt")
                   }}
@@ -1683,11 +1692,11 @@ export default function Agent({
                   }
                 >
                   <Brain size={16} /> {t("System Prompt")}
-                </button>
+                </Button>
               )}
 
               {appFormWatcher.name && tab === "systemPrompt" && (
-                <button
+                <Button
                   className={clsx(styles.tabButton, "inverted")}
                   type="button"
                   onClick={() => {
@@ -1710,10 +1719,10 @@ export default function Agent({
                     height={18}
                   />
                   {t("Continue")}
-                </button>
+                </Button>
               )}
-            </div>
-          </div>
+            </Div>
+          </Div>
         </Modal>
       )}
     </>

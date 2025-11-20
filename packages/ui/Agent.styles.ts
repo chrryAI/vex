@@ -23,7 +23,7 @@ export const AgentStyleDefs = {
     paddingTop: 10,
   },
   tabButton: {},
-  tabButtonCurrentTab: {
+  currentTab: {
     fontSize: 13,
     margin: "0 5px",
   },
@@ -60,6 +60,18 @@ export const AgentStyleDefs = {
   colorOptions: {
     display: "flex",
     gap: 6,
+  },
+  apiKeys: {
+    display: "flex",
+    gap: 10,
+  },
+  apiKeysDiv: {
+    flex: 1,
+  },
+  apiKeysLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
   },
   field: {
     display: "flex",
@@ -113,6 +125,7 @@ export const AgentStyleDefs = {
     fontSize: 12,
     color: "var(--accent-1)",
   },
+  error: {},
 } as const
 
 import { createUnifiedStyles } from "./styles/createUnifiedStyles"
