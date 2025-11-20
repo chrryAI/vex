@@ -553,6 +553,7 @@ export default function App({
                   )}
                   <Button
                     disabled={isUploading}
+                    className="link"
                     title={t("Edit")}
                     aria-label={t("Edit")}
                     onClick={() => triggerFileInput()}
@@ -568,6 +569,7 @@ export default function App({
                       app={app}
                       alt="Space Invader"
                       title={t("Space Invader")}
+                      size={45}
                       style={{
                         ...styles.appImage.style,
                         position: "relative",
@@ -815,19 +817,17 @@ export default function App({
                 >
                   <Settings2 />
                 </Button>
-                <A
+                <Button
+                  className="inverted"
                   title={t("Your AI-Powered Life")}
-                  href={`${FRONTEND_URL}/lifeOS`}
                   style={{
-                    ...utilities.link.style,
                     ...utilities.small.style,
                     ...utilities.inverted.style,
                     display: "flex",
                     alignItems: "center",
                     gap: "0.4rem",
                   }}
-                  onClick={(e) => {
-                    e.preventDefault()
+                  onClick={() => {
                     setAppStatus({
                       step: canEditApp ? "update" : "add",
                       part: "name",
@@ -841,7 +841,7 @@ export default function App({
                     size={24}
                   />
                   <Span>{appFormWatcher.name}</Span>
-                </A>
+                </Button>
                 {isManagingApp && (
                   <Button
                     onClick={() => {
