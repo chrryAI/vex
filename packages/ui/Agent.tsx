@@ -461,7 +461,7 @@ export default function Agent({
   }
 
   return (
-    <>
+    <Div>
       <Button
         style={{
           ...styles.settingsButton.style,
@@ -531,22 +531,31 @@ export default function Agent({
                       {t(errors.name.message)}
                     </Span>
                   ) : null}
-                  <Div style={styles.field.style}>
+                  <Div style={utilities.row.style}>
                     <Controller
                       name={"backgroundColor"}
                       control={control}
                       render={({ field }) => (
-                        <Span style={styles.label.style}>
+                        <Div
+                          style={{
+                            ...utilities.row.style,
+                          }}
+                        >
                           <ThemeSwitcher
                             size={26}
                             onThemeChange={field.onChange}
                           />
                           {t("Theme & Color")}
-                        </Span>
+                        </Div>
                       )}
                     />
 
-                    <Div style={styles.colorOptions.style}>
+                    <Div
+                      style={{
+                        ...styles.colorOptions.style,
+                        ...utilities.right.style,
+                      }}
+                    >
                       <Controller
                         name={"themeColor"}
                         control={control}
@@ -556,8 +565,13 @@ export default function Agent({
                       />
                     </Div>
                   </Div>
-                  <Div style={styles.field.style}>
-                    <Label style={styles.label.style} htmlFor="defaultModel">
+                  <Div
+                    style={{ ...styles.field.style, ...utilities.row.style }}
+                  >
+                    <Label
+                      style={{ ...styles.label.style, ...utilities.row.style }}
+                      htmlFor="defaultModel"
+                    >
                       <>
                         {appFormWatcher.defaultModel === "deepSeek" ? (
                           <DeepSeek color="var(--accent-6)" size={25} />
@@ -582,7 +596,10 @@ export default function Agent({
                       control={control}
                       render={({ field }) => (
                         <Select
-                          style={styles.select.style}
+                          style={{
+                            ...styles.select.style,
+                            ...utilities.right.style,
+                          }}
                           options={[
                             { value: "sushi", label: "Sushi" },
                             { value: "claude", label: "Claude" },
@@ -607,8 +624,13 @@ export default function Agent({
                     />
                   </Div>
 
-                  <Div style={styles.field.style}>
-                    <Label style={styles.label.style} htmlFor="tone">
+                  <Div
+                    style={{ ...styles.field.style, ...utilities.row.style }}
+                  >
+                    <Label
+                      style={{ ...styles.label.style, ...utilities.row.style }}
+                      htmlFor="tone"
+                    >
                       <MicVocal size={18} color="var(--accent-6)" />
                       {t("Tone")}
                     </Label>
@@ -636,8 +658,13 @@ export default function Agent({
                     />
                   </Div>
 
-                  <Div style={styles.field.style}>
-                    <Label style={styles.label.style} htmlFor="temperature">
+                  <Div
+                    style={{ ...styles.field.style, ...utilities.row.style }}
+                  >
+                    <Label
+                      style={{ ...styles.label.style, ...utilities.row.style }}
+                      htmlFor="temperature"
+                    >
                       <ThermometerSun size={18} color="var(--accent-6)" />
                       {t("Temperature")}: {watch("temperature")}
                     </Label>
@@ -652,8 +679,11 @@ export default function Agent({
                     />
                   </Div>
 
-                  <Div style={styles.field.style}>
-                    <Label style={styles.label.style} htmlFor="placeholder">
+                  <Div style={{ ...styles.field.style }}>
+                    <Label
+                      style={{ ...styles.label.style, ...utilities.row.style }}
+                      htmlFor="placeholder"
+                    >
                       <Sparkles
                         size={20}
                         color="var(--accent-1)"
@@ -672,12 +702,17 @@ export default function Agent({
                     />
                   </Div>
                   {/* Tab 3: Capabilities */}
-                  <Div style={styles.field.style}>
-                    <Label style={styles.label.style} htmlFor="capabilities">
+                  <Div style={{ ...styles.field.style }}>
+                    <Label
+                      style={{ ...styles.label.style, ...utilities.row.style }}
+                      htmlFor="capabilities"
+                    >
                       <Boxes size={18} color="var(--accent-6)" />
                       {t("Capabilities")}
                     </Label>
-                    <Div style={styles.field.style}>
+                    <Div
+                      style={{ ...styles.field.style, ...utilities.row.style }}
+                    >
                       <Controller
                         name="capabilities.webSearch"
                         control={control}
@@ -1725,6 +1760,6 @@ export default function Agent({
           </Div>
         </Modal>
       )}
-    </>
+    </Div>
   )
 }

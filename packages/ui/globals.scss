@@ -363,6 +363,25 @@ button:active {
   transform: translateY(0.075rem) !important;
 }
 
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0.5rem 2.5rem 0.5rem 0.5rem;
+  border: 1px dashed var(--accent-1);
+  border-radius: var(--radius);
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: var(--border-transition);
+  cursor: pointer;
+
+  &:focus,
+  &:hover,
+  &:active {
+    border-color: var(--link-color);
+    outline: var(--link-color);
+  }
+}
+
 .slideUp {
   animation: slideUp 0.2s ease;
 }
