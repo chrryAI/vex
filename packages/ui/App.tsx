@@ -87,7 +87,6 @@ function FocusButton({ time }: { time: number }) {
       href={`${getAppSlug(focus)}`}
       openInNewTab={isExtension && isFirefox}
       style={{
-        ...utilities.link.style,
         ...appStyles.focus.style,
       }}
     >
@@ -537,6 +536,7 @@ export default function App({
                 >
                   {image && (
                     <Button
+                      className="link"
                       onClick={() => {
                         setImage(undefined)
                         setFile(undefined)
@@ -806,6 +806,7 @@ export default function App({
             ) : isManagingApp ? (
               <Div style={styles.nameImage.style}>
                 <Button
+                  className="link"
                   title={t("Edit")}
                   onClick={() => {
                     setAppStatus({
@@ -844,6 +845,7 @@ export default function App({
                 </Button>
                 {isManagingApp && (
                   <Button
+                    className="link"
                     onClick={() => {
                       setAppStatus(undefined)
                     }}
@@ -908,6 +910,7 @@ export default function App({
             )}
             {hasHydrated && isAppOwner && !isManagingApp ? (
               <Button
+                className="link"
                 style={{ ...utilities.link.style, ...styles.grip.style }}
                 title={t("Edit")}
                 onClick={() => {
@@ -1007,7 +1010,6 @@ export default function App({
                                 setIsNewChat(true, getAppSlug(chrry))
                               }}
                               style={{
-                                ...utilities.link.style,
                                 ...styles.chrry.style,
                               }}
                             >
@@ -1043,7 +1045,6 @@ export default function App({
                                   setIsNewChat(true, getAppSlug(zarathustra))
                                 }}
                                 style={{
-                                  ...utilities.link.style,
                                   ...styles.zarathustra.style,
                                 }}
                               >
@@ -1080,7 +1081,6 @@ export default function App({
                                   setIsNewChat(true, getAppSlug(popcorn))
                                 }}
                                 style={{
-                                  ...utilities.link.style,
                                   ...styles.popcorn.style,
                                 }}
                               >
@@ -1089,7 +1089,7 @@ export default function App({
                             ) : (
                               showPacmanHere && (
                                 <Button
-                                  className="ghost"
+                                  className="link"
                                   onClick={() =>
                                     setAppStatus({
                                       step: canEditApp ? "update" : "add",
@@ -1097,7 +1097,6 @@ export default function App({
                                     })
                                   }
                                   style={{
-                                    ...utilities.link.style,
                                     ...styles.pacMan.style,
                                   }}
                                 >
@@ -1179,7 +1178,6 @@ export default function App({
                                 setIsNewChat(true, getAppSlug(atlas))
                               }}
                               style={{
-                                ...utilities.link.style,
                                 ...styles.atlas.style,
                               }}
                             >
@@ -1189,14 +1187,13 @@ export default function App({
                           {showFocusHere && <FocusButton time={time} />}
                           {showSpaceInvaderHere && (
                             <Button
-                              className="ghost"
+                              className="link"
                               key={
                                 showingCustom
                                   ? "customInstructions"
                                   : "appInstructions"
                               }
                               style={{
-                                ...utilities.link.style,
                                 ...styles.spaceInvader.style,
                               }}
                               onClick={() => {
