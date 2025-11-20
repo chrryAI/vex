@@ -48,10 +48,8 @@ const Focus = lazy(() => import("./Focus"))
 type ThreadWithLikeCount = thread & { likeCount: number }
 
 const Thread = ({
-  className,
   isHome,
 }: {
-  className?: string
   isHome?: boolean
   threadId?: string
   threadData?: { thread: thread; messages: paginatedMessages }

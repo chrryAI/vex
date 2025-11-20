@@ -1,29 +1,21 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import styles from "./CharacterProfiles.module.scss"
 import Modal from "./Modal"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useData } from "./context/providers"
-import { useTheme } from "./platform"
-import {
-  BrowserInstance,
-  checkIsExtension,
-  FRONTEND_URL,
-  isOwner,
-} from "./utils"
+import { Button, Div, useTheme, Video } from "./platform"
 import { CircleX, Link, Sparkles, Trash2 } from "./icons"
 import CharacterProfile from "./CharacterProfile"
 import ConfirmButton from "./ConfirmButton"
-import { updateGuest, updateUser } from "./lib"
+import { updateUser } from "./lib"
 import Loading from "./Loading"
-import clsx from "clsx"
+import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
+import A from "./A"
 
 export default function CharacterProfiles() {
-  // Split contexts for better organization
   const { t } = useAppContext()
 
-  // Auth context
   const {
     user,
     guest,
@@ -36,9 +28,6 @@ export default function CharacterProfiles() {
     setUser,
   } = useAuth()
 
-  // Theme context
-  const { addHapticFeedback } = useTheme()
-
   const { actions } = useData()
 
   const [isUpdating, setIsUpdating] = useState(false)
@@ -49,15 +38,18 @@ export default function CharacterProfiles() {
     showCharacterProfiles && setIsModalOpen(showCharacterProfiles)
   }, [showCharacterProfiles])
 
+  const styles = useCharacterProfilesStyles()
+
   return (
-    <div className={styles.characterProfileContainer}>
-      <button
+    <Div>
+      <Button
         title={t("Character Profile")}
-        className={clsx("link", styles.characterProfileButton)}
+        className={"link"}
         onClick={() => setIsModalOpen(true)}
+        style={styles.characterProfileButton.style}
       >
         <Sparkles size={20} color="var(--accent-1)" fill="var(--accent-1)" />
-      </button>
+      </Button>
       {isModalOpen && (
         <Modal
           hideOnClickOutside={false}
@@ -68,18 +60,9 @@ export default function CharacterProfiles() {
           }}
           title={t("Character Profile")}
           hasCloseButton={true}
-          icon={
-            <video
-              className={styles.video}
-              src={`${FRONTEND_URL}/video/blob.mp4`}
-              autoPlay
-              loop
-              muted
-              playsInline
-            ></video>
-          }
+          icon={"blob"}
         >
-          <div className={styles.characterProfilesContainer}>
+          <Div style={styles.characterProfilesContainer.style}>
             {characterProfiles?.length && characterProfilesEnabled ? (
               characterProfiles?.map((characterProfile) => (
                 <CharacterProfile
@@ -103,8 +86,8 @@ export default function CharacterProfiles() {
             ) : (
               t("Pin character profiles from conversations to see them here")
             )}
-          </div>
-          <div className={styles.characterProfilesActions}>
+          </Div>
+          <Div style={styles.characterProfilesActions.style}>
             {characterProfilesEnabled ? (
               <ConfirmButton
                 confirm={
@@ -152,34 +135,16 @@ export default function CharacterProfiles() {
               </ConfirmButton>
             ) : (
               <>
-                <a
+                <A
                   target="_blank"
                   className="button small"
-                  onClick={(e) => {
-                    if (e.metaKey || e.ctrlKey) {
-                      return
-                    }
-
-                    addHapticFeedback()
-                    if (checkIsExtension()) {
-                      e.preventDefault()
-
-                      BrowserInstance?.runtime?.sendMessage({
-                        action: "openInSameTab",
-                        url: `${FRONTEND_URL}/privacy`,
-                      })
-
-                      return
-                    }
-
-                    window.open(`${FRONTEND_URL}/privacy`, "_blank")
-                  }}
+                  openInNewTab
                   href="/privacy"
                 >
                   <Link size={15} />
                   {t("Privacy")}
-                </a>
-                <button
+                </A>
+                <Button
                   className="small transparent"
                   disabled={isUpdating}
                   onClick={async () => {
@@ -220,12 +185,12 @@ export default function CharacterProfiles() {
                     />
                   )}
                   {t("Enable")}
-                </button>
+                </Button>
               </>
             )}
-          </div>
+          </Div>
         </Modal>
       )}
-    </div>
+    </Div>
   )
 }
