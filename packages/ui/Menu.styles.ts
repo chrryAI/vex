@@ -19,16 +19,16 @@ export const MenuStyleDefs = {
     display: "none",
     width: 250,
   },
-  menuOpen: {
+  threadList: {
+    opacity: 0,
+  },
+  open: {
     position: "fixed",
     display: "flex",
     zIndex: 9999,
   },
-  menuClosed: {
+  closed: {
     display: "none",
-  },
-  threadList: {
-    opacity: 0,
   },
   profileButton: {
     fontSize: 18,
@@ -52,11 +52,11 @@ export const MenuStyleDefs = {
     marginTop: 8,
     marginRight: -7,
   },
-  threadsLoading: {
+  threadsThreadItem: {},
+  loading: {
     display: "flex",
     flexDirection: "column",
   },
-  threadsThreadItem: {},
   noThreadsContainer: {
     fontSize: 12,
   },
@@ -113,6 +113,9 @@ export const MenuStyleDefs = {
     marginTop: 10,
     fontSize: 13,
   },
+  starActive: {
+    display: "inline-flex",
+  },
   brand: {
     fontSize: 18,
     fontWeight: "bold",
@@ -128,9 +131,6 @@ export const MenuStyleDefs = {
     color: "var(--shade-6)",
   },
   star: {
-    display: "inline-flex",
-  },
-  starStarActive: {
     display: "inline-flex",
   },
   collaborationStatus: {

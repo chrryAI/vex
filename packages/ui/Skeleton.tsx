@@ -49,7 +49,6 @@ export default function Skeleton({
   const hasHydrated = useHasHydrated()
 
   // Split contexts for better organization
-  const { t } = useAppContext()
 
   // Auth context
 
@@ -60,8 +59,6 @@ export default function Skeleton({
   const { pathname, setIsNewChat, hasNotification } = useNavigationContext()
 
   const { isDrawerOpen, setIsDrawerOpen, isSmallDevice } = useTheme()
-
-  const { device } = usePlatform()
 
   // Platform context
   const { isStandalone } = usePlatform()
