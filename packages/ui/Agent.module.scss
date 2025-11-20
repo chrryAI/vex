@@ -104,21 +104,22 @@ span.required {
   flex-direction: column;
   gap: toRem.toRem(15);
 
-  .label {
-    font-size: toRem.toRem(15);
-    color: var(--shade-7);
-  }
   border-bottom: toRem.toRem(1) solid var(--shade-2-transparent);
   padding: toRem.toRem(10) 0 toRem.toRem(12.5) 0;
+}
 
-  &:last-child {
-    border-bottom: none;
-  }
+.fieldLastChild {
+  border-bottom: none;
+}
 
-  &:first-child {
-    border-bottom: none;
-    padding-top: 0;
-  }
+.fieldFirstChild {
+  border-bottom: none;
+  padding-top: 0;
+}
+
+.label {
+  font-size: toRem.toRem(15);
+  color: var(--shade-7);
 }
 .instructionsButton {
   display: flex;
@@ -165,7 +166,6 @@ span.required {
 
 .modal {
   width: 100% !important;
-  margin: 0 auto !important;
   max-width: toRem.toRem(550) !important;
 }
 

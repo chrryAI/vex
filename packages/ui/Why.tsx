@@ -3,12 +3,9 @@
 import React, { useEffect } from "react"
 import Skeleton from "./Skeleton"
 import { useAppContext } from "./context/AppContext"
-import { FRONTEND_URL } from "./utils"
 import { CircleArrowLeft } from "./icons"
-// import styles from "./Why.module.scss"
 import { useAuth, useNavigationContext } from "./context/providers"
 import {
-  Box,
   Button,
   Div,
   H1,

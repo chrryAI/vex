@@ -153,11 +153,7 @@ export default function Modal({
     hasHydrated &&
     isModalOpen &&
     createPortal(
-      <Div
-        style={{ ...styles.modal.style, ...style }}
-        role="dialog"
-        aria-modal="true"
-      >
+      <Div style={{ ...styles.modal.style }} role="dialog" aria-modal="true">
         <Div
           style={{
             ...styles.main.style,
@@ -170,6 +166,8 @@ export default function Modal({
                 : viewPortWidth < 501
                   ? "100%"
                   : "auto",
+
+            ...style,
           }}
         >
           <Div

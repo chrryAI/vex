@@ -78,6 +78,9 @@ export const AgentStyleDefs = {
     flexDirection: "column",
     gap: 15,
     padding: "10px 0 13px 0",
+  },
+  fieldLastChild: {},
+  fieldFirstChild: {
     paddingTop: 0,
   },
   label: {
@@ -109,7 +112,6 @@ export const AgentStyleDefs = {
   },
   modal: {
     width: "100%",
-    margin: "0 auto !important",
     maxWidth: 550,
   },
   titleContainer: {

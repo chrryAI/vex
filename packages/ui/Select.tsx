@@ -1,10 +1,10 @@
 "use client"
 
-import clsx from "clsx"
 import React from "react"
-import { ArrowDown, CircleArrowDown } from "./icons"
+import { CircleArrowDown } from "./icons"
 
-import styles from "./Select.module.scss"
+import { Div } from "./platform"
+import { useSelectStyles } from "./Select.styles"
 
 export default function Select({
   className,
@@ -26,8 +26,9 @@ export default function Select({
   style?: React.CSSProperties
   onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }) {
+  const styles = useSelectStyles()
   return (
-    <div className={clsx(styles.customSelect, className)}>
+    <Div style={{ ...styles.customSelect.style, ...style }}>
       <select
         name={name}
         id={id}
@@ -46,8 +47,8 @@ export default function Select({
       <CircleArrowDown
         size={15}
         color="var(--shade-6)"
-        className={styles.icon}
+        style={styles.icon.style}
       />
-    </div>
+    </Div>
   )
 }
