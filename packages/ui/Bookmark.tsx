@@ -67,11 +67,13 @@ export default function Bookmark({
       })
   }
 
+  const [hovered, setHovered] = React.useState(false)
+
   return (
     <Button
+      className={`bookmark link ${bookmarked ? "bookmarked" : ""}`}
       onClick={() => setBookmarked(!bookmarked)}
       style={{
-        ...utilities.link.style,
         ...(bookmarked && styles.starActive.style),
         ...style,
       }}

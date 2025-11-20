@@ -607,3 +607,10 @@ input[type="text"]:active {
     transform: scale(1);
   }
 }
+
+button.link.bookmark:hover {
+  svg {
+    fill: var(--accent-1) !important;
+    color: var(--accent-1) !important;
+  }
+}

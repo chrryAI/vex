@@ -477,12 +477,15 @@ const Thread = ({
                             }}
                             thread={thread}
                           ></Bookmark>
-                          <button
+                          <Button
                             data-testid={`${liked ? "unfilter" : "filter"}-liked-button`}
-                            className={clsx("link", styles.likeButton)}
+                            className={"link"}
                             onClick={() => {
                               addHapticFeedback()
                               setLiked(!liked)
+                            }}
+                            style={{
+                              ...utilities.xSmall.style,
                             }}
                           >
                             {liked ? (
@@ -491,7 +494,7 @@ const Thread = ({
                               <ThumbsUp color="var(--shade-3)" size={16} />
                             )}
                             {t("Filter")}
-                          </button>
+                          </Button>
 
                           {!isVisitor && (
                             <Share
@@ -536,6 +539,7 @@ const Thread = ({
                           >
                             {!user?.subscription || !guest?.subscription ? (
                               <Button
+                                className="link"
                                 onClick={() => {
                                   addHapticFeedback()
                                   if (guest) {
