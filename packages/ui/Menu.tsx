@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import styles from "./Menu.module.scss"
+// import styles from "./Menu.module.scss"
 import clsx from "clsx"
 import {
   ArrowLeft,
@@ -35,7 +35,7 @@ import {
   useApp,
   useChat,
 } from "./context/providers"
-import { usePlatform, useTheme } from "./platform"
+import { Button, Div, H4, Span, usePlatform, useTheme } from "./platform"
 import { animate, stagger } from "motion"
 import { useHasHydrated } from "./hooks"
 import Bookmark from "./Bookmark"
@@ -45,6 +45,9 @@ import { defaultLocale } from "./locales"
 import Img from "./Image"
 import EmptyStateTips from "./EmptyStateTips"
 import ThemeSwitcher from "./ThemeSwitcher"
+import { useStyles } from "./context/StylesContext"
+import { useMenuStyles } from "./Menu.styles"
+import A from "./A"
 
 export default function Menu({
   className,
@@ -59,7 +62,9 @@ export default function Menu({
   // Auth context
   const { user, guest, profile, track, language, allApps, getAppSlug } =
     useAuth()
+  const { utilities } = useStyles()
 
+  const styles = useMenuStyles()
   // Navigation context
   const {
     router,
@@ -274,22 +279,22 @@ export default function Menu({
 
   return (
     <>
-      <div
+      <Div
+        className="menu"
         key={isDrawerOpen ? "open" : "closed"}
         ref={innerRef}
-        className={clsx(
-          styles.menu,
-          isDrawerOpen ? styles.open : styles.closed,
-          className,
-        )}
+        style={{
+          ...styles.menu.style,
+          ...(isDrawerOpen ? styles.open.style : styles.closed.style),
+        }}
       >
         <>
-          <div className={clsx(styles.menuHeader)}>
+          <Div style={styles.menuHeader.style}>
             {isDrawerOpen ? (
               <>
-                <a
+                <A
                   data-testid="menu-home-button"
-                  className={clsx("link")}
+                  className={"link"}
                   href={FRONTEND_URL}
                   onClick={(e) => {
                     addHapticFeedback()
@@ -307,30 +312,31 @@ export default function Menu({
                   }}
                 >
                   <Img app={app} size={28} />
-                  <span className={styles.brand}>{app?.name || "Vex"}</span>
-                </a>
-                <button
-                  className={clsx("link", styles.menuButton)}
+                  <Span style={styles.brand.style}>{app?.name || "Vex"}</Span>
+                </A>
+                <Button
+                  className={"link"}
                   onClick={toggleMenu}
+                  style={styles.menuButton.style}
                 >
                   <PanelRight color={"var(--shade-4)"} size={20} />
-                </button>
+                </Button>
               </>
             ) : (
-              <button className={clsx("link")} onClick={toggleMenu}>
+              <Button className={"link"} onClick={toggleMenu}>
                 <Img app={app} size={28} />
-              </button>
+              </Button>
             )}
-          </div>
-
-          <div
-            className={clsx(
-              styles.menuContent,
-              isDrawerOpen ? styles.open : styles.closed,
-            )}
+          </Div>
+          <Div
+            style={{
+              ...styles.menuContent.style,
+              ...(isDrawerOpen && styles.open.style),
+              ...(isDrawerOpen && styles.closed.style),
+            }}
           >
-            <div className={styles.menuItems}>
-              <a
+            <Div style={styles.menuItems.style}>
+              <A
                 data-testid="new-chat-button"
                 href={FRONTEND_URL}
                 onClick={(e) => {
@@ -346,14 +352,13 @@ export default function Menu({
                   setIsNewChat(true)
                   reload()
                 }}
-                className={clsx("button", "transparent", styles.menuItemButton)}
+                style={styles.menuItemButton.style}
+                className="button transparent"
               >
                 <MessageCirclePlus size={18} /> {t("New chat")}
-              </a>
-              <a
-                href={
-                  isStandalone ? undefined : `${FRONTEND_URL}/?incognito=true`
-                }
+              </A>
+              <A
+                href={`${FRONTEND_URL}/?incognito=true`}
                 onClick={(e) => {
                   track({
                     name: "private-chat-click",
@@ -367,11 +372,12 @@ export default function Menu({
                   router.push("/?incognito=true")
                   reload()
                 }}
-                className={clsx("button", "transparent", styles.menuItemButton)}
+                style={styles.menuItemButton.style}
+                className="button transparent"
               >
                 <HatGlasses size={18} /> {t("Incognito Chat")}
-              </a>
-              <a
+              </A>
+              <A
                 href={
                   isStandalone
                     ? undefined
@@ -389,18 +395,19 @@ export default function Menu({
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   goToThreads()
                 }}
-                className={clsx("button", "transparent", styles.menuItemButton)}
+                style={styles.menuItemButton.style}
+                className="button transparent"
               >
                 <Search size={18} /> {t("Search chats")}
-              </a>
+              </A>
               {showThreads && (
-                <div
-                  className={clsx(
-                    styles.threads,
-                    isLoadingThreads && styles.loading,
-                  )}
+                <Div
+                  style={{
+                    ...styles.threads.style,
+                    ...(isLoadingThreads && styles.loading.style),
+                  }}
                 >
-                  <h4 className={styles.threadsTitle}>
+                  <H4 style={styles.threadsTitle.style}>
                     {collaborationStatus === "active" ? (
                       <>
                         <UsersRound size={15} color="var(--accent-6)" />{" "}
@@ -424,8 +431,9 @@ export default function Menu({
                           if (isOwner) {
                             return (
                               <>
-                                <button
-                                  className={clsx("link", styles.profileButton)}
+                                <Button
+                                  className="link"
+                                  style={styles.profileButton.style}
                                   onClick={() => {
                                     addHapticFeedback()
                                     isMobileDevice && setIsDrawerOpen(false)
@@ -433,7 +441,7 @@ export default function Menu({
                                   }}
                                 >
                                   <UserRoundCog size={18} />{" "}
-                                  <span
+                                  <Span
                                     style={{
                                       color: isMobileDevice
                                         ? undefined
@@ -441,8 +449,8 @@ export default function Menu({
                                     }}
                                   >
                                     {name || t("Threads")}
-                                  </span>
-                                </button>
+                                  </Span>
+                                </Button>
                               </>
                             )
                           }
@@ -455,7 +463,7 @@ export default function Menu({
                         })()}
                       </>
                     )}
-                    <div
+                    <Div
                       style={{
                         marginLeft: "auto",
                         display: "inline-flex",
@@ -464,21 +472,21 @@ export default function Menu({
                       }}
                     >
                       {profile && profile.userName !== user?.userName ? (
-                        <button
-                          className={clsx("link")}
+                        <Button
+                          className="link"
                           onClick={() => {
                             setIsNewChat(true)
                           }}
                         >
                           <ArrowLeft color="var(--accent-6)" size={17} />
-                        </button>
+                        </Button>
                       ) : (
                         <>
                           {activeCollaborationThreadsCount > 0 ? (
                             <>
                               {collaborationStatus === "active" ? (
-                                <button
-                                  className={clsx("link")}
+                                <Button
+                                  className="link"
                                   onClick={() => {
                                     setIsNewChat(true)
                                   }}
@@ -487,11 +495,11 @@ export default function Menu({
                                     color="var(--accent-6)"
                                     size={17}
                                   />
-                                </button>
+                                </Button>
                               ) : (
-                                <button
+                                <Button
                                   title={t("Active Collaborations")}
-                                  className={clsx("link")}
+                                  className="link"
                                   onClick={() => {
                                     addHapticFeedback()
 
@@ -506,24 +514,24 @@ export default function Menu({
                                     color="var(--accent-1)"
                                     size={17}
                                   />
-                                </button>
+                                </Button>
                               )}
                             </>
                           ) : null}
                           {!profile && pendingCollaborationThreadsCount > 0 ? (
                             collaborationStatus === "pending" ? (
-                              <button
-                                className={clsx("link")}
+                              <Button
+                                className="link"
                                 onClick={() => {
                                   setIsNewChat(true)
                                 }}
                               >
                                 <ArrowLeft color="var(--accent-6)" size={16} />
-                              </button>
+                              </Button>
                             ) : (
-                              <button
+                              <Button
                                 title={t("Pending Collaborations")}
-                                className={clsx("link")}
+                                className="link"
                                 onClick={() => {
                                   addHapticFeedback()
                                   setCollaborationStatus("pending")
@@ -533,42 +541,40 @@ export default function Menu({
                                   color="var(--accent-6)"
                                   size={17}
                                 />
-                              </button>
+                              </Button>
                             )
                           ) : null}
                         </>
                       )}
-                    </div>
-                  </h4>
+                    </Div>
+                  </H4>
                   {isLoadingThreads ? (
-                    <div className={styles.loadingContainer}>
+                    <Div>
                       <Loading width={20} />
-                    </div>
+                    </Div>
                   ) : (
                     <>
-                      <div
+                      <Div
                         ref={timelineListRef}
                         className={clsx(styles.threadsList, "menuThreadList")}
                       >
                         {threads.threads.map((thread) => (
-                          <div
+                          <Div
                             data-testid="menu-thread-item"
                             style={{
+                              ...styles.threadItem.style,
                               paddingRight:
                                 collaborationStatus === "pending" ? 0 : 17,
                             }}
                             ref={(el) => {
                               threadRefs.current[thread.id] = el
                             }}
-                            className={clsx(
-                              styles.threadItem,
-                              "menuThreadItem",
-                            )}
+                            className="menuThreadItem"
                             key={`${thread.id}-${thread.bookmarks?.length}`}
                           >
                             {thread.visibility !== "private" ||
                             thread.collaborations?.length ? (
-                              <span
+                              <Span
                                 style={{
                                   display: "inline-flex",
                                   alignItems: "center",
@@ -596,14 +602,14 @@ export default function Menu({
                                 ) : thread.visibility === "protected" ? (
                                   <UserLock color="var(--accent-1)" size={13} />
                                 ) : null}
-                              </span>
+                              </Span>
                             ) : null}
 
                             {(() => {
                               const url = `/threads/${thread.id}`
 
                               return (
-                                <a
+                                <A
                                   data-testid={`thread-link-${thread.id}`}
                                   onClick={(e) => {
                                     track({
@@ -624,7 +630,7 @@ export default function Menu({
                                   href={url}
                                 >
                                   {thread.title}
-                                </a>
+                                </A>
                               )
                             })()}
 
@@ -637,7 +643,7 @@ export default function Menu({
                                   }
                                   refetchThreads()
                                 }}
-                                className={styles.collaborationStatus}
+                                style={styles.collaborationStatus.style}
                                 thread={thread}
                                 isIcon
                               />
@@ -647,23 +653,23 @@ export default function Menu({
                                 onSave={() => {
                                   refetchThreads()
                                 }}
-                                className={clsx(
-                                  styles.star,
-                                  thread.bookmarks?.some(
+                                style={{
+                                  ...styles.star.style,
+                                  ...(thread.bookmarks?.some(
                                     (b) => b.userId === thread.userId,
-                                  ) && styles.starActive,
-                                )}
+                                  ) && styles.starActive.style),
+                                }}
                                 thread={thread}
                               />
                             )}
-                          </div>
+                          </Div>
                         ))}
-                      </div>
+                      </Div>
                       {!isLoadingThreads && threads.threads.length === 0 && (
                         <>
-                          <div className={styles.noThreadsContainer}>
+                          <Div style={styles.noThreadsContainer.style}>
                             {t("Nothing here yet")}
-                          </div>
+                          </Div>
                         </>
                       )}
                       {threads.threads.length
@@ -671,8 +677,8 @@ export default function Menu({
                             const url = `/threads${collaborationStatus ? `?collaborationStatus=${collaborationStatus}` : ""}`
 
                             return (
-                              <div className={styles.loadMoreButtonContainer}>
-                                <a
+                              <Div style={styles.loadMoreButtonContainer.style}>
+                                <A
                                   href={url}
                                   data-testid="load-more-threads-menu"
                                   onClick={(e) => {
@@ -689,35 +695,24 @@ export default function Menu({
                                     isSmallDevice ? toggleMenu() : null
                                     router.push(url)
                                   }}
-                                  className={clsx(
-                                    "button",
-                                    "transparent",
-                                    "small",
-                                    styles.loadMoreButton,
-                                  )}
+                                  className="button transparent small"
+                                  style={styles.loadMoreButton.style}
                                 >
                                   <LoaderCircle size={14} /> {t("Load more")}
-                                </a>
-                              </div>
+                                </A>
+                              </Div>
                             )
                           })()
                         : null}
                       {threads.threads.length < 2 && <EmptyStateTips />}
                     </>
                   )}
-                </div>
+                </Div>
               )}
-            </div>
-          </div>
-
-          <div
-            className={clsx(
-              styles.footer,
-              os && styles[os],
-              isStandalone ? styles.standalone : undefined,
-            )}
-          >
-            <div
+            </Div>
+          </Div>
+          <Div style={styles.footer.style}>
+            <Div
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -733,7 +728,7 @@ export default function Menu({
                   &#169;
                 </>
               ) : null}
-              <button
+              <Button
                 style={{
                   marginLeft: "auto",
                   gap: 7.5,
@@ -758,13 +753,13 @@ export default function Menu({
               >
                 {"Amsterdam"}
                 <Img icon="heart" width={22} height={22} />
-              </button>
-            </div>
+              </Button>
+            </Div>
 
-            <div className={styles.colorSchemeContainer}>
-              <ColorScheme className={styles.colorScheme} />
+            <Div style={styles.colorSchemeContainer.style}>
+              <ColorScheme style={styles.colorScheme.style} />
               {hasHydrated && (
-                <button
+                <Button
                   title={t("Motion")}
                   onClick={() => {
                     reduceMotionContext && animateThreads(false)
@@ -772,31 +767,23 @@ export default function Menu({
                     setReduceMotion(!reduceMotionContext)
                   }}
                   style={{
+                    ...styles.reduceMotionButton.style,
                     marginLeft: "auto",
                     color: !reduceMotionContext
                       ? "var(--accent-6)"
                       : "var(--shade-3)",
                   }}
-                  className={clsx("link", styles.reduceMotionButton)}
+                  className={"link"}
                 >
                   <Tornado size={18} />
                   Motion
-                </button>
+                </Button>
               )}
-            </div>
+            </Div>
 
-            <div className={styles.bottom}>
-              <a
-                onClick={(e) => {
-                  if (checkIsExtension()) {
-                    e.preventDefault()
-                    BrowserInstance?.runtime?.sendMessage({
-                      action: "openInSameTab",
-                      url: `https://focusbutton.com${language === defaultLocale ? "" : `/${language}`}`,
-                    })
-                    return
-                  }
-                }}
+            <Div style={styles.bottom.style}>
+              <A
+                openInNewTab
                 href={`https://wannathis.one/?via=iliyan&ref=${app?.slug}`}
                 style={{
                   display: "inline-flex",
@@ -812,7 +799,7 @@ export default function Menu({
               >
                 <WannathisIcon width={18} height={18} />
                 Wannathis
-              </a>
+              </A>
 
               <ThemeSwitcher />
               {hasHydrated && (
@@ -820,10 +807,10 @@ export default function Menu({
                   v{VERSION}
                 </span>
               )}
-            </div>
-          </div>
+            </Div>
+          </Div>
         </>
-      </div>
+      </Div>
     </>
   )
 }

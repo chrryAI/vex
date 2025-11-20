@@ -17,17 +17,6 @@
 
   width: toRem.toRem(250);
 
-  &.open {
-    position: static;
-    display: flex;
-    position: fixed;
-    z-index: 9999;
-  }
-
-  &.closed {
-    display: none;
-  }
-
   @media print {
     display: none !important;
   }
@@ -35,6 +24,17 @@
 
 .threadList {
   opacity: 0;
+}
+
+.open {
+  position: static;
+  display: flex;
+  position: fixed;
+  z-index: 9999;
+}
+
+.closed {
+  display: none;
 }
 
 .profileButton {
@@ -63,13 +63,14 @@
 .threads {
   margin-top: toRem.toRem(7.5);
   margin-right: toRem.toRem(-7.5);
-  &.loading {
-    display: flex;
-    flex-direction: column;
-  }
 
   &.threadItem {
   }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
 }
 
 .noThreadsContainer {
@@ -145,6 +146,10 @@
   font-size: toRem.toRem(12.5);
 }
 
+.starActive {
+  display: inline-flex;
+}
+
 .brand {
   font-size: toRem.toRem(18);
   font-weight: bold;
@@ -171,10 +176,6 @@
 
     @media (min-width: breakpoints.$breakpoint-mobile) {
       display: none;
-    }
-
-    &.starActive {
-      display: inline-flex;
     }
   }
 

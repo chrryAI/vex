@@ -1,45 +1,47 @@
-import React, { useEffect } from "react"
-import styles from "./ColorScheme.module.scss"
+import React from "react"
 import clsx from "clsx"
 import { CheckIcon, Circle } from "./icons"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useHasHydrated } from "./hooks"
-import { useTheme } from "./platform"
+import { Button, Div, useTheme } from "./platform"
+import { useColorSchemeStyles } from "./ColorScheme.styles"
 
 export default function ColorScheme({
-  className,
+  style,
   onChange,
 }: {
-  className?: string
+  style?: React.CSSProperties
   onChange?: (color: keyof typeof COLORS) => void
 }) {
+  const styles = useColorSchemeStyles()
   const { colorScheme, setColorScheme } = useTheme()
   const hasHydrated = useHasHydrated()
 
   if (!hasHydrated) return null
 
   return (
-    <div className={clsx(styles.colorScheme, className)}>
+    <Div style={{ ...styles.colorScheme.style, ...style }}>
       {Object.entries(COLORS).map(([key, value]) => (
-        <button
+        <Button
           key={key}
           onClick={() => {
             setColorScheme(key as keyof typeof COLORS)
             onChange?.(key as keyof typeof COLORS)
           }}
-          className={clsx("link", styles.color, styles[key])}
+          style={{ ...styles.color.style }}
+          className={"link"}
         >
           <Circle size={20} fill={value} color={value} />
           {colorScheme === key && (
             <CheckIcon
-              className={styles.check}
+              style={{ ...styles.check.style }}
               size={11}
               strokeWidth={3}
               color="white"
             />
           )}
-        </button>
+        </Button>
       ))}
-    </div>
+    </Div>
   )
 }

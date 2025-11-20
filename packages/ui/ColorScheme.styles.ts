@@ -21,8 +21,6 @@ export const ColorSchemeStyleDefs = {
   },
   check: {
     position: "absolute",
-    top: "50%",
-    left: "50%",
   },
 } as const
 

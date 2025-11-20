@@ -16,6 +16,7 @@ export default function CollaborationStatus({
   className,
   isIcon,
   onSave,
+  style,
   dataTestId,
 }: {
   thread: thread
@@ -23,6 +24,7 @@ export default function CollaborationStatus({
   isIcon?: boolean
   onSave?: (status: "active" | "pending" | "revoked" | "rejected") => void
   dataTestId?: string
+  style?: React.CSSProperties
 }) {
   const { t } = useAppContext()
   const { user, token } = useAuth()
@@ -78,7 +80,7 @@ export default function CollaborationStatus({
 
   return (
     <div
-      style={{ gap: isIcon ? 5 : 10 }}
+      style={{ gap: isIcon ? 5 : 10, ...style }}
       className={clsx(styles.collaborationStatus, className)}
     >
       {!isIcon && <UsersRound color="var(--accent-1)" size={16} />}
