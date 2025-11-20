@@ -109,7 +109,7 @@ export const MenuStyleDefs = {
   threadsList: {
     display: "flex",
     flexDirection: "column",
-    gap: 8,
+    gap: 5,
     marginTop: 10,
     fontSize: 13,
   },
@@ -127,10 +127,13 @@ export const MenuStyleDefs = {
     alignItems: "center",
     gap: 3,
     position: "relative",
-    lineHeight: 1.3,
-    color: "var(--shade-6)",
+    fontSize: 13,
+    color: "var(--shade-7)",
   },
   star: {
+    position: "absolute",
+    top: 1,
+    right: 0,
     display: "inline-flex",
   },
   collaborationStatus: {
@@ -165,10 +168,13 @@ export const MenuStyleDefs = {
     flex: 1,
   },
   menuItemButton: {
-    display: "flex",
+    fontSize: 14,
     alignItems: "center",
+    display: "inline-flex",
+    justifyContent: "center",
     gap: 5,
-    flexDirection: "row",
+    padding: "7px 10px",
+    alignSelf: "flex-start",
   },
   menuButton: {
     display: "flex",

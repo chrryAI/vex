@@ -72,7 +72,6 @@ export default function Bookmark({
       onClick={() => setBookmarked(!bookmarked)}
       style={{
         ...utilities.link.style,
-        ...styles.star.style,
         ...(bookmarked && styles.starActive.style),
         ...style,
       }}
