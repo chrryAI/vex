@@ -1,21 +1,14 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import styles from "./CharacterProfiles.module.scss"
-import Modal from "./Modal"
 import { useAppContext } from "./context/AppContext"
-import {
-  useAuth,
-  useChat,
-  useData,
-  useNavigationContext,
-} from "./context/providers"
-import { FRONTEND_URL } from "./utils"
-import clsx from "clsx"
+import { useAuth, useChat, useData } from "./context/providers"
 import { Unlock, CircleX, Share, Lock, Sparkles, PinOff, Pin } from "./icons"
 import Loading from "./Loading"
 import { characterProfile } from "./types"
-import { getGuest, getUser, updateThread } from "./lib"
+import { updateThread } from "./lib"
+import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
+import { Button, Div } from "./platform"
 
 export default function CharacterProfile({
   onCharacterProfileUpdate,
@@ -28,6 +21,8 @@ export default function CharacterProfile({
   const [characterProfile, setCharacterProfile] = useState(
     props.characterProfile,
   )
+
+  const styles = useCharacterProfilesStyles()
 
   const { actions } = useData()
 
@@ -112,17 +107,14 @@ export default function CharacterProfile({
     }
   }
   return (
-    <div className={styles.characterProfileContainer}>
-      <div
-        key={characterProfile.id}
-        className={styles.characterProfileContainer}
-      >
-        <div className={styles.characterProfileActions}>
+    <Div>
+      <Div key={characterProfile.id}>
+        <Div style={styles.characterProfilesActions.style}>
           {characterProfile.pinned && showActions && (
-            <button
+            <Button
               title={t("Share")}
               onClick={() => setIsSharing(!isSharing)}
-              className={clsx("small link")}
+              className="small link"
             >
               {characterProfile.visibility === "public" && !isSharing ? (
                 <Unlock size={16} color="var(--accent-6)" />
@@ -131,15 +123,15 @@ export default function CharacterProfile({
               ) : (
                 <Share size={16} color="var(--accent-6)" />
               )}
-            </button>
+            </Button>
           )}
           {isSharing ? (
-            <button
-              className={clsx(
+            <Button
+              className={
                 characterProfile.visibility === "public"
                   ? "transparent"
-                  : "inverted",
-              )}
+                  : "inverted"
+              }
               onClick={() => handleShare()}
               disabled={isChangingVisibility}
             >
@@ -157,9 +149,9 @@ export default function CharacterProfile({
                     : "Make it public",
                 )}
               </>
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               onClick={() => {
                 if (props.showActions) {
                   setShowCharacterProfiles(true)
@@ -175,10 +167,10 @@ export default function CharacterProfile({
                 fill="var(--accent-1)"
               />
               {characterProfile.name}
-            </button>
+            </Button>
           )}
           {showActions && (
-            <button
+            <Button
               disabled={isPinning}
               onClick={() => handlePin()}
               className="small link"
@@ -195,10 +187,10 @@ export default function CharacterProfile({
               ) : (
                 <Pin size={16} color="var(--accent-1)" fill="var(--accent-1)" />
               )}
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
-    </div>
+        </Div>
+      </Div>
+    </Div>
   )
 }

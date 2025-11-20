@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import clsx from "clsx"
 import { collaboration, thread, user } from "./types"
 import {
   Circle,
@@ -364,7 +363,7 @@ export default function Share({
         <Div style={styles.shareModalContent.style}>
           {isCollaborating ? (
             <>
-              <Div style={styles.shareModalInputContainer}>
+              <Div style={styles.shareModalInputContainer.style}>
                 <Input
                   data-testid={`${dataTestId}share-input`}
                   style={styles.shareModalInput.style}
@@ -379,7 +378,7 @@ export default function Share({
                   <Copy size={14} /> {t("Copy")}
                 </Button>
               </Div>
-              <Div style={styles.collaborateInputContainer}>
+              <Div style={styles.collaborateInputContainer.style}>
                 <Input
                   type="email"
                   data-testid={`${dataTestId}collaborate-input`}
@@ -462,7 +461,7 @@ export default function Share({
                           </Span>
                         </P>
                       </Div>
-                      <Div className={clsx(styles.collaboratorActions)}>
+                      <Div style={styles.collaboratorActions.style}>
                         <ConfirmButton
                           dataTestId={`${dataTestId}collaborator-revoke-button`}
                           disabled={isRevoking}
