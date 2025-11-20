@@ -98,10 +98,8 @@ function FocusButton({ time }: { time: number }) {
 }
 
 export default function App({
-  className,
   onSave,
 }: {
-  className?: string
   onSave?: ({
     content,
     artifacts,
@@ -434,10 +432,7 @@ export default function App({
     <Div>
       <H1 style={styles.title.style}>
         {!isManagingApp && !canEditApp && app ? (
-          <Div
-            style={styles.appTitle.style}
-            className={styles.appTitle.className}
-          >
+          <Div style={styles.appTitle.style}>
             <Logo
               app={app}
               logo={app?.slug === "vex" ? "isVivid" : undefined}
@@ -457,7 +452,10 @@ export default function App({
             {appFormWatcher?.canSubmit && isManagingApp && (
               <Div style={utilities.row.style}>
                 <ConfirmButton
-                  className="small transparent"
+                  style={{
+                    ...utilities.transparent.style,
+                    ...utilities.small.style,
+                  }}
                   confirm={
                     <>
                       {isRemovingApp ? (
@@ -479,7 +477,10 @@ export default function App({
                   onClick={async () => {
                     await saveApp()
                   }}
-                  className="small inverted"
+                  style={{
+                    ...utilities.inverted.style,
+                    ...utilities.small.style,
+                  }}
                   disabled={!appFormWatcher.canSubmit || isSavingApp}
                 >
                   {isSavingApp ? (
@@ -492,10 +493,7 @@ export default function App({
               </Div>
             )}
             {isManagingApp && (
-              <Div
-                style={styles.validationFeedback}
-                className={styles.validationFeedback.className}
-              >
+              <Div style={styles.validationFeedback.style}>
                 {/* Show validation errors (except title) */}
 
                 {/* Image dimension warning/recommendation */}
@@ -549,10 +547,6 @@ export default function App({
                         ...utilities.link.style,
                         ...styles.removeImageButton.style,
                       }}
-                      className={clsx(
-                        utilities.link.className,
-                        styles.removeImageButton.className,
-                      )}
                     >
                       <CircleMinus color="var(--accent-1)" size={14} />
                     </Button>
@@ -566,10 +560,6 @@ export default function App({
                       ...styles.appImageWrapper.style,
                       ...utilities.link.style,
                     }}
-                    className={clsx(
-                      styles.appImageWrapper.className,
-                      utilities.link.className,
-                    )}
                   >
                     <Img
                       src={image}
@@ -821,20 +811,21 @@ export default function App({
                       part: "name",
                     })
                   }}
-                  style={utilities.link}
-                  className={utilities.link.className}
+                  style={utilities.link.style}
                 >
                   <Settings2 />
                 </Button>
                 <A
+                  title={t("Your AI-Powered Life")}
+                  href={`${FRONTEND_URL}/lifeOS`}
                   style={{
+                    ...utilities.link.style,
+                    ...utilities.small.style,
+                    ...utilities.inverted.style,
                     display: "flex",
                     alignItems: "center",
                     gap: "0.4rem",
                   }}
-                  title={t("Your AI-Powered Life")}
-                  href={`${FRONTEND_URL}/lifeOS`}
-                  className={clsx("button inverted small slideUp")}
                   onClick={(e) => {
                     e.preventDefault()
                     setAppStatus({
@@ -856,7 +847,7 @@ export default function App({
                     onClick={() => {
                       setAppStatus(undefined)
                     }}
-                    className="link"
+                    style={utilities.link.style}
                     title={t(isManagingApp ? "Cancel" : "Add agent")}
                   >
                     <CircleMinus color="var(--accent-1)" size={24} />
@@ -866,14 +857,16 @@ export default function App({
             ) : (
               store && (
                 <a
+                  title={t(store?.title || "Your AI-Powered Life")}
+                  href={getStoreSlug(store?.slug)}
                   style={{
+                    ...utilities.link.style,
+                    ...utilities.small.style,
+                    ...utilities.inverted.style,
                     display: "flex",
                     alignItems: "center",
                     gap: "0.4rem",
                   }}
-                  title={t(store?.title || "Your AI-Powered Life")}
-                  href={getStoreSlug(store?.slug)}
-                  className={clsx("button inverted small slideUp")}
                   onClick={(e) => {
                     addHapticFeedback()
 
@@ -900,7 +893,10 @@ export default function App({
                 href={`${FRONTEND_URL}/calendar`}
                 title={t("Organize your life")}
                 openInNewTab={isExtension && isFirefox}
-                className={clsx("button transparent slideUp")}
+                style={{
+                  ...utilities.button.style,
+                  ...utilities.transparent.style,
+                }}
               >
                 <Img
                   showLoading={false}
@@ -912,7 +908,7 @@ export default function App({
             )}
             {hasHydrated && isAppOwner && !isManagingApp ? (
               <Button
-                className={clsx(styles.grip, "link")}
+                style={{ ...utilities.link.style, ...styles.grip.style }}
                 title={t("Edit")}
                 onClick={() => {
                   setAppStatus({
@@ -948,7 +944,7 @@ export default function App({
               !canEditApp &&
               !isManagingApp && (
                 <span
-                  className={clsx(styles.grip)}
+                  style={{ ...styles.grip.style }}
                   title={t("Drag and drop to reorder apps")}
                 >
                   <Grip size={24} color="var(--accent-1)" />
@@ -963,7 +959,7 @@ export default function App({
                 ...styles.appsGrid.style,
               }}
             >
-              <DraggableAppList className={clsx(styles.apps)}>
+              <DraggableAppList style={{ ...styles.apps.style }}>
                 {appsState
                   .filter((item) => item.id !== popcorn?.id)
                   .slice(0, 5)
@@ -991,7 +987,7 @@ export default function App({
                         onDragStart={reorder.handleDragStart}
                         onDragEnd={reorder.handleDragEnd}
                         onDrop={reorder.handleDrop}
-                        className={clsx(styles.appItem)}
+                        style={{ ...styles.appItem.style }}
                       >
                         <>
                           {showChrryHere && (
@@ -1010,11 +1006,12 @@ export default function App({
 
                                 setIsNewChat(true, getAppSlug(chrry))
                               }}
-                              className={clsx("link", styles.chrry)}
+                              style={{
+                                ...utilities.link.style,
+                                ...styles.chrry.style,
+                              }}
                             >
                               <Img
-                                className={clsx("link", styles.chrry)}
-                                containerClass={clsx("link", styles.chrry)}
                                 logo="chrry"
                                 alt="Chrry"
                                 title={"Chrry"}
@@ -1045,14 +1042,15 @@ export default function App({
 
                                   setIsNewChat(true, getAppSlug(zarathustra))
                                 }}
-                                className={clsx("link", styles.zarathustra)}
+                                style={{
+                                  ...utilities.link.style,
+                                  ...styles.zarathustra.style,
+                                }}
                               >
                                 <Img
-                                  className={clsx("link", styles.zarathustra)}
-                                  containerClass={clsx(
-                                    "link",
-                                    styles.zarathustra,
-                                  )}
+                                  style={{
+                                    ...styles.zarathustra.style,
+                                  }}
                                   app={zarathustra}
                                   width={80}
                                   height={80}
@@ -1081,15 +1079,11 @@ export default function App({
 
                                   setIsNewChat(true, getAppSlug(popcorn))
                                 }}
-                                className={clsx("link", styles.chrry)}
+                                style={{
+                                  ...utilities.link.style,
+                                }}
                               >
-                                <Img
-                                  className={clsx("link", styles.chrry)}
-                                  containerClass={clsx("link", styles.chrry)}
-                                  app={popcorn}
-                                  width={80}
-                                  height={80}
-                                />
+                                <Img app={popcorn} width={80} height={80} />
                               </A>
                             ) : (
                               showPacmanHere && (
@@ -1100,11 +1094,12 @@ export default function App({
                                       part: "highlights",
                                     })
                                   }
-                                  className={clsx("link", styles.pacMan)}
+                                  style={{
+                                    ...utilities.link.style,
+                                    ...styles.pacMan.style,
+                                  }}
                                 >
                                   <Img
-                                    className={clsx("link", styles.pacMan)}
-                                    containerClass={clsx("link", styles.pacMan)}
                                     icon="pacman"
                                     alt="Pacman"
                                     title={"Pacman"}
@@ -1130,16 +1125,17 @@ export default function App({
                                 key={item.slug}
                                 title={t(item.title)}
                                 style={{
+                                  ...utilities.button.style,
+                                  ...utilities.small.style,
+                                  ...(isManagingApp
+                                    ? utilities.transparent.style
+                                    : utilities.inverted.style),
                                   display: "inline-flex",
                                   alignItems: "center",
                                   gap: "0.35rem",
                                   marginLeft: index === 0 ? "auto" : "",
                                 }}
                                 href={getAppSlug(item)}
-                                className={clsx(
-                                  "button  small",
-                                  isManagingApp ? "transparent" : "inverted",
-                                )}
                                 onClick={(e) => {
                                   if (isManagingApp) {
                                     e.preventDefault()
@@ -1180,15 +1176,12 @@ export default function App({
 
                                 setIsNewChat(true, getAppSlug(atlas))
                               }}
-                              className={clsx("link", styles.atlas)}
+                              style={{
+                                ...utilities.link.style,
+                                ...styles.atlas.style,
+                              }}
                             >
-                              <Img
-                                className={clsx("link", styles.atlas)}
-                                containerClass={clsx("link", styles.atlas)}
-                                app={atlas}
-                                width={22}
-                                height={22}
-                              />
+                              <Img app={atlas} width={22} height={22} />
                             </A>
                           )}
                           {showFocusHere && <FocusButton time={time} />}
@@ -1199,14 +1192,15 @@ export default function App({
                                   ? "customInstructions"
                                   : "appInstructions"
                               }
-                              className={clsx("link", styles.spaceInvader)}
+                              style={{
+                                ...utilities.link.style,
+                                ...styles.spaceInvader.style,
+                              }}
                               onClick={() => {
                                 toggleInstructions()
                               }}
                             >
                               <Img
-                                className={clsx("link", styles.spaceInvader)}
-                                containerClass={clsx(styles.spaceInvader)}
                                 icon="spaceInvader"
                                 alt="Space Invader"
                                 title={t("Space Invader")}

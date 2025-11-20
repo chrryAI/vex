@@ -1,17 +1,18 @@
 import { useCallback } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
+import { Div } from "./platform"
 
 interface DraggableAppListProps {
   children: React.ReactNode
   onReorder?: (dragIndex: number, hoverIndex: number) => void
-  className?: string
+  style?: React.CSSProperties
 }
 
 export function DraggableAppList({
   children,
   onReorder,
-  className,
+  style,
 }: DraggableAppListProps): React.ReactElement {
   const handleDrop = useCallback(
     (dragIndex: number, hoverIndex: number) => {
@@ -24,9 +25,9 @@ export function DraggableAppList({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={className} data-dnd-list>
+      <Div style={style} data-dnd-list>
         {children}
-      </div>
+      </Div>
     </DndProvider>
   )
 }
