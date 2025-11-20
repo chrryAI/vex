@@ -1149,7 +1149,13 @@ export default function Agent({
             )}
 
             {tab === "systemPrompt" && (
-              <Div style={{ ...styles.field.style }}>
+              <Div
+                style={{
+                  ...styles.field.style,
+                  ...styles.firstChild.style,
+                  ...styles.lastChild.style,
+                }}
+              >
                 <TextArea
                   id="systemPrompt"
                   {...register("systemPrompt")}
@@ -1707,53 +1713,59 @@ export default function Agent({
                   <Settings2 size={16} /> {t("Settings")}
                 </Button>
               </>
-              <Button
-                style={{
-                  ...styles.tabButton.style,
-                  ...utilities.small.style,
-                  ...(tab === "extends" ? styles.currentTab.style : undefined),
-                  backgroundColor: "var(--accent-7)",
-                }}
-                onClick={() => {
-                  setTab("extends")
-                }}
-                type="button"
-              >
-                <Blocks size={16} />
-                {t("Extend")}
-              </Button>
+              {tab !== "systemPrompt" && (
+                <>
+                  {" "}
+                  <Button
+                    style={{
+                      ...styles.tabButton.style,
+                      ...utilities.small.style,
+                      ...(tab === "extends"
+                        ? styles.currentTab.style
+                        : undefined),
+                      backgroundColor: "var(--accent-7)",
+                    }}
+                    onClick={() => {
+                      setTab("extends")
+                    }}
+                    type="button"
+                  >
+                    <Blocks size={16} />
+                    {t("Extend")}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setTab("monetization")
+                    }}
+                    type="button"
+                    style={{
+                      backgroundColor: "var(--accent-4)",
+                      ...styles.tabButton.style,
+                      ...utilities.small.style,
+                      ...(tab === "monetization"
+                        ? styles.currentTab.style
+                        : undefined),
+                    }}
+                  >
+                    <Coins size={16} /> {t("Monetization")}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setTab("api")
+                    }}
+                    type="button"
+                    style={{
+                      ...styles.tabButton.style,
+                      ...utilities.small.style,
+                      ...(tab === "api" ? styles.currentTab.style : undefined),
+                      backgroundColor: "var(--accent-1)",
+                    }}
+                  >
+                    <Webhook size={16} /> {t("API")}
+                  </Button>
+                </>
+              )}
 
-              <Button
-                onClick={() => {
-                  setTab("monetization")
-                }}
-                type="button"
-                style={{
-                  backgroundColor: "var(--accent-4)",
-                  ...styles.tabButton.style,
-                  ...utilities.small.style,
-                  ...(tab === "monetization"
-                    ? styles.currentTab.style
-                    : undefined),
-                }}
-              >
-                <Coins size={16} /> {t("Monetization")}
-              </Button>
-
-              <Button
-                onClick={() => {
-                  setTab("api")
-                }}
-                type="button"
-                style={{
-                  ...styles.tabButton.style,
-                  ...utilities.small.style,
-                  ...(tab === "api" ? styles.currentTab.style : undefined),
-                  backgroundColor: "var(--accent-1)",
-                }}
-              >
-                <Webhook size={16} /> {t("API")}
-              </Button>
               {tab !== "systemPrompt" && (
                 <Button
                   onClick={() => {
@@ -1798,8 +1810,8 @@ export default function Agent({
                     showLoading={false}
                     src={`${FRONTEND_URL}/images/pacman/heart.png`}
                     alt="Heart"
-                    width={18}
-                    height={18}
+                    width={10}
+                    height={10}
                   />
                   {t("Continue")}
                 </Button>
