@@ -25,6 +25,7 @@ export const MessageStyleDefs = {
   updateModalDescriptionItem: {
     display: "flex",
     gap: 5,
+    borderBottom: "none",
     paddingBottom: 0,
   },
   appIcon: {

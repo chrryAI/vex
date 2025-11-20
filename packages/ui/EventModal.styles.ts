@@ -34,6 +34,7 @@ export const EventModalStyleDefs = {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "20px 24px 16px",
+    borderBottom: "1px solid var(--shade-2)",
     fontSize: 18,
     fontWeight: 600,
     margin: 0,
@@ -74,6 +75,7 @@ export const EventModalStyleDefs = {
       fontWeight: 500,
       color: "var(--text-disabled)",
       padding: "8px 0",
+      borderBottom: "2px solid transparent",
     },
     focus: {
       outline: "none",
@@ -155,6 +157,7 @@ export const EventModalStyleDefs = {
     justifyContent: "flex-end",
     gap: 10,
     paddingTop: 10,
+    borderTop: "1px solid var(--shade-2)",
     flexWrap: "wrap",
   },
 } as const

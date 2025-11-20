@@ -101,6 +101,7 @@ export const MarkdownContentStyleDefs = {
     fontSize: "1rem",
   },
   blockquote: {
+    borderLeft: 4,
     paddingLeft: "1rem",
     marginLeft: 0,
     marginRight: 0,

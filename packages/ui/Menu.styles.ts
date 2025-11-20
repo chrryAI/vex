@@ -10,6 +10,7 @@ export const MenuStyleDefs = {
     backgroundColor: "var(--shade-1-transparent)",
     padding: "10px 13px 10px 10px",
     flexDirection: "column",
+    borderRight: 1,
     zIndex: 1000,
     position: "fixed",
     top: 0,

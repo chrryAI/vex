@@ -35,6 +35,7 @@ export const WhyStyleDefs = {
     padding: 16,
     backgroundColor: "var(--shade-1)",
     borderRadius: 6,
+    borderLeft: 4,
   },
 } as const
 

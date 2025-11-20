@@ -59,16 +59,19 @@ export const CalendarStyleDefs = {
   },
   rbcAgendaDateCell: {
     backgroundColor: "var(--background-secondary)",
+    borderRight: "1px solid var(--border)",
     padding: 12,
     fontWeight: 600,
   },
   rbcAgendaTimeCell: {
     backgroundColor: "var(--background-secondary)",
+    borderRight: "1px solid var(--border)",
     padding: 12,
     fontSize: 12,
   },
   rbcAgendaEventCell: {
     padding: 12,
+    borderBottom: "1px solid var(--shade-2)",
   },
   rbcAddonsDndDragPreview: {
     backgroundColor: "var(--primary)",
@@ -81,6 +84,7 @@ export const CalendarStyleDefs = {
     border: "2px dashed var(--primary) !important",
   },
   rbcAddonsDndDragRow: {
+    borderLeft: "4px solid var(--primary)",
     backgroundColor: "var(--primary-light)",
   },
   rbcAddonsDndResizeNsAnchor: {
