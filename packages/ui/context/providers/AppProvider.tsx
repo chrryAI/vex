@@ -16,7 +16,7 @@ import {
 } from "../../platform"
 import { appFormData, appSchema } from "../../schemas/appSchema"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { customZodResolver } from "../../utils/customZodResolver"
 import isOwner from "../../utils/isOwner"
 import { useAuth } from "./AuthProvider"
 import type { app, appWithStore, instruction } from "../../types"
@@ -425,7 +425,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const appForm = useForm<appFormData>({
-    resolver: zodResolver(appSchema),
+    resolver: customZodResolver(appSchema),
     mode: "onChange",
     defaultValues: { ...getInitialFormValues(), ...formDraft },
   })

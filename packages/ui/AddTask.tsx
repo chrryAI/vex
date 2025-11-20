@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { customZodResolver } from "./utils/customZodResolver"
 import { z } from "zod"
 import Loading from "./Loading"
 import { Task } from "./FocusButton"
@@ -45,23 +45,17 @@ const AddTask = ({
 
   const { addParams, removeParams } = useNavigation()
   const {
-    formState: { errors: formErrors },
+    formState: { errors },
     reset: resetNewTask,
     register: registerNewTask,
-    getValues,
-    setError,
-    clearErrors,
+    handleSubmit,
   } = useForm<z.infer<typeof NewTaskSchema>>({
+    resolver: customZodResolver(NewTaskSchema),
     mode: "onSubmit",
     defaultValues: {
       title: "",
     },
   })
-
-  // Use our own error state for Zod validation
-  const [newTaskErrors, setNewTaskErrors] = React.useState<{
-    title?: { message?: string }
-  }>({})
 
   useEffect(() => {
     addParams({ addTask: "true" })
@@ -88,26 +82,7 @@ const AddTask = ({
       ? user.tasksCount
       : GUEST_TASKS_COUNT
 
-  const onAddTask = async () => {
-    // Get form values
-    const data = getValues()
-
-    // Manually validate with Zod safeParse
-    const result = NewTaskSchema.safeParse(data)
-
-    if (!result.success) {
-      // Validation failed - extract errors
-      const zodErrors = result.error.flatten().fieldErrors
-      setNewTaskErrors({
-        title: zodErrors.title ? { message: zodErrors.title[0] } : undefined,
-      })
-      return
-    }
-
-    // Clear errors on success
-    setNewTaskErrors({})
-
-    console.log(`🚀 ~ AddTask ~ data:`, data)
+  const onAddTask = handleSubmit(async (data) => {
     const now = new Date()
     const newTask: Task = {
       id: crypto.randomUUID(),
@@ -148,7 +123,7 @@ const AddTask = ({
 
     setIsAddingTask(false)
     resetNewTask()
-  }
+  })
 
   return (
     <Div style={styles.addTask.style}>
@@ -169,16 +144,16 @@ const AddTask = ({
           <Input
             data-testid="add-task-input"
             style={{
-              ...(newTaskErrors.title ? styles.inputError.style : {}),
+              ...(errors.title ? styles.inputError.style : {}),
               ...styles.input.style,
             }}
             {...registerNewTask("title")}
             placeholder="Task title"
             type="text"
           />
-          {newTaskErrors.title && (
+          {errors.title && (
             <Div data-testid="add-task-error" style={styles.fieldError.style}>
-              {newTaskErrors.title?.message}
+              {errors.title?.message}
             </Div>
           )}
           <Div style={styles.addTaskButtons.style}>

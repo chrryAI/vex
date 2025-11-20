@@ -21,7 +21,7 @@ import Modal from "./Modal"
 import Checkbox from "./Checkbox"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useForm, Controller, type SubmitHandler } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { customZodResolver } from "./utils/customZodResolver"
 import {
   formCalendarEventSchema,
   type FormCalendarEventInput,
@@ -132,7 +132,7 @@ export default function EventModal({
     setFocus,
     reset,
   } = useForm({
-    resolver: zodResolver(formCalendarEventSchema),
+    resolver: customZodResolver(formCalendarEventSchema),
     mode: "onChange",
     defaultValues: {
       title: initialData?.title ?? "",
@@ -265,7 +265,7 @@ export default function EventModal({
           </div>
           {errors.title && (
             <div className={styles.error} role="alert">
-              {errors.title.message}
+              {(errors.title?.message as string) || ""}
             </div>
           )}
         </div>
@@ -316,7 +316,7 @@ export default function EventModal({
           </div>
           {errors.startTime && (
             <div className={styles.error} role="alert">
-              {errors.startTime.message}
+              {(errors.startTime?.message as string) || ""}
             </div>
           )}
         </div>
@@ -345,7 +345,7 @@ export default function EventModal({
           </div>
           {errors.endTime && (
             <div className={styles.error} role="alert">
-              {errors.endTime.message}
+              {(errors.endTime?.message as string) || ""}
             </div>
           )}
         </div>
