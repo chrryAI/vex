@@ -40,6 +40,7 @@ export const UsersStyleDefs = {
     display: "flex",
     gap: 10,
     flexDirection: "column",
+    borderBottom: "none",
     padding: "15px 0",
   },
   profileImage: {

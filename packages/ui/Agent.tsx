@@ -81,6 +81,9 @@ export default function Agent({
   const { t } = useAppContext()
   const { chrry, baseApp, token } = useAuth()
 
+  const bordered = {
+    border: "1px dashed var(--shade-2)",
+  }
   const { app, apps, appForm, appFormWatcher, appStatus, setAppStatus } =
     useApp()
 
@@ -531,7 +534,9 @@ export default function Agent({
                       {t(errors.name.message)}
                     </Span>
                   ) : null}
-                  <Div style={utilities.row.style}>
+                  <Div
+                    style={{ ...utilities.row.style, ...styles.bordered.style }}
+                  >
                     <Controller
                       name={"backgroundColor"}
                       control={control}
@@ -566,7 +571,11 @@ export default function Agent({
                     </Div>
                   </Div>
                   <Div
-                    style={{ ...styles.field.style, ...utilities.row.style }}
+                    style={{
+                      ...styles.field.style,
+                      ...utilities.row.style,
+                      ...styles.bordered.style,
+                    }}
                   >
                     <Label
                       style={{ ...styles.label.style, ...utilities.row.style }}
@@ -625,7 +634,11 @@ export default function Agent({
                   </Div>
 
                   <Div
-                    style={{ ...styles.field.style, ...utilities.row.style }}
+                    style={{
+                      ...styles.field.style,
+                      ...utilities.row.style,
+                      ...styles.bordered.style,
+                    }}
                   >
                     <Label
                       style={{ ...styles.label.style, ...utilities.row.style }}
@@ -659,7 +672,11 @@ export default function Agent({
                   </Div>
 
                   <Div
-                    style={{ ...styles.field.style, ...utilities.row.style }}
+                    style={{
+                      ...styles.field.style,
+                      ...utilities.row.style,
+                      ...styles.bordered.style,
+                    }}
                   >
                     <Label
                       style={{ ...styles.label.style, ...utilities.row.style }}
@@ -679,7 +696,9 @@ export default function Agent({
                     />
                   </Div>
 
-                  <Div style={{ ...styles.field.style }}>
+                  <Div
+                    style={{ ...styles.field.style, ...styles.bordered.style }}
+                  >
                     <Label
                       style={{ ...styles.label.style, ...utilities.row.style }}
                       htmlFor="placeholder"
@@ -702,7 +721,9 @@ export default function Agent({
                     />
                   </Div>
                   {/* Tab 3: Capabilities */}
-                  <Div style={{ ...styles.field.style }}>
+                  <Div
+                    style={{ ...styles.field.style, ...styles.lastChild.style }}
+                  >
                     <Label
                       style={{ ...styles.label.style, ...utilities.row.style }}
                       htmlFor="capabilities"
@@ -710,9 +731,7 @@ export default function Agent({
                       <Boxes size={18} color="var(--accent-6)" />
                       {t("Capabilities")}
                     </Label>
-                    <Div
-                      style={{ ...styles.field.style, ...utilities.row.style }}
-                    >
+                    <Div style={{ ...utilities.row.style }}>
                       <Controller
                         name="capabilities.webSearch"
                         control={control}
@@ -886,9 +905,12 @@ export default function Agent({
             )}
             {tab === "extends" && (
               <>
-                <Div style={styles.field.style}>
+                <Div style={{ ...styles.field.style }}>
                   <Span
-                    style={{ ...utilities.row.style, ...styles.label.style }}
+                    style={{
+                      ...styles.label.style,
+                      ...utilities.row.style,
+                    }}
                   >
                     <Blocks size={18} color="var(--accent-6)" />
                     {t("Extend")}

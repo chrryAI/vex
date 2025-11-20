@@ -234,6 +234,7 @@ export const ChatStyleDefs = {
     padding: 12,
     marginBottom: 8,
     backgroundColor: "var(--shade-1)",
+    borderBottom: 1,
     margin: "-3px -10px 0 -10px",
     position: "relative",
     left: 7,
@@ -306,6 +307,7 @@ export const ChatStyleDefs = {
   },
   voiceButtonListening: {},
   quotaDisplay: {
+    borderTop: 1,
     padding: "5px 0",
     fontSize: 13,
     position: "relative",

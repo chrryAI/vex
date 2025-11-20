@@ -17,9 +17,10 @@ export const AgentStyleDefs = {
   },
   footer: {
     flexWrap: "wrap",
-    display: "none",
+    display: "flex",
     justifyContent: "center",
     gap: 10,
+    borderTop: 1,
     paddingTop: 10,
   },
   tabButton: {},
@@ -77,10 +78,18 @@ export const AgentStyleDefs = {
     display: "flex",
     flexDirection: "column",
     gap: 15,
-    padding: "10px 0 13px 0",
+    padding: "10px 0 10px 0",
   },
-  fieldLastChild: {},
-  fieldFirstChild: {
+  bordered: {
+    borderBottom: "1px dashed var(--shade-2)",
+    paddingBottom: 10,
+  },
+  lastChild: {
+    borderBottom: "none",
+    paddingBottom: 0,
+  },
+  firstChild: {
+    borderBottom: "none",
     paddingTop: 0,
   },
   label: {

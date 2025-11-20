@@ -29,6 +29,7 @@ export const GrapeStyleDefs = {
     marginBottom: 5,
   },
   actions: {
+    borderTop: 1,
     marginTop: 20,
     paddingTop: 10,
   },

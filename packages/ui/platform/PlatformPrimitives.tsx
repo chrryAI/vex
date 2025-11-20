@@ -647,14 +647,16 @@ Code.displayName = "Code"
 export const Label = forwardRef<
   HTMLLabelElement,
   TextProps & { htmlFor?: string }
->(({ htmlFor, ...props }, ref) => (
+>(({ htmlFor, className, style, children, onClick, ...props }, ref) => (
   <label
     ref={ref}
     htmlFor={htmlFor}
-    className={props.className}
-    style={props.style as CSSProperties}
+    className={className}
+    style={style as CSSProperties}
+    onClick={onClick}
+    {...props}
   >
-    {props.children}
+    {children}
   </label>
 ))
 Label.displayName = "Label"

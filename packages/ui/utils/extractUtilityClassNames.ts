@@ -18,44 +18,9 @@ export function extractUtilityClassNames(
   for (const style of styles) {
     if (!style) continue
 
-    // Check all known utilities to see if their properties are present
-    for (const [utilityName, utilityDef] of Object.entries(UtilsStyleDefs)) {
-      const utilityStyles =
-        "base" in utilityDef ? (utilityDef as any).base : utilityDef
-
-      // Check if this utility's properties are present in the merged style
-      let matchCount = 0
-      let totalProps = 0
-      let allPropsPresent = true
-
-      for (const [key, value] of Object.entries(utilityStyles)) {
-        if (key === "className") continue
-        totalProps++
-
-        // If a property defined in the utility is MISSING in the style,
-        // we cannot apply this utility class safely (it would inject the missing prop)
-        if (!(key in style)) {
-          allPropsPresent = false
-          break
-        }
-
-        // Check if this property exists in the merged style with the same value
-        if (style[key] === value) {
-          matchCount++
-        }
-      }
-
-      // If all properties are present AND most match, this utility was likely spread
-      if (
-        allPropsPresent &&
-        totalProps > 0 &&
-        matchCount >= Math.ceil(totalProps * 0.5)
-      ) {
-        classNames.add(utilityName)
-      }
-    }
-
-    // Also check for explicit className property
+    // ONLY extract explicit className properties
+    // Do NOT auto-detect utilities from CSS properties to avoid false positives
+    // (e.g., detecting "column" when spreading styles with flexDirection: "column")
     if ("className" in style && typeof style.className === "string") {
       style.className.split(" ").forEach((cn: string) => {
         if (cn) classNames.add(cn)
