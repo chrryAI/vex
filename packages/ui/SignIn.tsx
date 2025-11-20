@@ -35,7 +35,7 @@ import {
   useError,
   useNavigationContext,
 } from "./context/providers"
-import { usePlatform } from "./platform"
+import { Button, usePlatform } from "./platform"
 import { getSiteConfig } from "./utils/siteConfig"
 
 export default function SignIn({
@@ -416,7 +416,7 @@ export default function SignIn({
               </button>
             )}
             {showRegister && (
-              <button
+              <Button
                 onClick={() => {
                   const plan = (user || guest)?.subscription?.plan || "member"
                   if (isExtension) {
@@ -446,7 +446,7 @@ export default function SignIn({
               >
                 <UserRoundPlus color="var(--accent-6)" size={16} />
                 {registerButtonText || t("Register")}
-              </button>
+              </Button>
             )}
           </>
         ) : (

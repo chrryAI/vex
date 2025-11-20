@@ -1364,6 +1364,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             }}
           >
             <Button
+              className={icon ? "link" : "inverted"}
               data-testid={`${dataTestId}-button`}
               onClick={() => {
                 // Clear content if it matches the currently selected instruction
@@ -1403,6 +1404,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 addHapticFeedback()
                 setIsArtifactsOpen(true)
               }}
+              className={icon ? "link" : "transparent"}
               style={{
                 ...(icon ? utilities.link.style : utilities.transparent.style),
               }}

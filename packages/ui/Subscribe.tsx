@@ -1075,6 +1075,7 @@ export default function Subscribe({
         </>
       ) : (
         <Button
+          className="transparent"
           data-gifted-fingerprint={giftedFingerPrint}
           data-testid={`subscribe-button`}
           id="subscribeButton"
