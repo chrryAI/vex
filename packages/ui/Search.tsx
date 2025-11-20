@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import styles from "./Search.module.scss"
+// import styles from "./Search.module.scss"
 import clsx from "clsx"
 import nprogress from "nprogress"
 import { SearchIcon } from "./icons"
@@ -13,6 +13,8 @@ import {
 } from "./hooks/useWindowHistory"
 import { useAppContext } from "./context/AppContext"
 import { useNavigationContext } from "./context/providers"
+import { useSearchStyles } from "./Search.styles"
+import { Div, Input } from "./platform"
 
 export default function Search({
   className,
@@ -21,6 +23,7 @@ export default function Search({
   paramName = "search",
   onChange,
   dataTestId,
+  style,
   ...props
 }: {
   className?: string
@@ -30,7 +33,9 @@ export default function Search({
   isFocus?: boolean
   dataTestId?: string
   onChange?: (search: string) => void
+  style?: React.CSSProperties
 }) {
+  const styles = useSearchStyles()
   const { addParams } = useNavigationContext()
   const searchParams = useSearchParams()
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -61,10 +66,10 @@ export default function Search({
   }, 600)
 
   return (
-    <div className={clsx(styles.searchBoxWrapper)}>
-      <SearchIcon className={styles.searchIcon} />
-      <input
-        className={clsx(styles.search, className)}
+    <Div style={{ ...styles.searchBoxWrapper.style, ...style }}>
+      <SearchIcon style={{ ...styles.searchIcon.style }} />
+      <Input
+        style={{ ...styles.search.style }}
         data-testid={dataTestId}
         type="search"
         placeholder={placeholder || "Search"}
@@ -76,6 +81,6 @@ export default function Search({
         }}
         value={term}
       />
-    </div>
+    </Div>
   )
 }

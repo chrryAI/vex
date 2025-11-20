@@ -501,7 +501,6 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
           isModalOpen={isModalOpen}
           onToggle={(open) => setIsModalOpen(open)}
           title="Grape"
-          className={styles.grapeModal}
         >
           <main>{renderContent()}</main>
           {renderFooter()}

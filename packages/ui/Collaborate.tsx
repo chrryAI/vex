@@ -2,17 +2,17 @@
 
 import React, { useState } from "react"
 
-import styles from "./Collaborate.module.scss"
+// import styles from "./Collaborate.module.scss"
 import { Send, UsersRound } from "./icons"
 import { useAppContext } from "./context/AppContext"
 import Modal from "./Modal"
-import clsx from "clsx"
 import toast from "react-hot-toast"
 import { user } from "./types"
 import Loading from "./Loading"
 import { checkIsExtension, BrowserInstance, apiFetch } from "./utils"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { useTheme } from "./platform"
+import { Button, Div, useTheme, TextArea } from "./platform"
+import { useCollaborateStyles } from "./Collaborate.styles"
 
 const Collaborate = ({ withUser }: { withUser: user }) => {
   const { addParams } = useNavigationContext()
@@ -21,13 +21,13 @@ const Collaborate = ({ withUser }: { withUser: user }) => {
   const { addHapticFeedback } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
   const [content, setContent] = useState("")
+  const styles = useCollaborateStyles()
 
   const [isLoading, setIsLoading] = useState(false)
 
   return (
-    <div className={styles.collaborate}>
-      <button
-        className={clsx("button xSmall", styles.collaborateButton)}
+    <Div>
+      <Button
         onClick={() => {
           if (!user) {
             addHapticFeedback()
@@ -49,9 +49,9 @@ const Collaborate = ({ withUser }: { withUser: user }) => {
       >
         <UsersRound size={18} />
         {t("Collaborate")}
-      </button>
+      </Button>
       <Modal
-        className={styles.modal}
+        style={styles.modal.style}
         hasCloseButton
         hideOnClickOutside={false}
         isModalOpen={isOpen}
@@ -67,12 +67,12 @@ const Collaborate = ({ withUser }: { withUser: user }) => {
           setIsOpen(open)
         }}
       >
-        <textarea
+        <TextArea
           disabled={false}
           id="instructions"
           onChange={(e) => setContent(e.target.value)}
           value={content}
-          className={styles.collaborateTextarea}
+          style={styles.collaborateTextarea.style}
           placeholder={`✨ ${t(`Let's create something amazing together!`)}
       
 ${t(`Describe what you'd like to collaborate on:`)}
@@ -85,10 +85,10 @@ ${t(`Describe what you'd like to collaborate on:`)}
 
 ${t(`Share your vision and invite others to join the conversation!`)}`}
         />
-        <div className={styles.actions}>
-          <button
+        <Div style={styles.actions.style}>
+          <Button
             disabled={isLoading || !content}
-            className={clsx("button inverted", styles.collaborateButton)}
+            className={"button inverted"}
             onClick={async () => {
               let postRequestHeaders: Record<string, string> = {
                 Authorization: `Bearer ${token}`,
@@ -167,10 +167,10 @@ ${t(`Share your vision and invite others to join the conversation!`)}`}
               </>
             )}
             {t("Send")}
-          </button>
-        </div>
+          </Button>
+        </Div>
       </Modal>
-    </div>
+    </Div>
   )
 }
 

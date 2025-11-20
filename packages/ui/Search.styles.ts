@@ -20,8 +20,8 @@ export const SearchStyleDefs = {
   },
   search: {
     border: "1px solid var(--shade-2)",
-    borderRadius: "var(--radius)",
-    padding: "10px 10px 10px 35px !important",
+    borderRadius: 20,
+    padding: "10px 10px 10px 35px",
     width: "100%",
     backgroundColor: "var(--background)",
     color: "var(--foreground)",

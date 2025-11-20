@@ -698,9 +698,14 @@ export default function Menu({
                                     if (e.metaKey || e.ctrlKey) {
                                       return
                                     }
+
                                     e.preventDefault()
                                     isSmallDevice ? toggleMenu() : null
-                                    router.push(url)
+                                    collaborationStatus
+                                      ? goToThreads({
+                                          collaborationStatus,
+                                        })
+                                      : goToThreads()
                                   }}
                                   className="button transparent small"
                                   style={styles.loadMoreButton.style}
