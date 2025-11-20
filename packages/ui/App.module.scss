@@ -67,12 +67,8 @@
 .atlas,
 .focus {
   position: relative;
-  right: toRem.toRem(-5);
+  margin-left: toRem.toRem(10);
 
-  &.atlas {
-    right: toRem.toRem(-3.5);
-    top: toRem.toRem(-2.5);
-  }
   &.focus {
     right: toRem.toRem(-3.5);
   }
@@ -80,6 +76,12 @@
     animation: float 2.5s ease-in-out forwards;
     @include utils.respect-reduced-motion;
   }
+}
+
+.atlas {
+  position: relative;
+  margin-left: toRem.toRem(10);
+  top: toRem.toRem(-5);
 }
 
 .appItem {
@@ -92,9 +94,10 @@
 
 .pacMan {
   position: relative;
-  left: toRem.toRem(-5);
   bottom: toRem.toRem(0);
   margin-left: auto !important;
+  margin-right: toRem.toRem(10);
+
   animation: slideInFromLeft 0.5s ease-out forwards;
   @include utils.respect-reduced-motion;
 }
@@ -102,9 +105,15 @@
 .chrry {
   position: relative;
   right: toRem.toRem(2.5);
-  @include utils.respect-reduced-motion;
-  margin-left: auto !important;
-  margin-right: toRem.toRem(3.5) !important;
+  margin-left: auto;
+  margin-right: toRem.toRem(7.5);
+}
+
+.popcorn {
+  position: relative;
+  right: toRem.toRem(2.5);
+  margin-left: auto;
+  margin-right: toRem.toRem(7.5);
 }
 
 .zarathustra {

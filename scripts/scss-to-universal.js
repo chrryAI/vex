@@ -58,6 +58,10 @@ const propertyMap = {
   gap: "gap",
   "row-gap": "rowGap",
   "column-gap": "columnGap",
+  "grid-template-columns": "gridTemplateColumns",
+  "grid-template-rows": "gridTemplateRows",
+  "grid-column": "gridColumn",
+  "grid-row": "gridRow",
   position: "position",
   top: "top",
   bottom: "bottom",
@@ -151,6 +155,11 @@ const convertValue = (property, value) => {
 
   // Handle clamp() - keep as string for web compatibility
   if (value.includes("clamp(")) {
+    return `'${value}'`
+  }
+
+  // Handle repeat() - keep as string for web, convert for native
+  if (value.includes("repeat(")) {
     return `'${value}'`
   }
 

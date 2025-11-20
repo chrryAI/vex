@@ -860,7 +860,7 @@ export default function App({
                   title={t(store?.title || "Your AI-Powered Life")}
                   href={getStoreSlug(store?.slug)}
                   style={{
-                    ...utilities.link.style,
+                    ...utilities.button.style,
                     ...utilities.small.style,
                     ...utilities.inverted.style,
                     display: "flex",
@@ -1081,13 +1081,15 @@ export default function App({
                                 }}
                                 style={{
                                   ...utilities.link.style,
+                                  ...styles.popcorn.style,
                                 }}
                               >
                                 <Img app={popcorn} width={80} height={80} />
                               </A>
                             ) : (
                               showPacmanHere && (
-                                <button
+                                <Button
+                                  className="ghost"
                                   onClick={() =>
                                     setAppStatus({
                                       step: canEditApp ? "update" : "add",
@@ -1106,7 +1108,7 @@ export default function App({
                                     width={26}
                                     height={26}
                                   />
-                                </button>
+                                </Button>
                               )
                             )
                           ) : null}
@@ -1186,7 +1188,8 @@ export default function App({
                           )}
                           {showFocusHere && <FocusButton time={time} />}
                           {showSpaceInvaderHere && (
-                            <button
+                            <Button
+                              className="ghost"
                               key={
                                 showingCustom
                                   ? "customInstructions"
@@ -1220,7 +1223,7 @@ export default function App({
                                   }}
                                 />
                               )}
-                            </button>
+                            </Button>
                           )}
                         </>
                       </DraggableAppItem>
