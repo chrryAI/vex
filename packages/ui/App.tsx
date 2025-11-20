@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react"
 
-import { usePlatform, useTheme } from "./platform"
+import { FilePicker, usePlatform, useTheme } from "./platform"
 import clsx from "clsx"
-import styles from "./App.module.scss"
 import EnableNotifications from "./EnableNotifications"
 import Logo from "./Image"
 import Img from "./Image"
@@ -11,7 +10,6 @@ import {
   ArrowRight,
   CircleCheck,
   CircleMinus,
-  Coins,
   Grip,
   Info,
   Pencil,
@@ -28,7 +26,7 @@ import { DraggableAppItem } from "./DraggableAppItem"
 import { useAppReorder } from "./hooks/useAppReorder"
 import { Div, H1, Button, Label, Span, Input } from "./platform"
 import A from "./A"
-import { apiFetch, FRONTEND_URL, isFirefox } from "./utils"
+import { apiFetch } from "./utils"
 
 import { useStyles } from "./context/StylesContext"
 import {
@@ -51,6 +49,7 @@ interface App {
 
 // Focus button with live clock when timer is idle
 function FocusButton({ time }: { time: number }) {
+  const { appStyles, utilities } = useStyles()
   const { isExtension, isFirefox, isWeb } = usePlatform()
   const { app, focus, getAppSlug, setShowFocus } = useAuth()
 
@@ -87,16 +86,13 @@ function FocusButton({ time }: { time: number }) {
       onClick={() => setShowFocus(true)}
       href={`${getAppSlug(focus)}`}
       openInNewTab={isExtension && isFirefox}
-      className={clsx("link", styles.focus)}
+      style={{
+        ...utilities.link.style,
+        ...appStyles.focus.style,
+      }}
     >
-      <span className={styles.focusTime}>{formatTime()}</span>
-      <Img
-        className={clsx("link", styles.focus)}
-        containerClass={clsx("link", styles.focus)}
-        logo="focus"
-        width={22}
-        height={22}
-      />
+      <Span style={appStyles.focusTime.style}>{formatTime()}</Span>
+      <Img style={appStyles.focus.style} logo="focus" width={22} height={22} />
     </A>
   )
 }
@@ -398,20 +394,15 @@ export default function App({
       storeApp && (
         <A
           style={{
+            ...utilities.button.style,
+            ...utilities.transparent.style,
+            ...utilities.small.style,
             display: "flex",
             alignItems: "center",
             gap: "0.4rem",
           }}
           href={getAppSlug(storeApp)}
-          className={clsx("button transparent small")}
           onClick={(e) => {
-            // if (isWeb) {
-            //   setTimeout(() => {
-            //     router.replace("/")
-            //   }, 200)
-            //   return
-            // }
-
             e.preventDefault()
 
             setIsNewChat(true, getAppSlug(storeApp))
@@ -433,7 +424,7 @@ export default function App({
 
   const canAddTitle = isManagingApp
 
-  const { appStyles, utilities } = useStyles()
+  const { appStyles: styles, utilities } = useStyles()
 
   if (!hasHydrated && (isManagingApp || appFormWatcher?.canSubmit)) {
     return <Loading fullScreen />
@@ -441,11 +432,11 @@ export default function App({
 
   return (
     <Div>
-      <H1 style={appStyles.title.style}>
+      <H1 style={styles.title.style}>
         {!isManagingApp && !canEditApp && app ? (
           <Div
-            style={appStyles.appTitle.style}
-            className={appStyles.appTitle.className}
+            style={styles.appTitle.style}
+            className={styles.appTitle.className}
           >
             <Logo
               app={app}
@@ -459,8 +450,8 @@ export default function App({
           <Div
             style={
               isManagingApp
-                ? appStyles.titleFormContainer.style
-                : appStyles.titleFormTitle.style
+                ? styles.titleFormContainer.style
+                : styles.titleFormTitle.style
             }
           >
             {appFormWatcher?.canSubmit && isManagingApp && (
@@ -502,15 +493,15 @@ export default function App({
             )}
             {isManagingApp && (
               <Div
-                style={appStyles.validationFeedback}
-                className={appStyles.validationFeedback.className}
+                style={styles.validationFeedback}
+                className={styles.validationFeedback.className}
               >
                 {/* Show validation errors (except title) */}
 
                 {/* Image dimension warning/recommendation */}
                 <Div
                   style={{
-                    ...appStyles.validationFeedback.style,
+                    ...styles.validationFeedback.style,
                     ...utilities.row.style,
                   }}
                 >
@@ -539,8 +530,13 @@ export default function App({
               </Div>
             )}
             {isManagingApp ? (
-              <div className={styles.titleForm}>
-                <div className={styles.appImageContainer}>
+              <Div style={styles.form.style}>
+                <Div
+                  style={{
+                    ...styles.appImageContainer.style,
+                    ...styles.formDiv.style,
+                  }}
+                >
                   {image && (
                     <Button
                       onClick={() => {
@@ -551,11 +547,11 @@ export default function App({
                       aria-label={t("Remove")}
                       style={{
                         ...utilities.link.style,
-                        ...appStyles.removeImageButton.style,
+                        ...styles.removeImageButton.style,
                       }}
                       className={clsx(
                         utilities.link.className,
-                        appStyles.removeImageButton.className,
+                        styles.removeImageButton.className,
                       )}
                     >
                       <CircleMinus color="var(--accent-1)" size={14} />
@@ -567,11 +563,11 @@ export default function App({
                     aria-label={t("Edit")}
                     onClick={() => triggerFileInput()}
                     style={{
-                      ...appStyles.appImageWrapper.style,
+                      ...styles.appImageWrapper.style,
                       ...utilities.link.style,
                     }}
                     className={clsx(
-                      appStyles.appImageWrapper.className,
+                      styles.appImageWrapper.className,
                       utilities.link.className,
                     )}
                   >
@@ -582,9 +578,8 @@ export default function App({
                       app={app}
                       alt="Space Invader"
                       title={t("Space Invader")}
-                      className={styles.appImage}
-                      size={50}
                       style={{
+                        ...styles.appImage.style,
                         position: "relative",
                         bottom: "0.4rem",
                       }}
@@ -594,7 +589,7 @@ export default function App({
                         ...utilities.button.style,
                         ...utilities.transparent.style,
                         ...utilities.small.style,
-                        ...appStyles.editImageButton.style,
+                        ...styles.editImageButton.style,
                         padding: "0.25rem",
                       }}
                     >
@@ -605,23 +600,23 @@ export default function App({
                       )}
                     </Span>
                   </Button>
-                </div>
-                <label htmlFor="title">
-                  <div className={styles.nameWithTip}>
-                    <input
+                </Div>
+                <Label htmlFor="title">
+                  <Div>
+                    <Input
                       {...appForm?.register("title")}
                       title={t("Title")}
                       id="title"
-                      className={styles.titleInput}
+                      style={styles.titleInput.style}
                       type="text"
                       placeholder={t("Title")}
                     />
-                  </div>
-                </label>
+                  </Div>
+                </Label>
                 {isManagingApp &&
                   appStatus?.part !== "name" &&
                   appStatus?.part !== "highlights" && (
-                    <button
+                    <Button
                       disabled={!canAddTitle}
                       onClick={() => {
                         if (canAddTitle) {
@@ -631,24 +626,23 @@ export default function App({
                           })
                         }
                       }}
-                      className={clsx(
-                        "small",
-                        styles.continueButton,
-                        canAddTitle ? "" : "transparent",
-                      )}
+                      style={{
+                        ...utilities.small.style,
+                        ...(canAddTitle ? {} : utilities.transparent.style),
+                      }}
                       title={t("Continue")}
                     >
                       <ArrowRight />
-                    </button>
+                    </Button>
                   )}
-              </div>
+              </Div>
             ) : appFormWatcher && appFormWatcher.canSubmit ? (
-              <div className={styles.titleFormTitle}>
+              <Div style={styles.titleFormTitle.style}>
                 <Logo app={app} showLoading={false} logo="isVivid" size={35} />
                 {t(appFormWatcher?.title || "Your personal AI agent")}
-              </div>
+              </Div>
             ) : (
-              <div className={styles.titleFormTitle}>
+              <Div style={styles.titleFormTitle.style}>
                 <Logo
                   app={app}
                   logo="isMagenta"
@@ -656,13 +650,10 @@ export default function App({
                   size={35}
                 />
                 {t("Your personal AI agent")}
-              </div>
+              </Div>
             )}
-
-            <input
-              key={inputKey}
+            <FilePicker
               ref={fileInputRef}
-              type="file"
               accept="image/*"
               style={{ display: "none" }}
               onChange={handleFileChange}
@@ -671,9 +662,9 @@ export default function App({
         )}
       </H1>
 
-      <Div style={{ ...appStyles.container.style }}>
+      <Div style={{ ...styles.container.style }}>
         <>
-          <Div style={{ ...appStyles.section.style }}>
+          <Div style={{ ...styles.section.style }}>
             <EnableNotifications
               onLocationClick={(location) => {
                 setInput(`What's the weather in ${location}?`)
@@ -681,7 +672,7 @@ export default function App({
               }}
             />
           </Div>
-          <Div style={{ ...appStyles.section.style }}>
+          <Div style={{ ...styles.section.style }}>
             {appStatus?.part ? null : (
               <Button
                 style={{
@@ -731,7 +722,7 @@ export default function App({
               </Button>
             )}
             {appStatus?.part === "name" ? (
-              <Div style={appStyles.agentNameForm.style}>
+              <Div style={styles.agentNameForm.style}>
                 <Div
                   style={{
                     display: "flex",
@@ -743,10 +734,10 @@ export default function App({
                   <Label
                     htmlFor="agentName"
                     style={{
-                      ...appStyles.nameField.style,
+                      ...styles.nameField.style,
                       paddingInline: "0.5rem",
                       ...(appForm?.formState.errors.name?.message
-                        ? appStyles.error.style
+                        ? styles.formInfoError.style
                         : {}),
                     }}
                   >
@@ -764,18 +755,18 @@ export default function App({
                     <Div style={{ position: "relative" }}>
                       <Div
                         style={{
-                          ...appStyles.info.style,
+                          ...styles.formInfo.style,
                           ...(appForm?.formState.errors.name?.message &&
-                            appStyles.error),
+                            styles.formInfoError.style),
                           display: "inline",
                         }}
                       >
                         {appForm?.formState.errors.name?.message ? (
-                          <Span style={appStyles.field.style}>
+                          <Span style={styles.field.style}>
                             {t(appForm?.formState.errors.name.message)}
                           </Span>
                         ) : (
-                          <Span style={appStyles.field.style}>
+                          <Span style={styles.field.style}>
                             {t("Keep it short!")}
                           </Span>
                         )}
@@ -784,7 +775,7 @@ export default function App({
                         {...appForm?.register("name")}
                         title={t("Name")}
                         id="agentName"
-                        style={appStyles.nameInput.style}
+                        style={styles.nameInput.style}
                         type="text"
                         placeholder={t("Name")}
                       />
@@ -793,7 +784,7 @@ export default function App({
                       title={t(
                         "This will the name your app, keep it short around 5-10 characters",
                       )}
-                      style={appStyles.infoIcon.style}
+                      style={styles.infoIcon.style}
                     >
                       <Info color="var(--background)" size={24} />
                     </Span>
@@ -821,7 +812,7 @@ export default function App({
                 </Div>
               </Div>
             ) : isManagingApp ? (
-              <Div style={appStyles.nameImage.style}>
+              <Div style={styles.nameImage.style}>
                 <Button
                   title={t("Edit")}
                   onClick={() => {
@@ -968,8 +959,8 @@ export default function App({
           {!isManagingApp && (
             <Div
               style={{
-                ...appStyles.section.style,
-                ...appStyles.appsGrid.style,
+                ...styles.section.style,
+                ...styles.appsGrid.style,
               }}
             >
               <DraggableAppList className={clsx(styles.apps)}>
@@ -1245,7 +1236,7 @@ export default function App({
             </Div>
           )}
         </>
-        <div className={styles.instructions}>
+        <Div style={{ ...styles.instructions.style }}>
           {isManagingApp && (
             <Instructions
               showButton={true}
@@ -1274,7 +1265,7 @@ export default function App({
                 })
             }}
           />
-        </div>
+        </Div>
       </Div>
     </Div>
   )

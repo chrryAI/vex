@@ -35,6 +35,21 @@ export const AppStyleDefs = {
     position: "relative",
     right: -5,
   },
+  focusTime: {
+    position: "absolute",
+    top: -5,
+    right: -40,
+    padding: "2px 6px",
+    backgroundColor: "var(--accent-1)",
+    color: "#fff",
+    borderRadius: 10,
+    fontSize: 8,
+    fontWeight: 600,
+    fontFamily: '"SF Mono", "Monaco", "Courier New", monospace',
+    whiteSpace: "nowrap",
+    boxShadow: 2,
+    zIndex: 1,
+  },
   apps: {
     display: "grid",
     gap: 10,
@@ -42,9 +57,16 @@ export const AppStyleDefs = {
   },
   spaceInvader: {
     position: "relative",
+    right: -5,
+  },
+  spaceInvaderAtlas: {
     right: -3,
     top: -2,
   },
+  spaceInvaderFocus: {
+    right: -3,
+  },
+  spaceInvaderSpaceInvader: {},
   atlas: {
     position: "relative",
     right: -5,
@@ -154,11 +176,27 @@ export const AppStyleDefs = {
     bottom: -4,
     right: -5,
   },
-  error: {
+  form: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  formLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+  },
+  formError: {
     color: "var(--accent-0)",
     fontSize: 12,
   },
-  info: {
+  formDiv: {
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "column",
+    gap: 8,
+  },
+  formInfo: {
     color: "var(--shade-7)",
     fontSize: 12,
     position: "absolute",
@@ -172,8 +210,13 @@ export const AppStyleDefs = {
     minWidth: 250,
     transform: -85,
   },
-  infoError: {
+  formInfoError: {
     color: "var(--accent-0)",
+  },
+  formDivDiv: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
   },
   namePreview: {
     marginBottom: 4,

@@ -36,23 +36,24 @@
 
 .focus {
   position: relative;
-  .focusTime {
-    position: absolute;
-    top: toRem.toRem(-5);
-    right: toRem.toRem(-40);
-    padding: toRem.toRem(2) toRem.toRem(6);
-    background-color: var(--accent-1);
-    color: #fff;
-    border-radius: toRem.toRem(10);
-    font-size: toRem.toRem(8);
-    font-weight: 600;
-    font-family: "SF Mono", "Monaco", "Courier New", monospace;
-    letter-spacing: toRem.toRem(0.5);
-    white-space: nowrap;
-    box-shadow: 0 toRem.toRem(2) toRem.toRem(4) rgba(0, 0, 0, 0.1);
-    z-index: 1;
-    pointer-events: none;
-  }
+}
+
+.focusTime {
+  position: absolute;
+  top: toRem.toRem(-5);
+  right: toRem.toRem(-40);
+  padding: toRem.toRem(2) toRem.toRem(6);
+  background-color: var(--accent-1);
+  color: #fff;
+  border-radius: toRem.toRem(10);
+  font-size: toRem.toRem(8);
+  font-weight: 600;
+  font-family: "SF Mono", "Monaco", "Courier New", monospace;
+  letter-spacing: toRem.toRem(0.5);
+  white-space: nowrap;
+  box-shadow: 0 toRem.toRem(2) toRem.toRem(4) rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  pointer-events: none;
 }
 
 .apps {
@@ -212,60 +213,58 @@
   bottom: toRem.toRem(-4);
   right: toRem.toRem(-5);
 }
-.agentNameForm,
-.titleForm,
-.nameForm {
+
+.form {
   display: flex;
   align-items: center;
 
-  label {
-    display: flex;
-    align-items: center;
-    gap: toRem.toRem(5);
-  }
-
   gap: toRem.toRem(7.5);
-
-  & > div {
-    display: flex;
-
-    align-items: center;
-    flex-direction: column;
-    gap: toRem.toRem(7.5);
-    > div {
-      display: flex;
-      align-items: center;
-      gap: toRem.toRem(7.5);
-    }
-  }
-
-  .error {
-    color: var(--accent-0);
-    font-size: toRem.toRem(12);
-  }
-
-  .info {
-    color: var(--shade-7);
-    font-size: toRem.toRem(12);
-
-    &.error {
-      color: var(--accent-0);
-    }
-
-    position: absolute;
-    top: toRem.toRem(-25);
-    left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    text-align: center;
-
-    min-width: toRem.toRem(250);
-    transform: translateX(toRem.toRem(-85));
-  }
 }
 
+.formLabel {
+  display: flex;
+  align-items: center;
+  gap: toRem.toRem(5);
+}
+
+.formError {
+  color: var(--accent-0);
+  font-size: toRem.toRem(12);
+}
+.formDiv {
+  display: flex;
+
+  align-items: center;
+  flex-direction: column;
+  gap: toRem.toRem(7.5);
+}
+
+.formInfo {
+  color: var(--shade-7);
+  font-size: toRem.toRem(12);
+
+  position: absolute;
+  top: toRem.toRem(-25);
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+
+  min-width: toRem.toRem(250);
+  transform: translateX(toRem.toRem(-85));
+}
+
+.formInfoError {
+  color: var(--accent-0);
+}
+
+.formDivDiv {
+  display: flex;
+  align-items: center;
+  gap: toRem.toRem(7.5);
+}
 .namePreview,
 .agentNameForm {
   margin-bottom: toRem.toRem(3.5);
