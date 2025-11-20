@@ -1,35 +1,28 @@
 "use client"
 
-import styles from "./AffiliateDashboard.module.scss"
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { COLORS, useAppContext } from "./context/AppContext"
 import toast from "react-hot-toast"
 import {
   Copy,
   TrendingUp,
-  Users,
-  DollarSign,
   MousePointerClick,
   Coins,
   UserRoundPlus,
-  UserPlus,
-  SmilePlus,
   CircleArrowLeft,
   Link,
   Clock,
-  Twitter,
   Share,
 } from "./icons"
 import Logo from "./Logo"
 import Loading from "./Loading"
 import clsx from "clsx"
-import Img from "./Image"
 import { apiFetch } from "./utils"
-import useSWR from "swr"
-import { FaTwitter, FaLinkedin, FaFacebook } from "react-icons/fa"
-import { useNavigation, useTheme } from "./platform"
+import { Button, Div, H1, H2, H3, P, useTheme } from "./platform"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
 import Skeleton from "./Skeleton"
+import { useAffiliateDashboardStyles } from "./AffiliateDashboard.styles"
+import { useStyles } from "./context/StylesContext"
 
 interface AffiliateStats {
   hasAffiliateLink: boolean
@@ -63,6 +56,9 @@ interface AffiliateStats {
 export default function AffiliateDashboard() {
   const { t } = useAppContext()
 
+  const styles = useAffiliateDashboardStyles()
+  const { utilities } = useStyles()
+
   const { affiliateStats, refetchAffiliateData, loadingAffiliateStats } =
     useData()
   const { addHapticFeedback } = useTheme()
@@ -84,26 +80,14 @@ export default function AffiliateDashboard() {
   }, [affiliateStats])
 
   if (!affiliateStats) {
-    return (
-      <div className={styles.affiliate}>
-        <div className={styles.loading}>
-          <Loading />
-        </div>
-      </div>
-    )
+    return <Loading />
   }
 
   if (
     loadingAffiliateStats ||
     (affiliateStats && !affiliateStats?.hasAffiliateLink)
   ) {
-    return (
-      <div className={styles.affiliate}>
-        <div className={styles.loading}>
-          <Loading />
-        </div>
-      </div>
-    )
+    return <Loading fullScreen />
   }
 
   const copyShareText = () => {
@@ -120,154 +104,154 @@ export default function AffiliateDashboard() {
   // Show stats dashboard if has affiliate link
   return (
     <Skeleton>
-      <div className={styles.affiliate}>
-        <div className={styles.dashboard}>
-          <div className={styles.header}>
-            <h1>
-              <button
+      <Div style={styles.affiliate.style}>
+        <Div style={styles.dashboard.style}>
+          <Div style={styles.header.style}>
+            <H1>
+              <Button
                 className="link"
                 onClick={() => {
                   router.push("/affiliate")
                 }}
               >
                 <CircleArrowLeft />
-              </button>
+              </Button>
               {t("Dashboard")}
-            </h1>
-            <div className={styles.status}>
+            </H1>
+            <Div style={styles.status.style}>
               <span
-                className={clsx(
-                  styles.statusBadge,
-                  affiliateStats.stats?.status === "active"
-                    ? styles.active
-                    : styles.inactive,
-                )}
+                style={{
+                  ...styles.statusBadge.style,
+                  ...(affiliateStats.stats?.status === "active"
+                    ? styles.active.style
+                    : styles.inactive.style),
+                }}
               >
                 {affiliateStats.stats?.status === "active"
                   ? t("Active")
                   : t("Inactive")}
               </span>
-            </div>
-          </div>
+            </Div>
+          </Div>
 
-          <div className={styles.linkSection}>
-            <h2>🤩 {t("Your Affiliate Link")}</h2>
-            <div className={styles.linkBox}>
+          <Div style={styles.linkSection.style}>
+            <H2 style={styles.linkSectionH2.style}>
+              🤩 {t("Your Affiliate Link")}
+            </H2>
+            <Div style={styles.linkBox.style}>
               <Link color={COLORS.blue} size={20} />
               <input
                 id="affiliateLink"
                 type="text"
                 value={affiliateStats.affiliateLink}
                 readOnly
-                className={styles.linkInput}
+                style={styles.linkInput.style}
               />
-              <button
-                className={clsx("inverted", styles.copyButton)}
-                onClick={copyLink}
-              >
+              <Button style={styles.copyButton.style} onClick={copyLink}>
                 <Copy size={16} />
-              </button>
-              <button onClick={() => copyShareText()}>
+              </Button>
+              <Button onClick={() => copyShareText()}>
                 <Share size={16} />
                 {t("Copy Post")}
-              </button>
-            </div>
-            <p className={styles.linkHelp}>
+              </Button>
+            </Div>
+            <P style={styles.linkHelp.style}>
               {t(
                 "Share this link to earn {{commission}} commission on all subscriptions!",
                 { commission: "20%" },
               )}
-            </p>
-          </div>
+            </P>
+          </Div>
 
-          <div className={styles.statsGrid}>
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>
+          <Div style={styles.statsGrid.style}>
+            <Div style={styles.statCard.style}>
+              <Div style={styles.statIcon.style}>
                 <MousePointerClick color={COLORS.violet} size={32} />
-              </div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>{t("Clicks")}</div>
-                <div className={styles.statValue}>
+              </Div>
+              <Div style={styles.statContent.style}>
+                <Div style={styles.statLabel.style}>{t("Clicks")}</Div>
+                <Div style={styles.statValue.style}>
                   {affiliateStats.stats?.clicks || 0}
-                </div>
-              </div>
-            </div>
+                </Div>
+              </Div>
+            </Div>
 
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>
+            <Div style={styles.statCard.style}>
+              <Div style={styles.statIcon.style}>
                 <UserRoundPlus color={COLORS.orange} size={32} />
-              </div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>{t("Conversions")}</div>
-                <div className={styles.statValue}>
+              </Div>
+              <Div style={styles.statContent.style}>
+                <Div style={styles.statLabel.style}>{t("Conversions")}</Div>
+                <Div style={styles.statValue.style}>
                   {affiliateStats.stats?.conversions || 0}
-                </div>
-              </div>
-            </div>
+                </Div>
+              </Div>
+            </Div>
 
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>
+            <Div style={styles.statCard.style}>
+              <Div style={styles.statIcon.style}>
                 <Coins color={COLORS.blue} size={32} />
-              </div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>{t("Commission Earned")}</div>
-                <div className={styles.statValue}>
+              </Div>
+              <Div style={styles.statContent.style}>
+                <Div style={styles.statLabel.style}>
+                  {t("Commission Earned")}
+                </Div>
+                <Div style={styles.statValue.style}>
                   €
                   {(
                     (affiliateStats.stats?.commissionEarned || 0) / 100
                   ).toFixed(2)}
-                </div>
-              </div>
-            </div>
+                </Div>
+              </Div>
+            </Div>
 
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>
+            <Div style={styles.statCard.style}>
+              <Div style={styles.statIcon.style}>
                 <TrendingUp color={COLORS.green} size={32} />
-              </div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>
+              </Div>
+              <Div style={styles.statContent.style}>
+                <Div style={styles.statLabel.style}>
                   {t("Commission Pending")}
-                </div>
-                <div className={styles.statValue}>
+                </Div>
+                <Div style={styles.statValue.style}>
                   €
                   {(
                     (affiliateStats.stats?.commissionPending || 0) / 100
                   ).toFixed(2)}
-                </div>
-              </div>
-            </div>
-          </div>
+                </Div>
+              </Div>
+            </Div>
+          </Div>
 
           {/* Payout Request Section */}
           {affiliateStats.stats &&
             affiliateStats.stats.commissionPending >= 5000 && (
-              <div className={styles.payoutSection}>
+              <Div style={styles.payoutSection.style}>
                 {affiliateStats.pendingPayout ? (
-                  <div className={styles.pendingPayoutInfo}>
-                    <div className={styles.pendingBadge}>
+                  <Div style={styles.pendingPayoutInfo.style}>
+                    <Div style={styles.pendingBadge.style}>
                       <Clock size={20} />
                       {t("Payout Pending")}
-                    </div>
-                    <p className={styles.pendingAmount}>
+                    </Div>
+                    <P style={styles.pendingAmount.style}>
                       €{(affiliateStats.pendingPayout.amount / 100).toFixed(2)}
-                    </p>
-                    <p className={styles.pendingDate}>
+                    </P>
+                    <P style={styles.pendingDate.style}>
                       {t("Requested on {{date}}", {
                         date: new Date(
                           affiliateStats.pendingPayout.requestedOn,
                         ).toLocaleDateString(),
                       })}
-                    </p>
-                    <p className={styles.pendingNote}>
+                    </P>
+                    <P style={styles.pendingNote.style}>
                       {t(
                         "Your payout is being processed. You'll be notified once completed.",
                       )}
-                    </p>
-                  </div>
+                    </P>
+                  </Div>
                 ) : (
                   <>
-                    <button
-                      className={clsx("button inverted", styles.payoutButton)}
+                    <Button
                       onClick={async () => {
                         addHapticFeedback()
                         try {
@@ -300,66 +284,68 @@ export default function AffiliateDashboard() {
                         (affiliateStats.stats.commissionPending || 0) / 100
                       ).toFixed(2)}
                       )
-                    </button>
-                    <p className={styles.payoutNote}>
+                    </Button>
+                    <P style={styles.payoutNote.style}>
                       {t("Minimum payout: {{amount}}", { amount: "€50" })}
-                    </p>
+                    </P>
                   </>
                 )}
-              </div>
+              </Div>
             )}
 
-          <div className={styles.referralsSection}>
-            <h2>{t("Referrals")}</h2>
-            <div className={styles.referralsGrid}>
-              <div className={styles.referralStat}>
-                <div className={styles.referralLabel}>{t("Total")}</div>
-                <div className={styles.referralValue}>
+          <Div style={styles.referralsSection.style}>
+            <H2 style={styles.referralsSectionH2.style}>{t("Referrals")}</H2>
+            <Div style={styles.referralsGrid.style}>
+              <Div style={styles.referralStat.style}>
+                <Div style={styles.referralLabel.style}>{t("Total")}</Div>
+                <Div style={styles.referralValue.style}>
                   {affiliateStats.referrals?.total || 0}
-                </div>
-              </div>
-              <div className={styles.referralStat}>
-                <div className={styles.referralLabel}>{t("Pending")}</div>
-                <div className={styles.referralValue}>
+                </Div>
+              </Div>
+              <Div style={styles.referralStat.style}>
+                <Div style={styles.referralLabel.style}>{t("Pending")}</Div>
+                <Div style={styles.referralValue.style}>
                   {affiliateStats.referrals?.pending || 0}
-                </div>
-              </div>
-              <div className={styles.referralStat}>
-                <div className={styles.referralLabel}>{t("Converted")}</div>
-                <div className={styles.referralValue}>
+                </Div>
+              </Div>
+              <Div style={styles.referralStat.style}>
+                <Div style={styles.referralLabel.style}>{t("Converted")}</Div>
+                <Div style={styles.referralValue.style}>
                   {affiliateStats.referrals?.converted || 0}
-                </div>
-              </div>
-              <div className={styles.referralStat}>
-                <div className={styles.referralLabel}>{t("Paid")}</div>
-                <div className={styles.referralValue}>
+                </Div>
+              </Div>
+              <Div style={styles.referralStat.style}>
+                <Div style={styles.referralLabel.style}>{t("Paid")}</Div>
+                <Div style={styles.referralValue.style}>
                   {affiliateStats.referrals?.paid || 0}
-                </div>
-              </div>
-            </div>
-          </div>
+                </Div>
+              </Div>
+            </Div>
+          </Div>
 
-          <div className={styles.info}>
-            <h3> {t("Program Details")}</h3>
-            <ul>
-              <li>
+          <Div style={styles.info.style}>
+            <H3 style={styles.infoH3.style}> {t("Program Details")}</H3>
+            <Div style={styles.infoUl.style}>
+              <P style={styles.infoUlLi.style}>
                 {t("Commission Rate: {{rate}}", {
                   rate: affiliateStats.stats?.commissionRate,
                 })}
                 %
-              </li>
-              <li>
+              </P>
+              <P style={styles.infoUlLi.style}>
                 {t("Referrals get {{bonus}} bonus credits on first purchase", {
                   bonus: "30%",
                 })}
-              </li>
-              <li>
+              </P>
+              <P style={styles.infoUlLi.style}>
                 {t("Cookie Duration {{duration}}", { duration: "30 days" })}
-              </li>
-              <li>{t("Minimum Payout {{payout}}", { payout: "€50" })}</li>
-            </ul>
-          </div>
-          <div className={styles.footer}>
+              </P>
+              <P style={styles.infoUlLi.style}>
+                {t("Minimum Payout {{payout}}", { payout: "€50" })}
+              </P>
+            </Div>
+          </Div>
+          <Div style={styles.footer.style}>
             <a
               href={`${FRONTEND_URL}`}
               className={clsx("link", styles.logo)}
@@ -373,9 +359,9 @@ export default function AffiliateDashboard() {
             >
               <Logo isVivid size={32} /> {"Vex"}
             </a>
-          </div>
-        </div>
-      </div>
+          </Div>
+        </Div>
+      </Div>
     </Skeleton>
   )
 }

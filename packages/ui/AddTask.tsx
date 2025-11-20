@@ -1,8 +1,6 @@
 "use client"
 
 import React, { useEffect } from "react"
-import styles from "./AddTask.module.scss"
-import clsx from "clsx"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -14,10 +12,19 @@ import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "./utils"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
 import { ArrowLeft } from "lucide-react"
-import { useWindowHistory } from "./hooks/useWindowHistory"
-import { useTranslation } from "react-i18next"
-import { toast, useNavigation } from "./platform"
+import {
+  Button,
+  Div,
+  Form,
+  H3,
+  Input,
+  Span,
+  toast,
+  useNavigation,
+} from "./platform"
 import { useAuth } from "./context/providers"
+import { useAddTaskStyles } from "./AddTask.styles"
+import { useStyles } from "./context/StylesContext"
 
 const NewTaskSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -32,21 +39,29 @@ const AddTask = ({
   onCancel: () => void
   totalTasksCount: number
 }) => {
-  const { t } = useTranslation()
+  const { t } = useAppContext()
+  const styles = useAddTaskStyles()
+  const { utilities } = useStyles()
 
   const { addParams, removeParams } = useNavigation()
   const {
-    handleSubmit: handleNewTaskSubmit,
-    formState: { errors: newTaskErrors },
+    formState: { errors: formErrors },
     reset: resetNewTask,
     register: registerNewTask,
+    getValues,
+    setError,
+    clearErrors,
   } = useForm<z.infer<typeof NewTaskSchema>>({
-    mode: "onChange",
-    resolver: zodResolver(NewTaskSchema),
+    mode: "onSubmit",
     defaultValues: {
       title: "",
     },
   })
+
+  // Use our own error state for Zod validation
+  const [newTaskErrors, setNewTaskErrors] = React.useState<{
+    title?: { message?: string }
+  }>({})
 
   useEffect(() => {
     addParams({ addTask: "true" })
@@ -73,7 +88,26 @@ const AddTask = ({
       ? user.tasksCount
       : GUEST_TASKS_COUNT
 
-  const onAddTask = handleNewTaskSubmit(async (data) => {
+  const onAddTask = async () => {
+    // Get form values
+    const data = getValues()
+
+    // Manually validate with Zod safeParse
+    const result = NewTaskSchema.safeParse(data)
+
+    if (!result.success) {
+      // Validation failed - extract errors
+      const zodErrors = result.error.flatten().fieldErrors
+      setNewTaskErrors({
+        title: zodErrors.title ? { message: zodErrors.title[0] } : undefined,
+      })
+      return
+    }
+
+    // Clear errors on success
+    setNewTaskErrors({})
+
+    console.log(`🚀 ~ AddTask ~ data:`, data)
     const now = new Date()
     const newTask: Task = {
       id: crypto.randomUUID(),
@@ -112,65 +146,67 @@ const AddTask = ({
       setIsAddingTask(false)
     }
 
-    // setTasks((prevTasks) => [...prevTasks, newTask])
     setIsAddingTask(false)
     resetNewTask()
-  })
+  }
+
   return (
-    <div className={styles.addTask}>
+    <Div style={styles.addTask.style}>
       {tasksCount <= totalTasksCount && user?.role !== "admin" ? (
-        <div className={styles.addTaskMaxCountReached}>
-          <span className={styles.addTaskMaxCountReachedText}>
+        <Div style={styles.addTaskMaxCountReached.style}>
+          <Span style={styles.addTaskMaxCountReachedText.style}>
             {t("Max tasks count reached")}
-          </span>
+          </Span>
           {!user ? <SignIn /> : <Subscribe />}
-          <button
-            className={clsx(styles.cancelAddTaskButton, "link")}
-            onClick={() => onCancel()}
-          >
+          <Button onClick={() => onCancel()}>
             <ArrowLeft size={14} />
             {t("Back")}
-          </button>
-        </div>
+          </Button>
+        </Div>
       ) : (
-        <form id="addTaskForm" onSubmit={onAddTask}>
-          <h3 className={styles.addTaskTitle}>{t("Add a task")}</h3>
-          <input
+        <Div id="addTaskForm">
+          <H3 style={styles.addTaskTitle.style}>{t("Add a task")}</H3>
+          <Input
             data-testid="add-task-input"
-            className={clsx(
-              styles.addTaskInput,
-              newTaskErrors.title && styles.inputError,
-            )}
+            style={{
+              ...(newTaskErrors.title ? styles.inputError.style : {}),
+              ...styles.input.style,
+            }}
             {...registerNewTask("title")}
             placeholder="Task title"
             type="text"
           />
           {newTaskErrors.title && (
-            <div data-testid="add-task-error" className={styles.fieldError}>
+            <Div data-testid="add-task-error" style={styles.fieldError.style}>
               {newTaskErrors.title?.message}
-            </div>
+            </Div>
           )}
-          <div className={styles.addTaskButtons}>
-            <button data-testid="add-task-button" type="submit">
+          <Div style={styles.addTaskButtons.style}>
+            <Button
+              data-testid="add-task-button"
+              type="button"
+              onClick={onAddTask}
+              style={{ padding: "10px 20px", cursor: "pointer" }}
+            >
               {isAddingTask ? (
                 <Loading color="#fff" width={18} height={18} />
               ) : (
                 t("Add")
               )}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className={clsx(styles.cancelAddTaskButton, "transparent")}
+              style={utilities.transparent.style}
               onClick={() => {
                 onCancel()
               }}
             >
               {t("Cancel")}
-            </button>
-          </div>
-        </form>
+            </Button>
+          </Div>
+        </Div>
       )}
-    </div>
+    </Div>
   )
 }
 

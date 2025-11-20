@@ -103,6 +103,12 @@ export interface TextAreaProps extends BaseProps {
   "data-testid"?: string
 }
 
+export interface FormProps extends BaseProps {
+  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void
+  id?: string
+  "data-testid"?: string
+}
+
 export interface ScrollViewProps extends BaseProps {
   horizontal?: boolean
   showsHorizontalScrollIndicator?: boolean
@@ -398,6 +404,24 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   },
 )
 TextArea.displayName = "TextArea"
+
+export const Form = forwardRef<HTMLFormElement, FormProps>(
+  ({ className, style, onSubmit, children, id, ...props }, ref) => {
+    return (
+      <form
+        ref={ref}
+        className={className}
+        style={style as CSSProperties}
+        onSubmit={onSubmit}
+        id={id}
+        {...props}
+      >
+        {children}
+      </form>
+    )
+  },
+)
+Form.displayName = "Form"
 
 export const ScrollView = forwardRef<HTMLDivElement, ScrollViewProps>(
   (

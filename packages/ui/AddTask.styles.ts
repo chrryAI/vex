@@ -8,6 +8,8 @@
 export const AddTaskStyleDefs = {
   addTask: {
     margin: "5px 0 20px 0",
+  },
+  input: {
     display: "block",
     width: "100%",
     height: 50,
@@ -33,7 +35,15 @@ export const AddTaskStyleDefs = {
   },
   addTaskTitle: {
     margin: 0,
-    marginBottom: 5,
+    marginBottom: 10,
+  },
+  fieldError: {
+    color: "var(--accent-0)",
+    fontSize: 13,
+    marginBottom: 15,
+  },
+  inputError: {
+    borderColor: "var(--accent-0)",
   },
 } as const
 

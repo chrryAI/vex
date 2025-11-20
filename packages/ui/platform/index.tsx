@@ -64,6 +64,7 @@ export {
   Link,
   Input,
   TextArea,
+  Form,
   ScrollView,
   Image,
   // Semantic aliases
@@ -96,6 +97,7 @@ export {
   type LinkProps,
   type InputProps,
   type TextAreaProps,
+  type FormProps,
   type ScrollViewProps,
   type ImageProps,
 } from "./PlatformPrimitives"
