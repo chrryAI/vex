@@ -96,11 +96,13 @@ export const UtilsStyleDefs = {
     alignItems: "center",
     gap: 5,
     flexWrap: "wrap",
+    flex: 1,
   },
   column: {
     display: "flex",
     flexDirection: "column",
     gap: 5,
+    flex: 1,
   },
   left: {
     marginRight: "auto",
