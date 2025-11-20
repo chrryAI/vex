@@ -99,12 +99,14 @@
   align-items: center;
   gap: toRem.toRem(5);
   flex-wrap: wrap;
+  flex: 1;
 }
 
 .column {
   display: flex;
   flex-direction: column;
   gap: toRem.toRem(5);
+  flex: 1;
 }
 
 .left {

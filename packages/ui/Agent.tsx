@@ -1326,11 +1326,13 @@ export default function Agent({
             {tab === "api" && (
               <>
                 {/* API Keys Section (BYOK) */}
-                <Div style={{ ...styles.apiKeys.style }}>
+                <Div
+                  style={{ ...styles.apiKeys.style, ...utilities.row.style }}
+                >
                   {/* OpenAI Key */}
                   <Div style={{ ...utilities.column.style }}>
                     <Label>
-                      <OpenAI /> OpenAI (ChatGPT)
+                      <OpenAI /> OpenAI (ChatGPT)ss
                     </Label>
                     <Controller
                       name="apiKeys.openai"
