@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react"
 import clsx from "clsx"
-// import styles from "./Share.module.scss"
 import { collaboration, thread, user } from "./types"
 import {
   Circle,
@@ -336,13 +335,13 @@ export default function Share({
           <LockIcon color="var(--shade-3)" size={size ? size - 3 : undefined} />
         )}
         <Button
+          className="link"
           title={t("Share")}
           data-testid={`${dataTestId}share-button`}
           onClick={() => {
             setIsOpen(true)
           }}
           style={{
-            ...utilities.link.style,
             ...styles.share.style,
             ...style,
           }}
