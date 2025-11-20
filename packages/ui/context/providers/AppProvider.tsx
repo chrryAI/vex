@@ -7,6 +7,7 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useRef,
 } from "react"
 import {
   useLocalStorage,
@@ -328,7 +329,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   // Cross-platform localStorage hook (works on web, native, extension)
-  const [formDraft, setFormDraft] = useLocalStorage<
+  const [formDraft, setFormDraftInternal] = useLocalStorage<
     Partial<appFormData> | undefined
   >("draft", undefined)
   const defaultFormValues = {
@@ -362,6 +363,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     apiEnabled: false,
     apiPricing: "per-request" as const,
     displayMode: "standalone" as const,
+  }
+
+  const setFormDraft = (draft: Partial<appFormData> | undefined) => {
+    setFormDraftInternal(draft)
   }
 
   useEffect(() => {
@@ -592,14 +597,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const stepRef = useRef(step)
+  const partRef = useRef(part)
+
   useEffect(() => {
     if (step || part) {
-      setAppStatusInternal({
-        step: step,
-        part: part,
-      })
+      ;(appStatus?.step !== step || appStatus?.part !== part) &&
+        setAppStatusInternal({
+          step: step,
+          part: part,
+        })
 
-      if (step === "add") {
+      if (step === "add" && stepRef.current !== "add") {
         // Clear localStorage draft first
         setFormDraft(undefined)
         // Then reset form to default values (clears id and all fields)
@@ -613,7 +622,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           id: undefined, // Explicitly clear id to prevent conflicts
         }
         appForm.reset(freshDefaults)
-      } else if (step === "restore") {
+      } else if (step === "restore" && stepRef.current !== "restore") {
         // Restore app data from current app into form for editing
         if (app && isAppOwner) {
           const appValues = getInitialFormValues()
@@ -621,6 +630,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setFormDraft(appValues)
         }
       }
+      stepRef.current = step
+      partRef.current = part
     }
   }, [step, part]) // Run once on mount
 
