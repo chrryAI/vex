@@ -33,7 +33,7 @@ import ColorScheme from "./ColorScheme"
 import { useHasHydrated } from "./hooks"
 import { Controller, useForm } from "react-hook-form"
 import toast from "react-hot-toast"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { customZodResolver } from "./utils/customZodResolver"
 import {
   createCustomAiAgentSchema,
   type CreateCustomAiAgent,
@@ -103,7 +103,7 @@ export default function Agent({
 
   // Custom agent form
   const customAgentForm = useForm<CreateCustomAiAgent>({
-    resolver: zodResolver(createCustomAiAgentSchema),
+    resolver: customZodResolver(createCustomAiAgentSchema),
     defaultValues: {
       name: "",
       apiKey: "",
@@ -910,6 +910,7 @@ export default function Agent({
                     style={{
                       ...styles.label.style,
                       ...utilities.row.style,
+                      ...styles.bordered.style,
                     }}
                   >
                     <Blocks size={18} color="var(--accent-6)" />
@@ -983,10 +984,17 @@ export default function Agent({
                     />
                   </Div>
                   <Div
-                    style={{ ...styles.field.style, ...utilities.row.style }}
+                    style={{
+                      ...styles.field.style,
+                      ...utilities.row.style,
+                      ...styles.bordered.style,
+                    }}
                   >
                     <label
-                      style={{ ...styles.label.style, ...utilities.row.style }}
+                      style={{
+                        ...styles.label.style,
+                        ...utilities.row.style,
+                      }}
                       htmlFor="visibility"
                     >
                       <GlobeLock size={18} color="var(--accent-6)" />
@@ -1012,14 +1020,16 @@ export default function Agent({
                   </Div>
 
                   <Span
-                    style={{ ...styles.label.style, ...utilities.row.style }}
+                    style={{
+                      ...styles.label.style,
+                      ...utilities.row.style,
+                      ...styles.bordered.style,
+                    }}
                   >
                     <VectorSquare size={18} color="var(--accent-6)" />
                     {t("Tools")}
                   </Span>
-                  <Div
-                    style={{ ...styles.field.style, ...utilities.row.style }}
-                  >
+                  <Div style={{ ...utilities.row.style }}>
                     <Controller
                       name="tools"
                       control={control}
