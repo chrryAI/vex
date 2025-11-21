@@ -15,14 +15,24 @@ export interface VideoProps {
 }
 
 const Video: React.FC<VideoProps> = ({ style, width, height }) => {
+  // Extract objectFit from style for cross-platform compatibility
+  // On web, objectFit is a CSS property. On native, we'd use resizeMode on Video component
+  const { objectFit, ...restStyle } = style || {}
+
+  // Map objectFit to resizeMode for when you implement a real Video component
+  // const resizeMode = objectFit === 'cover' ? 'cover' : objectFit === 'contain' ? 'contain' : 'stretch'
+
   // React Native doesn't have built-in video support
   // You would need to use expo-av or react-native-video
   // For now, return a placeholder View
+  // When implementing with expo-av or react-native-video, use:
+  // <Video source={{ uri: src }} resizeMode={resizeMode} style={restStyle} />
+
   return (
     <View
       style={[
         styles.placeholder,
-        style,
+        restStyle,
         width && { width },
         height && { height },
       ]}

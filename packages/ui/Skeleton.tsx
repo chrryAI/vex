@@ -34,6 +34,7 @@ import { useTheme } from "./platform"
 import A from "./A"
 import Version from "./Version"
 import AddToHomeScreen from "./AddToHomeScreen"
+import { threadId } from "worker_threads"
 
 export default function Skeleton({
   className,
@@ -176,17 +177,19 @@ export default function Skeleton({
                   </A>
                 </Div>
               ) : null}
-              <A
-                href={`/blossom`}
-                style={{
-                  ...utilities.button.style,
-                  ...utilities.transparent.style,
-                  ...utilities.small.style,
-                  ...(hasHydrated && isMobile && skeletonStyles.blog.style),
-                }}
-              >
-                <Img logo="blossom" size={22} /> {"Blossom"}
-              </A>
+              {isEmpty && (
+                <A
+                  href={`/blossom`}
+                  style={{
+                    ...utilities.button.style,
+                    ...utilities.transparent.style,
+                    ...utilities.small.style,
+                    ...(hasHydrated && isMobile && skeletonStyles.blog.style),
+                  }}
+                >
+                  <Img logo="blossom" size={22} /> {"Blossom"}
+                </A>
+              )}
             </Div>
             <Div style={{ ...skeletonStyles.right.style }}>
               <CharacterProfiles />

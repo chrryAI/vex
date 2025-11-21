@@ -84,6 +84,7 @@ const propertyMap = {
   "white-space": "whiteSpace",
   "text-overflow": "textOverflow",
   transform: "transform",
+  "object-fit": "objectFit",
 }
 
 // CSS variable to theme property mappings
