@@ -1,8 +1,6 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import styles from "./Store.module.scss"
-import clsx from "clsx"
 import Skeleton from "./Skeleton"
 import {
   useApp,
@@ -13,7 +11,7 @@ import {
 import Img from "./Image"
 import { useAppContext } from "./context/AppContext"
 import { appWithStore } from "./types"
-import { Div, usePlatform, useTheme } from "./platform"
+import { Div, H3, H4, P, Span, useTheme } from "./platform"
 import { useStoreStyles } from "./Store.styles"
 import { Sparkles, ArrowRight } from "./icons"
 import A from "./A"
@@ -34,14 +32,20 @@ export default function Store({
     useNavigationContext()
 
   const { getAppSlug } = useAuth()
-  const { currentStore: store } = useApp()
+
+  const { track, allApps } = useAuth()
+
+  const { currentStore } = useApp()
+
+  const store = slug
+    ? allApps.find((app) => app.slug === slug)?.store
+    : currentStore
 
   const apps = store?.apps
 
   // Get the base app - either from store.app or find it in the apps array
 
   const { t } = useAppContext()
-  const { track } = useAuth()
 
   // Filter apps that belong to this store (exclude Chrry itself)
   const storeApps = apps
@@ -60,7 +64,7 @@ export default function Store({
 
     setSelectedAppInternal(app)
 
-    router.push(`/${app.store.slug}?app=${app.slug}`)
+    !slug && router.push(`/${app.store.slug}?app=${app.slug}`)
   }
 
   useEffect(() => {
@@ -95,9 +99,9 @@ export default function Store({
   // Dynamically update page metadata for client-side navigation
   useStoreMetadata(store)
 
-  const storeStyles = useStoreStyles()
+  const styles = useStoreStyles()
 
-  const { margin } = storeStyles.lifeOS.style
+  const { margin } = styles.lifeOS.style
 
   const render = () => {
     if (!store?.app) {
@@ -107,13 +111,13 @@ export default function Store({
     return (
       <Div
         style={{
-          ...storeStyles.lifeOS.style,
+          ...styles.lifeOS.style,
           margin: compact ? 0 : margin,
         }}
       >
         {!compact && (
-          <div style={{ ...storeStyles.header.style }}>
-            <div style={{ ...storeStyles.headerIcons.style }}>
+          <Div style={{ ...styles.header.style }}>
+            <div style={{ ...styles.headerIcons.style }}>
               <Img
                 showLoading={false}
                 src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
@@ -138,8 +142,8 @@ export default function Store({
                 size={28}
               />
             </div>
-            <h1 style={{ ...storeStyles.title.style }}>
-              <span style={{ ...storeStyles.titleText.style }}>
+            <h1 style={{ ...styles.title.style }}>
+              <span style={{ ...styles.titleText.style }}>
                 <A
                   href={store.app ? getAppSlug(store.app) : "#"}
                   onClick={(e) => {
@@ -159,12 +163,12 @@ export default function Store({
                 - {t(store?.title || "")}
               </span>
             </h1>
-            <p style={{ ...storeStyles.intro.style }}>
+            <p style={{ ...styles.intro.style }}>
               {t(store?.description || "")}
             </p>
-          </div>
+          </Div>
         )}
-        <div className={styles.createAgent}>
+        <Div style={styles.createAgent.style}>
           <button
             onClick={() => {
               router.push("/?part=highlights")
@@ -174,41 +178,41 @@ export default function Store({
             <Sparkles size={16} color="var(--accent-1)" />
             {t("Create Your Agent")}
           </button>
-        </div>
-        <div className={styles.content}>
-          <div className={styles.apps}>
+        </Div>
+        <Div style={styles.content.style}>
+          <Div style={styles.apps.style}>
             {storeApps?.map((app) => (
-              <div
+              <Div
                 key={app.id}
-                className={clsx(
-                  styles.app,
-                  selectedApp?.id === app.id && styles.selected,
-                )}
+                style={{
+                  ...styles.app.style,
+                  ...(selectedApp?.id === app.id && styles.appSelected.style),
+                }}
                 onClick={() => setSelectedApp(app)}
               >
-                <span className={clsx(styles.badge)}>{t("live")}</span>
+                <span style={{ ...styles.badge.style }}>{t("live")}</span>
                 <Img
-                  className={clsx(styles.appImage)}
+                  style={{ ...styles.appImage.style }}
                   app={app}
                   alt={app.name}
                   size={isMobileDevice ? 40 : 80}
                 />
-                <div className={styles.appInfo}>
-                  <span className={styles.appName}>
+                <Div style={{ ...styles.appInfo.style }}>
+                  <Span style={{ ...styles.appName.style }}>
                     {app.icon} {app.name}
-                  </span>
-                  <span className={styles.appSubtitle}>
+                  </Span>
+                  <Span style={{ ...styles.appSubtitle.style }}>
                     {t(app.subtitle || "")}
-                  </span>
-                </div>
-              </div>
+                  </Span>
+                </Div>
+              </Div>
             ))}
-          </div>
+          </Div>
 
-          <div key={selectedApp?.id} className={styles.footer}>
+          <Div key={selectedApp?.id} style={styles.footer.style}>
             {selectedApp && (
-              <div className={styles.appDetails}>
-                <h3 className={styles.appTitle}>
+              <Div style={styles.appDetails.style}>
+                <H3 style={styles.appTitle.style}>
                   {selectedApp.icon} {selectedApp.name}
                   <A
                     href={getAppSlug(selectedApp)}
@@ -219,32 +223,36 @@ export default function Store({
                       e.preventDefault()
                       setIsNewChat(true, getAppSlug(selectedApp))
                     }}
-                    className={clsx(styles.tryItNow)}
+                    style={styles.tryItNow.style}
                   >
                     <ArrowRight size={16} color="var(--accent-6)" />
                     {t("Try it now!")}
                   </A>
-                </h3>
-                <p className={styles.subtitle}>{t(selectedApp.title || "")}</p>
-                <p className={styles.description}>
+                </H3>
+                <P style={styles.subtitle.style}>
+                  {t(selectedApp.title || "")}
+                </P>
+                <P style={styles.description.style}>
                   {t(selectedApp.description || "")}
-                </p>
+                </P>
                 {Array.isArray(selectedApp.featureList) &&
                   selectedApp.featureList.length > 0 && (
-                    <div className={styles.features}>
-                      <h4>{t("Key Features")}</h4>
-                      <ul>
+                    <Div>
+                      <H4 style={styles.featuresH4.style}>
+                        {t("Key Features")}
+                      </H4>
+                      <Div>
                         {selectedApp.featureList.map((feature, index) => (
-                          <li className={styles.feature} key={index}>
+                          <P style={styles.feature.style} key={index}>
                             <Sparkles
                               size={16}
                               color="var(--accent-1)"
                               fill="var(--accent-1)"
                             />
                             {t(feature)}
-                          </li>
+                          </P>
                         ))}
-                        <li className={styles.feature}>
+                        <P style={styles.feature.style}>
                           <A
                             href={getAppSlug(selectedApp)}
                             onClick={(e) => {
@@ -259,44 +267,18 @@ export default function Store({
                             <ArrowRight size={16} color="var(--accent-6)" />
                             {t("Try it now!")}
                           </A>
-                        </li>
-                      </ul>
-                    </div>
+                        </P>
+                      </Div>
+                    </Div>
                   )}
-              </div>
+              </Div>
             )}
-          </div>
-        </div>
-        {/* Hidden content for SEO - all apps details */}
+          </Div>
+        </Div>
         {!compact && (
-          <div style={{ display: "none" }} className="seo-content">
-            {storeApps?.map((appItem) => (
-              <section key={appItem.id}>
-                <h2>{appItem.name}</h2>
-                <h3>{t(appItem.title || "")}</h3>
-                <p>{t(appItem.description || "")}</p>
-                {Array.isArray(appItem.featureList) &&
-                  appItem.featureList.length > 0 && (
-                    <>
-                      <h4>{t("Key Features")}</h4>
-                      <ul>
-                        {appItem.featureList.map((feature, index) => (
-                          <li key={index}>{t(feature)}</li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-              </section>
-            ))}
-          </div>
-        )}
-        {!compact && (
-          <div className={styles.tetris}>
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <A
-                href={`/blossom`}
-                className={clsx("link", styles.hamburgerButton)}
-              >
+          <Div style={styles.tetris.style}>
+            <Div style={{ display: "flex", gap: "1rem" }}>
+              <A href={`/blossom`}>
                 <Img logo="blossom" size={28} /> Blossom
               </A>
               <Img
@@ -313,9 +295,8 @@ export default function Store({
                 width={28}
                 height={28}
               />
-            </div>
-            <span></span>
-          </div>
+            </Div>
+          </Div>
         )}
       </Div>
     )

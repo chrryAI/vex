@@ -217,36 +217,29 @@
       color: var(--shade-7);
       font-size: toRem.toRem(15);
     }
-
-    .features {
-      h4 {
-        margin: 0 0 toRem.toRem(10) 0;
-        font-size: toRem.toRem(16);
-        font-weight: 600;
-      }
-
-      .feature {
-        display: flex;
-        align-items: center;
-        gap: toRem.toRem(5);
-      }
-
-      ul {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-
-        li {
-          margin-bottom: toRem.toRem(6);
-          color: var(--shade-6);
-        }
-      }
-    }
   }
 
   @include utils.respect-reduced-motion;
 }
 
+.featuresUl {
+  display: flex;
+  gap: toRem.toRem(10);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.featuresH4 {
+  margin: 0 0 toRem.toRem(10) 0;
+  font-size: toRem.toRem(16);
+  font-weight: 600;
+}
+.feature {
+  display: flex;
+  align-items: center;
+  gap: toRem.toRem(5);
+}
 .tetris {
   display: flex;
   justify-content: center;

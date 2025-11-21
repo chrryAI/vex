@@ -161,6 +161,17 @@ export const StoreStyleDefs = {
     color: "var(--shade-7)",
     fontSize: 15,
   },
+  featuresUl: {
+    display: "flex",
+    gap: 10,
+    margin: 0,
+    padding: 0,
+  },
+  featuresH4: {
+    margin: "0 0 10px 0",
+    fontSize: 16,
+    fontWeight: 600,
+  },
   feature: {
     display: "flex",
     alignItems: "center",
