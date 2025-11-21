@@ -2,7 +2,6 @@
 
 import { Trans, useTranslation } from "react-i18next"
 import React, { useState, useRef, useEffect } from "react"
-import styles from "./FocusButton.module.scss"
 import { useHasHydrated } from "./hooks"
 import {
   AlarmClockCheck,
