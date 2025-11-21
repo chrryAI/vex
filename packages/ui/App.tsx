@@ -38,7 +38,7 @@ import {
 } from "./context/providers"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
-import Grape from "./Grape"
+// import Grape from "./Grape"
 
 interface App {
   id: string

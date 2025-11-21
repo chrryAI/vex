@@ -9,6 +9,7 @@ import { useAuth } from "./context/providers"
 import { apiFetch } from "./utils"
 import { useLanguageSwitcherStyles } from "./LanguageSwitcher.styles"
 import { Button, Div } from "./platform"
+import { useStyles } from "./context/StylesContext"
 
 const LanguageSwitcher = ({
   style,
@@ -18,6 +19,8 @@ const LanguageSwitcher = ({
 }) => {
   const { t } = useAppContext()
   const styles = useLanguageSwitcherStyles()
+
+  const { utilities } = useStyles()
 
   const { language, setLanguage, user, token, track, API_URL } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
@@ -50,7 +53,8 @@ const LanguageSwitcher = ({
   return (
     <>
       <Button
-        style={style}
+        className="link"
+        style={{ ...utilities.link.style, ...style }}
         onClick={() => {
           setIsModalOpen(true)
         }}
@@ -77,6 +81,7 @@ const LanguageSwitcher = ({
             <Button
               key={item.code}
               style={{
+                ...utilities.link.style,
                 ...styles.languageButton.style,
                 color: item.code === language ? "var(--shade-8)" : "",
               }}
