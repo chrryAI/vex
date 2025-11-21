@@ -16,7 +16,7 @@ export const ThreadStyleDefs = {
     flexDirection: "column",
     gap: 10,
     fontSize: 15,
-    paddingBottom: 195,
+    padding: "0 10px 195px 10px",
     width: "100%",
   },
   threadEmpty: {
