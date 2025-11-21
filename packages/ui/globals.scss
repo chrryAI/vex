@@ -713,6 +713,18 @@ button.favorite {
   }
 }
 
+.formSwitch {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.formSwitchTrack {
+  transition: all 0.3s linear;
+}
+
+.formSwitchThumbChecked {
+  transform: translateX(20px);
+}
+
 @keyframes placeholderGlowPulse {
   0% {
     border-color: var(--accent-1);

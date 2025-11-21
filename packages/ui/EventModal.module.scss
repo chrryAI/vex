@@ -88,23 +88,23 @@
 .titleInput {
   flex: 1;
   width: 100%;
-  background: none;
-  border: none;
-  font-size: toRem.toRem(24);
-  font-weight: 500;
-  color: var(--text-primary);
-  padding: 8px 0;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.2s ease;
+  // background: none;
+  // border: none;
+  // font-size: toRem.toRem(24);
+  // font-weight: 500;
+  // color: var(--text-primary);
+  // padding: 8px 0;
+  // border-bottom: 2px solid transparent;
+  // transition: border-color 0.2s ease;
 
-  &:focus {
-    outline: none;
-    border-bottom-color: var(--primary);
-  }
+  // &:focus {
+  //   outline: none;
+  //   border-bottom-color: var(--primary);
+  // }
 
-  &::placeholder {
-    color: var(--text-disabled);
-  }
+  // &::placeholder {
+  //   color: var(--text-disabled);
+  // }
 }
 
 .input {
@@ -117,15 +117,15 @@
   color: var(--text-primary);
   transition: all 0.2s ease;
 
-  &:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-light);
-  }
+  // &:focus {
+  //   outline: none;
+  //   border-color: var(--primary);
+  //   box-shadow: 0 0 0 3px var(--primary-light);
+  // }
 
-  &::placeholder {
-    color: var(--text-secondary);
-  }
+  // &::placeholder {
+  //   color: var(--text-secondary);
+  // }
 }
 
 .descriptionEdit {
@@ -134,10 +134,10 @@
   gap: toRem.toRem(10);
   flex: 1;
   width: 100%;
+}
 
-  button {
-    align-self: flex-start;
-  }
+.descriptionEditButton {
+  align-self: flex-start;
 }
 .textarea {
   min-height: 120px;
@@ -181,10 +181,8 @@
   }
 }
 
-.dateTimeSection {
-  .field {
-    align-items: center;
-  }
+.dateTimeSectionField {
+  align-items: center;
 }
 
 .dateTimeGroup {
