@@ -4,15 +4,17 @@ import React, { useEffect } from "react"
 import { useAppContext } from "./context/AppContext"
 import Skeleton from "./Skeleton"
 import { CircleArrowLeft } from "./icons"
-import styles from "./About.module.scss"
 import Img from "./Img"
 import { FRONTEND_URL } from "./utils"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { useTheme } from "./platform"
+import { Button, Div, H1, H2, P, Section, useTheme } from "./platform"
+import { useAboutStyles } from "./About.styles"
 
 export default function Privacy() {
   const { t } = useAppContext()
   const { track } = useAuth()
+
+  const styles = useAboutStyles()
 
   const { router } = useNavigationContext()
   const { isDrawerOpen } = useTheme()
@@ -25,86 +27,85 @@ export default function Privacy() {
 
   return (
     <Skeleton>
-      <div
-        className={styles.about}
+      <Div
         style={{
           maxWidth: 800,
           margin: isDrawerOpen ? undefined : "0 auto",
           padding: "0 0px 20px 0px",
         }}
       >
-        <h1 style={{ marginTop: 0 }}>
-          <button className="link" onClick={() => router.push("/about")}>
+        <H1 style={{ marginTop: 0 }}>
+          <Button className="link" onClick={() => router.push("/about")}>
             <CircleArrowLeft color="var(--accent-1)" size={24} />
-          </button>{" "}
+          </Button>{" "}
           {t("Privacy Policy")}
-        </h1>
+        </H1>
 
-        <section>
-          <h2>{t("privacy.collection.title")}</h2>
-          <p>{t("privacy.collection.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("privacy.collection.title")}</H2>
+          <P>{t("privacy.collection.content")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("privacy.analytics.title")}</h2>
-          <p>{t("privacy.analytics.content2")}</p>
-          <ul>
-            <li>{t("privacy.analytics.items.pageviews")}</li>
-            <li>{t("privacy.analytics.items.features")}</li>
-            <li>{t("privacy.analytics.items.performance")}</li>
-            <li>{t("privacy.analytics.items.conversion")}</li>
-          </ul>
-          <p>{t("privacy.analytics.anonymized")}</p>
-        </section>
+        <Section>
+          <H2>{t("privacy.analytics.title")}</H2>
+          <P>{t("privacy.analytics.content2")}</P>
+          <Div>
+            <P>{t("privacy.analytics.items.pageviews")}</P>
+            <P>{t("privacy.analytics.items.features")}</P>
+            <P>{t("privacy.analytics.items.performance")}</P>
+            <P>{t("privacy.analytics.items.conversion")}</P>
+          </Div>
+          <P>{t("privacy.analytics.anonymized")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("privacy.chat.title")}</h2>
-          <p>{t("privacy.chat.content")}</p>
-          <p>{t("privacy.chat.memory_note")}</p>
-        </section>
+        <Section>
+          <H2>{t("privacy.chat.title")}</H2>
+          <P>{t("privacy.chat.content")}</P>
+          <P>{t("privacy.chat.memory_note")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("privacy.character.title")}</h2>
-          <p>{t("privacy.character.content")}</p>
-          <ul>
-            <li>{t("privacy.character.items.analysis")}</li>
-            <li>{t("privacy.character.items.storage")}</li>
-            <li>{t("privacy.character.items.sharing")}</li>
-            <li>{t("privacy.character.items.control")}</li>
-          </ul>
-        </section>
+        <Section>
+          <H2>{t("privacy.character.title")}</H2>
+          <P>{t("privacy.character.content")}</P>
+          <Div>
+            <P>{t("privacy.character.items.analysis")}</P>
+            <P>{t("privacy.character.items.storage")}</P>
+            <P>{t("privacy.character.items.sharing")}</P>
+            <P>{t("privacy.character.items.control")}</P>
+          </Div>
+        </Section>
 
-        <section>
-          <h2>{t("privacy.memory.title")}</h2>
-          <p>{t("privacy.memory.content")}</p>
-          <ul>
-            <li>{t("privacy.memory.items.extraction")}</li>
-            <li>{t("privacy.memory.items.storage")}</li>
-            <li>{t("privacy.memory.items.usage")}</li>
-            <li>{t("privacy.memory.items.control")}</li>
-          </ul>
-        </section>
+        <Section>
+          <H2>{t("privacy.memory.title")}</H2>
+          <P>{t("privacy.memory.content")}</P>
+          <Div>
+            <P>{t("privacy.memory.items.extraction")}</P>
+            <P>{t("privacy.memory.items.storage")}</P>
+            <P>{t("privacy.memory.items.usage")}</P>
+            <P>{t("privacy.memory.items.control")}</P>
+          </Div>
+        </Section>
 
-        <section>
-          <h2>{t("privacy.cookies.title")}</h2>
-          <p>{t("privacy.cookies.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("privacy.cookies.title")}</H2>
+          <P>{t("privacy.cookies.content")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("privacy.security.title")}</h2>
-          <p>{t("privacy.security.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("privacy.security.title")}</H2>
+          <P>{t("privacy.security.content")}</P>
+        </Section>
 
-        <section>
-          <h2>{t("privacy.changes.title")}</h2>
-          <p>{t("privacy.changes.content")}</p>
-        </section>
+        <Section>
+          <H2>{t("privacy.changes.title")}</H2>
+          <P>{t("privacy.changes.content")}</P>
+        </Section>
 
-        <div className={styles.lastUpdated}>
+        <Div style={styles.lastUpdated.style}>
           <Img src={`${FRONTEND_URL}/frog.png`} width={24} height={24} />
           {t("privacy.last_updated", { date: "August 4, 2025" })}
-        </div>
-      </div>
+        </Div>
+      </Div>
     </Skeleton>
   )
 }

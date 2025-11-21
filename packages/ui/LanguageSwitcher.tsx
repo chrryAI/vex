@@ -3,20 +3,21 @@
 import React, { useEffect, useState } from "react"
 import { Languages } from "./icons"
 import Modal from "./Modal"
-import styles from "./LanguageSwitcher.module.scss"
-import clsx from "clsx"
 import { locale, LANGUAGES } from "./locales"
 import { useAppContext } from "./context/AppContext"
 import { useAuth } from "./context/providers"
 import { apiFetch } from "./utils"
+import { useLanguageSwitcherStyles } from "./LanguageSwitcher.styles"
+import { Button, Div } from "./platform"
 
 const LanguageSwitcher = ({
-  className,
+  style,
 }: {
-  className?: string
+  style?: React.CSSProperties
   handleSetLanguage?: (path: string, language: locale) => void
 }) => {
   const { t } = useAppContext()
+  const styles = useLanguageSwitcherStyles()
 
   const { language, setLanguage, user, token, track, API_URL } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
@@ -48,14 +49,14 @@ const LanguageSwitcher = ({
 
   return (
     <>
-      <button
-        className={clsx("link", className)}
+      <Button
+        style={style}
         onClick={() => {
           setIsModalOpen(true)
         }}
       >
         <Languages size={18} />
-      </button>
+      </Button>
       <Modal
         isModalOpen={isModalOpen}
         title={
@@ -71,20 +72,21 @@ const LanguageSwitcher = ({
           name: "language_switcher",
         }}
       >
-        <div className={styles.languages}>
+        <Div style={styles.languages.style}>
           {LANGUAGES.map((item) => (
-            <button
+            <Button
               key={item.code}
               style={{
+                ...styles.languageButton.style,
                 color: item.code === language ? "var(--shade-8)" : "",
               }}
               onClick={() => changeLanguage(item.code)}
-              className={clsx("link", styles.languageButton)}
+              className={"link"}
             >
               {item.name}
-            </button>
+            </Button>
           ))}
-        </div>
+        </Div>
       </Modal>
     </>
   )

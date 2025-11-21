@@ -12,7 +12,6 @@ export const FocusButtonStyleDefs = {
     maxWidth: 320,
     margin: "0 auto",
     gap: 15,
-    fontSize: 16,
   },
   greeting: {
     fontSize: 15,
@@ -151,6 +150,25 @@ export const FocusButtonStyleDefs = {
     gap: 42,
     alignItems: "center",
   },
+  settings: {
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
+  },
+  settingsInput: {
+    borderRadius: 10,
+    border: "1px solid var(--shade-2)",
+    padding: "5px 7px",
+    fontSize: "1rem",
+    backgroundColor: "var(--background)",
+    color: "var(--foreground)",
+    opacity: 1,
+  },
+  settingsSpan: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+  },
   controls: {
     gap: 15,
     display: "flex",
@@ -227,8 +245,12 @@ export const FocusButtonStyleDefs = {
   active: {
     color: "var(--accent-4)",
   },
-  footerContainerActive: {
-    color: "var(--accent-1)",
+  footerContainer: {
+    position: "absolute",
+    bottom: 10,
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
   },
   discord: {
     display: "inline-flex",

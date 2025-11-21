@@ -1,22 +1,20 @@
 "use client"
 
 import React from "react"
-import styles from "./Testimonials.module.scss"
 import { ChartColumnBig } from "lucide-react"
 import { Quote } from "lucide-react"
-import clsx from "clsx"
 import { useTranslation } from "react-i18next"
-import { useTheme } from "./platform"
+import { Div, Span, useTheme } from "./platform"
+import { useTestimonialsStyles } from "./Testimonials.styles"
 
-const Testimonials = ({ className }: { className?: string }) => {
+const Testimonials = ({ style }: { style?: React.CSSProperties }) => {
   const { isDark } = useTheme()
   const { t } = useTranslation()
+
+  const styles = useTestimonialsStyles()
   return (
-    <section
-      data-testid="testimonials"
-      className={clsx(styles.testimonials, className)}
-    >
-      <ul>
+    <section data-testid="testimonials" style={styles.testimonials.style}>
+      <Div>
         {[
           {
             quote:
@@ -37,8 +35,8 @@ const Testimonials = ({ className }: { className?: string }) => {
             emoji: <ChartColumnBig width={15} height={22} />,
           },
         ].map((item, i) => (
-          <li key={i} className={styles.testimonial}>
-            <span className={styles.quote}>
+          <Div key={item.author} style={styles.testimonial.style}>
+            <Span>
               <Quote
                 size={22}
                 strokeWidth={1.25}
@@ -52,13 +50,12 @@ const Testimonials = ({ className }: { className?: string }) => {
                 }}
               />
               {t(item.quote)}
-            </span>
-            <span> {item.emoji}</span>
-            <br />
-            <span className={styles.author}>{item.author}</span>
-          </li>
+            </Span>
+            <Span> {item.emoji}</Span>
+            <Div style={styles.author}>{item.author}</Div>
+          </Div>
         ))}
-      </ul>
+      </Div>
     </section>
   )
 }

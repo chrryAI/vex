@@ -1,12 +1,13 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import styles from "./MoodSelector.module.scss"
 import clsx from "clsx"
-import { PiHandTap } from "react-icons/pi"
-import { MousePointerClick } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { emojiMap, moodType } from "./types"
+import { useMoodSelectorStyles } from "./MoodSelector.styles"
+import { Button, Div, Span } from "./platform"
+import { useStyles } from "./context/StylesContext"
+import { MousePointerClick } from "./icons"
 
 export default function MoodSelector({
   onMoodChange,
@@ -25,6 +26,8 @@ export default function MoodSelector({
   onMoodChange: (mood: moodType) => void
   onSelectingMood?: (value: boolean) => void
 }) {
+  const styles = useMoodSelectorStyles()
+  const { utilities } = useStyles()
   const withDefaultMood = rest.mood || "thinking"
   const { t } = useTranslation()
   const [lastMood, setLastMoodInternal] = useState<moodType | undefined>(
@@ -67,20 +70,22 @@ export default function MoodSelector({
     }
   }, [])
 
+  const btnStyles = {
+    ...utilities.link.style,
+    ...styles.emoji.style,
+    fontSize: style?.fontSize,
+  }
+
   return (
-    <div
-      ref={ref}
-      style={style}
-      className={clsx(styles.moodSelector, className)}
-    >
-      <div className={styles.emojiContainer}>
+    <Div ref={ref} style={style}>
+      <Div style={styles.emojiContainer.style}>
         {mood ? (
-          <button
+          <Button
             data-testid="moodify-reset-button"
             style={{
-              fontSize: style?.fontSize,
+              ...btnStyles,
             }}
-            className={clsx("link", styles.emoji)}
+            className={"link"}
             onClick={() => {
               setMood(undefined)
             }}
@@ -88,16 +93,16 @@ export default function MoodSelector({
           >
             {emojiMap[mood]}
             {children ? (
-              <div className={styles.children}>{children}</div>
+              <Div style={styles.children.style}>{children}</Div>
             ) : (
-              showEdit && <span className={styles.edit}>{t("Edit")}</span>
+              showEdit && <Span style={styles.edit.style}>{t("Edit")}</Span>
             )}
-          </button>
+          </Button>
         ) : (
           <>
-            <button
+            <Button
               style={{
-                fontSize: style?.fontSize,
+                ...btnStyles,
               }}
               type="button"
               data-testid="moodify-happy-button"
@@ -105,10 +110,10 @@ export default function MoodSelector({
               onClick={() => setMood("happy")}
             >
               {emojiMap["happy"]}
-            </button>
-            <button
+            </Button>
+            <Button
               style={{
-                fontSize: style?.fontSize,
+                ...btnStyles,
               }}
               type="button"
               data-testid="moodify-sad-button"
@@ -116,9 +121,11 @@ export default function MoodSelector({
               onClick={() => setMood("sad")}
             >
               {emojiMap["sad"]}
-            </button>
-            <button
+            </Button>
+            <Button
               style={{
+                ...utilities.link.style,
+                ...styles.emoji.style,
                 fontSize: style?.fontSize,
               }}
               type="button"
@@ -127,10 +134,10 @@ export default function MoodSelector({
               onClick={() => setMood("angry")}
             >
               {emojiMap["angry"]}
-            </button>
-            <button
+            </Button>
+            <Button
               style={{
-                fontSize: style?.fontSize,
+                ...btnStyles,
               }}
               type="button"
               data-testid="moodify-astonished-button"
@@ -138,10 +145,10 @@ export default function MoodSelector({
               onClick={() => setMood("astonished")}
             >
               {emojiMap["astonished"]}
-            </button>
-            <button
+            </Button>
+            <Button
               style={{
-                fontSize: style?.fontSize,
+                ...btnStyles,
               }}
               type="button"
               data-testid="moodify-inlove-button"
@@ -149,11 +156,11 @@ export default function MoodSelector({
               onClick={() => setMood("inlove")}
             >
               {emojiMap["inlove"]}
-            </button>
+            </Button>
 
             <button
               style={{
-                fontSize: style?.fontSize,
+                ...btnStyles,
               }}
               type="button"
               data-testid="moodify-thinking-button"
@@ -162,17 +169,13 @@ export default function MoodSelector({
             >
               {showEdit && (
                 <>
-                  <PiHandTap strokeWidth={1.5} className={styles.mobile} />
-                  <MousePointerClick
-                    strokeWidth={1.5}
-                    className={styles.desktop}
-                  />
+                  <MousePointerClick strokeWidth={1.5} />
                 </>
               )}
             </button>
           </>
         )}
-      </div>
-    </div>
+      </Div>
+    </Div>
   )
 }

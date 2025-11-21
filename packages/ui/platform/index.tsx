@@ -156,3 +156,6 @@ export {
   useThemeColor,
   useResolveColor,
 } from "../context/ThemeContext"
+
+// Keep Awake Hook
+export { useKeepAwake } from "./KeepAwake"

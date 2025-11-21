@@ -8,10 +8,6 @@
   max-width: 320px;
   margin: 0 auto;
   gap: 15px;
-
-  button {
-    font-size: 16px;
-  }
 }
 
 .greeting {
@@ -161,14 +157,14 @@
   right: 2px;
 }
 
-.themeToggle {
-  &.light:hover {
-    color: var(--shade-7);
-    svg {
-      fill: var(--shade-7);
-    }
-  }
-}
+// .themeToggle {
+//   &.light:hover {
+//     color: var(--shade-7);
+//     svg {
+//       fill: var(--shade-7);
+//     }
+//   }
+// }
 
 .timeAdjust {
   background: none;
@@ -217,26 +213,26 @@
   display: flex;
   gap: 10px;
   align-items: center;
+}
 
-  input[type="number"] {
-    border-radius: 10px;
-    border: 1px solid var(--shade-2);
-    padding: 5px 7px;
-    font-size: 1rem;
-    background: var(--background);
-    color: var(--foreground);
+.settingsInput {
+  border-radius: 10px;
+  border: 1px solid var(--shade-2);
+  padding: 5px 7px;
+  font-size: 1rem;
+  background: var(--background);
+  color: var(--foreground);
 
-    &::-webkit-inner-spin-button,
-    &::-webkit-outer-spin-button {
-      opacity: 1;
-    }
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    opacity: 1;
   }
+}
 
-  > span {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
+.settingsSpan {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .controls,
@@ -349,22 +345,22 @@
   align-items: center;
   gap: 10px;
 
-  button {
-    color: var(--shade-4);
-    padding: 0;
-    background-color: var(--background);
-    border: none;
-    box-shadow: none;
+  // button {
+  //   color: var(--shade-4);
+  //   padding: 0;
+  //   background-color: var(--background);
+  //   border: none;
+  //   box-shadow: none;
 
-    &:hover {
-      color: var(--shade-4);
-      background-color: var(--background);
-    }
+  //   &:hover {
+  //     color: var(--shade-4);
+  //     background-color: var(--background);
+  //   }
 
-    &.active {
-      color: var(--accent-1);
-    }
-  }
+  //   &.active {
+  //     color: var(--accent-1);
+  //   }
+  // }
 }
 
 .discord,
