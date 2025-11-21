@@ -239,7 +239,7 @@ const Thread = ({
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
           },
-          paddingInline: isMobileDevice ? 0 : 15,
+          padding: isMobileDevice ? "0 0px 195px 0px" : "0 10px 195px 10px",
         }}
       >
         {!isVisitor && (
