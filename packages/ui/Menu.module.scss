@@ -250,6 +250,8 @@
 .menuButton {
   display: flex !important;
   margin-left: auto !important;
+  position: relative;
+  right: -7px;
 }
 
 // .menuItemButton {

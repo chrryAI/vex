@@ -86,7 +86,7 @@ export const SkeletonStyleDefs = {
   hamburgerMenu: {
     display: "flex",
     alignItems: "center",
-    gap: 13,
+    gap: 10,
   },
   brandHelp: {
     textAlign: "center",
