@@ -103,7 +103,7 @@ export const SubscribeStyleDefs = {
   title: {
     margin: 0,
     marginBottom: 5,
-    borderBottom: 1,
+    borderBottom: "1px solid var(--shade-2px)",
     padding: 0,
     paddingBottom: 5,
     display: "flex",

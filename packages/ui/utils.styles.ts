@@ -25,7 +25,7 @@ export const UtilsStyleDefs = {
       color: "#fff",
     },
     active: {
-      transform: 1,
+      transform: NaN,
     },
     disabled: {
       cursor: "default",
@@ -51,7 +51,7 @@ export const UtilsStyleDefs = {
       backgroundColor: "transparent",
     },
     active: {
-      transform: 1,
+      transform: NaN,
     },
   },
   small: {

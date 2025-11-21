@@ -20,7 +20,7 @@ export const AgentStyleDefs = {
     display: "flex",
     justifyContent: "center",
     gap: 10,
-    borderTop: 1,
+    borderTop: "1px dashed var(--shade-2px)",
     paddingTop: 10,
   },
   tabButton: {},

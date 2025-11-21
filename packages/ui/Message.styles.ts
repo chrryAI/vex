@@ -98,7 +98,7 @@ export const MessageStyleDefs = {
     border: "1px solid var(--shade-2)",
     borderRadius: "var(--radius)",
     position: "relative",
-    boxShadow: 5,
+    boxShadow: "0px 0px 5px var(--shade-2px)",
     alignSelf: "flex-end",
   },
   agentMessageTime: {
@@ -119,7 +119,7 @@ export const MessageStyleDefs = {
     border: "1px solid var(--shade-2)",
     alignSelf: "flex-start",
     borderRadius: 15,
-    boxShadow: 5,
+    boxShadow: "0px 0px 5px var(--shade-2px)",
   },
   userImage: {
     borderRadius: "50%",

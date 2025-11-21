@@ -6,9 +6,25 @@
  */
 
 export const ChatStyleDefs = {
-  drawerOpen: {},
+  chatContainerWrapper: {
+    display: "flex",
+    position: "fixed",
+    zIndex: 1000,
+    bottom: 3,
+    padding: "0 10px",
+    maxWidth: 600,
+    width: "100%",
+    flexDirection: "column",
+    flex: 1,
+    gap: 12,
+    left: "50%",
+    transform: "translateX(-50%)",
+  },
   standalone: {
-    bottom: 5,
+    paddingBottom: 5,
+  },
+  drawerOpen: {
+    left: "calc(50% + 7.65625rem)",
   },
   loadingContainer: {
     display: "flex",
@@ -16,35 +32,36 @@ export const ChatStyleDefs = {
     alignItems: "center",
     flex: 1,
   },
-  focus: {
-    borderColor: "var(--accent-5)",
-    boxShadow: 5,
+  chat: {
+    position: "relative",
+    flex: 1,
+    border: "1px solid var(--accent-1)",
+    boxShadow: "0px 0px 5px var(--accent-1px)",
+    borderRadius: "var(--radius)",
+    padding: 5,
+    paddingBottom: 35,
+    marginBottom: 3,
+    backgroundColor: "var(--shade-1-transparent)",
+    paddingRight: 19,
   },
-  placeholderGlow: {
-    opacity: 1,
-    transform: 0,
+  chatFloating: {
+    backgroundColor: "var(--shade-2-transparent)",
+    border: "1px dashed var(--shade-3)",
+    boxShadow: "none",
+    bottom: 3,
+    opacity: 0,
   },
-  videoContainer: {
-    base: {
-      position: "absolute",
-      backgroundColor: "#000",
-      padding: 2,
-      width: 34,
-      height: 34,
-      display: "none",
-      borderRadius: "50%",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: "var(--shadow)",
-      right: -2,
-      border: "1px solid transparent",
-    },
-    hover: {
-      borderColor: "var(--accent-1)",
-    },
+  floatingVideoContainer: {
+    width: 29,
+    height: 29,
   },
-  sendButton: {
-    display: "flex",
+  floatingVideo: {
+    width: 25,
+    height: 25,
+  },
+  floatingSendButton: {
+    width: 26,
+    height: 26,
   },
   hourlyLimit: {
     fontSize: 12,
@@ -54,50 +71,49 @@ export const ChatStyleDefs = {
     gap: 5,
     position: "relative",
   },
-  conversation: {
+  speechConversation: {
     display: "flex",
     flexDirection: "column",
     gap: 15,
+  },
+  speechUsageStats: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
   },
   statItem: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     fontSize: 12,
-    color: "var(--shade-8)",
+  },
+  statLabel: {
+    color: "var(--shade-6)",
     fontWeight: 500,
+  },
+  statValue: {
+    color: "var(--shade-8)",
     fontFamily: "var(--font-mono)",
   },
-  actions: {
+  speechActions: {
     display: "flex",
     alignItems: "flex-end",
     justifyContent: "flex-end",
     gap: 10,
     flexWrap: "wrap",
   },
-  chatContainerWrapper: {
-    display: "flex",
-    flexDirection: "column",
-    flex: 1,
-    gap: 12,
-  },
-  chatTextArea: {
-    base: {
-      width: "100%",
-      display: "flex",
-      height: "var(--textarea-height, auto)",
-      overflowY: "hidden",
-      paddingRight: 0,
-      opacity: 0,
-    },
-    hover: {
-      border: "none",
-      outline: "none",
-      backgroundColor: "transparent",
-    },
-  },
   top: {
     marginBottom: 10,
+  },
+  topChatFloating: {
+    zIndex: 1001,
+    padding: "0 5px",
+    gap: 5,
+    position: "relative",
+    marginBottom: 7,
+    transform: "translateX(-50%) translateY(0)",
+    display: "flex",
+    alignItems: "center",
   },
   topInner: {
     backgroundColor: "var(--shade-1)",
@@ -115,27 +131,35 @@ export const ChatStyleDefs = {
     borderRadius: "var(--radius)",
   },
   debateAgentButton: {
-    base: {
-      position: "absolute",
-      display: "flex",
-      alignItems: "center",
-      gap: 5,
-      bottom: -5,
-      right: -5,
-    },
-    disabled: {
-      backgroundColor: "var(--shade-1-transparent)",
-    },
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+  },
+  debateAgentButtonDisabled: {
+    backgroundColor: "var(--shade-1-transparent)",
+  },
+  plusIcon: {
+    position: "absolute",
+    bottom: -5,
+    right: -5,
   },
   scrollDownButton: {
-    marginLeft: "auto",
+    base: {
+      marginLeft: "auto",
+    },
+    hover: {
+      transform: "scale(1.15)",
+    },
   },
   chatContainer: {
     display: "flex",
     flexDirection: "column",
     flex: 1,
+  },
+  chatContainerFloating: {
     bottom: 5,
-    maxWidth: 600,
+    transform: "translateX(50%) translateY(0)",
     zIndex: 1000,
   },
   brandHelp: {
@@ -147,6 +171,7 @@ export const ChatStyleDefs = {
     gap: 10,
     marginTop: 0,
     marginBottom: 13,
+    fontWeight: "normal",
   },
   collaborationTooltip: {
     alignItems: "center",
@@ -154,12 +179,6 @@ export const ChatStyleDefs = {
     display: "flex",
     position: "relative",
     bottom: 5,
-    backgroundColor: "var(--shade-2-transparent)",
-    border: "1px solid var(--shade-2)",
-    zIndex: 9999,
-    borderRadius: "var(--radius)",
-    padding: 10,
-    marginBottom: 10,
   },
   shareTooltip: {
     alignItems: "center",
@@ -167,11 +186,14 @@ export const ChatStyleDefs = {
     display: "flex",
     position: "relative",
     bottom: 5,
+  },
+  tooltip: {
     backgroundColor: "var(--shade-2-transparent)",
     border: "1px solid var(--shade-2)",
     zIndex: 9999,
     borderRadius: "var(--radius)",
     padding: 10,
+    position: "relative",
     marginBottom: 10,
   },
   generateImagesButtonContainer: {
@@ -234,7 +256,7 @@ export const ChatStyleDefs = {
     padding: 12,
     marginBottom: 8,
     backgroundColor: "var(--shade-1)",
-    borderBottom: 1,
+    borderBottom: "1px solid var(--shade-2px)",
     margin: "-3px -10px 0 -10px",
     position: "relative",
     left: 7,
@@ -307,7 +329,7 @@ export const ChatStyleDefs = {
   },
   voiceButtonListening: {},
   quotaDisplay: {
-    borderTop: 1,
+    borderTop: "1px solid var(--shade-2px)",
     padding: "5px 0",
     fontSize: 13,
     position: "relative",
@@ -352,6 +374,8 @@ export const ChatStyleDefs = {
     padding: "5px 10px",
     gap: 5,
     textAlign: "center",
+  },
+  standaloneIos: {
     marginBottom: 8,
   },
   creditInfoStandalone: {},
@@ -363,6 +387,9 @@ export const ChatStyleDefs = {
     right: 0,
     display: "flex",
     alignItems: "flex-end",
+  },
+  sendButton: {
+    display: "flex",
   },
   attachButton: {
     display: "flex",
@@ -377,8 +404,16 @@ export const ChatStyleDefs = {
     marginLeft: "auto",
     fontSize: 12,
   },
-  chatFooterButtonsExtension: {
-    gap: 8,
+  chatTextArea: {
+    width: "100%",
+    display: "flex",
+    paddingTop: 0,
+    overflowY: "hidden",
+    paddingRight: 0,
+    transform: "translateY(10px)",
+    border: "none",
+    outline: "none",
+    backgroundColor: "transparent",
   },
   agentButtonModal: {
     display: "flex",
@@ -388,14 +423,14 @@ export const ChatStyleDefs = {
   agentButtonModalActive: {
     backgroundColor: "var(--accent-6)",
   },
-  agentButtonModalFavorite: {
-    backgroundColor: "var(--accent-1)",
-  },
   agentButtonModalInactive: {
     backgroundColor: "var(--shade-3)",
     color: "var(--shade-1)",
   },
-  agentButtonModalCurrent: {
+  favorite: {
+    backgroundColor: "var(--accent-1)",
+  },
+  current: {
     backgroundColor: "var(--accent-4)",
   },
   agentButtonContainer: {
@@ -526,6 +561,25 @@ export const ChatStyleDefs = {
   },
   video: {
     display: "none",
+  },
+  videoContainer: {
+    base: {
+      position: "absolute",
+      backgroundColor: "#000",
+      padding: 2,
+      width: 34,
+      height: 34,
+      display: "none",
+      borderRadius: "50%",
+      alignItems: "center",
+      justifyContent: "center",
+      boxShadow: "var(--shadow)",
+      right: -2,
+      border: "1px solid transparent",
+    },
+    hover: {
+      borderColor: "var(--accent-1)",
+    },
   },
   videoContainerLoading: {
     display: "inline",

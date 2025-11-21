@@ -47,7 +47,7 @@ export const AppStyleDefs = {
     fontWeight: 600,
     fontFamily: '"SF Mono", "Monaco", "Courier New", monospace',
     whiteSpace: "nowrap",
-    boxShadow: 2,
+    boxShadow: "0px 2px 4px rgba(0px, 0px, 0px, 0px.1px)",
     zIndex: 1,
   },
   apps: {
@@ -204,7 +204,7 @@ export const AppStyleDefs = {
     width: "100%",
     textAlign: "center",
     minWidth: 250,
-    transform: -85,
+    transform: NaN,
   },
   formInfoError: {
     color: "var(--accent-0)",

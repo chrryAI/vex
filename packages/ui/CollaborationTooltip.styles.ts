@@ -20,7 +20,7 @@ export const CollaborationTooltipStyleDefs = {
     backgroundColor: "var(--shade-0)",
     border: "1px solid var(--shade-2)",
     borderRadius: 16,
-    boxShadow: 20,
+    boxShadow: "0px 20px 40px rgba(0px, 0px, 0px, 0px.15px)",
     zIndex: 9999,
     minWidth: 320,
     maxWidth: 400,
