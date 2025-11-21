@@ -17,7 +17,7 @@ export const WhyStyleDefs = {
     flexDirection: "column",
   },
   features: {
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1pxfr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250, 1fr))",
     gap: 20,
   },
   feature: {
@@ -36,7 +36,7 @@ export const WhyStyleDefs = {
     padding: 16,
     backgroundColor: "var(--shade-1)",
     borderRadius: 6,
-    borderLeft: "4px solid var(--accent-1px)",
+    borderLeft: "4px solid var(--accent-1)",
   },
 } as const
 

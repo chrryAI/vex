@@ -68,7 +68,7 @@ export const ModalStyleDefs = {
     gap: 5,
   },
   borderHeader: {
-    borderBottom: "1px dashed var(--shade-2px)",
+    borderBottom: "1px dashed var(--shade-2)",
   },
   close: {
     display: "flex",

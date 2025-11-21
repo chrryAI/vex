@@ -47,7 +47,7 @@ export const AppStyleDefs = {
     fontWeight: 600,
     fontFamily: '"SF Mono", "Monaco", "Courier New", monospace',
     whiteSpace: "nowrap",
-    boxShadow: "0px 2px 4px rgba(0px, 0px, 0px, 0px.1px)",
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
     zIndex: 1,
   },
   apps: {

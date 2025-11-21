@@ -166,7 +166,8 @@ const convertValue = (property, value) => {
     // If the result contains spaces (multiple values), keep as string
     if (converted.includes(" ")) {
       // Add 'px' suffix to each number for web compatibility
-      const withPx = converted.replace(/(\d+)/g, "$1px")
+      // But don't add px to numbers inside var() - use negative lookahead
+      const withPx = converted.replace(/(\d+)(?![^(]*\))/g, "$1px")
       return `"${withPx}"`
     }
 
