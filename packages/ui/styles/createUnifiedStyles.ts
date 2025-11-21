@@ -10,18 +10,33 @@ export type UnifiedStyles<T extends UnifiedStylesInput = UnifiedStylesInput> = {
 export function createUnifiedStyles<T extends UnifiedStylesInput>(
   styleDefinitions: T,
 ): UnifiedStyles<T> {
+  // Safety check: ensure styleDefinitions exists
+  if (!styleDefinitions || typeof styleDefinitions !== "object") {
+    console.warn(
+      "createUnifiedStyles: styleDefinitions is undefined or invalid",
+    )
+    return {
+      native: {} as Record<keyof T, Record<string, any>>,
+      web: {} as Record<keyof T, string>,
+      all: {} as Record<keyof T, Record<string, any>>,
+    }
+  }
+
   const nativeStyles: Record<string, Record<string, any>> = {}
   const webCssModules: Record<string, string> = {}
 
   Object.entries(styleDefinitions).forEach(([className, styleObj]) => {
     const nativeStyle: Record<string, any> = {}
 
-    Object.entries(styleObj).forEach(([prop, value]) => {
-      const normalizedValue = normalizeValue(prop, value)
-      if (normalizedValue !== undefined && normalizedValue !== null) {
-        nativeStyle[prop] = normalizedValue
-      }
-    })
+    // Safety check for styleObj
+    if (styleObj && typeof styleObj === "object") {
+      Object.entries(styleObj).forEach(([prop, value]) => {
+        const normalizedValue = normalizeValue(prop, value)
+        if (normalizedValue !== undefined && normalizedValue !== null) {
+          nativeStyle[prop] = normalizedValue
+        }
+      })
+    }
 
     nativeStyles[className] = nativeStyle
     webCssModules[className] = className

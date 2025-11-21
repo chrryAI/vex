@@ -70,7 +70,7 @@ export function useCookie(
  */
 export function getCookieSync(key: string): string | null {
   // Only works on web with document.cookie
-  if (typeof document !== "undefined") {
+  if (typeof document !== "undefined" && document.cookie) {
     const cookies = document.cookie.split(";")
     for (const cookie of cookies) {
       const [cookieName, cookieValue] = cookie.split("=").map((c) => c.trim())
@@ -157,7 +157,7 @@ async function getCookie(key: string): Promise<string | null> {
   }
 
   // Web: Use document.cookie
-  if (typeof document !== "undefined") {
+  if (typeof document !== "undefined" && document.cookie) {
     const cookies = document.cookie.split(";")
     for (const cookie of cookies) {
       const [cookieName, cookieValue] = cookie.split("=").map((c) => c.trim())
@@ -314,7 +314,7 @@ export async function getAllCookies(): Promise<Record<string, string>> {
   }
 
   // Web: Parse document.cookie
-  if (typeof document !== "undefined") {
+  if (typeof document !== "undefined" && document.cookie) {
     const cookieStrings = document.cookie.split(";")
     for (const cookie of cookieStrings) {
       const [name, value] = cookie.split("=").map((c) => c.trim())

@@ -12,6 +12,12 @@ export function createStyleHook<T extends Record<string, any>>(styles: {
   native: Record<string, any>
 }) {
   return function useStyles(): T {
+    // Safety check: ensure styles object exists
+    if (!styles || !styles.native) {
+      console.warn("createStyleHook: styles.native is undefined")
+      return {} as T
+    }
+
     // Make usePlatform optional - gracefully handle missing PlatformProvider
     let platform
     try {

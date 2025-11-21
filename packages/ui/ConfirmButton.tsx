@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "./platform"
 import Loading from "./Loading"
-import { Trash2 } from "lucide-react"
+import { Trash2 } from "./icons"
 
 const ConfirmButton = ({
   children = (

@@ -45,14 +45,7 @@ import toast from "react-hot-toast"
 import Img from "./Image"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useWebSocket } from "./hooks/useWebSocket"
-import {
-  Claude,
-  DeepSeek,
-  Flux,
-  Gemini,
-  OpenAI,
-  Perplexity,
-} from "@lobehub/icons"
+import { Claude, DeepSeek, Flux, Gemini, OpenAI, Perplexity } from "./icons"
 import { AudioPlayer } from "react-audio-play"
 import { checkSpeechLimits } from "./lib/speechLimits"
 import { stripMarkdown } from "./lib/stripMarkdown"

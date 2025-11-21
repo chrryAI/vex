@@ -1,8 +1,7 @@
 "use client"
 
 import React from "react"
-import { ChartColumnBig } from "lucide-react"
-import { Quote } from "lucide-react"
+import { ChartColumnBig, Quote } from "./icons"
 import { useTranslation } from "react-i18next"
 import { Div, Span, useTheme } from "./platform"
 import { useTestimonialsStyles } from "./Testimonials.styles"

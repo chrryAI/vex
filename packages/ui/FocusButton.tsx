@@ -21,7 +21,7 @@ import {
   SmilePlus,
   Repeat,
   CloudDownload,
-} from "lucide-react"
+} from "./icons"
 
 import { FaDiscord } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"

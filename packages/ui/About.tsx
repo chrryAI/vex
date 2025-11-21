@@ -42,7 +42,7 @@ import {
   Video,
 } from "./platform"
 import { getSiteConfig } from "./utils/siteConfig"
-import { Claude, DeepSeek } from "@lobehub/icons"
+import { Claude, DeepSeek } from "./icons"
 import A from "./A"
 import { useAboutStyles } from "./About.styles"
 import { useStyles } from "./context/StylesContext"
