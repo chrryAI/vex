@@ -7,7 +7,7 @@ import {
   useState,
   useMemo,
 } from "react"
-import styles from "./Chat.module.scss"
+// import styles from "./Chat.module.scss"
 import clsx from "clsx"
 import {
   Paperclip,
@@ -53,7 +53,17 @@ import {
   useError,
   useData,
 } from "./context/providers"
-import { useTheme, usePlatform, Div } from "./platform"
+import {
+  useTheme,
+  usePlatform,
+  Div,
+  Button,
+  Span,
+  Video,
+  Strong,
+  H2,
+  TextArea,
+} from "./platform"
 import {
   type message,
   type aiAgent,
@@ -100,6 +110,9 @@ import { useWindowHistory } from "./hooks/useWindowHistory"
 import App from "./App"
 import Img from "./Image"
 import MoodSelector from "./MoodSelector"
+import { useChatStyles } from "./Chat.styles"
+import { useStyles } from "./context/StylesContext"
+import A from "./A"
 
 const MAX_FILES = 3
 
@@ -191,6 +204,10 @@ export default function Chat({
   // Split contexts for better organization
   const { t } = useAppContext()
   const { weather, VERSION } = useData()
+
+  const styles = useChatStyles()
+
+  const { utilities } = useStyles()
 
   // Auth context
   const {
@@ -290,8 +307,14 @@ export default function Chat({
   const inputRef = useRef(text || "")
 
   // Theme context
-  const { addHapticFeedback, reduceMotion, playNotification, isDrawerOpen } =
-    useTheme()
+  const {
+    addHapticFeedback,
+    reduceMotion,
+    playNotification,
+    isDrawerOpen,
+    isSmallDevice,
+    isMobileDevice,
+  } = useTheme()
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setSelectedAgentInternal(agent)
@@ -2844,20 +2867,21 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         {!isSelectingMood && (
           <>
             {streamId && isStreaming ? (
-              <button
+              <Button
                 data-testid="chat-stop-streaming-button"
                 title={t("Stop streaming")}
-                className={clsx("link", styles.sendButton)}
+                className="link"
                 type="button"
+                style={{ ...styles.sendButton.style }}
                 disabled={!isStreaming}
                 onClick={handleStopStreaming}
               >
                 <CircleStop color="var(--accent-0)" size={26} />
-              </button>
+              </Button>
             ) : isLoading && !isStreaming ? (
               <Loading width={28} height={28} />
             ) : inputRef.current.trim() || files.length > 0 ? (
-              <button
+              <Button
                 data-testid="chat-send-button"
                 title={
                   creditsLeft === 0
@@ -2866,7 +2890,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       ? t("Accept and send")
                       : t("Send")
                 }
-                className={clsx("link", styles.sendButton)}
+                className="link"
+                style={{ ...styles.sendButton.style }}
                 type="submit"
                 disabled={getIsSendDisabled()}
                 onClick={() => handleSubmit(needsReviewRef.current)}
@@ -2887,11 +2912,11 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     size={30}
                   />
                 )}
-              </button>
+              </Button>
             ) : isLoading ? (
               <Loading width={26} height={26} />
             ) : (
-              <button
+              <Button
                 onClick={() => {
                   if (
                     guest &&
@@ -2931,45 +2956,41 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   startVoiceConversation()
                 }}
                 disabled={isVoiceDisabled || inConversationRef.current}
-                className={clsx(
-                  "link",
-                  styles.voiceButton,
-                  isListening ? styles.voiceButtonListening : "",
-                )}
+                className="link"
+                style={{
+                  ...styles.voiceButton.style,
+                  ...(isListening ? styles.voiceButtonListening.style : {}),
+                }}
                 type="button"
                 title={
                   isListening ? t("Stop listening") : t("Start voice input")
                 }
               >
                 {needsReview ? (
-                  <span data-testid="chat-accept-button">
+                  <Span data-testid="chat-accept-button">
                     <CircleCheck size={30} color="var(--accent-6)" />
-                  </span>
+                  </Span>
                 ) : (
-                  <div
-                    className={clsx(styles.videoContainer)}
-                    title={t("Sound")}
-                  >
+                  <Div title={t("Sound")} style={styles.videoContainer.style}>
                     {needsReview ? (
-                      <span data-testid="chat-accept-button">
+                      <Span data-testid="chat-accept-button">
                         <CircleCheck size={30} color="var(--accent-6)" />
-                      </span>
+                      </Span>
                     ) : (
-                      <video
-                        onLoadedData={() => setIsVideoLoading(false)}
-                        ref={videoRef}
+                      <Video
+                        // onLoadedData={() => setIsVideoLoading(false)}
+                        // ref={videoRef}
                         src={`${FRONTEND_URL}/video/blob.mp4`}
-                        style={{}}
-                        className={styles.video}
+                        style={styles.video.style}
                         loop
                         autoPlay
                         muted
                         playsInline
-                      ></video>
+                      />
                     )}
-                  </div>
+                  </Div>
                 )}
-              </button>
+              </Button>
             )}
           </>
         )}
@@ -3004,7 +3025,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           }
           onToggle={() => setIsAgentModalOpen(!isAgentModalOpen)}
         >
-          <div className={styles.modalContent}>
+          <Div style={styles.modalContent.style}>
             {aiAgents
               ?.filter((agent) =>
                 isDebateAgentModalOpen
@@ -3025,27 +3046,30 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 return a.order - b.order
               })
               ?.map((agent) => (
-                <div className={styles.agentModal} key={agent.id}>
-                  <div className={styles.buttonContainer}>
-                    <div className={styles.agentButtonContainer}>
-                      <button
-                        translate="no"
+                <Div style={styles.agentModal.style} key={agent.id}>
+                  <Div style={styles.buttonContainer.style}>
+                    <Div style={styles.agentButtonContainer.style}>
+                      <Button
                         data-agent-name={agent.name}
                         data-testid={`agent-modal-button-${agent.name}`}
                         className={clsx(
-                          "medium",
-                          styles.agentButtonModal,
-                          (agent.authorization === "user" &&
-                            !user &&
-                            !guest?.subscription) ||
+                          `medium ${
+                            (agent.authorization === "user" &&
+                              !user &&
+                              !guest?.subscription) ||
                             agent.id === sushiAgent?.id
-                            ? "inverted"
-                            : (user || guest)?.favouriteAgent === agent.name
-                              ? styles.favorite
-                              : agent.name === selectedAgent?.name
-                                ? styles.current
-                                : styles[agent.state],
+                              ? "inverted"
+                              : ""
+                          }`,
                         )}
+                        style={{
+                          ...styles.agentButtonModal.style,
+                          ...((user || guest)?.favouriteAgent === agent.name
+                            ? styles.favorite.style
+                            : agent.name === selectedAgent?.name
+                              ? styles.current.style
+                              : undefined),
+                        }}
                         onClick={() => {
                           addHapticFeedback()
                           if (agent.state !== "active") {
@@ -3056,20 +3080,11 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             !user &&
                             !guest?.subscription
                           ) {
-                            const url = threadId
-                              ? `/threads/${threadId}?subscribe=true&plan=member`
-                              : "/?subscribe=true&plan=member"
+                            addParams({
+                              subscribe: "true",
+                              plan: "member",
+                            })
 
-                            if (checkIsExtension()) {
-                              BrowserInstance?.runtime?.sendMessage?.({
-                                action: "openInSameTab",
-                                url: `${FRONTEND_URL}${url}`,
-                              })
-
-                              return
-                            }
-
-                            push(url)
                             return
                           }
                           isDebateAgentModalOpen
@@ -3105,20 +3120,20 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           <Img icon="sushi" size={22} />
                         ) : null}{" "}
                         {agent.displayName}
-                      </button>
+                      </Button>
 
                       {(user || guest)?.favouriteAgent === agent.name ? (
-                        <span className={styles.stateLabel}>
+                        <Span style={styles.stateLabel.style}>
                           <Star
                             color="var(--accent-1)"
                             fill="var(--accent-1)"
                             size={17}
-                          />{" "}
-                        </span>
+                          />
+                        </Span>
                       ) : (
-                        <button
+                        <Button
                           title={t("Set as favorite")}
-                          className={clsx(styles.favoriteButton, "link")}
+                          className="favorite link"
                           onClick={async () => {
                             addHapticFeedback()
                             user &&
@@ -3164,50 +3179,43 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             strokeWidth={1.5}
                             size={17}
                           />
-                        </button>
+                        </Button>
                       )}
-                    </div>
+                    </Div>
 
                     {agent.authorization === "user" &&
                     !user &&
                     !guest?.subscription &&
                     agent.state === "active" ? (
-                      <span className={styles.stateLabel}>
-                        <button
+                      <Span style={styles.stateLabel.style}>
+                        <Button
                           onClick={() => {
                             addHapticFeedback()
                             // setIsAgentModalOpen(false)
-                            const url = threadId
-                              ? `/threads/${threadId}?subscribe=true&plan=member`
-                              : "/?subscribe=true&plan=member"
 
-                            if (checkIsExtension()) {
-                              BrowserInstance?.runtime?.sendMessage?.({
-                                action: "openInSameTab",
-                                url: `${FRONTEND_URL}${url}`,
-                              })
-                              return
-                            }
-
-                            push(url)
+                            addParams({
+                              subscribe: "true",
+                              plan: "member",
+                            })
                           }}
-                          className={clsx(styles.loginButton, "link")}
+                          className="link"
+                          style={styles.loginButton.style}
                         >
                           <LogIn color="var(--accent-6)" size={14} />{" "}
                           {t("Login")}
-                        </button>
-                      </span>
+                        </Button>
+                      </Span>
                     ) : (
                       <>
                         {agent.state === "active" && (
-                          <span className={styles.stateLabelContainer}>
-                            <span className={styles.creditCost}>
+                          <Span style={styles.stateLabelContainer.style}>
+                            <Span style={styles.creditCost.style}>
                               <Coins size={15} color="var(--accent-1)" />
                               {t("credits", {
                                 count: agent.creditCost,
                               })}
-                            </span>
-                            <span className={styles.stateLabel}>
+                            </Span>
+                            <Span style={styles.stateLabel.style}>
                               <CircleCheck
                                 color={
                                   agent.name === selectedAgent?.name
@@ -3221,34 +3229,34 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                                   ? "Current"
                                   : "Active",
                               )}
-                            </span>
-                          </span>
+                            </Span>
+                          </Span>
                         )}
                         {agent.state === "testing" && (
-                          <span className={styles.stateLabel}>
+                          <Span style={styles.stateLabel.style}>
                             <Info color="var(--accent-1)" size={14} />{" "}
                             {t("In testing")}
-                          </span>
+                          </Span>
                         )}
                         {agent.state === "inactive" && (
-                          <span className={styles.stateLabel}>
+                          <Span style={styles.stateLabel.style}>
                             <Info size={14} /> {t("Soon")}
-                          </span>
+                          </Span>
                         )}
                       </>
                     )}
-                  </div>
+                  </Div>
 
                   {agent.description && (
-                    <div className={styles.agentModalDescription}>
-                      <span className={styles.capabilitiesLabel}>
+                    <Div style={styles.agentModalDescription.style}>
+                      <Span style={styles.capabilitiesLabel.style}>
                         {Object.entries(agent.capabilities).map(
                           ([key, value]) => {
                             return (
-                              <span
+                              <Span
                                 title={`${value ? "✅" : "❌"} ${key === "pdf" ? "PDF" : t(capitalizeFirstLetter(key))}`}
                                 key={key}
-                                className={styles.stateLabel}
+                                style={styles.stateLabel.style}
                               >
                                 {(key === "text" && (
                                   <TextIcon
@@ -3320,17 +3328,17 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                                       size={14}
                                     />
                                   ))}
-                              </span>
+                              </Span>
                             )
                           },
                         )}
-                      </span>
+                      </Span>
                       {t(agent.description)}
-                    </div>
+                    </Div>
                   )}
-                </div>
+                </Div>
               ))}
-          </div>
+          </Div>
         </Modal>
       )}
       {!thread && showSuggestions && !isGame && (
@@ -3346,15 +3354,15 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           }}
         />
       )}
-      <div
+      <Div
         key={isChatFloating ? "floating" : "fixed"}
-        className={clsx(
-          styles.chatContainerWrapper,
-          isDrawerOpen && styles.drawerOpen,
-          className,
-          os && styles[os],
-          isStandalone && styles.standalone,
-        )}
+        style={{
+          ...styles.chatContainerWrapper.style,
+          ...style,
+          ...(isDrawerOpen && !isSmallDevice ? styles.drawerOpen.style : {}),
+          // ...(isMobileDevice ? styles.mobile.style : {}),
+          ...(isStandalone && os === "ios" ? styles.standalone.style : {}),
+        }}
       >
         {isSpeechActive && (
           <Modal
@@ -3367,19 +3375,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
               setIsSpeechActive(open)
             }}
-            icon={
-              <video
-                className={styles.video}
-                src={`${FRONTEND_URL}/video/blob.mp4`}
-                autoPlay
-                loop
-                muted
-                playsInline
-              ></video>
-            }
+            icon={"blob"}
             title={
-              <div className={styles.speechModalTitle}>
-                <span>
+              <Div style={styles.speechModalTitle.style}>
+                <Span>
                   {isListening ? (
                     <>{t("I'm listening...")}</>
                   ) : isSpeaking ? (
@@ -3389,22 +3388,26 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   ) : !limitCheck.allowed ? (
                     t("Voice limit reached")
                   ) : null}
-                </span>
-                <button
+                </Span>
+                <Button
                   onClick={stopSpeechConversation}
-                  className={clsx("link", styles.speechModalTitleButton)}
+                  className={"link"}
+                  style={{
+                    ...styles.speechModalTitleButton.style,
+                    ...utilities.link.style,
+                  }}
                 >
                   <CircleX size={24} />
-                </button>
-              </div>
+                </Button>
+              </Div>
             }
           >
-            <div className={styles.speechConversation}>
-              <div className={styles.conversation}>
-                <div className={styles.usageStats}>
-                  <div className={styles.statItem}>
-                    <span className={styles.statLabel}>{t("Today")}:</span>
-                    <span className={styles.statValue}>
+            <Div style={styles.speechConversation.style}>
+              <Div style={styles.speechConversation.style}>
+                <Div style={styles.speechUsageStats.style}>
+                  <Div style={styles.statItem.style}>
+                    <Span style={styles.statLabel.style}>{t("Today")}:</Span>
+                    <Span style={styles.statValue.style}>
                       {(() => {
                         if (user?.subscription || guest?.subscription) {
                           return (
@@ -3434,11 +3437,13 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         return "5"
                       })()}{" "}
                       {t("requests")}
-                    </span>
-                  </div>
-                  <div className={styles.statItem}>
-                    <span className={styles.statLabel}>{t("This hour")}:</span>
-                    <span className={styles.statValue}>
+                    </Span>
+                  </Div>
+                  <Div style={styles.statItem.style}>
+                    <Span style={styles.statLabel.style}>
+                      {t("This hour")}:
+                    </Span>
+                    <Span style={styles.statValue.style}>
                       {(() => {
                         if (user?.subscription || guest?.subscription) {
                           return (
@@ -3467,13 +3472,13 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         }
                         return "5"
                       })()}
-                    </span>
-                  </div>
-                  <div className={styles.statItem}>
-                    <span className={styles.statLabel}>
+                    </Span>
+                  </Div>
+                  <Div style={styles.statItem.style}>
+                    <Span style={styles.statLabel.style}>
                       {t("Characters today")}:
-                    </span>
-                    <span className={styles.statValue}>
+                    </Span>
+                    <Span style={styles.statValue.style}>
                       {(() => {
                         if (user?.subscription || guest?.subscription) {
                           return <>{user?.speechCharactersToday || 0} / ∞</>
@@ -3497,100 +3502,101 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         }
                         return null
                       })()}
-                    </span>
-                  </div>
-                </div>
+                    </Span>
+                  </Div>
+                </Div>
 
                 {/* Call to action for guests */}
-              </div>
+              </Div>
 
-              <div className={styles.actions}>
+              <Div>
                 {guest && !user && (
-                  <button
-                    className="button transparent"
+                  <Button
+                    className="transparent"
+                    style={{ ...utilities.transparent.style }}
                     onClick={() => {
-                      addHapticFeedback()
                       addParams({ signIn: "register" })
                     }}
                   >
                     <Logo isVivid size={19} /> {t("Sign up for 4x more usage")}
-                  </button>
+                  </Button>
                 )}
 
                 {/* Call to action for members */}
                 {user && !(user.subscription || guest?.subscription) && (
-                  <button
-                    className="button transparent"
+                  <Button
+                    className="transparent"
+                    style={{ ...utilities.transparent.style }}
                     onClick={() => {
                       {
-                        addHapticFeedback()
                         setIsSpeechActive(false)
                         addParams({ subscribe: "true" })
                       }
                     }}
                   >
                     <Logo isVivid size={19} /> {t("Need more, subscribe!")}
-                  </button>
+                  </Button>
                 )}
 
                 {!inConversationRef.current &&
                   !isListening &&
                   !isSpeaking &&
                   !isLoading && (
-                    <button
+                    <Button
                       onClick={() => {
                         addHapticFeedback()
                         startListening()
                       }}
                     >
                       <Megaphone size={18} /> {t("Speak")}
-                    </button>
+                    </Button>
                   )}
-              </div>
-            </div>
+              </Div>
+            </Div>
           </Modal>
         )}
-        <div
+        <Div
           ref={chatContainerRef}
-          className={clsx(
-            styles.chatContainer,
-            isChatFloating && styles.chatFloating,
-          )}
+          style={{
+            ...styles.chatContainer.style,
+            ...style,
+            ...(isChatFloating ? styles.chatContainerFloating.style : {}),
+          }}
         >
           {/* Anchor element for chat input tooltip */}
           {files.length === 0 && (
-            <div
-              className={clsx(
-                styles.top,
-                isStandalone ? styles.standalone : undefined,
-                isChatFloating && styles.chatFloating,
-                collaborationStep === 3 && styles.collaborationStep3,
-                os && styles[os],
-              )}
+            <Div
+              style={{
+                ...styles.top.style,
+                ...styles.topChatFloating.style,
+                ...(isChatFloating ? styles.chatContainerFloating.style : {}),
+                ...(collaborationStep === 3
+                  ? styles.collaborationStep3.style
+                  : {}),
+              }}
             >
-              {Top && <div className={styles.topInner}>{Top}</div>}
+              {Top && <Div style={styles.topInner.style}>{Top}</Div>}
               {hasBottomOffset && (
-                <button
-                  className={clsx("link", styles.scrollDownButton)}
+                <Button
+                  className={"link"}
+                  style={{
+                    ...styles.scrollDownButton.style,
+                    ...utilities.link.style,
+                  }}
                   onClick={showInputAndScrollToBottom}
                   title={t("Scroll to bottom")}
                 >
                   <CircleArrowDown size={25} />
-                </button>
+                </Button>
               )}
-            </div>
+            </Div>
           )}
 
           <>
             {collaborationStep === 2 ? (
-              <div
-                className={clsx(
-                  styles.tooltipContainer,
-                  styles.collaborationTooltip,
-                )}
-              >
-                <div className={clsx(styles.tooltip)}>
-                  <div
+              <Div style={styles.collaborationTooltip.style}>
+                <Div style={styles.tooltip.style}>
+                  <Div
                     style={{
                       maxWidth: "300px",
                       display: "flex",
@@ -3598,46 +3604,45 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       gap: 7.5,
                     }}
                   >
-                    <div
+                    <Div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
                       }}
                     >
-                      <strong>
+                      <Strong>
                         {collaborationSteps[0]?.title ||
                           t("Start Your Conversation")}
-                      </strong>
-                      <button
+                      </Strong>
+                      <Button
                         style={{
                           cursor: "pointer",
                           position: "absolute",
                           right: 7.5,
                           top: 7.5,
                           zIndex: 10000,
+                          ...utilities.link.style,
                         }}
                         className="link"
                         onClick={closeCollaborationTooltip}
                       >
                         <CircleX size={22} />
-                      </button>
-                    </div>
-                    <div style={{ fontSize: "13px", lineHeight: "1.4" }}>
+                      </Button>
+                    </Div>
+                    <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
                       {collaborationSteps[0]?.description ||
                         t(
                           "Type your message or question in the chat input below to begin collaborating with AI.",
                         )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </Div>
+                  </Div>
+                </Div>
+              </Div>
             ) : collaborationStep === 3 ? (
-              <div
-                className={clsx(styles.tooltipContainer, styles.shareTooltip)}
-              >
-                <div className={clsx(styles.tooltip)}>
-                  <div
+              <Div style={styles.shareTooltip.style}>
+                <Div style={styles.tooltip.style}>
+                  <Div
                     style={{
                       maxWidth: "300px",
                       display: "flex",
@@ -3645,75 +3650,78 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       gap: 7.5,
                     }}
                   >
-                    <div
+                    <Div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
                       }}
                     >
-                      <strong>
+                      <Strong>
                         {collaborationSteps[1]?.title || t("Share Your Thread")}
-                      </strong>
-                      <button
+                      </Strong>
+                      <Button
                         style={{
                           cursor: "pointer",
                           position: "absolute",
                           right: 7.5,
                           top: 7.5,
                           zIndex: 10000,
+                          ...utilities.link.style,
                         }}
                         className="link"
                         onClick={closeCollaborationTooltip}
                       >
                         <CircleX size={22} />
-                      </button>
-                    </div>
-                    <div style={{ fontSize: "13px", lineHeight: "1.4" }}>
+                      </Button>
+                    </Div>
+                    <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
                       {collaborationSteps[1]?.description ||
                         t(
                           "Once you have a conversation going, click the share button to invite others to collaborate.",
                         )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </Div>
+                  </Div>
+                </Div>
+              </Div>
             ) : (
               selectedAgent !== null && (
-                <div className={styles.content}>
+                <Div style={styles.content.style}>
                   {hitHourlyLimit ||
                   isChatFloating ||
                   exceededInitial ? null : showGreeting &&
                     files.length === 0 ? (
-                    <h2 className={styles.brandHelp}>
+                    <H2 style={styles.brandHelp.style}>
                       {isIncognito ? <HatGlasses size={24} /> : ""}
-                      <span>
+                      <Span>
                         👋{" "}
                         {t(
                           language === "fr"
                             ? "What can I help with?"
                             : "What's on your mind?",
                         )}
-                      </span>
-                    </h2>
+                      </Span>
+                    </H2>
                   ) : null}
-                </div>
+                </Div>
               )
             )}
 
-            <div
-              className={clsx(
-                styles.chat,
-                os && styles[os],
-                isStandalone ? styles.standalone : undefined,
-                isChatFloating && styles.chatFloating,
-                showPlaceholderGlow && styles.placeholderGlow,
-              )}
+            <Div
+              className={showPlaceholderGlow ? "chat placeholderGlow" : "chat"}
+              style={{
+                ...styles.chat.style,
+                ...(isStandalone ? styles.standalone : {}),
+                ...(isChatFloating ? styles.chatFloating.style : {}),
+              }}
             >
               {selectedAgent?.capabilities.imageGeneration && (
-                <button
+                <Button
                   data-testid="image-generation-button"
-                  className={clsx("link", styles.imageGenerationButton)}
+                  style={{
+                    ...utilities.link.style,
+                    ...styles.imageGenerationButton.style,
+                  }}
                   title={
                     isImageGenerationEnabled
                       ? t("Image Generation Enabled")
@@ -3737,26 +3745,26 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     }
                     size={22}
                   />
-                </button>
+                </Button>
               )}
               {/* File Preview Area */}
               {files.length > 0 && (
-                <div className={styles.filePreviewArea}>
+                <Div style={styles.filePreviewArea.style}>
                   {files.map((file, index) => {
                     const fileType = getFileType(file)
                     const isImage = fileType === "image"
                     const isText = fileType === "text" // Add text type detection
 
                     return (
-                      <div key={index} className={styles.filePreview}>
+                      <Div key={index} style={styles.filePreview.style}>
                         {isImage ? (
-                          <img
+                          <Img
                             src={createImagePreview(file)}
                             alt={file.name}
-                            className={styles.filePreviewImage}
+                            style={styles.filePreviewImage.style}
                           />
                         ) : (
-                          <div className={styles.filePreviewIcon}>
+                          <Div style={styles.filePreviewIcon.style}>
                             {fileType === "audio" ? (
                               <Music size={16} />
                             ) : fileType === "video" ? (
@@ -3764,39 +3772,43 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             ) : (
                               <FileIcon size={16} />
                             )}
-                          </div>
+                          </Div>
                         )}
 
-                        <div className={styles.filePreviewInfo}>
-                          <div className={styles.filePreviewName}>
+                        <Div style={styles.filePreviewInfo.style}>
+                          <Div style={styles.filePreviewName.style}>
                             {file.name}
-                          </div>
-                          <div className={styles.filePreviewSize}>
+                          </Div>
+                          <Div style={styles.filePreviewSize.style}>
                             {(file.size / 1024).toFixed(1)}KB
-                          </div>
-                        </div>
+                          </Div>
+                        </Div>
 
-                        <button
+                        <Button
                           data-testid="file-preview-clear"
                           type="button"
                           onClick={() => removeFile(index)}
-                          className={clsx("link", styles.filePreviewClear)}
+                          className="link"
+                          style={{
+                            ...utilities.link.style,
+                            ...styles.filePreviewClear.style,
+                          }}
                           title="Remove file"
                         >
                           <CircleX size={18} />
-                        </button>
-                      </div>
+                        </Button>
+                      </Div>
                     )
                   })}
-                </div>
+                </Div>
               )}
+              {disabled && <Span>{t("Chat is disabled")}</Span>}
 
-              <textarea
-                suppressHydrationWarning
-                onPaste={handlePaste}
-                rows={isHydrated && isChatFloating ? 1 : undefined}
+              <TextArea
+                className="chatTextArea"
+                rows={isHydrated && isChatFloating ? 1 : 2}
                 data-testid="chat-textarea"
-                className={styles.chatTextArea}
+                style={styles.chatTextArea.style}
                 value={input}
                 onChange={handleInputChange}
                 name="chat"
@@ -3809,117 +3821,133 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 }
                 ref={chatInputRef}
                 disabled={disabled}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
+                // Cross-platform submit on Enter
+                onSubmitEditing={(e) => {
+                  if (!e.nativeEvent?.shiftKey) {
                     handleSubmit()
                   }
                 }}
+                // Web-specific: prevent default Enter behavior
+                onKeyPress={(e: {
+                  key: string
+                  shiftKey: boolean
+                  preventDefault: () => void
+                }) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                  }
+                }}
+                // Handle paste
+                onPaste={handlePaste}
+                // React Native specific
+                blurOnSubmit={false}
+                multiline={true}
+                returnKeyType="send"
               />
 
               {/* Quota Info Display */}
               {showQuotaInfo && quotaInfo && (
-                <div className={styles.quotaDisplay}>
-                  <div className={styles.quotaHeader}>
+                <Div style={styles.quotaDisplay.style}>
+                  <Div style={styles.quotaHeader.style}>
                     <HardDrive size={16} color="var(--accent-6)" />
-                    <span>{t("File Upload Limits")}</span>
-                    <button
+                    <Span>{t("File Upload Limits")}</Span>
+                    <Button
                       title={t("Close")}
                       onClick={() => setShowQuotaInfo(false)}
                       className="link"
                       style={{ marginLeft: "auto" }}
                     >
                       <CircleX size={18} color="var(--accent-1)" />
-                    </button>
-                  </div>
-                  <div className={styles.quotaItems}>
-                    <div className={styles.quotaItem}>
+                    </Button>
+                  </Div>
+                  <Div style={styles.quotaItems.style}>
+                    <Div style={styles.quotaItem.style}>
                       <Clock size={14} color="var(--shade-6)" />
-                      <span>
+                      <Span>
                         {t("Hourly: {{used}}/{{limit}} files", {
                           used: quotaInfo.hourly.used,
                           limit: quotaInfo.hourly.limit,
                         })}
-                      </span>
-                      <span className={styles.quotaReset}>
+                      </Span>
+                      <Span style={styles.quotaReset.style}>
                         {t("Resets in {{time}}", {
                           time: formatTimeUntilReset(
                             quotaInfo?.hourly?.resetTime,
                           ),
                         })}
-                      </span>
-                    </div>
-                    <div className={styles.quotaItem}>
+                      </Span>
+                    </Div>
+                    <Div style={styles.quotaItem.style}>
                       <Timer size={14} color="var(--shade-6)" />
-                      <span>
+                      <Span>
                         {t("Daily: {{used}}/{{limit}} files", {
                           used: quotaInfo.daily.used,
                           limit: quotaInfo.daily.limit,
                         })}
-                      </span>
-                      <span className={styles.quotaReset}>
+                      </Span>
+                      <Span style={styles.quotaReset.style}>
                         {t("Resets in {{time}}", {
                           time: formatTimeUntilReset(quotaInfo.daily.resetTime),
                         })}
-                      </span>
-                    </div>
-                    <div className={styles.quotaItem}>
+                      </Span>
+                    </Div>
+                    <Div style={styles.quotaItem.style}>
                       <HardDrive size={14} color="var(--shade-6)" />
-                      <span>
+                      <Span>
                         {t("Size: {{used}}/{{limit}} MB", {
                           used: quotaInfo.dailySize.used,
                           limit: quotaInfo.dailySize.limit,
                         })}
-                      </span>
-                      <span className={styles.quotaReset}>
+                      </Span>
+                      <Span style={styles.quotaReset.style}>
                         {t("Resets in {{time}}", {
                           time: formatTimeUntilReset(
                             quotaInfo.dailySize.resetTime,
                           ),
                         })}
-                      </span>
-                    </div>
+                      </Span>
+                    </Div>
                     {quotaInfo.images && (
-                      <div className={styles.quotaItem}>
+                      <Div style={styles.quotaItem.style}>
                         <Palette size={14} color="var(--shade-6)" />
-                        <span>
+                        <Span>
                           {t("Images: {{used}}/{{limit}} daily", {
                             used: quotaInfo.images.used,
                             limit: quotaInfo.images.limit,
                           })}
-                        </span>
-                        <span className={styles.quotaReset}>
+                        </Span>
+                        <Span style={styles.quotaReset.style}>
                           {t("Resets in {{time}}", {
                             time: formatTimeUntilReset(
                               quotaInfo.images.resetTime,
                             ),
                           })}
-                        </span>
-                      </div>
+                        </Span>
+                      </Div>
                     )}
-                  </div>
-                </div>
+                  </Div>
+                </Div>
               )}
 
               {/* Credit Estimate Display */}
 
-              <div className={styles.chatFooter}>
+              <Div style={styles.chatFooter.style}>
                 {!isAttaching && selectedAgent ? (
-                  <div
+                  <Div
                     style={{
                       display: "flex",
                       alignItems: "flex-end",
                       gap: debateAgent ? 10 : 5,
                     }}
                   >
-                    <span
+                    <Span
                       style={{
                         display: "flex",
                         alignItems: "flex-end",
                         gap: 9,
                       }}
                     >
-                      <button
+                      <Button
                         disabled={isChrry || !!app?.onlyAgent}
                         data-testid={
                           !debateAgent
@@ -3941,7 +3969,14 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             setIsAgentModalOpen(true)
                           } else setIsDebateAgentModalOpen(true)
                         }}
-                        className={clsx("link", styles.debateAgentButton)}
+                        className="link"
+                        style={{
+                          ...utilities.link.style,
+                          ...styles.debateAgentButton.style,
+                          ...(isChrry || !!app?.onlyAgent
+                            ? styles.debateAgentButtonDisabled
+                            : {}),
+                        }}
                       >
                         {selectedAgent.name === "deepSeek" ? (
                           <DeepSeek color="var(--accent-6)" size={24} />
@@ -3964,14 +3999,14 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         debateAgent ? null : (
                           <Plus
                             strokeWidth={3}
-                            className={styles.plusIcon}
+                            style={styles.plusIcon.style}
                             size={10}
                             color="var(--accent-6)"
                           />
                         )}
-                      </button>
+                      </Button>
                       {debateAgent && !app?.onlyAgent ? (
-                        <button
+                        <Button
                           data-testid="add-debate-agent-button"
                           data-agent-name={debateAgent.name}
                           onClick={() => {
@@ -3982,7 +4017,14 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             addHapticFeedback()
                             setIsDebateAgentModalOpen(true)
                           }}
-                          className={clsx("link", styles.debateAgentButton)}
+                          className="link"
+                          style={{
+                            ...utilities.link.style,
+                            ...styles.debateAgentButton.style,
+                            ...(isChrry || !!app?.onlyAgent
+                              ? styles.debateAgentButtonDisabled
+                              : {}),
+                          }}
                         >
                           <span style={{ position: "relative", left: "-2px" }}>
                             |
@@ -4000,19 +4042,12 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           ) : debateAgent.name === "perplexity" ? (
                             <Perplexity color="var(--accent-6)" size={22} />
                           ) : null}
-                        </button>
+                        </Button>
                       ) : (
-                        <button
+                        <Button
                           disabled={isChrry || !!app?.onlyAgent}
-                          translate="no"
                           data-agent-name={selectedAgent.name}
                           data-testid="agent-select-button"
-                          style={{
-                            color:
-                              isChrry || app?.onlyAgent
-                                ? "var(--shade-6)"
-                                : undefined,
-                          }}
                           onClick={() => {
                             if (appStatus?.part) {
                               toast.error(t("Agent locked during app creation"))
@@ -4021,20 +4056,28 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             addHapticFeedback()
                             setIsAgentModalOpen(true)
                           }}
-                          className={clsx("link", styles.agentButton)}
+                          className="link"
+                          style={{
+                            ...utilities.link.style,
+                            ...styles.agentButton.style,
+                            color:
+                              isChrry || app?.onlyAgent
+                                ? "var(--shade-6)"
+                                : undefined,
+                          }}
                           type="submit"
                         >
-                          <span className={styles.agentName}>
+                          <Span style={styles.agentName.style}>
                             {selectedAgent?.displayName}
-                          </span>
+                          </Span>
                           {!app?.onlyAgent && (
                             <ChevronDown color="var(--accent-6)" size={20} />
                           )}
-                        </button>
+                        </Button>
                       )}
-                    </span>
+                    </Span>
                     {!appStatus?.part && !isChrry && !app?.onlyAgent && (
-                      <button
+                      <Button
                         data-testid={
                           debateAgent
                             ? "debate-agent-delete-button"
@@ -4043,6 +4086,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         style={{
                           position: "relative",
                           top: "-2px",
+                          ...utilities.link.style,
                         }}
                         className="link"
                         onClick={() => {
@@ -4053,15 +4097,16 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         }}
                       >
                         <CircleX color="var(--accent-1)" size={18} />
-                      </button>
+                      </Button>
                     )}
-                  </div>
+                  </Div>
                 ) : (
                   !isAttaching && (
-                    <button
+                    <Button
                       className="link"
                       style={{
                         color: "var(--accent-1)",
+                        ...utilities.link.style,
                       }}
                       onClick={() => {
                         addHapticFeedback()
@@ -4074,18 +4119,17 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         size={22}
                       />{" "}
                       {t("Select agent")}
-                    </button>
+                    </Button>
                   )
                 )}
 
-                <div
-                  className={clsx(
-                    styles.chatFooterButtons,
-                    isExtension && styles.extension,
-                  )}
+                <Div
+                  style={{
+                    ...styles.chatFooterButtons.style,
+                  }}
                 >
                   {isHydrated && (
-                    <div
+                    <Div
                       style={{
                         top: "0.15rem",
                         position: "relative",
@@ -4110,17 +4154,20 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           }}
                         />
                       )}
-                    </div>
+                    </Div>
                   )}
                   {!isSelectingMood && !needsReview && (
                     <>
-                      <button
+                      <Button
                         data-testid={
                           isWebSearchEnabled
                             ? "web-search-button-enabled"
                             : "web-search-button-disabled"
                         }
                         className="link"
+                        style={{
+                          ...utilities.link.style,
+                        }}
                         title={
                           isWebSearchEnabled
                             ? t("Web Search Enabled")
@@ -4136,7 +4183,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         }}
                       >
                         {app?.features?.moodTracking ? null : (
-                          <span
+                          <Span
                             style={{
                               fontSize: 12,
                               color:
@@ -4146,7 +4193,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             }}
                           >
                             {t("Web")}
-                          </span>
+                          </Span>
                         )}
 
                         {selectedAgent?.capabilities?.webSearch ? (
@@ -4161,22 +4208,25 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         ) : (
                           <GlobeLock color="var(--shade-3)" size={22} />
                         )}
-                      </button>
+                      </Button>
                     </>
                   )}
                   {isAttaching ? (
-                    <span className={styles.attachButtons}>
-                      <button
+                    <Span style={styles.attachButtons.style}>
+                      <Button
                         data-testid="attach-button-close"
                         className="link"
+                        style={{
+                          ...utilities.link.style,
+                        }}
                         onClick={() => {
                           addHapticFeedback()
                           setIsAttaching(false)
                         }}
                       >
                         <CircleX color="var(--accent-1)" size={22} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         data-testid="attach-button-video"
                         title={t("Video")}
                         onClick={() => {
@@ -4194,18 +4244,19 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           triggerFileInput("video/*")
                         }}
                         disabled={isAttachmentDisabled("video")}
-                        className={clsx(
-                          `link`,
-                          hasFileType("video")
-                            ? styles.attachButtonSelected
+                        style={{
+                          ...utilities.link.style,
+                          ...(hasFileType("video")
+                            ? styles.attachButtonSelected.style
                             : isAttachmentDisabled("video")
-                              ? styles.attachButtonDisabled
-                              : undefined,
-                        )}
+                              ? styles.attachButtonDisabled.style
+                              : undefined),
+                        }}
+                        className="link"
                       >
                         <VideoIcon size={22} color={getButtonColor("video")} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         data-testid="attach-button-pdf"
                         title={"PDF"}
                         onClick={() => {
@@ -4223,19 +4274,20 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
                           triggerFileInput("application/pdf")
                         }}
+                        style={{
+                          ...utilities.link.style,
+                          ...(hasFileType("pdf")
+                            ? styles.attachButtonSelected.style
+                            : isAttachmentDisabled("pdf")
+                              ? styles.attachButtonDisabled.style
+                              : undefined),
+                        }}
                         disabled={isAttachmentDisabled("audio")}
-                        className={clsx(
-                          `link`,
-                          hasFileType("pdf")
-                            ? styles.attachButtonSelected
-                            : isAttachmentDisabled("audio")
-                              ? styles.attachButtonDisabled
-                              : undefined,
-                        )}
+                        className="link"
                       >
                         <FileText size={22} color={getButtonColor("pdf")} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         data-testid="attach-button-audio"
                         title={t("Audio")}
                         onClick={() => {
@@ -4253,18 +4305,19 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           triggerFileInput("audio/*")
                         }}
                         disabled={isAttachmentDisabled("audio")}
-                        className={clsx(
-                          `link`,
-                          hasFileType("audio")
-                            ? styles.attachButtonSelected
+                        style={{
+                          ...utilities.link.style,
+                          ...(hasFileType("audio")
+                            ? styles.attachButtonSelected.style
                             : isAttachmentDisabled("audio")
-                              ? styles.attachButtonDisabled
-                              : undefined,
-                        )}
+                              ? styles.attachButtonDisabled.style
+                              : undefined),
+                        }}
+                        className="link"
                       >
                         <AudioLines size={22} color={getButtonColor("audio")} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         data-testid="attach-button-image"
                         title={t("Image")}
                         onClick={() => {
@@ -4283,49 +4336,32 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           triggerFileInput("image/*")
                         }}
                         disabled={isAttachmentDisabled("image")}
-                        className={clsx(
-                          `link`,
-                          hasFileType("image")
-                            ? styles.attachButtonSelected
+                        style={{
+                          ...utilities.link.style,
+                          ...(hasFileType("image")
+                            ? styles.attachButtonSelected.style
                             : isAttachmentDisabled("image")
-                              ? styles.attachButtonDisabled
-                              : undefined,
-                        )}
+                              ? styles.attachButtonDisabled.style
+                              : undefined),
+                        }}
+                        className="link"
                       >
                         <ImageIcon size={22} color={getButtonColor("image")} />
-                      </button>
-                    </span>
+                      </Button>
+                    </Span>
                   ) : needsReview ? (
-                    <a
+                    <A
                       target="_blank"
                       className="button small transparent"
-                      onClick={(e) => {
-                        if (e.metaKey || e.ctrlKey) {
-                          return
-                        }
-
-                        addHapticFeedback()
-                        if (checkIsExtension()) {
-                          e.preventDefault()
-
-                          BrowserInstance?.runtime?.sendMessage({
-                            action: "openInSameTab",
-                            url: `${FRONTEND_URL}/privacy`,
-                          })
-
-                          return
-                        }
-
-                        window.open(`${FRONTEND_URL}/privacy`, "_blank")
-                      }}
+                      openInNewTab
                       href="/privacy"
                     >
                       <Link size={15} />
                       {t("Privacy")}
-                    </a>
+                    </A>
                   ) : (
                     !isSelectingMood && (
-                      <button
+                      <Button
                         data-testid="attach-button"
                         title={t("Attach")}
                         onClick={() => {
@@ -4344,49 +4380,54 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
                           )
                         }}
-                        className={clsx("link", styles.attachButton)}
+                        className="link"
+                        style={{
+                          ...utilities.link.style,
+                          ...styles.attachButton.style,
+                        }}
                         type="submit"
                       >
                         <Paperclip color={"var(--accent-6)"} size={22} />
-                      </button>
+                      </Button>
                     )
                   )}
                   {/* Quota info button */}
                   {user && !isSelectingMood && (
-                    <button
-                      onClick={async (e) => {
+                    <Button
+                      onClick={async () => {
                         addHapticFeedback()
-                        e.preventDefault()
                         if (!quotaInfo && !isFetchingQuotaInfo) {
                           await fetchQuotaInfo()
                         }
                         setShowQuotaInfo(!showQuotaInfo)
                       }}
-                      className={clsx("link", styles.attachButton)}
+                      style={{
+                        ...utilities.link.style,
+                        ...styles.attachButton.style,
+                      }}
                       type="button"
                       title={t("View file upload limits")}
                     >
                       <HardDrive color={"var(--shade-6)"} size={22} />
-                    </button>
+                    </Button>
                   )}
                   {renderSubmit()}
-                </div>
-              </div>
-            </div>
+                </Div>
+              </Div>
+            </Div>
             {!isChatFloating && (
-              <div
-                className={clsx(
-                  styles.creditInfo,
-                  os && styles[os],
-                  isStandalone ? styles.standalone : undefined,
-                )}
+              <Div
+                style={{
+                  ...styles.creditInfo.style,
+                  ...(isStandalone ? styles.standalone.style : undefined),
+                }}
               >
-                <span className={styles.creditCost}>
+                <Span style={styles.creditCost.style}>
                   {!hitHourlyLimit && (
                     <Coins color="var(--accent-1)" size={16} />
                   )}
                   {creditEstimate && creditEstimate.multiplier > 1 ? (
-                    <span
+                    <Span
                       title={t("task_detected_tooltip", {
                         taskType: t(`task_type_${creditEstimate.taskType}`),
                         multiplier: creditEstimate.multiplier,
@@ -4401,30 +4442,31 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             (selectedAgent?.creditCost || 1),
                         ),
                       })}
-                    </span>
+                    </Span>
                   ) : hitHourlyLimit && !threadId ? (
-                    <span
+                    <Span
                       data-testid="hourly-limit-info"
                       data-hourly-left={hourlyUsageLeft}
-                      className={styles.hourlyLimit}
+                      style={styles.hourlyLimit.style}
                     >
                       {!user?.subscription || !guest?.subscription ? (
-                        <button
+                        <Button
                           onClick={() => {
                             addHapticFeedback()
                             addParams({ subscribe: "true" })
                           }}
                           className="link"
+                          style={utilities.link.style}
                         >
                           <ClockPlus size={16} />
-                        </button>
+                        </Button>
                       ) : (
                         <Clock color="var(--accent-1)" size={16} />
                       )}
-                      <span style={{ fontSize: "1rem" }}>😅</span>
+                      <Span style={{ fontSize: "1rem" }}>😅</Span>
                       {user?.messagesLastHour || guest?.messagesLastHour || 0}/
-                      {hourlyLimit}"
-                    </span>
+                      {hourlyLimit}
+                    </Span>
                   ) : selectedAgent ? (
                     <>
                       {t("credits", {
@@ -4436,29 +4478,29 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   ) : (
                     t("Doesn't cost credits")
                   )}
-                </span>
+                </Span>
 
                 {selectedAgent && (
                   <>
                     {creditsLeft !== undefined ? (
                       <>
                         {remainingMs ? (
-                          <span
+                          <Span
                             data-testid="hourly-limit-info"
                             data-hourly-left={hourlyUsageLeft}
-                            className={styles.hourlyLimit}
+                            style={styles.hourlyLimit.style}
                           >
                             <Timer size={16} />{" "}
                             {formatTime(Math.floor(remainingMs / 1000))}
-                          </span>
+                          </Span>
                         ) : (
-                          <span
+                          <Span
                             data-credits-left={creditsLeft}
                             data-testid="credits-info"
-                            className={styles.creditInfoText}
+                            style={styles.creditInfoText.style}
                           >
                             <Info color="var(--accent-6)" size={16} />
-                            <span
+                            <Span
                               style={{
                                 color:
                                   creditsLeft === 0
@@ -4471,8 +4513,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                                 : t("credits_left", {
                                     count: creditsLeft,
                                   })}
-                            </span>
-                          </span>
+                            </Span>
+                          </Span>
                         )}
                       </>
                     ) : null}
@@ -4480,7 +4522,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 )}
 
                 {user && !user?.subscription && (
-                  <button
+                  <Button
                     data-testid="subscribe-from-chat-button"
                     onClick={() => {
                       track({
@@ -4491,27 +4533,35 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       })
                       addParams({ subscribe: "true" })
                     }}
-                    className={clsx("link", styles.subscribeButton)}
+                    className={"link"}
+                    style={{
+                      ...utilities.link.style,
+                      ...styles.subscribeButton.style,
+                    }}
                   >
                     <UserRoundPlus size={16} /> {t("Subscribe")}
-                  </button>
+                  </Button>
                 )}
                 {guest && (
-                  <button
+                  <Button
                     data-testid="login-from-chat-button"
                     onClick={() => {
                       addParams({ signIn: "login" })
                     }}
-                    className={clsx("link", styles.loginButton)}
+                    className={"link"}
+                    style={{
+                      ...utilities.link.style,
+                      ...styles.loginButton.style,
+                    }}
                   >
                     <LogIn size={16} /> {t("Login")}
-                  </button>
+                  </Button>
                 )}
-              </div>
+              </Div>
             )}
           </>
-        </div>
-      </div>
+        </Div>
+      </Div>
     </>
   )
 }

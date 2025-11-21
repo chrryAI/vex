@@ -109,6 +109,13 @@ export interface TextAreaProps extends BaseProps {
   maxLength?: number
   autoFocus?: boolean
   "data-testid"?: string
+  // React Native-specific props (ignored on web, but accepted for cross-platform compatibility)
+  onSubmitEditing?: (e: any) => void
+  onKeyPress?: (e: any) => void
+  onPaste?: (e: any) => void
+  blurOnSubmit?: boolean
+  multiline?: boolean
+  returnKeyType?: string
 }
 
 export interface FormProps extends BaseProps {
@@ -381,6 +388,13 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       rows = 4,
       maxLength,
       autoFocus,
+      // React Native-specific props - extract but don't pass to textarea
+      onSubmitEditing,
+      onKeyPress,
+      onPaste,
+      blurOnSubmit,
+      multiline,
+      returnKeyType,
       ...props
     },
     ref,
@@ -406,6 +420,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         rows={rows}
         maxLength={maxLength}
         autoFocus={autoFocus}
+        onKeyPress={onKeyPress}
+        onPaste={onPaste}
         {...props}
       />
     )

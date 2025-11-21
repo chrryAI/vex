@@ -41,7 +41,7 @@ export const ThreadsStyleDefs = {
   },
   right: {
     display: "flex",
-    gap: 8,
+    gap: "8px 10px",
     marginLeft: "auto",
   },
   loadingContainer: {

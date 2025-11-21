@@ -7,34 +7,27 @@
   position: fixed;
   z-index: 1000;
   bottom: toRem.toRem(3);
-  left: 50%;
-  transform: translateX(-50%);
   padding: 0 toRem.toRem(10);
+  max-width: toRem.toRem(600);
 
   width: 100%;
-  max-width: breakpoints.$breakpoint-mobile;
+  // transform: translateX(-50%);
 
-  &.drawerOpen {
-    @media (min-width: breakpoints.$breakpoint-desktop) {
-      left: calc(50% + toRem.toRem(122.5));
-    }
-  }
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: toRem.toRem(12);
 
-  &.android:not(.standalone) {
-    padding-bottom: toRem.toRem(5);
-  }
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-  &.standalone {
-    &.ios {
-      padding-bottom: toRem.toRem(4.5);
-    }
-  }
+.standalone {
+  padding-bottom: toRem.toRem(4.5);
+}
 
-  @media all and (display-mode: standalone) {
-    &.ios {
-      padding-bottom: toRem.toRem(4.5);
-    }
-  }
+.drawerOpen {
+  left: calc(50% + 7.65625rem);
 }
 
 .loadingContainer {
@@ -42,24 +35,6 @@
   justify-content: center;
   align-items: center;
   flex: 1;
-}
-
-@keyframes placeholderGlowPulse {
-  0% {
-    border-color: var(--accent-1);
-    box-shadow: 0 0 toRem.toRem(20) var(--accent-1);
-  }
-  50% {
-    border-color: var(--accent-5);
-    box-shadow:
-      0 0 toRem.toRem(30) var(--accent-5),
-      0 0 toRem.toRem(45) var(--accent-5),
-      inset 0 0 toRem.toRem(25) var(--accent-5-transparent);
-  }
-  100% {
-    border-color: var(--accent-1);
-    box-shadow: 0 0 toRem.toRem(20) var(--accent-1);
-  }
 }
 
 .chat {
@@ -83,67 +58,31 @@
     box-shadow 0.3s ease-out,
     border-color 0.3s ease-out;
   will-change: height, transform;
+}
 
-  &:hover,
-  &:focus,
-  &.focus {
-    border-color: var(--accent-5);
-    box-shadow: 0 0 toRem.toRem(5) var(--accent-5);
-  }
+.chatFloating {
+  animation: slideUp 0.3s ease-in-out;
+  background-color: var(--shade-2-transparent);
+  border: toRem.toRem(1) dashed var(--shade-3);
+  box-shadow: none;
+  bottom: toRem.toRem(2.5);
+  opacity: 0;
+  animation: fadeInUp 0.3s ease-in-out forwards;
+}
 
-  &:active {
-    border-color: var(--accent-6);
-    box-shadow: 0 0 toRem.toRem(5) var(--accent-6);
-  }
+.floatingVideoContainer {
+  width: toRem.toRem(29);
+  height: toRem.toRem(29);
+}
 
-  // Glow effect when placeholder updates
-  &.placeholderGlow {
-    animation: placeholderGlowPulse 2s ease-in-out;
-    @include utils.respect-reduced-motion;
-  }
+.floatingVideo {
+  width: toRem.toRem(25);
+  height: toRem.toRem(25);
+}
 
-  @include utils.respect-reduced-motion;
-  &.chatFloating {
-    animation: slideUp 0.3s ease-in-out;
-    background-color: var(--shade-2-transparent);
-    border: toRem.toRem(1) dashed var(--shade-3);
-    box-shadow: none;
-    bottom: toRem.toRem(2.5);
-    opacity: 0;
-    animation: fadeInUp 0.3s ease-in-out forwards;
-
-    &.placeholderGlow {
-      opacity: 1;
-      animation: placeholderGlowPulse 2s ease-in-out;
-      transform: translateX(-50%) translateY(toRem.toRem(0));
-    }
-
-    .videoContainer {
-      width: toRem.toRem(29);
-      height: toRem.toRem(29);
-      .video {
-        width: toRem.toRem(25);
-        height: toRem.toRem(25);
-      }
-    }
-
-    .sendButton {
-      width: toRem.toRem(26);
-      height: toRem.toRem(26);
-    }
-
-    &.standalone {
-      &.ios {
-        bottom: toRem.toRem(5);
-      }
-    }
-
-    @media all and (display-mode: standalone) {
-      &.ios {
-        bottom: toRem.toRem(5);
-      }
-    }
-  }
+.floatingSendButton {
+  width: toRem.toRem(26);
+  height: toRem.toRem(26);
 }
 
 .hourlyLimit {
@@ -165,37 +104,37 @@
     flex-direction: column;
     gap: toRem.toRem(15);
   }
+}
 
-  .usageStats {
-    display: flex;
-    flex-direction: column;
-    gap: toRem.toRem(8);
+.speechUsageStats {
+  display: flex;
+  flex-direction: column;
+  gap: toRem.toRem(8);
+}
 
-    .statItem {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: toRem.toRem(12);
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: toRem.toRem(12);
+}
 
-      .statLabel {
-        color: var(--shade-6);
-        font-weight: 500;
-      }
+.statLabel {
+  color: var(--shade-6);
+  font-weight: 500;
+}
 
-      .statValue {
-        color: var(--shade-8);
-        font-family: var(--font-mono);
-      }
-    }
-  }
+.statValue {
+  color: var(--shade-8);
+  font-family: var(--font-mono);
+}
 
-  .actions {
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    gap: toRem.toRem(10);
-    flex-wrap: wrap;
-  }
+.speechActions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: toRem.toRem(10);
+  flex-wrap: wrap;
 }
 
 @keyframes fadeInUp {
@@ -209,20 +148,10 @@
   }
 }
 
-.chatContainerWrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: toRem.toRem(12);
-}
-
-.chatTextArea {
-}
-
 .top {
   margin-bottom: toRem.toRem(10);
 }
-.top.chatFloating {
+.topChatFloating {
   // position: fixed;
   z-index: 1001;
   // bottom: toRem.toRem(92.5);
@@ -236,28 +165,13 @@
   display: flex;
 
   align-items: center;
+}
 
-  .topInner {
-    background-color: var(--shade-1);
-    border: toRem.toRem(1) solid var(--shade-2);
-    padding: toRem.toRem(5);
-    border-radius: var(--radius);
-  }
-
-  @media (min-width: breakpoints.$breakpoint-mobile) {
-  }
-
-  @media all and (display-mode: standalone) {
-    &.ios {
-      margin-bottom: toRem.toRem(4.5);
-    }
-  }
-
-  &.standalone {
-    &.ios {
-      bottom: toRem.toRem(4.5);
-    }
-  }
+.topInner {
+  background-color: var(--shade-1);
+  border: toRem.toRem(1) solid var(--shade-2);
+  padding: toRem.toRem(5);
+  border-radius: var(--radius);
 }
 
 .top.collaborationStep3 {
@@ -282,16 +196,16 @@
   display: flex;
   align-items: center;
   gap: toRem.toRem(5);
+}
 
-  .plusIcon {
-    position: absolute;
-    bottom: toRem.toRem(-5);
-    right: toRem.toRem(-5);
-  }
+.debateAgentButtonDisabled {
+  background-color: var(--shade-1-transparent) !important;
+}
 
-  &:disabled {
-    background-color: var(--shade-1-transparent) !important;
-  }
+.plusIcon {
+  position: absolute;
+  bottom: toRem.toRem(-5);
+  right: toRem.toRem(-5);
 }
 
 .scrollDownButton {
@@ -308,13 +222,12 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+}
 
-  &.chatFloating {
-    bottom: toRem.toRem(5);
-    transform: translateX(50%) translateY(0);
-    max-width: toRem.toRem(600);
-    z-index: 1000;
-  }
+.chatContainerFloating {
+  bottom: toRem.toRem(5);
+  transform: translateX(50%) translateY(0);
+  z-index: 1000;
 }
 
 .brandHelp {
@@ -326,6 +239,7 @@
   gap: toRem.toRem(10);
   margin-top: 0;
   margin-bottom: toRem.toRem(12.5);
+  font-weight: normal;
 
   @media (min-width: breakpoints.$breakpoint-mobile-small-max) {
     font-size: toRem.toRem(20);
@@ -343,17 +257,17 @@
   display: flex;
   position: relative;
   bottom: toRem.toRem(5);
+}
 
-  .tooltip {
-    background-color: var(--shade-2-transparent);
-    border: toRem.toRem(1) solid var(--shade-2);
-    backdrop-filter: blur(toRem.toRem(5.5));
-    z-index: 9999;
-    border-radius: var(--radius);
-    padding: toRem.toRem(10);
-    position: relative;
-    margin-bottom: toRem.toRem(10);
-  }
+.tooltip {
+  background-color: var(--shade-2-transparent);
+  border: toRem.toRem(1) solid var(--shade-2);
+  backdrop-filter: blur(toRem.toRem(5.5));
+  z-index: 9999;
+  border-radius: var(--radius);
+  padding: toRem.toRem(10);
+  position: relative;
+  margin-bottom: toRem.toRem(10);
 }
 
 // .collaborateButtonContainer,
@@ -640,15 +554,13 @@
   gap: toRem.toRem(12.5);
   margin-left: auto;
   font-size: toRem.toRem(12);
-  &.extension {
-    gap: toRem.toRem(7.5);
-  }
 }
 
 .chatTextArea {
   width: 100%;
   display: flex;
-  height: var(--textarea-height, auto);
+  // height: var(--textarea-height, auto);
+  padding-top: 0;
   transition:
     height 0.2s ease-out,
     transform 0.2s ease-out,
@@ -660,19 +572,14 @@
 
   /* Initial state - slide up from below */
   transform: translateY(10px);
-  opacity: 0;
+  // opacity: 0;
 
   /* Animate to final position */
   animation: slideUpIn 0.3s ease-out forwards;
 
-  &,
-  &:focus,
-  &:active,
-  &:hover {
-    border: none;
-    outline: none;
-    background-color: transparent;
-  }
+  border: none;
+  outline: none;
+  background-color: transparent;
 }
 
 @keyframes slideUpIn {
@@ -686,14 +593,6 @@
   }
 }
 
-.favoriteButton {
-  &:hover {
-    svg {
-      fill: var(--accent-1);
-    }
-  }
-}
-
 .agentButtonModal {
   display: flex;
   align-items: center;
@@ -703,18 +602,18 @@
     background-color: var(--accent-6);
   }
 
-  &.favorite {
-    background-color: var(--accent-1);
-  }
-
   &.inactive {
     background-color: var(--shade-3);
     color: var(--shade-1);
   }
+}
 
-  &.current {
-    background-color: var(--accent-4);
-  }
+.favorite {
+  background-color: var(--accent-1);
+}
+
+.current {
+  background-color: var(--accent-4);
 }
 
 .agentButtonContainer {

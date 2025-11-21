@@ -614,3 +614,63 @@ button.link.bookmark:hover {
     color: var(--accent-1) !important;
   }
 }
+
+button.favorite {
+  &:hover {
+    svg {
+      fill: var(--accent-1);
+    }
+  }
+}
+
+.chatTextArea {
+  &,
+  &:focus,
+  &:active,
+  &:hover {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    resize: none;
+  }
+}
+
+.chat {
+  &:hover,
+  &:focus,
+  &.focus {
+    border-color: var(--accent-5);
+    box-shadow: 0 0 5px var(--accent-5);
+  }
+
+  &:active {
+    border-color: var(--accent-6);
+    box-shadow: 0 0 5px var(--accent-6);
+  }
+
+  // Glow effect when placeholder updates
+  &.placeholderGlow {
+    animation: placeholderGlowPulse 2s ease-in-out;
+    @include utils.respect-reduced-motion;
+  }
+
+  @include utils.respect-reduced-motion;
+}
+
+@keyframes placeholderGlowPulse {
+  0% {
+    border-color: var(--accent-1);
+    box-shadow: 0 0 20px var(--accent-1);
+  }
+  50% {
+    border-color: var(--accent-5);
+    box-shadow:
+      0 0 30px var(--accent-5),
+      0 0 45px var(--accent-5),
+      inset 0 0 25px var(--accent-5-transparent);
+  }
+  100% {
+    border-color: var(--accent-1);
+    box-shadow: 0 0 20px var(--accent-1);
+  }
+}

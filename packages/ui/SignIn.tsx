@@ -397,6 +397,20 @@ export default function SignIn({
     }
   }
 
+  useEffect(() => {
+    if (isExtension) {
+      BrowserInstance?.runtime?.sendMessage?.({
+        action: "openInSameTab",
+        url: `${window.location.href}`,
+      })
+      return
+    }
+  }, [isExtension])
+
+  if (isExtension) {
+    return null
+  }
+
   return (
     <>
       <div style={style} className={clsx(styles.container, className)}>

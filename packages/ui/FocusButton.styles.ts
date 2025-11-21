@@ -52,7 +52,7 @@ export const FocusButtonStyleDefs = {
   focusButtonMounted: {},
   focusButtonCounting: {
     border: "1px solid var(--accent-4)",
-    boxShadow: 5,
+    boxShadow: "0px 0px 5px var(--accent-4px)",
   },
   focusButtonPaused: {
     border: "1px solid var(--orange-500)",
@@ -350,7 +350,7 @@ export const FocusButtonStyleDefs = {
   },
   selectedTaskCounting: {
     border: "1px solid var(--accent-4)",
-    boxShadow: 5,
+    boxShadow: "0px 0px 5px var(--accent-4px)",
   },
   selectedTaskPaused: {
     border: "1px solid var(--orange-500)",

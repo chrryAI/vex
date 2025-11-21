@@ -129,6 +129,20 @@ const convertValue = (property, value) => {
   value = value.trim()
   value = value.replace(/\s*!important\s*$/, "")
 
+  // Handle transform FIRST - before general toRem processing
+  // This prevents the global toRem converter from adding 'px' to numbers in percentages
+  if (property === "transform") {
+    // Convert toRem.toRem() calls to pixel values
+    const converted = value.replace(
+      /toRem\.toRem\((-?[0-9.]+)\)/g,
+      (match, num) => {
+        const rounded = Math.round(parseFloat(num))
+        return rounded === 0 ? "0" : `${rounded}px`
+      },
+    )
+    return `"${converted}"`
+  }
+
   // Handle SCSS breakpoint variables: breakpoints.$breakpoint-mobile → 600
   if (value.includes("breakpoints.$")) {
     const match = value.match(/breakpoints\.(\$breakpoint-[a-z-]+)/)
@@ -222,11 +236,8 @@ const convertValue = (property, value) => {
 
   // Note: display property is now included for both web and native
 
-  if (
-    property === "transform" ||
-    property === "animation" ||
-    property === "transition"
-  ) {
+  // Skip animation and transition (web-only)
+  if (property === "animation" || property === "transition") {
     return null
   }
 
