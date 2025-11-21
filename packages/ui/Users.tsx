@@ -1,19 +1,11 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import styles from "./Users.module.scss"
 import Skeleton from "./Skeleton"
 import clsx from "clsx"
 import useSWR from "swr"
-import { getUsers } from "./lib"
 import { useAppContext } from "./context/AppContext"
-import { useLocalStorage } from "./hooks"
-import {
-  BrowserInstance,
-  checkIsExtension,
-  FRONTEND_URL,
-  pageSizes,
-} from "./utils"
+import { pageSizes } from "./utils"
 import { user, characterProfile } from "./types"
 import Search from "./Search"
 import {
@@ -30,8 +22,13 @@ import Loading from "./Loading"
 import toast from "react-hot-toast"
 import Collaborate from "./Collaborate"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
+import { useUsersStyles } from "./Users.styles"
+import { A, Button, Div, H1, P } from "./platform"
+import { useStyles } from "./context/StylesContext"
 
-const Users = ({ className }: { className?: string }) => {
+const Users = ({ style }: { style?: React.CSSProperties }) => {
+  const styles = useUsersStyles()
+  const { utilities } = useStyles()
   const [until, setUntil] = useState<number>(1)
   const { token } = useAuth()
   const { t } = useAppContext()
@@ -106,10 +103,10 @@ const Users = ({ className }: { className?: string }) => {
 
   return (
     <Skeleton>
-      <div className={clsx(styles.users, className)}>
-        <h1 className={clsx(styles.usersTitle)}>
+      <Div style={{ ...styles.users.style, ...style }}>
+        <H1 style={{ ...styles.usersTitle.style }}>
           <UsersRound size={26} /> {t("Users")}
-        </h1>
+        </H1>
         <Search
           paramName="find"
           dataTestId="threads-search"
@@ -128,41 +125,39 @@ const Users = ({ className }: { className?: string }) => {
           }}
         />
         {isLoading && !isLoadingMore && !find ? (
-          <div className={clsx(styles.loadingContainer)}>
+          <Div style={{ ...styles.loadingContainer.style }}>
             <Loading />
-          </div>
+          </Div>
         ) : (
-          <div className={clsx(styles.usersContainer)}>
-            {users?.length === 0 && (
-              <p className={clsx(styles.noUsers)}>{t("Nothing here yet")}</p>
-            )}
+          <Div style={{ ...styles.usersContainer.style }}>
+            {users?.length === 0 && <P>{t("Nothing here yet")}</P>}
             {users?.map((user) => (
-              <div className={styles.usersItem} key={user.id}>
-                <div className={styles.usersItemUser}>
-                  <div className={styles.usersItemUserImage}>
+              <Div style={{ ...styles.usersItem.style }} key={user.id}>
+                <Div style={{ ...styles.usersItemUser.style }}>
+                  <Div style={{ ...styles.usersItemUserImage.style }}>
                     {user.image ? (
                       <Img
                         src={user.image}
                         alt={user.name!}
                         width={26}
                         height={26}
-                        className={styles.profileImage}
+                        style={{ ...styles.profileImage.style }}
                       />
                     ) : (
                       <CircleUserRound size={26} />
                     )}
-                    <a
+                    <A
                       onClick={(e) => {
                         e.preventDefault()
                         router.push(`/u/${user.userName}`)
                       }}
                     >
                       {user.name}
-                    </a>
-                  </div>
+                    </A>
+                  </Div>
                   <Collaborate withUser={user} />
-                </div>
-                <div className={styles.usersItemCharacterProfiles}>
+                </Div>
+                <Div style={{ ...styles.usersItemCharacterProfiles.style }}>
                   {(() => {
                     const characterProfile =
                       user.characterProfiles.find(
@@ -182,8 +177,10 @@ const Users = ({ className }: { className?: string }) => {
 
                     return (
                       <>
-                        <div className={styles.usersItemCharacterProfile}>
-                          <a
+                        <Div
+                          style={{ ...styles.usersItemCharacterProfile.style }}
+                        >
+                          <A
                             key={characterProfile.id}
                             onClick={(e) => {
                               e.preventDefault()
@@ -193,6 +190,10 @@ const Users = ({ className }: { className?: string }) => {
                               )
                             }}
                             className="button inverted"
+                            style={{
+                              ...utilities.button.style,
+                              ...utilities.inverted.style,
+                            }}
                             href={`/u?similarTo=${characterProfile.id}`}
                           >
                             <Sparkles
@@ -201,20 +202,19 @@ const Users = ({ className }: { className?: string }) => {
                               fill="var(--accent-1)"
                             />
                             {characterProfile.name}
-                          </a>
+                          </A>
                           {previousCharacterProfile && (
-                            <button
+                            <Button
                               className="link"
-                              onClick={(e) => {
-                                e.preventDefault()
-
+                              style={{ ...utilities.link.style }}
+                              onClick={() => {
                                 setSelectedCharacterProfileId(
                                   previousCharacterProfile.id,
                                 )
                               }}
                             >
                               <ArrowLeft size={18} />
-                            </button>
+                            </Button>
                           )}
                           {nextCharacterProfile && (
                             <button
@@ -230,34 +230,40 @@ const Users = ({ className }: { className?: string }) => {
                               <ArrowRight size={18} />
                             </button>
                           )}
-                        </div>
-                        <div className={styles.tags}>
+                        </Div>
+                        <Div style={{ ...styles.tags.style }}>
                           {characterProfile.tags?.join(", ")}
-                        </div>
+                        </Div>
                       </>
                     )
                   })()}
-                </div>
-              </div>
+                </Div>
+              </Div>
             ))}
-          </div>
+          </Div>
         )}
 
         {hasNextPage && (
-          <div className={clsx(styles.loadMoreButtonContainer)}>
-            <button
+          <Div
+            style={{
+              ...styles.loadMoreButtonContainer.style,
+              ...utilities.transparent.style,
+            }}
+          >
+            <Button
               onClick={() => {
                 setIsLoadingMore(true)
                 setUntil(until + 1)
               }}
-              className={clsx("transparent", styles.loadMoreButton)}
+              style={{ ...styles.loadMoreButton }}
+              className={"transparent"}
             >
               <LoaderCircle size={18} />
               {t("Load more")}
-            </button>
-          </div>
+            </Button>
+          </Div>
         )}
-      </div>
+      </Div>
     </Skeleton>
   )
 }
