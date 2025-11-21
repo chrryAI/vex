@@ -77,9 +77,11 @@ export interface InputProps extends BaseProps {
     | "search"
     | "hidden"
     | "range"
+    | "checkbox"
 
   placeholder?: string
   value?: string
+  checked?: boolean
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void
   onChangeText?: (text: string) => void
   name?: string
@@ -116,6 +118,19 @@ export interface TextAreaProps extends BaseProps {
   blurOnSubmit?: boolean
   multiline?: boolean
   returnKeyType?: string
+}
+
+export interface SelectProps extends BaseProps {
+  value?: string
+  defaultValue?: string
+  onChange?: (e: ChangeEvent<HTMLSelectElement>) => void
+  onValueChange?: (value: string) => void
+  name?: string
+  id?: string
+  disabled?: boolean
+  required?: boolean
+  options?: { value: string; label: string }[]
+  children?: React.ReactNode
 }
 
 export interface FormProps extends BaseProps {
@@ -338,6 +353,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       style,
       placeholder,
       value,
+      checked,
       onChange,
       onChangeText,
       name,
@@ -360,6 +376,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         style={style}
         placeholder={placeholder}
         value={value}
+        checked={checked}
         onChange={handleChange}
         name={name}
         required={required}
@@ -428,6 +445,57 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   },
 )
 TextArea.displayName = "TextArea"
+
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  (
+    {
+      className,
+      style,
+      value,
+      defaultValue,
+      onChange,
+      onValueChange,
+      name,
+      id,
+      disabled,
+      required,
+      options,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+      onChange?.(e)
+      onValueChange?.(e.target.value)
+    }
+
+    return (
+      <select
+        ref={ref}
+        className={className}
+        style={style as CSSProperties}
+        value={value}
+        defaultValue={defaultValue}
+        onChange={handleChange}
+        name={name}
+        id={id}
+        disabled={disabled}
+        required={required}
+        {...props}
+      >
+        {options
+          ? options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))
+          : children}
+      </select>
+    )
+  },
+)
+Select.displayName = "Select"
 
 export const Form = forwardRef<HTMLFormElement, FormProps>(
   ({ className, style, onSubmit, children, id, ...props }, ref) => {

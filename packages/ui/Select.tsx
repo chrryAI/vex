@@ -3,8 +3,16 @@
 import React from "react"
 import { CircleArrowDown } from "./icons"
 
-import { Div } from "./platform"
+import {
+  Div,
+  Select as PlatformSelect,
+  type SelectProps as PlatformSelectProps,
+} from "./platform"
 import { useSelectStyles } from "./Select.styles"
+
+export interface SelectProps extends Omit<PlatformSelectProps, "options"> {
+  options: { value: string; label: string }[]
+}
 
 export default function Select({
   className,
@@ -13,37 +21,32 @@ export default function Select({
   value,
   name,
   onChange,
+  onValueChange,
   style,
   id,
+  disabled,
+  required,
   ...rest
-}: {
-  name?: string
-  id?: string
-  className?: string
-  value?: string
-  options: { value: string; label: string }[]
-  defaultValue?: string
-  style?: React.CSSProperties
-  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
-}) {
+}: SelectProps) {
   const styles = useSelectStyles()
+
   return (
     <Div style={{ ...styles.customSelect.style, ...style }}>
-      <select
+      <PlatformSelect
+        className={className || "select"}
         name={name}
         id={id}
-        style={style}
         defaultValue={defaultValue}
         value={value}
         onChange={onChange}
+        onValueChange={onValueChange}
+        disabled={disabled}
+        required={required}
+        options={options}
+        style={styles.select.style}
+        {...styles.select.handlers}
         {...rest}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      />
       <CircleArrowDown
         size={15}
         color="var(--shade-6)"
