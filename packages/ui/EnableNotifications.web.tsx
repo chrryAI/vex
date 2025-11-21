@@ -2,36 +2,31 @@
 
 /// <reference types="chrome" />
 
-import React, { useContext, useEffect, useState } from "react"
-import styles from "./EnableNotifications.module.scss"
-import { BellDot, BellRing } from "./icons"
-import clsx from "clsx"
+import React, { useEffect, useState } from "react"
+import { BellRing } from "./icons"
 
-import Loading from "./Loading"
-import { customPushSubscription, pushSubscription } from "./types"
+import { customPushSubscription } from "./types"
 import registerServiceWorker, {
   subscribeToPushNotifications,
 } from "./utils/registerServiceWorker"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { apiFetch } from "./utils"
-import { useNavigation, usePlatform } from "./platform"
-import { useMediaQuery } from "usehooks-ts"
-import { platform } from "os"
-import AddToHomeScreen from "./AddToHomeScreen"
+import { Button, Div, usePlatform } from "./platform"
 import toast from "react-hot-toast"
 import Weather from "./Weather"
+import { useEnableNotificationsStyles } from "./EnableNotifications.styles"
 
 export default function EnableNotifications({
-  className,
   text = "Notifications",
   onLocationClick,
 }: {
   text?: string
-  className?: string
   onLocationClick?: (location: string) => void
 }) {
   const [isMounted, setIsMounted] = useState(false)
+
+  const styles = useEnableNotificationsStyles()
 
   // Split contexts for better organization
   const { t } = useAppContext()
@@ -221,28 +216,28 @@ export default function EnableNotifications({
     swRegistration
 
   return (
-    <div className={clsx(styles.enableNotificationsContainer, className)}>
+    <Div style={styles.enableNotificationsContainer.style}>
       <Weather
         onLocationClick={onLocationClick}
         showLocation={!shouldShow}
-        className={clsx(
-          styles.weather,
-          !shouldShow && styles.withoutNotifications,
-        )}
+        style={
+          !shouldShow ? { ...styles.withoutNotifications.style } : undefined
+        }
       />
 
       {isMounted && shouldShow && (
-        <div className={clsx(styles.enableNotifications, os && styles[os])}>
-          <button
+        <Div style={styles.enableNotifications.style}>
+          <Button
             data-testid="enableNotificationsButton"
             onClick={handleSubscribe}
-            className={clsx(styles.enableNotificationsButton, "small")}
+            className={"small"}
+            style={styles.enableNotificationsButton.style}
             disabled={!swRegistration}
           >
             <BellRing size={16} /> {t(text)}
-          </button>
-        </div>
+          </Button>
+        </Div>
       )}
-    </div>
+    </Div>
   )
 }

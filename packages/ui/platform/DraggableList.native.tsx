@@ -22,18 +22,32 @@ export default function DraggableList<T>({
     item,
     drag,
     isActive,
-    index,
+    getIndex,
   }: NativeRenderItemParams<T>) => {
     // Map native params to our shared interface
-    // They are identical, but explicit mapping ensures type safety
     const params: RenderItemParams<T> = {
       item,
       drag,
       isActive,
-      index: index || 0,
+      index: getIndex?.() ?? 0,
     }
     return renderItem(params)
   }
+
+  // Wrap header/footer if they're ReactNode but not components
+  const wrappedHeader =
+    ListHeaderComponent &&
+    typeof ListHeaderComponent !== "function" &&
+    typeof ListHeaderComponent !== "object"
+      ? () => <>{ListHeaderComponent}</>
+      : (ListHeaderComponent as any)
+
+  const wrappedFooter =
+    ListFooterComponent &&
+    typeof ListFooterComponent !== "function" &&
+    typeof ListFooterComponent !== "object"
+      ? () => <>{ListFooterComponent}</>
+      : (ListFooterComponent as any)
 
   return (
     <DraggableFlatList
@@ -41,8 +55,8 @@ export default function DraggableList<T>({
       renderItem={renderItemWrapper}
       keyExtractor={keyExtractor}
       onDragEnd={onDragEnd}
-      ListHeaderComponent={ListHeaderComponent}
-      ListFooterComponent={ListFooterComponent}
+      ListHeaderComponent={wrappedHeader}
+      ListFooterComponent={wrappedFooter}
       contentContainerStyle={contentContainerStyle}
       style={style}
       testID={testID}

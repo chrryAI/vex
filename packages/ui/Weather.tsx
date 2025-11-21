@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import styles from "./Weather.module.scss"
+// import styles from "./Weather.module.scss"
 import { useAppContext } from "./context/AppContext"
 import {
   Sun,
@@ -14,7 +14,6 @@ import {
   Tornado,
   Snowflake,
   Cloudy,
-  Pencil,
   Settings,
 } from "./icons"
 import AsyncSelect from "react-select/async"
@@ -31,6 +30,9 @@ import { selectStyles } from "./selectStyles"
 import { updateGuest, updateUser } from "./lib"
 import { toast } from "react-hot-toast"
 import { useAuth, useData } from "./context/providers"
+import { useWeatherStyles } from "./Weather.styles"
+import { Button, Div, Span } from "./platform"
+import { useStyles } from "./context/StylesContext"
 
 // Register English locale
 countries.registerLocale(enLocale)
@@ -96,15 +98,19 @@ function getWeatherColor(code: number): string {
 // Detect preferred unit based on country
 
 export default function Weather({
-  className,
+  style,
   showLocation,
   onLocationClick,
 }: {
-  className?: string
+  style?: React.CSSProperties
   showLocation?: boolean
   onLocationClick?: (location: string) => void
 }) {
   const { weather, refetchWeather, actions } = useData()
+
+  const styles = useWeatherStyles()
+
+  const { utilities } = useStyles()
 
   const { user, guest, token, setUser, setGuest, API_URL } = useAuth()
 
@@ -147,14 +153,17 @@ export default function Weather({
   if (!city || !country) return null
 
   return (
-    <div
+    <Div
       {...(weather
         ? {
             "aria-label": `${t(weather.condition)} - ${weather.location}, ${weather.country}`,
             title: `${t(weather.condition)} - ${weather.location}, ${weather.country}`,
           }
         : {})}
-      className={clsx(styles.weather, className)}
+      style={{
+        ...styles.weather.style,
+        ...style,
+      }}
     >
       {country && (
         <Modal
@@ -171,7 +180,6 @@ export default function Weather({
             isClearable
             placeholder={t("Select city")}
             cacheOptions
-            className={styles.input}
             classNamePrefix="react-select"
             styles={{
               ...selectStyles,
@@ -228,23 +236,19 @@ export default function Weather({
           />
         </Modal>
       )}
-      <button
-        onClick={() => setIsCityModalOpen(true)}
-        className={clsx("link", styles.settings)}
-      >
+      <Button onClick={() => setIsCityModalOpen(true)} className={"link"}>
         <Settings size={18} />
-      </button>
+      </Button>
       {(() => {
         if (!weather) return null
         const Icon = weatherIcons[weather.code]
         if (!Icon) return null
         return <Icon color={getWeatherColor(weather.code)} size={18} />
       })()}
-      <span className={styles.info}>
+      <Span style={styles.info.style}>
         {weather && <span>{weather.temperature}</span>}
         {showLocation && (
-          <span
-            role="button"
+          <Span
             onClick={() =>
               weather &&
               onLocationClick?.(`${weather.location}, ${weather.country}`)
@@ -252,9 +256,9 @@ export default function Weather({
             className={clsx(styles.location)}
           >
             {city}, {country}
-          </span>
+          </Span>
         )}
-      </span>
-    </div>
+      </Span>
+    </Div>
   )
 }
