@@ -3,6 +3,7 @@
  */
 
 // Import polyfills for web-only APIs
+import 'react-native-gesture-handler';
 import './polyfills';
 
 import {AppRegistry} from 'react-native';
