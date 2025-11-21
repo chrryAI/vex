@@ -385,9 +385,12 @@ export default function EventModal({
                   {...register("description")}
                 />
                 {eventId && (
-                  <button onClick={() => setCanEditDescription(false)}>
-                    Cancel
-                  </button>
+                  <Button
+                    style={styles.descriptionEditButton.style}
+                    onClick={() => setCanEditDescription(false)}
+                  >
+                    {t("Cancel")}
+                  </Button>
                 )}
               </Div>
             </>

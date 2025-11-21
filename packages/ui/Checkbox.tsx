@@ -26,7 +26,7 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
   return (
     <Div
       onClick={handleClick}
-      className={className}
+      className={"formSwitch"}
       style={{
         ...styles.formSwitch.style,
         ...(disabled && { opacity: 0.5, cursor: "not-allowed" }),
@@ -45,12 +45,14 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
 
       {/* Custom toggle switch */}
       <Div
+        className="formSwitchTrack"
         style={{
           ...styles.formSwitchTrack.style,
           ...(checked && styles.formSwitchTrackChecked.style),
         }}
       >
         <Div
+          className="formSwitchThumb"
           style={{
             ...styles.formSwitchThumb.style,
             ...(checked && styles.formSwitchThumbChecked.style),

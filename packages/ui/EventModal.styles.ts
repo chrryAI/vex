@@ -59,44 +59,26 @@ export const EventModalStyleDefs = {
     gap: 20,
   },
   field: {
+    display: "flex",
     alignItems: "center",
+    gap: 12,
   },
   fieldIcon: {
     color: "var(--text-secondary)",
     flexShrink: 0,
   },
   titleInput: {
-    base: {
-      flex: 1,
-      width: "100%",
-      backgroundColor: "none",
-      border: "none",
-      fontSize: 24,
-      fontWeight: 500,
-      color: "var(--text-disabled)",
-      padding: "8px 0",
-      borderBottom: "2px solid transparent",
-    },
-    focus: {
-      outline: "none",
-      borderBottomColor: "var(--primary)",
-    },
+    flex: 1,
+    width: "100%",
   },
   input: {
-    base: {
-      flex: 1,
-      backgroundColor: "var(--shade-1)",
-      border: "1px solid var(--shade-2)",
-      borderRadius: "var(--radius)",
-      padding: "12px 16px",
-      fontSize: 14,
-      color: "var(--text-secondary)",
-    },
-    focus: {
-      outline: "none",
-      borderColor: "var(--primary)",
-      boxShadow: "0 0 0 3px var(--primary-light)",
-    },
+    flex: 1,
+    backgroundColor: "var(--shade-1)",
+    border: "1px solid var(--shade-2)",
+    borderRadius: "var(--radius)",
+    padding: "12px 16px",
+    fontSize: 14,
+    color: "var(--text-primary)",
   },
   descriptionEdit: {
     display: "flex",
@@ -104,6 +86,8 @@ export const EventModalStyleDefs = {
     gap: 10,
     flex: 1,
     width: "100%",
+  },
+  descriptionEditButton: {
     alignSelf: "flex-start",
   },
   textarea: {
@@ -126,6 +110,9 @@ export const EventModalStyleDefs = {
     height: 16,
     fontSize: 14,
     color: "var(--text-primary)",
+  },
+  dateTimeSectionField: {
+    alignItems: "center",
   },
   dateTimeGroup: {
     display: "flex",
