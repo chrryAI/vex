@@ -9,12 +9,16 @@ import { useColorSchemeStyles } from "./ColorScheme.styles"
 export default function ColorScheme({
   style,
   onChange,
+  ...props
 }: {
   style?: React.CSSProperties
   onChange?: (color: keyof typeof COLORS) => void
+  colorScheme?: string
 }) {
   const styles = useColorSchemeStyles()
-  const { colorScheme, setColorScheme } = useTheme()
+  const { colorScheme: colorSchemeInternal, setColorScheme } = useTheme()
+  const colorScheme = props.colorScheme || colorSchemeInternal
+
   const hasHydrated = useHasHydrated()
 
   if (!hasHydrated) return null
@@ -25,7 +29,7 @@ export default function ColorScheme({
         <Button
           key={key}
           onClick={() => {
-            setColorScheme(key as keyof typeof COLORS)
+            !props.colorScheme && setColorScheme(key as keyof typeof COLORS)
             onChange?.(key as keyof typeof COLORS)
           }}
           style={{ ...styles.color.style }}

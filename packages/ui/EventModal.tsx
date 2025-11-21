@@ -15,7 +15,7 @@ import {
   Trash2,
   Pencil,
 } from "./icons"
-import styles from "./EventModal.module.scss"
+// import styles from "./EventModal.module.scss"
 import clsx from "clsx"
 import Modal from "./Modal"
 import Checkbox from "./Checkbox"
@@ -39,6 +39,10 @@ import TextWithLinks from "./TextWithLinks"
 import MarkdownContent from "./MarkdownContent"
 import ConfirmButton from "./ConfirmButton"
 import { useAuth, useData } from "./context/providers"
+import { useEventModalStyles } from "./EventModal.styles"
+import { useStyles } from "./context/StylesContext"
+import { Button, Div, Form, Input, Label, Span, TextArea } from "./platform"
+import ColorScheme from "./ColorScheme"
 
 // Use the unified schema - single source of truth!
 
@@ -115,6 +119,8 @@ export default function EventModal({
   initialData?: modalData
   refetchCalendarEvents: () => Promise<void>
 }) {
+  const styles = useEventModalStyles()
+  const { utilities } = useStyles()
   const { t } = useAppContext()
   const { token } = useAuth()
   const colorOptions = getColorOptions(t)
@@ -248,33 +254,33 @@ export default function EventModal({
       hasCloseButton={true}
       title={eventId ? t("Edit Event") : t("Create Event")}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+      <Form onSubmit={handleSubmit(onSubmit)} style={styles.form.style}>
         {/* Title */}
-        <div className={styles.field}>
-          <div className={styles.fieldIcon}>
+        <Div style={styles.field.style}>
+          <Div style={styles.fieldIcon.style}>
             <Type size={16} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <input
+          </Div>
+          <Div style={{ flex: 1 }}>
+            <Input
               type="text"
               placeholder={t("Add title")}
-              className={styles.titleInput}
+              style={styles.titleInput.style}
               autoFocus
               {...register("title")}
             />
-          </div>
+          </Div>
           {errors.title && (
-            <div className={styles.error} role="alert">
+            <Div style={styles.error.style} role="alert">
               {(errors.title?.message as string) || ""}
-            </div>
+            </Div>
           )}
-        </div>
+        </Div>
 
         {/* All Day Toggle */}
-        <div className={styles.field}>
-          <div className={styles.fieldIcon}>
+        <Div style={styles.field.style}>
+          <Div style={styles.fieldIcon.style}>
             <Calendar size={16} />
-          </div>
+          </Div>
           <Controller
             control={control}
             name="isAllDay"
@@ -287,23 +293,24 @@ export default function EventModal({
               </Checkbox>
             )}
           />
-        </div>
+        </Div>
 
         {/* Date and Time */}
-        <div className={styles.fieldWrapper}>
-          <div className={styles.field}>
+        <Div>
+          <Div style={styles.field.style}>
             <Clock12 size={16} />
             <label htmlFor="start">{t("Start")}</label>
             <Controller
               control={control}
               name="startTime"
               render={({ field }) => (
-                <input
+                <Input
                   id="start"
+                  className="dateTimeInput"
                   type={
                     (watch("isAllDay") as boolean) ? "date" : "datetime-local"
                   }
-                  className={styles.dateTimeInput}
+                  style={styles.dateTimeInput}
                   value={formatDateForInput(field.value, !!watch("isAllDay"))}
                   onChange={(e) => {
                     const v = e.target.value
@@ -313,27 +320,28 @@ export default function EventModal({
                 />
               )}
             />
-          </div>
+          </Div>
           {errors.startTime && (
-            <div className={styles.error} role="alert">
+            <Div style={styles.error.style} role="alert">
               {(errors.startTime?.message as string) || ""}
-            </div>
+            </Div>
           )}
-        </div>
-        <div className={styles.fieldWrapper}>
-          <div className={styles.field}>
+        </Div>
+        <Div>
+          <Div style={styles.field.style}>
             <Clock11 size={16} />
-            <label htmlFor="end">{t("End")}</label>
+            <Label htmlFor="end">{t("End")}</Label>
             <Controller
               control={control}
               name="endTime"
               render={({ field }) => (
-                <input
+                <Input
                   id="end"
+                  className="dateTimeInput"
                   type={
                     (watch("isAllDay") as boolean) ? "date" : "datetime-local"
                   }
-                  className={styles.dateTimeInput}
+                  style={styles.dateTimeInput.style}
                   value={formatDateForInput(field.value, !!watch("isAllDay"))}
                   onChange={(e) => {
                     const v = e.target.value
@@ -342,37 +350,37 @@ export default function EventModal({
                 />
               )}
             />
-          </div>
+          </Div>
           {errors.endTime && (
-            <div className={styles.error} role="alert">
+            <Div style={styles.fieldWrapperError.style} role="alert">
               {(errors.endTime?.message as string) || ""}
-            </div>
+            </Div>
           )}
-        </div>
+        </Div>
         {/* Location */}
-        <div className={styles.field}>
-          <div className={styles.fieldIcon}>
+        <Div style={styles.field.style}>
+          <Div style={styles.fieldIcon.style}>
             <MapPin size={16} />
-          </div>
-          <input
+          </Div>
+          <Input
             type="text"
             placeholder={t("Add location")}
-            className={styles.input}
+            style={styles.input.style}
             {...register("location")}
           />
-        </div>
+        </Div>
 
         {/* Description */}
-        <div style={{ alignItems: "flex-start" }} className={styles.field}>
+        <Div style={{ ...styles.field.style, alignItems: "flex-start" }}>
           {canEditDescription ? (
             <>
-              <div className={styles.fieldIcon}>
+              <Div style={styles.fieldIcon.style}>
                 <Info size={16} />
-              </div>
-              <div className={styles.descriptionEdit}>
-                <textarea
+              </Div>
+              <Div style={styles.descriptionEdit.style}>
+                <TextArea
                   placeholder={t("Add description")}
-                  className={styles.textarea}
+                  style={styles.textarea.style}
                   rows={3}
                   {...register("description")}
                 />
@@ -381,53 +389,46 @@ export default function EventModal({
                     Cancel
                   </button>
                 )}
-              </div>
+              </Div>
             </>
           ) : (
-            <div className={styles.descriptionView}>
+            <Div
+              className="descriptionView"
+              style={styles.descriptionView.style}
+            >
               <MarkdownContent
                 content={initialData?.description || ""}
-                className={styles.descriptionView}
+                style={styles.descriptionView.style}
               />
-            </div>
+            </Div>
           )}
-        </div>
+        </Div>
 
         {/* Color */}
-        <div className={styles.field}>
-          <div className={styles.fieldIcon}>
+        <Div style={styles.field.style}>
+          <Div style={styles.fieldIcon.style}>
             <Palette size={16} />
-          </div>
-          <div className={styles.colorSection}>
-            <span className={styles.colorLabel}>{t("Color")}</span>
-            <div className={styles.colorOptions}>
-              {colorOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={clsx(
-                    "link",
-                    styles.colorOption,
-                    watch("color") === option.value && styles.selected,
-                  )}
-                  onClick={() => setValue("color", option.value)}
-                  title={option.label}
-                >
-                  <Circle size={20} fill={option.color} color={option.color} />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className={styles.actions}>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
+          </Div>
+          <Div style={styles.colorSection.style}>
+            <Span style={styles.colorLabel}>{t("Color")}</Span>
+            <Div state={styles.colorOptions}>
+              <ColorScheme
+                colorScheme={watch("color")}
+                onChange={(color) => setValue("color", color)}
+              />
+            </Div>
+          </Div>
+        </Div>
+        <Div style={styles.actions.style}>
+          <Div style={{ display: "flex", gap: "10px" }}>
+            <Button
               type="button"
               onClick={() => onClose()}
               className="transparent"
+              style={{ ...utilities.transparent.style }}
             >
               {t("Cancel")}
-            </button>
+            </Button>
             {eventId && (
               <ConfirmButton
                 onConfirm={handleDelete}
@@ -442,29 +443,33 @@ export default function EventModal({
                   </>
                 }
                 className="transparent"
+                style={{
+                  ...utilities.transparent.style,
+                  color: "var(--error)",
+                }}
                 disabled={isDeleting}
-                style={{ color: "var(--error)" }}
               >
                 <Trash2 color="var(--accent-0)" size={16} />
                 {t("Delete")}
               </ConfirmButton>
             )}
-          </div>
+          </Div>
           {!canEditDescription && (
-            <button
+            <Button
               type="button"
               className="inverted"
+              style={{ ...utilities.inverted.style }}
               onClick={() => setCanEditDescription(true)}
             >
               <Pencil size={16} /> {t("Edit description")}
-            </button>
+            </Button>
           )}
 
-          <button type="submit" disabled={isSubmitting || isSaving}>
+          <Button type="submit" disabled={isSubmitting || isSaving}>
             {isSubmitting || isSaving ? <Loading size={18} /> : t("Save")}
-          </button>
-        </div>
-      </form>
+          </Button>
+        </Div>
+      </Form>
     </Modal>
   )
 }
