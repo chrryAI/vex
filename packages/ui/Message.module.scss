@@ -272,14 +272,16 @@
   }
 }
 
-.userMessageTime,
 .agentMessageTime {
   font-size: toRem.toRem(12);
   color: var(--shade-6);
+}
 
-  &.userMessageTime {
-    align-self: center;
-  }
+.userMessageTime {
+  font-size: toRem.toRem(12);
+  color: var(--shade-6);
+
+  align-self: center;
 }
 
 .footer {
@@ -327,29 +329,6 @@
   &.userIcon.owner {
     align-self: flex-end;
   }
-
-  // &.tablet {
-  //   display: none;
-  //   align-self: flex-start;
-  // }
-
-  &.mobile {
-    display: flex;
-
-    .userMessageTime,
-    .agentMessageTime {
-      align-self: center;
-    }
-  }
-
-  // @media (min-width: breakpoints.$breakpoint-mobile) {
-  //   &.mobile {
-  //     display: none;
-  //   }
-  //   &.tablet {
-  //     display: flex;
-  //   }
-  // }
 }
 
 .webSearchResults {
