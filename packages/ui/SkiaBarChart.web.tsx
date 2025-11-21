@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react"
-import { useTheme } from "../context/ThemeContext"
+import { useTheme } from "./context/ThemeContext"
 import { BarData, Mood, emojiMap } from "./utils/chartTypes"
 import { Div, Text } from "./platform"
 

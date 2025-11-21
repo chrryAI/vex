@@ -9,10 +9,10 @@ import {
   Group,
   useFont,
 } from "@shopify/react-native-skia"
-import { useTheme } from "../context/ThemeContext"
+import { useTheme } from "./context/ThemeContext"
 import { BarData, Mood, emojiMap } from "./utils/chartTypes"
 import { getMoodValue } from "./utils/chartUtils"
-import Text from "./platform/PlatformPrimitives"
+import { Text } from "./platform/PlatformPrimitives"
 
 interface SkiaBarChartProps {
   data: BarData[]

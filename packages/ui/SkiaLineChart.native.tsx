@@ -17,7 +17,7 @@ import Animated, {
   runOnJS,
   Easing,
 } from "react-native-reanimated"
-import { useTheme, colorsType } from "../context/ThemeContext"
+import { useTheme } from "./context/ThemeContext"
 import { useTranslation } from "react-i18next"
 import { Dataset, DataPoint } from "./utils/chartTypes"
 import { createSmoothPathPoints } from "./utils/chartUtils"
@@ -151,7 +151,7 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
           style="stroke"
           strokeWidth={0.5}
           opacity={progressState}
-          color={colors.getForegroundTransparent?.(0.1) || colors.shade2}
+          color={colors.shade2}
         />
       )
     })
@@ -235,8 +235,7 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
                     position: "absolute",
                     left: 2,
                     top: paddingBottom + chartHeight - chartHeight * level - 8,
-                    color:
-                      colors.getForegroundTransparent?.(0.6) || colors.shade6,
+                    color: colors.shade6,
                     fontSize: 10,
                     opacity: progressState,
                     width: paddingLeft - 6,
@@ -252,9 +251,10 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
 
         {/* X-axis labels */}
         <View style={styles.xAxisLabels}>
-          {datasets[0]?.data.map((point, index) => {
+          {datasets[0]?.data?.map((point, index) => {
             const x =
-              paddingLeft + (chartWidth / (datasets[0].data.length - 1)) * index
+              paddingLeft +
+              (chartWidth / (datasets[0]?.data?.length ?? 1 - 1)) * index
             return (
               <Animated.Text
                 key={`x-label-${index}`}
@@ -263,8 +263,7 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
                     position: "absolute",
                     left: x - 18,
                     top: height - paddingBottom + 2,
-                    color:
-                      colors.getForegroundTransparent?.(0.8) || colors.shade8,
+                    color: colors.shade8,
                     fontSize: 11,
                     opacity: progressState,
                     width: 36,
@@ -290,7 +289,7 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
   )
 }
 
-const getStyles = (colors: colorsType) =>
+const getStyles = (colors: any) =>
   StyleSheet.create({
     container: {
       overflow: "hidden",
