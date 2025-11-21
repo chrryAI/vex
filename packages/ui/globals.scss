@@ -703,7 +703,7 @@ button.favorite {
 }
 
 .descriptionView {
-  :global(a) {
+  a {
     color: var(--primary);
     text-decoration: underline;
 
