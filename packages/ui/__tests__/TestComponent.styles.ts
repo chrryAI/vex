@@ -39,6 +39,10 @@ export const TestComponentStyleDefs = {
     },
     hover: {
       backgroundColor: "var(--accent-5)",
+      transform: "translateY(-1px)",
+    },
+    active: {
+      transform: "translateY(1px)",
     },
     focus: {
       outline: "2px solid var(--accent-6)",
@@ -61,6 +65,9 @@ export const TestComponentStyleDefs = {
     hover: {
       color: "var(--accent-5)",
       textDecorationLine: "underline",
+    },
+    active: {
+      transform: "translateY(1px)",
     },
   },
   card: {

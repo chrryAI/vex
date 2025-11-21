@@ -76,6 +76,11 @@ export const ChatStyleDefs = {
     flexDirection: "column",
     gap: 15,
   },
+  conversation: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 15,
+  },
   speechUsageStats: {
     display: "flex",
     flexDirection: "column",
@@ -278,6 +283,7 @@ export const ChatStyleDefs = {
     width: 32,
     height: 32,
     borderRadius: 4,
+    objectFit: "cover",
     backgroundColor: "var(--shade-2)",
   },
   filePreviewIcon: {
@@ -407,9 +413,12 @@ export const ChatStyleDefs = {
   chatTextArea: {
     width: "100%",
     display: "flex",
+    minHeight: 58,
     paddingTop: 0,
     overflowY: "hidden",
     paddingRight: 0,
+    position: "relative",
+    bottom: 3,
     transform: "translateY(10px)",
     border: "none",
     outline: "none",
@@ -560,29 +569,23 @@ export const ChatStyleDefs = {
     maxWidth: 599,
   },
   video: {
-    display: "none",
+    width: 30,
+    height: 30,
+    objectFit: "cover",
+    borderRadius: "50%",
   },
   videoContainer: {
-    base: {
-      position: "absolute",
-      backgroundColor: "#000",
-      padding: 2,
-      width: 34,
-      height: 34,
-      display: "none",
-      borderRadius: "50%",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: "var(--shadow)",
-      right: -2,
-      border: "1px solid transparent",
-    },
-    hover: {
-      borderColor: "var(--accent-1)",
-    },
-  },
-  videoContainerLoading: {
-    display: "inline",
+    position: "relative",
+    backgroundColor: "#000",
+    width: 34,
+    height: 34,
+    display: "flex",
+    borderRadius: "50%",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "var(--shadow)",
+    right: -2,
+    border: "1px solid transparent",
   },
 } as const
 

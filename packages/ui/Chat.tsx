@@ -2977,16 +2977,18 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                         <CircleCheck size={30} color="var(--accent-6)" />
                       </Span>
                     ) : (
-                      <Video
-                        // onLoadedData={() => setIsVideoLoading(false)}
-                        // ref={videoRef}
-                        src={`${FRONTEND_URL}/video/blob.mp4`}
-                        style={styles.video.style}
-                        loop
-                        autoPlay
-                        muted
-                        playsInline
-                      />
+                      <>
+                        <Video
+                          // onLoadedData={() => setIsVideoLoading(false)}
+                          // ref={videoRef}
+                          src={`${FRONTEND_URL}/video/blob.mp4`}
+                          style={styles.video.style}
+                          loop
+                          autoPlay
+                          muted
+                          playsInline
+                        />
+                      </>
                     )}
                   </Div>
                 )}
@@ -3685,6 +3687,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 </Div>
               </Div>
             ) : (
+              !showQuotaInfo &&
               selectedAgent !== null && (
                 <Div style={styles.content.style}>
                   {hitHourlyLimit ||
@@ -4394,6 +4397,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   {/* Quota info button */}
                   {user && !isSelectingMood && (
                     <Button
+                      className="link"
                       onClick={async () => {
                         addHapticFeedback()
                         if (!quotaInfo && !isFetchingQuotaInfo) {
