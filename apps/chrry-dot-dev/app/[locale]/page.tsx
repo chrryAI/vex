@@ -1,5 +1,5 @@
 import React from "react"
-import ChrryDotDev from "chrry/ChrryDotDev"
+import ChrryDotDev from "../../components/ChrryDotDev"
 
 export default function Page() {
   return <ChrryDotDev />

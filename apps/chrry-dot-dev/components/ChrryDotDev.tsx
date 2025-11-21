@@ -1,11 +1,9 @@
 "use client"
 
 import React from "react"
-import { getSiteConfig } from "./utils/siteConfig"
-import { ExternalLink, Github, Package } from "./icons"
+import { ExternalLink, Github, Package } from "lucide-react"
 import styles from "./ChrryDotDev.module.scss"
-import { useData } from "./context/providers"
-import A from "./A"
+import { getSiteConfig } from "chrry/utils/siteConfig"
 
 export default function Chrry() {
   const config = getSiteConfig("chrryDev")
