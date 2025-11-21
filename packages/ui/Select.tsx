@@ -15,7 +15,6 @@ export interface SelectProps extends Omit<PlatformSelectProps, "options"> {
 }
 
 export default function Select({
-  className,
   options,
   defaultValue,
   value,
@@ -33,7 +32,7 @@ export default function Select({
   return (
     <Div style={{ ...styles.customSelect.style, ...style }}>
       <PlatformSelect
-        className={className || "select"}
+        className={"select"}
         name={name}
         id={id}
         defaultValue={defaultValue}

@@ -485,7 +485,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
               <Checkbox
                 checked={env === "production"}
                 onChange={(e) => {
-                  const newEnv = e.target.checked ? "production" : "development"
+                  const newEnv = e ? "production" : "development"
                   setEnv(newEnv)
                   toast.success(
                     `Switched to ${newEnv === "production" ? "Production" : "Development"} environment`,
