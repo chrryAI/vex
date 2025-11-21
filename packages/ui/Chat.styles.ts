@@ -49,7 +49,6 @@ export const ChatStyleDefs = {
     border: "1px dashed var(--shade-3)",
     boxShadow: "none",
     bottom: 3,
-    opacity: 0,
   },
   floatingVideoContainer: {
     width: 29,
@@ -116,11 +115,10 @@ export const ChatStyleDefs = {
     gap: 5,
     position: "relative",
     marginBottom: 7,
-    transform: "translateX(-50%) translateY(0)",
     display: "flex",
     alignItems: "center",
   },
-  topInner: {
+  topChatFloatingTopInner: {
     backgroundColor: "var(--shade-1)",
     border: "1px solid var(--shade-2)",
     padding: 5,
@@ -130,6 +128,8 @@ export const ChatStyleDefs = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+  },
+  collaborationStep3Div: {
     backgroundColor: "var(--shade-2-transparent)",
     border: "1px solid var(--shade-2)",
     padding: 5,
@@ -164,7 +164,6 @@ export const ChatStyleDefs = {
   },
   chatContainerFloating: {
     bottom: 5,
-    transform: "translateX(50%) translateY(0)",
     zIndex: 1000,
   },
   brandHelp: {
