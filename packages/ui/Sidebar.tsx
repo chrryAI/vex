@@ -40,7 +40,6 @@ const Terms = lazy(() => import("./Terms"))
 const About = lazy(() => import("./About"))
 const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
-const Chrry = lazy(() => import("./ChrryDotDev"))
 const Affiliate = lazy(() => import("./Affiliate"))
 const AffiliateDashboard = lazy(() => import("./AffiliateDashboard"))
 
@@ -57,7 +56,6 @@ const ROUTES: Record<string, ComponentType<any>> = {
   affiliate: Affiliate,
   "affiliate/dashboard": AffiliateDashboard,
   u: Users,
-  chrryDotDev: Chrry,
 }
 
 // Helper to detect app slugs vs regular routes
