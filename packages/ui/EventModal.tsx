@@ -15,8 +15,6 @@ import {
   Trash2,
   Pencil,
 } from "./icons"
-// import styles from "./EventModal.module.scss"
-import clsx from "clsx"
 import Modal from "./Modal"
 import Checkbox from "./Checkbox"
 import { COLORS, useAppContext } from "./context/AppContext"
