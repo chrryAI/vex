@@ -68,7 +68,8 @@ export function getMostFrequentMood(arr: string[]): string {
   arr.forEach((m) => {
     freq[m] = (freq[m] || 0) + 1
   })
-  return Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0]
+  const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1])
+  return sorted[0]?.[0] ?? "thinking"
 }
 
 /**
@@ -107,8 +108,11 @@ export function createSmoothPathPoints(
     c2y?: number
   }> = []
 
-  // Start point
-  points.push({ type: "move", x: data[0].x, y: data[0].y })
+  // Start point - with null safety
+  const firstPoint = data[0]
+  if (!firstPoint) return []
+
+  points.push({ type: "move", x: firstPoint.x, y: firstPoint.y })
 
   // Create smooth curves
   for (let i = 0; i < lastIndex; i++) {
@@ -116,6 +120,9 @@ export function createSmoothPathPoints(
     const next = data[i + 1]
     const prev = i === 0 ? curr : data[i - 1]
     const after = i + 2 > lastIndex ? next : data[i + 2]
+
+    // Null safety checks
+    if (!curr || !next || !prev || !after) continue
 
     // Catmull-Rom to Bezier control points
     const c1x = curr.x + (next.x - prev.x) / 6
