@@ -7,7 +7,7 @@ import { useAuth } from "./context/providers"
 import Loading from "./Loading"
 import { useNavigation } from "./platform"
 import clsx from "clsx"
-import MoodReports from "./MoodReports"
+// import MoodReports from "./MoodReports"
 import FocusButton from "./FocusButton"
 
 export default function Focus({ children }: { children?: React.ReactNode }) {
@@ -40,10 +40,10 @@ export default function Focus({ children }: { children?: React.ReactNode }) {
                     </div>
                   }
                 >
-                  <MoodReports
+                  {/* <MoodReports
                     className={styles.moodReports}
                     onClose={() => setShowMoodReports(false)}
-                  />
+                  /> */}
                 </Suspense>
               ) : (
                 <div className={clsx(styles.focusButton)}>

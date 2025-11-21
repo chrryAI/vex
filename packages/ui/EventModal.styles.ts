@@ -110,6 +110,13 @@ export const EventModalStyleDefs = {
     minHeight: 120,
     width: "100%",
   },
+  descriptionView: {
+    width: "100%",
+    minHeight: 80,
+    color: "var(--text)",
+    lineHeight: 1.5,
+    whiteSpace: "pre-wrap",
+  },
   allDayToggle: {
     display: "flex",
     alignItems: "center",
@@ -128,7 +135,16 @@ export const EventModalStyleDefs = {
     fontWeight: 500,
     color: "var(--text-secondary)",
   },
+  dateTimeInput: {
+    fontSize: 14,
+    marginLeft: "auto",
+    fontFamily: "var(--font-mono)",
+  },
   error: {
+    color: "var(--accent-0)",
+    fontSize: 12,
+  },
+  fieldWrapperError: {
     textAlign: "right",
     marginTop: 5,
   },
@@ -145,7 +161,6 @@ export const EventModalStyleDefs = {
   },
   colorOptions: {
     display: "flex",
-    gap: 6,
   },
   colorOption: {
     base: {},

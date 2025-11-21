@@ -1,582 +1,519 @@
-"use client"
+// import React, { useEffect, useState, useMemo } from "react"
+// import { useTheme } from "./context/ThemeContext"
+// import { useAppContext } from "./context/AppContext"
+// import SkiaLineChart from "./SkiaLineChart"
+// import SkiaBarChart from "./SkiaBarChart"
+// import { useTranslation } from "react-i18next"
+// import { ArrowLeft, ArrowRight, CircleX, Presentation } from "lucide-react"
+// // import { message, mood, taskLog } from "@repo/db"
+// import timeAgo from "./utils/timeAgo"
+// import TextWithLinks from "./TextWithLinks"
+// import { Div, Text, ScrollView, Image, Button } from "./platform"
+// import { useMoodReportsStyles } from "./MoodReports.styles"
+// import Modal from "./Modal"
+// import Loading from "./Loading"
+// import { emojiMap, moodValues, Mood, DataPoint } from "./utils/chartTypes"
+// import {
+//   getMoodEmoji,
+//   weekDays,
+//   getStartOfWeek,
+//   getEndOfWeek,
+//   isLatestWeek,
+//   isLatestMonth,
+//   getMostFrequentMood,
+//   getMoodValue,
+// } from "./utils/chartUtils"
 
-import React, { useEffect, useState } from "react"
-import { mood } from "./types"
-import styles from "./MoodReports.module.scss"
-import { BarChart, Bar, Cell, LabelList } from "recharts"
+// const MAX_MOBILE_WIDTH = 500
 
-import { Trans, useTranslation } from "react-i18next"
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
-import clsx from "clsx"
-import { FRONTEND_URL } from "./utils"
-import { useAuth } from "./context/providers"
-import { useNavigation, useTheme } from "./platform"
-import Loading from "./Loading"
-import Img from "./Image"
+// type MoodWithRelations = mood & {
+//   message?: message
+//   taskLog?: taskLog
+// }
 
-import { ArrowLeft, ArrowRight } from "./icons"
+// export default function MoodReports() {
+//   const { colors } = useTheme()
+//   const styles = useMoodReportsStyles()
+//   const { t, i18n } = useTranslation()
+//   const { moods, fetchMoods, isLoadingMoods, isDemo, setIsDemo, language } =
+//     useAppContext()
+//   const [currentWeek, setCurrentWeek] = useState(new Date())
+//   const [currentMonth, setCurrentMonth] = useState(new Date())
+//   const [selectedMood, setSelectedMood] = useState<
+//     MoodWithRelations | undefined
+//   >()
 
-type Mood = "happy" | "sad" | "angry" | "astonished" | "inlove" | "thinking"
+//   useEffect(() => {
+//     fetchMoods()
+//   }, [])
 
-const emojiMap: Record<Mood, string> = {
-  happy: "😊",
-  sad: "😢",
-  angry: "😠",
-  astonished: "😲",
-  inlove: "😍",
-  thinking: "🤔",
-}
+//   // Week navigation
+//   const goToPreviousWeek = () => {
+//     const newWeek = new Date(currentWeek)
+//     newWeek.setDate(newWeek.getDate() - 7)
+//     setCurrentWeek(newWeek)
+//   }
+//   const goToNextWeek = () => {
+//     const newWeek = new Date(currentWeek)
+//     newWeek.setDate(newWeek.getDate() + 7)
+//     setCurrentWeek(newWeek)
+//   }
 
-const moodValues: Record<Mood, number> = {
-  happy: 80,
-  sad: 20,
-  angry: 10,
-  astonished: 60,
-  inlove: 100,
-  thinking: 50,
-}
+//   // Month navigation
+//   const goToPreviousMonth = () => {
+//     const newMonth = new Date(currentMonth)
+//     newMonth.setMonth(newMonth.getMonth() - 1)
+//     setCurrentMonth(newMonth)
+//   }
+//   const goToNextMonth = () => {
+//     const newMonth = new Date(currentMonth)
+//     newMonth.setMonth(newMonth.getMonth() + 1)
+//     setCurrentMonth(newMonth)
+//   }
 
-const getMoodEmoji = (type: string) => {
-  return emojiMap[type as Mood] || "🫥"
-}
-export default function MoodReports({
-  className,
-  onClose,
-}: {
-  onClose?: () => void
-  className?: string
-}) {
-  const {
-    isLoadingMoods,
-    fetchMoods,
-    user,
-    guest,
-    moods,
-    token,
-    language,
-    track: trackEvent,
-  } = useAuth()
+//   // Get moods for current week
+//   const weekMoods = useMemo(() => {
+//     const start = getStartOfWeek(currentWeek)
+//     const end = getEndOfWeek(currentWeek)
+//     return (
+//       moods.moods?.filter((m) => {
+//         const d = new Date(m.createdOn)
+//         return d >= start && d <= end
+//       }) || []
+//     )
+//   }, [moods.moods, currentWeek])
 
-  const { push, addParams, removeParams } = useNavigation()
-  const [isClient, setIsClient] = useState(false)
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-  const [currentWeek, setCurrentWeek] = useState(new Date())
-  const [currentMonth, setCurrentMonth] = useState(new Date())
+//   // Emoji per day for current week
+//   const dailyMoods = weekDays.map((day, idx) => {
+//     const jsDay = idx === 6 ? 0 : idx + 1 // Map Sun=0, Mon=1, ...
+//     const mood = weekMoods.find((m) => new Date(m.createdOn).getDay() === jsDay)
+//     return {
+//       day,
+//       emoji: getMoodEmoji(mood?.type ?? ""),
+//       type: mood?.type,
+//       message: mood?.message,
+//       createdOn: mood?.createdOn,
+//       updatedOn: mood?.updatedOn,
+//       guestId: mood?.guestId,
+//       taskLog: mood?.taskLog,
+//       id: mood?.id,
+//       userId: mood?.userId,
+//       taskLogId: mood?.taskLogId,
+//     }
+//   })
 
-  const [isWindows, setIsWindows] = useState(false)
+//   // Weekly chart data
+//   const weekChartData: DataPoint[] = weekMoods.map((m) => ({
+//     value: getMoodValue(m.type),
+//     label: new Date(m.createdOn).toLocaleDateString(language, {
+//       month: "short",
+//       day: "numeric",
+//     }),
+//     date:
+//       typeof m.createdOn === "string"
+//         ? m.createdOn
+//         : new Date(m.createdOn).toISOString(),
+//   }))
 
-  useEffect(() => {
-    setIsWindows(
-      typeof window !== "undefined" && navigator.userAgent.includes("Windows"),
-    )
-  }, [])
+//   // Monthly chart data
+//   const monthStart = new Date(
+//     currentMonth.getFullYear(),
+//     currentMonth.getMonth(),
+//     1,
+//   )
+//   const monthEnd = new Date(
+//     currentMonth.getFullYear(),
+//     currentMonth.getMonth() + 1,
+//     0,
+//     23,
+//     59,
+//     59,
+//     999,
+//   )
+//   const monthlyMoods =
+//     moods.moods?.filter((m) => {
+//       const d = new Date(m.createdOn)
+//       return d >= monthStart && d <= monthEnd
+//     }) || []
 
-  const goToPreviousMonth = () => {
-    const newMonth = new Date(currentMonth)
-    newMonth.setMonth(newMonth.getMonth() - 1)
-    setCurrentMonth(newMonth)
-  }
+//   // Group by week number
+//   const weeklySums: Record<number, { sum: number; count: number }> = {}
+//   monthlyMoods.forEach((m) => {
+//     const d = new Date(m.createdOn)
+//     const weekNum = Math.ceil(d.getDate() / 7)
+//     const val = getMoodValue(m.type)
+//     if (!weeklySums[weekNum]) weeklySums[weekNum] = { sum: 0, count: 0 }
+//     weeklySums[weekNum].sum += val
+//     weeklySums[weekNum].count++
+//   })
 
-  const goToNextMonth = () => {
-    const newMonth = new Date(currentMonth)
-    newMonth.setMonth(newMonth.getMonth() + 1)
-    setCurrentMonth(newMonth)
-  }
+//   // Find most frequent mood per week for emoji
+//   const moodsByWeek: Record<number, string[]> = {}
+//   monthlyMoods.forEach((m) => {
+//     const d = new Date(m.createdOn)
+//     const weekNum = Math.ceil(d.getDate() / 7)
+//     if (!moodsByWeek[weekNum]) moodsByWeek[weekNum] = []
+//     moodsByWeek[weekNum].push(m.type)
+//   })
 
-  const isLatestMonth = () => {
-    const today = new Date()
-    return (
-      currentMonth.getMonth() === today.getMonth() &&
-      currentMonth.getFullYear() === today.getFullYear()
-    )
-  }
-  const goToPreviousWeek = () => {
-    const newWeek = new Date(currentWeek)
-    newWeek.setDate(newWeek.getDate() - 7)
-    setCurrentWeek(newWeek)
-    setCurrentDay(newWeek)
-  }
+//   const monthlyChartData = Object.entries(weeklySums).map(([week, data]) => {
+//     const moodsArr = moodsByWeek[Number(week)] || []
+//     const mood = getMostFrequentMood(moodsArr)
+//     return {
+//       label: t("week_number", { number: week }),
+//       value: Math.round(data.sum / data.count),
+//       date: String(week),
+//       mood,
+//     }
+//   })
 
-  const goToNextWeek = () => {
-    const newWeek = new Date(currentWeek)
-    newWeek.setDate(newWeek.getDate() + 7)
-    setCurrentWeek(newWeek)
-    setCurrentDay(newWeek) // Sync daily view to first day of week
-  }
+//   if (isLoadingMoods) {
+//     return (
+//       <Div style={styles.loadingContainer.style}>
+//         <Loading size={24} />
+//       </Div>
+//     )
+//   }
 
-  const getCurrentWeekMoods = () => {
-    const startOfWeek = new Date(currentWeek)
-    const day = currentWeek.getDay()
-    const diff = (day === 0 ? -6 : 1) - day
-    startOfWeek.setDate(currentWeek.getDate() + diff)
-    startOfWeek.setHours(0, 0, 0, 0)
+//   return (
+//     <ScrollView
+//       style={{
+//         marginTop: "5px",
+//         backgroundColor: colors.background,
+//         paddingLeft: "10px",
+//         paddingRight: "10px",
+//         paddingBottom: "180px",
+//         marginLeft: "auto",
+//         marginRight: "auto",
+//         maxWidth: `${MAX_MOBILE_WIDTH}px`,
+//         width: "100%",
+//       }}
+//     >
+//       {/* Modal for mood details */}
+//       {selectedMood && (
+//         <Modal
+//           isModalOpen={!!selectedMood}
+//           onToggle={() => setSelectedMood(undefined)}
+//           title={timeAgo(selectedMood.createdOn, language)}
+//         >
+//           <Div>
+//             {!selectedMood.message ? (
+//               <Text
+//                 style={{
+//                   color: colors.shade6,
+//                   textAlign: "center",
+//                   marginTop: "24px",
+//                   marginBottom: "24px",
+//                 }}
+//               >
+//                 {t("No messages for this day")}
+//               </Text>
+//             ) : (
+//               <Div
+//                 style={{
+//                   display: "flex",
+//                   flexDirection: "row",
+//                   alignItems: "flex-start",
+//                   gap: "5px",
+//                   marginBottom: "12px",
+//                   lineHeight: "20px",
+//                 }}
+//               >
+//                 <TextWithLinks
+//                   text={`${emojiMap[selectedMood.type as Mood]} ${selectedMood.message.content}`}
+//                   style={{
+//                     fontSize: "15px",
+//                     color: colors.foreground,
+//                     marginBottom: "2px",
+//                   }}
+//                 />
+//               </Div>
+//             )}
+//           </Div>
+//         </Modal>
+//       )}
 
-    const endOfWeek = new Date(startOfWeek)
-    endOfWeek.setDate(startOfWeek.getDate() + 6)
-    endOfWeek.setHours(23, 59, 59, 999)
+//       {/* Daily Section */}
+//       <Div>
+//         <Div
+//           style={{
+//             display: "flex",
+//             flexDirection: "row",
+//             justifyContent: "space-between",
+//             alignItems: "center",
+//             marginBottom: "8px",
+//           }}
+//         >
+//           <Text
+//             style={{
+//               fontSize: "18px",
+//               fontWeight: "600",
+//               color: colors.shade8,
+//               marginBottom: "5px",
+//             }}
+//           >
+//             🫥 {t("Daily")}
+//           </Text>
 
-    const weekMoods = moods.moods?.filter(
-      (mood) => mood.createdOn >= startOfWeek && mood.createdOn <= endOfWeek,
-    )
+//           <Button
+//             onClick={() => setIsDemo(!isDemo)}
+//             style={{
+//               display: "flex",
+//               flexDirection: "row",
+//               alignItems: "center",
+//               gap: "3px",
+//             }}
+//           >
+//             <Presentation color={colors.accent6} size={16} />
+//             <Text style={{ fontSize: "14px" }}>
+//               {isDemo ? t("Hide demo") : t("Show demo")}
+//             </Text>
+//           </Button>
+//         </Div>
 
-    if (!weekMoods?.length) return []
+//         <Div
+//           style={{
+//             display: "flex",
+//             flexDirection: "row",
+//             justifyContent: "space-between",
+//             alignItems: "center",
+//             marginBottom: "8px",
+//             borderColor: colors.accent1,
+//             borderWidth: "2px",
+//             borderStyle: "solid",
+//             borderRadius: "20px",
+//             padding: "10px",
+//             paddingTop: "20px",
+//             paddingBottom: "20px",
+//           }}
+//         >
+//           {dailyMoods.map((m, i) => (
+//             <Div
+//               key={i}
+//               style={{
+//                 flex: 1,
+//                 display: "flex",
+//                 justifyContent: "center",
+//                 flexDirection: "column",
+//                 alignItems: "center",
+//               }}
+//             >
+//               <Button
+//                 onClick={() => {
+//                   if (m.id) {
+//                     setSelectedMood({
+//                       ...m,
+//                       id: m.id,
+//                       userId: m.userId!,
+//                       guestId: m.guestId!,
+//                       taskLogId: m.taskLogId!,
+//                       taskLog: m.taskLog!,
+//                       message: m.message!,
+//                       createdOn: m.createdOn!,
+//                       updatedOn: m.updatedOn!,
+//                       type: m.type!,
+//                     })
+//                   }
+//                 }}
+//                 style={{
+//                   display: "flex",
+//                   flexDirection: "column",
+//                   alignItems: "center",
+//                   gap: "5px",
+//                 }}
+//               >
+//                 <Text style={{ fontSize: "28px" }}>{m.emoji}</Text>
+//                 <Text
+//                   style={{
+//                     fontSize: "13px",
+//                     color: m.message ? colors.accent6 : colors.foreground,
+//                     textAlign: "center",
+//                   }}
+//                 >
+//                   {t(m.day)}
+//                 </Text>
+//               </Button>
+//             </Div>
+//           ))}
+//         </Div>
 
-    // Group moods by day and calculate average
-    const moodsByDay = new Map<
-      string,
-      { moods: typeof weekMoods; sum: number; count: number }
-    >()
+//         <Div
+//           style={{
+//             display: "flex",
+//             flexDirection: "row",
+//             justifyContent: "center",
+//             alignItems: "center",
+//           }}
+//         >
+//           <Button onClick={goToPreviousWeek} style={{ padding: "8px" }}>
+//             <ArrowLeft color={colors.accent6} size={16} />
+//           </Button>
 
-    weekMoods.forEach((mood) => {
-      const dateKey = new Date(mood.createdOn).toLocaleDateString()
-      const moodValue = moodValues[mood.type as Mood] || 50
+//           <Text
+//             style={{
+//               fontSize: "13px",
+//               color: colors.shade8,
+//             }}
+//           >
+//             {t("week_of", {
+//               date: currentWeek.toLocaleDateString(language, {
+//                 month: "short",
+//                 day: "numeric",
+//               }),
+//             })}
+//           </Text>
 
-      if (!moodsByDay.has(dateKey)) {
-        moodsByDay.set(dateKey, { moods: [], sum: 0, count: 0 })
-      }
+//           <Button
+//             onClick={goToNextWeek}
+//             style={{ padding: "8px" }}
+//             disabled={isLatestWeek(currentWeek)}
+//           >
+//             <ArrowRight
+//               color={isLatestWeek(currentWeek) ? colors.shade6 : colors.accent6}
+//               size={16}
+//             />
+//           </Button>
+//         </Div>
+//       </Div>
 
-      const dayData = moodsByDay.get(dateKey)!
-      dayData.moods.push(mood)
-      dayData.sum += moodValue
-      dayData.count++
-    })
+//       {/* Weekly line chart */}
+//       <Div style={{ marginBottom: "10px" }}>
+//         <Div
+//           style={{
+//             display: "flex",
+//             flexDirection: "row",
+//             justifyContent: "space-between",
+//             alignItems: "center",
+//             marginBottom: "8px",
+//           }}
+//         >
+//           <Text
+//             style={{
+//               fontSize: "18px",
+//               fontWeight: "600",
+//               color: colors.shade8,
+//               marginBottom: "5px",
+//             }}
+//           >
+//             📈 {t("Weekly")}
+//           </Text>
+//         </Div>
+//         <Div
+//           style={{
+//             borderRadius: "20px",
+//             borderColor: colors.accent1,
+//             borderWidth: "2px",
+//             borderStyle: "solid",
+//             padding: "0",
+//           }}
+//         >
+//           <SkiaLineChart
+//             datasets={
+//               weekChartData.length
+//                 ? [
+//                     {
+//                       label: t("Mood"),
+//                       color: colors.accent6,
+//                       data: weekChartData,
+//                     },
+//                   ]
+//                 : []
+//             }
+//             height={220}
+//             width={
+//               typeof window !== "undefined"
+//                 ? Math.min(window.innerWidth - 32, MAX_MOBILE_WIDTH - 32)
+//                 : MAX_MOBILE_WIDTH - 32
+//             }
+//           />
+//         </Div>
+//       </Div>
 
-    // Convert to array with average mood per day
-    return Array.from(moodsByDay.entries())
-      .map(([date, data]) => {
-        const avgValue = Math.round(data.sum / data.count)
-        // Determine the most representative mood based on average
-        const avgMood =
-          avgValue >= moodValues.happy
-            ? "happy"
-            : avgValue >= moodValues.astonished
-              ? "astonished"
-              : avgValue >= moodValues.thinking
-                ? "thinking"
-                : avgValue >= moodValues.sad
-                  ? "sad"
-                  : avgValue >= moodValues.angry
-                    ? "angry"
-                    : "thinking"
+//       {/* Monthly bar chart */}
+//       <Div style={{ marginTop: "10px", marginBottom: "10px" }}>
+//         <Div
+//           style={{
+//             display: "flex",
+//             flexDirection: "row",
+//             justifyContent: "space-between",
+//             alignItems: "center",
+//             marginBottom: "8px",
+//           }}
+//         >
+//           <Text
+//             style={{
+//               fontSize: "18px",
+//               fontWeight: "600",
+//               color: colors.shade8,
+//               marginBottom: "5px",
+//             }}
+//           >
+//             📊 {t("Monthly")}
+//           </Text>
+//         </Div>
+//         <Div
+//           style={{
+//             borderRadius: "20px",
+//             borderColor: colors.accent1,
+//             borderWidth: "2px",
+//             borderStyle: "solid",
+//             padding: "0",
+//             paddingBottom: "10px",
+//             marginBottom: "7.5px",
+//           }}
+//         >
+//           <SkiaBarChart
+//             data={monthlyChartData}
+//             height={220}
+//             width={
+//               typeof window !== "undefined"
+//                 ? Math.min(window.innerWidth - 32, MAX_MOBILE_WIDTH - 32)
+//                 : MAX_MOBILE_WIDTH - 32
+//             }
+//             barColor={colors.accent4}
+//           />
+//         </Div>
 
-        const firstMood = data.moods[0]
-        if (!firstMood) return null
+//         <Div
+//           style={{
+//             display: "flex",
+//             flexDirection: "row",
+//             justifyContent: "center",
+//             alignItems: "center",
+//           }}
+//         >
+//           <Button onClick={goToPreviousMonth} style={{ padding: "8px" }}>
+//             <ArrowLeft color={colors.accent6} size={16} />
+//           </Button>
 
-        return {
-          date,
-          mood: avgMood,
-          emoji: getMoodEmoji(avgMood),
-          id: firstMood.id,
-          createdOn: firstMood.createdOn,
-          value: avgValue,
-          moodCount: data.count, // How many moods contributed to this average
-        }
-      })
-      .filter((mood): mood is NonNullable<typeof mood> => mood !== null)
-      .sort(
-        (a, b) =>
-          new Date(a.createdOn).getTime() - new Date(b.createdOn).getTime(),
-      )
-  }
+//           <Text
+//             style={{
+//               fontSize: "13px",
+//               color: colors.shade8,
+//             }}
+//           >
+//             {t("month_of", {
+//               date: currentMonth.toLocaleDateString(language, {
+//                 month: "short",
+//                 day: "numeric",
+//               }),
+//             })}
+//           </Text>
 
-  const getBarColor = (score: number) => {
-    if (score < 30) return "var(--accent-0)" // red
-    if (score < 50) return "var(--accent-1)" // orange
-    if (score < 70) return "var(--accent-6)" // blue
-    return "var(--accent-4)" // green
-  }
-  const { t } = useTranslation()
-
-  useEffect(() => {
-    if (!token) return
-    fetchMoods()
-  }, [token])
-
-  const [currentDay, setCurrentDay] = useState(new Date())
-
-  const getDailyMoodsForWeek = () => {
-    const weekMoods = getCurrentWeekMoods()
-    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-      (day, index) => {
-        const jsDayIndex = index === 6 ? 0 : index + 1 // Map to JS day indices (Sun=0, Mon=1, etc.)
-        const mood = weekMoods.find((m) => {
-          return new Date(m.createdOn).getDay() === jsDayIndex
-        })
-        return {
-          day,
-          mood: mood || null,
-        }
-      },
-    )
-  }
-
-  const isLatestDay = () => {
-    const today = new Date()
-    return currentDay.toDateString() === today.toDateString()
-  }
-
-  const isLatestWeek = () => {
-    if (!moods.moods?.length) return true
-
-    const today = new Date()
-    const currentWeekStart = new Date(today)
-    currentWeekStart.setDate(today.getDate() - today.getDay() + 1) // Monday
-    currentWeekStart.setHours(0, 0, 0, 0)
-
-    const viewedWeekStart = new Date(currentWeek)
-    viewedWeekStart.setDate(currentWeek.getDate() - currentWeek.getDay() + 1) // Monday
-    viewedWeekStart.setHours(0, 0, 0, 0)
-
-    return viewedWeekStart.getTime() >= currentWeekStart.getTime()
-  }
-
-  const getMostRecentWeekWithData = () => {
-    if (!moods.moods?.length) return []
-
-    const latestDate = new Date(moods.moods[0]?.createdOn || new Date())
-
-    // Calculate days since Monday (1)
-    const daysSinceMonday = (latestDate.getDay() + 6) % 7
-    const startOfWeek = new Date(latestDate)
-    startOfWeek.setDate(latestDate.getDate() - daysSinceMonday)
-    startOfWeek.setHours(0, 0, 0, 0)
-
-    const endOfWeek = new Date(startOfWeek)
-    endOfWeek.setDate(startOfWeek.getDate() + 6) // Full 7-day week
-    endOfWeek.setHours(23, 59, 59, 999)
-
-    return moods.moods.filter(
-      (mood) => mood.createdOn >= startOfWeek && mood.createdOn <= endOfWeek,
-    )
-  }
-  const getMonthlyChartData = () => {
-    const monthStart = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      1,
-    )
-    const monthEnd = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
-      0,
-    )
-    monthEnd.setHours(23, 59, 59, 999)
-
-    const weeklyData: Record<number, { sum: number; count: number }> = {}
-
-    moods.moods?.forEach((mood) => {
-      const moodDate = new Date(mood.createdOn)
-      if (moodDate >= monthStart && moodDate <= monthEnd) {
-        const weekNum = Math.ceil(moodDate.getDate() / 7)
-        const moodValue = moodValues[mood.type as Mood] || 50
-
-        if (!weeklyData[weekNum]) {
-          weeklyData[weekNum] = { sum: 0, count: 0 }
-        }
-        weeklyData[weekNum].sum += moodValue
-        weeklyData[weekNum].count++
-      }
-    })
-
-    return Object.entries(weeklyData).map(([week, data]) => ({
-      week: parseInt(week),
-      value: Math.round(data.sum / data.count),
-      color: getBarColor(Math.round(data.sum / data.count)),
-    }))
-  }
-
-  const monthlyChartData = getMonthlyChartData()
-  if (!isClient) return null
-
-  if (isLoadingMoods) {
-    return (
-      <div className={styles.loadingContainer}>
-        <Loading />
-      </div>
-    )
-  }
-
-  return (
-    <div className={clsx(styles.moodReports, className)}>
-      <h2 className={styles.title} data-testid="moods-daily">
-        🫥 {t("Daily")}{" "}
-        <button
-          className={clsx(styles.close, "link")}
-          onClick={() => {
-            removeParams("moodReport")
-            onClose?.()
-          }}
-        >
-          Focus
-          <Img size={24} logo="focus" />
-        </button>
-      </h2>
-      <div>
-        <div
-          className={styles.dailyMoods}
-          style={{
-            width: "100%",
-            backgroundColor: "var(--shade-1)",
-            borderRadius: "var(--radius)",
-            outline: "1px solid var(--accent-1)",
-            padding: "20px",
-            boxShadow: "var(--shadow)",
-          }}
-        >
-          {getDailyMoodsForWeek().map((moodForDay, index) => {
-            const dayKey =
-              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index] || "Sun"
-            return (
-              <div key={dayKey} className={styles.dayMood}>
-                <span
-                  className={`${styles.moodEmoji} ${isWindows ? styles.windows : ""}`}
-                >
-                  {getMoodEmoji(moodForDay?.mood?.mood || "🫥")}
-                </span>
-                <span className={styles.dayName}>{t(dayKey)}</span>
-              </div>
-            )
-          })}
-        </div>
-        <div className={styles.navigation}>
-          <span>
-            <Trans
-              i18nKey="Week of {{date}}"
-              values={{
-                date: currentWeek.toLocaleDateString(language, {
-                  month: "short",
-                  day: "numeric",
-                }),
-              }}
-            />
-          </span>
-          <button
-            data-testid="moods-previous-week-daily"
-            className={clsx("link", styles.previous)}
-            onClick={goToPreviousWeek}
-          >
-            <ArrowLeft size={16} className={styles.arrow} />
-          </button>
-
-          <button
-            data-testid="moods-next-week-daily"
-            disabled={isLatestDay()}
-            className={clsx("link", styles.next)}
-            onClick={goToNextWeek}
-          >
-            <ArrowRight size={16} className={styles.arrow} />
-          </button>
-        </div>
-      </div>
-      <h2 data-testid="moods-weekly" className={styles.title}>
-        <span>📈 {t("Weekly")}</span>
-      </h2>
-      <div>
-        <div
-          style={{
-            width: "100%",
-            height: "300px",
-            borderRadius: "var(--radius)",
-            outline: "1px solid var(--accent-1)",
-            boxShadow: "var(--shadow)",
-          }}
-        >
-          <ResponsiveContainer>
-            <LineChart
-              data={getCurrentWeekMoods()}
-              margin={{ top: 40, right: 30, left: 20, bottom: 5 }}
-            >
-              {/* Remove CartesianGrid */}
-              <XAxis
-                dataKey="date"
-                tickFormatter={(dateStr, index) => {
-                  const date = new Date(
-                    dateStr.includes("/")
-                      ? dateStr.split("/").reverse().join("-")
-                      : dateStr,
-                  )
-
-                  return t(
-                    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
-                      date.getDay() - 1
-                    ] || "Sun",
-                  )
-                }}
-                tick={{ fontSize: 12 }} // Smaller font size
-              />
-              <YAxis
-                hide
-                domain={[0, 100]}
-                tick={{ fontSize: 12 }} // Consistent smaller font size
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--shade-1)",
-                  border: "1px solid var(--shade-2)",
-                  borderRadius: "var(--radius)",
-                  color: "var(--foreground)",
-                }}
-                formatter={(value, name, props) => {
-                  const moodCount = props.payload.moodCount || 1
-                  return [
-                    `${props.payload.emoji} ${props.payload.mood}`,
-                    `Score: ${value}`,
-                    moodCount > 1 ? `(avg of ${moodCount} moods)` : "",
-                  ]
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="var(--accent-1)" // Using CSS variable for accent-6 color
-                strokeWidth={2.5}
-                dot={(props) => (
-                  <text
-                    key={props.payload.id}
-                    x={props.cx}
-                    y={props.cy}
-                    dy={-8}
-                    fontSize={20}
-                    textAnchor="middle"
-                  >
-                    {getMoodEmoji(props.payload.mood)}
-                  </text>
-                )}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        <div className={styles.navigation}>
-          <span>
-            <Trans
-              i18nKey="Week of {{date}}"
-              values={{
-                date: currentWeek.toLocaleDateString(language, {
-                  month: "short",
-                  day: "numeric",
-                }),
-              }}
-            />
-          </span>
-          <button
-            data-testid="moods-previous-week-weekly"
-            className={clsx("link", styles.previous)}
-            onClick={goToPreviousWeek}
-          >
-            <ArrowLeft size={16} className={styles.arrow} />
-          </button>
-
-          <button
-            data-testid="moods-next-week-weekly"
-            disabled={isLatestWeek()}
-            className={clsx("link", styles.next)}
-            onClick={goToNextWeek}
-          >
-            <ArrowRight size={16} className={styles.arrow} />
-          </button>
-        </div>
-      </div>
-
-      <h2 data-testid="moods-monthly" className={styles.title}>
-        📊 {t("Monthly")}{" "}
-      </h2>
-
-      <div>
-        <div
-          style={{
-            width: "100%",
-            height: "300px",
-            backgroundColor: "var(--shade-1)",
-            borderRadius: "var(--radius)",
-            outline: "1px solid var(--accent-1)",
-            boxShadow: "var(--shadow)",
-          }}
-        >
-          <ResponsiveContainer>
-            <BarChart
-              data={monthlyChartData}
-              margin={{ top: 40, right: 30, left: 20, bottom: 5 }}
-            >
-              <XAxis
-                dataKey="week"
-                tickFormatter={(week) => t("week_number", { number: week })}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis hide domain={[0, 100]} />
-              <Bar dataKey="value" radius={[18, 18, 0, 0]}>
-                {monthlyChartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-                <LabelList
-                  dataKey="value"
-                  position="top"
-                  fill="var(--foreground)"
-                  fontSize={12}
-                  fontWeight={500}
-                  formatter={(value: any) => {
-                    const numValue = Number(value)
-                    if (isNaN(numValue)) return value
-
-                    const emoji = getMoodEmoji(
-                      numValue >= moodValues.happy
-                        ? "happy"
-                        : numValue <= moodValues.sad
-                          ? "sad"
-                          : numValue <= moodValues.angry
-                            ? "angry"
-                            : numValue >= moodValues.astonished
-                              ? "astonished"
-                              : numValue >= moodValues.inlove
-                                ? "inlove"
-                                : "neutral",
-                    )
-                    return `${emoji} ${numValue}`
-                  }}
-                />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className={styles.navigation}>
-          <span>
-            <Trans
-              i18nKey="Month of {{date}}"
-              values={{
-                date: currentMonth.toLocaleDateString(language, {
-                  month: "short",
-                  year: "numeric",
-                }),
-              }}
-            />
-          </span>
-          <button
-            data-testid="moods-previous-month"
-            className={clsx("link", styles.previous)}
-            onClick={goToPreviousMonth}
-          >
-            <ArrowLeft size={16} className={styles.arrow} />
-          </button>
-          <button
-            data-testid="moods-next-month"
-            disabled={isLatestMonth()}
-            className={clsx("link", styles.next)}
-            onClick={goToNextMonth}
-          >
-            <ArrowRight size={16} className={styles.arrow} />
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+//           <Button
+//             onClick={goToNextMonth}
+//             style={{ padding: "8px" }}
+//             disabled={isLatestMonth(currentMonth)}
+//           >
+//             <ArrowRight
+//               color={
+//                 isLatestMonth(currentMonth) ? colors.shade6 : colors.accent6
+//               }
+//               size={16}
+//             />
+//           </Button>
+//         </Div>
+//       </Div>
+//     </ScrollView>
+//   )
+// }

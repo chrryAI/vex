@@ -680,6 +680,39 @@ button.favorite {
   backdrop-filter: blur(5.5px);
 }
 
+.dateTimeInput {
+  font-size: 13px;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  font-family: var(--font-mono) !important;
+  font-size: 13.5px !important;
+
+  &:invalid {
+    border-color: var(--accent-0);
+  }
+
+  // Style the calendar picker icon
+  &::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+
+    &:hover {
+      filter: invert(0.3);
+    }
+  }
+}
+
+.descriptionView {
+  :global(a) {
+    color: var(--primary);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--primary-dark);
+    }
+  }
+}
+
 @keyframes placeholderGlowPulse {
   0% {
     border-color: var(--accent-1);

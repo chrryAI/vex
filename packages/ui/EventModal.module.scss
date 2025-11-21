@@ -152,14 +152,14 @@
   white-space: pre-wrap;
   word-break: break-word;
 
-  :global(a) {
-    color: var(--primary);
-    text-decoration: underline;
+  // :global(a) {
+  //   color: var(--primary);
+  //   text-decoration: underline;
 
-    &:hover {
-      color: var(--primary-dark);
-    }
-  }
+  //   &:hover {
+  //     color: var(--primary-dark);
+  //   }
+  // }
 }
 
 .allDayToggle {
@@ -208,19 +208,19 @@
   font-family: var(--font-mono) !important;
   font-size: toRem.toRem(13.5) !important;
 
-  &:invalid {
-    border-color: var(--accent-0);
-  }
+  // &:invalid {
+  //   border-color: var(--accent-0);
+  // }
 
-  // Style the calendar picker icon
-  &::-webkit-calendar-picker-indicator {
-    filter: invert(0.5);
-    cursor: pointer;
+  // // Style the calendar picker icon
+  // &::-webkit-calendar-picker-indicator {
+  //   filter: invert(0.5);
+  //   cursor: pointer;
 
-    &:hover {
-      filter: invert(0.3);
-    }
-  }
+  //   &:hover {
+  //     filter: invert(0.3);
+  //   }
+  // }
 }
 
 .error {
@@ -228,11 +228,9 @@
   font-size: toRem.toRem(12);
 }
 
-.fieldWrapper {
-  .error {
-    text-align: right;
-    margin-top: toRem.toRem(5);
-  }
+.fieldWrapperError {
+  text-align: right;
+  margin-top: toRem.toRem(5);
 }
 
 .colorSection {
@@ -250,7 +248,6 @@
 
 .colorOptions {
   display: flex;
-  gap: toRem.toRem(6);
 }
 
 .colorOption {
