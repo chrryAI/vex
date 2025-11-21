@@ -13,9 +13,9 @@ import registerServiceWorker, {
   subscribeToPushNotifications,
 } from "./utils/registerServiceWorker"
 import { useAppContext } from "./context/AppContext"
-import { useAuth } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 import { apiFetch } from "./utils"
-import { usePlatform } from "./platform"
+import { useNavigation, usePlatform } from "./platform"
 import { useMediaQuery } from "usehooks-ts"
 import { platform } from "os"
 import AddToHomeScreen from "./AddToHomeScreen"
@@ -44,6 +44,8 @@ export default function EnableNotifications({
   // Platform context
   const { os, isStandalone, device } = usePlatform()
 
+  const { setShowAddToHomeScreen } = useNavigationContext()
+
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -54,8 +56,6 @@ export default function EnableNotifications({
   const [isSubscribed, setIsSubscribed] = useState<boolean | undefined>(
     undefined,
   )
-
-  const [showAddToHomeScreen, setShowAddToHomeScreen] = useState(false)
 
   async function addPushSubscription(
     subscription: PushSubscription,
