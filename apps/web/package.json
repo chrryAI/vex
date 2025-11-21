@@ -34,8 +34,6 @@
     "@react-email/render": "^1.2.0",
     "@repo/db": "workspace:*",
     "@sentry/nextjs": "^8.55.0",
-    "@tamagui/config": "1.135.2",
-    "@tamagui/core": "1.135.2",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.17.20",
