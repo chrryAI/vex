@@ -883,7 +883,7 @@ export default function FocusButton({
                     <>
                       <DraggableList
                         data-testid="tasks"
-                        style={styles.tasks.style}
+                        contentContainerStyle={styles.tasks.style}
                         data={tasks.tasks.filter(Boolean)}
                         keyExtractor={(item) => item.id}
                         onDragEnd={async ({ data, from, to }) => {
@@ -915,25 +915,29 @@ export default function FocusButton({
 
                           isMovingItemRef.current = false
                         }}
-                        renderItem={({ item: task, index, drag, isActive }) => (
+                        renderItem={({ item: task, drag, isActive }) => (
                           <Div
                             data-task-title={task.title}
                             data-testid="task"
+                            className="pointer"
                             key={task.id}
                             style={{
                               ...styles.task.style,
                               ...(selectedTasks?.some((t) => t.id === task.id)
-                                ? styles.selectedTask.style
+                                ? {
+                                    ...styles.selectedTask.style,
+                                    ...(isCountingDown && !isPaused
+                                      ? styles.selectedTaskCounting.style
+                                      : {}),
+                                    ...(isPaused
+                                      ? styles.selectedTaskPaused.style
+                                      : {}),
+                                    ...(isFinished
+                                      ? styles.selectedTaskFinished.style
+                                      : {}),
+                                  }
                                 : {}),
-                              ...(isCountingDown && !isPaused
-                                ? styles.selectedTaskCounting.style
-                                : {}),
-                              ...(isPaused
-                                ? styles.selectedTaskPaused.style
-                                : {}),
-                              ...(isFinished
-                                ? styles.selectedTaskFinished.style
-                                : {}),
+
                               opacity: isActive ? 0.5 : 1,
                             }}
                           >
@@ -991,7 +995,7 @@ export default function FocusButton({
                                   </Span>
                                 ) : (
                                   <Span
-                                    style={styles.taskNotSelected}
+                                    style={styles.taskNotSelected.style}
                                     data-testid="task-not-selected"
                                   >
                                     <Circle width={16} height={16} />
