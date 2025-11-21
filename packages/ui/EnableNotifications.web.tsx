@@ -207,6 +207,8 @@ export default function EnableNotifications({
     }
   }
 
+  if (!isMounted) return null
+
   // Show notification button for extensions if permission not granted, for web if service worker ready
   const shouldShow =
     (device === "desktop" || isStandalone) &&
@@ -217,13 +219,7 @@ export default function EnableNotifications({
 
   return (
     <Div style={styles.enableNotificationsContainer.style}>
-      <Weather
-        onLocationClick={onLocationClick}
-        showLocation={!shouldShow}
-        style={
-          !shouldShow ? { ...styles.withoutNotifications.style } : undefined
-        }
-      />
+      <Weather onLocationClick={onLocationClick} showLocation={!shouldShow} />
 
       {isMounted && shouldShow && (
         <Div style={styles.enableNotifications.style}>

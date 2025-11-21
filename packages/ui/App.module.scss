@@ -41,14 +41,14 @@
 .focusTime {
   position: absolute;
   top: toRem.toRem(-5);
-  right: toRem.toRem(-40);
+  right: toRem.toRem(-30);
   padding: toRem.toRem(2) toRem.toRem(6);
   background-color: var(--accent-1);
   color: #fff;
   border-radius: toRem.toRem(10);
-  font-size: toRem.toRem(8);
+  font-size: toRem.toRem(8.5);
   font-weight: 600;
-  font-family: "SF Mono", "Monaco", "Courier New", monospace;
+  font-family: var(--font-mono);
   letter-spacing: toRem.toRem(0.5);
   white-space: nowrap;
   box-shadow: 0 toRem.toRem(2) toRem.toRem(4) rgba(0, 0, 0, 0.1);
