@@ -75,27 +75,33 @@ export const StoreStyleDefs = {
     marginBottom: 10,
   },
   app: {
-    base: {
-      position: "relative",
-      display: "flex",
-      alignItems: "center",
-      flexDirection: "column",
-      gap: 10,
-      outline: "1px dashed var(--shade-2)",
-      padding: 10,
-      paddingTop: 13,
-      borderRadius: 20,
-      minWidth: "initial",
-      flex: 1,
-      alignSelf: "flex-start",
-    },
-    hover: {
-      outline: "2px solid var(--accent-1)",
-    },
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "column",
+    gap: 10,
+    outline: "1px dashed var(--shade-2)",
+    padding: 10,
+    paddingTop: 13,
+    borderRadius: 20,
+    minWidth: "initial",
+    flex: 1,
   },
   appImage: {
     maxWidth: 40,
     maxHeight: 40,
+  },
+  appSelected: {
+    outline: "3px solid var(--accent-5)",
+    backgroundColor: "var(--shade-1)",
+  },
+  appLarge: {
+    flex: "inherit",
+    minWidth: 130,
+  },
+  appLast: {
+    alignSelf: "flex-start",
+    flex: 1,
   },
   appInfo: {
     display: "none",
@@ -133,10 +139,6 @@ export const StoreStyleDefs = {
   },
   badgePlanned: {
     backgroundColor: "var(--shade-3)",
-  },
-  appSelected: {
-    outline: "3px solid var(--accent-5)",
-    backgroundColor: "var(--shade-1)",
   },
   footer: {
     padding: 15,
@@ -189,97 +191,17 @@ export const StoreStyleDefs = {
 } as const
 
 import { createUnifiedStyles } from "./styles/createUnifiedStyles"
-import { useInteractiveStyles } from "./styles/useInteractiveStyles"
+import { createStyleHook } from "./styles/createStyleHook"
 
 export const StoreStyles = createUnifiedStyles(StoreStyleDefs)
 
-// ---- Stronger types for style defs and hook results ----
-
-// A minimal shape for a style object. You can expand this later to be more specific
-// (e.g., union of CSS properties used across web/native).
-type StyleObject = {
-  [key: string]: string | number | boolean | StyleObject | undefined
-}
-
-// Interactive (hover/focus/etc.) style definition
-type InteractiveStyleDef = {
-  base: StyleObject
-  hover?: StyleObject
-  active?: StyleObject
-  focus?: StyleObject
-  disabled?: StyleObject
-}
-
-// Static style definition is simply a style object
-type StaticStyleDef = StyleObject
-
-// explicit static result shape for non-interactive classes
-type StaticStyleResult = {
-  style: StaticStyleDef
-  handlers: Record<string, never>
-  state: { isHovered: false; isPressed: false; isFocused: false }
-}
-
-// interactive style hook result (keeps your existing hook return type)
-type InteractiveStyleResult = ReturnType<typeof useInteractiveStyles>
-
-// Create a discriminated mapped type so each key gets the right result type
-export type StoreStylesHook = {
-  [K in keyof typeof StoreStyleDefs]: (typeof StoreStyleDefs)[K] extends {
-    base: any
+// Type for the hook return value
+type StoreStylesHook = {
+  [K in keyof typeof StoreStyleDefs]: {
+    className?: string
+    style?: Record<string, any>
   }
-    ? InteractiveStyleResult
-    : StaticStyleResult
 }
 
-// Type guard to narrow a StyleDef to InteractiveStyleDef without using any casts
-function isInteractiveStyleDef(def: unknown): def is InteractiveStyleDef {
-  return (
-    typeof def === "object" &&
-    def !== null &&
-    Object.prototype.hasOwnProperty.call(def, "base")
-  )
-}
-
-// Create interactive style hooks (safe - calls hooks deterministically)
-export const useStoreStyles = (): StoreStylesHook => {
-  // Call all hooks upfront in a stable order (Rules of Hooks compliant)
-  const styleResults: Partial<Record<keyof typeof StoreStyleDefs, any>> = {}
-
-  // Use Object.keys to ensure consistent iteration order across environments
-  const keys = Object.keys(StoreStyleDefs) as Array<keyof typeof StoreStyleDefs>
-
-  for (const className of keys) {
-    const styleDef = StoreStyleDefs[className]
-
-    if (isInteractiveStyleDef(styleDef)) {
-      // styleDef is narrowed to InteractiveStyleDef here (no any cast needed)
-      const {
-        base = {},
-        hover = {},
-        active = {},
-        focus = {},
-        disabled = {},
-      } = styleDef
-
-      // Call useInteractiveStyles for interactive styles
-      styleResults[className] = useInteractiveStyles({
-        baseStyle: base,
-        hoverStyle: hover,
-        activeStyle: active,
-        focusStyle: focus,
-        disabledStyle: disabled,
-      })
-    } else {
-      // Static styles - no hook needed
-      // styleDef is narrowed to StaticStyleDef here
-      styleResults[className] = {
-        style: styleDef as StaticStyleDef,
-        handlers: {},
-        state: { isHovered: false, isPressed: false, isFocused: false },
-      }
-    }
-  }
-
-  return styleResults as StoreStylesHook
-}
+// Create the style hook using the factory
+export const useStoreStyles = createStyleHook<StoreStylesHook>(StoreStyles)

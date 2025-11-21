@@ -11,11 +11,12 @@ import {
 import Img from "./Image"
 import { useAppContext } from "./context/AppContext"
 import { appWithStore } from "./types"
-import { Div, H3, H4, P, Span, useTheme } from "./platform"
+import { Button, Div, H1, H3, H4, P, Span, useTheme } from "./platform"
 import { useStoreStyles } from "./Store.styles"
 import { Sparkles, ArrowRight } from "./icons"
 import A from "./A"
 import { useStoreMetadata } from "./hooks/useMetadata"
+import { useStyles } from "./context/StylesContext"
 
 export default function Store({
   compact,
@@ -27,6 +28,8 @@ export default function Store({
   const { FRONTEND_URL } = useData()
 
   const { isMobileDevice } = useTheme()
+
+  const { utilities } = useStyles()
 
   const { router, setIsNewChat, pathname, searchParams } =
     useNavigationContext()
@@ -101,8 +104,6 @@ export default function Store({
 
   const styles = useStoreStyles()
 
-  const { margin } = styles.lifeOS.style
-
   const render = () => {
     if (!store?.app) {
       return null
@@ -112,12 +113,12 @@ export default function Store({
       <Div
         style={{
           ...styles.lifeOS.style,
-          margin: compact ? 0 : margin,
+          margin: compact ? 0 : "0 auto",
         }}
       >
         {!compact && (
           <Div style={{ ...styles.header.style }}>
-            <div style={{ ...styles.headerIcons.style }}>
+            <Div style={{ ...styles.headerIcons.style }}>
               <Img
                 showLoading={false}
                 src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
@@ -141,9 +142,9 @@ export default function Store({
                 alt="Heart"
                 size={28}
               />
-            </div>
-            <h1 style={{ ...styles.title.style }}>
-              <span style={{ ...styles.titleText.style }}>
+            </Div>
+            <H1 style={{ ...styles.title.style }}>
+              <Span style={{ ...styles.titleText.style }}>
                 <A
                   href={store.app ? getAppSlug(store.app) : "#"}
                   onClick={(e) => {
@@ -161,43 +162,59 @@ export default function Store({
                   {store?.name}
                 </A>{" "}
                 - {t(store?.title || "")}
-              </span>
-            </h1>
-            <p style={{ ...styles.intro.style }}>
+              </Span>
+            </H1>
+            <P style={{ ...styles.intro.style }}>
               {t(store?.description || "")}
-            </p>
+            </P>
           </Div>
         )}
         <Div style={styles.createAgent.style}>
-          <button
+          <Button
             onClick={() => {
               router.push("/?part=highlights")
             }}
             className="inverted"
+            style={{ ...utilities.inverted.style }}
           >
             <Sparkles size={16} color="var(--accent-1)" />
             {t("Create Your Agent")}
-          </button>
+          </Button>
         </Div>
         <Div style={styles.content.style}>
           <Div style={styles.apps.style}>
-            {storeApps?.map((app) => (
+            {storeApps?.map((app, index) => (
               <Div
                 key={app.id}
+                className="pointer"
                 style={{
                   ...styles.app.style,
+                  ...(index === storeApps?.length - 1 && styles.appLast.style),
+                  ...(!isMobileDevice ? styles.appLarge.style : {}),
                   ...(selectedApp?.id === app.id && styles.appSelected.style),
                 }}
                 onClick={() => setSelectedApp(app)}
               >
-                <span style={{ ...styles.badge.style }}>{t("live")}</span>
+                <Span
+                  style={{
+                    ...styles.badge.style,
+                    display: isMobileDevice ? "none" : "flex",
+                  }}
+                >
+                  {t("live")}
+                </Span>
                 <Img
                   style={{ ...styles.appImage.style }}
                   app={app}
                   alt={app.name}
                   size={isMobileDevice ? 40 : 80}
                 />
-                <Div style={{ ...styles.appInfo.style }}>
+                <Div
+                  style={{
+                    ...styles.appInfo.style,
+                    display: isMobileDevice ? "none" : "flex",
+                  }}
+                >
                   <Span style={{ ...styles.appName.style }}>
                     {app.icon} {app.name}
                   </Span>
