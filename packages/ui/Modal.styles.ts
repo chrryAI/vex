@@ -25,6 +25,7 @@ export const ModalStyleDefs = {
     height: 35,
     borderRadius: "50%",
     backgroundColor: "black",
+    objectFit: "cover",
   },
   main: {
     margin: "0 auto",

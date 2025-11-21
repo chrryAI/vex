@@ -78,6 +78,7 @@ export const CalendarStyleDefs = {
     border: "2px solid var(--primary-dark)",
     borderRadius: 4,
     opacity: 0.8,
+    transform: "rotate(5deg)",
   },
   rbcAddonsDndOver: {
     backgroundColor: "var(--primary-light)",

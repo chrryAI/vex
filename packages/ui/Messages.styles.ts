@@ -56,6 +56,7 @@ export const MessagesStyleDefs = {
   video: {
     width: 30,
     height: 30,
+    objectFit: "cover",
     borderRadius: "50%",
   },
   characterProfileActions: {

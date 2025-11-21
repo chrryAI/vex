@@ -147,9 +147,15 @@ export const EventModalStyleDefs = {
     display: "flex",
     gap: 6,
   },
-  colorOption: {},
+  colorOption: {
+    base: {},
+    hover: {
+      transform: "scale(1.15)",
+    },
+  },
   colorOptionSelected: {
     borderColor: "var(--foreground)",
+    transform: "scale(1.3)",
   },
   actions: {
     display: "flex",
