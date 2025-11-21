@@ -1,12 +1,10 @@
 "use client"
 
 import clsx from "clsx"
-// import styles from "./Skeleton.module.scss"
 import Menu from "./Menu"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
-import { useAppContext } from "./context/AppContext"
-import { CircleEllipsis, NotebookPen } from "./icons"
+import { CircleEllipsis } from "./icons"
 import { useHasHydrated } from "../ui/hooks"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { useEffect } from "react"
@@ -24,7 +22,6 @@ import {
 } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import {
-  useAuth,
   useChat,
   useNavigationContext,
   useData,
@@ -141,6 +138,7 @@ export default function Skeleton({
             <Div style={{ ...skeletonStyles.hamburgerMenu.style }}>
               {!isDrawerOpen && (
                 <Button
+                  className="link"
                   style={{
                     ...skeletonStyles.hamburgerButton.style,
                     ...utilities.link,
@@ -156,6 +154,7 @@ export default function Skeleton({
               {!isDrawerOpen ? (
                 <Div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                   <A
+                    className="link"
                     clientOnly
                     href={`/`}
                     style={{
@@ -180,6 +179,7 @@ export default function Skeleton({
               {isEmpty && (
                 <A
                   href={`/blossom`}
+                  className="button transparent"
                   style={{
                     ...utilities.button.style,
                     ...utilities.transparent.style,

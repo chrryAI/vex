@@ -50,6 +50,7 @@ export default function AddToHomeScreen(): React.ReactPortal | null {
       <Div style={styles.main.style}>
         <Div style={styles.inner.style} ref={innerRef}>
           <Button
+            className="link"
             style={{ ...styles.close.style, ...utilities.link.style }}
             onClick={() => setShowAddToHomeScreen(false)}
           >

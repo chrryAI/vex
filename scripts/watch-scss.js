@@ -38,6 +38,15 @@ const convertFile = (filePath) => {
     execSync(`node "${CONVERTER_SCRIPT}" "${filePath}"`, {
       stdio: "inherit",
     })
+
+    // Touch the generated .styles.ts file to trigger hot reload
+    const stylesFile = filePath.replace(".module.scss", ".styles.ts")
+    if (fs.existsSync(stylesFile)) {
+      const time = new Date()
+      fs.utimesSync(stylesFile, time, time)
+      console.log(`🔥 Hot reload triggered!`)
+    }
+
     console.log(`✅ Converted successfully!`)
   } catch (error) {
     console.error(`❌ Conversion failed:`, error.message)
@@ -56,25 +65,21 @@ try {
 // Watch for changes
 console.log("👁️  Watching for changes... (Press Ctrl+C to stop)\n")
 
-fs.watch(
-  WATCH_DIR,
-  { recursive: true },
-  (eventType, filename) => {
-    if (!filename || !filename.endsWith(".module.scss")) {
-      return
-    }
+fs.watch(WATCH_DIR, { recursive: true }, (eventType, filename) => {
+  if (!filename || !filename.endsWith(".module.scss")) {
+    return
+  }
 
-    const filePath = path.join(WATCH_DIR, filename)
+  const filePath = path.join(WATCH_DIR, filename)
 
-    // Check if file exists (it might have been deleted)
-    if (!fs.existsSync(filePath)) {
-      console.log(`🗑️  File deleted: ${filename}`)
-      return
-    }
+  // Check if file exists (it might have been deleted)
+  if (!fs.existsSync(filePath)) {
+    console.log(`🗑️  File deleted: ${filename}`)
+    return
+  }
 
-    convertFile(filePath)
-  },
-)
+  convertFile(filePath)
+})
 
 // Keep the process running
 process.on("SIGINT", () => {

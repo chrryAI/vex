@@ -2,14 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import styles from "./SignIn.module.scss"
 import clsx from "clsx"
-import {
-  CircleX,
-  Coins,
-  LinkIcon,
-  LogInIcon,
-  LogIn,
-  UserRoundPlus,
-} from "./icons"
+import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
 import { apiFetch, CHRRY_URL, isDevelopment } from "./utils"
 import { FaGoogle, FaApple } from "react-icons/fa"
 

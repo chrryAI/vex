@@ -121,6 +121,7 @@ export default function About() {
       >
         <H1 style={{ display: "flex", gap: 5, marginTop: 0 }}>
           <Button
+            className="link"
             style={{ ...utilities.link.style }}
             onClick={() => router.push("/")}
           >
@@ -278,6 +279,7 @@ export default function About() {
             <Logo size={24} /> {t("Free")}
             {!user && (
               <Button
+                className="inverted"
                 style={{
                   marginLeft: "auto",
                   fontSize: 14,
@@ -322,6 +324,7 @@ export default function About() {
                 }
                 router.push("/about?subscribe=true&plan=credits")
               }}
+              className="inverted"
               style={{
                 marginLeft: "auto",
                 fontSize: 14,
@@ -368,6 +371,7 @@ export default function About() {
                 }
                 router.push("/about?subscribe=true&plan=plus")
               }}
+              className="inverted"
               style={{
                 marginLeft: "auto",
                 fontSize: 14,
@@ -403,6 +407,7 @@ export default function About() {
                 }
                 router.push("/about?subscribe=true&plan=pro")
               }}
+              className="inverted"
               style={{
                 marginLeft: "auto",
                 fontSize: 14,
@@ -452,7 +457,7 @@ export default function About() {
             <Div>
               <H3 style={{ display: "flex" }}>
                 {t("about.platforms.chrome.title")}{" "}
-                <a
+                <A
                   target="_blank"
                   style={{
                     marginLeft: "auto",
@@ -463,7 +468,7 @@ export default function About() {
                 >
                   <FaChrome size={18} />
                   {t("Install")}
-                </a>
+                </A>
               </H3>
               <P>{t("about.platforms.chrome.content")} </P>
               <Video

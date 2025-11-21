@@ -7,8 +7,6 @@ import React, {
   useRef,
   useState,
 } from "react"
-// import styles from "./Instructions.module.scss"
-import clsx from "clsx"
 import {
   ArrowLeft,
   Brain,
@@ -1016,6 +1014,7 @@ export default function Instructions({
 
                       <Div style={styles.filePreviewInfo.style}>
                         <A
+                          className="link"
                           href={file.url}
                           style={{
                             ...utilities.link.style,
@@ -1036,6 +1035,7 @@ export default function Instructions({
                         <Button
                           data-testid={`${dataTestId}-file-preview-clear`}
                           type="button"
+                          className="link"
                           onClick={() => handleDeleteFile(file.id)}
                           style={{
                             ...utilities.link.style,
@@ -1099,6 +1099,7 @@ export default function Instructions({
                         data-testid={`${dataTestId}-file-preview-clear`}
                         type="button"
                         onClick={() => removeFile(index)}
+                        className="link"
                         style={{
                           ...utilities.link.style,
                           ...styles.filePreviewClear.style,
@@ -1117,6 +1118,7 @@ export default function Instructions({
               <Div style={styles.fileUploader.style}>
                 <>
                   <Button
+                    className="link"
                     data-testid={`${dataTestId}-artifacts-back-button`}
                     onClick={() => {
                       addHapticFeedback()
@@ -1128,6 +1130,7 @@ export default function Instructions({
                     <ArrowLeft size={16} />
                   </Button>
                   <Button
+                    className="link"
                     data-testid={`${dataTestId}-artifacts-paste-button`}
                     onClick={async () => {
                       addHapticFeedback()
@@ -1160,6 +1163,7 @@ export default function Instructions({
                     {t("Paste")}
                   </Button>
                   <Button
+                    className="link"
                     data-testid={`${dataTestId}-artifacts-upload-button`}
                     onClick={() =>
                       triggerFileInput(
@@ -1259,6 +1263,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           <Div style={styles.footer.style}>
             {thread && (
               <Button
+                className="inverted"
                 data-testid={`${dataTestId}-modal-regenerate-button`}
                 onClick={() => handleSave({ regenerateInstructions: true })}
                 style={{ ...utilities.inverted.style }}
@@ -1275,6 +1280,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             )}
             <Div style={styles.actions.style}>
               <Button
+                className="inverted"
                 data-testid={`${dataTestId}-modal-artifacts-button`}
                 onClick={() => {
                   setIsArtifactsOpen(true)
@@ -1321,6 +1327,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     </Div>
                   )}
                   <Button
+                    className="inverted"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                     style={{ ...utilities.inverted.style }}
                   >
@@ -1515,7 +1522,12 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   <A
                     openInNewTab
                     href={extensionUrl}
-                    className={clsx("button small", styles.installButton)}
+                    className="button"
+                    style={{
+                      ...utilities.button.style,
+                      ...utilities.small.style,
+                      ...styles.installButton.style,
+                    }}
                   >
                     <FaChrome size={18} />
                     {t("Extension")}

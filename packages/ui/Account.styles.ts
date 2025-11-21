@@ -11,6 +11,8 @@ export const AccountStyleDefs = {
     alignItems: "center",
     gap: 5,
     margin: "10px 0 5px 0",
+  },
+  userNameContainerInput: {
     flex: 1,
   },
   email: {

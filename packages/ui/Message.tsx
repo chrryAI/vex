@@ -1,5 +1,3 @@
-// import styles from "./Message.module.scss"
-import clsx from "clsx"
 import {
   Download,
   Globe as GlobeIcon,
@@ -844,6 +842,7 @@ export default function Message({
                             key={file.id}
                             href={file.url}
                             target="_blank"
+                            className="button inverted"
                             rel="noopener noreferrer"
                             style={{
                               ...utilities.button.style,
@@ -857,6 +856,7 @@ export default function Message({
                       } else {
                         return (
                           <Button
+                            className="button inverted"
                             data-testid="user-message-text"
                             style={{
                               ...utilities.button.style,
@@ -888,6 +888,7 @@ export default function Message({
             <Div style={styles.footer.style}>
               <Div style={styles.left.style}>
                 <Button
+                  className="link"
                   onClick={() => copyToClipboard(message.message.content)}
                   style={{
                     ...utilities.link.style,
@@ -916,6 +917,7 @@ export default function Message({
                   addParams({ subscribe: "true", plan: "member" })
                 }}
                 type="button"
+                className="link"
                 style={{
                   ...utilities.link.style,
                 }}
@@ -961,6 +963,7 @@ export default function Message({
           {apps?.map((app) => (
             <Div style={styles.updateModalDescriptionItem.style} key={app.id}>
               <Button
+                className="link"
                 disabled={isUpdatingApp}
                 onClick={() => handleUpdateAgent(app)}
                 style={{
@@ -1027,6 +1030,7 @@ export default function Message({
 
               setIsAppSelectOpen(true)
             }}
+            className="link"
             style={{
               ...utilities.link.style,
               ...styles.agentIcon.style,
@@ -1167,6 +1171,7 @@ export default function Message({
             <Div style={styles.footer.style}>
               <Div style={styles.left.style}>
                 <Button
+                  className="link"
                   onClick={() => copyToClipboard(message.message.content)}
                   style={{
                     ...utilities.link.style,
@@ -1206,6 +1211,7 @@ export default function Message({
 
               <Button
                 disabled={isSpeechLoading}
+                className="link"
                 style={{
                   ...utilities.link.style,
                   ...styles.playButton.style,
