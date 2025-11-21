@@ -752,7 +752,7 @@ export default function Agent({
                               disabled={
                                 aiAgent?.capabilities?.webSearch === true
                               }
-                              onChange={(e) => field.onChange(e.target.checked)}
+                              onChange={(checked) => field.onChange(checked)}
                             >
                               <span>{t("Web Search")}</span>
                             </Checkbox>
@@ -782,7 +782,7 @@ export default function Agent({
                               disabled={
                                 aiAgent?.capabilities?.imageGeneration === true
                               }
-                              onChange={(e) => field.onChange(e.target.checked)}
+                              onChange={(checked) => field.onChange(checked)}
                             >
                               <span>{t("ImageGeneration")}</span>
                             </Checkbox>
@@ -808,7 +808,7 @@ export default function Agent({
                             <Checkbox
                               checked={field.value}
                               disabled={aiAgent?.capabilities?.pdf === true}
-                              onChange={(e) => field.onChange(e.target.checked)}
+                              onChange={(checked) => field.onChange(checked)}
                             >
                               <span>{t("File Analysis")}</span>
                             </Checkbox>
@@ -834,7 +834,7 @@ export default function Agent({
                             <Checkbox
                               checked={field.value}
                               disabled={aiAgent?.capabilities?.audio === true}
-                              onChange={(e) => field.onChange(e.target.checked)}
+                              onChange={(checked) => field.onChange(checked)}
                             >
                               <span>{t("Voice")}</span>
                             </Checkbox>
@@ -860,7 +860,7 @@ export default function Agent({
                             <Checkbox
                               checked={field.value}
                               disabled={aiAgent?.capabilities?.video === true}
-                              onChange={(e) => field.onChange(e.target.checked)}
+                              onChange={(checked) => field.onChange(checked)}
                             >
                               <span>{t("Video")}</span>
                             </Checkbox>
@@ -890,7 +890,7 @@ export default function Agent({
                               disabled={
                                 aiAgent?.capabilities?.codeExecution === true
                               }
-                              onChange={(e) => field.onChange(e.target.checked)}
+                              onChange={(checked) => field.onChange(checked)}
                             >
                               <span>{t("Code Execution")}</span>
                             </Checkbox>
@@ -945,11 +945,9 @@ export default function Agent({
                                   <Checkbox
                                     checked={checked}
                                     // disabled={isDisabled || isChrry}
-                                    onChange={(e) => {
+                                    onChange={(isChecked) => {
                                       if (checked) {
                                         if (isChrry) {
-                                          e.preventDefault()
-
                                           toast.error(
                                             `${app.name} is required and cannot be removed.`,
                                           )
@@ -958,8 +956,6 @@ export default function Agent({
                                         }
 
                                         if (isBaseApp) {
-                                          e.preventDefault()
-
                                           toast.error(
                                             `${app.name} is your base app.`,
                                           )
@@ -967,7 +963,7 @@ export default function Agent({
                                           return
                                         }
                                       }
-                                      const newValue = e.target.checked
+                                      const newValue = isChecked
                                         ? [...(field.value || []), app.id]
                                         : field.value?.filter(
                                             (v) => v !== app.id,
@@ -1064,8 +1060,8 @@ export default function Agent({
                                 field.value?.includes("calendar") || false
                               }
                               disabled={!!calendarRequiredApp}
-                              onChange={(e) => {
-                                const newValue = e.target.checked
+                              onChange={(checked) => {
+                                const newValue = checked
                                   ? [...(field.value || []), "calendar"]
                                   : field.value?.filter((v) => v !== "calendar")
                                 field.onChange(newValue)
@@ -1097,8 +1093,8 @@ export default function Agent({
                               disabled={
                                 isLocationRequired || !!locationRequiredApp
                               }
-                              onChange={(e) => {
-                                const newValue = e.target.checked
+                              onChange={(checked) => {
+                                const newValue = checked
                                   ? [...(field.value || []), "location"]
                                   : field.value?.filter((v) => v !== "location")
                                 field.onChange(newValue)
@@ -1130,8 +1126,8 @@ export default function Agent({
                               disabled={
                                 isWeatherRequired || !!weatherRequiredApp
                               }
-                              onChange={(e) => {
-                                const newValue = e.target.checked
+                              onChange={(checked) => {
+                                const newValue = checked
                                   ? [...(field.value || []), "weather"]
                                   : field.value?.filter((v) => v !== "weather")
                                 field.onChange(newValue)

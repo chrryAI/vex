@@ -393,14 +393,11 @@ export default function FocusButton({ className }: { className?: string }) {
         <div className={styles.additionalSettings}>
           <Checkbox
             checked={enableNotifications}
-            onChange={(e) => setEnableNotifications(e.target.checked)}
+            onChange={(e) => setEnableNotifications(e)}
           >
             {t("Notifications")}
           </Checkbox>
-          <Checkbox
-            checked={enableSound}
-            onChange={(e) => setEnableSound(e.target.checked)}
-          >
+          <Checkbox checked={enableSound} onChange={(e) => setEnableSound(e)}>
             {t("Sound")}
           </Checkbox>
         </div>
