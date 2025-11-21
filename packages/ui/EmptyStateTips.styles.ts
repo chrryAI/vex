@@ -6,6 +6,14 @@
  */
 
 export const EmptyStateTipsStyleDefs = {
+  emptyStateTips: {
+    marginTop: 15,
+  },
+  ul: {
+    padding: 0,
+    margin: 0,
+    fontSize: 13,
+  },
   tip: {
     marginBottom: 10,
     position: "relative",

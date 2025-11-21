@@ -14,6 +14,7 @@ export const MessageStyleDefs = {
     height: 35,
     borderRadius: "50%",
     backgroundColor: "black",
+    objectFit: "cover",
   },
   updateModalDescription: {
     display: "flex",

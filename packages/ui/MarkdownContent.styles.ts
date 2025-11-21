@@ -47,6 +47,9 @@ export const MarkdownContentStyleDefs = {
     hover: {
       color: "var(--accent-1)",
     },
+    active: {
+      transform: "scale(0.95)",
+    },
   },
   copyButtonCopied: {
     color: "var(--accent-4)",

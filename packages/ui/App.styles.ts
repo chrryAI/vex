@@ -204,7 +204,7 @@ export const AppStyleDefs = {
     width: "100%",
     textAlign: "center",
     minWidth: 250,
-    transform: NaN,
+    transform: "translateX(-85px)",
   },
   formInfoError: {
     color: "var(--accent-0)",

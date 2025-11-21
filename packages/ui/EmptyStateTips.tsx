@@ -2,14 +2,22 @@
 
 import React from "react"
 import { useAppContext } from "./context/AppContext"
-import styles from "./EmptyStateTips.module.scss"
-import clsx from "clsx"
 import { useApp } from "./context/providers"
+import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
+import { Div, H3, Section, Span, usePlatform, useTheme } from "./platform"
 
-export default function EmptyStateTips({ className }: { className?: string }) {
+export default function EmptyStateTips({
+  style,
+}: {
+  style?: React.CSSProperties
+}) {
   const { isManagingApp, canEditApp, app } = useApp()
 
+  const styles = useEmptyStateTipsStyles()
+
   const { t } = useAppContext()
+
+  const { viewPortHeight } = usePlatform()
 
   const getTitle = () => {
     if (isManagingApp || canEditApp) {
@@ -60,17 +68,25 @@ export default function EmptyStateTips({ className }: { className?: string }) {
     ]
 
     return (
-      <section className={clsx(styles.emptyStateTips, className)}>
-        <h3 style={{ marginBottom: 10, marginTop: 0 }}>{getTitle()}</h3>
-        <ul>
-          {builderTips.map((item, i) => (
-            <li key={i} className={styles.tip}>
-              <span className={styles.tipText}>{item.tip}</span>
-              <span> {item.emoji}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <Section style={{ ...styles.emptyStateTips, ...style }}>
+        <H3 style={{ marginBottom: 10, marginTop: 0 }}>{getTitle()}</H3>
+        <Div style={{ ...styles.ul.style }}>
+          {builderTips.map((item, i) => {
+            // Progressive display based on viewport height
+            if (viewPortHeight < 600 && i >= 3) return null
+            if (viewPortHeight < 700 && i >= 4) return null
+            if (viewPortHeight < 800 && i >= 5) return null
+            if (viewPortHeight < 900 && i >= 6) return null
+
+            return (
+              <Div key={i} style={styles.tip.style}>
+                <Span style={styles.tipText.style}>{item.tip}</Span>
+                <Span> {item.emoji}</Span>
+              </Div>
+            )
+          })}
+        </Div>
+      </Section>
     )
   }
 
@@ -209,16 +225,24 @@ export default function EmptyStateTips({ className }: { className?: string }) {
   }
 
   return (
-    <section className={clsx(styles.emptyStateTips, className)}>
-      <h3 style={{ marginBottom: 10, marginTop: 0 }}>{t(getAppTitle())}</h3>
-      <ul>
-        {currentTips.map((item, i) => (
-          <li key={i} className={styles.tip}>
-            <span className={styles.tipText}>{t(item.tip || "")}</span>
-            <span> {item.emoji}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <Section style={{ ...styles.emptyStateTips, ...style }}>
+      <H3 style={{ marginBottom: 10, marginTop: 0 }}>{t(getAppTitle())}</H3>
+      <Div style={{ ...styles.ul.style }}>
+        {currentTips.map((item, i) => {
+          // Progressive display based on viewport height
+          if (viewPortHeight < 600 && i >= 3) return null
+          if (viewPortHeight < 700 && i >= 4) return null
+          if (viewPortHeight < 800 && i >= 5) return null
+          if (viewPortHeight < 900 && i >= 6) return null
+
+          return (
+            <Div key={i} style={styles.tip.style}>
+              <Span style={styles.tipText.style}>{t(item.tip || "")}</Span>
+              <Span> {item.emoji}</Span>
+            </Div>
+          )
+        })}
+      </Div>
+    </Section>
   )
 }

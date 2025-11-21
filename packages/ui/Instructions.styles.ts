@@ -33,6 +33,7 @@ export const InstructionsStyleDefs = {
   video: {
     width: 30,
     height: 30,
+    objectFit: "cover",
     borderRadius: "50%",
   },
   updateModalButtons: {
@@ -175,6 +176,7 @@ export const InstructionsStyleDefs = {
     width: 32,
     height: 32,
     borderRadius: 4,
+    objectFit: "cover",
     backgroundColor: "var(--shade-2)",
   },
   fileUploader: {
