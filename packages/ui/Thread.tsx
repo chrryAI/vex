@@ -125,7 +125,7 @@ const Thread = ({
 
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
-  const { addHapticFeedback, isDrawerOpen, isSmallDevice } = useTheme()
+  const { addHapticFeedback, isMobileDevice, isSmallDevice } = useTheme()
 
   // Update thread metadata dynamically
   useThreadMetadata(thread)
@@ -239,6 +239,7 @@ const Thread = ({
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
           },
+          paddingInline: isMobileDevice ? 0 : 15,
         }}
       >
         {!isVisitor && (

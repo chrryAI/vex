@@ -12,7 +12,7 @@
   flex-direction: column;
   gap: toRem.toRem(10);
   font-size: toRem.toRem(15);
-  padding-bottom: toRem.toRem(195);
+  padding: 0 toRem.toRem(10) toRem.toRem(195) toRem.toRem(10);
   width: 100%;
 
   &.empty {
