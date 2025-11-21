@@ -1133,7 +1133,9 @@ export default function App({
                               <A
                                 key={item.slug}
                                 title={t(item.title)}
-                                className="button"
+                                className={`button ${
+                                  isManagingApp ? "transparent" : "inverted"
+                                }`}
                                 style={{
                                   ...utilities.button.style,
                                   ...utilities.small.style,
