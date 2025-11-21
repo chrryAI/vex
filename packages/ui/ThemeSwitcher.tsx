@@ -3,27 +3,34 @@ import { useHasHydrated } from "./hooks"
 import { useAppContext } from "./context/AppContext"
 import clsx from "clsx"
 import { Moon, Sun } from "./icons"
-import { useTheme } from "./platform"
+import { Button, Div, useTheme } from "./platform"
+import { useStyles } from "./context/StylesContext"
 
 export default function ThemeSwitcher({
   onThemeChange,
   size = 18,
+  style,
 }: {
   onThemeChange?: (theme: "#000000" | "#ffffff") => void
   size?: number
+  style?: React.CSSProperties
 }) {
   const hasHydrated = useHasHydrated()
   const { isDark, setTheme } = useTheme()
   const { t } = useAppContext()
+
+  const { utilities } = useStyles()
+
   return (
-    <div>
+    <Div>
       {hasHydrated && (
-        <button
+        <Button
           title={isDark ? t("Light") : t("Dark")}
           onClick={() => {
             setTheme(isDark ? "light" : "dark")
             onThemeChange?.(isDark ? "#000000" : "#ffffff")
           }}
+          style={{ ...utilities.link.style, ...style }}
           className={clsx("link")}
         >
           {isDark ? (
@@ -31,8 +38,8 @@ export default function ThemeSwitcher({
           ) : (
             <Moon color="var(--shade-7)" size={size} />
           )}
-        </button>
+        </Button>
       )}
-    </div>
+    </Div>
   )
 }

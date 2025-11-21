@@ -56,6 +56,10 @@ export interface ButtonProps extends BaseProps {
   id?: string
   "aria-label"?: string
   "aria-disabled"?: boolean
+  // Pointer events for cross-platform touch/pointer interactions
+  onPointerDown?: (e: any) => void
+  onPointerUp?: (e: any) => void
+  onPointerLeave?: (e: any) => void
 }
 
 export interface LinkProps extends BaseProps {

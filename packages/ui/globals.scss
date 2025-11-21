@@ -742,3 +742,13 @@ button.favorite {
     box-shadow: 0 0 20px var(--accent-1);
   }
 }
+
+.letsFocusContainer {
+  cursor: pointer;
+  &:hover {
+    .videoPlay,
+    .videoPause {
+      display: inline-flex !important;
+    }
+  }
+}

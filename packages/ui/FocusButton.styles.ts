@@ -86,10 +86,18 @@ export const FocusButtonStyleDefs = {
     borderRadius: "50%",
   },
   videoPlay: {
-    display: "inline-flex",
+    display: "none",
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
   },
   videoPause: {
-    display: "inline-flex",
+    display: "none",
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
   },
   videoContainer: {
     position: "relative",
@@ -106,31 +114,19 @@ export const FocusButtonStyleDefs = {
     alignItems: "center",
     gap: 3,
   },
-  letsFocusContainerDark: {
-    gap: 1,
-  },
   userName: {
     color: "var(--accent-5)",
     position: "relative",
     right: 2,
   },
   timeAdjust: {
-    base: {
-      backgroundColor: "none",
-      border: "none",
-      padding: 4,
-      color: "var(--shade-6)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: "var(--radius)",
-      boxShadow: "none",
-    },
-    hover: {
-      backgroundColor: "var(--background)",
-      color: "var(--foreground)",
-      boxShadow: "var(--shadow)",
-    },
+    padding: 5,
+    color: "var(--shade-6)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "var(--radius)",
+    backgroundColor: "transparent",
   },
   separator: {
     padding: "0 3px 10px 3px",
@@ -180,12 +176,14 @@ export const FocusButtonStyleDefs = {
     display: "flex",
   },
   pomodoro: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    whiteSpace: "nowrap",
     gap: 10,
     padding: "5px 10px",
     fontSize: 15,
-  },
-  pomodoroVisible: {
-    display: "flex",
   },
   pomodoroActive: {
     borderColor: "var(--accent-4)",
