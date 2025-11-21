@@ -1630,6 +1630,7 @@ export default function Agent({
                 >
                   <Button
                     type="button"
+                    className="inverted"
                     onClick={() => {
                       customAgentForm.reset()
                       setTab("settings")

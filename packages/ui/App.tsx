@@ -390,6 +390,7 @@ export default function App({
     () =>
       storeApp && (
         <A
+          className="button transparent"
           style={{
             ...utilities.button.style,
             ...utilities.transparent.style,
@@ -451,6 +452,7 @@ export default function App({
             {appFormWatcher?.canSubmit && isManagingApp && (
               <Div style={utilities.row.style}>
                 <ConfirmButton
+                  className="transparent"
                   style={{
                     ...utilities.transparent.style,
                     ...utilities.small.style,
@@ -473,6 +475,7 @@ export default function App({
                   <Trash2 color="var(--accent-0)" size={18} />
                 </ConfirmButton>
                 <Button
+                  className="inverted"
                   onClick={async () => {
                     await saveApp()
                   }}
@@ -577,6 +580,7 @@ export default function App({
                       }}
                     />
                     <Span
+                      className="button tranparent"
                       style={{
                         ...utilities.button.style,
                         ...utilities.transparent.style,
@@ -667,6 +671,7 @@ export default function App({
           <Div style={{ ...styles.section.style }}>
             {appStatus?.part ? null : (
               <Button
+                className="link"
                 style={{
                   ...utilities.link,
                   gap: "0.5rem",
@@ -783,6 +788,7 @@ export default function App({
                   </Label>
 
                   <Button
+                    className="link"
                     disabled={!canAddName}
                     onClick={() => {
                       if (canAddName) {
@@ -858,9 +864,10 @@ export default function App({
               </Div>
             ) : (
               store && (
-                <a
+                <A
                   title={t(store?.title || "Your AI-Powered Life")}
                   href={getStoreSlug(store?.slug)}
+                  className="button inverted"
                   style={{
                     ...utilities.button.style,
                     ...utilities.small.style,
@@ -887,7 +894,7 @@ export default function App({
                     size={24}
                   />
                   <span>{store?.name}</span>
-                </a>
+                </A>
               )
             )}
             {!isManagingApp && (
@@ -895,6 +902,7 @@ export default function App({
                 href={`${FRONTEND_URL}/calendar`}
                 title={t("Organize your life")}
                 openInNewTab={isExtension && isFirefox}
+                className="button transparent"
                 style={{
                   ...utilities.button.style,
                   ...utilities.transparent.style,
@@ -1125,6 +1133,7 @@ export default function App({
                               <A
                                 key={item.slug}
                                 title={t(item.title)}
+                                className="button"
                                 style={{
                                   ...utilities.button.style,
                                   ...utilities.small.style,

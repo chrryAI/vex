@@ -7,7 +7,6 @@ import {
   useState,
   useMemo,
 } from "react"
-// import styles from "./Chat.module.scss"
 import clsx from "clsx"
 import {
   Paperclip,
@@ -3393,7 +3392,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 </Span>
                 <Button
                   onClick={stopSpeechConversation}
-                  className={"link"}
+                  className="link"
                   style={{
                     ...styles.speechModalTitleButton.style,
                     ...utilities.link.style,
@@ -3595,7 +3594,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
               )}
               {hasBottomOffset && (
                 <Button
-                  className={"link"}
+                  className="link"
                   style={{
                     ...styles.scrollDownButton.style,
                     ...utilities.link.style,
@@ -3737,6 +3736,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
             >
               {selectedAgent?.capabilities.imageGeneration && (
                 <Button
+                  className="link"
                   data-testid="image-generation-button"
                   style={{
                     ...utilities.link.style,
@@ -4557,7 +4557,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       })
                       addParams({ subscribe: "true" })
                     }}
-                    className={"link"}
+                    className="link"
                     style={{
                       ...utilities.link.style,
                       ...styles.subscribeButton.style,
@@ -4572,7 +4572,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     onClick={() => {
                       addParams({ signIn: "login" })
                     }}
-                    className={"link"}
+                    className="link"
                     style={{
                       ...utilities.link.style,
                       ...styles.loginButton.style,

@@ -1,6 +1,5 @@
 "use client"
 import React, { useEffect, useState } from "react"
-// import styles from "./Subscribe.module.scss"
 
 import { user, subscription } from "./types"
 import { animate, stagger } from "motion"
@@ -726,6 +725,7 @@ export default function Subscribe({
                     ...utilities.transparent.style,
                     ...styles.backButton.style,
                   }}
+                  className="transparent"
                   onClick={() => {
                     addHapticFeedback()
                     setIsGifting(false)
@@ -867,6 +867,7 @@ export default function Subscribe({
                   <>
                     {!user && guest?.subscription && (
                       <Button
+                        className="link"
                         onClick={() => {
                           addHapticFeedback()
                           setSignInPart("register")
@@ -878,6 +879,7 @@ export default function Subscribe({
                       </Button>
                     )}
                     <ConfirmButton
+                      className="transparent"
                       style={{
                         ...utilities.transparent.style,
                         ...styles.cancelSubscriptionButton.style,
@@ -942,6 +944,7 @@ export default function Subscribe({
                 >
                   {isInviting && (
                     <Button
+                      className="transparent"
                       style={{
                         ...utilities.transparent.style,
                         ...styles.backButton.style,
@@ -955,6 +958,7 @@ export default function Subscribe({
                     </Button>
                   )}
                   <Button
+                    className="inverted"
                     data-testid="subscribe-gift"
                     data-part={isInviting ? "invite" : "gift"}
                     onClick={() => {
@@ -986,6 +990,7 @@ export default function Subscribe({
           ) : guest ? (
             <>
               <Button
+                className="inverted"
                 onClick={() => {
                   addHapticFeedback()
                   setSignInPart("register")
@@ -996,6 +1001,7 @@ export default function Subscribe({
                 {t("Register")}
               </Button>
               <Button
+                className="link"
                 onClick={() => {
                   addHapticFeedback()
                   setSignInPart("login")
@@ -1009,6 +1015,7 @@ export default function Subscribe({
           ) : (
             !user?.subscription && (
               <Button
+                className="transparent"
                 data-testid="current-plan"
                 style={{
                   ...utilities.transparent.style,

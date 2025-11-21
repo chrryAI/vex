@@ -110,6 +110,7 @@ export default function Affiliate() {
               ? null
               : affiliateStats?.hasAffiliateLink && (
                   <Button
+                    className="inverted"
                     style={{
                       ...styles.goToDashboard.style,
                       ...utilities.inverted.style,

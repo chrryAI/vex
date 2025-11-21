@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 
-// import styles from "./Collaborate.module.scss"
 import { Send, UsersRound } from "./icons"
 import { useAppContext } from "./context/AppContext"
 import Modal from "./Modal"

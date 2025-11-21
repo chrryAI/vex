@@ -1,8 +1,6 @@
 "use client"
 import React, { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
-// import styles from "./Modal.module.scss"
-import clsx from "clsx"
 import { CircleX } from "./icons"
 import { useAuth } from "./context/providers"
 import {
@@ -199,6 +197,7 @@ export default function Modal({
 
               {hasCloseButton && (
                 <Button
+                  className="link"
                   data-testid={
                     dataTestId
                       ? `${dataTestId}-close-button`

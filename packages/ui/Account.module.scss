@@ -29,10 +29,10 @@
   align-items: center;
   gap: toRem.toRem(5);
   margin: toRem.toRem(10) 0 toRem.toRem(5) 0;
+}
 
-  input {
-    flex: 1;
-  }
+.userNameContainerInput {
+  flex: 1;
 }
 
 .email {

@@ -874,6 +874,7 @@ export default function FocusButton({ className }: { className?: string }) {
                         </button>
                         {focus && (
                           <A
+                            className="button inverted"
                             style={{
                               ...utilities.button.style,
                               ...utilities.inverted.style,

@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
 import { thread, MAX_THREAD_TITLE_CHAR_COUNT } from "./types"
-// import styles from "./EditThread.module.scss"
-import clsx from "clsx"
 import { Pencil, Sparkles } from "./icons"
 import Modal from "./Modal"
 import Loading from "./Loading"

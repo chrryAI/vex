@@ -1,11 +1,8 @@
 import React from "react"
 import { useData, useNavigationContext } from "./context/providers"
-import AddToHomeScreen from "./AddToHomeScreen"
 import Modal from "./Modal"
-import clsx from "clsx"
 import { FaApple, FaAndroid, FaChrome, FaFirefox } from "react-icons/fa"
 import Img from "./Img"
-// import styles from "./Version.module.scss"
 import { useTranslation } from "react-i18next"
 import { Button, Div, Span, usePlatform, Video } from "./platform"
 import A from "./A"
@@ -101,6 +98,7 @@ export default function Version() {
                     return
                   }
                 }}
+                className="button"
                 href="https://chromewebstore.google.com/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc"
                 style={{
                   ...utilities.button.style,
@@ -112,6 +110,7 @@ export default function Version() {
               </A>
             ) : isFirefox ? (
               <A
+                className="button"
                 openInNewTab
                 href="https://addons.mozilla.org/en-US/firefox/addon/vex"
                 style={{

@@ -416,10 +416,10 @@ const Thread = ({
 
                                 router.push(`${slugPath}?step=add&part=title`)
                               }}
+                              className="button transparent"
                               style={{
                                 ...utilities.button.style,
                                 ...utilities.transparent.style,
-                                ...utilities.link.style,
                                 ...utilities.xSmall.style,
                               }}
                             >
@@ -445,10 +445,10 @@ const Thread = ({
 
                                 goToCalendar()
                               }}
+                              className="button transparent"
                               style={{
                                 ...utilities.button.style,
                                 ...utilities.transparent.style,
-                                ...utilities.link.style,
                                 ...utilities.xSmall.style,
                               }}
                             >

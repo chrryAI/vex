@@ -24,7 +24,7 @@ import {
   useError,
   useData,
 } from "./context/providers"
-import { Button, Div, Input, useTheme } from "./platform"
+import { Button, Div, FilePicker, Input, useTheme } from "./platform"
 import { uploadUserImage } from "./lib"
 import Img from "./Img"
 import CharacterProfiles from "./CharacterProfiles"
@@ -246,6 +246,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
     <>
       <Button
         data-testid="account-button"
+        className="transparent"
         style={{
           ...utilities.transparent.style,
           ...utilities.small.style,
@@ -280,10 +281,9 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
               <Div>
                 <Div style={styles.email.style}>
                   <Div style={styles.userImageContainer.style}>
-                    <input
+                    <FilePicker
                       key={inputKey}
                       ref={fileInputRef}
-                      type="file"
                       accept="image/*"
                       style={{ display: "none" }}
                       onChange={handleFileChange}
@@ -293,6 +293,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                       title={t("Edit Image")}
                       aria-label={t("Edit Image")}
                       onClick={() => triggerFileInput()}
+                      className="link"
                       style={{
                         ...utilities.link.style,
                         ...styles.userImageWrapper.style,
@@ -317,6 +318,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                       )}
 
                       <Div
+                        className="transparent"
                         style={{
                           ...utilities.button.style,
                           ...utilities.transparent.style,
@@ -369,6 +371,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                     value={userName}
                     placeholder={t("Let's set a username")}
                     type="text"
+                    style={styles.userNameContainerInput.style}
                   />
                   <Button onClick={handleUsernameSubmit} disabled={isSaving}>
                     {isSaving ? <Loading width={20} height={20} /> : t("Save")}
@@ -381,6 +384,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
           <Div data-testid="account-email" style={styles.deleteAccount.style}>
             {!isExtension && (
               <ConfirmButton
+                className="transparent"
                 style={{
                   ...styles.deleteAccountButton.style,
                   ...utilities.transparent.style,
@@ -432,6 +436,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                   </Div>
                 )}
                 <Button
+                  className="inverted"
                   style={{
                     ...styles.linkAccount.style,
                     ...utilities.inverted.style,
@@ -491,6 +496,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
               </Checkbox>
             )}
             <Button
+              className="link"
               data-testid="account-logout-button"
               style={{ ...styles.logoutButton.style, ...utilities.link.style }}
               onClick={handleLogout}

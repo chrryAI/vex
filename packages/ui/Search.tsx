@@ -1,17 +1,10 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-// import styles from "./Search.module.scss"
-import clsx from "clsx"
 import nprogress from "nprogress"
 import { SearchIcon } from "./icons"
 import { useDebouncedCallback } from "use-debounce"
-import {
-  useSearchParams,
-  usePathname,
-  useRouter,
-} from "./hooks/useWindowHistory"
-import { useAppContext } from "./context/AppContext"
+import { useSearchParams, usePathname } from "./hooks/useWindowHistory"
 import { useNavigationContext } from "./context/providers"
 import { useSearchStyles } from "./Search.styles"
 import { Div, Input } from "./platform"

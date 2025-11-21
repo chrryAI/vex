@@ -1,5 +1,4 @@
 import { forwardRef, useEffect, useState, useMemo } from "react"
-// import styles from "./Messages.module.scss"
 import type {
   aiAgent,
   guest,
@@ -10,7 +9,6 @@ import type {
   threadSummary,
 } from "./types"
 import Message from "./Message"
-import clsx from "clsx"
 import { CircleX, Loader, Sparkles, VideoIcon } from "./icons"
 import { useAppContext } from "./context/AppContext"
 import {
@@ -158,6 +156,7 @@ export default forwardRef<
       {nextPage && (
         <Div style={{ ...styles.loadMoreContainer.style }}>
           <Button
+            className="transparent"
             style={{ ...utilities.xSmall, ...utilities.transparent }}
             onClick={() => {
               setIsLoadingMore?.(true)
@@ -197,6 +196,7 @@ export default forwardRef<
         <Div style={{ ...styles.enableCharacterProfilesContainer.style }}>
           <Button
             disabled={isUpdating}
+            className="inverted"
             onClick={async () => {
               addHapticFeedback()
 
@@ -223,6 +223,7 @@ export default forwardRef<
                 onClick={async () => {
                   setShowCharacterProfiles(true)
                 }}
+                className="inverted"
                 style={{ ...utilities.inverted.style }}
               >
                 {isUpdating ? (
