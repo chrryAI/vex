@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react"
-import { useTheme, colorsType } from "../context/ThemeContext"
+import { useTheme } from "./context/ThemeContext"
 import { useTranslation } from "react-i18next"
 import { Dataset, DataPoint } from "./utils/chartTypes"
 import { createSmoothPathPoints } from "./utils/chartUtils"
@@ -85,7 +85,7 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
     ctx.clearRect(0, 0, width, height)
 
     // Draw grid lines
-    ctx.strokeStyle = colors.getForegroundTransparent?.(0.1) || colors.shade2
+    ctx.strokeStyle = colors.shade2
     ctx.lineWidth = 0.5
     ;[0.25, 0.5, 0.75, 1].forEach((level) => {
       const y = paddingBottom + chartHeight - chartHeight * level
@@ -210,8 +210,7 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
                   position: "absolute",
                   left: "2px",
                   top: `${paddingBottom + chartHeight - chartHeight * level - 8}px`,
-                  color:
-                    colors.getForegroundTransparent?.(0.6) || colors.shade6,
+                  color: colors.shade6,
                   fontSize: "10px",
                   opacity: progress,
                   width: `${paddingLeft - 6}px`,
@@ -234,9 +233,10 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
             height: "20px",
           }}
         >
-          {datasets[0]?.data.map((point, index) => {
+          {datasets[0]?.data?.map((point, index) => {
             const x =
-              paddingLeft + (chartWidth / (datasets[0].data.length - 1)) * index
+              paddingLeft +
+              (chartWidth / (datasets[0]?.data?.length ?? 1 - 1)) * index
             return (
               <Text
                 key={`x-label-${index}`}
@@ -244,8 +244,7 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
                   position: "absolute",
                   left: `${x - 18}px`,
                   top: `${height - paddingBottom + 2}px`,
-                  color:
-                    colors.getForegroundTransparent?.(0.8) || colors.shade8,
+                  color: colors.shade8,
                   fontSize: "11px",
                   opacity: progress,
                   width: "36px",

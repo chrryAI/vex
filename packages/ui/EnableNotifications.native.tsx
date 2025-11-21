@@ -115,17 +115,17 @@ export default function EnableNotifications({
       <Weather
         onLocationClick={onLocationClick}
         showLocation={!shouldShow}
-        style={{
-          ...styles.weather.style,
-          ...(!shouldShow && styles.withoutNotifications.style),
-        }}
+        // style={{
+        //   ...styles.weather.style,
+        //   ...(!shouldShow && styles.withoutNotifications.style),
+        // }}
       />
 
       {isMounted && shouldShow && (
         <Div
           style={{
             ...styles.enableNotifications.style,
-            ...(os && styles[os]?.style),
+            // ...(os && styles[os]?.style),
           }}
         >
           <Button
