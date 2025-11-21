@@ -47,7 +47,6 @@
   padding-bottom: toRem.toRem(35);
   margin-bottom: toRem.toRem(3);
   background-color: var(--shade-1-transparent);
-  backdrop-filter: blur(toRem.toRem(5.5));
   padding-right: toRem.toRem(19);
   position: relative;
 
@@ -66,8 +65,8 @@
   border: toRem.toRem(1) dashed var(--shade-3);
   box-shadow: none;
   bottom: toRem.toRem(2.5);
-  opacity: 0;
-  animation: fadeInUp 0.3s ease-in-out forwards;
+  // opacity: 0;
+  // animation: fadeInUp 0.3s ease-in-out forwards;
 }
 
 .floatingVideoContainer {
@@ -161,13 +160,13 @@
   position: relative;
   margin-bottom: toRem.toRem(6.5);
 
-  transform: translateX(-50%) translateY(0);
+  // transform: translateX(-50%) translateY(0);
   display: flex;
 
   align-items: center;
 }
 
-.topInner {
+.topChatFloatingTopInner {
   background-color: var(--shade-1);
   border: toRem.toRem(1) solid var(--shade-2);
   padding: toRem.toRem(5);
@@ -178,17 +177,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  > div {
-    background-color: var(--shade-2-transparent);
-    border: toRem.toRem(1) solid var(--shade-2);
-    backdrop-filter: blur(toRem.toRem(5.5));
-    padding: toRem.toRem(5);
-    border-radius: var(--radius);
-  }
 
   @media (min-width: breakpoints.$breakpoint-mobile) {
     left: toRem.toRem(20);
   }
+}
+
+.collaborationStep3Div {
+  background-color: var(--shade-2-transparent);
+  border: toRem.toRem(1) solid var(--shade-2);
+  backdrop-filter: blur(toRem.toRem(5.5));
+  padding: toRem.toRem(5);
+  border-radius: var(--radius);
 }
 
 .debateAgentButton {
@@ -226,7 +226,7 @@
 
 .chatContainerFloating {
   bottom: toRem.toRem(5);
-  transform: translateX(50%) translateY(0);
+  // transform: translateX(50%) translateY(0);
   z-index: 1000;
 }
 

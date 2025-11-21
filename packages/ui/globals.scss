@@ -657,6 +657,10 @@ button.favorite {
   @include utils.respect-reduced-motion;
 }
 
+.blur {
+  backdrop-filter: blur(5.5px);
+}
+
 @keyframes placeholderGlowPulse {
   0% {
     border-color: var(--accent-1);

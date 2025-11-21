@@ -3568,16 +3568,31 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           {/* Anchor element for chat input tooltip */}
           {files.length === 0 && (
             <Div
+              className={collaborationStep === 3 ? "blur" : ""}
               style={{
                 ...styles.top.style,
-                ...styles.topChatFloating.style,
-                ...(isChatFloating ? styles.chatContainerFloating.style : {}),
-                ...(collaborationStep === 3
-                  ? styles.collaborationStep3.style
+                ...(isChatFloating
+                  ? {
+                      ...styles.chatContainerFloating.style,
+                      ...styles.topChatFloating.style,
+                    }
                   : {}),
               }}
             >
-              {Top && <Div style={styles.topInner.style}>{Top}</Div>}
+              {Top && (
+                <Div
+                  style={{
+                    ...(isChatFloating
+                      ? styles.topChatFloatingTopInner.style
+                      : {}),
+                    ...(collaborationStep === 3
+                      ? styles.collaborationStep3Div.style
+                      : {}),
+                  }}
+                >
+                  {Top}
+                </Div>
+              )}
               {hasBottomOffset && (
                 <Button
                   className={"link"}
@@ -3711,7 +3726,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
             )}
 
             <Div
-              className={showPlaceholderGlow ? "chat placeholderGlow" : "chat"}
+              className={
+                showPlaceholderGlow ? "chat placeholderGlow blur" : "chat blur"
+              }
               style={{
                 ...styles.chat.style,
                 ...(isStandalone ? styles.standalone : {}),
@@ -3811,7 +3828,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 className="chatTextArea"
                 rows={isHydrated && isChatFloating ? 1 : 2}
                 data-testid="chat-textarea"
-                style={styles.chatTextArea.style}
+                style={{
+                  ...styles.chatTextArea.style,
+                  ...(isChatFloating ? { minHeight: 40 } : undefined),
+                }}
                 value={input}
                 onChange={handleInputChange}
                 name="chat"
