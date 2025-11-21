@@ -104,6 +104,13 @@ export {
   type ImageProps,
 } from "./PlatformPrimitives"
 
+// Draggable List Component (auto-resolves to .web.tsx or .native.tsx)
+export {
+  default as DraggableList,
+  type DraggableListProps,
+  type RenderItemParams,
+} from "./DraggableList"
+
 // Video Component (auto-resolves to .web.tsx or .native.tsx)
 export { default as Video, type VideoProps } from "./Video"
 
