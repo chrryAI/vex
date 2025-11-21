@@ -93,3 +93,7 @@ button.inverted:hover,
 .right {
   margin-left: auto;
 }
+
+.storeApp:hover {
+  outline: 2px solid var(--accent-1);
+}

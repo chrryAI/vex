@@ -121,72 +121,77 @@
     min-width: toRem.toRem(130);
   }
 
-  &:last-child {
-    // flex: 1;
-    align-self: flex-start;
-    flex: 1;
-  }
-
-  &:hover {
-    outline: 2px solid var(--accent-1);
-  }
-
   &.selected {
     outline: 3px solid var(--accent-5);
     background-color: var(--shade-1);
   }
+}
 
-  .appInfo {
+.appLarge {
+  flex: inherit;
+  min-width: toRem.toRem(130);
+}
+
+.appLast {
+  // flex: 1;
+  align-self: flex-start;
+  flex: 1;
+}
+
+.app:hover {
+  outline: 2px solid var(--accent-1);
+}
+
+.appInfo {
+  display: flex;
+  flex-direction: column;
+  gap: toRem.toRem(2);
+
+  display: none;
+
+  @media (min-width: breakpoints.$breakpoint-mobile) {
     display: flex;
-    flex-direction: column;
-    gap: toRem.toRem(2);
-
-    display: none;
-
-    @media (min-width: breakpoints.$breakpoint-mobile) {
-      display: flex;
-    }
-
-    .appName {
-      font-size: toRem.toRem(16);
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .appSubtitle {
-      font-size: toRem.toRem(12);
-      color: var(--shade-5);
-      text-align: center;
-      font-weight: 400;
-      max-width: toRem.toRem(115);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
   }
 
-  .badge {
-    bottom: 1px;
-    right: 1px;
-    background-color: var(--accent-1);
-    color: var(--shade-8);
-    padding: toRem.toRem(3) toRem.toRem(10);
-    border-radius: toRem.toRem(20);
+  .appName {
+    font-size: toRem.toRem(16);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .appSubtitle {
     font-size: toRem.toRem(12);
-    margin-bottom: toRem.toRem(10);
+    color: var(--shade-5);
+    text-align: center;
+    font-weight: 400;
+    max-width: toRem.toRem(115);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
 
-    &.inProgress {
-      background-color: var(--accent-5);
-    }
-    &.planned {
-      background-color: var(--shade-3);
-    }
+.badge {
+  bottom: 1px;
+  right: 1px;
+  background-color: var(--accent-1);
+  color: var(--shade-8);
+  padding: toRem.toRem(3) toRem.toRem(10);
+  border-radius: toRem.toRem(20);
+  font-size: toRem.toRem(12);
+  margin-bottom: toRem.toRem(10);
 
-    display: none;
+  &.inProgress {
+    background-color: var(--accent-5);
+  }
+  &.planned {
+    background-color: var(--shade-3);
+  }
 
-    @media (min-width: breakpoints.$breakpoint-mobile) {
-      display: flex;
-    }
+  display: none;
+
+  @media (min-width: breakpoints.$breakpoint-mobile) {
+    display: flex;
   }
 }
 
