@@ -14,9 +14,11 @@ import {
   Gemini,
   Flux,
   Perplexity,
-} from "@lobehub/icons"
+  Clapperboard,
+  Hand,
+  Shell,
+} from "./icons"
 import { getImageSrc } from "./lib"
-import { Clapperboard, Hand, Shell } from "./icons"
 
 type ImageProps = {
   slug?: "atlas" | "peach" | "vault" | "bloom"

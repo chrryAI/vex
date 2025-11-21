@@ -1,5 +1,5 @@
-import React, { useEffect } from "react"
-import { View, StyleSheet, Dimensions, Text } from "react-native"
+import React, { useEffect, useState } from "react"
+import { View, StyleSheet, Dimensions, Text, Animated } from "react-native"
 import {
   Canvas,
   Path,
@@ -10,13 +10,6 @@ import {
   LinearGradient,
   vec,
 } from "@shopify/react-native-skia"
-import Animated, {
-  useSharedValue,
-  withTiming,
-  useAnimatedReaction,
-  runOnJS,
-  Easing,
-} from "react-native-reanimated"
 import { useTheme } from "./context/ThemeContext"
 import { useTranslation } from "react-i18next"
 import { Dataset, DataPoint } from "./utils/chartTypes"
@@ -61,19 +54,36 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
   const { colors } = useTheme()
   const styles = getStyles(colors)
 
-  // Animation progress
-  const progress = useSharedValue(0)
-  const [progressState, setProgressState] = React.useState(0)
-  useAnimatedReaction(
-    () => progress.value,
-    (val) => {
-      runOnJS(setProgressState)(val)
-    },
-    [progress],
-  )
+  // Early return if no datasets
+  if (!datasets || datasets.length === 0) {
+    return (
+      <View style={[styles.container, { height }]}>
+        <View style={styles.noDataContainer}>
+          <Text style={[styles.noDataText, { color: colors.foreground }]}>
+            {t("Nothing here yet")}
+          </Text>
+        </View>
+      </View>
+    )
+  }
 
-  // Find global max value
-  const allValues = datasets.flatMap((ds) => ds.data.map((d) => d.value))
+  // Animation progress using simple state
+  const [progressState, setProgressState] = useState(animated ? 0 : 1)
+
+  // Simple animation using useEffect
+  useEffect(() => {
+    if (animated && progressState < 1) {
+      const timer = setTimeout(() => {
+        setProgressState(Math.min(1, progressState + 0.05))
+      }, 20)
+      return () => clearTimeout(timer)
+    }
+  }, [animated, progressState])
+
+  // Find global max value - filter out datasets without data
+  const allValues = datasets
+    .filter((ds) => ds && ds.data && Array.isArray(ds.data))
+    .flatMap((ds) => ds.data.map((d) => d.value))
   const maxValue = Math.max(...allValues, 0.1) * 1.1
   const minValue = 0
 
@@ -159,57 +169,67 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
 
   // Render lines
   const renderLines = () => {
-    return datasets.map((dataset, i) => {
-      const path = createPath(dataset.data, progressState)
-      const n = dataset.data.length
-      const rainbowColors = generateRainbowColorsFromBase(
-        Math.max(n, 6),
-        dataset.color,
+    return datasets
+      .filter(
+        (dataset) => dataset && dataset.data && Array.isArray(dataset.data),
       )
-      const x0 = paddingLeft
-      const x1 = paddingLeft + chartWidth
-      const y = paddingBottom + chartHeight / 2
-      return (
-        <Path
-          key={`line-${i}`}
-          path={path}
-          style="stroke"
-          strokeWidth={5}
-          strokeJoin="round"
-          strokeCap="round"
-          opacity={progressState}
-        >
-          <LinearGradient
-            start={vec(x0, y)}
-            end={vec(x1, y)}
-            colors={rainbowColors}
-            mode="clamp"
-          />
-        </Path>
-      )
-    })
+      .map((dataset, i) => {
+        const path = createPath(dataset.data, progressState)
+        const n = dataset.data.length
+        const rainbowColors = generateRainbowColorsFromBase(
+          Math.max(n, 6),
+          dataset.color,
+        )
+        const x0 = paddingLeft
+        const x1 = paddingLeft + chartWidth
+        const y = paddingBottom + chartHeight / 2
+        return (
+          <Path
+            key={`line-${i}`}
+            path={path}
+            style="stroke"
+            strokeWidth={5}
+            strokeJoin="round"
+            strokeCap="round"
+            opacity={progressState}
+          >
+            <LinearGradient
+              start={vec(x0, y)}
+              end={vec(x1, y)}
+              colors={rainbowColors}
+              mode="clamp"
+            />
+          </Path>
+        )
+      })
   }
 
   // Render data points
   const renderDataPoints = () => {
-    return datasets.map((dataset, i) =>
-      dataset.data.map((point, index) => {
-        const x = paddingLeft + (chartWidth / (dataset.data.length - 1)) * index
-        const normalizedValue = (point.value - minValue) / (maxValue - minValue)
-        const y = paddingBottom + chartHeight - normalizedValue * chartHeight
+    return datasets
+      .filter(
+        (dataset) => dataset && dataset.data && Array.isArray(dataset.data),
+      )
+      .map((dataset, i) =>
+        dataset.data.map((point, index) => {
+          const x =
+            paddingLeft + (chartWidth / (dataset.data.length - 1)) * index
+          const normalizedValue =
+            (point.value - minValue) / (maxValue - minValue)
+          const y = paddingBottom + chartHeight - normalizedValue * chartHeight
 
-        return (
-          <Circle
-            key={`point-${i}-${index}`}
-            cx={x}
-            cy={y}
-            r={0}
-            opacity={progressState}
-            color={pointColor ?? dataset.color}
-          />
-        )
-      }),
-    )
+          return (
+            <Circle
+              key={`point-${i}-${index}`}
+              cx={x}
+              cy={y}
+              r={0}
+              opacity={progressState}
+              color={pointColor ?? dataset.color}
+            />
+          )
+        }),
+      )
   }
 
   return (
@@ -252,9 +272,9 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
         {/* X-axis labels */}
         <View style={styles.xAxisLabels}>
           {datasets[0]?.data?.map((point, index) => {
+            const dataLength = datasets[0]?.data?.length || 1
             const x =
-              paddingLeft +
-              (chartWidth / (datasets[0]?.data?.length ?? 1 - 1)) * index
+              paddingLeft + (chartWidth / Math.max(dataLength - 1, 1)) * index
             return (
               <Animated.Text
                 key={`x-label-${index}`}

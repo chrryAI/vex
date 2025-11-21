@@ -6,5 +6,8 @@
 export * from "lucide-react"
 export type { LucideProps as IconProps } from "lucide-react"
 
+// AI Brand Icons
+export * from "@lobehub/icons"
+
 // Custom icons
 export { WannathisIcon } from "./WannathisIcon"

@@ -72,14 +72,7 @@ import {
   type collaboration,
   emojiMap,
 } from "./types"
-import {
-  DeepSeek,
-  OpenAI,
-  Claude,
-  Gemini,
-  Flux,
-  Perplexity,
-} from "@lobehub/icons"
+import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "./icons"
 import Modal from "./Modal"
 import Loading from "./Loading"
 import sanitizeHtml from "sanitize-html"

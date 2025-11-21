@@ -20,6 +20,16 @@ export function createStyleProxy<T extends Record<string, any>>(
 ): T {
   const { styles, theme, dimensions, styleCache } = options
 
+  // Safety check: ensure styles object exists
+  if (!styles || typeof styles !== "object") {
+    console.warn("createStyleProxy: styles object is undefined or invalid")
+    return new Proxy({} as T, {
+      get() {
+        return { style: {}, className: "" }
+      },
+    })
+  }
+
   return new Proxy({} as T, {
     get(_target: any, prop: string | symbol): any {
       if (typeof prop === "symbol") return undefined
@@ -32,8 +42,8 @@ export function createStyleProxy<T extends Record<string, any>>(
         return { style: styleCache.current.get(cacheKey)! }
       }
 
-      // Start with base styles
-      const baseStyle = styles[className] || {}
+      // Start with base styles - add safety check
+      const baseStyle = styles?.[className] || {}
       const responsiveStyle: Record<string, any> = {}
 
       // Resolve theme values and handle responsive properties

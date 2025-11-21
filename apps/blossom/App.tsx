@@ -35,7 +35,14 @@ function App(): React.JSX.Element {
   return (
     <View>
       <AppProviders>
-        <Text>App</Text>
+        <Text
+          style={{
+            color: isDarkMode ? '#FFF' : '#000',
+            fontSize: 24,
+            fontWeight: '600',
+          }}>
+          App
+        </Text>
       </AppProviders>
     </View>
   );

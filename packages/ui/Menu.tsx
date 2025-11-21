@@ -60,9 +60,10 @@ export default function Menu({
   // Auth context
   const { user, guest, profile, track, language, allApps, getAppSlug } =
     useAuth()
-  const { utilities } = useStyles()
+  // const { utilities } = useStyles()
 
   const styles = useMenuStyles()
+
   // Navigation context
   const {
     router,
@@ -267,7 +268,7 @@ export default function Menu({
   return (
     <>
       <Div
-        className="menu"
+        className="menu blur"
         key={isDrawerOpen ? "open" : "closed"}
         ref={innerRef}
         style={{

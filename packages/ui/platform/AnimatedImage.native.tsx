@@ -1,14 +1,9 @@
 /**
- * Native animated image using React Native Reanimated
+ * Native animated image using React Native's built-in Animated API
  */
 
-import React from "react"
-import { Image } from "react-native"
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated"
+import React, { useEffect, useRef } from "react"
+import { Image, Animated } from "react-native"
 import type { AnimationPreset } from "./animations"
 
 interface AnimatedImageProps {
@@ -23,121 +18,50 @@ interface AnimatedImageProps {
   animation?: AnimationPreset
 }
 
-const ReanimatedImage = Animated.createAnimatedComponent(Image)
+const AnimatedImageComponent = Animated.createAnimatedComponent(Image)
 
 export function AnimatedImage({
   src,
   alt,
-  className,
   style,
   isLoaded,
   reduceMotion,
   onLoad,
   dataTestId,
-  animation = "slideUp",
+  animation = "fadeIn",
 }: AnimatedImageProps) {
-  const animatedStyle = useAnimatedStyle(() => {
-    const config = reduceMotion
-      ? { duration: 0 }
-      : { damping: 15, stiffness: 150 }
+  const opacity = useRef(new Animated.Value(0)).current
+  const translateY = useRef(new Animated.Value(30)).current
 
-    switch (animation) {
-      case "slideUp":
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0, { duration: 300 }),
-          transform: [
-            {
-              translateY: withSpring(isLoaded ? 0 : 30, config),
-            },
-          ],
-        }
-
-      case "slideDown":
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0, { duration: 300 }),
-          transform: [
-            {
-              translateY: withSpring(isLoaded ? 0 : -30, config),
-            },
-          ],
-        }
-
-      case "slideLeft":
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0, { duration: 300 }),
-          transform: [
-            {
-              translateX: withSpring(isLoaded ? 0 : 30, config),
-            },
-          ],
-        }
-
-      case "slideRight":
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0, { duration: 300 }),
-          transform: [
-            {
-              translateX: withSpring(isLoaded ? 0 : -30, config),
-            },
-          ],
-        }
-
-      case "scale":
-      case "scaleIn":
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0, { duration: 300 }),
-          transform: [
-            {
-              scale: withSpring(isLoaded ? 1 : 0.5, config),
-            },
-          ],
-        }
-
-      case "pulse":
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0.5, { duration: 300 }),
-          transform: [
-            {
-              scale: withSpring(isLoaded ? 1 : 0.7, config),
-            },
-          ],
-        }
-
-      case "float":
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0.8, { duration: 300 }),
-          transform: [
-            {
-              translateY: withSpring(isLoaded ? 0 : -15, config),
-            },
-          ],
-        }
-
-      case "wiggle":
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0, { duration: 300 }),
-          transform: [
-            {
-              rotate: withSpring(isLoaded ? "0deg" : "-15deg", config),
-            },
-          ],
-        }
-
-      case "fade":
-      case "fadeIn":
-      default:
-        return {
-          opacity: withTiming(isLoaded ? 1 : 0, { duration: 300 }),
-        }
+  useEffect(() => {
+    if (isLoaded) {
+      const duration = reduceMotion ? 0 : 300
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration,
+          useNativeDriver: true,
+        }),
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }),
+      ]).start()
     }
-  }, [isLoaded, animation, reduceMotion])
+  }, [isLoaded, reduceMotion, opacity, translateY])
 
   return (
-    <ReanimatedImage
+    <AnimatedImageComponent
       testID={dataTestId}
       source={{ uri: src }}
       onLoad={onLoad}
-      style={[style, animatedStyle]}
+      style={[
+        style,
+        {
+          opacity,
+          transform: [{ translateY }],
+        },
+      ]}
       accessibilityLabel={alt}
     />
   )

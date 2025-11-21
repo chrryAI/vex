@@ -11,7 +11,7 @@ import { useAppContext } from "./context/AppContext"
 import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "./utils"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft } from "./icons"
 import {
   Button,
   Div,
