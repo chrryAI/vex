@@ -118,18 +118,7 @@ export default function Menu({
 
   const hasHydrated = useHasHydrated()
 
-  const reload = () => {
-    // if (isExtension) return
-    // const page = document.querySelector("[data-url]")
-    // if (page) {
-    //   const attr = page.getAttribute("data-url")
-    //   if (!attr) return
-    //   const pathname = window.location.pathname
-    //   if (pathname !== attr) {
-    //     window.location.href = attr
-    //   }
-    // }
-  }
+  const reload = () => {}
 
   const timelineListRef = useRef<HTMLDivElement>(null)
 
@@ -716,7 +705,9 @@ export default function Menu({
                             )
                           })()
                         : null}
-                      {threads.threads.length < 2 && <EmptyStateTips />}
+                      {threads.threads.length < 2 && (
+                        <EmptyStateTips style={{ marginTop: 15 }} />
+                      )}
                     </>
                   )}
                 </Div>

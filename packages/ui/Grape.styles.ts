@@ -17,19 +17,19 @@ export const GrapeStyleDefs = {
   },
   icon: {
     borderRadius: 40,
-    outline: "1px dashed var(--shade-3px)",
+    outline: "1px dashed var(--shade-3)",
     padding: 20,
     maxWidth: "100%",
     flex: 1,
   },
   iconSelected: {
-    outline: "2px solid var(--accent-1px)",
+    outline: "2px solid var(--accent-1)",
   },
   title: {
     marginBottom: 5,
   },
   actions: {
-    borderTop: "1px dashed var(--shade-3px)",
+    borderTop: "1px dashed var(--shade-3)",
     marginTop: 20,
     paddingTop: 10,
   },
