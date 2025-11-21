@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react"
-import styles from "./CollaborationStatus.module.scss"
 import clsx from "clsx"
-import type { thread, collaboration, user } from "./types"
+import type { thread } from "./types"
 import { useAppContext } from "./context/AppContext"
-import { Check, CircleCheck, CircleX, Trash2, UsersRound, X } from "./icons"
+import { CircleCheck, CircleX, UsersRound } from "./icons"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
-import { useAuth, useNavigationContext } from "./context/providers"
+import { useAuth } from "./context/providers"
 import { useData } from "./context/providers/DataProvider"
-import { useTheme } from "./platform"
+import { Button, Div, Span, useTheme } from "./platform"
+import { useStyles } from "./context/StylesContext"
+import { useCollaborationStatusStyles } from "./CollaborationStatus.styles"
 
 export default function CollaborationStatus({
   thread,
@@ -26,6 +27,10 @@ export default function CollaborationStatus({
   dataTestId?: string
   style?: React.CSSProperties
 }) {
+  const { utilities } = useStyles()
+
+  const styles = useCollaborationStatusStyles()
+
   const { t } = useAppContext()
   const { user, token } = useAuth()
   const { isMobileDevice } = useTheme()
@@ -79,7 +84,7 @@ export default function CollaborationStatus({
   }
 
   return (
-    <div
+    <Div
       style={{ gap: isIcon ? 5 : 10, ...style }}
       className={clsx(styles.collaborationStatus, className)}
     >
@@ -102,7 +107,7 @@ export default function CollaborationStatus({
               <CircleX color="var(--accent-0)" size={iconSize} />
             )}
           </ConfirmButton>
-          <button
+          <Button
             title={isMobileDevice ? t("Accept") : undefined}
             data-testid={`${dataTestId}-accept-collaboration`}
             style={{ fontSize }}
@@ -115,7 +120,7 @@ export default function CollaborationStatus({
             ) : (
               <CircleCheck color="var(--accent-4)" size={iconSize} />
             )}
-          </button>
+          </Button>
         </>
       ) : (
         <ConfirmButton
@@ -132,10 +137,10 @@ export default function CollaborationStatus({
             ) : (
               <CircleX color="var(--accent-0)" size={iconSize} />
             )}
-            <span>{t("Leave")}</span>
+            <Span>{t("Leave")}</Span>
           </>
         </ConfirmButton>
       )}
-    </div>
+    </Div>
   )
 }
