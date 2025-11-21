@@ -29,9 +29,7 @@ import { FaXTwitter } from "react-icons/fa6"
 
 import { toast } from "react-hot-toast"
 import clsx from "clsx"
-import { DndProvider } from "react-dnd"
-import { HTML5Backend } from "react-dnd-html5-backend"
-import DraggableItem from "./DraggableItem"
+import { DraggableList } from "./platform"
 import {
   GUEST_TASKS_COUNT,
   PLUS_TASKS_COUNT,
@@ -895,196 +893,204 @@ export default function FocusButton({ className }: { className?: string }) {
                     {tasks?.tasks?.length ? (
                       <>
                         <div data-testid="tasks" className={clsx(styles.tasks)}>
-                          <DndProvider backend={HTML5Backend}>
-                            {tasks.tasks.filter(Boolean).map((task, index) => (
-                              <DraggableItem
+                          <DraggableList
+                            data={tasks.tasks.filter(Boolean)}
+                            keyExtractor={(item) => item.id}
+                            onDragEnd={async ({ data, from, to }) => {
+                              if (from === to) return
+                              if (isMovingItemRef.current) return
+                              isMovingItemRef.current = true
+
+                              if (isCountingDown && !isPaused) {
+                                handlePause()
+                              }
+
+                              // Optimistic update
+                              setTasks((prevTasks) => ({
+                                ...prevTasks,
+                                tasks: data,
+                              }))
+
+                              const draggedTask = data[to]
+                              if (draggedTask) {
+                                await updateTask({
+                                  task: {
+                                    ...draggedTask,
+                                    total: undefined,
+                                    order: to,
+                                  },
+                                  reorder: true,
+                                })
+                              }
+
+                              isMovingItemRef.current = false
+                            }}
+                            renderItem={({
+                              item: task,
+                              index,
+                              drag,
+                              isActive,
+                            }) => (
+                              <div
+                                data-task-title={task.title}
+                                data-testid="task"
                                 key={task.id}
-                                index={index}
-                                moveItem={async (from, to) => {
-                                  if (isMovingItemRef.current) return
-                                  isMovingItemRef.current = true
-
-                                  if (isCountingDown && !isPaused) {
-                                    handlePause()
-                                  }
-
-                                  setTasks((prevTasks) => {
-                                    const newTasks = [...prevTasks.tasks]
-                                    const draggedTask = newTasks[from]
-                                    if (!draggedTask) {
-                                      toast.error("Dragged task not found")
-                                      return prevTasks
-                                    }
-
-                                    newTasks.splice(from, 1)
-                                    newTasks.splice(to, 0, draggedTask)
-
-                                    updateTask({
-                                      task: {
-                                        ...draggedTask,
-                                        total: undefined,
-                                        order: to,
-                                      },
-                                      reorder: true,
-                                    })
-                                    return {
-                                      ...prevTasks,
-                                      tasks: newTasks,
-                                    }
-                                  })
-
-                                  isMovingItemRef.current = false
-                                }}
+                                className={clsx(
+                                  styles.task,
+                                  index === 0 && styles.currentTask,
+                                  selectedTasks?.some(
+                                    (t) => t.id === task.id,
+                                  ) && styles.selectedTask,
+                                  isCountingDown &&
+                                    !isPaused &&
+                                    styles.counting,
+                                  isPaused && styles.paused,
+                                  isFinished && styles.finished,
+                                )}
+                                style={{ opacity: isActive ? 0.5 : 1 }}
                               >
-                                <div
-                                  data-task-title={task.title}
-                                  data-testid="task"
-                                  key={task.id}
-                                  className={clsx(
-                                    styles.task,
-                                    index === 0 && styles.currentTask,
-                                    selectedTasks?.some(
+                                <div className={styles.taskContent}>
+                                  <div
+                                    onClick={() => {
+                                      if (
+                                        selectedTasks?.some(
+                                          (t) => t.id === task.id,
+                                        )
+                                      ) {
+                                        setSelectedTasks(
+                                          selectedTasks?.filter(
+                                            (t) => t.id !== task.id,
+                                          ),
+                                        )
+                                      } else {
+                                        if (
+                                          selectedTasks &&
+                                          selectedTasks?.length === 3
+                                        ) {
+                                          toast.error(
+                                            t("You can select up to 3 tasks"),
+                                          )
+                                          return
+                                        }
+                                        if (time === 0) {
+                                          handlePresetTime(presetMin1)
+                                        }
+                                        setSelectedTasks(
+                                          selectedTasks
+                                            ? [...selectedTasks, task]
+                                            : [task],
+                                        )
+                                      }
+                                    }}
+                                    className={styles.taskTitle}
+                                  >
+                                    {selectedTasks?.some(
                                       (t) => t.id === task.id,
-                                    ) && styles.selectedTask,
-                                    isCountingDown &&
-                                      !isPaused &&
-                                      styles.counting,
-                                    isPaused && styles.paused,
-                                    isFinished && styles.finished,
-                                  )}
-                                >
-                                  <div className={styles.taskContent}>
-                                    <div
-                                      onClick={() => {
-                                        if (
-                                          selectedTasks?.some(
-                                            (t) => t.id === task.id,
-                                          )
-                                        ) {
-                                          setSelectedTasks(
-                                            selectedTasks?.filter(
-                                              (t) => t.id !== task.id,
-                                            ),
-                                          )
-                                        } else {
-                                          if (
-                                            selectedTasks &&
-                                            selectedTasks?.length === 3
-                                          ) {
-                                            toast.error(
-                                              t("You can select up to 3 tasks"),
-                                            )
-                                            return
+                                    ) ? (
+                                      <span
+                                        className={styles.taskSelected}
+                                        data-testid="task-selected"
+                                      >
+                                        <CircleCheck
+                                          width={16}
+                                          height={16}
+                                          color={
+                                            isCountingDown
+                                              ? "var(--accent-4)"
+                                              : isPaused
+                                                ? "var(--accent-1)"
+                                                : undefined
                                           }
-                                          if (time === 0) {
-                                            handlePresetTime(presetMin1)
-                                          }
-                                          setSelectedTasks(
-                                            selectedTasks
-                                              ? [...selectedTasks, task]
-                                              : [task],
-                                          )
-                                        }
-                                      }}
-                                      className={styles.taskTitle}
-                                    >
-                                      {selectedTasks?.some(
-                                        (t) => t.id === task.id,
-                                      ) ? (
-                                        <span
-                                          className={styles.taskSelected}
-                                          data-testid="task-selected"
-                                        >
-                                          <CircleCheck
-                                            width={16}
-                                            height={16}
-                                            color={
-                                              isCountingDown
-                                                ? "var(--accent-4)"
-                                                : isPaused
-                                                  ? "var(--accent-1)"
-                                                  : undefined
-                                            }
-                                          />
-                                        </span>
-                                      ) : (
-                                        <span
-                                          className={styles.taskNotSelected}
-                                          data-testid="task-not-selected"
-                                        >
-                                          <Circle width={16} height={16} />
-                                        </span>
-                                      )}
+                                        />
+                                      </span>
+                                    ) : (
+                                      <span
+                                        className={styles.taskNotSelected}
+                                        data-testid="task-not-selected"
+                                      >
+                                        <Circle width={16} height={16} />
+                                      </span>
+                                    )}
 
-                                      {(() => {
-                                        const totalTime = task.total?.reduce?.(
-                                          (total, item) => total + item.count,
-                                          0,
-                                        )
+                                    {(() => {
+                                      const totalTime = task.total?.reduce?.(
+                                        (total, item) => total + item.count,
+                                        0,
+                                      )
 
-                                        return (
-                                          <>
-                                            <span
-                                              task-time={totalTime}
-                                              data-testid="task-title"
-                                            >
-                                              {sanitizeHtml(task.title)}
+                                      return (
+                                        <>
+                                          <span
+                                            task-time={totalTime}
+                                            data-testid="task-title"
+                                          >
+                                            {sanitizeHtml(task.title)}
+                                          </span>
+                                          {totalTime && totalTime > 0 ? (
+                                            <span className={styles.taskTime}>
+                                              {Math.floor(totalTime / 3600) >
+                                                0 && (
+                                                <>
+                                                  {Math.floor(totalTime / 3600)}
+                                                  h{" "}
+                                                </>
+                                              )}
+                                              {Math.floor(
+                                                (totalTime % 3600) / 60,
+                                              ) > 0 && (
+                                                <>
+                                                  {Math.floor(
+                                                    (totalTime % 3600) / 60,
+                                                  )}
+                                                  m{" "}
+                                                </>
+                                              )}
+                                              {Math.floor(totalTime % 60)}s
                                             </span>
-                                            {totalTime && totalTime > 0 ? (
-                                              <span className={styles.taskTime}>
-                                                {Math.floor(totalTime / 3600) >
-                                                  0 && (
-                                                  <>
-                                                    {Math.floor(
-                                                      totalTime / 3600,
-                                                    )}
-                                                    h{" "}
-                                                  </>
-                                                )}
-                                                {Math.floor(
-                                                  (totalTime % 3600) / 60,
-                                                ) > 0 && (
-                                                  <>
-                                                    {Math.floor(
-                                                      (totalTime % 3600) / 60,
-                                                    )}
-                                                    m{" "}
-                                                  </>
-                                                )}
-                                                {Math.floor(totalTime % 60)}s
-                                              </span>
-                                            ) : null}
-                                          </>
-                                        )
-                                      })()}
-                                    </div>
-
-                                    <GripVertical
-                                      width={22}
-                                      height={22}
-                                      className={styles.dragHandle}
-                                    />
-                                    <button
-                                      data-testid="edit-task-button"
-                                      className={"link"}
-                                      onClick={() => {
-                                        if (
-                                          selectedTasks?.some(
-                                            (t) => t.id === task.id,
-                                          )
-                                        ) {
-                                          handlePause()
-                                        }
-                                        setEditingTask(task)
-                                      }}
-                                    >
-                                      <Pencil width={18} height={18} />
-                                    </button>
+                                          ) : null}
+                                        </>
+                                      )
+                                    })()}
                                   </div>
+
+                                  <div
+                                    className={styles.dragHandle}
+                                    onPointerDown={(e) => {
+                                      // Only allow left click for dragging on desktop
+                                      if (
+                                        e.pointerType === "mouse" &&
+                                        e.button !== 0
+                                      )
+                                        return
+                                      drag(e)
+                                    }}
+                                    style={{
+                                      touchAction: "none",
+                                      cursor: "grab",
+                                    }}
+                                  >
+                                    <GripVertical width={22} height={22} />
+                                  </div>
+                                  <button
+                                    data-testid="edit-task-button"
+                                    className={"link"}
+                                    onClick={() => {
+                                      if (
+                                        selectedTasks?.some(
+                                          (t) => t.id === task.id,
+                                        )
+                                      ) {
+                                        handlePause()
+                                      }
+                                      setEditingTask(task)
+                                    }}
+                                  >
+                                    <Pencil width={18} height={18} />
+                                  </button>
                                 </div>
-                              </DraggableItem>
-                            ))}
-                          </DndProvider>
+                              </div>
+                            )}
+                          />
                         </div>
                       </>
                     ) : null}
