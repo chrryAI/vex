@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import clsx from "clsx"
 import {
   Brain,
   BrainCog,
@@ -11,8 +10,6 @@ import {
   Settings2,
   Trash2,
 } from "./icons"
-
-import styles from "./MemoryConsent.module.scss"
 
 import { useAppContext } from "./context/AppContext"
 import {
@@ -27,15 +24,21 @@ import ConfirmButton from "./ConfirmButton"
 import Loading from "./Loading"
 import { deleteMemories, updateGuest, updateUser } from "./lib"
 import toast from "react-hot-toast"
+import { useMemoryConsentStyles } from "./MemoryConsent.styles"
+import { Button, Div } from "./platform"
+import { React } from "next/dist/server/route-modules/app-page/vendored/rsc/entrypoints"
+import { useStyles } from "./context/StylesContext"
 
 export default function MemoryConsent({
-  className,
+  style,
   ...props
 }: {
   isVisible?: boolean
-  className?: string
+  style?: React.CSSProperties
 }): React.ReactElement | null {
   // Split contexts for better organization
+  const styles = useMemoryConsentStyles()
+  const { utilities } = useStyles()
   const { t } = useAppContext()
 
   // Auth context
@@ -86,45 +89,49 @@ export default function MemoryConsent({
     return null
   }
   return (
-    <div
+    <Div
       ref={containerRef}
       data-testid="memory-consent-content"
-      className={clsx(styles.memoryConsent, className)}
+      style={{ ...styles.memoryConsent.style, ...style }}
     >
-      <div className={styles.buttons}>
+      <Div style={styles.buttons.style}>
         <>
           {memoriesEnabled && !isMemoryConsentManageVisible ? (
-            <button
+            <Button
               className="link"
+              style={{ ...utilities.link.style }}
               onClick={() => setIsMemoryConsentManageVisible(true)}
             >
               <Settings2 size={22} />
-            </button>
+            </Button>
           ) : !isMemoryConsentManageVisible ? (
-            <button
+            <Button
               className="transparent"
+              style={{ ...utilities.transparent.style }}
               onClick={() => {
                 router.push("/privacy")
               }}
             >
               <LinkIcon size={16} /> {t("Privacy")}
-            </button>
+            </Button>
           ) : (
             <></>
           )}
           {memoriesEnabled ? (
             isMemoryConsentManageVisible ? (
               <>
-                <button
+                <Button
                   onClick={() => setIsMemoryConsentManageVisible(false)}
                   title={t("Close")}
                   className="link"
+                  style={{ ...utilities.link.style }}
                 >
                   <CircleX size={20} />
-                </button>
+                </Button>
                 {(user || guest)?.memoriesCount ? (
-                  <button
+                  <Button
                     className="inverted"
+                    style={{ ...utilities.inverted.style }}
                     onClick={async () => {
                       const response = await apiFetch(`${API_URL}/memories`, {
                         method: "GET",
@@ -146,17 +153,18 @@ export default function MemoryConsent({
                   >
                     <Download size={18} />
                     {t("Export")}
-                  </button>
+                  </Button>
                 ) : null}
 
-                <button
+                <Button
                   className="transparent"
+                  style={{ ...utilities.transparent.style }}
                   onClick={() => {
                     router.push("/privacy")
                   }}
                 >
                   <LinkIcon size={16} /> {t("Privacy")}
-                </button>
+                </Button>
                 {(user || guest)?.memoriesCount ? (
                   <ConfirmButton
                     confirm={
@@ -171,7 +179,11 @@ export default function MemoryConsent({
                     }
                     disabled={isDeleting}
                     title={t("Disable")}
-                    className={clsx(styles.deleteButton, "transparent")}
+                    className={"transparent"}
+                    style={{
+                      ...utilities.transparent.style,
+                      ...styles.deleteButton.style,
+                    }}
                     onConfirm={async () => {
                       if (!token) return
                       setIsDeleting(true)
@@ -213,6 +225,7 @@ export default function MemoryConsent({
                 title={t("💭 We use conversation memory to improve responses.")}
                 className="transparent"
                 style={{
+                  ...utilities.transparent.style,
                   borderStyle: "dashed",
                 }}
                 onConfirm={async () => {
@@ -251,7 +264,7 @@ export default function MemoryConsent({
               </ConfirmButton>
             )
           ) : (
-            <button
+            <Button
               disabled={isUpdatingMemories}
               style={{
                 borderColor: "var(--accent-6)",
@@ -290,10 +303,10 @@ export default function MemoryConsent({
                 <BrainCog size={18} />
               )}
               {t("Enable Memories")}
-            </button>
+            </Button>
           )}
         </>
-      </div>
-    </div>
+      </Div>
+    </Div>
   )
 }

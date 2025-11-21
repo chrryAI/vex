@@ -29,7 +29,16 @@ import { FaXTwitter } from "react-icons/fa6"
 
 import { toast } from "react-hot-toast"
 import clsx from "clsx"
-import { DraggableList } from "./platform"
+import {
+  Button,
+  Div,
+  DraggableList,
+  Input,
+  Main,
+  Span,
+  Video,
+  useKeepAwake,
+} from "./platform"
 import {
   GUEST_TASKS_COUNT,
   PLUS_TASKS_COUNT,
@@ -54,6 +63,8 @@ import A from "./A"
 import { useStyles } from "./context/StylesContext"
 import Testimonials from "./Testimonials"
 import { getSiteConfig } from "./utils/siteConfig"
+import { useFocusButtonStyles } from "./FocusButton.styles"
+import ThemeSwitcher from "./ThemeSwitcher"
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -74,9 +85,15 @@ export type Task = {
 
 const MAX_TIME = 3600 // 60 minutes in seconds
 
-export default function FocusButton({ className }: { className?: string }) {
+export default function FocusButton({
+  style,
+}: {
+  style?: React.CSSProperties
+}) {
   const { t } = useTranslation()
 
+  const styles = useFocusButtonStyles()
+  const { utilities } = useStyles()
   const {
     token,
     track: trackEvent,
@@ -101,6 +118,8 @@ export default function FocusButton({ className }: { className?: string }) {
   const { os, isExtension } = usePlatform()
 
   const { enableSound, setEnableSound } = useTheme()
+
+  useKeepAwake()
 
   const {
     playKitasaku,
@@ -295,8 +314,6 @@ export default function FocusButton({ className }: { className?: string }) {
     handleCancel,
   ])
 
-  const { utilities } = useStyles()
-
   const updateTask = async ({
     task,
     reorder,
@@ -334,61 +351,61 @@ export default function FocusButton({ className }: { className?: string }) {
 
   if (showSettings) {
     return (
-      <div className={styles.settingsContainer}>
-        <div className={styles.closeSettingsButtonWrapper}>
-          <button
+      <Div style={styles.settingsContainer.style}>
+        <Div>
+          <Button
             data-testid="close-settings-button"
-            className={styles.closeSettingsButton}
+            style={styles.closeSettingsButton.style}
             onClick={() => setShowSettings(false)}
           >
             <CircleX width={18} height={18} /> {t("Settings")}
-          </button>
-        </div>
-        <div className={styles.settings}>
-          <span>
-            <input
+          </Button>
+        </Div>
+        <Div style={styles.settings.style}>
+          <Span style={styles.settingsSpan.style}>
+            <Input
               data-testid="preset-min-1-input"
               type="number"
               min="0"
               max="60"
               placeholder="Minutes"
-              defaultValue={presetMin1}
+              value={String(presetMin1)}
               onChange={(e) => {
                 setPresetMin1(Number(e.target.value))
               }}
             />
             {t("min")}
-          </span>
-          <span>
-            <input
+          </Span>
+          <Span style={styles.settingsSpan.style}>
+            <Input
               data-testid="preset-min-2-input"
               type="number"
               min="0"
               max="60"
               placeholder="Minutes"
-              defaultValue={presetMin2}
+              value={String(presetMin2)}
               onChange={(e) => {
                 setPresetMin2(Number(e.target.value))
               }}
             />
             {t("min")}
-          </span>
-          <span>
-            <input
+          </Span>
+          <Span style={styles.settingsSpan.style}>
+            <Input
               data-testid="preset-min-3-input"
               type="number"
               min="0"
               max="60"
               placeholder="Minutes"
-              defaultValue={presetMin3}
+              value={String(presetMin3)}
               onChange={(e) => {
                 setPresetMin3(Number(e.target.value))
               }}
             />
             {t("min")}
-          </span>
-        </div>
-        <div className={styles.additionalSettings}>
+          </Span>
+        </Div>
+        <Div style={styles.additionalSettings.style}>
           <Checkbox
             checked={enableNotifications}
             onChange={(e) => setEnableNotifications(e)}
@@ -398,772 +415,701 @@ export default function FocusButton({ className }: { className?: string }) {
           <Checkbox checked={enableSound} onChange={(e) => setEnableSound(e)}>
             {t("Sound")}
           </Checkbox>
-        </div>
-        <div className={styles.settingsFooter}>
-          <a
-            className={styles.discord}
+        </Div>
+        <Div style={styles.settingsFooter.style}>
+          <A
+            style={styles.discord.style}
             target="_blank"
             rel="noopener noreferrer"
             href="https://discord.gg/6NUvNSzs"
           >
             <FaDiscord size={16} /> Discord
-          </a>
+          </A>
           ,{" "}
-          <a
-            className={styles.x}
+          <A
+            style={styles.x.style}
             target="_blank"
             rel="noopener noreferrer"
             href="https://x.com/focusbuttonai"
           >
             <FaXTwitter size={12} />
-          </a>{" "}
-          ,{" "}
-          <span className={styles.version}>
-            v{getSiteConfig("focus").version}
-          </span>
-        </div>
-      </div>
+          </A>{" "}
+          , <Span>v{getSiteConfig("focus").version}</Span>
+        </Div>
+      </Div>
     )
   }
 
   const showControls = time > 0
 
   return (
-    <div className={clsx(styles.page, className)}>
-      <div className={clsx(styles.container)}>
-        <main className={styles.main}>
-          <div data-testid="pomodoro" className={styles.pomodoro}>
-            <button
-              data-testid="preset-1"
-              data-preset-min-1={presetMin1}
-              className={clsx(
-                styles.timeAdjust,
-                activePomodoro === presetMin1
-                  ? isCountingDown && !isPaused
-                    ? styles.active
-                    : time !== 0 && styles.paused
-                  : undefined,
-                "link",
-              )}
-              onClick={(e) => {
-                e.stopPropagation()
-                handlePresetTime(presetMin1)
-              }}
-            >
-              {presetMin1}
-              {t("min")}
-            </button>
-            <button
-              data-preset-min-2={presetMin2}
-              data-testid="preset-2"
-              className={clsx(
-                styles.timeAdjust,
-                activePomodoro === presetMin2
-                  ? isCountingDown && !isPaused
-                    ? styles.active
-                    : time !== 0 && styles.paused
-                  : undefined,
-                "link",
-              )}
-              onClick={(e) => {
-                e.stopPropagation()
-                handlePresetTime(presetMin2)
-              }}
-            >
-              {presetMin2}
-              {t("min")}
-            </button>
-            <button
-              data-preset-min-3={presetMin3}
-              data-testid="preset-3"
-              className={clsx(
-                styles.timeAdjust,
-                activePomodoro === presetMin3
-                  ? isCountingDown && !isPaused
-                    ? styles.active
-                    : time !== 0 && styles.paused
-                  : undefined,
-                "link",
-              )}
-              onClick={(e) => {
-                e.stopPropagation()
-                handlePresetTime(presetMin3)
-              }}
-            >
-              {presetMin3}
-              {t("min")}
-            </button>
-          </div>
-          <span className={styles.greeting}>
-            <>
-              <span>{t("Let’s focus")}</span>
-              <div
-                className={clsx(
-                  styles.letsFocusContainer,
-                  isDark && styles.dark,
-                )}
-                onClick={() => {
-                  if (videoRef.current && os === "ios") {
-                    !playKitasaku
-                      ? videoRef.current.play().catch((error: any) => {
-                          console.error(error)
-                        })
-                      : videoRef.current.pause()
-                  }
-                  setPlayKitasaku(!playKitasaku)
-                }}
-              >
-                {user?.name ? (
-                  <span className={styles.userName}>
-                    {user.name.split(" ")[0]}
-                  </span>
-                ) : (
-                  ""
-                )}
-                <div className={styles.videoContainer} title="Kitasaku">
-                  {!playKitasaku ? (
-                    <CirclePlay
-                      className={styles.videoPlay}
-                      color="var(--shade-5)"
-                      size={16}
-                    />
-                  ) : (
-                    <CirclePause
-                      className={styles.videoPause}
-                      color="var(--shade-5)"
-                      size={16}
-                    />
-                  )}
-
-                  <video
-                    ref={videoRef}
-                    className={styles.video}
-                    src={`${FRONTEND_URL}/video/blob.mp4`}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  ></video>
-                </div>
-              </div>
-            </>
-          </span>
-          <div
-            data-testid="focusbutton"
-            className={clsx(
-              styles.focusButton,
-              isMounted && styles.mounted,
-              isCountingDown && !isPaused && styles.counting,
-              isPaused && styles.paused,
-              isFinished && styles.finished,
-            )}
+    <Div style={style}>
+      <Main style={styles.main.style}>
+        <Div data-testid="pomodoro" style={styles.pomodoro.style}>
+          <Button
+            data-testid="preset-1"
+            data-preset-min-1={presetMin1}
+            className={"link"}
+            style={{
+              ...utilities.link.style,
+              ...styles.timeAdjust,
+              ...(activePomodoro === presetMin1
+                ? isCountingDown && !isPaused
+                  ? styles.active.style
+                  : time !== 0 && styles.focusButtonPaused.style
+                : {}),
+            }}
+            onClick={() => {
+              handlePresetTime(presetMin1)
+            }}
           >
-            <div className={styles.headerContainer}>
-              <button
-                data-testid="settings-button"
-                title={t("Settings")}
-                className={clsx(styles.showSettings, "link")}
-                onClick={() => setShowSettings(true)}
-              >
-                <SettingsIcon size={22} />
-              </button>
-              <button
-                title={t("Replay")}
-                className={clsx(styles.replay, replay && styles.active, "link")}
-                onClick={() => setReplay(!replay)}
-              >
-                <Repeat size={22} />
-              </button>
-            </div>
-
-            <div
-              data-time={time}
-              data-testid="time"
-              className={styles.timeDisplay}
-            >
-              <div
-                className={styles.time}
-                onClick={(e) => {
-                  e.stopPropagation()
-                }}
-              >
-                <SwipeableTimeControl
-                  style={{ userSelect: "none" }}
-                  value={Math.floor(time / 60)}
-                  onValueChange={(newMinutes) => {
-                    const newTime = Math.min(
-                      newMinutes * 60 + (time % 60),
-                      MAX_TIME,
-                    )
-                    setTime(newTime)
-                  }}
-                  Up={
-                    <button
-                      ref={minutesUpButtonRef}
-                      className={styles.timeAdjust}
-                      onClick={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => {
-                        e.stopPropagation()
-                        if (e.pointerType === "mouse" && e.buttons !== 1) return
-                        startAdjustment(1, true)
-                      }}
-                      onPointerUp={(e) => {
-                        e.stopPropagation()
-                        stopAdjustment()
-                      }}
-                      onPointerLeave={(e) => {
-                        e.stopPropagation()
-                        if (adjustIntervalRef.current) stopAdjustment()
-                      }}
-                    >
-                      <ChevronUp size={18} />
-                    </button>
-                  }
-                  Down={
-                    <button
-                      ref={minutesDownButtonRef}
-                      className={styles.timeAdjust}
-                      onClick={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => {
-                        e.stopPropagation()
-                        if (e.pointerType === "mouse" && e.buttons !== 1) return
-                        startAdjustment(-1, true)
-                      }}
-                      onPointerUp={(e) => {
-                        e.stopPropagation()
-                        stopAdjustment()
-                      }}
-                      onPointerLeave={(e) => {
-                        e.stopPropagation()
-                        if (adjustIntervalRef.current) stopAdjustment()
-                      }}
-                    >
-                      <ChevronDown size={18} />
-                    </button>
-                  }
-                  time={time}
-                />
-                <span className={styles.separator}>:</span>
-                <SwipeableTimeControl
-                  Up={
-                    <button
-                      ref={secondsUpButtonRef}
-                      className={styles.timeAdjust}
-                      onClick={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => {
-                        e.stopPropagation()
-                        if (e.pointerType === "mouse" && e.buttons !== 1) return
-                        startAdjustment(1, false)
-                      }}
-                      onPointerUp={(e) => {
-                        e.stopPropagation()
-                        stopAdjustment()
-                      }}
-                      onPointerLeave={(e) => {
-                        e.stopPropagation()
-                        if (adjustIntervalRef.current) stopAdjustment()
-                      }}
-                    >
-                      <ChevronUp size={18} />
-                    </button>
-                  }
-                  isMinute={false}
-                  Down={
-                    <button
-                      ref={secondsDownButtonRef}
-                      className={styles.timeAdjust}
-                      onClick={(e) => e.stopPropagation()}
-                      onPointerDown={(e) => {
-                        e.stopPropagation()
-                        if (e.pointerType === "mouse" && e.buttons !== 1) return
-                        startAdjustment(-1, false)
-                      }}
-                      onPointerUp={(e) => {
-                        e.stopPropagation()
-                        stopAdjustment()
-                      }}
-                      onPointerLeave={(e) => {
-                        e.stopPropagation()
-                        if (adjustIntervalRef.current) stopAdjustment()
-                      }}
-                    >
-                      <ChevronDown size={18} />
-                    </button>
-                  }
-                  value={time % 60}
-                  onValueChange={(newSeconds) => {
-                    const newTime = Math.min(
-                      Math.floor(time / 60) * 60 + newSeconds,
-                      MAX_TIME,
-                    )
-                    setTime(newTime)
-                  }}
-                  time={time}
-                />
-              </div>
-            </div>
-            <div className={styles.footerContainer}>
-              <button
-                title={isDark ? t("Light") : t("Dark")}
-                className={clsx(
-                  styles.themeToggle,
-                  isDark ? styles.dark : styles.light,
-                  "link",
-                )}
-              >
-                {isDark ? (
-                  <Sun
-                    className={styles.sun}
-                    size={22}
-                    onClick={() => {
-                      setTheme("light")
-                    }}
-                  />
-                ) : (
-                  <Moon
-                    className={styles.moon}
-                    size={22}
-                    onClick={() => {
-                      setTheme("dark")
-                    }}
-                  />
-                )}
-              </button>
-              <button
-                title={playBirds ? t("Pause sound") : t("Play sound")}
-                onClick={() => setPlayBirds(!playBirds)}
-                className={clsx(
-                  styles.birdButton,
-                  playBirds && styles.active,
-                  "link",
-                )}
-              >
-                <Bird
-                  color={
-                    isCountingDown && playBirds ? "var(--accent-4)" : undefined
-                  }
-                  size={22}
-                />
-              </button>
-            </div>
-          </div>
-          {remoteTimer?.count &&
-          remoteTimer?.isCountingDown &&
-          !isCountingDown &&
-          !isPaused ? (
-            <button
+            {presetMin1}
+            {t("min")}
+          </Button>
+          <Button
+            data-preset-min-2={presetMin2}
+            data-testid="preset-2"
+            className={"link"}
+            style={{
+              ...utilities.link.style,
+              ...styles.timeAdjust,
+              ...(activePomodoro === presetMin1
+                ? isCountingDown && !isPaused
+                  ? styles.active.style
+                  : time !== 0 && styles.focusButtonPaused.style
+                : {}),
+            }}
+            onClick={() => {
+              handlePresetTime(presetMin2)
+            }}
+          >
+            {presetMin2}
+            {t("min")}
+          </Button>
+          <Button
+            data-preset-min-3={presetMin3}
+            data-testid="preset-3"
+            className={"link"}
+            style={{
+              ...utilities.link.style,
+              ...styles.timeAdjust,
+              ...(activePomodoro === presetMin3
+                ? isCountingDown && !isPaused
+                  ? styles.active.style
+                  : time !== 0 && styles.focusButtonPaused.style
+                : {}),
+            }}
+            onClick={() => {
+              handlePresetTime(presetMin3)
+            }}
+          >
+            {presetMin3}
+            {t("min")}
+          </Button>
+        </Div>
+        <Span style={styles.greeting.style}>
+          <>
+            <Span>{t("Let’s focus")}</Span>
+            <Div
+              style={styles.letsFocusContainer.style}
               onClick={() => {
-                setTime(remoteTimer.count)
-              }}
-              title={t("Continue on this device")}
-              className="transparent"
-              style={{
-                fontSize: 12,
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "4px 7px",
-                borderWidth: 1.25,
-                fontFamily: "var(--font-mono)",
-                gap: 5,
-                alignContent: "center",
-                alignSelf: "center",
-                justifyContent: "center",
+                if (videoRef.current && os === "ios") {
+                  !playKitasaku
+                    ? videoRef.current.play().catch((error: any) => {
+                        console.error(error)
+                      })
+                    : videoRef.current.pause()
+                }
+                setPlayKitasaku(!playKitasaku)
               }}
             >
-              <CloudDownload color="var(--accent-6)" size={18} />
-              {formatTime(remoteTimer?.count || 0)}
-            </button>
-          ) : null}
-          {showControls && (
-            <div className={clsx(styles.controls)}>
-              <button
-                className={clsx(
-                  styles.controlButton,
-                  isPaused || !isCountingDown
-                    ? styles.startButton
-                    : styles.pauseButton,
-                  "link",
-                )}
-                data-testid={`focusbutton-${isPaused || !isCountingDown ? "start" : "pause"}-button`}
-                onClick={handleClick}
-              >
-                {isPaused || !isCountingDown ? (
-                  <>
-                    <CirclePlay
-                      className={styles.controlIcon}
-                      color="var(--accent-4)"
-                      width={20}
-                      height={20}
-                    />
-                    <span>{t("Start")}</span>
-                  </>
+              {user?.name ? (
+                <Span style={styles.userName.style}>
+                  {user.name.split(" ")[0]}
+                </Span>
+              ) : (
+                ""
+              )}
+              <Div style={styles.videoContainer.style} title="Kitasaku">
+                {!playKitasaku ? (
+                  <CirclePlay
+                    style={styles.videoPlay.style}
+                    color="var(--shade-5)"
+                    size={16}
+                  />
                 ) : (
-                  <>
-                    <CirclePause
-                      className={styles.controlIcon}
-                      width={20}
-                      height={20}
-                    />
-                    <span>{t("Pause")}</span>
-                  </>
+                  <CirclePause
+                    style={styles.videoPause.style}
+                    color="var(--shade-5)"
+                    size={16}
+                  />
                 )}
-              </button>
-              <button
-                className={clsx(
-                  styles.cancelButton,
-                  isCountingDown && styles.isCountingDown,
-                  "link",
-                )}
-                data-testid="focusbutton-cancel-button"
-                onClick={handleCancel}
-              >
-                <CircleX
-                  className={styles.controlIcon}
-                  width={20}
-                  height={20}
-                />
-                <span>{t("Cancel")}</span>
-              </button>
-            </div>
-          )}
-        </main>
-        <div className={styles.taskSection}>
-          {(() => {
-            if (addingTask) {
-              return (
-                <AddTask
-                  totalTasksCount={tasks?.tasks?.length || 0}
-                  onAdd={async () => {
-                    await fetchTasks()
-                    setAddingTask(false)
-                  }}
-                  onCancel={() => {
-                    setAddingTask(false)
-                  }}
-                />
-              )
-            }
 
+                <Video
+                  // ref={videoRef}
+                  style={styles.video.style}
+                  src={`${FRONTEND_URL}/video/blob.mp4`}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              </Div>
+            </Div>
+          </>
+        </Span>
+        <Div
+          data-testid="focusbutton"
+          style={{
+            ...styles.focusButton.style,
+            ...(isMounted ? styles.focusButtonMounted.style : {}),
+            ...(isCountingDown ? styles.focusButtonCounting.style : {}),
+            ...(isPaused ? styles.focusButtonPaused.style : {}),
+            ...(isFinished ? styles.focusButtonFinished.style : {}),
+          }}
+        >
+          <Div style={styles.headerContainer.style}>
+            <Button
+              data-testid="settings-button"
+              title={t("Settings")}
+              className="link"
+              style={{ ...utilities.link.style, ...styles.showSettings }}
+              onClick={() => setShowSettings(true)}
+            >
+              <SettingsIcon size={22} />
+            </Button>
+            <Button
+              className="link"
+              title={t("Replay")}
+              style={{
+                ...utilities.link.style,
+                ...styles.showSettings,
+                ...(replay ? styles.active.style : {}),
+              }}
+              onClick={() => setReplay(!replay)}
+            >
+              <Repeat size={22} />
+            </Button>
+          </Div>
+
+          {/* <Div
+            data-time={time}
+            data-testid="time"
+            style={styles.timeDisplay.style}
+          >
+            <Div
+              style={styles.time.style}
+              // onClick={(e) => {
+              //   e.stopPropagation()
+              // }}
+            >
+              <SwipeableTimeControl
+                style={{ userSelect: "none" }}
+                value={Math.floor(time / 60)}
+                onValueChange={(newMinutes) => {
+                  const newTime = Math.min(
+                    newMinutes * 60 + (time % 60),
+                    MAX_TIME,
+                  )
+                  setTime(newTime)
+                }}
+                // Up={
+                //   <Button
+                //     ref={minutesUpButtonRef}
+                //     style={styles.timeAdjust.style}
+                //     // onClick={(e) => e.stopPropagation()}
+                //     onPointerDown={(e) => {
+                //       e.stopPropagation()
+                //       if (e.pointerType === "mouse" && e.buttons !== 1) return
+                //       startAdjustment(1, true)
+                //     }}
+                //     onPointerUp={(e) => {
+                //       e.stopPropagation()
+                //       stopAdjustment()
+                //     }}
+                //     onPointerLeave={(e) => {
+                //       e.stopPropagation()
+                //       if (adjustIntervalRef.current) stopAdjustment()
+                //     }}
+                //   >
+                //     <ChevronUp size={18} />
+                //   </Button>
+                // }
+                // Down={
+                //   <button
+                //     ref={minutesDownButtonRef}
+                //     className={styles.timeAdjust}
+                //     onClick={(e) => e.stopPropagation()}
+                //     onPointerDown={(e) => {
+                //       e.stopPropagation()
+                //       if (e.pointerType === "mouse" && e.buttons !== 1) return
+                //       startAdjustment(-1, true)
+                //     }}
+                //     onPointerUp={(e) => {
+                //       e.stopPropagation()
+                //       stopAdjustment()
+                //     }}
+                //     onPointerLeave={(e) => {
+                //       e.stopPropagation()
+                //       if (adjustIntervalRef.current) stopAdjustment()
+                //     }}
+                //   >
+                //     <ChevronDown size={18} />
+                //   </button>
+                // }
+                time={time}
+              />
+              <Span style={styles.separator.style}>:</Span>
+              <SwipeableTimeControl
+                Up={
+                  <button
+                    ref={secondsUpButtonRef}
+                    style={styles.timeAdjust.style}
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => {
+                      e.stopPropagation()
+                      if (e.pointerType === "mouse" && e.buttons !== 1) return
+                      startAdjustment(1, false)
+                    }}
+                    onPointerUp={(e) => {
+                      e.stopPropagation()
+                      stopAdjustment()
+                    }}
+                    onPointerLeave={(e) => {
+                      e.stopPropagation()
+                      if (adjustIntervalRef.current) stopAdjustment()
+                    }}
+                  >
+                    <ChevronUp size={18} />
+                  </button>
+                }
+                isMinute={false}
+                Down={
+                  <button
+                    ref={secondsDownButtonRef}
+                    className={styles.timeAdjust}
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => {
+                      e.stopPropagation()
+                      if (e.pointerType === "mouse" && e.buttons !== 1) return
+                      startAdjustment(-1, false)
+                    }}
+                    onPointerUp={(e) => {
+                      e.stopPropagation()
+                      stopAdjustment()
+                    }}
+                    onPointerLeave={(e) => {
+                      e.stopPropagation()
+                      if (adjustIntervalRef.current) stopAdjustment()
+                    }}
+                  >
+                    <ChevronDown size={18} />
+                  </button>
+                }
+                value={time % 60}
+                onValueChange={(newSeconds) => {
+                  const newTime = Math.min(
+                    Math.floor(time / 60) * 60 + newSeconds,
+                    MAX_TIME,
+                  )
+                  setTime(newTime)
+                }}
+                time={time}
+              />
+            </Div>
+          </Div> */}
+          <Div style={styles.footerContainer.style}>
+            <ThemeSwitcher />
+            <Button
+              title={playBirds ? t("Pause sound") : t("Play sound")}
+              onClick={() => setPlayBirds(!playBirds)}
+              className={"link"}
+              style={{ ...(playBirds ? styles.active : {}) }}
+            >
+              <Bird
+                color={
+                  isCountingDown && playBirds ? "var(--accent-4)" : undefined
+                }
+                size={22}
+              />
+            </Button>
+          </Div>
+        </Div>
+        {remoteTimer?.count &&
+        remoteTimer?.isCountingDown &&
+        !isCountingDown &&
+        !isPaused ? (
+          <Button
+            onClick={() => {
+              setTime(remoteTimer.count)
+            }}
+            title={t("Continue on this device")}
+            className="transparent"
+            style={{
+              fontSize: 12,
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "4px 7px",
+              borderWidth: 1.25,
+              fontFamily: "var(--font-mono)",
+              gap: 5,
+              alignContent: "center",
+              alignSelf: "center",
+              justifyContent: "center",
+            }}
+          >
+            <CloudDownload color="var(--accent-6)" size={18} />
+            {formatTime(remoteTimer?.count || 0)}
+          </Button>
+        ) : null}
+        {showControls && (
+          <Div style={styles.controls.style}>
+            <Button
+              className={"link"}
+              style={{
+                ...(isPaused || !isCountingDown
+                  ? {}
+                  : styles.pauseButton.style),
+              }}
+              data-testid={`focusbutton-${isPaused || !isCountingDown ? "start" : "pause"}-button`}
+              onClick={handleClick}
+            >
+              {isPaused || !isCountingDown ? (
+                <>
+                  <CirclePlay
+                    style={styles.controlIcon.style}
+                    color="var(--accent-4)"
+                    width={20}
+                    height={20}
+                  />
+                  <span>{t("Start")}</span>
+                </>
+              ) : (
+                <>
+                  <CirclePause
+                    style={styles.controlIcon.style}
+                    width={20}
+                    height={20}
+                  />
+                  <span>{t("Pause")}</span>
+                </>
+              )}
+            </Button>
+            <Button
+              className={"link"}
+              style={styles.cancelButton.style}
+              data-testid="focusbutton-cancel-button"
+              onClick={handleCancel}
+            >
+              <CircleX
+                style={styles.controlIcon.style}
+                width={20}
+                height={20}
+              />
+              <span>{t("Cancel")}</span>
+            </Button>
+          </Div>
+        )}
+      </Main>
+      <Div style={styles.taskSection.style}>
+        {(() => {
+          if (addingTask) {
             return (
-              <>
-                {isLoadingTasks ? (
-                  <div className={styles.loadingTasks}>
-                    <Loading />
-                  </div>
-                ) : (
-                  <>
-                    <div className={styles.app}>
-                      <div data-testid="task-reports" className={styles.top}>
-                        <button
-                          data-testid="new-task-button"
-                          className={clsx(
-                            styles.newTaskButton,
-                            "transparent link",
-                          )}
-                          onClick={() => {
-                            addParams({ addTask: "true" })
-                          }}
-                        >
-                          <AlarmClockCheck width={16} height={16} />
-                          {t("New task")}
-                        </button>
-                        {focus && (
-                          <A
-                            className="button inverted"
-                            style={{
-                              ...utilities.button.style,
-                              ...utilities.inverted.style,
-                              ...utilities.small.style,
-                            }}
-                            onClick={() => {
-                              setShowFocus(false)
-                              app?.id === focus?.id
-                                ? setShowFocus(false)
-                                : push(getAppSlug(focus))
-                            }}
-                            // href={getAppSlug(refApp)}
-                          >
-                            <Img size={20} app={focus} />
-                            {focus.name}
-                          </A>
-                        )}
-                      </div>
-                    </div>
-
-                    {tasks?.tasks?.length ? (
-                      <>
-                        <div data-testid="tasks" className={clsx(styles.tasks)}>
-                          <DraggableList
-                            data={tasks.tasks.filter(Boolean)}
-                            keyExtractor={(item) => item.id}
-                            onDragEnd={async ({ data, from, to }) => {
-                              if (from === to) return
-                              if (isMovingItemRef.current) return
-                              isMovingItemRef.current = true
-
-                              if (isCountingDown && !isPaused) {
-                                handlePause()
-                              }
-
-                              // Optimistic update
-                              setTasks((prevTasks) => ({
-                                ...prevTasks,
-                                tasks: data,
-                              }))
-
-                              const draggedTask = data[to]
-                              if (draggedTask) {
-                                await updateTask({
-                                  task: {
-                                    ...draggedTask,
-                                    total: undefined,
-                                    order: to,
-                                  },
-                                  reorder: true,
-                                })
-                              }
-
-                              isMovingItemRef.current = false
-                            }}
-                            renderItem={({
-                              item: task,
-                              index,
-                              drag,
-                              isActive,
-                            }) => (
-                              <div
-                                data-task-title={task.title}
-                                data-testid="task"
-                                key={task.id}
-                                className={clsx(
-                                  styles.task,
-                                  index === 0 && styles.currentTask,
-                                  selectedTasks?.some(
-                                    (t) => t.id === task.id,
-                                  ) && styles.selectedTask,
-                                  isCountingDown &&
-                                    !isPaused &&
-                                    styles.counting,
-                                  isPaused && styles.paused,
-                                  isFinished && styles.finished,
-                                )}
-                                style={{ opacity: isActive ? 0.5 : 1 }}
-                              >
-                                <div className={styles.taskContent}>
-                                  <div
-                                    onClick={() => {
-                                      if (
-                                        selectedTasks?.some(
-                                          (t) => t.id === task.id,
-                                        )
-                                      ) {
-                                        setSelectedTasks(
-                                          selectedTasks?.filter(
-                                            (t) => t.id !== task.id,
-                                          ),
-                                        )
-                                      } else {
-                                        if (
-                                          selectedTasks &&
-                                          selectedTasks?.length === 3
-                                        ) {
-                                          toast.error(
-                                            t("You can select up to 3 tasks"),
-                                          )
-                                          return
-                                        }
-                                        if (time === 0) {
-                                          handlePresetTime(presetMin1)
-                                        }
-                                        setSelectedTasks(
-                                          selectedTasks
-                                            ? [...selectedTasks, task]
-                                            : [task],
-                                        )
-                                      }
-                                    }}
-                                    className={styles.taskTitle}
-                                  >
-                                    {selectedTasks?.some(
-                                      (t) => t.id === task.id,
-                                    ) ? (
-                                      <span
-                                        className={styles.taskSelected}
-                                        data-testid="task-selected"
-                                      >
-                                        <CircleCheck
-                                          width={16}
-                                          height={16}
-                                          color={
-                                            isCountingDown
-                                              ? "var(--accent-4)"
-                                              : isPaused
-                                                ? "var(--accent-1)"
-                                                : undefined
-                                          }
-                                        />
-                                      </span>
-                                    ) : (
-                                      <span
-                                        className={styles.taskNotSelected}
-                                        data-testid="task-not-selected"
-                                      >
-                                        <Circle width={16} height={16} />
-                                      </span>
-                                    )}
-
-                                    {(() => {
-                                      const totalTime = task.total?.reduce?.(
-                                        (total, item) => total + item.count,
-                                        0,
-                                      )
-
-                                      return (
-                                        <>
-                                          <span
-                                            task-time={totalTime}
-                                            data-testid="task-title"
-                                          >
-                                            {sanitizeHtml(task.title)}
-                                          </span>
-                                          {totalTime && totalTime > 0 ? (
-                                            <span className={styles.taskTime}>
-                                              {Math.floor(totalTime / 3600) >
-                                                0 && (
-                                                <>
-                                                  {Math.floor(totalTime / 3600)}
-                                                  h{" "}
-                                                </>
-                                              )}
-                                              {Math.floor(
-                                                (totalTime % 3600) / 60,
-                                              ) > 0 && (
-                                                <>
-                                                  {Math.floor(
-                                                    (totalTime % 3600) / 60,
-                                                  )}
-                                                  m{" "}
-                                                </>
-                                              )}
-                                              {Math.floor(totalTime % 60)}s
-                                            </span>
-                                          ) : null}
-                                        </>
-                                      )
-                                    })()}
-                                  </div>
-
-                                  <div
-                                    className={styles.dragHandle}
-                                    onPointerDown={(e) => {
-                                      // Only allow left click for dragging on desktop
-                                      if (
-                                        e.pointerType === "mouse" &&
-                                        e.button !== 0
-                                      )
-                                        return
-                                      drag(e)
-                                    }}
-                                    style={{
-                                      touchAction: "none",
-                                      cursor: "grab",
-                                    }}
-                                  >
-                                    <GripVertical width={22} height={22} />
-                                  </div>
-                                  <button
-                                    data-testid="edit-task-button"
-                                    className={"link"}
-                                    onClick={() => {
-                                      if (
-                                        selectedTasks?.some(
-                                          (t) => t.id === task.id,
-                                        )
-                                      ) {
-                                        handlePause()
-                                      }
-                                      setEditingTask(task)
-                                    }}
-                                  >
-                                    <Pencil width={18} height={18} />
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          />
-                        </div>
-                      </>
-                    ) : null}
-                    {tasks?.tasks?.length
-                      ? guest &&
-                        guest?.tasksCount <= GUEST_TASKS_COUNT && (
-                          <div
-                            data-testid="great-start"
-                            className={styles.greatStart}
-                          >
-                            <Trans
-                              i18nKey="greatStart"
-                              values={{ count: guest?.tasksCount }}
-                              components={{
-                                register: (
-                                  <button
-                                    onClick={() =>
-                                      addParams({
-                                        subscribe: "true",
-                                        plan: "plus",
-                                      })
-                                    }
-                                    className="link"
-                                  />
-                                ),
-                              }}
-                            />
-                          </div>
-                        )
-                      : user && tasks?.tasks?.length
-                        ? user?.tasksCount <= PLUS_TASKS_COUNT && (
-                            <Trans
-                              i18nKey="greatStartMember"
-                              components={{
-                                subscribe: (
-                                  <button
-                                    style={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      gap: 2,
-                                      position: "relative",
-                                      top: 1.1,
-                                    }}
-                                    onClick={() =>
-                                      addParams({
-                                        subscribe: "true",
-                                        plus: "true",
-                                      })
-                                    }
-                                    className="link"
-                                  >
-                                    <SmilePlus
-                                      className={styles.svg}
-                                      size={12}
-                                    />
-                                    <span>{t("subscribing")}</span>
-                                  </button>
-                                ),
-                              }}
-                            />
-                          )
-                        : undefined}
-
-                    {!tasks?.tasks?.length && !isLoadingTasks && (
-                      <Testimonials className={styles.testimonials} />
-                    )}
-                  </>
-                )}
-              </>
+              <AddTask
+                totalTasksCount={tasks?.tasks?.length || 0}
+                onAdd={async () => {
+                  await fetchTasks()
+                  setAddingTask(false)
+                }}
+                onCancel={() => {
+                  setAddingTask(false)
+                }}
+              />
             )
-          })()}
-        </div>
-      </div>
-    </div>
+          }
+
+          return (
+            <>
+              {isLoadingTasks ? (
+                <Div style={styles.loadingTasks.style}>
+                  <Loading />
+                </Div>
+              ) : (
+                <>
+                  <Div style={styles.app.style}>
+                    <Div data-testid="task-reports" style={styles.top.style}>
+                      <Button
+                        data-testid="new-task-button"
+                        className={"transparent link"}
+                        style={styles.newTaskButton.style}
+                        onClick={() => {
+                          addParams({ addTask: "true" })
+                        }}
+                      >
+                        <AlarmClockCheck width={16} height={16} />
+                        {t("New task")}
+                      </Button>
+                      {focus && (
+                        <A
+                          className="button inverted"
+                          style={{
+                            ...utilities.button.style,
+                            ...utilities.inverted.style,
+                            ...utilities.small.style,
+                          }}
+                          onClick={() => {
+                            setShowFocus(false)
+                            app?.id === focus?.id
+                              ? setShowFocus(false)
+                              : push(getAppSlug(focus))
+                          }}
+                          // href={getAppSlug(refApp)}
+                        >
+                          <Img size={20} app={focus} />
+                          {focus.name}
+                        </A>
+                      )}
+                    </Div>
+                  </Div>
+
+                  {tasks?.tasks?.length ? (
+                    <>
+                      <Div data-testid="tasks" style={styles.tasks.style}>
+                        <DraggableList
+                          data={tasks.tasks.filter(Boolean)}
+                          keyExtractor={(item) => item.id}
+                          onDragEnd={async ({ data, from, to }) => {
+                            if (from === to) return
+                            if (isMovingItemRef.current) return
+                            isMovingItemRef.current = true
+
+                            if (isCountingDown && !isPaused) {
+                              handlePause()
+                            }
+
+                            // Optimistic update
+                            setTasks((prevTasks) => ({
+                              ...prevTasks,
+                              tasks: data,
+                            }))
+
+                            const draggedTask = data[to]
+                            if (draggedTask) {
+                              await updateTask({
+                                task: {
+                                  ...draggedTask,
+                                  total: undefined,
+                                  order: to,
+                                },
+                                reorder: true,
+                              })
+                            }
+
+                            isMovingItemRef.current = false
+                          }}
+                          renderItem={({
+                            item: task,
+                            index,
+                            drag,
+                            isActive,
+                          }) => (
+                            <Div
+                              data-task-title={task.title}
+                              data-testid="task"
+                              key={task.id}
+                              style={{
+                                ...(selectedTasks?.some((t) => t.id === task.id)
+                                  ? styles.selectedTask.style
+                                  : {}),
+                                ...(isCountingDown && !isPaused
+                                  ? styles.selectedTaskCounting.style
+                                  : {}),
+                                ...(isPaused
+                                  ? styles.selectedTaskPaused.style
+                                  : {}),
+                                ...(isFinished
+                                  ? styles.selectedTaskFinished.style
+                                  : {}),
+                                opacity: isActive ? 0.5 : 1,
+                              }}
+                            >
+                              <Div style={styles.taskContent.style}>
+                                <Div
+                                  onClick={() => {
+                                    if (
+                                      selectedTasks?.some(
+                                        (t) => t.id === task.id,
+                                      )
+                                    ) {
+                                      setSelectedTasks(
+                                        selectedTasks?.filter(
+                                          (t) => t.id !== task.id,
+                                        ),
+                                      )
+                                    } else {
+                                      if (
+                                        selectedTasks &&
+                                        selectedTasks?.length === 3
+                                      ) {
+                                        toast.error(
+                                          t("You can select up to 3 tasks"),
+                                        )
+                                        return
+                                      }
+                                      if (time === 0) {
+                                        handlePresetTime(presetMin1)
+                                      }
+                                      setSelectedTasks(
+                                        selectedTasks
+                                          ? [...selectedTasks, task]
+                                          : [task],
+                                      )
+                                    }
+                                  }}
+                                  style={styles.taskTitle.style}
+                                >
+                                  {selectedTasks?.some(
+                                    (t) => t.id === task.id,
+                                  ) ? (
+                                    <Span
+                                      style={styles.taskSelected.style}
+                                      data-testid="task-selected"
+                                    >
+                                      <CircleCheck
+                                        width={16}
+                                        height={16}
+                                        color={
+                                          isCountingDown
+                                            ? "var(--accent-4)"
+                                            : isPaused
+                                              ? "var(--accent-1)"
+                                              : undefined
+                                        }
+                                      />
+                                    </Span>
+                                  ) : (
+                                    <Span
+                                      style={styles.taskNotSelected}
+                                      data-testid="task-not-selected"
+                                    >
+                                      <Circle width={16} height={16} />
+                                    </Span>
+                                  )}
+
+                                  {(() => {
+                                    const totalTime = task.total?.reduce?.(
+                                      (total, item) => total + item.count,
+                                      0,
+                                    )
+
+                                    return (
+                                      <>
+                                        <Span
+                                          task-time={totalTime}
+                                          data-testid="task-title"
+                                        >
+                                          {sanitizeHtml(task.title)}
+                                        </Span>
+                                        {totalTime && totalTime > 0 ? (
+                                          <Span style={styles.taskTime.style}>
+                                            {Math.floor(totalTime / 3600) >
+                                              0 && (
+                                              <>
+                                                {Math.floor(totalTime / 3600)}
+                                                h{" "}
+                                              </>
+                                            )}
+                                            {Math.floor(
+                                              (totalTime % 3600) / 60,
+                                            ) > 0 && (
+                                              <>
+                                                {Math.floor(
+                                                  (totalTime % 3600) / 60,
+                                                )}
+                                                m{" "}
+                                              </>
+                                            )}
+                                            {Math.floor(totalTime % 60)}s
+                                          </Span>
+                                        ) : null}
+                                      </>
+                                    )
+                                  })()}
+                                </Div>
+
+                                <Div
+                                  onPointerDown={(e) => {
+                                    // Only allow left click for dragging on desktop
+                                    if (
+                                      e.pointerType === "mouse" &&
+                                      e.button !== 0
+                                    )
+                                      return
+                                    drag(e)
+                                  }}
+                                  style={{
+                                    ...styles.dragHandle.style,
+                                    touchAction: "none",
+                                    cursor: "grab",
+                                  }}
+                                >
+                                  <GripVertical width={22} height={22} />
+                                </Div>
+                                <Button
+                                  data-testid="edit-task-button"
+                                  className={"link"}
+                                  onClick={() => {
+                                    if (
+                                      selectedTasks?.some(
+                                        (t) => t.id === task.id,
+                                      )
+                                    ) {
+                                      handlePause()
+                                    }
+                                    setEditingTask(task)
+                                  }}
+                                >
+                                  <Pencil width={18} height={18} />
+                                </Button>
+                              </Div>
+                            </Div>
+                          )}
+                        />
+                      </Div>
+                    </>
+                  ) : null}
+                  {tasks?.tasks?.length
+                    ? guest &&
+                      guest?.tasksCount <= GUEST_TASKS_COUNT && (
+                        <Div
+                          data-testid="great-start"
+                          style={styles.greatStart.style}
+                        >
+                          {t(
+                            "You can keep using the app just like this, you can add up to {{count}} tasks — but registering unlocks more ✨.",
+                            { count: guest?.tasksCount },
+                          )}
+                        </Div>
+                      )
+                    : user && tasks?.tasks?.length
+                      ? user?.tasksCount <= PLUS_TASKS_COUNT && (
+                          <>
+                            {t(
+                              `You're doing awesome! Unlock more tasks, advanced mood insights, and priority support by subscribing to Plus ✨.`,
+                            )}
+                          </>
+                        )
+                      : undefined}
+
+                  {!tasks?.tasks?.length && !isLoadingTasks && (
+                    <Testimonials style={styles.testimonials.style} />
+                  )}
+                </>
+              )}
+            </>
+          )
+        })()}
+      </Div>
+    </Div>
   )
 }

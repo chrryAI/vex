@@ -930,24 +930,6 @@ export default function App({
               >
                 <Settings2 size={24} color="var(--accent-1)" />
               </Button>
-            ) : user?.role === "admin" && grape ? (
-              <>
-                {app?.id === grape.id ? (
-                  <Grape />
-                ) : (
-                  <A
-                    style={{
-                      position: "relative",
-                      bottom: "0.75rem",
-                      left: "0.5rem",
-                      fontSize: "1.4rem",
-                    }}
-                    href={getAppSlug(grape)}
-                  >
-                    🍇
-                  </A>
-                )}
-              </>
             ) : app?.id === chrry?.id && focus ? (
               <FocusButton time={time} />
             ) : (
