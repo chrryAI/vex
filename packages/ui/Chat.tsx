@@ -3844,13 +3844,11 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 }
                 ref={chatInputRef}
                 disabled={disabled}
-                // Cross-platform submit on Enter
-                onSubmitEditing={(e) => {
-                  if (!e.nativeEvent?.shiftKey) {
-                    handleSubmit()
-                  }
+                // Native-only: submit on Enter (no shift key detection available)
+                onSubmitEditing={() => {
+                  handleSubmit()
                 }}
-                // Web-specific: prevent default Enter behavior
+                // Web-specific: handle Enter with shift key detection
                 onKeyPress={(e: {
                   key: string
                   shiftKey: boolean
@@ -3858,6 +3856,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 }) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault()
+                    handleSubmit()
                   }
                 }}
                 // Handle paste

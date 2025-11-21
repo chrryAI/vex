@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import clsx from "clsx"
 import { useThreadStyles } from "./Thread.styles"
 import {
@@ -119,9 +119,8 @@ const Thread = ({
 
   const { threadId, creditsLeft, setCreditsLeft } = useChat()
 
-  const setMessages: typeof setMessagesInternal = (messages) => {
-    setMessagesInternal(messages)
-  }
+  // Use setMessagesInternal directly instead of wrapping it
+  const setMessages = setMessagesInternal
 
   const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
 
@@ -228,6 +227,49 @@ const Thread = ({
     setIsEmpty(!messages.length)
   }, [messages.length])
 
+  // Memoize the streaming update handler to prevent infinite loops
+  const handleStreamingUpdate = useCallback(
+    ({
+      content,
+      clientId,
+      aiAgent,
+      isWebSearchEnabled,
+      isImageGenerationEnabled,
+    }: {
+      content: string
+      clientId?: string
+      aiAgent?: aiAgent
+      isWebSearchEnabled?: boolean
+      isImageGenerationEnabled?: boolean
+    }) => {
+      if (!isLoadingMore && shouldAutoScroll(content)) {
+        scrollToBottom()
+      }
+
+      // Only update if content actually changed and clientId exists
+      if (!clientId) return
+
+      setMessages((prev) => {
+        return prev.map((m) =>
+          m.message.id === clientId && !m.message.isStreamingStop
+            ? {
+                ...m,
+                message: {
+                  ...m.message,
+                  content,
+                  isStreaming: true,
+                  isWebSearchEnabled: !!isWebSearchEnabled,
+                  isImageGenerationEnabled: !!isImageGenerationEnabled,
+                },
+                aiAgent: aiAgent ?? m.aiAgent,
+              }
+            : m,
+        )
+      })
+    },
+    [isLoadingMore, scrollToBottom, setMessages, shouldAutoScroll],
+  )
+
   const render = () => {
     return (
       <Div
@@ -239,7 +281,10 @@ const Thread = ({
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
           },
-          padding: isMobileDevice ? "0 0px 195px 0px" : "0 10px 195px 10px",
+          paddingTop: 0,
+          paddingRight: isMobileDevice ? 0 : 10,
+          paddingBottom: 195,
+          paddingLeft: isMobileDevice ? 0 : 10,
         }}
       >
         {!isVisitor && (
@@ -718,38 +763,7 @@ const Thread = ({
                         })
                       }
                     }}
-                    onStreamingUpdate={({
-                      content,
-                      clientId,
-                      aiAgent,
-                      isWebSearchEnabled,
-                      isImageGenerationEnabled,
-                    }) => {
-                      if (!isLoadingMore && shouldAutoScroll(content)) {
-                        scrollToBottom()
-                      }
-
-                      // Only update if content actually changed
-                      setMessages((prev) => {
-                        return prev.map((m) =>
-                          m.message.id === clientId &&
-                          !m.message.isStreamingStop
-                            ? {
-                                ...m,
-                                message: {
-                                  ...m.message,
-                                  content,
-                                  isStreaming: true,
-                                  isWebSearchEnabled: !!isWebSearchEnabled,
-                                  isImageGenerationEnabled:
-                                    !!isImageGenerationEnabled,
-                                },
-                                aiAgent: aiAgent ?? m.aiAgent,
-                              }
-                            : m,
-                        )
-                      })
-                    }}
+                    onStreamingUpdate={handleStreamingUpdate}
                     onStreamingComplete={(message?: {
                       message: message
                       user?: user
