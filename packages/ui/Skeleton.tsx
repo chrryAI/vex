@@ -148,7 +148,11 @@ export default function Skeleton({
                   {hasNotification && (
                     <Span style={{ ...skeletonStyles.notification.style }} />
                   )}
-                  <CircleEllipsis color="var(--accent-1)" size={24} />
+                  <CircleEllipsis
+                    strokeWidth={1.5}
+                    color="var(--accent-1)"
+                    size={24}
+                  />
                 </Button>
               )}
               {!isDrawerOpen ? (

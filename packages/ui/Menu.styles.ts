@@ -179,6 +179,8 @@ export const MenuStyleDefs = {
   menuButton: {
     display: "flex",
     marginLeft: "auto",
+    position: "relative",
+    right: -7,
   },
 } as const
 

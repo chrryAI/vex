@@ -306,7 +306,11 @@ export default function Menu({
                   onClick={toggleMenu}
                   style={styles.menuButton.style}
                 >
-                  <PanelRight color={"var(--shade-4)"} size={20} />
+                  <PanelRight
+                    strokeWidth={1.5}
+                    color={"var(--accent-1)"}
+                    size={20}
+                  />
                 </Button>
               </>
             ) : (
