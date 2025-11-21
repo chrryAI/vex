@@ -85,7 +85,7 @@ export default function MoodSelector({
             style={{
               ...btnStyles,
             }}
-            className={"link"}
+            className="link"
             onClick={() => {
               setMood(undefined)
             }}
@@ -106,7 +106,7 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-happy-button"
-              className={clsx("link", styles.emoji)}
+              className="link"
               onClick={() => setMood("happy")}
             >
               {emojiMap["happy"]}
@@ -117,7 +117,7 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-sad-button"
-              className={clsx("link", styles.emoji)}
+              className="link"
               onClick={() => setMood("sad")}
             >
               {emojiMap["sad"]}
@@ -130,7 +130,7 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-angry-button"
-              className={clsx("link", styles.emoji)}
+              className="link"
               onClick={() => setMood("angry")}
             >
               {emojiMap["angry"]}
@@ -141,7 +141,7 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-astonished-button"
-              className={clsx("link", styles.emoji)}
+              className="link"
               onClick={() => setMood("astonished")}
             >
               {emojiMap["astonished"]}
@@ -152,19 +152,19 @@ export default function MoodSelector({
               }}
               type="button"
               data-testid="moodify-inlove-button"
-              className={clsx("link", styles.emoji)}
+              className="link"
               onClick={() => setMood("inlove")}
             >
               {emojiMap["inlove"]}
             </Button>
 
-            <button
+            <Button
               style={{
                 ...btnStyles,
               }}
               type="button"
               data-testid="moodify-thinking-button"
-              className={clsx("link", styles.emoji)}
+              className="link"
               onClick={() => setMood("thinking")}
             >
               {showEdit && (
@@ -172,7 +172,7 @@ export default function MoodSelector({
                   <MousePointerClick strokeWidth={1.5} />
                 </>
               )}
-            </button>
+            </Button>
           </>
         )}
       </Div>

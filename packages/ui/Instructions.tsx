@@ -68,16 +68,17 @@ import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import AddToHomeScreen from "./AddToHomeScreen"
 import { FaApple, FaAndroid, FaChrome, FaFirefox } from "react-icons/fa"
-import EmojiPicker, {
-  EmojiClickData,
-  Theme,
-  SuggestionMode,
-} from "emoji-picker-react"
+// import EmojiPicker, {
+//   EmojiClickData,
+//   Theme,
+//   SuggestionMode,
+// } from "emoji-picker-react"
 import Agent from "./Agent"
 import { useLocalStorage } from "./hooks"
 import A from "./A"
 import { useInstructionsStyles } from "./Instructions.styles"
 import { useStyles } from "./context/StylesContext"
+import EmojiPicker from "./EmojiPicker"
 
 export default function Instructions({
   className,
@@ -414,7 +415,7 @@ export default function Instructions({
   const [selectedEmoji, setSelectedEmoji] = useState<string>("🌸")
   const [editedTitle, setEditedTitle] = useState<string>("")
 
-  const handleEmojiClick = (emojiData: EmojiClickData) => {
+  const handleEmojiClick = (emojiData: { emoji: string }) => {
     setSelectedEmoji(emojiData.emoji)
     setShowEmojiPicker(false)
 
@@ -1308,13 +1309,9 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                       }}
                     >
                       <EmojiPicker
+                        open={showEmojiPicker}
+                        onClose={() => setShowEmojiPicker(false)}
                         onEmojiClick={handleEmojiClick}
-                        theme={
-                          (isDark ? Theme.DARK : Theme.LIGHT) as
-                            | Theme
-                            | undefined
-                        }
-                        searchPlaceHolder={t("Search emoji...")}
                         width={300}
                         height={400}
                         previewConfig={{
@@ -1322,7 +1319,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                         }}
                         skinTonesDisabled
                         lazyLoadEmojis={true}
-                        suggestedEmojisMode={SuggestionMode.RECENT}
+                        isDark={isDark}
                       />
                     </Div>
                   )}

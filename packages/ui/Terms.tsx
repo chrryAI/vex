@@ -38,6 +38,7 @@ export default function Terms() {
       >
         <H1 style={{ marginTop: 0 }}>
           <Button
+            className="link"
             style={utilities.link.style}
             onClick={() => router.push("/about")}
           >
