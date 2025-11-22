@@ -21,8 +21,8 @@ import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
-import { DraggableAppList } from "./DraggableAppList"
-import { DraggableAppItem } from "./DraggableAppItem"
+// import { DraggableAppList } from "./DraggableAppList"
+// import { DraggableAppItem } from "./DraggableAppItem"
 import { useAppReorder } from "./hooks/useAppReorder"
 import { Div, H1, Button, Label, Span, Input } from "./platform"
 import A from "./A"
@@ -952,7 +952,7 @@ export default function App({
                 ...styles.appsGrid.style,
               }}
             >
-              <DraggableAppList style={{ ...styles.apps.style }}>
+              <Div style={{ ...styles.apps.style }}>
                 {appsState
                   .filter((item) => item.id !== popcorn?.id)
                   .slice(0, 5)
@@ -972,14 +972,14 @@ export default function App({
                       store?.appId !== zarathustra?.id
 
                     return (
-                      <DraggableAppItem
+                      <Div
                         key={item.id}
                         id={item.id}
-                        index={index}
-                        onMove={reorder.moveApp}
-                        onDragStart={reorder.handleDragStart}
-                        onDragEnd={reorder.handleDragEnd}
-                        onDrop={reorder.handleDrop}
+                        // index={index}
+                        // onMove={reorder.moveApp}
+                        // onDragStart={reorder.handleDragStart}
+                        // onDragEnd={reorder.handleDragEnd}
+                        // onDrop={reorder.handleDrop}
                         style={{ ...styles.appItem.style }}
                       >
                         <>
@@ -1216,10 +1216,10 @@ export default function App({
                             </Button>
                           )}
                         </>
-                      </DraggableAppItem>
+                      </Div>
                     )
                   })}
-              </DraggableAppList>
+              </Div>
             </Div>
           )}
         </>

@@ -14,6 +14,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import AppProviders from '../../packages/ui/context/providers';
 
 function App(): React.JSX.Element {
@@ -44,6 +45,7 @@ function App(): React.JSX.Element {
           App
         </Text>
       </AppProviders>
+      <Toast />
     </View>
   );
 }

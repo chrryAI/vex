@@ -103,7 +103,10 @@ export function isStandalone(): boolean {
   }
 
   // Android/Chrome standalone
-  if (window.matchMedia("(display-mode: standalone)").matches) {
+  if (
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(display-mode: standalone)").matches
+  ) {
     return true
   }
 
@@ -114,7 +117,7 @@ export function isStandalone(): boolean {
  * Detect browser type
  */
 export function getBrowser(): BrowserType {
-  if (typeof navigator === "undefined") return "unknown"
+  if (typeof navigator === "undefined" || !navigator.userAgent) return "unknown"
 
   const ua = navigator.userAgent.toLowerCase()
 
