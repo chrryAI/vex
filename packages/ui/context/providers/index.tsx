@@ -29,7 +29,7 @@ import { locale } from "../../locales"
 import useSWR, { SWRConfig } from "swr"
 import { thread, paginatedMessages } from "../../types"
 import { TimerContext, TimerContextProvider } from "../TimerContext"
-import { Hey } from "../../Sidebar"
+import { Hey } from "../../Hey"
 
 interface AppProvidersProps {
   translations?: Record<string, any>

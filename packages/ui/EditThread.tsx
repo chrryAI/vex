@@ -9,8 +9,7 @@ import toast from "react-hot-toast"
 import DeleteThread from "./DeleteThread"
 import { useAuth, useError, useNavigationContext } from "./context/providers"
 import { useEditThreadStyles } from "./EditThread.styles"
-import { Button, Div, Span } from "./platform"
-import TextArea from "antd/es/input/TextArea"
+import { Button, Div, Span, TextArea } from "./platform"
 import { useStyles } from "./context/StylesContext"
 
 export default function EditThread({

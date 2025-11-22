@@ -3,7 +3,5 @@ module.exports = {
   plugins: [
     // Required for Zod v4's "export * as" syntax
     '@babel/plugin-transform-export-namespace-from',
-    // Reanimated plugin MUST be last
-    'react-native-reanimated/plugin',
   ],
 };

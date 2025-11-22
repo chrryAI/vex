@@ -1,7 +1,5 @@
 import React from "react"
-import DraggableFlatList, {
-  RenderItemParams as NativeRenderItemParams,
-} from "react-native-draggable-flatlist"
+import DragList from "react-native-draglist"
 import { DraggableListProps, RenderItemParams } from "./DraggableList.d"
 
 export default function DraggableList<T>({
@@ -14,55 +12,44 @@ export default function DraggableList<T>({
   contentContainerStyle,
   style,
   testID,
-  activationDistance,
-  dragItemOverflow,
-  dragHitSlop,
 }: DraggableListProps<T>) {
   const renderItemWrapper = ({
     item,
-    drag,
+    onStartDrag,
     isActive,
-    getIndex,
-  }: NativeRenderItemParams<T>) => {
+    index,
+  }: {
+    item: T
+    onStartDrag: () => void
+    isActive: boolean
+    index: number
+  }) => {
     // Map native params to our shared interface
     const params: RenderItemParams<T> = {
       item,
-      drag,
+      drag: onStartDrag,
       isActive,
-      index: getIndex?.() ?? 0,
+      index,
     }
     return renderItem(params)
   }
 
-  // Wrap header/footer if they're ReactNode but not components
-  const wrappedHeader =
-    ListHeaderComponent &&
-    typeof ListHeaderComponent !== "function" &&
-    typeof ListHeaderComponent !== "object"
-      ? () => <>{ListHeaderComponent}</>
-      : (ListHeaderComponent as any)
-
-  const wrappedFooter =
-    ListFooterComponent &&
-    typeof ListFooterComponent !== "function" &&
-    typeof ListFooterComponent !== "object"
-      ? () => <>{ListFooterComponent}</>
-      : (ListFooterComponent as any)
-
   return (
-    <DraggableFlatList
+    <DragList
       data={data}
-      renderItem={renderItemWrapper}
       keyExtractor={keyExtractor}
-      onDragEnd={onDragEnd}
-      ListHeaderComponent={wrappedHeader}
-      ListFooterComponent={wrappedFooter}
+      onReordered={(fromIndex, toIndex) => {
+        const newData = [...data]
+        const [removed] = newData.splice(fromIndex, 1)
+        newData.splice(toIndex, 0, removed!)
+        onDragEnd({ data: newData, from: fromIndex, to: toIndex })
+      }}
+      renderItem={renderItemWrapper}
+      ListHeaderComponent={ListHeaderComponent}
+      ListFooterComponent={ListFooterComponent}
       contentContainerStyle={contentContainerStyle}
       style={style}
       testID={testID}
-      activationDistance={activationDistance}
-      dragItemOverflow={dragItemOverflow}
-      dragHitSlop={dragHitSlop}
     />
   )
 }

@@ -12,8 +12,8 @@ export interface DraggableListProps<T> {
   renderItem: (params: RenderItemParams<T>) => React.ReactElement
   keyExtractor: (item: T, index: number) => string
   onDragEnd: (params: { data: T[]; from: number; to: number }) => void
-  ListHeaderComponent?: React.ReactNode
-  ListFooterComponent?: React.ReactNode
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null
+  ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null
   contentContainerStyle?: any
   style?: any
   testID?: string
