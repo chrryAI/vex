@@ -114,7 +114,7 @@ export default function DraggableList<T>({
       data-testid={testID}
     >
       <div style={contentContainerStyle}>
-        {ListHeaderComponent}
+        {ListHeaderComponent && <>{ListHeaderComponent}</>}
 
         <DndContext
           sensors={sensors}
@@ -134,7 +134,7 @@ export default function DraggableList<T>({
           </SortableContext>
         </DndContext>
 
-        {ListFooterComponent}
+        {ListFooterComponent && <>{ListFooterComponent}</>}
       </div>
     </div>
   )

@@ -190,9 +190,10 @@ export function PlatformProvider({
   )
 
   const viewportWidth = parseInt(
-    viewportWidthInternal.toString() ||
+    viewportWidthInternal?.toString() ||
       rest.viewPortWidth?.toString() ||
       "1024",
+    10,
   )
 
   // Update viewport width on client after mount

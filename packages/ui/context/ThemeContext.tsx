@@ -88,12 +88,16 @@ export function ThemeProvider({
   // Cross-platform theme (dark/light) storage
   // Default to "dark" if HTML element has "dark" class (from SSR), otherwise "light"
   const getInitialTheme = (): themeType => {
-    if (typeof document !== "undefined") {
+    if (
+      typeof document !== "undefined" &&
+      document.documentElement &&
+      document.documentElement.classList
+    ) {
       return document.documentElement.classList.contains("dark")
         ? "dark"
         : "light"
     }
-    return "dark" // Default to dark for SSR
+    return "dark" // Default to dark for SSR and Native
   }
 
   useEffect(() => {

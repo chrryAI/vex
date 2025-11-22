@@ -25,6 +25,14 @@ import { locales } from "../locales"
 import { getSiteConfig } from "./siteConfig"
 import { getAppAndStoreSlugs, excludedSlugRoutes } from "./url"
 import replaceLinks from "./replaceLinks"
+export * from "./env"
+import {
+  isDevelopment,
+  isTestingDevice,
+  isProduction,
+  checkIsExtension,
+  getExtensionUrl,
+} from "./env"
 
 export { exampleInstructions, getExampleInstructions }
 
@@ -42,37 +50,12 @@ export const GUEST_TASKS_COUNT = 4
 export const MEMBER_TASKS_COUNT = 8
 export const PLUS_TASKS_COUNT = 30
 
-export const checkIsExtension = () => {
-  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
-    return true
-  }
-  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
-    return true
-  }
-  return false
-}
-
 export { getWeatherCacheTime }
-
-export const getExtensionUrl = () => {
-  if (typeof window === "undefined") return
-  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
-    return chrome.runtime.getURL("index.html") // Chrome
-  }
-  if (typeof browser !== "undefined" && (browser as any).runtime?.getURL) {
-    return (browser as any).runtime.getURL("index.html") // Firefox
-  }
-  return `${window.location.origin}/index.html` // Fallback
-}
-
-const isProduction =
-  process.env.NODE_ENV === "production" ||
-  process.env.NEXT_PUBLIC_NODE_ENV === "production"
 
 // Get hostname from window if available (client-side)
 const getClientHostname = () => {
   if (typeof window !== "undefined") {
-    return window.location.hostname
+    return window.location?.hostname
   }
   return undefined
 }
@@ -109,15 +92,7 @@ export function getThreadId(pathname?: string): string | undefined {
 
 // export const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV !== "production"
 
-export const isDevelopment = checkIsExtension()
-  ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>
-      getExtensionUrl().includes(id),
-    )
-  : !isProduction
-
 export const MAX_TOOL_CALLS_PER_MESSAGE = 7
-
-const isTestingDevice = false && isDevelopment
 
 export const WS_URL = isTestingDevice
   ? "ws://192.168.2.27:5001"
@@ -247,6 +222,26 @@ export const utcToday = new Date(
   Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
 )
 
+export const getExtensionUrls = (domain?: string): string[] => {
+  const vex = getSiteConfig("vex").url
+  const chrry = getSiteConfig("chrryAI").url
+  const atlas = getSiteConfig("atlas").url
+  const istanbul = getSiteConfig("istanbul").url
+  const amsterdam = getSiteConfig("amsterdam").url
+  const tokyo = getSiteConfig("tokyo").url
+  const newYork = getSiteConfig("newYork").url
+  const focus = getSiteConfig("focus").url
+
+  // Development: only use localhost
+  if (isDevelopment) {
+    return [FRONTEND_URL]
+  }
+
+  // Production: current mode first, then other extensions as fallbacks
+  const urls = [vex, chrry, atlas, istanbul, amsterdam, tokyo, newYork, focus]
+  return urls
+}
+
 export const getBrowserAPI = (): BrowserAPIType | null => {
   if (typeof window === "undefined") return null
 
@@ -363,7 +358,7 @@ export const removeParam = (key: string) => {
 }
 
 export const isFirefox =
-  typeof navigator !== "undefined" && navigator?.userAgent.includes("Firefox")
+  typeof navigator !== "undefined" && navigator?.userAgent?.includes("Firefox")
 
 export function getFlag({ code }: { code?: string }) {
   if (!code || code.length !== 2) return "🏳️"

@@ -29,23 +29,48 @@ const config = {
       react: path.resolve(projectRoot, 'node_modules/react'),
       'react-dom': path.resolve(projectRoot, 'node_modules/react-dom'),
       'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
+      'react/jsx-runtime': path.resolve(
+        projectRoot,
+        'node_modules/react/jsx-runtime.js',
+      ),
+      'react/jsx-dev-runtime': path.resolve(
+        projectRoot,
+        'node_modules/react/jsx-dev-runtime.js',
+      ),
+      i18next: path.resolve(projectRoot, 'node_modules/i18next'),
+      'react-i18next': path.resolve(projectRoot, 'node_modules/react-i18next'),
+      'react-native-toast-message': path.resolve(
+        projectRoot,
+        'node_modules/react-native-toast-message',
+      ),
+      'react-hook-form': path.resolve(
+        projectRoot,
+        'node_modules/react-hook-form',
+      ),
+      swr: path.resolve(projectRoot, 'node_modules/swr'),
+      uuid: path.resolve(projectRoot, 'node_modules/uuid'),
+      zod: path.resolve(projectRoot, 'node_modules/zod'),
+      '@hookform/resolvers': path.resolve(
+        projectRoot,
+        'node_modules/@hookform/resolvers',
+      ),
+      invariant: path.resolve(projectRoot, 'node_modules/invariant'),
+      'prop-types': path.resolve(projectRoot, 'node_modules/prop-types'),
+      'react-native-get-random-values': path.resolve(
+        projectRoot,
+        'node_modules/react-native-get-random-values',
+      ),
     },
     // Block problematic modules that use dynamic imports
     blockList: [
       // Block React from workspace root to force using local copy
       new RegExp(`${workspaceRoot}/node_modules/react/`),
       new RegExp(`${workspaceRoot}/node_modules/react-dom/`),
-      new RegExp(`${workspaceRoot}/node_modules/react-native/`),
       // Block React from packages/ui to force using local copy
-      new RegExp(
-        path.resolve(workspaceRoot, 'packages/ui/node_modules/react/'),
-      ),
-      new RegExp(
-        path.resolve(workspaceRoot, 'packages/ui/node_modules/react-dom/'),
-      ),
-      new RegExp(
-        path.resolve(workspaceRoot, 'packages/ui/node_modules/react-native/'),
-      ),
+      /packages\/ui\/node_modules\/react\//,
+      /packages\/ui\/node_modules\/react-dom\//,
+      // Block swr from packages/ui to force using local copy
+      /packages\/ui\/node_modules\/swr\//,
       // Block @lobehub/ui's EmojiPicker which uses dynamic imports
       /node_modules\/@lobehub\/ui\/.*\/EmojiPicker/,
       // Block @emoji-mart packages that use dynamic imports
@@ -54,17 +79,44 @@ const config = {
       /node_modules\/goober/, // Block goober CSS-in-JS library
     ],
     resolveRequest: (context, moduleName, platform) => {
-      // Force React resolution to the app's node_modules
-      if (
-        moduleName === 'react' ||
-        moduleName === 'react-dom' ||
-        moduleName === 'react-native'
-      ) {
-        const appNodeModules = path.resolve(projectRoot, 'node_modules');
-        return {
-          type: 'sourceFile',
-          filePath: path.resolve(appNodeModules, moduleName),
-        };
+      // Redirect react-hot-toast to platform-agnostic toast for native
+      if (platform === 'ios' || platform === 'android') {
+        if (moduleName === 'react-hot-toast') {
+          return {
+            type: 'sourceFile',
+            filePath: path.resolve(
+              workspaceRoot,
+              'packages/ui/platform/toast.native.ts',
+            ),
+          };
+        }
+
+        // Block web-only libraries for React Native
+        const webOnlyLibraries = [
+          'react-select',
+          'react-dnd',
+          'react-dnd-html5-backend',
+          'react-audio-play',
+          '@dnd-kit/core',
+          '@dnd-kit/sortable',
+          '@dnd-kit/utilities',
+          'react-icons',
+          'react-native-markdown-display',
+        ];
+
+        if (
+          webOnlyLibraries.some(
+            lib => moduleName === lib || moduleName.startsWith(lib + '/'),
+          )
+        ) {
+          console.warn(
+            `⚠️  Blocked web-only library "${moduleName}" in React Native build. Create a .native.tsx version of the component using this library.`,
+          );
+          return {
+            type: 'sourceFile',
+            filePath: path.resolve(__dirname, 'web-only-mock.js'),
+          };
+        }
       }
 
       // Block @lobehub/ui imports completely (has dynamic imports)
@@ -113,6 +165,41 @@ const config = {
           return {
             type: 'sourceFile',
             filePath: path.resolve(__dirname, 'goober-mock.js'),
+          };
+        }
+
+        // Force React resolution to the app's node_modules
+        if (moduleName === 'react') {
+          return {
+            type: 'sourceFile',
+            filePath: path.resolve(projectRoot, 'node_modules/react/index.js'),
+          };
+        }
+        if (moduleName === 'react/jsx-runtime') {
+          return {
+            type: 'sourceFile',
+            filePath: path.resolve(
+              projectRoot,
+              'node_modules/react/jsx-runtime.js',
+            ),
+          };
+        }
+        if (moduleName === 'react/jsx-dev-runtime') {
+          return {
+            type: 'sourceFile',
+            filePath: path.resolve(
+              projectRoot,
+              'node_modules/react/jsx-dev-runtime.js',
+            ),
+          };
+        }
+        if (moduleName === 'react-native') {
+          return {
+            type: 'sourceFile',
+            filePath: path.resolve(
+              projectRoot,
+              'node_modules/react-native/index.js',
+            ),
           };
         }
       }

@@ -1,5 +1,3 @@
-import { FRONTEND_URL, isDevelopment } from "."
-
 export type SiteMode =
   | "chrryDev"
   | "vex"
@@ -47,26 +45,6 @@ export const extensions = [
   "https://vex.chrry.ai",
   "https://chrry.ai",
 ]
-
-export const getExtensionUrls = (domain?: string): string[] => {
-  const vex = getSiteConfig("vex").url
-  const chrry = getSiteConfig("chrryAI").url
-  const atlas = getSiteConfig("atlas").url
-  const istanbul = getSiteConfig("istanbul").url
-  const amsterdam = getSiteConfig("amsterdam").url
-  const tokyo = getSiteConfig("tokyo").url
-  const newYork = getSiteConfig("newYork").url
-  const focus = getSiteConfig("focus").url
-
-  // Development: only use localhost
-  if (isDevelopment) {
-    return [FRONTEND_URL]
-  }
-
-  // Production: current mode first, then other extensions as fallbacks
-  const urls = [vex, chrry, atlas, istanbul, amsterdam, tokyo, newYork, focus]
-  return urls
-}
 
 type SiteTranslation = {
   title: string
@@ -614,7 +592,9 @@ export function detectSiteModeDomain(hostname?: string): SiteMode {
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
-    hostname || (typeof window !== "undefined" ? window.location.hostname : "")
+    hostname ||
+    (typeof window !== "undefined" ? window?.location?.hostname : "") ||
+    ""
 
   let host = rawHost?.trim().toLowerCase()
 

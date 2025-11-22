@@ -1,28 +1,10 @@
 /**
  * Cross-platform toast utility
- * Web: Uses react-hot-toast
- * Native: Will use react-native-toast-message (placeholder for now)
+ * Web: Uses react-hot-toast (this file)
+ * Native: Uses react-native-toast-message (toast.native.ts)
  */
 
-import webToast from "react-hot-toast"
-
-// For now, just re-export react-hot-toast
-// When adding React Native support, we'll add platform detection here
-export const toast = {
-  success: (message: string, options?: any) => {
-    return webToast.success(message, options)
-  },
-  error: (message: string, options?: any) => {
-    return webToast.error(message, options)
-  },
-  loading: (message: string, options?: any) => {
-    return webToast.loading(message, options)
-  },
-  custom: (message: string, options?: any) => {
-    return webToast(message, options)
-  },
-  promise: webToast.promise,
-  dismiss: webToast.dismiss,
-}
+import toast from "react-hot-toast"
 
 export default toast
+export { toast }
