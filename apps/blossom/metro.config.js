@@ -23,8 +23,29 @@ const config = {
       path.resolve(projectRoot, 'node_modules'),
       path.resolve(workspaceRoot, 'node_modules'),
     ],
+    // Deduplicate React to prevent "Cannot read property 'useState' of null" error
+    // This ensures all packages use the same React instance from apps/blossom
+    extraNodeModules: {
+      react: path.resolve(projectRoot, 'node_modules/react'),
+      'react-dom': path.resolve(projectRoot, 'node_modules/react-dom'),
+      'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
+    },
     // Block problematic modules that use dynamic imports
     blockList: [
+      // Block React from workspace root to force using local copy
+      new RegExp(`${workspaceRoot}/node_modules/react/`),
+      new RegExp(`${workspaceRoot}/node_modules/react-dom/`),
+      new RegExp(`${workspaceRoot}/node_modules/react-native/`),
+      // Block React from packages/ui to force using local copy
+      new RegExp(
+        path.resolve(workspaceRoot, 'packages/ui/node_modules/react/'),
+      ),
+      new RegExp(
+        path.resolve(workspaceRoot, 'packages/ui/node_modules/react-dom/'),
+      ),
+      new RegExp(
+        path.resolve(workspaceRoot, 'packages/ui/node_modules/react-native/'),
+      ),
       // Block @lobehub/ui's EmojiPicker which uses dynamic imports
       /node_modules\/@lobehub\/ui\/.*\/EmojiPicker/,
       // Block @emoji-mart packages that use dynamic imports
@@ -33,6 +54,19 @@ const config = {
       /node_modules\/goober/, // Block goober CSS-in-JS library
     ],
     resolveRequest: (context, moduleName, platform) => {
+      // Force React resolution to the app's node_modules
+      if (
+        moduleName === 'react' ||
+        moduleName === 'react-dom' ||
+        moduleName === 'react-native'
+      ) {
+        const appNodeModules = path.resolve(projectRoot, 'node_modules');
+        return {
+          type: 'sourceFile',
+          filePath: path.resolve(appNodeModules, moduleName),
+        };
+      }
+
       // Block @lobehub/ui imports completely (has dynamic imports)
       if (
         moduleName === '@lobehub/ui' ||
