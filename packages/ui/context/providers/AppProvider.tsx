@@ -169,6 +169,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     defaultInstructions,
     sushi,
     focus,
+    setLoadingApp,
   } = useAuth()
   const { actions } = useData()
 
@@ -464,13 +465,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setStoreSlug(pathname.replace("/", ""))
   }, [pathname])
 
-  const currentStore = useMemo(() => {
-    // Extract last path segment to handle language prefixes (e.g., /en/store-slug -> store-slug)
+  const getCurrentStoreApp = () => {
     const pathSegments = pathname.split("/").filter(Boolean)
     const lastSegment = pathSegments[pathSegments.length - 1] || ""
 
     const matchedApp = allApps?.find((app) => app?.store?.slug === lastSegment)
-    return matchedApp?.store
+
+    return matchedApp
+  }
+
+  const [currentStore, setCurrentStore] = useState(getCurrentStoreApp()?.store)
+  useEffect(() => {
+    const matchedApp = getCurrentStoreApp()
+    if (matchedApp && !matchedApp?.store?.apps?.length) {
+      setLoadingApp(matchedApp)
+      return
+    }
+    matchedApp?.store && setCurrentStore(matchedApp.store)
   }, [pathname, allApps])
 
   const appFormWatcher = {

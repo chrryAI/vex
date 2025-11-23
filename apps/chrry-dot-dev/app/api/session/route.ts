@@ -261,7 +261,10 @@ export async function GET(request: Request) {
     locales,
   })
 
-  const appFromParams = appId ? await getApp({ id: appId }) : undefined
+  const appFromParams = appId
+    ? await getApp({ id: appId })
+    : await getApp({ storeSlug: slug?.appSlug })
+  console.log(`🚀 ~ GET ~ appId:`, appFromParams?.slug)
 
   const slugParam = appFromParams ? appFromParams.slug : slug?.appSlug
 

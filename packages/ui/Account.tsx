@@ -24,7 +24,14 @@ import {
   useError,
   useData,
 } from "./context/providers"
-import { Button, Div, FilePicker, Input, useTheme } from "./platform"
+import {
+  Button,
+  Div,
+  FilePicker,
+  Input,
+  usePlatform,
+  useTheme,
+} from "./platform"
 import { uploadUserImage } from "./lib"
 import Img from "./Img"
 import CharacterProfiles from "./CharacterProfiles"
@@ -36,6 +43,8 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const { push } = useRouter()
 
   const styles = useAccountStyles()
+
+  const { isMobileDevice } = useTheme()
   const { utilities } = useStyles()
 
   // Split contexts for better organization
@@ -250,6 +259,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
         style={{
           ...utilities.transparent.style,
           ...utilities.small.style,
+          display: isMobileDevice ? "none" : "flex",
           ...style,
         }}
         onClick={() => {

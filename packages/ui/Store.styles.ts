@@ -58,6 +58,8 @@ export const StoreStyleDefs = {
   },
   appTitle: {
     display: "flex",
+    margin: "0 0 10px 0",
+    fontSize: 20,
   },
   titleText: {
     gap: 5,

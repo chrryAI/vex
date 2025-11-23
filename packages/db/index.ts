@@ -4461,6 +4461,7 @@ export const getApp = async ({
   storeId,
   isSafe = true,
   depth = 0,
+  storeSlug,
   storeDomain,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
@@ -4471,6 +4472,7 @@ export const getApp = async ({
   storeId?: string
   isSafe?: boolean
   depth?: number
+  storeSlug?: string
   storeDomain?: string
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
@@ -4488,6 +4490,18 @@ export const getApp = async ({
 
   if (id) {
     appConditions.push(eq(apps.id, id))
+  }
+
+  if (storeId) {
+    appConditions.push(eq(apps.storeId, storeId))
+  }
+
+  if (storeSlug) {
+    appConditions.push(eq(stores.slug, storeSlug))
+  }
+
+  if (storeDomain) {
+    appConditions.push(eq(stores.domain, storeDomain))
   }
 
   // Build access conditions (can user/guest access this app?)
@@ -4534,14 +4548,9 @@ export const getApp = async ({
     .from(apps)
     .leftJoin(users, eq(apps.userId, users.id))
     .leftJoin(guests, eq(apps.guestId, guests.id))
+    .leftJoin(stores, eq(apps.storeId, stores.id))
 
   // Only add store join if storeDomain is provided
-  if (storeDomain) {
-    query = query.leftJoin(
-      stores,
-      and(eq(apps.storeId, stores.id), eq(stores.domain, storeDomain)),
-    )
-  }
 
   const [app] = await query.where(
     and(

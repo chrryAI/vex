@@ -18,6 +18,7 @@ import { Sparkles, ArrowRight } from "./icons"
 import A from "./A"
 import { useStoreMetadata } from "./hooks/useMetadata"
 import { useStyles } from "./context/StylesContext"
+import Loading from "./Loading"
 
 export default function Store({
   compact,
@@ -36,16 +37,13 @@ export default function Store({
 
   const { setIsNewAppChat } = useChat()
 
-  const { getAppSlug } = useAuth()
-
-  const { track, allApps } = useAuth()
+  const { track, allApps, getAppSlug, loadingApp } = useAuth()
 
   const { currentStore } = useApp()
 
   const store = slug
     ? allApps.find((app) => app.slug === slug)?.store
     : currentStore
-  console.log(`🚀 ~ file: Store.tsx:48 ~ currentStore:`, currentStore)
 
   const apps = store?.apps
 
@@ -106,6 +104,10 @@ export default function Store({
   useStoreMetadata(store)
 
   const styles = useStoreStyles()
+
+  if (!store?.app) {
+    return null
+  }
 
   const render = () => {
     return (
@@ -215,7 +217,12 @@ export default function Store({
                   }}
                 >
                   <Span style={{ ...styles.appName.style }}>
-                    {app.icon} {app.name}
+                    {loadingApp?.id === app.id ? (
+                      <Loading size={16} />
+                    ) : (
+                      app.icon
+                    )}{" "}
+                    {app.name}
                   </Span>
                   <Span style={{ ...styles.appSubtitle.style }}>
                     {t(app.subtitle || "")}
@@ -320,10 +327,6 @@ export default function Store({
 
   if (compact) {
     return render()
-  }
-
-  if (!store?.app) {
-    return null
   }
 
   return <Skeleton>{render()}</Skeleton>

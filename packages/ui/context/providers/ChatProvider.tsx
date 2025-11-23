@@ -175,8 +175,7 @@ export function ChatProvider({
     favouriteAgent,
     threadId,
     setThreadId,
-    loadingApp,
-    setLoadingApp,
+
     ...auth
   } = useAuth()
 
@@ -437,8 +436,12 @@ export function ChatProvider({
     return i?.store?.apps.length
   }
 
+  const [loadingApp, setLoadingApp] = useState<appWithStore | undefined>(
+    undefined,
+  )
+
   const setIsNewAppChat = (item: appWithStore | undefined) => {
-    if (!loadingApp && hasStoreApps(item)) {
+    if (!loadingApp && hasStoreApps(item) && item) {
       setIsNewChat(true, getAppSlug(item))
       return
     }
