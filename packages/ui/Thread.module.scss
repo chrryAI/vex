@@ -17,7 +17,7 @@
 
   &.empty {
     margin-top: auto;
-    padding-bottom: toRem.toRem(160);
+    padding: 0 toRem.toRem(10) toRem.toRem(160) toRem.toRem(10);
 
     @media (min-height: toRem.toRem(600)) {
       padding-bottom: toRem.toRem(170);
