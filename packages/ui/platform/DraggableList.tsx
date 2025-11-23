@@ -10,4 +10,4 @@
  */
 
 export { default } from "./DraggableList.web"
-export type { DraggableListProps, RenderItemParams } from "./DraggableList.d"
+export type { DraggableListProps, RenderItemParams } from "./DraggableList.web"
