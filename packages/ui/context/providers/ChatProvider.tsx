@@ -23,6 +23,7 @@ import {
   message,
   messages,
   paginatedMessages,
+  appWithStore,
 } from "../../types"
 
 import { pageSizes } from "../../utils"
@@ -50,6 +51,7 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      setIsNewAppChat: (item: appWithStore | undefined) => void
       shouldFocus: boolean
       setShouldFocus: (shouldFocus: boolean) => void
       placeHolderText: string | undefined
@@ -173,6 +175,8 @@ export function ChatProvider({
     favouriteAgent,
     threadId,
     setThreadId,
+    loadingApp,
+    setLoadingApp,
     ...auth
   } = useAuth()
 
@@ -428,7 +432,33 @@ export function ChatProvider({
 
   const [wasIncognito, setWasIncognito] = useState(isIncognito)
 
-  const [newChatTrigger, setNewChatTrigger] = useState(0)
+  const hasStoreApps = (item: appWithStore | undefined) => {
+    const i = item && allApps?.find((app) => app.id === item?.id)
+    return i?.store?.apps.length
+  }
+
+  const setIsNewAppChat = (item: appWithStore | undefined) => {
+    if (!loadingApp && hasStoreApps(item)) {
+      setIsNewChat(true, getAppSlug(item))
+      return
+    }
+
+    if (!loadingApp && item) {
+      setLoadingApp(item)
+      return
+    }
+  }
+
+  useEffect(() => {
+    if (!loadingApp) {
+      return
+    }
+
+    if (hasStoreApps(loadingApp)) {
+      setIsNewChat(true, getAppSlug(loadingApp))
+      return
+    }
+  }, [loadingApp, allApps])
 
   const setIsNewChat = (
     value: boolean,
@@ -448,10 +478,6 @@ export function ChatProvider({
       setIsChatFloating(false)
     }
 
-    if (value && isExtension) {
-      // Increment trigger to force useEffect to run even if isNewChat was already true
-      setNewChatTrigger((prev) => prev + 1)
-    }
     setIsNewChatInternal(value)
   }
 
@@ -1058,6 +1084,7 @@ export function ChatProvider({
   return (
     <ChatContext.Provider
       value={{
+        setIsNewAppChat,
         shouldFocus,
         setShouldFocus,
         placeHolderText,

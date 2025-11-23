@@ -31,7 +31,7 @@ export default function Store({
 
   const { utilities } = useStyles()
 
-  const { router, setIsNewChat, pathname, searchParams } =
+  const { router, setIsNewAppChat, pathname, searchParams } =
     useNavigationContext()
 
   const { getAppSlug } = useAuth()
@@ -151,7 +151,7 @@ export default function Store({
                     e.preventDefault()
 
                     if (store.app) {
-                      setIsNewChat(true, getAppSlug(store.app))
+                      setIsNewAppChat(store.app)
                     }
                     if (e.metaKey || e.ctrlKey) {
                       return
@@ -238,7 +238,7 @@ export default function Store({
                         return
                       }
                       e.preventDefault()
-                      setIsNewChat(true, getAppSlug(selectedApp))
+                      setIsNewAppChat(selectedApp)
                     }}
                     style={styles.tryItNow.style}
                   >
@@ -277,7 +277,7 @@ export default function Store({
                                 return
                               }
                               e.preventDefault()
-                              setIsNewChat(true, getAppSlug(selectedApp))
+                              setIsNewAppChat(selectedApp)
                             }}
                             className={"link"}
                           >
