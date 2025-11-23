@@ -1684,5 +1684,6 @@
   "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "명확하고 포괄적인 문서와 주석을 생성합니다. Sushi는 복잡한 코드를 사람이 읽을 수 있는 언어로 설명합니다.",
   "Create apps in your store with unlimited collaboration": "무제한 협업으로 스토어에 앱을 만드세요",
   "Create custom AI apps with team collaboration": "팀 협업으로 맞춤형 AI 앱을 만드세요",
-  "Unlimited stores with nested apps": "중첩된 앱이 있는 무제한 스토어"
+  "Unlimited stores with nested apps": "중첩된 앱이 있는 무제한 스토어",
+  "credit_left": "{{count}} 남음"
 }

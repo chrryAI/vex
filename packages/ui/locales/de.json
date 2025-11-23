@@ -1685,5 +1685,6 @@
   "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Erstellen Sie klare, umfassende Dokumentationen und Kommentare. Vex erklärt komplexen Code in menschenlesbarer Sprache.",
   "Create apps in your store with unlimited collaboration": "Erstellen Sie Apps in Ihrem Store mit unbegrenzter Zusammenarbeit",
   "Create custom AI apps with team collaboration": "Erstellen Sie benutzerdefinierte AI-Apps mit Teamzusammenarbeit",
-  "Unlimited stores with nested apps": "Unbegrenzte Stores mit verschachtelten Apps"
+  "Unlimited stores with nested apps": "Unbegrenzte Stores mit verschachtelten Apps",
+  "credit_left": "{{count}} übrig"
 }

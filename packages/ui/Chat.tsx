@@ -295,7 +295,7 @@ export default function Chat({
   const { captureException } = useError()
 
   // Platform context
-  const { device, os, isStandalone, isExtension } = usePlatform()
+  const { device, os, isStandalone, isExtension, viewPortWidth } = usePlatform()
   const inputRef = useRef(text || "")
 
   // Theme context
@@ -3203,7 +3203,11 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       <>
                         {agent.state === "active" && (
                           <Span style={styles.stateLabelContainer.style}>
-                            <Span style={styles.creditCost.style}>
+                            <Span
+                              style={{
+                                ...styles.creditCost.style,
+                              }}
+                            >
                               <Coins size={15} color="var(--accent-1)" />
                               {t("credits", {
                                 count: agent.creditCost,
@@ -4438,7 +4442,12 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   ...(isStandalone ? styles.standalone.style : undefined),
                 }}
               >
-                <Span style={styles.creditCost.style}>
+                <Span
+                  style={{
+                    ...styles.creditCost.style,
+                    display: viewPortWidth > 390 ? "flex" : "none",
+                  }}
+                >
                   {!hitHourlyLimit && (
                     <Coins color="var(--accent-1)" size={16} />
                   )}
@@ -4526,7 +4535,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             >
                               {creditsLeft > OWNER_CREDITS / 10
                                 ? t("Unlimited credits")
-                                : t("credits_left", {
+                                : t("credit_left", {
                                     count: creditsLeft,
                                   })}
                             </Span>

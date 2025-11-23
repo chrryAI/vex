@@ -1684,5 +1684,6 @@
   "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Açık, kapsamlı belgeler ve yorumlar oluşturun. Sushi, karmaşık kodu insanların okuyabileceği dilde açıklar.",
   "Create apps in your store with unlimited collaboration": "Mağazanızda sınırsız işbirliği ile uygulamalar oluşturun",
   "Create custom AI apps with team collaboration": "Takım işbirliği ile özel AI uygulamaları oluşturun",
-  "Unlimited stores with nested apps": "İç içe uygulamalarla sınırsız mağaza"
+  "Unlimited stores with nested apps": "İç içe uygulamalarla sınırsız mağaza",
+  "credit_left": "{{count}} kaldı"
 }
