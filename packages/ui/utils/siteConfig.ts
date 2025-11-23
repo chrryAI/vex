@@ -877,7 +877,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       favicon: "focus",
       mode: "focus",
       slug: "focus",
-      version: "26.10.32",
+      version: "26.10.33",
       storeSlug: "blossom",
       name: "Focus",
       domain: "focus.chrry.ai",
