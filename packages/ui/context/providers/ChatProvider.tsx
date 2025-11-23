@@ -463,7 +463,7 @@ export function ChatProvider({
       setLoading(false)
       return
     }
-  }, [loadingApp, allApps])
+  }, [loading, allApps, loadingApp])
 
   const setIsNewChat = (
     value: boolean,
