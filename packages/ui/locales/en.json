@@ -784,6 +784,7 @@
   "cost_transparency_title": "💰 Complete Cost Transparency",
   "credits_left_one": "{{count}} Credit left",
   "credits_left_other": "{{count}} Credits left",
+  "credit_left": "{{count}} left",
   "credits_one": "{{count}} Credit",
   "credits_other": "{{count}} Credits",
   "credits_plural": "{{count}} credits",

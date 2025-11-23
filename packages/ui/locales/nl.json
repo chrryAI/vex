@@ -1685,5 +1685,6 @@
   "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Genereer duidelijke, uitgebreide documentatie en opmerkingen. Sushi legt complexe code uit in menselijk leesbare taal.",
   "Create apps in your store with unlimited collaboration": "Maak apps in uw winkel met onbeperkte samenwerking",
   "Create custom AI apps with team collaboration": "Maak aangepaste AI-apps met team samenwerking",
-  "Unlimited stores with nested apps": "Onbeperkte winkels met geneste apps"
+  "Unlimited stores with nested apps": "Onbeperkte winkels met geneste apps",
+  "credit_left": "{{count}} over"
 }
