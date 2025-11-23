@@ -124,7 +124,7 @@ export default function ImageComponent(props: ImageProps) {
   const color =
     COLORS[app?.themeColor as keyof typeof COLORS] || "var(--accent-6)"
 
-  const intSize = parseInt(size)
+  const intSize = parseInt(size?.toString() || "0")
 
   const emojiSize = intSize && intSize <= 24 ? intSize * 0.85 : intSize
   if (isEmoji) {
