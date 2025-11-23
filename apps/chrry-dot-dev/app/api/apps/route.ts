@@ -18,6 +18,7 @@ import slugify from "slug"
 import { v4 as uuid } from "uuid"
 import { reorderApps } from "chrry/lib"
 import { appWithStore } from "chrry/types"
+import { getSiteConfig } from "chrry/utils/siteConfig"
 
 export async function GET(request: NextRequest) {
   const appId = request.nextUrl.searchParams.get("appId")
@@ -29,17 +30,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  let app
+
   if (!appId) {
+    const siteConfig = getSiteConfig(process.env.CHRRY_URL)
+
+    app = await getApp({
+      id: siteConfig.slug,
+      userId: member?.id,
+      guestId: guest?.id,
+      depth: 1,
+    })
     return NextResponse.json({ error: "appId is required" }, { status: 400 })
   }
 
   // Get the current app with its store
-  const app = await getApp({
-    id: appId,
-    userId: member?.id,
-    guestId: guest?.id,
-    depth: 1,
-  })
+  app =
+    app ||
+    (await getApp({
+      id: appId,
+      userId: member?.id,
+      guestId: guest?.id,
+      depth: 1,
+    }))
 
   if (!app) {
     return NextResponse.json({ error: "App not found" }, { status: 404 })
