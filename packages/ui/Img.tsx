@@ -153,7 +153,7 @@ export default function Img({
       <Div
         ref={ref}
         className={containerClass}
-        style={{ ...imgStyles.container.style, width, height }}
+        style={{ ...imgStyles.container.style, width, height, ...style }}
       >
         <AnimatedImage
           src={imageSrc}
@@ -163,6 +163,7 @@ export default function Img({
             ...imgStyles.img.style,
             width,
             height,
+            ...style,
           }}
           isLoaded={isLoaded}
           reduceMotion={reduceMotion}

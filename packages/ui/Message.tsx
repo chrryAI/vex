@@ -314,6 +314,11 @@ export default function Message({
 
   const [remoteDeleted, setRemoteDeleted] = useState(false)
 
+  const agentImageStyle = {
+    ...styles.agentMessageImageContainer.style,
+    width: isMobileDevice ? "100%" : "300px",
+    height: isMobileDevice ? "100%" : "300px",
+  }
   useWebSocket<{
     type: string
     data: {
@@ -780,6 +785,7 @@ export default function Message({
                   >
                     {images.map((image) => (
                       <Img
+                        style={styles.userMessageImage.style}
                         dataTestId="user-message-image"
                         key={image.id}
                         src={image.url}
@@ -1088,9 +1094,9 @@ export default function Message({
                 message.message.images?.length > 0 ? (
                 <Div style={styles.agentMessageImages.style}>
                   {message.message.images.map((image) => (
-                    <Div key={image.url} style={styles.imageContainer.style}>
+                    <Div key={image.url} style={agentImageStyle}>
                       <Img
-                        style={styles.agentMessageImageContainer.style}
+                        style={agentImageStyle}
                         src={image.url}
                         alt=""
                         width={"100%"}

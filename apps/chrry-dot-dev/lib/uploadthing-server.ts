@@ -83,10 +83,9 @@ export async function upload({
 
     // Domain root allowlist via tldts
     const parsedDomain = parseDomain(parsedUrl.hostname)
-    const rootDomain =
-      parsedDomain.domain && parsedDomain.publicSuffix
-        ? `${parsedDomain.domain}.${parsedDomain.publicSuffix}`
-        : parsedUrl.hostname
+    // parsedDomain.domain already includes the publicSuffix
+    // e.g., for "abc.replicate.delivery" → domain is "replicate.delivery"
+    const rootDomain = parsedDomain.domain || parsedUrl.hostname
     const isAllowed = ALLOWED_HOSTNAMES.includes(rootDomain)
     if (!isAllowed) {
       throw new Error(`Image host not allowed: ${rootDomain}`)
