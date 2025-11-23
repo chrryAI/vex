@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * Platform Primitives - Simple cross-platform components
  *
