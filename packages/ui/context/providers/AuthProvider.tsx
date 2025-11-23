@@ -1243,6 +1243,7 @@ export function AuthProvider({
           : undefined
 
         // Only update theme if app actually changed
+        console.log(`🚀 ~ AuthProvider ~ newApp:`, newApp)
         if (newApp?.id !== prevApp?.id) {
           // Defer theme updates to avoid "setState during render" error
           setTimeout(() => {
@@ -1252,6 +1253,7 @@ export function AuthProvider({
 
           // Merge apps from the new app's store
           newApp?.store?.apps && mergeApps(newApp?.store?.apps)
+          return newApp
         }
 
         return newApp

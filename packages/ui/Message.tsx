@@ -168,7 +168,7 @@ export default function Message({
         return
       }
 
-      setApp(app)
+      await refetchThread()
 
       toast.success(t("Updated"))
     } catch (error) {
@@ -958,25 +958,20 @@ export default function Message({
         icon={"blob"}
         title={<Div>{t(isUpdatingApp ? "Updating..." : "Switch agent")}</Div>}
       >
-        <Div style={styles.updateModalDescription}>
+        <Div style={styles.updateModalDescription.style}>
           {apps?.map((app) => (
-            <Div style={styles.updateModalDescriptionItem.style} key={app.id}>
-              <Button
-                className="link"
-                disabled={isUpdatingApp}
-                onClick={() => handleUpdateAgent(app)}
-                style={{
-                  ...utilities.link.style,
-                  ...styles.updateModalDescriptionButton.style,
-                }}
-              >
-                <Img app={app} showLoading={false} size={50} />
-                <Div>{app.name}</Div>
-              </Button>
-              <Div>
-                <Div>{app.description}</Div>
-              </Div>
-            </Div>
+            <Button
+              key={app.id}
+              className="card link border"
+              disabled={isUpdatingApp}
+              onClick={() => handleUpdateAgent(app)}
+              style={{
+                ...utilities.link.style,
+                ...styles.updateModalDescriptionButton.style,
+              }}
+            >
+              <Img app={app} showLoading={false} size={50} />
+            </Button>
           ))}
         </Div>
       </Modal>
