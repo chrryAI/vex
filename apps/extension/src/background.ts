@@ -26,10 +26,7 @@ browser.runtime.onMessage.addListener((request: unknown) => {
     browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
       if (tabs[0]?.id) {
         browser.tabs.update(tabs[0].id, { url: req.url })
-        // browser.runtime.sendMessage({
-        //   type: "log",
-        //   log: `🔄 Navigating to: ${req.url}`,
-        // })
+        console.log(`🔄 Navigating to: ${req.url}`)
       }
     })
   }
@@ -48,7 +45,7 @@ browser.runtime.onMessage.addListener(async (request: unknown) => {
         currentWindow: true,
       })
       if (tabs[0]?.id) {
-        // await closeSidebar(tabs[0].id)
+        await closeSidebar(tabs[0].id)
         sidebarState[tabs[0].id] = false
       }
     } catch (error) {

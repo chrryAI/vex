@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const siteConfig = getSiteConfig(process.env.CHRRY_URL)
 
     app = await getApp({
-      id: siteConfig.slug,
+      slug: siteConfig.slug,
       userId: member?.id,
       guestId: guest?.id,
       depth: 1,
