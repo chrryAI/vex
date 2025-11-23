@@ -29,8 +29,8 @@ export const getImageSrc = ({
   slug,
   size = 24,
   BASE_URL = utils.FRONTEND_URL,
-  width = 64,
-  height = 64,
+  width = 24,
+  height = 24,
   canEditApp,
   image,
 }: {
