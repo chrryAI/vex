@@ -2,7 +2,7 @@ import { type ReactNode, useState, useEffect } from "react"
 import { useSpring, animated } from "@react-spring/web"
 import { useReducedMotion, animationConfigs } from "./platform/animations"
 import { useInView } from "./platform/useInView"
-import { useNavigationContext } from "./context/providers"
+import { useAuth, useNavigationContext } from "./context/providers"
 
 interface AnimatedWrapperProps {
   children: ReactNode
@@ -39,7 +39,7 @@ export function AnimatedWrapper({
 }: AnimatedWrapperProps) {
   const reduceMotion = useReducedMotion()
   const [shouldAnimate, setShouldAnimate] = useState(false)
-  const { isSplash } = useNavigationContext()
+  const { isSplash } = useAuth()
 
   // Use intersection observer to trigger animation when in view
   const { ref, inView } = useInView({
