@@ -124,9 +124,16 @@ export default function ImageComponent(props: ImageProps) {
   const color =
     COLORS[app?.themeColor as keyof typeof COLORS] || "var(--accent-6)"
 
-  const intSize = parseInt(size?.toString() || "0")
+  // Convert size to number, fallback to 24 if it's a CSS string like "100%"
+  const isNumericString = (val: string) => /^\d+$/.test(val)
+  const intSize =
+    typeof size === "number"
+      ? size
+      : typeof size === "string" && isNumericString(size)
+        ? parseInt(size, 10)
+        : 24 // Default size for emojis when size is CSS unit
 
-  const emojiSize = intSize && intSize <= 24 ? intSize * 0.85 : intSize
+  const emojiSize = intSize <= 24 ? intSize * 0.85 : intSize
   if (isEmoji) {
     if (app?.store?.slug === "books") {
       if (app.slug === "zarathustra") {
