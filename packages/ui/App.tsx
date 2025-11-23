@@ -38,6 +38,7 @@ import {
 } from "./context/providers"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
+import { appWithStore } from "./types"
 // import Grape from "./Grape"
 
 interface App {
@@ -146,8 +147,11 @@ export default function App({
     apps,
     guestBaseApp,
     userBaseApp,
-    zarathustra,
     token,
+    fetchApps,
+    isLoadingApps,
+    loadingApp,
+    setLoadingApp,
   } = useAuth()
 
   const { FRONTEND_URL, API_URL } = useData()
@@ -169,8 +173,10 @@ export default function App({
   const vex = apps.find((app) => app.slug === "vex")
   const atlas = apps.find((app) => app.slug === "atlas")
   const grape = apps.find((app) => app.slug === "grape")
+  const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
-  const isBlossom = !store?.parentStoreId
+  const isBlossom = app?.id === chrry?.id
+  console.log(`🚀 ~ file: App.tsx:178 ~ apps:`, apps)
 
   const getApps = () => {
     return apps
@@ -1113,6 +1119,7 @@ export default function App({
                           ) : (
                             item.id !== app?.id && (
                               <A
+                                preventDefault
                                 key={item.slug}
                                 title={t(item.title)}
                                 className={`button ${
@@ -1132,24 +1139,33 @@ export default function App({
                                 href={getAppSlug(item)}
                                 onClick={(e) => {
                                   if (isManagingApp) {
-                                    e.preventDefault()
                                     return
                                   }
-
-                                  addHapticFeedback()
-
                                   if (e.metaKey || e.ctrlKey) {
                                     return
                                   }
+
+                                  if (!item?.store?.apps.length) {
+                                    setLoadingApp(item)
+                                  } else {
+                                    setIsNewChat(true, getAppSlug(item))
+                                  }
+
                                   e.preventDefault()
                                 }}
                               >
-                                <Img
-                                  showLoading={false}
-                                  app={item}
-                                  alt={item.title}
-                                  size={24}
-                                />
+                                {loadingApp?.id === item.id ? (
+                                  <Loading size={24} />
+                                ) : (
+                                  <>
+                                    <Img
+                                      showLoading={false}
+                                      app={item}
+                                      alt={item.title}
+                                      size={24}
+                                    />
+                                  </>
+                                )}
                                 <span>{item.name}</span>
                               </A>
                             )

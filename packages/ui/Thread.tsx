@@ -276,15 +276,15 @@ const Thread = ({
         data-thread-title={thread?.title}
         data-testid={id ? "thread" : isHome ? "home" : undefined}
         style={{
+          // paddingTop: 0,
+          // paddingRight: isMobileDevice ? 0 : 10,
+          // paddingBottom: 195,
+          // paddingLeft: isMobileDevice ? 0 : 10,
           ...styles.thread.style,
           ...(isEmpty && hasHydrated && styles.threadEmpty.style),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
           },
-          paddingTop: 0,
-          paddingRight: isMobileDevice ? 0 : 10,
-          paddingBottom: 195,
-          paddingLeft: isMobileDevice ? 0 : 10,
         }}
       >
         {!isVisitor && (

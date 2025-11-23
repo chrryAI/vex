@@ -41,6 +41,7 @@ import {
 } from "../../types"
 import toast from "react-hot-toast"
 import { getApps, getSession } from "../../lib"
+import { cacheData, getCachedData } from "../../lib/db"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { locale, locales } from "../../locales"
@@ -70,6 +71,10 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      fetchApps: () => Promise<void>
+      isLoadingApps: boolean
+      isSplash: boolean
+      setIsSplash: (value: boolean) => void
       findAppByPathname: (
         path: string,
         apps: appWithStore[],
@@ -147,8 +152,10 @@ const AuthContext = createContext<
       setStores: (stores: Paginated<storeWithApps> | undefined) => void
       chrryUrl: string
       aiAgents: aiAgent[]
-      app: (appWithStore & { image?: string }) | undefined
-      setApp: (app: (appWithStore & { image?: string }) | undefined) => void
+      loadingApp: appWithStore | undefined
+      setLoadingApp: (loadingApp: appWithStore | undefined) => void
+      app: appWithStore | undefined
+      setApp: (app: appWithStore | undefined) => void
       apps: appWithStore[]
       allApps: appWithStore[] // All apps from all stores
       setSlug: (slug: string | undefined) => void
@@ -730,6 +737,26 @@ export function AuthProvider({
 
   // Get isStorageReady from platform context
 
+  // Centralized function to merge apps without duplicates
+  const mergeApps = useCallback((newApps: appWithStore[]) => {
+    setAllApps((prevApps) => {
+      // Create a map of existing apps by ID
+      const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+
+      // Add new apps only if they don't exist
+      newApps.forEach((app) => {
+        if (
+          !existingAppsMap.has(app.id) ||
+          !existingAppsMap.get(app.id)?.store?.apps.length
+        ) {
+          existingAppsMap.set(app.id, app)
+        }
+      })
+
+      return Array.from(existingAppsMap.values())
+    })
+  }, [])
+
   const fetchSession = async (newApp?: appWithStore) => {
     if (newApp) {
       await refetchApps()
@@ -741,20 +768,28 @@ export function AuthProvider({
     await refetchSession()
   }
 
-  const { data: allAppsSwr, mutate: refetchApps } = useSWR(
-    token ? ["allApps", token] : null,
-    async () => {
-      if (!token) return null
-      const apps = await getApps({ token })
-      return apps
-    },
+  const [isSplash, setIsSplash] = useState(true)
+
+  const [loadingApp, setLoadingApp] = useState<appWithStore | undefined>(
+    undefined,
   )
 
+  // Load cached session immediately on mount
+  const [cachedSessionLoaded, setCachedSessionLoaded] = useState(false)
   useEffect(() => {
-    if (allAppsSwr && Array.isArray(allAppsSwr)) {
-      setAllApps(allAppsSwr)
+    const loadCachedSession = async () => {
+      if (cachedSessionLoaded) return
+
+      const cached = await getCachedData<session>("session")
+      if (cached) {
+        console.log("⚡ Loading cached session instantly")
+        // Session will be processed by the existing sessionSwr effect
+        setCachedSessionLoaded(true)
+      }
     }
-  }, [allAppsSwr])
+
+    loadCachedSession()
+  }, [cachedSessionLoaded])
 
   const {
     data: sessionSwr,
@@ -769,64 +804,81 @@ export function AuthProvider({
       ? ["session", env]
       : null,
     async () => {
-      // Don't pass appSlug - let the API determine base app by domain
-      // Call the API action
-      const result = await getSession({
-        deviceId,
-        appId: newApp?.id || lastAppId || app?.id,
-        fingerprint,
-        app: isBrowserExtension() ? "extension" : isStandalone ? "pwa" : "web",
-        gift,
-        isStandalone,
-        API_URL,
-        VERSION,
-        token: token || fingerprint!,
-        appSlug: app?.slug || baseApp?.slug,
-        agentName,
-        chrryUrl,
-      })
+      try {
+        // Don't pass appSlug - let the API determine base app by domain
+        // Call the API action
+        const result = await getSession({
+          deviceId,
+          appId: newApp?.id || lastAppId || app?.id,
+          fingerprint,
+          app: isBrowserExtension()
+            ? "extension"
+            : isStandalone
+              ? "pwa"
+              : "web",
+          gift,
+          isStandalone,
+          API_URL,
+          VERSION,
+          token: token || fingerprint!,
+          appSlug: app?.slug || baseApp?.slug,
+          agentName,
+          chrryUrl,
+        })
 
-      // Check if result exists
-      if (!result) {
-        throw new Error("No response from server")
-      }
-
-      // Type guard for error response
-      if ("error" in result || "status" in result) {
-        // Handle rate limit
-        if (result.status === 429) {
-          setShouldFetchSession(false)
-          throw new Error("Rate limit exceeded")
+        // Check if result exists
+        if (!result) {
+          throw new Error("No response from server")
         }
 
-        // Handle other errors
-        if (result.error) {
-          toast.error(result.error)
-          setShouldFetchSession(false)
+        // Type guard for error response
+        if ("error" in result || "status" in result) {
+          // Handle rate limit
+          if (result.status === 429) {
+            setShouldFetchSession(false)
+            throw new Error("Rate limit exceeded")
+          }
+
+          // Handle other errors
+          if (result.error) {
+            toast.error(result.error)
+            setShouldFetchSession(false)
+          }
         }
+
+        // 🔍 LOG: Check what apps are returned from session API
+        const sessionResult = result as session
+        console.log("📦 Session API Response - Apps:", {
+          app: sessionResult.app.name,
+          totalApps: sessionResult.app?.store?.apps?.length || 0,
+          apps: sessionResult.app?.store?.apps?.map((a: any) => ({
+            slug: a.slug,
+            name: a.name,
+            storeId: a.store?.id,
+            storeName: a.store?.name,
+          })),
+          currentStore: sessionResult.app?.store?.name,
+          currentStoreId: sessionResult.app?.store?.id,
+        })
+
+        // Remove gift param from URL after successful session fetch
+        if (gift) {
+          removeParams("gift")
+        }
+
+        // Cache session data on successful fetch
+        await cacheData("session", sessionResult, 1000 * 60 * 60) // 1 hour TTL
+
+        return sessionResult
+      } catch (error) {
+        // Fallback to cached session on error (offline mode)
+        const cached = await getCachedData<session>("session")
+        if (cached) {
+          console.log("📦 Using cached session (offline mode)")
+          return cached
+        }
+        throw error
       }
-
-      // 🔍 LOG: Check what apps are returned from session API
-      const sessionResult = result as session
-      console.log("📦 Session API Response - Apps:", {
-        app: sessionResult.app.name,
-        totalApps: sessionResult.app?.store?.apps?.length || 0,
-        apps: sessionResult.app?.store?.apps?.map((a: any) => ({
-          slug: a.slug,
-          name: a.name,
-          storeId: a.store?.id,
-          storeName: a.store?.name,
-        })),
-        currentStore: sessionResult.app?.store?.name,
-        currentStoreId: sessionResult.app?.store?.id,
-      })
-
-      // Remove gift param from URL after successful session fetch
-      if (gift) {
-        removeParams("gift")
-      }
-
-      return result as session
     },
     {
       // revalidateOnMount: true,
@@ -847,7 +899,9 @@ export function AuthProvider({
 
   const sessionData = sessionSwr || session
 
-  const [allApps, setAllApps] = useState<appWithStore[]>([])
+  const [allApps, setAllApps] = useState<appWithStore[]>(
+    sessionData?.app?.store?.apps || [],
+  )
 
   const chrry = allApps?.find((app) => !app.store?.parentStoreId)
   const vex = allApps?.find((app) => app.slug === "vex")
@@ -874,6 +928,7 @@ export function AuthProvider({
     ) {
       return true
     }
+
     // Must be the main app (not a sub-app)
     if (item.id !== item.store?.appId) return false
 
@@ -893,6 +948,77 @@ export function AuthProvider({
     (appWithStore & { image?: string }) | undefined
   >(session?.app || baseApp)
 
+  // Load cached apps immediately on mount
+  useEffect(() => {
+    const loadCachedApps = async () => {
+      if (!token || (!loadingApp?.id && !app?.id)) return
+
+      const key = `allApps-${loadingApp?.id || app?.id}-${user?.id || guest?.id}`
+      const cached = await getCachedData<appWithStore[]>(key)
+      console.log(`🚀 ~ file: AuthProvider.tsx:958 ~ cached:`, cached)
+
+      if (cached && cached.length > 0) {
+        console.log("⚡ Loading cached apps instantly")
+        mergeApps(cached)
+      }
+    }
+
+    loadCachedApps()
+  }, [token, loadingApp?.id, app?.id, user?.id, guest?.id, mergeApps])
+
+  const {
+    data: allAppsSwr,
+    mutate: refetchApps,
+    isLoading: isLoadingApps,
+  } = useSWR(
+    token && (loadingApp?.id || app?.id) ? ["allApps", token] : null,
+    async () => {
+      if (!token) return null
+      const key = `allApps-${loadingApp?.id || app?.id}-${user?.id || guest?.id}`
+
+      try {
+        const apps = await getApps({ token, appId: loadingApp?.id || app?.id })
+        // Cache apps on successful fetch
+        await cacheData(key, apps)
+        return apps
+      } catch (error) {
+        // Fallback to cached data on error (offline mode)
+        const cached = await getCachedData<appWithStore[]>(key)
+        if (cached) {
+          console.log("📦 Using cached apps (offline mode)")
+          return cached
+        }
+        throw error
+      }
+    },
+  )
+
+  useEffect(() => {
+    console.log(`🚀 ~ file: AuthProvider.tsx:940 ~ isLoadingApps:`, {
+      isLoadingApps,
+      loadingApp,
+      allAppsSwr,
+    })
+
+    if (
+      loadingApp &&
+      allApps?.find((app) => app.id === loadingApp.id)?.store?.apps.length
+    ) {
+      router.push(getAppSlug(loadingApp))
+      setLoadingApp(undefined)
+    }
+
+    if (!isLoadingApps && loadingApp) {
+      refetchApps()
+    }
+  }, [loadingApp, isLoadingApps, allApps])
+
+  useEffect(() => {
+    if (allAppsSwr && Array.isArray(allAppsSwr)) {
+      mergeApps(allAppsSwr)
+    }
+  }, [allAppsSwr, mergeApps])
+
   const [lastAppId, setLastAppId] = useLocalStorage<string | undefined>(
     "lastAppId",
     undefined,
@@ -909,13 +1035,14 @@ export function AuthProvider({
   }, [canShowFocus])
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
-  const [apps, setApps] = useState<appWithStore[]>(store?.apps || [])
 
-  useEffect(() => {
-    if (app?.store?.apps && app?.store?.apps.length) {
-      setApps(app?.store?.apps)
-    }
-  }, [app])
+  const base = allApps.find(
+    (a) => a.store?.appId === a.id && a.store.id === app?.store?.id,
+  )
+  // Filter apps by current store - fallback to all apps if store has no apps
+  const apps = app?.store?.id
+    ? allApps.filter((a) => base?.store?.apps.some((b) => b.id === a.id))
+    : allApps
 
   const userBaseApp = allApps?.find(
     (app) => user?.userName && app.store?.slug === user?.userName,
@@ -1125,12 +1252,15 @@ export function AuthProvider({
             newApp?.themeColor && setColorScheme(newApp.themeColor)
             newApp?.backgroundColor && setAppTheme(newApp.backgroundColor)
           }, 0)
+
+          // Merge apps from the new app's store
+          newApp?.store?.apps && mergeApps(newApp?.store?.apps)
         }
 
         return newApp
       })
     },
-    [setColorScheme, setAppTheme, baseApp],
+    [setColorScheme, setAppTheme, baseApp, mergeApps],
   )
 
   const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
@@ -1156,9 +1286,10 @@ export function AuthProvider({
   const [isLoadingTasks, setIsLoadingTasks] = useState(true)
 
   // app?.id removed from deps - use prevApp inside setState instead
+  console.log(`🚀 ~ file: AuthProvider.tsx:1184 ~ allApps:`, allApps)
 
   useEffect(() => {
-    if (!baseApp || !allApps.length || (!thread && threadId)) return
+    if (!allApps.length || (!thread && threadId)) return
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
@@ -1195,49 +1326,51 @@ export function AuthProvider({
       console.log("🔄 Switching app:", app?.slug, "→", matchedApp.slug)
       setApp(matchedApp)
       setStore(matchedApp.store)
+
+      setSlug(getAppSlug(matchedApp) || "")
     }
 
     // Always update apps list even if app didn't change
-    if (matchedApp) {
-      // Use the matched app's store.apps if available (has nested apps from backend)
-      // Otherwise filter allApps by store ID
-      let currentStoreApps: appWithStore[] = []
+    // if (matchedApp) {
+    //   // Use the matched app's store.apps if available (has nested apps from backend)
+    //   // Otherwise filter allApps by store ID
+    //   let currentStoreApps: appWithStore[] = []
 
-      if (matchedApp?.store?.apps && matchedApp.store.apps.length > 0) {
-        // Use nested store.apps (already has all apps for this store)
-        currentStoreApps = matchedApp.store.apps
-        console.log("✅ Using nested store.apps from matchedApp")
-      } else {
-        // Fallback: filter allApps by store ID
-        currentStoreApps =
-          allApps?.filter((a) => a?.store?.id === matchedApp?.store?.id) || []
-        console.log("⚠️ Fallback: filtering allApps by store ID")
-      }
+    //   if (matchedApp?.store?.apps && matchedApp.store.apps.length > 0) {
+    //     // Use nested store.apps (already has all apps for this store)
+    //     currentStoreApps = matchedApp.store.apps
+    //     console.log("✅ Using nested store.apps from matchedApp")
+    //   } else {
+    //     // Fallback: filter allApps by store ID
+    //     currentStoreApps =
+    //       allApps?.filter((a) => a?.store?.id === matchedApp?.store?.id) || []
+    //     console.log("⚠️ Fallback: filtering allApps by store ID")
+    //   }
 
-      // Always add Chrry as second item if it's not in the current store
-      const chrryApp = allApps?.find((a) => a.id === chrry?.id)
-      const hasChrry = currentStoreApps.some((a) => a.id === chrry?.id)
-      let finalApps = currentStoreApps
-      if (!hasChrry && chrryApp && currentStoreApps.length > 0) {
-        // Insert Chrry as second item (index 1)
-        finalApps = [
-          currentStoreApps[0]!,
-          chrryApp,
-          ...currentStoreApps.slice(1),
-        ]
-      } else if (!hasChrry && chrryApp) {
-        // If no other apps, just add Chrry
-        finalApps = [chrryApp]
-      }
+    //   // Always add Chrry as second item if it's not in the current store
+    //   const chrryApp = allApps?.find((a) => a.id === chrry?.id)
+    //   const hasChrry = currentStoreApps.some((a) => a.id === chrry?.id)
+    //   let finalApps = currentStoreApps
+    //   if (!hasChrry && chrryApp && currentStoreApps.length > 0) {
+    //     // Insert Chrry as second item (index 1)
+    //     finalApps = [
+    //       currentStoreApps[0]!,
+    //       chrryApp,
+    //       ...currentStoreApps.slice(1),
+    //     ]
+    //   } else if (!hasChrry && chrryApp) {
+    //     // If no other apps, just add Chrry
+    //     finalApps = [chrryApp]
+    //   }
 
-      console.log("✅ Final apps after Chrry logic:", {
-        finalCount: finalApps.length,
-        finalSlugs: finalApps.map((a) => a.slug),
-      })
+    //   console.log("✅ Final apps after Chrry logic:", {
+    //     finalCount: finalApps.length,
+    //     finalSlugs: finalApps.map((a) => a.slug),
+    //   })
 
-      setApps(finalApps)
-      setSlug(getAppSlug(matchedApp) || "")
-    }
+    //   // setApps(finalApps)
+    //   setSlug(getAppSlug(matchedApp) || "")
+    // }
   }, [
     allApps,
     pathname,
@@ -1373,7 +1506,7 @@ export function AuthProvider({
           // Also set current store's apps
           const currentStoreApps = sessionData.app.store.apps
 
-          setApps(currentStoreApps)
+          // setApps(currentStoreApps)
         }
       }
     }
@@ -1484,6 +1617,8 @@ export function AuthProvider({
         setTasks,
         threadId,
         setThreadId,
+        loadingApp,
+        setLoadingApp,
         taskId,
         focus,
         sushi,
@@ -1509,6 +1644,9 @@ export function AuthProvider({
         userBaseApp,
         guestBaseApp,
         vex,
+        fetchApps: async () => {
+          await refetchApps()
+        },
         TEST_MEMBER_FINGERPRINTS,
         TEST_GUEST_FINGERPRINTS,
         TEST_MEMBER_EMAILS,
@@ -1557,18 +1695,21 @@ export function AuthProvider({
         shouldFetchSession,
         profile,
         setProfile,
+        isLoadingApps,
         setShouldFetchSession,
         isLoading,
         setIsLoading,
         signOut,
         thread,
+        isSplash,
+        setIsSplash,
         setThread,
         isExtensionRedirect,
         signInContext,
         signOutContext,
         characterProfilesEnabled,
         apps,
-        setApps,
+        setApps: setAllApps,
         atlas,
         bloom,
         popcorn,

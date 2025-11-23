@@ -28,6 +28,7 @@ import {
 import { pageSizes } from "../../utils"
 import { getThreadId } from "../../utils/url"
 import { useThreadId } from "../../utils/useThreadId"
+import { cacheData, getCachedData } from "../../lib/db"
 import {
   toast,
   useLocalStorage,
@@ -225,6 +226,23 @@ export function ChatProvider({
       undefined,
   )
 
+  // Load cached threads immediately on mount
+  useEffect(() => {
+    const loadCachedThreads = async () => {
+      if (!app?.id || !(user?.id || guest?.id)) return
+
+      const key = `threads-${app.id}-${user?.id || guest?.id}`
+      const cached = await getCachedData(key)
+
+      if (cached) {
+        console.log("⚡ Loading cached threads instantly")
+        // Threads will be set by the SWR effect below
+      }
+    }
+
+    loadCachedThreads()
+  }, [app?.id, user?.id, guest?.id])
+
   const {
     data: threadsData,
     mutate: refetchThreads,
@@ -232,26 +250,43 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     shouldFetchThreads ? ["contextThreads", thread?.id, app?.id] : null,
-    () => {
+    async () => {
       if (!(user || guest)) return
-      return actions.getThreads({
-        onError: (status) => {
-          if (status === 429) {
-            setShouldFetchThreads(false)
-          }
-        },
-        appId: app?.id,
-        userName: userNameByUrl,
-        pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
-        sort: "bookmark", // Default to bookmarked threads first
-        collaborationStatus: collaborationStatus ?? undefined,
-        threadId:
-          !thread?.collaborations?.some(
-            (c) => user && c.user.id === user?.id,
-          ) || guest
-            ? thread?.id
-            : undefined,
-      })
+
+      const key = `threads-${app?.id}-${user?.id || guest?.id}`
+
+      try {
+        const threads = await actions.getThreads({
+          onError: (status) => {
+            if (status === 429) {
+              setShouldFetchThreads(false)
+            }
+          },
+          appId: app?.id,
+          userName: userNameByUrl,
+          pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
+          sort: "bookmark",
+          collaborationStatus: collaborationStatus ?? undefined,
+          threadId:
+            !thread?.collaborations?.some(
+              (c) => user && c.user.id === user?.id,
+            ) || guest
+              ? thread?.id
+              : undefined,
+        })
+
+        // Cache threads on successful fetch (30 min TTL)
+        await cacheData(key, threads, 1000 * 60 * 30)
+        return threads
+      } catch (error) {
+        // Fallback to cached threads on error (offline mode)
+        const cached = await getCachedData(key)
+        if (cached) {
+          console.log("📦 Using cached threads (offline mode)")
+          return cached
+        }
+        throw error
+      }
     },
 
     {
