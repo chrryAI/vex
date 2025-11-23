@@ -48,7 +48,7 @@ browser.runtime.onMessage.addListener(async (request: unknown) => {
         currentWindow: true,
       })
       if (tabs[0]?.id) {
-        await closeSidebar(tabs[0].id)
+        // await closeSidebar(tabs[0].id)
         sidebarState[tabs[0].id] = false
       }
     } catch (error) {

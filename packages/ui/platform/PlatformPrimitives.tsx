@@ -335,32 +335,6 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
     // Sanitize style to remove non-DOM properties (like className)
     const sanitizedStyle = sanitizeStyleForDOM(mergedStyles)
 
-    // In extension, intercept internal links to prevent opening in new tab
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-      onClick?.(e)
-
-      // Only intercept if:
-      // 1. We're in an extension
-      // 2. It's an internal link (starts with / or is relative)
-      // 3. No modifier keys (Cmd/Ctrl for new tab)
-      // 4. Not explicitly targeting a new tab
-      if (
-        isExtension &&
-        href &&
-        (href.startsWith("/") || !href.includes("://")) &&
-        !e.metaKey &&
-        !e.ctrlKey &&
-        target !== "_blank" &&
-        !e.defaultPrevented
-      ) {
-        e.preventDefault()
-        // Use window.history directly to stay in sidebar
-        window.history.pushState({}, "", href)
-        // Trigger popstate to update React
-        window.dispatchEvent(new PopStateEvent("popstate"))
-      }
-    }
-
     return (
       <a
         ref={ref}
@@ -369,7 +343,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
         rel={rel}
         className={finalClassName}
         style={sanitizedStyle}
-        onClick={handleClick}
+        onClick={onClick}
         {...props}
       >
         {children}
