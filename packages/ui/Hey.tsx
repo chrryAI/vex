@@ -190,7 +190,7 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        setIsSplash(!allApps.length)
+        setIsSplash(!app?.store?.apps?.length)
     }, [isImageLoaded, isHydrated, isSplash, allApps, minSplashTimeElapsed])
 
     useEffect(() => {
