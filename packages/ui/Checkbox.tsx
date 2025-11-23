@@ -1,3 +1,5 @@
+"use client"
+
 import React from "react"
 import { useCheckboxStyles } from "./Checkbox.styles"
 import { Div, Input, Span } from "./platform"

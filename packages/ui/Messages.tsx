@@ -1,3 +1,5 @@
+"use client"
+
 import { forwardRef, useEffect, useState, useMemo } from "react"
 import type {
   aiAgent,

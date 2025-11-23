@@ -1145,7 +1145,11 @@ export default function App({
                                     return
                                   }
 
-                                  if (!item?.store?.apps.length) {
+                                  if (
+                                    !item?.store?.apps.every(
+                                      (a) => a.store?.apps.length,
+                                    )
+                                  ) {
                                     setLoadingApp(item)
                                   } else {
                                     setIsNewChat(true, getAppSlug(item))
