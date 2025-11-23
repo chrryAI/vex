@@ -26,10 +26,10 @@ browser.runtime.onMessage.addListener((request: unknown) => {
     browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
       if (tabs[0]?.id) {
         browser.tabs.update(tabs[0].id, { url: req.url })
-        browser.runtime.sendMessage({
-          type: "log",
-          log: `🔄 Navigating to: ${req.url}`,
-        })
+        // browser.runtime.sendMessage({
+        //   type: "log",
+        //   log: `🔄 Navigating to: ${req.url}`,
+        // })
       }
     })
   }
