@@ -496,19 +496,20 @@ export default function Subscribe({
       !userToGift ||
       !userToGift?.subscription)
 
-  useEffect(() => {
-    if (isExtension) {
-      BrowserInstance?.runtime?.sendMessage?.({
-        action: "openInSameTab",
-        url: `${window.location.href}`,
-      })
-      return
-    }
-  }, [isExtension])
+  // useEffect(() => {
+  //   if (isExtension) {
+  //     BrowserInstance?.runtime?.sendMessage?.({
+  //       action: "openInSameTab",
+  //       url: `${window.location.href}`,
+  //     })
+  //     return
+  //   }
 
-  if (isExtension) {
-    return null
-  }
+  // }, [isExtension])
+
+  // if (isExtension) {
+  //   return null
+  // }
 
   return (
     <Div style={style}>
