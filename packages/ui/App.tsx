@@ -162,7 +162,7 @@ export default function App({
   const { router, setIsNewChat, getStoreSlug } = useNavigationContext()
 
   // Input context
-  const { setInput, setIsWebSearchEnabled } = useChat()
+  const { setInput, setIsWebSearchEnabled, setIsNewAppChat } = useChat()
 
   // Theme context
   const { addHapticFeedback } = useTheme()
@@ -177,8 +177,7 @@ export default function App({
   const grape = apps.find((app) => app.slug === "grape")
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
-  const isBlossom = app?.id === chrry?.id
-  console.log(`🚀 ~ file: App.tsx:178 ~ apps:`, apps)
+  const isBlossom = app?.store?.id === chrry?.store?.id
 
   const getApps = () => {
     return apps
@@ -411,7 +410,7 @@ export default function App({
           onClick={(e) => {
             e.preventDefault()
 
-            setIsNewChat(true, getAppSlug(storeApp))
+            setIsNewAppChat(storeApp)
             addHapticFeedback()
             setAppStatus(undefined)
             if (e.metaKey || e.ctrlKey) {
@@ -1005,7 +1004,7 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewChat(true, getAppSlug(chrry))
+                                setIsNewAppChat(chrry)
                               }}
                               style={{
                                 ...styles.chrry.style,
@@ -1040,7 +1039,7 @@ export default function App({
                                   }
                                   e.preventDefault()
 
-                                  setIsNewChat(true, getAppSlug(zarathustra))
+                                  setIsNewAppChat(zarathustra)
                                 }}
                                 style={{
                                   ...styles.zarathustra.style,
@@ -1076,7 +1075,7 @@ export default function App({
                                   }
                                   e.preventDefault()
 
-                                  setIsNewChat(true, getAppSlug(popcorn))
+                                  setIsNewAppChat(popcorn)
                                 }}
                                 style={{
                                   ...styles.popcorn.style,
@@ -1147,15 +1146,7 @@ export default function App({
                                     return
                                   }
 
-                                  if (
-                                    !item?.store?.apps.every(
-                                      (a) => a.store?.apps.length,
-                                    )
-                                  ) {
-                                    setLoadingApp(item)
-                                  } else {
-                                    setIsNewChat(true, getAppSlug(item))
-                                  }
+                                  setIsNewAppChat(item)
 
                                   e.preventDefault()
                                 }}
@@ -1190,7 +1181,7 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewChat(true, getAppSlug(atlas))
+                                setIsNewAppChat(atlas)
                               }}
                               style={{
                                 ...styles.atlas.style,

@@ -24,7 +24,9 @@ export default function Loading({
   const styles = useLoadingStyles()
   const LoadingWrapper = ({ children }: { children: React.ReactNode }) =>
     fullScreen ? (
-      <Div style={styles.loadingWrapper.style}>{children}</Div>
+      <Div className={"fullScreen"} style={styles.loadingWrapper.style}>
+        {children}
+      </Div>
     ) : (
       <>{children}</>
     )
@@ -40,6 +42,7 @@ export default function Loading({
         style={styles.loadingCircle.style}
         color={color as any}
         data-testid="imgLoading"
+        className="spinner"
       />
     </LoadingWrapper>
   )

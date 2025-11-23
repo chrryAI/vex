@@ -953,9 +953,8 @@ export function AuthProvider({
     const loadCachedApps = async () => {
       if (!token || (!loadingApp?.id && !app?.id)) return
 
-      const key = `allApps-${loadingApp?.id || app?.id}-${user?.id || guest?.id}`
+      const key = `allApps`
       const cached = await getCachedData<appWithStore[]>(key)
-      console.log(`🚀 ~ file: AuthProvider.tsx:958 ~ cached:`, cached)
 
       if (cached && cached.length > 0) {
         console.log("⚡ Loading cached apps instantly")
@@ -993,22 +992,19 @@ export function AuthProvider({
     },
   )
 
-  useEffect(() => {
-    console.log(`🚀 ~ file: AuthProvider.tsx:940 ~ isLoadingApps:`, {
-      isLoadingApps,
-      loadingApp,
-      allAppsSwr,
-    })
+  console.log(`🚀 ~ file: AuthProvider.tsx:998 ~ allApps:`, allApps)
 
-    if (
-      loadingApp &&
-      allApps?.find((app) => app.id === loadingApp.id)?.store?.apps.length
-    ) {
-      router.push(getAppSlug(loadingApp))
+  useEffect(() => {
+    const item = loadingApp
+      ? allApps?.find((app) => app.id === loadingApp?.id)
+      : undefined
+
+    if (loadingApp && item?.store?.apps.length) {
       setLoadingApp(undefined)
+      return
     }
 
-    if (!isLoadingApps && loadingApp) {
+    if (loadingApp) {
       refetchApps()
     }
   }, [loadingApp, isLoadingApps, allApps])
