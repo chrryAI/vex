@@ -145,6 +145,7 @@ browser.action.onClicked.addListener(async (tab) => {
       await openSidebar(tabId)
       console.log("🔓 Chrome sidebar opened for tab", tabId)
     }
+    // Chrome handles toggle internally via setPanelBehavior
   } catch (error) {
     console.error("Failed to toggle sidebar:", error)
     if (isFirefox) {
