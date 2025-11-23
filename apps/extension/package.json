@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "build:all": "npm run zip:source && npm run build:firefox && npm run build:chrome",
-    "build:chrome": "rm -rf dist && vite build && npm run zip:chrome",
+    "build:chrome:old": "rm -rf dist && vite build && npm run zip:chrome",
+    "build:chrome:atlas": "rm -rf dist && MODE=atlas vite build && cd dist && zip -r ../dist-chrome-atlas.zip .",
+    "build:chrome:focus": "rm -rf dist && MODE=focus vite build && cd dist && zip -r ../dist-chrome-focus.zip .",
+    "build:chrome:vex": "rm -rf dist && MODE=vex vite build && cd dist && zip -r ../dist-chrome-vex.zip .",
+    "build:chrome": "npm run build:chrome:atlas && npm run build:chrome:focus && npm run build:chrome:vex",
     "build:chrome:dev": "rm -rf dist && tsc && vite build --mode development && npm run zip:chrome",
     "build:dev": "rm -rf dist && vite build --mode development",
     "build:dev:watch": "tsc && vite build --mode development --watch",
