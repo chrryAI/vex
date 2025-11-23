@@ -4,6 +4,7 @@ import withNextIntl from "next-intl/plugin"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ["@chrryai/chrry"],
   compress: true,
   async redirects() {
     return [
@@ -34,7 +35,7 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ["lucide-react", "chrry"], // Tree-shake icons & components
+    optimizePackageImports: ["lucide-react"], // Tree-shake icons only, chrry has client boundaries
   },
   turbopack: {
     rules: {
@@ -44,7 +45,7 @@ const nextConfig = {
       },
     },
   },
-  productionBrowserSourceMaps: false,
+  productionBrowserSourceMaps: true, // Temporarily enable for debugging
   generateBuildId: async () => {
     return process.env.GIT_SHA || Date.now().toString()
   },
@@ -62,12 +63,22 @@ const nextConfig = {
     }
 
     // Silence package warnings (they're wrapped in try-catch)
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        "react-native-mmkv": false,
-        "solito/router": false,
-      }
+    // Exclude React Native packages from both client and server bundles
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "react-native-mmkv": false,
+      "solito/router": false,
+      "@react-spring/native": false,
+      "react-native-gesture-handler": false,
+      "react-native-reanimated": false,
+      "react-native-toast-message": false,
+      "react-native-markdown-display": false,
+      "react-native-draglist": false,
+      "@invertase/react-native-apple-authentication": false,
+      "@react-native-google-signin/google-signin": false,
+      "@react-native-community/netinfo": false,
+      "rn-emoji-keyboard": false,
+      "expo-keep-awake": false,
     }
 
     // Ignore missing module warnings for optional dependencies
