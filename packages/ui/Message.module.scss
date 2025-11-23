@@ -83,13 +83,13 @@
   flex-direction: row;
   flex-wrap: wrap;
   gap: toRem.toRem(10);
+}
 
-  img {
-    border-radius: toRem.toRem(20);
-    max-width: 100%;
-    // height: fit-content;
-    width: toRem.toRem(250);
-  }
+.userMessageImage {
+  border-radius: toRem.toRem(20);
+  max-width: 100%;
+  // height: fit-content;
+  width: toRem.toRem(250);
 }
 
 .userMessageVideo {

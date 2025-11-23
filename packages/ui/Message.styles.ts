@@ -68,6 +68,8 @@ export const MessageStyleDefs = {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
+  },
+  userMessageImage: {
     borderRadius: 20,
     maxWidth: "100%",
     width: 250,
