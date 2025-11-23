@@ -17,7 +17,6 @@ import { upload, deleteFile } from "../../../lib/uploadthing-server"
 import slugify from "slug"
 import { v4 as uuid } from "uuid"
 import { reorderApps } from "chrry/lib"
-import { getStores } from "@repo/db"
 import { appWithStore } from "chrry/types"
 
 export async function GET(request: NextRequest) {
@@ -30,76 +29,70 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const app = appId
-    ? await getApp({
-        id: appId,
-        userId: member?.id,
-        guestId: guest?.id,
-        depth: 1,
-      })
-    : undefined
-
-  const allStores = await getStores({
-    pageSize: 50,
-    userId: member?.id,
-    guestId: guest?.id,
-    ownerId: app?.userId || app?.guestId || undefined,
-  })
-
-  // Collect all apps from all stores
-  const allAppsFromAllStores: appWithStore[] = []
-  // console.log(`🔄 Collecting apps from ${allStores.stores.length} stores`)
-
-  for (const storeItem of allStores.stores) {
-    if (storeItem?.apps) {
-      if (!storeItem.apps.length) {
-        continue
-      }
-      const appsWithStoreApp = await Promise.all(
-        storeItem.apps.map(async (app) => {
-          if (!app) {
-            return null
-          }
-
-          // If this app IS the base app of its own store, set store.app to itself
-          const isBaseApp = app?.id === app?.store?.appId
-
-          let storeBaseApp: appWithStore | null = null
-          if (isBaseApp) {
-            // Self-reference for base apps
-            storeBaseApp =
-              (await getApp({
-                id: app?.id,
-                userId: member?.id,
-                guestId: guest?.id,
-                depth: 1,
-              })) || null
-          } else if (app?.store?.appId) {
-            const baseAppData = await getApp({
-              id: app?.store?.appId,
-              userId: member?.id,
-              guestId: guest?.id,
-              depth: 0,
-            })
-            storeBaseApp = baseAppData ?? null
-          }
-
-          return {
-            ...app,
-            store: {
-              ...app?.store,
-              app: storeBaseApp,
-            },
-          } as appWithStore
-        }),
-      )
-      allAppsFromAllStores.push(
-        ...appsWithStoreApp.map((app) => app as appWithStore),
-      )
-    }
+  if (!appId) {
+    return NextResponse.json({ error: "appId is required" }, { status: 400 })
   }
 
-  return NextResponse.json(allAppsFromAllStores)
+  // Get the current app with its store
+  const app = await getApp({
+    id: appId,
+    userId: member?.id,
+    guestId: guest?.id,
+    depth: 1,
+  })
+
+  if (!app) {
+    return NextResponse.json({ error: "App not found" }, { status: 404 })
+  }
+
+  // Get all apps from the current app's store
+  const currentStoreApps = app.store?.apps || []
+
+  // Get apps from different parent stores for quick navigation
+
+  // Combine: current store apps + apps from different parent stores
+  const allApps = [...currentStoreApps]
+
+  // Enrich each app with store.app reference
+  const enrichedApps = await Promise.all(
+    allApps.map(async (app) => {
+      if (!app) return null
+
+      const isBaseApp = app?.id === app?.store?.appId
+
+      let storeBaseApp: appWithStore | null = null
+      if (isBaseApp) {
+        // Self-reference for base apps
+        storeBaseApp =
+          (await getApp({
+            id: app?.id,
+            userId: member?.id,
+            guestId: guest?.id,
+            depth: 1,
+          })) || null
+      } else if (app?.store?.appId) {
+        const baseAppData = await getApp({
+          id: app?.store?.appId,
+          userId: member?.id,
+          guestId: guest?.id,
+          depth: 0,
+        })
+        storeBaseApp = baseAppData ?? null
+      }
+
+      return {
+        ...app,
+        store: {
+          ...app?.store,
+          app: storeBaseApp,
+        },
+      } as appWithStore
+    }),
+  )
+
+  const validApps = enrichedApps.filter(Boolean) as appWithStore[]
+
+  return NextResponse.json(validApps)
 }
 
 export async function POST(request: NextRequest) {

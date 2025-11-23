@@ -56,8 +56,7 @@ export const Hey = memo(
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { isHome, pathname, isSplash, setIsSplash, router } =
-      useNavigationContext()
+    const { isHome, pathname, router } = useNavigationContext()
 
     const { isExtension } = usePlatform()
     const styles = useSidebarStyles()
@@ -73,7 +72,7 @@ export const Hey = memo(
     }, [pathname, isExtension])
 
     const { threadId } = useChat()
-    const { allApps, app } = useAuth()
+    const { allApps, app, isSplash, setIsSplash } = useAuth()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
@@ -146,6 +145,17 @@ export const Hey = memo(
     const isHydrated = useHasHydrated()
 
     const [isImageLoaded, setIsImageLoaded] = useState(false)
+    const [minSplashTimeElapsed, setMinSplashTimeElapsed] = useState(false)
+
+    // Minimum splash screen duration (300ms) - starts when image loads
+    useEffect(() => {
+      if (!isImageLoaded) return
+
+      const timer = setTimeout(() => {
+        setMinSplashTimeElapsed(true)
+      }, 300)
+      return () => clearTimeout(timer)
+    }, [isImageLoaded])
 
     const getSplash = (isSplash: boolean) => {
       const splashStyle = styles.splash
@@ -174,8 +184,12 @@ export const Hey = memo(
     const splash = getSplash(isSplash)
 
     useEffect(() => {
-      isSplash && isImageLoaded && isHydrated && setIsSplash(!allApps.length)
-    }, [isImageLoaded, isHydrated, isSplash, allApps])
+      isSplash &&
+        isImageLoaded &&
+        isHydrated &&
+        minSplashTimeElapsed &&
+        setIsSplash(!allApps.length)
+    }, [isImageLoaded, isHydrated, isSplash, allApps, minSplashTimeElapsed])
 
     useEffect(() => {
       app?.slug && useExtensionIcon?.(app?.slug)

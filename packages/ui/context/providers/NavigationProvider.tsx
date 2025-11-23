@@ -48,8 +48,7 @@ const NavigationContext = createContext<
       setIsMemoryConsentManageVisible: (value: boolean) => void
       isHome: boolean
       setIsHome: (value: boolean) => void
-      isSplash: boolean
-      setIsSplash: (value: boolean) => void
+
       isVisitor: boolean
       setIsVisitor: (value: boolean) => void
       collaborationStep: number
@@ -216,8 +215,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const [isHome, setIsHome] = useState(pathname === "/")
 
-  const [isSplash, setIsSplash] = useState(true)
-
   return (
     <NavigationContext.Provider
       value={{
@@ -239,8 +236,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         setIsAccountVisible,
         isHome,
         setIsHome,
-        isSplash,
-        setIsSplash,
         goToCalendar,
         slug,
         addParam,

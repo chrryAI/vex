@@ -7,10 +7,12 @@ export default function Anchor({
   openInNewTab,
   target,
   children,
+  preventDefault,
   ...props
 }: React.HTMLAttributes<HTMLAnchorElement> & {
   openInNewTab?: boolean
   href?: string
+  preventDefault?: boolean
   clientOnly?: boolean
   target?: "_blank" | "_self" | "_parent" | "_top"
 }) {
@@ -71,15 +73,12 @@ export default function Anchor({
         addHapticFeedback()
 
         // Handle internal routing
-        if (href) {
+        if (href && !preventDefault) {
           router.push(href, {
             clientOnly,
           })
           return
         }
-
-        // Call original onClick if provided
-        props.onClick?.(e)
       }}
     >
       {children}

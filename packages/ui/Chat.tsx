@@ -4171,7 +4171,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       )}
                     </Div>
                   )}
-                  {!isSelectingMood && !needsReview && (
+                  {!isSelectingMood && !needsReview && isHydrated && (
                     <>
                       <Button
                         data-testid={
