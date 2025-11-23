@@ -72,6 +72,8 @@
 
 .appTitle {
   display: flex;
+  margin: 0 0 toRem.toRem(10) 0;
+  font-size: toRem.toRem(20);
 }
 
 .titleText {

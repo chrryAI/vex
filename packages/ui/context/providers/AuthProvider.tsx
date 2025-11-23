@@ -717,7 +717,9 @@ export function AuthProvider({
       return undefined
     }
 
-    const matchedApp = allApps?.find((app) => app.slug === appSlug)
+    const matchedApp = allApps?.find(
+      (app) => app.slug === appSlug || app.store?.slug === appSlug,
+    )
     return matchedApp?.slug
   }
 
@@ -747,7 +749,8 @@ export function AuthProvider({
       newApps.forEach((app) => {
         if (
           !existingAppsMap.has(app.id) ||
-          !existingAppsMap.get(app.id)?.store?.apps.length
+          !existingAppsMap.get(app.id)?.store?.apps.length ||
+          !existingAppsMap.get(app.id)?.store?.app
         ) {
           existingAppsMap.set(app.id, app)
         }
@@ -991,8 +994,6 @@ export function AuthProvider({
       }
     },
   )
-
-  console.log(`🚀 ~ file: AuthProvider.tsx:998 ~ allApps:`, allApps)
 
   useEffect(() => {
     const item = loadingApp
@@ -1282,7 +1283,6 @@ export function AuthProvider({
   const [isLoadingTasks, setIsLoadingTasks] = useState(true)
 
   // app?.id removed from deps - use prevApp inside setState instead
-  console.log(`🚀 ~ file: AuthProvider.tsx:1184 ~ allApps:`, allApps)
 
   useEffect(() => {
     if (!allApps.length || (!thread && threadId)) return
@@ -1325,48 +1325,6 @@ export function AuthProvider({
 
       setSlug(getAppSlug(matchedApp) || "")
     }
-
-    // Always update apps list even if app didn't change
-    // if (matchedApp) {
-    //   // Use the matched app's store.apps if available (has nested apps from backend)
-    //   // Otherwise filter allApps by store ID
-    //   let currentStoreApps: appWithStore[] = []
-
-    //   if (matchedApp?.store?.apps && matchedApp.store.apps.length > 0) {
-    //     // Use nested store.apps (already has all apps for this store)
-    //     currentStoreApps = matchedApp.store.apps
-    //     console.log("✅ Using nested store.apps from matchedApp")
-    //   } else {
-    //     // Fallback: filter allApps by store ID
-    //     currentStoreApps =
-    //       allApps?.filter((a) => a?.store?.id === matchedApp?.store?.id) || []
-    //     console.log("⚠️ Fallback: filtering allApps by store ID")
-    //   }
-
-    //   // Always add Chrry as second item if it's not in the current store
-    //   const chrryApp = allApps?.find((a) => a.id === chrry?.id)
-    //   const hasChrry = currentStoreApps.some((a) => a.id === chrry?.id)
-    //   let finalApps = currentStoreApps
-    //   if (!hasChrry && chrryApp && currentStoreApps.length > 0) {
-    //     // Insert Chrry as second item (index 1)
-    //     finalApps = [
-    //       currentStoreApps[0]!,
-    //       chrryApp,
-    //       ...currentStoreApps.slice(1),
-    //     ]
-    //   } else if (!hasChrry && chrryApp) {
-    //     // If no other apps, just add Chrry
-    //     finalApps = [chrryApp]
-    //   }
-
-    //   console.log("✅ Final apps after Chrry logic:", {
-    //     finalCount: finalApps.length,
-    //     finalSlugs: finalApps.map((a) => a.slug),
-    //   })
-
-    //   // setApps(finalApps)
-    //   setSlug(getAppSlug(matchedApp) || "")
-    // }
   }, [
     allApps,
     pathname,
@@ -1479,31 +1437,6 @@ export function AuthProvider({
       if (sessionData.app) {
         setApp(sessionData.app)
         setStore(sessionData.app.store)
-        // 🔍 LOG: Check apps being set from session data
-        console.log("🔄 Processing Session Data - Apps:", {
-          totalApps: sessionData.app.store?.apps?.length || 0,
-          apps: sessionData.app.store?.apps?.map((a: any) => ({
-            slug: a.slug,
-            name: a.name,
-            storeId: a.store?.id,
-            storeName: a.store?.name,
-          })),
-          currentStoreId: sessionData.app.store?.id,
-          currentStoreName: sessionData.app.store?.name,
-        })
-
-        // Initialize ALL apps from session data (SSR-friendly)
-        if (
-          sessionData?.app?.store?.apps?.length &&
-          sessionData?.app?.store?.apps?.length > 0
-        ) {
-          // setAllApps(sessionData.app.store.apps)
-
-          // Also set current store's apps
-          const currentStoreApps = sessionData.app.store.apps
-
-          // setApps(currentStoreApps)
-        }
       }
     }
   }, [sessionData])
