@@ -63,9 +63,6 @@
 .threads {
   margin-top: toRem.toRem(7.5);
   margin-right: toRem.toRem(-7.5);
-
-  &.threadItem {
-  }
 }
 
 .loading {
@@ -163,7 +160,7 @@
   gap: toRem.toRem(3);
   position: relative;
   font-size: toRem.toRem(13);
-  color: var(--shade-7);
+  color: var(--shade-6);
 }
 
 .star {

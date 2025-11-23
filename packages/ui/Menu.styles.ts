@@ -52,7 +52,6 @@ export const MenuStyleDefs = {
     marginTop: 8,
     marginRight: -7,
   },
-  threadsThreadItem: {},
   loading: {
     display: "flex",
     flexDirection: "column",
@@ -128,7 +127,7 @@ export const MenuStyleDefs = {
     gap: 3,
     position: "relative",
     fontSize: 13,
-    color: "var(--shade-7)",
+    color: "var(--shade-6)",
   },
   star: {
     position: "absolute",

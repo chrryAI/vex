@@ -1050,8 +1050,7 @@ export default function App({
                                     ...styles.zarathustra.style,
                                   }}
                                   app={zarathustra}
-                                  width={80}
-                                  height={80}
+                                  size={24}
                                 />
                               </A>
                             )}
@@ -1081,7 +1080,7 @@ export default function App({
                                   ...styles.popcorn.style,
                                 }}
                               >
-                                <Img app={popcorn} width={80} height={80} />
+                                <Img app={popcorn} size={24} />
                               </A>
                             ) : (
                               showPacmanHere && (
