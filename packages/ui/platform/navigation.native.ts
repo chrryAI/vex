@@ -2,119 +2,168 @@
  * Native Navigation (React Native with Solito)
  */
 
-import { useCallback, useMemo } from "react"
+import React, { createContext, useContext, useMemo, useCallback } from "react"
+import {
+  useNavigation as useNativeNavigation,
+  StackActions,
+} from "@react-navigation/native"
+
+export interface NavigationOptions {
+  scroll?: boolean
+  shallow?: boolean
+  clientOnly?: boolean
+}
 
 export interface NavigationParams {
   searchParams: URLSearchParams
   pathname: string
-  push: (path: string) => void
-  replace: (path: string) => void
+  push: (path: string, options?: NavigationOptions) => void
+  replace: (path: string, options?: NavigationOptions) => void
   back: () => void
   forward: () => void
+  refresh: () => void
+  prefetch: (path: string) => void
   addParams: (params: Record<string, string | number | boolean>) => void
   removeParams: (keys: string | string[]) => void
   setParams: (params: Record<string, string | number | boolean>) => void
 }
 
-let solitoRouter: any
+// Context to hold the current route info
+const NativeRouteContext = createContext<{
+  pathname: string
+  searchParams: URLSearchParams
+}>({
+  pathname: "/",
+  searchParams: new URLSearchParams(),
+})
 
-try {
-  const solito = require("solito/router")
-  solitoRouter = solito.useRouter
-} catch (error) {
-  console.warn("[chrry/platform/navigation] Solito not found. Using fallback.")
+export const NativeRouteProvider = ({
+  children,
+  state,
+}: {
+  children: React.ReactNode
+  state: any
+}) => {
+  const value = useMemo(() => {
+    if (!state) {
+      return {
+        pathname: "/",
+        searchParams: new URLSearchParams(),
+      }
+    }
+
+    const currentRoute = state.routes[state.index]
+
+    let pathname = "/"
+    if (currentRoute) {
+      if (currentRoute.name === "home") pathname = "/"
+      else if (currentRoute.name === "thread")
+        pathname = `/threads/${currentRoute.params?.id || ""}`
+      else pathname = `/${currentRoute.name}`
+    }
+
+    const searchParams = new URLSearchParams()
+    if (currentRoute?.params) {
+      Object.entries(currentRoute.params).forEach(([key, value]) => {
+        if (key !== "id") searchParams.set(key, String(value))
+      })
+    }
+
+    return { pathname, searchParams }
+  }, [state])
+
+  return React.createElement(NativeRouteContext.Provider, { value }, children)
+}
+
+// Helper to parse path into route name and params
+const parsePath = (path: string) => {
+  const cleanPath = path.split("?")[0] || ""
+  const query = path.split("?")[1] || ""
+  const searchParams = new URLSearchParams(query)
+  const params: Record<string, any> = Object.fromEntries(searchParams.entries())
+
+  if (cleanPath === "/" || cleanPath === "") {
+    return { name: "home", params }
+  }
+  if (cleanPath.startsWith("/threads/")) {
+    const id = cleanPath.split("/")[2]
+    return { name: "thread", params: { ...params, id } }
+  }
+  if (cleanPath === "/threads") {
+    return { name: "threads", params }
+  }
+  // Fallback for other routes - try to use the path segment as route name
+  const segment = cleanPath.slice(1)
+  return { name: segment, params }
 }
 
 /**
- * Native navigation hook using Solito
+ * Native navigation hook using React Navigation
  */
 export function useNavigation(): NavigationParams {
-  let router: any
-  let pathname = "/"
-  let searchParams = new URLSearchParams()
-
-  if (solitoRouter) {
-    try {
-      router = solitoRouter()
-      const routerPathname = router?.pathname || "/"
-      pathname = routerPathname
-
-      // Extract search params from pathname if present
-      if (routerPathname.includes("?")) {
-        const [path, query] = routerPathname.split("?")
-        pathname = path || "/"
-        searchParams = new URLSearchParams(query || "")
-      }
-    } catch (error) {
-      console.warn("Error using Solito router:", error)
-    }
-  }
+  const navigation = useNativeNavigation<any>()
+  const { pathname, searchParams } = useContext(NativeRouteContext)
 
   const push = useCallback(
-    (path: string) => {
-      if (router?.push) {
-        router.push(path)
-      } else {
-        console.warn("Navigation not available")
-      }
+    (path: string, options?: NavigationOptions) => {
+      const { name, params } = parsePath(path)
+      navigation.navigate(name, params)
     },
-    [router],
+    [navigation],
   )
 
   const replace = useCallback(
-    (path: string) => {
-      if (router?.replace) {
-        router.replace(path)
-      } else {
-        console.warn("Navigation not available")
-      }
+    (path: string, options?: NavigationOptions) => {
+      const { name, params } = parsePath(path)
+      navigation.dispatch(StackActions.replace(name, params))
     },
-    [router],
+    [navigation],
   )
 
   const back = useCallback(() => {
-    if (router?.back) {
-      router.back()
-    } else {
-      console.warn("Navigation not available")
+    if (navigation.canGoBack()) {
+      navigation.goBack()
     }
-  }, [router])
+  }, [navigation])
 
   const forward = useCallback(() => {
-    // Solito doesn't have forward, just log warning
     console.warn("Forward navigation not supported on native")
+  }, [])
+
+  const refresh = useCallback(() => {
+    // No-op
+  }, [])
+
+  const prefetch = useCallback((path: string) => {
+    // No-op
   }, [])
 
   const addParams = useCallback(
     (params: Record<string, string | number | boolean>) => {
-      const newSearchParams = new URLSearchParams(searchParams.toString())
-      Object.entries(params).forEach(([key, value]) => {
-        newSearchParams.set(key, String(value))
-      })
-      push(`${pathname}?${newSearchParams.toString()}`)
+      navigation.setParams(params)
     },
-    [pathname, searchParams, push],
+    [navigation],
   )
 
   const removeParams = useCallback(
     (keys: string | string[]) => {
-      const newSearchParams = new URLSearchParams(searchParams.toString())
+      // React Navigation merges params, so we can't easily "remove" them without resetting
+      // But we can set them to undefined/null if the screen handles it
       const keysArray = Array.isArray(keys) ? keys : [keys]
-      keysArray.forEach((key) => newSearchParams.delete(key))
-      push(`${pathname}?${newSearchParams.toString()}`)
+      const newParams: Record<string, any> = {}
+      keysArray.forEach((key) => {
+        newParams[key] = undefined
+      })
+      navigation.setParams(newParams)
     },
-    [pathname, searchParams, push],
+    [navigation],
   )
 
   const setParams = useCallback(
     (params: Record<string, string | number | boolean>) => {
-      const newSearchParams = new URLSearchParams()
-      Object.entries(params).forEach(([key, value]) => {
-        newSearchParams.set(key, String(value))
-      })
-      push(`${pathname}?${newSearchParams.toString()}`)
+      navigation.setParams(params)
     },
-    [pathname, push],
+    [navigation],
   )
 
   return useMemo(
@@ -125,6 +174,8 @@ export function useNavigation(): NavigationParams {
       replace,
       back,
       forward,
+      refresh,
+      prefetch,
       addParams,
       removeParams,
       setParams,
@@ -136,6 +187,8 @@ export function useNavigation(): NavigationParams {
       replace,
       back,
       forward,
+      refresh,
+      prefetch,
       addParams,
       removeParams,
       setParams,
@@ -147,33 +200,22 @@ export function useNavigation(): NavigationParams {
  * Get current pathname (native)
  */
 export function useCurrentPathname(): string {
-  if (solitoRouter) {
-    try {
-      const router = solitoRouter()
-      return router?.pathname || "/"
-    } catch (error) {
-      return "/"
-    }
-  }
-  return "/"
+  const { pathname } = useNavigation()
+  return pathname
 }
 
 /**
  * Get search params (native)
  */
 export function useCurrentSearchParams(): URLSearchParams {
-  if (solitoRouter) {
-    try {
-      const router = solitoRouter()
-      const pathname = router?.pathname || "/"
+  const { searchParams } = useNavigation()
+  return searchParams
+}
 
-      if (pathname.includes("?")) {
-        const [, query] = pathname.split("?")
-        return new URLSearchParams(query)
-      }
-    } catch (error) {
-      return new URLSearchParams()
-    }
-  }
-  return new URLSearchParams()
+/**
+ * Get previous pathname (native)
+ */
+export function usePreviousPathname(): string | null {
+  // TODO: Implement actual history tracking if needed
+  return null
 }

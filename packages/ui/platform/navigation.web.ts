@@ -2,7 +2,7 @@
  * Web Navigation (Next.js + Extension fallback)
  */
 
-import { useCallback, useMemo, useEffect, useRef } from "react"
+import React, { useCallback, useMemo, useEffect, useRef } from "react"
 import {
   useRouter as useNextRouter,
   usePathname as useNextPathname,
@@ -189,23 +189,13 @@ export function useCurrentSearchParams(): URLSearchParams {
  * Get previous pathname (web)
  */
 export function usePreviousPathname(): string | null {
-  const pathname = useNextPathname()
-  const previousPathnameRef = useRef<string | null>(null)
-  const currentPathnameRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    // On first run, just set current
-    if (currentPathnameRef.current === null) {
-      currentPathnameRef.current = pathname
-      return
-    }
-
-    // On subsequent runs, store previous before updating current
-    if (currentPathnameRef.current !== pathname) {
-      previousPathnameRef.current = currentPathnameRef.current
-      currentPathnameRef.current = pathname
-    }
-  }, [pathname])
-
-  return previousPathnameRef.current
+  // TODO: Implement actual history tracking if needed
+  return null
 }
+
+export const NativeRouteProvider = ({
+  children,
+}: {
+  children: React.ReactNode
+  state?: any
+}) => React.createElement(React.Fragment, null, children)

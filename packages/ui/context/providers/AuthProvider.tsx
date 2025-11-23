@@ -1348,6 +1348,11 @@ export function AuthProvider({
   }
 
   useEffect(() => {
+    // PerformanceObserver is web-only, skip on React Native
+    if (typeof PerformanceObserver === "undefined") {
+      return
+    }
+
     try {
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {

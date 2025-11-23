@@ -18,7 +18,16 @@ import { device, mood, timer } from "../types"
 import useSWR from "swr"
 import { useWebSocket } from "../hooks/useWebSocket"
 import { useAuth } from "./providers"
-import { useLocalStorage, usePlatform, useTheme } from "../platform"
+import {
+  useLocalStorage,
+  usePlatform,
+  useTheme,
+  Input,
+  Text,
+  Box,
+  FilePicker,
+  Audio,
+} from "../platform"
 
 export const STORAGE_SELECTED_TASKS_KEY = "selectedTasks"
 
@@ -971,7 +980,10 @@ export function TimerContextProvider({
       ? trackEvent({ name: "play_bird_sound" })
       : playBirds === false && trackEvent({ name: "stop_bird_sound" })
 
-    audioRef.current = audioRef.current || new Audio()
+    // Only use Audio API on web (check for global Audio constructor)
+    if (typeof window !== "undefined" && "Audio" in window) {
+      audioRef.current = audioRef.current || new (window as any).Audio()
+    }
 
     if (playBirds) {
       ;(async () => {
@@ -997,19 +1009,19 @@ export function TimerContextProvider({
   }, [playBirds, isExtension])
 
   const playTimerEnd = useCallback(async () => {
-    // Only play sound in web mode, extension handles it via offscreen document
-    if (!enableSound) {
+    // Only play sound in web mode (check for global Audio API)
+    if (!enableSound || typeof window === "undefined" || !("Audio" in window)) {
       return
     }
 
     try {
-      const audio = new Audio()
+      const audio = new (window as any).Audio()
       audio.src = `${FRONTEND_URL}/sounds/timer-end.mp3`
       audio.volume = 0.9
 
       // Preload and play
       audio.load()
-      await audio.play().catch((error) => {
+      await audio.play().catch((error: Error) => {
         console.log("Audio playback failed:", error)
       })
     } catch (error) {
@@ -1308,7 +1320,7 @@ export function TimerContextProvider({
 
   return (
     <TimerContext.Provider value={contextValue}>
-      <audio
+      <Audio
         onEnded={() => {
           setPlayKitasaku(false)
         }}

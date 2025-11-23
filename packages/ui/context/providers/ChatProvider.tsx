@@ -660,24 +660,37 @@ export function ChatProvider({
         threadId: threadId,
       })
 
-      document.addEventListener("visibilitychange", handleVisibilityChange)
-      document.addEventListener("pagehide", handleBeforeUnload)
-      window.addEventListener("pageshow", () =>
-        notifyPresence?.({ isOnline: true }),
-      )
+      // Platform-safe event listeners
+      if (typeof document !== "undefined") {
+        document.addEventListener("visibilitychange", handleVisibilityChange)
+        document.addEventListener("pagehide", handleBeforeUnload)
+      }
 
-      window.addEventListener("offline", handleNetworkChange)
+      if (typeof window !== "undefined" && window.addEventListener) {
+        window.addEventListener("pageshow", () =>
+          notifyPresence?.({ isOnline: true }),
+        )
 
-      // Add unload listener
-      window.addEventListener("beforeunload", handleBeforeUnload)
-      window.addEventListener("online", handleNetworkChange)
+        window.addEventListener("offline", handleNetworkChange)
+
+        // Add unload listener
+        window.addEventListener("beforeunload", handleBeforeUnload)
+        window.addEventListener("online", handleNetworkChange)
+      }
 
       return () => {
         // Cleanup
-        window.removeEventListener("offline", handleNetworkChange)
-        window.removeEventListener("online", handleNetworkChange)
-        document.removeEventListener("visibilitychange", handleVisibilityChange)
-        window.removeEventListener("beforeunload", handleBeforeUnload)
+        if (typeof window !== "undefined" && window.removeEventListener) {
+          window.removeEventListener("offline", handleNetworkChange)
+          window.removeEventListener("online", handleNetworkChange)
+          window.removeEventListener("beforeunload", handleBeforeUnload)
+        }
+        if (typeof document !== "undefined" && document.removeEventListener) {
+          document.removeEventListener(
+            "visibilitychange",
+            handleVisibilityChange,
+          )
+        }
         notifyPresence?.({
           isOnline: false,
           threadId: thread?.id,

@@ -201,9 +201,10 @@ export const useTheme = (): Theme => {
   // Check if dark mode is enabled
   const isDark =
     typeof window !== "undefined" &&
+    typeof document !== "undefined" &&
     (window.matchMedia?.("(prefers-color-scheme: dark)").matches ||
-      document.documentElement.classList.contains("dark") ||
-      document.documentElement.style.colorScheme === "dark")
+      document.documentElement?.classList?.contains("dark") ||
+      document.documentElement?.style?.colorScheme === "dark")
 
   return isDark ? darkTheme : lightTheme
 }

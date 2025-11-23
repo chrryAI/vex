@@ -5,7 +5,7 @@ import { PROD_FRONTEND_URL, FRONTEND_URL } from "./utils"
 import React, { useEffect } from "react"
 import Img from "./Img"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { usePlatform } from "./platform"
+import { usePlatform, Text } from "./platform"
 import { useApp, useData } from "./context/providers"
 import {
   DeepSeek,
@@ -137,37 +137,37 @@ export default function ImageComponent(props: ImageProps) {
   if (isEmoji) {
     if (app?.store?.slug === "books") {
       if (app.slug === "zarathustra") {
-        return <span style={{ fontSize: emojiSize }}>📕</span>
+        return <Text style={{ fontSize: emojiSize }}>📕</Text>
       }
 
       if (app.slug === "1984") {
-        return <span style={{ fontSize: emojiSize }}>👁️</span>
+        return <Text style={{ fontSize: emojiSize }}>👁️</Text>
       }
 
       if (app.slug === "meditations") {
-        return <span style={{ fontSize: emojiSize }}>🏛️</span>
+        return <Text style={{ fontSize: emojiSize }}>🏛️</Text>
       }
 
       if (app.slug === "dune") {
-        return <span style={{ fontSize: emojiSize }}>🏜️</span>
+        return <Text style={{ fontSize: emojiSize }}>🏜️</Text>
       }
     }
 
     if (app?.store?.slug === "movies") {
       if (app.slug === "fightClub") {
-        return <span style={{ fontSize: emojiSize }}>🧼</span>
+        return <Text style={{ fontSize: emojiSize }}>🧼</Text>
       }
 
       if (app.slug === "inception") {
-        return <span style={{ fontSize: emojiSize }}>🌀</span>
+        return <Text style={{ fontSize: emojiSize }}>🌀</Text>
       }
 
       if (app.slug === "pulpFiction") {
-        return <span style={{ fontSize: emojiSize }}>🍔</span>
+        return <Text style={{ fontSize: emojiSize }}>🍔</Text>
       }
 
       if (app.slug === "hungerGames") {
-        return <span style={{ fontSize: emojiSize }}>🏹</span>
+        return <Text style={{ fontSize: emojiSize }}>🏹</Text>
       }
 
       return <Clapperboard color={color} size={size} />
@@ -175,23 +175,23 @@ export default function ImageComponent(props: ImageProps) {
 
     if (app?.store?.slug === "compass") {
       if (app.slug === "amsterdam") {
-        return <span style={{ fontSize: emojiSize }}>🇳🇱</span>
+        return <Text style={{ fontSize: emojiSize }}>🇳🇱</Text>
       }
 
       if (app.slug === "tokyo") {
-        return <span style={{ fontSize: emojiSize }}>🇯🇵</span>
+        return <Text style={{ fontSize: emojiSize }}>🇯🇵</Text>
       }
 
       if (app.slug === "paris") {
-        return <span style={{ fontSize: emojiSize }}>🇫🇷</span>
+        return <Text style={{ fontSize: emojiSize }}>🇫🇷</Text>
       }
 
       if (app.slug === "istanbul") {
-        return <span style={{ fontSize: emojiSize }}>🇹🇷</span>
+        return <Text style={{ fontSize: emojiSize }}>🇹🇷</Text>
       }
 
       if (app.slug === "newYork") {
-        return <span style={{ fontSize: emojiSize }}>🗽</span>
+        return <Text style={{ fontSize: emojiSize }}>🗽</Text>
       }
     }
   }

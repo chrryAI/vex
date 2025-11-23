@@ -198,7 +198,7 @@ export function PlatformProvider({
 
   // Update viewport width on client after mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && window.addEventListener) {
       const updateWidth = () => setViewportWidth(window.innerWidth)
       updateWidth() // Set immediately
       window.addEventListener("resize", updateWidth)
@@ -291,7 +291,7 @@ export function PlatformProvider({
   useEffect(() => {
     // Only run on web/extension (not native)
     if (!_isWeb() && !_isBrowserExtension()) return
-    if (typeof window === "undefined") return
+    if (typeof window === "undefined" || !window.addEventListener) return
 
     const updateViewportDimensions = () => {
       // Use startTransition to make this a non-blocking update
@@ -315,7 +315,9 @@ export function PlatformProvider({
     window.addEventListener("resize", debouncedUpdate, { passive: true })
     return () => {
       clearTimeout(timeoutId)
-      window.removeEventListener("resize", debouncedUpdate)
+      if (window.removeEventListener) {
+        window.removeEventListener("resize", debouncedUpdate)
+      }
     }
   }, [setViewPortWidth, setViewPortHeight])
 
