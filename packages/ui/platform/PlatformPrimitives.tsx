@@ -316,8 +316,6 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
     { href, target, rel, className, style, onClick, children, ...props },
     ref,
   ) => {
-    const { isExtension } = usePlatform()
-
     // Parse className string to get inline styles for utility classes
     const parsedStyles = parseClassName(className)
 
