@@ -124,7 +124,9 @@ export default function ImageComponent(props: ImageProps) {
   const color =
     COLORS[app?.themeColor as keyof typeof COLORS] || "var(--accent-6)"
 
-  const emojiSize = size <= 24 ? size * 0.85 : size
+  const intSize = parseInt(size)
+
+  const emojiSize = intSize && intSize <= 24 ? intSize * 0.85 : intSize
   if (isEmoji) {
     if (app?.store?.slug === "books") {
       if (app.slug === "zarathustra") {
