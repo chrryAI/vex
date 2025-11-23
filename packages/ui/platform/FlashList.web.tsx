@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * FlashList Web Implementation
  * Uses custom virtualization for web browsers
