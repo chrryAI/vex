@@ -79,6 +79,25 @@ export const getImageSrc = ({
   canEditApp?: boolean
   image?: string
 }) => {
+  const finalWidth =
+    typeof width === "number"
+      ? width
+      : typeof width === "string" && parseInt(width)
+        ? parseInt(width)
+        : width
+          ? width
+          : size
+  const finalHeight =
+    typeof height === "number"
+      ? height
+      : typeof height === "string" && parseInt(height)
+        ? parseInt(height)
+        : height
+          ? height
+          : size
+
+  const finalSize = finalWidth || finalHeight
+
   const iconSrc = icon
     ? icon === "spaceInvader"
       ? `${PROD_FRONTEND_URL}/images/pacman/space-invader.png`
@@ -156,24 +175,12 @@ export const getImageSrc = ({
     src || logoSrc || (!app && iconSrc) || appImageSrc || undefined
 
   // Use size as the primary dimension, fallback to width/height if size not provided
-  const finalWidth =
-    typeof width === "number"
-      ? width
-      : typeof width === "string"
-        ? parseInt(width)
-        : size
-  const finalHeight =
-    typeof height === "number"
-      ? height
-      : typeof height === "string"
-        ? parseInt(height)
-        : size
 
   return {
     src: finalSrc,
-    width: size || finalWidth,
-    height: size || finalHeight,
-    size: size,
+    width: finalWidth,
+    height: finalHeight,
+    size: finalSize,
   }
 }
 
