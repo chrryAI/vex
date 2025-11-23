@@ -945,7 +945,7 @@ export default function App({
               !isManagingApp && (
                 <span
                   style={{ ...styles.grip.style }}
-                  title={t("Drag and drop to reorder apps")}
+                  // title={t("Drag and drop to reorder apps")}
                 >
                   <Grip size={24} color="var(--accent-1)" />
                 </span>
