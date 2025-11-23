@@ -7,6 +7,7 @@ import {
   useAuth,
   useData,
   useNavigationContext,
+  useChat,
 } from "./context/providers"
 import Img from "./Image"
 import { useAppContext } from "./context/AppContext"
@@ -31,8 +32,9 @@ export default function Store({
 
   const { utilities } = useStyles()
 
-  const { router, setIsNewAppChat, pathname, searchParams } =
-    useNavigationContext()
+  const { router, pathname, searchParams } = useNavigationContext()
+
+  const { setIsNewAppChat } = useChat()
 
   const { getAppSlug } = useAuth()
 
@@ -43,6 +45,7 @@ export default function Store({
   const store = slug
     ? allApps.find((app) => app.slug === slug)?.store
     : currentStore
+  console.log(`🚀 ~ file: Store.tsx:48 ~ currentStore:`, currentStore)
 
   const apps = store?.apps
 
@@ -105,10 +108,6 @@ export default function Store({
   const styles = useStoreStyles()
 
   const render = () => {
-    if (!store?.app) {
-      return null
-    }
-
     return (
       <Div
         style={{
