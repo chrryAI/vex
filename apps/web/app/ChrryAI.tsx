@@ -1,24 +1,28 @@
-import "./globals.scss"
-import "./globals.css"
-import "./styles/view-transitions.css"
+import "chrry/globals.scss"
+import "chrry/globals.css"
+import "chrry/styles/view-transitions.css"
 
 import type { ReactElement, ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
-import AppMetadata from "./AppMetadata"
-import { locale, locales } from "./locales"
-import { getMetadata, VERSION, getThreadId, pageSizes, API_URL } from "./utils"
-
-import { getSession, getThread, getTranslations } from "./lib"
-import { getSiteConfig, getSiteTranslation } from "./utils/siteConfig"
-import Chrry from "./Chrry"
-
 import {
-  appWithStore,
-  paginatedMessages,
+  getMetadata,
+  VERSION,
+  getThreadId,
+  pageSizes,
+  API_URL,
+} from "chrry/utils"
+import AppMetadata from "chrry/AppMetadata"
+import { getSession, getThread, getTranslations } from "chrry/lib"
+import { locale } from "chrry/locales"
+import {
   session,
-  sessionUser,
   thread,
-} from "./types"
+  paginatedMessages,
+  appWithStore,
+  sessionUser,
+} from "chrry/types"
+import { getSiteConfig, getSiteTranslation } from "chrry/utils/siteConfig"
+import { Providers } from "../components/Providers"
 
 export const generateMeta = async ({ locale }: { locale: locale }) => {
   const siteConfig = getSiteConfig()
@@ -48,28 +52,6 @@ export default async function ChrryAI({
   locale,
   headersList,
   cookieStore,
-  Wrapper = ({
-    children,
-    apiKey,
-    viewPortWidth,
-    viewPortHeight,
-    session,
-    translations,
-    locale,
-    thread,
-  }: WrapperProps): ReactElement => (
-    <Chrry
-      thread={thread}
-      locale={locale}
-      apiKey={apiKey}
-      viewPortWidth={viewPortWidth}
-      viewPortHeight={viewPortHeight}
-      session={session}
-      translations={translations}
-    >
-      {children}
-    </Chrry>
-  ),
 }: {
   children: ReactNode
   apiKey: string
@@ -378,17 +360,16 @@ export default async function ChrryAI({
         )}
       </head>
       <body className="loaded" suppressHydrationWarning>
-        <Wrapper
+        <Providers
           thread={thread}
           apiKey={apiKey}
           viewPortWidth={viewPortWidth}
           viewPortHeight={viewPortHeight}
           translations={translations}
           session={session && "app" in session ? session : undefined}
-          locale={locale}
         >
           {children}
-        </Wrapper>
+        </Providers>
       </body>
     </html>
   )

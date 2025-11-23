@@ -1,6 +1,4 @@
-"use client"
-
-import { useMemo, type ReactElement } from "react"
+import { type ReactElement } from "react"
 import { appWithStore } from "./types"
 import { getImageSrc } from "./lib"
 

@@ -13,7 +13,6 @@ import {
   signIn as signInContext,
   signOut as signOutContext,
 } from "next-auth/react"
-import { NextIntlClientProvider } from "next-intl"
 
 export function Providers({
   children,

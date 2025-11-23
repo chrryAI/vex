@@ -22,9 +22,6 @@ import { getLocale } from "next-intl/server"
 import { locale } from "chrry/locales"
 
 import { cookies, headers } from "next/headers"
-import ChrryAI from "chrry/ChrryAI"
-
-import { generateMeta } from "chrry/ChrryAI"
 
 import {
   TEST_GUEST_FINGERPRINTS,
@@ -36,6 +33,7 @@ import { Providers } from "../components/Providers"
 import { NextIntlClientProvider } from "next-intl"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import { getTranslations } from "chrry/lib"
+import ChrryAI, { generateMeta } from "./ChrryAI"
 
 export const generateMetadata = async () => {
   const headersList = await headers()

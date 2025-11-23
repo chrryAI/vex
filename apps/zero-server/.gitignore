@@ -1,9 +1,0 @@
-node_modules
-dist
-.env
-.env.local
-.DS_Store
-*.log
-
-# Auto-generated Zero schema
-zero-schema.gen.ts

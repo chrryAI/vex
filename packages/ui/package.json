@@ -129,7 +129,6 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-native": "*",
-    "react-native-draggable-flatlist": "^4.0.3",
     "tsup": "^8.0.0",
     "typescript": "5.8.2"
   },

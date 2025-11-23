@@ -26,7 +26,6 @@ import { deleteMemories, updateGuest, updateUser } from "./lib"
 import toast from "react-hot-toast"
 import { useMemoryConsentStyles } from "./MemoryConsent.styles"
 import { Button, Div } from "./platform"
-import { React } from "next/dist/server/route-modules/app-page/vendored/rsc/entrypoints"
 import { useStyles } from "./context/StylesContext"
 
 export default function MemoryConsent({
