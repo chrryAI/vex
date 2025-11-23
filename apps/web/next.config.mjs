@@ -45,7 +45,7 @@ const nextConfig = {
       },
     },
   },
-  productionBrowserSourceMaps: true, // Temporarily enable for debugging
+  productionBrowserSourceMaps: false, // Temporarily enable for debugging
   generateBuildId: async () => {
     return process.env.GIT_SHA || Date.now().toString()
   },
