@@ -15,7 +15,7 @@ export { PlatformProvider } from "../../platform"
 
 // Composition root - combines all providers
 import React, { ReactNode, useState } from "react"
-import { PlatformProvider } from "../../platform"
+import { PlatformProvider, Span } from "../../platform"
 import { ThemeProvider } from "../ThemeContext"
 import { StylesProvider } from "../StylesContext"
 import { ErrorProvider } from "./ErrorProvider"

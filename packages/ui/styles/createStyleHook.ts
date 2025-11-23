@@ -36,7 +36,7 @@ export function createStyleHook<T extends Record<string, any>>(styles: {
 
     // Debounced resize handler with startTransition to prevent Suspense triggers
     React.useEffect(() => {
-      if (typeof window === "undefined") return
+      if (typeof window === "undefined" || !window.addEventListener) return
 
       let timeoutId: any
       const handleResize = () => {
@@ -56,7 +56,9 @@ export function createStyleHook<T extends Record<string, any>>(styles: {
       window.addEventListener("resize", handleResize, { passive: true })
       return () => {
         clearTimeout(timeoutId)
-        window.removeEventListener("resize", handleResize)
+        if (window.removeEventListener) {
+          window.removeEventListener("resize", handleResize)
+        }
       }
     }, [])
 

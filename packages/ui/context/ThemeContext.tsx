@@ -196,15 +196,15 @@ export function ThemeProvider({
 
   // Apply dark/light mode to HTML element (web only)
   useEffect(() => {
-    if (isWeb && typeof document !== "undefined") {
+    if (isWeb && typeof document !== "undefined" && document.documentElement) {
       const html = document.documentElement
 
       if (themeMode === "dark") {
-        html.classList.add("dark")
-        html.style.colorScheme = "dark"
+        html.classList?.add("dark")
+        if (html.style) html.style.colorScheme = "dark"
       } else {
-        html.classList.remove("dark")
-        html.style.colorScheme = "light"
+        html.classList?.remove("dark")
+        if (html.style) html.style.colorScheme = "light"
       }
     }
   }, [themeMode, isWeb])

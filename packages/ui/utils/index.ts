@@ -54,16 +54,17 @@ export { getWeatherCacheTime }
 
 // Get hostname from window if available (client-side)
 const getClientHostname = () => {
-  if (typeof window !== "undefined") {
-    return window.location?.hostname
+  if (typeof window !== "undefined" && window.location) {
+    return window.location.hostname
   }
   return undefined
 }
 
 // Priority: env var > dynamic detection > hardcoded fallback
-export const CHRRY_URL =
-  (getClientHostname() ? getSiteConfig(getClientHostname()).url : undefined) ||
-  "https://vex.chrry.ai"
+const hostname = getClientHostname()
+export const CHRRY_URL = hostname
+  ? getSiteConfig(hostname).url
+  : "https://vex.chrry.ai"
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99

@@ -14,6 +14,11 @@ interface CacheDB extends DBSchema {
 let dbInstance: IDBPDatabase<CacheDB> | null = null
 
 const getDB = async () => {
+  // Check if IndexedDB is available (not in React Native)
+  if (typeof indexedDB === "undefined") {
+    return null
+  }
+
   if (dbInstance) return dbInstance
 
   dbInstance = await openDB<CacheDB>("vex-cache", 1, {
@@ -40,6 +45,7 @@ export const cacheData = async (
 ): Promise<void> => {
   try {
     const db = await getDB()
+    if (!db) return // IndexedDB not available (React Native)
     await db.put(
       "cache",
       {
@@ -64,6 +70,7 @@ export const getCachedData = async <T = any>(
 ): Promise<T | null> => {
   try {
     const db = await getDB()
+    if (!db) return null // IndexedDB not available (React Native)
     const cached = await db.get("cache", key)
 
     if (!cached) return null
@@ -88,6 +95,7 @@ export const getCachedData = async <T = any>(
 export const deleteCachedData = async (key: string): Promise<void> => {
   try {
     const db = await getDB()
+    if (!db) return // IndexedDB not available (React Native)
     await db.delete("cache", key)
   } catch (error) {
     console.error("Failed to delete cached data:", error)
@@ -100,6 +108,7 @@ export const deleteCachedData = async (key: string): Promise<void> => {
 export const clearCache = async (): Promise<void> => {
   try {
     const db = await getDB()
+    if (!db) return // IndexedDB not available (React Native)
     await db.clear("cache")
   } catch (error) {
     console.error("Failed to clear cache:", error)
@@ -112,6 +121,7 @@ export const clearCache = async (): Promise<void> => {
 export const getAllCacheKeys = async (): Promise<string[]> => {
   try {
     const db = await getDB()
+    if (!db) return [] // IndexedDB not available (React Native)
     return await db.getAllKeys("cache")
   } catch (error) {
     console.error("Failed to get cache keys:", error)

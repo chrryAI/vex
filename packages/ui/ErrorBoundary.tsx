@@ -1,4 +1,5 @@
 import { Component, ReactNode } from "react"
+import { Div, H2, Text } from "./platform"
 
 interface Props {
   children: ReactNode
@@ -28,13 +29,19 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div style={{ padding: "20px", color: "red" }}>
-            <h2>Something went wrong</h2>
-            <details>
-              <summary>Error details</summary>
-              <pre>{this.state.error?.message}</pre>
-            </details>
-          </div>
+          <Div style={{ padding: 20 }}>
+            <H2 style={{ color: "red", marginBottom: 10 }}>
+              Something went wrong
+            </H2>
+            <Div>
+              <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
+                Error details:
+              </Text>
+              <Text style={{ fontFamily: "monospace" }}>
+                {this.state.error?.message}
+              </Text>
+            </Div>
+          </Div>
         )
       )
     }

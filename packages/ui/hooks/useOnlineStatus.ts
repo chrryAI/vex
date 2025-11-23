@@ -5,6 +5,11 @@ export function useOnlineStatus() {
     typeof navigator !== "undefined" ? navigator.onLine : true, // default to true on server
   )
   useEffect(() => {
+    // Skip if window or addEventListener is not available (React Native)
+    if (typeof window === "undefined" || !window.addEventListener) {
+      return
+    }
+
     function updateStatus() {
       setIsOnline(navigator.onLine)
     }
@@ -36,8 +41,10 @@ export function useOnlineStatus() {
     // const interval = setInterval(checkConnection, 15000)
 
     return () => {
-      window.removeEventListener("online", updateStatus)
-      window.removeEventListener("offline", updateStatus)
+      if (window.removeEventListener) {
+        window.removeEventListener("online", updateStatus)
+        window.removeEventListener("offline", updateStatus)
+      }
       // clearInterval(interval)
     }
   }, [])
