@@ -79,24 +79,29 @@ export const getImageSrc = ({
   canEditApp?: boolean
   image?: string
 }) => {
+  // Helper to check if string is purely numeric (not "100%", "100px", etc.)
+  const isNumericString = (val: string) => /^\d+$/.test(val)
+
   const finalWidth =
     typeof width === "number"
       ? width
-      : typeof width === "string" && parseInt(width)
-        ? parseInt(width)
-        : width
-          ? width
-          : size
+      : typeof width === "string" && isNumericString(width)
+        ? parseInt(width, 10)
+        : width || size
+
   const finalHeight =
     typeof height === "number"
       ? height
-      : typeof height === "string" && parseInt(height)
-        ? parseInt(height)
-        : height
-          ? height
-          : size
+      : typeof height === "string" && isNumericString(height)
+        ? parseInt(height, 10)
+        : height || size
 
-  const finalSize = finalWidth || finalHeight
+  const finalSize =
+    typeof finalWidth === "number"
+      ? finalWidth
+      : typeof finalHeight === "number"
+        ? finalHeight
+        : size
 
   const iconSrc = icon
     ? icon === "spaceInvader"
