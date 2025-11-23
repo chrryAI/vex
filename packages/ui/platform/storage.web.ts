@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * Web Storage Implementation
  * Uses localStorage for web browsers

@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * ClientRouter - Reusable client-side router for web and extension
  *

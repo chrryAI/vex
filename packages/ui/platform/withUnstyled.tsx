@@ -1,3 +1,5 @@
+"use client"
+
 import React from "react"
 
 export function withUnstyled<T extends React.ElementType>(Component: T) {

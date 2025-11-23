@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * Style Mapper - Web version
  *

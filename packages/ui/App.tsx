@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useCallback, useEffect, useState } from "react"
 
 import { FilePicker, usePlatform, useTheme } from "./platform"

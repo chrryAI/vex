@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * DraggableList Component - Platform Abstraction
  *

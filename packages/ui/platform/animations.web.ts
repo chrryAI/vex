@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * Web animations using React Spring
  * Respects reduced motion preferences
