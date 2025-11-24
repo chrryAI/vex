@@ -23,9 +23,7 @@ export const ThreadsStyleDefs = {
     gap: 20,
     marginTop: 5,
   },
-  threadsItem: {
-    opacity: 0,
-  },
+  threadsItem: {},
   characterProfiles: {
     display: "flex",
     gap: 5,

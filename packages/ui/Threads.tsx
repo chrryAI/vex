@@ -15,7 +15,7 @@ import {
   UsersRound,
 } from "./icons"
 import { pageSizes } from "./utils"
-import { animate, stagger } from "motion"
+import { MotiView } from "./platform/MotiView"
 import Search from "./Search"
 import Skeleton from "./Skeleton"
 import EditThread from "./EditThread"
@@ -49,6 +49,14 @@ const Threads = ({
   } = useNavigationContext()
 
   const { reduceMotion } = useTheme()
+
+  const [animationKey, setAnimationKey] = useState(0)
+
+  useEffect(() => {
+    if (!reduceMotion) {
+      setAnimationKey((prev) => prev + 1)
+    }
+  }, [reduceMotion])
 
   const {
     token,
@@ -165,47 +173,6 @@ const Threads = ({
   //   }
   // }, [isLoading])
 
-  const animateThreads = (): void => {
-    // Always ensure menu is visible by default
-
-    // Only animate if we haven't before and don't prefer reduced motion
-    if (typeof window !== "undefined") {
-      // Check for reduced motion preference
-      const prefersReducedMotion =
-        reduceMotion ||
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-
-      if (prefersReducedMotion) {
-        // Just make visible without animation
-        const menuThreadList = document?.querySelector(".threadList")
-        const menuThreadItems = document?.querySelectorAll(".threadsItem")
-
-        if (menuThreadList) {
-          ;(menuThreadList as HTMLElement).style.opacity = "1"
-        }
-        menuThreadItems?.forEach((item) => {
-          ;(item as HTMLElement).style.opacity = "1"
-        })
-      } else {
-        animate([
-          [".threadList", { opacity: [0, 1] }, { duration: 0 }],
-          [
-            ".threadsItem",
-            {
-              y: [-10, 0],
-              opacity: [0, 1],
-              transform: ["translateX(-10px)", "none"],
-            },
-            {
-              delay: stagger(0.05),
-              duration: 0.1,
-            },
-          ],
-        ])
-      }
-    }
-  }
-
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   useEffect(() => {
@@ -216,19 +183,6 @@ const Threads = ({
       // setProfile(threadsData.user || threadsData?.threads?.[0]?.user)
     }
   }, [threadsData, user])
-
-  useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      !isLoading &&
-      !isLoadingMore &&
-      !search
-    ) {
-      setTimeout(() => {
-        animateThreads()
-      }, 200)
-    }
-  }, [isLoading, isLoadingMore, search, sortByDate, collaborationStatus])
 
   return (
     <Skeleton>
@@ -366,67 +320,76 @@ const Threads = ({
               data-testid="threads-container"
               style={{ ...styles.threadsContainer.style }}
             >
-              {sortedThreads.map((thread) => (
-                <Div
-                  data-testid="threads-item"
-                  ref={(el) => {
-                    threadRefs.current[thread.id] = el
+              {sortedThreads.map((thread, index) => (
+                <MotiView
+                  key={`${thread.id}-${animationKey}`}
+                  from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                  animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 100,
+                    delay: reduceMotion ? 0 : index * 50,
                   }}
-                  className={"threadsItem"}
-                  key={thread.id}
                 >
-                  <Div style={{ ...styles.threadItemTitle.style }}>
-                    {!isVisitor && (
-                      <EditThread
-                        refetch={async () => {
-                          await refetch()
-                        }}
-                        isIcon
-                        thread={thread}
-                      />
-                    )}
-                    {(() => {
-                      const url = `/threads/${thread.id}`
-                      return (
-                        <A
-                          data-testid="threads-item-title"
-                          onClick={(e) => {
-                            if (e.metaKey || e.ctrlKey) {
-                              return
-                            }
-                            e.preventDefault()
-                            router.push(url)
+                  <Div
+                    data-testid="threads-item"
+                    ref={(el) => {
+                      threadRefs.current[thread.id] = el
+                    }}
+                    className={"threadsItem"}
+                  >
+                    <Div style={{ ...styles.threadItemTitle.style }}>
+                      {!isVisitor && (
+                        <EditThread
+                          refetch={async () => {
+                            await refetch()
                           }}
-                          href={url}
-                          key={thread.id}
-                        >
-                          {thread.title}
-                        </A>
-                      )
-                    })()}
+                          isIcon
+                          thread={thread}
+                        />
+                      )}
+                      {(() => {
+                        const url = `/threads/${thread.id}`
+                        return (
+                          <A
+                            data-testid="threads-item-title"
+                            onClick={(e) => {
+                              if (e.metaKey || e.ctrlKey) {
+                                return
+                              }
+                              e.preventDefault()
+                              router.push(url)
+                            }}
+                            href={url}
+                            key={thread.id}
+                          >
+                            {thread.title}
+                          </A>
+                        )
+                      })()}
 
-                    {!isVisitor && (
-                      <Bookmark
-                        dataTestId="threads"
-                        onSave={() => {
-                          refetch()
-                          refetchThreads()
-                        }}
-                        thread={thread}
-                      />
-                    )}
-                    <Div style={{ ...styles.right.style }}>
-                      <Span style={{ ...styles.threadItemDate.style }}>
-                        {timeAgo(thread.createdOn, language)}
-                      </Span>
-                      {!isVisitor && <Share thread={thread} size={13} />}
+                      {!isVisitor && (
+                        <Bookmark
+                          dataTestId="threads"
+                          onSave={() => {
+                            refetch()
+                            refetchThreads()
+                          }}
+                          thread={thread}
+                        />
+                      )}
+                      <Div style={{ ...styles.right.style }}>
+                        <Span style={{ ...styles.threadItemDate.style }}>
+                          {timeAgo(thread.createdOn, language)}
+                        </Span>
+                        {!isVisitor && <Share thread={thread} size={13} />}
+                      </Div>
                     </Div>
-                  </Div>
 
-                  <Span style={{ ...styles.threadAiResponse.style }}>
-                    {thread.aiResponse}
-                  </Span>
-                </Div>
+                    <Span style={{ ...styles.threadAiResponse.style }}>
+                      {thread.aiResponse}
+                    </Span>
+                  </Div>
+                </MotiView>
               ))}
               {threads.threads.length === 0 && <P>{t("Nothing here yet")}</P>}
               {threads.hasNextPage && (
