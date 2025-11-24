@@ -77,7 +77,12 @@ export function createStyleHook<T extends Record<string, any>>(styles: {
       theme,
       dimensions,
       styleCache,
-      isWeb: platform?.isWeb ?? true, // Default to web if platform not available
+      // Treat as web if:
+      // 1. We are on SSR (window undefined)
+      // 2. We are on Client Web (!isNative)
+      // 3. Platform is missing (default to web)
+      isWeb:
+        typeof window === "undefined" || (platform ? !platform.isNative : true),
     })
   }
 }

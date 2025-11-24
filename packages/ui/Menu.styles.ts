@@ -108,7 +108,7 @@ export const MenuStyleDefs = {
   threadsList: {
     display: "flex",
     flexDirection: "column",
-    gap: 5,
+    gap: 8,
     marginTop: 10,
     fontSize: 13,
   },
