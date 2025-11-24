@@ -310,7 +310,7 @@ export default function Menu({
                 >
                   <PanelRight
                     strokeWidth={1.5}
-                    color={colors.accent1}
+                    color="var(--accent-1)"
                     size={20}
                   />
                 </Button>
@@ -724,7 +724,7 @@ export default function Menu({
                 alignItems: "center",
                 gap: 3,
                 fontSize: "0.7rem",
-                color: colors.shade7,
+                color: "var(--shade7)",
               }}
             >
               <Img icon="hamster" showLoading={false} width={26} height={26} />

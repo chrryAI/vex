@@ -20,6 +20,7 @@ export function createStyleProxy<T extends Record<string, any>>(
   options: StyleProxyOptions,
 ): T {
   const { styles, theme, dimensions, styleCache, isWeb = true } = options
+  console.log(`🚀 ~ createStyleProxy ~ isWeb:`, isWeb)
 
   // Safety check: ensure styles object exists
   if (!styles || typeof styles !== "object") {
