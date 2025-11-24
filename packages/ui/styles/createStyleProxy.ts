@@ -13,12 +13,13 @@ interface StyleProxyOptions {
   theme: Theme
   dimensions: { width: number; height: number }
   styleCache: React.MutableRefObject<Map<string, Record<string, any>>>
+  isWeb?: boolean
 }
 
 export function createStyleProxy<T extends Record<string, any>>(
   options: StyleProxyOptions,
 ): T {
-  const { styles, theme, dimensions, styleCache } = options
+  const { styles, theme, dimensions, styleCache, isWeb = true } = options
 
   // Safety check: ensure styles object exists
   if (!styles || typeof styles !== "object") {
@@ -55,8 +56,11 @@ export function createStyleProxy<T extends Record<string, any>>(
           resolvedValue = getResponsiveValue(dimensions.width, value)
         }
 
-        // Resolve theme variables
-        resolvedValue = resolveThemeValue(resolvedValue, theme)
+        // Only resolve theme variables for native platforms
+        // For web, keep CSS variables as-is so the browser can handle them dynamically
+        if (!isWeb) {
+          resolvedValue = resolveThemeValue(resolvedValue, theme)
+        }
 
         // Handle responsive font sizes (clamp-like behavior)
         if (

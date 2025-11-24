@@ -77,6 +77,7 @@ export function createStyleHook<T extends Record<string, any>>(styles: {
       theme,
       dimensions,
       styleCache,
+      isWeb: platform?.isWeb ?? true, // Default to web if platform not available
     })
   }
 }
