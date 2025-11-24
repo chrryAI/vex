@@ -44,7 +44,7 @@ export default function CharacterProfiles() {
     <Div>
       <Button
         title={t("Character Profile")}
-        className={"link"}
+        className={"link pulse"}
         onClick={() => setIsModalOpen(true)}
         style={styles.characterProfileButton.style}
       >
@@ -68,6 +68,7 @@ export default function CharacterProfiles() {
                 <CharacterProfile
                   key={characterProfile.id}
                   characterProfile={characterProfile}
+                  style={styles.characterProfile.style}
                 />
               ))
             ) : !characterProfilesEnabled ? (
