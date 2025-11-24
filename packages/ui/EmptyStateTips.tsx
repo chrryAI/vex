@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { useAppContext } from "./context/AppContext"
 import { useApp } from "./context/providers"
 import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
@@ -20,7 +20,7 @@ export default function EmptyStateTips({
   style?: React.CSSProperties
 }) {
   const { isManagingApp, canEditApp, app } = useApp()
-  const { reduceMotion: reduceMotionContext } = useTheme()
+  const { reduceMotion: reduceMotionContext, reduceMotion } = useTheme()
 
   const styles = useEmptyStateTipsStyles()
 
@@ -233,6 +233,14 @@ export default function EmptyStateTips({
     return "🎯 " + t("Pro Tips")
   }
 
+  const [animationKey, setAnimationKey] = useState(0)
+
+  useEffect(() => {
+    if (!reduceMotion) {
+      setAnimationKey((prev) => prev + 1)
+    }
+  }, [reduceMotion])
+
   return (
     <Section style={{ ...styles.emptyStateTips, ...style }}>
       <H3 style={{ marginBottom: 10, marginTop: 0 }}>{t(getAppTitle())}</H3>
@@ -246,7 +254,7 @@ export default function EmptyStateTips({
 
           return (
             <MotiView
-              key={i}
+              key={`tip-${i}-${animationKey}`}
               style={styles.tip.style}
               from={{
                 opacity: 0,

@@ -129,6 +129,12 @@ export default function Menu({
   // Custom loading state that waits for actual DOM rendering
 
   const [animationKey, setAnimationKey] = useState(0)
+
+  useEffect(() => {
+    if (!reduceMotionContext) {
+      setAnimationKey((prev) => prev + 1)
+    }
+  }, [reduceMotionContext])
   // Animation key changes to trigger reanimate
 
   const innerRef = React.useRef<HTMLDivElement>(null)
@@ -747,10 +753,6 @@ export default function Menu({
                   title={t("Motion")}
                   onClick={() => {
                     setReduceMotion(!reduceMotionContext)
-                    // Trigger reanimate when motion is enabled
-                    if (reduceMotionContext) {
-                      setAnimationKey((prev) => prev + 1)
-                    }
                   }}
                   style={{
                     ...styles.reduceMotionButton.style,
