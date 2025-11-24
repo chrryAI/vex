@@ -38,6 +38,11 @@ const nextConfig = {
     optimizePackageImports: ["lucide-react"], // Tree-shake icons only, chrry has client boundaries
   },
   turbopack: {
+    resolveAlias: {
+      // Block react-native from being bundled in turbopack
+      // Turbopack doesn't accept 'false', so we use a mock file
+      "react-native": "./react-native-mock.js",
+    },
     rules: {
       "*.html": {
         loaders: ["raw-loader"],
@@ -66,6 +71,7 @@ const nextConfig = {
     // Exclude React Native packages from both client and server bundles
     config.resolve.alias = {
       ...config.resolve.alias,
+      "react-native": false, // Block react-native completely on web
       "react-native-mmkv": false,
       "solito/router": false,
       "@react-spring/native": false,

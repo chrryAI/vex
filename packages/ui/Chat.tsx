@@ -1,5 +1,4 @@
 "use client"
-import { Platform } from "react-native"
 import {
   Dispatch,
   SetStateAction,
@@ -296,7 +295,8 @@ export default function Chat({
   const { captureException } = useError()
 
   // Platform context
-  const { device, os, isStandalone, isExtension, viewPortWidth } = usePlatform()
+  const { device, os, isStandalone, isExtension, viewPortWidth, isWeb } =
+    usePlatform()
   const inputRef = useRef(text || "")
 
   // Theme context
@@ -1039,6 +1039,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }
 
   const clearFiles = () => setFiles([])
+  console.log(`🚀 ~ file: hat.tsx:1047 ~ device:`, device)
 
   // Remove specific file
   const removeFile = (index: number) => {
@@ -2638,7 +2639,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
           // For extensions, cap the max height to prevent very tall initial height
           const maxHeight = newHeight
-          if (Platform.OS === "web") {
+          if (isWeb) {
             el.style.height = Math.min(newHeight, maxHeight) + "px"
           }
           // Check if exceeded (works for both input and placeholder)
@@ -2649,7 +2650,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       } else {
         // Reset to initial height when input is empty
         if (initialHeight.current) {
-          if (typeof window !== "undefined" && Platform.OS === "web") {
+          if (typeof window !== "undefined" && isWeb) {
             el.style.height = initialHeight.current + "px"
           }
         }

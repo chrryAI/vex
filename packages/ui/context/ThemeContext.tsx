@@ -127,9 +127,16 @@ export function ThemeProvider({
 
   // Update isSmallDevice when viewport changes
   useEffect(() => {
+    console.log("📐 ThemeContext viewPortWidth:", viewPortWidth)
     if (viewPortWidth) {
       const width = viewPortWidth
       const newIsSmallDevice = width < 960
+      console.log(
+        "📐 Calculated isSmallDevice:",
+        newIsSmallDevice,
+        "from width:",
+        width,
+      )
       // Only update if actually changed
       setIsSmallDeviceInternal((prev) => {
         if (prev !== newIsSmallDevice) {

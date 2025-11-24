@@ -32,6 +32,8 @@ import {
   detectPlatform as _detectPlatform,
 } from "./detection"
 
+// Dimensions will be imported dynamically when needed
+
 // Re-export for backwards compatibility
 export type { PlatformType, BrowserType }
 export {
@@ -233,6 +235,9 @@ export function PlatformProvider({
 
   // Detect device type - SSR-safe: use server-side UAParser detection only
   const device: "mobile" | "tablet" | "desktop" = (() => {
+    // Prioritize native platform detection (iOS/Android are always mobile)
+    if (_isNative() || _isIOS() || _isAndroid()) return "mobile"
+
     // Use UAParser device type from session
     if (session?.device?.type === "mobile") return "mobile"
     if (session?.device?.type === "tablet") return "tablet"
@@ -272,51 +277,98 @@ export function PlatformProvider({
     rest.viewPortWidth,
   )
 
-  const viewPortWidth = Number(viewPortWidthInternal)
+  const viewPortWidth = Number(viewPortWidthInternal) || 0
 
-  const setViewPortWidth = (height: number) => {
-    setViewPortWidthInternal(String(height))
+  const setViewPortWidth = (width: number) => {
+    console.log("🔧 setViewPortWidth:", width)
+    setViewPortWidthInternal(String(width))
   }
   const [viewPortHeightInternal, setViewPortHeightInternal] = useCookie(
     "viewPortHeight",
     rest.viewPortHeight,
   )
 
-  const viewPortHeight = Number(viewPortHeightInternal)
+  const viewPortHeight = Number(viewPortHeightInternal) || 0
 
   const setViewPortHeight = (height: number) => {
+    console.log("🔧 setViewPortHeight:", height)
     setViewPortHeightInternal(String(height))
   }
 
   useEffect(() => {
-    // Only run on web/extension (not native)
-    if (!_isWeb() && !_isBrowserExtension()) return
-    if (typeof window === "undefined" || !window.addEventListener) return
+    console.log("🔍 Platform detection:", {
+      isWeb: _isWeb(),
+      isNative: _isNative(),
+      isBrowserExtension: _isBrowserExtension(),
+    })
 
-    const updateViewportDimensions = () => {
-      // Use startTransition to make this a non-blocking update
-      startTransition(() => {
-        setViewPortWidth(window.innerWidth)
-        setViewPortHeight(window.innerHeight)
-      })
+    // Web/Extension: Use window dimensions
+    if (_isWeb() || _isBrowserExtension()) {
+      if (typeof window === "undefined" || !window.addEventListener) return
+
+      const updateViewportDimensions = () => {
+        // Use startTransition to make this a non-blocking update
+        startTransition(() => {
+          setViewPortWidth(window.innerWidth)
+          setViewPortHeight(window.innerHeight)
+        })
+      }
+
+      // Set initial values
+      updateViewportDimensions()
+
+      // Debounce resize to prevent excessive re-renders and Suspense triggers
+      let timeoutId: ReturnType<typeof setTimeout>
+      const debouncedUpdate = () => {
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(updateViewportDimensions, 150)
+      }
+
+      // Update on resize (debounced)
+      window.addEventListener("resize", debouncedUpdate, { passive: true })
+      return () => {
+        clearTimeout(timeoutId)
+        if (window.removeEventListener) {
+          window.removeEventListener("resize", debouncedUpdate)
+        }
+      }
     }
 
-    // Set initial values
-    updateViewportDimensions()
+    // Native: Use React Native Dimensions API
+    if (_isNative()) {
+      console.log("🔍 Running native dimensions code")
+      try {
+        // Use dynamic import to prevent webpack/turbopack from bundling react-native
+        // This will only execute on actual React Native runtime
+        const rnModule = "react-native"
+        const { Dimensions } = require(rnModule)
+        console.log("✅ React Native Dimensions loaded")
 
-    // Debounce resize to prevent excessive re-renders and Suspense triggers
-    let timeoutId: ReturnType<typeof setTimeout>
-    const debouncedUpdate = () => {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(updateViewportDimensions, 150)
-    }
+        const updateNativeDimensions = () => {
+          const { width, height } = Dimensions.get("window")
+          console.log("📱 Native dimensions:", { width, height })
+          startTransition(() => {
+            setViewPortWidth(width)
+            setViewPortHeight(height)
+          })
+        }
 
-    // Update on resize (debounced)
-    window.addEventListener("resize", debouncedUpdate, { passive: true })
-    return () => {
-      clearTimeout(timeoutId)
-      if (window.removeEventListener) {
-        window.removeEventListener("resize", debouncedUpdate)
+        // Set initial values
+        updateNativeDimensions()
+
+        // Listen for dimension changes
+        const subscription = Dimensions.addEventListener(
+          "change",
+          updateNativeDimensions,
+        )
+
+        return () => {
+          if (subscription?.remove) {
+            subscription.remove()
+          }
+        }
+      } catch (e) {
+        console.error("❌ React Native Dimensions not available:", e)
       }
     }
   }, [setViewPortWidth, setViewPortHeight])

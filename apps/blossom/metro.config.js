@@ -27,7 +27,6 @@ const config = {
     // This ensures all packages use the same React instance from apps/blossom
     extraNodeModules: {
       react: path.resolve(projectRoot, 'node_modules/react'),
-      'react-dom': path.resolve(projectRoot, 'node_modules/react-dom'),
       'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
       'react/jsx-runtime': path.resolve(
         projectRoot,
@@ -87,8 +86,19 @@ const config = {
       /node_modules\/goober/, // Block goober CSS-in-JS library
     ],
     resolveRequest: (context, moduleName, platform) => {
-      // Redirect react-hot-toast to platform-agnostic toast for native
+      // Block react-dom for React Native
       if (platform === 'ios' || platform === 'android') {
+        if (moduleName === 'react-dom' || moduleName.startsWith('react-dom/')) {
+          console.warn(
+            `⚠️  Blocked react-dom import in React Native. Use .native.tsx files instead.`,
+          );
+          return {
+            type: 'sourceFile',
+            filePath: path.resolve(__dirname, 'react-dom-mock.js'),
+          };
+        }
+
+        // Redirect react-hot-toast to platform-agnostic toast for native
         if (moduleName === 'react-hot-toast') {
           return {
             type: 'sourceFile',
@@ -177,6 +187,7 @@ const config = {
         }
 
         // Force React resolution to the app's node_modules
+        // Let Metro handle react-native resolution automatically (it knows to skip .flow files)
         if (moduleName === 'react') {
           return {
             type: 'sourceFile',
@@ -201,15 +212,8 @@ const config = {
             ),
           };
         }
-        if (moduleName === 'react-native') {
-          return {
-            type: 'sourceFile',
-            filePath: path.resolve(
-              projectRoot,
-              'node_modules/react-native/index.js',
-            ),
-          };
-        }
+        // Don't force react-native resolution - let Metro handle it
+        // (Metro knows to use the correct entry point and skip Flow files)
       }
       return context.resolveRequest(context, moduleName, platform);
     },
