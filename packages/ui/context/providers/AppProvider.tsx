@@ -530,8 +530,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [instructions, setInstructions] =
     useState<instruction[]>(instructionsInternal)
 
-  const [showingCustom, setShowingCustom] = useState(false)
-
   useEffect(() => {
     setInstructions(instructionsInternal)
   }, [instructionsInternal])
@@ -539,6 +537,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const hasCustomInstructions = contextInstructions.some(
     (i) => !app?.highlights?.some((h) => h.id === i.id),
   )
+
+  const [showingCustom, setShowingCustom] = useState(hasCustomInstructions)
 
   const isAppInstructions = contextInstructions.every((i) =>
     app?.highlights?.some((h) => h.id === i.id),
