@@ -122,7 +122,7 @@ export default function Instructions({
 
   const { utilities } = useStyles()
 
-  const { defaultInstructions, instructions: contextInstructions } = useApp()
+  const { defaultInstructions, isAppInstructions } = useApp()
 
   // Auth context
   const { token, language, user, guest, app, focus, baseApp } = useAuth()
@@ -1437,7 +1437,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               .map((instruction, index) => {
                 return (
                   <MotiView
-                    key={instruction.id}
+                    key={`instruction-${instruction.id}-isAppInstructions-${isAppInstructions ? "true" : "false"}`}
                     from={{ opacity: 0, translateY: -10 }}
                     animate={{ opacity: 1, translateY: 0 }}
                     transition={{
