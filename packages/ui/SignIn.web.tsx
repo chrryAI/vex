@@ -406,7 +406,7 @@ export default function SignIn({
 
   return (
     <>
-      <div style={style} className={clsx(styles.container, className)}>
+      <>
         {!user ? (
           <>
             {showSignIn && (
@@ -459,7 +459,7 @@ export default function SignIn({
         ) : (
           <Account />
         )}
-      </div>
+      </>
       {part && (
         <Modal
           icon={

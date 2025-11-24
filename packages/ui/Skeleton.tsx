@@ -203,7 +203,7 @@ export default function Skeleton({
               <CharacterProfiles />
               <Subscribe />
 
-              {!isMobileDevice ? <SignIn showSignIn={false} /> : null}
+              <SignIn showSignIn={false} showRegister={isMobileDevice} />
 
               <LanguageSwitcher />
             </Div>
