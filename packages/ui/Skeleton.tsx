@@ -55,7 +55,8 @@ export default function Skeleton({
   // Navigation context
   const { pathname, setIsNewChat, hasNotification } = useNavigationContext()
 
-  const { isDrawerOpen, setIsDrawerOpen, isSmallDevice } = useTheme()
+  const { isDrawerOpen, setIsDrawerOpen, isSmallDevice, isMobileDevice } =
+    useTheme()
 
   // Platform context
   const { isStandalone } = usePlatform()
@@ -189,7 +190,9 @@ export default function Skeleton({
                     ...utilities.button.style,
                     ...utilities.transparent.style,
                     ...utilities.small.style,
-                    ...(hasHydrated && isMobile && skeletonStyles.blog.style),
+                    ...(hasHydrated &&
+                      isMobileDevice &&
+                      skeletonStyles.blog.style),
                   }}
                 >
                   <Img logo="blossom" size={22} /> {"Blossom"}
@@ -200,7 +203,7 @@ export default function Skeleton({
               <CharacterProfiles />
               <Subscribe />
 
-              <SignIn showSignIn={false} />
+              {!isMobileDevice ? <SignIn showSignIn={false} /> : null}
 
               <LanguageSwitcher />
             </Div>
