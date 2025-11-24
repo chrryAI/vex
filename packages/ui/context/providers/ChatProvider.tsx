@@ -433,9 +433,14 @@ export function ChatProvider({
   const [wasIncognito, setWasIncognito] = useState(isIncognito)
 
   const hasStoreApps = (item: appWithStore | undefined) => {
-    const i = item && allApps?.find((app) => app.id === item?.id)
-    return i?.store?.apps.length
+    const app = allApps?.find((app) => app.id === item?.id)
+    return app?.store?.apps.length
   }
+
+  // ?.store?.apps.every(
+  //   (item) =>
+  //     allApps?.find((app) => app.id === item.id)?.store?.apps.length,
+  // )
 
   const [loading, setLoading] = useState<boolean>(false)
 
