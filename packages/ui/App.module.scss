@@ -34,10 +34,6 @@
   padding: 0 toRem.toRem(10);
 }
 
-.focus {
-  position: relative;
-}
-
 .focusTime {
   position: absolute;
   top: toRem.toRem(-5);
@@ -64,18 +60,22 @@
 }
 
 .spaceInvader,
-.atlas,
-.focus {
+.atlas {
   position: relative;
   margin-left: toRem.toRem(10);
 
   &.focus {
-    right: toRem.toRem(-3.5);
+    right: toRem.toRem(0);
   }
   &.spaceInvader {
     animation: float 2.5s ease-in-out forwards;
     @include utils.respect-reduced-motion;
   }
+}
+
+.focus {
+  position: relative;
+  margin-left: toRem.toRem(5);
 }
 
 .atlas {

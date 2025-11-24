@@ -1085,7 +1085,7 @@ export default function App({
                             ) : (
                               showPacmanHere && (
                                 <Button
-                                  className="link"
+                                  className="link slideInFromLeft"
                                   onClick={() =>
                                     setAppStatus({
                                       step: canEditApp ? "update" : "add",
@@ -1192,7 +1192,7 @@ export default function App({
                           {showFocusHere && <FocusButton time={time} />}
                           {showSpaceInvaderHere && (
                             <Button
-                              className="link"
+                              className="link float"
                               key={
                                 showingCustom
                                   ? "customInstructions"
@@ -1219,9 +1219,8 @@ export default function App({
                                   style={{
                                     position: "absolute",
                                     bottom: 1,
-                                    right: -13,
-                                    zIndex: -1,
-                                    color: "var(--accent-1)",
+                                    right: -5,
+                                    color: "#f87171",
                                   }}
                                 />
                               )}

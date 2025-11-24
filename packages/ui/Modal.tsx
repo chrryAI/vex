@@ -169,6 +169,7 @@ export default function Modal({
           }}
         >
           <Div
+            className="slideUp"
             data-testid={dataTestId}
             style={styles.inner.style}
             ref={innerRef}

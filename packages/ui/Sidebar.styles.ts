@@ -19,7 +19,7 @@ export const SidebarStyleDefs = {
     justifyContent: "center",
     alignItems: "center",
     position: "fixed",
-    backgroundColor: "#000",
+    backgroundColor: "var(--background)",
     zIndex: 999999,
   },
   splashHidden: {
