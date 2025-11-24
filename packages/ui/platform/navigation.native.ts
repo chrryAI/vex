@@ -3,10 +3,7 @@
  */
 
 import React, { createContext, useContext, useMemo, useCallback } from "react"
-import {
-  useNavigation as useNativeNavigation,
-  StackActions,
-} from "@react-navigation/native"
+import { useCustomNavigation } from "./CustomNavigator.native"
 
 export interface NavigationOptions {
   scroll?: boolean
@@ -44,6 +41,8 @@ export const NativeRouteProvider = ({
   children: React.ReactNode
   state: any
 }) => {
+  console.log(`🚀 ~ file: navigation.native.ts:46 ~ state:`, state)
+
   const value = useMemo(() => {
     if (!state) {
       return {
@@ -98,33 +97,61 @@ const parsePath = (path: string) => {
 }
 
 /**
- * Native navigation hook using React Navigation
+ * Native navigation hook using Custom Navigator
  */
 export function useNavigation(): NavigationParams {
-  const navigation = useNativeNavigation<any>()
-  const { pathname, searchParams } = useContext(NativeRouteContext)
+  // Get custom navigation
+  let customNav: any = null
+  try {
+    customNav = useCustomNavigation()
+  } catch (e) {
+    // Not inside a navigator
+  }
+
+  const route = customNav?.currentRoute
+
+  // Build pathname from route
+  const pathname = useMemo(() => {
+    if (!route) return "/"
+    if (route.name === "home") return "/"
+    if (route.name === "thread") return `/threads/${route.params?.id || ""}`
+    return `/${route.name}`
+  }, [route])
+
+  // Build searchParams from route params
+  const searchParams = useMemo(() => {
+    const params = new URLSearchParams()
+    if (route?.params) {
+      Object.entries(route.params).forEach(([key, value]) => {
+        if (key !== "id") params.set(key, String(value))
+      })
+    }
+    return params
+  }, [route])
 
   const push = useCallback(
     (path: string, options?: NavigationOptions) => {
+      if (!customNav) return
       const { name, params } = parsePath(path)
-      navigation.navigate(name, params)
+      customNav.navigate(name, params)
     },
-    [navigation],
+    [customNav],
   )
 
   const replace = useCallback(
     (path: string, options?: NavigationOptions) => {
+      if (!customNav) return
       const { name, params } = parsePath(path)
-      navigation.dispatch(StackActions.replace(name, params))
+      customNav.navigate(name, params)
     },
-    [navigation],
+    [customNav],
   )
 
   const back = useCallback(() => {
-    if (navigation.canGoBack()) {
-      navigation.goBack()
+    if (customNav?.canGoBack()) {
+      customNav.goBack()
     }
-  }, [navigation])
+  }, [customNav])
 
   const forward = useCallback(() => {
     console.warn("Forward navigation not supported on native")
@@ -140,30 +167,34 @@ export function useNavigation(): NavigationParams {
 
   const addParams = useCallback(
     (params: Record<string, string | number | boolean>) => {
-      navigation.setParams(params)
+      if (!customNav) return
+      const { name } = customNav.currentRoute
+      customNav.navigate(name, { ...customNav.currentRoute.params, ...params })
     },
-    [navigation],
+    [customNav],
   )
 
   const removeParams = useCallback(
     (keys: string | string[]) => {
-      // React Navigation merges params, so we can't easily "remove" them without resetting
-      // But we can set them to undefined/null if the screen handles it
+      if (!customNav) return
       const keysArray = Array.isArray(keys) ? keys : [keys]
-      const newParams: Record<string, any> = {}
+      const { name, params = {} } = customNav.currentRoute
+      const newParams = { ...params }
       keysArray.forEach((key) => {
-        newParams[key] = undefined
+        delete newParams[key]
       })
-      navigation.setParams(newParams)
+      customNav.navigate(name, newParams)
     },
-    [navigation],
+    [customNav],
   )
 
   const setParams = useCallback(
     (params: Record<string, string | number | boolean>) => {
-      navigation.setParams(params)
+      if (!customNav) return
+      const { name } = customNav.currentRoute
+      customNav.navigate(name, params)
     },
-    [navigation],
+    [customNav],
   )
 
   return useMemo(

@@ -184,6 +184,7 @@ export const Hey = memo(
     }
     // Memoize splash component to prevent re-renders
     const splash = getSplash(isSplash)
+    console.log(`🚀 ~ file: Hey.tsx:187 ~ splash:`, splash)
 
     useEffect(() => {
       isSplash &&

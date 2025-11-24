@@ -60,6 +60,10 @@ const config = {
         projectRoot,
         'node_modules/react-native-get-random-values',
       ),
+      'react-native-svg': path.resolve(
+        projectRoot,
+        'node_modules/react-native-svg',
+      ),
     },
     // Block problematic modules that use dynamic imports
     blockList: [
