@@ -969,8 +969,11 @@ export default function App({
 
                     // Calculate positions for Pacman and Space Invader
                     // Show after base app (index 0) and Chrry (index 1)
-                    const showPacmanHere = index === 2
-                    const showSpaceInvaderHere = index === 3
+                    const showPacmanHere =
+                      app?.store?.id !== popcorn?.store?.id && index === 2
+                    const showSpaceInvaderHere =
+                      app?.store?.id !== popcorn?.store?.id && index === 3
+
                     const showChrryHere =
                       index === 0 && chrry && app?.id !== chrry.id
                     const showZarathustraHere =
@@ -987,11 +990,15 @@ export default function App({
                         // onDragStart={reorder.handleDragStart}
                         // onDragEnd={reorder.handleDragEnd}
                         // onDrop={reorder.handleDrop}
-                        style={{ ...styles.appItem.style }}
+                        style={{
+                          ...styles.appItem.style,
+                          marginLeft: index === 2 ? "auto" : undefined,
+                        }}
                       >
                         <>
                           {showChrryHere && (
                             <A
+                              preventDefault
                               href={getAppSlug(chrry)}
                               onClick={(e) => {
                                 if (isManagingApp) {
@@ -1010,13 +1017,17 @@ export default function App({
                                 ...styles.chrry.style,
                               }}
                             >
-                              <Img
-                                logo="chrry"
-                                alt="Chrry"
-                                title={"Chrry"}
-                                width={28}
-                                height={28}
-                              />
+                              {loadingApp?.id !== chrry?.id ? (
+                                <Img
+                                  logo="chrry"
+                                  alt="Chrry"
+                                  title={"Chrry"}
+                                  width={28}
+                                  height={28}
+                                />
+                              ) : (
+                                <Loading size={28} />
+                              )}
                             </A>
                           )}
 
@@ -1027,6 +1038,7 @@ export default function App({
                               (app) => app.id === zarathustra.id,
                             ) && (
                               <A
+                                preventDefault
                                 href={getAppSlug(zarathustra)}
                                 onClick={(e) => {
                                   if (isManagingApp) {
@@ -1045,13 +1057,17 @@ export default function App({
                                   ...styles.zarathustra.style,
                                 }}
                               >
-                                <Img
-                                  style={{
-                                    ...styles.zarathustra.style,
-                                  }}
-                                  app={zarathustra}
-                                  size={24}
-                                />
+                                {loadingApp?.id !== zarathustra?.id ? (
+                                  <Img
+                                    style={{
+                                      ...styles.zarathustra.style,
+                                    }}
+                                    app={zarathustra}
+                                    size={24}
+                                  />
+                                ) : (
+                                  <Loading size={24} />
+                                )}
                               </A>
                             )}
                           {showPacmanHere ? (
@@ -1062,6 +1078,7 @@ export default function App({
                               (app) => app.id === popcorn.id,
                             ) ? (
                               <A
+                                preventDefault
                                 href={getAppSlug(popcorn)}
                                 onClick={(e) => {
                                   if (isManagingApp) {
@@ -1080,7 +1097,11 @@ export default function App({
                                   ...styles.popcorn.style,
                                 }}
                               >
-                                <Img app={popcorn} size={24} />
+                                {loadingApp?.id !== popcorn?.id ? (
+                                  <Img app={popcorn} size={24} />
+                                ) : (
+                                  <Loading size={24} />
+                                )}
                               </A>
                             ) : (
                               showPacmanHere && (
@@ -1169,6 +1190,7 @@ export default function App({
                           {showAtlasHere && atlas && (
                             <A
                               href={getAppSlug(atlas)}
+                              preventDefault
                               onClick={(e) => {
                                 if (isManagingApp) {
                                   e.preventDefault()
@@ -1186,7 +1208,11 @@ export default function App({
                                 ...styles.atlas.style,
                               }}
                             >
-                              <Img app={atlas} width={22} height={22} />
+                              {loadingApp?.id === atlas?.id ? (
+                                <Loading size={22} />
+                              ) : (
+                                <Img app={atlas} width={22} height={22} />
+                              )}
                             </A>
                           )}
                           {showFocusHere && <FocusButton time={time} />}
