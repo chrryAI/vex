@@ -1,4 +1,5 @@
 "use client"
+import { Platform } from "react-native"
 import {
   Dispatch,
   SetStateAction,
@@ -54,6 +55,7 @@ import {
 import {
   useTheme,
   usePlatform,
+  useResolveColor,
   Div,
   Button,
   Span,
@@ -339,7 +341,9 @@ export default function Chat({
 
   useEffect(() => {
     // Set actual window height on client
-    setWindowHeight(window.innerHeight)
+    if (typeof window !== "undefined") {
+      setWindowHeight(window.innerHeight)
+    }
   }, [])
 
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
@@ -387,10 +391,14 @@ export default function Chat({
       }
     }
 
-    document.addEventListener("keyup", handleKeyUp)
+    if (typeof document !== "undefined") {
+      document.addEventListener("keyup", handleKeyUp)
+    }
 
     return () => {
-      document.removeEventListener("keyup", handleKeyUp)
+      if (typeof document !== "undefined") {
+        document.removeEventListener("keyup", handleKeyUp)
+      }
     }
   }, [user]) // Empty dependency array - no re-creation of listener
 
@@ -2630,7 +2638,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
           // For extensions, cap the max height to prevent very tall initial height
           const maxHeight = newHeight
-          el.style.height = Math.min(newHeight, maxHeight) + "px"
+          if (Platform.OS === "web") {
+            el.style.height = Math.min(newHeight, maxHeight) + "px"
+          }
           // Check if exceeded (works for both input and placeholder)
           setExceededInitial(
             el.scrollHeight > (initialHeight.current + 30 || 0),
@@ -2639,7 +2649,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       } else {
         // Reset to initial height when input is empty
         if (initialHeight.current) {
-          if (typeof window !== "undefined") {
+          if (typeof window !== "undefined" && Platform.OS === "web") {
             el.style.height = initialHeight.current + "px"
           }
         }
@@ -2846,9 +2856,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 onClick={() => handleSubmit(needsReviewRef.current)}
               >
                 {needsReviewRef.current ? (
-                  <span data-testid="chat-accept-button">
+                  <Span data-testid="chat-accept-button">
                     <CircleCheck size={30} color="var(--accent-6)" />
-                  </span>
+                  </Span>
                 ) : (
                   <CircleArrowUp
                     color={
@@ -2965,13 +2975,13 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 color="var(--accent-1)"
                 size={22}
               />
-              <span>
+              <Span>
                 {t(
                   isDebateAgentModalOpen
                     ? "Add debate agent"
                     : "Select an agent",
                 )}
-              </span>
+              </Span>
             </>
           }
           onToggle={() => setIsAgentModalOpen(!isAgentModalOpen)}
@@ -4002,9 +4012,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                               : {}),
                           }}
                         >
-                          <span style={{ position: "relative", left: "-2px" }}>
+                          <Span style={{ position: "relative", left: "-2px" }}>
                             |
-                          </span>
+                          </Span>
                           {debateAgent.name === "deepSeek" ? (
                             <DeepSeek color="var(--accent-6)" size={24} />
                           ) : debateAgent.name === "chatGPT" ? (

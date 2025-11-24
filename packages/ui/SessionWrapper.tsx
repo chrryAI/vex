@@ -60,7 +60,7 @@ export async function SessionWrapper({
 
   if (session && "error" in session) {
     console.error(session.error)
-    return <div>{session.error}</div>
+    return <>{session.error}</>
   }
 
   return (

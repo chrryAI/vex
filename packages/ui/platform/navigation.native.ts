@@ -41,8 +41,6 @@ export const NativeRouteProvider = ({
   children: React.ReactNode
   state: any
 }) => {
-  console.log(`🚀 ~ file: navigation.native.ts:46 ~ state:`, state)
-
   const value = useMemo(() => {
     if (!state) {
       return {

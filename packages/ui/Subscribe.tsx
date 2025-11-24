@@ -361,7 +361,7 @@ export default function Subscribe({
   }
 
   useEffect(() => {
-    if (typeof window === "undefined") return
+    if (typeof window === "undefined" || !window.location) return
     const params = new URLSearchParams(window.location.search)
     if (params.get("checkout") === "success") {
       const sessionId = params.get("session_id")
@@ -716,7 +716,7 @@ export default function Subscribe({
         <Div style={{ ...styles.gift.style }}>
           {userToGift?.subscription && selectedPlan !== "credits" ? (
             <Div style={{ ...styles.userToGift.style }}>
-              <button
+              <Button
                 style={{ ...styles.backButton.style }}
                 onClick={() => {
                   addHapticFeedback()
@@ -724,7 +724,7 @@ export default function Subscribe({
                 }}
               >
                 <ArrowLeft size={20} />
-              </button>
+              </Button>
 
               <p>
                 {userToGift?.email} {t(`already subscribed`)}
@@ -872,20 +872,20 @@ export default function Subscribe({
                         <SmilePlus />
                       )}
                       {selectedPlan === "credits" ? (
-                        <span>
+                        <Span>
                           {t("credits_pricing", {
                             credits: ADDITIONAL_CREDITS,
                             price: `${CREDITS_PRICE}.00`,
                           })}
-                        </span>
+                        </Span>
                       ) : (
-                        <span>
+                        <Span>
                           {t("pricing", {
                             freeDays: FREE_DAYS,
                             price:
                               selectedPlan === "plus" ? PLUS_PRICE : PRO_PRICE,
                           })}
-                        </span>
+                        </Span>
                       )}
                     </>
                   )}
@@ -1008,7 +1008,7 @@ export default function Subscribe({
                     ) : (
                       <>
                         <>🎁</>
-                        <span> {isInviting ? t("Invite") : t("Gift")}</span>
+                        <Span> {isInviting ? t("Invite") : t("Gift")}</Span>
                       </>
                     )}
                   </Button>
@@ -1070,7 +1070,7 @@ export default function Subscribe({
           ) : (
             <Div style={{ ...styles.subscribeAsGuest.style }}>
               {t("Subscribe as guest!")}
-              <button
+              <Button
                 onClick={() => {
                   addHapticFeedback()
                   setSignInPart("login")
@@ -1079,7 +1079,7 @@ export default function Subscribe({
                 style={{ marginLeft: "8px" }}
               >
                 {t("Already have an account?")}
-              </button>
+              </Button>
               <p>*{t("You can migrate your account whenever you want")}</p>
             </Div>
           )

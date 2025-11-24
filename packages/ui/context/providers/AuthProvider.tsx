@@ -1243,7 +1243,6 @@ export function AuthProvider({
           : undefined
 
         // Only update theme if app actually changed
-        console.log(`🚀 ~ AuthProvider ~ newApp:`, newApp)
         if (newApp?.id !== prevApp?.id) {
           // Defer theme updates to avoid "setState during render" error
           setTimeout(() => {

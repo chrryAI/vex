@@ -1,11 +1,16 @@
 import React from "react"
-import { MotiView as MotiViewOriginal } from "moti"
-import type { MotiProps } from "moti"
+import { View } from "react-native"
 
 /**
- * Native MotiView wrapper
- * Uses the actual Moti library for React Native animations
+ * Native MotiView wrapper - simplified to avoid Reanimated issues
+ * Just renders children without animations for now
  */
-export const MotiView: typeof MotiViewOriginal = MotiViewOriginal
+export const MotiView = ({ children, style, ...props }: any) => {
+  return (
+    <View style={style} {...props}>
+      {children}
+    </View>
+  )
+}
 
-export type MotiViewProps = MotiProps<any>
+export type MotiViewProps = any

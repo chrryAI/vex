@@ -1,6 +1,7 @@
 import React from "react"
 import { FRONTEND_URL } from "./utils"
 import { Globe } from "./icons"
+import { A, Span } from "./platform"
 
 interface LinkProps {
   type: "link"
@@ -34,7 +35,7 @@ const TextWithLinks: React.FC<TextWithLinksProps> = ({
           return <React.Fragment key={index}>{segment}</React.Fragment>
         } else {
           return (
-            <a
+            <A
               key={index}
               href={segment.url}
               target={segment.isExternal ? "_blank" : "_self"}
@@ -45,8 +46,8 @@ const TextWithLinks: React.FC<TextWithLinksProps> = ({
                 color: "var(--accent-6)",
               }}
             >
-              <span>{segment.text}</span>
-            </a>
+              <Span>{segment.text}</Span>
+            </A>
           )
         }
       })}

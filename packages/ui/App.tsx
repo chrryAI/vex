@@ -419,7 +419,7 @@ export default function App({
           }}
         >
           <Img app={storeApp} showLoading={false} size={24} />
-          <span>{storeApp?.name}</span>
+          <Span>{storeApp?.name}</Span>
         </A>
       ),
     [t, app, user, guest],
@@ -707,7 +707,7 @@ export default function App({
                 }}
                 title={t(isManagingApp ? "Cancel" : "Add agent")}
               >
-                <span
+                <Span
                   style={{
                     position: "absolute",
                     bottom: "0.15rem",
@@ -715,7 +715,7 @@ export default function App({
                   }}
                 >
                   🤯
-                </span>
+                </Span>
                 <Img
                   showLoading={false}
                   alt="Plus"
@@ -900,7 +900,7 @@ export default function App({
                     store={store}
                     size={24}
                   />
-                  <span>{store?.name}</span>
+                  <Span>{store?.name}</Span>
                 </A>
               )
             )}
@@ -943,12 +943,12 @@ export default function App({
               hasHydrated &&
               !canEditApp &&
               !isManagingApp && (
-                <span
+                <Span
                   style={{ ...styles.grip.style }}
                   // title={t("Drag and drop to reorder apps")}
                 >
                   <Grip size={24} color="var(--accent-1)" />
-                </span>
+                </Span>
               )
             )}
           </Div>
@@ -1183,7 +1183,7 @@ export default function App({
                                     />
                                   </>
                                 )}
-                                <span>{item.name}</span>
+                                <Span>{item.name}</Span>
                               </A>
                             )
                           )}

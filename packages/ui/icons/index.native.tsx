@@ -36,31 +36,41 @@ function useResolveIconColor(color: string | undefined): string | undefined {
   return color
 }
 
+// Helper to wrap icon with color resolution
+function createWrappedIcon(OriginalIcon: any, displayName: string) {
+  // Lucide icons are functional components
+  if (
+    !OriginalIcon ||
+    (typeof OriginalIcon !== "function" && typeof OriginalIcon !== "object")
+  ) {
+    return OriginalIcon
+  }
+
+  const WrappedIcon = React.forwardRef((props: IconProps, ref) => {
+    const resolvedColor = useResolveIconColor(props.color)
+    const resolvedStroke = useResolveIconColor(props.stroke as string)
+    const resolvedFill = useResolveIconColor(props.fill)
+
+    return (
+      <OriginalIcon
+        {...props}
+        ref={ref}
+        color={resolvedColor}
+        stroke={resolvedStroke}
+        fill={resolvedFill}
+      />
+    )
+  })
+  WrappedIcon.displayName = `Wrapped${displayName}`
+  return WrappedIcon
+}
+
 // Create wrapped versions of all Lucide icons that auto-resolve colors
 const wrappedIcons: Record<string, React.ComponentType<any>> = {}
 
 Object.keys(LucideIcons).forEach((iconName) => {
   const OriginalIcon = (LucideIcons as any)[iconName]
-
-  // Only wrap if it's a component (not types or other exports)
-  if (typeof OriginalIcon === "function") {
-    wrappedIcons[iconName] = React.forwardRef((props: IconProps, ref) => {
-      const resolvedColor = useResolveIconColor(props.color)
-      const resolvedStroke = useResolveIconColor(props.stroke as string)
-      const resolvedFill = useResolveIconColor(props.fill)
-
-      return (
-        <OriginalIcon
-          {...props}
-          ref={ref}
-          color={resolvedColor}
-          stroke={resolvedStroke}
-          fill={resolvedFill}
-        />
-      )
-    })
-    wrappedIcons[iconName].displayName = `Wrapped${iconName}`
-  }
+  wrappedIcons[iconName] = createWrappedIcon(OriginalIcon, iconName)
 })
 
 // Export all wrapped icons
@@ -89,7 +99,6 @@ export const {
   ArrowUpCircle,
   ArrowUpLeft,
   ArrowUpRight,
-  AtSign,
   Award,
   BarChart,
   BarChart2,
@@ -184,7 +193,6 @@ export const {
   Github,
   Gitlab,
   Glasses,
-  Globe,
   Grid,
   HardDrive,
   Hash,
@@ -225,7 +233,6 @@ export const {
   MinusCircle,
   MinusSquare,
   Monitor,
-  Moon,
   MoreHorizontal,
   MoreVertical,
   MousePointer,
@@ -287,7 +294,6 @@ export const {
   Square,
   Star,
   StopCircle,
-  Sun,
   Sunrise,
   Sunset,
   Tablet,
@@ -324,10 +330,7 @@ export const {
   Video,
   VideoOff,
   Voicemail,
-  Volume,
-  Volume1,
-  Volume2,
-  VolumeX,
+
   Watch,
   Wifi,
   WifiOff,
@@ -344,27 +347,79 @@ export const {
 
 // Custom icons that don't exist in lucide-react-native
 // Use Glasses as fallback for HatGlasses (incognito mode)
-export const HatGlasses = wrappedIcons.Glasses || LucideIcons.Glasses
-export const BellDot = wrappedIcons.Bell || LucideIcons.Bell
-export const LoaderCircle = wrappedIcons.Loader || LucideIcons.Loader
+export const HatGlasses =
+  wrappedIcons.Glasses || createWrappedIcon(LucideIcons.Glasses, "Glasses")
+export const BellDot =
+  wrappedIcons.Bell || createWrappedIcon(LucideIcons.Bell, "Bell")
+export const LoaderCircle =
+  wrappedIcons.Loader || createWrappedIcon(LucideIcons.Loader, "Loader")
 export const MessageCirclePlus =
-  wrappedIcons.MessageCircle || LucideIcons.MessageCircle
-export const Tornado = wrappedIcons.Wind || LucideIcons.Wind
-export const UserLock = wrappedIcons.UserCheck || LucideIcons.UserCheck
-export const UserRoundCog = wrappedIcons.User || LucideIcons.User
-export const UserRoundPlus = wrappedIcons.UserPlus || LucideIcons.UserPlus
-export const UsersRound = wrappedIcons.Users || LucideIcons.Users
-export const PanelRight = wrappedIcons.Sidebar || LucideIcons.Sidebar
-export const Search = wrappedIcons.Search || LucideIcons.Search
-export const Sparkles = wrappedIcons.Sparkles || LucideIcons.Sparkles
-export const CircleX = wrappedIcons.XCircle || LucideIcons.XCircle
-export const Link = wrappedIcons.Link || LucideIcons.Link
-export const Trash2 = wrappedIcons.Trash2 || LucideIcons.Trash2
-export const Circle = wrappedIcons.Circle || LucideIcons.Circle
-export const XCircle = wrappedIcons.XCircle || LucideIcons.XCircle
-export const Link2 = wrappedIcons.Link2 || LucideIcons.Link2
-export const Languages = wrappedIcons.Languages || LucideIcons.Languages
-export const Paperclip = wrappedIcons.Paperclip || LucideIcons.Paperclip
-export const Coins = wrappedIcons.Coins || LucideIcons.Coins
+  wrappedIcons.MessageCircle ||
+  createWrappedIcon(LucideIcons.MessageCircle, "MessageCircle")
+export const Tornado =
+  wrappedIcons.Wind || createWrappedIcon(LucideIcons.Wind, "Wind")
+export const UserLock =
+  wrappedIcons.UserCheck ||
+  createWrappedIcon(LucideIcons.UserCheck, "UserCheck")
+export const UserRoundCog =
+  wrappedIcons.User || createWrappedIcon(LucideIcons.User, "User")
+export const UserRoundPlus =
+  wrappedIcons.UserPlus || createWrappedIcon(LucideIcons.UserPlus, "UserPlus")
+export const UsersRound =
+  wrappedIcons.Users || createWrappedIcon(LucideIcons.Users, "Users")
+export const PanelRight =
+  wrappedIcons.Sidebar || createWrappedIcon(LucideIcons.Sidebar, "Sidebar")
+export const Search =
+  wrappedIcons.Search || createWrappedIcon(LucideIcons.Search, "Search")
+export const Sparkles =
+  wrappedIcons.Sparkles || createWrappedIcon(LucideIcons.Sparkles, "Sparkles")
+export const CircleX =
+  wrappedIcons.XCircle || createWrappedIcon(LucideIcons.XCircle, "XCircle")
+export const Link =
+  wrappedIcons.Link || createWrappedIcon(LucideIcons.Link, "Link")
+export const Trash2 =
+  wrappedIcons.Trash2 || createWrappedIcon(LucideIcons.Trash2, "Trash2")
+export const Circle =
+  wrappedIcons.Circle || createWrappedIcon(LucideIcons.Circle, "Circle")
+export const XCircle =
+  wrappedIcons.XCircle || createWrappedIcon(LucideIcons.XCircle, "XCircle")
+export const Link2 =
+  wrappedIcons.Link2 || createWrappedIcon(LucideIcons.Link2, "Link2")
+export const Languages =
+  wrappedIcons.Languages ||
+  createWrappedIcon(LucideIcons.Languages, "Languages")
+export const Paperclip =
+  wrappedIcons.Paperclip ||
+  createWrappedIcon(LucideIcons.Paperclip, "Paperclip")
+export const Coins =
+  wrappedIcons.Coins || createWrappedIcon(LucideIcons.Coins, "Coins")
+export const AtSign =
+  wrappedIcons.AtSign || createWrappedIcon(LucideIcons.AtSign, "AtSign")
+export const CheckIcon =
+  wrappedIcons.CheckIcon ||
+  createWrappedIcon(LucideIcons.CheckIcon, "CheckIcon")
+export const Sun = wrappedIcons.Sun || createWrappedIcon(LucideIcons.Sun, "Sun")
+export const Moon =
+  wrappedIcons.Moon || createWrappedIcon(LucideIcons.Moon, "Moon")
+export const Grip =
+  wrappedIcons.Grip || createWrappedIcon(LucideIcons.Grip, "Grip")
+
+export const Volume =
+  wrappedIcons.Volume || createWrappedIcon(LucideIcons.Volume, "Volume")
+export const Volume1 =
+  wrappedIcons.Volume1 || createWrappedIcon(LucideIcons.Volume1, "Volume1")
+export const Volume2 =
+  wrappedIcons.Volume2 || createWrappedIcon(LucideIcons.Volume2, "Volume2")
+export const VolumeX =
+  wrappedIcons.VolumeX || createWrappedIcon(LucideIcons.VolumeX, "VolumeX")
+export const GlobeLock =
+  wrappedIcons.GlobeLock ||
+  createWrappedIcon(LucideIcons.GlobeLock, "GlobeLock")
+export const Globe =
+  wrappedIcons.Globe || createWrappedIcon(LucideIcons.Globe, "Globe")
+export const MousePointerClick =
+  wrappedIcons.MousePointerClick ||
+  createWrappedIcon(LucideIcons.MousePointerClick, "MousePointerClick")
+
 // Custom icons
 export { WannathisIcon } from "./WannathisIcon"

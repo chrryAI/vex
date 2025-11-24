@@ -713,10 +713,10 @@ export default function Menu({
             >
               <Img icon="hamster" showLoading={false} width={26} height={26} />
               {hasHydrated ? (
-                <>
+                <Span>
                   {new Date().getFullYear()}
                   &#169;
-                </>
+                </Span>
               ) : null}
               <Button
                 style={{
@@ -791,9 +791,9 @@ export default function Menu({
 
               <ThemeSwitcher />
               {hasHydrated && (
-                <span style={{ marginLeft: "auto", fontSize: 12 }}>
+                <Span style={{ marginLeft: "auto", fontSize: 12 }}>
                   v{VERSION}
-                </span>
+                </Span>
               )}
             </Div>
           </Div>

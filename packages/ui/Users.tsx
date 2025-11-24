@@ -217,18 +217,17 @@ const Users = ({ style }: { style?: React.CSSProperties }) => {
                             </Button>
                           )}
                           {nextCharacterProfile && (
-                            <button
+                            <Button
                               className="link"
-                              onClick={(e) => {
-                                e.preventDefault()
-
+                              style={{ ...utilities.link.style }}
+                              onClick={() => {
                                 setSelectedCharacterProfileId(
                                   nextCharacterProfile.id,
                                 )
                               }}
                             >
                               <ArrowRight size={18} />
-                            </button>
+                            </Button>
                           )}
                         </Div>
                         <Div style={{ ...styles.tags.style }}>

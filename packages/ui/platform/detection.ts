@@ -12,7 +12,11 @@ export type BrowserType = "chrome" | "firefox" | "safari" | "edge" | "unknown"
  * Detect if running on web (browser)
  */
 export function isWeb(): boolean {
-  return typeof window !== "undefined" && typeof document !== "undefined"
+  return (
+    !isNative() &&
+    typeof window !== "undefined" &&
+    typeof document !== "undefined"
+  )
 }
 
 /**

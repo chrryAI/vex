@@ -781,7 +781,7 @@ export default function FocusButton({
                     width={20}
                     height={20}
                   />
-                  <span>{t("Start")}</span>
+                  <Span>{t("Start")}</Span>
                 </>
               ) : (
                 <>
@@ -790,7 +790,7 @@ export default function FocusButton({
                     width={20}
                     height={20}
                   />
-                  <span>{t("Pause")}</span>
+                  <Span>{t("Pause")}</Span>
                 </>
               )}
             </Button>
@@ -809,7 +809,7 @@ export default function FocusButton({
                 width={20}
                 height={20}
               />
-              <span>{t("Cancel")}</span>
+              <Span>{t("Cancel")}</Span>
             </Button>
           </Div>
         )}
