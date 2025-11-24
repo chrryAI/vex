@@ -161,11 +161,13 @@ export const Box = forwardRef<View, BoxProps>(
     const { styleRegistry } = usePlatform()
     const finalStyle = mergeStyles(className, style, styleRegistry) as ViewStyle
 
-    // Handle onClick as onTouchEnd/onPress if needed, but View doesn't support onPress directly without Touchable
-    // For simple Boxes, we assume it's just a View. If onClick is present, user should likely use Button or Touchable
-    // But for compatibility, we can wrap in TouchableOpacity if onClick is present?
-    // Better to stick to View and let user use Button for interactions.
-    // However, some web code might put onClick on a div.
+    // Auto-wrap text children in <Text> for React Native
+    const wrappedChildren = React.Children.map(children, (child) => {
+      if (typeof child === "string" || typeof child === "number") {
+        return <RNText>{child}</RNText>
+      }
+      return child
+    })
 
     if (onClick) {
       return (
@@ -176,14 +178,14 @@ export const Box = forwardRef<View, BoxProps>(
           activeOpacity={0.8}
           {...props}
         >
-          {children}
+          {wrappedChildren}
         </TouchableOpacity>
       )
     }
 
     return (
       <View ref={ref} style={finalStyle} {...props}>
-        {children}
+        {wrappedChildren}
       </View>
     )
   },
@@ -209,6 +211,14 @@ export const Button = forwardRef<View, ButtonProps>(
     const { styleRegistry } = usePlatform()
     const finalStyle = mergeStyles(className, style, styleRegistry) as ViewStyle
 
+    // Auto-wrap text children in <Text> for React Native
+    const wrappedChildren = React.Children.map(children, (child) => {
+      if (typeof child === "string" || typeof child === "number") {
+        return <RNText>{child}</RNText>
+      }
+      return child
+    })
+
     return (
       <Pressable
         ref={ref}
@@ -217,7 +227,7 @@ export const Button = forwardRef<View, ButtonProps>(
         disabled={disabled}
         {...props}
       >
-        {children}
+        {wrappedChildren}
       </Pressable>
     )
   },
