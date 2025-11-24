@@ -25,6 +25,9 @@ export const CharacterProfilesStyleDefs = {
     gap: 5,
   },
   characterProfileButton: {},
+  characterProfile: {
+    margin: 0,
+  },
 } as const
 
 import { createUnifiedStyles } from "./styles/createUnifiedStyles"
