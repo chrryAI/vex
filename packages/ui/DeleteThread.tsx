@@ -7,6 +7,7 @@ import Loading from "./Loading"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { apiFetch } from "./utils"
+import { Span } from "./platform"
 
 export default function DeleteThread({
   className,
@@ -38,7 +39,7 @@ export default function DeleteThread({
           {isDeleting ? (
             <Loading color="var(--accent-0)" width={16} height={16} />
           ) : (
-            <span>🔥</span>
+            <Span>🔥</Span>
           )}
         </>
       }

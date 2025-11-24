@@ -10,7 +10,7 @@ import { user } from "./types"
 import Loading from "./Loading"
 import { checkIsExtension, BrowserInstance, apiFetch } from "./utils"
 import { useAuth, useNavigationContext } from "./context/providers"
-import { Button, Div, useTheme, TextArea } from "./platform"
+import { Button, Div, useTheme, TextArea, Span } from "./platform"
 import { useCollaborateStyles } from "./Collaborate.styles"
 
 const Collaborate = ({ withUser }: { withUser: user }) => {
@@ -58,7 +58,7 @@ const Collaborate = ({ withUser }: { withUser: user }) => {
           <>
             <>
               <UsersRound color="var(--accent-6)" size={24} />
-              <span>{t("Collaborate")}</span>
+              <Span>{t("Collaborate")}</Span>
             </>
           </>
         }

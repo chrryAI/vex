@@ -246,7 +246,7 @@ export default function Weather({
         return <Icon color={getWeatherColor(weather.code)} size={18} />
       })()}
       <Span style={styles.info.style}>
-        {weather && <span>{weather.temperature}</span>}
+        {weather && <Span>{weather.temperature}</Span>}
         {showLocation && (
           <Span
             onClick={() =>

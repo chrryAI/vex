@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Button } from "./platform"
+import { Button, Span } from "./platform"
 import Loading from "./Loading"
 import { Trash2 } from "./icons"
 
@@ -95,7 +95,7 @@ const ConfirmButton = ({
               {processing ? (
                 <Loading color="var(--accent-0)" size={16} />
               ) : (
-                <span style={{ width: "16px", height: "16px" }}>🔥</span>
+                <Span style={{ width: "16px", height: "16px" }}>🔥</Span>
               )}
             </>
           )

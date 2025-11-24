@@ -73,15 +73,15 @@ export default function CharacterProfiles() {
               ))
             ) : !characterProfilesEnabled ? (
               <>
-                <div>
+                <Div>
                   {t(
                     "Enable character profiling in your conversations to start building your collection of AI-generated personality insights.",
                   )}
-                </div>
+                </Div>
                 {!user && (
-                  <div>
+                  <Div>
                     {t("By using this feature, you accept our privacy policy.")}
-                  </div>
+                  </Div>
                 )}
               </>
             ) : (

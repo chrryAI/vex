@@ -18,8 +18,6 @@ function App(): React.JSX.Element {
     flex: 1,
   };
 
-  console.log(`🚀 ~ App ~ isDarkMode:`, isDarkMode);
-
   return (
     <View style={backgroundStyle as any}>
       <Chrry />

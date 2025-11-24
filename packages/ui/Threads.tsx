@@ -394,16 +394,16 @@ const Threads = ({
               {threads.threads.length === 0 && <P>{t("Nothing here yet")}</P>}
               {threads.hasNextPage && (
                 <Div style={{ ...styles.loadMoreButtonContainer.style }}>
-                  <button
+                  <Button
                     onClick={() => {
                       setIsLoadingMore(true)
                       setUntil(until + 1)
                     }}
                     style={{ ...styles.loadMoreButton.style }}
                   >
-                    <LoaderCircle size={18} />
+                    <LoaderCircle size={16} />
                     {t("Load more")}
-                  </button>
+                  </Button>
                 </Div>
               )}
             </Div>

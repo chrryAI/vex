@@ -243,9 +243,9 @@ export default function About() {
                       padding: 0,
                     }}
                   >
-                    <span style={{ fontSize: 30 }}>
+                    <Span style={{ fontSize: 30 }}>
                       {<Img app={app} size={30} />}
-                    </span>
+                    </Span>
                     {app.title || app.name}
                   </H4>
                   <P style={styles.appDescription.style}>

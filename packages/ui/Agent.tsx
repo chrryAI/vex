@@ -747,7 +747,7 @@ export default function Agent({
                               }
                               onChange={(checked) => field.onChange(checked)}
                             >
-                              <span>{t("Web Search")}</span>
+                              <Span>{t("Web Search")}</Span>
                             </Checkbox>
                           </Label>
                         )}
@@ -777,7 +777,7 @@ export default function Agent({
                               }
                               onChange={(checked) => field.onChange(checked)}
                             >
-                              <span>{t("ImageGeneration")}</span>
+                              <Span>{t("ImageGeneration")}</Span>
                             </Checkbox>
                           </Label>
                         )}
@@ -803,7 +803,7 @@ export default function Agent({
                               disabled={aiAgent?.capabilities?.pdf === true}
                               onChange={(checked) => field.onChange(checked)}
                             >
-                              <span>{t("File Analysis")}</span>
+                              <Span>{t("File Analysis")}</Span>
                             </Checkbox>
                           </Label>
                         )}
@@ -829,7 +829,7 @@ export default function Agent({
                               disabled={aiAgent?.capabilities?.audio === true}
                               onChange={(checked) => field.onChange(checked)}
                             >
-                              <span>{t("Voice")}</span>
+                              <Span>{t("Voice")}</Span>
                             </Checkbox>
                           </Label>
                         )}
@@ -855,7 +855,7 @@ export default function Agent({
                               disabled={aiAgent?.capabilities?.video === true}
                               onChange={(checked) => field.onChange(checked)}
                             >
-                              <span>{t("Video")}</span>
+                              <Span>{t("Video")}</Span>
                             </Checkbox>
                           </Label>
                         )}
@@ -885,7 +885,7 @@ export default function Agent({
                               }
                               onChange={(checked) => field.onChange(checked)}
                             >
-                              <span>{t("Code Execution")}</span>
+                              <Span>{t("Code Execution")}</Span>
                             </Checkbox>
                           </Label>
                         )}
@@ -1386,9 +1386,9 @@ export default function Agent({
                     <Label>
                       <DeepSeek /> DeepSeek{" "}
                       {appFormWatcher.tier !== "free" && (
-                        <span style={{ color: "var(--accent-1)" }}>
+                        <Span style={{ color: "var(--accent-1)" }}>
                           *{t("Required")}
-                        </span>
+                        </Span>
                       )}
                     </Label>
                     <Controller
@@ -1506,14 +1506,14 @@ export default function Agent({
                       )}
                     />
                     {customAgentForm.formState.errors.name && (
-                      <span
+                      <Span
                         style={{
                           color: "var(--accent-1)",
                           fontSize: "0.85rem",
                         }}
                       >
                         {customAgentForm.formState.errors.name.message}
-                      </span>
+                      </Span>
                     )}
                   </Div>
 

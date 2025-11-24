@@ -1,5 +1,6 @@
 import React from "react"
 import { ExternalLink } from "./icons"
+import { A, Span } from "./platform"
 
 interface CitationTextProps {
   text: string
@@ -41,7 +42,7 @@ export const processTextWithCitations = ({
     if (source && source.url && source.url !== "#") {
       // Create clickable citation
       parts.push(
-        <a
+        <A
           key={`citation-${citationNumber}-${match.index}`}
           href={source.url}
           target="_blank"
@@ -62,23 +63,15 @@ export const processTextWithCitations = ({
             fontSize: "0.85em",
             lineHeight: "1.2",
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--accent-3)"
-            e.currentTarget.style.borderColor = "var(--accent-6)"
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--accent-2)"
-            e.currentTarget.style.borderColor = "var(--accent-4)"
-          }}
         >
           [{citationNumber}]
           <ExternalLink size={10} />
-        </a>,
+        </A>,
       )
     } else {
       // Non-clickable citation (no URL available)
       parts.push(
-        <span
+        <Span
           key={`citation-${citationNumber}-${match.index}`}
           className="citation-placeholder"
           style={{
@@ -88,7 +81,7 @@ export const processTextWithCitations = ({
           }}
         >
           [{citationNumber}]
-        </span>,
+        </Span>,
       )
     }
 
@@ -116,15 +109,15 @@ const CitationText: React.FC<CitationTextProps> = ({
   })
 
   if (typeof processedContent === "string") {
-    return <span className={className}>{processedContent}</span>
+    return <Span className={className}>{processedContent}</Span>
   }
 
   return (
-    <span className={className}>
+    <Span className={className}>
       {processedContent.map((part, index) => (
         <React.Fragment key={index}>{part}</React.Fragment>
       ))}
-    </span>
+    </Span>
   )
 }
 

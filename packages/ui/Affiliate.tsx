@@ -10,7 +10,6 @@ import {
   UserRoundPlus,
   SmilePlus,
 } from "./icons"
-import clsx from "clsx"
 import Img from "./Image"
 import { useAuth, useData } from "./context/providers"
 import {
@@ -259,10 +258,15 @@ export default function Affiliate() {
 
           <Div style={styles.cta.style}>
             {!affiliateStats?.hasAffiliateLink && (
-              <button
-                className={clsx("button inverted large", styles.joinButton)}
-                onClick={createAffiliateLink}
+              <Button
+                className={"inverted"}
                 disabled={creating}
+                style={{
+                  ...utilities.button.style,
+                  ...utilities.inverted.style,
+                  ...utilities.large.style,
+                  ...styles.joinButton.style,
+                }}
               >
                 <SmilePlus size={20} />
                 {creating
@@ -270,7 +274,7 @@ export default function Affiliate() {
                   : user
                     ? t("Join Affiliate Program")
                     : t("Sign In to Join")}
-              </button>
+              </Button>
             )}
           </Div>
         </Div>
