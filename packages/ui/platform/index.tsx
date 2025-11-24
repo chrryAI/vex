@@ -115,7 +115,7 @@ export {
 
 // Video Component (auto-resolves to .web.tsx or .native.tsx)
 export { default as Video, type VideoProps } from "./Video"
-export { Audio } from "./Audio"
+export { Audio, type AudioProps } from "./Audio"
 
 // FilePicker Component (auto-resolves to .web.tsx or .native.tsx)
 export { default as FilePicker, type FilePickerProps } from "./FilePicker"

@@ -155,7 +155,7 @@ export const Hey = memo(
 
       const timer = setTimeout(() => {
         setMinSplashTimeElapsed(true)
-      }, 300)
+      }, 700)
       return () => clearTimeout(timer)
     }, [isImageLoaded])
 
@@ -184,7 +184,6 @@ export const Hey = memo(
     }
     // Memoize splash component to prevent re-renders
     const splash = getSplash(isSplash)
-    console.log(`🚀 ~ file: Hey.tsx:187 ~ splash:`, splash)
 
     useEffect(() => {
       isSplash &&
@@ -202,7 +201,7 @@ export const Hey = memo(
       <Div>
         <ErrorBoundary>
           {!app ? (
-            <Div {...styles.splash}>
+            <Div style={styles.splash.style}>
               <Img logo="blossom" showLoading={false} size={64} />
             </Div>
           ) : (

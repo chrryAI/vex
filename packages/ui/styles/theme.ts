@@ -199,12 +199,14 @@ export type Theme = typeof lightTheme | typeof darkTheme
 // Hook to get current theme
 export const useTheme = (): Theme => {
   // Check if dark mode is enabled
+  // Default to dark theme on server (SSR) to match most users' preference
+  // and reduce hydration mismatches
   const isDark =
-    typeof window !== "undefined" &&
-    typeof document !== "undefined" &&
-    (window.matchMedia?.("(prefers-color-scheme: dark)").matches ||
-      document.documentElement?.classList?.contains("dark") ||
-      document.documentElement?.style?.colorScheme === "dark")
+    typeof window === "undefined" || // Server-side: default to dark
+    typeof document === "undefined" || // Server-side: default to dark
+    window.matchMedia?.("(prefers-color-scheme: dark)").matches ||
+    document.documentElement?.classList?.contains("dark") ||
+    document.documentElement?.style?.colorScheme === "dark"
 
   return isDark ? darkTheme : lightTheme
 }

@@ -720,7 +720,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       url: "https://chrry.dev",
       email: "iliyan@chrry.ai",
       description:
-        "A modern, cross-platform UI library for React, React Native, and Next.js",
+        "A modern, cross-platform AI UI library for React, React Native, and Next.js",
       logo: "/assets/cherry-logo.svg", // Cross-platform SVG
       primaryColor: "#E91E63", // Cherry pink
       links: {
