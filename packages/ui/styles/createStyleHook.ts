@@ -77,13 +77,16 @@ export function createStyleHook<T extends Record<string, any>>(styles: {
       theme,
       dimensions,
       styleCache,
-      // Treat as web if:
-      // 1. Platform says it's web (or not native)
-      // 2. Platform is missing AND we are on SSR (window undefined)
-      // 3. Platform is missing AND we are on Client Web
+      // Determine if we're on web or native:
+      // 1. If platform context exists, use platform.isNative to determine
+      // 2. If no platform context, check navigator.product for React Native
+      // 3. Default to web for SSR (window undefined)
       isWeb: platform
         ? !platform.isNative
-        : typeof window === "undefined" || true, // Default to web if no platform (SSR or simple render)
+        : typeof navigator !== "undefined" &&
+            navigator.product === "ReactNative"
+          ? false
+          : true, // Default to web (SSR or browser without platform context)
     })
   }
 }

@@ -28,11 +28,16 @@ export function resolveThemeValue(value: any, theme: Theme): any {
       "--shade-6": "shade6",
       "--shade-7": "shade7",
       "--shade-8": "shade8",
+      "--shade-1-transparent": "shade1Transparent",
+      "--shade-2-transparent": "shade2Transparent",
+      "--shade-3-transparent": "shade3Transparent",
+      "--background-transparent": "backgroundTransparent",
       "--link-color": "linkColor",
       "--selection": "selection",
       "--overlay": "overlay",
       "--shadow": "shadow",
       "--shadow-glow": "shadowGlow",
+      "--radius": "radius",
     }
 
     // Resolve var(--variable) syntax (for SVG components)

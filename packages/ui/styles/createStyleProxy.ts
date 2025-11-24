@@ -60,6 +60,59 @@ export function createStyleProxy<T extends Record<string, any>>(
         // For web, keep CSS variables as-is so the browser can handle them dynamically
         if (!isWeb) {
           resolvedValue = resolveThemeValue(resolvedValue, theme)
+
+          // React Native compatibility fixes - only if resolvedValue is still a string
+          if (
+            resolvedValue !== undefined &&
+            resolvedValue !== null &&
+            typeof resolvedValue === "string"
+          ) {
+            // Convert position: fixed to absolute (RN doesn't support fixed)
+            if (key === "position" && resolvedValue === "fixed") {
+              resolvedValue = "absolute"
+            }
+
+            // Convert viewport units (100dvh, 100vw, etc.) to dimensions
+            if (resolvedValue.includes("dvh") || resolvedValue.includes("vh")) {
+              const match = resolvedValue.match(/(\d+(?:\.\d+)?)(dvh|vh)/)
+              if (match) {
+                const percentage = parseFloat(match[1])
+                resolvedValue = (dimensions.height * percentage) / 100
+              }
+            }
+            if (resolvedValue.includes("vw")) {
+              const match = resolvedValue.match(/(\d+(?:\.\d+)?)vw/)
+              if (match) {
+                const percentage = parseFloat(match[1])
+                resolvedValue = (dimensions.width * percentage) / 100
+              }
+            }
+
+            // Convert overflowY/overflowX to overflow (RN uses single overflow prop)
+            if (key === "overflowY" || key === "overflowX") {
+              // Skip this key, will be handled by overflow property
+              continue
+            }
+
+            // Convert percentage borderRadius to numeric value
+            if (key === "borderRadius" && resolvedValue.includes("%")) {
+              // For 50%, use a large number to create circle effect
+              if (resolvedValue === "50%") {
+                resolvedValue = 9999
+              }
+            }
+
+            // Remove calc() expressions (not supported in RN)
+            if (resolvedValue.includes("calc(")) {
+              // Try to extract simple calculations
+              const calcMatch = resolvedValue.match(/calc\((.+)\)/)
+              if (calcMatch) {
+                // For now, skip complex calc expressions
+                // TODO: Implement calc parser if needed
+                continue
+              }
+            }
+          }
         }
 
         // Handle responsive font sizes (clamp-like behavior)
@@ -75,6 +128,12 @@ export function createStyleProxy<T extends Record<string, any>>(
         }
 
         responsiveStyle[key] = resolvedValue
+      }
+
+      // React Native: Add overflow property if overflowY or overflowX was in baseStyle
+      if (!isWeb && (baseStyle.overflowY || baseStyle.overflowX)) {
+        responsiveStyle.overflow =
+          baseStyle.overflowY || baseStyle.overflowX || "visible"
       }
 
       // Cache the resolved style
