@@ -19,6 +19,7 @@
     "buffer": "^6.0.3",
     "i18next": "^25.6.3",
     "invariant": "^2.2.4",
+    "lucide-react-native": "^0.462.0",
     "prop-types": "^15.8.1",
     "react": "19.1.1",
     "react-dom": "19.1.1",

@@ -64,6 +64,10 @@ const config = {
         projectRoot,
         'node_modules/react-native-svg',
       ),
+      'lucide-react-native': path.resolve(
+        projectRoot,
+        'node_modules/lucide-react-native',
+      ),
     },
     // Block problematic modules that use dynamic imports
     blockList: [

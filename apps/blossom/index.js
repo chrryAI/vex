@@ -5,6 +5,8 @@
 // Import polyfills for web-only APIs
 import 'react-native-get-random-values';
 import 'react-native-gesture-handler';
+// Import react-native-svg to register native components early
+import 'react-native-svg';
 import './polyfills';
 
 import {AppRegistry} from 'react-native';
