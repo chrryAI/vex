@@ -62,6 +62,7 @@ const propertyMap = {
   "grid-template-rows": "gridTemplateRows",
   "grid-column": "gridColumn",
   "grid-row": "gridRow",
+  "overflow-wrap": "overflowWrap",
   position: "position",
   top: "top",
   bottom: "bottom",
