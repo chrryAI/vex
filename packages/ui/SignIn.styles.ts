@@ -21,7 +21,7 @@ export const SignInStyleDefs = {
     borderRadius: "50%",
   },
   registerButton: {
-    display: "flex",
+    display: "none",
   },
   signInButtons: {
     display: "flex",

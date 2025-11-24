@@ -1,12 +1,12 @@
 "use client"
 
-import clsx from "clsx"
 import { defaultLocale } from "./locales"
 import Thread from "./Thread"
 import { app } from "./types"
 import { useAuth } from "./context/providers"
 import { useApp } from "./context/providers"
 import { useAppMetadata } from "./hooks"
+import { Div } from "./platform"
 
 export default function Home({
   className,
@@ -22,11 +22,8 @@ export default function Home({
   useAppMetadata(app, !store && !threadId)
 
   return (
-    <div
-      data-url={language === defaultLocale ? "/" : `/${language}`}
-      className={clsx(className)}
-    >
+    <Div data-url={language === defaultLocale ? "/" : `/${language}`}>
       <Thread isHome />
-    </div>
+    </Div>
   )
 }

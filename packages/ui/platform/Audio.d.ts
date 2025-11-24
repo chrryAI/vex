@@ -7,6 +7,3 @@ export interface AudioProps {
   loop?: boolean
   autoPlay?: boolean
 }
-
-// Re-export from platform-specific implementations
-export { Audio, type AudioProps } from "./Audio"

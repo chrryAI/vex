@@ -34,6 +34,7 @@ import {
   useChat,
 } from "./context/providers"
 import { Button, Div, H4, Span, usePlatform, useTheme } from "./platform"
+import { matchMedia } from "./platform/matchMedia"
 import { animate, stagger } from "motion"
 import { useHasHydrated } from "./hooks"
 import Bookmark from "./Bookmark"
@@ -98,6 +99,7 @@ export default function Menu({
     isDrawerOpen,
     setIsDrawerOpen,
     isSmallDevice,
+    colors,
   } = useTheme()
 
   const [previousThreads, setPreviousThreads] = useState<typeof threads>({
@@ -134,8 +136,7 @@ export default function Menu({
 
     // Check for reduced motion preference
     const prefersReducedMotion =
-      reduceMotion ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      reduceMotion || matchMedia("(prefers-reduced-motion: reduce)").matches
 
     if (prefersReducedMotion) {
       // Just make visible without animation
@@ -309,7 +310,7 @@ export default function Menu({
                 >
                   <PanelRight
                     strokeWidth={1.5}
-                    color={"var(--accent-1)"}
+                    color={colors.accent1}
                     size={20}
                   />
                 </Button>
@@ -406,12 +407,12 @@ export default function Menu({
                   <H4 style={styles.threadsTitle.style}>
                     {collaborationStatus === "active" ? (
                       <>
-                        <UsersRound size={15} color="var(--accent-6)" />{" "}
+                        <UsersRound size={15} color={colors.accent6} />{" "}
                         {t("Collaborations")}
                       </>
                     ) : collaborationStatus === "pending" ? (
                       <>
-                        <UsersRound size={15} color="var(--accent-6)" />{" "}
+                        <UsersRound size={15} color={colors.accent6} />{" "}
                         {t("Pending")}
                       </>
                     ) : (
@@ -474,7 +475,7 @@ export default function Menu({
                             setIsNewChat(true)
                           }}
                         >
-                          <ArrowLeft color="var(--accent-6)" size={17} />
+                          <ArrowLeft color={colors.accent6} size={17} />
                         </Button>
                       ) : (
                         <>
@@ -487,10 +488,7 @@ export default function Menu({
                                     setIsNewChat(true)
                                   }}
                                 >
-                                  <ArrowLeft
-                                    color="var(--accent-6)"
-                                    size={17}
-                                  />
+                                  <ArrowLeft color={colors.accent6} size={17} />
                                 </Button>
                               ) : (
                                 <Button
@@ -507,7 +505,7 @@ export default function Menu({
                                   }}
                                 >
                                   <UsersRound
-                                    color="var(--accent-1)"
+                                    color={colors.accent1}
                                     size={17}
                                   />
                                 </Button>
@@ -522,7 +520,7 @@ export default function Menu({
                                   setIsNewChat(true)
                                 }}
                               >
-                                <ArrowLeft color="var(--accent-6)" size={16} />
+                                <ArrowLeft color={colors.accent6} size={16} />
                               </Button>
                             ) : (
                               <Button
@@ -534,7 +532,7 @@ export default function Menu({
                                 }}
                               >
                                 <UserRoundPlus
-                                  color="var(--accent-6)"
+                                  color={colors.accent6}
                                   size={17}
                                 />
                               </Button>
@@ -590,16 +588,16 @@ export default function Menu({
                                   user,
                                   guest,
                                 }) ? (
-                                  <BellDot color="var(--accent-6)" size={13} />
+                                  <BellDot color={colors.accent6} size={13} />
                                 ) : thread.collaborations?.length ? (
                                   <UsersRound
-                                    color="var(--accent-1)"
+                                    color={colors.accent1}
                                     size={13}
                                   />
                                 ) : thread.visibility === "public" ? (
-                                  <LockOpen color="var(--accent-1)" size={13} />
+                                  <LockOpen color={colors.accent1} size={13} />
                                 ) : thread.visibility === "protected" ? (
-                                  <UserLock color="var(--accent-1)" size={13} />
+                                  <UserLock color={colors.accent1} size={13} />
                                 ) : null}
                               </Span>
                             ) : null}
@@ -726,7 +724,7 @@ export default function Menu({
                 alignItems: "center",
                 gap: 3,
                 fontSize: "0.7rem",
-                color: "var(--shade-7)",
+                color: colors.shade7,
               }}
             >
               <Img icon="hamster" showLoading={false} width={26} height={26} />
@@ -778,8 +776,8 @@ export default function Menu({
                     ...styles.reduceMotionButton.style,
                     marginLeft: "auto",
                     color: !reduceMotionContext
-                      ? "var(--accent-6)"
-                      : "var(--shade-3)",
+                      ? colors.accent6
+                      : colors.shade3,
                   }}
                   className={"link"}
                 >

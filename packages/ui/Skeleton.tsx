@@ -31,7 +31,6 @@ import { useTheme } from "./platform"
 import A from "./A"
 import Version from "./Version"
 import AddToHomeScreen from "./AddToHomeScreen"
-import { threadId } from "worker_threads"
 
 export default function Skeleton({
   className,
@@ -85,10 +84,12 @@ export default function Skeleton({
       `${FRONTEND_URL}/hamster.png`,
     ]
 
-    preloadImages.forEach((src) => {
-      const img = new Image()
-      img.src = src
-    })
+    if (typeof Image !== "undefined") {
+      preloadImages.forEach((src) => {
+        const img = new Image()
+        img.src = src
+      })
+    }
   }, [])
 
   // Call ALL hooks before any conditional returns
