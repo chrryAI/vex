@@ -126,6 +126,7 @@ export async function getNewsBySource(
 ): Promise<any[]> {
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const sevenDaysAgoISO = sevenDaysAgo.toISOString()
 
   return await db
     .select()
@@ -133,7 +134,7 @@ export async function getNewsBySource(
     .where(
       and(
         eq(newsArticles.source, source),
-        sql`${newsArticles.publishedAt} >= ${sevenDaysAgo.toISOString()}`,
+        sql`${newsArticles.publishedAt} >= ${sevenDaysAgoISO}`,
       ),
     )
     .orderBy(desc(newsArticles.publishedAt))
@@ -161,11 +162,12 @@ export async function getNewsByCategory(
 export async function getLatestNews(limit: number = 50): Promise<any[]> {
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const sevenDaysAgoISO = sevenDaysAgo.toISOString()
 
   return await db
     .select()
     .from(newsArticles)
-    .where(sql`${newsArticles.publishedAt} >= ${sevenDaysAgo.toISOString()}`)
+    .where(sql`${newsArticles.publishedAt} >= ${sevenDaysAgoISO}`)
     .orderBy(desc(newsArticles.publishedAt))
     .limit(limit)
 }
