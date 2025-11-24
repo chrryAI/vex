@@ -41,7 +41,6 @@ import {
   Star,
   Link,
 } from "./icons"
-import { animate, stagger } from "motion"
 import { useAppContext } from "./context/AppContext"
 import { validateFile, formatFileSize } from "./utils/fileValidation"
 import {
@@ -441,43 +440,6 @@ export default function Chat({
     }
 
     return text
-  }
-
-  const animateSuggestions = (): void => {
-    // Check for reduced motion preference
-    const prefersReducedMotion =
-      reduceMotion ||
-      (typeof window !== "undefined" &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-
-    if (prefersReducedMotion) {
-      // Just make visible without animation
-      const suggestionsList = document?.querySelector(".suggestionsList")
-      const suggestionItems = document?.querySelectorAll(".suggestionItem")
-
-      if (suggestionsList) {
-        ;(suggestionsList as HTMLElement).style.opacity = "1"
-      }
-      suggestionItems?.forEach((item) => {
-        ;(item as HTMLElement).style.opacity = "1"
-      })
-    } else {
-      // Animate top to bottom
-      animate([
-        [".suggestionsList", { opacity: [0, 1] }, { duration: 0 }],
-        [
-          ".suggestionItem",
-          {
-            y: [-20, 0],
-            opacity: [0, 1],
-          },
-          {
-            delay: stagger(0.025),
-            duration: 0.1,
-          },
-        ],
-      ])
-    }
   }
 
   const hasIncompleteAction = (streamedContent: string) =>
@@ -2661,20 +2623,25 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
       // Only adjust height if there's actual input
       if (input) {
-        // Reset height to auto, then expand
-        el.style.height = "auto"
-        const newHeight = el.scrollHeight
+        if (typeof window !== "undefined") {
+          // Reset height to auto, then expand
+          el.style.height = "auto"
+          const newHeight = el.scrollHeight
 
-        // For extensions, cap the max height to prevent very tall initial height
-        const maxHeight = newHeight
-        el.style.height = Math.min(newHeight, maxHeight) + "px"
-
-        // Check if exceeded (works for both input and placeholder)
-        setExceededInitial(el.scrollHeight > (initialHeight.current + 30 || 0))
+          // For extensions, cap the max height to prevent very tall initial height
+          const maxHeight = newHeight
+          el.style.height = Math.min(newHeight, maxHeight) + "px"
+          // Check if exceeded (works for both input and placeholder)
+          setExceededInitial(
+            el.scrollHeight > (initialHeight.current + 30 || 0),
+          )
+        }
       } else {
         // Reset to initial height when input is empty
         if (initialHeight.current) {
-          el.style.height = initialHeight.current + "px"
+          if (typeof window !== "undefined") {
+            el.style.height = initialHeight.current + "px"
+          }
         }
         setExceededInitial(false)
       }
@@ -2842,16 +2809,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       setAttempt(undefined)
     }
   }, [shouldSubmit, selectedAgent, attempt, debateAgent])
-
-  useEffect(() => {
-    if (showSuggestions) {
-      // Small delay to ensure DOM is ready
-      const timer = setTimeout(() => {
-        animateSuggestions()
-      }, 50)
-      return () => clearTimeout(timer)
-    }
-  }, [showSuggestions])
 
   const renderSubmit = () => {
     return (

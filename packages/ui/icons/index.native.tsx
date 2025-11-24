@@ -120,7 +120,6 @@ export const {
   ChevronsRight,
   ChevronsUp,
   Chrome,
-  Circle,
   CircleEllipsis,
   Clipboard,
   Clock,
@@ -134,7 +133,6 @@ export const {
   Codepen,
   Codesandbox,
   Coffee,
-  Coins,
   Columns,
   Command,
   Compass,
@@ -204,8 +202,6 @@ export const {
   Layers,
   Layout,
   LifeBuoy,
-  Link,
-  Link2,
   Linkedin,
   List,
   Loader,
@@ -239,7 +235,6 @@ export const {
   Navigation2,
   Octagon,
   Package,
-  Paperclip,
   Pause,
   PauseCircle,
   PenTool,
@@ -270,7 +265,6 @@ export const {
   Rss,
   Save,
   Scissors,
-  Search,
   Send,
   Server,
   Settings,
@@ -307,7 +301,6 @@ export const {
   ToggleRight,
   Tool,
   Trash,
-  Trash2,
   Trello,
   TrendingDown,
   TrendingUp,
@@ -340,7 +333,6 @@ export const {
   WifiOff,
   Wind,
   X,
-  XCircle,
   XOctagon,
   XSquare,
   Youtube,
@@ -348,12 +340,31 @@ export const {
   ZapOff,
   ZoomIn,
   ZoomOut,
-  Sparkles,
 } = wrappedIcons
 
 // Custom icons that don't exist in lucide-react-native
 // Use Glasses as fallback for HatGlasses (incognito mode)
 export const HatGlasses = wrappedIcons.Glasses || LucideIcons.Glasses
-
+export const BellDot = wrappedIcons.Bell || LucideIcons.Bell
+export const LoaderCircle = wrappedIcons.Loader || LucideIcons.Loader
+export const MessageCirclePlus =
+  wrappedIcons.MessageCircle || LucideIcons.MessageCircle
+export const Tornado = wrappedIcons.Wind || LucideIcons.Wind
+export const UserLock = wrappedIcons.UserCheck || LucideIcons.UserCheck
+export const UserRoundCog = wrappedIcons.User || LucideIcons.User
+export const UserRoundPlus = wrappedIcons.UserPlus || LucideIcons.UserPlus
+export const UsersRound = wrappedIcons.Users || LucideIcons.Users
+export const PanelRight = wrappedIcons.Sidebar || LucideIcons.Sidebar
+export const Search = wrappedIcons.Search || LucideIcons.Search
+export const Sparkles = wrappedIcons.Sparkles || LucideIcons.Sparkles
+export const CircleX = wrappedIcons.XCircle || LucideIcons.XCircle
+export const Link = wrappedIcons.Link || LucideIcons.Link
+export const Trash2 = wrappedIcons.Trash2 || LucideIcons.Trash2
+export const Circle = wrappedIcons.Circle || LucideIcons.Circle
+export const XCircle = wrappedIcons.XCircle || LucideIcons.XCircle
+export const Link2 = wrappedIcons.Link2 || LucideIcons.Link2
+export const Languages = wrappedIcons.Languages || LucideIcons.Languages
+export const Paperclip = wrappedIcons.Paperclip || LucideIcons.Paperclip
+export const Coins = wrappedIcons.Coins || LucideIcons.Coins
 // Custom icons
 export { WannathisIcon } from "./WannathisIcon"

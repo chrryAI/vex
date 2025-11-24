@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react"
 
 import { user, subscription } from "./types"
-import { animate, stagger } from "motion"
+import { MotiView } from "./platform/MotiView"
 import {
   useAuth,
   useChat,
@@ -361,6 +361,7 @@ export default function Subscribe({
   }
 
   useEffect(() => {
+    if (typeof window === "undefined") return
     const params = new URLSearchParams(window.location.search)
     if (params.get("checkout") === "success") {
       const sessionId = params.get("session_id")
@@ -372,7 +373,7 @@ export default function Subscribe({
     }
   }, [])
 
-  const [selectedPlan, setSelectedPlan] = useState<
+  const [selectedPlan, setSelectedPlanInternal] = useState<
     "plus" | "pro" | "member" | "credits"
   >(
     (searchParams.get("plan") as
@@ -382,6 +383,11 @@ export default function Subscribe({
       | "credits"
       | "plus") ?? "plus",
   )
+
+  const setSelectedPlan = (plan: "plus" | "pro" | "member" | "credits") => {
+    setSelectedPlanInternal(plan)
+    setAnimationKey((prev) => prev + 1)
+  }
 
   useEffect(() => {
     if (isModalOpen) return
@@ -400,59 +406,6 @@ export default function Subscribe({
   }, [searchParams])
 
   useEffect(() => {
-    if (!isModalOpen && searchParams.get("plan")) removeParam("plan")
-  }, [isModalOpen, searchParams])
-
-  useEffect(() => {
-    isModalOpen && selectedPlan && animateFeatures()
-  }, [isModalOpen, selectedPlan])
-
-  const animateFeatures = (): void => {
-    const prefersReducedMotion =
-      reduceMotion ||
-      (typeof window !== "undefined" &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-
-    if (prefersReducedMotion) {
-      setTimeout(() => {
-        const list = document?.querySelector(".features")
-        const listitem = document?.querySelectorAll(".feature")
-
-        if (list) {
-          ;(list as HTMLElement).style.opacity = "1"
-        }
-        listitem?.forEach((item) => {
-          ;(item as HTMLElement).style.opacity = "1"
-        })
-      }, 100)
-      // Just make visible without animation
-    } else {
-      // Always ensure menu is visible by default
-
-      setTimeout(() => {
-        if (typeof window !== "undefined") {
-          animate([
-            [".features", { opacity: [0, 1] }, { duration: 0 }],
-            [
-              ".feature",
-              {
-                y: [-10, 0],
-                opacity: [0, 1],
-                transform: ["translateX(-10px)", "none"],
-              },
-              {
-                delay: stagger(0.05),
-                duration: 0.1,
-              },
-            ],
-          ])
-        }
-      }, 100)
-      // Only animate if we haven't before and don't prefer reduced motion
-    }
-  }
-
-  useEffect(() => {
     if (isModalOpen) return
     setIsAdding(false)
     setIsInviting(false)
@@ -462,6 +415,16 @@ export default function Subscribe({
     setSearch("")
   }, [isModalOpen])
 
+  const features =
+    selectedPlan === "plus"
+      ? plusFeatures
+      : selectedPlan === "member"
+        ? memberFeatures
+        : selectedPlan === "pro"
+          ? proFeatures
+          : selectedPlan === "credits"
+            ? creditsFeatures
+            : []
   const shouldShowGift = () => {
     // Not in gifting mode
     if (isGifting && !userToGift) return false
@@ -510,6 +473,8 @@ export default function Subscribe({
   // if (isExtension) {
   //   return null
   // }
+
+  const [animationKey, setAnimationKey] = useState(0)
 
   return (
     <Div style={style}>
@@ -622,66 +587,128 @@ export default function Subscribe({
           className={"features"}
           style={{ ...styles.features.style }}
         >
-          <Div className={clsx(styles.feature, "feature")}>
-            <A href={"mailto:iliyan@chrry.ai"} className={"link"}>
-              <Img logo="isVivid" icon="heart" width={16} height={16} />
-              {t("Need a white label like Vex?")}
-            </A>
-          </Div>
-          {(selectedPlan === "plus"
-            ? plusFeatures
-            : selectedPlan === "member"
-              ? memberFeatures
-              : selectedPlan === "pro"
-                ? proFeatures
-                : selectedPlan === "credits"
-                  ? creditsFeatures
-                  : []
-          ).map((feature, i) => (
-            <Div
-              className={"feature"}
-              style={{ ...styles.feature.style }}
-              key={i}
-            >
-              {feature.emoji} {feature.text}
+          <MotiView
+            key={`0-${animationKey}`}
+            from={{ opacity: 0, translateY: -10, translateX: -10 }}
+            animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+            transition={{
+              duration: reduceMotion ? 0 : 100,
+              delay: reduceMotion ? 0 : 0,
+            }}
+          >
+            <Div className={clsx(styles.feature, "feature")}>
+              <A href={"mailto:iliyan@chrry.ai"} className={"link"}>
+                <Img logo="isVivid" icon="heart" width={16} height={16} />
+                {t("Need a white label like Vex?")}
+              </A>
             </Div>
+          </MotiView>
+          {features.map((feature, i) => (
+            <MotiView
+              key={`${i + 1}-${animationKey}`}
+              from={{ opacity: 0, translateY: 0, translateX: -10 }}
+              animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+              transition={{
+                duration: reduceMotion ? 0 : 100,
+                delay: reduceMotion ? 0 : (i + 1) * 25,
+              }}
+            >
+              <Div className={"feature"} style={{ ...styles.feature.style }}>
+                {feature.emoji} {feature.text}
+              </Div>
+            </MotiView>
           ))}
           {affiliateCode ? (
             (selectedPlan === "plus" ||
               selectedPlan === "pro" ||
               selectedPlan === "credits") && (
-              <li
-                className={clsx(styles.feature, "feature")}
-                style={{ color: "var(--accent-4)" }}
+              <MotiView
+                key={`999-${animationKey}`}
+                from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                transition={{
+                  duration: reduceMotion ? 0 : 100,
+                  delay: reduceMotion ? 0 : (features.length + 1) * 25,
+                }}
               >
-                🎁 {t("+30% bonus credits from referral")}
-              </li>
+                <Div
+                  style={{ ...styles.feature.style, color: "var(--accent-4)" }}
+                >
+                  🎁 {t("+30% bonus credits from referral")}
+                </Div>
+              </MotiView>
             )
           ) : (
             <>
-              <Div className={clsx(styles.feature, "feature")}>
-                <A openInNewTab href={"https://chrry.dev"} className={"link"}>
-                  <Img logo="chrry" width={16} height={16} />
-                  {t("Open Source")}
-                </A>
-              </Div>
-              <Div className={clsx(styles.feature, "feature")}>
-                <A
-                  style={{
-                    color: "#f87171",
-                  }}
-                  href={"/affiliate"}
-                  className={"link"}
-                >
-                  <Img
-                    showLoading={false}
-                    icon="heart"
-                    width={16}
-                    height={16}
-                  />{" "}
-                  {t("Affiliate")}
-                </A>
-              </Div>
+              <MotiView
+                key={`1000-${animationKey}`}
+                from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                transition={{
+                  duration: reduceMotion ? 0 : 100,
+                  delay: reduceMotion
+                    ? 0
+                    : ((selectedPlan === "plus"
+                        ? plusFeatures
+                        : selectedPlan === "member"
+                          ? memberFeatures
+                          : selectedPlan === "pro"
+                            ? proFeatures
+                            : selectedPlan === "credits"
+                              ? creditsFeatures
+                              : []
+                      ).length +
+                        1) *
+                      25,
+                }}
+              >
+                <Div className={clsx(styles.feature, "feature")}>
+                  <A openInNewTab href={"https://chrry.dev"} className={"link"}>
+                    <Img logo="chrry" width={16} height={16} />
+                    {t("Open Source")}
+                  </A>
+                </Div>
+              </MotiView>
+              <MotiView
+                key={`1001-${animationKey}`}
+                from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                transition={{
+                  duration: reduceMotion ? 0 : 100,
+                  delay: reduceMotion
+                    ? 0
+                    : ((selectedPlan === "plus"
+                        ? plusFeatures
+                        : selectedPlan === "member"
+                          ? memberFeatures
+                          : selectedPlan === "pro"
+                            ? proFeatures
+                            : selectedPlan === "credits"
+                              ? creditsFeatures
+                              : []
+                      ).length +
+                        2) *
+                      25,
+                }}
+              >
+                <Div className={clsx(styles.feature, "feature")}>
+                  <A
+                    style={{
+                      color: "#f87171",
+                    }}
+                    href={"/affiliate"}
+                    className={"link"}
+                  >
+                    <Img
+                      showLoading={false}
+                      icon="heart"
+                      width={16}
+                      height={16}
+                    />{" "}
+                    {t("Affiliate")}
+                  </A>
+                </Div>
+              </MotiView>
             </>
           )}
         </Div>

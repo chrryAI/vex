@@ -573,23 +573,23 @@ input[type="text"]:active {
   width: 100%;
 }
 
-.suggestionsList,
-.menuThreadList {
-  opacity: 0;
+// .suggestionsList,
+// .menuThreadList {
+//   opacity: 0;
 
-  @media (prefers-reduced-motion: reduce) {
-    opacity: 1 !important;
-  }
-}
+//   @media (prefers-reduced-motion: reduce) {
+//     opacity: 1 !important;
+//   }
+// }
 
-.suggestionItem,
-.menuThreadItem {
-  opacity: 0;
+// .suggestionItem,
+// .menuThreadItem {
+//   opacity: 0;
 
-  @media (prefers-reduced-motion: reduce) {
-    opacity: 1 !important;
-  }
-}
+//   @media (prefers-reduced-motion: reduce) {
+//     opacity: 1 !important;
+//   }
+// }
 
 #root {
   margin: 0;
