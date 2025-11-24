@@ -437,11 +437,6 @@ export function ChatProvider({
     return app?.store?.apps.length
   }
 
-  // ?.store?.apps.every(
-  //   (item) =>
-  //     allApps?.find((app) => app.id === item.id)?.store?.apps.length,
-  // )
-
   const [loading, setLoading] = useState<boolean>(false)
 
   const setIsNewAppChat = (item: appWithStore | undefined) => {
