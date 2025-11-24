@@ -80,9 +80,11 @@ export default function Modal({
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
+    if (typeof window !== "undefined" && document.addEventListener) {
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
     }
   }, [isModalOpen, hideOnClickOutside])
 
@@ -112,24 +114,26 @@ export default function Modal({
 
   useEffect(() => {
     if (isModalOpen) {
-      // Store the current scroll position
-      const scrollY = window.scrollY
+      if (typeof window !== "undefined" && document.body) {
+        // Store the current scroll position
+        const scrollY = window.scrollY
 
-      // Lock the body scroll
-      document.body.style.position = "fixed"
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.width = "100%"
-      document.body.style.overflow = "hidden"
+        // Lock the body scroll
+        document.body.style.position = "fixed"
+        document.body.style.top = `-${scrollY}px`
+        document.body.style.width = "100%"
+        document.body.style.overflow = "hidden"
 
-      return () => {
-        // Restore the body scroll
-        document.body.style.position = ""
-        document.body.style.top = ""
-        document.body.style.width = ""
-        document.body.style.overflow = ""
+        return () => {
+          // Restore the body scroll
+          document.body.style.position = ""
+          document.body.style.top = ""
+          document.body.style.width = ""
+          document.body.style.overflow = ""
 
-        // Restore the scroll position
-        window.scrollTo(0, scrollY)
+          // Restore the scroll position
+          window.scrollTo(0, scrollY)
+        }
       }
     }
   }, [isModalOpen])
@@ -141,9 +145,11 @@ export default function Modal({
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+    if (typeof window !== "undefined" && window.addEventListener) {
+      window.addEventListener("keydown", handleKeyDown)
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown)
+      }
     }
   }, [isModalOpen])
 

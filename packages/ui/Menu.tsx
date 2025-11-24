@@ -36,6 +36,7 @@ import {
 import { Button, Div, H4, Span, usePlatform, useTheme } from "./platform"
 import { matchMedia } from "./platform/matchMedia"
 import { animate, stagger } from "motion"
+import { MotiView } from "./platform/MotiView"
 import { useHasHydrated } from "./hooks"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
@@ -127,79 +128,43 @@ export default function Menu({
 
   // Custom loading state that waits for actual DOM rendering
 
-  const [hasAnimatedThreads, setHasAnimatedThreads] = useState(false)
-  const animateThreads = (
-    reduceMotion: boolean = reduceMotionContext,
-  ): void => {
-    if (typeof window === "undefined") return
-    // const menuThreadList = document?.querySelector(".menuThreadList")
-
-    // Check for reduced motion preference
-    const prefersReducedMotion =
-      reduceMotion || matchMedia("(prefers-reduced-motion: reduce)").matches
-
-    if (prefersReducedMotion) {
-      // Just make visible without animation
-      const menuThreadList = document?.querySelector(".menuThreadList")
-      const menuThreadItems = document?.querySelectorAll(".menuThreadItem")
-
-      if (menuThreadList) {
-        ;(menuThreadList as HTMLElement).style.opacity = "1"
-      }
-      menuThreadItems?.forEach((item) => {
-        ;(item as HTMLElement).style.opacity = "1"
-      })
-    } else {
-      // Animate with motion
-      animate([
-        [".menuThreadList", { opacity: [0, 1] }, { duration: 0 }],
-        [
-          ".menuThreadItem",
-          {
-            y: [-10, 0],
-            opacity: [0, 1],
-            transform: ["translateX(-10px)", "none"],
-          },
-          {
-            delay: stagger(0.05),
-            duration: 0.1,
-          },
-        ],
-      ])
-      setHasAnimatedThreads(true)
-    }
-  }
+  const [animationKey, setAnimationKey] = useState(0)
+  // Animation key changes to trigger reanimate
 
   const innerRef = React.useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        isSmallDevice &&
-        innerRef.current &&
-        !innerRef.current.contains(event.target as Node)
-      ) {
-        setIsDrawerOpen(false)
+    if (typeof window !== "undefined" && document.addEventListener) {
+      function handleClickOutside(event: MouseEvent) {
+        if (
+          isSmallDevice &&
+          innerRef.current &&
+          !innerRef.current.contains(event.target as Node)
+        ) {
+          setIsDrawerOpen(false)
+        }
       }
-    }
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
     }
   }, [isSmallDevice])
 
   useEffect(() => {
-    isDrawerOpen && animateThreads()
+    // isDrawerOpen && animateThreads() // Moti handles this declaratively
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsDrawerOpen(!isDrawerOpen)
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+    if (typeof window !== "undefined" && window.addEventListener) {
+      window.addEventListener("keydown", handleKeyDown)
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown)
+      }
     }
   }, [isDrawerOpen])
 
@@ -261,10 +226,8 @@ export default function Menu({
           prev.id === threads.threads[i]?.id &&
           prev.bookmarks?.length === threads.threads[i]?.bookmarks?.length,
       )
-    setTimeout(() => {
-      ;(!hasAnimatedThreads || !areEqual) && animateThreads()
-    }, 150)
-  }, [threads, hasAnimatedThreads])
+    // Removed animateThreads call as Moti handles animation
+  }, [threads])
 
   return (
     <>
@@ -555,19 +518,34 @@ export default function Menu({
                           ...styles.threadsList.style,
                         }}
                       >
-                        {threads.threads.map((thread) => (
-                          <Div
+                        {threads.threads.map((thread, index) => (
+                          <MotiView
+                            key={`${thread.id}-${thread.bookmarks?.length}-${animationKey}`}
+                            from={{
+                              opacity: 0,
+                              translateY: 0,
+                              translateX: -10,
+                            }}
+                            animate={{
+                              opacity: 1,
+                              translateY: 0,
+                              translateX: 0,
+                            }}
+                            transition={{
+                              type: "timing",
+                              duration: reduceMotionContext ? 0 : 100,
+                              delay: reduceMotionContext ? 0 : index * 50,
+                            }}
                             data-testid="menu-thread-item"
                             style={{
                               ...styles.threadItem.style,
                               paddingRight:
                                 collaborationStatus === "pending" ? 0 : 17,
                             }}
-                            ref={(el) => {
+                            ref={(el: any) => {
                               threadRefs.current[thread.id] = el
                             }}
                             className="menuThreadItem"
-                            key={`${thread.id}-${thread.bookmarks?.length}`}
                           >
                             {thread.visibility !== "private" ||
                             thread.collaborations?.length ? (
@@ -661,7 +639,7 @@ export default function Menu({
                                 thread={thread}
                               />
                             )}
-                          </Div>
+                          </MotiView>
                         ))}
                       </Div>
                       {!isLoadingThreads && threads.threads.length === 0 && (
@@ -768,9 +746,11 @@ export default function Menu({
                 <Button
                   title={t("Motion")}
                   onClick={() => {
-                    reduceMotionContext && animateThreads(false)
-
                     setReduceMotion(!reduceMotionContext)
+                    // Trigger reanimate when motion is enabled
+                    if (reduceMotionContext) {
+                      setAnimationKey((prev) => prev + 1)
+                    }
                   }}
                   style={{
                     ...styles.reduceMotionButton.style,

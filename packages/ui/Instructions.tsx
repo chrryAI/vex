@@ -79,6 +79,7 @@ import A from "./A"
 import { useInstructionsStyles } from "./Instructions.styles"
 import { useStyles } from "./context/StylesContext"
 import EmojiPicker from "./EmojiPicker"
+import { MotiView } from "./platform/MotiView"
 
 export default function Instructions({
   className,
@@ -195,7 +196,8 @@ export default function Instructions({
   }, [viewPortHeight, isStandalone])
 
   // Theme context
-  const { addHapticFeedback, isDark, isMobileDevice } = usePlatformTheme()
+  const { addHapticFeedback, isDark, isMobileDevice, reduceMotion } =
+    usePlatformTheme()
 
   const isManaging = isManagingApp
 
@@ -1419,6 +1421,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         )}
         {!thread && showInstructions && (
           <Div
+            className="suggestionsList"
             data-testid={`${dataTestId}-list`}
             ref={instructionsListRef}
             style={{
@@ -1431,51 +1434,60 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 0,
                 isMemoryConsentManageVisible ? 3 : visibleInstructionCount,
               )
-              .map((instruction) => {
+              .map((instruction, index) => {
                 return (
-                  <Button
+                  <MotiView
                     key={instruction.id}
-                    data-testid={`${dataTestId}-item`}
-                    className="link"
-                    style={{
-                      ...utilities.link.style,
-                      ...styles.instruction.style,
-                      ...(selectedInstruction?.id === instruction.id
-                        ? styles.instructionSelected.style
-                        : {}),
-                      fontSize: isMobileDevice ? 14 : 15,
-                    }}
-                    onClick={() => {
-                      setSelectedInstruction(instruction)
-                      if (instruction.requiresWebSearch) {
-                        setSelectedAgent(perplexityAgent)
-                      }
+                    from={{ opacity: 0, translateY: -10 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{
+                      duration: reduceMotion ? 0 : 100,
+                      delay: reduceMotion ? 0 : index * 15,
                     }}
                   >
-                    <Span style={styles.instructionEmoji.style}>
-                      {instruction.emoji}
-                    </Span>
-                    <Span style={styles.instructionTitle.style}>
-                      {t(
-                        instruction.title,
-                        isManaging ? undefined : instructionConfig,
+                    <Button
+                      data-testid={`${dataTestId}-item`}
+                      className="link"
+                      style={{
+                        ...utilities.link.style,
+                        ...styles.instruction.style,
+                        ...(selectedInstruction?.id === instruction.id
+                          ? styles.instructionSelected.style
+                          : {}),
+                        fontSize: isMobileDevice ? 14 : 15,
+                      }}
+                      onClick={() => {
+                        setSelectedInstruction(instruction)
+                        if (instruction.requiresWebSearch) {
+                          setSelectedAgent(perplexityAgent)
+                        }
+                      }}
+                    >
+                      <Span style={styles.instructionEmoji.style}>
+                        {instruction.emoji}
+                      </Span>
+                      <Span style={styles.instructionTitle.style}>
+                        {t(
+                          instruction.title,
+                          isManaging ? undefined : instructionConfig,
+                        )}
+                      </Span>
+                      {isManaging && (
+                        <>
+                          {getCurrentSuggestionStep(instruction) ===
+                          "not_started" ? (
+                            <ArrowRight size={14} color="var(--accent-1)" />
+                          ) : getCurrentSuggestionStep(instruction) ===
+                            "in_progress" ? (
+                            <Circle size={14} color="var(--accent-1)" />
+                          ) : getCurrentSuggestionStep(instruction) ===
+                            "success" ? (
+                            <CircleCheck size={14} color="var(--accent-4)" />
+                          ) : null}
+                        </>
                       )}
-                    </Span>
-                    {isManaging && (
-                      <>
-                        {getCurrentSuggestionStep(instruction) ===
-                        "not_started" ? (
-                          <ArrowRight size={14} color="var(--accent-1)" />
-                        ) : getCurrentSuggestionStep(instruction) ===
-                          "in_progress" ? (
-                          <Circle size={14} color="var(--accent-1)" />
-                        ) : getCurrentSuggestionStep(instruction) ===
-                          "success" ? (
-                          <CircleCheck size={14} color="var(--accent-4)" />
-                        ) : null}
-                      </>
-                    )}
-                  </Button>
+                    </Button>
+                  </MotiView>
                 )
               })}
           </Div>

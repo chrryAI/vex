@@ -4,7 +4,15 @@ import React from "react"
 import { useAppContext } from "./context/AppContext"
 import { useApp } from "./context/providers"
 import { useEmptyStateTipsStyles } from "./EmptyStateTips.styles"
-import { Div, H3, Section, Span, usePlatform, useTheme } from "./platform"
+import {
+  Div,
+  H3,
+  MotiView,
+  Section,
+  Span,
+  usePlatform,
+  useTheme,
+} from "./platform"
 
 export default function EmptyStateTips({
   style,
@@ -12,6 +20,7 @@ export default function EmptyStateTips({
   style?: React.CSSProperties
 }) {
   const { isManagingApp, canEditApp, app } = useApp()
+  const { reduceMotion: reduceMotionContext } = useTheme()
 
   const styles = useEmptyStateTipsStyles()
 
@@ -236,10 +245,31 @@ export default function EmptyStateTips({
           if (viewPortHeight < 900 && i >= 6) return null
 
           return (
-            <Div key={i} style={styles.tip.style}>
-              <Span style={styles.tipText.style}>{t(item.tip || "")}</Span>
-              <Span> {item.emoji}</Span>
-            </Div>
+            <MotiView
+              key={i}
+              style={styles.tip.style}
+              from={{
+                opacity: 0,
+                translateY: 0,
+                translateX: -10,
+              }}
+              animate={{
+                opacity: 1,
+                translateY: 0,
+                translateX: 0,
+              }}
+              transition={{
+                type: "timing",
+                duration: reduceMotionContext ? 0 : 100,
+                delay: reduceMotionContext ? 0 : i * 50,
+              }}
+              data-testid="menu-thread-item"
+            >
+              <Div key={i} style={styles.tip.style}>
+                <Span style={styles.tipText.style}>{t(item.tip || "")}</Span>
+                <Span> {item.emoji}</Span>
+              </Div>
+            </MotiView>
           )
         })}
       </Div>

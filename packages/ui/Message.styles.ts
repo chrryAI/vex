@@ -106,6 +106,7 @@ export const MessageStyleDefs = {
     border: "1px solid var(--shade-2)",
     borderRadius: "var(--radius)",
     position: "relative",
+    overflowWrap: "break-word",
     boxShadow: "0px 0px 5px var(--shade-2)",
   },
   userMessageOwner: {
@@ -132,6 +133,7 @@ export const MessageStyleDefs = {
     alignSelf: "flex-start",
     borderRadius: 15,
     boxShadow: "0px 0px 5px var(--shade-2)",
+    overflowWrap: "break-word",
   },
   userImage: {
     borderRadius: "50%",

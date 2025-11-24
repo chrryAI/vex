@@ -791,7 +791,7 @@ export function AuthProvider({
       }
     }
 
-    // loadCachedSession()
+    loadCachedSession()
   }, [cachedSessionLoaded])
 
   const {
@@ -965,7 +965,7 @@ export function AuthProvider({
       }
     }
 
-    // loadCachedApps()
+    loadCachedApps()
   }, [token, loadingApp?.id, app?.id, user?.id, guest?.id, mergeApps])
 
   const {

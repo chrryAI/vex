@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.4.59",
+  "version": "1.4.60",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -86,6 +86,7 @@
     "lucide-react": "^0.534.0",
     "lucide-react-native": "^0.462.0",
     "markdown-to-jsx": "^7.7.13",
+    "moti": "^0.30.0",
     "motion": "^12.23.24",
     "next": "^15.5.6",
     "next-auth": "^4.24.11",
@@ -124,7 +125,6 @@
   "devDependencies": {
     "@react-navigation/native": "^7.1.19",
     "@react-navigation/native-stack": "^7.6.2",
-    "react-native-svg": "^15.15.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
@@ -133,6 +133,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-native": "*",
+    "react-native-svg": "^15.15.0",
     "tsup": "^8.0.0",
     "typescript": "5.8.2"
   },

@@ -120,7 +120,6 @@ export const SubscribeStyleDefs = {
     margin: 0,
     fontSize: 15,
     padding: 0,
-    opacity: 0,
   },
   feature: {
     margin: 0,
@@ -128,7 +127,6 @@ export const SubscribeStyleDefs = {
     gap: 1,
     alignItems: "center",
     padding: 0,
-    opacity: 0,
   },
   checkoutButton: {
     display: "flex",
