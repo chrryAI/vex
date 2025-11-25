@@ -109,13 +109,8 @@
   flex: 1;
 
   .appImage {
-    max-width: toRem.toRem(40);
-    max-height: toRem.toRem(40);
-
-    @media (min-width: breakpoints.$breakpoint-mobile) {
-      max-width: toRem.toRem(80);
-      max-height: toRem.toRem(80);
-    }
+    max-width: toRem.toRem(80);
+    max-height: toRem.toRem(80);
   }
 
   @media (min-width: breakpoints.$breakpoint-mobile) {
