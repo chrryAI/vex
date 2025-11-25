@@ -1,51 +1,63 @@
 # Chrry API
 
-Next.js API application for the Chrry marketplace.
+This is the Next.js API application for the Chrry marketplace. It provides a comprehensive set of API endpoints for managing apps, stores, and other resources on the Vex platform.
 
-## Getting Started
+## ✨ Features
 
-1. Install dependencies:
+*   **Next.js API Routes**: The API is built using Next.js API routes, providing a simple and intuitive way to create API endpoints.
+*   **Authentication and Authorization**: The API includes a robust authentication and authorization system to ensure that only authorized users can access protected resources.
+*   **AI Integration**: The API is integrated with a wide range of AI and machine learning services.
+*   **Database Integration**: The API is integrated with the Vex database, providing a type-safe and efficient way to interact with the database.
 
-```bash
-npm install
-```
+## 🚀 Getting Started
 
-2. Copy `.env.example` to `.env` and configure:
+### Prerequisites
 
-```bash
-cp .env.example .env
-```
+*   Node.js 18+
+*   pnpm 9+
 
-3. Run the development server:
+### Setup Instructions
 
-```bash
-npm run dev
-```
+1.  **Install dependencies**:
 
-API will be available at [http://localhost:3001](http://localhost:3001)
+    ```bash
+    pnpm install
+    ```
+
+2.  **Set up environment variables**:
+
+    Copy the `.env.example` file to `.env` and fill in the required values:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+3.  **Run the development server**:
+
+    ```bash
+    pnpm dev
+    ```
+
+    The API will be available at `http://localhost:3001`.
 
 ## API Endpoints
 
-- `GET /api/health` - Health check
-- `GET /api/apps` - Get all apps
-- `POST /api/apps` - Create a new app
-- `GET /api/stores` - Get all stores
-- `POST /api/stores` - Create a new store
+*   `GET /api/health` - Health check
+*   `GET /api/apps` - Get all apps
+*   `POST /api/apps` - Create a new app
+*   `GET /api/stores` - Get all stores
+*   `POST /api/stores` - Create a new store
 
-## Deployment
+... and many more.
 
-Deploy to Vercel:
+For detailed information about all the available API endpoints, see the [API Documentation](API_DOCS.md).
 
-```bash
-vercel --prod
-```
+## 🏛️ Architecture
 
-Set custom domain: `api.chrry.dev`
-
-## Architecture
+The `chrry-dot-dev` application is a standard Next.js app with the following structure:
 
 ```
-apps/api/
+apps/chrry-dot-dev/
 ├── app/
 │   ├── api/          # API routes
 │   ├── layout.tsx    # Root layout
@@ -53,3 +65,7 @@ apps/api/
 ├── middleware.ts     # CORS & auth
 └── package.json
 ```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to open an issue or submit a pull request.
