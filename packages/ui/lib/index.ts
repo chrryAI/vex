@@ -15,7 +15,7 @@ import {
 import * as utils from "../utils"
 import z from "zod"
 import { createCalendarEventSchema } from "../utils/calendarValidation"
-import superjson from "superjson"
+import { stringify as superjsonStringify } from "./superjson"
 import { appFormData } from "../schemas/appSchema"
 import { session } from "../context/providers/AuthProvider"
 
@@ -730,7 +730,7 @@ export const createCalendarEvent = async ({
 }) => {
   const response = await fetch(`${API_URL}/calendar`, {
     method: "POST",
-    body: superjson.stringify(event), // Serialize Dates properly
+    body: superjsonStringify(event), // Serialize Dates properly
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -753,7 +753,7 @@ export const updateCalendarEvent = async ({
 }) => {
   const response = await fetch(`${API_URL}/calendar/${id}`, {
     method: "PATCH",
-    body: superjson.stringify({ ...event, id }),
+    body: superjsonStringify({ ...event, id }),
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

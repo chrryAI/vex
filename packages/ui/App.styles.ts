@@ -51,7 +51,6 @@ export const AppStyleDefs = {
     gap: 10,
     gridTemplateColumns: "repeat(2, 1fr)",
     margin: "0 auto",
-    overflowWrap: "anywhere",
   },
   spaceInvader: {
     position: "relative",

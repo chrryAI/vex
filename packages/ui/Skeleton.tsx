@@ -96,8 +96,6 @@ export default function Skeleton({
   // Call ALL hooks before any conditional returns
   const { skeletonStyles, utilities } = useStyles()
 
-  console.log(`🚀 ~ Skeleton ~ isSmallDevice:`, isSmallDevice)
-
   return (
     <Div
       id="skeleton"
@@ -205,7 +203,7 @@ export default function Skeleton({
               <CharacterProfiles />
               <Subscribe />
 
-              <SignIn showSignIn={false} showRegister={isMobileDevice} />
+              <SignIn showSignIn={false} />
 
               <LanguageSwitcher />
             </Div>

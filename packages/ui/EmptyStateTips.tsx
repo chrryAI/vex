@@ -26,6 +26,14 @@ export default function EmptyStateTips({
 
   const { t } = useAppContext()
 
+  const [animationKey, setAnimationKey] = useState(0)
+
+  useEffect(() => {
+    if (!reduceMotion) {
+      setAnimationKey((prev) => prev + 1)
+    }
+  }, [reduceMotion])
+
   const { viewPortHeight } = usePlatform()
 
   const getTitle = () => {
@@ -232,14 +240,6 @@ export default function EmptyStateTips({
     if (app?.slug === "vault") return "💰 " + t("Finance Tips")
     return "🎯 " + t("Pro Tips")
   }
-
-  const [animationKey, setAnimationKey] = useState(0)
-
-  useEffect(() => {
-    if (!reduceMotion) {
-      setAnimationKey((prev) => prev + 1)
-    }
-  }, [reduceMotion])
 
   return (
     <Section style={{ ...styles.emptyStateTips, ...style }}>

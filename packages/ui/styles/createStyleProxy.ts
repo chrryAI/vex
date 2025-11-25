@@ -73,14 +73,17 @@ export function createStyleProxy<T extends Record<string, any>>(
             }
 
             // Convert viewport units (100dvh, 100vw, etc.) to dimensions
-            if (resolvedValue.includes("dvh") || resolvedValue.includes("vh")) {
+            if (
+              resolvedValue?.includes?.("dvh") ||
+              resolvedValue?.includes?.("vh")
+            ) {
               const match = resolvedValue.match(/(\d+(?:\.\d+)?)(dvh|vh)/)
               if (match) {
                 const percentage = parseFloat(match[1])
                 resolvedValue = (dimensions.height * percentage) / 100
               }
             }
-            if (resolvedValue.includes("vw")) {
+            if (resolvedValue?.includes?.("vw")) {
               const match = resolvedValue.match(/(\d+(?:\.\d+)?)vw/)
               if (match) {
                 const percentage = parseFloat(match[1])
@@ -95,7 +98,7 @@ export function createStyleProxy<T extends Record<string, any>>(
             }
 
             // Convert percentage borderRadius to numeric value
-            if (key === "borderRadius" && resolvedValue.includes("%")) {
+            if (key === "borderRadius" && resolvedValue.includes?.("%")) {
               // For 50%, use a large number to create circle effect
               if (resolvedValue === "50%") {
                 resolvedValue = 9999
@@ -103,7 +106,7 @@ export function createStyleProxy<T extends Record<string, any>>(
             }
 
             // Remove calc() expressions (not supported in RN)
-            if (resolvedValue.includes("calc(")) {
+            if (resolvedValue.includes?.("calc(")) {
               // Try to extract simple calculations
               const calcMatch = resolvedValue.match(/calc\((.+)\)/)
               if (calcMatch) {
@@ -119,7 +122,7 @@ export function createStyleProxy<T extends Record<string, any>>(
         if (
           key === "fontSize" &&
           typeof resolvedValue === "string" &&
-          resolvedValue.includes("vw")
+          resolvedValue.includes?.("vw")
         ) {
           const vwValue = parseFloat(resolvedValue)
           const calculatedSize = (dimensions.width * vwValue) / 100

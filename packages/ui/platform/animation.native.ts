@@ -2,15 +2,11 @@
  * Native Animation (Moti - Motion for React Native)
  */
 
-// React Spring for React Native
-import { animated } from "@react-spring/native"
-import { View, Text, Image, ScrollView } from "react-native"
+// Moti for React Native animations
+import { MotiView, MotiText, MotiImage, MotiScrollView } from "moti"
 
-// Export animated components
-export const MotiView = animated(View)
-export const MotiText = animated(Text)
-export const MotiImage = animated(Image)
-export const MotiScrollView = animated(ScrollView)
+// Re-export Moti components
+export { MotiView, MotiText, MotiImage, MotiScrollView }
 
 // Mock AnimatePresence for now (react-spring doesn't have a direct equivalent in the same way)
 export const AnimatePresence = ({ children }: { children: React.ReactNode }) =>

@@ -8,7 +8,6 @@ import {
   Div,
   H4,
   toRem,
-  useNavigation,
   usePlatform,
   useTheme,
   Video,
