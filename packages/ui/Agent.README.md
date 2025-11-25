@@ -4,14 +4,14 @@ The `Agent` component allows users to select from a variety of AI agents, each w
 
 ## ✨ Features
 
-*   **Agent Selection**: Users can select from a list of available AI agents.
-*   **Agent Profiles**: Each agent has a profile that displays its name, avatar, and a brief description of its capabilities.
-*   **Customizable**: The component can be customized to display different agents and agent profiles.
+- **Agent Selection**: Users can select from a list of available AI agents.
+- **Agent Profiles**: Each agent has a profile that displays its name, avatar, and a brief description of its capabilities.
+- **Customizable**: The component can be customized to display different agents and agent profiles.
 
 ## 🚀 Usage
 
 ```tsx
-import { Agent } from "@chrryai/chrry";
+import { Agent } from "@chrryai/chrry"
 
 function App() {
   const agents = [
@@ -27,20 +27,20 @@ function App() {
       avatar: "https://example.com/atlas-avatar.png",
       description: "A travel-focused AI assistant.",
     },
-  ];
+  ]
 
-  return <Agent agents={agents} />;
+  return <Agent agents={agents} />
 }
 ```
 
-##  props API
+## props API
 
 The `Agent` component accepts the following props:
 
-| Prop        | Type      | Description                                |
-| ----------- | --------- | ------------------------------------------ |
-| `agents`    | `array`   | An array of agent objects to display.      |
-| `onSelect`  | `function`| A callback function to handle agent selection. |
+| Prop       | Type       | Description                                    |
+| ---------- | ---------- | ---------------------------------------------- |
+| `agents`   | `array`    | An array of agent objects to display.          |
+| `onSelect` | `function` | A callback function to handle agent selection. |
 
 ## 🤝 Contributing
 

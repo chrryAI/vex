@@ -20,19 +20,19 @@ The request body can be either a JSON object or a `multipart/form-data` object.
 
 **JSON Request Body:**
 
-| Field                  | Type      | Description                               |
-| ---------------------- | --------- | ----------------------------------------- |
-| `agentId`              | `string`  | The ID of the AI agent to use.            |
-| `messageId`            | `string`  | The ID of the message to process.         |
-| `language`             | `string`  | The language of the request (e.g., "en"). |
+| Field                    | Type      | Description                               |
+| ------------------------ | --------- | ----------------------------------------- |
+| `agentId`                | `string`  | The ID of the AI agent to use.            |
+| `messageId`              | `string`  | The ID of the message to process.         |
+| `language`               | `string`  | The language of the request (e.g., "en"). |
 | `imageGenerationEnabled` | `boolean` | Whether to enable image generation.       |
-| `pauseDebate`          | `boolean` | Whether to pause a debate.                |
-| `stopStreamId`         | `string`  | The ID of the stream to stop.             |
-| `selectedAgentId`      | `string`  | The ID of the selected agent in a debate. |
-| `isSpeechActive`       | `boolean` | Whether speech is active.                 |
-| `weather`              | `object`  | The current weather conditions.           |
-| `slug`                 | `string`  | The slug of the app.                      |
-| `placeholder`          | `string`  | The placeholder text.                     |
+| `pauseDebate`            | `boolean` | Whether to pause a debate.                |
+| `stopStreamId`           | `string`  | The ID of the stream to stop.             |
+| `selectedAgentId`        | `string`  | The ID of the selected agent in a debate. |
+| `isSpeechActive`         | `boolean` | Whether speech is active.                 |
+| `weather`                | `object`  | The current weather conditions.           |
+| `slug`                   | `string`  | The slug of the app.                      |
+| `placeholder`            | `string`  | The placeholder text.                     |
 
 **Multipart/form-data Request Body:**
 
@@ -52,12 +52,12 @@ This endpoint is used to search for users by username or email, or to get a list
 
 #### Query Parameters
 
-| Parameter     | Type     | Description                                         |
-| ------------- | -------- | --------------------------------------------------- |
-| `search`      | `string` | The username or email to search for.                |
-| `find`        | `string` | A search query to find users.                       |
-| `pageSize`    | `number` | The number of users to return.                      |
-| `similarTo`   | `string` | Find users similar to the given user ID.            |
+| Parameter   | Type     | Description                              |
+| ----------- | -------- | ---------------------------------------- |
+| `search`    | `string` | The username or email to search for.     |
+| `find`      | `string` | A search query to find users.            |
+| `pageSize`  | `number` | The number of users to return.           |
+| `similarTo` | `string` | Find users similar to the given user ID. |
 
 #### Response
 

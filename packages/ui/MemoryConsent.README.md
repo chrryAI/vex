@@ -4,28 +4,28 @@ The `MemoryConsent` component is used to obtain user consent for the AI's memory
 
 ## ✨ Features
 
-*   **User Consent**: The component provides a clear and concise way to obtain user consent for the AI's memory feature.
-*   **Customizable**: The component can be customized to display different consent messages.
-*   **Secure**: The component is designed to be secure and to protect user privacy.
+- **User Consent**: The component provides a clear and concise way to obtain user consent for the AI's memory feature.
+- **Customizable**: The component can be customized to display different consent messages.
+- **Secure**: The component is designed to be secure and to protect user privacy.
 
 ## 🚀 Usage
 
 ```tsx
-import { MemoryConsent } from "@chrryai/chrry";
+import { MemoryConsent } from "@chrryai/chrry"
 
 function App() {
-  return <MemoryConsent />;
+  return <MemoryConsent />
 }
 ```
 
-##  props API
+## props API
 
 The `MemoryConsent` component accepts the following props:
 
-| Prop        | Type       | Description                                  |
-| ----------- | ---------- | -------------------------------------------- |
-| `onConsent` | `function` | A callback function to handle user consent.    |
-| `onDecline` | `function` | A callback function to handle user decline.    |
+| Prop        | Type       | Description                                 |
+| ----------- | ---------- | ------------------------------------------- |
+| `onConsent` | `function` | A callback function to handle user consent. |
+| `onDecline` | `function` | A callback function to handle user decline. |
 
 ## 🤝 Contributing
 
