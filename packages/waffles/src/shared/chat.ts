@@ -99,8 +99,8 @@ export const chat = async ({
       : isMember
         ? model === "chatGPT"
           ? 4
-          : model === "deepSeek"
-            ? 1
+          : model === "sushi"
+            ? 2
             : model === "claude"
               ? 3
               : 1
@@ -161,7 +161,7 @@ export const chat = async ({
       .getAttribute("data-agent-name")
   }
 
-  !isMember && expect(await getAgentName()).toBe("deepSeek")
+  !isMember && expect(await getAgentName()).toBe("sushi")
 
   const chatTextarea = page.getByTestId("chat-textarea")
   await expect(chatTextarea).toBeVisible()
@@ -325,10 +325,10 @@ export const chat = async ({
 
         await expect(agentModalCloseButton).toBeVisible()
         await agentModalCloseButton.click()
-        expect(await getAgentName()).toBe(isMember ? "chatGPT" : "flux")
+        expect(await getAgentName()).toBe("sushi")
       } else {
         if (!isMember) {
-          if (!["flux", "deepSeek", "gemini"].includes(prompt.model)) {
+          if (!["sushi", "gemini"].includes(prompt.model)) {
             await expect(signInModal).toBeVisible()
             const signInModalCloseButton = page.getByTestId(
               "sign-in-modal-close-button",
@@ -336,7 +336,7 @@ export const chat = async ({
             await expect(signInModalCloseButton).toBeVisible()
             await signInModalCloseButton.click()
 
-            expect(await getAgentName()).toBe("deepSeek")
+            expect(await getAgentName()).toBe("sushi")
           }
         } else {
           expect(await getAgentName()).toBe(prompt.model)
@@ -1387,7 +1387,7 @@ export const chat = async ({
         await expect.poll(getAgentName, { timeout: 5000 }).not.toBe("flux")
 
         // Verify agent changed to expected default
-        const expectedDefaultAgent = !isMember ? "deepSeek" : "chatGPT"
+        const expectedDefaultAgent = "sushi"
         expect(await getAgentName()).toBe(expectedDefaultAgent)
 
         // Second click: Toggle image generation back on
@@ -1397,7 +1397,7 @@ export const chat = async ({
         await expect.poll(getAgentName, { timeout: 5000 }).toBe("flux")
         await imageGenerationButton.click()
         await page.waitForTimeout(2000)
-        expect(await getAgentName()).toBe(!isMember ? "deepSeek" : "chatGPT")
+        expect(await getAgentName()).toBe(expectedDefaultAgent)
       }
     }
 

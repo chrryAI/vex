@@ -562,22 +562,6 @@ export default function Subscribe({
           className={"features"}
           style={{ ...styles.features.style }}
         >
-          <MotiView
-            key={`0-${animationKey}`}
-            from={{ opacity: 0, translateY: -10, translateX: -10 }}
-            animate={{ opacity: 1, translateY: 0, translateX: 0 }}
-            transition={{
-              duration: reduceMotion ? 0 : 100,
-              delay: reduceMotion ? 0 : 0,
-            }}
-          >
-            <Div className={clsx(styles.feature, "feature")}>
-              <A href={"mailto:iliyan@chrry.ai"} className={"link"}>
-                <Img logo="isVivid" icon="heart" width={16} height={16} />
-                {t("Need a white label like Vex?")}
-              </A>
-            </Div>
-          </MotiView>
           {features.map((feature, i) => (
             <MotiView
               key={`${i + 1}-${animationKey}`}
@@ -615,6 +599,22 @@ export default function Subscribe({
             )
           ) : (
             <>
+              <MotiView
+                key={`0-${animationKey}`}
+                from={{ opacity: 0, translateY: 0, translateX: -10 }}
+                animate={{ opacity: 1, translateY: 0, translateX: 0 }}
+                transition={{
+                  duration: reduceMotion ? 0 : 100,
+                  delay: reduceMotion ? 0 : 0,
+                }}
+              >
+                <Div className={clsx(styles.feature, "feature")}>
+                  <A href={"mailto:iliyan@chrry.ai"} className={"link"}>
+                    <Img logo="isVivid" icon="heart" width={16} height={16} />
+                    {t("Need a white label like Vex?")}
+                  </A>
+                </Div>
+              </MotiView>
               <MotiView
                 key={`1000-${animationKey}`}
                 from={{ opacity: 0, translateY: 0, translateX: -10 }}
