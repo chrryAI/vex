@@ -90,8 +90,8 @@ export const StoreStyleDefs = {
     flex: 1,
   },
   appImage: {
-    maxWidth: 40,
-    maxHeight: 40,
+    maxWidth: 80,
+    maxHeight: 80,
   },
   appSelected: {
     outline: "3px solid var(--accent-5)",

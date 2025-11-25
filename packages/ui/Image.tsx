@@ -213,19 +213,21 @@ export default function ImageComponent(props: ImageProps) {
   }
 
   return (
-    <Img
-      key={src}
-      onLoad={onLoad}
-      dataTestId={dataTestId}
-      containerClass={containerClass}
-      style={style}
-      className={className}
-      showLoading={showLoading}
-      width={width}
-      height={height}
-      title={title}
-      src={src || `${BASE_URL}/images/pacman/space-invader.png`}
-      alt={alt || app?.title || logo ? "Vex" : ""}
-    />
+    <>
+      <Img
+        key={src}
+        onLoad={onLoad}
+        dataTestId={dataTestId}
+        containerClass={containerClass}
+        style={style}
+        className={className}
+        showLoading={showLoading}
+        width={width}
+        height={height}
+        title={title}
+        src={src || `${BASE_URL}/images/pacman/space-invader.png`}
+        alt={alt || app?.title || logo ? "Vex" : ""}
+      />
+    </>
   )
 }
