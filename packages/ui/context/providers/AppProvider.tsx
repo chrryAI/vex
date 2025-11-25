@@ -540,6 +540,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [showingCustom, setShowingCustom] = useState(hasCustomInstructions)
 
+  useEffect(() => {
+    setShowingCustom(hasCustomInstructions)
+  }, [hasCustomInstructions])
+
   const isAppInstructions = contextInstructions.every((i) =>
     app?.highlights?.some((h) => h.id === i.id),
   )
