@@ -124,8 +124,6 @@ export { default as FilePicker, type FilePickerProps } from "./FilePicker"
 export { FlashList, type FlashListProps } from "./FlashList"
 
 // Animation utilities
-export * from "./animation"
-export * from "./animations" // Auto-resolves to .web.ts or .native.ts
 export * from "./useInView" // Auto-resolves to .web.ts or .native.ts
 export { useOnlineStatus } from "./useOnlineStatus" // Auto-resolves to .web.ts or .native.ts
 export { MotiView, type MotiViewProps } from "./MotiView" // Auto-resolves to .web.tsx or .native.tsx

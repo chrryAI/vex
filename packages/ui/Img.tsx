@@ -5,8 +5,7 @@ import React, { useState, useEffect } from "react"
 import { useImgStyles } from "./Img.styles"
 import Loading from "./Loading"
 import { ImageIcon } from "./icons"
-import { Div, Image as PlatformImage, MotiView } from "./platform"
-import { useReducedMotion } from "./platform/animations" // Auto-resolves to .web or .native
+import { Div, Image as PlatformImage, MotiView, useTheme } from "./platform"
 import { useInView } from "./platform/useInView" // Auto-resolves to .web or .native
 import { apiFetch } from "./utils"
 // Simple in-memory cache
@@ -143,8 +142,9 @@ export default function Img({
     }
   }, [])
 
+  const { reduceMotion } = useTheme()
+
   // Moti animation with reduced motion support
-  const reduceMotion = useReducedMotion()
 
   if (imageSrc) {
     return (
