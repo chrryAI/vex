@@ -4,10 +4,10 @@ Blossom is a React Native application designed to help you track your mood, prac
 
 ## ✨ Features
 
-*   **Mood Tracking**: Log your mood throughout the day and see how it changes over time.
-*   **Guided Meditations**: Listen to guided meditations to help you relax and de-stress.
-*   **Journaling**: Write down your thoughts and feelings in a private journal.
-*   **Personalized Insights**: Get personalized insights into your mental health based on your data.
+- **Mood Tracking**: Log your mood throughout the day and see how it changes over time.
+- **Guided Meditations**: Listen to guided meditations to help you relax and de-stress.
+- **Journaling**: Write down your thoughts and feelings in a private journal.
+- **Personalized Insights**: Get personalized insights into your mental health based on your data.
 
 ## 🚀 Getting Started
 

@@ -4,16 +4,16 @@ This package contains the database schema, migrations, and seeding scripts for t
 
 ## ✨ Features
 
-*   **Drizzle ORM**: The database layer is built on top of Drizzle ORM, providing a type-safe and intuitive API for interacting with the database.
-*   **PostgreSQL**: The package is designed to work with PostgreSQL, a powerful open-source relational database.
-*   **Migrations**: The package includes a migration system for managing changes to the database schema over time.
-*   **Seeding**: The package includes a seeding system for populating the database with initial data.
+- **Drizzle ORM**: The database layer is built on top of Drizzle ORM, providing a type-safe and intuitive API for interacting with the database.
+- **PostgreSQL**: The package is designed to work with PostgreSQL, a powerful open-source relational database.
+- **Migrations**: The package includes a migration system for managing changes to the database schema over time.
+- **Seeding**: The package includes a seeding system for populating the database with initial data.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-*   PostgreSQL 14+
+- PostgreSQL 14+
 
 ### Setup Instructions
 
