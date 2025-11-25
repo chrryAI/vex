@@ -274,7 +274,8 @@ export function AuthProvider({
 }) {
   const [wasGifted, setWasGifted] = useState<boolean>(false)
   const [session, setSession] = useState<session | undefined>(props.session)
-
+  const { searchParams, removeParams, pathname, addParams, ...router } =
+    useNavigation()
   useEffect(() => {
     if (error) {
       toast.error(error)
@@ -317,6 +318,8 @@ export function AuthProvider({
 
   const { isStorageReady } = usePlatform()
 
+  const fingerprintParam = searchParams.get("fp") || ""
+
   useEffect(() => {
     if (!deviceId && isStorageReady) {
       console.log("📝 Updating deviceId from session:", session?.deviceId)
@@ -332,7 +335,9 @@ export function AuthProvider({
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
-    session?.guest?.fingerprint || session?.user?.fingerprint || undefined,
+    session?.guest?.fingerprint ||
+      session?.user?.fingerprint ||
+      fingerprintParam,
   )
 
   // Local state for token and versions (no dependency on DataProvider)
@@ -397,12 +402,13 @@ export function AuthProvider({
 
   const TEST_MEMBER_FINGERPRINTS = session?.TEST_MEMBER_FINGERPRINTS || []
   const TEST_GUEST_FINGERPRINTS = session?.TEST_GUEST_FINGERPRINTS || []
+  console.log(
+    `🚀 ~ AuthProvider ~ TEST_GUEST_FINGERPRINTS:`,
+    TEST_GUEST_FINGERPRINTS,
+  )
   const TEST_MEMBER_EMAILS = session?.TEST_MEMBER_EMAILS || []
 
   // Create actions instance
-
-  const { searchParams, removeParams, pathname, addParams, ...router } =
-    useNavigation()
 
   const [taskId, setTaskId] = useState<string | undefined>(
     searchParams.get("taskId") || undefined,
@@ -411,8 +417,6 @@ export function AuthProvider({
   useEffect(() => {
     setTaskId(searchParams.get("taskId") || undefined)
   }, [searchParams])
-
-  const fingerprintParam = searchParams.get("fp") || ""
 
   const [isGuestTest, setIsLiveGuestTest] = useLocalStorage<boolean>(
     "isGuestTest",
@@ -428,6 +432,8 @@ export function AuthProvider({
       : false,
   )
 
+  const isLiveTest = isGuestTest || isMemberTest
+
   const [signInPart, setSignInPartInternal] = React.useState<
     "login" | "register" | "credentials" | undefined
   >(undefined)
@@ -435,7 +441,9 @@ export function AuthProvider({
   const setSignInPart = (
     part: "login" | "register" | "credentials" | undefined,
   ) => {
-    const newPart = !!user ? undefined : part
+    const newPart =
+      part && isLiveTest ? "credentials" : !!user ? undefined : part
+
     setSignInPartInternal(newPart)
 
     // Sync URL with state
@@ -526,8 +534,6 @@ export function AuthProvider({
       isPWA,
     })
   }
-
-  const isLiveTest = isGuestTest || isMemberTest
 
   const getAppSlug = (
     targetApp: appWithStore,
