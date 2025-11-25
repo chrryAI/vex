@@ -136,6 +136,7 @@ export * from "./storage"
 export * from "./useStorage"
 export * from "./navigation"
 export * from "./cookies"
+export const toRem = (value: number): string => `${value / 16}rem`
 export { Toast, VexToast } from "./ToastComponent"
 export { default as toast } from "./toast"
 export { default as useCookieOrLocalStorage } from "../hooks/useCookieOrLocalStorage"
