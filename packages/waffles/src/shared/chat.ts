@@ -103,8 +103,8 @@ export const chat = async ({
             ? 2
             : model === "claude"
               ? 3
-              : 1
-        : 1
+              : 2
+        : 2
 
   const MAX_FILE_SIZE = 4
 

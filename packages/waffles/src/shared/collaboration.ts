@@ -53,7 +53,7 @@ export async function collaboration({
     prompts: [
       {
         text: "I want to visit Japan. What should I know?",
-        model: "deepSeek",
+        model: "sushi",
       },
     ],
   })
@@ -180,7 +180,7 @@ export async function collaboration({
     prompts: [
       {
         text: "I've been to Tokyo before! The cherry blossoms are amazing in spring.",
-        model: "deepSeek",
+        model: "sushi",
       },
     ],
   })
@@ -203,7 +203,7 @@ export async function collaboration({
     prompts: [
       {
         text: "That's great! When is the best time to see cherry blossoms?",
-        model: "deepSeek",
+        model: "sushi",
       },
     ],
   })

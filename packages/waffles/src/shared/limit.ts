@@ -42,7 +42,7 @@ export const limit = async ({
           ? ("claude" as modelName)
           : isChatGPTMessage
             ? ("chatGPT" as modelName)
-            : ("deepSeek" as modelName),
+            : ("sushi" as modelName),
       agentMessageTimeout: isFluxMessage ? 60000 : 30000, // Flux needs more time
       webSearch: isWebSearch,
       shouldFail: i === hourlyLimit, // Only fail on last message
@@ -53,7 +53,7 @@ export const limit = async ({
   // Add one extra prompt that should fail
   const failPrompt = {
     text: "This message should fail due to hourly limit",
-    model: "deepSeek" as modelName,
+    model: "sushi" as modelName,
     agentMessageTimeout: 30000,
     shouldFail: true, // Flag to indicate this should fail
     webSearch: true, // Test web search on the failing request too
