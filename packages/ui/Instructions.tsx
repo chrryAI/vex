@@ -56,8 +56,6 @@ import { useHasHydrated } from "./hooks"
 
 import {
   getInstructionConfig,
-  isFirefox,
-  MAX_FILE_SIZES,
   PROMPT_LIMITS,
   instructionBase,
   isOwner,
@@ -66,13 +64,7 @@ import {
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
-import AddToHomeScreen from "./AddToHomeScreen"
-import { FaApple, FaAndroid, FaChrome, FaFirefox } from "react-icons/fa"
-// import EmojiPicker, {
-//   EmojiClickData,
-//   Theme,
-//   SuggestionMode,
-// } from "emoji-picker-react"
+import { FaApple, FaAndroid, FaChrome } from "react-icons/fa"
 import Agent from "./Agent"
 import { useLocalStorage } from "./hooks"
 import A from "./A"
@@ -113,10 +105,9 @@ export default function Instructions({
     artifacts: File[]
   }) => void
 }) {
-  // Split contexts for better organization
   const { t } = useAppContext()
-  const { isExtension } = usePlatform()
-  const { FRONTEND_URL, API_URL } = useData()
+
+  const { API_URL } = useData()
 
   const styles = useInstructionsStyles()
 
@@ -124,10 +115,8 @@ export default function Instructions({
 
   const { defaultInstructions, isAppInstructions } = useApp()
 
-  // Auth context
-  const { token, language, user, guest, app, focus, baseApp } = useAuth()
+  const { token, language, user, guest, app, focus } = useAuth()
 
-  // Chat context
   const {
     selectedAgent,
     setSelectedAgent,
@@ -138,7 +127,6 @@ export default function Instructions({
     refetchThread,
   } = useChat()
 
-  // Navigation context (router is the wrapper)
   const {
     router,
     collaborationStep,
@@ -147,7 +135,6 @@ export default function Instructions({
     setShowAddToHomeScreen,
   } = useNavigationContext()
 
-  // App context
   const {
     isManagingApp,
     appFormWatcher,
@@ -157,16 +144,11 @@ export default function Instructions({
     appForm,
   } = useApp()
 
-  // Error context
   const { captureException } = useError()
-
-  // Data context
   const { weather } = useData()
 
-  // Platform context
   const { os, isStandalone, viewPortHeight } = usePlatform()
 
-  // Calculate how many instruction items to show based on viewport height
   const getVisibleInstructionCount = () => {
     const height = (viewPortHeight || 0) + (isStandalone ? 250 : 0)
 

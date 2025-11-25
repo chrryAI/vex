@@ -21,7 +21,7 @@ import {
   useData,
   useChat,
 } from "./context/providers"
-import { useTheme, usePlatform, Div, Button, Span } from "./platform"
+import { useTheme, Div, Button, Span } from "./platform"
 import type {
   message,
   aiAgent,
@@ -33,14 +33,14 @@ import type {
 } from "./types"
 import MarkdownContent from "./MarkdownContent"
 
-import { BrowserInstance, checkIsExtension, isOwner, apiFetch } from "./utils"
+import { isOwner, apiFetch } from "./utils"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 
 import { Check, Copy } from "./icons"
 
 import { useEffect, useMemo, useState } from "react"
-import { deleteMessage, updateMessage, updateThread } from "./lib"
+import { updateMessage, updateThread } from "./lib"
 import toast from "react-hot-toast"
 import Img from "./Image"
 import { useThreadPresence } from "./hooks/useThreadPresence"
@@ -49,7 +49,6 @@ import { Claude, DeepSeek, Flux, Gemini, OpenAI, Perplexity } from "./icons"
 import { AudioPlayer } from "react-audio-play"
 import { checkSpeechLimits } from "./lib/speechLimits"
 import { stripMarkdown } from "./lib/stripMarkdown"
-import Logo from "./Logo"
 import { useMessageStyles } from "./Message.styles"
 import { useStyles } from "./context/StylesContext"
 import A from "./A"
@@ -75,11 +74,9 @@ export default function Message({
   onToggleLike?: (liked: boolean | undefined) => void
   onPlayAudio?: () => void
 }): React.ReactElement | null {
-  // Split contexts for better organization
   const { t } = useAppContext()
   const { utilities } = useStyles()
 
-  // Auth context
   const {
     language,
     token,
@@ -97,19 +94,12 @@ export default function Message({
 
   const { isAccountVisible, setIsAccountVisible } = useNavigationContext()
   const { refetchThread, messages } = useChat()
-  // Navigation context (router is the wrapper)
   const { router, addParams } = useNavigationContext()
 
-  // App context
-  const { slug, apps, setApp, app } = useApp()
+  const { slug, apps, app } = useApp()
 
-  // Error context
   const { captureException } = useError()
 
-  // Platform context
-  const { os } = usePlatform()
-
-  // Theme context
   const { addHapticFeedback, isMobileDevice } = useTheme()
 
   const ownerId = user?.id || guest?.id
