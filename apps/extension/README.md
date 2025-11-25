@@ -1,69 +1,67 @@
-# React + TypeScript + Vite
+# Vex Browser Extension
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the browser extension for the Vex platform. It is built using React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Multi-App Architecture**: This single codebase is used to build multiple, distinct extensions:
+    *   **Atlas**: A travel-focused extension.
+    *   **Focus**: A productivity-focused extension.
+    *   **Vex**: The main Vex platform extension.
+*   **AI-Powered**: The extension is powered by the Vex AI platform, providing you with AI assistance in your browser.
+*   **Cross-Browser**: The extension is designed to work in both Chrome and Firefox.
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default tseslint.config([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+*   Node.js 18+
+*   pnpm 9+
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Setup Instructions
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1.  **Install dependencies**:
+
+    ```bash
+    pnpm install
+    ```
+
+2.  **Build the extension**:
+
+    ```bash
+    # Build a specific extension (e.g., atlas)
+    pnpm run build:chrome:atlas
+
+    # Build all extensions
+    pnpm run build:chrome
+    ```
+
+3.  **Load the extension in your browser**:
+    *   **Chrome**:
+        1.  Go to `chrome://extensions`.
+        2.  Enable "Developer mode".
+        3.  Click "Load unpacked".
+        4.  Select the `dist` directory.
+    *   **Firefox**:
+        1.  Go to `about:debugging`.
+        2.  Click "This Firefox".
+        3.  Click "Load Temporary Add-on".
+        4.  Select the `dist/manifest.json` file.
+
+## 🛠️ Development
+
+To build the extension for development, run the following command:
+
+```bash
+pnpm run build:dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+To watch for changes and automatically rebuild the extension, run:
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x"
-import reactDom from "eslint-plugin-react-dom"
-
-export default tseslint.config([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm run dev:watch
 ```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to open an issue or submit a pull request.
