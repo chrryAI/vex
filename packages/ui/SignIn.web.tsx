@@ -424,6 +424,7 @@ export default function SignIn({
             )}
             {showRegister && (
               <Button
+                data-testid="register-button"
                 onClick={() => {
                   const plan = (user || guest)?.subscription?.plan || "member"
                   if (isExtension) {
