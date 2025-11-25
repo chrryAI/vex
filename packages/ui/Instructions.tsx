@@ -120,7 +120,6 @@ export default function Instructions({
   const {
     selectedAgent,
     setSelectedAgent,
-    perplexityAgent,
     deepSeekAgent,
     claudeAgent,
     favouriteAgent,
@@ -1440,9 +1439,6 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                       }}
                       onClick={() => {
                         setSelectedInstruction(instruction)
-                        if (instruction.requiresWebSearch) {
-                          setSelectedAgent(perplexityAgent)
-                        }
                       }}
                     >
                       <Span style={styles.instructionEmoji.style}>

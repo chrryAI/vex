@@ -860,14 +860,13 @@ export function ChatProvider({
       return
     }
 
-    const a = agent
-    setSelectedAgentInternal(a)
-    setAgentName(a?.name || "")
+    setSelectedAgentInternal(agent)
+    setAgentName(agent?.name || "")
     isImageGenerationEnabledRef.current &&
       setIsImageGenerationEnabledInternal(
-        a?.capabilities?.imageGeneration || false,
+        agent?.capabilities?.imageGeneration || false,
       )
-    setIsWebSearchEnabledInternal(a?.capabilities?.webSearch || false)
+    setIsWebSearchEnabledInternal(agent?.capabilities?.webSearch || false)
   }
 
   const [selectedAgent, setSelectedAgentInternal] = useLocalStorage<
