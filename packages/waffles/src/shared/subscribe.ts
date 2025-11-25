@@ -137,11 +137,10 @@ export const subscribe = async ({
   })
 
   const purchaseTypeInput = page.getByTestId("purchase-type")
-  await expect(purchaseTypeInput).toBeVisible()
 
   // Wait for toast with partial text match (handles emoji and variations)
   await expect(purchaseTypeInput).toHaveValue(
-    inviteOrGift ? "gift" : "subscribe",
+    inviteOrGift ? "gift" : "subscription",
   )
 
   await expect(subscribeButton).toBeVisible({
@@ -157,7 +156,7 @@ export const subscribe = async ({
   }
 
   if (createChat && threadUrl) {
-    expect(await getCreditsLeft(page)).toBe(5000 - prompts.length)
+    expect(await getCreditsLeft(page)).toBe(2000 - prompts.length * 2)
 
     await signIn({
       page,

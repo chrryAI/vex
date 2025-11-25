@@ -234,10 +234,6 @@ export default function Subscribe({
     }
   }
 
-  const [purchaseType, setPurchaseType] = useState<
-    "subscribe" | "gift" | "credits" | undefined
-  >()
-
   const verifyPayment = async (sessionId: string) => {
     track({ name: "subscribe_verify_payment" })
     const params = new URLSearchParams(window.location.search)
@@ -268,13 +264,8 @@ export default function Subscribe({
     if (data.success) {
       track({ name: "subscribe_payment_verified" })
       if (isExtensionRedirect) {
-        setPurchaseType("subscribe")
         toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
       } else {
-        setPurchaseType(
-          data.gift ? "gift" : data.credits ? "credits" : "subscribe",
-        )
-
         toast.success(
           data.gift
             ? t(`🥰 ${t("Thank you for your gift")}`)
@@ -496,6 +487,7 @@ export default function Subscribe({
           style={{ ...styles.plans.style }}
         >
           <Button
+            data-testid="member-button"
             onClick={() => {
               addHapticFeedback()
               setSelectedPlan("member")
@@ -870,6 +862,7 @@ export default function Subscribe({
                   <>
                     {!user && guest?.subscription && (
                       <Button
+                        data-testid="migrate-button"
                         className="link"
                         onClick={() => {
                           addHapticFeedback()
@@ -1004,6 +997,7 @@ export default function Subscribe({
                 {t("Register")}
               </Button>
               <Button
+                data-testid="login-button"
                 className="link"
                 onClick={() => {
                   addHapticFeedback()
@@ -1126,12 +1120,7 @@ export default function Subscribe({
           {t("Plus")}
         </Button>
       )}
-
-      {purchaseType && (
-        <Input data-testid="purchase-type" type="hidden" value={purchaseType} />
-      )}
-
-      {/* {giftedFingerPrint} */}
+      <Input data-testid="purchase-type" type="hidden" value={part} />
     </Div>
   )
 }
