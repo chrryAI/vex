@@ -25,7 +25,7 @@ export const thread = async ({
       prompts: Array.from({ length: 3 }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
-          model: "deepSeek",
+          model: "sushi",
           agentMessageTimeout: 30000,
         }
       }),
@@ -176,7 +176,7 @@ export const thread = async ({
       prompts: Array.from({ length: 3 }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
-          model: "deepSeek",
+          model: "sushi",
           agentMessageTimeout: 30000,
         }
       }),
@@ -200,7 +200,7 @@ export const thread = async ({
       prompts: Array.from({ length: 3 }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
-          model: "deepSeek",
+          model: "sushi",
           agentMessageTimeout: 30000,
         }
       }),

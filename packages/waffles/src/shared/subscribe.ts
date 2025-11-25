@@ -28,11 +28,11 @@ export const subscribe = async ({
   const prompts = [
     {
       text: "Hello",
-      model: "deepSeek" as modelName,
+      model: "sushi" as modelName,
     },
     {
       text: "World",
-      model: "deepSeek" as modelName,
+      model: "sushi" as modelName,
     },
   ]
   if (createChat) {
