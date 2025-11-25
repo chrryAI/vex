@@ -179,6 +179,7 @@ export default function EditThread({
         </Div>
       </Modal>
       <Button
+        className={isIcon ? "link" : "transparent"}
         data-testid="edit-thread-button"
         onClick={() => setIsModalOpen(true)}
         style={{
