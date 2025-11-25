@@ -478,6 +478,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       onValueChange?.(e.target.value)
     }
 
+    // Filter out React Native-specific event handlers that don't exist on web select
+    const { onPressIn, onPressOut, onPress, onLongPress, ...webProps } =
+      props as any
+
     return (
       <select
         ref={ref}
@@ -490,7 +494,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         id={id}
         disabled={disabled}
         required={required}
-        {...props}
+        {...webProps}
       >
         {options
           ? options.map((option) => (

@@ -1,9 +1,9 @@
 /**
- * Native animated image using React Native's built-in Animated API
+ * Native animated image using Moti
  */
 
-import React, { useEffect, useRef } from "react"
-import { Image, Animated } from "react-native"
+import React from "react"
+import { MotiImage } from "moti"
 import type { AnimationPreset } from "./animations"
 
 interface AnimatedImageProps {
@@ -18,8 +18,6 @@ interface AnimatedImageProps {
   animation?: AnimationPreset
 }
 
-const AnimatedImageComponent = Animated.createAnimatedComponent(Image)
-
 export function AnimatedImage({
   src,
   alt,
@@ -30,39 +28,25 @@ export function AnimatedImage({
   dataTestId,
   animation = "fadeIn",
 }: AnimatedImageProps) {
-  const opacity = useRef(new Animated.Value(0)).current
-  const translateY = useRef(new Animated.Value(30)).current
-
-  useEffect(() => {
-    if (isLoaded) {
-      const duration = reduceMotion ? 0 : 300
-      Animated.parallel([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration,
-          useNativeDriver: true,
-        }),
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }),
-      ]).start()
-    }
-  }, [isLoaded, reduceMotion, opacity, translateY])
-
   return (
-    <AnimatedImageComponent
+    <MotiImage
       testID={dataTestId}
       source={{ uri: src }}
       onLoad={onLoad}
-      style={[
-        style,
-        {
-          opacity,
-          transform: [{ translateY }],
-        },
-      ]}
+      style={style}
       accessibilityLabel={alt}
+      from={{
+        opacity: 0,
+        translateY: reduceMotion ? 0 : 30,
+      }}
+      animate={{
+        opacity: isLoaded ? 1 : 0,
+        translateY: 0,
+      }}
+      transition={{
+        type: reduceMotion ? "timing" : "spring",
+        duration: reduceMotion ? 0 : 300,
+      }}
     />
   )
 }
