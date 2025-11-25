@@ -6,10 +6,5 @@
     display: inline-flex !important;
   }
   font-size: toRem.toRem(12);
-  & {
-    color: var(--shade-6);
-  }
-  &:hover {
-    color: var(--accent-1);
-  }
+  color: var(--shade-6);
 }
