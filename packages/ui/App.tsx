@@ -971,8 +971,7 @@ export default function App({
                     // Show after base app (index 0) and Chrry (index 1)
                     const showPacmanHere =
                       app?.store?.id !== popcorn?.store?.id && index === 2
-                    const showSpaceInvaderHere =
-                      app?.store?.id !== popcorn?.store?.id && index === 3
+                    const showSpaceInvaderHere = index === 3
 
                     const showChrryHere =
                       index === 0 && chrry && app?.id !== chrry.id
