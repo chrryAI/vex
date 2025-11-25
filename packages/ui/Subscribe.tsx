@@ -487,6 +487,7 @@ export default function Subscribe({
           style={{ ...styles.plans.style }}
         >
           <Button
+            data-testid="member-button"
             onClick={() => {
               addHapticFeedback()
               setSelectedPlan("member")
@@ -861,6 +862,7 @@ export default function Subscribe({
                   <>
                     {!user && guest?.subscription && (
                       <Button
+                        data-testid="migrate-button"
                         className="link"
                         onClick={() => {
                           addHapticFeedback()
@@ -995,6 +997,7 @@ export default function Subscribe({
                 {t("Register")}
               </Button>
               <Button
+                data-testid="login-button"
                 className="link"
                 onClick={() => {
                   addHapticFeedback()

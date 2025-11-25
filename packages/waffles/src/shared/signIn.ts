@@ -16,16 +16,19 @@ export const signIn = async ({
   email?: string
   password?: string
 }) => {
-  const signInButton = page.getByTestId("login-button")
+  const registerButton = page.getByTestId("register-button")
 
   if (!isOpened) {
-    await expect(signInButton).toBeVisible({
+    await expect(registerButton).toBeVisible({
       timeout: 15000,
     })
-    await signInButton.click()
+    await registerButton.click()
   }
 
-  const isExtension = page.url().includes("extension")
+  const signInButton = page.getByTestId("login-button")
+  await expect(signInButton).toBeVisible()
+
+  await signInButton.click()
 
   const modal = page.getByTestId("sign-in-modal")
   await expect(modal).toBeVisible()
