@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 
 import { FilePicker, usePlatform, useTheme } from "./platform"
-import clsx from "clsx"
 import EnableNotifications from "./EnableNotifications"
 import Logo from "./Image"
 import Img from "./Image"
@@ -23,13 +22,9 @@ import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
-// import { DraggableAppList } from "./DraggableAppList"
-// import { DraggableAppItem } from "./DraggableAppItem"
-import { useAppReorder } from "./hooks/useAppReorder"
 import { Div, H1, Button, Label, Span, Input } from "./platform"
 import A from "./A"
 import { apiFetch } from "./utils"
-
 import { useStyles } from "./context/StylesContext"
 import {
   useApp,
@@ -38,28 +33,17 @@ import {
   useData,
   useNavigationContext,
 } from "./context/providers"
-import { COLORS, useAppContext } from "./context/AppContext"
+import { useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
-import { appWithStore } from "./types"
-// import Grape from "./Grape"
 
-interface App {
-  id: string
-  name: string
-  slug: string
-  [key: string]: unknown
-}
-
-// Focus button with live clock when timer is idle
 function FocusButton({ time }: { time: number }) {
-  const { appStyles, utilities } = useStyles()
+  const { appStyles } = useStyles()
   const { isExtension, isFirefox, isWeb } = usePlatform()
-  const { app, focus, getAppSlug, setShowFocus } = useAuth()
+  const { focus, getAppSlug, setShowFocus } = useAuth()
 
   const [currentTime, setCurrentTime] = useState(new Date())
 
   useEffect(() => {
-    // Only update clock when timer is idle (time === 0)
     if (time === 0) {
       const interval = setInterval(() => {
         setCurrentTime(new Date())
@@ -70,10 +54,8 @@ function FocusButton({ time }: { time: number }) {
 
   const formatTime = () => {
     if (time > 0) {
-      // Show timer countdown
       return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
     } else {
-      // Show current time
       const hours = currentTime.getHours()
       const minutes = currentTime.getMinutes()
       return `${hours}:${String(minutes).padStart(2, "0")}`
@@ -110,12 +92,9 @@ export default function App({
     artifacts: File[]
   }) => void
 }) {
-  // Split contexts for better organization
   const { t } = useAppContext()
-
   const { time } = useTimerContext()
 
-  // App context
   const {
     slug,
     app,
@@ -140,7 +119,6 @@ export default function App({
     toggleInstructions,
   } = useApp()
 
-  // Auth context
   const {
     user,
     guest,
@@ -150,21 +128,15 @@ export default function App({
     guestBaseApp,
     userBaseApp,
     token,
-    fetchApps,
-    isLoadingApps,
     loadingApp,
-    setLoadingApp,
   } = useAuth()
 
   const { FRONTEND_URL, API_URL } = useData()
 
-  // Navigation context (router is the wrapper)
-  const { router, setIsNewChat, getStoreSlug } = useNavigationContext()
+  const { router, getStoreSlug } = useNavigationContext()
 
-  // Input context
   const { setInput, setIsWebSearchEnabled, setIsNewAppChat } = useChat()
 
-  // Theme context
   const { addHapticFeedback } = useTheme()
   const currentStoreId = store?.id
 
@@ -239,13 +211,6 @@ export default function App({
 
   const hasHydrated = useHasHydrated()
 
-  const reorder = useAppReorder({
-    apps: appsState,
-    setApps,
-    autoInstall: false,
-    storeId: store?.id,
-  })
-
   const [imageDimensionWarning, setImageDimensionWarning] = React.useState<
     string | null
   >(null)
@@ -296,7 +261,6 @@ export default function App({
 
       if (!ctx) {
         setFile(originalFile)
-        // setImage(URL.createObjectURL(originalFile))
         return
       }
 
@@ -656,6 +620,7 @@ export default function App({
               </Div>
             )}
             <FilePicker
+              key={inputKey}
               ref={fileInputRef}
               accept="image/*"
               style={{ display: "none" }}
@@ -967,8 +932,6 @@ export default function App({
                     const showAtlasHere = index === 1 && app?.id === chrry?.id
                     const showFocusHere = focus && !showAtlasHere && index === 1
 
-                    // Calculate positions for Pacman and Space Invader
-                    // Show after base app (index 0) and Chrry (index 1)
                     const showPacmanHere =
                       app?.store?.id !== popcorn?.store?.id && index === 2
                     const showSpaceInvaderHere = index === 3
@@ -984,11 +947,6 @@ export default function App({
                       <Div
                         key={item.id}
                         id={item.id}
-                        // index={index}
-                        // onMove={reorder.moveApp}
-                        // onDragStart={reorder.handleDragStart}
-                        // onDragEnd={reorder.handleDragEnd}
-                        // onDrop={reorder.handleDrop}
                         style={{
                           ...styles.appItem.style,
                           marginLeft: index === 2 ? "auto" : undefined,
@@ -1270,7 +1228,6 @@ export default function App({
                   content,
                   artifacts,
                 })
-                // !isAddingApp && setInstructionsIndex((prev) => prev + 1)
               }}
               showInstructions={false}
             />
