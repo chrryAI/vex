@@ -243,6 +243,16 @@ See [LICENSE](LICENSE) for details.
 
 - **Website:** [chrry.dev](https://chrry.dev)
 - **Documentation:** [chrry.dev/docs](https://chrry.dev/docs)
+- **Component Documentation**:
+    - [Chat](./Chat.README.md)
+    - [Message](./Message.README.md)
+    - [Agent](./Agent.README.md)
+    - [Instructions](./Instructions.README.md)
+    - [MemoryConsent](./MemoryConsent.README.md)
+    - [CharacterProfiles](./CharacterProfiles.README.md)
+    - [EmptyStateTips](./EmptyStateTips.README.md)
+    - [Modal](./Modal.README.md)
+    - [Sidebar](./Sidebar.README.md)
 - **GitHub:** [@chrryai/chrry](https://github.com/chrryai/chrry)
 - **npm:** [@chrryai/chrry](https://www.npmjs.com/package/@chrryai/chrry)
 - **Chrry:** [chrry.ai](https://chrry.ai)

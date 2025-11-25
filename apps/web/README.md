@@ -4,17 +4,17 @@ This is the main web-based frontend for the Vex platform. It is a Next.js applic
 
 ## ✨ Features
 
-- **AI Chat**: A full-featured AI chat interface for interacting with the Vex platform.
-- **Multi-App PWA**: The web app supports the multi-app PWA architecture, allowing users to install different Vex apps on their home screen.
-- **App Marketplace**: Users can browse and install specialized AI apps from the app marketplace.
-- **Real-Time Collaboration**: The web app supports real-time collaboration features.
+*   **AI Chat**: A full-featured AI chat interface for interacting with the Vex platform.
+*   **Multi-App PWA**: The web app supports the multi-app PWA architecture, allowing users to install different Vex apps on their home screen.
+*   **App Marketplace**: Users can browse and install specialized AI apps from the app marketplace.
+*   **Real-Time Collaboration**: The web app supports real-time collaboration features.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- pnpm 9+
+*   Node.js 18+
+*   pnpm 9+
 
 ### Setup Instructions
 
