@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.4.65",
+  "version": "1.4.67",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -67,8 +67,6 @@
   "dependencies": {
     "@auth/core": "^0.37.2",
     "@google-cloud/translate": "^9.2.0",
-    "@react-spring/native": "^10.0.3",
-    "@react-spring/web": "^10.0.3",
     "@types/ioredis": "^5.0.0",
     "eslint": "^9.34.0",
     "eventsource-parser": "^3.0.3",

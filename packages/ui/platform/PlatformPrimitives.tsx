@@ -159,6 +159,7 @@ export interface ImageProps extends BaseProps {
   alt?: string
   width?: number | string
   height?: number | string
+  onLoad?: () => void
 }
 
 // ============================================

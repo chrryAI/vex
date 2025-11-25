@@ -5,10 +5,9 @@ import React, { useState, useEffect } from "react"
 import { useImgStyles } from "./Img.styles"
 import Loading from "./Loading"
 import { ImageIcon } from "./icons"
-import { Div } from "./platform"
+import { Div, Image as PlatformImage, MotiView } from "./platform"
 import { useReducedMotion } from "./platform/animations" // Auto-resolves to .web or .native
 import { useInView } from "./platform/useInView" // Auto-resolves to .web or .native
-import { AnimatedImage } from "./platform/AnimatedImage" // Auto-resolves to .web or .native
 import { apiFetch } from "./utils"
 // Simple in-memory cache
 const imageCache = new Map<string, string>()
@@ -144,10 +143,9 @@ export default function Img({
     }
   }, [])
 
-  // React Spring animation with reduced motion support
+  // Moti animation with reduced motion support
   const reduceMotion = useReducedMotion()
 
-  // Rest of your component remains the same...
   if (imageSrc) {
     return (
       <Div
@@ -155,24 +153,37 @@ export default function Img({
         className={containerClass}
         style={{ ...imgStyles.container.style, width, height, ...style }}
       >
-        <AnimatedImage
-          src={imageSrc}
-          alt={alt}
-          className={className}
-          style={{
-            ...imgStyles.img.style,
-            width,
-            height,
-            ...style,
+        <MotiView
+          from={{
+            opacity: 0,
+            translateY: reduceMotion ? 0 : 10,
           }}
-          isLoaded={isLoaded}
-          reduceMotion={reduceMotion}
-          onLoad={() => {
-            setIsLoaded(true)
-            onLoad?.()
+          animate={{
+            opacity: isLoaded ? 1 : 0,
+            translateY: 0,
           }}
-          dataTestId={dataTestId}
-        />
+          transition={{
+            type: reduceMotion ? "timing" : "spring",
+            duration: reduceMotion ? 0 : 150,
+          }}
+          style={{ width: "100%", height: "100%" }}
+        >
+          <PlatformImage
+            src={imageSrc}
+            alt={alt}
+            className={className}
+            style={{
+              ...imgStyles.img.style,
+              width,
+              height,
+              ...style,
+            }}
+            onLoad={() => {
+              setIsLoaded(true)
+              onLoad?.()
+            }}
+          />
+        </MotiView>
       </Div>
     )
   }

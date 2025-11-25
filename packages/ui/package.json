@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.4.65",
+  "version": "1.4.67",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -60,7 +60,6 @@
     "@number-flow/react": "^0.5.10",
     "@react-native-community/netinfo": "^11.4.1",
     "@react-native-google-signin/google-signin": "^16.0.0",
-    "@react-spring/web": "^10.0.3",
     "@stripe/stripe-js": "^7.7.0",
     "@types/chrome": "^0.1.1",
     "@types/nprogress": "^0.2.3",

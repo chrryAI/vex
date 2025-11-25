@@ -74,7 +74,6 @@ const nextConfig = {
       "react-native": false, // Block react-native completely on web
       "react-native-mmkv": false,
       "solito/router": false,
-      "@react-spring/native": false,
       "react-native-gesture-handler": false,
       "react-native-reanimated": false,
       "react-native-toast-message": false,
