@@ -72,23 +72,13 @@ All powered by the same infrastructure, yet each app is a fully independent PWA 
 
 3. **Set up environment variables**
 
-   Copy the example files and add your own values:
+   Run the setup script to create the necessary `.env` files:
 
    ```bash
-   # Database configuration
-   cp packages/db/.env.example packages/db/.env
-
-   # Main app configuration
-   cp apps/web/.env.example apps/web/.env
-
-   # Api app configuration
-   cp apps/chrry-dot-dev/.env.example apps/chrry-dot-dev/.env
-
-   # WebSocket server
-   cp apps/ws/.env.example apps/ws/.env
+   pnpm run setup:env
    ```
 
-   Edit the `.env` files and add:
+   Then, edit the new `.env` files and add:
    - Your PostgreSQL database URL
    - Your AI provider API keys (ChatGPT, Claude, DeepSeek, etc.) or NEXT_PUBLIC_TESTING_ENV='e2e'
    - Other required credentials (see `.env.example` files)
