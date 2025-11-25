@@ -41,16 +41,15 @@ export default function Bookmark({
   )
 
   useEffect(() => {
-    threads?.threads.some(
-      (t) =>
-        t.id === thread.id &&
-        t.bookmarks?.some((b) =>
-          isOwner(b, { userId: user?.id, guestId: guest?.id }),
-        ),
-    )
-      ? setBookmarkedInternal(true)
-      : setBookmarkedInternal(bookmarked)
-  }, [threads, bookmarked])
+    const t = threads?.threads.find((t) => t.id === thread.id)
+    if (t) {
+      t.bookmarks?.some((b) =>
+        isOwner(b, { userId: user?.id, guestId: guest?.id }),
+      )
+        ? setBookmarkedInternal(true)
+        : setBookmarkedInternal(false)
+    }
+  }, [threads])
 
   const setBookmarked = async (bookmarked: boolean) => {
     setBookmarkedInternal(bookmarked)
@@ -66,8 +65,6 @@ export default function Bookmark({
         onSave?.()
       })
   }
-
-  const [hovered, setHovered] = React.useState(false)
 
   return (
     <Button
