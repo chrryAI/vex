@@ -22,7 +22,7 @@ import {
 import { apiFetch } from "./utils"
 import ConfirmButton from "./ConfirmButton"
 import Loading from "./Loading"
-import { deleteMemories, updateGuest, updateUser } from "./lib"
+import { updateUser } from "./lib"
 import toast from "react-hot-toast"
 import { useMemoryConsentStyles } from "./MemoryConsent.styles"
 import { Button, Div } from "./platform"
@@ -30,32 +30,26 @@ import { useStyles } from "./context/StylesContext"
 
 export default function MemoryConsent({
   style,
-  ...props
 }: {
   isVisible?: boolean
   style?: React.CSSProperties
 }): React.ReactElement | null {
-  // Split contexts for better organization
   const styles = useMemoryConsentStyles()
   const { utilities } = useStyles()
   const { t } = useAppContext()
 
-  // Auth context
   const { user, guest, token, memoriesEnabled, setUser, setGuest, API_URL } =
     useAuth()
 
-  // Navigation context (router is the wrapper)
   const {
     router,
     isMemoryConsentManageVisible,
     setIsMemoryConsentManageVisible,
   } = useNavigationContext()
 
-  // App context
   const { isManagingApp, canEditApp } = useApp()
   const { actions } = useData()
 
-  // Error context
   const { captureException } = useError()
 
   const [isDeleting, setIsDeleting] = useState(false)

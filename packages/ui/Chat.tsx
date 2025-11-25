@@ -54,7 +54,6 @@ import {
 import {
   useTheme,
   usePlatform,
-  useResolveColor,
   Div,
   Button,
   Span,
@@ -84,13 +83,11 @@ import useSWR from "swr"
 import {
   BrowserInstance,
   capitalizeFirstLetter,
-  checkIsExtension,
   isOwner,
   MAX_FILE_SIZES,
   OWNER_CREDITS,
   PROMPT_LIMITS,
   apiFetch,
-  isE2E,
 } from "./utils"
 import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
@@ -98,7 +95,6 @@ import { checkSpeechLimits, SPEECH_LIMITS } from "./lib/speechLimits"
 import { stripMarkdown } from "./lib/stripMarkdown"
 import nProgress from "nprogress"
 import Logo from "./Logo"
-import { useWindowHistory } from "./hooks/useWindowHistory"
 import App from "./App"
 import Img from "./Image"
 import MoodSelector from "./MoodSelector"
@@ -107,8 +103,6 @@ import { useStyles } from "./context/StylesContext"
 import A from "./A"
 
 const MAX_FILES = 3
-
-// Function to handle context menu messages
 
 export default function Chat({
   className,
@@ -193,7 +187,6 @@ export default function Chat({
   thread?: thread
   onTyping?: (isTyping: boolean) => void
 }): React.ReactElement {
-  // Split contexts for better organization
   const { t } = useAppContext()
   const { weather, VERSION } = useData()
 
@@ -201,7 +194,6 @@ export default function Chat({
 
   const { utilities } = useStyles()
 
-  // Auth context
   const {
     user,
     token,
@@ -226,7 +218,6 @@ export default function Chat({
 
   const isChrry = chrry?.id === app?.id
 
-  // Chat context
   const {
     aiAgents,
     selectedAgent,
@@ -258,7 +249,6 @@ export default function Chat({
     shouldFocus,
   } = useChat()
 
-  // Navigation context (router is the wrapper)
   const {
     router,
     isNewChat,
@@ -269,16 +259,8 @@ export default function Chat({
     addParams,
   } = useNavigationContext()
 
-  // App context
-  const {
-    slug,
-    suggestSaveApp,
-    saveApp,
-    apps,
-    appStatus,
-    appFormWatcher,
-    setApp,
-  } = useApp()
+  const { slug, suggestSaveApp, saveApp, apps, appStatus, appFormWatcher } =
+    useApp()
 
   const threadIdRef = useRef(threadId)
 
@@ -287,27 +269,17 @@ export default function Chat({
   }, [threadId])
 
   const setThreadId = (id: string) => {
-    // setThreadIdContext(id)
     threadIdRef.current = id
   }
 
-  // Error context
   const { captureException } = useError()
 
-  // Platform context
   const { device, os, isStandalone, isExtension, viewPortWidth, isWeb } =
     usePlatform()
   const inputRef = useRef(text || "")
 
-  // Theme context
-  const {
-    addHapticFeedback,
-    reduceMotion,
-    playNotification,
-    isDrawerOpen,
-    isSmallDevice,
-    isMobileDevice,
-  } = useTheme()
+  const { addHapticFeedback, playNotification, isDrawerOpen, isSmallDevice } =
+    useTheme()
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setSelectedAgentInternal(agent)

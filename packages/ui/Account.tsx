@@ -63,19 +63,15 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
     API_URL,
   } = useAuth()
 
-  // Navigation context
   const { isAccountVisible: isModalOpen, setIsAccountVisible: setIsModalOpen } =
     useNavigationContext()
 
-  // Error context
   const { captureException } = useError()
 
-  // Theme context
   const { addHapticFeedback } = useTheme()
 
   const { setEnv, env, actions } = useData()
 
-  // Get searchParams from useSearchParams hook
   const searchParams = useSearchParams()
   const innerRef = React.useRef<HTMLDivElement>(null)
   const isExtension = checkIsExtension()

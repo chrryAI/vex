@@ -26,7 +26,6 @@ import {
   UserRoundPlus,
   CircleArrowDown,
   CircleArrowUp,
-  Link,
 } from "./icons"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -34,7 +33,6 @@ import { useAppContext } from "./context/AppContext"
 import { apiFetch } from "./utils"
 import Modal from "./Modal"
 import ConfirmButton from "./ConfirmButton"
-import Logo from "./Logo"
 
 import Img from "./Image"
 import { getFeatures } from "./utils/subscription"
@@ -101,10 +99,8 @@ export default function Subscribe({
       CREDITS_PRICE,
     })
 
-  // Error context
   const { captureException } = useError()
 
-  // Theme context
   const { addHapticFeedback, reduceMotion } = useTheme()
   const [isModalOpen, setIsModalOpen] = React.useState<boolean | undefined>(
     searchParams.get("subscribe") === "true" || undefined,
@@ -426,16 +422,10 @@ export default function Subscribe({
             ? creditsFeatures
             : []
   const shouldShowGift = () => {
-    // Not in gifting mode
     if (isGifting && !userToGift) return false
 
-    // In gifting mode but no user found yet (for credits)
-    // if (selectedPlan === "credits" && !userToGift) return false
-
-    // Found a user to gift to, but they already have this plan
     if (userToGift?.subscription?.plan === selectedPlan) return false
 
-    // All other gifting scenarios are valid
     return true
   }
 
@@ -458,21 +448,6 @@ export default function Subscribe({
       canSubscribe() ||
       !userToGift ||
       !userToGift?.subscription)
-
-  // useEffect(() => {
-  //   if (isExtension) {
-  //     BrowserInstance?.runtime?.sendMessage?.({
-  //       action: "openInSameTab",
-  //       url: `${window.location.href}`,
-  //     })
-  //     return
-  //   }
-
-  // }, [isExtension])
-
-  // if (isExtension) {
-  //   return null
-  // }
 
   const [animationKey, setAnimationKey] = useState(0)
 

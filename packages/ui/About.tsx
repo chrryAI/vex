@@ -47,17 +47,7 @@ import A from "./A"
 import { useAboutStyles } from "./About.styles"
 import { useStyles } from "./context/StylesContext"
 export default function About() {
-  const {
-    // track,
-    // isStandalone,
-    // addHapticFeedback,
-    chrry,
-    // captureException,
-    user,
-    track,
-    baseApp,
-    setApp,
-  } = useAuth()
+  const { chrry, track, baseApp, setApp, user } = useAuth()
 
   const config = getSiteConfig()
 
@@ -70,24 +60,12 @@ export default function About() {
 
   const { t } = useAppContext()
 
-  const {
-    // isDrawerOpen,
-    // router,
-    // t,
-    // track,
-    isStandalone,
-    // addHapticFeedback,
-
-    // captureException,
-    // user,
-  } = usePlatform()
+  const { isStandalone } = usePlatform()
 
   const { router } = useNavigationContext()
   const { isDrawerOpen, addHapticFeedback, isMobileDevice } = useTheme()
 
   const { captureException } = useError()
-
-  // useData()
 
   useEffect(() => {
     track({

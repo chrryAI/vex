@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Manual trigger
   push:
     branches:
-      - main # Sync to chrry repo when merged to main
+      - chrry # Sync to chrry repo when merged to main
     paths:
       - "packages/ui/**" # Only trigger if ui package changed
 
