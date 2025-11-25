@@ -9,6 +9,7 @@
     "native": "cd apps/native && npm start",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "setup:env": "bash scripts/setup-env.sh",
     "translate": "node scripts/translate.js",
     "update-version": "node scripts/update-version.js",
     "backfill-embeddings": "cd apps/web && npx tsx scripts/backfill-message-embeddings.ts",
