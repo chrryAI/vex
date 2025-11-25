@@ -53,10 +53,7 @@ export function Providers({
         i18nRouter.replace(path, { locale: lang })
       }}
       signInContext={(provider, options) => {
-        return signInContext(provider, {
-          blankTarget: true,
-          callbackUrl: options.callbackUrl,
-        })
+        return signInContext(provider, options)
       }}
       signOutContext={signOutContext}
     >

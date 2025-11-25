@@ -85,61 +85,7 @@ export default async function RootLayout({
         })
       : null
 
-  if (testMember && TEST_MEMBER_EMAILS.includes(testMember.email)) {
-    await deleteCreditUsage({
-      userId: testMember.id,
-    })
-
-    await updateUser({
-      ...testMember,
-      credits: 150,
-      migratedFromGuest: false,
-      subscribedOn: null,
-    })
-
-    const threads = await getThreads({
-      pageSize: 100000,
-      userId: testMember.id,
-      publicBookmarks: true,
-    })
-
-    await Promise.all(
-      threads.threads.map((thread) => {
-        thread.userId === testMember.id
-          ? deleteThread({ id: thread.id })
-          : updateThread({
-              ...thread,
-              bookmarks:
-                thread?.bookmarks?.filter(
-                  (bookmark) => bookmark.userId !== testMember.id,
-                ) || [],
-            })
-      }),
-    )
-
-    const messages = await getMessages({
-      pageSize: 100000,
-      userId: testMember.id,
-    })
-
-    await Promise.all(
-      messages.messages.map((message) => {
-        deleteMessage({
-          id: message.message.id,
-        })
-      }),
-    )
-
-    const subscriptions = await getSubscriptions({
-      userId: testMember.id,
-    })
-
-    await Promise.all(
-      subscriptions.map((subscription) => {
-        deleteSubscription({ id: subscription.id })
-      }),
-    )
-  } else if (fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
+  if (fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
     const guest = await getGuestDb({ fingerprint: fingerprint })
 
     if (guest) {
@@ -196,6 +142,60 @@ export default async function RootLayout({
         subscribedOn: null,
       })
     }
+  } else if (testMember && TEST_MEMBER_EMAILS.includes(testMember.email)) {
+    await deleteCreditUsage({
+      userId: testMember.id,
+    })
+
+    await updateUser({
+      ...testMember,
+      credits: 150,
+      migratedFromGuest: false,
+      subscribedOn: null,
+    })
+
+    const threads = await getThreads({
+      pageSize: 100000,
+      userId: testMember.id,
+      publicBookmarks: true,
+    })
+
+    await Promise.all(
+      threads.threads.map((thread) => {
+        thread.userId === testMember.id
+          ? deleteThread({ id: thread.id })
+          : updateThread({
+              ...thread,
+              bookmarks:
+                thread?.bookmarks?.filter(
+                  (bookmark) => bookmark.userId !== testMember.id,
+                ) || [],
+            })
+      }),
+    )
+
+    const messages = await getMessages({
+      pageSize: 100000,
+      userId: testMember.id,
+    })
+
+    await Promise.all(
+      messages.messages.map((message) => {
+        deleteMessage({
+          id: message.message.id,
+        })
+      }),
+    )
+
+    const subscriptions = await getSubscriptions({
+      userId: testMember.id,
+    })
+
+    await Promise.all(
+      subscriptions.map((subscription) => {
+        deleteSubscription({ id: subscription.id })
+      }),
+    )
   }
 
   return (

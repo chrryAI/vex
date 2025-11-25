@@ -107,6 +107,10 @@ export default async function middleware(request: NextRequest) {
     return response
   }
 
+  const url = new URL(request.url)
+  const searchParams = url.searchParams
+  const fingerprint = searchParams.get("fp")
+
   const response = handleIntlRequest(request)
   setCorsHeaders(response, request)
 
@@ -183,7 +187,7 @@ export default async function middleware(request: NextRequest) {
   // Set fingerprint cookie if not already set
   const existingFingerprint = request.cookies.get("fingerprint")?.value
   if (!existingFingerprint) {
-    response.cookies.set("fingerprint", uuidv4(), {
+    response.cookies.set("fingerprint", fingerprint || uuidv4(), {
       httpOnly: false,
       secure: process.env.NODE_ENV !== "development",
       sameSite: "lax",

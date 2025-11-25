@@ -90,10 +90,10 @@ export default function EmptyStateTips({
         <Div style={{ ...styles.ul.style }}>
           {builderTips.map((item, i) => {
             // Progressive display based on viewport height
-            if (viewPortHeight < 600 && i >= 3) return null
-            if (viewPortHeight < 700 && i >= 4) return null
-            if (viewPortHeight < 800 && i >= 5) return null
-            if (viewPortHeight < 900 && i >= 6) return null
+            if (viewPortHeight < 600 && i >= 2) return null
+            if (viewPortHeight < 700 && i >= 3) return null
+            if (viewPortHeight < 800 && i >= 4) return null
+            if (viewPortHeight < 900 && i >= 5) return null
 
             return (
               <Div key={i} style={styles.tip.style}>
