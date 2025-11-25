@@ -72,6 +72,7 @@ export default function Bookmark({
       onClick={() => setBookmarked(!bookmarked)}
       style={{
         ...(bookmarked && styles.starActive.style),
+        ...utilities.link.style,
         ...style,
       }}
       data-testid={`${dataTestId}-${bookmarked ? "bookmarked" : "not-bookmarked"}`}
@@ -79,7 +80,7 @@ export default function Bookmark({
       {bookmarked ? (
         <Star size={size} color="var(--accent-1)" fill="var(--accent-1)" />
       ) : (
-        <Star size={size} color="var(--shade-3)" />
+        <Star size={size} color="var(--shade-2)" fill="var(--shade-1)" />
       )}
       {children}
     </Button>
