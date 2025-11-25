@@ -4,9 +4,9 @@ This package provides shared ESLint configurations for the Vex monorepo.
 
 ## ✨ Features
 
-*   **Shared Configurations**: The package includes a base configuration and specialized configurations for Next.js and React libraries.
-*   **Best Practices**: The configurations are designed to enforce best practices and help to catch errors early.
-*   **Easy to Use**: The configurations are easy to use and can be extended to meet the specific needs of each project.
+- **Shared Configurations**: The package includes a base configuration and specialized configurations for Next.js and React libraries.
+- **Best Practices**: The configurations are designed to enforce best practices and help to catch errors early.
+- **Easy to Use**: The configurations are easy to use and can be extended to meet the specific needs of each project.
 
 ## 🚀 Usage
 
@@ -19,7 +19,7 @@ This is the base configuration, which is intended to be used for all projects in
 ```javascript
 module.exports = {
   extends: ["@repo/eslint-config/base"],
-};
+}
 ```
 
 ### Next.js Configuration
@@ -29,7 +29,7 @@ This configuration is intended to be used for Next.js projects.
 ```javascript
 module.exports = {
   extends: ["@repo/eslint-config/next-js"],
-};
+}
 ```
 
 ### React Internal Configuration
@@ -39,7 +39,7 @@ This configuration is intended to be used for internal React libraries.
 ```javascript
 module.exports = {
   extends: ["@repo/eslint-config/react-internal"],
-};
+}
 ```
 
 ## 🤝 Contributing

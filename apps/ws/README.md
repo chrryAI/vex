@@ -4,16 +4,16 @@ This is the WebSocket server for the Vex platform. It is built using Express and
 
 ## ✨ Features
 
-*   **Real-Time Chat**: The WebSocket server enables real-time, bidirectional communication between clients and the Vex platform.
-*   **Scalable**: The server is designed to be scalable to handle a large number of concurrent connections.
-*   **Secure**: The server includes authentication and authorization mechanisms to ensure that only authorized users can connect.
+- **Real-Time Chat**: The WebSocket server enables real-time, bidirectional communication between clients and the Vex platform.
+- **Scalable**: The server is designed to be scalable to handle a large number of concurrent connections.
+- **Secure**: The server includes authentication and authorization mechanisms to ensure that only authorized users can connect.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-*   Node.js 18+
-*   pnpm 9+
+- Node.js 18+
+- pnpm 9+
 
 ### Setup Instructions
 

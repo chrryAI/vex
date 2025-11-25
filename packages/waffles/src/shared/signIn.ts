@@ -25,6 +25,11 @@ export const signIn = async ({
     await registerButton.click()
   }
 
+  const memberButton = page.getByTestId("member-button")
+  await expect(memberButton).toBeVisible()
+
+  await memberButton.click()
+
   const signInButton = page.getByTestId("login-button")
   await expect(signInButton).toBeVisible()
 

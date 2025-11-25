@@ -4,17 +4,17 @@ This is the Next.js API application for the Chrry marketplace. It provides a com
 
 ## ✨ Features
 
-*   **Next.js API Routes**: The API is built using Next.js API routes, providing a simple and intuitive way to create API endpoints.
-*   **Authentication and Authorization**: The API includes a robust authentication and authorization system to ensure that only authorized users can access protected resources.
-*   **AI Integration**: The API is integrated with a wide range of AI and machine learning services.
-*   **Database Integration**: The API is integrated with the Vex database, providing a type-safe and efficient way to interact with the database.
+- **Next.js API Routes**: The API is built using Next.js API routes, providing a simple and intuitive way to create API endpoints.
+- **Authentication and Authorization**: The API includes a robust authentication and authorization system to ensure that only authorized users can access protected resources.
+- **AI Integration**: The API is integrated with a wide range of AI and machine learning services.
+- **Database Integration**: The API is integrated with the Vex database, providing a type-safe and efficient way to interact with the database.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-*   Node.js 18+
-*   pnpm 9+
+- Node.js 18+
+- pnpm 9+
 
 ### Setup Instructions
 
@@ -42,11 +42,11 @@ This is the Next.js API application for the Chrry marketplace. It provides a com
 
 ## API Endpoints
 
-*   `GET /api/health` - Health check
-*   `GET /api/apps` - Get all apps
-*   `POST /api/apps` - Create a new app
-*   `GET /api/stores` - Get all stores
-*   `POST /api/stores` - Create a new store
+- `GET /api/health` - Health check
+- `GET /api/apps` - Get all apps
+- `POST /api/apps` - Create a new app
+- `GET /api/stores` - Get all stores
+- `POST /api/stores` - Create a new store
 
 ... and many more.
 
