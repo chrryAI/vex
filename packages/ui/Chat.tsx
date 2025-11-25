@@ -4385,7 +4385,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 <Span
                   style={{
                     ...styles.creditCost.style,
-                    display: viewPortWidth > 390 ? "flex" : "none",
+                    display: viewPortWidth > 300 ? "flex" : "none",
                   }}
                 >
                   {!hitHourlyLimit && (
