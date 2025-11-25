@@ -4,9 +4,9 @@ This package provides shared TypeScript configurations for the Vex monorepo.
 
 ## ✨ Features
 
-*   **Shared Configurations**: The package includes a base configuration and specialized configurations for Next.js and React libraries.
-*   **Strict Type Checking**: The configurations are designed to enforce strict type checking, helping to catch errors early and improve code quality.
-*   **Easy to Use**: The configurations are easy to use and can be extended to meet the specific needs of each project.
+- **Shared Configurations**: The package includes a base configuration and specialized configurations for Next.js and React libraries.
+- **Strict Type Checking**: The configurations are designed to enforce strict type checking, helping to catch errors early and improve code quality.
+- **Easy to Use**: The configurations are easy to use and can be extended to meet the specific needs of each project.
 
 ## 🚀 Usage
 

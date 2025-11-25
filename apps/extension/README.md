@@ -4,19 +4,19 @@ This is the browser extension for the Vex platform. It is built using React, Typ
 
 ## ✨ Features
 
-*   **Multi-App Architecture**: This single codebase is used to build multiple, distinct extensions:
-    *   **Atlas**: A travel-focused extension.
-    *   **Focus**: A productivity-focused extension.
-    *   **Vex**: The main Vex platform extension.
-*   **AI-Powered**: The extension is powered by the Vex AI platform, providing you with AI assistance in your browser.
-*   **Cross-Browser**: The extension is designed to work in both Chrome and Firefox.
+- **Multi-App Architecture**: This single codebase is used to build multiple, distinct extensions:
+  - **Atlas**: A travel-focused extension.
+  - **Focus**: A productivity-focused extension.
+  - **Vex**: The main Vex platform extension.
+- **AI-Powered**: The extension is powered by the Vex AI platform, providing you with AI assistance in your browser.
+- **Cross-Browser**: The extension is designed to work in both Chrome and Firefox.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-*   Node.js 18+
-*   pnpm 9+
+- Node.js 18+
+- pnpm 9+
 
 ### Setup Instructions
 
@@ -37,16 +37,16 @@ This is the browser extension for the Vex platform. It is built using React, Typ
     ```
 
 3.  **Load the extension in your browser**:
-    *   **Chrome**:
-        1.  Go to `chrome://extensions`.
-        2.  Enable "Developer mode".
-        3.  Click "Load unpacked".
-        4.  Select the `dist` directory.
-    *   **Firefox**:
-        1.  Go to `about:debugging`.
-        2.  Click "This Firefox".
-        3.  Click "Load Temporary Add-on".
-        4.  Select the `dist/manifest.json` file.
+    - **Chrome**:
+      1.  Go to `chrome://extensions`.
+      2.  Enable "Developer mode".
+      3.  Click "Load unpacked".
+      4.  Select the `dist` directory.
+    - **Firefox**:
+      1.  Go to `about:debugging`.
+      2.  Click "This Firefox".
+      3.  Click "Load Temporary Add-on".
+      4.  Select the `dist/manifest.json` file.
 
 ## 🛠️ Development
 
