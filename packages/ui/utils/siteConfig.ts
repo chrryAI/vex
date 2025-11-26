@@ -586,9 +586,15 @@ export function getSiteTranslation(
   return catalog[locale] ?? catalog.en
 }
 
-export function detectSiteModeDomain(hostname?: string): SiteMode {
-  const defaultMode = "atlas"
-  // const defaultMode = "amsterdam"
+export function detectSiteModeDomain(
+  hostname?: string,
+  mode?: SiteMode,
+): SiteMode {
+  const defaultMode =
+    (process.env.MODE as SiteMode) ||
+    ((import.meta.env as any)?.VITE_SITE_MODE as SiteMode) ||
+    mode ||
+    ("vex" as SiteMode)
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -877,7 +883,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       favicon: "focus",
       mode: "focus",
       slug: "focus",
-      version: "26.10.36",
+      version: "26.10.38",
       storeSlug: "blossom",
       name: "Focus",
       domain: "focus.chrry.ai",
