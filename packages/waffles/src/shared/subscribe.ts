@@ -87,10 +87,11 @@ export const subscribe = async ({
 
   const getCreditsLeft = async (page: Page) => {
     const creditsInfo = page.getByTestId("credits-info")
-    const isCreditsVisible = await creditsInfo.isVisible().catch(() => false)
-    if (!isCreditsVisible) {
-      return null // Credits info is hidden when hourly limit is shown
-    }
+
+    await expect(creditsInfo).toBeVisible({
+      timeout: 10000,
+    })
+
     return parseInt(
       (await creditsInfo.getAttribute("data-credits-left", {
         timeout: 1000,
@@ -165,15 +166,17 @@ export const subscribe = async ({
       password,
     })
 
-    await expect(await getFirstMenuThread()).toBeVisible({
+    const first = await getFirstMenuThread()
+    await expect(first).toBeVisible({
       timeout: 20000,
     })
 
-    await page.goto(threadUrl, {
-      waitUntil: "networkidle",
-    })
+    await first.click()
 
     const userMessages = page.getByTestId("user-message")
+    await expect(userMessages).toBeVisible({
+      timeout: 10000,
+    })
     const userCount = await userMessages.count()
     expect(userCount).toBe(2)
   }
