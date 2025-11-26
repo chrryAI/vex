@@ -250,10 +250,6 @@ export function ChatProvider({
   }, [app?.id, user?.id, guest?.id])
 
   useEffect(() => {
-    console.log(
-      `🚀 ~ ChatProvider ~ migratedFromGuestRef.current:`,
-      migratedFromGuestRef.current,
-    )
     if (user && migratedFromGuestRef.current) {
       migratedFromGuestRef.current = false
       fetchSession()
