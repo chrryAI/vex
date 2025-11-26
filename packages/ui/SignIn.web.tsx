@@ -30,6 +30,7 @@ import {
 } from "./context/providers"
 import { Button, usePlatform } from "./platform"
 import { getSiteConfig } from "./utils/siteConfig"
+import { clearCache } from "./lib/db"
 
 export default function SignIn({
   className,
@@ -60,10 +61,24 @@ export default function SignIn({
     guest,
     isExtensionRedirect,
     fingerprint,
-    signInContext,
+    signInContext: signInContextInternal,
     signInPart: part,
     setSignInPart: setPart,
   } = useAuth()
+
+  const signInContext = async (
+    provider: "google" | "apple" | "credentials",
+    options: {
+      email?: string | undefined
+      password?: string | undefined
+      redirect?: boolean | undefined
+      callbackUrl: string
+      errorUrl: string
+    },
+  ) => {
+    await clearCache()
+    return signInContextInternal?.(provider, options)
+  }
   const { t } = useAppContext()
 
   const {

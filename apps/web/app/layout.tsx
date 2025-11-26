@@ -34,10 +34,16 @@ import { NextIntlClientProvider } from "next-intl"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import { getTranslations } from "chrry/lib"
 import ChrryAI, { generateMeta } from "./ChrryAI"
+import { getThreadId } from "chrry/utils"
+import { threadId } from "worker_threads"
 
 export const generateMetadata = async () => {
   const headersList = await headers()
   const hostname = headersList.get("host") || ""
+
+  const pathname = headersList.get("x-pathname") || ""
+
+  const threadId = getThreadId(pathname)
 
   const siteConfig = getSiteConfig(hostname)
   const locale = (await getLocale()) as locale
@@ -85,77 +91,42 @@ export default async function RootLayout({
         })
       : null
 
-  if (testMember && TEST_MEMBER_EMAILS.includes(testMember.email)) {
-    await deleteCreditUsage({
-      userId: testMember.id,
-    })
-
-    await updateUser({
-      ...testMember,
-      credits: 150,
-      migratedFromGuest: false,
-      subscribedOn: null,
-    })
-
-    const threads = await getThreads({
-      pageSize: 100000,
-      userId: testMember.id,
-      publicBookmarks: true,
-    })
-
-    await Promise.all(
-      threads.threads.map((thread) => {
-        thread.userId === testMember.id
-          ? deleteThread({ id: thread.id })
-          : updateThread({
-              ...thread,
-              bookmarks:
-                thread?.bookmarks?.filter(
-                  (bookmark) => bookmark.userId !== testMember.id,
-                ) || [],
-            })
-      }),
-    )
-
-    const messages = await getMessages({
-      pageSize: 100000,
-      userId: testMember.id,
-    })
-
-    await Promise.all(
-      messages.messages.map((message) => {
-        deleteMessage({
-          id: message.message.id,
-        })
-      }),
-    )
-
-    const subscriptions = await getSubscriptions({
-      userId: testMember.id,
-    })
-
-    await Promise.all(
-      subscriptions.map((subscription) => {
-        deleteSubscription({ id: subscription.id })
-      }),
-    )
-  } else if (fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
-    const guest = await getGuestDb({ fingerprint: fingerprint })
-
-    if (guest) {
+  if (!threadId && fingerprint) {
+    if (testMember && TEST_MEMBER_EMAILS.includes(testMember.email)) {
       await deleteCreditUsage({
-        guestId: guest.id,
+        userId: testMember.id,
+      })
+
+      await updateUser({
+        ...testMember,
+        credits: 150,
+        migratedFromGuest: false,
+        subscribedOn: null,
       })
 
       const threads = await getThreads({
         pageSize: 100000,
-        guestId: guest.id,
+        userId: testMember.id,
         publicBookmarks: true,
       })
 
+      await Promise.all(
+        threads.threads.map((thread) => {
+          thread.userId === testMember.id
+            ? deleteThread({ id: thread.id })
+            : updateThread({
+                ...thread,
+                bookmarks:
+                  thread?.bookmarks?.filter(
+                    (bookmark) => bookmark.userId !== testMember.id,
+                  ) || [],
+              })
+        }),
+      )
+
       const messages = await getMessages({
         pageSize: 100000,
-        guestId: guest.id,
+        userId: testMember.id,
       })
 
       await Promise.all(
@@ -166,22 +137,8 @@ export default async function RootLayout({
         }),
       )
 
-      await Promise.all(
-        threads.threads.map((thread) => {
-          thread.guestId === guest.id
-            ? deleteThread({ id: thread.id })
-            : updateThread({
-                ...thread,
-                bookmarks:
-                  thread?.bookmarks?.filter(
-                    (bookmark) => bookmark.guestId !== guest.id,
-                  ) || [],
-              })
-        }),
-      )
-
       const subscriptions = await getSubscriptions({
-        guestId: guest.id,
+        userId: testMember.id,
       })
 
       await Promise.all(
@@ -189,12 +146,63 @@ export default async function RootLayout({
           deleteSubscription({ id: subscription.id })
         }),
       )
+    } else if (TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
+      const guest = await getGuestDb({ fingerprint: fingerprint })
 
-      await updateGuest({
-        ...guest,
-        credits: 30,
-        subscribedOn: null,
-      })
+      if (guest) {
+        await deleteCreditUsage({
+          guestId: guest.id,
+        })
+
+        const threads = await getThreads({
+          pageSize: 100000,
+          guestId: guest.id,
+          publicBookmarks: true,
+        })
+
+        const messages = await getMessages({
+          pageSize: 100000,
+          guestId: guest.id,
+        })
+
+        await Promise.all(
+          messages.messages.map((message) => {
+            deleteMessage({
+              id: message.message.id,
+            })
+          }),
+        )
+
+        await Promise.all(
+          threads.threads.map((thread) => {
+            thread.guestId === guest.id
+              ? deleteThread({ id: thread.id })
+              : updateThread({
+                  ...thread,
+                  bookmarks:
+                    thread?.bookmarks?.filter(
+                      (bookmark) => bookmark.guestId !== guest.id,
+                    ) || [],
+                })
+          }),
+        )
+
+        const subscriptions = await getSubscriptions({
+          guestId: guest.id,
+        })
+
+        await Promise.all(
+          subscriptions.map((subscription) => {
+            deleteSubscription({ id: subscription.id })
+          }),
+        )
+
+        await updateGuest({
+          ...guest,
+          credits: 30,
+          subscribedOn: null,
+        })
+      }
     }
   }
 

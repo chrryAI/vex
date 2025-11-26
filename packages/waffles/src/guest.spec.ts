@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   // await acceptAllButton.click()
 })
 
-test("Subscribe As Guest", async ({ page }) => {
+test.only("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -34,7 +34,7 @@ test("Subscribe As Guest", async ({ page }) => {
   })
 })
 
-test.only("Invite", async ({ page }) => {
+test("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -51,7 +51,7 @@ test.only("Invite", async ({ page }) => {
   })
 })
 
-test("Gift", async ({ page }) => {
+test.only("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
   })

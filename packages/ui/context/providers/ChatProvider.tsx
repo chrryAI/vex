@@ -253,7 +253,7 @@ export function ChatProvider({
     isLoading: isLoadingThreadsSwr,
     error: threadsError,
   } = useSWR(
-    shouldFetchThreads ? ["contextThreads", thread?.id, app?.id] : null,
+    shouldFetchThreads ? ["contextThreads", thread?.id, app?.id, token] : null,
     async () => {
       if (!(user || guest)) return
 
@@ -805,10 +805,9 @@ export function ChatProvider({
     data: threadSWR,
     mutate,
     error,
-    isLoading: isLoadingThread,
   } = useSWR(
     shouldFetchThread && token && threadId
-      ? ["thread", threadId, liked, until]
+      ? ["thread", threadId, liked, until, token]
       : null,
     async () => {
       if (!threadId) return
