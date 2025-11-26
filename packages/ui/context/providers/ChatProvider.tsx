@@ -175,6 +175,8 @@ export function ChatProvider({
     favouriteAgent,
     threadId,
     setThreadId,
+    migratedFromGuestRef,
+    fetchSession,
     loadingApp,
     setLoadingApp,
     ...auth
@@ -247,18 +249,27 @@ export function ChatProvider({
     loadCachedThreads()
   }, [app?.id, user?.id, guest?.id])
 
+  useEffect(() => {
+    console.log(
+      `🚀 ~ ChatProvider ~ migratedFromGuestRef.current:`,
+      migratedFromGuestRef.current,
+    )
+    if (user && migratedFromGuestRef.current) {
+      migratedFromGuestRef.current = false
+      fetchSession()
+      refetchThreads()
+    }
+  }, [user])
+
   const {
     data: threadsData,
     mutate: refetchThreads,
     isLoading: isLoadingThreadsSwr,
     error: threadsError,
   } = useSWR(
-    shouldFetchThreads ? ["contextThreads", thread?.id, app?.id] : null,
+    shouldFetchThreads ? ["contextThreads", thread?.id, app?.id, token] : null,
     async () => {
-      if (!(user || guest)) return
-
       const key = `threads-${app?.id}-${user?.id || guest?.id}`
-
       try {
         const threads = await actions.getThreads({
           onError: (status) => {

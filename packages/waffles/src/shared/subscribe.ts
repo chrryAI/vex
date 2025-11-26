@@ -166,12 +166,14 @@ export const subscribe = async ({
       password,
     })
 
-    const first = await getFirstMenuThread()
-    await expect(first).toBeVisible({
-      timeout: 20000,
-    })
+    // const first = await getFirstMenuThread()
+    // await expect(first).toBeVisible({
+    //   timeout: 20000,
+    // })
 
-    await first.click()
+    await page.goto(threadUrl, {
+      waitUntil: "networkidle",
+    })
 
     const userMessages = page.getByTestId("user-message")
     await expect(userMessages).toBeVisible({

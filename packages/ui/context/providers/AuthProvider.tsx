@@ -72,6 +72,7 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      migratedFromGuestRef: React.MutableRefObject<boolean>
       fetchApps: () => Promise<void>
       isLoadingApps: boolean
       isSplash: boolean
@@ -332,19 +333,15 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [shouldFetchSession, setShouldFetchSession] = useState(!session)
+  const [shouldFetchSession, setShouldFetchSession] = useState(true)
 
-  const [fingerprint, setFingerprintInternal] = useCookieOrLocalStorage(
+  const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
     session?.guest?.fingerprint ||
       session?.user?.fingerprint ||
       fingerprintParam,
   )
 
-  const setFingerprint = (fingerprint?: string) => {
-    // setFingerprintInternal(fingerprint)
-    // setFingerprint(fingerprint)
-  }
   // Local state for token and versions (no dependency on DataProvider)
   const [token, setTokenInternal] = useCookieOrLocalStorage(
     "token",
@@ -1190,14 +1187,6 @@ export function AuthProvider({
     }
   }, [user, guest, isSessionLoading])
 
-  useEffect(() => {
-    if (user && migratedFromGuestRef.current) {
-      migratedFromGuestRef.current = false
-      fetchSession()
-      // refetchThreads()
-    }
-  }, [user])
-
   const { setColorScheme, setTheme } = useTheme()
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
@@ -1426,6 +1415,10 @@ export function AuthProvider({
       setSession(sessionData)
       // Track guest migration
       if (sessionData.migratedFromGuest) {
+        console.log(
+          `🚀 ~ AuthProvider ~ sessionData.migratedFromGuest):`,
+          sessionData.migratedFromGuest,
+        )
         migratedFromGuestRef.current = sessionData.migratedFromGuest
       }
 
@@ -1602,6 +1595,7 @@ export function AuthProvider({
         storeApp,
         store,
         stores,
+        migratedFromGuestRef,
         setStore,
         setStores,
         getAppSlug,

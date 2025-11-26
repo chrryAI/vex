@@ -91,6 +91,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
       "x-locale",
       "x-app-id",
       "x-source",
+      "x-url",
     ].join(", "),
   )
   response.headers.set(
@@ -127,6 +128,8 @@ export default async function middleware(request: NextRequest) {
     response.headers.set("x-store-slug", slug.storeSlug)
     response.headers.set("x-route-type", "store-app")
   }
+
+  response.headers.set("x-url", request.url)
 
   const RESERVED_PATHS = [
     "threads",

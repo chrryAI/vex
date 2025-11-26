@@ -91,8 +91,15 @@ export default async function RootLayout({
         })
       : null
 
-  if (!threadId && fingerprint) {
-    if (testMember && TEST_MEMBER_EMAILS.includes(testMember.email)) {
+  const url = headersList.get("x-url") || ""
+  const isCheckout = url.includes("checkout")
+
+  if (!threadId && fingerprint && !isCheckout) {
+    if (
+      testMember &&
+      TEST_MEMBER_EMAILS.includes(testMember.email) &&
+      !testMember.subscription
+    ) {
       await deleteCreditUsage({
         userId: testMember.id,
       })
@@ -146,7 +153,10 @@ export default async function RootLayout({
           deleteSubscription({ id: subscription.id })
         }),
       )
-    } else if (TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
+    } else if (
+      !currentMember &&
+      TEST_GUEST_FINGERPRINTS.includes(fingerprint)
+    ) {
       const guest = await getGuestDb({ fingerprint: fingerprint })
 
       if (guest) {
