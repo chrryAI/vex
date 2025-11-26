@@ -334,13 +334,17 @@ export function AuthProvider({
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!session)
 
-  const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
+  const [fingerprint, setFingerprintInternal] = useCookieOrLocalStorage(
     "fingerprint",
     session?.guest?.fingerprint ||
       session?.user?.fingerprint ||
       fingerprintParam,
   )
 
+  const setFingerprint = (fingerprint?: string) => {
+    // setFingerprintInternal(fingerprint)
+    // setFingerprint(fingerprint)
+  }
   // Local state for token and versions (no dependency on DataProvider)
   const [token, setTokenInternal] = useCookieOrLocalStorage(
     "token",

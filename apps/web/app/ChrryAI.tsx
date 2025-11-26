@@ -88,7 +88,7 @@ export default async function ChrryAI({
   const hostname = headersList.get("host") || ""
 
   const fingerprint =
-    cookieStore.get("fingerprint")?.value || headersList.get("x-fp") || uuidv4()
+    headersList.get("x-fp") || cookieStore.get("fingerprint")?.value || uuidv4()
 
   const gift = headersList.get("x-gift") || undefined
 

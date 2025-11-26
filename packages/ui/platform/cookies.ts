@@ -108,7 +108,15 @@ export function useCookie(
   // For web: use synchronous cookie access
   if (isBrowser && !isNative() && !isBrowserExtension()) {
     const [item, setItem] = useState<string>(() => {
-      return getCookieWeb(key, initialValue)
+      const existingCookie = getCookieWeb(key, "")
+
+      // If cookie doesn't exist and we have an initialValue, set it
+      if (!existingCookie && initialValue) {
+        setCookieWeb(key, initialValue)
+        return initialValue
+      }
+
+      return existingCookie || initialValue
     })
 
     const updateItem = useCallback(

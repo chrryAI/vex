@@ -360,6 +360,7 @@ export async function GET(request: Request) {
       ?.split("=")[1]
 
     const deviceId = deviceIdUrl || deviceIdCookie || deviceIdHeader
+    console.log(`🚀 ~ GET ~ deviceId:`, deviceId)
 
     let fingerPrintCookie = request.headers
       .get("cookie")
@@ -369,15 +370,12 @@ export async function GET(request: Request) {
       ?.substring("fingerprint=".length) // Get everything after "fingerprint="
       ?.trim() // Trim the value itself
 
-    const isValidFingerprint = fingerPrintCookie
-      ? validateUuid(fingerPrintCookie)
-      : false
-
     let fingerprint =
+      fingerprintHeader ||
       fingerPrintUrl ||
-      guest?.fingerprint ||
       fingerPrintCookie ||
-      fingerprintHeader
+      guest?.fingerprint
+    console.log(`🚀 ~ GET ~ fingerprint:`, fingerprint)
 
     const { getIp } = lib
 
@@ -600,12 +598,14 @@ export async function GET(request: Request) {
         }),
       )
 
+      const guestFingerprint = await getGuestDb({ fingerprint })
+
       let migratedFromGuest = false
       if (!member.migratedFromGuest) {
-        const toMigrate = member
-          ? (member.email ? await getGuestDb({ email: member.email }) : null) ||
-            (await getGuestDb({ fingerprint }))
-          : null
+        const toMigrate = member.email
+          ? (await getGuestDb({ email: member.email })) || guestFingerprint
+          : guestFingerprint
+
         if (toMigrate && !toMigrate?.migratedToUser) {
           await migrateUser({
             user: member,
