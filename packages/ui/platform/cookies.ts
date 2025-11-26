@@ -5,14 +5,16 @@
 
 /// <reference types="chrome" />
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
 import { storage } from "./storage"
 import { getExtensionUrls } from "../utils"
-import { validate } from "uuid"
+
+const isBrowser = typeof window !== "undefined"
 
 // Cookie options
 export interface CookieOptions {
+  days?: number
   maxAge?: number // seconds
   expires?: Date
   path?: string
@@ -22,47 +24,126 @@ export interface CookieOptions {
 }
 
 /**
+ * Stringify cookie options for document.cookie
+ */
+export function stringifyOptions(options: CookieOptions) {
+  return Object.keys(options).reduce((acc, key) => {
+    if (key === "days") {
+      return acc
+    } else {
+      const value = options[key as keyof CookieOptions]
+      if (value === false) {
+        return acc
+      } else if (value === true) {
+        return `${acc}; ${key}`
+      } else if (value) {
+        return `${acc}; ${key}=${value}`
+      }
+      return acc
+    }
+  }, "")
+}
+
+/**
+ * Set cookie (web-only, synchronous)
+ */
+export const setCookieWeb = (
+  name: string,
+  value: string,
+  options: CookieOptions = {},
+) => {
+  if (!isBrowser) return
+
+  const optionsWithDefaults = {
+    days: 7,
+    path: "/",
+    ...options,
+  }
+
+  const expires = new Date(
+    Date.now() + (optionsWithDefaults.days || 7) * 864e5,
+  ).toUTCString()
+
+  document.cookie =
+    name +
+    "=" +
+    encodeURIComponent(value) +
+    "; expires=" +
+    expires +
+    stringifyOptions(optionsWithDefaults)
+}
+
+/**
+ * Get cookie (web-only, synchronous)
+ */
+export const getCookieWeb = (name: string, initialValue = "") => {
+  return (
+    (isBrowser &&
+      document.cookie.split("; ").reduce((r, v) => {
+        const parts = v.split("=")
+        return parts[0] === name && parts[1] ? decodeURIComponent(parts[1]) : r
+      }, "")) ||
+    initialValue
+  )
+}
+
+/**
+ * Remove cookie (web-only, synchronous)
+ */
+export const removeCookieWeb = (name: string) => {
+  if (!isBrowser) return
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+}
+
+/**
  * Cross-platform cookie hook
- * - Web: Uses document.cookie
- * - Native: Uses AsyncStorage/MMKV (no real cookies)
- * - Extension: Uses chrome.cookies API or localStorage fallback
+ * - Web: Uses document.cookie (synchronous)
+ * - Native: Uses AsyncStorage/MMKV
+ * - Extension: Uses localStorage fallback
  */
 export function useCookie(
   key: string,
   initialValue: string = "",
 ): [string, (value: string, options?: CookieOptions) => void, () => void] {
+  // For web: use synchronous cookie access
+  if (isBrowser && !isNative() && !isBrowserExtension()) {
+    const [item, setItem] = useState<string>(() => {
+      return getCookieWeb(key, initialValue)
+    })
+
+    const updateItem = useCallback(
+      (value: string, options?: CookieOptions) => {
+        setItem(value)
+        setCookieWeb(key, value, options)
+      },
+      [key],
+    )
+
+    const removeItem = useCallback(() => {
+      setItem(initialValue)
+      removeCookieWeb(key)
+    }, [key, initialValue])
+
+    return [item, updateItem, removeItem]
+  }
+
+  // For native/extension: use async storage
   const [value, setValue] = useState<string>(initialValue)
 
-  // Load cookie on mount
-  useEffect(() => {
-    const loadCookie = async () => {
-      const cookieValue = await getCookie(key)
-      if (cookieValue !== null) {
-        setValue(cookieValue)
-      } else if (initialValue) {
-        // If no cookie exists but we have an initial value, set it
-        await setCookieValue(key, initialValue)
-      }
-    }
-    loadCookie()
-  }, [key, initialValue])
-
-  // Set cookie
-  const setCookie = useCallback(
-    async (newValue: string, options?: CookieOptions) => {
+  const updateItem = useCallback(
+    (newValue: string, _options?: CookieOptions) => {
       setValue(newValue)
-      await setCookieValue(key, newValue, options)
+      storage.setItem(key, newValue)
     },
     [key],
   )
 
-  // Remove cookie
-  const removeCookie = useCallback(async () => {
+  const removeItem = useCallback(() => {
     setValue(initialValue)
-    await deleteCookie(key)
+    storage.removeItem(key)
   }, [key, initialValue])
 
-  return [value, setCookie, removeCookie]
+  return [value, updateItem, removeItem]
 }
 
 /**

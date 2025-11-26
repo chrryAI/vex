@@ -344,9 +344,11 @@ export function AuthProvider({
   // Local state for token and versions (no dependency on DataProvider)
   const [token, setTokenInternal] = useCookieOrLocalStorage(
     "token",
-    apiKey || session?.user?.token || session?.guest?.fingerprint,
-    true,
+    session?.user?.token || session?.guest?.fingerprint || apiKey,
+    isExtension,
   )
+
+  console.log(`🚀 ~ DataProvider ~ token:`, token)
 
   // Track if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)
@@ -381,6 +383,7 @@ export function AuthProvider({
   }, [isExtension])
 
   const setToken = (token?: string) => {
+    console.log(`🚀 ~ setToken ~ token:`, token)
     setTokenInternal(token || "")
   }
 
@@ -403,10 +406,7 @@ export function AuthProvider({
 
   const TEST_MEMBER_FINGERPRINTS = session?.TEST_MEMBER_FINGERPRINTS || []
   const TEST_GUEST_FINGERPRINTS = session?.TEST_GUEST_FINGERPRINTS || []
-  console.log(
-    `🚀 ~ AuthProvider ~ TEST_GUEST_FINGERPRINTS:`,
-    TEST_GUEST_FINGERPRINTS,
-  )
+
   const TEST_MEMBER_EMAILS = session?.TEST_MEMBER_EMAILS || []
 
   // Create actions instance
