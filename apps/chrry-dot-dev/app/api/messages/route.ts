@@ -42,7 +42,7 @@ import {
   message,
 } from "@repo/db"
 import { user } from "@repo/db"
-import { isE2E, isOwner } from "chrry/utils"
+import { isE2E, isOwner, MAX_FILE_LIMITS } from "chrry/utils"
 import { PROMPT_LIMITS, webSearchResultType } from "@repo/db/src/schema"
 import sanitizeHtml from "sanitize-html"
 
@@ -502,6 +502,15 @@ export async function POST(request: Request) {
   } else {
     // Handle JSON requests (no files)
     requestData = await request.json()
+  }
+
+  if (files.length > MAX_FILE_LIMITS.artifacts) {
+    return new Response(
+      JSON.stringify({
+        error: `Maximum ${MAX_FILE_LIMITS.artifacts} files allowed`,
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    )
   }
 
   // Scan files for malware

@@ -80,10 +80,10 @@ test.only("File upload", async ({ page }) => {
   })
 
   await chat({
-    // artifacts: {
-    //   paste: 3,
-    //   pdf: 3,
-    // },
+    artifacts: {
+      paste: 3,
+      pdf: 3,
+    },
     isNewChat: false,
     page,
     isMember,
@@ -101,14 +101,18 @@ test.only("File upload", async ({ page }) => {
       {
         text: "Hey Vex, Analyze this pdf(s)",
         model: "sushi",
-        pdf: 4,
+        mix: {
+          pdf: 4,
+        },
         like: true,
       },
 
       {
-        text: "Hey Vex, Analyze this pdf",
+        text: "Hey Vex, Analyze this paste(s)",
         model: "sushi",
-        paste: 4,
+        mix: {
+          paste: 4,
+        },
         like: true,
       },
     ],

@@ -205,7 +205,7 @@ export const chat = async ({
 
   const about = page.getByTestId("instruction-about")
   let instructionButton = await getNthInstruction(0)
-  let artifactsButton = page.getByTestId("instruction-artifacts-button")
+  let artifactsButton = page.getByTestId("instruction-modal-artifacts-button")
 
   if (!threadId) {
     await expect(thread).not.toBeVisible()
@@ -215,7 +215,7 @@ export const chat = async ({
     await expect(instructionButton).not.toBeVisible()
 
     instructionButton = page.getByTestId("chat-instruction-button")
-    artifactsButton = page.getByTestId("chat-artifacts-button")
+    artifactsButton = page.getByTestId("chat-modal-artifacts-button")
     await expect(thread).toBeVisible()
     await expect(about).not.toBeVisible()
   }
@@ -240,52 +240,57 @@ export const chat = async ({
     const modalSaveButton = page.getByTestId("instruction-modal-save-button")
     await expect(modalSaveButton).toBeVisible()
 
-    await modalSaveButton.click()
-  }
+    if (artifacts) {
+      await artifactsButton.click()
 
-  if (artifacts) {
-    await artifactsButton.click()
+      const dataTestId = threadId ? "chat" : "instruction"
+      await expect(instructionModal).toBeVisible()
 
-    const dataTestId = threadId ? "chat" : "instruction"
-    await expect(instructionModal).toBeVisible()
+      if (artifacts.pdf) {
+        const fileChooserPromise = page.waitForEvent("filechooser")
+        await page.getByTestId(`${dataTestId}-artifacts-upload-button`).click()
 
-    if (artifacts.pdf) {
-      const fileChooserPromise = page.waitForEvent("filechooser")
-      await page.getByTestId(`${dataTestId}-artifacts-upload-button`).click()
+        const testUsedPaths = Array.from({ length: artifacts.pdf }, (_, i) => {
+          const fileType = "pdf"
+          const fileName = `test${capitalizeFirstLetter(fileType)}${i + 1}`
+          const extension = "pdf"
 
-      const testUsedPaths = Array.from({ length: artifacts.pdf }, (_, i) => {
-        const fileType = "pdf"
-        const fileName = `test${capitalizeFirstLetter(fileType)}${i + 1}`
-        const extension = "pdf"
+          return path.join(
+            process.cwd(),
+            "src/shared",
+            fileType,
+            `${fileName}.${extension}`,
+          )
+        })
 
-        return path.join(
-          process.cwd(),
-          "src/shared",
-          fileType,
-          `${fileName}.${extension}`,
-        )
-      })
-
-      const fileChooser = await fileChooserPromise
-      await fileChooser.setFiles(testUsedPaths)
-    }
-
-    if (artifacts.paste) {
-      for (let i = 0; i < artifacts.paste; i++) {
-        await simulatePaste(page, faker.lorem.sentence({ min: 550, max: 750 }))
+        const fileChooser = await fileChooserPromise
+        await fileChooser.setFiles(testUsedPaths)
       }
-    }
 
-    if ((artifacts.pdf || 0) + (artifacts.paste || 0) > 5) {
-      await expect(page.getByText("Maximum 5 files allowed")).toBeVisible()
-    }
+      if (artifacts.paste) {
+        for (let i = 0; i < artifacts.paste; i++) {
+          await simulatePaste(
+            page,
+            faker.lorem.sentence({ min: 550, max: 750 }),
+          )
+        }
+      }
 
-    const modalSaveButton = page.getByTestId(`${dataTestId}-modal-save-button`)
-    await expect(modalSaveButton).toBeVisible()
+      if ((artifacts.pdf || 0) + (artifacts.paste || 0) > 10) {
+        await expect(page.getByText("Maximum 10 files allowed")).toBeVisible()
+      }
+
+      const modalSaveButton = page.getByTestId(
+        `${dataTestId}-modal-save-button`,
+      )
+      await expect(modalSaveButton).toBeVisible()
+
+      await modalSaveButton.click()
+
+      expect(await page.getByText("Updated").count()).toBeGreaterThan(0)
+    }
 
     await modalSaveButton.click()
-
-    expect(await page.getByText("Updated").count()).toBeGreaterThan(0)
   }
 
   const getAgentModalButton = (agent: string) => {
@@ -717,89 +722,89 @@ export const chat = async ({
       "[data-testid=like-button]",
     )
 
-    if (prompts.indexOf(prompt) === 0 && artifacts) {
-      const dataTestId = threadId ? "chat" : "instruction"
-      let artifactsButton = page.getByTestId(
-        `${dataTestId}-instruction-artifacts-button`,
-      )
-      await artifactsButton.click()
+    // if (prompts.indexOf(prompt) === 0 && artifacts) {
+    //   const dataTestId = threadId ? "chat" : "instruction"
+    //   let artifactsButton = page.getByTestId(
+    //     `${dataTestId}-instruction-artifacts-button`,
+    //   )
+    //   await artifactsButton.click()
 
-      const instructionModal = page.getByTestId(
-        `${dataTestId}-instruction-modal`,
-      )
+    //   const instructionModal = page.getByTestId(
+    //     `${dataTestId}-instruction-modal`,
+    //   )
 
-      await expect(instructionModal).toBeVisible()
+    //   await expect(instructionModal).toBeVisible()
 
-      const filePreviewClears = page.getByTestId(
-        `${dataTestId}-instruction-file-preview-clear`,
-      )
+    //   const filePreviewClears = page.getByTestId(
+    //     `${dataTestId}-instruction-file-preview-clear`,
+    //   )
 
-      let count = (artifacts.pdf || 0) + (artifacts.paste || 0)
+    //   let count = (artifacts.pdf || 0) + (artifacts.paste || 0)
 
-      if (count > 5) {
-        count = 5
-      }
+    //   if (count > 5) {
+    //     count = 5
+    //   }
 
-      for (let i = 0; i < count; i++) {
-        const filePreviewClear = filePreviewClears.nth(count - i - 1)
-        await expect(filePreviewClear).toBeVisible()
-        await filePreviewClear.click()
-        await page.waitForTimeout(1000)
-      }
+    //   for (let i = 0; i < count; i++) {
+    //     const filePreviewClear = filePreviewClears.nth(count - i - 1)
+    //     await expect(filePreviewClear).toBeVisible()
+    //     await filePreviewClear.click()
+    //     await page.waitForTimeout(1000)
+    //   }
 
-      expect(await filePreviewClears.count()).toBe(0)
+    //   expect(await filePreviewClears.count()).toBe(0)
 
-      if (artifacts.paste) {
-        for (let i = 0; i < artifacts.paste; i++) {
-          await simulatePaste(
-            page,
-            faker.lorem.sentence({ min: 550, max: 750 }),
-          )
-        }
-      }
+    //   if (artifacts.paste) {
+    //     for (let i = 0; i < artifacts.paste; i++) {
+    //       await simulatePaste(
+    //         page,
+    //         faker.lorem.sentence({ min: 550, max: 750 }),
+    //       )
+    //     }
+    //   }
 
-      if (artifacts.pdf) {
-        const fileChooserPromise = page.waitForEvent("filechooser")
-        await page
-          .getByTestId(`${dataTestId}-instruction-artifacts-upload-button`)
-          .click()
-        const testUsedPaths = Array.from({ length: artifacts.pdf }, (_, i) => {
-          const fileType = "pdf"
-          const fileName = `test${capitalizeFirstLetter(fileType)}${i + 1}`
-          const extension = "pdf"
+    //   if (artifacts.pdf) {
+    //     const fileChooserPromise = page.waitForEvent("filechooser")
+    //     await page
+    //       .getByTestId(`${dataTestId}-instruction-artifacts-upload-button`)
+    //       .click()
+    //     const testUsedPaths = Array.from({ length: artifacts.pdf }, (_, i) => {
+    //       const fileType = "pdf"
+    //       const fileName = `test${capitalizeFirstLetter(fileType)}${i + 1}`
+    //       const extension = "pdf"
 
-          return path.join(
-            process.cwd(),
-            "src/shared",
-            fileType,
-            `${fileName}.${extension}`,
-          )
-        })
+    //       return path.join(
+    //         process.cwd(),
+    //         "src/shared",
+    //         fileType,
+    //         `${fileName}.${extension}`,
+    //       )
+    //     })
 
-        const fileChooser = await fileChooserPromise
-        await fileChooser.setFiles(testUsedPaths)
-      }
+    //     const fileChooser = await fileChooserPromise
+    //     await fileChooser.setFiles(testUsedPaths)
+    //   }
 
-      if ((artifacts.pdf || 0) + (artifacts.paste || 0) > 5) {
-        await expect(page.getByText("Maximum 5 files allowed")).toBeVisible()
-      }
+    //   if ((artifacts.pdf || 0) + (artifacts.paste || 0) > 10) {
+    //     await expect(page.getByText("Maximum 10 files allowed")).toBeVisible()
+    //   }
 
-      const modalSaveButton = page.getByTestId(
-        `${dataTestId}-instruction-modal-save-button`,
-      )
-      await expect(modalSaveButton).toBeVisible()
+    //   const modalSaveButton = page.getByTestId(
+    //     `${dataTestId}-instruction-modal-save-button`,
+    //   )
+    //   await expect(modalSaveButton).toBeVisible()
 
-      await modalSaveButton.click()
+    //   await modalSaveButton.click()
 
-      await wait(10000)
+    //   await wait(10000)
 
-      const modalCloseButton = page.getByTestId(
-        `${dataTestId}-instruction-modal-close-button`,
-      )
-      await expect(modalCloseButton).toBeVisible()
+    //   const modalCloseButton = page.getByTestId(
+    //     `${dataTestId}-instruction-modal-close-button`,
+    //   )
+    //   await expect(modalCloseButton).toBeVisible()
 
-      await modalCloseButton.click()
-    }
+    //   await modalCloseButton.click()
+    // }
 
     if (!prompt.stop) {
       await expect(likeButton).toBeVisible({

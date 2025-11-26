@@ -88,6 +88,7 @@ import {
   OWNER_CREDITS,
   PROMPT_LIMITS,
   apiFetch,
+  MAX_FILE_LIMITS,
 } from "./utils"
 import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
@@ -102,7 +103,7 @@ import { useChatStyles } from "./Chat.styles"
 import { useStyles } from "./context/StylesContext"
 import A from "./A"
 
-const MAX_FILES = 3
+const MAX_FILES = MAX_FILE_LIMITS.chat
 
 export default function Chat({
   className,

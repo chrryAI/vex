@@ -584,6 +584,11 @@ export const PDF_LIMITS = {
   max: 2 * 1024 * 1024, // Absolute max 2MB
 }
 
+export const MAX_FILE_LIMITS = {
+  artifacts: 10,
+  chat: 5,
+}
+
 export const MAX_FILE_SIZES = {
   deepSeek: {
     pdf: 22 * 1024 * 1024, // 22MB - reports show it can handle large documents

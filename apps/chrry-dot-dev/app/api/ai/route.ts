@@ -48,7 +48,13 @@ import { createOpenAI } from "@ai-sdk/openai"
 import { createAnthropic } from "@ai-sdk/anthropic"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { faker } from "@faker-js/faker"
-import { isE2E, isDevelopment, isOwner, MAX_FILE_SIZES } from "chrry/utils"
+import {
+  isE2E,
+  isDevelopment,
+  isOwner,
+  MAX_FILE_SIZES,
+  MAX_FILE_LIMITS,
+} from "chrry/utils"
 import Replicate from "replicate"
 import { webSearchResultType } from "@repo/db/src/schema"
 import {
@@ -562,6 +568,15 @@ export async function POST(request: Request) {
   } else {
     // Handle JSON requests (no files)
     requestData = await request.json()
+  }
+
+  if (files.length > MAX_FILE_LIMITS.chat) {
+    return new Response(
+      JSON.stringify({
+        error: `Maximum ${MAX_FILE_LIMITS.chat} files allowed`,
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    )
   }
 
   const {

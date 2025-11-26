@@ -28,7 +28,7 @@ import {
   generateThreadInstructions,
   generateThreadTitle,
 } from "../../../../utils/titleGenerator"
-import { FRONTEND_URL, isE2E, isOwner } from "chrry/utils"
+import { FRONTEND_URL, isE2E, isOwner, MAX_FILE_LIMITS } from "chrry/utils"
 import Collaboration from "../../../../components/emails/Collaboration"
 import { defaultLocale } from "chrry/locales"
 import captureException from "../../../../lib/captureException"
@@ -226,6 +226,15 @@ export async function PATCH(request: NextRequest) {
   } else {
     // Handle JSON requests (no files)
     requestData = await request.json()
+  }
+
+  if (files.length > MAX_FILE_LIMITS.artifacts) {
+    return new Response(
+      JSON.stringify({
+        error: `Maximum ${MAX_FILE_LIMITS.artifacts} files allowed`,
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    )
   }
 
   // Scan files for malware
