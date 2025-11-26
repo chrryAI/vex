@@ -79,6 +79,7 @@ import extractVideoFrames from "../../../lib/extractVideoFrames"
 import checkFileUploadLimits from "../../../lib/checkFileUploadLimits"
 import { getTools } from "../../../lib/tools"
 import { appFormData } from "chrry/schemas/appSchema"
+import { uploadArtifacts } from "../../actions/uploadArtifacts"
 
 interface StreamController {
   close: () => void
@@ -1000,6 +1001,12 @@ You can enable these in your settings anytime!"
     userId: member?.id,
     guestId: guest?.id,
   })
+
+  // Auto-upload files as thread artifacts if thread has no existing artifacts
+  const hasNoArtifacts = !thread.artifacts || thread.artifacts.length === 0
+  if (hasNoArtifacts && files.length > 0) {
+    await uploadArtifacts({ files, thread })
+  }
 
   // Get system prompt template from database (or use default Vex template)
   // If no app, fetch the default Vex app from database
