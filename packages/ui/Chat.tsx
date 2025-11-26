@@ -1011,7 +1011,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   }
 
   const clearFiles = () => setFiles([])
-  console.log(`🚀 ~ file: hat.tsx:1047 ~ device:`, device)
 
   // Remove specific file
   const removeFile = (index: number) => {

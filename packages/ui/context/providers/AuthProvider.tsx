@@ -333,7 +333,7 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [shouldFetchSession, setShouldFetchSession] = useState(true)
+  const [shouldFetchSession, setShouldFetchSession] = useState(!session)
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
@@ -348,8 +348,6 @@ export function AuthProvider({
     session?.user?.token || session?.guest?.fingerprint || apiKey,
     isExtension,
   )
-
-  console.log(`🚀 ~ DataProvider ~ token:`, token)
 
   // Track if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)
@@ -384,7 +382,6 @@ export function AuthProvider({
   }, [isExtension])
 
   const setToken = (token?: string) => {
-    console.log(`🚀 ~ setToken ~ token:`, token)
     setTokenInternal(token || "")
   }
 
@@ -1415,10 +1412,6 @@ export function AuthProvider({
       setSession(sessionData)
       // Track guest migration
       if (sessionData.migratedFromGuest) {
-        console.log(
-          `🚀 ~ AuthProvider ~ sessionData.migratedFromGuest):`,
-          sessionData.migratedFromGuest,
-        )
         migratedFromGuestRef.current = sessionData.migratedFromGuest
       }
 

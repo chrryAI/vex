@@ -16,6 +16,7 @@ import {
   updateGuest,
   updateThread,
   updateUser,
+  migrateUser,
 } from "@repo/db"
 
 import { getLocale } from "next-intl/server"
@@ -84,6 +85,8 @@ export default async function RootLayout({
   const fingerprint =
     cookieStore.get("fingerprint")?.value || headersList.get("x-fp") || uuidv4()
 
+  const guest = await getGuestDb({ fingerprint: fingerprint })
+
   const testMember =
     fingerprint && TEST_MEMBER_FINGERPRINTS.includes(fingerprint)
       ? await getUser({
@@ -95,11 +98,7 @@ export default async function RootLayout({
   const isCheckout = url.includes("checkout")
 
   if (!threadId && fingerprint && !isCheckout) {
-    if (
-      testMember &&
-      TEST_MEMBER_EMAILS.includes(testMember.email) &&
-      !testMember.subscription
-    ) {
+    if (testMember && TEST_MEMBER_EMAILS.includes(testMember.email)) {
       await deleteCreditUsage({
         userId: testMember.id,
       })
@@ -117,19 +116,19 @@ export default async function RootLayout({
         publicBookmarks: true,
       })
 
-      // await Promise.all(
-      //   threads.threads.map((thread) => {
-      //     thread.userId === testMember.id
-      //       ? deleteThread({ id: thread.id })
-      //       : updateThread({
-      //           ...thread,
-      //           bookmarks:
-      //             thread?.bookmarks?.filter(
-      //               (bookmark) => bookmark.userId !== testMember.id,
-      //             ) || [],
-      //         })
-      //   }),
-      // )
+      await Promise.all(
+        threads.threads.map((thread) => {
+          thread.userId === testMember.id
+            ? deleteThread({ id: thread.id })
+            : updateThread({
+                ...thread,
+                bookmarks:
+                  thread?.bookmarks?.filter(
+                    (bookmark) => bookmark.userId !== testMember.id,
+                  ) || [],
+              })
+        }),
+      )
 
       const messages = await getMessages({
         pageSize: 100000,
@@ -157,8 +156,6 @@ export default async function RootLayout({
       !currentMember &&
       TEST_GUEST_FINGERPRINTS.includes(fingerprint)
     ) {
-      const guest = await getGuestDb({ fingerprint: fingerprint })
-
       if (guest) {
         await deleteCreditUsage({
           guestId: guest.id,
@@ -213,6 +210,21 @@ export default async function RootLayout({
           subscribedOn: null,
         })
       }
+    }
+  }
+
+  if (currentMember && !currentMember?.migratedFromGuest) {
+    const toMigrate = currentMember.email
+      ? (await getGuestDb({ email: currentMember.email })) || guest
+      : guest
+
+    if (toMigrate && !toMigrate?.migratedToUser) {
+      await migrateUser({
+        user: currentMember,
+        guest: toMigrate,
+      })
+
+      currentMember.migratedFromGuest = true
     }
   }
 
