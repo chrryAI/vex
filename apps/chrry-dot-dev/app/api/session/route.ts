@@ -360,7 +360,6 @@ export async function GET(request: Request) {
       ?.split("=")[1]
 
     const deviceId = deviceIdUrl || deviceIdCookie || deviceIdHeader
-    console.log(`🚀 ~ GET ~ deviceId:`, deviceId)
 
     let fingerPrintCookie = request.headers
       .get("cookie")
@@ -375,7 +374,6 @@ export async function GET(request: Request) {
       fingerPrintUrl ||
       fingerPrintCookie ||
       guest?.fingerprint
-    console.log(`🚀 ~ GET ~ fingerprint:`, fingerprint)
 
     const { getIp } = lib
 
@@ -601,7 +599,7 @@ export async function GET(request: Request) {
       const guestFingerprint = await getGuestDb({ fingerprint })
 
       let migratedFromGuest = false
-      if (!member.migratedFromGuest) {
+      if (!member.migratedFromGuest && appType && appType !== "web") {
         const toMigrate = member.email
           ? (await getGuestDb({ email: member.email })) || guestFingerprint
           : guestFingerprint
@@ -674,7 +672,6 @@ export async function GET(request: Request) {
     let existingGuest = gift
       ? await getGuestDb({ fingerprint: gift })
       : await getGuestDb({ fingerprint })
-    console.log(`🚀 ~ GET ~ existingGuest:`, existingGuest?.fingerprint)
 
     if (gift && !existingGuest?.email) {
       existingGuest = await getGuestDb({ fingerprint })

@@ -95,7 +95,6 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         const email = credentials?.email as string
         const password = credentials?.password as string
-        console.log(`🚀 ~ authorize ~ credentials:`, credentials?.email)
 
         if (!email || !password) {
           return null

@@ -911,7 +911,10 @@ export const createVerificationToken = async (token: newVerificationToken) => {
 export const updateUser = async (user: user) => {
   const [updated] = await db
     .update(users)
-    .set(user)
+    .set({
+      ...user,
+      password: user.password ?? (await getUser({ id: user.id }))?.password,
+    })
     .where(eq(users.id, user.id))
     .returning()
 
@@ -1554,7 +1557,6 @@ export async function migrateUser({
 
   await Promise.all(
     threads.threads.map(async (thread) => {
-      console.log(`🚀 ~ migrateUser ~ thread:`, thread.id)
       await updateThread({
         ...thread,
         userId,
