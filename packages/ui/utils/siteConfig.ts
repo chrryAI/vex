@@ -592,7 +592,7 @@ export function detectSiteModeDomain(
 ): SiteMode {
   const defaultMode =
     (process.env.MODE as SiteMode) ||
-    ((import.meta.env as any)?.VITE_SITE_MODE as SiteMode) ||
+    ((import.meta as any)?.env?.VITE_SITE_MODE as SiteMode) ||
     mode ||
     ("vex" as SiteMode)
 
