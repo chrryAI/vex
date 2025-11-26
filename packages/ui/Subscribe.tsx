@@ -1125,7 +1125,6 @@ export default function Subscribe({
           {t("Plus")}
         </Button>
       )}
-      {giftedFingerPrint}
       <Input data-testid="purchase-type" type="hidden" value={purchaseType} />
     </Div>
   )
