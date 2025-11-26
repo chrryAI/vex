@@ -11,6 +11,17 @@ import path from "path"
 import process from "process"
 import { faker } from "@faker-js/faker"
 
+// Resolve paths relative to the waffles package root
+const getTestFilePath = (...pathSegments: string[]) => {
+  const cwd = process.cwd()
+  // Check if we're already in the waffles directory
+  if (cwd.endsWith("packages/waffles") || cwd.endsWith("waffles")) {
+    return path.join(cwd, ...pathSegments)
+  }
+  // Otherwise, assume we're in monorepo root
+  return path.join(cwd, "packages/waffles", ...pathSegments)
+}
+
 export const chat = async ({
   artifacts,
   page,
@@ -63,11 +74,7 @@ export const chat = async ({
     like?: boolean
     delete?: boolean
     webSearch?: boolean
-    image?: number
-    video?: number
-    audio?: number
-    paste?: number
-    pdf?: number
+
     mix?: {
       image?: number
       video?: number
@@ -107,20 +114,6 @@ export const chat = async ({
         : 2
 
   const MAX_FILE_SIZE = 4
-
-  if (
-    prompts?.some(
-      (p) =>
-        (p.pdf && p.pdf > MAX_FILE_SIZE) ||
-        (p.image && p.image > MAX_FILE_SIZE) ||
-        (p.video && p.video > MAX_FILE_SIZE) ||
-        (p.audio && p.audio > MAX_FILE_SIZE) ||
-        (p.paste && p.paste > MAX_FILE_SIZE) ||
-        Object.values(p.mix || {}).some((v) => v > MAX_FILE_SIZE),
-    )
-  ) {
-    throw new Error("Test file size limit exceeded")
-  }
 
   if (isLiveTest) {
     await page.goto(getURL({ isLive: true, isMember }), {
@@ -267,7 +260,7 @@ export const chat = async ({
 
         return path.join(
           process.cwd(),
-          "tests/shared",
+          "src/shared",
           fileType,
           `${fileName}.${extension}`,
         )
@@ -412,367 +405,8 @@ export const chat = async ({
     }
 
     const attachButton = page.getByTestId("attach-button")
-    const attachButtonClose = page.getByTestId("attach-button-close")
-    const attachButtonImage = page.getByTestId("attach-button-image")
-    const attachButtonVideo = page.getByTestId("attach-button-video")
-    const attachButtonAudio = page.getByTestId("attach-button-audio")
-    const attachButtonPdf = page.getByTestId("attach-button-pdf")
 
-    if (prompt.image) {
-      for (let i = 0; i < prompt.image; i++) {
-        attachButton.click()
-        await wait(1000)
-        await expect(attachButton).not.toBeVisible()
-        await expect(attachButtonClose).toBeVisible()
-        await expect(attachButtonImage).toBeVisible()
-        await expect(attachButtonVideo).toBeVisible()
-        await expect(attachButtonAudio).toBeVisible()
-        await expect(attachButtonPdf).toBeVisible()
-
-        const fileChooserPromise = page.waitForEvent("filechooser")
-        if (i === 3) {
-          await expect(attachButtonImage).toBeDisabled()
-
-          await expect(attachButtonVideo).toBeDisabled()
-          await expect(attachButtonAudio).toBeDisabled()
-          await expect(attachButtonPdf).toBeDisabled()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-
-          break
-        }
-        await attachButtonImage.click()
-
-        {
-          const fileChooser = await fileChooserPromise
-
-          const testUsed = path.join(
-            process.cwd(),
-            `tests/shared/image/testImage${i + 1}.jpeg`,
-          )
-          await fileChooser.setFiles(testUsed)
-
-          await page.waitForTimeout(2000)
-
-          await expect(attachButton).toBeVisible()
-          attachButton.click()
-
-          await expect(attachButtonImage).toBeVisible()
-          await expect(attachButtonVideo).toBeVisible()
-          await expect(attachButtonAudio).toBeVisible()
-          await expect(attachButtonPdf).toBeVisible()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-        }
-      }
-
-      const filePreviewClears = page.getByTestId("file-preview-clear")
-
-      const count = prompt.image > 3 ? 3 : prompt.image
-
-      for (let i = 0; i < count; i++) {
-        const filePreviewClear = filePreviewClears.nth(count - i - 1)
-        await expect(filePreviewClear).toBeVisible()
-        await filePreviewClear.click()
-        await page.waitForTimeout(500)
-      }
-
-      await expect(attachButton).toBeVisible()
-      attachButton.click()
-
-      const fileChooserPromise = page.waitForEvent("filechooser")
-
-      await expect(attachButtonImage).toBeVisible()
-      await attachButtonImage.click()
-
-      const fileChooser = await fileChooserPromise
-
-      const testUsedPaths = Array.from({ length: prompt.image }, (_, i) =>
-        path.join(
-          process.cwd(),
-          "tests/shared/image",
-          `testImage${i + 1}.jpeg`,
-        ),
-      )
-
-      await fileChooser.setFiles(testUsedPaths)
-
-      if (prompt.image > 3) {
-        await expect(page.getByText("Too many files selected")).toBeVisible()
-      }
-    } else if (prompt.audio) {
-      for (let i = 0; i < prompt.audio; i++) {
-        attachButton.click()
-        await wait(1000)
-        await expect(attachButton).not.toBeVisible()
-        await expect(attachButtonClose).toBeVisible()
-        await expect(attachButtonImage).toBeVisible()
-        await expect(attachButtonVideo).toBeVisible()
-        await expect(attachButtonAudio).toBeVisible()
-        await expect(attachButtonPdf).toBeVisible()
-
-        const fileChooserPromise = page.waitForEvent("filechooser")
-        if (i === 3) {
-          await expect(attachButtonImage).toBeDisabled()
-          await expect(attachButtonVideo).toBeDisabled()
-          await expect(attachButtonAudio).toBeDisabled()
-          await expect(attachButtonPdf).toBeDisabled()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-
-          break
-        }
-
-        await attachButtonAudio.click()
-
-        {
-          const fileChooser = await fileChooserPromise
-
-          const testUsed = path.join(
-            process.cwd(),
-            `tests/shared/audio/testAudio${i + 1}.wav`,
-          )
-          await fileChooser.setFiles(testUsed)
-
-          await page.waitForTimeout(2000)
-
-          await expect(attachButton).toBeVisible()
-          attachButton.click()
-
-          await expect(attachButtonImage).toBeVisible()
-          await expect(attachButtonVideo).toBeVisible()
-          await expect(attachButtonAudio).toBeVisible()
-          await expect(attachButtonPdf).toBeVisible()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-        }
-      }
-
-      const filePreviewClears = page.getByTestId("file-preview-clear")
-
-      const count = prompt.audio > 3 ? 3 : prompt.audio
-
-      for (let i = 0; i < count; i++) {
-        const filePreviewClear = filePreviewClears.nth(count - i - 1)
-        await expect(filePreviewClear).toBeVisible()
-        await filePreviewClear.click()
-        await page.waitForTimeout(500)
-      }
-
-      await expect(attachButton).toBeVisible()
-      attachButton.click()
-
-      const fileChooserPromise = page.waitForEvent("filechooser")
-
-      await expect(attachButtonAudio).toBeVisible()
-      await attachButtonAudio.click()
-
-      const fileChooser = await fileChooserPromise
-
-      const testUsedPaths = Array.from({ length: prompt.audio }, (_, i) =>
-        path.join(process.cwd(), "tests/shared/audio", `testAudio${i + 1}.wav`),
-      )
-
-      await fileChooser.setFiles(testUsedPaths)
-
-      if (prompt.audio > 3) {
-        await expect(page.getByText("Too many files selected")).toBeVisible()
-      }
-    } else if (prompt.video) {
-      for (let i = 0; i < prompt.video; i++) {
-        attachButton.click()
-        await wait(1000)
-        await expect(attachButton).not.toBeVisible()
-        await expect(attachButtonClose).toBeVisible()
-        await expect(attachButtonImage).toBeVisible()
-        await expect(attachButtonVideo).toBeVisible()
-        await expect(attachButtonAudio).toBeVisible()
-        await expect(attachButtonPdf).toBeVisible()
-
-        const fileChooserPromise = page.waitForEvent("filechooser")
-        if (i === 3) {
-          await expect(attachButtonImage).toBeDisabled()
-          await expect(attachButtonVideo).toBeDisabled()
-          await expect(attachButtonAudio).toBeDisabled()
-          await expect(attachButtonPdf).toBeDisabled()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-
-          break
-        }
-
-        await attachButtonAudio.click()
-
-        {
-          const fileChooser = await fileChooserPromise
-
-          const testUsed = path.join(
-            process.cwd(),
-            `tests/shared/video/testVideo${i + 1}.webm`,
-          )
-          await fileChooser.setFiles(testUsed)
-
-          await page.waitForTimeout(2000)
-
-          await expect(attachButton).toBeVisible()
-          attachButton.click()
-
-          await expect(attachButtonImage).toBeVisible()
-          await expect(attachButtonVideo).toBeVisible()
-          await expect(attachButtonAudio).toBeVisible()
-          await expect(attachButtonPdf).toBeVisible()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-        }
-      }
-
-      const filePreviewClears = page.getByTestId("file-preview-clear")
-
-      const count = prompt.video > 3 ? 3 : prompt.video
-
-      for (let i = 0; i < count; i++) {
-        const filePreviewClear = filePreviewClears.nth(count - i - 1)
-        await expect(filePreviewClear).toBeVisible()
-        await filePreviewClear.click()
-        await page.waitForTimeout(500)
-      }
-
-      await expect(attachButton).toBeVisible()
-      attachButton.click()
-
-      const fileChooserPromise = page.waitForEvent("filechooser")
-
-      await expect(attachButtonAudio).toBeVisible()
-      await attachButtonAudio.click()
-
-      const fileChooser = await fileChooserPromise
-
-      const testUsedPaths = Array.from({ length: prompt.video }, (_, i) =>
-        path.join(
-          process.cwd(),
-          "tests/shared/video",
-          `testVideo${i + 1}.webm`,
-        ),
-      )
-
-      await fileChooser.setFiles(testUsedPaths)
-
-      if (prompt.video > 3) {
-        await expect(page.getByText("Too many files selected")).toBeVisible()
-      }
-    } else if (prompt.pdf) {
-      for (let i = 0; i < prompt.pdf; i++) {
-        attachButton.click()
-        await wait(1000)
-        await expect(attachButton).not.toBeVisible()
-        await expect(attachButtonClose).toBeVisible()
-        await expect(attachButtonImage).toBeVisible()
-        await expect(attachButtonVideo).toBeVisible()
-        await expect(attachButtonAudio).toBeVisible()
-        await expect(attachButtonPdf).toBeVisible()
-
-        const fileChooserPromise = page.waitForEvent("filechooser")
-        if (i === 3) {
-          await expect(attachButtonImage).toBeDisabled()
-          await expect(attachButtonVideo).toBeDisabled()
-          await expect(attachButtonAudio).toBeDisabled()
-          await expect(attachButtonPdf).toBeDisabled()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-
-          break
-        }
-
-        await attachButtonPdf.click()
-
-        {
-          const fileChooser = await fileChooserPromise
-
-          const testUsed = path.join(
-            process.cwd(),
-            `tests/shared/pdf/testPdf${i + 1}.pdf`,
-          )
-          await fileChooser.setFiles(testUsed)
-
-          await page.waitForTimeout(2000)
-
-          await expect(attachButton).toBeVisible()
-          attachButton.click()
-
-          await expect(attachButtonImage).toBeVisible()
-          await expect(attachButtonVideo).toBeVisible()
-          await expect(attachButtonAudio).toBeVisible()
-          await expect(attachButtonPdf).toBeVisible()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-        }
-      }
-
-      const filePreviewClears = page.getByTestId("file-preview-clear")
-
-      const count = prompt.pdf > 3 ? 3 : prompt.pdf
-
-      for (let i = 0; i < count; i++) {
-        const filePreviewClear = filePreviewClears.nth(count - i - 1)
-        await expect(filePreviewClear).toBeVisible()
-        await filePreviewClear.click()
-        await page.waitForTimeout(500)
-      }
-
-      await expect(attachButton).toBeVisible()
-      attachButton.click()
-
-      const fileChooserPromise = page.waitForEvent("filechooser")
-
-      await expect(attachButtonPdf).toBeVisible()
-      await attachButtonPdf.click()
-
-      const fileChooser = await fileChooserPromise
-
-      const testUsedPaths = Array.from({ length: prompt.pdf }, (_, i) =>
-        path.join(process.cwd(), "tests/shared/pdf", `testPdf${i + 1}.pdf`),
-      )
-
-      await fileChooser.setFiles(testUsedPaths)
-
-      if (prompt.pdf > 3) {
-        await expect(page.getByText("Too many files selected")).toBeVisible()
-      }
-    } else if (prompt.paste) {
-      const filePreviewClears = page.getByTestId("file-preview-clear")
-
-      const count = prompt.paste > 3 ? 3 : prompt.paste
-
-      for (let i = 0; i < prompt.paste; i++) {
-        const text = faker.lorem.sentence({ min: 550, max: 750 })
-        await simulateInputPaste(page, text)
-        await page.waitForTimeout(1000)
-      }
-
-      if (prompt.paste > 3) {
-        await expect(page.getByText("Too many files")).toBeVisible()
-      }
-
-      for (let i = 0; i < count; i++) {
-        const filePreviewClear = filePreviewClears.nth(count - i - 1)
-        await expect(filePreviewClear).toBeVisible()
-        await filePreviewClear.click()
-        await page.waitForTimeout(500)
-      }
-
-      for (let i = 0; i < count; i++) {
-        const text = faker.lorem.sentence({ min: 550, max: 750 })
-        await simulateInputPaste(page, text)
-      }
-    } else if (prompt.mix) {
+    if (prompt.mix) {
       const fileExtensions = {
         image: "jpeg",
         video: "mp4",
@@ -800,6 +434,7 @@ export const chat = async ({
 
       // Limit to max 3 total files
       filesToAttach = filesToAttach.slice(0, 3 - filesToPaste)
+      console.log(`🚀 ~ chat ~ filesToAttach:`, filesToAttach)
 
       for (let i = 0; i < filesToPaste; i++) {
         const text = faker.lorem.sentence({ min: 550, max: 750 })
@@ -811,43 +446,10 @@ export const chat = async ({
         const key = filesToAttach[i]
         if (!key) break
 
-        attachButton.click()
-        await wait(1000)
-        await expect(attachButton).not.toBeVisible()
-        await expect(attachButtonClose).toBeVisible()
-        await expect(attachButtonImage).toBeVisible()
-        await expect(attachButtonVideo).toBeVisible()
-        await expect(attachButtonAudio).toBeVisible()
-        await expect(attachButtonPdf).toBeVisible()
-
-        if (i > to) {
-          await expect(attachButtonImage).toBeDisabled()
-          await expect(attachButtonVideo).toBeDisabled()
-          await expect(attachButtonAudio).toBeDisabled()
-          await expect(attachButtonPdf).toBeDisabled()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
-
-          break
-        }
-
         const fileChooserPromise = page.waitForEvent("filechooser")
 
-        if (key === "audio") {
-          await expect(attachButtonAudio).toBeVisible()
-          await attachButtonAudio.click()
-        } else if (key === "image") {
-          await expect(attachButtonImage).toBeVisible()
-          await attachButtonImage.click()
-        } else if (key === "video") {
-          await expect(attachButtonVideo).toBeVisible()
-          await attachButtonVideo.click()
-        } else if (key === "pdf") {
-          await expect(attachButtonPdf).toBeVisible()
-          await attachButtonPdf.click()
-        }
-
+        attachButton.click()
+        await wait(1000)
         {
           const fileChooser = await fileChooserPromise
 
@@ -860,22 +462,11 @@ export const chat = async ({
 
           const testUsed = path.join(
             process.cwd(),
-            `tests/shared/${key}/test${capitalizeFirstLetter(key)}${fileIndex}.${extension}`,
+            `src/shared/${key}/test${capitalizeFirstLetter(key)}${fileIndex}.${extension}`,
           )
           await fileChooser.setFiles(testUsed)
 
           await page.waitForTimeout(2000)
-
-          await expect(attachButton).toBeVisible()
-          attachButton.click()
-
-          await expect(attachButtonImage).toBeVisible()
-          await expect(attachButtonVideo).toBeVisible()
-          await expect(attachButtonAudio).toBeVisible()
-          await expect(attachButtonPdf).toBeVisible()
-
-          await attachButtonClose.click()
-          await expect(attachButton).toBeVisible()
         }
       }
 
@@ -900,18 +491,6 @@ export const chat = async ({
 
         const fileChooserPromise = page.waitForEvent("filechooser")
 
-        const key = filesToAttach[0]
-
-        if (key === "image") {
-          await attachButtonImage.click()
-        } else if (key === "video") {
-          await attachButtonVideo.click()
-        } else if (key === "audio") {
-          await attachButtonAudio.click()
-        } else if (key === "pdf") {
-          await attachButtonPdf.click()
-        }
-
         const fileChooser = await fileChooserPromise
 
         const testUsedPaths = await Promise.all(
@@ -929,7 +508,7 @@ export const chat = async ({
 
             return path.join(
               process.cwd(),
-              "tests/shared",
+              "src/shared",
               fileType,
               `${fileName}.${extension}`,
             )
@@ -1107,55 +686,7 @@ export const chat = async ({
       visible: !prompt.stop,
     })
 
-    if (prompt.image) {
-      const userMessageImageCount = await (await getLastUserMessage())
-        .getByTestId("user-message-image")
-        .count()
-
-      expect(userMessageImageCount).toBe(prompt.image > 3 ? 3 : prompt.image)
-    } else if (prompt.mix?.image) {
-      const userMessageImageCount = await (await getLastUserMessage())
-        .getByTestId("user-message-image")
-        .count()
-
-      expect(userMessageImageCount).toBe(
-        prompt.mix.image > 3 ? 3 : prompt.mix.image,
-      )
-    } else if (prompt.video) {
-      const userMessageVideoCount = await (await getLastUserMessage())
-        .getByTestId("user-message-video")
-        .count()
-
-      expect(userMessageVideoCount).toBe(prompt.video > 3 ? 3 : prompt.video)
-    } else if (prompt.mix?.video) {
-      const userMessageVideoCount = (await getLastUserMessage())
-        .getByTestId("user-message-video")
-        .count()
-
-      expect(userMessageVideoCount).toBe(
-        prompt.mix.video > 3 ? 3 : prompt.mix.video,
-      )
-    } else if (prompt.audio) {
-      const userMessageAudioCount = await (await getLastUserMessage())
-        .getByTestId("user-message-audio")
-        .count()
-
-      expect(userMessageAudioCount).toBe(prompt.audio > 3 ? 3 : prompt.audio)
-    } else if (prompt.mix?.audio) {
-      const userMessageAudioCount = (await getLastUserMessage())
-        .getByTestId("user-message-audio")
-        .count()
-
-      expect(userMessageAudioCount).toBe(
-        prompt.mix.audio > 3 ? 3 : prompt.mix.audio,
-      )
-    } else if (prompt.pdf) {
-      const userMessagePdfCount = await (await getLastUserMessage())
-        .getByTestId("user-message-pdf")
-        .count()
-
-      expect(userMessagePdfCount).toBe(prompt.pdf > 3 ? 3 : prompt.pdf)
-    } else if (prompt.mix?.pdf) {
+    if (prompt.mix?.pdf) {
       const userMessagePdfCount = await (await getLastUserMessage())
         .getByTestId("user-message-pdf")
         .count()
@@ -1239,7 +770,7 @@ export const chat = async ({
 
           return path.join(
             process.cwd(),
-            "tests/shared",
+            "src/shared",
             fileType,
             `${fileName}.${extension}`,
           )

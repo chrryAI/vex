@@ -1683,11 +1683,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     playNotification()
 
     if (!suggestSaveApp) {
-      if (!threadId && !isImageGenerationEnabled && !isIncognito) {
-        toast.success(t("Generating AI thread title, keep calm..."), {
-          duration: 6000,
-        })
-      } else if (isImageGenerationEnabled) {
+      if (isImageGenerationEnabled) {
         toast.success(t("Generating image, keep calm..."), {
           duration: 6000,
         })
@@ -1698,11 +1694,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         return
       }
     }
-
-    // Create abort controller for this request
-
-    // let clientId
-    // Notify parent about user message
 
     onMessage?.({
       content: userMessageText,

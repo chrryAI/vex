@@ -2364,7 +2364,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
           if (file.type === "audio") {
             const uploadResult = await upload({
               url: `data:${file.mimeType};base64,${file.data}`,
-              messageId: slug(file.filename.substring(0, 10)),
+              messageId: slugify(file.filename.substring(0, 10)),
               options: {
                 title: file.filename,
                 type: "audio",
@@ -2378,7 +2378,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
           } else {
             const uploadResult = await upload({
               url: `data:${file.mimeType};base64,${file.data}`,
-              messageId: slug(file.filename.substring(0, 10)),
+              messageId: slugify(file.filename.substring(0, 10)),
               options: {
                 title: file.filename,
                 type: "video",
@@ -2418,7 +2418,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
               // Fallback: upload video as file
               const uploadResult = await upload({
                 url: `data:${file.mimeType};base64,${file.data}`,
-                messageId: slug(file.filename.substring(0, 10)),
+                messageId: slugify(file.filename.substring(0, 10)),
                 options: {
                   title: file.filename,
                   type: "video",
@@ -2465,7 +2465,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
         } else if (file.type === "pdf" || file.type === "application/pdf") {
           const uploadResult = await upload({
             url: `data:${file.mimeType};base64,${file.data}`,
-            messageId: slug(file.filename.substring(0, 10)),
+            messageId: slugify(file.filename.substring(0, 10)),
             options: {
               title: file.filename,
               type: "pdf",

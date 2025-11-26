@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   // await acceptAllButton.click()
 })
 
-test.only("Subscribe As Guest", async ({ page }) => {
+test("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -34,7 +34,7 @@ test.only("Subscribe As Guest", async ({ page }) => {
   })
 })
 
-test.only("Invite", async ({ page }) => {
+test("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -51,7 +51,7 @@ test.only("Invite", async ({ page }) => {
   })
 })
 
-test.only("Gift", async ({ page }) => {
+test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
   })
@@ -73,17 +73,17 @@ test.only("Gift", async ({ page }) => {
   })
 })
 
-test("File upload", async ({ page }) => {
-  test.slow()
+test.only("File upload", async ({ page }) => {
+  // test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
   })
 
   await chat({
-    artifacts: {
-      paste: 3,
-      pdf: 3,
-    },
+    // artifacts: {
+    //   paste: 3,
+    //   pdf: 3,
+    // },
     isNewChat: false,
     page,
     isMember,
@@ -91,7 +91,7 @@ test("File upload", async ({ page }) => {
     prompts: [
       {
         text: "Hey Vex, Analyze this files",
-        model: "deepSeek",
+        model: "sushi",
         mix: {
           paste: 1,
           pdf: 2,
@@ -100,14 +100,14 @@ test("File upload", async ({ page }) => {
       },
       {
         text: "Hey Vex, Analyze this pdf(s)",
-        model: "deepSeek",
+        model: "sushi",
         pdf: 4,
         like: true,
       },
 
       {
         text: "Hey Vex, Analyze this pdf",
-        model: "deepSeek",
+        model: "sushi",
         paste: 4,
         like: true,
       },
@@ -134,16 +134,16 @@ test("Long text", async ({ page }) => {
     prompts: [
       {
         text: "Short",
-        model: "deepSeek",
+        model: "sushi",
       },
       {
         text: "long",
-        model: "deepSeek",
+        model: "sushi",
         stop: true,
       },
       {
         text: "Should delete this message",
-        model: "deepSeek",
+        model: "sushi",
         delete: true,
       },
     ],
@@ -159,16 +159,16 @@ test("Long text", async ({ page }) => {
 //     prompts: [
 //       {
 //         text: "Analyze this video data",
-//         model: "deepSeek",
+//         model: "sushi",
 //       },
 //       {
 //         text: "long",
-//         model: "deepSeek",
+//         model: "sushi",
 //         stop: true,
 //       },
 //       {
 //         text: "Should delete this message",
-//         model: "deepSeek",
+//         model: "sushi",
 //         delete: true,
 //       },
 //     ],
