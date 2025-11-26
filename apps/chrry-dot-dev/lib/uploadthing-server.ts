@@ -4,6 +4,7 @@ import captureException from "./captureException"
 import dns from "dns"
 import net from "net"
 import { parse as parseDomain } from "tldts"
+import { isDevelopment } from "chrry/utils"
 // Two separate UploadThing accounts
 const chatUtapi = new UTApi({
   token: process.env.UPLOADTHING_TOKEN, // For chat messages/files
@@ -76,83 +77,90 @@ export async function upload({
     // Validate URL to prevent SSRF attacks
     const parsedUrl = new URL(url)
 
-    // Only allow HTTPS URLs
-    if (parsedUrl.protocol !== "https:") {
-      throw new Error("Only HTTPS URLs are allowed")
+    // Only allow HTTPS or Data URLs
+    if (
+      // !isDevelopment &&
+      parsedUrl.protocol !== "https:" &&
+      parsedUrl.protocol !== "data:"
+    ) {
+      throw new Error("Only HTTPS or Data URLs are allowed")
     }
 
-    // Domain root allowlist via tldts
-    const parsedDomain = parseDomain(parsedUrl.hostname)
-    // parsedDomain.domain already includes the publicSuffix
-    // e.g., for "abc.replicate.delivery" → domain is "replicate.delivery"
-    const rootDomain = parsedDomain.domain || parsedUrl.hostname
-    const isAllowed = ALLOWED_HOSTNAMES.includes(rootDomain)
-    if (!isAllowed) {
-      throw new Error(`Image host not allowed: ${rootDomain}`)
-    }
+    // Skip domain/IP checks for Data URLs
+    if (parsedUrl.protocol !== "data:") {
+      // Domain root allowlist via tldts
+      const parsedDomain = parseDomain(parsedUrl.hostname)
+      // parsedDomain.domain already includes the publicSuffix
+      // e.g., for "abc.replicate.delivery" → domain is "replicate.delivery"
+      const rootDomain = parsedDomain.domain || parsedUrl.hostname
+      const isAllowed = ALLOWED_HOSTNAMES.includes(rootDomain)
+      if (!isAllowed) {
+        throw new Error(`Image host not allowed: ${rootDomain}`)
+      }
 
-    // Check if hostname matches allowed domains (including subdomains)
-    const isAllowedDomain = ALLOWED_HOSTNAMES.some(
-      (domain) =>
-        parsedUrl.hostname === domain ||
-        parsedUrl.hostname.endsWith(`.${domain}`),
-    )
-
-    if (!isAllowedDomain) {
-      throw new Error(
-        `URL domain not allowed. Only ${ALLOWED_HOSTNAMES.join(", ")} are permitted`,
+      // Check if hostname matches allowed domains (including subdomains)
+      const isAllowedDomain = ALLOWED_HOSTNAMES.some(
+        (domain) =>
+          parsedUrl.hostname === domain ||
+          parsedUrl.hostname.endsWith(`.${domain}`),
       )
-    }
 
-    // Prevent access to private IP ranges
-    const hostname = parsedUrl.hostname
-    const privateIpPatterns = [
-      /^127\./, // localhost
-      /^10\./, // private class A
-      /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // private class B
-      /^192\.168\./, // private class C
-      /^169\.254\./, // link-local
-      /^::1$/, // IPv6 localhost
-      /^fc00:/, // IPv6 private
-      /^fe80:/, // IPv6 link-local
-    ]
-
-    if (privateIpPatterns.some((pattern) => pattern.test(hostname))) {
-      throw new Error("Access to private IP addresses is not allowed")
-    }
-
-    // Resolve DNS for hostname to check resolved IPs against private ranges
-    let addresses
-    try {
-      addresses = await dns.promises.lookup(parsedUrl.hostname, { all: true })
-    } catch (e) {
-      throw new Error("Failed to resolve image hosting domain")
-    }
-    // Checks for private/reserved/public addresses by inspecting resolved IPs
-    const isIpPrivate = (ip: string) => {
-      if (net.isIPv4(ip)) {
-        // 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16
-        return (
-          ip.startsWith("10.") ||
-          /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip) ||
-          ip.startsWith("192.168.") ||
-          ip.startsWith("127.") ||
-          ip.startsWith("169.254.")
-        )
-      } else if (net.isIPv6(ip)) {
-        // IPv6: localhost (::1), link-local (fe80::/10), private (fc00::/7)
-        return (
-          ip === "::1" ||
-          ip.startsWith("fc00:") ||
-          ip.startsWith("fd00:") || // part of IPv6 private range
-          ip.startsWith("fe80:")
+      if (!isAllowedDomain) {
+        throw new Error(
+          `URL domain not allowed. Only ${ALLOWED_HOSTNAMES.join(", ")} are permitted`,
         )
       }
-      return false
-    }
-    // If ANY resolved IP is private, abort!
-    if (addresses.some((addr) => isIpPrivate(addr.address))) {
-      throw new Error("Resolved address is private or local; access denied")
+
+      // Prevent access to private IP ranges
+      const hostname = parsedUrl.hostname
+      const privateIpPatterns = [
+        /^127\./, // localhost
+        /^10\./, // private class A
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // private class B
+        /^192\.168\./, // private class C
+        /^169\.254\./, // link-local
+        /^::1$/, // IPv6 localhost
+        /^fc00:/, // IPv6 private
+        /^fe80:/, // IPv6 link-local
+      ]
+
+      if (privateIpPatterns.some((pattern) => pattern.test(hostname))) {
+        throw new Error("Access to private IP addresses is not allowed")
+      }
+
+      // Resolve DNS for hostname to check resolved IPs against private ranges
+      let addresses
+      try {
+        addresses = await dns.promises.lookup(parsedUrl.hostname, { all: true })
+      } catch (e) {
+        throw new Error("Failed to resolve image hosting domain")
+      }
+      // Checks for private/reserved/public addresses by inspecting resolved IPs
+      const isIpPrivate = (ip: string) => {
+        if (net.isIPv4(ip)) {
+          // 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16
+          return (
+            ip.startsWith("10.") ||
+            /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip) ||
+            ip.startsWith("192.168.") ||
+            ip.startsWith("127.") ||
+            ip.startsWith("169.254.")
+          )
+        } else if (net.isIPv6(ip)) {
+          // IPv6: localhost (::1), link-local (fe80::/10), private (fc00::/7)
+          return (
+            ip === "::1" ||
+            ip.startsWith("fc00:") ||
+            ip.startsWith("fd00:") || // part of IPv6 private range
+            ip.startsWith("fe80:")
+          )
+        }
+        return false
+      }
+      // If ANY resolved IP is private, abort!
+      if (addresses.some((addr) => isIpPrivate(addr.address))) {
+        throw new Error("Resolved address is private or local; access denied")
+      }
     }
 
     // Download the file
@@ -238,15 +246,25 @@ export async function upload({
       type: fileType === "image" ? "image/png" : blob.type,
     })
 
+    console.log(
+      `📦 File created: ${file.name}, size: ${file.size}, type: ${file.type}`,
+    )
+
     console.log("☁️ Uploading to UploadThing...")
 
     // Upload to UploadThing (use context-specific account)
     const utapi = getUtapi(context)
     const uploadResult = await utapi.uploadFiles([file])
 
-    if (!uploadResult[0] || uploadResult[0].error) {
+    console.log("📤 Upload result:", JSON.stringify(uploadResult, null, 2))
+
+    if (!uploadResult?.[0] || uploadResult[0].error) {
+      console.error(
+        "❌ UploadThing error details:",
+        JSON.stringify(uploadResult?.[0]?.error, null, 2),
+      )
       throw new Error(
-        `UploadThing upload failed: ${uploadResult[0]?.error?.message}`,
+        `UploadThing upload failed: ${uploadResult?.[0]?.error?.message || "No result returned"}`,
       )
     }
 

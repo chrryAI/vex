@@ -2334,15 +2334,24 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     if (userContent.files && userContent.files.length > 0) {
       for (const file of userContent.files) {
         if (file.type === "image") {
-          const uploadResult = await upload({
-            url: `data:${file.mimeType};base64,${file.data}`,
-            messageId: slugify(file.filename.substring(0, 10)),
-            options: {
-              maxWidth: 600,
-              maxHeight: 600,
-              title: file.filename,
-            },
-          })
+          let uploadResult
+          try {
+            uploadResult = await upload({
+              url: `data:${file.mimeType};base64,${file.data}`,
+              messageId: slugify(file.filename.substring(0, 10)),
+              options: {
+                maxWidth: 600,
+                maxHeight: 600,
+                title: file.filename,
+              },
+            })
+          } catch (error: any) {
+            console.error("❌ Image upload failed:", error)
+            return NextResponse.json(
+              { error: `Failed to upload image: ${error.message}` },
+              { status: 500 },
+            )
+          }
 
           uploadedImages.push({
             url: uploadResult.url,
@@ -2362,28 +2371,46 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
             text: `[${file.type.toUpperCase()} FILE: ${file.filename} (${(file.size / 1024).toFixed(1)}KB)]`,
           })
           if (file.type === "audio") {
-            const uploadResult = await upload({
-              url: `data:${file.mimeType};base64,${file.data}`,
-              messageId: slugify(file.filename.substring(0, 10)),
-              options: {
-                title: file.filename,
-                type: "audio",
-              },
-            })
+            let uploadResult
+            try {
+              uploadResult = await upload({
+                url: `data:${file.mimeType};base64,${file.data}`,
+                messageId: slugify(file.filename.substring(0, 10)),
+                options: {
+                  title: file.filename,
+                  type: "audio",
+                },
+              })
+            } catch (error: any) {
+              console.error("❌ Audio upload failed:", error)
+              return NextResponse.json(
+                { error: `Failed to upload audio: ${error.message}` },
+                { status: 500 },
+              )
+            }
             uploadedAudio.push({
               url: uploadResult.url,
               title: uploadResult.title,
               size: file.size,
             })
           } else {
-            const uploadResult = await upload({
-              url: `data:${file.mimeType};base64,${file.data}`,
-              messageId: slugify(file.filename.substring(0, 10)),
-              options: {
-                title: file.filename,
-                type: "video",
-              },
-            })
+            let uploadResult
+            try {
+              uploadResult = await upload({
+                url: `data:${file.mimeType};base64,${file.data}`,
+                messageId: slugify(file.filename.substring(0, 10)),
+                options: {
+                  title: file.filename,
+                  type: "video",
+                },
+              })
+            } catch (error: any) {
+              console.error("❌ Video upload failed:", error)
+              return NextResponse.json(
+                { error: `Failed to upload video: ${error.message}` },
+                { status: 500 },
+              )
+            }
             uploadedVideo.push({
               url: uploadResult.url,
               title: uploadResult.title,
@@ -2416,14 +2443,25 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
                 error,
               )
               // Fallback: upload video as file
-              const uploadResult = await upload({
-                url: `data:${file.mimeType};base64,${file.data}`,
-                messageId: slugify(file.filename.substring(0, 10)),
-                options: {
-                  title: file.filename,
-                  type: "video",
-                },
-              })
+              let uploadResult
+              try {
+                uploadResult = await upload({
+                  url: `data:${file.mimeType};base64,${file.data}`,
+                  messageId: slugify(file.filename.substring(0, 10)),
+                  options: {
+                    title: file.filename,
+                    type: "video",
+                  },
+                })
+              } catch (uploadError: any) {
+                console.error("❌ Fallback video upload failed:", uploadError)
+                return NextResponse.json(
+                  {
+                    error: `Failed to upload video (fallback): ${uploadError.message}`,
+                  },
+                  { status: 500 },
+                )
+              }
               uploadedVideo.push({
                 url: uploadResult.url,
                 title: uploadResult.title,
@@ -2463,14 +2501,23 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
             text: `[TEXT FILE: ${file.filename}] - Processed for intelligent search (${Math.round((textContent?.length || 0) / 1000)}k chars)`,
           })
         } else if (file.type === "pdf" || file.type === "application/pdf") {
-          const uploadResult = await upload({
-            url: `data:${file.mimeType};base64,${file.data}`,
-            messageId: slugify(file.filename.substring(0, 10)),
-            options: {
-              title: file.filename,
-              type: "pdf",
-            },
-          })
+          let uploadResult
+          try {
+            uploadResult = await upload({
+              url: `data:${file.mimeType};base64,${file.data}`,
+              messageId: slugify(file.filename.substring(0, 10)),
+              options: {
+                title: file.filename,
+                type: "pdf",
+              },
+            })
+          } catch (error: any) {
+            console.error("❌ PDF upload failed:", error)
+            return NextResponse.json(
+              { error: `Failed to upload PDF: ${error.message}` },
+              { status: 500 },
+            )
+          }
 
           try {
             const pdfBuffer = Buffer.from(file.data, "base64")
@@ -3489,16 +3536,27 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         console.log("✅ Flux image generation complete:", imageUrl)
 
         // Upload to UploadThing for permanent storage
-        const { url: permanentUrl, title } = await upload({
-          url: imageUrl,
-          messageId: slugify(currentMessageContent.trim().substring(0, 10)),
-          options: {
-            maxWidth: 1024,
-            maxHeight: 1024,
-            title: agent.name,
-            type: "image",
-          },
-        })
+        let permanentUrl, title
+        try {
+          const result = await upload({
+            url: imageUrl,
+            messageId: slugify(currentMessageContent.trim().substring(0, 10)),
+            options: {
+              maxWidth: 1024,
+              maxHeight: 1024,
+              title: agent.name,
+              type: "image",
+            },
+          })
+          permanentUrl = result.url
+          title = result.title
+        } catch (error: any) {
+          console.error("❌ Flux image upload failed:", error)
+          return NextResponse.json(
+            { error: `Failed to upload generated image: ${error.message}` },
+            { status: 500 },
+          )
+        }
 
         console.log("✅ Image uploaded to permanent storage:", permanentUrl)
 
