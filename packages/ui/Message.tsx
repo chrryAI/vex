@@ -344,6 +344,8 @@ export default function Message({
           setVideo(data.message?.message.video)
         data.message?.message.audio?.length &&
           setAudio(data.message?.message.audio)
+        data.message?.message.files?.length &&
+          setFiles(data.message?.message.files)
 
         await refetchThread()
       }
