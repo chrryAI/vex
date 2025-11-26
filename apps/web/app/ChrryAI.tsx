@@ -90,7 +90,7 @@ export default async function ChrryAI({
   const fingerprint =
     cookieStore.get("fingerprint")?.value || headersList.get("x-fp") || uuidv4()
 
-  const gift = headersList.get("x-gift")
+  const gift = headersList.get("x-gift") || undefined
 
   const agentName = cookieStore.get("agentName")?.value
 
