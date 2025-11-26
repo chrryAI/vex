@@ -83,6 +83,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
       "x-screen-height",
       "x-timezone",
       "x-device-id",
+      "x-fp",
       "x-app-slug",
       "x-store-slug",
       "x-route-type",
@@ -109,7 +110,6 @@ export default async function middleware(request: NextRequest) {
 
   const url = new URL(request.url)
   const searchParams = url.searchParams
-  const fingerprint = searchParams.get("fp")
   const gift = searchParams.get("gift")
 
   const response = handleIntlRequest(request)
@@ -187,9 +187,12 @@ export default async function middleware(request: NextRequest) {
   }
 
   // Set fingerprint cookie if not already set
-  const existingFingerprint = request.cookies.get("fingerprint")?.value
-  if (!existingFingerprint) {
-    response.cookies.set("fingerprint", fingerprint || uuidv4(), {
+  const existingFingerprintCookie = request.cookies.get("fingerprint")?.value
+  const fingerprintUrl = searchParams.get("fp")
+
+  const fingerprint = request.headers.get("x-fp") || fingerprintUrl || uuidv4()
+  if (!existingFingerprintCookie && fingerprint) {
+    response.cookies.set("fingerprint", fingerprint, {
       httpOnly: false,
       secure: process.env.NODE_ENV !== "development",
       sameSite: "lax",
@@ -197,6 +200,10 @@ export default async function middleware(request: NextRequest) {
       path: "/",
     })
   }
+
+  // Pass fingerprint to API via header (for cross-domain requests)
+  const fingerprintToPass = existingFingerprintCookie || fingerprint || uuidv4()
+  response.headers.set("x-fp", fingerprintToPass)
 
   return response
 }

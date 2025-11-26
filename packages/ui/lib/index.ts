@@ -1020,6 +1020,7 @@ export const getSession = async ({
       ...(routeType ? { "x-route-type": routeType } : {}),
       ...(pathname ? { "x-pathname": pathname } : {}),
       ...(locale ? { "x-locale": locale } : {}),
+      ...(fingerprint ? { "x-fp": fingerprint } : {}),
     },
   })
 

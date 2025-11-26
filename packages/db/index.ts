@@ -1552,8 +1552,16 @@ export async function migrateUser({
 
   const { id: userId } = user
 
+  console.log(
+    `🚀 ~ migrateUser ~ threads:`,
+    threads.totalCount,
+    user.id,
+    guest.id,
+  )
+
   await Promise.all(
     threads.threads.map(async (thread) => {
+      console.log(`🚀 ~ migrateUser ~ thread:`, thread.id)
       await updateThread({
         ...thread,
         userId,

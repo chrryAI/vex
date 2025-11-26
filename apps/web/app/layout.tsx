@@ -110,19 +110,19 @@ export default async function RootLayout({
         publicBookmarks: true,
       })
 
-      await Promise.all(
-        threads.threads.map((thread) => {
-          thread.userId === testMember.id
-            ? deleteThread({ id: thread.id })
-            : updateThread({
-                ...thread,
-                bookmarks:
-                  thread?.bookmarks?.filter(
-                    (bookmark) => bookmark.userId !== testMember.id,
-                  ) || [],
-              })
-        }),
-      )
+      // await Promise.all(
+      //   threads.threads.map((thread) => {
+      //     thread.userId === testMember.id
+      //       ? deleteThread({ id: thread.id })
+      //       : updateThread({
+      //           ...thread,
+      //           bookmarks:
+      //             thread?.bookmarks?.filter(
+      //               (bookmark) => bookmark.userId !== testMember.id,
+      //             ) || [],
+      //         })
+      //   }),
+      // )
 
       const messages = await getMessages({
         pageSize: 100000,
