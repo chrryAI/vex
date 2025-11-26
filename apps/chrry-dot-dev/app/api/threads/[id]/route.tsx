@@ -28,7 +28,6 @@ import {
   generateThreadInstructions,
   generateThreadTitle,
 } from "../../../../utils/titleGenerator"
-import { v4 as uuidv4 } from "uuid"
 import { FRONTEND_URL, isE2E, isOwner } from "chrry/utils"
 import Collaboration from "../../../../components/emails/Collaboration"
 import { defaultLocale } from "chrry/locales"
@@ -50,6 +49,8 @@ export async function GET(request: Request) {
 
   const member = await getMember()
   const guest = member ? undefined : await getGuest()
+  console.log(`🚀 ~ GET ~ member:`, member?.id)
+  console.log(`🚀 ~ GET ~ guest:`, guest?.id)
 
   if (!member && !guest) {
     return NextResponse.json(
@@ -70,6 +71,13 @@ export async function GET(request: Request) {
   }
 
   const thread = await getThread({ id })
+  console.log(
+    `🚀 ~ GET ~ thread:`,
+    isOwner(thread, {
+      userId: member?.id,
+      guestId: guest?.id,
+    }),
+  )
 
   if (!thread) {
     return NextResponse.json(
@@ -80,8 +88,10 @@ export async function GET(request: Request) {
 
   if (
     thread.visibility === "private" &&
-    thread.userId !== member?.id &&
-    (!guest || thread.guestId !== guest?.id) &&
+    !isOwner(thread, {
+      userId: member?.id,
+      guestId: guest?.id,
+    }) &&
     !thread.collaborations.some(
       (c) =>
         c.user.id === member?.id &&
@@ -284,6 +294,13 @@ export async function PATCH(request: NextRequest) {
 
   const member = await getMember()
   const guest = member ? undefined : await getGuest()
+  console.log(`🚀 ~ GET ~ guest:`, guest)
+  console.log(`🚀 ~ GET ~ guest:`, guest)
+  console.log(`🚀 ~ GET ~ guest:`, guest)
+  console.log(`🚀 ~ GET ~ guest:`, guest)
+  console.log(`🚀 ~ GET ~ guest:`, guest)
+  console.log(`🚀 ~ GET ~ guest:`, guest)
+  console.log(`🚀 ~ GET ~ guest:`, guest)
 
   if (!member && !guest) {
     return NextResponse.json(

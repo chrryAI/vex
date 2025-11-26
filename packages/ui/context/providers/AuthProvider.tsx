@@ -41,7 +41,7 @@ import {
 } from "../../types"
 import toast from "react-hot-toast"
 import { getApps, getSession } from "../../lib"
-import { cacheData, getCachedData } from "../../lib/db"
+import { cacheData, clearCache, getCachedData } from "../../lib/db"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { locale, locales } from "../../locales"
@@ -58,6 +58,7 @@ import {
   getThreadId,
   instructionBase,
   isDeepEqual,
+  isE2E,
   PROD_FRONTEND_URL,
   WS_URL,
 } from "../../utils"
@@ -441,8 +442,7 @@ export function AuthProvider({
   const setSignInPart = (
     part: "login" | "register" | "credentials" | undefined,
   ) => {
-    const newPart =
-      part && isLiveTest ? "credentials" : !!user ? undefined : part
+    const newPart = part && isE2E ? "credentials" : !!user ? undefined : part
 
     setSignInPartInternal(newPart)
 
@@ -1521,6 +1521,7 @@ export function AuthProvider({
   const zarathustra = allApps.find((app) => app.slug === "zarathustra")
 
   const signOut = async () => {
+    await clearCache()
     setShouldFetchSession(false)
     setUser(undefined)
     setGuest(undefined)
