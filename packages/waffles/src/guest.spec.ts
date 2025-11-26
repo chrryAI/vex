@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   // await acceptAllButton.click()
 })
 
-test.only("Subscribe As Guest", async ({ page }) => {
+test("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -34,7 +34,7 @@ test.only("Subscribe As Guest", async ({ page }) => {
   })
 })
 
-test("Invite", async ({ page }) => {
+test.only("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,

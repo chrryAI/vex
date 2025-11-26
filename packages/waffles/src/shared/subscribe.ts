@@ -136,16 +136,17 @@ export const subscribe = async ({
     visible: !inviteOrGift,
   })
 
+  await expect(subscribeButton).toBeVisible({
+    visible: !!inviteOrGift,
+    timeout: 10000,
+  })
+
   const purchaseTypeInput = page.getByTestId("purchase-type")
 
   // Wait for toast with partial text match (handles emoji and variations)
   await expect(purchaseTypeInput).toHaveValue(
     inviteOrGift ? "gift" : "subscription",
   )
-
-  await expect(subscribeButton).toBeVisible({
-    visible: !!inviteOrGift,
-  })
 
   const getNthMenuThread = async (nth: number) => {
     const threads = page.getByTestId("menu-thread-item")

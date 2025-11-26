@@ -90,6 +90,8 @@ export default async function ChrryAI({
   const fingerprint =
     cookieStore.get("fingerprint")?.value || headersList.get("x-fp") || uuidv4()
 
+  const gift = headersList.get("x-gift")
+
   const agentName = cookieStore.get("agentName")?.value
 
   const appId =
@@ -131,6 +133,7 @@ export default async function ChrryAI({
         chrryUrl: siteConfig.url,
         screenWidth: Number(viewPortWidth),
         screenHeight: Number(viewPortHeight),
+        gift,
         source: "layout",
         userAgent: headersList.get("user-agent") || `Chrry/${VERSION}`,
       }),

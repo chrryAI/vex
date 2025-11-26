@@ -674,6 +674,7 @@ export async function GET(request: Request) {
     let existingGuest = gift
       ? await getGuestDb({ fingerprint: gift })
       : await getGuestDb({ fingerprint })
+    console.log(`🚀 ~ GET ~ existingGuest:`, existingGuest?.fingerprint)
 
     if (gift && !existingGuest?.email) {
       existingGuest = await getGuestDb({ fingerprint })

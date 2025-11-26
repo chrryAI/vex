@@ -114,6 +114,10 @@ export default function Subscribe({
 
   const [part, setPart] = useState<"subscription" | "gift">("subscription")
 
+  const [purchaseType, setPurchaseType] = useState<"subscription" | "gift">(
+    "subscription",
+  )
+
   const handleCheckout = async (part: "subscription" | "gift") => {
     setPart(part)
     track({ name: "subscribe_checkout" })
@@ -266,6 +270,7 @@ export default function Subscribe({
       if (isExtensionRedirect) {
         toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
       } else {
+        setPurchaseType(data.gift ? "gift" : "subscription")
         toast.success(
           data.gift
             ? t(`🥰 ${t("Thank you for your gift")}`)
@@ -1120,7 +1125,8 @@ export default function Subscribe({
           {t("Plus")}
         </Button>
       )}
-      <Input data-testid="purchase-type" type="hidden" value={part} />
+      {giftedFingerPrint}
+      <Input data-testid="purchase-type" type="hidden" value={purchaseType} />
     </Div>
   )
 }
