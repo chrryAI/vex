@@ -1,6 +1,6 @@
 {
   "name": "@repo/extension",
-  "version": "1.4.80",
+  "version": "1.4.81",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,9 +12,9 @@
     "build:chrome": "npm run build:chrome:atlas && npm run build:chrome:focus && npm run build:chrome:vex",
     "build:chrome:dev": "rm -rf dist && tsc && vite build --mode development && npm run zip:chrome",
     "build:dev": "rm -rf dist && vite build --mode development",
-    "build:dev:watch": "tsc && vite build --mode development --watch",
+    "build:dev:watch": "vite build --mode development --watch",
     "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build && npm run zip:firefox",
-    "dev": "node dev-watch.js",
+    "dev": "MODE=focus node dev-watch.js",
     "dev:watch": "concurrently \"npm run build:dev:watch\" \"npm run reload:watch\"",
     "lint": "eslint .",
     "preview": "vite preview",

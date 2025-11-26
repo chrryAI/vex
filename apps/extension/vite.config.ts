@@ -74,7 +74,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name === "Vex" ? "Chrry" : siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.4.80",
+    version: siteConfig.version || "1.4.81",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -190,6 +190,7 @@ export default defineConfig(({ command, mode }) => {
         env.VITE_BROWSER || "chrome",
       ),
       "import.meta.env.VITE_IS_EXTENSION": JSON.stringify("true"),
+      "import.meta.env.VITE_SITE_MODE": JSON.stringify(siteMode),
     },
     optimizeDeps: {
       exclude: ["next/navigation", "next/router"],
