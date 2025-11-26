@@ -34,7 +34,7 @@ test.only("Subscribe As Guest", async ({ page }) => {
   })
 })
 
-test("Invite", async ({ page }) => {
+test.only("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -51,7 +51,7 @@ test("Invite", async ({ page }) => {
   })
 })
 
-test("Gift", async ({ page }) => {
+test.only("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
   })
