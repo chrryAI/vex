@@ -51,7 +51,7 @@ test("Invite", async ({ page }) => {
   })
 })
 
-test.only("Gift", async ({ page }) => {
+test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
   })
