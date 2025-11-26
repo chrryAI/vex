@@ -27,6 +27,7 @@ import {
   TEST_MEMBER_EMAILS,
   TEST_MEMBER_FINGERPRINTS,
 } from "@repo/db"
+
 import { generateAppMetadata } from "chrry/utils"
 import { Providers } from "../components/Providers"
 import { NextIntlClientProvider } from "next-intl"

@@ -110,12 +110,14 @@ export default async function middleware(request: NextRequest) {
   const url = new URL(request.url)
   const searchParams = url.searchParams
   const fingerprint = searchParams.get("fp")
+  const gift = searchParams.get("gift")
 
   const response = handleIntlRequest(request)
   setCorsHeaders(response, request)
 
   // Add pathname to headers for app detection
   response.headers.set("x-pathname", pathname)
+  gift && response.headers.set("x-gift", gift)
 
   const slug = getSlugFromPathname(pathname)
 

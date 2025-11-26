@@ -1,28 +1,7 @@
-import { Page, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
-import { faker } from "@faker-js/faker"
-import { modelName } from "@repo/db/src/schema"
-import { subscribe } from "./shared/subscribe"
-import { getURL } from "."
-import { thread } from "./shared/thread"
-import { collaboration } from "./shared/collaboration"
-import { text } from "stream/consumers"
+
 const isMember = false
-
-// test("Subscribe", async ({ page }) => {
-//   await page.goto(getURL(), {
-//     waitUntil: "networkidle",
-//   })
-//   await subscribe({ page })
-// })
-
-// test("Thread", async ({ page }) => {
-//   await thread({ page })
-// })
-
-// test("Collaboration", async ({ page, browser }) => {
-//   await collaboration({ page, browser })
-// })
 
 test.skip("Chat", async ({ page }) => {
   test.slow()
