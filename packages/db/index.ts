@@ -2720,7 +2720,24 @@ export const deleteThread = async ({ id }: { id: string }) => {
   return deleted
 }
 
+export const updateAiAgent = async (data: aiAgent) => {
+  const [updated] = await db
+    .update(aiAgents)
+    .set(data)
+    .where(eq(aiAgents.id, data.id))
+    .returning()
+
+  return updated
+}
+
 export const createAiAgent = async (agent: newAiAgent) => {
+  const existing = await getAiAgent({ name: agent.name })
+  if (existing) {
+    console.log("Updating agent:", agent.name)
+    // Merge new data with existing, keeping the id
+    return updateAiAgent({ ...existing, ...agent })
+  }
+
   const [inserted] = await db.insert(aiAgents).values(agent).returning()
   return inserted
 }

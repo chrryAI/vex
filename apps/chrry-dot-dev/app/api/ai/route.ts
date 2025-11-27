@@ -2803,16 +2803,39 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   })
 
   // Define token limits per model (conservative estimates to prevent errors)
-  const TOKEN_LIMITS = {
-    deepSeek: 28000, // DeepSeek R1 has 32K context, use 28K to be safe
-    chatGPT: 120000, // GPT-4 has 128K context, use 120K to be safe
-    claude: 180000, // Claude has 200K context, use 180K to be safe
-    gemini: 950000, // Gemini has 1M context, use 950K to be safe
+  // Note: Images/videos are handled separately by providers and don't count toward text token limits
+  const TOKEN_LIMITS: Record<string, number> = {
+    deepseek: 60000, // DeepSeek R1 has 64K context, use 60K to be safe
+    chatgpt: 120000, // GPT-4o has 128K context, use 120K to be safe
+    claude: 180000, // Claude 3.5 Sonnet has 200K context, use 180K to be safe
+    gemini: 1900000, // Gemini 1.5 Pro has 2M context, use 1.9M to be safe
   }
 
-  if (estimatedTokens > 25000) {
+  // Calculate text-only tokens (exclude base64 image/video data from count)
+  const textOnlyTokens = Math.ceil(
+    messages.reduce((total, msg) => {
+      if (typeof msg.content === "string") {
+        return total + msg.content.length
+      }
+      // For multimodal content, only count text parts
+      if (Array.isArray(msg.content)) {
+        return (
+          total +
+          msg.content
+            .filter((part: any) => part.type === "text")
+            .reduce(
+              (sum: number, part: any) => sum + (part.text?.length || 0),
+              0,
+            )
+        )
+      }
+      return total
+    }, 0) / 4,
+  )
+
+  if (textOnlyTokens > 25000) {
     console.warn(
-      `⚠️ High token usage detected: ~${estimatedTokens} tokens (approaching limits)`,
+      `⚠️ High token usage detected: ~${textOnlyTokens} text tokens (approaching limits)`,
     )
   }
 
@@ -2823,21 +2846,28 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     return NextResponse.json({ error: "Agent not found" }, { status: 404 })
   }
 
+  const computedAgentName =
+    agent.name === "sushi"
+      ? imageGenerationEnabled
+        ? "claude"
+        : "deepseek"
+      : agent.name
+
   // Check token limit for the specific agent/model
   const modelLimit =
-    TOKEN_LIMITS[agent.name as keyof typeof TOKEN_LIMITS] || 25000
-  if (estimatedTokens > modelLimit) {
+    TOKEN_LIMITS[computedAgentName as keyof typeof TOKEN_LIMITS] || 25000
+  if (textOnlyTokens > modelLimit) {
     console.log(
-      `🚫 Token limit exceeded: ~${estimatedTokens} tokens > ${modelLimit} limit for ${agent.name}`,
+      `🚫 Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
     )
     captureException(
-      `🚫 Token limit exceeded: ~${estimatedTokens} tokens > ${modelLimit} limit for ${agent.name}`,
+      `🚫 Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
     )
     return NextResponse.json(
       {
         error: "Request too large",
-        message: `Your message is too long for ${agent.displayName}. Please reduce the file size, use fewer files, or shorten your message. Estimated tokens: ${estimatedTokens}, limit: ${modelLimit}`,
-        estimatedTokens,
+        message: `Your message is too long for ${agent.displayName}. Please reduce the file size, use fewer files, or shorten your message. Estimated tokens: ${textOnlyTokens}, limit: ${modelLimit}`,
+        estimatedTokens: textOnlyTokens,
         limit: modelLimit,
       },
       { status: 413 }, // 413 Payload Too Large
@@ -4283,6 +4313,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           if (chunk && chunk.trim().length > 0) {
             hasReceivedContent = true
           }
+
+          console.log(`🚀 ~ file: route.ts:4313 ~ chunk:`, chunk)
+
           await enhancedStreamChunk({
             chunk,
             chunkNumber: currentChunk++,

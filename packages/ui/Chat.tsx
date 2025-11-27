@@ -280,8 +280,13 @@ export default function Chat({
     usePlatform()
   const inputRef = useRef(text || "")
 
-  const { addHapticFeedback, playNotification, isDrawerOpen, isSmallDevice } =
-    useTheme()
+  const {
+    addHapticFeedback,
+    playNotification,
+    isDrawerOpen,
+    isSmallDevice,
+    isMobileDevice,
+  } = useTheme()
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setSelectedAgentInternal(agent)
@@ -3493,488 +3498,446 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
             </Div>
           </Modal>
         )}
-        <Div
-          ref={chatContainerRef}
-          style={{
-            ...styles.chatContainer.style,
-            ...style,
-            ...(isChatFloating ? styles.chatContainerFloating.style : {}),
-          }}
-        >
-          {/* Anchor element for chat input tooltip */}
-          {files.length === 0 && (
-            <Div
-              className={collaborationStep === 3 ? "blur" : ""}
-              style={{
-                ...styles.top.style,
-                ...(isChatFloating
-                  ? {
-                      ...styles.chatContainerFloating.style,
-                      ...styles.topChatFloating.style,
-                    }
-                  : {}),
-              }}
-            >
-              {Top && (
-                <Div
-                  style={{
-                    ...(isChatFloating
-                      ? styles.topChatFloatingTopInner.style
-                      : {}),
-                    ...(collaborationStep === 3
-                      ? styles.collaborationStep3Div.style
-                      : {}),
-                  }}
-                >
-                  {Top}
-                </Div>
-              )}
-              {hasBottomOffset && (
-                <Button
-                  className="link"
-                  style={{
-                    ...styles.scrollDownButton.style,
-                    ...utilities.link.style,
-                  }}
-                  onClick={showInputAndScrollToBottom}
-                  title={t("Scroll to bottom")}
-                >
-                  <CircleArrowDown size={25} />
-                </Button>
-              )}
-            </Div>
-          )}
-
-          <>
-            {collaborationStep === 2 ? (
-              <Div style={styles.collaborationTooltip.style}>
-                <Div style={styles.tooltip.style}>
+        {isHydrated && (
+          <Div
+            ref={chatContainerRef}
+            style={{
+              ...styles.chatContainer.style,
+              ...style,
+              ...(isChatFloating ? styles.chatContainerFloating.style : {}),
+            }}
+          >
+            {/* Anchor element for chat input tooltip */}
+            {files.length === 0 && (
+              <Div
+                className={collaborationStep === 3 ? "blur" : ""}
+                style={{
+                  ...styles.top.style,
+                  ...(isChatFloating
+                    ? {
+                        ...styles.chatContainerFloating.style,
+                        ...styles.topChatFloating.style,
+                      }
+                    : {}),
+                }}
+              >
+                {Top && (
                   <Div
                     style={{
-                      maxWidth: "300px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 7.5,
+                      ...(isChatFloating
+                        ? styles.topChatFloatingTopInner.style
+                        : {}),
+                      ...(collaborationStep === 3
+                        ? styles.collaborationStep3Div.style
+                        : {}),
                     }}
                   >
-                    <Div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Strong>
-                        {collaborationSteps[0]?.title ||
-                          t("Start Your Conversation")}
-                      </Strong>
-                      <Button
-                        style={{
-                          cursor: "pointer",
-                          position: "absolute",
-                          right: 7.5,
-                          top: 7.5,
-                          zIndex: 10000,
-                          ...utilities.link.style,
-                        }}
-                        className="link"
-                        onClick={closeCollaborationTooltip}
-                      >
-                        <CircleX size={22} />
-                      </Button>
-                    </Div>
-                    <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
-                      {collaborationSteps[0]?.description ||
-                        t(
-                          "Type your message or question in the chat input below to begin collaborating with AI.",
-                        )}
-                    </Div>
+                    {Top}
                   </Div>
-                </Div>
-              </Div>
-            ) : collaborationStep === 3 ? (
-              <Div style={styles.shareTooltip.style}>
-                <Div style={styles.tooltip.style}>
-                  <Div
+                )}
+                {hasBottomOffset && (
+                  <Button
+                    className="link"
                     style={{
-                      maxWidth: "300px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 7.5,
+                      ...styles.scrollDownButton.style,
+                      ...utilities.link.style,
                     }}
+                    onClick={showInputAndScrollToBottom}
+                    title={t("Scroll to bottom")}
                   >
-                    <Div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Strong>
-                        {collaborationSteps[1]?.title || t("Share Your Thread")}
-                      </Strong>
-                      <Button
-                        style={{
-                          cursor: "pointer",
-                          position: "absolute",
-                          right: 7.5,
-                          top: 7.5,
-                          zIndex: 10000,
-                          ...utilities.link.style,
-                        }}
-                        className="link"
-                        onClick={closeCollaborationTooltip}
-                      >
-                        <CircleX size={22} />
-                      </Button>
-                    </Div>
-                    <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
-                      {collaborationSteps[1]?.description ||
-                        t(
-                          "Once you have a conversation going, click the share button to invite others to collaborate.",
-                        )}
-                    </Div>
-                  </Div>
-                </Div>
+                    <CircleArrowDown size={25} />
+                  </Button>
+                )}
               </Div>
-            ) : (
-              !showQuotaInfo &&
-              selectedAgent !== null && (
-                <Div style={styles.content.style}>
-                  {hitHourlyLimit ||
-                  isChatFloating ||
-                  exceededInitial ? null : showGreeting &&
-                    files.length === 0 ? (
-                    <H2 style={styles.brandHelp.style}>
-                      {isIncognito ? <HatGlasses size={24} /> : ""}
-                      <Span>
-                        👋{" "}
-                        {t(
-                          language === "fr"
-                            ? "What can I help with?"
-                            : "What's on your mind?",
-                        )}
-                      </Span>
-                    </H2>
-                  ) : null}
-                </Div>
-              )
             )}
 
-            <Div
-              className={
-                showPlaceholderGlow ? "chat placeholderGlow blur" : "chat blur"
-              }
-              style={{
-                ...styles.chat.style,
-                ...(isStandalone ? styles.standalone : {}),
-                ...(isChatFloating ? styles.chatFloating.style : {}),
-              }}
-            >
-              {selectedAgent?.capabilities.imageGeneration && (
-                <Button
-                  className="link"
-                  data-testid="image-generation-button"
-                  style={{
-                    ...utilities.link.style,
-                    ...styles.imageGenerationButton.style,
-                  }}
-                  title={
-                    isImageGenerationEnabled
-                      ? t("Image Generation Enabled")
-                      : t("Enable Image Generation")
-                  }
-                  onClick={() => {
-                    setIsImageGenerationEnabled(!isImageGenerationEnabled)
-
-                    if (selectedAgent?.name === "flux") {
-                      setSelectedAgent(undefined)
-                    } else {
-                      setSelectedAgent(sushiAgent)
-                    }
-                  }}
-                >
-                  <Palette
-                    color={
-                      isImageGenerationEnabled
-                        ? "var(--accent-1)"
-                        : "var(--shade-3)"
-                    }
-                    size={22}
-                  />
-                </Button>
-              )}
-              {/* File Preview Area */}
-              {files.length > 0 && (
-                <Div style={styles.filePreviewArea.style}>
-                  {files.map((file, index) => {
-                    const fileType = getFileType(file)
-                    const isImage = fileType === "image"
-                    const isText = fileType === "text" // Add text type detection
-
-                    return (
-                      <Div key={index} style={styles.filePreview.style}>
-                        {isImage ? (
-                          <Img
-                            src={createImagePreview(file)}
-                            alt={file.name}
-                            style={styles.filePreviewImage.style}
-                          />
-                        ) : (
-                          <Div style={styles.filePreviewIcon.style}>
-                            {fileType === "audio" ? (
-                              <Music size={16} />
-                            ) : fileType === "video" ? (
-                              <VideoIcon size={16} />
-                            ) : (
-                              <FileIcon size={16} />
-                            )}
-                          </Div>
-                        )}
-
-                        <Div style={styles.filePreviewInfo.style}>
-                          <Div style={styles.filePreviewName.style}>
-                            {file.name}
-                          </Div>
-                          <Div style={styles.filePreviewSize.style}>
-                            {(file.size / 1024).toFixed(1)}KB
-                          </Div>
-                        </Div>
-
+            <>
+              {collaborationStep === 2 ? (
+                <Div style={styles.collaborationTooltip.style}>
+                  <Div style={styles.tooltip.style}>
+                    <Div
+                      style={{
+                        maxWidth: "300px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 7.5,
+                      }}
+                    >
+                      <Div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Strong>
+                          {collaborationSteps[0]?.title ||
+                            t("Start Your Conversation")}
+                        </Strong>
                         <Button
-                          data-testid="file-preview-clear"
-                          type="button"
-                          onClick={() => removeFile(index)}
-                          className="link"
                           style={{
+                            cursor: "pointer",
+                            position: "absolute",
+                            right: 7.5,
+                            top: 7.5,
+                            zIndex: 10000,
                             ...utilities.link.style,
-                            ...styles.filePreviewClear.style,
                           }}
-                          title="Remove file"
+                          className="link"
+                          onClick={closeCollaborationTooltip}
                         >
-                          <CircleX size={18} />
+                          <CircleX size={22} />
                         </Button>
                       </Div>
-                    )
-                  })}
-                </Div>
-              )}
-              {disabled && <Span>{t("Chat is disabled")}</Span>}
-
-              <TextArea
-                className="chatTextArea"
-                rows={isHydrated && isChatFloating ? 1 : 2}
-                data-testid="chat-textarea"
-                style={{
-                  ...styles.chatTextArea.style,
-                  ...(isChatFloating ? { minHeight: 40 } : undefined),
-                }}
-                value={input}
-                onChange={handleInputChange}
-                name="chat"
-                id="chat"
-                placeholder={
-                  !isHydrated
-                    ? ""
-                    : placeholder ||
-                      `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
-                }
-                ref={chatInputRef}
-                disabled={disabled}
-                // Native-only: submit on Enter (no shift key detection available)
-                onSubmitEditing={() => {
-                  handleSubmit()
-                }}
-                // Web-specific: handle Enter with shift key detection
-                onKeyPress={(e: {
-                  key: string
-                  shiftKey: boolean
-                  preventDefault: () => void
-                }) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmit()
-                  }
-                }}
-                // Handle paste
-                onPaste={handlePaste}
-                // React Native specific
-                blurOnSubmit={false}
-                multiline={true}
-                returnKeyType="send"
-              />
-
-              {/* Quota Info Display */}
-              {showQuotaInfo && quotaInfo && (
-                <Div style={styles.quotaDisplay.style}>
-                  <Div style={styles.quotaHeader.style}>
-                    <HardDrive size={16} color="var(--accent-6)" />
-                    <Span>{t("File Upload Limits")}</Span>
-                    <Button
-                      title={t("Close")}
-                      onClick={() => setShowQuotaInfo(false)}
-                      className="link"
-                      style={{ marginLeft: "auto" }}
-                    >
-                      <CircleX size={18} color="var(--accent-1)" />
-                    </Button>
+                      <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
+                        {collaborationSteps[0]?.description ||
+                          t(
+                            "Type your message or question in the chat input below to begin collaborating with AI.",
+                          )}
+                      </Div>
+                    </Div>
                   </Div>
-                  <Div style={styles.quotaItems.style}>
-                    <Div style={styles.quotaItem.style}>
-                      <Clock size={14} color="var(--shade-6)" />
-                      <Span>
-                        {t("Hourly: {{used}}/{{limit}} files", {
-                          used: quotaInfo.hourly.used,
-                          limit: quotaInfo.hourly.limit,
-                        })}
-                      </Span>
-                      <Span style={styles.quotaReset.style}>
-                        {t("Resets in {{time}}", {
-                          time: formatTimeUntilReset(
-                            quotaInfo?.hourly?.resetTime,
-                          ),
-                        })}
-                      </Span>
+                </Div>
+              ) : collaborationStep === 3 ? (
+                <Div style={styles.shareTooltip.style}>
+                  <Div style={styles.tooltip.style}>
+                    <Div
+                      style={{
+                        maxWidth: "300px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 7.5,
+                      }}
+                    >
+                      <Div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Strong>
+                          {collaborationSteps[1]?.title ||
+                            t("Share Your Thread")}
+                        </Strong>
+                        <Button
+                          style={{
+                            cursor: "pointer",
+                            position: "absolute",
+                            right: 7.5,
+                            top: 7.5,
+                            zIndex: 10000,
+                            ...utilities.link.style,
+                          }}
+                          className="link"
+                          onClick={closeCollaborationTooltip}
+                        >
+                          <CircleX size={22} />
+                        </Button>
+                      </Div>
+                      <Div style={{ fontSize: "13px", lineHeight: "1.4" }}>
+                        {collaborationSteps[1]?.description ||
+                          t(
+                            "Once you have a conversation going, click the share button to invite others to collaborate.",
+                          )}
+                      </Div>
                     </Div>
-                    <Div style={styles.quotaItem.style}>
-                      <Timer size={14} color="var(--shade-6)" />
-                      <Span>
-                        {t("Daily: {{used}}/{{limit}} files", {
-                          used: quotaInfo.daily.used,
-                          limit: quotaInfo.daily.limit,
-                        })}
-                      </Span>
-                      <Span style={styles.quotaReset.style}>
-                        {t("Resets in {{time}}", {
-                          time: formatTimeUntilReset(quotaInfo.daily.resetTime),
-                        })}
-                      </Span>
-                    </Div>
-                    <Div style={styles.quotaItem.style}>
-                      <HardDrive size={14} color="var(--shade-6)" />
-                      <Span>
-                        {t("Size: {{used}}/{{limit}} MB", {
-                          used: quotaInfo.dailySize.used,
-                          limit: quotaInfo.dailySize.limit,
-                        })}
-                      </Span>
-                      <Span style={styles.quotaReset.style}>
-                        {t("Resets in {{time}}", {
-                          time: formatTimeUntilReset(
-                            quotaInfo.dailySize.resetTime,
-                          ),
-                        })}
-                      </Span>
-                    </Div>
-                    {quotaInfo.images && (
-                      <Div style={styles.quotaItem.style}>
-                        <Palette size={14} color="var(--shade-6)" />
+                  </Div>
+                </Div>
+              ) : (
+                !showQuotaInfo &&
+                selectedAgent !== null && (
+                  <Div style={styles.content.style}>
+                    {hitHourlyLimit ||
+                    isChatFloating ||
+                    exceededInitial ? null : showGreeting &&
+                      files.length === 0 ? (
+                      <H2 style={styles.brandHelp.style}>
+                        {isIncognito ? <HatGlasses size={24} /> : ""}
                         <Span>
-                          {t("Images: {{used}}/{{limit}} daily", {
-                            used: quotaInfo.images.used,
-                            limit: quotaInfo.images.limit,
+                          👋{" "}
+                          {t(
+                            language === "fr"
+                              ? "What can I help with?"
+                              : "What's on your mind?",
+                          )}
+                        </Span>
+                      </H2>
+                    ) : null}
+                  </Div>
+                )
+              )}
+
+              <Div
+                className={
+                  showPlaceholderGlow
+                    ? "chat placeholderGlow blur"
+                    : "chat blur"
+                }
+                style={{
+                  ...styles.chat.style,
+                  ...(isStandalone ? styles.standalone : {}),
+                  ...(isChatFloating ? styles.chatFloating.style : {}),
+                }}
+              >
+                {selectedAgent?.capabilities.imageGeneration && (
+                  <Button
+                    className="link"
+                    data-testid="image-generation-button"
+                    style={{
+                      ...utilities.link.style,
+                      ...styles.imageGenerationButton.style,
+                    }}
+                    title={
+                      isImageGenerationEnabled
+                        ? t("Image Generation Enabled")
+                        : t("Enable Image Generation")
+                    }
+                    onClick={() => {
+                      setIsImageGenerationEnabled(!isImageGenerationEnabled)
+
+                      if (selectedAgent?.name === "flux") {
+                        setSelectedAgent(undefined)
+                      } else {
+                        setSelectedAgent(sushiAgent)
+                      }
+                    }}
+                  >
+                    <Palette
+                      color={
+                        isImageGenerationEnabled
+                          ? "var(--accent-1)"
+                          : "var(--shade-3)"
+                      }
+                      size={22}
+                    />
+                  </Button>
+                )}
+                {/* File Preview Area */}
+                {files.length > 0 && (
+                  <Div style={styles.filePreviewArea.style}>
+                    {files.map((file, index) => {
+                      const fileType = getFileType(file)
+                      const isImage = fileType === "image"
+                      const isText = fileType === "text" // Add text type detection
+
+                      return (
+                        <Div key={index} style={styles.filePreview.style}>
+                          {isImage ? (
+                            <Img
+                              src={createImagePreview(file)}
+                              alt={file.name}
+                              style={styles.filePreviewImage.style}
+                            />
+                          ) : (
+                            <Div style={styles.filePreviewIcon.style}>
+                              {fileType === "audio" ? (
+                                <Music size={16} />
+                              ) : fileType === "video" ? (
+                                <VideoIcon size={16} />
+                              ) : (
+                                <FileIcon size={16} />
+                              )}
+                            </Div>
+                          )}
+
+                          <Div style={styles.filePreviewInfo.style}>
+                            <Div style={styles.filePreviewName.style}>
+                              {file.name}
+                            </Div>
+                            <Div style={styles.filePreviewSize.style}>
+                              {(file.size / 1024).toFixed(1)}KB
+                            </Div>
+                          </Div>
+
+                          <Button
+                            data-testid="file-preview-clear"
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="link"
+                            style={{
+                              ...utilities.link.style,
+                              ...styles.filePreviewClear.style,
+                            }}
+                            title="Remove file"
+                          >
+                            <CircleX size={18} />
+                          </Button>
+                        </Div>
+                      )
+                    })}
+                  </Div>
+                )}
+                {disabled && <Span>{t("Chat is disabled")}</Span>}
+
+                <TextArea
+                  className="chatTextArea"
+                  rows={isHydrated && isChatFloating ? 1 : 2}
+                  data-testid="chat-textarea"
+                  style={{
+                    ...styles.chatTextArea.style,
+                    ...(isChatFloating ? { minHeight: 40 } : undefined),
+                  }}
+                  value={input}
+                  onChange={handleInputChange}
+                  name="chat"
+                  id="chat"
+                  placeholder={
+                    !isHydrated
+                      ? ""
+                      : placeholder ||
+                        `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
+                  }
+                  ref={chatInputRef}
+                  disabled={disabled}
+                  // Native-only: submit on Enter (no shift key detection available)
+                  onSubmitEditing={() => {
+                    handleSubmit()
+                  }}
+                  // Web-specific: handle Enter with shift key detection
+                  onKeyPress={(e: {
+                    key: string
+                    shiftKey: boolean
+                    preventDefault: () => void
+                  }) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSubmit()
+                    }
+                  }}
+                  // Handle paste
+                  onPaste={handlePaste}
+                  // React Native specific
+                  blurOnSubmit={false}
+                  multiline={true}
+                  returnKeyType="send"
+                />
+
+                {/* Quota Info Display */}
+                {showQuotaInfo && quotaInfo && (
+                  <Div style={styles.quotaDisplay.style}>
+                    <Div style={styles.quotaHeader.style}>
+                      <HardDrive size={16} color="var(--accent-6)" />
+                      <Span>{t("File Upload Limits")}</Span>
+                      <Button
+                        title={t("Close")}
+                        onClick={() => setShowQuotaInfo(false)}
+                        className="link"
+                        style={{ marginLeft: "auto" }}
+                      >
+                        <CircleX size={18} color="var(--accent-1)" />
+                      </Button>
+                    </Div>
+                    <Div style={styles.quotaItems.style}>
+                      <Div style={styles.quotaItem.style}>
+                        <Clock size={14} color="var(--shade-6)" />
+                        <Span>
+                          {t("Hourly: {{used}}/{{limit}} files", {
+                            used: quotaInfo.hourly.used,
+                            limit: quotaInfo.hourly.limit,
                           })}
                         </Span>
                         <Span style={styles.quotaReset.style}>
                           {t("Resets in {{time}}", {
                             time: formatTimeUntilReset(
-                              quotaInfo.images.resetTime,
+                              quotaInfo?.hourly?.resetTime,
                             ),
                           })}
                         </Span>
                       </Div>
-                    )}
+                      <Div style={styles.quotaItem.style}>
+                        <Timer size={14} color="var(--shade-6)" />
+                        <Span>
+                          {t("Daily: {{used}}/{{limit}} files", {
+                            used: quotaInfo.daily.used,
+                            limit: quotaInfo.daily.limit,
+                          })}
+                        </Span>
+                        <Span style={styles.quotaReset.style}>
+                          {t("Resets in {{time}}", {
+                            time: formatTimeUntilReset(
+                              quotaInfo.daily.resetTime,
+                            ),
+                          })}
+                        </Span>
+                      </Div>
+                      <Div style={styles.quotaItem.style}>
+                        <HardDrive size={14} color="var(--shade-6)" />
+                        <Span>
+                          {t("Size: {{used}}/{{limit}} MB", {
+                            used: quotaInfo.dailySize.used,
+                            limit: quotaInfo.dailySize.limit,
+                          })}
+                        </Span>
+                        <Span style={styles.quotaReset.style}>
+                          {t("Resets in {{time}}", {
+                            time: formatTimeUntilReset(
+                              quotaInfo.dailySize.resetTime,
+                            ),
+                          })}
+                        </Span>
+                      </Div>
+                      {quotaInfo.images && (
+                        <Div style={styles.quotaItem.style}>
+                          <Palette size={14} color="var(--shade-6)" />
+                          <Span>
+                            {t("Images: {{used}}/{{limit}} daily", {
+                              used: quotaInfo.images.used,
+                              limit: quotaInfo.images.limit,
+                            })}
+                          </Span>
+                          <Span style={styles.quotaReset.style}>
+                            {t("Resets in {{time}}", {
+                              time: formatTimeUntilReset(
+                                quotaInfo.images.resetTime,
+                              ),
+                            })}
+                          </Span>
+                        </Div>
+                      )}
+                    </Div>
                   </Div>
-                </Div>
-              )}
+                )}
 
-              {/* Credit Estimate Display */}
+                {/* Credit Estimate Display */}
 
-              <Div style={styles.chatFooter.style}>
-                {!isAttaching && selectedAgent ? (
-                  <Div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-end",
-                      gap: debateAgent ? 10 : 5,
-                    }}
-                  >
-                    <Span
+                <Div style={styles.chatFooter.style}>
+                  {!isAttaching && selectedAgent ? (
+                    <Div
                       style={{
                         display: "flex",
                         alignItems: "flex-end",
-                        gap: 9,
+                        gap: debateAgent ? 10 : 5,
                       }}
                     >
-                      <Button
-                        disabled={isChrry || !!app?.onlyAgent}
-                        data-testid={
-                          !debateAgent
-                            ? selectedAgent?.name !== "flux"
-                              ? "add-debate-agent-button"
-                              : undefined
-                            : "agent-select-button"
-                        }
-                        data-agent-name={selectedAgent.name}
-                        title={t("Add debate agent")}
-                        onClick={() => {
-                          addHapticFeedback()
-                          if (appStatus?.part) {
-                            toast.error(t("Agent locked during app creation"))
-                            return
-                          }
-
-                          if (debateAgent || selectedAgent?.name === "flux") {
-                            setIsAgentModalOpen(true)
-                          } else setIsDebateAgentModalOpen(true)
-                        }}
-                        className="link"
+                      <Span
                         style={{
-                          ...utilities.link.style,
-                          ...styles.debateAgentButton.style,
-                          ...(isChrry || !!app?.onlyAgent
-                            ? styles.debateAgentButtonDisabled
-                            : {}),
+                          display: "flex",
+                          alignItems: "flex-end",
+                          gap: 9,
                         }}
                       >
-                        {selectedAgent.name === "deepSeek" ? (
-                          <DeepSeek color="var(--accent-6)" size={24} />
-                        ) : selectedAgent.name === "chatGPT" ? (
-                          <OpenAI color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "claude" ? (
-                          <Claude color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "gemini" ? (
-                          <Gemini color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "flux" ? (
-                          <Flux color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "perplexity" ? (
-                          <Perplexity color="var(--accent-6)" size={22} />
-                        ) : selectedAgent.name === "sushi" ? (
-                          <Img icon="sushi" size={22} />
-                        ) : null}
-                        {isChrry ||
-                        app?.onlyAgent ||
-                        selectedAgent?.name === "flux" ||
-                        debateAgent ? null : (
-                          <Plus
-                            strokeWidth={3}
-                            style={styles.plusIcon.style}
-                            size={10}
-                            color="var(--accent-6)"
-                          />
-                        )}
-                      </Button>
-                      {debateAgent && !app?.onlyAgent ? (
                         <Button
-                          data-testid="add-debate-agent-button"
-                          data-agent-name={debateAgent.name}
+                          disabled={isChrry || !!app?.onlyAgent}
+                          data-testid={
+                            !debateAgent
+                              ? selectedAgent?.name !== "flux"
+                                ? "add-debate-agent-button"
+                                : undefined
+                              : "agent-select-button"
+                          }
+                          data-agent-name={selectedAgent.name}
+                          title={t("Add debate agent")}
                           onClick={() => {
+                            addHapticFeedback()
                             if (appStatus?.part) {
                               toast.error(t("Agent locked during app creation"))
                               return
                             }
-                            addHapticFeedback()
-                            setIsDebateAgentModalOpen(true)
+
+                            if (debateAgent || selectedAgent?.name === "flux") {
+                              setIsAgentModalOpen(true)
+                            } else setIsDebateAgentModalOpen(true)
                           }}
                           className="link"
                           style={{
@@ -3985,547 +3948,625 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                               : {}),
                           }}
                         >
-                          <Span style={{ position: "relative", left: "-2px" }}>
-                            |
-                          </Span>
-                          {debateAgent.name === "deepSeek" ? (
+                          {selectedAgent.name === "deepSeek" ? (
                             <DeepSeek color="var(--accent-6)" size={24} />
-                          ) : debateAgent.name === "chatGPT" ? (
+                          ) : selectedAgent.name === "chatGPT" ? (
                             <OpenAI color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "claude" ? (
+                          ) : selectedAgent.name === "claude" ? (
                             <Claude color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "gemini" ? (
+                          ) : selectedAgent.name === "gemini" ? (
                             <Gemini color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "flux" ? (
+                          ) : selectedAgent.name === "flux" ? (
                             <Flux color="var(--accent-6)" size={22} />
-                          ) : debateAgent.name === "perplexity" ? (
+                          ) : selectedAgent.name === "perplexity" ? (
                             <Perplexity color="var(--accent-6)" size={22} />
+                          ) : selectedAgent.name === "sushi" ? (
+                            <Img icon="sushi" size={22} />
                           ) : null}
+                          {isChrry ||
+                          app?.onlyAgent ||
+                          selectedAgent?.name === "flux" ||
+                          debateAgent ? null : (
+                            <Plus
+                              strokeWidth={3}
+                              style={styles.plusIcon.style}
+                              size={10}
+                              color="var(--accent-6)"
+                            />
+                          )}
                         </Button>
-                      ) : (
+                        {debateAgent && !app?.onlyAgent ? (
+                          <Button
+                            data-testid="add-debate-agent-button"
+                            data-agent-name={debateAgent.name}
+                            onClick={() => {
+                              if (appStatus?.part) {
+                                toast.error(
+                                  t("Agent locked during app creation"),
+                                )
+                                return
+                              }
+                              addHapticFeedback()
+                              setIsDebateAgentModalOpen(true)
+                            }}
+                            className="link"
+                            style={{
+                              ...utilities.link.style,
+                              ...styles.debateAgentButton.style,
+                              ...(isChrry || !!app?.onlyAgent
+                                ? styles.debateAgentButtonDisabled
+                                : {}),
+                            }}
+                          >
+                            <Span
+                              style={{ position: "relative", left: "-2px" }}
+                            >
+                              |
+                            </Span>
+                            {debateAgent.name === "deepSeek" ? (
+                              <DeepSeek color="var(--accent-6)" size={24} />
+                            ) : debateAgent.name === "chatGPT" ? (
+                              <OpenAI color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "claude" ? (
+                              <Claude color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "gemini" ? (
+                              <Gemini color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "flux" ? (
+                              <Flux color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "perplexity" ? (
+                              <Perplexity color="var(--accent-6)" size={22} />
+                            ) : null}
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled={isChrry || !!app?.onlyAgent}
+                            data-agent-name={selectedAgent.name}
+                            data-testid="agent-select-button"
+                            onClick={() => {
+                              if (appStatus?.part) {
+                                toast.error(
+                                  t("Agent locked during app creation"),
+                                )
+                                return
+                              }
+                              addHapticFeedback()
+                              setIsAgentModalOpen(true)
+                            }}
+                            className="link"
+                            style={{
+                              ...utilities.link.style,
+                              ...styles.agentButton.style,
+                              color:
+                                isChrry || app?.onlyAgent
+                                  ? "var(--shade-6)"
+                                  : undefined,
+                            }}
+                            type="submit"
+                          >
+                            <Span
+                              style={{
+                                ...styles.agentName.style,
+                                maxWidth: isMobileDevice ? 75 : 150,
+                              }}
+                            >
+                              {selectedAgent?.displayName}
+                            </Span>
+                            {!app?.onlyAgent && (
+                              <ChevronDown color="var(--accent-6)" size={20} />
+                            )}
+                          </Button>
+                        )}
+                      </Span>
+                      {!appStatus?.part && !isChrry && !app?.onlyAgent && (
                         <Button
-                          disabled={isChrry || !!app?.onlyAgent}
-                          data-agent-name={selectedAgent.name}
-                          data-testid="agent-select-button"
+                          data-testid={
+                            debateAgent
+                              ? "debate-agent-delete-button"
+                              : "agent-delete-button"
+                          }
+                          style={{
+                            position: "relative",
+                            top: "-2px",
+                            ...utilities.link.style,
+                          }}
+                          className="link"
                           onClick={() => {
-                            if (appStatus?.part) {
-                              toast.error(t("Agent locked during app creation"))
+                            addHapticFeedback()
+                            debateAgent
+                              ? setDebateAgent(null)
+                              : setSelectedAgent(null)
+                          }}
+                        >
+                          <CircleX color="var(--accent-1)" size={18} />
+                        </Button>
+                      )}
+                    </Div>
+                  ) : (
+                    !isAttaching && (
+                      <Button
+                        className="link"
+                        style={{
+                          color: "var(--accent-1)",
+                          ...utilities.link.style,
+                        }}
+                        onClick={() => {
+                          addHapticFeedback()
+                          setIsAgentModalOpen(true)
+                        }}
+                      >
+                        <Sparkles
+                          color="var(--accent-1)"
+                          fill="var(--accent-1)"
+                          size={22}
+                        />{" "}
+                        {t("Select agent")}
+                      </Button>
+                    )
+                  )}
+
+                  <Div
+                    style={{
+                      ...styles.chatFooterButtons.style,
+                    }}
+                  >
+                    {isHydrated && (
+                      <Div
+                        style={{
+                          top: "0.15rem",
+                          position: "relative",
+                        }}
+                      >
+                        {app?.features?.moodTracking && (
+                          <MoodSelector
+                            showEdit={false}
+                            style={{
+                              fontSize: "1.40rem",
+                            }}
+                            key={mood?.type}
+                            mood={mood?.type}
+                            onSelectingMood={(v) => {
+                              setIsSelectingMood(v)
+                            }}
+                            onMoodChange={async (newMood) => {
+                              if (mood?.type !== newMood) {
+                                await updateMood({ type: newMood })
+                                toast.success(emojiMap[newMood])
+                              }
+                            }}
+                          />
+                        )}
+                      </Div>
+                    )}
+                    {!isSelectingMood && !needsReview && isHydrated && (
+                      <>
+                        <Button
+                          data-testid={
+                            isWebSearchEnabled
+                              ? "web-search-button-enabled"
+                              : "web-search-button-disabled"
+                          }
+                          className="link"
+                          style={{
+                            ...utilities.link.style,
+                          }}
+                          title={
+                            isWebSearchEnabled
+                              ? t("Web Search Enabled")
+                              : t("Enable Web Search")
+                          }
+                          onClick={() => {
+                            // if (!selectedAgent?.capabilities?.webSearch) {
+                            //   setAttempt("webSearch")
+                            //   setIsAgentModalOpen(true)
+                            //   return
+                            // }
+                            setIsWebSearchEnabled(!isWebSearchEnabled)
+                          }}
+                        >
+                          {app?.features?.moodTracking ? null : (
+                            <Span
+                              style={{
+                                fontSize: 12,
+                                color:
+                                  isWebSearchEnabled || needSearch
+                                    ? "var(--accent-6)"
+                                    : "var(--shade-3)",
+                              }}
+                            >
+                              {t("Web")}
+                            </Span>
+                          )}
+
+                          {selectedAgent?.capabilities?.webSearch ? (
+                            <Globe
+                              color={
+                                isWebSearchEnabled
+                                  ? "var(--accent-6)"
+                                  : "var(--shade-3)"
+                              }
+                              size={22}
+                            />
+                          ) : (
+                            <GlobeLock color="var(--shade-3)" size={22} />
+                          )}
+                        </Button>
+                      </>
+                    )}
+                    {isAttaching ? (
+                      <Span style={styles.attachButtons.style}>
+                        <Button
+                          data-testid="attach-button-close"
+                          className="link"
+                          style={{
+                            ...utilities.link.style,
+                          }}
+                          onClick={() => {
+                            addHapticFeedback()
+                            setIsAttaching(false)
+                          }}
+                        >
+                          <CircleX color="var(--accent-1)" size={22} />
+                        </Button>
+                        <Button
+                          data-testid="attach-button-video"
+                          title={t("Video")}
+                          onClick={() => {
+                            if (
+                              !selectedAgent ||
+                              !selectedAgent.capabilities.video
+                            ) {
+                              setIsAgentModalOpen(true)
                               return
                             }
+                            if (
+                              debateAgent &&
+                              !debateAgent.capabilities.video
+                            ) {
+                              setIsDebateAgentModalOpen(true)
+                              return
+                            }
+                            triggerFileInput("video/*")
+                          }}
+                          disabled={isAttachmentDisabled("video")}
+                          style={{
+                            ...utilities.link.style,
+                            ...(hasFileType("video")
+                              ? styles.attachButtonSelected.style
+                              : isAttachmentDisabled("video")
+                                ? styles.attachButtonDisabled.style
+                                : undefined),
+                          }}
+                          className="link"
+                        >
+                          <VideoIcon
+                            size={22}
+                            color={getButtonColor("video")}
+                          />
+                        </Button>
+                        <Button
+                          data-testid="attach-button-pdf"
+                          title={"PDF"}
+                          onClick={() => {
+                            if (
+                              !selectedAgent ||
+                              !selectedAgent.capabilities.pdf
+                            ) {
+                              setIsAgentModalOpen(true)
+                              return
+                            }
+                            if (debateAgent && !debateAgent.capabilities.pdf) {
+                              setIsDebateAgentModalOpen(true)
+                              return
+                            }
+
+                            triggerFileInput("application/pdf")
+                          }}
+                          style={{
+                            ...utilities.link.style,
+                            ...(hasFileType("pdf")
+                              ? styles.attachButtonSelected.style
+                              : isAttachmentDisabled("pdf")
+                                ? styles.attachButtonDisabled.style
+                                : undefined),
+                          }}
+                          disabled={isAttachmentDisabled("audio")}
+                          className="link"
+                        >
+                          <FileText size={22} color={getButtonColor("pdf")} />
+                        </Button>
+                        <Button
+                          data-testid="attach-button-audio"
+                          title={t("Audio")}
+                          onClick={() => {
+                            if (
+                              !selectedAgent ||
+                              !selectedAgent.capabilities.audio
+                            ) {
+                              setIsAgentModalOpen(true)
+                              return
+                            }
+                            if (
+                              debateAgent &&
+                              !debateAgent.capabilities.audio
+                            ) {
+                              setIsDebateAgentModalOpen(true)
+                              return
+                            }
+                            triggerFileInput("audio/*")
+                          }}
+                          disabled={isAttachmentDisabled("audio")}
+                          style={{
+                            ...utilities.link.style,
+                            ...(hasFileType("audio")
+                              ? styles.attachButtonSelected.style
+                              : isAttachmentDisabled("audio")
+                                ? styles.attachButtonDisabled.style
+                                : undefined),
+                          }}
+                          className="link"
+                        >
+                          <AudioLines
+                            size={22}
+                            color={getButtonColor("audio")}
+                          />
+                        </Button>
+                        <Button
+                          data-testid="attach-button-image"
+                          title={t("Image")}
+                          onClick={() => {
+                            if (
+                              !selectedAgent ||
+                              !selectedAgent.capabilities.image
+                            ) {
+                              setIsAgentModalOpen(true)
+                              return
+                            }
+                            if (
+                              debateAgent &&
+                              !debateAgent.capabilities.image
+                            ) {
+                              setIsDebateAgentModalOpen(true)
+                              return
+                            }
+
+                            triggerFileInput("image/*")
+                          }}
+                          disabled={isAttachmentDisabled("image")}
+                          style={{
+                            ...utilities.link.style,
+                            ...(hasFileType("image")
+                              ? styles.attachButtonSelected.style
+                              : isAttachmentDisabled("image")
+                                ? styles.attachButtonDisabled.style
+                                : undefined),
+                          }}
+                          className="link"
+                        >
+                          <ImageIcon
+                            size={22}
+                            color={getButtonColor("image")}
+                          />
+                        </Button>
+                      </Span>
+                    ) : needsReview ? (
+                      <A
+                        target="_blank"
+                        className="button small transparent"
+                        openInNewTab
+                        href="/privacy"
+                      >
+                        <Link size={15} />
+                        {t("Privacy")}
+                      </A>
+                    ) : (
+                      !isSelectingMood && (
+                        <Button
+                          data-testid="attach-button"
+                          title={t("Attach")}
+                          onClick={() => {
                             addHapticFeedback()
-                            setIsAgentModalOpen(true)
+
+                            // Auto-switch to Sushi for file attachments
+                            const sushiAgent = aiAgents.find(
+                              (agent) => agent.name === "sushi",
+                            )
+                            if (sushiAgent && selectedAgent?.name !== "sushi") {
+                              setSelectedAgent(sushiAgent)
+                            }
+
+                            // Open system file picker directly with all supported types
+                            triggerFileInput(
+                              "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                            )
                           }}
                           className="link"
                           style={{
                             ...utilities.link.style,
-                            ...styles.agentButton.style,
-                            color:
-                              isChrry || app?.onlyAgent
-                                ? "var(--shade-6)"
-                                : undefined,
+                            ...styles.attachButton.style,
                           }}
                           type="submit"
                         >
-                          <Span style={styles.agentName.style}>
-                            {selectedAgent?.displayName}
-                          </Span>
-                          {!app?.onlyAgent && (
-                            <ChevronDown color="var(--accent-6)" size={20} />
-                          )}
+                          <Paperclip color={"var(--accent-6)"} size={22} />
                         </Button>
-                      )}
-                    </Span>
-                    {!appStatus?.part && !isChrry && !app?.onlyAgent && (
-                      <Button
-                        data-testid={
-                          debateAgent
-                            ? "debate-agent-delete-button"
-                            : "agent-delete-button"
-                        }
-                        style={{
-                          position: "relative",
-                          top: "-2px",
-                          ...utilities.link.style,
-                        }}
-                        className="link"
-                        onClick={() => {
-                          addHapticFeedback()
-                          debateAgent
-                            ? setDebateAgent(null)
-                            : setSelectedAgent(null)
-                        }}
-                      >
-                        <CircleX color="var(--accent-1)" size={18} />
-                      </Button>
+                      )
                     )}
-                  </Div>
-                ) : (
-                  !isAttaching && (
-                    <Button
-                      className="link"
-                      style={{
-                        color: "var(--accent-1)",
-                        ...utilities.link.style,
-                      }}
-                      onClick={() => {
-                        addHapticFeedback()
-                        setIsAgentModalOpen(true)
-                      }}
-                    >
-                      <Sparkles
-                        color="var(--accent-1)"
-                        fill="var(--accent-1)"
-                        size={22}
-                      />{" "}
-                      {t("Select agent")}
-                    </Button>
-                  )
-                )}
-
-                <Div
-                  style={{
-                    ...styles.chatFooterButtons.style,
-                  }}
-                >
-                  {isHydrated && (
-                    <Div
-                      style={{
-                        top: "0.15rem",
-                        position: "relative",
-                      }}
-                    >
-                      {app?.features?.moodTracking && (
-                        <MoodSelector
-                          showEdit={false}
-                          style={{
-                            fontSize: "1.40rem",
-                          }}
-                          key={mood?.type}
-                          mood={mood?.type}
-                          onSelectingMood={(v) => {
-                            setIsSelectingMood(v)
-                          }}
-                          onMoodChange={async (newMood) => {
-                            if (mood?.type !== newMood) {
-                              await updateMood({ type: newMood })
-                              toast.success(emojiMap[newMood])
-                            }
-                          }}
-                        />
-                      )}
-                    </Div>
-                  )}
-                  {!isSelectingMood && !needsReview && isHydrated && (
-                    <>
+                    {/* Quota info button */}
+                    {user && !isSelectingMood && (
                       <Button
-                        data-testid={
-                          isWebSearchEnabled
-                            ? "web-search-button-enabled"
-                            : "web-search-button-disabled"
-                        }
                         className="link"
-                        style={{
-                          ...utilities.link.style,
-                        }}
-                        title={
-                          isWebSearchEnabled
-                            ? t("Web Search Enabled")
-                            : t("Enable Web Search")
-                        }
-                        onClick={() => {
-                          // if (!selectedAgent?.capabilities?.webSearch) {
-                          //   setAttempt("webSearch")
-                          //   setIsAgentModalOpen(true)
-                          //   return
-                          // }
-                          setIsWebSearchEnabled(!isWebSearchEnabled)
-                        }}
-                      >
-                        {app?.features?.moodTracking ? null : (
-                          <Span
-                            style={{
-                              fontSize: 12,
-                              color:
-                                isWebSearchEnabled || needSearch
-                                  ? "var(--accent-6)"
-                                  : "var(--shade-3)",
-                            }}
-                          >
-                            {t("Web")}
-                          </Span>
-                        )}
-
-                        {selectedAgent?.capabilities?.webSearch ? (
-                          <Globe
-                            color={
-                              isWebSearchEnabled
-                                ? "var(--accent-6)"
-                                : "var(--shade-3)"
-                            }
-                            size={22}
-                          />
-                        ) : (
-                          <GlobeLock color="var(--shade-3)" size={22} />
-                        )}
-                      </Button>
-                    </>
-                  )}
-                  {isAttaching ? (
-                    <Span style={styles.attachButtons.style}>
-                      <Button
-                        data-testid="attach-button-close"
-                        className="link"
-                        style={{
-                          ...utilities.link.style,
-                        }}
-                        onClick={() => {
+                        onClick={async () => {
                           addHapticFeedback()
-                          setIsAttaching(false)
-                        }}
-                      >
-                        <CircleX color="var(--accent-1)" size={22} />
-                      </Button>
-                      <Button
-                        data-testid="attach-button-video"
-                        title={t("Video")}
-                        onClick={() => {
-                          if (
-                            !selectedAgent ||
-                            !selectedAgent.capabilities.video
-                          ) {
-                            setIsAgentModalOpen(true)
-                            return
+                          if (!quotaInfo && !isFetchingQuotaInfo) {
+                            await fetchQuotaInfo()
                           }
-                          if (debateAgent && !debateAgent.capabilities.video) {
-                            setIsDebateAgentModalOpen(true)
-                            return
-                          }
-                          triggerFileInput("video/*")
+                          setShowQuotaInfo(!showQuotaInfo)
                         }}
-                        disabled={isAttachmentDisabled("video")}
-                        style={{
-                          ...utilities.link.style,
-                          ...(hasFileType("video")
-                            ? styles.attachButtonSelected.style
-                            : isAttachmentDisabled("video")
-                              ? styles.attachButtonDisabled.style
-                              : undefined),
-                        }}
-                        className="link"
-                      >
-                        <VideoIcon size={22} color={getButtonColor("video")} />
-                      </Button>
-                      <Button
-                        data-testid="attach-button-pdf"
-                        title={"PDF"}
-                        onClick={() => {
-                          if (
-                            !selectedAgent ||
-                            !selectedAgent.capabilities.pdf
-                          ) {
-                            setIsAgentModalOpen(true)
-                            return
-                          }
-                          if (debateAgent && !debateAgent.capabilities.pdf) {
-                            setIsDebateAgentModalOpen(true)
-                            return
-                          }
-
-                          triggerFileInput("application/pdf")
-                        }}
-                        style={{
-                          ...utilities.link.style,
-                          ...(hasFileType("pdf")
-                            ? styles.attachButtonSelected.style
-                            : isAttachmentDisabled("pdf")
-                              ? styles.attachButtonDisabled.style
-                              : undefined),
-                        }}
-                        disabled={isAttachmentDisabled("audio")}
-                        className="link"
-                      >
-                        <FileText size={22} color={getButtonColor("pdf")} />
-                      </Button>
-                      <Button
-                        data-testid="attach-button-audio"
-                        title={t("Audio")}
-                        onClick={() => {
-                          if (
-                            !selectedAgent ||
-                            !selectedAgent.capabilities.audio
-                          ) {
-                            setIsAgentModalOpen(true)
-                            return
-                          }
-                          if (debateAgent && !debateAgent.capabilities.audio) {
-                            setIsDebateAgentModalOpen(true)
-                            return
-                          }
-                          triggerFileInput("audio/*")
-                        }}
-                        disabled={isAttachmentDisabled("audio")}
-                        style={{
-                          ...utilities.link.style,
-                          ...(hasFileType("audio")
-                            ? styles.attachButtonSelected.style
-                            : isAttachmentDisabled("audio")
-                              ? styles.attachButtonDisabled.style
-                              : undefined),
-                        }}
-                        className="link"
-                      >
-                        <AudioLines size={22} color={getButtonColor("audio")} />
-                      </Button>
-                      <Button
-                        data-testid="attach-button-image"
-                        title={t("Image")}
-                        onClick={() => {
-                          if (
-                            !selectedAgent ||
-                            !selectedAgent.capabilities.image
-                          ) {
-                            setIsAgentModalOpen(true)
-                            return
-                          }
-                          if (debateAgent && !debateAgent.capabilities.image) {
-                            setIsDebateAgentModalOpen(true)
-                            return
-                          }
-
-                          triggerFileInput("image/*")
-                        }}
-                        disabled={isAttachmentDisabled("image")}
-                        style={{
-                          ...utilities.link.style,
-                          ...(hasFileType("image")
-                            ? styles.attachButtonSelected.style
-                            : isAttachmentDisabled("image")
-                              ? styles.attachButtonDisabled.style
-                              : undefined),
-                        }}
-                        className="link"
-                      >
-                        <ImageIcon size={22} color={getButtonColor("image")} />
-                      </Button>
-                    </Span>
-                  ) : needsReview ? (
-                    <A
-                      target="_blank"
-                      className="button small transparent"
-                      openInNewTab
-                      href="/privacy"
-                    >
-                      <Link size={15} />
-                      {t("Privacy")}
-                    </A>
-                  ) : (
-                    !isSelectingMood && (
-                      <Button
-                        data-testid="attach-button"
-                        title={t("Attach")}
-                        onClick={() => {
-                          addHapticFeedback()
-
-                          // Auto-switch to Sushi for file attachments
-                          const sushiAgent = aiAgents.find(
-                            (agent) => agent.name === "sushi",
-                          )
-                          if (sushiAgent && selectedAgent?.name !== "sushi") {
-                            setSelectedAgent(sushiAgent)
-                          }
-
-                          // Open system file picker directly with all supported types
-                          triggerFileInput(
-                            "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
-                          )
-                        }}
-                        className="link"
                         style={{
                           ...utilities.link.style,
                           ...styles.attachButton.style,
                         }}
-                        type="submit"
+                        type="button"
+                        title={t("View file upload limits")}
                       >
-                        <Paperclip color={"var(--accent-6)"} size={22} />
+                        <HardDrive color={"var(--shade-6)"} size={22} />
                       </Button>
-                    )
-                  )}
-                  {/* Quota info button */}
-                  {user && !isSelectingMood && (
-                    <Button
-                      className="link"
-                      onClick={async () => {
-                        addHapticFeedback()
-                        if (!quotaInfo && !isFetchingQuotaInfo) {
-                          await fetchQuotaInfo()
-                        }
-                        setShowQuotaInfo(!showQuotaInfo)
-                      }}
-                      style={{
-                        ...utilities.link.style,
-                        ...styles.attachButton.style,
-                      }}
-                      type="button"
-                      title={t("View file upload limits")}
-                    >
-                      <HardDrive color={"var(--shade-6)"} size={22} />
-                    </Button>
-                  )}
-                  {renderSubmit()}
+                    )}
+                    {renderSubmit()}
+                  </Div>
                 </Div>
               </Div>
-            </Div>
-            {!isChatFloating && (
-              <Div
-                style={{
-                  ...styles.creditInfo.style,
-                  ...(isStandalone ? styles.standalone.style : undefined),
-                }}
-              >
-                <Span
+              {!isChatFloating && (
+                <Div
                   style={{
-                    ...styles.creditCost.style,
-                    display: viewPortWidth > 300 ? "flex" : "none",
+                    ...styles.creditInfo.style,
+                    ...(isStandalone ? styles.standalone.style : undefined),
                   }}
                 >
-                  {!hitHourlyLimit && (
-                    <Coins color="var(--accent-1)" size={16} />
-                  )}
-                  {creditEstimate && creditEstimate.multiplier > 1 ? (
-                    <Span
-                      title={t("task_detected_tooltip", {
-                        taskType: t(`task_type_${creditEstimate.taskType}`),
-                        multiplier: creditEstimate.multiplier,
-                        warning: creditEstimate.warning || "",
-                      })}
-                      style={{ fontSize: "0.9em", opacity: 0.8 }}
-                    >
-                      ~
-                      {t("credits", {
-                        count: Math.ceil(
-                          creditEstimate.multiplier *
-                            (selectedAgent?.creditCost || 1),
-                        ),
-                      })}
-                    </Span>
-                  ) : hitHourlyLimit && !threadId ? (
-                    <Span
-                      data-testid="hourly-limit-info"
-                      data-hourly-left={hourlyUsageLeft}
-                      style={styles.hourlyLimit.style}
-                    >
-                      {!user?.subscription || !guest?.subscription ? (
-                        <Button
-                          onClick={() => {
-                            addHapticFeedback()
-                            addParams({ subscribe: "true" })
-                          }}
-                          className="link"
-                          style={utilities.link.style}
-                        >
-                          <ClockPlus size={16} />
-                        </Button>
-                      ) : (
-                        <Clock color="var(--accent-1)" size={16} />
-                      )}
-                      <Span style={{ fontSize: "1rem" }}>😅</Span>
-                      {user?.messagesLastHour || guest?.messagesLastHour || 0}/
-                      {hourlyLimit}
-                    </Span>
-                  ) : selectedAgent ? (
-                    <>
-                      {t("credits", {
-                        count:
-                          (selectedAgent?.creditCost || 1) +
-                          (debateAgent?.creditCost || 0),
-                      })}
-                    </>
-                  ) : (
-                    t("Doesn't cost credits")
-                  )}
-                </Span>
-
-                {selectedAgent && (
-                  <>
-                    {creditsLeft !== undefined ? (
-                      <>
-                        {remainingMs ? (
-                          <Span
-                            data-testid="hourly-limit-info"
-                            data-hourly-left={hourlyUsageLeft}
-                            style={styles.hourlyLimit.style}
+                  <Span
+                    style={{
+                      ...styles.creditCost.style,
+                      display: viewPortWidth > 300 ? "flex" : "none",
+                    }}
+                  >
+                    {!hitHourlyLimit && (
+                      <Coins color="var(--accent-1)" size={16} />
+                    )}
+                    {creditEstimate && creditEstimate.multiplier > 1 ? (
+                      <Span
+                        title={t("task_detected_tooltip", {
+                          taskType: t(`task_type_${creditEstimate.taskType}`),
+                          multiplier: creditEstimate.multiplier,
+                          warning: creditEstimate.warning || "",
+                        })}
+                        style={{ fontSize: "0.9em", opacity: 0.8 }}
+                      >
+                        ~
+                        {t("credits", {
+                          count: Math.ceil(
+                            creditEstimate.multiplier *
+                              (selectedAgent?.creditCost || 1),
+                          ),
+                        })}
+                      </Span>
+                    ) : hitHourlyLimit && !threadId ? (
+                      <Span
+                        data-testid="hourly-limit-info"
+                        data-hourly-left={hourlyUsageLeft}
+                        style={styles.hourlyLimit.style}
+                      >
+                        {!user?.subscription || !guest?.subscription ? (
+                          <Button
+                            onClick={() => {
+                              addHapticFeedback()
+                              addParams({ subscribe: "true" })
+                            }}
+                            className="link"
+                            style={utilities.link.style}
                           >
-                            <Timer size={16} />{" "}
-                            {formatTime(Math.floor(remainingMs / 1000))}
-                          </Span>
+                            <ClockPlus size={16} />
+                          </Button>
                         ) : (
-                          <Span
-                            data-credits-left={creditsLeft}
-                            data-testid="credits-info"
-                            style={styles.creditInfoText.style}
-                          >
-                            <Info color="var(--accent-6)" size={16} />
-                            <Span
-                              style={{
-                                color:
-                                  creditsLeft === 0
-                                    ? "var(--accent-0)"
-                                    : undefined,
-                              }}
-                            >
-                              {creditsLeft > OWNER_CREDITS / 10
-                                ? t("Unlimited credits")
-                                : t("credit_left", {
-                                    count: creditsLeft,
-                                  })}
-                            </Span>
-                          </Span>
+                          <Clock color="var(--accent-1)" size={16} />
                         )}
+                        <Span style={{ fontSize: "1rem" }}>😅</Span>
+                        {user?.messagesLastHour || guest?.messagesLastHour || 0}
+                        /{hourlyLimit}
+                      </Span>
+                    ) : selectedAgent ? (
+                      <>
+                        {t("credits", {
+                          count:
+                            (selectedAgent?.creditCost || 1) +
+                            (debateAgent?.creditCost || 0),
+                        })}
                       </>
-                    ) : null}
-                  </>
-                )}
+                    ) : (
+                      t("Doesn't cost credits")
+                    )}
+                  </Span>
 
-                {user && !user?.subscription && (
-                  <Button
-                    data-testid="subscribe-from-chat-button"
-                    onClick={() => {
-                      track({
-                        name: "subscribe-from-chat-click",
-                        props: {
-                          threadId: threadId,
-                        },
-                      })
-                      addParams({ subscribe: "true" })
-                    }}
-                    className="link"
-                    style={{
-                      ...utilities.link.style,
-                      ...styles.subscribeButton.style,
-                    }}
-                  >
-                    <UserRoundPlus size={16} /> {t("Subscribe")}
-                  </Button>
-                )}
-                {guest && (
-                  <Button
-                    data-testid="login-from-chat-button"
-                    onClick={() => {
-                      addParams({ signIn: "login" })
-                    }}
-                    className="link"
-                    style={{
-                      ...utilities.link.style,
-                      ...styles.loginButton.style,
-                    }}
-                  >
-                    <LogIn size={16} /> {t("Login")}
-                  </Button>
-                )}
-              </Div>
-            )}
-          </>
-        </Div>
+                  {selectedAgent && (
+                    <>
+                      {creditsLeft !== undefined ? (
+                        <>
+                          {remainingMs ? (
+                            <Span
+                              data-testid="hourly-limit-info"
+                              data-hourly-left={hourlyUsageLeft}
+                              style={styles.hourlyLimit.style}
+                            >
+                              <Timer size={16} />{" "}
+                              {formatTime(Math.floor(remainingMs / 1000))}
+                            </Span>
+                          ) : (
+                            <Span
+                              data-credits-left={creditsLeft}
+                              data-testid="credits-info"
+                              style={styles.creditInfoText.style}
+                            >
+                              <Info color="var(--accent-6)" size={16} />
+                              <Span
+                                style={{
+                                  color:
+                                    creditsLeft === 0
+                                      ? "var(--accent-0)"
+                                      : undefined,
+                                }}
+                              >
+                                {creditsLeft > OWNER_CREDITS / 10
+                                  ? t("Unlimited credits")
+                                  : t("credit_left", {
+                                      count: creditsLeft,
+                                    })}
+                              </Span>
+                            </Span>
+                          )}
+                        </>
+                      ) : null}
+                    </>
+                  )}
+
+                  {user && !user?.subscription && (
+                    <Button
+                      data-testid="subscribe-from-chat-button"
+                      onClick={() => {
+                        track({
+                          name: "subscribe-from-chat-click",
+                          props: {
+                            threadId: threadId,
+                          },
+                        })
+                        addParams({ subscribe: "true" })
+                      }}
+                      className="link"
+                      style={{
+                        ...utilities.link.style,
+                        ...styles.subscribeButton.style,
+                      }}
+                    >
+                      <UserRoundPlus size={16} /> {t("Subscribe")}
+                    </Button>
+                  )}
+                  {guest && (
+                    <Button
+                      data-testid="login-from-chat-button"
+                      onClick={() => {
+                        addParams({ signIn: "login" })
+                      }}
+                      className="link"
+                      style={{
+                        ...utilities.link.style,
+                        ...styles.loginButton.style,
+                      }}
+                    >
+                      <LogIn size={16} /> {t("Login")}
+                    </Button>
+                  )}
+                </Div>
+              )}
+            </>
+          </Div>
+        )}
       </Div>
     </>
   )

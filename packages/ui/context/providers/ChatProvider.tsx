@@ -884,7 +884,7 @@ export function ChatProvider({
   )
 
   const setIsWebSearchEnabled = (value: boolean) => {
-    value ? setSelectedAgent(perplexityAgent) : setSelectedAgent(sushiAgent)
+    value ? setSelectedAgent(perplexityAgent) : undefined
     setIsWebSearchEnabledInternal(value)
   }
 
@@ -941,6 +941,7 @@ export function ChatProvider({
     const a = aiAgents.find(
       (agent) =>
         app?.defaultModel &&
+        app.onlyAgent &&
         agent.name.toLowerCase() === app?.defaultModel?.toLowerCase(),
     )
     if (!a) return
