@@ -37,6 +37,7 @@
   gap: toRem.toRem(10);
   color: var(--shade-6);
   flex-wrap: wrap;
+  flex-direction: column;
 }
 
 .loading {

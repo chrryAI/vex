@@ -38,6 +38,7 @@ export const MessagesStyleDefs = {
     gap: 10,
     color: "var(--shade-6)",
     flexWrap: "wrap",
+    flexDirection: "column",
   },
   loading: {
     display: "flex",

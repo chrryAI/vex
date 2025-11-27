@@ -263,7 +263,12 @@ export default forwardRef<
           </Div>
 
           {showLoadingCharacterProfile ? (
-            <Div style={{ ...styles.characterProfileContainer.style }}>
+            <Div
+              style={{
+                ...styles.characterProfileContainer.style,
+                flexDirection: "row",
+              }}
+            >
               <Video
                 style={{ ...styles.video.style }}
                 src={`${FRONTEND_URL}/video/blob.mp4`}
