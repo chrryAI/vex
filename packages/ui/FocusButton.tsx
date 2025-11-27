@@ -561,6 +561,7 @@ export default function FocusButton({
           </>
         </Span>
         <Div
+          className="slideUp"
           data-testid="focusbutton"
           style={{
             ...styles.focusButton.style,
