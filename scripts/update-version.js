@@ -61,11 +61,15 @@ function updatePackageJson(file, version) {
 }
 
 // 4. Helper to replace version in text/code files
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function replaceVersionInFile(file, oldVersion, newVersion) {
   let content = fs.readFileSync(file, "utf8")
   // Replace versionName
   content = content.replace(
-    new RegExp(oldVersion.replace(/\./g, "\\."), "g"),
+    new RegExp(escapeRegExp(oldVersion), "g"),
     newVersion,
   )
   // For Android build.gradle: update versionCode
