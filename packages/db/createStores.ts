@@ -6677,7 +6677,7 @@ Be helpful, clear, and guide users through creating campaigns or completing feed
     version: "1.0.0",
     status: "testing" as const,
     title: "AI Coding Assistant",
-    onlyAgent: true,
+    onlyAgent: false,
     themeColor: "violet",
     backgroundColor: "#000000",
     defaultModel: "sushi" as const,
