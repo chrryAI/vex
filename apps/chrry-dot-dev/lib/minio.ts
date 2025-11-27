@@ -37,19 +37,6 @@ const s3Client = new S3Client({
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
   },
   forcePathStyle: true, // Required for MinIO/Coolify
-  // SECURITY: Disable SSL certificate verification ONLY in development
-  // This is safe because:
-  // 1. Only active when isDevelopment === true (NODE_ENV !== 'production')
-  // 2. Needed for self-signed certs or cert mismatches in dev/staging
-  // 3. Production will use proper SSL verification automatically
-  // For production: Ensure your MinIO has a valid SSL certificate or use Cloudflare proxy
-  requestHandler: isDevelopment
-    ? new NodeHttpHandler({
-        httpsAgent: new https.Agent({
-          rejectUnauthorized: false,
-        }),
-      })
-    : undefined,
 })
 
 // Bucket names for different contexts
