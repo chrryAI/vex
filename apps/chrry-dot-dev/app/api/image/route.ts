@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import slugify from "slug"
-import { upload } from "../../../lib/uploadthing-server"
+import { upload } from "../../../lib/minio"
 import getMember from "../../actions/getMember"
 import getGuest from "../../actions/getGuest"
 import { scanFileForMalware } from "../../../lib/security"

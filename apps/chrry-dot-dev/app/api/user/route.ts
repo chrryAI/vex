@@ -12,7 +12,7 @@ import captureException from "../../../lib/captureException"
 import { isValidUsername } from "chrry/utils"
 import { protectedRoutes } from "chrry/utils/url"
 import Stripe from "stripe"
-import { deleteFile } from "../../../lib/uploadthing-server"
+import { deleteFile } from "../../../lib/minio"
 
 export async function GET() {
   const member = await getMember({ skipCache: true })

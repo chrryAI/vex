@@ -1,5 +1,5 @@
 import slugify from "slug"
-import { deleteFile, upload } from "../../../../lib/uploadthing-server"
+import { deleteFile, upload } from "../../../../lib/minio"
 import getMember from "../../../actions/getMember"
 import { NextRequest, NextResponse } from "next/server"
 import { updateUser } from "@repo/db"

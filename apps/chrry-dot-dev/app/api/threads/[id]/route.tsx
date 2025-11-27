@@ -33,7 +33,7 @@ import Collaboration from "../../../../components/emails/Collaboration"
 import { defaultLocale } from "chrry/locales"
 import captureException from "../../../../lib/captureException"
 import { scanFileForMalware } from "../../../../lib/security"
-import { deleteFile } from "../../../../lib/uploadthing-server"
+import { deleteFile } from "../../../../lib/minio"
 
 export async function GET(request: Request) {
   const id = request.url.split("/").pop()?.split("?")[0] || ""

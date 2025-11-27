@@ -13,7 +13,7 @@ import {
 } from "@repo/db"
 import { appSchema } from "chrry/schemas/appSchema"
 import captureException from "../../../lib/captureException"
-import { upload, deleteFile } from "../../../lib/uploadthing-server"
+import { upload, deleteFile } from "../../../lib/minio"
 import slugify from "slug"
 import { v4 as uuid } from "uuid"
 import { reorderApps } from "chrry/lib"
