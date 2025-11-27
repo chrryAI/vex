@@ -138,17 +138,6 @@
   align-items: center;
   gap: 3px;
   cursor: pointer;
-
-  // &.dark {
-  //   gap: 1px;
-  // }
-
-  // &:hover {
-  //   .videoPlay,
-  //   .videoPause {
-  //     display: inline-flex;
-  //   }
-  // }
 }
 
 .userName {
@@ -156,15 +145,6 @@
   position: relative;
   right: 2px;
 }
-
-// .themeToggle {
-//   &.light:hover {
-//     color: var(--shade-7);
-//     svg {
-//       fill: var(--shade-7);
-//     }
-//   }
-// }
 
 .timeAdjust {
   padding: 5px 9px;
@@ -176,12 +156,6 @@
   transition: all 0.2s ease;
   border-radius: var(--radius);
   background-color: transparent;
-
-  // &:hover {
-  //   background: var(--background);
-  //   color: var(--foreground);
-  //   box-shadow: var(--shadow);
-  // }
 }
 
 .separator {
