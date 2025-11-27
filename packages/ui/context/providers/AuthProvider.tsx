@@ -8,6 +8,7 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
 } from "react"
 import useSWR from "swr"
 import { v4 as uuidv4 } from "uuid"
@@ -19,6 +20,7 @@ import {
   useLocalStorage,
   getExtensionId,
   storage,
+  useCookie,
 } from "../../platform"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
@@ -275,7 +277,15 @@ export function AuthProvider({
   }) => Promise<any>
 }) {
   const [wasGifted, setWasGifted] = useState<boolean>(false)
-  const [session, setSession] = useState<session | undefined>(props.session)
+  const [session, setSessionInternal] = useState<session | undefined>(
+    props.session,
+  )
+
+  const setSession = (session: session, cache: boolean = false) => {
+    setSessionInternal(session)
+    if (cache) cacheData(sessionCacheKey, session, 1000 * 60 * 60) // 1 hour TTL
+  }
+
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
   useEffect(() => {
@@ -385,6 +395,38 @@ export function AuthProvider({
     setTokenInternal(token || "")
   }
 
+  function processSession(sessionData?: session) {
+    if (sessionData) {
+      setSession(sessionData, true)
+      // Track guest migration
+      if (sessionData.migratedFromGuest) {
+        migratedFromGuestRef.current = sessionData.migratedFromGuest
+      }
+      // Update user/guest state
+      if (sessionData.user) {
+        setUser(sessionData.user)
+        setToken(sessionData.user.token)
+        setHasNotifications(sessionData.hasNotifications)
+        setFingerprint(sessionData.user.fingerprint || undefined)
+        setGuest(undefined)
+      } else if (sessionData.guest) {
+        setGuest(sessionData.guest)
+        setHasNotifications(sessionData.hasNotifications)
+        setFingerprint(sessionData.guest.fingerprint)
+        setToken(sessionData.guest.fingerprint)
+        setUser(undefined)
+      }
+      // Update versions and apps
+      setVersions(sessionData.versions)
+      // setApps(sessionData.app?.store.apps || [])
+      sessionData.aiAgents && setAiAgents(sessionData.aiAgents)
+      if (sessionData.app) {
+        setApp(sessionData.app)
+        setStore(sessionData.app.store)
+      }
+    }
+  }
+
   // Generate fingerprint if missing (for guests)
   useEffect(() => {
     if (!fingerprint) {
@@ -451,6 +493,112 @@ export function AuthProvider({
       removeParams("signIn")
     }
   }
+  const {
+    data: sessionSwr,
+    mutate: refetchSession,
+    isLoading: isSessionLoading,
+    error: sessionError,
+  } = useSWR(
+    (isExtension ? isStorageReady && isCookieReady : true) &&
+      (fingerprint || token) &&
+      deviceId &&
+      shouldFetchSession
+      ? ["session", env]
+      : null,
+    async () => {
+      try {
+        // Don't pass appSlug - let the API determine base app by domain
+        // Call the API action
+        const result = await getSession({
+          deviceId,
+          appId: newApp?.id || lastAppId || app?.id,
+          fingerprint,
+          app: isBrowserExtension()
+            ? "extension"
+            : isStandalone
+              ? "pwa"
+              : "web",
+          gift,
+          isStandalone,
+          API_URL,
+          VERSION,
+          token: token || fingerprint!,
+          appSlug: app?.slug || baseApp?.slug,
+          agentName,
+          chrryUrl,
+        })
+
+        // Check if result exists
+        if (!result) {
+          throw new Error("No response from server")
+        }
+
+        // Type guard for error response
+        if ("error" in result || "status" in result) {
+          // Handle rate limit
+          if (result.status === 429) {
+            setShouldFetchSession(false)
+            throw new Error("Rate limit exceeded")
+          }
+
+          // Handle other errors
+          if (result.error) {
+            toast.error(result.error)
+            setShouldFetchSession(false)
+          }
+        }
+
+        // 🔍 LOG: Check what apps are returned from session API
+        const sessionResult = result as session
+        console.log("📦 Session API Response - Apps:", {
+          app: sessionResult.app.name,
+          totalApps: sessionResult.app?.store?.apps?.length || 0,
+          apps: sessionResult.app?.store?.apps?.map((a: any) => ({
+            slug: a.slug,
+            name: a.name,
+            storeId: a.store?.id,
+            storeName: a.store?.name,
+          })),
+          currentStore: sessionResult.app?.store?.name,
+          currentStoreId: sessionResult.app?.store?.id,
+        })
+
+        // Remove gift param from URL after successful session fetch
+        if (gift) {
+          removeParams("gift")
+        }
+
+        // Cache session data on successful fetch
+
+        return sessionResult
+      } catch (error) {
+        // Fallback to cached session on error (offline mode)
+        const cached = await getCachedData<session>(sessionCacheKey)
+        if (cached) {
+          console.log("📦 Using cached session (offline mode)")
+          return cached
+        }
+        throw error
+      }
+    },
+    {
+      // revalidateOnMount: true,
+      onError: (error) => {
+        // Stop retrying on rate limit errors
+        if (error.message.includes("429")) {
+          setShouldFetchSession(false)
+        }
+      },
+      errorRetryCount: 2,
+      errorRetryInterval: 3000, // 5 seconds between retries
+      shouldRetryOnError: (error) => {
+        // Don't retry on rate limit errors
+        return !error.message.includes("429")
+      },
+    },
+  )
+
+  const sessionData = sessionSwr || session
 
   function trackPlausibleEvent({
     name,
@@ -498,6 +646,19 @@ export function AuthProvider({
   const [guest, setGuest] = React.useState<sessionGuest | undefined>(
     session?.guest,
   )
+
+  const getAlterNativeDomains = (store: storeWithApps) => {
+    // Map askvex.com and vex.chrry.ai as equivalent domains
+    if (
+      store?.domain === "https://vex.chrry.ai" ||
+      store?.domain === "https://askvex.com"
+    ) {
+      return ["https://vex.chrry.ai"]
+    }
+
+    return store.domain ? [store.domain] : []
+  }
+
   const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
   const [agentName, setAgentName] = useState(session?.aiAgent?.name)
   const trackEvent = ({
@@ -532,7 +693,9 @@ export function AuthProvider({
       isPWA,
     })
   }
-
+  const [allApps, setAllApps] = useState<appWithStore[]>(
+    sessionData?.app?.store?.apps || [],
+  )
   const getAppSlug = (
     targetApp: appWithStore,
     defaultSlug: string = "/",
@@ -580,7 +743,33 @@ export function AuthProvider({
 
     return computedSlug || defaultSlug
   }
+  const baseApp = allApps?.find((item) => {
+    if (!item) return false
+    if (
+      siteConfig.slug === item.slug &&
+      item.store?.slug === siteConfig.storeSlug
+    ) {
+      return true
+    }
 
+    // Must be the main app (not a sub-app)
+    if (item.id !== item.store?.appId) return false
+
+    // Must have a domain
+    if (!item?.store?.domain) return false
+
+    // Match the chrryUrl (e.g., chrry.ai or vex.chrry.ai)
+    return (
+      getAlterNativeDomains(item.store).includes(chrryUrl) ||
+      item.store.domain === chrryUrl
+    )
+  })
+
+  const [threadId, setThreadId] = useState(getThreadId(pathname))
+
+  const [app, setAppInternal] = useState<
+    (appWithStore & { image?: string }) | undefined
+  >(session?.app || baseApp)
   useEffect(() => {
     const signInParam = searchParams.get("signIn")
     const currentPart = signInParam as
@@ -739,6 +928,11 @@ export function AuthProvider({
     return apps.find((app) => app.slug === slugFromPath)
   }
 
+  const [lastAppId, setLastAppId] = useLocalStorage<string | undefined>(
+    "lastAppId",
+    undefined,
+  )
+
   const [newApp, setNewApp] = useState<appWithStore | undefined>(undefined)
 
   // Get isStorageReady from platform context
@@ -781,190 +975,24 @@ export function AuthProvider({
     undefined,
   )
 
-  // Load cached session immediately on mount
-  const [cachedSessionLoaded, setCachedSessionLoaded] = useState(false)
-  useEffect(() => {
-    const loadCachedSession = async () => {
-      if (cachedSessionLoaded) return
-
-      const cached = await getCachedData<session>("session")
-      if (cached) {
-        console.log("⚡ Loading cached session instantly")
-        // Session will be processed by the existing sessionSwr effect
-        setCachedSessionLoaded(true)
-      }
-    }
-
-    loadCachedSession()
-  }, [cachedSessionLoaded])
-
-  const {
-    data: sessionSwr,
-    mutate: refetchSession,
-    isLoading: isSessionLoading,
-    error: sessionError,
-  } = useSWR(
-    (isExtension ? isStorageReady && isCookieReady : true) &&
-      (fingerprint || token) &&
-      deviceId &&
-      shouldFetchSession
-      ? ["session", env]
-      : null,
-    async () => {
-      try {
-        // Don't pass appSlug - let the API determine base app by domain
-        // Call the API action
-        const result = await getSession({
-          deviceId,
-          appId: newApp?.id || lastAppId || app?.id,
-          fingerprint,
-          app: isBrowserExtension()
-            ? "extension"
-            : isStandalone
-              ? "pwa"
-              : "web",
-          gift,
-          isStandalone,
-          API_URL,
-          VERSION,
-          token: token || fingerprint!,
-          appSlug: app?.slug || baseApp?.slug,
-          agentName,
-          chrryUrl,
-        })
-
-        // Check if result exists
-        if (!result) {
-          throw new Error("No response from server")
-        }
-
-        // Type guard for error response
-        if ("error" in result || "status" in result) {
-          // Handle rate limit
-          if (result.status === 429) {
-            setShouldFetchSession(false)
-            throw new Error("Rate limit exceeded")
-          }
-
-          // Handle other errors
-          if (result.error) {
-            toast.error(result.error)
-            setShouldFetchSession(false)
-          }
-        }
-
-        // 🔍 LOG: Check what apps are returned from session API
-        const sessionResult = result as session
-        console.log("📦 Session API Response - Apps:", {
-          app: sessionResult.app.name,
-          totalApps: sessionResult.app?.store?.apps?.length || 0,
-          apps: sessionResult.app?.store?.apps?.map((a: any) => ({
-            slug: a.slug,
-            name: a.name,
-            storeId: a.store?.id,
-            storeName: a.store?.name,
-          })),
-          currentStore: sessionResult.app?.store?.name,
-          currentStoreId: sessionResult.app?.store?.id,
-        })
-
-        // Remove gift param from URL after successful session fetch
-        if (gift) {
-          removeParams("gift")
-        }
-
-        // Cache session data on successful fetch
-        await cacheData("session", sessionResult, 1000 * 60 * 60) // 1 hour TTL
-
-        return sessionResult
-      } catch (error) {
-        // Fallback to cached session on error (offline mode)
-        const cached = await getCachedData<session>("session")
-        if (cached) {
-          console.log("📦 Using cached session (offline mode)")
-          return cached
-        }
-        throw error
-      }
-    },
-    {
-      // revalidateOnMount: true,
-      onError: (error) => {
-        // Stop retrying on rate limit errors
-        if (error.message.includes("429")) {
-          setShouldFetchSession(false)
-        }
-      },
-      errorRetryCount: 2,
-      errorRetryInterval: 3000, // 5 seconds between retries
-      shouldRetryOnError: (error) => {
-        // Don't retry on rate limit errors
-        return !error.message.includes("429")
-      },
-    },
-  )
-
-  const sessionData = sessionSwr || session
-
-  const [allApps, setAllApps] = useState<appWithStore[]>(
-    sessionData?.app?.store?.apps || [],
-  )
+  const sessionCacheKey: string = useMemo(() => {
+    return app?.slug || ""
+  }, [app?.slug])
 
   const chrry = allApps?.find((app) => !app.store?.parentStoreId)
   const vex = allApps?.find((app) => app.slug === "vex")
   const sushi = allApps?.find((app) => app.slug === "sushi")
   const focus = allApps?.find((app) => app.slug === "focus")
 
-  const getAlterNativeDomains = (store: storeWithApps) => {
-    // Map askvex.com and vex.chrry.ai as equivalent domains
-    if (
-      store?.domain === "https://vex.chrry.ai" ||
-      store?.domain === "https://askvex.com"
-    ) {
-      return ["https://vex.chrry.ai"]
-    }
-
-    return store.domain ? [store.domain] : []
-  }
-
-  const baseApp = allApps?.find((item) => {
-    if (!item) return false
-    if (
-      siteConfig.slug === item.slug &&
-      item.store?.slug === siteConfig.storeSlug
-    ) {
-      return true
-    }
-
-    // Must be the main app (not a sub-app)
-    if (item.id !== item.store?.appId) return false
-
-    // Must have a domain
-    if (!item?.store?.domain) return false
-
-    // Match the chrryUrl (e.g., chrry.ai or vex.chrry.ai)
-    return (
-      getAlterNativeDomains(item.store).includes(chrryUrl) ||
-      item.store.domain === chrryUrl
-    )
-  })
-
-  const [threadId, setThreadId] = useState(getThreadId(pathname))
-
-  const [app, setAppInternal] = useState<
-    (appWithStore & { image?: string }) | undefined
-  >(session?.app || baseApp)
-
   // Load cached apps immediately on mount
   useEffect(() => {
     const loadCachedApps = async () => {
       if (!token || (!loadingApp?.id && !app?.id)) return
 
-      const key = `allApps`
+      const key = `allApps-${loadingApp?.id || app?.id}-${user?.id || guest?.id}`
       const cached = await getCachedData<appWithStore[]>(key)
 
       if (cached && cached.length > 0) {
-        console.log("⚡ Loading cached apps instantly")
         mergeApps(cached)
       }
     }
@@ -1019,11 +1047,6 @@ export function AuthProvider({
       mergeApps(allAppsSwr)
     }
   }, [allAppsSwr, mergeApps])
-
-  const [lastAppId, setLastAppId] = useLocalStorage<string | undefined>(
-    "lastAppId",
-    undefined,
-  )
 
   // Sync app.id to lastAppId for extensions
 
@@ -1229,7 +1252,7 @@ export function AuthProvider({
 
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
-      isExtension && item?.id !== baseApp?.id && setLastAppId(item?.id)
+      ;(item?.id !== baseApp?.id || !isExtension) && setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
           ? {
@@ -1408,39 +1431,7 @@ export function AuthProvider({
 
   // Handle session data updates
   useEffect(() => {
-    if (sessionData) {
-      setSession(sessionData)
-      // Track guest migration
-      if (sessionData.migratedFromGuest) {
-        migratedFromGuestRef.current = sessionData.migratedFromGuest
-      }
-
-      // Update user/guest state
-      if (sessionData.user) {
-        setUser(sessionData.user)
-        setToken(sessionData.user.token)
-        setHasNotifications(sessionData.hasNotifications)
-        setFingerprint(sessionData.user.fingerprint || undefined)
-        setGuest(undefined)
-      } else if (sessionData.guest) {
-        setGuest(sessionData.guest)
-        setHasNotifications(sessionData.hasNotifications)
-        setFingerprint(sessionData.guest.fingerprint)
-        setToken(sessionData.guest.fingerprint)
-        setUser(undefined)
-      }
-
-      // Update versions and apps
-      setVersions(sessionData.versions)
-      // setApps(sessionData.app?.store.apps || [])
-
-      sessionData.aiAgents && setAiAgents(sessionData.aiAgents)
-
-      if (sessionData.app) {
-        setApp(sessionData.app)
-        setStore(sessionData.app.store)
-      }
-    }
+    processSession(sessionData)
   }, [sessionData])
 
   const defaultInstructions = getExampleInstructions()

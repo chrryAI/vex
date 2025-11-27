@@ -1047,9 +1047,10 @@ export const getSession = async ({
     return result as session | { error?: string; status?: number }
   } catch (error) {
     const text = await response.text()
-    throw new Error(
-      `Failed to parse API response as JSON. Got: ${text.substring(0, 200)}... (Full URL: ${API_URL}/session)`,
-    )
+    return {
+      error: `API error (${response.status}): ${text.substring(0, 200)}`,
+      status: response.status,
+    }
   }
 }
 
@@ -1071,7 +1072,18 @@ export const getApps = async ({
       Authorization: `Bearer ${token}`,
     },
   })
+
+  console.log(`🚀 ~ file: index.ts:1077 ~ response:`, response)
+
+  if (!response.ok) {
+    return {
+      error: `API error (${response.status})`,
+      status: response.status,
+    }
+  }
+
   const data = await response.json()
+
   return data as appWithStore[]
 }
 
@@ -1089,6 +1101,14 @@ export const getTranslations = async ({
       Authorization: `Bearer ${token}`,
     },
   })
+
+  if (!response.ok) {
+    return {
+      error: `API error (${response.status})`,
+      status: response.status,
+    }
+  }
+
   const data = await response.json()
   return data as Record<string, any>
 }
