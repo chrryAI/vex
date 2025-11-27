@@ -1686,5 +1686,6 @@
   "Create apps in your store with unlimited collaboration": "在您的商店中创建应用，无限制地进行协作",
   "Create custom AI apps with team collaboration": "与团队协作创建定制的AI应用",
   "Unlimited stores with nested apps": "无限制的商店与嵌套应用",
-  "credit_left": "剩余{{count}}"
+  "credit_left": "剩余{{count}}",
+  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "将文件上传至此处，以便AI记住并在未来的对话中参考。这些文件将成为线程记忆的一部分。"
 }
