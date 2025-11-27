@@ -1,7 +1,7 @@
 "use server"
 
 import slugify from "slug"
-import { upload } from "../../lib/uploadthing-server"
+import { upload } from "../../lib/minio"
 import { processFileForRAG } from "./ragService"
 import getMember from "./getMember"
 import getGuest from "./getGuest"

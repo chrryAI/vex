@@ -68,7 +68,7 @@ import {
   getHourlyLimit,
 } from "../../../lib"
 import { scanFileForMalware } from "../../../lib/security"
-import { upload } from "../../../lib/uploadthing-server"
+import { upload } from "../../../lib/minio"
 import slugify from "slug"
 import { notifyOwnerAndCollaborations } from "../../../lib/notify"
 import { checkRateLimit } from "../../../lib/rateLimiting"

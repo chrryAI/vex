@@ -6,7 +6,7 @@ import getGuest from "../../../actions/getGuest"
 import { validate } from "uuid"
 import { isOwner } from "chrry/utils"
 import { notifyOwnerAndCollaborations } from "../../../../lib/notify"
-import { deleteFile } from "../../../../lib/uploadthing-server"
+import { deleteFile } from "../../../../lib/minio"
 
 export async function DELETE(request: Request) {
   const id = request.url.split("/").pop()
