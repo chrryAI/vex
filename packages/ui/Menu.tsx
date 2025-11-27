@@ -591,10 +591,10 @@ export default function Menu({
                               return (
                                 <A
                                   className="link"
+                                  data-testid="menu-thread-link"
                                   style={{
                                     ...styles.threadItem.style,
                                   }}
-                                  data-testid={`thread-link-${thread.id}`}
                                   onClick={(e) => {
                                     track({
                                       name: "thread-click-menu",

@@ -2,6 +2,9 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  CreateBucketCommand,
+  HeadBucketCommand,
+  PutBucketPolicyCommand,
 } from "@aws-sdk/client-s3"
 import { Upload } from "@aws-sdk/lib-storage"
 import { NodeHttpHandler } from "@smithy/node-http-handler"
@@ -47,6 +50,54 @@ const PUBLIC_URL = process.env.S3_PUBLIC_URL || process.env.S3_ENDPOINT
 // Get bucket name based on context
 function getBucket(context: "chat" | "apps" = "chat"): string {
   return context === "apps" ? BUCKET_APPS : BUCKET_CHAT
+}
+
+// Track which buckets we've already verified exist
+const verifiedBuckets = new Set<string>()
+
+// Ensure bucket exists, create if not
+async function ensureBucketExists(bucket: string): Promise<void> {
+  if (verifiedBuckets.has(bucket)) return
+
+  try {
+    await s3Client.send(new HeadBucketCommand({ Bucket: bucket }))
+    verifiedBuckets.add(bucket)
+    console.log(`✅ Bucket verified: ${bucket}`)
+  } catch (err: any) {
+    if (
+      err.name === "NotFound" ||
+      err.Code === "NoSuchBucket" ||
+      err.$metadata?.httpStatusCode === 404
+    ) {
+      console.log(`📦 Creating bucket: ${bucket}`)
+      await s3Client.send(new CreateBucketCommand({ Bucket: bucket }))
+
+      // Set public read policy for the bucket
+      const publicPolicy = {
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Effect: "Allow",
+            Principal: "*",
+            Action: ["s3:GetObject"],
+            Resource: [`arn:aws:s3:::${bucket}/*`],
+          },
+        ],
+      }
+      await s3Client.send(
+        new PutBucketPolicyCommand({
+          Bucket: bucket,
+          Policy: JSON.stringify(publicPolicy),
+        }),
+      )
+      console.log(`🔓 Public read policy set for: ${bucket}`)
+
+      verifiedBuckets.add(bucket)
+      console.log(`✅ Bucket created: ${bucket}`)
+    } else {
+      throw err
+    }
+  }
 }
 
 const SUPPORTED_TYPES = {
@@ -354,6 +405,9 @@ export async function upload({
     const bucket = getBucket(context)
 
     console.log(`☁️ Uploading to S3: ${bucket}/${s3Key}`)
+
+    // Ensure bucket exists before uploading
+    await ensureBucketExists(bucket)
 
     // Upload to S3
     const contentType = fileType === "image" ? "image/png" : blob.type
