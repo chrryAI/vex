@@ -400,31 +400,16 @@ export async function deleteFile(
   context: "chat" | "apps" = "chat",
 ): Promise<void> {
   try {
-    // Extract S3 key from URL
-    // Expected format: https://cdn.example.com/bucket-name/context/filename.ext
-    const urlParts = url.split("/")
-    const keyIndex = urlParts.findIndex((part) => part === context)
-
-    if (keyIndex === -1 || keyIndex === urlParts.length - 1) {
-      console.warn("⚠️ Could not extract S3 key from URL:", url)
-      return
-    }
-
-    const s3Key = urlParts.slice(keyIndex).join("/")
     const bucket = getBucket(context)
+    const key = url.replace(`${PUBLIC_URL}/`, "")
 
-    console.log(`🗑️ Deleting from S3: ${bucket}/${s3Key}`)
-
-    const command = new DeleteObjectCommand({
-      Bucket: bucket,
-      Key: s3Key,
-    })
-
-    await s3Client.send(command)
-    console.log("✅ File deleted successfully:", s3Key)
-  } catch (error) {
-    captureException(error)
-    console.error("❌ Failed to delete file:", error)
-    // Don't throw - deletion failures shouldn't break the app
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      }),
+    )
+  } catch (err) {
+    captureException(err)
   }
 }
