@@ -15,12 +15,11 @@ export default defineConfig({
   webServer: {
     command: "npm run start:gh",
     url: "http://localhost:3000",
-    timeout: 12000,
     // timeout: 480000,
     reuseExistingServer: true,
   },
   testDir: "./src",
-  timeout: 480000,
+  timeout: 200000,
   /* Run tests in files in parallel */
   // fullyParallel: true,
   fullyParallel: true,

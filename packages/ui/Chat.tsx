@@ -1602,6 +1602,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     }
 
     addHapticFeedback()
+
+    clearFiles()
+
     if (
       !selectedAgent?.capabilities?.image &&
       files.some((file) => file.type.startsWith("image/"))
@@ -1832,7 +1835,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         if (collaborationStep === 2) {
           setCollaborationStep(3)
         }
-        clearFiles()
 
         onMessage?.({
           content: userMessageText,
