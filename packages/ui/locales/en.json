@@ -1677,5 +1677,6 @@
   "Seamlessly integrate third-party APIs and services. Sushi handles authentication, error handling, and rate limiting properly.": "Seamlessly integrate third-party APIs and services. Sushi handles authentication, error handling, and rate limiting properly.",
   "Write optimized SQL, NoSQL, and ORM queries. Sushi creates efficient database operations with proper indexing and relationships.": "Write optimized SQL, NoSQL, and ORM queries. Sushi creates efficient database operations with proper indexing and relationships.",
   "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.": "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.",
-  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language."
+  "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.",
+  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory."
 }

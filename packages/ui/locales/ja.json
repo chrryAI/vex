@@ -1685,5 +1685,6 @@
   "Create apps in your store with unlimited collaboration": "無制限のコラボレーションでストア内にアプリを作成",
   "Create custom AI apps with team collaboration": "チーム協力でカスタムAIアプリを作成",
   "Unlimited stores with nested apps": "ネストされたアプリを持つ無制限のストア",
-  "credit_left": "残り{{count}}回"
+  "credit_left": "残り{{count}}回",
+  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "AIが覚えて将来の会話で参照するために、ここにファイルをアップロードしてください。これらのアーティファクトはスレッドのメモリの一部となります。"
 }

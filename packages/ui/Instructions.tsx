@@ -984,7 +984,7 @@ export default function Instructions({
           <Div>
             <Div>
               {t(
-                "Upload PDF or text content here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.",
+                "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.",
               )}
             </Div>
             {(files.length || threadArtifacts.length) > 0 && (
