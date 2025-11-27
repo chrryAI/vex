@@ -7,7 +7,7 @@
     "next-to-hono": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/cli.ts --format cjs,esm --dts",
+    "build": "tsup src/index.ts src/cli.ts --format cjs,esm",
     "dev": "tsup src/index.ts src/cli.ts --format cjs,esm --dts --watch",
     "test": "vitest",
     "convert": "tsx src/cli.ts"
