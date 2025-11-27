@@ -392,7 +392,7 @@ export default function Chat({
   // || windowHeight < 600 // Not at bottom or mobile
 
   const floatingInitial =
-    (isChatFloatingContext || shouldUseCompactMode) && !empty && !showChatInput
+    (isChatFloatingContext && !empty && !showChatInput) || shouldUseCompactMode
 
   const [isChatFloating, setIsChatFloatingState] = useState(floatingInitial)
 
@@ -3660,8 +3660,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 !showQuotaInfo &&
                 selectedAgent !== null && (
                   <Div style={styles.content.style}>
-                    {isChatFloating || exceededInitial ? null : showGreeting &&
-                      files.length === 0 ? (
+                    {isChatFloating ||
+                    exceededInitial ||
+                    threadId ? null : showGreeting && files.length === 0 ? (
                       <H2 style={styles.brandHelp.style}>
                         {isIncognito ? <HatGlasses size={24} /> : ""}
                         <Span>
