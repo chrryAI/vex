@@ -2704,18 +2704,23 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       setHasBottomOffset(distanceFromBottom > 100)
     }
 
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null
     const handleScroll = () => {
-      const scrollPosition = window.scrollY
-      const documentHeight = document.documentElement.scrollHeight
-      const currentWindowHeight = window.innerHeight
-      const distanceFromBottom =
-        documentHeight - (scrollPosition + currentWindowHeight)
+      if (scrollTimeout) return
+      scrollTimeout = setTimeout(() => {
+        const scrollPosition = window.scrollY
+        const documentHeight = document.documentElement.scrollHeight
+        const currentWindowHeight = window.innerHeight
+        const distanceFromBottom =
+          documentHeight - (scrollPosition + currentWindowHeight)
 
-      // Show chat input when within 150px of bottom
-      setShowChatInput(distanceFromBottom <= 150)
+        // Show chat input when within 150px of bottom
+        setShowChatInput(distanceFromBottom <= 150)
 
-      // Check for bottom offset
-      checkBottomOffset()
+        // Check for bottom offset
+        checkBottomOffset()
+        scrollTimeout = null
+      }, 16) // ~60fps throttle
     }
 
     const handleResize = () => {
@@ -2772,6 +2777,9 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       observer.disconnect()
       if (domChangeTimeout) {
         clearTimeout(domChangeTimeout)
+      }
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout)
       }
     }
   }, [empty])
