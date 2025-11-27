@@ -1,13 +1,7 @@
 import * as dotenv from "dotenv"
 import { Page } from "@playwright/test"
 
-export type modelName =
-  | "chatGPT"
-  | "claude"
-  // | "deepSeek"
-  | "gemini"
-  | "flux"
-  | "sushi"
+export type modelName = "chatGPT" | "claude" | "gemini" | "sushi"
 
 export const TEST_GUEST_FINGERPRINTS =
   process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []

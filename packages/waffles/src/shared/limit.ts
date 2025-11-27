@@ -15,10 +15,6 @@ export const limit = async ({
   // Calculate exact hourly limit for guest users
   const hourlyLimit = isSubscriber ? 100 : isMember ? 30 : 10 // guests: 10, members: 30, subscribers: 100
 
-  console.log(
-    `🎯 Testing hourly limit: ${hourlyLimit} requests for ${isMember ? "member" : "guest"}`,
-  )
-
   // Create prompts to consume exactly the hourly limit with mixed models
   const limitPrompts = Array.from({ length: hourlyLimit }, (_, i) => {
     const isFluxMessage = i % (isMember ? 5 : 3) === 0 // Every 3rd message is Flux
@@ -37,7 +33,7 @@ export const limit = async ({
           ? `Find latest news about ${faker.company.name()}`
           : `Test message ${i + 1} - ${faker.lorem.sentence()}`,
       model: isFluxMessage
-        ? ("flux" as modelName)
+        ? ("sushi" as modelName)
         : isClaudeMessage
           ? ("claude" as modelName)
           : isChatGPTMessage
@@ -47,6 +43,7 @@ export const limit = async ({
       webSearch: isWebSearch,
       shouldFail: i === hourlyLimit, // Only fail on last message
       like,
+      imageGenerationEnabled: isFluxMessage,
     }
   })
 

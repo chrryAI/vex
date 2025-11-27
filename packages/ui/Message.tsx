@@ -485,6 +485,7 @@ export default function Message({
     return (
       <Div style={styles.likeButtons.style}>
         <Button
+          className="link"
           data-testid={`${liked ? "unlike-button" : "like-button"}`}
           title={liked ? t("Unlike") : t("Like")}
           style={utilities.link.style}
@@ -498,6 +499,7 @@ export default function Message({
         </Button>
 
         <Button
+          className="link"
           data-testid={`${disliked ? "undislike-button" : "dislike-button"}`}
           title={disliked ? t("Unlike") : t("Dislike")}
           style={utilities.link.style}
