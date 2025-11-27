@@ -560,23 +560,12 @@ export default function Message({
       message.message.isStreamingStop ||
       !threadId
     ) {
-      return (
-        <>
-          {canDelete && "canDelete"}
-
-          {remoteDeleted && "remoteDeleted"}
-          {message.message.isStreamingStop && "isStreamingStop"}
-          {!message.message.threadId && "noThreadId"}
-        </>
-      )
+      return null
     }
 
     const messageId = message.message.id
 
-    if (message.message.isStreamingStop || !token)
-      return (
-        <>{message.message.isStreamingStop ? "isStreamingStop" : "no token"}</>
-      )
+    if (message.message.isStreamingStop || !token) return null
 
     return (
       <ConfirmButton
