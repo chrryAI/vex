@@ -347,7 +347,7 @@ export default function Message({
         data.message?.message.files?.length &&
           setFiles(data.message?.message.files)
 
-        await refetchThread()
+        // await refetchThread()
       }
 
       if (
@@ -782,7 +782,8 @@ export default function Message({
                         key={image.id}
                         src={image.url}
                         alt={image.title}
-                        size={200}
+                        width={200}
+                        height={"auto"}
                       />
                     ))}
                   </Div>

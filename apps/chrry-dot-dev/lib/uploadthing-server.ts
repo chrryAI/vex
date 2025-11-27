@@ -24,18 +24,86 @@ const SUPPORTED_TYPES = {
   audio: ["audio/mpeg", "audio/wav", "audio/ogg"],
   video: ["video/mp4", "video/webm", "video/quicktime"],
   pdf: ["application/pdf"],
-  text: ["text/plain"],
+  text: [
+    "text/plain",
+    "text/markdown",
+    "text/csv",
+    "text/xml",
+    "text/html",
+    "text/css",
+    "text/javascript",
+    "text/typescript",
+    "text/jsx",
+    "text/tsx",
+    "text/py",
+    "text/java",
+    "text/c",
+    "text/cpp",
+    "text/h",
+    "text/hpp",
+    "text/cs",
+    "text/php",
+    "text/rb",
+    "text/go",
+    "text/rs",
+    "text/swift",
+    "text/kt",
+    "text/scala",
+    "text/sh",
+    "text/yaml",
+    "text/yml",
+    "text/toml",
+    "text/ini",
+    "text/conf",
+    "text/log",
+  ],
 }
 
 function validateFileType(
   type: string,
-): "image" | "audio" | "video" | "pdf" | "text" {
+):
+  | "image"
+  | "audio"
+  | "video"
+  | "pdf"
+  | "text"
+  | "md"
+  | "json"
+  | "csv"
+  | "xml"
+  | "html"
+  | "css"
+  | "js"
+  | "ts"
+  | "tsx"
+  | "jsx"
+  | "py"
+  | "java"
+  | "c"
+  | "cpp"
+  | "h"
+  | "hpp"
+  | "cs"
+  | "php"
+  | "rb"
+  | "go"
+  | "rs"
+  | "swift"
+  | "kt"
+  | "scala"
+  | "sh"
+  | "yaml"
+  | "yml"
+  | "toml"
+  | "ini"
+  | "conf"
+  | "log"
+  | undefined {
   if (SUPPORTED_TYPES.image.includes(type)) return "image"
   if (SUPPORTED_TYPES.audio.includes(type)) return "audio"
   if (SUPPORTED_TYPES.video.includes(type)) return "video"
   if (SUPPORTED_TYPES.pdf.includes(type)) return "pdf"
   if (SUPPORTED_TYPES.text.includes(type)) return "text"
-  throw new Error(`Unsupported file type: ${type}`)
 }
 
 /**
@@ -173,18 +241,16 @@ export async function upload({
 
     const fileType = validateFileType(blob.type)
 
-    const fileExt =
-      fileType === "pdf"
-        ? "pdf"
-        : fileType === "image"
-          ? "png"
-          : fileType === "audio"
-            ? "mp3"
-            : fileType === "text"
-              ? "txt"
-              : "mp4"
+    if (!fileType) {
+      return {
+        url: "",
+        width: undefined,
+        height: undefined,
+        title: undefined,
+      }
+    }
 
-    const fileName = `${messageId}-${Date.now()}.${fileExt}`
+    const fileName = `${messageId}-${Date.now()}.${blob.type}`
 
     let width, height
 

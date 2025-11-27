@@ -28,6 +28,7 @@ export const MessagesStyleDefs = {
     display: "flex",
     justifyContent: "center",
     marginBottom: 10,
+    color: "var(--shade-6)",
   },
   characterProfileContainer: {
     display: "flex",
@@ -35,7 +36,8 @@ export const MessagesStyleDefs = {
     alignItems: "center",
     marginTop: 25,
     gap: 10,
-    flexDirection: "column",
+    color: "var(--shade-6)",
+    flexWrap: "wrap",
   },
   loading: {
     display: "flex",
@@ -46,7 +48,7 @@ export const MessagesStyleDefs = {
     color: "var(--shade-6)",
   },
   enableCharacterProfilesContainer: {
-    display: "none",
+    display: "flex",
     justifyContent: "center",
     margin: "25px 0",
   },

@@ -98,7 +98,7 @@ export default forwardRef<
   } = useAuth()
 
   // Chat context
-  const { threadId } = useChat()
+  const { threadId, scrollToBottom } = useChat()
 
   // Navigation context (router is the wrapper)
   const { router } = useNavigationContext()
@@ -127,6 +127,7 @@ export default forwardRef<
     data: characterProfile
   }>({
     onMessage: async ({ type, data }) => {
+      console.log(`🚀 ~ Messages ~ type:`, type)
       if (type === "character_tag_created") {
         if (data?.threadId !== threadId) return
         onCharacterProfileUpdate?.()
@@ -151,6 +152,16 @@ export default forwardRef<
   const isStreaming = messages?.some(
     (message) => message.message.isStreaming === true,
   )
+
+  const showLoadingCharacterProfile =
+    threadId &&
+    !isStreaming &&
+    characterProfilesEnabled &&
+    loadingCharacterProfile?.threadId === threadId
+
+  useEffect(() => {
+    showLoadingCharacterProfile && scrollToBottom()
+  }, [showLoadingCharacterProfile])
 
   if (!showEmptyState && messages?.length === 0) return null
   return (
@@ -195,7 +206,16 @@ export default forwardRef<
           })}
       </Div>
       {appStatus?.part || suggestSaveApp ? (
-        <Div style={{ ...styles.enableCharacterProfilesContainer.style }}>
+        <Div
+          style={{
+            ...styles.enableCharacterProfilesContainer.style,
+            display:
+              messages?.filter((message) => message.message.agentId).length ===
+              0
+                ? "none"
+                : "flex",
+          }}
+        >
           <Button
             disabled={isUpdating}
             className="inverted"
@@ -242,10 +262,7 @@ export default forwardRef<
             ) : null}
           </Div>
 
-          {threadId &&
-          !isStreaming &&
-          characterProfilesEnabled &&
-          loadingCharacterProfile?.threadId === threadId ? (
+          {showLoadingCharacterProfile ? (
             <Div style={{ ...styles.characterProfileContainer.style }}>
               <Video
                 style={{ ...styles.video.style }}

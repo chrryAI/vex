@@ -2880,12 +2880,18 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         supported = true
       } else if (fileType.startsWith("video/") && agent.capabilities.video) {
         supported = true
-      } else if (fileType.startsWith("text/") && agent.capabilities.text) {
+      } else if (
+        (fileType.startsWith("text/") ||
+          fileType.startsWith("application/octet-stream")) &&
+        agent.capabilities.text
+      ) {
         supported = true
       } else if (
         fileType.startsWith("application/pdf") &&
         agent.capabilities.pdf
       ) {
+        supported = true
+      } else {
         supported = true
       }
 
@@ -3371,6 +3377,18 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         streamControllers.delete(streamId)
       },
     })
+
+    checkThreadSummaryLimit({ user: member, guest, thread }) &&
+      notifyOwnerAndCollaborations({
+        notifySender: true,
+        thread,
+        payload: {
+          type: "character_tag_creating",
+          data: { threadId: thread.id },
+        },
+        member,
+        guest,
+      })
 
     return response || NextResponse.json({ success: true })
   }

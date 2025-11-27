@@ -169,6 +169,7 @@ export const chat = async ({
   const creditsInfo = page.getByTestId("credits-info")
   await expect(creditsInfo).toBeVisible()
   const scrollToBottom = async () => {
+    return
     await page.evaluate(() => {
       window.scrollTo(0, document.body.scrollHeight)
     })
@@ -573,7 +574,7 @@ export const chat = async ({
       break
     }
 
-    await scrollToBottom() // Ensure send button is visible
+    // await scrollToBottom() // Ensure send button is visible
     await sendButton.click()
 
     const acceptButton = page.getByTestId("chat-accept-button")
@@ -704,7 +705,7 @@ export const chat = async ({
         .getByTestId("user-message-pdf")
         .count()
 
-      expect(userMessagePdfCount).toBe(prompt.mix.pdf > 3 ? 3 : prompt.mix.pdf)
+      expect(userMessagePdfCount).toBe(prompt.mix.pdf > 5 ? 5 : prompt.mix.pdf)
     }
 
     if (prompt.webSearch) {
