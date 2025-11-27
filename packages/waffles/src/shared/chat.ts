@@ -71,6 +71,7 @@ export const chat = async ({
     deleteMessage?: boolean
     deleteAgentMessage?: boolean
     model?: modelName
+    imageGenerationEnabled?: boolean
     agentMessageTimeout?: number
     shouldFail?: boolean
     like?: boolean
@@ -369,10 +370,7 @@ export const chat = async ({
 
         const geminiButton = page.getByTestId(`agent-modal-button-gemini`)
 
-        const fluxButton = page.getByTestId(`agent-modal-button-flux`)
-
         expect(geminiButton).not.toBeVisible()
-        expect(fluxButton).not.toBeVisible()
 
         const agentModalButton = page.getByTestId(
           `agent-modal-button-${prompt.debateAgent}`,
@@ -398,11 +396,6 @@ export const chat = async ({
 
         await agentSelectButton.click()
         await expect(agentModal).toBeVisible()
-
-        const fluxButton = getAgentModalButton("flux")
-        await expect(fluxButton).toBeVisible()
-        await fluxButton.click()
-        await wait(1000)
 
         await expect(addDebateAgentButton).not.toBeVisible()
 
@@ -921,7 +914,7 @@ export const chat = async ({
         )
       }
 
-      if (prompt.model === "flux") {
+      if (prompt.imageGenerationEnabled) {
         const imageGenerationButton = page.getByTestId(
           "image-generation-button",
         )

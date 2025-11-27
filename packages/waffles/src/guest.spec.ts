@@ -73,7 +73,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test.only("File upload", async ({ page }) => {
+test("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -121,7 +121,7 @@ test.only("File upload", async ({ page }) => {
   })
 })
 
-test("Chat - Hourly Limit Test", async ({ page }) => {
+test.only("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await limit({ page })
 })
