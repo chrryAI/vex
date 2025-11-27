@@ -85,6 +85,8 @@ export const MessageStyleDefs = {
     flexWrap: "wrap",
     gap: 10,
     margin: "10px 0 5px 0",
+  },
+  userMessageVideoVideo: {
     maxWidth: "100%",
     width: 250,
     borderRadius: 20,
