@@ -2106,6 +2106,41 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     )
   }
 
+  const generateContent = async (m?: typeof message) => {
+    try {
+      if (m && selectedAgent) {
+        await generateAIContent({
+          thread,
+          user: member,
+          guest,
+          agentId: selectedAgent.id,
+          conversationHistory: !suggestionMessages
+            ? messages
+            : [
+                { role: "system", content: enhancedSystemPrompt },
+                ...suggestionMessages,
+                enhancedUserMessage,
+              ],
+          latestMessage: m.message,
+          language,
+          calendarEvents,
+          app, // Pass app object directly
+          skipClassification: !!app, // Skip AI classification if app is set
+        })
+      }
+    } catch (error) {
+      console.error("❌ Background content generation failed:", error)
+      captureException(error, {
+        tags: {
+          type: "background_task",
+          task: "content_generation",
+          threadId: thread.id,
+          userId: member?.id || guest?.id,
+        },
+      })
+    }
+  }
+
   // Process files and prepare content for AI
   let userContent: any = currentMessageContent
 
@@ -3676,14 +3711,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           aiResponse: `Generated image: ${content.slice(0, 50)}${content.length > 50 ? "..." : ""}`,
         })
 
-        // // Deduct credits for image generation
-        // if (member) {
-        //   await updateUser({
-        //     ...member,
-        //     credits: Math.max(0, member.credits - agent.creditCost),
-        //   })
-        // }
-
         const m = await getMessage({ id: aiMessage.id })
 
         thread &&
@@ -3701,40 +3728,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             guest,
           })
 
-        after(async () => {
-          try {
-            if (m && selectedAgent) {
-              await generateAIContent({
-                thread,
-                user: member,
-                guest,
-                agentId: selectedAgent.id,
-                conversationHistory: !suggestionMessages
-                  ? messages
-                  : [
-                      { role: "system", content: enhancedSystemPrompt },
-                      ...suggestionMessages,
-                      enhancedUserMessage,
-                    ],
-                latestMessage: m.message,
-                language,
-                calendarEvents,
-                app, // Pass app object directly (no extra query needed)
-                skipClassification: !!app, // Skip AI classification if app is set
-              })
-            }
-          } catch (error) {
-            console.error("❌ Background content generation failed:", error)
-            captureException(error, {
-              tags: {
-                type: "background_task",
-                task: "content_generation",
-                threadId: thread.id,
-                userId: member?.id || guest?.id,
-              },
-            })
-          }
-        })
+        after(() => generateContent(m))
 
         return NextResponse.json({ success: true })
       } catch (error) {
@@ -3925,6 +3919,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 member,
                 guest,
               })
+
+            after(async () => generateContent(m))
 
             console.log("✅ Sushi stream_complete notification sent")
           }
@@ -4161,39 +4157,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             guest,
           })
 
-        after(async () => {
-          try {
-            if (m && selectedAgent) {
-              await generateAIContent({
-                thread,
-                user: member,
-                guest,
-                agentId: selectedAgent.id,
-                conversationHistory: !suggestionMessages
-                  ? messages
-                  : [
-                      { role: "system", content: enhancedSystemPrompt },
-                      ...suggestionMessages,
-                      enhancedUserMessage,
-                    ],
-                language,
-                latestMessage: m.message,
-                app,
-                skipClassification: !!app,
-              })
-            }
-          } catch (error) {
-            console.error("❌ Background content generation failed:", error)
-            captureException(error, {
-              tags: {
-                type: "background_task",
-                task: "content_generation",
-                threadId: thread.id,
-                userId: member?.id || guest?.id,
-              },
-            })
-          }
-        })
+        after(async () => generateContent(m))
 
         return NextResponse.json({ success: true })
       } catch (error: unknown) {
@@ -4516,40 +4480,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       }
 
       // Background processing with DeepSeek for content generation
-      after(async () => {
-        try {
-          if (m && selectedAgent) {
-            await generateAIContent({
-              thread,
-              user: member,
-              guest,
-              agentId: selectedAgent.id,
-              conversationHistory: !suggestionMessages
-                ? messages
-                : [
-                    { role: "system", content: enhancedSystemPrompt },
-                    ...suggestionMessages,
-                    enhancedUserMessage,
-                  ],
-              latestMessage: m.message,
-              language,
-              calendarEvents,
-              app, // Pass app object directly
-              skipClassification: !!app, // Skip AI classification if app is set
-            })
-          }
-        } catch (error) {
-          console.error("❌ Background content generation failed:", error)
-          captureException(error, {
-            tags: {
-              type: "background_task",
-              task: "content_generation",
-              threadId: thread.id,
-              userId: member?.id || guest?.id,
-            },
-          })
-        }
-      })
+      after(async () => generateContent(m))
 
       console.log("📡 Returning provider stream response")
 
