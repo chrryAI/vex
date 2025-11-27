@@ -1,7 +1,7 @@
 import { expect, Page } from "@playwright/test"
 import { signIn } from "./signIn"
 import { chat } from "./chat"
-import { isCI, modelName } from "../index"
+import { isCI, modelName, wait } from "../index"
 
 export const subscribe = async ({
   page,
@@ -148,7 +148,7 @@ export const subscribe = async ({
   )
 
   const getNthMenuThread = async (nth: number) => {
-    const threads = page.getByTestId("menu-thread-item")
+    const threads = page.getByTestId("menu-thread-link")
     return threads.nth(nth)
   }
   const getFirstMenuThread = async () => {
@@ -164,14 +164,14 @@ export const subscribe = async ({
       password,
     })
 
-    // const first = await getFirstMenuThread()
-    // await expect(first).toBeVisible({
-    //   timeout: 20000,
-    // })
-
-    await page.goto(threadUrl, {
-      waitUntil: "networkidle",
+    const first = await getFirstMenuThread()
+    await expect(first).toBeVisible({
+      timeout: 5000,
     })
+
+    await (await getFirstMenuThread()).click()
+
+    await wait(5000)
 
     const getLastMessage = async () => {
       // Wait for either user or guest messages to appear

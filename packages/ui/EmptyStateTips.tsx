@@ -271,7 +271,6 @@ export default function EmptyStateTips({
                 duration: reduceMotionContext ? 0 : 100,
                 delay: reduceMotionContext ? 0 : i * 50,
               }}
-              data-testid="menu-thread-item"
             >
               <Div key={i} style={styles.tip.style}>
                 <Span style={styles.tipText.style}>{t(item.tip || "")}</Span>
