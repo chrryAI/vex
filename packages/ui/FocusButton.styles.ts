@@ -120,7 +120,7 @@ export const FocusButtonStyleDefs = {
     right: 2,
   },
   timeAdjust: {
-    padding: 5,
+    padding: "5px 9px",
     color: "var(--shade-6)",
     display: "flex",
     alignItems: "center",

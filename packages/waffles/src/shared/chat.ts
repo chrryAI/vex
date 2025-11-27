@@ -22,6 +22,8 @@ const getTestFilePath = (...pathSegments: string[]) => {
   return path.join(cwd, "packages/waffles", ...pathSegments)
 }
 
+const MAX_FILES = 5
+
 export const chat = async ({
   artifacts,
   page,
@@ -286,9 +288,6 @@ export const chat = async ({
         }
       }
 
-      // Limit to max 3 total files
-      // filesToAttach = filesToAttach.slice(0, 3 - filesToPaste)
-
       const testUsedPaths = await Promise.all(
         Array.from({ length: filesToAttach.length }, async (_, i) => {
           // Determine file type based on prompt.mix configuration
@@ -433,7 +432,7 @@ export const chat = async ({
 
     if (prompt.mix) {
       const size = Object.values(prompt.mix).reduce((a, b) => a + b)
-      const to = size > 5 ? 5 : size
+      const to = size > MAX_FILES ? MAX_FILES : size
 
       // Create array of individual files to attach
       let filesToAttach: string[] = []
@@ -533,7 +532,7 @@ export const chat = async ({
           testUsedPaths.filter((path): path is string => path !== null),
         )
 
-        if (filesToAttach.length + filesToPaste > 3) {
+        if (filesToAttach.length + filesToPaste > 5) {
           await expect(page.getByText("Too many files selected")).toBeVisible()
         }
       }
@@ -705,7 +704,9 @@ export const chat = async ({
         .getByTestId("user-message-pdf")
         .count()
 
-      expect(userMessagePdfCount).toBe(prompt.mix.pdf > 5 ? 5 : prompt.mix.pdf)
+      expect(userMessagePdfCount).toBe(
+        prompt.mix.pdf > MAX_FILES ? MAX_FILES : prompt.mix.pdf,
+      )
     }
 
     if (prompt.webSearch) {
