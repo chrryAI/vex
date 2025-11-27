@@ -281,7 +281,7 @@ const Thread = ({
           // paddingBottom: 195,
           // paddingLeft: isMobileDevice ? 0 : 10,
           ...styles.thread.style,
-          ...(isEmpty && hasHydrated && styles.threadEmpty.style),
+          ...(isEmpty && !threadId && hasHydrated && styles.threadEmpty.style),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
           },
@@ -381,7 +381,7 @@ const Thread = ({
                 }}
                 emptyMessage={
                   liked && messages.length === 0
-                    ? t("No more liked messages")
+                    ? t("Nothing here yet")
                     : undefined
                 }
                 showEmptyState={!!thread}

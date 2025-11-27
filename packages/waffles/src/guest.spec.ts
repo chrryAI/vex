@@ -99,19 +99,21 @@ test.only("File upload", async ({ page }) => {
         like: true,
       },
       {
-        text: "Hey Vex, Analyze this pdf(s)",
+        text: "Hey Vex, Analyze this pdf(s) and images",
         model: "sushi",
         mix: {
           pdf: 4,
+          image: 2,
         },
         like: true,
       },
 
       {
-        text: "Hey Vex, Analyze this paste(s)",
+        text: "Hey Vex, Analyze this paste(s) and video",
         model: "sushi",
         mix: {
           paste: 4,
+          video: 1,
         },
         like: true,
       },

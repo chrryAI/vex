@@ -98,6 +98,13 @@ export const chat = async ({
     instruction = ""
   }
 
+  const fileExtensions = {
+    image: "jpeg",
+    video: "webm",
+    audio: "wav",
+    pdf: "pdf",
+  }
+
   const hourlyLimit = isSubscriber ? 100 : isMember ? 30 : 10 // guests: 10, members: 30, subscribers: 100
 
   const getModelCredits = (model: string) =>
@@ -154,7 +161,7 @@ export const chat = async ({
       .getAttribute("data-agent-name")
   }
 
-  !isMember && expect(await getAgentName()).toBe("sushi")
+  expect(await getAgentName()).toBe("sushi")
 
   const chatTextarea = page.getByTestId("chat-textarea")
   await expect(chatTextarea).toBeVisible()
@@ -207,6 +214,10 @@ export const chat = async ({
   let instructionButton = await getNthInstruction(0)
   let artifactsButton = page.getByTestId("instruction-modal-artifacts-button")
 
+  let artifactsUploadButton = page.getByTestId(
+    "instruction-artifacts-upload-button",
+  )
+
   if (!threadId) {
     await expect(thread).not.toBeVisible()
     await expect(instructionButton).toBeVisible()
@@ -216,6 +227,7 @@ export const chat = async ({
 
     instructionButton = page.getByTestId("chat-instruction-button")
     artifactsButton = page.getByTestId("chat-modal-artifacts-button")
+    artifactsUploadButton = page.getByTestId("chat-artifacts-upload-button")
     await expect(thread).toBeVisible()
     await expect(about).not.toBeVisible()
   }
@@ -246,27 +258,6 @@ export const chat = async ({
       const dataTestId = threadId ? "chat" : "instruction"
       await expect(instructionModal).toBeVisible()
 
-      if (artifacts.pdf) {
-        const fileChooserPromise = page.waitForEvent("filechooser")
-        await page.getByTestId(`${dataTestId}-artifacts-upload-button`).click()
-
-        const testUsedPaths = Array.from({ length: artifacts.pdf }, (_, i) => {
-          const fileType = "pdf"
-          const fileName = `test${capitalizeFirstLetter(fileType)}${i + 1}`
-          const extension = "pdf"
-
-          return path.join(
-            process.cwd(),
-            "src/shared",
-            fileType,
-            `${fileName}.${extension}`,
-          )
-        })
-
-        const fileChooser = await fileChooserPromise
-        await fileChooser.setFiles(testUsedPaths)
-      }
-
       if (artifacts.paste) {
         for (let i = 0; i < artifacts.paste; i++) {
           await simulatePaste(
@@ -276,7 +267,58 @@ export const chat = async ({
         }
       }
 
-      if ((artifacts.pdf || 0) + (artifacts.paste || 0) > 10) {
+      const fileChooserPromise = page.waitForEvent("filechooser")
+
+      let filesToAttach: string[] = []
+      let filesToPaste = 0
+
+      for (const [key, count] of Object.entries(
+        artifacts as Record<string, number>,
+      )) {
+        if (key === "paste") {
+          filesToPaste = count
+        } else {
+          // Add multiple files of same type
+          for (let i = 0; i < count; i++) {
+            filesToAttach.push(key)
+          }
+        }
+      }
+
+      // Limit to max 3 total files
+      // filesToAttach = filesToAttach.slice(0, 3 - filesToPaste)
+
+      const testUsedPaths = await Promise.all(
+        Array.from({ length: filesToAttach.length }, async (_, i) => {
+          // Determine file type based on prompt.mix configuration
+          const fileType = filesToAttach[i]
+
+          if (!fileType) {
+            return null
+          }
+
+          const fileName = `test${capitalizeFirstLetter(fileType)}${i + 1}`
+          const extension =
+            fileExtensions[fileType as keyof typeof fileExtensions] || "jpeg"
+
+          return path.join(
+            process.cwd(),
+            "src/shared",
+            fileType,
+            `${fileName}.${extension}`,
+          )
+        }),
+      )
+
+      await artifactsUploadButton.click()
+
+      const fileChooser = await fileChooserPromise
+
+      await fileChooser.setFiles(
+        testUsedPaths.filter((path): path is string => path !== null),
+      )
+
+      if (filesToAttach.length + filesToPaste > 10) {
         await expect(page.getByText("Maximum 10 files allowed")).toBeVisible()
       }
 
@@ -288,9 +330,9 @@ export const chat = async ({
       await modalSaveButton.click()
 
       expect(await page.getByText("Updated").count()).toBeGreaterThan(0)
+    } else {
+      await modalSaveButton.click()
     }
-
-    await modalSaveButton.click()
   }
 
   const getAgentModalButton = (agent: string) => {
@@ -316,30 +358,7 @@ export const chat = async ({
 
       await agentModalButton.click()
 
-      if (prompt.model === "gemini") {
-        const agentModalCloseButton = page.getByTestId(
-          "agent-modal-close-button",
-        )
-
-        await expect(agentModalCloseButton).toBeVisible()
-        await agentModalCloseButton.click()
-        expect(await getAgentName()).toBe("sushi")
-      } else {
-        if (!isMember) {
-          if (!["sushi", "gemini"].includes(prompt.model)) {
-            await expect(signInModal).toBeVisible()
-            const signInModalCloseButton = page.getByTestId(
-              "sign-in-modal-close-button",
-            )
-            await expect(signInModalCloseButton).toBeVisible()
-            await signInModalCloseButton.click()
-
-            expect(await getAgentName()).toBe("sushi")
-          }
-        } else {
-          expect(await getAgentName()).toBe(prompt.model)
-        }
-      }
+      expect(await getAgentName()).toBe(prompt.model)
     }
 
     if (prompt.debateAgent) {
@@ -412,15 +431,8 @@ export const chat = async ({
     const attachButton = page.getByTestId("attach-button")
 
     if (prompt.mix) {
-      const fileExtensions = {
-        image: "jpeg",
-        video: "mp4",
-        audio: "wav",
-        pdf: "pdf",
-      }
-
       const size = Object.values(prompt.mix).reduce((a, b) => a + b)
-      const to = size > 3 ? 3 : size
+      const to = size > 5 ? 5 : size
 
       // Create array of individual files to attach
       let filesToAttach: string[] = []
@@ -436,10 +448,6 @@ export const chat = async ({
           }
         }
       }
-
-      // Limit to max 3 total files
-      filesToAttach = filesToAttach.slice(0, 3 - filesToPaste)
-      console.log(`🚀 ~ chat ~ filesToAttach:`, filesToAttach)
 
       for (let i = 0; i < filesToPaste; i++) {
         const text = faker.lorem.sentence({ min: 550, max: 750 })

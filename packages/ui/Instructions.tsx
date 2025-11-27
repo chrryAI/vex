@@ -1102,19 +1102,19 @@ export default function Instructions({
               <Div style={styles.fileUploader.style}>
                 <>
                   <Button
-                    className="link"
+                    className="transparent"
                     data-testid={`${dataTestId}-artifacts-back-button`}
                     onClick={() => {
                       addHapticFeedback()
                       setIsArtifactsOpen(false)
                       setIsOpen(true)
                     }}
-                    style={{ ...utilities.link.style }}
+                    style={{ ...utilities.transparent.style }}
                   >
                     <ArrowLeft size={16} />
                   </Button>
                   <Button
-                    className="link"
+                    className="transparent"
                     data-testid={`${dataTestId}-artifacts-paste-button`}
                     onClick={async () => {
                       addHapticFeedback()
@@ -1141,20 +1141,20 @@ export default function Instructions({
                         )
                       }
                     }}
-                    style={{ ...utilities.link.style }}
+                    style={{ ...utilities.transparent.style }}
                   >
                     <Copy size={16} />
                     {t("Paste")}
                   </Button>
                   <Button
-                    className="link"
+                    className="transparent"
                     data-testid={`${dataTestId}-artifacts-upload-button`}
                     onClick={() =>
                       triggerFileInput(
                         "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
                       )
                     }
-                    style={{ ...utilities.link.style }}
+                    style={{ ...utilities.transparent.style }}
                   >
                     <FileUp size={16} />
                     {t("Upload")}
