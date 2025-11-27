@@ -111,6 +111,7 @@ export const subscribe = async ({
   await page.waitForSelector("form.PaymentForm-form")
 
   // Fill payment form
+  await page.selectOption("#billingCountry", "NL")
   await page.fill("#email", "test@example.com")
   await page.fill("#cardNumber", "4242424242424242") // Stripe test card
   await page.fill("#cardExpiry", "12/30") // MM/YY
@@ -119,11 +120,8 @@ export const subscribe = async ({
 
   // Fill address fields for USA billing
 
-  if (isCI) {
-    await page.selectOption("#billingCountry", "NL")
-  }
-
-  const guestMessages = page.getByTestId("guest-message")
+  // if (isCI) {
+  // }
 
   //   await page.selectOption("#billingCountry", "US") // Select country
 

@@ -4314,8 +4314,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             hasReceivedContent = true
           }
 
-          console.log(`🚀 ~ file: route.ts:4313 ~ chunk:`, chunk)
-
           await enhancedStreamChunk({
             chunk,
             chunkNumber: currentChunk++,
