@@ -104,12 +104,13 @@
   gap: toRem.toRem(10);
 
   margin: toRem.toRem(10) 0 toRem.toRem(5) 0;
-  video {
-    max-width: 100%;
-    // height: fit-content;
-    width: toRem.toRem(250);
-    border-radius: toRem.toRem(20);
-  }
+}
+
+.userMessageVideoVideo {
+  max-width: 100%;
+  // height: fit-content;
+  width: toRem.toRem(250);
+  border-radius: toRem.toRem(20);
 }
 
 .userMessageAudio {

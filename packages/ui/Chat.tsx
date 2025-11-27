@@ -248,6 +248,7 @@ export default function Chat({
     setIsImageGenerationEnabled,
     setShouldFocus,
     shouldFocus,
+    isChatFloating: isChatFloatingInternal,
   } = useChat()
 
   const {
@@ -385,7 +386,8 @@ export default function Chat({
   const shouldUseCompactMode = compactMode || hasBottomOffset
   // || windowHeight < 600 // Not at bottom or mobile
 
-  const isChatFloating = shouldUseCompactMode || (!empty && !showChatInput)
+  const isChatFloating =
+    isChatFloatingInternal || shouldUseCompactMode || (!empty && !showChatInput)
 
   useEffect(() => {
     if (process.env.NODE_ENV !== "production") {

@@ -1,22 +1,65 @@
-import { UTApi } from "uploadthing/server"
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3"
+import { Upload } from "@aws-sdk/lib-storage"
+import { NodeHttpHandler } from "@smithy/node-http-handler"
+import https from "https"
 import sharp from "sharp"
 import captureException from "./captureException"
 import dns from "dns"
 import net from "net"
 import { parse as parseDomain } from "tldts"
 import { isDevelopment } from "chrry/utils"
-// Two separate UploadThing accounts
-const chatUtapi = new UTApi({
-  token: process.env.UPLOADTHING_TOKEN, // For chat messages/files
+
+// Validate S3 configuration
+if (
+  !process.env.S3_ENDPOINT ||
+  !process.env.S3_ACCESS_KEY_ID ||
+  !process.env.S3_SECRET_ACCESS_KEY
+) {
+  console.warn("⚠️  S3 credentials not configured. Please add to .env:")
+  console.warn("   S3_ENDPOINT=${MINIO_SERVER_URL}")
+  console.warn("   S3_ACCESS_KEY_ID=${MINIO_ROOT_USER}")
+  console.warn("   S3_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}")
+  console.warn("   S3_BUCKET_NAME=chrry-chat-files")
+  console.warn("   S3_BUCKET_NAME_APPS=chrry-app-profiles")
+  console.warn("   S3_PUBLIC_URL=${MINIO_SERVER_URL}")
+}
+
+// S3 Client Configuration
+const s3Client = new S3Client({
+  endpoint: process.env.S3_ENDPOINT,
+  region: process.env.S3_REGION || "us-east-1",
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
+  },
+  forcePathStyle: true, // Required for MinIO/Coolify
+  // SECURITY: Disable SSL certificate verification ONLY in development
+  // This is safe because:
+  // 1. Only active when isDevelopment === true (NODE_ENV !== 'production')
+  // 2. Needed for self-signed certs or cert mismatches in dev/staging
+  // 3. Production will use proper SSL verification automatically
+  // For production: Ensure your MinIO has a valid SSL certificate or use Cloudflare proxy
+  requestHandler: isDevelopment
+    ? new NodeHttpHandler({
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      })
+    : undefined,
 })
 
-const appsUtapi = new UTApi({
-  token: process.env.UPLOADTHING_APPS_TOKEN, // For app profiles/images
-})
+// Bucket names for different contexts
+const BUCKET_CHAT = process.env.S3_BUCKET_NAME || "chrry-chat-files"
+const BUCKET_APPS = process.env.S3_BUCKET_NAME_APPS || "chrry-app-profiles"
+const PUBLIC_URL = process.env.S3_PUBLIC_URL || process.env.S3_ENDPOINT
 
-// Get UTApi instance based on context
-function getUtapi(context: "chat" | "apps" = "chat"): UTApi {
-  return context === "apps" ? appsUtapi : chatUtapi
+// Get bucket name based on context
+function getBucket(context: "chat" | "apps" = "chat"): string {
+  return context === "apps" ? BUCKET_APPS : BUCKET_CHAT
 }
 
 const SUPPORTED_TYPES = {
@@ -107,11 +150,11 @@ function validateFileType(
 }
 
 /**
- * Upload a file from Replicate to UploadThing for permanent storage
- * @param url - The temporary Replicate file URL
+ * Upload a file to S3-compatible storage (MinIO via Coolify)
+ * @param url - The temporary file URL or data URL
  * @param messageId - The message ID for unique filename
  * @param options - Optional upload options
- * @returns Permanent UploadThing URL and file metadata
+ * @returns Permanent S3 URL and file metadata
  */
 export async function upload({
   url,
@@ -131,23 +174,33 @@ export async function upload({
     title?: string
     type?: "image" | "audio" | "video" | "pdf" | "text"
   }
-  context?: "chat" | "apps" // Use "apps" for app profile images
+  context?: "chat" | "apps"
 }): Promise<{ url: string; width?: number; height?: number; title?: string }> {
-  // Only allow images from trusted hosts (add your domains as needed)
+  // Validate S3 is configured
+  if (
+    !process.env.S3_ENDPOINT ||
+    !process.env.S3_ACCESS_KEY_ID ||
+    !process.env.S3_SECRET_ACCESS_KEY
+  ) {
+    throw new Error(
+      "S3 storage is not configured. Please add S3_ENDPOINT, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY to your .env file. See setup guide for details.",
+    )
+  }
+
+  // Only allow files from trusted hosts
   const ALLOWED_HOSTNAMES = [
     "replicate.delivery", // Replicate temporary files
     "replicate.com",
-    "utfs.io", // UploadThing
+    "utfs.io", // Legacy UploadThing (for migration)
     "uploadthing.com",
-    // Add more trusted domains here as needed
   ]
   try {
     // Validate URL to prevent SSRF attacks
     const parsedUrl = new URL(url)
 
-    // Only allow HTTPS or Data URLs
+    // Only allow HTTPS or Data URLs (HTTP allowed in development for internal Docker network)
     if (
-      // !isDevelopment &&
+      !isDevelopment &&
       parsedUrl.protocol !== "https:" &&
       parsedUrl.protocol !== "data:"
     ) {
@@ -158,12 +211,10 @@ export async function upload({
     if (parsedUrl.protocol !== "data:") {
       // Domain root allowlist via tldts
       const parsedDomain = parseDomain(parsedUrl.hostname)
-      // parsedDomain.domain already includes the publicSuffix
-      // e.g., for "abc.replicate.delivery" → domain is "replicate.delivery"
       const rootDomain = parsedDomain.domain || parsedUrl.hostname
       const isAllowed = ALLOWED_HOSTNAMES.includes(rootDomain)
       if (!isAllowed) {
-        throw new Error(`Image host not allowed: ${rootDomain}`)
+        throw new Error(`File host not allowed: ${rootDomain}`)
       }
 
       // Check if hostname matches allowed domains (including subdomains)
@@ -201,12 +252,11 @@ export async function upload({
       try {
         addresses = await dns.promises.lookup(parsedUrl.hostname, { all: true })
       } catch (e) {
-        throw new Error("Failed to resolve image hosting domain")
+        throw new Error("Failed to resolve file hosting domain")
       }
-      // Checks for private/reserved/public addresses by inspecting resolved IPs
+
       const isIpPrivate = (ip: string) => {
         if (net.isIPv4(ip)) {
-          // 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16
           return (
             ip.startsWith("10.") ||
             /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(ip) ||
@@ -215,17 +265,16 @@ export async function upload({
             ip.startsWith("169.254.")
           )
         } else if (net.isIPv6(ip)) {
-          // IPv6: localhost (::1), link-local (fe80::/10), private (fc00::/7)
           return (
             ip === "::1" ||
             ip.startsWith("fc00:") ||
-            ip.startsWith("fd00:") || // part of IPv6 private range
+            ip.startsWith("fd00:") ||
             ip.startsWith("fe80:")
           )
         }
         return false
       }
-      // If ANY resolved IP is private, abort!
+
       if (addresses.some((addr) => isIpPrivate(addr.address))) {
         throw new Error("Resolved address is private or local; access denied")
       }
@@ -250,7 +299,9 @@ export async function upload({
       }
     }
 
-    const fileName = `${messageId}-${Date.now()}.${blob.type}`
+    // Generate file extension
+    const ext = fileType === "image" ? "png" : blob.type.split("/")[1] || "bin"
+    const fileName = `${messageId}-${Date.now()}.${ext}`
 
     let width, height
 
@@ -304,47 +355,43 @@ export async function upload({
 
       // Convert processed image back to buffer
       const imageBuffer = await processedImage.png().toBuffer()
-      // Convert Buffer to ArrayBuffer
       processedBuffer = new Uint8Array(imageBuffer).buffer
     }
 
-    const file = new File([processedBuffer], fileName, {
-      type: fileType === "image" ? "image/png" : blob.type,
-    })
-
     console.log(
-      `📦 File created: ${file.name}, size: ${file.size}, type: ${file.type}`,
+      `📦 File prepared: ${fileName}, size: ${processedBuffer.byteLength} bytes, type: ${fileType}`,
     )
 
-    console.log("☁️ Uploading to UploadThing...")
+    // Generate S3 key with context prefix
+    const s3Key = `${context}/${fileName}`
+    const bucket = getBucket(context)
 
-    // Upload to UploadThing (use context-specific account)
-    const utapi = getUtapi(context)
-    const uploadResult = await utapi.uploadFiles([file])
+    console.log(`☁️ Uploading to S3: ${bucket}/${s3Key}`)
 
-    console.log("📤 Upload result:", JSON.stringify(uploadResult, null, 2))
+    // Upload to S3
+    const contentType = fileType === "image" ? "image/png" : blob.type
 
-    if (!uploadResult?.[0] || uploadResult[0].error) {
-      console.error(
-        "❌ UploadThing error details:",
-        JSON.stringify(uploadResult?.[0]?.error, null, 2),
-      )
+    const upload = new Upload({
+      client: s3Client,
+      params: {
+        Bucket: bucket,
+        Key: s3Key,
+        Body: Buffer.from(processedBuffer),
+        ContentType: contentType,
+        CacheControl: "public, max-age=31536000, immutable",
+        // ACL: "public-read", // Uncomment if your bucket doesn't have public read policy
+      },
+    })
 
-      return {
-        url: "",
-        width: undefined,
-        height: undefined,
-        title: undefined,
-      }
-    }
+    await upload.done()
 
-    // UploadThing returns the URL in the data object
-    const permanentUrl =
-      uploadResult[0].data?.ufsUrl || (uploadResult[0] as any).url
-    console.log("✅ File uploaded successfully:", permanentUrl)
+    // Construct public URL
+    const publicUrl = `${PUBLIC_URL}/${bucket}/${s3Key}`
+
+    console.log("✅ File uploaded successfully:", publicUrl)
 
     return {
-      url: permanentUrl,
+      url: publicUrl,
       width,
       height,
       title: options.title || fileName,
@@ -352,38 +399,45 @@ export async function upload({
   } catch (error) {
     captureException(error)
     console.error("❌ Failed to upload file:", error)
-    return {
-      url: "",
-      width: undefined,
-      height: undefined,
-      title: undefined,
-    }
+    throw error // Re-throw so the API route can handle it with proper JSON error
   }
 }
 
 /**
- * Delete an image from UploadThing (optional cleanup)
- * @param url - The file key from UploadThing URL
+ * Delete a file from S3 storage
+ * @param url - The S3 file URL
+ * @param context - The storage context (chat or apps)
  */
 export async function deleteFile(
   url: string,
   context: "chat" | "apps" = "chat",
 ): Promise<void> {
   try {
-    const pathSegments = url.split("/").filter(Boolean)
+    // Extract S3 key from URL
+    // Expected format: https://cdn.example.com/bucket-name/context/filename.ext
+    const urlParts = url.split("/")
+    const keyIndex = urlParts.findIndex((part) => part === context)
 
-    if (pathSegments?.length >= 1 && url.includes("/f/")) {
-      const fileKey = pathSegments[pathSegments.length - 1]
-
-      if (fileKey) {
-        const utapi = getUtapi(context)
-        await utapi.deleteFiles([fileKey])
-        console.log("🗑️ Deleted image from UploadThing:", fileKey)
-      }
+    if (keyIndex === -1 || keyIndex === urlParts.length - 1) {
+      console.warn("⚠️ Could not extract S3 key from URL:", url)
+      return
     }
+
+    const s3Key = urlParts.slice(keyIndex).join("/")
+    const bucket = getBucket(context)
+
+    console.log(`🗑️ Deleting from S3: ${bucket}/${s3Key}`)
+
+    const command = new DeleteObjectCommand({
+      Bucket: bucket,
+      Key: s3Key,
+    })
+
+    await s3Client.send(command)
+    console.log("✅ File deleted successfully:", s3Key)
   } catch (error) {
     captureException(error)
-    console.error("❌ Failed to delete image:", error)
+    console.error("❌ Failed to delete file:", error)
     // Don't throw - deletion failures shouldn't break the app
   }
 }

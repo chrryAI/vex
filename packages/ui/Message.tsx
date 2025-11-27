@@ -21,7 +21,7 @@ import {
   useData,
   useChat,
 } from "./context/providers"
-import { useTheme, Div, Button, Span } from "./platform"
+import { useTheme, Div, Button, Span, Video } from "./platform"
 import type {
   message,
   aiAgent,
@@ -816,7 +816,11 @@ export default function Message({
                   >
                     {video.map((video) => (
                       <Div data-testid="user-message-video" key={video.id}>
-                        <video controls src={video.url} />
+                        <Video
+                          style={styles.userMessageVideoVideo.style}
+                          controls
+                          src={video.url}
+                        />
                       </Div>
                     ))}
                   </Div>
