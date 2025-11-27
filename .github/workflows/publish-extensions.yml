@@ -62,11 +62,19 @@ jobs:
       - name: Check Chrome Web Store secrets for ${{ matrix.site }}
         id: check-chrome-secrets
         run: |
-          EXTENSION_ID="${{ secrets[matrix.chrome_extension_id_secret] }}"
+          # Select extension id secret for each site explicitly
+          if [[ "${{ matrix.site }}" == "SITE_A" ]]; then
+            EXTENSION_ID="${{ secrets.CHROME_EXTENSION_ID_SITE_A }}"
+          elif [[ "${{ matrix.site }}" == "SITE_B" ]]; then
+            EXTENSION_ID="${{ secrets.CHROME_EXTENSION_ID_SITE_B }}"
+          # Add more sites as required
+          else
+            EXTENSION_ID=""
+          fi
           if [[ -z "${{ secrets.CHROME_CLIENT_ID }}" || -z "${{ secrets.CHROME_CLIENT_SECRET }}" || -z "${{ secrets.CHROME_REFRESH_TOKEN }}" || -z "$EXTENSION_ID" ]]; then
             echo "chrome_secrets_available=false" >> $GITHUB_OUTPUT
             echo "❌ Chrome Web Store secrets not configured for ${{ matrix.site }}. Skipping Chrome upload."
-            echo "Required secrets: CHROME_CLIENT_ID, CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN, ${{ matrix.chrome_extension_id_secret }}"
+            echo "Required secrets: CHROME_CLIENT_ID, CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN, CHROME_EXTENSION_ID_${{ matrix.site }}"
           else
             echo "chrome_secrets_available=true" >> $GITHUB_OUTPUT
             echo "✅ Chrome Web Store secrets found for ${{ matrix.site }}"
@@ -93,7 +101,7 @@ jobs:
             --arg clientId "${{ secrets.CHROME_CLIENT_ID }}" \
             --arg clientSecret "${{ secrets.CHROME_CLIENT_SECRET }}" \
             --arg refreshToken "${{ secrets.CHROME_REFRESH_TOKEN }}" \
-            --arg extId "${{ secrets[matrix.chrome_extension_id_secret] }}" \
+            --arg extId "$(if [[ "${{ matrix.site }}" == "SITE_A" ]]; then echo "${{ secrets.CHROME_EXTENSION_ID_SITE_A }}"; elif [[ "${{ matrix.site }}" == "SITE_B" ]]; then echo "${{ secrets.CHROME_EXTENSION_ID_SITE_B }}"; else echo ""; fi)" \
             '{\n              "$schema": "https://github.com/PlasmoHQ/bpp/raw/main/keys.schema.json",\n              "chrome": {\n                "zip": "dist-chrome.zip",\n                "clientId": $clientId,\n                "clientSecret": $clientSecret,\n                "refreshToken": $refreshToken,\n                "extId": $extId\n              }\n            }')
           echo "CHROME_KEYS_JSON<<EOF" >> $GITHUB_ENV
           echo "$JSON_CONTENT" >> $GITHUB_ENV
