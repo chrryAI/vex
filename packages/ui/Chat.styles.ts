@@ -21,7 +21,7 @@ export const ChatStyleDefs = {
     transform: "translateX(-50%)",
   },
   standalone: {
-    paddingBottom: 5,
+    bottom: 15,
   },
   drawerOpen: {
     left: "calc(50% + 7.65625rem)",
