@@ -45,13 +45,187 @@ const isProd = process.env.DB_URL && !process.env.DB_URL.includes("localhost")
 const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
+async function createAgents() {
+  const chatGptAgent = await createAiAgent({
+    name: "chatGPT",
+    displayName: "GPT-5.1",
+    version: "5.1",
+    apiURL: "https://api.openai.com/v1/chat/completions",
+    state: "active",
+    description: "Versatile, creative, and reliable language model.",
+    creditCost: 4,
+    authorization: "all",
+    maxPromptSize: 128000,
+    modelId: "gpt-5.1",
+    order: 1,
+    capabilities: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+    },
+  })
+
+  const claudeAgent = await createAiAgent({
+    name: "claude",
+    displayName: "Claude Sonnet 4.5",
+    version: "4.5",
+    apiURL: "https://api.anthropic.com/v1/messages",
+    state: "active",
+    description: "Helpful, safe, and human-like conversational AI",
+    creditCost: 3,
+    authorization: "all",
+    modelId: "claude-sonnet-4-5-20250929",
+    maxPromptSize: 200000,
+    order: 0,
+    capabilities: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+    },
+  })
+
+  const deepSeekAgent = await createAiAgent({
+    name: "deepSeek",
+    displayName: "DeepSeek V3",
+    version: "3.0.0",
+    apiURL: "https://api.deepseek.com/v1",
+    description: "Fast, accurate, and privacy-focused AI assistant.",
+    state: "active",
+    creditCost: 1,
+    authorization: "all",
+    modelId: "deepseek-chat",
+    maxPromptSize: 128000,
+    order: 4,
+    capabilities: {
+      text: true,
+      image: false,
+      audio: false,
+      video: false,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+    },
+  })
+
+  const sushiAgent = await createAiAgent({
+    name: "sushi",
+    displayName: "Sushi 1.0",
+    version: "1.0.0",
+    apiURL: "https://api.deepseek.com/v1",
+    description:
+      "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Use palette icon for image generation.",
+    state: "active",
+    creditCost: 2,
+    authorization: "all",
+    modelId: "deepseek-reasoner", // Advanced reasoning model with visible thinking
+    maxPromptSize: 128000,
+    order: 5,
+    capabilities: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: true, // Available via UI palette icon
+    },
+  })
+
+  const geminiAgent = await createAiAgent({
+    name: "gemini",
+    displayName: "Gemini 3.0 Pro",
+    version: "3.0",
+    apiURL:
+      "https://generativelanguage.googleapis.com/v1/models/gemini-3.0-pro:streamGenerateContent",
+    state: "active",
+    description: "Most advanced Gemini 3 Pro model.",
+    creditCost: 4,
+    authorization: "all",
+    modelId: "gemini-3-pro-preview",
+    maxPromptSize: 2000000,
+    order: 1,
+    capabilities: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+    },
+  })
+
+  const perplexityAgent = await createAiAgent({
+    name: "perplexity",
+    displayName: "Perplexity Sonar",
+    version: "1.1",
+    apiURL: "https://api.perplexity.ai/chat/completions",
+    state: "active",
+    description: "Real-time web search with citations.",
+    creditCost: 3, // Lower cost than sonar-pro
+    authorization: "all",
+    modelId: "sonar-pro", // keep 'sonar-pro' if you want the best quality
+    maxPromptSize: 28000,
+    order: 3,
+    capabilities: {
+      text: true,
+      image: false,
+      audio: false,
+      video: false,
+      webSearch: true,
+      pdf: false,
+      imageGeneration: false,
+    },
+  })
+
+  const fluxAgent = await createAiAgent({
+    name: "flux",
+    displayName: "Flux Schnell",
+    version: "1.0",
+    apiURL: "https://api.replicate.com/v1/predictions",
+    state: "active",
+    description: "Create stunning visuals from text prompts.",
+    creditCost: 2, // Hybrid DeepSeek + Flux Schnell
+    authorization: "all",
+    modelId: "black-forest-labs/flux-schnell",
+    order: 5,
+    maxPromptSize: 4000,
+    capabilities: {
+      text: false,
+      image: false,
+      audio: false,
+      video: false,
+      webSearch: false,
+      pdf: false,
+      imageGeneration: true,
+    },
+  })
+  return {
+    sushiAgent,
+    fluxAgent,
+    perplexityAgent,
+    geminiAgent,
+    claudeAgent,
+    chatGptAgent,
+    deepSeekAgent,
+  }
+}
+
 const clearDb = async (): Promise<void> => {
   if (isProd) {
     return
   }
   console.log("Clearing database")
   await db.delete(calendarEvents)
-  await db.delete(aiAgents)
+  // await db.delete(aiAgents)
   await db.delete(messages)
   await db.delete(guests)
   await db.delete(users)
@@ -166,168 +340,7 @@ const create = async () => {
 
   const { vex } = await createStores({ user: admin })
 
-  await createAiAgent({
-    name: "chatGPT",
-    displayName: "GPT-4.1",
-    version: "4.1",
-    apiURL: "https://api.openai.com/v1/chat/completions",
-    state: "active",
-    description: "Versatile, creative, and reliable language model.",
-    creditCost: 4,
-    authorization: "all",
-    maxPromptSize: 128000,
-    modelId: "gpt-4.1",
-    order: 1,
-    capabilities: {
-      text: true,
-      image: true,
-      audio: true,
-      video: true,
-      webSearch: false,
-      pdf: true,
-      imageGeneration: false,
-    },
-  })
-
-  await createAiAgent({
-    name: "claude",
-    displayName: "Claude Sonnet 4",
-    version: "4",
-    apiURL: "https://api.anthropic.com/v1/messages",
-    state: "active",
-    description: "Helpful, safe, and human-like conversational AI",
-    creditCost: 3,
-    authorization: "all",
-    modelId: "claude-sonnet-4-20250514",
-    maxPromptSize: 200000,
-    order: 0,
-    capabilities: {
-      text: true,
-      image: true,
-      audio: true,
-      video: true,
-      webSearch: false,
-      pdf: true,
-      imageGeneration: false,
-    },
-  })
-
-  await createAiAgent({
-    name: "deepSeek",
-    displayName: "DeepSeek V3",
-    version: "3.0.0",
-    apiURL: "https://api.deepseek.com/v1",
-    description: "Fast, accurate, and privacy-focused AI assistant.",
-    state: "active",
-    creditCost: 1,
-    authorization: "all",
-    modelId: "deepseek-chat",
-    maxPromptSize: 128000,
-    order: 4,
-    capabilities: {
-      text: true,
-      image: false,
-      audio: false,
-      video: false,
-      webSearch: false,
-      pdf: true,
-      imageGeneration: false,
-    },
-  })
-
-  const sushiAgent = await createAiAgent({
-    name: "sushi",
-    displayName: "Sushi 1.0",
-    version: "1.0.0",
-    apiURL: "https://api.deepseek.com/v1",
-    description:
-      "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Use palette icon for image generation.",
-    state: "active",
-    creditCost: 2,
-    authorization: "all",
-    modelId: "deepseek-reasoner", // Advanced reasoning model with visible thinking
-    maxPromptSize: 128000,
-    order: 5,
-    capabilities: {
-      text: true,
-      image: true,
-      audio: true,
-      video: true,
-      webSearch: false,
-      pdf: true,
-      imageGeneration: true, // Available via UI palette icon
-    },
-  })
-
-  await createAiAgent({
-    name: "gemini",
-    displayName: "Gemini 2.5 Pro",
-    version: "2.5",
-    apiURL:
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent",
-    state: "active",
-    description: "Fast, efficient, and great for quick answers.",
-    creditCost: 2,
-    authorization: "all",
-    modelId: "gemini-2.5-pro",
-    maxPromptSize: 1000000,
-    order: 2,
-    capabilities: {
-      text: true,
-      image: true,
-      audio: true,
-      video: true,
-      webSearch: false,
-      pdf: true,
-      imageGeneration: false,
-    },
-  })
-
-  await createAiAgent({
-    name: "perplexity",
-    displayName: "Perplexity Sonar",
-    version: "1.1",
-    apiURL: "https://api.perplexity.ai/chat/completions",
-    state: "active",
-    description: "Real-time web search with citations.",
-    creditCost: 3, // Lower cost than sonar-pro
-    authorization: "all",
-    modelId: "sonar-pro", // keep 'sonar-pro' if you want the best quality
-    maxPromptSize: 28000,
-    order: 3,
-    capabilities: {
-      text: true,
-      image: false,
-      audio: false,
-      video: false,
-      webSearch: true,
-      pdf: false,
-      imageGeneration: false,
-    },
-  })
-
-  await createAiAgent({
-    name: "flux",
-    displayName: "Flux Schnell",
-    version: "1.0",
-    apiURL: "https://api.replicate.com/v1/predictions",
-    state: "active",
-    description: "Create stunning visuals from text prompts.",
-    creditCost: 2, // Hybrid DeepSeek + Flux Schnell
-    authorization: "all",
-    modelId: "black-forest-labs/flux-schnell",
-    order: 5,
-    maxPromptSize: 4000,
-    capabilities: {
-      text: false,
-      image: false,
-      audio: false,
-      video: false,
-      webSearch: false,
-      pdf: false,
-      imageGeneration: true,
-    },
-  })
+  const { sushiAgent } = await createAgents()
 
   if (!sushiAgent) throw new Error("Failed to add agent")
 
