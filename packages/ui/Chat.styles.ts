@@ -168,7 +168,7 @@ export const ChatStyleDefs = {
   },
   brandHelp: {
     textAlign: "center",
-    fontSize: 18,
+    fontSize: 17,
     lineHeight: 1.2,
     display: "flex",
     alignItems: "center",

@@ -329,9 +329,13 @@ export async function upload({
         "❌ UploadThing error details:",
         JSON.stringify(uploadResult?.[0]?.error, null, 2),
       )
-      throw new Error(
-        `UploadThing upload failed: ${uploadResult?.[0]?.error?.message || "No result returned"}`,
-      )
+
+      return {
+        url: "",
+        width: undefined,
+        height: undefined,
+        title: undefined,
+      }
     }
 
     // UploadThing returns the URL in the data object
@@ -348,7 +352,12 @@ export async function upload({
   } catch (error) {
     captureException(error)
     console.error("❌ Failed to upload file:", error)
-    throw error
+    return {
+      url: "",
+      width: undefined,
+      height: undefined,
+      title: undefined,
+    }
   }
 }
 
