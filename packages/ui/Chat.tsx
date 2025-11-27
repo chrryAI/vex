@@ -227,7 +227,7 @@ export default function Chat({
     setDebateAgent,
     isDebating,
     setIsDebating,
-    setIsChatFloating,
+    setIsChatFloating: setIsChatFloatingContext,
     setIsWebSearchEnabled: setWebSearchEnabledInternal,
     isWebSearchEnabled,
     setInput: setInputInternal,
@@ -248,7 +248,7 @@ export default function Chat({
     setIsImageGenerationEnabled,
     setShouldFocus,
     shouldFocus,
-    isChatFloating: isChatFloatingInternal,
+    isChatFloating: isChatFloatingContext,
   } = useChat()
 
   const {
@@ -391,20 +391,15 @@ export default function Chat({
   const shouldUseCompactMode = compactMode || hasBottomOffset
   // || windowHeight < 600 // Not at bottom or mobile
 
-  const isChatFloating =
-    isChatFloatingInternal || shouldUseCompactMode || (!empty && !showChatInput)
+  const floatingInitial =
+    (isChatFloatingContext || shouldUseCompactMode) && !empty && !showChatInput
+
+  const [isChatFloating, setIsChatFloatingState] = useState(floatingInitial)
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
-      console.log(" Chat floating state", {
-        isChatFloating,
-        empty,
-        showChatInput,
-        shouldUseCompactMode,
-      })
-    }
-    setIsChatFloating(isChatFloating)
-  }, [isChatFloating])
+    setIsChatFloatingContext(floatingInitial)
+    setIsChatFloatingState(floatingInitial)
+  }, [floatingInitial])
 
   // Strip ACTION JSON sfrom streaming text
   const stripActionFromText = (text: string): string => {

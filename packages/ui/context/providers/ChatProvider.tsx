@@ -711,6 +711,7 @@ export function ChatProvider({
     if (id) {
       setThreadId(id)
       setShouldFetchThread(true)
+    } else {
       setIsChatFloating(false)
     }
   }, [pathname])
