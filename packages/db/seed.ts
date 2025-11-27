@@ -457,8 +457,8 @@ const create = async () => {
     ]
 
     // --- JSON-like structure for multi-turn threads ---
-    const THREAD_COUNT = foo ? 10 : 20
-    const MESSAGES_PER_THREAD = 50
+    const THREAD_COUNT = foo ? 2 : 20
+    const MESSAGES_PER_THREAD = foo ? 2 : 50
     const threadsData = Array.from({ length: THREAD_COUNT }).map((_, t) => {
       const usedIndexes = new Set<number>()
       const messages: { role: "user" | "ai"; content: string }[] = []
