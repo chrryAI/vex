@@ -166,23 +166,18 @@ export const MessageStyleDefs = {
     justifyContent: "center",
   },
   downloadButton: {
-    base: {
-      position: "absolute",
-      top: 8,
-      right: 8,
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
-      border: "none",
-      borderRadius: 6,
-      color: "white",
-      padding: 6,
-      opacity: 1,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    hover: {
-      backgroundColor: "rgba(0, 0, 0, 0.9)",
-    },
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    border: "none",
+    borderRadius: 6,
+    color: "white",
+    padding: 6,
+    opacity: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   placeholder: {
     borderRadius: 13,
@@ -332,99 +327,18 @@ export const MessageStyleDefs = {
 } as const
 
 import { createUnifiedStyles } from "./styles/createUnifiedStyles"
-import { useInteractiveStyles } from "./styles/useInteractiveStyles"
+import { createStyleHook } from "./styles/createStyleHook"
 
 export const MessageStyles = createUnifiedStyles(MessageStyleDefs)
 
-// ---- Stronger types for style defs and hook results ----
-
-// A minimal shape for a style object. You can expand this later to be more specific
-// (e.g., union of CSS properties used across web/native).
-type StyleObject = {
-  [key: string]: string | number | boolean | StyleObject | undefined
-}
-
-// Interactive (hover/focus/etc.) style definition
-type InteractiveStyleDef = {
-  base: StyleObject
-  hover?: StyleObject
-  active?: StyleObject
-  focus?: StyleObject
-  disabled?: StyleObject
-}
-
-// Static style definition is simply a style object
-type StaticStyleDef = StyleObject
-
-// explicit static result shape for non-interactive classes
-type StaticStyleResult = {
-  style: StaticStyleDef
-  handlers: Record<string, never>
-  state: { isHovered: false; isPressed: false; isFocused: false }
-}
-
-// interactive style hook result (keeps your existing hook return type)
-type InteractiveStyleResult = ReturnType<typeof useInteractiveStyles>
-
-// Create a discriminated mapped type so each key gets the right result type
-export type MessageStylesHook = {
-  [K in keyof typeof MessageStyleDefs]: (typeof MessageStyleDefs)[K] extends {
-    base: any
+// Type for the hook return value
+type MessageStylesHook = {
+  [K in keyof typeof MessageStyleDefs]: {
+    className?: string
+    style?: Record<string, any>
   }
-    ? InteractiveStyleResult
-    : StaticStyleResult
 }
 
-// Type guard to narrow a StyleDef to InteractiveStyleDef without using any casts
-function isInteractiveStyleDef(def: unknown): def is InteractiveStyleDef {
-  return (
-    typeof def === "object" &&
-    def !== null &&
-    Object.prototype.hasOwnProperty.call(def, "base")
-  )
-}
-
-// Create interactive style hooks (safe - calls hooks deterministically)
-export const useMessageStyles = (): MessageStylesHook => {
-  // Call all hooks upfront in a stable order (Rules of Hooks compliant)
-  const styleResults: Partial<Record<keyof typeof MessageStyleDefs, any>> = {}
-
-  // Use Object.keys to ensure consistent iteration order across environments
-  const keys = Object.keys(MessageStyleDefs) as Array<
-    keyof typeof MessageStyleDefs
-  >
-
-  for (const className of keys) {
-    const styleDef = MessageStyleDefs[className]
-
-    if (isInteractiveStyleDef(styleDef)) {
-      // styleDef is narrowed to InteractiveStyleDef here (no any cast needed)
-      const {
-        base = {},
-        hover = {},
-        active = {},
-        focus = {},
-        disabled = {},
-      } = styleDef
-
-      // Call useInteractiveStyles for interactive styles
-      styleResults[className] = useInteractiveStyles({
-        baseStyle: base,
-        hoverStyle: hover,
-        activeStyle: active,
-        focusStyle: focus,
-        disabledStyle: disabled,
-      })
-    } else {
-      // Static styles - no hook needed
-      // styleDef is narrowed to StaticStyleDef here
-      styleResults[className] = {
-        style: styleDef as StaticStyleDef,
-        handlers: {},
-        state: { isHovered: false, isPressed: false, isFocused: false },
-      }
-    }
-  }
-
-  return styleResults as MessageStylesHook
-}
+// Create the style hook using the factory
+export const useMessageStyles =
+  createStyleHook<MessageStylesHook>(MessageStyles)

@@ -3397,16 +3397,15 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
           debateAgentId,
           pauseDebate,
           webSearchResult: message.message.webSearchResult,
-          images:
-            agent?.name === "flux"
-              ? [
-                  {
-                    url: "https://3cgunoyddd.ufs.sh/f/MwscKX46dv5bvbXGhy8iLAyQ5oWlezrwqhECfbKvk8PJmgZN",
-                    prompt: "test",
-                    id: uuidv4(),
-                  },
-                ]
-              : undefined,
+          images: imageGenerationEnabled
+            ? [
+                {
+                  url: "https://3cgunoyddd.ufs.sh/f/MwscKX46dv5bvbXGhy8iLAyQ5oWlezrwqhECfbKvk8PJmgZN",
+                  prompt: "test",
+                  id: uuidv4(),
+                },
+              ]
+            : undefined,
         })
 
         console.timeEnd("messageProcessing")

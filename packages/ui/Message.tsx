@@ -39,7 +39,7 @@ import ConfirmButton from "./ConfirmButton"
 
 import { Check, Copy } from "./icons"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { updateMessage, updateThread } from "./lib"
 import toast from "react-hot-toast"
 import Img from "./Image"
@@ -115,6 +115,16 @@ export default function Message({
       (u.userId && u.userId === message.user?.id) ||
       (u.guestId && u.guestId === message.guest?.id),
   )
+
+  const agentImageLoader = useCallback(() => {
+    return (
+      <Div style={styles.agentMessageImages.style}>
+        <Div style={agentImageStyle}>
+          <Img logo="blossom" size={30} />
+        </Div>
+      </Div>
+    )
+  }, [])
 
   const [isAppSelectOpen, setIsAppSelectOpen] = useState(false)
   const [isUpdatingApp, setIsUpdatingApp] = useState(false)
@@ -310,6 +320,7 @@ export default function Message({
     ...styles.agentMessageImageContainer.style,
     width: isMobileDevice ? "100%" : "300px",
     height: isMobileDevice ? "100%" : "300px",
+    display: "inline-flex",
   }
   useWebSocket<{
     type: string
@@ -1091,11 +1102,7 @@ export default function Message({
             <Div style={styles.agentMessageContent.style}>
               {message.message.isStreaming &&
               message.message.isImageGenerationEnabled ? (
-                <Div style={styles.agentMessageImages.style}>
-                  <Div style={styles.placeholder.style}>
-                    <Loading />
-                  </Div>
-                </Div>
+                agentImageLoader()
               ) : message.message.images &&
                 message.message.images?.length > 0 ? (
                 <Div style={styles.agentMessageImages.style}>
