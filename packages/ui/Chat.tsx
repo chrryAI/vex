@@ -470,7 +470,7 @@ export default function Chat({
     // Get agent-specific limits
     const agentLimits =
       MAX_FILE_SIZES[selectedAgent.name as keyof typeof MAX_FILE_SIZES] ||
-      MAX_FILE_SIZES.deepSeek
+      MAX_FILE_SIZES.sushi
 
     // Calculate maximum total size from agent's individual file limits
     const MAX_TOTAL_FILE_SIZE =
@@ -1003,7 +1003,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       }
     }
 
-    setFiles((prev) => [...prev, ...validFiles].slice(0, 3))
+    setFiles((prev) => [...prev, ...validFiles].slice(0, MAX_FILES))
 
     if (validFiles.length > 0) {
       toast.success(`${validFiles.length} file(s) selected`)
