@@ -25,9 +25,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if account has calendar scope
-    const hasCalendarScope = account.scope?.includes(
-      "https://www.googleapis.com/auth/calendar",
-    )
+    const hasCalendarScope = account.scope
+      ?.split(/\s+/)
+      .includes("https://www.googleapis.com/auth/calendar")
 
     return NextResponse.json({
       connected: true,
