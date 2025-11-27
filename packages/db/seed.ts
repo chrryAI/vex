@@ -408,7 +408,7 @@ const create = async () => {
 
   for (const adminUser of [admin]) {
     const foo = process.env.TESTING_ENV === "e2e"
-    if (foo) return
+    // if (foo) return
 
     // Pool of user prompts and AI responses
     const prompts = [
@@ -457,7 +457,7 @@ const create = async () => {
     ]
 
     // --- JSON-like structure for multi-turn threads ---
-    const THREAD_COUNT = 50
+    const THREAD_COUNT = foo ? 10 : 20
     const MESSAGES_PER_THREAD = 50
     const threadsData = Array.from({ length: THREAD_COUNT }).map((_, t) => {
       const usedIndexes = new Set<number>()

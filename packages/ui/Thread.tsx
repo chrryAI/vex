@@ -769,17 +769,8 @@ const Thread = ({
                       user?: user
                       guest?: guest
                       aiAgent?: aiAgent
-                      thread?: thread & {
-                        likeCount: number
-                        collaborations?: {
-                          collaboration: collaboration
-                          user: user
-                        }[]
-                      }
+                      thread?: thread
                     }) => {
-                      console.log("🤖 onStreamingComplete", {
-                        message,
-                      })
                       if (!message?.aiAgent?.id && !message?.message.agentId)
                         return
 
@@ -797,6 +788,7 @@ const Thread = ({
                                 : selectedAgent?.creditCost || 1),
                           )
                       }
+
                       track({
                         name: "thread-message-agent",
                         props: {
@@ -812,11 +804,15 @@ const Thread = ({
                           ...message.thread,
                         })
 
+                      console.log("🤖 onStreamingComplete", {
+                        message,
+                      })
+
                       // Mark last AI message as not streaming
                       message &&
                         setMessages((prev) =>
                           prev.map((m, i) => {
-                            if (m.message.id === message.message.id) {
+                            if (m.message.id === message.message.clientId) {
                               if (m.message.isStreamingStop) {
                                 return {
                                   ...m,

@@ -92,9 +92,9 @@ export default function Message({
 
   const styles = useMessageStyles()
 
-  const { isAccountVisible, setIsAccountVisible } = useNavigationContext()
-  const { refetchThread, messages } = useChat()
-  const { router, addParams } = useNavigationContext()
+  const { setIsAccountVisible } = useNavigationContext()
+  const { refetchThread } = useChat()
+  const { addParams } = useNavigationContext()
 
   const { slug, apps, app } = useApp()
 
@@ -104,8 +104,10 @@ export default function Message({
 
   const ownerId = user?.id || guest?.id
 
+  const threadId = message.message.threadId
+
   const { typingUsers, onlineUsers } = useThreadPresence({
-    threadId: message.message.threadId,
+    threadId,
   })
 
   const isTyping = typingUsers.some(
@@ -140,14 +142,14 @@ export default function Message({
   const [speech, setSpeech] = useState<HTMLAudioElement | null>(null)
 
   const handleUpdateAgent = async (app?: app) => {
-    if (!token) return
+    if (!token || !threadId) return
     addHapticFeedback()
     setIsAppSelectOpen(false)
     setIsUpdatingApp(true)
 
     try {
       const result = await updateThread({
-        id: message.message.threadId,
+        id: threadId,
         appId: app ? app.id : null,
         token,
       })
@@ -545,19 +547,31 @@ export default function Message({
       !canDelete ||
       remoteDeleted ||
       message.message.isStreamingStop ||
-      !message.message.threadId
+      !threadId
     ) {
-      return null
+      return (
+        <>
+          {canDelete && "canDelete"}
+
+          {remoteDeleted && "remoteDeleted"}
+          {message.message.isStreamingStop && "isStreamingStop"}
+          {!message.message.threadId && "noThreadId"}
+        </>
+      )
     }
 
     const messageId = message.message.id
 
-    if (message.message.isStreaming || !token) return null
+    if (message.message.isStreamingStop || !token)
+      return (
+        <>{message.message.isStreamingStop ? "isStreamingStop" : "no token"}</>
+      )
 
     return (
       <ConfirmButton
         processing={isDeleting}
         data-testid="delete-message"
+        className="link"
         style={utilities.link.style}
         onConfirm={async function () {
           setIsDeleting(true)
@@ -1213,13 +1227,10 @@ export default function Message({
                 onClick={() => {
                   addHapticFeedback()
                   if (requiresLogin) {
-                    router.push(
-                      `/threads/${message.message.threadId}?signIn=register`,
-                    )
+                    addParams({ subscribe: "true", plan: "member" })
                   } else if (requiresSubscription) {
-                    router.push(
-                      `/threads/${message.message.threadId}?subscribe=true`,
-                    )
+                    addParams({ subscribe: "true", plan: "plus" })
+                  } else if (message.message.isStreaming) {
                   } else {
                     playAIResponseWithTTS(
                       stripMarkdown(message.message.content),

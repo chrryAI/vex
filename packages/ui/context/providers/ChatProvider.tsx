@@ -1013,15 +1013,15 @@ export function ChatProvider({
     debateAgent && !user && guest && setDebateAgent(null)
   }, [user, guest, debateAgent])
 
-  useEffect(() => {
-    if (hitHourlyLimit) {
-      toast.error(
-        t("You hit your hourly limit {{hourlyLimit}}", {
-          hourlyLimit,
-        }),
-      )
-    }
-  }, [hitHourlyLimit])
+  // useEffect(() => {
+  //   if (hitHourlyLimit) {
+  //     toast.error(
+  //       t("You hit your hourly limit {{hourlyLimit}}", {
+  //         hourlyLimit,
+  //       }),
+  //     )
+  //   }
+  // }, [hitHourlyLimit])
 
   const [nextPage, setNextPage] = useState<number | undefined>(undefined)
 

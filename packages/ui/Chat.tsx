@@ -1593,6 +1593,16 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
       return
     }
+
+    if (hitHourlyLimit) {
+      toast.error(
+        t("You hit your hourly limit {{hourlyLimit}}", {
+          hourlyLimit,
+        }),
+      )
+
+      return
+    }
     if (!isPrivacyApproved && !approve) {
       setNeedsReview(true)
       return
@@ -2634,12 +2644,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   const getIsSendDisabled = () =>
     (inputRef.current.trim() === "" && files.length === 0) ||
     isLoading ||
-    hitHourlyLimit ||
     creditsLeft === 0 ||
     disabled
 
-  const isVoiceDisabled =
-    isLoading || hitHourlyLimit || creditsLeft === 0 || disabled
+  const isVoiceDisabled = isLoading || creditsLeft === 0 || disabled
 
   const [speechSupported, setSpeechSupported] = useState(false)
 
@@ -2860,6 +2868,15 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       plan: "member",
                     })
 
+                    return
+                  }
+
+                  if (hitHourlyLimit) {
+                    toast.error(
+                      t("You hit your hourly limit {{hourlyLimit}}", {
+                        hourlyLimit,
+                      }),
+                    )
                     return
                   }
                   if (!isPrivacyApproved) {
@@ -3643,18 +3660,20 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 !showQuotaInfo &&
                 selectedAgent !== null && (
                   <Div style={styles.content.style}>
-                    {hitHourlyLimit ||
-                    isChatFloating ||
-                    exceededInitial ? null : showGreeting &&
+                    {isChatFloating || exceededInitial ? null : showGreeting &&
                       files.length === 0 ? (
                       <H2 style={styles.brandHelp.style}>
                         {isIncognito ? <HatGlasses size={24} /> : ""}
                         <Span>
                           👋{" "}
                           {t(
-                            language === "fr"
-                              ? "What can I help with?"
-                              : "What's on your mind?",
+                            hitHourlyLimit
+                              ? t("You hit your hourly limit {{hourlyLimit}}", {
+                                  hourlyLimit,
+                                })
+                              : language === "fr"
+                                ? "What can I help with?"
+                                : "What's on your mind?",
                           )}
                         </Span>
                       </H2>

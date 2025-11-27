@@ -24,7 +24,7 @@ export interface PresenceData {
   userImage?: string
 }
 
-export function useThreadPresence({ threadId }: { threadId: string }) {
+export function useThreadPresence({ threadId }: { threadId?: string }) {
   const [participants, setParticipants] = useState<
     Record<string, ThreadParticipant>
   >({})
@@ -120,12 +120,13 @@ export function useThreadPresence({ threadId }: { threadId: string }) {
     onlineUsers,
     typingUsers,
     notifyTyping: (isTyping: boolean) => {
-      notifyTyping?.({
-        threadId,
-        isTyping,
-        userId: currentUserId,
-        guestId: currentGuestId,
-      })
+      threadId &&
+        notifyTyping?.({
+          threadId,
+          isTyping,
+          userId: currentUserId,
+          guestId: currentGuestId,
+        })
     },
   }
 }
