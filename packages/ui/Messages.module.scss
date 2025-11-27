@@ -26,6 +26,7 @@
   display: flex;
   justify-content: center;
   margin-bottom: toRem.toRem(10);
+  color: var(--shade-6);
 }
 
 .characterProfileContainer {
@@ -34,7 +35,8 @@
   align-items: center;
   margin-top: toRem.toRem(25);
   gap: toRem.toRem(10);
-  flex-direction: column;
+  color: var(--shade-6);
+  flex-wrap: wrap;
 }
 
 .loading {
@@ -50,10 +52,6 @@
   display: flex;
   justify-content: center;
   margin: toRem.toRem(25) 0;
-
-  &:empty {
-    display: none;
-  }
 }
 
 .enabledCharacterProfiles {

@@ -375,7 +375,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.4.85"
+export const VERSION = config.version || "1.4.86"
 export type instructionBase = {
   id: string
   title: string
@@ -489,7 +489,8 @@ export function checkThreadSummaryLimit({
   threadId?: string
   thread: thread & { summary?: threadSummary }
 }): boolean {
-  if (!user && !guest) return false
+  if (!user?.characterProfilesEnabled && !guest?.characterProfilesEnabled)
+    return false
 
   const summary = thread.summary
 
@@ -630,7 +631,7 @@ export const MAX_FILE_SIZES = {
     image: 500 * 1024 * 1024, // 500MB - Gemini Pro 2.5 multimodal capabilities
     audio: 500 * 1024 * 1024, // 500MB - Gemini Pro 2.5 audio processing
     video: 1000 * 1024 * 1024, // 1GB - Gemini Pro 2.5 video analysis (within 2GB limit)
-    text: 300 * 1024 * 1024, // 300MB - Gemini Pro 2.5 text processing
+    text: 500 * 1024 * 1024, // 300MB - Gemini Pro 2.5 text processing
   },
 }
 

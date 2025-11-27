@@ -924,7 +924,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
     if (fileType.startsWith("application/pdf")) return agentLimits.pdf
 
-    return 0
+    return agentLimits.text
   }
   const setIsAttaching = (attaching: boolean) => {
     if (attaching) {
@@ -1950,15 +1950,20 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
             .get("content-type")
             ?.includes("application/json")
         ) {
-          const result = await agentResponse.json()
-          if (result.error) {
-            // Show detailed error message for oversized requests
-            if (agentResponse.status === 413 && result.message) {
-              toast.error(result.message)
-            } else {
-              toast.error(result.error)
+          try {
+            const result = await agentResponse.json()
+            if (result.error) {
+              // Show detailed error message for oversized requests
+              if (agentResponse.status === 413 && result.message) {
+                toast.error(result.message)
+              } else {
+                toast.error(result.error)
+              }
+              return
             }
-            return
+          } catch (error) {
+            console.error("Failed to parse JSON response", error)
+            toast.error("Failed to send message")
           }
         }
 

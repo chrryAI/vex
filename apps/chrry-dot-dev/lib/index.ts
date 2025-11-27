@@ -194,7 +194,8 @@ export function checkThreadSummaryLimit({
   threadId?: string
   thread: thread & { summary?: threadSummary }
 }): boolean {
-  if (!user && !guest) return false
+  if (!user?.characterProfilesEnabled && !guest?.characterProfilesEnabled)
+    return false
 
   const summary = thread.summary
 
