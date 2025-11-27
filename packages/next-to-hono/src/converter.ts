@@ -87,8 +87,8 @@ export function parseNextJSRoute(
       const routePath = filePath
         .replace(basePath, "")
         .replace(/\/route\.(ts|tsx|js|jsx)$/, "")
-        .replace(/\[\.\.\.([^\]]+)\]/g, ":$1*") // [...slug] → :slug*
-        .replace(/\[([^\]]+)\]/g, ":$1") // [id] → :id
+        .replace(/\[\.\.\.(\w+)\]/g, ":$1*") // [...slug] → :slug*
+        .replace(/\[(\w+)\]/g, ":$1") // [id] → :id
         .replace(/^\/?/, "/") // Ensure leading slash
 
       // Analyze complexity
