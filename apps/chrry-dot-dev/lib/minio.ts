@@ -411,5 +411,6 @@ export async function deleteFile(
     )
   } catch (err) {
     captureException(err)
+    console.error("❌ Failed to delete file:", err)
   }
 }
