@@ -1447,7 +1447,7 @@ ${focusTimer.isCountingDown ? "⏱️ **TIMER IS ACTIVE** - User is currently in
 ${
   member?.characterProfilesEnabled || guest?.characterProfilesEnabled
     ? "✅ User has enabled character profiles - you CAN create moods using the createMood tool"
-    : "⚠️ User has NOT enabled character profiles - you MUST ask for permission before logging moods. Explain that enabling character profiles allows mood tracking for better wellness insights."
+    : "⚠️ User has NOT enabled character profiles - you MUST ask for permission before logging moods. Tell them to enable it via: 1) The sparkles icon ✨ in the header (top right), or 2) The settings at the bottom of the thread (top of chat box). Explain that enabling character profiles allows mood tracking for better wellness insights."
 }
 
 **Examples:**
