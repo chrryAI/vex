@@ -39,7 +39,6 @@ import { getFeatures } from "./utils/subscription"
 import A from "./A"
 import { useSubscribeStyles } from "./Subscribe.styles"
 import { useStyles } from "./context/StylesContext"
-import { useLocalStorage } from "usehooks-ts"
 
 export default function Subscribe({
   customerEmail,
@@ -115,9 +114,9 @@ export default function Subscribe({
 
   const [part, setPart] = useState<"subscription" | "gift">("subscription")
 
-  const [purchaseType, setPurchaseType] = useLocalStorage<
-    "subscription" | "gift"
-  >("purchaseType", "subscription")
+  const [purchaseType, setPurchaseType] = useState<"subscription" | "gift">(
+    "subscription",
+  )
 
   const handleCheckout = async (part: "subscription" | "gift") => {
     setPart(part)
