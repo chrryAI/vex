@@ -10,13 +10,7 @@ export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
 }
 
-import {
-  BrowserInstance,
-  checkIsExtension,
-  getRedirectURL,
-  // isCI,
-  // isE2E,
-} from "./utils"
+import { BrowserInstance, checkIsExtension, getRedirectURL } from "./utils"
 import toast from "react-hot-toast"
 import Account from "./Account"
 import { useAppContext } from "./context/AppContext"
@@ -28,10 +22,7 @@ import {
   useError,
   useNavigationContext,
 } from "./context/providers"
-import { Button, usePlatform } from "./platform"
-import { getSiteConfig } from "./utils/siteConfig"
-// import { clearCache } from "./lib/db"
-import { useSWRConfig } from "swr"
+import { Button } from "./platform"
 import useCache from "./hooks/useCache"
 
 export default function SignIn({
