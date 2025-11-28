@@ -249,7 +249,10 @@ export function ChatProvider({
   } = useSWR(
     shouldFetchThreads ? ["contextThreads", thread?.id, app?.id, token] : null,
     async () => {
-      const key = `threads-${app?.id}-${user?.id || guest?.id}`
+      console.log(
+        `🚀 ~ file: ChatProvider.tsx:251 ~ shouldFetchThreads:`,
+        shouldFetchThreads,
+      )
       try {
         const threads = await actions.getThreads({
           onError: (status) => {
@@ -290,6 +293,8 @@ export function ChatProvider({
     },
   )
 
+  console.log(`🚀 ~ file: ChatProvider.tsx:246 ~ threadsData:`, threadsData)
+
   const [isLoadingThreads, setIsLoadingThreads] = useState(true)
 
   useEffect(() => {
@@ -305,6 +310,9 @@ export function ChatProvider({
     threads: [],
     totalCount: 0,
   })
+
+  console.log(`🚀 ~ file: ChatProvider.tsx:307 ~ threads:`, threads)
+  console.log(`🚀 ~ file: ChatProvider.tsx:321 ~ threadsData:`, threadsData)
 
   const [activeCollaborationThreadsCount, setActiveCollaborationThreadsCount] =
     useState<number>(0)
