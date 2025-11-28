@@ -154,7 +154,10 @@ export default function AppProviders({
                       <NavigationProvider>
                         <AppContextProvider>
                           <StylesProvider>
-                            <Hey useExtensionIcon={useExtensionIcon}>
+                            <Hey
+                              cacheReady={cacheReady}
+                              useExtensionIcon={useExtensionIcon}
+                            >
                               {children}
                             </Hey>
                           </StylesProvider>

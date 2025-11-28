@@ -5,9 +5,7 @@ import {
   lazy,
   memo,
   Suspense,
-  useCallback,
   useEffect,
-  useMemo,
   useState,
 } from "react"
 import Img from "./Image"
@@ -55,10 +53,12 @@ export const Hey = memo(
     className,
     children,
     useExtensionIcon,
+    cacheReady,
   }: {
     className?: string
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
+    cacheReady?: boolean
   }) {
     const { isHome, pathname, router } = useNavigationContext()
 
@@ -173,7 +173,7 @@ export const Hey = memo(
           }}
         >
           <Img
-            onLoad={() => {
+            onLoad={(src) => {
               setIsImageLoaded(true)
             }}
             app={isChrry ? undefined : app}
@@ -185,7 +185,7 @@ export const Hey = memo(
       )
     }
     // Memoize splash component to prevent re-renders
-    const splash = useMemo(() => getSplash(isSplash), [isSplash])
+    const splash = !cacheReady ? getSplash(isSplash) : null
 
     useEffect(() => {
       isSplash &&
