@@ -32,9 +32,7 @@ export async function POST() {
     }
   }
 
-  await cleanupTest({
-    fingerprint: fp,
-  })
+  await cleanupTest()
 
   return NextResponse.json({ success: true })
 }

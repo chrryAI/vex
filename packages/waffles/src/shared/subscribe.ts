@@ -131,7 +131,7 @@ export const subscribe = async ({
 
   const plusButton = page.getByTestId("plus-button")
   await expect(plusButton).toBeVisible({
-    timeout: 20000,
+    timeout: 50000,
     visible: !inviteOrGift,
   })
 

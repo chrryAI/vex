@@ -19,8 +19,19 @@ import {
 export default async function cleanupTest({
   fingerprint,
 }: {
-  fingerprint: string
-}) {
+  fingerprint?: string
+} = {}) {
+  if (!fingerprint) {
+    for (const fp of TEST_MEMBER_FINGERPRINTS) {
+      await cleanupTest({ fingerprint: fp })
+    }
+
+    for (const fp of TEST_GUEST_FINGERPRINTS) {
+      await cleanupTest({ fingerprint: fp })
+    }
+
+    return
+  }
   const testMember =
     fingerprint && TEST_MEMBER_FINGERPRINTS.includes(fingerprint)
       ? await getUser({

@@ -103,11 +103,6 @@ export default function Menu({
     colors,
   } = useTheme()
 
-  const [previousThreads, setPreviousThreads] = useState<typeof threads>({
-    threads: [],
-    totalCount: 0,
-  })
-
   const toggleMenu = () => {
     addHapticFeedback()
     track({
@@ -219,21 +214,6 @@ export default function Menu({
       setLastStarredId(null) // reset after scrolling
     }
   }, [threads, lastStarredId])
-
-  useEffect(() => {
-    setPreviousThreads(threads)
-
-    if (threads?.threads?.length === 0) return
-
-    const areEqual =
-      previousThreads.threads.length === threads.threads.length &&
-      previousThreads.threads.every(
-        (prev, i) =>
-          prev.id === threads.threads[i]?.id &&
-          prev.bookmarks?.length === threads.threads[i]?.bookmarks?.length,
-      )
-    // Removed animateThreads call as Moti handles animation
-  }, [threads])
 
   return (
     <>
