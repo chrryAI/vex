@@ -4548,8 +4548,8 @@ export const getApp = async ({
   // Use shared cache key for public apps if user doesn't own any apps
   // Otherwise use user-specific key (they might have user-specific data like placeholders)
   const cacheKey = isAppOwner
-    ? `app:${id || slug || name}:user:${userId}:guest:${guestId}:store:${storeId || "none"}:storeDomain:${storeDomain || "none"}:depth:${depth}`
-    : `app:${id || slug || name}:public:store:${storeId || "none"}:storeDomain:${storeDomain || "none"}:depth:${depth}`
+    ? `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}`
+    : `app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}`
 
   // Try cache first
   const cached = await getCache<appWithStore>(cacheKey)
