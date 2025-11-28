@@ -43,6 +43,7 @@ export const ThreadStyleDefs = {
     display: "flex",
     flexDirection: "column",
     gap: 10,
+    marginBottom: 5,
   },
   header: {
     display: "flex",
