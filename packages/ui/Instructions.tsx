@@ -1411,10 +1411,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             }}
           >
             {instructions
-              .slice(
-                0,
-                isMemoryConsentManageVisible ? 3 : visibleInstructionCount,
-              )
+              .slice(0, visibleInstructionCount)
               .map((instruction, index) => {
                 return (
                   <MotiView
