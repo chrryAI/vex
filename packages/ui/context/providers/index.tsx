@@ -14,7 +14,7 @@ export { AppProvider, useApp } from "./AppProvider"
 export { PlatformProvider } from "../../platform"
 
 // Composition root - combines all providers
-import React, { ReactNode, useState } from "react"
+import React, { ReactNode, useState, useEffect } from "react"
 import { PlatformProvider, Span } from "../../platform"
 import { ThemeProvider } from "../ThemeContext"
 import { StylesProvider } from "../StylesContext"
@@ -81,11 +81,18 @@ export default function AppProviders({
 }: AppProvidersProps) {
   const [error, setError] = useState("")
   const cacheProvider = useSWRCacheProvider()
+  const [cacheReady, setCacheReady] = useState(false)
+
+  // Track when cache provider is ready
+  useEffect(() => {
+    if (cacheProvider && !cacheReady) {
+      setCacheReady(true)
+    }
+  }, [cacheProvider, cacheReady])
 
   // Global SWR configuration with 429 error handling and persistent cache
   const swrConfig = {
-    // Use persistent cache provider when ready (IndexedDB on web, MMKV on native)
-    // If not ready yet, SWR uses its default in-memory cache
+    // Use persistent cache provider (IndexedDB on web, MMKV on native)
     ...(cacheProvider ? { provider: cacheProvider } : {}),
     // Pre-populate cache with SSR session data
     fallback: session ? { session: { data: session } } : {},
@@ -121,7 +128,7 @@ export default function AppProviders({
   }
 
   return (
-    <SWRConfig value={swrConfig}>
+    <SWRConfig key={cacheReady ? "persistent" : "memory"} value={swrConfig}>
       <PlatformProvider
         viewPortWidth={viewPortWidth}
         viewPortHeight={viewPortHeight}
