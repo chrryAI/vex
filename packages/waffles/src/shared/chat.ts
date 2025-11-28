@@ -52,8 +52,10 @@ export const chat = async ({
   isLiveTest = false,
   threadId,
   creditsConsumed = 0,
+  messagesConsumed = 0,
   bookmark = true,
 }: {
+  messagesConsumed?: number
   isSubscriber?: boolean
   artifacts?: {
     text?: number
@@ -93,13 +95,19 @@ export const chat = async ({
   creditsConsumed?: number
   bookmark?: boolean
 }) => {
-  page.on("console", (msg) => {
-    console.log(`[browser][${msg.type()}] ${msg.text()}`, msg)
-  })
+  let credits = isSubscriber ? 2000 : isMember ? 150 : 30
 
-  if (threadId) {
-    instruction = ""
+  if (creditsConsumed) {
+    credits -= creditsConsumed
   }
+
+  // page.on("console", (msg) => {
+  //   console.log(`[browser][${msg.type()}] ${msg.text()}`, msg)
+  // })
+
+  // if (threadId) {
+  //   instruction = ""
+  // }
 
   const fileExtensions = {
     image: "jpeg",
@@ -137,9 +145,6 @@ export const chat = async ({
     await wait(3000)
   }
 
-  let credits = isSubscriber ? 2000 : (isMember ? 150 : 30) - creditsConsumed
-  let hourlyUsage = creditsConsumed || 0 // Track hourly usage for assertions
-
   const agentModal = page.getByTestId("agent-modal")
   await expect(agentModal).not.toBeVisible()
 
@@ -151,7 +156,7 @@ export const chat = async ({
 
   const addDebateAgentButton = page.getByTestId("add-debate-agent-button")
   await expect(addDebateAgentButton).toBeVisible()
-
+  let hourlyUsage = 0 - messagesConsumed
   const getAgentName = async () => {
     return page
       .getByTestId("agent-select-button")
@@ -677,6 +682,7 @@ export const chat = async ({
     } else {
       hourlyUsage += 1 + (prompt.debateAgent ? 1 : 0)
     }
+
     // Check if delete button exists
     const deleteMessageButton = lastMessage.locator(
       "[data-testid=delete-message]",
@@ -849,6 +855,10 @@ export const chat = async ({
 
       const hourlyUsageLeft = await getHourlyUsageLeft()
       expect(hourlyUsageLeft).toBe((hourlyLimit - hourlyUsage).toString())
+      console.log(`🚀 ~ file: chat.ts:858 ~ hourlyUsage:`, {
+        hourlyUsage,
+        hourlyLimit,
+      })
 
       // Assert appropriate values based on what's visible
 

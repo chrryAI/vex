@@ -170,6 +170,8 @@ export const thread = async ({
     await chat({
       isNewChat: true,
       page,
+      creditsConsumed: 3 * 2,
+      messagesConsumed: 3,
       isMember,
       instruction: "Help me write a short story",
       bookmark,
@@ -192,7 +194,8 @@ export const thread = async ({
 
     await chat({
       isNewChat: false,
-      creditsConsumed: 3,
+      creditsConsumed: 3 * 2 * 2,
+      messagesConsumed: 3 * 2,
       bookmark: false,
       page,
       isMember,

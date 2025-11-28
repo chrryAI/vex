@@ -157,7 +157,7 @@ export const Hey = memo(
 
       const timer = setTimeout(() => {
         setMinSplashTimeElapsed(true)
-      }, 700)
+      }, 1000)
       return () => clearTimeout(timer)
     }, [isImageLoaded])
 
