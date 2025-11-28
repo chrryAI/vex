@@ -287,63 +287,59 @@ const Thread = ({
           },
         }}
       >
-        {!isVisitor && (
+        {!isVisitor && thread && (
           <Div style={styles.headers.style}>
-            {thread && (
-              <>
-                <Div style={styles.header.style}>
-                  <Instructions
-                    onSave={(data) => {
-                      setThread({
-                        ...thread,
-                        instructions: data.content,
-                      })
-                    }}
-                    dataTestId="thread-instruction"
-                    className="small"
-                    thread={thread}
-                  />
-                  <DeleteThread
-                    id={thread.id}
-                    onDelete={() => {
-                      if (threads.threads.length === 1) {
-                        setIsNewChat(true)
-                      } else {
-                        shouldStopAutoScrollRef.current = true
-                        goToThreads()
-                      }
-                    }}
-                  />
-                  <EditThread
-                    thread={thread}
-                    refetch={async () => {
-                      await refetchThreads()
-                    }}
-                    onDelete={() => {
-                      if (threads.threads.length === 1) {
-                        setIsNewChat(true)
-                      } else {
-                        shouldStopAutoScrollRef.current = true
-                        goToThreads()
-                      }
-                    }}
-                  />
+            <Div style={styles.header.style}>
+              <Instructions
+                onSave={(data) => {
+                  setThread({
+                    ...thread,
+                    instructions: data.content,
+                  })
+                }}
+                dataTestId="thread-instruction"
+                className="small"
+                thread={thread}
+              />
+              <DeleteThread
+                id={thread.id}
+                onDelete={() => {
+                  if (threads.threads.length === 1) {
+                    setIsNewChat(true)
+                  } else {
+                    shouldStopAutoScrollRef.current = true
+                    goToThreads()
+                  }
+                }}
+              />
+              <EditThread
+                thread={thread}
+                refetch={async () => {
+                  await refetchThreads()
+                }}
+                onDelete={() => {
+                  if (threads.threads.length === 1) {
+                    setIsNewChat(true)
+                  } else {
+                    shouldStopAutoScrollRef.current = true
+                    goToThreads()
+                  }
+                }}
+              />
 
-                  <Share
-                    dataTestId="thread"
-                    onCollaborationChange={() => {
-                      setCollaborationVersion((v) => v + 1)
-                      refetch()
-                    }}
-                    onChangeVisibility={(visibility) =>
-                      setThread({ ...thread, visibility })
-                    }
-                    size={15}
-                    thread={thread}
-                  />
-                </Div>
-              </>
-            )}
+              <Share
+                dataTestId="thread"
+                onCollaborationChange={() => {
+                  setCollaborationVersion((v) => v + 1)
+                  refetch()
+                }}
+                onChangeVisibility={(visibility) =>
+                  setThread({ ...thread, visibility })
+                }
+                size={15}
+                thread={thread}
+              />
+            </Div>
           </Div>
         )}
 

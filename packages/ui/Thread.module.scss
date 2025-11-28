@@ -64,10 +64,6 @@
 
   flex-direction: column;
   gap: toRem.toRem(10);
-
-  &:empty {
-    display: none;
-  }
 }
 
 .header {
