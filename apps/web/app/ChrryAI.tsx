@@ -12,7 +12,7 @@ import {
   API_URL,
 } from "chrry/utils"
 import AppMetadata from "chrry/AppMetadata"
-import { getSession, getThread, getTranslations } from "chrry/lib"
+import { getSession, getThread, getThreads, getTranslations } from "chrry/lib"
 import { locale } from "chrry/locales"
 import {
   session,
@@ -23,6 +23,7 @@ import {
 } from "chrry/types"
 import { getSiteConfig, getSiteTranslation } from "chrry/utils/siteConfig"
 import { Providers } from "../components/Providers"
+import { captureException } from "@sentry/nextjs"
 
 export const generateMeta = async ({ locale }: { locale: locale }) => {
   const siteConfig = getSiteConfig()
@@ -149,6 +150,25 @@ export default async function ChrryAI({
   } catch (error) {
     console.error("❌ API Error:", error)
     apiError = error as Error
+  }
+
+  let threads:
+    | {
+        threads: thread[]
+        totalCount: number
+      }
+    | undefined
+
+  try {
+    threads = await getThreads({
+      appId: (session as session)?.app?.id,
+      pageSize: pageSizes.menuThreads,
+      sort: "bookmark",
+      token: apiKey,
+    })
+  } catch (error) {
+    captureException(error)
+    console.error("❌ API Error:", error)
   }
 
   // Show detailed error page if API failed
@@ -362,6 +382,7 @@ export default async function ChrryAI({
           </>
         )}
       </head>
+
       <body className="loaded" suppressHydrationWarning>
         <Providers
           thread={thread}
@@ -369,6 +390,7 @@ export default async function ChrryAI({
           viewPortWidth={viewPortWidth}
           viewPortHeight={viewPortHeight}
           translations={translations}
+          threads={threads}
           session={session && "app" in session ? session : undefined}
         >
           {children}

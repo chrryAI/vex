@@ -74,6 +74,11 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      threads: {
+        threads: thread[]
+        totalCount: number
+      }
+      setThreads: (value: { threads: thread[]; totalCount: number }) => void
       migratedFromGuestRef: React.MutableRefObject<boolean>
       fetchApps: () => Promise<void>
       isLoadingApps: boolean
@@ -270,6 +275,10 @@ export function AuthProvider({
   gift?: string
   error?: string
   session?: session
+  threads?: {
+    threads: thread[]
+    totalCount: number
+  }
   thread?: { thread: thread; messages: paginatedMessages }
   signOutContext?: (options: {
     callbackUrl: string
@@ -304,6 +313,16 @@ export function AuthProvider({
   const setEnv = (env: "development" | "production" | "staging") => {
     fetchSession()
   }
+
+  const [threads, setThreads] = useState<{
+    threads: thread[]
+    totalCount: number
+  }>(
+    props.threads || {
+      threads: [],
+      totalCount: 0,
+    },
+  )
 
   const isCI = process.env.NEXT_PUBLIC_CI === "true"
 
@@ -1517,6 +1536,8 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        threads,
+        setThreads,
         showFocus,
         setShowFocus,
         isLoadingTasks,

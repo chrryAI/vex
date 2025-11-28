@@ -76,7 +76,7 @@ export const Hey = memo(
     }, [pathname, isExtension])
 
     const { threadId } = useChat()
-    const { allApps, app, isSplash, setIsSplash } = useAuth()
+    const { allApps, app, isSplash, setIsSplash, apps } = useAuth()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
@@ -192,8 +192,8 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        setIsSplash(!app?.store?.apps?.length)
-    }, [isImageLoaded, isHydrated, isSplash, allApps, minSplashTimeElapsed])
+        setIsSplash(!apps.length)
+    }, [isImageLoaded, isHydrated, isSplash, apps, minSplashTimeElapsed])
 
     useEffect(() => {
       app?.slug && useExtensionIcon?.(app?.slug)
