@@ -5,7 +5,9 @@ import {
   lazy,
   memo,
   Suspense,
+  useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react"
 import Img from "./Image"
@@ -74,7 +76,7 @@ export const Hey = memo(
     }, [pathname, isExtension])
 
     const { threadId } = useChat()
-    const { allApps, app, isSplash, setIsSplash, session } = useAuth()
+    const { allApps, app, isSplash, setIsSplash } = useAuth()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
@@ -171,7 +173,7 @@ export const Hey = memo(
           }}
         >
           <Img
-            onLoad={(src) => {
+            onLoad={() => {
               setIsImageLoaded(true)
             }}
             app={isChrry ? undefined : app}
@@ -183,7 +185,7 @@ export const Hey = memo(
       )
     }
     // Memoize splash component to prevent re-renders
-    const splash = getSplash(isSplash)
+    const splash = useMemo(() => getSplash(isSplash), [isSplash])
 
     useEffect(() => {
       isSplash &&
