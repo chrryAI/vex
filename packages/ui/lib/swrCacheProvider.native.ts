@@ -5,7 +5,6 @@
 
 import { useState, useEffect } from "react"
 import type { Cache } from "swr"
-import { MMKV } from "react-native-mmkv"
 
 // TTL for cache entries (1 hour)
 const CACHE_TTL = 60 * 60 * 1000
@@ -18,9 +17,10 @@ interface CacheEntry<T = unknown> {
   ts: number
 }
 
-// Initialize MMKV storage for SWR cache
-let storage: MMKV | null = null
+// Initialize MMKV storage for SWR cache (runtime require to avoid bundler issues)
+let storage: any = null
 try {
+  const { MMKV } = require("react-native-mmkv")
   storage = new MMKV({ id: "swr-cache" })
 } catch (error) {
   console.warn("[SWR Cache] MMKV initialization failed:", error)
