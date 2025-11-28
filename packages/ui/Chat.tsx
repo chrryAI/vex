@@ -3707,6 +3707,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   <Button
                     className="link"
                     data-testid="image-generation-button"
+                    data-enabled={isImageGenerationEnabled}
                     style={{
                       ...utilities.link.style,
                       ...styles.imageGenerationButton.style,
@@ -3719,11 +3720,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     onClick={() => {
                       setIsImageGenerationEnabled(!isImageGenerationEnabled)
 
-                      if (selectedAgent?.name === "flux") {
-                        setSelectedAgent(undefined)
-                      } else {
-                        setSelectedAgent(sushiAgent)
-                      }
+                      setSelectedAgent(sushiAgent)
                     }}
                   >
                     <Palette

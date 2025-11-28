@@ -111,7 +111,7 @@ export const chat = async ({
   const hourlyLimit = isSubscriber ? 100 : isMember ? 30 : 10 // guests: 10, members: 30, subscribers: 100
 
   const getModelCredits = (model: string) =>
-    model === "flux"
+    model === "sushi"
       ? 2
       : isMember
         ? model === "chatGPT"
@@ -341,7 +341,38 @@ export const chat = async ({
     return agentModalButton
   }
 
+  const imageGenerationButton = page.getByTestId("image-generation-button")
+
   for (const prompt of prompts) {
+    if (prompt.imageGenerationEnabled) {
+      // First click: Toggle off image generation
+      await imageGenerationButton.click()
+
+      // Wait for agent to change away from sushi
+
+      // Verify agent changed to expected default
+      const expectedDefaultAgent = "sushi"
+      expect(await getAgentName()).toBe(expectedDefaultAgent)
+
+      // Second click: Toggle image generation back on
+      await imageGenerationButton.click()
+
+      // Wait for agent to change back to sushi
+      await expect.poll(getAgentName, { timeout: 5000 }).toBe("sushi")
+      await imageGenerationButton.click()
+      await page.waitForTimeout(2000)
+      expect(await getAgentName()).toBe(expectedDefaultAgent)
+    } else {
+      const imageGenerationEnabled =
+        await imageGenerationButton.getAttribute("data-enabled")
+
+      if (imageGenerationEnabled) {
+        await imageGenerationButton.click()
+      }
+    }
+
+    await wait(1000)
+
     const debateAgentDeleteButton = page.getByTestId(
       "debate-agent-delete-button",
     )
@@ -725,90 +756,6 @@ export const chat = async ({
       "[data-testid=like-button]",
     )
 
-    // if (prompts.indexOf(prompt) === 0 && artifacts) {
-    //   const dataTestId = threadId ? "chat" : "instruction"
-    //   let artifactsButton = page.getByTestId(
-    //     `${dataTestId}-instruction-artifacts-button`,
-    //   )
-    //   await artifactsButton.click()
-
-    //   const instructionModal = page.getByTestId(
-    //     `${dataTestId}-instruction-modal`,
-    //   )
-
-    //   await expect(instructionModal).toBeVisible()
-
-    //   const filePreviewClears = page.getByTestId(
-    //     `${dataTestId}-instruction-file-preview-clear`,
-    //   )
-
-    //   let count = (artifacts.pdf || 0) + (artifacts.paste || 0)
-
-    //   if (count > 5) {
-    //     count = 5
-    //   }
-
-    //   for (let i = 0; i < count; i++) {
-    //     const filePreviewClear = filePreviewClears.nth(count - i - 1)
-    //     await expect(filePreviewClear).toBeVisible()
-    //     await filePreviewClear.click()
-    //     await page.waitForTimeout(1000)
-    //   }
-
-    //   expect(await filePreviewClears.count()).toBe(0)
-
-    //   if (artifacts.paste) {
-    //     for (let i = 0; i < artifacts.paste; i++) {
-    //       await simulatePaste(
-    //         page,
-    //         faker.lorem.sentence({ min: 550, max: 750 }),
-    //       )
-    //     }
-    //   }
-
-    //   if (artifacts.pdf) {
-    //     const fileChooserPromise = page.waitForEvent("filechooser")
-    //     await page
-    //       .getByTestId(`${dataTestId}-instruction-artifacts-upload-button`)
-    //       .click()
-    //     const testUsedPaths = Array.from({ length: artifacts.pdf }, (_, i) => {
-    //       const fileType = "pdf"
-    //       const fileName = `test${capitalizeFirstLetter(fileType)}${i + 1}`
-    //       const extension = "pdf"
-
-    //       return path.join(
-    //         process.cwd(),
-    //         "src/shared",
-    //         fileType,
-    //         `${fileName}.${extension}`,
-    //       )
-    //     })
-
-    //     const fileChooser = await fileChooserPromise
-    //     await fileChooser.setFiles(testUsedPaths)
-    //   }
-
-    //   if ((artifacts.pdf || 0) + (artifacts.paste || 0) > 10) {
-    //     await expect(page.getByText("Maximum 10 files allowed")).toBeVisible()
-    //   }
-
-    //   const modalSaveButton = page.getByTestId(
-    //     `${dataTestId}-instruction-modal-save-button`,
-    //   )
-    //   await expect(modalSaveButton).toBeVisible()
-
-    //   await modalSaveButton.click()
-
-    //   await wait(10000)
-
-    //   const modalCloseButton = page.getByTestId(
-    //     `${dataTestId}-instruction-modal-close-button`,
-    //   )
-    //   await expect(modalCloseButton).toBeVisible()
-
-    //   await modalCloseButton.click()
-    // }
-
     if (!prompt.stop) {
       await expect(likeButton).toBeVisible({
         timeout: prompt.agentMessageTimeout || agentMessageTimeout,
@@ -912,31 +859,6 @@ export const chat = async ({
         console.log(
           `✅ Credits assertion: ${creditsLeft} left (expected: ${credits})`,
         )
-      }
-
-      if (prompt.imageGenerationEnabled) {
-        const imageGenerationButton = page.getByTestId(
-          "image-generation-button",
-        )
-
-        // First click: Toggle off image generation
-        await imageGenerationButton.click()
-
-        // Wait for agent to change away from flux
-        await expect.poll(getAgentName, { timeout: 5000 }).not.toBe("flux")
-
-        // Verify agent changed to expected default
-        const expectedDefaultAgent = "sushi"
-        expect(await getAgentName()).toBe(expectedDefaultAgent)
-
-        // Second click: Toggle image generation back on
-        await imageGenerationButton.click()
-
-        // Wait for agent to change back to flux
-        await expect.poll(getAgentName, { timeout: 5000 }).toBe("flux")
-        await imageGenerationButton.click()
-        await page.waitForTimeout(2000)
-        expect(await getAgentName()).toBe(expectedDefaultAgent)
       }
     }
 
