@@ -1516,8 +1516,14 @@ export function AuthProvider({
   const isExtensionRedirect = searchParams.get("extension") === "true"
   const isLoggedOut = searchParams.get("loggedOut") === "true" || undefined
   const isWelcome = searchParams.get("welcome") === "true" || undefined
+  const showAccountStatusRef = useRef(false)
+
   useEffect(() => {
+    if (showAccountStatusRef.current) return
+
     if (isLoggedOut) {
+      showAccountStatusRef.current = true
+
       isExtensionRedirect
         ? toast.success(`${t("Logged out")}. ${t("Reload your extension")}`)
         : toast.success(t("Logged out successfully"))
@@ -1530,6 +1536,7 @@ export function AuthProvider({
         : toast.success(`${t("Welcome")}`)
 
       removeParams("welcome")
+      showAccountStatusRef.current = true
     }
   }, [isLoggedOut, isWelcome])
 
