@@ -496,7 +496,7 @@ export function AuthProvider({
       (fingerprint || token) &&
       deviceId &&
       shouldFetchSession
-      ? ["session", env]
+      ? "session"
       : null,
     async () => {
       try {

@@ -791,14 +791,20 @@ export function ChatProvider({
 
   const [status, setStatus] = useState<number | null>(null)
 
+  // Build cache key - only include values that affect the response
+  const keyParts = { threadId, liked, until }
+  const finalKey =
+    Object.entries(keyParts)
+      .filter(([_, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => `${key}-${value}`)
+      .join("-") || "thread"
+
   const {
     data: threadSWR,
     mutate,
     error,
   } = useSWR(
-    shouldFetchThread && token && threadId
-      ? ["thread", threadId, liked, until, token]
-      : null,
+    shouldFetchThread && token && threadId ? [finalKey] : null,
     async () => {
       if (!threadId) return
 
