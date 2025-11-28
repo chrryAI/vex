@@ -40,7 +40,7 @@ export const ThreadStyleDefs = {
     },
   },
   headers: {
-    display: "none",
+    display: "flex",
     flexDirection: "column",
     gap: 10,
   },
