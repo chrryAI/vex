@@ -29,7 +29,6 @@ import {
 import { pageSizes } from "../../utils"
 import { getThreadId } from "../../utils/url"
 import { useThreadId } from "../../utils/useThreadId"
-import { cacheData, getCachedData } from "../../lib/db"
 import {
   toast,
   useLocalStorage,
@@ -233,21 +232,6 @@ export function ChatProvider({
   )
 
   // Load cached threads immediately on mount
-  useEffect(() => {
-    const loadCachedThreads = async () => {
-      if (!app?.id || !(user?.id || guest?.id)) return
-
-      const key = `threads-${app.id}-${user?.id || guest?.id}`
-      const cached = await getCachedData(key)
-
-      if (cached) {
-        console.log("⚡ Loading cached threads instantly")
-        // Threads will be set by the SWR effect below
-      }
-    }
-
-    loadCachedThreads()
-  }, [app?.id, user?.id, guest?.id])
 
   useEffect(() => {
     if (user && migratedFromGuestRef.current) {
@@ -287,16 +271,10 @@ export function ChatProvider({
         })
 
         // Cache threads on successful fetch (30 min TTL)
-        await cacheData(key, threads, 1000 * 60 * 30)
         return threads
       } catch (error) {
-        // Fallback to cached threads on error (offline mode)
-        const cached = await getCachedData(key)
-        if (cached) {
-          console.log("📦 Using cached threads (offline mode)")
-          return cached
-        }
-        throw error
+        console.log(`🚀 ~ file: ChatProvider.tsx:291 ~ error:`, error)
+        toast.error("Something went wrong")
       }
     },
 
