@@ -1291,6 +1291,9 @@ importers:
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@piotr-cz/swr-idb-cache':
+        specifier: ^1.1.2
+        version: 1.1.2(react@19.2.0)(swr@2.3.6(react@19.2.0))
       '@react-native-community/netinfo':
         specifier: ^11.4.1
         version: 11.4.1(react-native@0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@react-native-community/cli@20.0.2(typescript@5.8.2))(@types/react@19.1.12)(react@19.2.0))
@@ -4548,6 +4551,12 @@ packages:
   '@parcel/watcher@2.5.1':
     resolution: {integrity: sha512-dfUnCxiN9H4ap84DvD2ubjw+3vUNpstxa0TneY/Paat8a3R4uQZDLSvWjmznAY/DoahqTHl9V46HF/Zs3F29pg==}
     engines: {node: '>= 10.0.0'}
+
+  '@piotr-cz/swr-idb-cache@1.1.2':
+    resolution: {integrity: sha512-30JFSCUtuEpazU1qHsX06qdTq+64PjggaROe8pKXgy7ZVHmpU5Ir1ItbhVBYZq/27U5xlGX+xmL+I44Pp9pIOQ==}
+    peerDependencies:
+      react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      swr: ^2.0.0-beta.3
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -19529,6 +19538,12 @@ snapshots:
       '@parcel/watcher-win32-ia32': 2.5.1
       '@parcel/watcher-win32-x64': 2.5.1
     optional: true
+
+  '@piotr-cz/swr-idb-cache@1.1.2(react@19.2.0)(swr@2.3.6(react@19.2.0))':
+    dependencies:
+      idb: 8.0.3
+      react: 19.2.0
+      swr: 2.3.6(react@19.2.0)
 
   '@pkgjs/parseargs@0.11.0':
     optional: true

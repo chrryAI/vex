@@ -43,7 +43,6 @@ import {
 } from "../../types"
 import toast from "react-hot-toast"
 import { getApps, getSession } from "../../lib"
-import { cacheData, clearCache, getCachedData } from "../../lib/db"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { locale, locales } from "../../locales"
@@ -277,14 +276,7 @@ export function AuthProvider({
   }) => Promise<any>
 }) {
   const [wasGifted, setWasGifted] = useState<boolean>(false)
-  const [session, setSessionInternal] = useState<session | undefined>(
-    props.session,
-  )
-
-  const setSession = (session: session, cache: boolean = false) => {
-    setSessionInternal(session)
-    if (cache) cacheData(sessionCacheKey, session, 1000 * 60 * 60) // 1 hour TTL
-  }
+  const [session, setSession] = useState<session | undefined>(props.session)
 
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
@@ -397,7 +389,7 @@ export function AuthProvider({
 
   function processSession(sessionData?: session) {
     if (sessionData) {
-      setSession(sessionData, true)
+      setSession(sessionData)
       // Track guest migration
       if (sessionData.migratedFromGuest) {
         migratedFromGuestRef.current = sessionData.migratedFromGuest
@@ -572,13 +564,7 @@ export function AuthProvider({
 
         return sessionResult
       } catch (error) {
-        // Fallback to cached session on error (offline mode)
-        const cached = await getCachedData<session>(sessionCacheKey)
-        if (cached) {
-          console.log("📦 Using cached session (offline mode)")
-          return cached
-        }
-        throw error
+        toast.error("Something went wrong")
       }
     },
     {
@@ -992,21 +978,14 @@ export function AuthProvider({
     token && (loadingApp?.id || app?.id) ? ["allApps", token] : null,
     async () => {
       if (!token) return null
-      const key = `allApps-${loadingApp?.id || app?.id}-${user?.id || guest?.id}`
 
       try {
         const apps = await getApps({ token, appId: loadingApp?.id || app?.id })
-        // Cache apps on successful fetch
-        await cacheData(key, apps)
+
         return apps
       } catch (error) {
-        // Fallback to cached data on error (offline mode)
-        const cached = await getCachedData<appWithStore[]>(key)
-        if (cached) {
-          console.log("📦 Using cached apps (offline mode)")
-          return cached
-        }
-        throw error
+        console.log(`🚀 ~ file: AuthProvider.tsx:1002 ~ error:`, error)
+        toast.error("Something went wrong")
       }
     },
   )
@@ -1486,7 +1465,6 @@ export function AuthProvider({
   const zarathustra = allApps.find((app) => app.slug === "zarathustra")
 
   const signOut = async () => {
-    await clearCache()
     setShouldFetchSession(false)
     setUser(undefined)
     setGuest(undefined)
