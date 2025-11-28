@@ -244,12 +244,12 @@ export function ChatProvider({
   }, [user])
 
   const {
-    data: threadsData,
+    data: threadsSwr,
     mutate: refetchThreads,
     isLoading: isLoadingThreadsSwr,
     error: threadsError,
   } = useSWR(
-    shouldFetchThreads ? ["contextThreads", thread?.id, app?.id, token] : null,
+    shouldFetchThreads ? ["contextThreads", thread?.id, app?.id] : null,
     async () => {
       try {
         const threads = await actions.getThreads({
@@ -291,23 +291,25 @@ export function ChatProvider({
     },
   )
 
-  const [isLoadingThreads, setIsLoadingThreads] = useState(true)
+  const threadsData = threadsSwr || threads
+
+  const [isLoadingThreads, setIsLoadingThreads] = useState(!threads.totalCount)
 
   useEffect(() => {
-    if (threadsError || !isLoadingThreadsSwr) {
+    if (threadsError || !isLoadingThreadsSwr || threadsData.threads.length) {
       setIsLoadingThreads(false)
     }
-  }, [threadsError, isLoadingThreadsSwr])
+  }, [threadsError, isLoadingThreadsSwr, threadsData])
 
   const [activeCollaborationThreadsCount, setActiveCollaborationThreadsCount] =
     useState<number>(0)
 
   useEffect(() => {
-    if (threadsData && Array.isArray(threadsData.threads)) {
-      setThreads(threadsData)
+    if (threadsSwr && Array.isArray(threadsSwr.threads)) {
+      setThreads(threadsSwr)
       setIsLoadingThreads(false)
     }
-  }, [threadsData])
+  }, [threadsSwr])
 
   const fetchActiveCollaborationThreadsCount = async () => {
     const threads = await actions.getThreads({
@@ -373,18 +375,16 @@ export function ChatProvider({
   useEffect(() => {
     if (pathname !== "/") return
 
-    if (!threadsData || !Array.isArray(threadsData.threads)) return
+    if (!threadsSwr || !Array.isArray(threadsSwr.threads)) return
     if (pendingCollaborationThreadsCount > 0) {
       !hasNotification && setHasNotification(true)
-      threadsData.threads.some(
-        (thread: thread) => thread.userId === user?.id,
-      ) &&
+      threadsSwr.threads.some((thread: thread) => thread.userId === user?.id) &&
         collaborationStatus === undefined &&
         setCollaborationStatus("pending")
     }
   }, [
     pendingCollaborationThreadsCount,
-    threadsData,
+    threadsSwr,
     collaborationStatus,
     hasNotification,
   ])

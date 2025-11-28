@@ -39,6 +39,7 @@ import { getFeatures } from "./utils/subscription"
 import A from "./A"
 import { useSubscribeStyles } from "./Subscribe.styles"
 import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
 
 export default function Subscribe({
   customerEmail,
@@ -114,11 +115,14 @@ export default function Subscribe({
 
   const [part, setPart] = useState<"subscription" | "gift">("subscription")
 
+  const purchaseTypeParam = searchParams.get("purchaseType")
+
   const [purchaseType, setPurchaseType] = useState<"subscription" | "gift">(
-    "subscription",
+    purchaseTypeParam || "subscription",
   )
 
   const handleCheckout = async (part: "subscription" | "gift") => {
+    setPurchaseType(part)
     setPart(part)
     track({ name: "subscribe_checkout" })
     setLoading(true)
@@ -132,6 +136,7 @@ export default function Subscribe({
 
       const checkoutSuccessUrl = (() => {
         params.set("checkout", "success")
+        params.set("purchaseType", part)
 
         return `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
       })()
@@ -283,7 +288,8 @@ export default function Subscribe({
       }
 
       await fetchSession()
-      setIsModalOpen(false)
+      // Delay modal close to allow state to update
+      setTimeout(() => setIsModalOpen(false), 100)
     } else {
       if (data.error) {
         toast.error(data.error)
@@ -352,7 +358,10 @@ export default function Subscribe({
     }
   }
 
+  const is = useHasHydrated()
+
   useEffect(() => {
+    if (!is) return
     if (typeof window === "undefined" || !window.location) return
     const params = new URLSearchParams(window.location.search)
     if (params.get("checkout") === "success") {
@@ -361,9 +370,11 @@ export default function Subscribe({
         return
       }
 
-      verifyPayment(sessionId)
+      setTimeout(() => {
+        verifyPayment(sessionId)
+      }, 100)
     }
-  }, [])
+  }, [is])
 
   const [selectedPlan, setSelectedPlanInternal] = useState<
     "plus" | "pro" | "member" | "credits"
