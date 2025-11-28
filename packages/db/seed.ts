@@ -39,6 +39,7 @@ import {
 
 import { createEvent } from "./createEvent"
 import { createStores } from "./createStores"
+import { createCities } from "./createCities"
 
 const isProd = process.env.DB_URL && !process.env.DB_URL.includes("localhost")
 
@@ -313,6 +314,8 @@ const create = async () => {
   if (isProd) {
     return
   }
+
+  // await createCities()
 
   console.log("🌍 Creating cities...")
   console.log("✅ Cities created")

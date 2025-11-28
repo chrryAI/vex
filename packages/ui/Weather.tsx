@@ -134,6 +134,7 @@ export default function Weather({
         }))
       })
       .catch((error) => {
+        console.log(`🚀 ~ file: Weather.tsx:137 ~ error:`, error)
         toast.error(t("Something went wrong"))
         return []
       })
@@ -167,6 +168,7 @@ export default function Weather({
     >
       {country && (
         <Modal
+          id="city-modal"
           hideOnClickOutside={false}
           hasCloseButton
           icon={
@@ -181,15 +183,24 @@ export default function Weather({
             placeholder={t("Select city")}
             cacheOptions
             classNamePrefix="react-select"
+            menuPortalTarget={
+              typeof document !== "undefined"
+                ? document.getElementById("city-modal")
+                : null
+            }
+            menuPosition="fixed"
             styles={{
               ...selectStyles,
+              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               control: (base, state) => ({
                 ...selectStyles.control?.(base, state),
               }),
             }}
             loadOptions={callApi}
             onChange={async (selectedCity: any) => {
-              if (!token) return
+              if (!selectedCity?.value) return
+
+              setIsCityModalOpen(false) // Close modal on success
 
               try {
                 if (user) {
@@ -218,7 +229,6 @@ export default function Weather({
                 toast.success(t("Updated"))
 
                 refetchWeather()
-                setIsCityModalOpen(false) // Close modal on success
               } catch (error) {
                 toast.error(t("Something went wrong"))
               }

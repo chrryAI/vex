@@ -41,7 +41,7 @@ export const selectStyles: StylesConfig = {
     backgroundColor: "var(--background)",
     border: "1px solid var(--shade-2)",
     borderRadius: "var(--radius)",
-    padding: "5px",
+    padding: "7.5px 5px",
     // minWidth: "500px",
     top: "35px",
     maxWidth: "100%",

@@ -842,3 +842,9 @@ button.favorite {
     opacity: 0.7;
   }
 }
+
+#city-modal .react-select__menu-portal {
+  position: absolute;
+  top: 55px !important;
+  left: 12.5px !important;
+}
