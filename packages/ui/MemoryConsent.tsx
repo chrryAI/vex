@@ -1,15 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import {
-  Brain,
-  BrainCog,
-  CircleX,
-  Download,
-  LinkIcon,
-  Settings2,
-  Trash2,
-} from "./icons"
+import { Brain, CircleX, Download, LinkIcon, Settings2, Trash2 } from "./icons"
 
 import { useAppContext } from "./context/AppContext"
 import {
@@ -158,24 +150,16 @@ export default function MemoryConsent({
                 >
                   <LinkIcon size={16} /> {t("Privacy")}
                 </Button>
-                {(user || guest)?.memoriesCount ? (
+                {!(user || guest)?.memoriesCount ? (
                   <ConfirmButton
-                    confirm={
-                      <>
-                        {isDeleting ? (
-                          <Loading width={18} height={18} />
-                        ) : (
-                          <Trash2 size={16} color="var(--accent-0)" />
-                        )}
-                        {t("Are you sure?")}
-                      </>
-                    }
+                    processing={isDeleting}
                     disabled={isDeleting}
-                    title={t("Disable")}
+                    title={t("Delete")}
                     className={"transparent"}
                     style={{
                       ...utilities.transparent.style,
                       ...styles.deleteButton.style,
+                      fontSize: 15,
                     }}
                     onConfirm={async () => {
                       if (!token) return
@@ -197,8 +181,7 @@ export default function MemoryConsent({
                       }
                     }}
                   >
-                    <Trash2 size={18} color="var(--accent-0)" />
-                    {t("Delete")}
+                    <Trash2 size={15} color="var(--accent-0)" />
                   </ConfirmButton>
                 ) : null}
               </>
@@ -209,7 +192,7 @@ export default function MemoryConsent({
                     {isUpdatingMemories ? (
                       <Loading width={18} height={18} />
                     ) : (
-                      <Trash2 size={16} color="var(--accent-0)" />
+                      <Brain color="#ef5350" size={18} />
                     )}
                     {t("Are you sure?")}
                   </>
@@ -251,7 +234,7 @@ export default function MemoryConsent({
                 {isUpdatingMemories ? (
                   <Loading width={18} height={18} />
                 ) : (
-                  <Brain color="#ef5350" size={18} />
+                  <Brain color="var(--shade-5)" size={18} />
                 )}
                 {t("Disable Memories")}
               </ConfirmButton>
@@ -293,7 +276,7 @@ export default function MemoryConsent({
               {isUpdatingMemories ? (
                 <Loading color="white" width={18} height={18} />
               ) : (
-                <BrainCog size={18} />
+                <Brain size={16} />
               )}
               {t("Enable Memories")}
             </Button>
