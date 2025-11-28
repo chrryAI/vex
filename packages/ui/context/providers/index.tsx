@@ -30,6 +30,7 @@ import useSWR, { SWRConfig } from "swr"
 import { thread, paginatedMessages } from "../../types"
 import { TimerContext, TimerContextProvider } from "../TimerContext"
 import { Hey } from "../../Hey"
+import { useSWRCacheProvider } from "../../lib/swrCacheProvider"
 
 interface AppProvidersProps {
   translations?: Record<string, any>
@@ -79,8 +80,15 @@ export default function AppProviders({
   useExtensionIcon,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
-  // Global SWR configuration with 429 error handling
+  const cacheProvider = useSWRCacheProvider()
+
+  // Global SWR configuration with 429 error handling and persistent cache
   const swrConfig = {
+    // Use persistent cache provider when ready (IndexedDB on web, MMKV on native)
+    // If not ready yet, SWR uses its default in-memory cache
+    ...(cacheProvider ? { provider: cacheProvider } : {}),
+    // Pre-populate cache with SSR session data
+    fallback: session ? { session: { data: session } } : {},
     onError: (error: any) => {
       if (error?.status === 429) {
         // const errorKey = `rate_limit_${Date.now()}`

@@ -39,9 +39,11 @@ const nextConfig = {
   },
   turbopack: {
     resolveAlias: {
-      // Block react-native from being bundled in turbopack
+      // Block react-native packages from being bundled in turbopack
       // Turbopack doesn't accept 'false', so we use a mock file
       "react-native": "./react-native-mock.js",
+      "react-native-mmkv": "./react-native-mock.js",
+      "react-native-nitro-modules": "./react-native-mock.js",
     },
     rules: {
       "*.html": {

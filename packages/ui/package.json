@@ -58,6 +58,7 @@
     "@invertase/react-native-apple-authentication": "^2.5.0",
     "@lobehub/icons": "^2.23.0",
     "@number-flow/react": "^0.5.10",
+    "@piotr-cz/swr-idb-cache": "^1.1.2",
     "@react-native-community/netinfo": "^11.4.1",
     "@react-native-google-signin/google-signin": "^16.0.0",
     "@stripe/stripe-js": "^7.7.0",
