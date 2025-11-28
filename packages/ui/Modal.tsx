@@ -27,6 +27,7 @@ export default function Modal({
   params,
   icon,
   scrollable,
+  id,
   borderHeader = true,
   dataTestId,
   hideOnClickOutside = true,
@@ -35,6 +36,7 @@ export default function Modal({
 }: {
   hideOnClickOutside?: boolean
   params?: string
+  id?: string
   isModalOpen?: boolean
   hasCloseButton?: boolean
   children: React.ReactNode
@@ -179,6 +181,7 @@ export default function Modal({
             data-testid={dataTestId}
             style={styles.inner.style}
             ref={innerRef}
+            id={id}
           >
             <H4
               style={{
