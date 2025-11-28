@@ -984,22 +984,6 @@ export function AuthProvider({
   const sushi = allApps?.find((app) => app.slug === "sushi")
   const focus = allApps?.find((app) => app.slug === "focus")
 
-  // Load cached apps immediately on mount
-  useEffect(() => {
-    const loadCachedApps = async () => {
-      if (!token || (!loadingApp?.id && !app?.id)) return
-
-      const key = `allApps-${loadingApp?.id || app?.id}-${user?.id || guest?.id}`
-      const cached = await getCachedData<appWithStore[]>(key)
-
-      if (cached && cached.length > 0) {
-        mergeApps(cached)
-      }
-    }
-
-    loadCachedApps()
-  }, [token, loadingApp?.id, app?.id, user?.id, guest?.id, mergeApps])
-
   const {
     data: allAppsSwr,
     mutate: refetchApps,
