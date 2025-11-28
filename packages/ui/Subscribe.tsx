@@ -282,7 +282,7 @@ export default function Subscribe({
         setGiftedFingerPrint(data.fingerprint)
       }
 
-      fetchSession()
+      await fetchSession()
       setIsModalOpen(false)
     } else {
       if (data.error) {

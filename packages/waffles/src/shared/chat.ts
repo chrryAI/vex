@@ -156,7 +156,11 @@ export const chat = async ({
 
   const addDebateAgentButton = page.getByTestId("add-debate-agent-button")
   await expect(addDebateAgentButton).toBeVisible()
-  let hourlyUsage = 0 - messagesConsumed
+  let hourlyUsage = 0 + messagesConsumed
+  console.log(`🚀 ~ file: chat.ts:160 ~ hourlyUsage:`, {
+    hourlyUsage,
+    messagesConsumed,
+  })
   const getAgentName = async () => {
     return page
       .getByTestId("agent-select-button")
@@ -371,7 +375,7 @@ export const chat = async ({
       const imageGenerationEnabled =
         await imageGenerationButton.getAttribute("data-enabled")
 
-      if (imageGenerationEnabled) {
+      if (imageGenerationEnabled && imageGenerationEnabled === "true") {
         await imageGenerationButton.click()
       }
     }

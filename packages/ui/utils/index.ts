@@ -70,7 +70,7 @@ export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99
 export const PRO_PRICE = 19.99
 export const CREDITS_PRICE = 5.0
-export const ADDITIONAL_CREDITS = 600
+export const ADDITIONAL_CREDITS = 500
 
 export function isValidUuidV4(uuid: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -375,7 +375,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.5.8"
+export const VERSION = config.version || "1.5.9"
 export type instructionBase = {
   id: string
   title: string
