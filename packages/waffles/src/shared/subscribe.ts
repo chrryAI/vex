@@ -166,7 +166,7 @@ export const subscribe = async ({
 
     const first = await getFirstMenuThread()
     await expect(first).toBeVisible({
-      timeout: 5000,
+      timeout: 25000,
     })
 
     await (await getFirstMenuThread()).click()

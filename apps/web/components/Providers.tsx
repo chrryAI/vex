@@ -22,6 +22,7 @@ export function Providers({
   thread,
   session,
   translations,
+  threads,
 }: {
   children: ReactNode
   apiKey?: string
@@ -30,6 +31,10 @@ export function Providers({
   session?: any
   thread?: { thread: thread; messages: paginatedMessages }
   translations?: Record<string, any>
+  threads?: {
+    threads: thread[]
+    totalCount: number
+  }
 }): ReactElement {
   const { useRouter: useI18nRouter } = createNavigation({ locales })
   const i18nRouter = useI18nRouter()
@@ -48,6 +53,7 @@ export function Providers({
       viewPortHeight={viewPortHeight}
       thread={thread}
       session={session}
+      threads={threads}
       onSetLanguage={(path, lang) => {
         setLanguage(lang)
         i18nRouter.replace(path, { locale: lang })

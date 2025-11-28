@@ -178,6 +178,8 @@ export function ChatProvider({
     fetchSession,
     loadingApp,
     setLoadingApp,
+    threads,
+    setThreads,
     ...auth
   } = useAuth()
 
@@ -289,8 +291,6 @@ export function ChatProvider({
     },
   )
 
-  console.log(`🚀 ~ file: ChatProvider.tsx:246 ~ threadsData:`, threadsData)
-
   const [isLoadingThreads, setIsLoadingThreads] = useState(true)
 
   useEffect(() => {
@@ -298,17 +298,6 @@ export function ChatProvider({
       setIsLoadingThreads(false)
     }
   }, [threadsError, isLoadingThreadsSwr])
-
-  const [threads, setThreads] = useState<{
-    threads: thread[]
-    totalCount: number
-  }>({
-    threads: [],
-    totalCount: 0,
-  })
-
-  console.log(`🚀 ~ file: ChatProvider.tsx:307 ~ threads:`, threads)
-  console.log(`🚀 ~ file: ChatProvider.tsx:321 ~ threadsData:`, threadsData)
 
   const [activeCollaborationThreadsCount, setActiveCollaborationThreadsCount] =
     useState<number>(0)

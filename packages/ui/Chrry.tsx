@@ -18,6 +18,7 @@ export default function Chrry({
   locale,
   translations,
   useExtensionIcon,
+  threads,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -28,6 +29,10 @@ export default function Chrry({
   session?: session
   viewPortWidth?: string
   viewPortHeight?: string
+  threads?: {
+    threads: thread[]
+    totalCount: number
+  }
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   signInContext?: (
     provider: "google" | "apple" | "credentials",
@@ -58,6 +63,7 @@ export default function Chrry({
       signOutContext={signOutContext}
       thread={thread}
       translations={translations}
+      threads={threads}
     >
       {children}
     </AppProviders>

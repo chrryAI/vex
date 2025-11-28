@@ -58,6 +58,10 @@ interface AppProvidersProps {
   viewPortHeight?: string
   useExtensionIcon?: (slug?: string) => void
   thread?: { thread: thread; messages: paginatedMessages }
+  threads?: {
+    threads: thread[]
+    totalCount: number
+  }
 }
 
 /**
@@ -78,6 +82,7 @@ export default function AppProviders({
   locale,
   translations,
   useExtensionIcon,
+  threads,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
   const cacheProvider = useSWRCacheProvider()
@@ -95,10 +100,10 @@ export default function AppProviders({
     // Use persistent cache provider (IndexedDB on web, MMKV on native)
     ...(cacheProvider ? { provider: cacheProvider } : {}),
     // Pre-populate cache with SSR data
-    fallback: {
-      ...(session ? { session: { data: session } } : {}),
-      ...(thread?.thread ? { [`threadId-${thread.thread.id}`]: thread } : {}),
-    },
+    // fallback: {
+    //   ...(session ? { session: { data: session } } : {}),
+    //   ...(thread?.thread ? { [`threadId-${thread.thread.id}`]: thread } : {}),
+    // },
     onError: (error: any) => {
       if (error?.status === 429) {
         // const errorKey = `rate_limit_${Date.now()}`
@@ -145,6 +150,7 @@ export default function AppProviders({
               locale={locale}
               error={error}
               apiKey={apiKey}
+              threads={threads}
               onSetLanguage={onSetLanguage}
               signInContext={signInContext}
               signOutContext={signOutContext}
