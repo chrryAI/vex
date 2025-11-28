@@ -11,7 +11,7 @@ import {
   useError,
   useData,
 } from "./context/providers"
-import { apiFetch } from "./utils"
+import { apiFetch, isE2E } from "./utils"
 import ConfirmButton from "./ConfirmButton"
 import Loading from "./Loading"
 import { updateUser } from "./lib"
@@ -45,6 +45,8 @@ export default function MemoryConsent({
   const { captureException } = useError()
 
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const [isDeletingSession, setIsDeletingSession] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -186,58 +188,96 @@ export default function MemoryConsent({
                 ) : null}
               </>
             ) : (
-              <ConfirmButton
-                confirm={
-                  <>
-                    {isUpdatingMemories ? (
-                      <Loading width={18} height={18} />
-                    ) : (
-                      <Brain color="#ef5350" size={18} />
-                    )}
-                    {t("Are you sure?")}
-                  </>
-                }
-                disabled={isUpdatingMemories}
-                title={t("💭 We use conversation memory to improve responses.")}
-                className="transparent"
-                style={{
-                  ...utilities.transparent.style,
-                  borderStyle: "dashed",
-                }}
-                onConfirm={async () => {
-                  if (!token) return
-                  setIsUpdatingMemories(true)
-                  try {
-                    if (user) {
-                      const updatedUser = await updateUser({
-                        token,
-                        memoriesEnabled: !memoriesEnabled,
-                      })
-
-                      setUser(updatedUser)
-                    }
-
-                    if (guest) {
-                      const updatedGuest = await actions.updateGuest({
-                        memoriesEnabled: !memoriesEnabled,
-                      })
-
-                      setGuest(updatedGuest)
-                    }
-                  } catch (error) {
-                    console.error("Error updating guest:", error)
-                  } finally {
-                    setIsUpdatingMemories(false)
+              <>
+                <ConfirmButton
+                  confirm={
+                    <>
+                      {isUpdatingMemories ? (
+                        <Loading width={18} height={18} />
+                      ) : (
+                        <Brain color="#ef5350" size={18} />
+                      )}
+                      {t("Are you sure?")}
+                    </>
                   }
-                }}
-              >
-                {isUpdatingMemories ? (
-                  <Loading width={18} height={18} />
-                ) : (
-                  <Brain color="var(--shade-5)" size={18} />
+                  disabled={isUpdatingMemories}
+                  title={t(
+                    "💭 We use conversation memory to improve responses.",
+                  )}
+                  className="transparent"
+                  style={{
+                    ...utilities.transparent.style,
+                    borderStyle: "dashed",
+                  }}
+                  onConfirm={async () => {
+                    if (!token) return
+                    setIsUpdatingMemories(true)
+                    try {
+                      if (user) {
+                        const updatedUser = await updateUser({
+                          token,
+                          memoriesEnabled: !memoriesEnabled,
+                        })
+
+                        setUser(updatedUser)
+                      }
+
+                      if (guest) {
+                        const updatedGuest = await actions.updateGuest({
+                          memoriesEnabled: !memoriesEnabled,
+                        })
+
+                        setGuest(updatedGuest)
+                      }
+                    } catch (error) {
+                      console.error("Error updating guest:", error)
+                    } finally {
+                      setIsUpdatingMemories(false)
+                    }
+                  }}
+                >
+                  {isUpdatingMemories ? (
+                    <Loading width={18} height={18} />
+                  ) : (
+                    <Brain color="var(--shade-5)" size={18} />
+                  )}
+                  {t("Disable Memories")}
+                </ConfirmButton>
+                {isE2E && (
+                  <ConfirmButton
+                    className="transparent"
+                    processing={isDeletingSession}
+                    data-testid="clear-session"
+                    key={String(isDeletingSession)}
+                    onConfirm={async () => {
+                      if (!token) return
+                      try {
+                        const result = await apiFetch(`${API_URL}/clear`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                        })
+                        const data = await result.json()
+
+                        if (data.error) {
+                          toast.error(data.error)
+                          return
+                        }
+
+                        data.success && toast.success(t("Session cleared"))
+                      } catch (error) {
+                        console.error("Error updating guest:", error)
+                      } finally {
+                        setIsUpdatingMemories(false)
+                      }
+                    }}
+                  >
+                    <Trash2 color="red" size={13} />
+                  </ConfirmButton>
                 )}
-                {t("Disable Memories")}
-              </ConfirmButton>
+              </>
             )
           ) : (
             <Button

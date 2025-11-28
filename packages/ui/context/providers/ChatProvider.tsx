@@ -249,10 +249,6 @@ export function ChatProvider({
   } = useSWR(
     shouldFetchThreads ? ["contextThreads", thread?.id, app?.id, token] : null,
     async () => {
-      console.log(
-        `🚀 ~ file: ChatProvider.tsx:251 ~ shouldFetchThreads:`,
-        shouldFetchThreads,
-      )
       try {
         const threads = await actions.getThreads({
           onError: (status) => {
@@ -782,7 +778,7 @@ export function ChatProvider({
     }
   }, [appStatus?.part])
 
-  const [shouldFetchThread, setShouldFetchThread] = useState(!thread)
+  const [shouldFetchThread, setShouldFetchThread] = useState(true)
 
   const [until, setUntil] = useState<number>(1)
   const [liked, setLiked] = useState<boolean | undefined>(undefined)
@@ -821,7 +817,7 @@ export function ChatProvider({
       return threadData
     },
     {
-      // revalidateOnMount: true,
+      revalidateOnMount: true,
     },
   )
 

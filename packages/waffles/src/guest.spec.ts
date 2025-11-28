@@ -7,6 +7,7 @@ import { collaboration } from "./shared/collaboration"
 import { limit } from "./shared/limit"
 const isMember = false
 import { v4 as uuidv4 } from "uuid"
+import { clean } from "./shared/clean"
 
 test.beforeEach(async ({ page }) => {
   // await page.goto(TEST_URL, { waitUntil: "networkidle" })
@@ -17,7 +18,7 @@ test.beforeEach(async ({ page }) => {
   // await acceptAllButton.click()
 })
 
-test("Subscribe As Guest", async ({ page }) => {
+test.only("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -32,9 +33,10 @@ test("Subscribe As Guest", async ({ page }) => {
     page,
     isMember,
   })
+  await clean({ page })
 })
 
-test("Invite", async ({ page }) => {
+test.only("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -49,9 +51,10 @@ test("Invite", async ({ page }) => {
     isMember,
     invite: `${uuidv4()}@gmail.com`,
   })
+  await clean({ page })
 })
 
-test("Gift", async ({ page }) => {
+test.only("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
   })
@@ -71,9 +74,10 @@ test("Gift", async ({ page }) => {
     password: process.env.VEX_TEST_PASSWORD_3!,
     gift: process.env.VEX_TEST_EMAIL_3!,
   })
+  await clean({ page })
 })
 
-test("File upload", async ({ page }) => {
+test.only("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -119,16 +123,20 @@ test("File upload", async ({ page }) => {
       },
     ],
   })
+
+  await clean({ page })
 })
 
-test("Chat - Hourly Limit Test", async ({ page }) => {
+test.only("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await limit({ page })
+  await clean({ page })
 })
 
 test.only("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, bookmark: true })
+  await clean({ page })
 })
 
 test("Long text", async ({ page }) => {

@@ -27,7 +27,7 @@ import useSWR from "swr"
 import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
 import { useError } from "./ErrorProvider"
 import { getSiteConfig } from "../../utils/siteConfig"
-import { apiFetch } from "../../utils"
+import { ADDITIONAL_CREDITS, apiFetch } from "../../utils"
 
 export type affiliateStats = {
   hasAffiliateLink: boolean
@@ -205,7 +205,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.5.8"
+  const VERSION = "1.5.9"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -273,8 +273,6 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
       shouldRetryOnError: false,
     },
   )
-
-  const ADDITIONAL_CREDITS = 2500
 
   // Get URL constants and env state from AuthProvider
 

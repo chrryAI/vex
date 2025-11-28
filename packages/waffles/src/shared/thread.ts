@@ -15,6 +15,7 @@ export const thread = async ({
   createChat?: boolean
   bookmark?: boolean
 }) => {
+  let total = 0
   createChat &&
     (await chat({
       bookmark,
@@ -30,6 +31,8 @@ export const thread = async ({
         }
       }),
     }))
+
+  createChat && (total = total + 3)
 
   const getNthMenuThread = async (nth: number) => {
     const threads = page.getByTestId("menu-thread-item")
@@ -170,8 +173,8 @@ export const thread = async ({
     await chat({
       isNewChat: true,
       page,
-      creditsConsumed: 3 * 2,
-      messagesConsumed: 3,
+      creditsConsumed: total * 2,
+      messagesConsumed: 0,
       isMember,
       instruction: "Help me write a short story",
       bookmark,
@@ -184,6 +187,8 @@ export const thread = async ({
       }),
     })
 
+    total = total + 3
+
     const menuHomeButton = page.getByTestId("menu-home-button")
 
     await expect(menuHomeButton).toBeVisible()
@@ -194,8 +199,8 @@ export const thread = async ({
 
     await chat({
       isNewChat: false,
-      creditsConsumed: 3 * 2 * 2,
-      messagesConsumed: 3 * 2,
+      creditsConsumed: total * 2,
+      messagesConsumed: 3,
       bookmark: false,
       page,
       isMember,
@@ -208,6 +213,8 @@ export const thread = async ({
         }
       }),
     })
+
+    total = total + 3
 
     await loadMore.click()
     await wait(1000)

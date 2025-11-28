@@ -10,7 +10,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react"
-import useSWR from "swr"
+import useSWR, { useSWRConfig } from "swr"
 import { v4 as uuidv4 } from "uuid"
 import {
   isBrowserExtension,
@@ -64,6 +64,7 @@ import {
   WS_URL,
 } from "../../utils"
 import { Task } from "../TimerContext"
+import useCache from "chrry/hooks/useCache"
 
 // Constants (shared with DataProvider)
 
@@ -335,7 +336,7 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [shouldFetchSession, setShouldFetchSession] = useState(!session)
+  const [shouldFetchSession, setShouldFetchSession] = useState(true)
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
@@ -561,6 +562,11 @@ export function AuthProvider({
         }
 
         // Cache session data on successful fetch
+
+        console.log(
+          `🚀 ~ file: AuthProvider.tsx:566 ~ sessionResult:`,
+          sessionResult,
+        )
 
         return sessionResult
       } catch (error) {
@@ -944,7 +950,13 @@ export function AuthProvider({
     })
   }, [])
 
+  console.log(
+    `🚀 ~ file: AuthProvider.tsx:960 ~ fetchSession ~ newApp:`,
+    shouldFetchSession,
+  )
+
   const fetchSession = async (newApp?: appWithStore) => {
+    console.log(`🚀 ~ file: AuthProvider.tsx:958 ~ newApp:`, newApp)
     if (newApp) {
       await refetchApps()
       setNewApp(newApp)
@@ -952,7 +964,15 @@ export function AuthProvider({
 
     setIsLoading(true)
     setShouldFetchSession(true)
-    await refetchSession()
+
+    shouldFetchSession &&
+      console.log(
+        `🚀 ~ file: AuthProvider.tssssssx:960 ~ fetchSession ~ newApp:`,
+        shouldFetchSession,
+      )
+    // Force revalidation - clear cache and fetch fresh data
+    shouldFetchSession &&
+      (await refetchSession(undefined, { revalidate: true }))
   }
 
   const [isSplash, setIsSplash] = useState(true)
@@ -1458,6 +1478,8 @@ export function AuthProvider({
     }
   }, [sessionError])
 
+  const { clear } = useCache()
+
   const popcorn = allApps.find((app) => app.slug === "popcorn")
   const atlas = allApps.find((app) => app.slug === "atlas")
   const bloom = allApps.find((app) => app.slug === "bloom")
@@ -1469,6 +1491,7 @@ export function AuthProvider({
     setUser(undefined)
     setGuest(undefined)
     setToken(fingerprint)
+    clear()
   }
 
   const isExtensionRedirect = searchParams.get("extension") === "true"

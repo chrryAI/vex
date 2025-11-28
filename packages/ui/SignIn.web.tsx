@@ -30,7 +30,9 @@ import {
 } from "./context/providers"
 import { Button, usePlatform } from "./platform"
 import { getSiteConfig } from "./utils/siteConfig"
-import { clearCache } from "./lib/db"
+// import { clearCache } from "./lib/db"
+import { useSWRConfig } from "swr"
+import useCache from "./hooks/useCache"
 
 export default function SignIn({
   className,
@@ -55,6 +57,8 @@ export default function SignIn({
 
   const isAppleSignInAvailable = true
 
+  const { clear } = useCache()
+
   const {
     setToken,
     user,
@@ -76,7 +80,7 @@ export default function SignIn({
       errorUrl: string
     },
   ) => {
-    await clearCache()
+    clear()
     return signInContextInternal?.(provider, options)
   }
   const { t } = useAppContext()

@@ -88,15 +88,6 @@ export default async function RootLayout({
 
   const guest = await getGuestDb({ fingerprint: fingerprint })
 
-  const url = headersList.get("x-url") || ""
-  const isCheckout = url.includes("checkout")
-
-  if (!threadId && fingerprint && !isCheckout) {
-    await cleanupTest({
-      fingerprint: fingerprint,
-    })
-  }
-
   if (currentMember && !currentMember?.migratedFromGuest) {
     const toMigrate = currentMember.email
       ? (await getGuestDb({ email: currentMember.email })) || guest
