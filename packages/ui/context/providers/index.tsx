@@ -94,8 +94,11 @@ export default function AppProviders({
   const swrConfig = {
     // Use persistent cache provider (IndexedDB on web, MMKV on native)
     ...(cacheProvider ? { provider: cacheProvider } : {}),
-    // Pre-populate cache with SSR session data
-    fallback: session ? { session: { data: session } } : {},
+    // Pre-populate cache with SSR data
+    fallback: {
+      ...(session ? { session: { data: session } } : {}),
+      ...(thread?.thread ? { [`threadId-${thread.thread.id}`]: thread } : {}),
+    },
     onError: (error: any) => {
       if (error?.status === 429) {
         // const errorKey = `rate_limit_${Date.now()}`
