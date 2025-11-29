@@ -304,7 +304,7 @@ const Thread = ({
               <DeleteThread
                 id={thread.id}
                 onDelete={() => {
-                  if (threads.threads.length === 1) {
+                  if (threads?.threads?.length === 1) {
                     setIsNewChat(true)
                   } else {
                     shouldStopAutoScrollRef.current = true
@@ -318,7 +318,7 @@ const Thread = ({
                   await refetchThreads()
                 }}
                 onDelete={() => {
-                  if (threads.threads.length === 1) {
+                  if (threads?.threads?.length === 1) {
                     setIsNewChat(true)
                   } else {
                     shouldStopAutoScrollRef.current = true
