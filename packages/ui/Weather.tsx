@@ -114,11 +114,14 @@ export default function Weather({
 
   const { user, guest, token, setUser, setGuest, API_URL } = useAuth()
 
+  const [isLoading, setIsLoading] = useState(false)
+
   async function callApi(value: string) {
     if (!token) {
       console.warn("Token not ready yet")
       return []
     }
+    setIsLoading(true)
     const data = await apiFetch(`${API_URL}/cities?search=${value}`, {
       headers: {
         "Content-Type": "application/json",
@@ -137,6 +140,9 @@ export default function Weather({
         console.log(`🚀 ~ file: Weather.tsx:137 ~ error:`, error)
         toast.error(t("Something went wrong"))
         return []
+      })
+      .finally(() => {
+        setIsLoading(false)
       })
 
     return data
@@ -182,13 +188,13 @@ export default function Weather({
             isClearable
             placeholder={t("Select city")}
             cacheOptions
+            isLoading={isLoading}
             classNamePrefix="react-select"
             menuPortalTarget={
               typeof document !== "undefined"
                 ? document.getElementById("city-modal")
                 : null
             }
-            menuPosition="fixed"
             styles={{
               ...selectStyles,
               menuPortal: (base) => ({ ...base, zIndex: 9999 }),
