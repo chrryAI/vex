@@ -147,9 +147,9 @@ export default function Instructions({
   const { captureException } = useError()
   const { weather } = useData()
 
-  const { os, isStandalone, viewPortHeight } = usePlatform()
+  const { os, isStandalone } = usePlatform()
 
-  const offset = isStandalone ? 250 : 0
+  const offset = isStandalone ? -250 : 0
 
   const count = useResponsiveCount(
     [
