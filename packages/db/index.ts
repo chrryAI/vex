@@ -5684,7 +5684,6 @@ export async function getStore({
   // Populate nested store.apps if depth > 0
   let appsWithNestedStores = appsResult.items
   if (depth > 0) {
-    console.log(`📦 Populating nested apps for store with depth: ${depth}`)
     appsWithNestedStores = await Promise.all(
       appsResult.items.map(async (appItem) => {
         // Recursively fetch nested store apps (depth - 1)
@@ -5694,10 +5693,6 @@ export async function getStore({
           guestId,
           depth: depth - 1,
         })
-
-        console.log(
-          `  ↳ ${appItem.name}: fetched ${nestedStoreData?.apps?.length || 0} apps from store ${appItem?.store?.name}`,
-        )
 
         return {
           ...appItem,

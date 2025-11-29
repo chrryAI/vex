@@ -182,7 +182,7 @@ export default function Instructions({
   const city = user?.city || guest?.city
   const country = user?.country || guest?.country
 
-  const productionExtensions = ["chrome", "firefox"]
+  const productionExtensions = ["chrome"]
   const MAX_FILES = 10
   const [selectedInstruction, setSelectedInstructionInternal] =
     useState<instructionBase | null>(null)

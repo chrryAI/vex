@@ -42,7 +42,7 @@ import {
   moodType,
 } from "../../types"
 import toast from "react-hot-toast"
-import { getApps, getSession } from "../../lib"
+import { getApp, getApps, getSession } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { locale, locales } from "../../locales"
@@ -999,11 +999,12 @@ export function AuthProvider({
     data: allAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && appId ? ["allApps", appId] : null, async () => {
+  } = useSWR(token && appId ? ["app", appId] : null, async () => {
     try {
-      const apps = await getApps({ token, appId })
+      if (!token || !appId) return
+      const apps = await getApp({ token, appId })
 
-      return apps
+      return apps.store?.apps
     } catch (error) {
       toast.error("Something went wrong")
     }

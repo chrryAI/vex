@@ -21,6 +21,7 @@ import { useAuth } from "./AuthProvider"
 import { thread, session } from "../../types"
 import { t } from "i18next"
 import { defaultLocale } from "../../locales"
+import { getSiteConfig, whiteLabels } from "../../utils/siteConfig"
 
 const NavigationContext = createContext<
   | {
@@ -169,17 +170,23 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     searchParams.get("showInstall") === "true",
   )
 
+  const siteApp = getSiteConfig()
+
   const setShowAddToHomeScreen = (value: boolean) => {
     if (typeof window === "undefined") return
+
+    const whiteLabel = app?.slug
+      ? whiteLabels.find((a) => a.slug === app.slug)
+      : undefined
     !value && removeParam("showInstall")
     if (
       !isStandalone &&
       value &&
-      os === "ios" &&
       app &&
-      session?.app?.id !== app.id
+      app.slug &&
+      app.slug !== siteApp.slug
     ) {
-      const newUrl = new URL(window.location.href)
+      const newUrl = new URL(whiteLabel?.url || window.location.href)
       newUrl.searchParams.set("showInstall", "true")
 
       window.location.href = newUrl.toString()

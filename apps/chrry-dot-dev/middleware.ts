@@ -90,6 +90,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
       "x-pathname",
       "x-locale",
       "x-app-id",
+      "x-chrry-url",
     ].join(", "),
   )
   response.headers.set(
@@ -185,6 +186,10 @@ export default async function middleware(request: NextRequest) {
   // Set fingerprint cookie if not already set
   const existingFingerprintCookie = request.cookies.get("fingerprint")?.value
   const fingerprintUrl = searchParams.get("fp")
+
+  const chrryUrl = searchParams.get("chrryUrl")
+
+  chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
 
   const fingerprint = request.headers.get("x-fp") || fingerprintUrl || uuidv4()
   if (!existingFingerprintCookie && fingerprint) {
