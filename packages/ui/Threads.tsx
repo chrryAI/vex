@@ -65,7 +65,7 @@ const Threads = ({
     setProfile,
     profile,
     app,
-    allApps,
+    storeApps,
     baseApp,
     getAppSlug,
     timeAgo,

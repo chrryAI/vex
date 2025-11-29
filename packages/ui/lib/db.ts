@@ -34,7 +34,7 @@ const getDB = async () => {
 
 /**
  * Cache data to IndexedDB
- * @param key - Unique cache key (e.g., 'allApps', 'threads-app123')
+ * @param key - Unique cache key (e.g., 'storeApps', 'threads-app123')
  * @param data - Any JSON-serializable data
  * @param ttl - Optional time-to-live in milliseconds
  */
