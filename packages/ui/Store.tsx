@@ -202,7 +202,7 @@ export default function Store({
                     display: isMobileDevice ? "none" : "flex",
                   }}
                 >
-                  {t("live")}
+                  {t(app.status === "active" ? "live" : "testing")}
                 </Span>
                 <Img
                   style={{ ...styles.appImage.style }}

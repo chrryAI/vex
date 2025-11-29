@@ -5493,7 +5493,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
     subtitle: "AI Ad Platform",
     storeId: blossom.id, // Primary store is Blossom (marketplace/monetization)
     version: "1.0.0",
-    status: "active" as const,
+    status: "testing" as const,
     title: "Privacy-First AI Advertising",
     themeColor: "purple",
     backgroundColor: "#000000",
