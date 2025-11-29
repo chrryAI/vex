@@ -54,9 +54,17 @@ export async function GET(request: NextRequest) {
       depth: 1,
     }))
 
+  console.log(`🚀 ~ GET ~ app:`, app?.name)
   if (!app) {
     return NextResponse.json({ error: "App not found" }, { status: 404 })
   }
+
+  const baseConfig = getSiteConfig()
+
+  const siteApp = await getApp({
+    slug: baseConfig.slug,
+    storeSlug: baseConfig.storeSlug,
+  })
 
   // Get all apps from the current app's store
   const currentStoreApps = app.store?.apps || []
@@ -104,6 +112,10 @@ export async function GET(request: NextRequest) {
   )
 
   const validApps = enrichedApps.filter(Boolean) as appWithStore[]
+
+  if (siteApp && validApps && !validApps.some((app) => app.id === siteApp.id)) {
+    validApps.push(siteApp)
+  }
 
   return NextResponse.json(validApps)
 }

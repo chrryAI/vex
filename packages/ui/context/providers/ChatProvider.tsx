@@ -180,6 +180,7 @@ export function ChatProvider({
     setLoadingApp,
     threads,
     setThreads,
+    hasStoreApps,
     ...auth
   } = useAuth()
 
@@ -407,11 +408,6 @@ export function ChatProvider({
   }, [searchParams])
 
   const [wasIncognito, setWasIncognito] = useState(isIncognito)
-
-  const hasStoreApps = (item: appWithStore | undefined) => {
-    const app = allApps?.find((app) => app.id === item?.id)
-    return app?.store?.apps.length
-  }
 
   const [loading, setLoading] = useState<boolean>(false)
 
@@ -757,7 +753,7 @@ export function ChatProvider({
     }
   }, [placeHolder, app])
 
-  const { appStatus } = useApp()
+  const { appStatus, baseApp } = useApp()
 
   useEffect(() => {
     if (appStatus?.part) {

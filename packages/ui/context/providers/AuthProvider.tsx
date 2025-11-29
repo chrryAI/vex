@@ -74,6 +74,7 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      hasStoreApps: (item: appWithStore | undefined) => boolean
       threads?: {
         threads: thread[]
         totalCount: number
@@ -706,6 +707,7 @@ export function AuthProvider({
   const [allApps, setAllApps] = useState<appWithStore[]>(
     sessionData?.app?.store?.apps || [],
   )
+
   const getAppSlug = (
     targetApp: appWithStore,
     defaultSlug: string = "/",
@@ -718,6 +720,7 @@ export function AuthProvider({
     let computedSlug = defaultSlug
 
     if (targetApp) {
+      console.log(`🚀 ~ getAppSlug ~ baseApp:`, baseApp)
       if (targetApp.id === baseApp?.id) {
         computedSlug = defaultSlug
       } else if (baseApp?.id === chrry?.id && targetApp.id === chrry?.id) {
@@ -755,6 +758,11 @@ export function AuthProvider({
   }
   const baseApp = allApps?.find((item) => {
     if (!item) return false
+    console.log(
+      `🚀 ~ AuthProvider ~ siteConfig.storeSlug:`,
+      siteConfig.slug,
+      allApps,
+    )
     if (
       siteConfig.slug === item.slug &&
       item.store?.slug === siteConfig.storeSlug
@@ -1001,41 +1009,52 @@ export function AuthProvider({
     undefined,
   )
 
-  const sessionCacheKey: string = useMemo(() => {
-    return app?.slug || ""
-  }, [app?.slug])
-
   const chrry = allApps?.find((app) => !app.store?.parentStoreId)
   const vex = allApps?.find((app) => app.slug === "vex")
   const sushi = allApps?.find((app) => app.slug === "sushi")
   const focus = allApps?.find((app) => app.slug === "focus")
 
+  const appId = loadingApp?.id || app?.id
+
   const {
     data: allAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(
-    token && (loadingApp?.id || app?.id) ? ["allApps", token] : null,
-    async () => {
-      if (!token) return null
+  } = useSWR(token && appId ? ["allApps"] : null, async () => {
+    try {
+      const apps = await getApps({ token, appId: loadingApp?.id || app?.id })
 
-      try {
-        const apps = await getApps({ token, appId: loadingApp?.id || app?.id })
+      console.log(`🚀 ~ AuthProvider ~ apps:`, app?.id, baseApp?.id)
 
-        return apps
-      } catch (error) {
-        console.log(`🚀 ~ file: AuthProvider.tsx:1002 ~ error:`, error)
-        toast.error("Something went wrong")
-      }
-    },
-  )
+      return apps
+    } catch (error) {
+      console.log(`🚀 ~ file: AuthProvider.tsx:1002 ~ error:`, error)
+      toast.error("Something went wrong")
+    }
+  })
+
+  const hasStoreApps = (item: appWithStore | undefined) => {
+    const app = allApps?.find((app) => {
+      return app.id === item?.id
+    })
+
+    item?.slug === "fightClub" &&
+      console.log(
+        `🚀 ~ hasStoreApps ~ app:`,
+        allApps?.find(
+          (app) => app.store?.appId && app.id === item?.store?.appId,
+        ),
+      )
+    return Boolean(
+      app?.store?.apps.length &&
+        allApps?.find(
+          (app) => app.store?.appId && app.id === item?.store?.appId,
+        ),
+    )
+  }
 
   useEffect(() => {
-    const item = loadingApp
-      ? allApps?.find((app) => app.id === loadingApp?.id)
-      : undefined
-
-    if (loadingApp && item?.store?.apps.length) {
+    if (hasStoreApps(loadingApp)) {
       setLoadingApp(undefined)
       return
     }
@@ -1066,6 +1085,7 @@ export function AuthProvider({
   const base = allApps.find(
     (a) => a.store?.appId === a.id && a.store.id === app?.store?.id,
   )
+
   // Filter apps by current store - fallback to all apps if store has no apps
   const apps = app?.store?.id
     ? allApps.filter((a) => base?.store?.apps.some((b) => b.id === a.id))
@@ -1580,6 +1600,7 @@ export function AuthProvider({
         guestBaseStore,
         userBaseApp,
         guestBaseApp,
+        hasStoreApps,
         vex,
         fetchApps: async () => {
           await refetchApps()
