@@ -203,13 +203,13 @@ export default function Subscribe({
     return cleaned
   }
 
-  const [giftedFingerPrint, setGiftedFingerPrintInternal] = useState<
+  const [checkoutFingerPrint, setCheckoutFingerPrintInternal] = useState<
     string | null
   >()
 
-  const setGiftedFingerPrint = (fp: string) => {
+  const setCheckoutFingerPrint = (fp: string) => {
     if (!isE2E) return
-    setGiftedFingerPrintInternal(fp)
+    setCheckoutFingerPrintInternal(fp)
   }
 
   const handlePlanChange = async (newPlan: "plus" | "pro") => {
@@ -268,7 +268,7 @@ export default function Subscribe({
         userId,
         guestId,
         email,
-        giftedFingerPrint,
+        checkoutFingerPrint,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -279,25 +279,15 @@ export default function Subscribe({
     const data = await response.json()
     if (data.success) {
       track({ name: "subscribe_payment_verified" })
-      if (isExtensionRedirect) {
-        toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
-      } else {
-        setPurchaseType(data.gift ? "gift" : "subscription")
-        toast.success(
-          data.gift
-            ? t(`🥰 ${t("Thank you for your gift")}`)
-            : data.credits
-              ? t(`${t("Credits updated")}`)
-              : t(`${t("Subscribed")}`),
-        )
-
-        console.log(`🚀 ~ verifyPayment ~ data.fingerPrint:`, {
-          data,
-          giftedFingerPrint,
-        })
-
-        setGiftedFingerPrint(uuidv4())
-      }
+      setPurchaseType(data.gift ? "gift" : "subscription")
+      toast.success(
+        data.gift
+          ? t(`🥰 ${t("Thank you for your gift")}`)
+          : data.credits
+            ? t(`${t("Credits updated")}`)
+            : t(`${t("Subscribed")}`),
+      )
+      setCheckoutFingerPrint(uuidv4())
 
       await fetchSession()
       // Delay modal close to allow state to update
@@ -373,12 +363,12 @@ export default function Subscribe({
   const is = useHasHydrated()
 
   useEffect(() => {
-    if (giftedFingerPrint) return
-    setGiftedFingerPrint(uuidv4())
-  }, [giftedFingerPrint])
+    if (checkoutFingerPrint) return
+    setCheckoutFingerPrint(uuidv4())
+  }, [checkoutFingerPrint])
 
   useEffect(() => {
-    if (!giftedFingerPrint) return
+    if (!checkoutFingerPrint) return
     if (typeof window === "undefined" || !window.location) return
     const params = new URLSearchParams(window.location.search)
     if (params.get("checkout") === "success") {
@@ -391,7 +381,7 @@ export default function Subscribe({
         verifyPayment(sessionId)
       }, 100)
     }
-  }, [giftedFingerPrint])
+  }, [checkoutFingerPrint])
 
   const [selectedPlan, setSelectedPlanInternal] = useState<
     "plus" | "pro" | "member" | "credits"
@@ -1128,7 +1118,7 @@ export default function Subscribe({
         is && (
           <Button
             className="transparent"
-            data-gifted-fingerprint={giftedFingerPrint}
+            data-gifted-fingerprint={checkoutFingerPrint}
             data-testid={`subscribe-button`}
             id="subscribeButton"
             onClick={() => {
