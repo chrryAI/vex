@@ -72,6 +72,7 @@ import { useInstructionsStyles } from "./Instructions.styles"
 import { useStyles } from "./context/StylesContext"
 import EmojiPicker from "./EmojiPicker"
 import { MotiView } from "./platform/MotiView"
+import { useResponsiveCount } from "./hooks/useResponsiveCount"
 
 export default function Instructions({
   className,
@@ -148,33 +149,19 @@ export default function Instructions({
 
   const { os, isStandalone, viewPortHeight } = usePlatform()
 
-  const getVisibleInstructionCount = () => {
-    const height = (viewPortHeight || 0) + (isStandalone ? 250 : 0)
+  const offset = isStandalone ? 250 : 0
 
-    if (height >= 500 && height < 600) return 1
-    if (height >= 550 && height < 625) return 2
-    // Show first 3 items at 550px+
-    if (height >= 550 && height < 650) return 3
-
-    // Show 4 items at 650px+
-    if (height >= 650 && height < 750) return 4
-
-    // Show all items at 750px+ (for standalone) or 800px+ (tablet)
-    if (height >= 750 || height >= 800) return Infinity
-
-    // Below 550px, show none
-    return 0
-  }
-
-  const [visibleInstructionCount, setVisibleInstructionCount] = useState(
-    getVisibleInstructionCount(),
+  const count = useResponsiveCount(
+    [
+      { height: 500, count: 0 }, // Below 500px: show none
+      { height: 600, count: 1 }, // 500-599px: show 1
+      { height: 625, count: 2 }, // 600-624px: show 2
+      { height: 650, count: 3 }, // 625-649px: show 3
+      { height: 750, count: 4 }, // 650-749px: show 4
+      { height: Infinity, count: 7 }, // 750px+: show all
+    ],
+    offset,
   )
-
-  useEffect(() => {
-    setTimeout(() => {
-      setVisibleInstructionCount(getVisibleInstructionCount())
-    }, 50)
-  }, [viewPortHeight, isStandalone])
 
   // Theme context
   const { addHapticFeedback, isDark, isMobileDevice, reduceMotion } =
@@ -1410,61 +1397,59 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               gap: isMobileDevice ? toRem(5) : toRem(7.5),
             }}
           >
-            {instructions
-              .slice(0, visibleInstructionCount)
-              .map((instruction, index) => {
-                return (
-                  <MotiView
-                    key={`instruction-${instruction.id}-isAppInstructions-${isAppInstructions ? "true" : "false"}`}
-                    from={{ opacity: 0, translateY: -10 }}
-                    animate={{ opacity: 1, translateY: 0 }}
-                    transition={{
-                      duration: reduceMotion ? 0 : 100,
-                      delay: reduceMotion ? 0 : index * 15,
+            {instructions.slice(0, count).map((instruction, index) => {
+              return (
+                <MotiView
+                  key={`instruction-${instruction.id}-isAppInstructions-${isAppInstructions ? "true" : "false"}`}
+                  from={{ opacity: 0, translateY: -10 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 100,
+                    delay: reduceMotion ? 0 : index * 15,
+                  }}
+                >
+                  <Button
+                    data-testid={`${dataTestId}-item`}
+                    className="link"
+                    style={{
+                      ...utilities.link.style,
+                      ...styles.instruction.style,
+                      ...(selectedInstruction?.id === instruction.id
+                        ? styles.instructionSelected.style
+                        : {}),
+                      fontSize: isMobileDevice ? 14 : 15,
+                    }}
+                    onClick={() => {
+                      setSelectedInstruction(instruction)
                     }}
                   >
-                    <Button
-                      data-testid={`${dataTestId}-item`}
-                      className="link"
-                      style={{
-                        ...utilities.link.style,
-                        ...styles.instruction.style,
-                        ...(selectedInstruction?.id === instruction.id
-                          ? styles.instructionSelected.style
-                          : {}),
-                        fontSize: isMobileDevice ? 14 : 15,
-                      }}
-                      onClick={() => {
-                        setSelectedInstruction(instruction)
-                      }}
-                    >
-                      <Span style={styles.instructionEmoji.style}>
-                        {instruction.emoji}
-                      </Span>
-                      <Span style={styles.instructionTitle.style}>
-                        {t(
-                          instruction.title,
-                          isManaging ? undefined : instructionConfig,
-                        )}
-                      </Span>
-                      {isManaging && (
-                        <>
-                          {getCurrentSuggestionStep(instruction) ===
-                          "not_started" ? (
-                            <ArrowRight size={14} color="var(--accent-1)" />
-                          ) : getCurrentSuggestionStep(instruction) ===
-                            "in_progress" ? (
-                            <Circle size={14} color="var(--accent-1)" />
-                          ) : getCurrentSuggestionStep(instruction) ===
-                            "success" ? (
-                            <CircleCheck size={14} color="var(--accent-4)" />
-                          ) : null}
-                        </>
+                    <Span style={styles.instructionEmoji.style}>
+                      {instruction.emoji}
+                    </Span>
+                    <Span style={styles.instructionTitle.style}>
+                      {t(
+                        instruction.title,
+                        isManaging ? undefined : instructionConfig,
                       )}
-                    </Button>
-                  </MotiView>
-                )
-              })}
+                    </Span>
+                    {isManaging && (
+                      <>
+                        {getCurrentSuggestionStep(instruction) ===
+                        "not_started" ? (
+                          <ArrowRight size={14} color="var(--accent-1)" />
+                        ) : getCurrentSuggestionStep(instruction) ===
+                          "in_progress" ? (
+                          <Circle size={14} color="var(--accent-1)" />
+                        ) : getCurrentSuggestionStep(instruction) ===
+                          "success" ? (
+                          <CircleCheck size={14} color="var(--accent-4)" />
+                        ) : null}
+                      </>
+                    )}
+                  </Button>
+                </MotiView>
+              )
+            })}
           </Div>
         )}
         {!thread && !icon && showInstructions && (

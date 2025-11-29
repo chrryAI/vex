@@ -13,6 +13,7 @@ import {
   usePlatform,
   useTheme,
 } from "./platform"
+import { useResponsiveCount } from "./hooks/useResponsiveCount"
 
 export default function EmptyStateTips({
   style,
@@ -222,13 +223,12 @@ export default function EmptyStateTips({
     ],
   }
 
-  const count = (() => {
-    if (viewPortHeight < 600) return 2
-    if (viewPortHeight < 700) return 3
-    if (viewPortHeight < 800) return 4
-    if (viewPortHeight < 900) return 5
-    return 6
-  })()
+  const count = useResponsiveCount([
+    { height: 600, count: 2 },
+    { height: 700, count: 3 },
+    { height: 800, count: 4 },
+    { height: 900, count: 5 },
+  ])
 
   const currentTips = app?.tips
     ? app?.tips.map((tip) => ({
