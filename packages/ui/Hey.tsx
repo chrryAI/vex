@@ -76,11 +76,11 @@ export const Hey = memo(
     }, [pathname, isExtension])
 
     const { threadId } = useChat()
-    const { allApps, app, isSplash, setIsSplash, apps } = useAuth()
+    const { storeApps, app, isSplash, setIsSplash, apps } = useAuth()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
-    const store = allApps?.find(
+    const store = storeApps?.find(
       (app) => app?.store?.slug === lastPathSegment,
     )?.store
 
@@ -114,7 +114,7 @@ export const Hey = memo(
     const isChrry = app && app.slug === "chrry"
 
     const isAppSlug =
-      !!appSlug && allApps.some((candidate) => candidate.slug === appSlug)
+      !!appSlug && storeApps.some((candidate) => candidate.slug === appSlug)
 
     // Check if current route is a store slug by checking all apps
     const isStorePage = !!store

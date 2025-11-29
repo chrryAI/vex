@@ -168,7 +168,7 @@ const AuthContext = createContext<
       app: appWithStore | undefined
       setApp: (app: appWithStore | undefined) => void
       apps: appWithStore[]
-      allApps: appWithStore[] // All apps from all stores
+      storeApps: appWithStore[] // All apps from all stores
       setSlug: (slug: string | undefined) => void
       setApps: (apps: appWithStore[]) => void
       getAppSlug: (app: appWithStore, defaultSlug?: string) => string
@@ -699,7 +699,7 @@ export function AuthProvider({
       isPWA,
     })
   }
-  const [allApps, setAllApps] = useState<appWithStore[]>(
+  const [storeApps, setAllApps] = useState<appWithStore[]>(
     sessionData?.app?.store?.apps || [],
   )
 
@@ -750,7 +750,7 @@ export function AuthProvider({
 
     return computedSlug || defaultSlug
   }
-  const baseApp = allApps?.find((item) => {
+  const baseApp = storeApps?.find((item) => {
     if (!item) return false
 
     if (
@@ -918,7 +918,7 @@ export function AuthProvider({
       return undefined
     }
 
-    const matchedApp = allApps?.find(
+    const matchedApp = storeApps?.find(
       (app) => app.slug === appSlug || app.store?.slug === appSlug,
     )
     return matchedApp?.slug
@@ -988,15 +988,15 @@ export function AuthProvider({
     undefined,
   )
 
-  const chrry = allApps?.find((app) => !app.store?.parentStoreId)
-  const vex = allApps?.find((app) => app.slug === "vex")
-  const sushi = allApps?.find((app) => app.slug === "sushi")
-  const focus = allApps?.find((app) => app.slug === "focus")
+  const chrry = storeApps?.find((app) => !app.store?.parentStoreId)
+  const vex = storeApps?.find((app) => app.slug === "vex")
+  const sushi = storeApps?.find((app) => app.slug === "sushi")
+  const focus = storeApps?.find((app) => app.slug === "focus")
 
   const appId = loadingApp?.id || app?.id
 
   const {
-    data: allAppsSwr,
+    data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
   } = useSWR(token && appId ? ["app", appId] : null, async () => {
@@ -1011,13 +1011,13 @@ export function AuthProvider({
   })
 
   const hasStoreApps = (item: appWithStore | undefined) => {
-    const app = allApps?.find((app) => {
+    const app = storeApps?.find((app) => {
       return app.id === item?.id
     })
 
     return Boolean(
       app?.store?.apps.length &&
-        allApps?.find(
+        storeApps?.find(
           (app) => app.store?.appId && app.id === item?.store?.appId,
         ),
     )
@@ -1032,13 +1032,13 @@ export function AuthProvider({
     if (loadingApp) {
       refetchApps()
     }
-  }, [loadingApp, isLoadingApps, allApps])
+  }, [loadingApp, isLoadingApps, storeApps])
 
   useEffect(() => {
-    if (allAppsSwr && Array.isArray(allAppsSwr)) {
-      mergeApps(allAppsSwr)
+    if (storeAppsSwr && Array.isArray(storeAppsSwr)) {
+      mergeApps(storeAppsSwr)
     }
-  }, [allAppsSwr, mergeApps])
+  }, [storeAppsSwr, mergeApps])
 
   // Sync app.id to lastAppId for extensions
 
@@ -1052,20 +1052,20 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const base = allApps.find(
+  const base = storeApps.find(
     (a) => a.store?.appId === a.id && a.store.id === app?.store?.id,
   )
 
   // Filter apps by current store - fallback to all apps if store has no apps
   const apps = app?.store?.id
-    ? allApps.filter((a) => base?.store?.apps.some((b) => b.id === a.id))
-    : allApps
+    ? storeApps.filter((a) => base?.store?.apps.some((b) => b.id === a.id))
+    : storeApps
 
-  const userBaseApp = allApps?.find(
+  const userBaseApp = storeApps?.find(
     (app) => user?.userName && app.store?.slug === user?.userName,
   )
   const userBaseStore = userBaseApp?.store
-  const guestBaseApp = allApps?.find(
+  const guestBaseApp = storeApps?.find(
     (app) => guest?.id && app.store?.slug === guest?.id,
   )
   const guestBaseStore = guestBaseApp?.store
@@ -1298,13 +1298,13 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
-    if (!allApps.length || (!thread && threadId)) return
+    if (!storeApps.length || (!thread && threadId)) return
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
 
     if (thread?.appId) {
-      const threadApp = allApps.find((app) => app.id === thread.appId)
+      const threadApp = storeApps.find((app) => app.id === thread.appId)
       if (threadApp) {
         matchedApp = threadApp
         console.log("🧵 Using thread app:", threadApp.slug)
@@ -1313,7 +1313,7 @@ export function AuthProvider({
 
     // Priority 2: Find app by pathname
     if (!matchedApp) {
-      matchedApp = findAppByPathname(pathname, allApps) || baseApp
+      matchedApp = findAppByPathname(pathname, storeApps) || baseApp
       console.log("🛣️ Using pathname app:", matchedApp?.slug)
     }
 
@@ -1339,7 +1339,7 @@ export function AuthProvider({
       setSlug(getAppSlug(matchedApp) || "")
     }
   }, [
-    allApps,
+    storeApps,
     pathname,
     baseApp,
     app?.id,
@@ -1440,7 +1440,7 @@ export function AuthProvider({
     }))
 
   useEffect(() => {
-    const created = allApps?.some((app) => app.id === newApp?.id)
+    const created = storeApps?.some((app) => app.id === newApp?.id)
     if (newApp && created && app?.id !== newApp.id) {
       const finalURL = getAppSlug(newApp)
 
@@ -1462,7 +1462,7 @@ export function AuthProvider({
         router.push(`${finalURL}`)
       }
     }
-  }, [newApp, app, allApps])
+  }, [newApp, app, storeApps])
 
   const lastRateLimitErrorRef = useRef<string | null>(null)
 
@@ -1490,11 +1490,11 @@ export function AuthProvider({
 
   const { clear } = useCache()
 
-  const popcorn = allApps.find((app) => app.slug === "popcorn")
-  const atlas = allApps.find((app) => app.slug === "atlas")
-  const bloom = allApps.find((app) => app.slug === "bloom")
+  const popcorn = storeApps.find((app) => app.slug === "popcorn")
+  const atlas = storeApps.find((app) => app.slug === "atlas")
+  const bloom = storeApps.find((app) => app.slug === "bloom")
 
-  const zarathustra = allApps.find((app) => app.slug === "zarathustra")
+  const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
   const signOut = async () => {
     setShouldFetchSession(false)
@@ -1646,7 +1646,7 @@ export function AuthProvider({
         zarathustra,
         updateMood,
         lastAppId,
-        allApps, // All apps from all stores
+        storeApps, // All apps from all stores
         refetchSession: async (newApp?: appWithStore) => {
           await fetchSession(newApp)
         },

@@ -151,7 +151,7 @@ export function ChatProvider({
     setGuest,
     setUser,
     setApp,
-    allApps,
+    storeApps,
     app,
     chrry,
     track,
@@ -434,7 +434,7 @@ export function ChatProvider({
       setLoading(false)
       return
     }
-  }, [loading, allApps, loadingApp])
+  }, [loading, storeApps, loadingApp])
 
   const setIsNewChat = (
     value: boolean,

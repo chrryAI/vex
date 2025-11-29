@@ -163,7 +163,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     store,
     guestBaseApp,
     stores,
-    allApps,
+    storeApps,
     isSavingApp,
     setIsSavingApp,
     defaultInstructions,
@@ -373,8 +373,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!formDraft || !formDraft.extends) return
 
-    // Filter out stale app IDs that no longer exist in allApps
-    const validAppIds = new Set(allApps.map((app) => app.id))
+    // Filter out stale app IDs that no longer exist in storeApps
+    const validAppIds = new Set(storeApps.map((app) => app.id))
     const validExtends = formDraft.extends.filter((id) => validAppIds.has(id))
 
     // If all extends were stale, reset to defaults
@@ -396,7 +396,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         extends: validExtends,
       })
     }
-  }, [formDraft, vex, chrry, allApps])
+  }, [formDraft, vex, chrry, storeApps])
 
   const getInitialFormValues = (): Partial<appFormData> => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
@@ -469,7 +469,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const pathSegments = pathname.split("/").filter(Boolean)
     const lastSegment = pathSegments[pathSegments.length - 1] || ""
 
-    const matchedApp = allApps?.find((app) => app?.store?.slug === lastSegment)
+    const matchedApp = storeApps?.find(
+      (app) => app?.store?.slug === lastSegment,
+    )
 
     return matchedApp
   }
@@ -482,7 +484,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return
     }
     matchedApp?.store && setCurrentStore(matchedApp.store)
-  }, [pathname, allApps])
+  }, [pathname, storeApps])
 
   const appFormWatcher = {
     ...watcher,

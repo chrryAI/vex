@@ -114,11 +114,11 @@ export default async function getAppAction({
     // Get apps from different parent stores for quick navigation
 
     // Combine: current store apps + apps from different parent stores
-    const allApps = [...currentStoreApps]
+    const storeApps = [...currentStoreApps]
 
     // Enrich each app with store.app reference
     const enrichedApps = await Promise.all(
-      allApps.map(async (app) => {
+      storeApps.map(async (app) => {
         if (!app) return null
 
         const isBaseApp = app?.id === app?.store?.appId

@@ -131,7 +131,7 @@ Use descriptive, scoped keys:
 
 ```typescript
 // Good
-"allApps"
+"storeApps"
 "session"
 "threads-app123"
 "profile-user456"

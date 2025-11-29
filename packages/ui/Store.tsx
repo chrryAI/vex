@@ -37,12 +37,17 @@ export default function Store({
 
   const { setIsNewAppChat } = useChat()
 
-  const { track, allApps, getAppSlug, loadingApp } = useAuth()
+  const {
+    track,
+    storeApps: storeAppsContext,
+    getAppSlug,
+    loadingApp,
+  } = useAuth()
 
   const { currentStore } = useApp()
 
   const store = slug
-    ? allApps.find((app) => app.slug === slug)?.store
+    ? storeAppsContext.find((app) => app.slug === slug)?.store
     : currentStore
 
   const apps = store?.apps

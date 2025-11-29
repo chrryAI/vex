@@ -103,7 +103,7 @@ export default function FocusButton({
     bloom,
     app,
     getAppSlug,
-    allApps,
+    storeApps,
     focus,
     setShowFocus,
     showFocus,

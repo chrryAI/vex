@@ -58,7 +58,7 @@ export const AppContextProvider = ({
   children: React.ReactNode
 }) => {
   const { t: i18nT } = useTranslation()
-  const { user, allApps, atlas } = useAuth()
+  const { user, storeApps, atlas } = useAuth()
   const isE2E = process.env.NEXT_PUBLIC_TESTING_ENV === "e2e"
   const isCI = process.env.NEXT_PUBLIC_CI === "true"
 
@@ -98,7 +98,7 @@ export const AppContextProvider = ({
       }
     }
 
-    const app = allApps.find((a) => a.slug === config.slug)
+    const app = storeApps.find((a) => a.slug === config.slug)
 
     // Fallback for cities
     const name =

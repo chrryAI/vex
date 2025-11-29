@@ -4199,7 +4199,7 @@ export const getInstructions = async ({
 }) => {
   // If perApp is true, get pageSize instructions per app
   if (perApp) {
-    const allApps = await getApps({
+    const storeApps = await getApps({
       userId,
       guestId,
       pageSize: 50,
@@ -4207,7 +4207,7 @@ export const getInstructions = async ({
     })
     // Deduplicate app IDs (in case of inheritance duplicates)
     const uniqueAppIds = Array.from(
-      new Set([null, ...allApps.items.map((app) => app.id)]),
+      new Set([null, ...storeApps.items.map((app) => app.id)]),
     )
 
     const instructionsByApp = await Promise.all(

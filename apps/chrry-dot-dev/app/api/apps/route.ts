@@ -461,7 +461,7 @@ export async function POST(request: NextRequest) {
     console.log(`✅ App installed to store: ${subjectStore?.store.slug}`)
 
     // 🎉 Auto-install and put first: Get all apps, add new app to top, send to reorder
-    const allAppsResult = await getApps({
+    const storeAppsResult = await getApps({
       userId: member?.id,
       guestId: guest?.id,
     })
@@ -480,7 +480,9 @@ export async function POST(request: NextRequest) {
     // New app first, then up to 5 existing apps (total 6)
     const appsToReorder = [
       newApp,
-      ...allAppsResult.items.filter((app) => app.id !== newApp.id).slice(0, 5),
+      ...storeAppsResult.items
+        .filter((app) => app.id !== newApp.id)
+        .slice(0, 5),
     ]
 
     await reorderApps({
