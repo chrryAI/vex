@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const member = await getMember({ full: true })
+  const member = await getMember({ full: true, skipCache: true })
 
   const {
     language,
@@ -144,7 +144,9 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE() {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-  const member = await getMember()
+  const member = await getMember({
+    skipCache: true,
+  })
 
   if (!member) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
