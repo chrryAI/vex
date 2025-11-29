@@ -98,7 +98,7 @@ export const AppStyleDefs = {
   },
   zarathustra: {
     position: "relative",
-    right: 0,
+    right: 5,
   },
   grip: {},
   instructions: {},
