@@ -28,8 +28,8 @@ interface WeatherApiResponse {
 }
 
 export async function GET(request: NextRequest) {
-  const member = await getMember({ full: true })
-  const guest = await getGuest()
+  const member = await getMember({ full: true, skipCache: true })
+  const guest = await getGuest({ skipCache: true })
 
   if (!member && !guest) {
     return NextResponse.json(

@@ -10,9 +10,9 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || process.env.CHATGPT_API_KEY
 const OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech"
 
 export async function POST(request: NextRequest) {
-  const member = await getMember({ full: true })
+  const member = await getMember({ full: true, skipCache: true })
 
-  const guest = member ? undefined : await getGuest()
+  const guest = member ? undefined : await getGuest({ skipCache: true })
 
   if (!member && !guest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

@@ -23,8 +23,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const user = await getMember()
-    const guest = !user ? await getGuest() : undefined
+    const user = await getMember({ full: true, skipCache: true })
+    const guest = !user ? await getGuest({ skipCache: true }) : undefined
     const subscription = user?.subscription || guest?.subscription
 
     if (!subscription) {
