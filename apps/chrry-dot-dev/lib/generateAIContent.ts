@@ -801,20 +801,11 @@ async function generateAIContent({
   useCustomAgent?: boolean // Use app's selected agent instead of DeepSeek (may increase costs)
 }) {
   const memoriesEnabled = user?.memoriesEnabled || guest?.memoriesEnabled
-  console.log(
-    `🚀 ~ file: generateAIContent.ts:806 ~ memoriesEnabled:`,
-    memoriesEnabled,
-  )
+
   if (thread.isIncognito) return
 
   const characterProfilesEnabled =
     user?.characterProfilesEnabled || guest?.characterProfilesEnabled
-
-  console.log(
-    `🚀 ~ file: generateAIContent.ts:808 ~ characterProfilesEnabled:`,
-    characterProfilesEnabled,
-    app?.id,
-  )
 
   // Always extract memories if we have an app (for app memories)
   // Skip only if both features are disabled AND no app

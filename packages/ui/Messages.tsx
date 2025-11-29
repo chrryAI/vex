@@ -127,7 +127,6 @@ export default forwardRef<
     data: characterProfile
   }>({
     onMessage: async ({ type, data }) => {
-      console.log(`🚀 ~ Messages ~ type:`, type)
       if (type === "character_tag_created") {
         if (data?.threadId !== threadId) return
         onCharacterProfileUpdate?.()

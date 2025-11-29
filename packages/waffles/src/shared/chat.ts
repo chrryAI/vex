@@ -157,10 +157,7 @@ export const chat = async ({
   const addDebateAgentButton = page.getByTestId("add-debate-agent-button")
   await expect(addDebateAgentButton).toBeVisible()
   let hourlyUsage = 0 + messagesConsumed
-  console.log(`🚀 ~ file: chat.ts:160 ~ hourlyUsage:`, {
-    hourlyUsage,
-    messagesConsumed,
-  })
+
   const getAgentName = async () => {
     return page
       .getByTestId("agent-select-button")
@@ -859,10 +856,6 @@ export const chat = async ({
 
       const hourlyUsageLeft = await getHourlyUsageLeft()
       expect(hourlyUsageLeft).toBe((hourlyLimit - hourlyUsage).toString())
-      console.log(`🚀 ~ file: chat.ts:858 ~ hourlyUsage:`, {
-        hourlyUsage,
-        hourlyLimit,
-      })
 
       // Assert appropriate values based on what's visible
 

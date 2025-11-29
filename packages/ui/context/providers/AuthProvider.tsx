@@ -582,11 +582,6 @@ export function AuthProvider({
 
         // Cache session data on successful fetch
 
-        console.log(
-          `🚀 ~ file: AuthProvider.tsx:566 ~ sessionResult:`,
-          sessionResult,
-        )
-
         return sessionResult
       } catch (error) {
         toast.error("Something went wrong")
@@ -720,7 +715,6 @@ export function AuthProvider({
     let computedSlug = defaultSlug
 
     if (targetApp) {
-      console.log(`🚀 ~ getAppSlug ~ baseApp:`, baseApp)
       if (targetApp.id === baseApp?.id) {
         computedSlug = defaultSlug
       } else if (baseApp?.id === chrry?.id && targetApp.id === chrry?.id) {
@@ -758,11 +752,7 @@ export function AuthProvider({
   }
   const baseApp = allApps?.find((item) => {
     if (!item) return false
-    console.log(
-      `🚀 ~ AuthProvider ~ siteConfig.storeSlug:`,
-      siteConfig.slug,
-      allApps,
-    )
+
     if (
       siteConfig.slug === item.slug &&
       item.store?.slug === siteConfig.storeSlug
@@ -978,13 +968,7 @@ export function AuthProvider({
     })
   }, [])
 
-  console.log(
-    `🚀 ~ file: AuthProvider.tsx:960 ~ fetchSession ~ newApp:`,
-    shouldFetchSession,
-  )
-
   const fetchSession = async (newApp?: appWithStore) => {
-    console.log(`🚀 ~ file: AuthProvider.tsx:958 ~ newApp:`, newApp)
     if (newApp) {
       await refetchApps()
       setNewApp(newApp)
@@ -993,11 +977,6 @@ export function AuthProvider({
     setIsLoading(true)
     setShouldFetchSession(true)
 
-    shouldFetchSession &&
-      console.log(
-        `🚀 ~ file: AuthProvider.tssssssx:960 ~ fetchSession ~ newApp:`,
-        shouldFetchSession,
-      )
     // Force revalidation - clear cache and fetch fresh data
     shouldFetchSession &&
       (await refetchSession(undefined, { revalidate: true }))
@@ -1024,11 +1003,8 @@ export function AuthProvider({
     try {
       const apps = await getApps({ token, appId: loadingApp?.id || app?.id })
 
-      console.log(`🚀 ~ AuthProvider ~ apps:`, app?.id, baseApp?.id)
-
       return apps
     } catch (error) {
-      console.log(`🚀 ~ file: AuthProvider.tsx:1002 ~ error:`, error)
       toast.error("Something went wrong")
     }
   })
@@ -1038,13 +1014,6 @@ export function AuthProvider({
       return app.id === item?.id
     })
 
-    item?.slug === "fightClub" &&
-      console.log(
-        `🚀 ~ hasStoreApps ~ app:`,
-        allApps?.find(
-          (app) => app.store?.appId && app.id === item?.store?.appId,
-        ),
-      )
     return Boolean(
       app?.store?.apps.length &&
         allApps?.find(

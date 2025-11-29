@@ -137,7 +137,6 @@ export default function Weather({
         }))
       })
       .catch((error) => {
-        console.log(`🚀 ~ file: Weather.tsx:137 ~ error:`, error)
         toast.error(t("Something went wrong"))
         return []
       })
