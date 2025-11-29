@@ -58,7 +58,7 @@ echo -e "${BLUE}🎨 Generating Chrome Web Store assets for ${APP_NAME}...${NC}"
 echo -e "${YELLOW}📦 Creating store icon (128x128)...${NC}"
 $MAGICK "$SOURCE_ICON" \
     -resize 128x128 \
-    -background none \
+    -background black \
     -gravity center \
     -extent 128x128 \
     "$OUTPUT_DIR/icon-128.png"
@@ -67,8 +67,10 @@ echo -e "${GREEN}✅ Store icon created${NC}"
 # 2. Small Promo Tile (440x280)
 echo -e "${YELLOW}🖼️  Creating small promo tile (440x280)...${NC}"
 $MAGICK "$SOURCE_ICON" \
-    -resize 200x200 \
-    -background none \
+    -resize 220x220 \
+    -filter Lanczos \
+    -sharpen 0x1 \
+    -background black \
     -gravity center \
     -extent 440x280 \
     "$OUTPUT_DIR/small-promo-440x280.png"
@@ -78,7 +80,9 @@ echo -e "${GREEN}✅ Small promo tile created${NC}"
 echo -e "${YELLOW}🎭 Creating marquee promo tile (1400x560)...${NC}"
 $MAGICK "$SOURCE_ICON" \
     -resize 400x400 \
-    -background none \
+    -filter Lanczos \
+    -sharpen 0x1 \
+    -background black \
     -gravity center \
     -extent 1400x560 \
     "$OUTPUT_DIR/marquee-promo-1400x560.png"
@@ -91,7 +95,9 @@ echo -e "${YELLOW}📸 Creating screenshots (1280x800)...${NC}"
 for i in {1..5}; do
     $MAGICK "$SOURCE_ICON" \
         -resize 400x400 \
-        -background none \
+        -filter Lanczos \
+        -sharpen 0x1 \
+        -background black \
         -gravity center \
         -extent 1280x800 \
         "$OUTPUT_DIR/screenshot-${i}-1280x800.png"

@@ -66,14 +66,14 @@ export default defineConfig(({ command, mode }) => {
   }
 
   const getIconPath = (size: 16 | 32 | 48 | 128) =>
-    siteConfig.slug === "vex" || siteConfig.slug === "chrry"
+    siteConfig.slug === "chrry"
       ? `icons/blossom-icon-${size}.png`
       : `icons/${siteConfig.slug}-icon-${size}.png`
 
   // Manifest base
   const manifestBase = {
     manifest_version: 3,
-    name: `${siteConfig.name === "Vex" ? "Chrry" : siteConfig.name} 🍒`,
+    name: `${siteConfig.name} 🍒`,
     version: siteConfig.version || "1.5.23",
     description: siteConfig.description,
     permissions: isFirefox
