@@ -74,7 +74,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.5.24",
+    version: siteConfig.version || "1.5.25",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -136,7 +136,7 @@ export default defineConfig(({ command, mode }) => {
       viteStaticCopy({
         targets: [
           {
-            src: "icons", // this will copy the entire icons folder
+            src: "public/icons", // copy from public/icons
             dest: "",
           },
         ],
