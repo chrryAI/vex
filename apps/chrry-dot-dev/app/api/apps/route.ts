@@ -54,7 +54,6 @@ export async function GET(request: NextRequest) {
       depth: 1,
     }))
 
-  console.log(`🚀 ~ GET ~ app:`, app?.name)
   if (!app) {
     return NextResponse.json({ error: "App not found" }, { status: 404 })
   }

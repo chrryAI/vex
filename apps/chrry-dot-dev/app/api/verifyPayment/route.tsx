@@ -39,10 +39,7 @@ export async function POST(request: Request) {
   const body = await request.json()
   const siteConfig = getSiteConfig()
   const { session_id, userId, guestId, email, checkoutFingerPrint } = body
-  console.log(
-    `🚀 ~ file: route.tsx:42 ~ { session_id, userId, guestId, email }:`,
-    { session_id, userId, guestId, email, checkoutFingerPrint },
-  )
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
   const validTransitions = {
     plus: ["pro"],

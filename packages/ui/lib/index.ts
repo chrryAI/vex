@@ -1074,8 +1074,6 @@ export const getApps = async ({
     },
   })
 
-  console.log(`🚀 ~ file: index.ts:1077 ~ response:`, response)
-
   if (!response.ok) {
     return {
       error: `API error (${response.status})`,

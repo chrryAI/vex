@@ -275,7 +275,6 @@ export function ChatProvider({
         // Cache threads on successful fetch (30 min TTL)
         return threads
       } catch (error) {
-        console.log(`🚀 ~ file: ChatProvider.tsx:291 ~ error:`, error)
         toast.error("Something went wrong")
       }
     },
