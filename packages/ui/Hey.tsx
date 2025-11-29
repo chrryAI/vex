@@ -195,9 +195,9 @@ export const Hey = memo(
         setIsSplash(!apps.length)
     }, [isImageLoaded, isHydrated, isSplash, apps, minSplashTimeElapsed])
 
-    useEffect(() => {
-      app?.slug && useExtensionIcon?.(app?.slug)
-    }, [app, useExtensionIcon])
+    // useEffect(() => {
+    //   app?.slug && useExtensionIcon?.(app?.slug)
+    // }, [app, useExtensionIcon])
 
     return (
       <Div>
