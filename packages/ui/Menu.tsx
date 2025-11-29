@@ -60,7 +60,7 @@ export default function Menu({
   const { t } = useAppContext()
 
   // Auth context
-  const { user, guest, profile, track, language, allApps, getAppSlug } =
+  const { user, guest, profile, track, showFocus, setShowFocus, getAppSlug } =
     useAuth()
   // const { utilities } = useStyles()
 
@@ -294,6 +294,8 @@ export default function Menu({
                   }
                   e.preventDefault()
 
+                  showFocus && setShowFocus(false)
+
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   setIsNewChat(true)
                   reload()
@@ -312,6 +314,8 @@ export default function Menu({
                   if (e.metaKey || e.ctrlKey) {
                     return
                   }
+
+                  showFocus && setShowFocus(false)
                   e.preventDefault()
 
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
