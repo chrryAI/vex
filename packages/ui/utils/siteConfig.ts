@@ -730,6 +730,10 @@ export function detectSiteModeDomain(
 
   // Domain-based detection (use exact match or subdomain check)
 
+  if (matchesDomain(host, "books.chrry.ai")) {
+    return "zarathustra"
+  }
+
   if (matchesDomain(host, "atlas.chrry.ai")) {
     return "atlas"
   }
