@@ -222,6 +222,14 @@ export default function EmptyStateTips({
     ],
   }
 
+  const count = (() => {
+    if (viewPortHeight < 600) return 2
+    if (viewPortHeight < 700) return 3
+    if (viewPortHeight < 800) return 4
+    if (viewPortHeight < 900) return 5
+    return 6
+  })()
+
   const currentTips = app?.tips
     ? app?.tips.map((tip) => ({
         tip: tip.content,
@@ -245,7 +253,7 @@ export default function EmptyStateTips({
     <Section style={{ ...styles.emptyStateTips, ...style }}>
       <H3 style={{ marginBottom: 10, marginTop: 0 }}>{t(getAppTitle())}</H3>
       <Div style={{ ...styles.ul.style }}>
-        {currentTips.map((item, i) => {
+        {currentTips.slice(0, count).map((item, i) => {
           // Progressive display based on viewport height
           if (viewPortHeight < 600 && i >= 3) return null
           if (viewPortHeight < 700 && i >= 4) return null

@@ -504,7 +504,7 @@ export default function Menu({
                           ...styles.threadsList.style,
                         }}
                       >
-                        {threads.threads.map((thread, index) => (
+                        {threads?.threads.map((thread, index) => (
                           <MotiView
                             key={`${thread.id}-${thread.bookmarks?.length}-${animationKey}`}
                             from={{
@@ -628,14 +628,14 @@ export default function Menu({
                           </MotiView>
                         ))}
                       </Div>
-                      {!isLoadingThreads && threads.threads.length === 0 && (
+                      {!isLoadingThreads && threads?.threads.length === 0 && (
                         <>
                           <Div style={styles.noThreadsContainer.style}>
                             {t("Nothing here yet")}
                           </Div>
                         </>
                       )}
-                      {threads.threads.length
+                      {threads?.threads.length
                         ? (() => {
                             const url = `/threads${collaborationStatus ? `?collaborationStatus=${collaborationStatus}` : ""}`
 
@@ -672,7 +672,7 @@ export default function Menu({
                             )
                           })()
                         : null}
-                      {threads.threads.length < 2 && (
+                      {threads?.threads && threads?.threads.length < 2 && (
                         <EmptyStateTips style={{ marginTop: 15 }} />
                       )}
                     </>
