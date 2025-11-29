@@ -382,7 +382,9 @@ export default function Menu({
                                   style={styles.profileButton.style}
                                   onClick={() => {
                                     addHapticFeedback()
-                                    isMobileDevice && setIsDrawerOpen(false)
+                                    isSmallDevice
+                                      ? toggleMenu()
+                                      : addHapticFeedback()
                                     setIsAccountVisible(true)
                                   }}
                                 >
