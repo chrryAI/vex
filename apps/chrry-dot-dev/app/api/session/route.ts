@@ -243,6 +243,13 @@ export async function GET(request: Request) {
 
   const siteConfig = getSiteConfig(chrryUrl)
 
+  const baseConfig = getSiteConfig()
+
+  const siteApp = await getApp({
+    slug: baseConfig.slug,
+    storeSlug: baseConfig.storeSlug,
+  })
+
   const chrryStore = await getStore({
     domain: siteConfig.store,
     userId: member?.id,
@@ -304,6 +311,63 @@ export async function GET(request: Request) {
       })) || baseApp
     : baseApp
 
+  if (app?.store?.apps?.length) {
+    const currentStoreApps = app.store?.apps || []
+
+    // Get apps from different parent stores for quick navigation
+
+    // Combine: current store apps + apps from different parent stores
+    const allApps = [...currentStoreApps]
+
+    // Enrich each app with store.app reference
+    const enrichedApps = await Promise.all(
+      allApps.map(async (app) => {
+        if (!app) return null
+
+        const isBaseApp = app?.id === app?.store?.appId
+
+        let storeBaseApp: appWithStore | null = null
+        if (isBaseApp) {
+          // Self-reference for base apps
+          storeBaseApp =
+            (await getApp({
+              id: app?.id,
+              userId: member?.id,
+              guestId: guest?.id,
+              depth: 1,
+            })) || null
+        } else if (app?.store?.appId) {
+          const baseAppData = await getApp({
+            id: app?.store?.appId,
+            userId: member?.id,
+            guestId: guest?.id,
+            depth: 0,
+          })
+          storeBaseApp = baseAppData ?? null
+        }
+
+        return {
+          ...app,
+          store: {
+            ...app?.store,
+            app: storeBaseApp,
+          },
+        } as appWithStore
+      }),
+    )
+
+    const validApps = enrichedApps.filter(Boolean) as appWithStore[]
+    app.store.apps = validApps
+  }
+
+  if (
+    app &&
+    siteApp &&
+    app.store?.apps &&
+    !app.store?.apps?.some((app) => app.id === siteApp.id)
+  ) {
+    app.store.apps.push(siteApp)
+  }
   if (!success) {
     return new Response(JSON.stringify({ error: "Too many requests" }), {
       status: 429,
