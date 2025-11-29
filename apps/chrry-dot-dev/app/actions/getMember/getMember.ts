@@ -22,7 +22,7 @@ export default async function getMember({
 } = {}) {
   if (byEmail) {
     const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
-    let user = await getUser({ email: byEmail, skipCache })
+    let user = await getUser({ email: byEmail, skipCache: skipCache || full })
 
     if (user) {
       return {

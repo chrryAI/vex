@@ -6,7 +6,7 @@ import { updateUser } from "@repo/db"
 import { scanFileForMalware } from "../../../../lib/security"
 
 export async function PATCH(request: NextRequest) {
-  const member = await getMember()
+  const member = await getMember({ full: true, skipCache: true })
 
   if (!member) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

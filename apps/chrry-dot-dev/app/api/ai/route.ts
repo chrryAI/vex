@@ -511,8 +511,8 @@ export async function POST(request: Request) {
   console.log("🚀 POST /api/ai - Request received")
   console.time("messageProcessing")
 
-  const member = await getMember({ full: true })
-  const guest = member ? undefined : await getGuest()
+  const member = await getMember({ full: true, skipCache: true })
+  const guest = member ? undefined : await getGuest({ skipCache: true })
 
   if (!member && !guest) {
     console.log("❌ No valid credentials")
