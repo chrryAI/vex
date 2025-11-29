@@ -33,7 +33,7 @@ const NavigationContext = createContext<
       isIncognito: boolean
       addParams: ReturnType<typeof useNavigation>["addParams"]
       removeParams: ReturnType<typeof useNavigation>["removeParams"]
-      threads: {
+      threads?: {
         threads: thread[]
         totalCount: number
       }
