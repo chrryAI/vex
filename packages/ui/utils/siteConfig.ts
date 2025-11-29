@@ -9,6 +9,7 @@ export type SiteMode =
   | "amsterdam"
   | "tokyo"
   | "newYork"
+  | "popcorn"
 
 export interface SiteConfig {
   mode: SiteMode
@@ -44,6 +45,7 @@ export const extensions = [
   "https://chrry.dev",
   "https://vex.chrry.ai",
   "https://chrry.ai",
+  "https://popcorn.chrry.ai",
 ]
 
 type SiteTranslation = {
@@ -576,6 +578,58 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "New York City ve ABD için tasarlanmış kişisel yapay zeka asistanınız. Hiç uyumayan şehirde sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
     },
   },
+  popcorn: {
+    en: {
+      title: "Popcorn - Cinema Universe",
+      description:
+        "Step into the premier hub for iconic films, genre-defining storytelling, and cinematic AI companions that decode every frame.",
+    },
+    de: {
+      title: "Popcorn - Cinema Universum",
+      description:
+        "Tauche ein in den führenden Hub für ikonische Filme, genredefinierende Geschichten und kinoreif KI-Begleiter, die jeden Frame entschlüsseln.",
+    },
+    fr: {
+      title: "Popcorn - Univers Cinématographique",
+      description:
+        "Entrez dans le hub premier pour les films iconiques, les histoires définissant les genres et les compagnons IA cinématographiques qui décodent chaque image.",
+    },
+    ja: {
+      title: "Popcorn - シネマ・ユニバース",
+      description:
+        "象徴的な映画、ジャンルを定義するストーリーテリング、すべてのフレームを解読する映画AIコンパニオンのプレミアハブに足を踏み入れましょう。",
+    },
+    ko: {
+      title: "Popcorn - 시네마 유니버스",
+      description:
+        "상징적인 영화, 장르를 정의하는 스토리텔링, 모든 프레임을 해독하는 영화 AI 컴패니언의 최고 허브로 들어가세요.",
+    },
+    pt: {
+      title: "Popcorn - Universo do Cinema",
+      description:
+        "Entre no principal hub para filmes icônicos, narrativas que definem gêneros e companheiros de IA cinematográficos que decodificam cada quadro.",
+    },
+    es: {
+      title: "Popcorn - Universo Cinematográfico",
+      description:
+        "Entra en el hub principal para películas icónicas, narrativas que definen géneros y compañeros de IA cinematográficos que decodifican cada fotograma.",
+    },
+    zh: {
+      title: "Popcorn - 电影宇宙",
+      description:
+        "进入标志性电影、定义流派的叙事和解码每一帧的电影AI伴侣的首要中心。",
+    },
+    nl: {
+      title: "Popcorn - Cinema Universum",
+      description:
+        "Stap binnen in de belangrijkste hub voor iconische films, genrebepalende verhalen en cinematografische AI-metgezellen die elk frame ontcijferen.",
+    },
+    tr: {
+      title: "Popcorn - Sinema Evreni",
+      description:
+        "İkonik filmler, tür tanımlayan hikaye anlatımı ve her kareyi çözen sinematik yapay zeka arkadaşları için önde gelen merkeze adım atın.",
+    },
+  },
 }
 
 export function getSiteTranslation(
@@ -638,6 +692,9 @@ export function detectSiteModeDomain(
   if (matchesDomain(host, "newyork.chrry.ai")) {
     return "newYork"
   }
+  if (matchesDomain(host, "popcorn.chrry.ai")) {
+    return "popcorn"
+  }
 
   if (matchesDomain(host, "vex.chrry.ai")) {
     return "vex"
@@ -684,6 +741,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "amsterdam",
     "tokyo",
     "newYork",
+    "popcorn",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -1225,6 +1283,87 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
           description: "Always available in the city that never sleeps",
           icon: "🌃",
           link: "/support",
+          isOpenSource: false,
+        },
+      ],
+    }
+  }
+
+  // Popcorn configuration
+  if (mode === "popcorn") {
+    return {
+      favicon: "popcorn",
+      mode: "popcorn",
+      slug: "popcorn",
+      storeSlug: "movies",
+      name: "Popcorn",
+      domain: "popcorn.chrry.ai",
+      url: "https://popcorn.chrry.ai",
+      store: "https://popcorn.chrry.ai",
+      email: "iliyan@chrry.ai",
+      description:
+        "Step into the premier hub for iconic films, genre-defining storytelling, and cinematic AI companions that decode every frame.",
+      logo: "🍿",
+      primaryColor: "#DC2626", // Cinema red
+      links: {
+        github: "https://github.com/chrryai/vex",
+        docs: "https://popcorn.chrry.ai/docs",
+      },
+      features: [
+        {
+          title: "Scene Analysis",
+          description: "Decode any film scene with precision",
+          icon: "🎬",
+          link: "/scene-analysis",
+          isOpenSource: false,
+        },
+        {
+          title: "Character Arc Explorer",
+          description: "Trace protagonist transformations",
+          icon: "🧭",
+          link: "/character-arcs",
+          isOpenSource: false,
+        },
+        {
+          title: "Cinematic Techniques",
+          description: "Visual storytelling breakdown",
+          icon: "🎥",
+          link: "/techniques",
+          isOpenSource: false,
+        },
+        {
+          title: "Soundtrack Insights",
+          description: "Audio storytelling analysis",
+          icon: "🎵",
+          link: "/soundtrack",
+          isOpenSource: false,
+        },
+        {
+          title: "Genre Remix",
+          description: "Reimagine films in new genres",
+          icon: "🔄",
+          link: "/remix",
+          isOpenSource: false,
+        },
+        {
+          title: "Dialogue Deep Dive",
+          description: "Unpack memorable quotes",
+          icon: "💬",
+          link: "/dialogue",
+          isOpenSource: false,
+        },
+        {
+          title: "Double Features",
+          description: "Curated film pairings",
+          icon: "🎟️",
+          link: "/double-features",
+          isOpenSource: false,
+        },
+        {
+          title: "Movie Database",
+          description: "Explore iconic films",
+          icon: "📚",
+          link: "/films",
           isOpenSource: false,
         },
       ],
