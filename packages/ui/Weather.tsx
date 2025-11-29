@@ -150,8 +150,8 @@ export default function Weather({
 
   const [isCityModalOpen, setIsCityModalOpen] = useState(false)
 
-  const city = (user || guest)?.city || weather?.location
-  const country = (user || guest)?.country || weather?.country
+  const city = weather?.location || (user || guest)?.city || ""
+  const country = weather?.country || (user || guest)?.country || ""
   function getCountryCode(countryName: string): string {
     const code = countries.getAlpha2Code(countryName, "en")
     return code || countryName
