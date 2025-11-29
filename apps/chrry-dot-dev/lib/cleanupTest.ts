@@ -10,41 +10,40 @@ import {
   getUser,
   updateGuest,
   updateThread,
-  updateUser,
   TEST_MEMBER_EMAILS,
   TEST_GUEST_FINGERPRINTS,
-  TEST_MEMBER_FINGERPRINTS,
 } from "@repo/db"
 
 export default async function cleanupTest({
   fingerprint,
 }: {
-  fingerprint: string
-}) {
-  const testMember =
-    fingerprint && TEST_MEMBER_FINGERPRINTS.includes(fingerprint)
-      ? await getUser({ fingerprint })
-      : null
+  fingerprint?: string
+} = {}) {
+  if (!fingerprint) {
+    let cleanedUsers = true
+    for (const fp of TEST_GUEST_FINGERPRINTS) {
+      await cleanupTest({
+        fingerprint: fp,
+      })
+      cleanedUsers = !cleanedUsers
+    }
+    return
+  }
+
+  for (const email of TEST_MEMBER_EMAILS) {
+    const user = await getUser({ email })
+    if (user && user.fingerprint) {
+      await cleanupUser({
+        type: "member",
+        userId: user.id,
+      })
+    }
+  }
 
   const guest =
     fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)
       ? await getGuestDb({ fingerprint })
       : null
-
-  // Cleanup for test member
-  if (testMember && TEST_MEMBER_EMAILS.includes(testMember.email)) {
-    await cleanupUser({
-      userId: testMember.id,
-      type: "member",
-    })
-
-    await updateUser({
-      ...testMember,
-      credits: 150,
-      migratedFromGuest: false,
-      subscribedOn: null,
-    })
-  }
 
   // Cleanup for test guest
   if (guest && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
