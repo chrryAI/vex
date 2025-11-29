@@ -10,6 +10,7 @@ export type SiteMode =
   | "tokyo"
   | "newYork"
   | "popcorn"
+  | "zarathustra"
 
 export interface SiteConfig {
   mode: SiteMode
@@ -630,6 +631,58 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "İkonik filmler, tür tanımlayan hikaye anlatımı ve her kareyi çözen sinematik yapay zeka arkadaşları için önde gelen merkeze adım atın.",
     },
   },
+  zarathustra: {
+    en: {
+      title: "Zarathustra - Philosophy Guide",
+      description:
+        "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
+    },
+    de: {
+      title: "Zarathustra - Philosophie-Führer",
+      description:
+        "Dein KI-Philosophie-Führer. Erkunde Nietzsche, Existenzialismus und zeitlose Weisheit durch intelligente Gespräche.",
+    },
+    fr: {
+      title: "Zarathustra - Guide Philosophique",
+      description:
+        "Votre guide philosophique IA. Explorez Nietzsche, l'existentialisme et la sagesse intemporelle à travers des conversations intelligentes.",
+    },
+    ja: {
+      title: "Zarathustra - 哲学ガイド",
+      description:
+        "あなたのAI哲学ガイド。インテリジェントな会話を通じてニーチェ、実存主義、時代を超えた知恵を探求しましょう。",
+    },
+    ko: {
+      title: "Zarathustra - 철학 가이드",
+      description:
+        "당신의 AI 철학 가이드. 지능적인 대화를 통해 니체, 실존주의, 시대를 초월한 지혜를 탐구하세요.",
+    },
+    pt: {
+      title: "Zarathustra - Guia de Filosofia",
+      description:
+        "Seu guia de filosofia com IA. Explore Nietzsche, existencialismo e sabedoria atemporal através de conversas inteligentes.",
+    },
+    es: {
+      title: "Zarathustra - Guía de Filosofía",
+      description:
+        "Tu guía de filosofía con IA. Explora Nietzsche, el existencialismo y la sabiduría atemporal a través de conversaciones inteligentes.",
+    },
+    zh: {
+      title: "Zarathustra - 哲学指南",
+      description:
+        "您的AI哲学指南。通过智能对话探索尼采、存在主义和永恒的智慧。",
+    },
+    nl: {
+      title: "Zarathustra - Filosofie Gids",
+      description:
+        "Je AI-filosofiegids. Verken Nietzsche, existentialisme en tijdloze wijsheid door intelligente gesprekken.",
+    },
+    tr: {
+      title: "Zarathustra - Felsefe Rehberi",
+      description:
+        "Yapay zeka felsefe rehberiniz. Akıllı sohbetler aracılığıyla Nietzsche, varoluşçuluk ve zamansız bilgeliği keşfedin.",
+    },
+  },
 }
 
 export function getSiteTranslation(
@@ -648,7 +701,7 @@ export function detectSiteModeDomain(
     (process.env.MODE as SiteMode) ||
     ((import.meta as any)?.env?.VITE_SITE_MODE as SiteMode) ||
     mode ||
-    ("vex" as SiteMode)
+    ("zarathustra" as SiteMode)
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -742,6 +795,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "tokyo",
     "newYork",
     "popcorn",
+    "zarathustra",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -1364,6 +1418,87 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
           description: "Explore iconic films",
           icon: "📚",
           link: "/films",
+          isOpenSource: false,
+        },
+      ],
+    }
+  }
+
+  // Zarathustra configuration
+  if (mode === "zarathustra") {
+    return {
+      favicon: "zarathustra",
+      mode: "zarathustra",
+      slug: "zarathustra",
+      storeSlug: "books",
+      name: "Zarathustra",
+      domain: "books.chrry.ai",
+      url: "https://books.chrry.ai",
+      store: "https://books.chrry.ai",
+      email: "iliyan@chrry.ai",
+      description:
+        "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
+      logo: "🪢",
+      primaryColor: "#7C3AED", // Purple/violet for wisdom
+      links: {
+        github: "https://github.com/chrryai/vex",
+        docs: "https://zarathustra.chrry.ai/docs",
+      },
+      features: [
+        {
+          title: "Philosophy Explorer",
+          description: "Navigate schools of thought",
+          icon: "🏛️",
+          link: "/philosophy",
+          isOpenSource: false,
+        },
+        {
+          title: "Book Analysis",
+          description: "Deep dive into philosophical texts",
+          icon: "📖",
+          link: "/books",
+          isOpenSource: false,
+        },
+        {
+          title: "Concept Breakdown",
+          description: "Understand complex ideas simply",
+          icon: "💡",
+          link: "/concepts",
+          isOpenSource: false,
+        },
+        {
+          title: "Philosopher Profiles",
+          description: "Learn about great thinkers",
+          icon: "🧠",
+          link: "/philosophers",
+          isOpenSource: false,
+        },
+        {
+          title: "Eternal Recurrence",
+          description: "Explore Nietzsche's key ideas",
+          icon: "♾️",
+          link: "/nietzsche",
+          isOpenSource: false,
+        },
+        {
+          title: "Existential Toolkit",
+          description: "Apply philosophy to life",
+          icon: "🛠️",
+          link: "/toolkit",
+          isOpenSource: false,
+        },
+        {
+          title: "Reading Lists",
+          description: "Curated philosophical journeys",
+          icon: "📚",
+          link: "/reading-lists",
+          isOpenSource: false,
+        },
+        {
+          title: "Daily Wisdom",
+          description: "Philosophical insights daily",
+          icon: "✨",
+          link: "/daily",
           isOpenSource: false,
         },
       ],

@@ -12,7 +12,6 @@ import {
   getSubscriptions,
   getThreads,
   getUser,
-  getApp,
   updateGuest,
   updateThread,
   updateUser,
@@ -38,6 +37,7 @@ import ChrryAI, { generateMeta } from "./ChrryAI"
 import { getThreadId } from "chrry/utils"
 import { threadId } from "worker_threads"
 import cleanupTest from "../lib/cleanupTest"
+import getApp from "./actions/getApp"
 
 export const generateMetadata = async () => {
   const headersList = await headers()
@@ -50,11 +50,7 @@ export const generateMetadata = async () => {
   const siteConfig = getSiteConfig(hostname)
   const locale = (await getLocale()) as locale
 
-  const app = await getApp({
-    slug: siteConfig.slug,
-    storeDomain: siteConfig.store,
-    depth: 1, // Populate one level of nested store.apps
-  })
+  const app = await getApp()
 
   if (!app || !app.store) {
     return generateMeta({ locale })
