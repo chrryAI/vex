@@ -291,8 +291,6 @@ export function ChatProvider({
     },
   )
 
-  const threadsData = threadsSwr || threads
-
   const [isLoadingThreads, setIsLoadingThreads] = useState(!threads)
 
   useEffect(() => {
