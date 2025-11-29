@@ -3560,7 +3560,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     name: "Popcorn",
     title: "Popcorn — Movies Spotlight",
     subtitle: "Your cinematic concierge",
-    domain: "https://popcorn.chrry.ai/movies",
+    domain: "https://popcorn.chrry.ai",
     storeId: movies.id,
     version: "1.0.0",
     status: "active" as const,
