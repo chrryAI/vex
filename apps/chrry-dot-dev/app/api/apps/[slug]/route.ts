@@ -357,10 +357,10 @@ export async function PATCH(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const { id: appId } = await params
+    const { slug: appId } = await params
 
     const app = await getAppAction({ appId })
 
