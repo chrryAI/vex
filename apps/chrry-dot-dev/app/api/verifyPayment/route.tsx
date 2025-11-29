@@ -38,10 +38,10 @@ import { trackPurchase } from "../../../lib/ads"
 export async function POST(request: Request) {
   const body = await request.json()
   const siteConfig = getSiteConfig()
-  const { session_id, userId, guestId, email, giftedFingerPrint } = body
+  const { session_id, userId, guestId, email, checkoutFingerPrint } = body
   console.log(
     `🚀 ~ file: route.tsx:42 ~ { session_id, userId, guestId, email }:`,
-    { session_id, userId, guestId, email, giftedFingerPrint },
+    { session_id, userId, guestId, email, checkoutFingerPrint },
   )
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
   const validTransitions = {
@@ -51,9 +51,11 @@ export async function POST(request: Request) {
 
   const member = await getMember()
 
-  const isE2EAndValidFingerprint = isE2E && validate(giftedFingerPrint)
+  const isE2EAndValidFingerprint = isE2E && validate(checkoutFingerPrint)
 
-  const newFingerprint = isE2EAndValidFingerprint ? giftedFingerPrint : uuidv4()
+  const newFingerprint = isE2EAndValidFingerprint
+    ? checkoutFingerPrint
+    : uuidv4()
 
   let user = email
     ? await getUser({ email })
