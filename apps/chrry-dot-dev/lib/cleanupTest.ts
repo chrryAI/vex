@@ -32,7 +32,7 @@ export default async function cleanupTest({
 
   for (const email of TEST_MEMBER_EMAILS) {
     const user = await getUser({ email })
-    if (user && user.fingerprint) {
+    if (user) {
       await cleanupUser({
         type: "member",
         userId: user.id,

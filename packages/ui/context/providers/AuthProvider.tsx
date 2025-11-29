@@ -74,7 +74,7 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
-      threads: {
+      threads?: {
         threads: thread[]
         totalCount: number
       }
@@ -315,15 +315,13 @@ export function AuthProvider({
     fetchSession()
   }
 
-  const [threads, setThreads] = useState<{
-    threads: thread[]
-    totalCount: number
-  }>(
-    props.threads || {
-      threads: [],
-      totalCount: 0,
-    },
-  )
+  const [threads, setThreads] = useState<
+    | {
+        threads: thread[]
+        totalCount: number
+      }
+    | undefined
+  >(props.threads)
 
   const isCI = process.env.NEXT_PUBLIC_CI === "true"
 

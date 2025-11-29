@@ -116,7 +116,7 @@ const ChatContext = createContext<
       isLoadingThreads: boolean
       setIsLoadingThreads: (value: boolean) => void
       isIncognito: boolean
-      threads: {
+      threads?: {
         threads: thread[]
         totalCount: number
       }
@@ -293,13 +293,13 @@ export function ChatProvider({
 
   const threadsData = threadsSwr || threads
 
-  const [isLoadingThreads, setIsLoadingThreads] = useState(!threads.totalCount)
+  const [isLoadingThreads, setIsLoadingThreads] = useState(!threads)
 
   useEffect(() => {
-    if (threadsError || !isLoadingThreadsSwr || threadsData.threads.length) {
+    if (threadsError || !isLoadingThreadsSwr) {
       setIsLoadingThreads(false)
     }
-  }, [threadsError, isLoadingThreadsSwr, threadsData])
+  }, [threadsError, isLoadingThreadsSwr])
 
   const [activeCollaborationThreadsCount, setActiveCollaborationThreadsCount] =
     useState<number>(0)
