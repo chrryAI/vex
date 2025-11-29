@@ -9,6 +9,7 @@ import { v4 as uuid, validate } from "uuid"
 import slugify from "slug"
 import { isDevelopment, isOwner } from "chrry/utils"
 import { parse as parseDomain } from "tldts"
+import getAppAction from "../../../actions/getApp"
 
 export async function PATCH(
   request: NextRequest,
@@ -356,27 +357,15 @@ export async function PATCH(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { slug: appSlug } = await params
+    const { id: appId } = await params
 
-    const app = await getApp({ slug: appSlug })
+    const app = await getAppAction({ appId })
 
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 })
-    }
-
-    // Only return public apps or apps owned by the requester
-    const member = await getMember()
-    const guest = await getGuest()
-
-    const isOwner =
-      (member && app.userId === member.id) ||
-      (guest && app.guestId === guest.id)
-
-    if (app.visibility !== "public" && !isOwner) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     return NextResponse.json(app)

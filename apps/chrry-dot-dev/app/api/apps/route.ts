@@ -19,9 +19,10 @@ import { v4 as uuid } from "uuid"
 import { reorderApps } from "chrry/lib"
 import { appWithStore } from "chrry/types"
 import { getSiteConfig } from "chrry/utils/siteConfig"
+import getAppAction from "../../actions/getApp"
 
 export async function GET(request: NextRequest) {
-  const appId = request.nextUrl.searchParams.get("appId")
+  const appId = request.nextUrl.searchParams.get("appId") || undefined
 
   const member = await getMember()
   const guest = await getGuest()
@@ -30,93 +31,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  let app
-
-  if (!appId) {
-    const siteConfig = getSiteConfig(process.env.CHRRY_URL)
-
-    app = await getApp({
-      slug: siteConfig.slug,
-      userId: member?.id,
-      guestId: guest?.id,
-      depth: 1,
-    })
-    return NextResponse.json({ error: "appId is required" }, { status: 400 })
-  }
-
-  // Get the current app with its store
-  app =
-    app ||
-    (await getApp({
-      id: appId,
-      userId: member?.id,
-      guestId: guest?.id,
-      depth: 1,
-    }))
-
-  if (!app) {
-    return NextResponse.json({ error: "App not found" }, { status: 404 })
-  }
-
-  const baseConfig = getSiteConfig()
-
-  const siteApp = await getApp({
-    slug: baseConfig.slug,
-    storeSlug: baseConfig.storeSlug,
+  let app = await getAppAction({
+    appId,
+    member,
+    guest,
   })
 
-  // Get all apps from the current app's store
-  const currentStoreApps = app.store?.apps || []
-
-  // Get apps from different parent stores for quick navigation
-
-  // Combine: current store apps + apps from different parent stores
-  const allApps = [...currentStoreApps]
-
-  // Enrich each app with store.app reference
-  const enrichedApps = await Promise.all(
-    allApps.map(async (app) => {
-      if (!app) return null
-
-      const isBaseApp = app?.id === app?.store?.appId
-
-      let storeBaseApp: appWithStore | null = null
-      if (isBaseApp) {
-        // Self-reference for base apps
-        storeBaseApp =
-          (await getApp({
-            id: app?.id,
-            userId: member?.id,
-            guestId: guest?.id,
-            depth: 1,
-          })) || null
-      } else if (app?.store?.appId) {
-        const baseAppData = await getApp({
-          id: app?.store?.appId,
-          userId: member?.id,
-          guestId: guest?.id,
-          depth: 0,
-        })
-        storeBaseApp = baseAppData ?? null
-      }
-
-      return {
-        ...app,
-        store: {
-          ...app?.store,
-          app: storeBaseApp,
-        },
-      } as appWithStore
-    }),
-  )
-
-  const validApps = enrichedApps.filter(Boolean) as appWithStore[]
-
-  if (siteApp && validApps && !validApps.some((app) => app.id === siteApp.id)) {
-    validApps.push(siteApp)
-  }
-
-  return NextResponse.json(validApps)
+  return NextResponse.json(app?.store?.apps || [])
 }
 
 export async function POST(request: NextRequest) {

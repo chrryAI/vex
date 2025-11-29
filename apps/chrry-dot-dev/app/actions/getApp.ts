@@ -2,12 +2,16 @@
 
 import { headers } from "next/headers"
 import { validate } from "uuid"
-import { getApp, getApps as getAppsDB } from "@repo/db"
+import { getApp, getStore } from "@repo/db"
 import { user, guest } from "@repo/db"
+import getMember from "./getMember"
+import getGuest from "./getGuest"
+import { getSiteConfig } from "chrry/utils/siteConfig"
+import { excludedSlugRoutes, getAppAndStoreSlugs } from "chrry/utils/url"
+import { locales } from "chrry/locales"
+import { appWithStore } from "chrry/types"
 
 export default async function getAppAction({
-  member,
-  guest,
   ...rest
 }: {
   member?: user
@@ -15,40 +19,152 @@ export default async function getAppAction({
   appId?: string
   appSlug?: string
   routeType?: string
-}) {
+} = {}) {
+  const member = await getMember()
+  const guest = await getGuest()
+
   const headersList = await headers()
   const appId = rest.appId || headersList.get("x-app-id")
 
   const appSlug = rest.appSlug || headersList.get("x-app-slug")
-  const routeType = rest.routeType || headersList.get("x-route-type")
 
-  let app = null
+  const pathname = headersList.get("x-pathname") || "/"
 
-  // Fetch app if this is an app route
-  if (routeType && (appId || appSlug)) {
-    app =
-      appId && validate(appId)
-        ? await getApp({
-            id: appId,
-            userId: member?.id,
-            guestId: guest?.id,
-          })
-        : undefined
+  const chrryUrlFromParams = headersList.get("x-chrry-url")
 
-    app = appSlug
-      ? await getApp({
-          slug: appSlug,
+  let chrryUrl = chrryUrlFromParams
+    ? decodeURIComponent(chrryUrlFromParams)
+    : process.env.CHRRY_URL
+
+  const siteConfig = getSiteConfig(chrryUrl)
+
+  const baseConfig = getSiteConfig()
+
+  const siteApp = await getApp({
+    slug: baseConfig.slug,
+    storeSlug: baseConfig.storeSlug,
+  })
+
+  const chrryStore = await getStore({
+    domain: siteConfig.store,
+    userId: member?.id,
+    guestId: guest?.id,
+    depth: 1, // Populate one level of nested store.apps
+  })
+
+  if (!chrryStore || !chrryStore.app || !chrryStore.store) {
+    return null
+  }
+
+  const slug = getAppAndStoreSlugs(pathname, {
+    defaultAppSlug: siteConfig.slug,
+    defaultStoreSlug: siteConfig.storeSlug,
+    excludedRoutes: excludedSlugRoutes,
+    locales,
+  })
+
+  const appFromParams = appId
+    ? await getApp({ id: appId })
+    : appSlug
+      ? await getApp({ slug: appSlug })
+      : await getApp({ storeSlug: slug?.appSlug })
+
+  const slugParam = appFromParams ? appFromParams.slug : slug?.appSlug
+
+  const store = appFromParams?.store
+    ? await getStore({
+        id: appFromParams.store.id,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1, // Populate one level of nested store.apps
+      })
+    : slugParam
+      ? (await getStore({
+          slug: slugParam,
           userId: member?.id,
           guestId: guest?.id,
-        })
-      : undefined
+          depth: 1, // Populate one level of nested store.apps
+        })) || chrryStore
+      : chrryStore
+
+  // Find base app by siteConfig.slug (e.g., "focus" for focus.chrry.ai)
+  // This may differ from store's default app (store.app)
+  const baseApp =
+    store?.apps?.find(
+      (app) =>
+        app.slug === siteConfig.slug &&
+        app.store?.slug === siteConfig.storeSlug,
+    ) || store?.app
+
+  // If no slug param, use store's default app directly
+  // Otherwise fetch by slug
+  let app = slugParam
+    ? (await getApp({
+        slug: slugParam,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1, // Populate one level of nested store.apps
+        // Don't pass storeId - let getApp determine the correct store context
+      })) || baseApp
+    : baseApp
+
+  if (app?.store?.apps?.length) {
+    const currentStoreApps = app.store?.apps || []
+
+    // Get apps from different parent stores for quick navigation
+
+    // Combine: current store apps + apps from different parent stores
+    const allApps = [...currentStoreApps]
+
+    // Enrich each app with store.app reference
+    const enrichedApps = await Promise.all(
+      allApps.map(async (app) => {
+        if (!app) return null
+
+        const isBaseApp = app?.id === app?.store?.appId
+
+        let storeBaseApp: appWithStore | null = null
+        if (isBaseApp) {
+          // Self-reference for base apps
+          storeBaseApp =
+            (await getApp({
+              id: app?.id,
+              userId: member?.id,
+              guestId: guest?.id,
+              depth: 1,
+            })) || null
+        } else if (app?.store?.appId) {
+          const baseAppData = await getApp({
+            id: app?.store?.appId,
+            userId: member?.id,
+            guestId: guest?.id,
+            depth: 0,
+          })
+          storeBaseApp = baseAppData ?? null
+        }
+
+        return {
+          ...app,
+          store: {
+            ...app?.store,
+            app: storeBaseApp,
+          },
+        } as appWithStore
+      }),
+    )
+
+    const validApps = enrichedApps.filter(Boolean) as appWithStore[]
+    app.store.apps = validApps
+  }
+
+  if (
+    app &&
+    siteApp &&
+    app.store?.apps &&
+    !app.store?.apps?.some((app) => app.id === siteApp.id)
+  ) {
+    app.store.apps.push(siteApp)
   }
 
   return app
-}
-
-export async function getApps() {
-  const apps = await getAppsDB()
-
-  return apps
 }

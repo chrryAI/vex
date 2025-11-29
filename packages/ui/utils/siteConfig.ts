@@ -12,6 +12,706 @@ export type SiteMode =
   | "popcorn"
   | "zarathustra"
 
+const chrryDev = {
+  mode: "chrryDev" as SiteMode,
+  slug: "chrryDev",
+  storeSlug: "chrry",
+  favicon: "chrry",
+  store: "https://chrry.dev",
+  name: "Chrry",
+  domain: "chrry.dev",
+  url: "https://chrry.dev",
+  email: "iliyan@chrry.ai",
+  description:
+    "A modern, cross-platform AI UI library for React, React Native, and Next.js",
+  logo: "/assets/cherry-logo.svg", // Cross-platform SVG
+  primaryColor: "#E91E63", // Cherry pink
+  links: {
+    github: "https://github.com/chrryAI/vex",
+    npm: "https://www.npmjs.com/package/@chrryai/chrry",
+    docs: "https://chrry.dev/docs",
+    demo: "https://chrry.dev/demo",
+  },
+  features: [
+    {
+      title: "Pepper",
+      description: "Universal router with view transitions",
+      icon: "🌶️",
+      link: "https://npmjs.com/package/@chrryai/pepper",
+      isOpenSource: true,
+    },
+    {
+      title: "Components",
+      description: "50+ production-ready UI components",
+      icon: "🎨",
+      link: "https://github.com/chrryAI/chrry",
+      isOpenSource: true,
+    },
+
+    {
+      title: "Icons",
+      description: "Cross-platform icon system with Lucide",
+      icon: "✨",
+      link: "https://github.com/chrryAI/chrry/tree/main/icons",
+      isOpenSource: true,
+    },
+    {
+      title: "Styles",
+      description: "SCSS to TypeScript converter",
+      icon: "🎭",
+      link: "https://github.com/chrryAI/chrry/tree/main/styles",
+      isOpenSource: true,
+    },
+    {
+      title: "Hooks",
+      description: "Reusable React hooks",
+      icon: "🪝",
+      link: "https://github.com/chrryAI/chrry/tree/main/hooks",
+      isOpenSource: true,
+    },
+    {
+      title: "Context",
+      description: "State management providers",
+      icon: "🔄",
+      link: "https://github.com/chrryAI/chrry/tree/main/context",
+      isOpenSource: true,
+    },
+    {
+      title: "Platform",
+      description: "Cross-platform utilities",
+      icon: "📱",
+      link: "https://github.com/chrryAI/chrry/tree/main/platform",
+      isOpenSource: true,
+    },
+    {
+      title: "Waffles",
+      description: "Playwright testing utilities",
+      icon: "🧇",
+      link: "https://npmjs.com/package/@chrryai/waffles",
+      isOpenSource: true,
+    },
+  ],
+}
+
+const chrryAI = {
+  slug: "chrry",
+  favicon: "chrry",
+  storeSlug: "blossom",
+  mode: "chrryAI" as SiteMode,
+  name: "Chrry",
+  domain: "chrry.ai",
+  email: "iliyan@chrry.ai",
+  url: "https://chrry.ai",
+  store: "https://chrry.ai",
+  description: "AI App Marketplace - Discover, create, and monetize AI apps",
+  logo: "🍒",
+  primaryColor: "#E91E63", // Cherry pink
+  links: {
+    github: "https://github.com/chrryAI/chrry",
+    docs: "https://chrry.ai/docs",
+    // store: "https://chrry.store",
+  },
+  features: [
+    {
+      title: "App Marketplace",
+      description: "Discover and install AI apps",
+      icon: "🏪",
+      link: "/explore",
+      isOpenSource: false,
+    },
+    {
+      title: "Create Stores",
+      description: "Build your own AI app marketplace",
+      icon: "🏗️",
+      link: "/stores/new",
+      isOpenSource: false,
+    },
+    {
+      title: "Publish Apps",
+      description: "Monetize your AI applications",
+      icon: "📱",
+      link: "/apps/new",
+      isOpenSource: false,
+    },
+    {
+      title: "Revenue Sharing",
+      description: "Earn 70% on every sale",
+      icon: "💰",
+      link: "/affiliate",
+      isOpenSource: false,
+    },
+    {
+      title: "Custom Domains",
+      description: "White-label your store",
+      icon: "🌐",
+      link: "/settings/domain",
+      isOpenSource: false,
+    },
+    {
+      title: "Analytics",
+      description: "Track your app performance",
+      icon: "📊",
+      link: "/analytics",
+      isOpenSource: false,
+    },
+    {
+      title: "Multi-Agent Support",
+      description: "Build for any AI platform",
+      icon: "🤖",
+      link: "/docs/agents",
+      isOpenSource: false,
+    },
+    {
+      title: "Developer Tools",
+      description: "APIs and SDKs for developers",
+      icon: "🛠️",
+      link: "/docs/api",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const focus = {
+  favicon: "focus",
+  mode: "focus" as SiteMode,
+  slug: "focus",
+  version: "26.10.44",
+  storeSlug: "blossom",
+  name: "Focus",
+  domain: "focus.chrry.ai",
+  store: "https://chrry.ai",
+  email: "iliyan@chrry.ai",
+  url: "https://focus.chrry.ai",
+  description:
+    "AI-powered Pomodoro timer with task management and mood tracking. Stay focused, productive, and mindful while you work.",
+  logo: "⏱️",
+  primaryColor: "#3B82F6", // Blue
+  links: {
+    github: "https://github.com/chrryAI/chrry",
+    docs: "https://focus.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Focus Timer",
+      description: "Pomodoro and custom focus sessions",
+      icon: "⏱️",
+      link: "/timer",
+      isOpenSource: false,
+    },
+    {
+      title: "Task Management",
+      description: "Organize and track your tasks",
+      icon: "✅",
+      link: "/tasks",
+      isOpenSource: false,
+    },
+    {
+      title: "AI Task Breakdown",
+      description: "Break complex projects into steps",
+      icon: "🤖",
+      link: "/ai",
+      isOpenSource: false,
+    },
+    {
+      title: "Time Tracking",
+      description: "Track time across all your tasks",
+      icon: "📊",
+      link: "/analytics",
+      isOpenSource: false,
+    },
+    {
+      title: "Progress Analytics",
+      description: "Visualize your productivity patterns",
+      icon: "📈",
+      link: "/progress",
+      isOpenSource: false,
+    },
+    {
+      title: "Goal Setting",
+      description: "Set and achieve your goals",
+      icon: "🎯",
+      link: "/goals",
+      isOpenSource: false,
+    },
+    {
+      title: "Productivity Insights",
+      description: "AI-powered productivity tips",
+      icon: "💡",
+      link: "/insights",
+      isOpenSource: false,
+    },
+    {
+      title: "Deep Work Mode",
+      description: "Eliminate distractions and focus",
+      icon: "🧠",
+      link: "/deep-work",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const atlas = {
+  favicon: "atlas",
+  mode: "atlas" as SiteMode,
+  slug: "atlas",
+  storeSlug: "compass",
+  name: "Atlas",
+  domain: "atlas.chrry.ai",
+  url: "https://atlas.chrry.ai",
+  store: "https://atlas.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "Your intelligent geographic companion. Save locations with AI context, create geo-tagged notes, and discover local AI resources.",
+  logo: "🌍",
+  primaryColor: "#10B981", // Green
+  links: {
+    github: "https://github.com/chrryai/vex",
+    docs: "https://atlas.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Geo-Tagged Memory",
+      description: "Save locations with AI context",
+      icon: "📍",
+      link: "/memory",
+      isOpenSource: false,
+    },
+    {
+      title: "Travel Planning",
+      description: "Smart itineraries and local insights",
+      icon: "✈️",
+      link: "/travel",
+      isOpenSource: false,
+    },
+    {
+      title: "Local Discovery",
+      description: "Find authentic spots locals love",
+      icon: "🗺️",
+      link: "/discover",
+      isOpenSource: false,
+    },
+    {
+      title: "Weather Integration",
+      description: "Real-time weather for your locations",
+      icon: "🌤️",
+      link: "/weather",
+      isOpenSource: false,
+    },
+    {
+      title: "Browser Extension",
+      description: "Access Atlas from anywhere",
+      icon: "🔌",
+      link: "https://chrome.google.com/webstore",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const istanbul = {
+  favicon: "atlas",
+  mode: "istanbul" as SiteMode,
+  slug: "istanbul",
+  storeSlug: "compass",
+  name: "Istanbul",
+  domain: "istanbul.chrry.ai",
+  url: "https://istanbul.chrry.ai",
+  store: "https://atlas.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "Your personal AI assistant designed for Istanbul and Turkey. Chat in Turkish, collaborate locally, and get things done faster.",
+  logo: "🇹🇷",
+  primaryColor: "#E30A17", // Turkish red
+  links: {
+    github: "https://github.com/chrryai/vex",
+    docs: "https://istanbul.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Turkish Language Support",
+      description: "Native Turkish AI assistance",
+      icon: "🗣️",
+      link: "/language",
+      isOpenSource: false,
+    },
+    {
+      title: "Local Insights",
+      description: "Istanbul-specific recommendations",
+      icon: "🕌",
+      link: "/local",
+      isOpenSource: false,
+    },
+    {
+      title: "Turkish Lira Pricing",
+      description: "Local currency and payment methods",
+      icon: "💰",
+      link: "/pricing",
+      isOpenSource: false,
+    },
+    {
+      title: "Local Collaboration",
+      description: "Connect with Turkish users",
+      icon: "👥",
+      link: "/community",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const amsterdam = {
+  favicon: "atlas",
+  mode: "amsterdam" as SiteMode,
+  slug: "amsterdam",
+  storeSlug: "compass",
+  name: "Amsterdam",
+  domain: "amsterdam.chrry.ai",
+  url: "https://amsterdam.chrry.ai",
+  store: "https://atlas.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "Your personal AI assistant designed for Amsterdam and the Netherlands. Chat in Dutch, collaborate locally, and get things done faster.",
+  logo: "🇳🇱",
+  primaryColor: "#FF6B35", // Dutch orange
+  links: {
+    github: "https://github.com/chrryai/vex",
+    docs: "https://amsterdam.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Dutch Language Support",
+      description: "Native Dutch AI assistance",
+      icon: "🗣️",
+      link: "/language",
+      isOpenSource: false,
+    },
+    {
+      title: "Local Insights",
+      description: "Amsterdam-specific recommendations",
+      icon: "🚲",
+      link: "/local",
+      isOpenSource: false,
+    },
+    {
+      title: "Euro Pricing",
+      description: "Local currency and payment methods",
+      icon: "💰",
+      link: "/pricing",
+      isOpenSource: false,
+    },
+    {
+      title: "Local Collaboration",
+      description: "Connect with Dutch users",
+      icon: "👥",
+      link: "/community",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const tokyo = {
+  favicon: "atlas",
+  mode: "tokyo" as SiteMode,
+  slug: "tokyo",
+  storeSlug: "compass",
+  name: "Tokyo",
+  domain: "tokyo.chrry.ai",
+  url: "https://tokyo.chrry.ai",
+  store: "https://atlas.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "Your personal AI assistant designed for Tokyo and Japan. Chat in Japanese, collaborate locally, and get things done faster.",
+  logo: "🇯🇵",
+  primaryColor: "#BC002D", // Japanese red
+  links: {
+    github: "https://github.com/chrryai/vex",
+    docs: "https://tokyo.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Japanese Language Support",
+      description: "Native Japanese AI assistance",
+      icon: "🗣️",
+      link: "/language",
+      isOpenSource: false,
+    },
+    {
+      title: "Local Insights",
+      description: "Tokyo-specific recommendations",
+      icon: "🗼",
+      link: "/local",
+      isOpenSource: false,
+    },
+    {
+      title: "Yen Pricing",
+      description: "Local currency and payment methods",
+      icon: "💰",
+      link: "/pricing",
+      isOpenSource: false,
+    },
+    {
+      title: "Local Collaboration",
+      description: "Connect with Japanese users",
+      icon: "👥",
+      link: "/community",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const newYork = {
+  favicon: "atlas",
+  mode: "newYork" as SiteMode,
+  slug: "newYork",
+  storeSlug: "compass",
+  name: "New York",
+  domain: "newyork.chrry.ai",
+  url: "https://newyork.chrry.ai",
+  store: "https://atlas.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "Your personal AI assistant designed for New York City and the USA. Chat, collaborate locally, and get things done faster in the city that never sleeps.",
+  logo: "🗽",
+  primaryColor: "#0039A6", // NYC blue
+  links: {
+    github: "https://github.com/chrryai/vex",
+    docs: "https://newyork.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "NYC Local Insights",
+      description: "New York-specific recommendations",
+      icon: "🏙️",
+      link: "/local",
+      isOpenSource: false,
+    },
+    {
+      title: "USD Pricing",
+      description: "US currency and payment methods",
+      icon: "💰",
+      link: "/pricing",
+      isOpenSource: false,
+    },
+    {
+      title: "Local Collaboration",
+      description: "Connect with NYC users",
+      icon: "👥",
+      link: "/community",
+      isOpenSource: false,
+    },
+    {
+      title: "24/7 Support",
+      description: "Always available in the city that never sleeps",
+      icon: "🌃",
+      link: "/support",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const popcorn = {
+  favicon: "popcorn",
+  mode: "popcorn" as SiteMode,
+  slug: "popcorn",
+  storeSlug: "movies",
+  name: "Popcorn",
+  domain: "popcorn.chrry.ai",
+  url: "https://popcorn.chrry.ai",
+  store: "https://popcorn.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "Step into the premier hub for iconic films, genre-defining storytelling, and cinematic AI companions that decode every frame.",
+  logo: "🍿",
+  primaryColor: "#DC2626", // Cinema red
+  links: {
+    github: "https://github.com/chrryai/vex",
+    docs: "https://popcorn.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Scene Analysis",
+      description: "Decode any film scene with precision",
+      icon: "🎬",
+      link: "/scene-analysis",
+      isOpenSource: false,
+    },
+    {
+      title: "Character Arc Explorer",
+      description: "Trace protagonist transformations",
+      icon: "🧭",
+      link: "/character-arcs",
+      isOpenSource: false,
+    },
+    {
+      title: "Cinematic Techniques",
+      description: "Visual storytelling breakdown",
+      icon: "🎥",
+      link: "/techniques",
+      isOpenSource: false,
+    },
+    {
+      title: "Soundtrack Insights",
+      description: "Audio storytelling analysis",
+      icon: "🎵",
+      link: "/soundtrack",
+      isOpenSource: false,
+    },
+    {
+      title: "Genre Remix",
+      description: "Reimagine films in new genres",
+      icon: "🔄",
+      link: "/remix",
+      isOpenSource: false,
+    },
+    {
+      title: "Dialogue Deep Dive",
+      description: "Unpack memorable quotes",
+      icon: "💬",
+      link: "/dialogue",
+      isOpenSource: false,
+    },
+    {
+      title: "Double Features",
+      description: "Curated film pairings",
+      icon: "🎟️",
+      link: "/double-features",
+      isOpenSource: false,
+    },
+    {
+      title: "Movie Database",
+      description: "Explore iconic films",
+      icon: "📚",
+      link: "/films",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const zarathustra = {
+  favicon: "zarathustra",
+  mode: "zarathustra" as SiteMode,
+  slug: "zarathustra",
+  storeSlug: "books",
+  name: "Zarathustra",
+  domain: "books.chrry.ai",
+  url: "https://books.chrry.ai",
+  store: "https://books.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
+  logo: "🪢",
+  primaryColor: "#7C3AED", // Purple/violet for wisdom
+  links: {
+    github: "https://github.com/chrryai/vex",
+    docs: "https://zarathustra.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Philosophy Explorer",
+      description: "Navigate schools of thought",
+      icon: "🏛️",
+      link: "/philosophy",
+      isOpenSource: false,
+    },
+    {
+      title: "Book Analysis",
+      description: "Deep dive into philosophical texts",
+      icon: "📖",
+      link: "/books",
+      isOpenSource: false,
+    },
+    {
+      title: "Concept Breakdown",
+      description: "Understand complex ideas simply",
+      icon: "💡",
+      link: "/concepts",
+      isOpenSource: false,
+    },
+    {
+      title: "Philosopher Profiles",
+      description: "Learn about great thinkers",
+      icon: "🧠",
+      link: "/philosophers",
+      isOpenSource: false,
+    },
+    {
+      title: "Eternal Recurrence",
+      description: "Explore Nietzsche's key ideas",
+      icon: "♾️",
+      link: "/nietzsche",
+      isOpenSource: false,
+    },
+    {
+      title: "Existential Toolkit",
+      description: "Apply philosophy to life",
+      icon: "🛠️",
+      link: "/toolkit",
+      isOpenSource: false,
+    },
+    {
+      title: "Reading Lists",
+      description: "Curated philosophical journeys",
+      icon: "📚",
+      link: "/reading-lists",
+      isOpenSource: false,
+    },
+    {
+      title: "Daily Wisdom",
+      description: "Philosophical insights daily",
+      icon: "✨",
+      link: "/daily",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const vex = {
+  url: "https://vex.chrry.ai",
+  mode: "vex" as SiteMode,
+  slug: "vex",
+  favicon: "vex",
+  storeSlug: "lifeOS",
+  name: "Vex",
+  domain: "vex.chrry.ai",
+  store: "https://vex.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "Your AI-Powered Life",
+  logo: "🤖",
+  primaryColor: "#6366F1", // Indigo
+  links: {
+    github: "https://github.com/chrryai/chrry",
+    docs: "https://vex.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "LifeOS",
+      description: "AI-powered life management system",
+      icon: "🧠",
+      link: "/lifeOS",
+      isOpenSource: false,
+    },
+    {
+      title: "AI Agents",
+      description: "Custom AI agents for any task",
+      icon: "🤖",
+      link: "/lifeOS",
+      isOpenSource: false,
+    },
+    {
+      title: "Collaboration",
+      description: "Real-time AI collaboration",
+      icon: "👥",
+      link: "/threads",
+      isOpenSource: false,
+    },
+    {
+      title: "Browser Extension",
+      description: "AI assistant in your browser",
+      icon: "🔌",
+      link: "https://chrome.google.com/webstore",
+      isOpenSource: false,
+    },
+  ],
+}
+
 export interface SiteConfig {
   mode: SiteMode
   slug: string
@@ -831,734 +1531,69 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   const mode = detectSiteMode(hostname)
 
   if (mode === "chrryDev") {
-    return {
-      mode: "chrryDev",
-      slug: "chrryDev",
-      storeSlug: "chrry",
-      favicon: "chrry",
-      store: "https://chrry.dev",
-      name: "Chrry",
-      domain: "chrry.dev",
-      url: "https://chrry.dev",
-      email: "iliyan@chrry.ai",
-      description:
-        "A modern, cross-platform AI UI library for React, React Native, and Next.js",
-      logo: "/assets/cherry-logo.svg", // Cross-platform SVG
-      primaryColor: "#E91E63", // Cherry pink
-      links: {
-        github: "https://github.com/chrryAI/vex",
-        npm: "https://www.npmjs.com/package/@chrryai/chrry",
-        docs: "https://chrry.dev/docs",
-        demo: "https://chrry.dev/demo",
-      },
-      features: [
-        {
-          title: "Pepper",
-          description: "Universal router with view transitions",
-          icon: "🌶️",
-          link: "https://npmjs.com/package/@chrryai/pepper",
-          isOpenSource: true,
-        },
-        {
-          title: "Components",
-          description: "50+ production-ready UI components",
-          icon: "🎨",
-          link: "https://github.com/chrryAI/chrry",
-          isOpenSource: true,
-        },
-
-        {
-          title: "Icons",
-          description: "Cross-platform icon system with Lucide",
-          icon: "✨",
-          link: "https://github.com/chrryAI/chrry/tree/main/icons",
-          isOpenSource: true,
-        },
-        {
-          title: "Styles",
-          description: "SCSS to TypeScript converter",
-          icon: "🎭",
-          link: "https://github.com/chrryAI/chrry/tree/main/styles",
-          isOpenSource: true,
-        },
-        {
-          title: "Hooks",
-          description: "Reusable React hooks",
-          icon: "🪝",
-          link: "https://github.com/chrryAI/chrry/tree/main/hooks",
-          isOpenSource: true,
-        },
-        {
-          title: "Context",
-          description: "State management providers",
-          icon: "🔄",
-          link: "https://github.com/chrryAI/chrry/tree/main/context",
-          isOpenSource: true,
-        },
-        {
-          title: "Platform",
-          description: "Cross-platform utilities",
-          icon: "📱",
-          link: "https://github.com/chrryAI/chrry/tree/main/platform",
-          isOpenSource: true,
-        },
-        {
-          title: "Waffles",
-          description: "Playwright testing utilities",
-          icon: "🧇",
-          link: "https://npmjs.com/package/@chrryai/waffles",
-          isOpenSource: true,
-        },
-      ],
-    }
+    return chrryDev
   }
 
   if (mode === "chrryAI") {
-    return {
-      slug: "chrry",
-      favicon: "chrry",
-      storeSlug: "blossom",
-      mode: "chrryAI",
-      name: "Chrry",
-      domain: "chrry.ai",
-      email: "iliyan@chrry.ai",
-      url: "https://chrry.ai",
-      store: "https://chrry.ai",
-      description:
-        "AI App Marketplace - Discover, create, and monetize AI apps",
-      logo: "🍒",
-      primaryColor: "#E91E63", // Cherry pink
-      links: {
-        github: "https://github.com/chrryAI/chrry",
-        docs: "https://chrry.ai/docs",
-        // store: "https://chrry.store",
-      },
-      features: [
-        {
-          title: "App Marketplace",
-          description: "Discover and install AI apps",
-          icon: "🏪",
-          link: "/explore",
-          isOpenSource: false,
-        },
-        {
-          title: "Create Stores",
-          description: "Build your own AI app marketplace",
-          icon: "🏗️",
-          link: "/stores/new",
-          isOpenSource: false,
-        },
-        {
-          title: "Publish Apps",
-          description: "Monetize your AI applications",
-          icon: "📱",
-          link: "/apps/new",
-          isOpenSource: false,
-        },
-        {
-          title: "Revenue Sharing",
-          description: "Earn 70% on every sale",
-          icon: "💰",
-          link: "/affiliate",
-          isOpenSource: false,
-        },
-        {
-          title: "Custom Domains",
-          description: "White-label your store",
-          icon: "🌐",
-          link: "/settings/domain",
-          isOpenSource: false,
-        },
-        {
-          title: "Analytics",
-          description: "Track your app performance",
-          icon: "📊",
-          link: "/analytics",
-          isOpenSource: false,
-        },
-        {
-          title: "Multi-Agent Support",
-          description: "Build for any AI platform",
-          icon: "🤖",
-          link: "/docs/agents",
-          isOpenSource: false,
-        },
-        {
-          title: "Developer Tools",
-          description: "APIs and SDKs for developers",
-          icon: "🛠️",
-          link: "/docs/api",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return chrryAI
   }
 
   if (mode === "focus") {
-    return {
-      favicon: "focus",
-      mode: "focus",
-      slug: "focus",
-      version: "26.10.44",
-      storeSlug: "blossom",
-      name: "Focus",
-      domain: "focus.chrry.ai",
-      store: "https://chrry.ai",
-      email: "iliyan@chrry.ai",
-      url: "https://focus.chrry.ai",
-      description:
-        "AI-powered Pomodoro timer with task management and mood tracking. Stay focused, productive, and mindful while you work.",
-      logo: "⏱️",
-      primaryColor: "#3B82F6", // Blue
-      links: {
-        github: "https://github.com/chrryAI/chrry",
-        docs: "https://focus.chrry.ai/docs",
-      },
-      features: [
-        {
-          title: "Focus Timer",
-          description: "Pomodoro and custom focus sessions",
-          icon: "⏱️",
-          link: "/timer",
-          isOpenSource: false,
-        },
-        {
-          title: "Task Management",
-          description: "Organize and track your tasks",
-          icon: "✅",
-          link: "/tasks",
-          isOpenSource: false,
-        },
-        {
-          title: "AI Task Breakdown",
-          description: "Break complex projects into steps",
-          icon: "🤖",
-          link: "/ai",
-          isOpenSource: false,
-        },
-        {
-          title: "Time Tracking",
-          description: "Track time across all your tasks",
-          icon: "📊",
-          link: "/analytics",
-          isOpenSource: false,
-        },
-        {
-          title: "Progress Analytics",
-          description: "Visualize your productivity patterns",
-          icon: "📈",
-          link: "/progress",
-          isOpenSource: false,
-        },
-        {
-          title: "Goal Setting",
-          description: "Set and achieve your goals",
-          icon: "🎯",
-          link: "/goals",
-          isOpenSource: false,
-        },
-        {
-          title: "Productivity Insights",
-          description: "AI-powered productivity tips",
-          icon: "💡",
-          link: "/insights",
-          isOpenSource: false,
-        },
-        {
-          title: "Deep Work Mode",
-          description: "Eliminate distractions and focus",
-          icon: "🧠",
-          link: "/deep-work",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return focus
   }
 
   // Atlas configuration
   if (mode === "atlas") {
-    return {
-      favicon: "atlas",
-      mode: "atlas",
-      slug: "atlas",
-      storeSlug: "compass",
-      name: "Atlas",
-      domain: "atlas.chrry.ai",
-      url: "https://atlas.chrry.ai",
-      store: "https://atlas.chrry.ai",
-      email: "iliyan@chrry.ai",
-      description:
-        "Your intelligent geographic companion. Save locations with AI context, create geo-tagged notes, and discover local AI resources.",
-      logo: "🌍",
-      primaryColor: "#10B981", // Green
-      links: {
-        github: "https://github.com/chrryai/vex",
-        docs: "https://atlas.chrry.ai/docs",
-      },
-      features: [
-        {
-          title: "Geo-Tagged Memory",
-          description: "Save locations with AI context",
-          icon: "📍",
-          link: "/memory",
-          isOpenSource: false,
-        },
-        {
-          title: "Travel Planning",
-          description: "Smart itineraries and local insights",
-          icon: "✈️",
-          link: "/travel",
-          isOpenSource: false,
-        },
-        {
-          title: "Local Discovery",
-          description: "Find authentic spots locals love",
-          icon: "🗺️",
-          link: "/discover",
-          isOpenSource: false,
-        },
-        {
-          title: "Weather Integration",
-          description: "Real-time weather for your locations",
-          icon: "🌤️",
-          link: "/weather",
-          isOpenSource: false,
-        },
-        {
-          title: "Browser Extension",
-          description: "Access Atlas from anywhere",
-          icon: "🔌",
-          link: "https://chrome.google.com/webstore",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return atlas
   }
 
   // Istanbul configuration
   if (mode === "istanbul") {
-    return {
-      favicon: "atlas",
-      mode: "istanbul",
-      slug: "istanbul",
-      storeSlug: "compass",
-      name: "Istanbul",
-      domain: "istanbul.chrry.ai",
-      url: "https://istanbul.chrry.ai",
-      store: "https://atlas.chrry.ai",
-      email: "iliyan@chrry.ai",
-      description:
-        "Your personal AI assistant designed for Istanbul and Turkey. Chat in Turkish, collaborate locally, and get things done faster.",
-      logo: "🇹🇷",
-      primaryColor: "#E30A17", // Turkish red
-      links: {
-        github: "https://github.com/chrryai/vex",
-        docs: "https://istanbul.chrry.ai/docs",
-      },
-      features: [
-        {
-          title: "Turkish Language Support",
-          description: "Native Turkish AI assistance",
-          icon: "🗣️",
-          link: "/language",
-          isOpenSource: false,
-        },
-        {
-          title: "Local Insights",
-          description: "Istanbul-specific recommendations",
-          icon: "🕌",
-          link: "/local",
-          isOpenSource: false,
-        },
-        {
-          title: "Turkish Lira Pricing",
-          description: "Local currency and payment methods",
-          icon: "💰",
-          link: "/pricing",
-          isOpenSource: false,
-        },
-        {
-          title: "Local Collaboration",
-          description: "Connect with Turkish users",
-          icon: "👥",
-          link: "/community",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return istanbul
   }
 
   // Amsterdam configuration
   if (mode === "amsterdam") {
-    return {
-      favicon: "atlas",
-      mode: "amsterdam",
-      slug: "amsterdam",
-      storeSlug: "compass",
-      name: "Amsterdam",
-      domain: "amsterdam.chrry.ai",
-      url: "https://amsterdam.chrry.ai",
-      store: "https://atlas.chrry.ai",
-      email: "iliyan@chrry.ai",
-      description:
-        "Your personal AI assistant designed for Amsterdam and the Netherlands. Chat in Dutch, collaborate locally, and get things done faster.",
-      logo: "🇳🇱",
-      primaryColor: "#FF6B35", // Dutch orange
-      links: {
-        github: "https://github.com/chrryai/vex",
-        docs: "https://amsterdam.chrry.ai/docs",
-      },
-      features: [
-        {
-          title: "Dutch Language Support",
-          description: "Native Dutch AI assistance",
-          icon: "🗣️",
-          link: "/language",
-          isOpenSource: false,
-        },
-        {
-          title: "Local Insights",
-          description: "Amsterdam-specific recommendations",
-          icon: "🚲",
-          link: "/local",
-          isOpenSource: false,
-        },
-        {
-          title: "Euro Pricing",
-          description: "Local currency and payment methods",
-          icon: "💰",
-          link: "/pricing",
-          isOpenSource: false,
-        },
-        {
-          title: "Local Collaboration",
-          description: "Connect with Dutch users",
-          icon: "👥",
-          link: "/community",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return amsterdam
   }
 
   // Tokyo configuration
   if (mode === "tokyo") {
-    return {
-      favicon: "atlas",
-      mode: "tokyo",
-      slug: "tokyo",
-      storeSlug: "compass",
-      name: "Tokyo",
-      domain: "tokyo.chrry.ai",
-      url: "https://tokyo.chrry.ai",
-      store: "https://atlas.chrry.ai",
-      email: "iliyan@chrry.ai",
-      description:
-        "Your personal AI assistant designed for Tokyo and Japan. Chat in Japanese, collaborate locally, and get things done faster.",
-      logo: "🇯🇵",
-      primaryColor: "#BC002D", // Japanese red
-      links: {
-        github: "https://github.com/chrryai/vex",
-        docs: "https://tokyo.chrry.ai/docs",
-      },
-      features: [
-        {
-          title: "Japanese Language Support",
-          description: "Native Japanese AI assistance",
-          icon: "🗣️",
-          link: "/language",
-          isOpenSource: false,
-        },
-        {
-          title: "Local Insights",
-          description: "Tokyo-specific recommendations",
-          icon: "🗼",
-          link: "/local",
-          isOpenSource: false,
-        },
-        {
-          title: "Yen Pricing",
-          description: "Local currency and payment methods",
-          icon: "💰",
-          link: "/pricing",
-          isOpenSource: false,
-        },
-        {
-          title: "Local Collaboration",
-          description: "Connect with Japanese users",
-          icon: "👥",
-          link: "/community",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return tokyo
   }
 
   // New York configuration
   if (mode === "newYork") {
-    return {
-      favicon: "atlas",
-      mode: "newYork",
-      slug: "newYork",
-      storeSlug: "compass",
-      name: "New York",
-      domain: "newyork.chrry.ai",
-      url: "https://newyork.chrry.ai",
-      store: "https://atlas.chrry.ai",
-      email: "iliyan@chrry.ai",
-      description:
-        "Your personal AI assistant designed for New York City and the USA. Chat, collaborate locally, and get things done faster in the city that never sleeps.",
-      logo: "🗽",
-      primaryColor: "#0039A6", // NYC blue
-      links: {
-        github: "https://github.com/chrryai/vex",
-        docs: "https://newyork.chrry.ai/docs",
-      },
-      features: [
-        {
-          title: "NYC Local Insights",
-          description: "New York-specific recommendations",
-          icon: "🏙️",
-          link: "/local",
-          isOpenSource: false,
-        },
-        {
-          title: "USD Pricing",
-          description: "US currency and payment methods",
-          icon: "💰",
-          link: "/pricing",
-          isOpenSource: false,
-        },
-        {
-          title: "Local Collaboration",
-          description: "Connect with NYC users",
-          icon: "👥",
-          link: "/community",
-          isOpenSource: false,
-        },
-        {
-          title: "24/7 Support",
-          description: "Always available in the city that never sleeps",
-          icon: "🌃",
-          link: "/support",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return newYork
   }
 
   // Popcorn configuration
   if (mode === "popcorn") {
-    return {
-      favicon: "popcorn",
-      mode: "popcorn",
-      slug: "popcorn",
-      storeSlug: "movies",
-      name: "Popcorn",
-      domain: "popcorn.chrry.ai",
-      url: "https://popcorn.chrry.ai",
-      store: "https://popcorn.chrry.ai",
-      email: "iliyan@chrry.ai",
-      description:
-        "Step into the premier hub for iconic films, genre-defining storytelling, and cinematic AI companions that decode every frame.",
-      logo: "🍿",
-      primaryColor: "#DC2626", // Cinema red
-      links: {
-        github: "https://github.com/chrryai/vex",
-        docs: "https://popcorn.chrry.ai/docs",
-      },
-      features: [
-        {
-          title: "Scene Analysis",
-          description: "Decode any film scene with precision",
-          icon: "🎬",
-          link: "/scene-analysis",
-          isOpenSource: false,
-        },
-        {
-          title: "Character Arc Explorer",
-          description: "Trace protagonist transformations",
-          icon: "🧭",
-          link: "/character-arcs",
-          isOpenSource: false,
-        },
-        {
-          title: "Cinematic Techniques",
-          description: "Visual storytelling breakdown",
-          icon: "🎥",
-          link: "/techniques",
-          isOpenSource: false,
-        },
-        {
-          title: "Soundtrack Insights",
-          description: "Audio storytelling analysis",
-          icon: "🎵",
-          link: "/soundtrack",
-          isOpenSource: false,
-        },
-        {
-          title: "Genre Remix",
-          description: "Reimagine films in new genres",
-          icon: "🔄",
-          link: "/remix",
-          isOpenSource: false,
-        },
-        {
-          title: "Dialogue Deep Dive",
-          description: "Unpack memorable quotes",
-          icon: "💬",
-          link: "/dialogue",
-          isOpenSource: false,
-        },
-        {
-          title: "Double Features",
-          description: "Curated film pairings",
-          icon: "🎟️",
-          link: "/double-features",
-          isOpenSource: false,
-        },
-        {
-          title: "Movie Database",
-          description: "Explore iconic films",
-          icon: "📚",
-          link: "/films",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return popcorn
   }
 
   // Zarathustra configuration
   if (mode === "zarathustra") {
-    return {
-      favicon: "zarathustra",
-      mode: "zarathustra",
-      slug: "zarathustra",
-      storeSlug: "books",
-      name: "Zarathustra",
-      domain: "books.chrry.ai",
-      url: "https://books.chrry.ai",
-      store: "https://books.chrry.ai",
-      email: "iliyan@chrry.ai",
-      description:
-        "Your AI philosophy guide. Explore Nietzsche, existentialism, and timeless wisdom through intelligent conversation.",
-      logo: "🪢",
-      primaryColor: "#7C3AED", // Purple/violet for wisdom
-      links: {
-        github: "https://github.com/chrryai/vex",
-        docs: "https://zarathustra.chrry.ai/docs",
-      },
-      features: [
-        {
-          title: "Philosophy Explorer",
-          description: "Navigate schools of thought",
-          icon: "🏛️",
-          link: "/philosophy",
-          isOpenSource: false,
-        },
-        {
-          title: "Book Analysis",
-          description: "Deep dive into philosophical texts",
-          icon: "📖",
-          link: "/books",
-          isOpenSource: false,
-        },
-        {
-          title: "Concept Breakdown",
-          description: "Understand complex ideas simply",
-          icon: "💡",
-          link: "/concepts",
-          isOpenSource: false,
-        },
-        {
-          title: "Philosopher Profiles",
-          description: "Learn about great thinkers",
-          icon: "🧠",
-          link: "/philosophers",
-          isOpenSource: false,
-        },
-        {
-          title: "Eternal Recurrence",
-          description: "Explore Nietzsche's key ideas",
-          icon: "♾️",
-          link: "/nietzsche",
-          isOpenSource: false,
-        },
-        {
-          title: "Existential Toolkit",
-          description: "Apply philosophy to life",
-          icon: "🛠️",
-          link: "/toolkit",
-          isOpenSource: false,
-        },
-        {
-          title: "Reading Lists",
-          description: "Curated philosophical journeys",
-          icon: "📚",
-          link: "/reading-lists",
-          isOpenSource: false,
-        },
-        {
-          title: "Daily Wisdom",
-          description: "Philosophical insights daily",
-          icon: "✨",
-          link: "/daily",
-          isOpenSource: false,
-        },
-      ],
-    }
+    return zarathustra
   }
 
   // Vex configuration
-  return {
-    url: "https://vex.chrry.ai",
-    mode: "vex",
-    slug: "vex",
-    favicon: "vex",
-    storeSlug: "lifeOS",
-    name: "Vex",
-    domain: "vex.chrry.ai",
-    store: "https://vex.chrry.ai",
-    email: "iliyan@chrry.ai",
-    description: "Your AI-Powered Life",
-    logo: "🤖",
-    primaryColor: "#6366F1", // Indigo
-    links: {
-      github: "https://github.com/chrryai/chrry",
-      docs: "https://vex.chrry.ai/docs",
-    },
-    features: [
-      {
-        title: "LifeOS",
-        description: "AI-powered life management system",
-        icon: "🧠",
-        link: "/lifeOS",
-        isOpenSource: false,
-      },
-      {
-        title: "AI Agents",
-        description: "Custom AI agents for any task",
-        icon: "🤖",
-        link: "/lifeOS",
-        isOpenSource: false,
-      },
-      {
-        title: "Collaboration",
-        description: "Real-time AI collaboration",
-        icon: "👥",
-        link: "/threads",
-        isOpenSource: false,
-      },
-      {
-        title: "Browser Extension",
-        description: "AI assistant in your browser",
-        icon: "🔌",
-        link: "https://chrome.google.com/webstore",
-        isOpenSource: false,
-      },
-    ],
-  }
+  return vex
 }
+
+export const whiteLabels = [
+  chrryDev,
+  chrryAI,
+  focus,
+  atlas,
+  istanbul,
+  amsterdam,
+  tokyo,
+  newYork,
+  popcorn,
+  zarathustra,
+  vex,
+]
 
 /**
  * Check if current site is Chrry

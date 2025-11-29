@@ -15,12 +15,22 @@ export async function GET(
   const guest = await getGuest()
 
   // Try to get app by slug first (for system apps like "atlas", "peach"), then by UUID
-  const app = validate(id)
-    ? await getApp({ id })
-    : await getApp({ slug: id, userId: member?.id, guestId: guest?.id })
+  let app = await getApp({ id })
 
   if (!app) {
-    return NextResponse.json({ error: "App not found" }, { status: 404 })
+    app = await getApp({ slug: "chrry" })
+  }
+
+  if (!app) {
+    return NextResponse.json(
+      { error: "App not found" },
+      {
+        headers: {
+          "Content-Type": "application/manifest+json",
+          "Cache-Control": "public, max-age=3600, s-maxage=86400",
+        },
+      },
+    )
   }
 
   // Extract theme color from app metadata or use default

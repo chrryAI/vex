@@ -954,7 +954,7 @@ export const getSession = async ({
   API_URL = utils.API_URL,
   VERSION = utils.VERSION,
   app,
-  appSlug = "chrry",
+  appSlug,
   agentName,
   chrryUrl,
   routeType,
@@ -1017,11 +1017,12 @@ export const getSession = async ({
       "x-timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
       ...(appId ? { "x-app-id": appId } : {}),
       ...(userAgent ? { "user-agent": userAgent } : {}),
-      ...(appSlug ? { "x-app-slug": appId } : {}),
+      ...(appSlug ? { "x-app-slug": appSlug } : {}),
       ...(routeType ? { "x-route-type": routeType } : {}),
       ...(pathname ? { "x-pathname": pathname } : {}),
       ...(locale ? { "x-locale": locale } : {}),
       ...(fingerprint ? { "x-fp": fingerprint } : {}),
+      ...(chrryUrl ? { "x-chrry-url": chrryUrl } : {}),
     },
   })
 
@@ -1084,6 +1085,26 @@ export const getApps = async ({
   const data = await response.json()
 
   return data as appWithStore[]
+}
+
+export const getApp = async ({
+  API_URL = utils.API_URL,
+  token,
+  appId,
+}: {
+  API_URL?: string
+  token: string
+  appId: string
+}) => {
+  const response = await fetch(`${API_URL}/apps/${appId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "x-app-id": appId,
+    },
+  })
+
+  const data = await response.json()
+  return data as appWithStore
 }
 
 export const getTranslations = async ({
@@ -1231,6 +1252,7 @@ export const getActions = ({
     reorderApps: (apps: app[], autoInstall?: boolean, storeId?: string) =>
       reorderApps({ token, apps, autoInstall, storeId, API_URL }),
     getApps: () => getApps({ token, API_URL }),
+    getApp: ({ appId }: { appId: string }) => getApp({ token, appId, API_URL }),
 
     getSession: (params: {
       deviceId: string | undefined
