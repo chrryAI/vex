@@ -78,8 +78,9 @@ const AuthContext = createContext<
         threads: thread[]
         totalCount: number
       }
+      lasProcessedSession: React.RefObject<string | undefined>
       setThreads: (value: { threads: thread[]; totalCount: number }) => void
-      migratedFromGuestRef: React.MutableRefObject<boolean>
+      migratedFromGuestRef: React.RefObject<boolean>
       fetchApps: () => Promise<void>
       isLoadingApps: boolean
       isSplash: boolean
@@ -927,6 +928,8 @@ export function AuthProvider({
     return matchedApp?.slug
   }
 
+  const lasProcessedSession = useRef<string | undefined>(undefined)
+
   // Find app by pathname - handles both base apps and sub-apps
   const findAppByPathname = (
     path: string,
@@ -1602,6 +1605,7 @@ export function AuthProvider({
         setMemoriesEnabled,
         gift,
         wasGifted,
+        lasProcessedSession,
         setWasGifted,
         showCharacterProfiles,
         setShowCharacterProfiles,

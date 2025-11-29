@@ -31,14 +31,18 @@ import {
   PLUS_CREDITS_PER_MONTH,
   PRO_CREDITS_PER_MONTH,
 } from "@repo/db/src/schema"
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4, validate } from "uuid"
 import { capitalizeFirstLetter, FRONTEND_URL, isE2E } from "chrry/utils"
 import { trackPurchase } from "../../../lib/ads"
 
 export async function POST(request: Request) {
   const body = await request.json()
   const siteConfig = getSiteConfig()
-  const { session_id, userId, guestId, email } = body
+  const { session_id, userId, guestId, email, giftedFingerPrint } = body
+  console.log(
+    `🚀 ~ file: route.tsx:42 ~ { session_id, userId, guestId, email }:`,
+    { session_id, userId, guestId, email, giftedFingerPrint },
+  )
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
   const validTransitions = {
     plus: ["pro"],
@@ -47,17 +51,43 @@ export async function POST(request: Request) {
 
   const member = await getMember()
 
-  const user = email
+  const isE2EAndValidFingerprint = isE2E && validate(giftedFingerPrint)
+
+  const newFingerprint = isE2EAndValidFingerprint ? giftedFingerPrint : uuidv4()
+
+  let user = email
     ? await getUser({ email })
     : userId
       ? await getUser({ id: userId })
       : undefined
-  const guest = !user
+  let guest = !user
     ? email
       ? (await getGuest({ email })) ||
-        (await createGuest({ email, fingerprint: uuidv4(), ip: "192.168.1.1" }))
+        (await createGuest({
+          email,
+          fingerprint: newFingerprint,
+          ip: "192.168.1.1",
+        }))
       : await getGuest({ id: guestId })
     : undefined
+
+  if (isE2EAndValidFingerprint && user) {
+    await updateUser({
+      ...user,
+      fingerprint: newFingerprint,
+    })
+
+    user = await getUser({ id: userId })
+  }
+
+  if (isE2EAndValidFingerprint && guest) {
+    await updateGuest({
+      ...guest,
+      fingerprint: newFingerprint,
+    })
+
+    guest = await getGuest({ id: guestId })
+  }
 
   if (!user && !guest) {
     return NextResponse.json(
@@ -269,7 +299,7 @@ export async function POST(request: Request) {
             if (isSelfReferral) {
               console.log("⚠️ Self-referral blocked:", {
                 affiliateUserId: affiliateLink.userId,
-                buyerUserId: user.id,
+                buyerUserId: user?.id,
               })
               throw new Error("Cannot use your own affiliate link")
             }
@@ -362,12 +392,12 @@ export async function POST(request: Request) {
 
           if (affiliateLink && affiliateLink.status === "active") {
             // Prevent self-referral (only check user, as guests can't be affiliates)
-            const isSelfReferral = user && affiliateLink.userId === user.id
+            const isSelfReferral = member && affiliateLink.userId === member.id
 
             if (isSelfReferral) {
               console.log("⚠️ Self-referral blocked (credits):", {
                 affiliateUserId: affiliateLink.userId,
-                buyerUserId: user.id,
+                buyerUserId: member.id,
               })
               throw new Error("Cannot use your own affiliate link")
             }
@@ -531,6 +561,7 @@ export async function POST(request: Request) {
         creditsAdded: creditsToAdd,
         gift: !!email,
         credits: creditsToAdd,
+        fingerprint: guest?.fingerprint || user?.fingerprint,
       })
     }
 
