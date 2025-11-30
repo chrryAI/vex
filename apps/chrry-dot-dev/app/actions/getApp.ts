@@ -27,17 +27,13 @@ export default async function getAppAction({
   const headersList = request?.headers || (await headers())
   const appId = rest.appId || headersList.get("x-app-id")
 
-  const appSlug = rest.appSlug || headersList.get("x-app-slug")
-
   const chrryUrl = rest.chrryUrl || (await getChrryUrl(request))
 
   const siteConfig = getSiteConfig(chrryUrl)
 
-  const baseConfig = getSiteConfig()
-
   const siteApp = await getApp({
-    slug: baseConfig.slug,
-    storeSlug: baseConfig.storeSlug,
+    slug: siteConfig.slug,
+    storeSlug: siteConfig.storeSlug,
   })
 
   const chrryStore = await getStore({
@@ -58,14 +54,7 @@ export default async function getAppAction({
         guestId: guest?.id,
         depth: 1,
       })
-    : appSlug
-      ? await getApp({
-          slug: appSlug,
-          userId: member?.id,
-          guestId: guest?.id,
-          depth: 1,
-        })
-      : undefined
+    : undefined
 
   const store = appFromParams?.store || chrryStore
 
@@ -80,7 +69,7 @@ export default async function getAppAction({
 
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
-  let app = await getApp({
+  const app = await getApp({
     id: appFromParams?.id || baseApp?.id,
     userId: member?.id,
     guestId: guest?.id,
