@@ -805,7 +805,7 @@ export function ChatProvider({
       return threadData
     },
     {
-      revalidateOnMount: true,
+      // revalidateOnMount: true,
     },
   )
 
