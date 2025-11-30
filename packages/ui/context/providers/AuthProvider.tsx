@@ -336,7 +336,6 @@ export function AuthProvider({
   const isTestingDevice = false && isDevelopment
 
   const chrryUrl = CHRRY_URL
-  console.log(`🚀 ~ AuthProvider ~ chrryUrl:`, chrryUrl)
 
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
@@ -754,30 +753,28 @@ export function AuthProvider({
 
     return computedSlug || defaultSlug
   }
-  const baseApp = storeApps
-    .concat(session?.app?.store?.apps || [])
-    .find((item) => {
-      if (!item) return false
+  const baseApp = storeApps.find((item) => {
+    if (!item) return false
 
-      if (
-        siteConfig.slug === item.slug &&
-        item.store?.slug === siteConfig.storeSlug
-      ) {
-        return true
-      }
+    if (
+      siteConfig.slug === item.slug &&
+      item.store?.slug === siteConfig.storeSlug
+    ) {
+      return true
+    }
 
-      // Must be the main app (not a sub-app)
-      if (item.id !== item.store?.appId) return false
+    // Must be the main app (not a sub-app)
+    if (item.id !== item.store?.appId) return false
 
-      // Must have a domain
-      if (!item?.store?.domain) return false
+    // Must have a domain
+    if (!item?.store?.domain) return false
 
-      // Match the chrryUrl (e.g., chrry.ai or vex.chrry.ai)
-      return (
-        getAlterNativeDomains(item.store).includes(chrryUrl) ||
-        item.store.domain === chrryUrl
-      )
-    })
+    // Match the chrryUrl (e.g., chrry.ai or vex.chrry.ai)
+    return (
+      getAlterNativeDomains(item.store).includes(chrryUrl) ||
+      item.store.domain === chrryUrl
+    )
+  })
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
 
@@ -908,32 +905,6 @@ export function AuthProvider({
   const [hasNotifications, setHasNotifications] = useState<boolean | undefined>(
     false,
   )
-  const getSlugFromPathname = (path: string): string | undefined => {
-    if (path === "/") return undefined
-
-    const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
-      defaultAppSlug: baseApp?.slug || siteConfig.slug,
-      defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
-      excludedRoutes: excludedSlugRoutes,
-      locales,
-    })
-    console.log(`🚀 ~ getSlugFromPathname ~ appSlug:`, appSlug, storeSlug)
-
-    if (!appSlug) {
-      return undefined
-    }
-
-    const matchedApp = storeApps?.find(
-      (item) =>
-        item.slug === appSlug &&
-        (!baseApp
-          ? true
-          : !baseApp?.store?.apps?.some((a) => a.id === item.id)
-            ? item.store?.slug === storeSlug
-            : true),
-    )
-    return matchedApp?.slug
-  }
 
   const lasProcessedSession = useRef<string | undefined>(undefined)
 
@@ -942,11 +913,22 @@ export function AuthProvider({
     path: string,
     apps: appWithStore[],
   ): appWithStore | undefined => {
-    const slugFromPath = getSlugFromPathname(path)
-    if (!slugFromPath) return undefined
+    if (path === "/") return undefined
 
-    // Try to find exact match by slug
-    return apps.find((app) => app.slug === slugFromPath)
+    const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
+      defaultAppSlug: baseApp?.slug || siteConfig.slug,
+      defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
+    })
+
+    const matchedApp = storeApps?.find(
+      (item) =>
+        item.slug === appSlug &&
+        (hasStoreApps(baseApp)
+          ? baseApp?.store?.apps?.find((app) => app.slug === appSlug) ||
+            item.store?.slug === storeSlug
+          : true),
+    )
+    return matchedApp
   }
 
   const [lastAppId, setLastAppId] = useLocalStorage<string | undefined>(
@@ -961,18 +943,20 @@ export function AuthProvider({
   // Centralized function to merge apps without duplicates
   const mergeApps = useCallback((newApps: appWithStore[]) => {
     setAllApps((prevApps) => {
-      console.log(`🚀 ~ AuthProvider ~ prevApps:`, prevApps)
       // Create a map of existing apps by ID
       const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
 
-      // Add new apps only if they don't exist
-      newApps.forEach((app) => {
-        if (
-          !existingAppsMap.has(app.id) ||
-          !existingAppsMap.get(app.id)?.store?.apps.length ||
-          !existingAppsMap.get(app.id)?.store?.app
-        ) {
-          existingAppsMap.set(app.id, app)
+      // Add or update apps
+      newApps.forEach((newApp) => {
+        const existingApp = existingAppsMap.get(newApp.id)
+
+        // If app doesn't exist, add it
+
+        // If new app has more data (store.apps populated), update it
+        if (hasStoreApps(newApp) && !hasStoreApps(existingApp)) {
+          existingAppsMap.set(newApp.id, newApp)
+        } else {
+          existingAppsMap.set(newApp.id, newApp)
         }
       })
 
@@ -1025,18 +1009,18 @@ export function AuthProvider({
       if (!token || !appId) return
       const app = await getApp({ token, appId, chrryUrl })
 
-      if (loadingAppId) {
-        setLoadingAppId(undefined)
-      }
-
-      const apps = app.store?.apps
-
-      apps && mergeApps(apps)
-      return apps
+      return app.store?.apps
     } catch (error) {
       toast.error("Something went wrong")
     }
   })
+
+  useEffect(() => {
+    if (storeAppsSwr) {
+      mergeApps(storeAppsSwr)
+      setLoadingAppId(undefined)
+    }
+  }, [storeAppsSwr])
 
   const hasStoreApps = (item: appWithStore | undefined) => {
     if (!item || !storeApps.length) return false
@@ -1045,7 +1029,8 @@ export function AuthProvider({
     })
 
     return Boolean(
-      app?.store?.apps.length &&
+      app?.store?.app &&
+        app?.store?.apps.length &&
         storeApps?.find(
           (app) => app.store?.appId && app.id === item?.store?.appId,
         ),
@@ -1079,10 +1064,17 @@ export function AuthProvider({
     (a) => a.store?.appId === a.id && a.store.id === app?.store?.id,
   )
 
+  const storeAppInternal = app?.store?.apps.find(
+    (item) => item.id === app?.store?.appId,
+  )
+
+  const [storeApp, setStoreApp] = useState<appWithStore | undefined>(
+    storeAppInternal,
+  )
   // Filter apps by current store - fallback to all apps if store has no apps
-  const apps = app?.store?.id
-    ? storeApps.filter((a) => base?.store?.apps.some((b) => b.id === a.id))
-    : storeApps
+  const apps = storeApps.filter((item) => {
+    return app?.store?.apps?.some((app) => app.id === item.id)
+  })
 
   const userBaseApp = storeApps?.find(
     (app) => user?.userName && app.store?.slug === user?.userName,
@@ -1092,14 +1084,6 @@ export function AuthProvider({
     (app) => guest?.id && app.store?.slug === guest?.id,
   )
   const guestBaseStore = guestBaseApp?.store
-
-  const storeAppInternal = app?.store?.apps.find(
-    (item) => item.id === app?.store?.appId,
-  )
-
-  const [storeApp, setStoreApp] = useState<appWithStore | undefined>(
-    storeAppInternal,
-  )
 
   useEffect(() => {
     storeAppInternal && setStoreApp(storeAppInternal)
@@ -1342,7 +1326,7 @@ export function AuthProvider({
     // Priority 2: Find app by pathname
     if (!matchedApp) {
       matchedApp = findAppByPathname(pathname, storeApps) || baseApp
-      console.log("🛣️ Using pathname app:", matchedApp?.slug)
+      console.log("🛣️ Using pathname app:", matchedApp?.slug, pathname)
     }
 
     console.log("🔍 App detection:", {

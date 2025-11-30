@@ -136,7 +136,7 @@ export default function AppProviders({
   }
 
   return (
-    <SWRConfig key={cacheReady ? "persistent" : "memory"} value={swrConfig}>
+    <SWRConfig value={swrConfig}>
       <PlatformProvider
         viewPortWidth={viewPortWidth}
         viewPortHeight={viewPortHeight}
