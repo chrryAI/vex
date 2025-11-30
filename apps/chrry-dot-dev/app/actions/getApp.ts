@@ -10,6 +10,7 @@ import { getSiteConfig } from "chrry/utils/siteConfig"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "chrry/utils/url"
 import { locales } from "chrry/locales"
 import { appWithStore } from "chrry/types"
+import getChrryUrl from "./getChrryUrl"
 
 export default async function getAppAction({
   ...rest
@@ -31,15 +32,7 @@ export default async function getAppAction({
 
   const pathname = headersList.get("x-pathname") || "/"
 
-  const hostname = headersList.get("host") || ""
-
-  const chrryUrlFromHeader = headersList.get("x-chrry-url")
-
-  let chrryUrl = rest.chrryUrl
-    ? rest.chrryUrl
-    : chrryUrlFromHeader
-      ? decodeURIComponent(chrryUrlFromHeader)
-      : hostname
+  const chrryUrl = rest.chrryUrl || (await getChrryUrl())
 
   const siteConfig = getSiteConfig(chrryUrl)
 
