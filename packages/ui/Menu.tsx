@@ -97,6 +97,8 @@ export default function Menu({
   // App context
   const { app } = useApp()
 
+  app && console.log("ssskacsnckjfnckjjdfc kjf c", getAppSlug(app, ""))
+
   // Platform context
   const { viewPortHeight, isStandalone } = usePlatform()
 
@@ -352,11 +354,7 @@ export default function Menu({
                 <HatGlasses size={18} /> {t("Incognito Chat")}
               </A>
               <A
-                href={
-                  isStandalone
-                    ? undefined
-                    : `${app ? getAppSlug(app, "") : ""}/threads`
-                }
+                href={`${app ? getAppSlug(app, "") : ""}/threads`}
                 onClick={(e) => {
                   track({
                     name: "threads-click-menu",
@@ -687,10 +685,13 @@ export default function Menu({
                       )}
                       {threads?.threads.length
                         ? (() => {
-                            const url = `/threads${collaborationStatus ? `?collaborationStatus=${collaborationStatus}` : ""}`
+                            const url = `${app ? getAppSlug(app, "") : ""}/threads${collaborationStatus ? `?collaborationStatus=${collaborationStatus}` : ""}`
 
                             return (
-                              <Div style={styles.loadMoreButtonContainer.style}>
+                              <Div
+                                suppressHydrationWarning
+                                style={styles.loadMoreButtonContainer.style}
+                              >
                                 <A
                                   href={url}
                                   data-testid="load-more-threads-menu"

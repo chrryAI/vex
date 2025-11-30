@@ -925,38 +925,75 @@ export default function App({
               }}
             >
               <Div style={{ ...styles.apps.style }}>
-                {appsState
-                  .filter((item) => item.id !== popcorn?.id)
-                  .slice(0, 5)
-                  ?.map((item, index) => {
-                    const showAtlasHere = index === 1 && app?.id === chrry?.id
-                    const showFocusHere = focus && !showAtlasHere && index === 1
+                {appsState.slice(0, 5)?.map((item, index) => {
+                  const showAtlasHere = index === 1 && app?.id === chrry?.id
+                  const showFocusHere = focus && !showAtlasHere && index === 1
 
-                    const showPacmanHere =
-                      app?.store?.id !== popcorn?.store?.id && index === 2
-                    const showSpaceInvaderHere = index === 3
+                  const showPacmanHere =
+                    app?.store?.id !== popcorn?.store?.id && index === 2
+                  const showSpaceInvaderHere = index === 3
 
-                    const showChrryHere =
-                      index === 0 && chrry && app?.id !== chrry.id
-                    const showZarathustraHere =
-                      !showChrryHere &&
-                      index === 0 &&
-                      store?.appId !== zarathustra?.id
+                  const showChrryHere =
+                    index === 0 && chrry && app?.id !== chrry.id
+                  const showZarathustraHere =
+                    !showChrryHere &&
+                    index === 0 &&
+                    store?.appId !== zarathustra?.id
 
-                    return (
-                      <Div
-                        key={item.id}
-                        id={item.id}
-                        style={{
-                          ...styles.appItem.style,
-                          marginLeft: index === 2 ? "auto" : undefined,
-                        }}
-                      >
-                        <>
-                          {showChrryHere && (
+                  return (
+                    <Div
+                      key={item.id}
+                      id={item.id}
+                      style={{
+                        ...styles.appItem.style,
+                        marginLeft: index === 2 ? "auto" : undefined,
+                      }}
+                    >
+                      <>
+                        {showChrryHere && (
+                          <A
+                            preventDefault
+                            href={getAppSlug(chrry)}
+                            onClick={(e) => {
+                              if (isManagingApp) {
+                                e.preventDefault()
+                                return
+                              }
+
+                              if (e.metaKey || e.ctrlKey) {
+                                return
+                              }
+                              e.preventDefault()
+
+                              setIsNewAppChat(chrry)
+                            }}
+                            style={{
+                              ...styles.chrry.style,
+                            }}
+                          >
+                            {loadingApp?.id !== chrry?.id ? (
+                              <Img
+                                logo="chrry"
+                                alt="Chrry"
+                                title={"Chrry"}
+                                width={28}
+                                height={28}
+                              />
+                            ) : (
+                              <Loading size={28} />
+                            )}
+                          </A>
+                        )}
+
+                        {showZarathustraHere &&
+                          zarathustra &&
+                          store &&
+                          store?.apps?.some(
+                            (app) => app.id === zarathustra.id,
+                          ) && (
                             <A
                               preventDefault
-                              href={getAppSlug(chrry)}
+                              href={getAppSlug(zarathustra)}
                               onClick={(e) => {
                                 if (isManagingApp) {
                                   e.preventDefault()
@@ -968,251 +1005,205 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewAppChat(chrry)
+                                setIsNewAppChat(zarathustra)
                               }}
                               style={{
-                                ...styles.chrry.style,
+                                ...styles.zarathustra.style,
                               }}
                             >
-                              {loadingApp?.id !== chrry?.id ? (
+                              {loadingApp?.id !== zarathustra?.id ? (
                                 <Img
-                                  logo="chrry"
-                                  alt="Chrry"
-                                  title={"Chrry"}
-                                  width={28}
-                                  height={28}
+                                  style={{
+                                    ...styles.zarathustra.style,
+                                  }}
+                                  app={zarathustra}
+                                  size={24}
                                 />
                               ) : (
-                                <Loading size={28} />
+                                <Loading size={24} />
                               )}
                             </A>
                           )}
-
-                          {showZarathustraHere &&
-                            zarathustra &&
-                            store &&
-                            store?.apps?.some(
-                              (app) => app.id === zarathustra.id,
-                            ) && (
-                              <A
-                                preventDefault
-                                href={getAppSlug(zarathustra)}
-                                onClick={(e) => {
-                                  if (isManagingApp) {
-                                    e.preventDefault()
-                                    return
-                                  }
-
-                                  if (e.metaKey || e.ctrlKey) {
-                                    return
-                                  }
+                        {showPacmanHere ? (
+                          popcorn &&
+                          store &&
+                          store?.appId !== popcorn?.id &&
+                          store?.apps?.some((app) => app.id === popcorn.id) ? (
+                            <A
+                              preventDefault
+                              href={getAppSlug(popcorn)}
+                              onClick={(e) => {
+                                if (isManagingApp) {
                                   e.preventDefault()
+                                  return
+                                }
 
-                                  setIsNewAppChat(zarathustra)
-                                }}
+                                if (e.metaKey || e.ctrlKey) {
+                                  return
+                                }
+                                e.preventDefault()
+
+                                setIsNewAppChat(popcorn)
+                              }}
+                              style={{
+                                ...styles.popcorn.style,
+                              }}
+                            >
+                              {loadingApp?.id !== popcorn?.id ? (
+                                <Img app={popcorn} size={24} />
+                              ) : (
+                                <Loading size={24} />
+                              )}
+                            </A>
+                          ) : (
+                            showPacmanHere && (
+                              <Button
+                                className="link slideInFromLeft"
+                                onClick={() =>
+                                  setAppStatus({
+                                    step: canEditApp ? "update" : "add",
+                                    part: "highlights",
+                                  })
+                                }
                                 style={{
-                                  ...styles.zarathustra.style,
+                                  ...styles.pacMan.style,
                                 }}
                               >
-                                {loadingApp?.id !== zarathustra?.id ? (
+                                <Img
+                                  icon="pacman"
+                                  alt="Pacman"
+                                  title={"Pacman"}
+                                  width={26}
+                                  height={26}
+                                />
+                              </Button>
+                            )
+                          )
+                        ) : null}
+
+                        {slug && getAppSlug(item) === slug ? (
+                          <>
+                            <StoreApp key={"vex"} />
+                          </>
+                        ) : (
+                          item.id !== app?.id && (
+                            <A
+                              preventDefault
+                              key={item.slug}
+                              title={t(item.title)}
+                              className={`button ${
+                                isManagingApp ? "transparent" : "inverted"
+                              }`}
+                              style={{
+                                ...utilities.button.style,
+                                ...utilities.small.style,
+                                ...(isManagingApp
+                                  ? utilities.transparent.style
+                                  : utilities.inverted.style),
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "0.35rem",
+                                marginLeft: index === 0 ? "auto" : "",
+                              }}
+                              href={getAppSlug(item)}
+                              onClick={(e) => {
+                                if (isManagingApp) {
+                                  return
+                                }
+                                if (e.metaKey || e.ctrlKey) {
+                                  return
+                                }
+
+                                setIsNewAppChat(item)
+
+                                e.preventDefault()
+                              }}
+                            >
+                              {loadingApp?.id === item.id ? (
+                                <Loading size={24} />
+                              ) : (
+                                <>
                                   <Img
-                                    style={{
-                                      ...styles.zarathustra.style,
-                                    }}
-                                    app={zarathustra}
+                                    showLoading={false}
+                                    app={item}
+                                    alt={item.title}
                                     size={24}
                                   />
-                                ) : (
-                                  <Loading size={24} />
-                                )}
-                              </A>
-                            )}
-                          {showPacmanHere ? (
-                            popcorn &&
-                            store &&
-                            store?.appId !== popcorn?.id &&
-                            store?.apps?.some(
-                              (app) => app.id === popcorn.id,
-                            ) ? (
-                              <A
-                                preventDefault
-                                href={getAppSlug(popcorn)}
-                                onClick={(e) => {
-                                  if (isManagingApp) {
-                                    e.preventDefault()
-                                    return
-                                  }
-
-                                  if (e.metaKey || e.ctrlKey) {
-                                    return
-                                  }
-                                  e.preventDefault()
-
-                                  setIsNewAppChat(popcorn)
-                                }}
-                                style={{
-                                  ...styles.popcorn.style,
-                                }}
-                              >
-                                {loadingApp?.id !== popcorn?.id ? (
-                                  <Img app={popcorn} size={24} />
-                                ) : (
-                                  <Loading size={24} />
-                                )}
-                              </A>
-                            ) : (
-                              showPacmanHere && (
-                                <Button
-                                  className="link slideInFromLeft"
-                                  onClick={() =>
-                                    setAppStatus({
-                                      step: canEditApp ? "update" : "add",
-                                      part: "highlights",
-                                    })
-                                  }
-                                  style={{
-                                    ...styles.pacMan.style,
-                                  }}
-                                >
-                                  <Img
-                                    icon="pacman"
-                                    alt="Pacman"
-                                    title={"Pacman"}
-                                    width={26}
-                                    height={26}
-                                  />
-                                </Button>
-                              )
-                            )
-                          ) : null}
-
-                          {slug &&
-                          index ===
-                            appsState.findIndex(
-                              (a) => getAppSlug(a) === slug,
-                            ) ? (
-                            <>
-                              <StoreApp key={"vex"} />
-                            </>
-                          ) : (
-                            item.id !== app?.id && (
-                              <A
-                                preventDefault
-                                key={item.slug}
-                                title={t(item.title)}
-                                className={`button ${
-                                  isManagingApp ? "transparent" : "inverted"
-                                }`}
-                                style={{
-                                  ...utilities.button.style,
-                                  ...utilities.small.style,
-                                  ...(isManagingApp
-                                    ? utilities.transparent.style
-                                    : utilities.inverted.style),
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "0.35rem",
-                                  marginLeft: index === 0 ? "auto" : "",
-                                }}
-                                href={getAppSlug(item)}
-                                onClick={(e) => {
-                                  if (isManagingApp) {
-                                    return
-                                  }
-                                  if (e.metaKey || e.ctrlKey) {
-                                    return
-                                  }
-
-                                  setIsNewAppChat(item)
-
-                                  e.preventDefault()
-                                }}
-                              >
-                                {loadingApp?.id === item.id ? (
-                                  <Loading size={24} />
-                                ) : (
-                                  <>
-                                    <Img
-                                      showLoading={false}
-                                      app={item}
-                                      alt={item.title}
-                                      size={24}
-                                    />
-                                  </>
-                                )}
-                                <Span>{item.name}</Span>
-                              </A>
-                            )
-                          )}
-                          {showAtlasHere && atlas && (
-                            <A
-                              href={getAppSlug(atlas)}
-                              preventDefault
-                              onClick={(e) => {
-                                if (isManagingApp) {
-                                  e.preventDefault()
-                                  return
-                                }
-
-                                if (e.metaKey || e.ctrlKey) {
-                                  return
-                                }
-                                e.preventDefault()
-
-                                setIsNewAppChat(atlas)
-                              }}
-                              style={{
-                                ...styles.atlas.style,
-                              }}
-                            >
-                              {loadingApp?.id === atlas?.id ? (
-                                <Loading size={22} />
-                              ) : (
-                                <Img app={atlas} width={22} height={22} />
+                                </>
                               )}
+                              <Span>{item.name}</Span>
                             </A>
-                          )}
-                          {showFocusHere && <FocusButton time={time} />}
-                          {showSpaceInvaderHere && (
-                            <Button
-                              className="link float"
-                              key={
-                                showingCustom
-                                  ? "customInstructions"
-                                  : "appInstructions"
+                          )
+                        )}
+                        {showAtlasHere && atlas && (
+                          <A
+                            href={getAppSlug(atlas)}
+                            preventDefault
+                            onClick={(e) => {
+                              if (isManagingApp) {
+                                e.preventDefault()
+                                return
                               }
-                              style={{
-                                ...styles.spaceInvader.style,
-                              }}
-                              onClick={() => {
-                                toggleInstructions()
-                              }}
-                            >
-                              <Img
-                                icon="spaceInvader"
-                                alt="Space Invader"
-                                title={t("Space Invader")}
-                                width={26}
-                                height={26}
+
+                              if (e.metaKey || e.ctrlKey) {
+                                return
+                              }
+                              e.preventDefault()
+
+                              setIsNewAppChat(atlas)
+                            }}
+                            style={{
+                              ...styles.atlas.style,
+                            }}
+                          >
+                            {loadingApp?.id === atlas?.id ? (
+                              <Loading size={22} />
+                            ) : (
+                              <Img app={atlas} width={22} height={22} />
+                            )}
+                          </A>
+                        )}
+                        {showFocusHere && <FocusButton time={time} />}
+                        {showSpaceInvaderHere && (
+                          <Button
+                            className="link float"
+                            key={
+                              showingCustom
+                                ? "customInstructions"
+                                : "appInstructions"
+                            }
+                            style={{
+                              ...styles.spaceInvader.style,
+                            }}
+                            onClick={() => {
+                              toggleInstructions()
+                            }}
+                          >
+                            <Img
+                              icon="spaceInvader"
+                              alt="Space Invader"
+                              title={t("Space Invader")}
+                              width={26}
+                              height={26}
+                            />
+                            {hasCustomInstructions && (
+                              <RefreshCw
+                                size={10}
+                                strokeWidth={3}
+                                style={{
+                                  position: "absolute",
+                                  bottom: 1,
+                                  right: -5,
+                                  color: "#f87171",
+                                }}
                               />
-                              {hasCustomInstructions && (
-                                <RefreshCw
-                                  size={10}
-                                  strokeWidth={3}
-                                  style={{
-                                    position: "absolute",
-                                    bottom: 1,
-                                    right: -5,
-                                    color: "#f87171",
-                                  }}
-                                />
-                              )}
-                            </Button>
-                          )}
-                        </>
-                      </Div>
-                    )
-                  })}
+                            )}
+                          </Button>
+                        )}
+                      </>
+                    </Div>
+                  )
+                })}
               </Div>
             </Div>
           )}

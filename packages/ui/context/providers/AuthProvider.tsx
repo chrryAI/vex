@@ -710,9 +710,9 @@ export function AuthProvider({
     targetApp: appWithStore,
     defaultSlug: string = "/",
   ): string => {
-    const localeMatch = locales.find(
-      (loc) => pathname === `/${loc}` || pathname.startsWith(`/${loc}/`),
-    )
+    const localeMatch = locales.find((loc) => {
+      return pathname === `/${loc}` || pathname.startsWith(`/${loc}/`)
+    })
     const localePrefix = localeMatch ? `/${localeMatch}` : ""
 
     let computedSlug = defaultSlug
@@ -720,10 +720,8 @@ export function AuthProvider({
     if (targetApp) {
       if (targetApp.id === baseApp?.id) {
         computedSlug = defaultSlug
-      } else if (baseApp?.id === chrry?.id && targetApp.id === chrry?.id) {
-        computedSlug = defaultSlug
       } else if (
-        targetApp.id === chrry?.id ||
+        targetApp.id === app?.id &&
         baseApp?.store?.apps.some((app) => app.id === targetApp.id)
       ) {
         computedSlug = `/${targetApp.slug}`
@@ -762,18 +760,6 @@ export function AuthProvider({
     ) {
       return true
     }
-
-    // Must be the main app (not a sub-app)
-    if (item.id !== item.store?.appId) return false
-
-    // Must have a domain
-    if (!item?.store?.domain) return false
-
-    // Match the chrryUrl (e.g., chrry.ai or vex.chrry.ai)
-    return (
-      getAlterNativeDomains(item.store).includes(chrryUrl) ||
-      item.store.domain === chrryUrl
-    )
   })
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
@@ -1065,15 +1051,19 @@ export function AuthProvider({
   )
 
   const storeAppInternal = app?.store?.apps.find(
-    (item) => item.id === app?.store?.appId,
+    (item) => app?.store?.appId && item.id === app?.store?.appId,
   )
 
   const [storeApp, setStoreApp] = useState<appWithStore | undefined>(
     storeAppInternal,
   )
+
+  useEffect(() => {
+    setStoreApp(storeAppInternal)
+  }, [storeAppInternal])
   // Filter apps by current store - fallback to all apps if store has no apps
   const apps = storeApps.filter((item) => {
-    return app?.store?.apps?.some((app) => app.id === item.id)
+    return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
   })
 
   const userBaseApp = storeApps?.find(
@@ -1084,10 +1074,6 @@ export function AuthProvider({
     (app) => guest?.id && app.store?.slug === guest?.id,
   )
   const guestBaseStore = guestBaseApp?.store
-
-  useEffect(() => {
-    storeAppInternal && setStoreApp(storeAppInternal)
-  }, [storeAppInternal])
 
   const [slugState, setSlugState] = useState<string | undefined>(
     (app && getAppSlug(app)) || undefined,
@@ -1260,6 +1246,7 @@ export function AuthProvider({
 
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
+      if (!item) return
       ;(item?.id !== baseApp?.id || !isExtension) && setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
