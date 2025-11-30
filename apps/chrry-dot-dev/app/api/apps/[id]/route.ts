@@ -13,7 +13,7 @@ import getAppAction from "../../../actions/getApp"
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const member = await getMember()
@@ -23,20 +23,14 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { slug: appSlug } = await params
+    const { id } = await params
 
     // Get existing app
-    const existingApp = validate(appSlug)
-      ? await getPureApp({
-          id: appSlug,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
-      : await getApp({
-          slug: appSlug,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
+    const existingApp = await getPureApp({
+      id,
+      userId: member?.id,
+      guestId: guest?.id,
+    })
 
     if (!existingApp) {
       return NextResponse.json({ error: "App not found" }, { status: 404 })
@@ -44,8 +38,10 @@ export async function PATCH(
 
     // Verify ownership
     if (
-      (member && existingApp.userId !== member.id) ||
-      (guest && existingApp.guestId !== guest.id)
+      !isOwner(existingApp, {
+        userId: member?.id,
+        guestId: guest?.id,
+      })
     ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
@@ -357,12 +353,12 @@ export async function PATCH(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { slug: appId } = await params
+    const { id } = await params
 
-    const app = await getAppAction({ appId })
+    const app = await getAppAction({ appId: id })
 
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 })
@@ -378,7 +374,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const member = await getMember()
@@ -388,16 +384,14 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { slug: appSlug } = await params
+    const { id } = await params
 
     // Get existing app
-    const existingApp = validate(appSlug)
-      ? await getApp({ id: appSlug, userId: member?.id, guestId: guest?.id })
-      : await getApp({
-          slug: appSlug,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
+    const existingApp = await getApp({
+      id,
+      userId: member?.id,
+      guestId: guest?.id,
+    })
 
     if (!existingApp) {
       return NextResponse.json({ error: "App not found" }, { status: 404 })
