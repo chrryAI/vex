@@ -21,9 +21,7 @@ export async function GET(request: Request) {
     try {
       const translationsModule = await import(`chrry/locales/${locale}.json`)
       translations = translationsModule.default || translationsModule
-      if (isDevelopment) {
-        return NextResponse.json(translations)
-      }
+
       // Store in Redis cache for future requests
       await setCachedTranslations(locale, translations)
     } catch (error) {

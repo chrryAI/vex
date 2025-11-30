@@ -1,3 +1,4 @@
+import { isDevelopment } from ".."
 import { redis } from "./redis"
 
 /**
@@ -283,6 +284,9 @@ export async function setCachedTranslations(
   locale: string,
   translations: Record<string, any>,
 ) {
+  if (isDevelopment) {
+    return
+  }
   await setCache(
     cacheKeys.translations(locale),
     translations,

@@ -1046,10 +1046,6 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const base = storeApps.find(
-    (a) => a.store?.appId === a.id && a.store.id === app?.store?.id,
-  )
-
   const storeAppInternal = app?.store?.apps.find(
     (item) => app?.store?.appId && item.id === app?.store?.appId,
   )
