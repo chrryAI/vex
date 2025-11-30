@@ -1018,7 +1018,8 @@ export function AuthProvider({
 
       return apps.store?.apps
     } catch (error) {
-      toast.error("Something went wrong")
+      console.log(error)
+      // toast.error("Something went wrong")
     }
   })
 
