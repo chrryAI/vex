@@ -175,7 +175,7 @@ const focus = {
   favicon: "focus",
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.47",
+  version: "26.10.48",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
