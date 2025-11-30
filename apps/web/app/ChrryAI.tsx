@@ -362,6 +362,7 @@ export default async function ChrryAI({
       aria-label={app?.name}
       suppressHydrationWarning
       translate="no"
+      data-chrry-url={chrryUrl}
     >
       {/* <ServiceWorkerRegistration /> */}
       <head suppressHydrationWarning>

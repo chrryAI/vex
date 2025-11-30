@@ -1,18 +1,16 @@
 "use server"
 
 import { headers } from "next/headers"
-import { validate } from "uuid"
 import { getApp, getStore } from "@repo/db"
 import { user, guest } from "@repo/db"
 import getMember from "./getMember"
 import getGuest from "./getGuest"
 import { getSiteConfig } from "chrry/utils/siteConfig"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "chrry/utils/url"
-import { locales } from "chrry/locales"
 import { appWithStore } from "chrry/types"
 import getChrryUrl from "./getChrryUrl"
 
 export default async function getAppAction({
+  request,
   ...rest
 }: {
   member?: user
@@ -21,16 +19,17 @@ export default async function getAppAction({
   appSlug?: string
   routeType?: string
   chrryUrl?: string
+  request?: Request
 } = {}) {
   const member = await getMember()
   const guest = await getGuest()
 
-  const headersList = await headers()
+  const headersList = request?.headers || (await headers())
   const appId = rest.appId || headersList.get("x-app-id")
 
   const appSlug = rest.appSlug || headersList.get("x-app-slug")
 
-  const chrryUrl = rest.chrryUrl || (await getChrryUrl())
+  const chrryUrl = rest.chrryUrl || (await getChrryUrl(request))
 
   const siteConfig = getSiteConfig(chrryUrl)
 
