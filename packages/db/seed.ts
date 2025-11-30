@@ -341,7 +341,7 @@ const create = async () => {
     console.log("✅ Admin user already exists, skipping creation")
   }
 
-  const { fightClub: vex } = await createStores({ user: admin })
+  const { coder: vex } = await createStores({ user: admin })
 
   const { sushiAgent } = await createAgents()
 
