@@ -241,7 +241,7 @@ export async function GET(request: Request) {
   // Otherwise fetch by slug
   const app = await getAppAction({
     chrryUrl,
-    appId,
+    appId: appId && validateUuid(appId) ? appId : undefined,
   })
 
   try {
