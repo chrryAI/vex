@@ -48,9 +48,9 @@ export default async function getAppAction({
     depth: 1, // Populate one level of nested store.apps
   })
 
-  if (!chrryStore || !chrryStore.app || !chrryStore.store) {
-    return null
-  }
+  // if (!chrryStore || !chrryStore.app || !chrryStore.store) {
+  //   return null
+  // }
 
   const appFromParams = appId
     ? await getApp({

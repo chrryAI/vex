@@ -190,15 +190,13 @@ export async function GET(request: Request) {
   const url = new URL(request.url)
 
   // Detect domain for cookies from chrryUrl (for extensions), Referer, or Origin header
-  const chrryUrlFromParams = url.searchParams.get("chrryUrl")
+  const chrryUrl = await getChrryUrl(request)
   const referer =
     request.headers.get("referer") || request.headers.get("origin")
   let cookieDomain: string | undefined = undefined
 
   // Priority: chrryUrl (for extensions) > referer (for web)
-  const sourceUrl = chrryUrlFromParams
-    ? decodeURIComponent(chrryUrlFromParams)
-    : referer
+  const sourceUrl = chrryUrl ? chrryUrl : referer
 
   if (sourceUrl && process.env.NODE_ENV === "production") {
     try {
@@ -231,10 +229,6 @@ export async function GET(request: Request) {
   const appType = url.searchParams.get("app")
   const isExtension = appType === "extension"
   const headers = request.headers
-
-  const chrryUrl = chrryUrlFromParams
-    ? decodeURIComponent(chrryUrlFromParams)
-    : undefined
 
   const appId = url.searchParams.get("appId") || undefined
   // If no slug param, use store's default app directly

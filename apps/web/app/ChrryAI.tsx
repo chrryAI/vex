@@ -102,7 +102,6 @@ export default async function ChrryAI({
     thread?.thread?.app?.slug || headersList.get("x-app-slug") || "vex"
 
   const routeType = headersList.get("x-route-type") || undefined
-  console.log(`🚀 ~ ChrryAI ~ appId:`, appId)
 
   const viewPortWidth = cookieStore.get("viewPortWidth")?.value || ""
   const viewPortHeight = cookieStore.get("viewPortHeight")?.value || ""
