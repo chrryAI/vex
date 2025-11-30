@@ -235,10 +235,15 @@ export async function GET(request: Request) {
     ? decodeURIComponent(chrryUrlFromParams)
     : request.headers.get("x-chrry-url") || undefined
 
+  const appId =
+    url.searchParams.get("appId") ||
+    request.headers.get("x-app-id") ||
+    undefined
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
   const app = await getAppAction({
     chrryUrl,
+    appId,
   })
 
   try {
