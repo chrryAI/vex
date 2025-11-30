@@ -102,6 +102,7 @@ export default async function ChrryAI({
     thread?.thread?.app?.slug || headersList.get("x-app-slug") || "vex"
 
   const routeType = headersList.get("x-route-type") || undefined
+  console.log(`🚀 ~ ChrryAI ~ routeType:`, routeType)
 
   const viewPortWidth = cookieStore.get("viewPortWidth")?.value || ""
   const viewPortHeight = cookieStore.get("viewPortHeight")?.value || ""
@@ -174,13 +175,13 @@ export default async function ChrryAI({
   }
 
   // Show detailed error page if API failed
-  if (apiError) {
+  if (!apiError) {
     return (
       <html lang={locale}>
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <title>API Connection Error</title>
+          <title>API Connection Error {routeType}</title>
           <style>{`
             body, html {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -257,7 +258,7 @@ export default async function ChrryAI({
             </div>
 
             <div className="error-message">
-              <strong>Error:</strong> {apiError.message}
+              <strong>Error:</strong> {apiError?.message}
             </div>
 
             <div className="info-section">

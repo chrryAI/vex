@@ -674,7 +674,7 @@ export default function Menu({
                           </MotiView>
                         ))}
                       </Div>
-                      {!isLoadingThreads && threads?.threads.length === 0 && (
+                      {threads?.threads.length === 0 && (
                         <>
                           <Div style={styles.noThreadsContainer.style}>
                             {t("Nothing here yet")}
