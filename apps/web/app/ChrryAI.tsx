@@ -111,9 +111,10 @@ export default async function ChrryAI({
   let session: session | undefined
   let translations: Record<string, any> | undefined
   let apiError: Error | null = null
+  let app: appWithStore | undefined
 
   try {
-    const [sessionResult, translationsResult] = await Promise.all([
+    const [sessionResult, translationsResult, appResult] = await Promise.all([
       getSession({
         appId,
         deviceId,
@@ -136,10 +137,16 @@ export default async function ChrryAI({
         token: apiKey,
         locale,
       }),
+
+      getAppAction({
+        chrryUrl,
+        appId,
+      }),
     ])
 
     session = sessionResult
     translations = translationsResult
+    app = appResult
   } catch (error) {
     console.error("❌ API Error:", error)
     apiError = error as Error
@@ -326,11 +333,6 @@ export default async function ChrryAI({
       </html>
     )
   }
-
-  const app = await getAppAction({
-    chrryUrl,
-    appId,
-  })
 
   let user: sessionUser | undefined
 
