@@ -7319,5 +7319,5 @@ You are an architecture expert. Design systems that grow with users, follow indu
   //   },
   // })
 
-  return { vex }
+  return { vex, coder, fightClub }
 }
