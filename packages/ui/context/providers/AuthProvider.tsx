@@ -336,6 +336,7 @@ export function AuthProvider({
   const isTestingDevice = false && isDevelopment
 
   const chrryUrl = CHRRY_URL
+  console.log(`🚀 ~ AuthProvider ~ chrryUrl:`, chrryUrl)
 
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
@@ -752,28 +753,31 @@ export function AuthProvider({
 
     return computedSlug || defaultSlug
   }
-  const baseApp = storeApps?.find((item) => {
-    if (!item) return false
+  const baseApp = storeApps
+    .concat(session?.app?.store?.apps || [])
+    .find((item) => {
+      if (!item) return false
 
-    if (
-      siteConfig.slug === item.slug &&
-      item.store?.slug === siteConfig.storeSlug
-    ) {
-      return true
-    }
+      if (
+        siteConfig.slug === item.slug &&
+        item.store?.slug === siteConfig.storeSlug
+      ) {
+        return true
+      }
 
-    // Must be the main app (not a sub-app)
-    if (item.id !== item.store?.appId) return false
+      // Must be the main app (not a sub-app)
+      if (item.id !== item.store?.appId) return false
 
-    // Must have a domain
-    if (!item?.store?.domain) return false
+      // Must have a domain
+      if (!item?.store?.domain) return false
 
-    // Match the chrryUrl (e.g., chrry.ai or vex.chrry.ai)
-    return (
-      getAlterNativeDomains(item.store).includes(chrryUrl) ||
-      item.store.domain === chrryUrl
-    )
-  })
+      // Match the chrryUrl (e.g., chrry.ai or vex.chrry.ai)
+      return (
+        getAlterNativeDomains(item.store).includes(chrryUrl) ||
+        item.store.domain === chrryUrl
+      )
+    })
+  console.log(`🚀 ~ AuthProvider ~ baseApp:`, baseApp)
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
 
