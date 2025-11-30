@@ -1008,16 +1008,16 @@ export function AuthProvider({
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && appId ? ["app", appId] : null, async () => {
+  } = useSWR(token && appId ? ["apps", appId] : null, async () => {
     try {
       if (!token || !appId) return
-      const apps = await getApp({ token, appId })
+      const apps = await getApps({ token })
 
       if (loadingAppId) {
         setLoadingAppId(undefined)
       }
 
-      return apps.store?.apps
+      return apps
     } catch (error) {
       toast.error("Something went wrong")
     }
