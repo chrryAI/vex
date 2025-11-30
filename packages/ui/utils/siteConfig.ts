@@ -1429,6 +1429,7 @@ export function detectSiteModeDomain(
   }
 
   // Domain-based detection (use exact match or subdomain check)
+  console.log(`🔍 Detecting mode for host: "${host}"`)
 
   if (matchesDomain(host, "books.chrry.ai")) {
     return "zarathustra"

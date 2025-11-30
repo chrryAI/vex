@@ -53,9 +53,19 @@ export default async function getAppAction({
   }
 
   const appFromParams = appId
-    ? await getApp({ id: appId })
+    ? await getApp({
+        id: appId,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1,
+      })
     : appSlug
-      ? await getApp({ slug: appSlug })
+      ? await getApp({
+          slug: appSlug,
+          userId: member?.id,
+          guestId: guest?.id,
+          depth: 1,
+        })
       : undefined
 
   const store = appFromParams?.store || chrryStore

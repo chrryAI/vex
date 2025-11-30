@@ -907,8 +907,6 @@ export function AuthProvider({
   const getSlugFromPathname = (path: string): string | undefined => {
     if (path === "/") return undefined
 
-    const siteConfig = getSiteConfig()
-
     const { appSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
       defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,

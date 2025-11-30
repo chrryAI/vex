@@ -1,6 +1,7 @@
 import { defaultLocale } from "chrry/locales"
 import { NextResponse } from "next/server"
 import { getCachedTranslations, setCachedTranslations } from "@repo/db"
+import { isDevelopment } from "chrry/utils"
 
 export async function GET(request: Request) {
   console.log("🌍 Translations API called")
@@ -20,7 +21,9 @@ export async function GET(request: Request) {
     try {
       const translationsModule = await import(`chrry/locales/${locale}.json`)
       translations = translationsModule.default || translationsModule
-
+      if (isDevelopment) {
+        return NextResponse.json(translations)
+      }
       // Store in Redis cache for future requests
       await setCachedTranslations(locale, translations)
     } catch (error) {

@@ -237,6 +237,7 @@ export default function Menu({
   return (
     <>
       <Div
+        suppressHydrationWarning
         className="menu blur"
         key={isDrawerOpen ? "open" : "closed"}
         ref={innerRef}
