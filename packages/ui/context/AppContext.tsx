@@ -3,7 +3,7 @@ import React, { createContext, useContext, useRef } from "react"
 
 import { useTranslation } from "react-i18next"
 import { COLORS } from "./ThemeContext"
-import { useAuth, useData } from "./providers"
+import { useAuth, useData, useError } from "./providers"
 import { getSiteConfig } from "../utils/siteConfig"
 
 export { COLORS }
@@ -48,8 +48,10 @@ export const MONTHLY_GUEST_CREDITS = 30
 
 export const AppContext = createContext<{
   t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => string
+  captureException: (error: Error) => void
 }>({
   t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => key,
+  captureException: () => {},
 })
 
 export const AppContextProvider = ({
@@ -108,10 +110,13 @@ export const AppContextProvider = ({
     return result.replace(/Vex/g, name).replace(/vex/g, name.toLowerCase())
   }
 
+  const { captureException } = useError()
+
   return (
     <AppContext.Provider
       value={{
         t,
+        captureException,
       }}
     >
       {children}

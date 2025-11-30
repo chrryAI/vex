@@ -777,7 +777,7 @@ export function AuthProvider({
         item.store.domain === chrryUrl
       )
     })
-  console.log(`🚀 ~ AuthProvider ~ baseApp:`, baseApp)
+  console.log(`🚀 ~ AuthProvider ~ baseApp:`, session?.app?.store?.apps)
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
 
