@@ -74,6 +74,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      loadingAppId: string | undefined
+      setLoadingAppId: (value: string | undefined) => void
       hasStoreApps: (item: appWithStore | undefined) => boolean
       threads?: {
         threads: thread[]
@@ -984,16 +986,25 @@ export function AuthProvider({
 
   const [isSplash, setIsSplash] = useState(true)
 
-  const [loadingApp, setLoadingApp] = useState<appWithStore | undefined>(
+  const [loadingAppId, setLoadingAppId] = useState<string | undefined>(
     undefined,
   )
+
+  const [loadingApp, setLoadingAppInternal] = useState<
+    appWithStore | undefined
+  >(undefined)
+
+  const setLoadingApp = (appWithStore?: appWithStore) => {
+    setLoadingAppId(appWithStore?.id)
+    setLoadingAppInternal(appWithStore)
+  }
 
   const chrry = storeApps?.find((app) => !app.store?.parentStoreId)
   const vex = storeApps?.find((app) => app.slug === "vex")
   const sushi = storeApps?.find((app) => app.slug === "sushi")
   const focus = storeApps?.find((app) => app.slug === "focus")
 
-  const appId = loadingApp?.id || app?.id
+  const appId = loadingAppId || app?.id
 
   const {
     data: storeAppsSwr,
@@ -1305,9 +1316,9 @@ export function AuthProvider({
 
     if (thread?.appId) {
       const threadApp = storeApps.find((app) => app.id === thread.appId)
-      if (threadApp) {
-        matchedApp = threadApp
-        console.log("🧵 Using thread app:", threadApp.slug)
+      if (!hasStoreApps(threadApp) && thread.appId) {
+        setLoadingAppId(thread.appId)
+        return
       }
     }
 
@@ -1562,6 +1573,8 @@ export function AuthProvider({
         isLoadingMood,
         enableNotifications,
         setEnableNotifications,
+        loadingAppId,
+        setLoadingAppId,
         defaultInstructions,
         isSavingApp,
         setIsSavingApp,
