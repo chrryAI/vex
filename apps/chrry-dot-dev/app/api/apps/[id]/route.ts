@@ -10,6 +10,7 @@ import slugify from "slug"
 import { isDevelopment, isOwner } from "chrry/utils"
 import { parse as parseDomain } from "tldts"
 import getAppAction from "../../../actions/getApp"
+import getChrryUrl from "../../../actions/getChrryUrl"
 
 export async function PATCH(
   request: NextRequest,
@@ -358,7 +359,9 @@ export async function GET(
   try {
     const { id } = await params
 
-    const app = await getAppAction({ appId: id })
+    const chrryUrl = await getChrryUrl(request)
+
+    const app = await getAppAction({ appId: id, chrryUrl })
 
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 })

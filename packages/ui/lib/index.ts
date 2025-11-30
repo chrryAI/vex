@@ -1061,17 +1061,21 @@ export type ApiActions = ReturnType<typeof getActions>
 export const getApps = async ({
   API_URL = utils.API_URL,
   token,
+  chrryUrl,
   appId,
 }: {
   API_URL?: string
   token: string
   appId?: string
+  chrryUrl?: string
 }) => {
   const params = new URLSearchParams()
   appId && params.append("appId", appId)
+  chrryUrl && params.append("chrryUrl", chrryUrl)
   const response = await fetch(`${API_URL}/apps?${params}`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      ...(chrryUrl ? { "x-chrry-url": chrryUrl } : {}),
     },
   })
 
@@ -1091,15 +1095,20 @@ export const getApp = async ({
   API_URL = utils.API_URL,
   token,
   appId,
+  chrryUrl,
 }: {
   API_URL?: string
   token: string
   appId: string
+  chrryUrl?: string
 }) => {
+  const params = new URLSearchParams()
+  chrryUrl && params.append("chrryUrl", chrryUrl)
   const response = await fetch(`${API_URL}/apps/${appId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "x-app-id": appId,
+      ...(chrryUrl ? { "x-chrry-url": chrryUrl } : {}),
     },
   })
 
