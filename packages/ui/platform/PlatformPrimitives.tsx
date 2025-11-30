@@ -58,6 +58,7 @@ export interface ButtonProps extends BaseProps {
   id?: string
   "aria-label"?: string
   "aria-disabled"?: boolean
+  suppressHydrationWarning?: boolean
   // Pointer events for cross-platform touch/pointer interactions
   onPointerDown?: (e: any) => void
   onPointerUp?: (e: any) => void
@@ -275,6 +276,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       type = "button",
       onClick,
       disabled,
+      suppressHydrationWarning,
       children,
       ...props
     },
@@ -305,6 +307,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         style={sanitizedStyle}
         onClick={onClick}
         disabled={disabled}
+        suppressHydrationWarning={suppressHydrationWarning}
         {...props}
       >
         {children}

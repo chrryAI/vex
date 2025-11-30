@@ -285,7 +285,11 @@ export default function Menu({
                 </Button>
               </>
             ) : (
-              <Button className={"link"} onClick={toggleMenu}>
+              <Button
+                suppressHydrationWarning
+                className={"link"}
+                onClick={toggleMenu}
+              >
                 <Img app={app} size={28} />
               </Button>
             )}
