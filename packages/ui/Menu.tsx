@@ -60,8 +60,16 @@ export default function Menu({
   const { t } = useAppContext()
 
   // Auth context
-  const { user, guest, profile, track, showFocus, setShowFocus, getAppSlug } =
-    useAuth()
+  const {
+    user,
+    guest,
+    profile,
+    track,
+    showFocus,
+    setShowFocus,
+    getAppSlug,
+    loadingAppId,
+  } = useAuth()
   // const { utilities } = useStyles()
 
   const styles = useMenuStyles()
@@ -539,8 +547,10 @@ export default function Menu({
                             }}
                             className="menuThreadItem"
                           >
-                            {thread.visibility !== "private" ||
-                            thread.collaborations?.length ? (
+                            {loadingAppId === thread.appId ? (
+                              <Loading size={14} />
+                            ) : thread.visibility !== "private" ||
+                              thread.collaborations?.length ? (
                               <Span
                                 style={{
                                   display: "inline-flex",
@@ -571,6 +581,7 @@ export default function Menu({
                                 ) : null}
                               </Span>
                             ) : null}
+
                             {(() => {
                               const url = `/threads/${thread.id}`
 
