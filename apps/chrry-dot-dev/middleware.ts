@@ -183,7 +183,6 @@ export default async function middleware(request: NextRequest) {
     setCorsHeaders(response, request)
     response.headers.set("x-pathname", pathname)
     response.headers.set("x-route-type", "client-side")
-    return response
   }
 
   if (
@@ -196,7 +195,6 @@ export default async function middleware(request: NextRequest) {
     setCorsHeaders(response, request)
     response.headers.set("x-pathname", pathname)
     response.headers.set("x-route-type", "client-side")
-    return response
   }
 
   // API routes: only add CORS

@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "rm -fr .next && next dev --turbo",
     "update:sw": "node scripts/update-sw-version.js",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' SENTRY_DISABLE_SOURCEMAPS=1 next build && npm run update:sw",
     "start": "next start -p 3000 -H 0.0.0.0",

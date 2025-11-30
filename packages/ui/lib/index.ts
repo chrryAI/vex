@@ -1032,7 +1032,7 @@ export const getSession = async ({
       return {
         error: "Rate limit exceeded",
         status: 429,
-      }
+      } as unknown as session
     }
 
     // Return error with status for other non-OK responses
@@ -1040,19 +1040,19 @@ export const getSession = async ({
     return {
       error: `API error (${response.status}): ${text.substring(0, 200)}`,
       status: response.status,
-    }
+    } as unknown as session
   }
 
   // Try to parse JSON, catch if it's HTML or invalid
   try {
     const result = await response.json()
-    return result as session | { error?: string; status?: number }
+    return result as session
   } catch (error) {
     const text = await response.text()
     return {
       error: `API error (${response.status}): ${text.substring(0, 200)}`,
       status: response.status,
-    }
+    } as unknown as session
   }
 }
 
