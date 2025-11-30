@@ -23,13 +23,12 @@ const staticPatterns = [
   "/manifest.webmanifest",
   "/sw.js",
   "/icons",
-  "/api",
   "/images",
   "/logo",
   "/icons",
   "/sounds",
   "/video",
-  "/((?!_next|api|favicon.ico|manifest.webmanifest|sw.js|icon-|blob\.mp4|kitasaku\.mp3|birds\.mp3|timer-end\.mp3|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)",
+  "/((?!_next|favicon.ico|manifest.webmanifest|sw.js|icon-|blob\.mp4|kitasaku\.mp3|birds\.mp3|timer-end\.mp3|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)",
 ]
 
 const intlMiddleware = createIntlMiddleware({
@@ -142,6 +141,46 @@ export default async function middleware(request: NextRequest) {
     "affiliate",
   ]
 
+  const searchParams = request.nextUrl.searchParams
+
+  // Set fingerprint cookie if not already set
+  const existingFingerprintCookie = request.cookies.get("fingerprint")?.value
+  const fingerprintUrl = searchParams.get("fp")
+
+  const chrryUrl =
+    searchParams.get("chrryUrl") || request.headers.get("x-chrry-url")
+
+  // Debug: log all headers
+  console.log("🔍 All request headers:")
+  request.headers.forEach((value, key) => {
+    console.log(`  ${key}: ${value}`)
+  })
+  console.log(
+    `🚀 ~ middleware ~ chrryUrl from header:`,
+    request.headers.get("x-chrry-url"),
+  )
+  console.log(
+    `🚀 ~ middleware ~ chrryUrl from query:`,
+    searchParams.get("chrryUrl"),
+  )
+
+  chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
+
+  const fingerprint = request.headers.get("x-fp") || fingerprintUrl || uuidv4()
+  if (!existingFingerprintCookie && fingerprint) {
+    response.cookies.set("fingerprint", fingerprint, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365 * 10, // 10 years
+      path: "/",
+    })
+  }
+
+  // Pass fingerprint to API via header (for cross-domain requests)
+  const fingerprintToPass = existingFingerprintCookie || uuidv4()
+  response.headers.set("x-fp", fingerprintToPass)
+
   // Extract path segments to check for reserved paths
   const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}\//, "/")
   const segments = pathWithoutLocale.split("/").filter(Boolean)
@@ -178,34 +217,9 @@ export default async function middleware(request: NextRequest) {
   if (pathname.startsWith("/api")) {
     const response = NextResponse.next()
     setCorsHeaders(response, request)
+    chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
     return response
   }
-
-  const searchParams = request.nextUrl.searchParams
-
-  // Set fingerprint cookie if not already set
-  const existingFingerprintCookie = request.cookies.get("fingerprint")?.value
-  const fingerprintUrl = searchParams.get("fp")
-
-  const chrryUrl = searchParams.get("chrryUrl")
-
-  chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
-
-  const fingerprint = request.headers.get("x-fp") || fingerprintUrl || uuidv4()
-  if (!existingFingerprintCookie && fingerprint) {
-    response.cookies.set("fingerprint", fingerprint, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV !== "development",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 365 * 10, // 10 years
-      path: "/",
-    })
-  }
-
-  // Pass fingerprint to API via header (for cross-domain requests)
-  const fingerprintToPass = existingFingerprintCookie || uuidv4()
-  response.headers.set("x-fp", fingerprintToPass)
-
   return response
 }
 

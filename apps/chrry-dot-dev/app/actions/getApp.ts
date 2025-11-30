@@ -19,6 +19,7 @@ export default async function getAppAction({
   appId?: string
   appSlug?: string
   routeType?: string
+  chrryUrl?: string
 } = {}) {
   const member = await getMember()
   const guest = await getGuest()
@@ -30,11 +31,15 @@ export default async function getAppAction({
 
   const pathname = headersList.get("x-pathname") || "/"
 
-  const chrryUrlFromParams = headersList.get("x-chrry-url")
+  const hostname = headersList.get("host") || ""
 
-  let chrryUrl = chrryUrlFromParams
-    ? decodeURIComponent(chrryUrlFromParams)
-    : process.env.CHRRY_URL
+  const chrryUrlFromHeader = headersList.get("x-chrry-url")
+
+  let chrryUrl = rest.chrryUrl
+    ? rest.chrryUrl
+    : chrryUrlFromHeader
+      ? decodeURIComponent(chrryUrlFromHeader)
+      : hostname
 
   const siteConfig = getSiteConfig(chrryUrl)
 

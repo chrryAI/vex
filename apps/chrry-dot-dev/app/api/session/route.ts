@@ -231,9 +231,16 @@ export async function GET(request: Request) {
   const isExtension = appType === "extension"
   const headers = request.headers
 
+  const chrryUrl =
+    url.searchParams.get("chrryUrl") ||
+    request.headers.get("x-chrry-url") ||
+    undefined
+
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
-  const app = await getAppAction()
+  const app = await getAppAction({
+    chrryUrl,
+  })
 
   try {
     if (member?.id) {
