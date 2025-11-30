@@ -75,9 +75,4 @@ packages/ui/locales/en.new.json
 
 test-results
 packages/waffles/test-results/*
-apps/extension/dist-chrome-atlas.zip
-apps/extension/dist-chrome-focus.zip
-apps/extension/dist-chrome-chrry.zip
-apps/extension/dist-chrome-popcorn.zip
-apps/extension/dist-chrome-vex.zip
-apps/extension/dist-chrome-zarathustra.zip
+**/dist-chrome-*.zip
