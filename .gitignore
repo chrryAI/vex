@@ -67,9 +67,7 @@ android/*.jks
 *.jks
 *.apk
 *.aab
-apps/extension/dist-chrome.zip
-apps/extension/dist-firefox.zip
-apps/extension/focusbutton.zip
+apps/extension/dist-*.zip
 
 # Translation temp files
 packages/ui/locales/en.new.json
@@ -77,3 +75,9 @@ packages/ui/locales/en.new.json
 
 test-results
 packages/waffles/test-results/*
+apps/extension/dist-chrome-atlas.zip
+apps/extension/dist-chrome-focus.zip
+apps/extension/dist-chrome-chrry.zip
+apps/extension/dist-chrome-popcorn.zip
+apps/extension/dist-chrome-vex.zip
+apps/extension/dist-chrome-zarathustra.zip
