@@ -612,8 +612,7 @@ export default function Menu({
                                     )
                                     if (
                                       thread.appId &&
-                                      threadApp &&
-                                      !hasStoreApps(threadApp)
+                                      (!threadApp || !hasStoreApps(threadApp))
                                     ) {
                                       setLoadingThreadId(thread.id)
                                       setLoadingAppId(thread.appId)
