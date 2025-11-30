@@ -674,7 +674,7 @@ export default function Menu({
                           </MotiView>
                         ))}
                       </Div>
-                      {threads?.threads.length === 0 && (
+                      {!threads?.totalCount && (
                         <>
                           <Div style={styles.noThreadsContainer.style}>
                             {t("Nothing here yet")}
@@ -718,9 +718,10 @@ export default function Menu({
                             )
                           })()
                         : null}
-                      {threads?.threads && threads?.threads.length < 2 && (
+                      {!threads?.threads?.length ||
+                      threads?.threads?.length < 2 ? (
                         <EmptyStateTips style={{ marginTop: 15 }} />
-                      )}
+                      ) : null}
                     </>
                   )}
                 </Div>

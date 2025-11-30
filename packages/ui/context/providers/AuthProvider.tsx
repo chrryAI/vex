@@ -1015,8 +1015,7 @@ export function AuthProvider({
       if (!token || !appId) return
       const apps = await getApp({ token, appId })
 
-      if (loadingAppId || loadingApp) {
-        setLoadingApp(undefined)
+      if (loadingAppId) {
         setLoadingAppId(undefined)
       }
 
