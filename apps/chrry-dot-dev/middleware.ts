@@ -150,12 +150,6 @@ export default async function middleware(request: NextRequest) {
   const chrryUrl =
     searchParams.get("chrryUrl") || request.headers.get("x-chrry-url")
 
-  // Debug: log all headers
-  console.log("🔍 All request headers:")
-  request.headers.forEach((value, key) => {
-    console.log(`  ${key}: ${value}`)
-  })
-
   chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
 
   const fingerprint = request.headers.get("x-fp") || fingerprintUrl || uuidv4()

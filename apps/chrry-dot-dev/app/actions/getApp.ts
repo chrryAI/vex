@@ -30,8 +30,6 @@ export default async function getAppAction({
 
   const appSlug = rest.appSlug || headersList.get("x-app-slug")
 
-  const pathname = headersList.get("x-pathname") || "/"
-
   const chrryUrl = rest.chrryUrl || (await getChrryUrl())
 
   const siteConfig = getSiteConfig(chrryUrl)
@@ -54,36 +52,13 @@ export default async function getAppAction({
     return null
   }
 
-  const slug = getAppAndStoreSlugs(pathname, {
-    defaultAppSlug: siteConfig.slug,
-    defaultStoreSlug: siteConfig.storeSlug,
-    excludedRoutes: excludedSlugRoutes,
-    locales,
-  })
-
   const appFromParams = appId
     ? await getApp({ id: appId })
     : appSlug
       ? await getApp({ slug: appSlug })
-      : await getApp({ storeSlug: slug?.appSlug })
+      : undefined
 
-  const slugParam = appFromParams ? appFromParams.slug : slug?.appSlug
-
-  const store = appFromParams?.store
-    ? await getStore({
-        id: appFromParams.store.id,
-        userId: member?.id,
-        guestId: guest?.id,
-        depth: 1, // Populate one level of nested store.apps
-      })
-    : slugParam
-      ? (await getStore({
-          slug: slugParam,
-          userId: member?.id,
-          guestId: guest?.id,
-          depth: 1, // Populate one level of nested store.apps
-        })) || chrryStore
-      : chrryStore
+  const store = appFromParams?.store || chrryStore
 
   // Find base app by siteConfig.slug (e.g., "focus" for focus.chrry.ai)
   // This may differ from store's default app (store.app)
@@ -96,15 +71,12 @@ export default async function getAppAction({
 
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
-  let app = slugParam
-    ? (await getApp({
-        slug: slugParam,
-        userId: member?.id,
-        guestId: guest?.id,
-        depth: 1, // Populate one level of nested store.apps
-        // Don't pass storeId - let getApp determine the correct store context
-      })) || baseApp
-    : baseApp
+  let app = await getApp({
+    id: appFromParams?.id || baseApp?.id,
+    userId: member?.id,
+    guestId: guest?.id,
+    depth: 1,
+  })
 
   if (app?.store?.apps?.length) {
     const currentStoreApps = app.store?.apps || []
