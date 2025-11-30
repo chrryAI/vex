@@ -46,6 +46,7 @@ import { excludedSlugRoutes, getAppAndStoreSlugs } from "chrry/utils/url"
 import { locales } from "chrry/locales"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import getAppAction from "../../actions/getApp"
+import getChrryUrl from "../../actions/getChrryUrl"
 
 const getGuestDb = ({
   email,
@@ -233,12 +234,9 @@ export async function GET(request: Request) {
 
   const chrryUrl = chrryUrlFromParams
     ? decodeURIComponent(chrryUrlFromParams)
-    : request.headers.get("x-chrry-url") || undefined
+    : undefined
 
-  const appId =
-    url.searchParams.get("appId") ||
-    request.headers.get("x-app-id") ||
-    undefined
+  const appId = url.searchParams.get("appId") || undefined
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
   const app = await getAppAction({
