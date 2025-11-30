@@ -24,6 +24,7 @@ import {
 import { getSiteConfig, getSiteTranslation } from "chrry/utils/siteConfig"
 import { Providers } from "../components/Providers"
 import { captureException } from "@sentry/nextjs"
+import getChrryUrl from "chrry-dot-dev/app/actions/getChrryUrl"
 
 export const generateMeta = async ({ locale }: { locale: locale }) => {
   const siteConfig = getSiteConfig()
@@ -105,6 +106,7 @@ export default async function ChrryAI({
   const viewPortWidth = cookieStore.get("viewPortWidth")?.value || ""
   const viewPortHeight = cookieStore.get("viewPortHeight")?.value || ""
 
+  const chrryUrl = await getChrryUrl()
   // Check for app route from middleware
   const siteConfig = getSiteConfig(hostname)
 
@@ -131,7 +133,7 @@ export default async function ChrryAI({
         routeType,
         translate: true,
         locale,
-        chrryUrl: siteConfig.url,
+        chrryUrl,
         screenWidth: Number(viewPortWidth),
         screenHeight: Number(viewPortHeight),
         gift,
