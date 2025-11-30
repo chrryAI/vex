@@ -911,19 +911,26 @@ export function AuthProvider({
   const getSlugFromPathname = (path: string): string | undefined => {
     if (path === "/") return undefined
 
-    const { appSlug } = getAppAndStoreSlugs(path, {
+    const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
       defaultAppSlug: baseApp?.slug || siteConfig.slug,
       defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
       excludedRoutes: excludedSlugRoutes,
       locales,
     })
+    console.log(`🚀 ~ getSlugFromPathname ~ appSlug:`, appSlug, storeSlug)
 
     if (!appSlug) {
       return undefined
     }
 
     const matchedApp = storeApps?.find(
-      (app) => app.slug === appSlug || app.store?.slug === appSlug,
+      (item) =>
+        item.slug === appSlug &&
+        (!app
+          ? true
+          : !app?.store?.apps?.some((a) => a.id === item.id)
+            ? item.store?.slug === storeSlug
+            : true),
     )
     return matchedApp?.slug
   }
