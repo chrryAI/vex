@@ -1086,9 +1086,17 @@ export function AuthProvider({
   )
   const guestBaseStore = guestBaseApp?.store
 
-  const storeApp = app?.store?.apps.find(
+  const storeAppInternal = app?.store?.apps.find(
     (item) => item.id === app?.store?.appId,
   )
+
+  const [storeApp, setStoreApp] = useState<appWithStore | undefined>(
+    storeAppInternal,
+  )
+
+  useEffect(() => {
+    storeAppInternal && setStoreApp(storeAppInternal)
+  }, [storeAppInternal])
 
   const [slugState, setSlugState] = useState<string | undefined>(
     (app && getAppSlug(app)) || undefined,
