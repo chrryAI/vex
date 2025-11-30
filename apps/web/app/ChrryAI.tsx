@@ -175,7 +175,7 @@ export default async function ChrryAI({
   }
 
   // Show detailed error page if API failed
-  if (!apiError) {
+  if (apiError) {
     return (
       <html lang={locale}>
         <head>
