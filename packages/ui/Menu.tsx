@@ -69,6 +69,9 @@ export default function Menu({
     setShowFocus,
     getAppSlug,
     loadingAppId,
+    storeApps,
+    setLoadingAppId,
+    hasStoreApps,
   } = useAuth()
   // const { utilities } = useStyles()
 
@@ -96,6 +99,14 @@ export default function Menu({
 
   // Platform context
   const { viewPortHeight, isStandalone } = usePlatform()
+
+  const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!loadingAppId) {
+      setLoadingThreadId(null)
+    }
+  }, [loadingAppId])
 
   // Theme context
   const {
@@ -547,10 +558,8 @@ export default function Menu({
                             }}
                             className="menuThreadItem"
                           >
-                            {loadingAppId === thread.appId ? (
-                              <Loading size={14} />
-                            ) : thread.visibility !== "private" ||
-                              thread.collaborations?.length ? (
+                            {thread.visibility !== "private" ||
+                            thread.collaborations?.length ? (
                               <Span
                                 style={{
                                   display: "inline-flex",
@@ -593,6 +602,18 @@ export default function Menu({
                                     ...styles.threadItem.style,
                                   }}
                                   onClick={(e) => {
+                                    const threadApp = storeApps.find(
+                                      (app) => app.id === thread.appId,
+                                    )
+                                    if (
+                                      thread.appId &&
+                                      threadApp &&
+                                      !hasStoreApps(threadApp)
+                                    ) {
+                                      setLoadingThreadId(thread.id)
+                                      setLoadingAppId(thread.appId)
+                                      return
+                                    }
                                     track({
                                       name: "thread-click-menu",
                                       props: {
@@ -614,7 +635,15 @@ export default function Menu({
                                 </A>
                               )
                             })()}
-                            {collaborationStatus === "pending" ? (
+                            {loadingThreadId === thread.id ? (
+                              <Loading
+                                style={{
+                                  ...styles.star.style,
+                                  width: 14,
+                                  height: 14,
+                                }}
+                              />
+                            ) : collaborationStatus === "pending" ? (
                               <CollaborationStatus
                                 dataTestId="menu"
                                 onSave={() => {

@@ -341,7 +341,7 @@ const create = async () => {
     console.log("✅ Admin user already exists, skipping creation")
   }
 
-  const { vex } = await createStores({ user: admin })
+  const { fightClub: vex } = await createStores({ user: admin })
 
   const { sushiAgent } = await createAgents()
 
@@ -591,15 +591,15 @@ const create = async () => {
       if (!message) throw new Error("Failed to create message")
     }
 
-    await updateThread({
-      ...publicThread,
-      bookmarks: [
-        {
-          userId: admin.id,
-          createdOn: new Date().toISOString(),
-        },
-      ],
-    })
+    // await updateThread({
+    //   ...publicThread,
+    //   bookmarks: [
+    //     {
+    //       userId: admin.id,
+    //       createdOn: new Date().toISOString(),
+    //     },
+    //   ],
+    // })
 
     // const guest = await createGuest({
     //   ip: "192.168.2.27",

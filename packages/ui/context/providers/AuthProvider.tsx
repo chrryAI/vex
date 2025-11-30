@@ -1015,6 +1015,11 @@ export function AuthProvider({
       if (!token || !appId) return
       const apps = await getApp({ token, appId })
 
+      if (loadingAppId || loadingApp) {
+        setLoadingApp(undefined)
+        setLoadingAppId(undefined)
+      }
+
       return apps.store?.apps
     } catch (error) {
       toast.error("Something went wrong")
@@ -1022,6 +1027,7 @@ export function AuthProvider({
   })
 
   const hasStoreApps = (item: appWithStore | undefined) => {
+    if (!item || !storeApps.length) return false
     const app = storeApps?.find((app) => {
       return app.id === item?.id
     })
@@ -1316,10 +1322,7 @@ export function AuthProvider({
 
     if (thread?.appId) {
       const threadApp = storeApps.find((app) => app.id === thread.appId)
-      if (!hasStoreApps(threadApp) && thread.appId) {
-        setLoadingAppId(thread.appId)
-        return
-      }
+      matchedApp = threadApp
     }
 
     // Priority 2: Find app by pathname
@@ -1358,6 +1361,7 @@ export function AuthProvider({
     threadId,
     lastAppId,
     isExtension,
+    loadingAppId,
   ])
   // Thread app takes priority over pathname, then falls back to pathname detection
 
