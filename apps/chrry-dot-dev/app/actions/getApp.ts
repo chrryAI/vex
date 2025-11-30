@@ -8,6 +8,7 @@ import getGuest from "./getGuest"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import { appWithStore } from "chrry/types"
 import getChrryUrl from "./getChrryUrl"
+import { getAppAndStoreSlugs } from "chrry/utils/url"
 
 export default async function getAppAction({
   request,
@@ -27,6 +28,8 @@ export default async function getAppAction({
   const headersList = request?.headers || (await headers())
   const appId = rest.appId || headersList.get("x-app-id")
 
+  const path = headersList.get("x-pathname")
+
   const chrryUrl = rest.chrryUrl || (await getChrryUrl(request))
 
   const siteConfig = getSiteConfig(chrryUrl)
@@ -43,20 +46,30 @@ export default async function getAppAction({
     depth: 1, // Populate one level of nested store.apps
   })
 
+  const { appSlug, storeSlug } = getAppAndStoreSlugs(path || "/", {
+    defaultAppSlug: siteConfig.slug,
+    defaultStoreSlug: siteConfig.storeSlug,
+  })
   // if (!chrryStore || !chrryStore.app || !chrryStore.store) {
   //   return null
   // }
 
-  const appFromParams = appId
+  const appInternal = appId
     ? await getApp({
         id: appId,
         userId: member?.id,
         guestId: guest?.id,
         depth: 1,
       })
-    : undefined
+    : await getApp({
+        slug: appSlug,
+        storeSlug: storeSlug,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1,
+      })
 
-  const store = appFromParams?.store || chrryStore
+  const store = appInternal?.store || chrryStore
 
   // Find base app by siteConfig.slug (e.g., "focus" for focus.chrry.ai)
   // This may differ from store's default app (store.app)
@@ -69,12 +82,14 @@ export default async function getAppAction({
 
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
-  const app = await getApp({
-    id: appFromParams?.id || baseApp?.id,
-    userId: member?.id,
-    guestId: guest?.id,
-    depth: 1,
-  })
+  const app =
+    appInternal ||
+    (await getApp({
+      id: baseApp?.id,
+      userId: member?.id,
+      guestId: guest?.id,
+      depth: 1,
+    }))
 
   if (app?.store?.apps?.length) {
     const currentStoreApps = app.store?.apps || []
