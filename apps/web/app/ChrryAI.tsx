@@ -25,6 +25,7 @@ import { getSiteConfig, getSiteTranslation } from "chrry/utils/siteConfig"
 import { Providers } from "../components/Providers"
 import { captureException } from "@sentry/nextjs"
 import getChrryUrl from "chrry-dot-dev/app/actions/getChrryUrl"
+import getAppAction from "./actions/getApp"
 
 export const generateMeta = async ({ locale }: { locale: locale }) => {
   const siteConfig = getSiteConfig()
@@ -96,10 +97,7 @@ export default async function ChrryAI({
 
   const agentName = cookieStore.get("agentName")?.value
 
-  const appId =
-    thread?.thread?.appId || headersList.get("x-app-id") || undefined
-  const appSlug =
-    thread?.thread?.app?.slug || headersList.get("x-app-slug") || "vex"
+  const appId = thread?.thread?.appId || undefined
 
   const routeType = headersList.get("x-route-type") || undefined
 
@@ -110,13 +108,7 @@ export default async function ChrryAI({
   // Check for app route from middleware
   const siteConfig = getSiteConfig(hostname)
 
-  let session:
-    | session
-    | {
-        error?: string
-        status?: number
-      }
-    | undefined
+  let session: session | undefined
   let translations: Record<string, any> | undefined
   let apiError: Error | null = null
 
@@ -127,7 +119,6 @@ export default async function ChrryAI({
         deviceId,
         fingerprint,
         token: apiKey,
-        appSlug,
         agentName,
         pathname,
         routeType,
@@ -280,9 +271,7 @@ export default async function ChrryAI({
                 <li>
                   <strong>Hostname:</strong> {hostname}
                 </li>
-                <li>
-                  <strong>App Slug:</strong> {appSlug || "(none)"}
-                </li>
+
                 <li>
                   <strong>Locale:</strong> {locale}
                 </li>
@@ -329,25 +318,28 @@ export default async function ChrryAI({
           }}
         >
           <h1 style={{ color: "#ef4444" }}>Session Error</h1>
-          <p>{session.error}</p>
-          <p style={{ fontSize: "14px", color: "#666" }}>
-            Status: {session.status}
-          </p>
+          <p>{session.error as unknown as string}</p>
+          {/* <p style={{ fontSize: "14px", color: "#666" }}>
+            Status: {session.status as unknown as number}
+          </p> */}
         </body>
       </html>
     )
   }
 
-  let app: appWithStore | undefined
+  const app = await getAppAction({
+    chrryUrl,
+    appId,
+  })
 
   let user: sessionUser | undefined
 
-  if (session && "app" in session) {
-    app = session.app
-  }
-
   if (session && "user" in session) {
     user = session.user
+  }
+
+  if (session && app) {
+    session.app = app
   }
 
   const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark" // Fallback to dark black

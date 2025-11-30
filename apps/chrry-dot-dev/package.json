@@ -12,7 +12,7 @@
   },
   "scripts": {
     "dev:server": "node server.js",
-    "dev": "next dev -p 3001 --turbo",
+    "dev": "rm -fr .next && next dev -p 3001 --turbo",
     "dev:watch": "node dev-watch.js",
     "dev:debug": "./dev.sh",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' SENTRY_DISABLE_SOURCEMAPS=1 next build",

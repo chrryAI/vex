@@ -13,11 +13,8 @@ import {
   user,
   guest,
   upsertDevice,
-  getApp,
   getAiAgents,
   getAiAgent,
-  getStores,
-  getStore,
   TEST_MEMBER_FINGERPRINTS,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_EMAILS,
@@ -28,7 +25,7 @@ import { validate as validateUuid } from "uuid"
 import { UAParser } from "ua-parser-js"
 import arcjet, { detectBot } from "@arcjet/next"
 
-import { isDevelopment, VERSION, getSlugFromPathname } from "chrry/utils"
+import { isDevelopment, VERSION } from "chrry/utils"
 import { checkRateLimit } from "../../../lib/rateLimiting"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -40,11 +37,6 @@ import {
 
 import captureException from "../../../lib/captureException"
 import getGuestAction from "../../actions/getGuest"
-import { cookies } from "next/headers"
-import { appWithStore } from "chrry/types"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "chrry/utils/url"
-import { locales } from "chrry/locales"
-import { getSiteConfig } from "chrry/utils/siteConfig"
 import getAppAction from "../../actions/getApp"
 import getChrryUrl from "../../actions/getChrryUrl"
 
@@ -226,6 +218,9 @@ export async function GET(request: Request) {
     }
   }
   const locale = url.searchParams.get("locale") || "en"
+
+  const source = url.searchParams.get("source") || "client"
+
   const appType = url.searchParams.get("app")
   const isExtension = appType === "extension"
   const headers = request.headers
@@ -233,10 +228,13 @@ export async function GET(request: Request) {
   const appId = url.searchParams.get("appId") || undefined
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
-  const app = await getAppAction({
-    request,
-    appId: appId && validateUuid(appId) ? appId : undefined,
-  })
+  const app =
+    source !== "layout"
+      ? await getAppAction({
+          request,
+          appId: appId && validateUuid(appId) ? appId : undefined,
+        })
+      : undefined
 
   try {
     if (member?.id) {

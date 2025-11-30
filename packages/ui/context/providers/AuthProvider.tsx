@@ -551,14 +551,14 @@ export function AuthProvider({
         // Type guard for error response
         if ("error" in result || "status" in result) {
           // Handle rate limit
-          if (result.status === 429) {
+          if ("status" in result && result.status === 429) {
             setShouldFetchSession(false)
             throw new Error("Rate limit exceeded")
           }
 
           // Handle other errors
-          if (result.error) {
-            toast.error(result.error)
+          if ("error" in result && result.error) {
+            toast.error(result.error as string)
             setShouldFetchSession(false)
           }
         }
