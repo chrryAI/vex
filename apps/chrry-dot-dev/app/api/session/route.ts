@@ -234,7 +234,7 @@ export async function GET(request: Request) {
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
   const app = await getAppAction({
-    chrryUrl,
+    request,
     appId: appId && validateUuid(appId) ? appId : undefined,
   })
 
