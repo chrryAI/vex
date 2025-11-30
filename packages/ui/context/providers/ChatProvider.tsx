@@ -830,6 +830,7 @@ export function ChatProvider({
   }
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
+    if (selectedAgent?.name === agent?.name) return
     if (agent === null) {
       setAgentName("")
       setSelectedAgentInternal(null)

@@ -140,18 +140,14 @@ export default async function getAppAction({
     app.store.apps = validApps
   }
 
-  // if (
-  //   app &&
-  //   siteApp &&
-  //   app.store?.apps &&
-  //   !app.store?.apps?.some((app) => app.id === siteApp.id)
-  // ) {
-  //   app.store.apps.push(siteApp)
-  // }
+  if (
+    app &&
+    siteApp &&
+    app.store?.apps &&
+    !app.store?.apps?.some((app) => app.id === siteApp.id)
+  ) {
+    app.store.apps.push(siteApp)
+  }
 
-  // console.log(
-  //   `🚀 ~ getAppAction ~ app:`,
-  //   app?.store?.apps?.map((app) => app.name),
-  // )
   return app
 }
