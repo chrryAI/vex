@@ -777,7 +777,6 @@ export function AuthProvider({
         item.store.domain === chrryUrl
       )
     })
-  console.log(`🚀 ~ AuthProvider ~ baseApp:`, session?.app?.store?.apps)
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
 
@@ -959,11 +958,7 @@ export function AuthProvider({
 
       // Add new apps only if they don't exist
       newApps.forEach((app) => {
-        if (
-          !existingAppsMap.has(app.id) ||
-          !existingAppsMap.get(app.id)?.store?.apps.length ||
-          !existingAppsMap.get(app.id)?.store?.app
-        ) {
+        if (!existingAppsMap.has(app.id)) {
           existingAppsMap.set(app.id, app)
         }
       })
