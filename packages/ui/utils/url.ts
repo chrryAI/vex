@@ -3,13 +3,13 @@
  * These functions can be used in both client and server components
  */
 
-import { locales } from "../locales"
+import { locales as localesArray } from "../locales"
 import { getThreadId as getThreadIdFromUrl } from "./index"
 
 const baseProtectedRoutes = ["threads", "about", "privacy", "terms", "why", "u"]
 
 export const protectedRoutes = Array.from(
-  new Set([...baseProtectedRoutes, ...locales]),
+  new Set([...baseProtectedRoutes, ...localesArray]),
 )
 
 export const excludedSlugRoutes = Array.from(
@@ -36,7 +36,7 @@ export function getAppAndStoreSlugs(
     defaultAppSlug,
     defaultStoreSlug,
     excludedRoutes = excludedSlugRoutes,
-    locales = [],
+    locales = localesArray,
   }: SlugExtractionOptions,
 ) {
   const normalizedLocales = Array.isArray(locales) ? locales : []
