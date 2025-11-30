@@ -191,7 +191,9 @@ export default async function middleware(request: NextRequest) {
     return response
   }
 
-  const hostname = request.headers.get("host") || ""
+  // Prefer x-forwarded-host (set by proxy) over host header
+  const hostname =
+    request.headers.get("x-forwarded-host") || request.headers.get("host") || ""
 
   const chrryUrlFromHeader = request.headers.get("x-chrry-url")
   const protocol = request.headers.get("x-forwarded-proto") || "https"
