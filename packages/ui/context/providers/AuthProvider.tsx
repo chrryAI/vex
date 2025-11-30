@@ -926,9 +926,9 @@ export function AuthProvider({
     const matchedApp = storeApps?.find(
       (item) =>
         item.slug === appSlug &&
-        (!app
+        (!baseApp
           ? true
-          : !app?.store?.apps?.some((a) => a.id === item.id)
+          : !baseApp?.store?.apps?.some((a) => a.id === item.id)
             ? item.store?.slug === storeSlug
             : true),
     )
