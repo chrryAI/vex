@@ -587,7 +587,8 @@ export function AuthProvider({
 
         return sessionResult
       } catch (error) {
-        toast.error("Something went wrong")
+        // toast.error("Something went wrong")
+        console.error("Error fetching session:", error)
       }
     },
     {
@@ -953,12 +954,17 @@ export function AuthProvider({
   // Centralized function to merge apps without duplicates
   const mergeApps = useCallback((newApps: appWithStore[]) => {
     setAllApps((prevApps) => {
+      console.log(`🚀 ~ AuthProvider ~ prevApps:`, prevApps)
       // Create a map of existing apps by ID
       const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
 
       // Add new apps only if they don't exist
       newApps.forEach((app) => {
-        if (!existingAppsMap.has(app.id)) {
+        if (
+          !existingAppsMap.has(app.id) ||
+          !existingAppsMap.get(app.id)?.store?.apps.length ||
+          !existingAppsMap.get(app.id)?.store?.app
+        ) {
           existingAppsMap.set(app.id, app)
         }
       })
@@ -1010,16 +1016,18 @@ export function AuthProvider({
   } = useSWR(token && appId ? ["app", appId] : null, async () => {
     try {
       if (!token || !appId) return
-      const apps = await getApp({ token, appId, chrryUrl })
+      const app = await getApp({ token, appId, chrryUrl })
 
       if (loadingAppId) {
         setLoadingAppId(undefined)
       }
 
-      return apps.store?.apps
+      const apps = app.store?.apps
+
+      apps && mergeApps(apps)
+      return apps
     } catch (error) {
-      console.log(error)
-      // toast.error("Something went wrong")
+      toast.error("Something went wrong")
     }
   })
 
@@ -1047,12 +1055,6 @@ export function AuthProvider({
       refetchApps()
     }
   }, [loadingApp, isLoadingApps, storeApps])
-
-  useEffect(() => {
-    if (storeAppsSwr && Array.isArray(storeAppsSwr)) {
-      mergeApps(storeAppsSwr)
-    }
-  }, [storeAppsSwr, mergeApps])
 
   // Sync app.id to lastAppId for extensions
 
