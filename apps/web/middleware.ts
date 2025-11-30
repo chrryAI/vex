@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import createIntlMiddleware from "next-intl/middleware"
 import { locales, defaultLocale } from "chrry/locales"
+import getChrryUrl from "chrry-dot-dev/app/actions/getChrryUrl"
 
 // Static allowed origins (always allowed)
 const STATIC_ALLOWED_ORIGINS = [
@@ -190,9 +191,18 @@ export default async function middleware(request: NextRequest) {
     return response
   }
 
-  const chrryUrl = searchParams.get("chrryUrl")
+  const hostname = request.headers.get("host") || ""
 
-  chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
+  const chrryUrlFromHeader = request.headers.get("x-chrry-url")
+  const protocol = request.headers.get("x-forwarded-proto") || "https"
+
+  let chrryUrl = chrryUrlFromHeader
+    ? decodeURIComponent(chrryUrlFromHeader)
+    : hostname.startsWith("http")
+      ? hostname
+      : `${protocol}://${hostname}`
+
+  response.headers.set("x-chrry-url", chrryUrl)
 
   // Set fingerprint cookie if not already set
   const existingFingerprintCookie = request.cookies.get("fingerprint")?.value

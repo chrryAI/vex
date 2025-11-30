@@ -155,14 +155,6 @@ export default async function middleware(request: NextRequest) {
   request.headers.forEach((value, key) => {
     console.log(`  ${key}: ${value}`)
   })
-  console.log(
-    `🚀 ~ middleware ~ chrryUrl from header:`,
-    request.headers.get("x-chrry-url"),
-  )
-  console.log(
-    `🚀 ~ middleware ~ chrryUrl from query:`,
-    searchParams.get("chrryUrl"),
-  )
 
   chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
 
