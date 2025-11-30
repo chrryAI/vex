@@ -205,7 +205,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.5.41"
+  const VERSION = "1.5.42"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -429,32 +429,6 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
       "Liberia",
     ]
     return fahrenheitCountries.includes(country) ? "F" : "C"
-  }
-
-  const swrConfig = {
-    onError: (error: any) => {
-      if (error?.status === 429) {
-        const errorKey = `rate_limit_${Date.now()}`
-        const lastShown = localStorage.getItem("last_rate_limit_toast")
-        const now = Date.now()
-
-        // Only show toast if it's been more than 30 seconds since last one
-        if (!lastShown || now - parseInt(lastShown) > 30000) {
-          toast.error(
-            "Rate limit exceeded. Please wait a moment before trying again.",
-          )
-          localStorage.setItem("last_rate_limit_toast", now.toString())
-        }
-      }
-    },
-    onErrorRetry: (error: any, revalidate: any, { retryCount }: any) => {
-      // Don't retry on 429 errors
-      if (error?.status === 429) return
-
-      // Default retry logic for other errors
-      if (retryCount >= 3) return
-      setTimeout(() => revalidate({ retryCount }), 5000)
-    },
   }
 
   useEffect(() => {
