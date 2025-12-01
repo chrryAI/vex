@@ -487,6 +487,7 @@ export type message = {
   userId: string | null
   guestId: string | null
   content: string
+  reasoning: string | null
   originalContent: string | null
   createdOn: Date
   updatedOn: Date

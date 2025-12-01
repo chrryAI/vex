@@ -39,7 +39,7 @@ import ConfirmButton from "./ConfirmButton"
 
 import { Check, Copy } from "./icons"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState, useRef } from "react"
 import { updateMessage, updateThread } from "./lib"
 import toast from "react-hot-toast"
 import Img from "./Image"
@@ -132,6 +132,53 @@ export default function Message({
   const [disliked, setDisliked] = useState<boolean | undefined>(undefined)
   const [isSpeechActive, setIsSpeechActive] = useState(false)
   const [isSpeechLoading, setIsSpeechLoading] = useState(false)
+  const [isReasoningExpanded, setIsReasoningExpanded] = useState(false)
+  const [isReasoningStreaming, setIsReasoningStreaming] = useState(false)
+  const reasoningScrollRef = useRef<HTMLDivElement>(null)
+
+  // Parse reasoning from content if it has __REASONING__ markers
+  const { content: cleanContent, reasoning } = useMemo(() => {
+    const messageContent = message.message.content
+    const reasoningMatches = messageContent.match(
+      /__REASONING__(.*?)__\/REASONING__/gs,
+    )
+
+    if (reasoningMatches) {
+      const extractedReasoning = reasoningMatches
+        .map((match) => match.replace(/__REASONING__|__\/REASONING__/g, ""))
+        .join("")
+      const cleanedContent = messageContent.replace(
+        /__REASONING__.*?__\/REASONING__/gs,
+        "",
+      )
+
+      // Check if reasoning is still streaming (no closing tag yet or message is streaming)
+      const isStreaming =
+        message.message.isStreaming && messageContent.includes("__REASONING__")
+
+      setIsReasoningStreaming(!!isStreaming)
+
+      return { content: cleanedContent, reasoning: extractedReasoning }
+    }
+
+    // Also check if reasoning is stored separately in the message
+    return {
+      content: messageContent,
+      reasoning: message.message.reasoning || null,
+    }
+  }, [
+    message.message.content,
+    message.message.reasoning,
+    message.message.isStreaming,
+  ])
+
+  // Auto-scroll reasoning to bottom while streaming
+  useEffect(() => {
+    if (isReasoningStreaming && reasoningScrollRef.current) {
+      reasoningScrollRef.current.scrollTop =
+        reasoningScrollRef.current.scrollHeight
+    }
+  }, [reasoning, isReasoningStreaming])
 
   const limitCheck = useMemo(() => {
     return user || guest
@@ -1122,6 +1169,48 @@ export default function Message({
                   ))}
                 </Div>
               ) : null}
+              {reasoning && (
+                <Div
+                  style={{
+                    marginBottom: "1rem",
+                    borderLeft: "3px solid var(--accent-1)",
+                    paddingLeft: "0.5rem",
+                  }}
+                >
+                  <Button
+                    className="link"
+                    onClick={() => setIsReasoningExpanded(!isReasoningExpanded)}
+                    style={{
+                      ...utilities.link.style,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      fontSize: "0.9rem",
+                      color: "var(--accent-1)",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    {t("Reasoning")}
+                    {isReasoningExpanded ? "." : "..."}
+                  </Button>
+                  {(isReasoningExpanded || isReasoningStreaming) && (
+                    <Div
+                      ref={reasoningScrollRef}
+                      style={{
+                        height: "80px",
+                        overflowY: "auto",
+                        fontSize: "0.85rem",
+                        color: "var(--accent-6)",
+                        whiteSpace: "pre-wrap",
+                        background: "var(--background-2)",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      {reasoning}
+                    </Div>
+                  )}
+                </Div>
+              )}
               {message.message.content === "🐹 Done!" ? (
                 <Div
                   style={{ display: "flex", alignItems: "center", gap: "2rem" }}
@@ -1130,7 +1219,7 @@ export default function Message({
                 </Div>
               ) : (
                 <MarkdownContent
-                  content={message.message.content}
+                  content={cleanContent}
                   webSearchResults={
                     message.message.webSearchResult || undefined
                   }

@@ -753,6 +753,7 @@ export const messages = pgTable(
       onDelete: "cascade",
     }),
     content: text("content").notNull(),
+    reasoning: text("reasoning"),
     originalContent: text("originalContent"),
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
       .defaultNow()
