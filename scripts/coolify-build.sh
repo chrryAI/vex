@@ -12,6 +12,18 @@ if [ -d "apps/web/.next" ] && [ -d "apps/chrry-dot-dev/.next" ]; then
 else
   echo "⚠️  No cached build found. Building now..."
 
+  # Turbo remote cache config (set via Coolify env vars)
+  export TURBO_API="${TURBO_API:-}"
+  export TURBO_TOKEN="${TURBO_TOKEN:-}"
+  export TURBO_TEAM="${TURBO_TEAM:-}"
+  export TURBO_REMOTE_CACHE_SIGNATURE_KEY="${TURBO_REMOTE_CACHE_SIGNATURE_KEY:-}"
+
+  if [ -n "$TURBO_API" ]; then
+    echo "📦 Remote caching enabled: $TURBO_API"
+  else
+    echo "⚠️  No TURBO_API set, remote caching disabled"
+  fi
+
   # Install dependencies
   pnpm install --frozen-lockfile
 
