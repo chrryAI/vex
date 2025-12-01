@@ -55,7 +55,7 @@ export function generateStoreMetadata({
   return {
     title: `${t(storeName)} - Chrry`,
     description: description,
-    manifest: `${API_URL}/manifest/${store.id}`,
+    manifest: `${API_URL}/manifest/${store?.app?.id}`,
     icons: [
       ...(icon32
         ? [{ rel: "icon", url: icon32, sizes: "32x32", type: "image/png" }]

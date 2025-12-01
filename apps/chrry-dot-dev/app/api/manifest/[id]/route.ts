@@ -15,7 +15,7 @@ export async function GET(
   const guest = await getGuest()
 
   // Try to get app by slug first (for system apps like "atlas", "peach"), then by UUID
-  let app = await getApp({ id })
+  let app = await getApp({ id, userId: member?.id, guestId: guest?.id })
 
   if (!app) {
     app = await getApp({ slug: "chrry" })

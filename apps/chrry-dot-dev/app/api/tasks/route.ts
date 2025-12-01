@@ -88,6 +88,7 @@ export async function GET(request: Request) {
   const tasks = await getTasks({
     userId: member?.id,
     guestId: guest?.id,
+    pageSize: 15,
   })
 
   return NextResponse.json(tasks)

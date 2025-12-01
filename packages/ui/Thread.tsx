@@ -52,6 +52,7 @@ const Thread = ({
 }: {
   isHome?: boolean
   threadId?: string
+
   threadData?: { thread: thread; messages: paginatedMessages }
 }) => {
   // Initialize unified styles hook

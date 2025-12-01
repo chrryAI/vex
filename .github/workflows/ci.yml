@@ -98,9 +98,22 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=8192
           CI: true
 
-  merge-to-main:
+  deploy:
     runs-on: ubuntu-latest
     needs: build
+    if: github.ref == 'refs/heads/chrry' && github.event_name == 'push'
+
+    steps:
+      - name: Trigger Coolify deployments
+        run: |
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=w84koc40kg0ckkwsk8kww04k&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=is4sos8844g880cockkowoco&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+
+  merge-to-main:
+    runs-on: ubuntu-latest
+    needs: deploy
     if: github.ref == 'refs/heads/chrry' && github.event_name == 'push'
 
     steps:

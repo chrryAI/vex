@@ -154,12 +154,6 @@ export default function FocusButton({
     remoteTimer,
   } = useTimerContext()
 
-  useEffect(() => {
-    if (!tasks?.tasks?.length) {
-      fetchTasks()
-    }
-  }, [tasks])
-
   const isMovingItemRef = useRef(false)
   const { isDark, setTheme: setThemeInContext } = useTheme()
   const { setPlaceHolderText, placeHolderText, setShouldFocus } = useChat()
@@ -311,6 +305,12 @@ export default function FocusButton({
     handlePause,
     handleCancel,
   ])
+
+  useEffect(() => {
+    if (!tasks && isMounted) {
+      fetchTasks()
+    }
+  }, [tasks, isMounted])
 
   const updateTask = async ({
     task,
@@ -896,10 +896,13 @@ export default function FocusButton({
                           }
 
                           // Optimistic update
-                          setTasks((prevTasks) => ({
-                            ...prevTasks,
-                            tasks: data,
-                          }))
+                          setTasks((prevTasks) => {
+                            if (!prevTasks) return prevTasks
+                            return {
+                              ...prevTasks,
+                              tasks: data,
+                            }
+                          })
 
                           const draggedTask = data[to]
                           if (draggedTask) {
