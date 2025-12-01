@@ -68,11 +68,16 @@ if docker ps | grep -q turborepo-remote-cache; then
 else
     echo "⚠️  Turbo cache server is not running!"
     echo "Starting Turbo cache server..."
+    # Ensure cache directory exists and is writable
+    mkdir -p /var/turbo-cache
+    chmod 777 /var/turbo-cache
+    
     docker run -d \
       --name turbo-cache \
       --restart unless-stopped \
-      -p 9080:9080 \
+      -p 9080:3000 \
       -v /var/turbo-cache:/cache \
+      -e TURBO_TOKEN=KwbLMNV8SoWIuSzp/z0X+FigFNR72tIzScQyGFqQ//Q= \
       ducktors/turborepo-remote-cache
 fi
 

@@ -1054,7 +1054,6 @@ export function AuthProvider({
       item.store?.id === app?.store?.id,
   )
 
-  // Filter apps by current store - fallback to all apps if store has no apps
   const apps = storeApps.filter((item) => {
     return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
   })

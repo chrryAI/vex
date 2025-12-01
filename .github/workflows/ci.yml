@@ -44,7 +44,7 @@ jobs:
       - name: Lint
         run: pnpm turbo lint
         env:
-          TURBO_API: ${{ secrets.TURBO_API }} # Your VPS IP
+          TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
           TURBO_TEAM: "vex"
 
@@ -57,7 +57,7 @@ jobs:
       - name: Build packages
         run: pnpm turbo build --filter="@repo/db" --filter="@chrryai/chrry" --filter="@chrryai/waffles" --filter="@chrryai/pepper"
         env:
-          TURBO_API: ${{ secrets.TURBO_API }} # Your VPS IP
+          TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
           TURBO_TEAM: "vex"
           NODE_OPTIONS: --max-old-space-size=8192
@@ -65,7 +65,7 @@ jobs:
       - name: Build web app
         run: pnpm turbo build --filter="web"
         env:
-          TURBO_API: ${{ secrets.TURBO_API }} # Your VPS IP
+          TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
           TURBO_TEAM: "vex"
           DB_URL: ${{ secrets.DB_URL }}
@@ -75,7 +75,7 @@ jobs:
       - name: Build chrry-dot-dev app
         run: pnpm turbo build --filter="chrrydotdev"
         env:
-          TURBO_API: ${{ secrets.TURBO_API }} # Your VPS IP
+          TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
           TURBO_TEAM: "vex"
           DB_URL: ${{ secrets.DB_URL }}
@@ -85,7 +85,7 @@ jobs:
       - name: Build WebSocket server
         run: pnpm turbo build --filter="wsserver"
         env:
-          TURBO_API: ${{ secrets.TURBO_API }} # Your VPS IP
+          TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
           TURBO_TEAM: "vex"
           DB_URL: ${{ secrets.DB_URL }}
