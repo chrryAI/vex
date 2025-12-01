@@ -731,7 +731,7 @@ const Thread = ({
                               isImageGenerationEnabled:
                                 msg?.isImageGenerationEnabled!,
                               isStreaming: true,
-
+                              reasoning: msg?.message?.message?.reasoning!,
                               like: null,
                               dislike: null,
                               creditCost: selectedAgent?.creditCost || 1,
