@@ -1047,17 +1047,13 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const storeAppInternal = app?.store?.apps.find(
-    (item) => app?.store?.appId && item.id === app?.store?.appId,
+  const storeApp = app?.store?.apps.find(
+    (item) =>
+      app?.store?.appId &&
+      item.id === app?.store?.appId &&
+      item.store?.id === app?.store?.id,
   )
 
-  const [storeApp, setStoreApp] = useState<appWithStore | undefined>(
-    storeAppInternal,
-  )
-
-  useEffect(() => {
-    setStoreApp(storeAppInternal)
-  }, [storeAppInternal])
   // Filter apps by current store - fallback to all apps if store has no apps
   const apps = storeApps.filter((item) => {
     return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
