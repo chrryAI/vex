@@ -41,7 +41,7 @@ export default function Bookmark({
   )
 
   useEffect(() => {
-    const t = threads?.threads.find((t) => t.id === thread.id)
+    const t = threads?.threads?.find((t) => t.id === thread.id)
     if (t) {
       t.bookmarks?.some((b) =>
         isOwner(b, { userId: user?.id, guestId: guest?.id }),

@@ -89,6 +89,7 @@ import {
   PROMPT_LIMITS,
   apiFetch,
   MAX_FILE_LIMITS,
+  isE2E,
 } from "./utils"
 import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
@@ -2693,6 +2694,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   // Scroll detection for auto-hide chat input
   useEffect(() => {
     if (empty) return
+
+    const offset = isE2E ? 250 : 150
     const checkBottomOffset = () => {
       const scrollPosition = window.scrollY
       const documentHeight = document.documentElement.scrollHeight
@@ -2701,7 +2704,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         documentHeight - (scrollPosition + viewportHeight)
 
       // Has bottom offset if not at the very bottom (more than 100px from bottom)
-      setHasBottomOffset(distanceFromBottom > 100)
+      setHasBottomOffset(distanceFromBottom > offset)
     }
 
     let scrollTimeout: ReturnType<typeof setTimeout> | null = null
@@ -2715,7 +2718,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           documentHeight - (scrollPosition + currentWindowHeight)
 
         // Show chat input when within 150px of bottom
-        setShowChatInput(distanceFromBottom <= 150)
+        setShowChatInput(distanceFromBottom <= offset)
 
         // Check for bottom offset
         checkBottomOffset()

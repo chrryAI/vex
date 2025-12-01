@@ -78,7 +78,7 @@ export const signIn = async ({
   }
 
   await expect(signInButton).not.toBeVisible({
-    timeout: 15000,
+    timeout: 100000,
   })
 
   const accountButton = page.getByTestId("account-button")

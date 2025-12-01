@@ -219,19 +219,27 @@ export const subscribe = async ({
   }
 
   if (inviteOrGift) {
-    const fingerprint = await subscribeButton.getAttribute(
-      "data-gifted-fingerprint",
-    )
+    const fingerprint = page.getByTestId("gifted-fingerprint")
 
-    expect(fingerprint).toBeTruthy()
+    expect(fingerprint).toBeAttached({
+      timeout: 20000,
+    })
+
+    const fingerprintValue = await fingerprint.getAttribute("value")
+    expect(fingerprintValue).toBeTruthy()
+
+    await wait(5000)
 
     // Open gift redemption in fresh browser context
     const giftBrowser = page.context().browser()!
     const giftContext = await giftBrowser.newContext()
     const giftPage = await giftContext.newPage()
-    await giftPage.goto(`${page.url().split("?")[0]}?gift=${fingerprint}`, {
-      waitUntil: "networkidle",
-    })
+    await giftPage.goto(
+      `${page.url().split("?")[0]}?gift=${fingerprintValue}`,
+      {
+        waitUntil: "networkidle",
+      },
+    )
 
     await giftPage.bringToFront()
 

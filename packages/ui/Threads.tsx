@@ -391,8 +391,8 @@ const Threads = ({
                   </Div>
                 </MotiView>
               ))}
-              {threads.threads.length === 0 && <P>{t("Nothing here yet")}</P>}
-              {threads.hasNextPage && (
+              {threads?.threads?.length === 0 && <P>{t("Nothing here yet")}</P>}
+              {threads?.hasNextPage && (
                 <Div style={{ ...styles.loadMoreButtonContainer.style }}>
                   <Button
                     onClick={() => {
