@@ -157,6 +157,7 @@ export default function Message({
         message.message.isStreaming && messageContent.includes("__REASONING__")
 
       setIsReasoningStreaming(!!isStreaming)
+      setIsReasoningExpanded(true)
 
       return { content: cleanedContent, reasoning: extractedReasoning }
     }
@@ -1191,13 +1192,13 @@ export default function Message({
                     }}
                   >
                     {t("Reasoning")}
-                    {isReasoningExpanded ? "." : "..."}
+                    {isReasoningExpanded && !isReasoningStreaming ? "." : "..."}
                   </Button>
-                  {(isReasoningExpanded || isReasoningStreaming) && (
+                  {isReasoningExpanded && (
                     <Div
                       ref={reasoningScrollRef}
                       style={{
-                        height: !isReasoningStreaming ? "200px" : "100px",
+                        maxHeight: !isReasoningStreaming ? "200px" : "100px",
                         overflowY: "auto",
                         fontSize: "0.85rem",
                         color: "var(--shade-6)",
