@@ -1371,20 +1371,24 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 <Plus size={12} />
               )}
             </Button>
-            <Button
-              title={t("Artifacts")}
-              data-testid={`${dataTestId}-artifacts-button`}
-              onClick={() => {
-                addHapticFeedback()
-                setIsArtifactsOpen(true)
-              }}
-              className={icon ? "link" : "transparent"}
-              style={{
-                ...(icon ? utilities.link.style : utilities.transparent.style),
-              }}
-            >
-              <TestTubeDiagonal size={15} color="var(--accent-4)" />
-            </Button>
+            {!isMobileDevice && (
+              <Button
+                title={t("Artifacts")}
+                data-testid={`${dataTestId}-artifacts-button`}
+                onClick={() => {
+                  addHapticFeedback()
+                  setIsArtifactsOpen(true)
+                }}
+                className={icon ? "link" : "transparent"}
+                style={{
+                  ...(icon
+                    ? utilities.link.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <TestTubeDiagonal size={15} color="var(--accent-4)" />
+              </Button>
+            )}
           </Div>
         )}
         {!thread && showInstructions && (
