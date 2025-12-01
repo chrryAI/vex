@@ -31,23 +31,23 @@ const NEWS_SOURCES = {
     name: "TechCrunch",
     feeds: [{ url: "https://techcrunch.com/feed/", category: "tech" }],
   },
-  nyt: {
-    name: "New York Times",
-    feeds: [
-      {
-        url: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-        category: "top",
-      },
-      {
-        url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
-        category: "world",
-      },
-      {
-        url: "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
-        category: "tech",
-      },
-    ],
-  },
+  // nyt: {
+  //   name: "New York Times",
+  //   feeds: [
+  //     {
+  //       url: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+  //       category: "top",
+  //     },
+  //     {
+  //       url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+  //       category: "world",
+  //     },
+  //     {
+  //       url: "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+  //       category: "tech",
+  //     },
+  //   ],
+  // },
 }
 
 /**
