@@ -46,6 +46,7 @@ jobs:
         env:
           TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
           TURBO_TEAM: "vex"
 
       - name: Type check
@@ -59,6 +60,7 @@ jobs:
         env:
           TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
           TURBO_TEAM: "vex"
           NODE_OPTIONS: --max-old-space-size=8192
 
@@ -67,6 +69,7 @@ jobs:
         env:
           TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
           TURBO_TEAM: "vex"
           DB_URL: ${{ secrets.DB_URL }}
           NODE_OPTIONS: --max-old-space-size=8192
@@ -77,6 +80,7 @@ jobs:
         env:
           TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
           TURBO_TEAM: "vex"
           DB_URL: ${{ secrets.DB_URL }}
           NODE_OPTIONS: --max-old-space-size=8192
@@ -87,6 +91,7 @@ jobs:
         env:
           TURBO_API: ${{ secrets.TURBO_API }}
           TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
           TURBO_TEAM: "vex"
           DB_URL: ${{ secrets.DB_URL }}
           NODE_OPTIONS: --max-old-space-size=8192
