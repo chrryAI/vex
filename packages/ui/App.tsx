@@ -113,7 +113,6 @@ export default function App({
     setAppStatus,
     baseApp,
     isAppOwner,
-    storeApp,
     hasCustomInstructions,
     showingCustom,
     toggleInstructions,
@@ -151,6 +150,8 @@ export default function App({
 
   const isBlossom = app?.store?.id === chrry?.store?.id
 
+  const storeApp = apps.find((item) => item.store?.id === app?.store?.id)
+  console.log(`🚀 ~ file: App.tsx:154 ~ apps:`, apps)
   const getApps = () => {
     return apps
       .filter(
