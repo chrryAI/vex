@@ -1016,7 +1016,7 @@ export function ChatProvider({
 
   useEffect(() => {
     if (!threadId) {
-      setStatus(null)
+      status && setStatus(null)
       return
     }
 
