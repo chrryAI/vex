@@ -1,5 +1,5 @@
 import { Browser, expect, test } from "@playwright/test"
-import { getURL, wait } from ".."
+import { getURL, VEX_TEST_EMAIL, wait } from ".."
 import { chat } from "./chat"
 import { Page } from "@playwright/test"
 import { signIn } from "./signIn"
@@ -89,7 +89,7 @@ export async function collaboration({
   const collaborateInput = page1.getByTestId("chat-collaborate-input")
   expect(collaborateInput).toBeVisible()
 
-  await collaborateInput.fill("iliyan@chrry.ai")
+  await collaborateInput.fill(VEX_TEST_EMAIL)
 
   const collaborateAddButton = page1.getByTestId("chat-collaborate-add-button")
   await collaborateAddButton.click()

@@ -390,6 +390,7 @@ export default async function ChrryAI({
           threads={threads}
           session={session && "app" in session ? session : undefined}
         >
+          {thread?.thread?.title}
           {children}
         </Providers>
       </body>

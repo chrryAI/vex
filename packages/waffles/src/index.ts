@@ -10,8 +10,8 @@ export const TEST_MEMBER_FINGERPRINTS =
 export const TEST_MEMBER_EMAILS =
   process.env.TEST_MEMBER_EMAILS?.split(",") || []
 
-export const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL_1!
-export const VEX_TEST_PASSWORD = process.env.VEX_TEST_PASSWORD_1!
+export const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL!
+export const VEX_TEST_PASSWORD = process.env.VEX_TEST_PASSWORD!
 export const VEX_TEST_FINGERPRINT = TEST_MEMBER_FINGERPRINTS[0]
 export const VEX_TEST_EMAIL_2 = process.env.VEX_TEST_EMAIL_2!
 export const VEX_TEST_PASSWORD_2 = process.env.VEX_TEST_PASSWORD_2!

@@ -1,9 +1,11 @@
 import {
+  canCollaborate,
   collaboration,
   getApp,
   getThread,
   getThreads,
   getUser,
+  isOwner,
   thread,
   user,
 } from "@repo/db"
@@ -97,13 +99,11 @@ export async function GET(request: Request) {
 
     // Block unauthorized access to private threads
     if (
-      thread &&
-      thread.visibility === "private" &&
-      thread.guestId !== guest?.id &&
-      thread.userId !== member?.id &&
-      !thread?.collaborations?.some(
-        (collaboration) => collaboration.user.id === member?.id,
-      )
+      !canCollaborate({
+        thread,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
     ) {
       return NextResponse.json(
         { error: "Unauthorized access to private thread", status: 401 },

@@ -355,7 +355,7 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [shouldFetchSession, setShouldFetchSession] = useState(true)
+  const [shouldFetchSession, setShouldFetchSession] = useState(!session)
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
@@ -364,12 +364,20 @@ export function AuthProvider({
       fingerprintParam,
   )
 
+  const tokenInternal =
+    session?.user?.token || session?.guest?.fingerprint || apiKey
   // Local state for token and versions (no dependency on DataProvider)
   const [token, setTokenInternal] = useCookieOrLocalStorage(
     "token",
-    session?.user?.token || session?.guest?.fingerprint || apiKey,
+    tokenInternal,
     isExtension,
   )
+
+  useEffect(() => {
+    if (tokenInternal) {
+      setTokenInternal(tokenInternal)
+    }
+  }, [tokenInternal])
 
   // Track if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)

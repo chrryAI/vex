@@ -3791,8 +3791,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     })}
                   </Div>
                 )}
-                {disabled && <Span>{t("Chat is disabled")}</Span>}
-
                 <TextArea
                   className="chatTextArea"
                   rows={isHydrated && isChatFloating ? 1 : 2}
