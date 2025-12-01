@@ -15,16 +15,16 @@ test.skip("Chat", async ({ page }) => {
     prompts: [
       {
         text: "What are the must-see attractions in Tokyo?",
-        model: "deepSeek",
+        model: "sushi",
       },
       {
         text: "Can you suggest a detailed itinerary for day 1?",
-        model: "deepSeek",
+        model: "sushi",
         like: true,
       },
       {
         text: "What's the best way to get around between these places?",
-        model: "deepSeek",
+        model: "sushi",
         like: true,
       },
       {
@@ -44,7 +44,7 @@ test.skip("Chat", async ({ page }) => {
     prompts: [
       {
         text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
-        model: "flux",
+        imageGenerationEnabled: true,
         like: true,
       },
     ],

@@ -116,6 +116,32 @@ export const isOwner = (
   return false
 }
 
+export const canCollaborate = ({
+  thread,
+  userId,
+  guestId,
+}: {
+  thread:
+    | (thread & {
+        collaborations?: { collaboration: collaboration; user: user }[]
+      })
+    | undefined
+  userId?: string
+  guestId?: string
+}) => {
+  if (thread?.visibility === "public") return true
+  console.log(
+    `🚀 ~ thread:`,
+    thread?.collaborations?.map((c) => c.user.name),
+  )
+
+  return isOwner(thread, { userId, guestId })
+    ? true
+    : thread?.collaborations?.some(
+        (collaboration) => collaboration.user.id === userId,
+      )
+}
+
 declare global {
   // eslint-disable-next-line no-var -- only var works here
   // eslint-disable-next-line no-unused-vars

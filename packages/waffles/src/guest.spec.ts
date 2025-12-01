@@ -139,7 +139,7 @@ test.skip("Thread", async ({ page }) => {
   await clean({ page })
 })
 
-test.only("Long text", async ({ page }) => {
+test.skip("Long text", async ({ page }) => {
   await chat({
     page,
     isMember,
@@ -164,31 +164,6 @@ test.only("Long text", async ({ page }) => {
   })
 })
 
-// test("File upload", async ({ page }) => {
-//   await chat({
-//     page,
-//     isMember,
-//     instruction: "Long text",
-//     // agentMessageTimeout: 12000,
-//     prompts: [
-//       {
-//         text: "Analyze this video data",
-//         model: "sushi",
-//       },
-//       {
-//         text: "long",
-//         model: "sushi",
-//         stop: true,
-//       },
-//       {
-//         text: "Should delete this message",
-//         model: "sushi",
-//         delete: true,
-//       },
-//     ],
-//   })
-// })
-
-test("Collaboration", async ({ page, browser }) => {
+test.only("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember })
 })

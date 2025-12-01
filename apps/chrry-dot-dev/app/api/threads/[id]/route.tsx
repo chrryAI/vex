@@ -1,4 +1,5 @@
 import {
+  canCollaborate,
   createCollaboration,
   deleteThread,
   getCharacterProfile,
@@ -78,17 +79,11 @@ export async function GET(request: Request) {
   }
 
   if (
-    thread.visibility === "private" &&
-    !isOwner(thread, {
+    !canCollaborate({
+      thread,
       userId: member?.id,
       guestId: guest?.id,
-    }) &&
-    !thread.collaborations.some(
-      (c) =>
-        c.user.id === member?.id &&
-        c.collaboration.status &&
-        ["pending", "active"].includes(c.collaboration.status),
-    )
+    })
   ) {
     return NextResponse.json(
       { error: "Unauthorized", status: 401 },
