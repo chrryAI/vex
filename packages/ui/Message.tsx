@@ -1172,7 +1172,7 @@ export default function Message({
               {reasoning && (
                 <Div
                   style={{
-                    marginBottom: "1rem",
+                    marginBottom: "0.3rem",
                     borderLeft: "3px solid var(--accent-1)",
                     paddingLeft: "0.5rem",
                   }}
@@ -1197,13 +1197,12 @@ export default function Message({
                     <Div
                       ref={reasoningScrollRef}
                       style={{
-                        height: "80px",
+                        height: !isReasoningStreaming ? "200px" : "100px",
                         overflowY: "auto",
                         fontSize: "0.85rem",
-                        color: "var(--accent-6)",
+                        color: "var(--shade-6)",
                         whiteSpace: "pre-wrap",
                         background: "var(--background-2)",
-                        borderRadius: "8px",
                       }}
                     >
                       {reasoning}
