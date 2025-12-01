@@ -960,7 +960,6 @@ export function AuthProvider({
     setIsLoading(true)
     setShouldFetchSession(true)
 
-    // Force revalidation - clear cache and fetch fresh data
     shouldFetchSession &&
       (await refetchSession(undefined, { revalidate: true }))
   }
