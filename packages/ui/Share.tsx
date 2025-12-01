@@ -320,7 +320,7 @@ export default function Share({
           ...style,
         }}
       >
-        {thread.visibility === "public" ? (
+        {/* {thread.visibility === "public" ? (
           <LockOpen
             color="var(--accent-1)"
             size={size ? size - 3 : undefined}
@@ -332,7 +332,7 @@ export default function Share({
           />
         ) : (
           <LockIcon color="var(--shade-3)" size={size ? size - 3 : undefined} />
-        )}
+        )} */}
         <Button
           className="link"
           title={t("Share")}
@@ -345,7 +345,7 @@ export default function Share({
             ...style,
           }}
         >
-          <ShareIcon strokeWidth={2.5} size={size} />
+          <ShareIcon size={size} />
         </Button>
       </Div>
       <Modal

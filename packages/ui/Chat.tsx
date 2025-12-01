@@ -2718,7 +2718,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           documentHeight - (scrollPosition + currentWindowHeight)
 
         // Show chat input when within 150px of bottom
-        setShowChatInput(distanceFromBottom <= offset)
+        setShowChatInput(distanceFromBottom < offset)
 
         // Check for bottom offset
         checkBottomOffset()

@@ -527,6 +527,7 @@ const Thread = ({
                             }}
                             style={{
                               ...utilities.xSmall.style,
+                              padding: 0,
                             }}
                           >
                             {liked ? (
@@ -534,7 +535,6 @@ const Thread = ({
                             ) : (
                               <ThumbsUp color="var(--shade-3)" size={16} />
                             )}
-                            {t("Filter")}
                           </Button>
 
                           {!isVisitor && (

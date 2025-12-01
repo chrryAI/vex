@@ -128,6 +128,7 @@ export default function App({
     userBaseApp,
     token,
     loadingApp,
+    storeApp,
   } = useAuth()
 
   const { FRONTEND_URL, API_URL } = useData()
@@ -150,8 +151,6 @@ export default function App({
 
   const isBlossom = app?.store?.id === chrry?.store?.id
 
-  const storeApp = apps.find((item) => item.store?.id === app?.store?.id)
-  console.log(`🚀 ~ file: App.tsx:154 ~ apps:`, apps)
   const getApps = () => {
     return apps
       .filter(

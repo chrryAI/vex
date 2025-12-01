@@ -588,8 +588,9 @@ export default function Message({
     id: string
   } | null>(null)
 
-  const requiresLogin = user && !user.subscription
-  const requiresSubscription = guest && !guest.subscription
+  const requiresLogin = !limitCheck.allowed && user && !user.subscription
+  const requiresSubscription =
+    !limitCheck.allowed && guest && !guest.subscription
 
   const [evenChance] = useState(Math.random() >= 0.5)
 
@@ -1164,8 +1165,8 @@ export default function Message({
                 <Div
                   style={{
                     marginBottom: "0.3rem",
-                    borderLeft: "3px solid var(--accent-1)",
-                    paddingLeft: "0.5rem",
+                    borderLeft: "0.75px solid var(--accent-1)",
+                    paddingLeft: "0.7rem",
                   }}
                 >
                   <Button
@@ -1178,7 +1179,7 @@ export default function Message({
                       gap: "0.5rem",
                       fontSize: "0.9rem",
                       color: "var(--accent-1)",
-                      marginBottom: "0.5rem",
+                      marginBottom: "0.3rem",
                     }}
                   >
                     {t("Reasoning")}
@@ -1188,7 +1189,7 @@ export default function Message({
                     <Div
                       ref={reasoningScrollRef}
                       style={{
-                        maxHeight: !isReasoningStreaming ? "200px" : "100px",
+                        maxHeight: !isReasoningStreaming ? "200px" : "80px",
                         overflowY: "auto",
                         fontSize: "0.85rem",
                         color: "var(--shade-6)",
