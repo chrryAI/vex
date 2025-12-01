@@ -175,7 +175,7 @@ const focus = {
   favicon: "focus",
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.49",
+  version: "26.10.50",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1401,7 +1401,7 @@ export function detectSiteModeDomain(
     (process.env.MODE as SiteMode) ||
     ((import.meta as any)?.env?.VITE_SITE_MODE as SiteMode) ||
     mode ||
-    ("vex" as SiteMode)
+    ("zarathustra" as SiteMode)
 
   // Get hostname from parameter or window (client-side)
   const rawHost =

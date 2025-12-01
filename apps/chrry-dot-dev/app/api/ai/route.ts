@@ -3302,11 +3302,15 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
           max: content.includes("long") ? 750 : 80,
         })
 
+        // Generate test reasoning
+        const testReasoning = faker.lorem.sentences(30)
+
         const clientId = message.message.clientId
 
         // Update thread and create message in the background
 
-        // Split the response into chunks to simulate streaming
+        // Split reasoning and response into chunks to simulate streaming
+        const reasoningChunks = testReasoning.match(/.{1,15}/g) || []
         const chunks = testResponse.match(/.{1,10}/g) || [testResponse]
 
         // Create AI message structure for E2E streaming chunks
@@ -3326,6 +3330,32 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
           thread: thread,
         }
 
+        let currentChunk = 0
+
+        // Stream reasoning first
+        for (const reasoningChunk of reasoningChunks) {
+          if (!streamControllers.has(streamId)) {
+            console.log("Stream was stopped, breaking loop")
+            break
+          }
+
+          await wait(10)
+
+          thread &&
+            enhancedStreamChunk({
+              chunk: `__REASONING__${reasoningChunk}__/REASONING__`,
+              chunkNumber: currentChunk++,
+              totalChunks: -1,
+              streamingMessage: e2eStreamingMessage,
+              member,
+              guest,
+              thread,
+              clientId,
+              streamId,
+            })
+        }
+
+        // Then stream the answer
         const totalChunks = chunks.length
 
         for (const [index, chunk] of chunks.entries()) {
@@ -3336,17 +3366,12 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
 
           const chunkNumber = index + 1
 
-          // console.log(
-          //   `📤 ${clientId} Sending chunk ${chunkNumber}/${totalChunks}:`,
-          //   chunk.substring(0, 20) + "...",
-          // )
-
           await wait(150)
 
           thread &&
             enhancedStreamChunk({
               chunk,
-              chunkNumber,
+              chunkNumber: currentChunk++,
               totalChunks,
               streamingMessage: e2eStreamingMessage,
               member,
@@ -3387,6 +3412,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         const aiMessage = await createMessage({
           id: clientId,
           content: testResponse,
+          reasoning: testReasoning, // Save test reasoning
           originalContent: testResponse.trim(),
           threadId,
           agentId,
@@ -3842,9 +3868,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             // DeepSeek Reasoner's thinking process chunks
             reasoningText += part.text
             console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
-            // Stream reasoning to frontend with special formatting
+            // Stream reasoning with special marker for UI to handle separately
             await enhancedStreamChunk({
-              chunk: `<reasoning>${part.text}</reasoning>`,
+              chunk: `__REASONING__${part.text}__/REASONING__`,
               chunkNumber: currentChunk++,
               totalChunks: -1,
               streamingMessage: sushiStreamingMessage,
@@ -3894,6 +3920,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             userId: member?.id,
             guestId: guest?.id,
             content: finalText,
+            reasoning: reasoningText || undefined, // Store reasoning separately
             clientId,
           })
 
