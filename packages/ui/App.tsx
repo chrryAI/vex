@@ -1080,11 +1080,6 @@ export default function App({
                             )
                           )
                         ) : null}
-
-                        {getAppSlug(item)}
-                        <br />
-                        {slug}
-
                         {slug && getAppSlug(item) === slug ? (
                           <>
                             <StoreApp key={"vex"} />
