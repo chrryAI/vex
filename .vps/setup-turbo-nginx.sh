@@ -82,6 +82,7 @@ else
       -v /var/turbo-cache:/cache \
       -e TURBO_TOKEN=KwbLMNV8SoWIuSzp/z0X+FigFNR72tIzScQyGFqQ//Q= \
       -e BODY_LIMIT=524288000 \
+      -e STORAGE_PATH=/cache \
       ducktors/turborepo-remote-cache
 fi
 
