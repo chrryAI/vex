@@ -411,7 +411,7 @@ export function ChatProvider({
   const [loading, setLoading] = useState<boolean>(false)
 
   const setIsNewAppChat = (item: appWithStore | undefined) => {
-    if (!loadingApp && hasStoreApps(item) && item) {
+    if (hasStoreApps(item) && item) {
       setIsNewChat(true, getAppSlug(item))
       setLoading(false)
       return

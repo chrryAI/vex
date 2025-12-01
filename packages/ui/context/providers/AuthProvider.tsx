@@ -719,8 +719,7 @@ export function AuthProvider({
       if (targetApp.id === baseApp?.id) {
         computedSlug = defaultSlug
       } else if (
-        targetApp.id === app?.id &&
-        targetApp.store?.slug === baseApp?.store?.slug &&
+        targetApp.store?.slug === baseApp?.store?.slug ||
         baseApp?.store?.apps.some((app) => app.id === targetApp.id)
       ) {
         computedSlug = `/${targetApp.slug}`
