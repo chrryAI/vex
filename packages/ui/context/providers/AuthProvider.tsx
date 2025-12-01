@@ -1035,8 +1035,6 @@ export function AuthProvider({
     }
   }, [loadingApp, isLoadingApps, storeApps])
 
-  // Sync app.id to lastAppId for extensions
-
   const canShowFocus = !!focus && app?.id === focus.id && !threadId
 
   const [showFocus, setShowFocus] = useState(canShowFocus)
