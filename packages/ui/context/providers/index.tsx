@@ -85,20 +85,11 @@ export default function AppProviders({
   threads,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
-  const cacheProvider = useSWRCacheProvider()
-  const [cacheReady, setCacheReady] = useState(false)
-
-  // Track when cache provider is ready
-  useEffect(() => {
-    if (cacheProvider && !cacheReady) {
-      setCacheReady(true)
-    }
-  }, [cacheProvider, cacheReady])
 
   // Global SWR configuration with 429 error handling and persistent cache
   const swrConfig = {
     // Use persistent cache provider (IndexedDB on web, MMKV on native)
-    ...(cacheProvider ? { provider: cacheProvider } : {}),
+    // ...(cacheProvider ? { provider: cacheProvider } : {}),
     // Pre-populate cache with SSR data
     // fallback: {
     //   ...(session ? { session: { data: session } } : {}),
@@ -119,6 +110,7 @@ export default function AppProviders({
         }
       }
     },
+
     onErrorRetry: (
       error: any,
       key: string,
@@ -163,10 +155,7 @@ export default function AppProviders({
                       <NavigationProvider>
                         <AppContextProvider>
                           <StylesProvider>
-                            <Hey
-                              cacheReady={cacheReady}
-                              useExtensionIcon={useExtensionIcon}
-                            >
+                            <Hey useExtensionIcon={useExtensionIcon}>
                               {children}
                             </Hey>
                           </StylesProvider>

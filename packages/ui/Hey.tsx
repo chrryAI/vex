@@ -53,12 +53,10 @@ export const Hey = memo(
     className,
     children,
     useExtensionIcon,
-    cacheReady,
   }: {
     className?: string
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
-    cacheReady?: boolean
   }) {
     const { isHome, pathname, router } = useNavigationContext()
 
@@ -185,7 +183,7 @@ export const Hey = memo(
       )
     }
     // Memoize splash component to prevent re-renders
-    const splash = !cacheReady ? getSplash(isSplash) : null
+    const splash = getSplash(isSplash)
 
     useEffect(() => {
       isSplash &&

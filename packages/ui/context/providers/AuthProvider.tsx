@@ -8,9 +8,8 @@ import React, {
   useEffect,
   useRef,
   useCallback,
-  useMemo,
 } from "react"
-import useSWR, { useSWRConfig } from "swr"
+import useSWR from "swr"
 import { v4 as uuidv4 } from "uuid"
 import {
   isBrowserExtension,
@@ -20,14 +19,12 @@ import {
   useLocalStorage,
   getExtensionId,
   storage,
-  useCookie,
 } from "../../platform"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 
 import {
   aiAgent,
-  message,
   characterProfile,
   appWithStore,
   user,
@@ -42,23 +39,21 @@ import {
   moodType,
 } from "../../types"
 import toast from "react-hot-toast"
-import { getApp, getApps, getSession } from "../../lib"
+import { getApp, getSession } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { locale, locales } from "../../locales"
 import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "../../utils/url"
+import { getAppAndStoreSlugs } from "../../utils/url"
 import {
   API_URL,
   apiFetch,
-  BrowserInstance,
   CHRRY_URL,
   FRONTEND_URL,
   getExampleInstructions,
   getThreadId,
   instructionBase,
-  isDeepEqual,
   isE2E,
   PROD_FRONTEND_URL,
   WS_URL,
@@ -96,19 +91,22 @@ const AuthContext = createContext<
       showFocus: boolean
       isLoadingTasks: boolean
       fetchTasks: () => Promise<void>
-      tasks: {
+      tasks?: {
         tasks: Task[]
         totalCount: number
         hasNextPage: boolean
         nextPage: number | null
       }
       setTasks: React.Dispatch<
-        React.SetStateAction<{
-          tasks: Task[]
-          totalCount: number
-          hasNextPage: boolean
-          nextPage: number | null
-        }>
+        React.SetStateAction<
+          | {
+              tasks: Task[]
+              totalCount: number
+              hasNextPage: boolean
+              nextPage: number | null
+            }
+          | undefined
+        >
       >
       threadId?: string
       setThreadId: (threadId?: string) => void
@@ -1266,25 +1264,21 @@ export function AuthProvider({
 
   const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
 
-  const [tasks, setTasks] = useState<{
-    tasks: Task[]
-    totalCount: number
-    hasNextPage: boolean
-    nextPage: number | null
-  }>({
-    tasks: [],
-    totalCount: 0,
-    hasNextPage: false,
-    nextPage: null,
-  })
+  const [tasks, setTasks] = useState<
+    | {
+        tasks: Task[]
+        totalCount: number
+        hasNextPage: boolean
+        nextPage: number | null
+      }
+    | undefined
+  >(undefined)
 
   useEffect(() => {
     if (!threadId) {
       setThread(undefined)
     }
   }, [threadId])
-
-  const [isLoadingTasks, setIsLoadingTasks] = useState(true)
 
   // app?.id removed from deps - use prevApp inside setState instead
 
@@ -1383,9 +1377,10 @@ export function AuthProvider({
   const [isSavingApp, setIsSavingApp] = useState(false)
 
   const [shouldFetchTasks, setShouldFetchTasks] = useState(false)
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false)
 
   const { data: tasksData, mutate: refetchTasks } = useSWR(
-    token && shouldFetchTasks ? ["tasks"] : null, // Disabled by default, fetch manually with refetchTasks()
+    shouldFetchTasks && token ? ["tasks"] : null, // Disabled by default, fetch manually with refetchTasks()
     async () => {
       const response = await apiFetch(`${API_URL}/tasks`, {
         method: "GET",
@@ -1395,9 +1390,12 @@ export function AuthProvider({
         },
       })
       const data = await response.json()
+      setIsLoadingTasks(false)
       return data
     },
   )
+
+  // isLoading is true until first data arrives, then stays false
 
   useEffect(() => {
     if (tasksData) {
@@ -1408,7 +1406,8 @@ export function AuthProvider({
 
   const fetchTasks = async () => {
     setShouldFetchTasks(true)
-    shouldFetchTasks && refetchTasks()
+    setIsLoadingTasks(true)
+    shouldFetchTasks && (await refetchTasks())
   }
 
   // Handle session data updates
@@ -1477,8 +1476,6 @@ export function AuthProvider({
     }
   }, [sessionError])
 
-  const { clear } = useCache()
-
   const popcorn = storeApps.find((app) => app.slug === "popcorn")
   const atlas = storeApps.find((app) => app.slug === "atlas")
   const bloom = storeApps.find((app) => app.slug === "bloom")
@@ -1490,7 +1487,6 @@ export function AuthProvider({
     setUser(undefined)
     setGuest(undefined)
     setToken(fingerprint)
-    clear()
   }
 
   const isExtensionRedirect = searchParams.get("extension") === "true"

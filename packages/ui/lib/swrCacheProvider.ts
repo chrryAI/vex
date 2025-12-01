@@ -6,6 +6,8 @@
 
 import { useState, useEffect } from "react"
 import type { Cache } from "swr"
+import createCacheProvider from "@piotr-cz/swr-idb-cache"
+import usePromise from "react-use-promise"
 
 // TTL for cache entries (1 hour)
 const CACHE_TTL = 60 * 60 * 1000
@@ -79,23 +81,16 @@ export async function getCacheProvider(): Promise<CacheProvider> {
  * Returns null while initializing, then the provider
  */
 export function useSWRCacheProvider(): CacheProvider | null {
-  const [provider, setProvider] = useState<CacheProvider | null>(null)
+  const [cacheProvider] = usePromise(
+    () =>
+      createCacheProvider({
+        dbName: "my-app",
+        storeName: "swr-cache",
+      }),
+    [],
+  )
 
-  useEffect(() => {
-    let mounted = true
-
-    getCacheProvider().then((p) => {
-      if (mounted) {
-        setProvider(() => p)
-      }
-    })
-
-    return () => {
-      mounted = false
-    }
-  }, [])
-
-  return provider
+  return cacheProvider || null
 }
 
 export default getCacheProvider

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     console.log(`📝 Loading translations for locale: ${locale}`)
 
     // Try to get from Redis cache first (only in production)
-    const cached = await getCachedTranslations(locale)
+    const cached = isDevelopment ? null : await getCachedTranslations(locale)
     if (cached) {
       return NextResponse.json(cached)
     }

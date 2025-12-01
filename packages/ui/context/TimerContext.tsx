@@ -53,26 +53,22 @@ export const TimerContext = createContext<{
   timer: timer | null
   setTimer: (timer: timer | null) => void
 
-  tasks: {
+  tasks?: {
     tasks: Task[]
     totalCount: number
     hasNextPage: boolean
     nextPage: number | null
   }
   setTasks: (
-    tasks:
+    tasks: SetStateAction<
       | {
           tasks: Task[]
           totalCount: number
           hasNextPage: boolean
           nextPage: number | null
         }
-      | SetStateAction<{
-          tasks: Task[]
-          totalCount: number
-          hasNextPage: boolean
-          nextPage: number | null
-        }>,
+      | undefined
+    >,
   ) => void
   handlePresetTime: (minutes: number) => void
   isLoadingTasks: boolean
@@ -146,21 +142,7 @@ export const TimerContext = createContext<{
     hasNextPage: false,
     nextPage: null,
   },
-  setTasks: (
-    tasks:
-      | {
-          tasks: Task[]
-          totalCount: number
-          hasNextPage: boolean
-          nextPage: number | null
-        }
-      | SetStateAction<{
-          tasks: Task[]
-          totalCount: number
-          hasNextPage: boolean
-          nextPage: number | null
-        }>,
-  ) => {},
+  setTasks: () => {},
 })
 
 // Add global type declaration for browser
@@ -385,7 +367,7 @@ export function TimerContextProvider({
 
       return currentSelected
     })
-  }, [tasks.tasks])
+  }, [tasks?.tasks])
 
   const updateTimer = useCallback(
     (data: timer) => {
@@ -464,12 +446,12 @@ export function TimerContextProvider({
   )
 
   useEffect(() => {
-    if (!tasks.totalCount || selectedTasks) return
+    if (!tasks?.totalCount || selectedTasks) return
     if (!tasks?.tasks || !Array.isArray(tasks.tasks)) return
 
     const filter = tasks.tasks.filter((task) => task.selected)
     setSelectedTasksInternal(filter)
-  }, [tasks.totalCount])
+  }, [tasks?.totalCount])
 
   const setSelectedTasks = useCallback((value: Task[] | undefined) => {
     setSelectedTasksInternal(value)
@@ -570,50 +552,53 @@ export function TimerContextProvider({
       }
 
       for (const selectedTask of selectedTasks) {
-        setTasks((prevTasks) => ({
-          ...prevTasks,
-          tasks: prevTasks?.tasks?.map((task) => {
-            if (task.id === selectedTask.id) {
-              const hasDay = task.total?.find?.((t) =>
-                isSameDay(new Date(t.date), currentDay),
-              )
+        setTasks((prevTasks) => {
+          if (!prevTasks) return prevTasks
+          return {
+            ...prevTasks,
+            tasks: prevTasks.tasks.map((task) => {
+              if (task.id === selectedTask.id) {
+                const hasDay = task.total?.find?.((t) =>
+                  isSameDay(new Date(t.date), currentDay),
+                )
 
-              const total = hasDay
-                ? task.total?.map((t) => {
-                    return {
-                      ...t,
-                      count: isSameDay(new Date(t.date), currentDay)
-                        ? t.count + 1
-                        : t.count,
+                const total = hasDay
+                  ? task.total?.map((t) => {
+                      return {
+                        ...t,
+                        count: isSameDay(new Date(t.date), currentDay)
+                          ? t.count + 1
+                          : t.count,
+                      }
+                    })
+                  : task.total?.length
+                    ? [
+                        ...task.total,
+                        { date: currentDay.toISOString(), count: 1 },
+                      ]
+                    : [{ date: currentDay.toISOString(), count: 1 }]
+
+                setSelectedTasks(
+                  selectedTasks?.map((t) => {
+                    if (t.id === task.id) {
+                      return {
+                        ...t,
+                        total,
+                      }
                     }
-                  })
-                : task.total?.length
-                  ? [
-                      ...task.total,
-                      { date: currentDay.toISOString(), count: 1 },
-                    ]
-                  : [{ date: currentDay.toISOString(), count: 1 }]
+                    return t
+                  }),
+                )
 
-              setSelectedTasks(
-                selectedTasks?.map((t) => {
-                  if (t.id === task.id) {
-                    return {
-                      ...t,
-                      total,
-                    }
-                  }
-                  return t
-                }),
-              )
-
-              return {
-                ...task,
-                total,
+                return {
+                  ...task,
+                  total,
+                }
               }
-            }
-            return task
-          }),
-        }))
+              return task
+            }),
+          }
+        })
       }
     }
   }, [time, isCountingDown, isPaused, token])

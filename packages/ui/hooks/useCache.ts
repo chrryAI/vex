@@ -6,9 +6,14 @@ export default function useCache() {
   // Clear all SWR cache keys
 
   return {
-    clear: () => {
+    clear: (k?: string) => {
       for (const key of cache.keys()) {
-        cache.delete(key)
+        if (key === k) {
+          cache.delete(key)
+          break
+        } else {
+          cache.delete(key)
+        }
       }
     },
   }
