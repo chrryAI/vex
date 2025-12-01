@@ -14,6 +14,9 @@ cat > /etc/nginx/sites-available/turbo-cache << 'EOF'
 server {
     listen 80;
     server_name turbo.chrry.dev;
+    
+    # Allow large uploads
+    client_max_body_size 500M;
 
     # Proxy to Turbo cache server
     location / {
