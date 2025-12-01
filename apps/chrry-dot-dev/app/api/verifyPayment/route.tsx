@@ -41,10 +41,6 @@ export async function POST(request: Request) {
   const { session_id, userId, guestId, email, checkoutFingerPrint } = body
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-  const validTransitions = {
-    plus: ["pro"],
-    pro: ["plus"],
-  }
 
   const member = await getMember()
 

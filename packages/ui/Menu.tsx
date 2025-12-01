@@ -532,7 +532,7 @@ export default function Menu({
                           ...styles.threadsList.style,
                         }}
                       >
-                        {threads?.threads.map((thread, index) => (
+                        {threads?.threads?.map((thread, index) => (
                           <MotiView
                             key={`${thread.id}-${thread.bookmarks?.length}-${animationKey}`}
                             from={{
@@ -683,7 +683,7 @@ export default function Menu({
                           </Div>
                         </>
                       )}
-                      {threads?.threads.length
+                      {threads?.threads?.length
                         ? (() => {
                             const url = `${app ? getAppSlug(app, "") : ""}/threads${collaborationStatus ? `?collaborationStatus=${collaborationStatus}` : ""}`
 

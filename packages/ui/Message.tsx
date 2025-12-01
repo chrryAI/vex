@@ -588,18 +588,8 @@ export default function Message({
     id: string
   } | null>(null)
 
-  const [requiresLogin, setRequiresLogin] = useState(false)
-  const [requiresSubscription, setRequiresSubscription] = useState(false)
-
-  useEffect(() => {
-    if (!limitCheck.allowed) {
-      user && !user.subscription
-        ? setRequiresSubscription(true)
-        : guest && !guest.subscription
-          ? setRequiresSubscription(true)
-          : setRequiresLogin(true)
-    }
-  }, [limitCheck, user, guest])
+  const requiresLogin = user && !user.subscription
+  const requiresSubscription = guest && !guest.subscription
 
   const [evenChance] = useState(Math.random() >= 0.5)
 

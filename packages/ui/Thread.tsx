@@ -65,10 +65,6 @@ const Thread = ({
   const { user, guest, track, memoriesEnabled, setShowFocus, ...auth } =
     useAuth()
 
-  const [isEmpty, setIsEmpty] = useState(true)
-
-  const showFocus = auth.showFocus && isEmpty
-
   // Chat context
   const {
     isWebSearchEnabled,
@@ -98,7 +94,11 @@ const Thread = ({
     liked,
     setLiked,
     placeHolderText,
+    isEmpty,
+    setIsEmpty,
   } = useChat()
+
+  const showFocus = auth.showFocus && isEmpty
 
   const { os } = usePlatform()
 

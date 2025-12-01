@@ -11,7 +11,6 @@ import {
   useError,
 } from "./context/providers"
 import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
-import { v4 as uuidv4 } from "uuid"
 
 import clsx from "clsx"
 import {
@@ -31,7 +30,7 @@ import {
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
-import { apiFetch, isE2E } from "./utils"
+import { apiFetch } from "./utils"
 import Modal from "./Modal"
 import ConfirmButton from "./ConfirmButton"
 
@@ -119,7 +118,7 @@ export default function Subscribe({
   const purchaseTypeParam = searchParams.get("purchaseType")
 
   const [purchaseType, setPurchaseType] = useState<"subscription" | "gift">(
-    (purchaseTypeParam as "subscription" | "gift") || "subscription",
+    (purchaseTypeParam as "subscription") || "subscription",
   )
 
   const handleCheckout = async (part: "subscription" | "gift") => {
@@ -203,14 +202,9 @@ export default function Subscribe({
     return cleaned
   }
 
-  const [checkoutFingerPrint, setCheckoutFingerPrintInternal] = useState<
-    string | null
-  >()
-
-  const setCheckoutFingerPrint = (fp: string) => {
-    if (!isE2E) return
-    setCheckoutFingerPrintInternal(fp)
-  }
+  const [giftedFingerPrint, setGiftedFingerPrint] = useState<string | null>(
+    null,
+  )
 
   const handlePlanChange = async (newPlan: "plus" | "pro") => {
     setLoading(true)
@@ -268,7 +262,6 @@ export default function Subscribe({
         userId,
         guestId,
         email,
-        checkoutFingerPrint,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -279,15 +272,20 @@ export default function Subscribe({
     const data = await response.json()
     if (data.success) {
       track({ name: "subscribe_payment_verified" })
-      setPurchaseType(data.gift ? "gift" : "subscription")
-      toast.success(
-        data.gift
-          ? t(`🥰 ${t("Thank you for your gift")}`)
-          : data.credits
-            ? t(`${t("Credits updated")}`)
-            : t(`${t("Subscribed")}`),
-      )
-      setCheckoutFingerPrint(uuidv4())
+      if (isExtensionRedirect) {
+        toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
+      } else {
+        setPurchaseType(data.gift ? "gift" : "subscription")
+        toast.success(
+          data.gift
+            ? t(`🥰 ${t("Thank you for your gift")}`)
+            : data.credits
+              ? t(`${t("Credits updated")}`)
+              : t(`${t("Subscribed")}`),
+        )
+
+        setGiftedFingerPrint(data.fingerprint)
+      }
 
       await fetchSession()
       // Delay modal close to allow state to update
@@ -363,12 +361,7 @@ export default function Subscribe({
   const is = useHasHydrated()
 
   useEffect(() => {
-    if (checkoutFingerPrint) return
-    setCheckoutFingerPrint(uuidv4())
-  }, [checkoutFingerPrint])
-
-  useEffect(() => {
-    if (!checkoutFingerPrint) return
+    if (!is) return
     if (typeof window === "undefined" || !window.location) return
     const params = new URLSearchParams(window.location.search)
     if (params.get("checkout") === "success") {
@@ -381,7 +374,7 @@ export default function Subscribe({
         verifyPayment(sessionId)
       }, 100)
     }
-  }, [checkoutFingerPrint])
+  }, [is])
 
   const [selectedPlan, setSelectedPlanInternal] = useState<
     "plus" | "pro" | "member" | "credits"
@@ -1115,42 +1108,42 @@ export default function Subscribe({
         )} */}
         </>
       ) : (
-        is && (
-          <Button
-            className="transparent"
-            data-gifted-fingerprint={checkoutFingerPrint}
-            data-testid={`subscribe-button`}
-            id="subscribeButton"
-            onClick={() => {
-              addHapticFeedback()
-              if (isExtension) {
-                BrowserInstance?.runtime?.sendMessage({
-                  action: "openInSameTab",
-                  url: `${FRONTEND_URL}?subscribe=true&extension=true`,
-                })
+        <Button
+          className="transparent"
+          data-gifted-fingerprint={giftedFingerPrint}
+          data-testid={`subscribe-button`}
+          id="subscribeButton"
+          onClick={() => {
+            addHapticFeedback()
+            if (isExtension) {
+              BrowserInstance?.runtime?.sendMessage({
+                action: "openInSameTab",
+                url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+              })
 
-                return
-              }
-              setIsModalOpen(true)
-            }}
-            disabled={loading}
-            style={{
-              ...utilities.transparent.style,
-              ...utilities.small.style,
-              ...styles.subscribeButton.style,
-            }}
-          >
-            <Img icon="strawberry" showLoading={false} size={18} />
-            {t("Plus")}
-          </Button>
-        )
+              return
+            }
+            setIsModalOpen(true)
+          }}
+          disabled={loading}
+          style={{
+            ...utilities.transparent.style,
+            ...utilities.small.style,
+            ...styles.subscribeButton.style,
+          }}
+        >
+          <Img icon="strawberry" showLoading={false} size={18} />
+          {t("Plus")}
+        </Button>
       )}
-      <Input
-        key={purchaseType}
-        data-testid="purchase-type"
-        type="hidden"
-        value={purchaseType}
-      />
+      {giftedFingerPrint && (
+        <Input
+          data-testid="gifted-fingerprint"
+          type="hidden"
+          value={giftedFingerPrint}
+        />
+      )}
+      <Input data-testid="purchase-type" type="hidden" value={purchaseType} />
     </Div>
   )
 }
