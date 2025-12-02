@@ -132,7 +132,7 @@ export default function Message({
   const [disliked, setDisliked] = useState<boolean | undefined>(undefined)
   const [isSpeechActive, setIsSpeechActive] = useState(false)
   const [isSpeechLoading, setIsSpeechLoading] = useState(false)
-  const [isReasoningExpanded, setIsReasoningExpanded] = useState(false)
+  const [isReasoningExpanded, setIsReasoningExpanded] = useState(true)
   const [isReasoningStreaming, setIsReasoningStreaming] = useState(false)
   const reasoningScrollRef = useRef<HTMLDivElement>(null)
 
@@ -157,7 +157,6 @@ export default function Message({
         message.message.isStreaming && messageContent.includes("__REASONING__")
 
       setIsReasoningStreaming(!!isStreaming)
-      setIsReasoningExpanded(true)
 
       return { content: cleanedContent, reasoning: extractedReasoning }
     }
@@ -1130,37 +1129,6 @@ export default function Message({
         ) : (
           <Div style={styles.agentMessage.style}>
             <Div style={styles.agentMessageContent.style}>
-              {message.message.isStreaming &&
-              message.message.isImageGenerationEnabled ? (
-                agentImageLoader()
-              ) : message.message.images &&
-                message.message.images?.length > 0 ? (
-                <Div style={styles.agentMessageImages.style}>
-                  {message.message.images.map((image) => (
-                    <Div key={image.url} style={agentImageStyle}>
-                      <Img
-                        style={agentImageStyle}
-                        src={image.url}
-                        alt=""
-                        width={"100%"}
-                        height={"100%"}
-                      />
-                      <Button
-                        style={styles.downloadButton.style}
-                        onClick={() =>
-                          downloadImage(
-                            image.url,
-                            `${image.prompt?.slice(0, 30) || "image"}.webp`,
-                          )
-                        }
-                        title={t("Download image")}
-                      >
-                        <Download size={16} />
-                      </Button>
-                    </Div>
-                  ))}
-                </Div>
-              ) : null}
               {reasoning && (
                 <Div
                   style={{
@@ -1202,20 +1170,43 @@ export default function Message({
                   )}
                 </Div>
               )}
-              {message.message.content === "🐹 Done!" ? (
+              <MarkdownContent
+                content={cleanContent}
+                webSearchResults={message.message.webSearchResult || undefined}
+              />
+              {message.message.isStreaming &&
+              message.message.isImageGenerationEnabled ? (
+                agentImageLoader()
+              ) : message.message.images &&
+                message.message.images?.length > 0 ? (
                 <Div
-                  style={{ display: "flex", alignItems: "center", gap: "2rem" }}
+                  style={{ ...styles.agentMessageImages.style, marginTop: 5 }}
                 >
-                  <Span>{t("🐹 Done!")}</Span>
+                  {message.message.images.map((image) => (
+                    <Div key={image.url} style={agentImageStyle}>
+                      <Img
+                        style={agentImageStyle}
+                        src={image.url}
+                        alt=""
+                        width={"100%"}
+                        height={"100%"}
+                      />
+                      <Button
+                        style={styles.downloadButton.style}
+                        onClick={() =>
+                          downloadImage(
+                            image.url,
+                            `${image.prompt?.slice(0, 30) || "image"}.webp`,
+                          )
+                        }
+                        title={t("Download image")}
+                      >
+                        <Download size={16} />
+                      </Button>
+                    </Div>
+                  ))}
                 </Div>
-              ) : (
-                <MarkdownContent
-                  content={cleanContent}
-                  webSearchResults={
-                    message.message.webSearchResult || undefined
-                  }
-                />
-              )}
+              ) : null}
             </Div>
             {isSearchStart ||
             (message.message.isStreaming &&
