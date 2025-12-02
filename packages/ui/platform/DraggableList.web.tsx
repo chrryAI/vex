@@ -71,7 +71,8 @@ function SortableItem<T>({
     transition,
     zIndex: isDragging ? 999 : "auto",
     position: "relative" as const,
-    touchAction: "none", // Important for mobile drag
+    // Don't block touch events on the entire item - let scrolling work
+    // touchAction is set to "none" only on the drag handle itself
   }
 
   // Map dnd-kit listeners to the 'drag' function expected by the consumer
@@ -103,12 +104,24 @@ export default function DraggableList<T>({
   testID,
 }: DraggableListProps<T>) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Require 5px movement before drag starts
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
-    useSensor(TouchSensor),
-    useSensor(MouseSensor),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        distance: 5, // Require 5px movement before drag starts
+      },
+    }),
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 5, // Require 5px movement before drag starts
+      },
+    }),
   )
 
   const items = useMemo(

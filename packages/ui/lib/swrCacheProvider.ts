@@ -1,96 +1,105 @@
 /**
- * Cross-platform SWR Cache Provider
- * - Web: Uses IndexedDB via @piotr-cz/swr-idb-cache
- * - Native: Uses in-memory cache (MMKV support via platform-specific imports)
+ * Cross-platform SWR Cache Provider - Web
+ * Uses Dexie (IndexedDB) with TTL-based garbage collection
  */
 
-import { useState, useEffect } from "react"
 import type { Cache } from "swr"
-import createCacheProvider from "@piotr-cz/swr-idb-cache"
-import usePromise from "react-use-promise"
+import Dexie from "dexie"
 
-// TTL for cache entries (1 hour)
+// TTL (1 hour)
 const CACHE_TTL = 60 * 60 * 1000
 
-// SWR provider signature
-type CacheProvider = (cache: Readonly<Cache<any>>) => Cache<any>
+// -----------------------------------------
+// Dexie DB for Web
+// -----------------------------------------
 
-/**
- * Simple in-memory cache provider (used as fallback)
- */
-function createMemoryCacheProvider(): CacheProvider {
-  const cache = new Map<string, any>()
-  return () => cache
+class SWRDexieDB extends Dexie {
+  cache!: Dexie.Table<{ key: string; value: any; ts: number }, string>
+
+  constructor() {
+    super("swr-dexie-cache")
+    this.version(1).stores({
+      cache: "key, ts",
+    })
+  }
 }
 
-/**
- * IndexedDB-based SWR cache provider for Web
- * Uses @piotr-cz/swr-idb-cache with garbage collection
- */
-async function createIDBCacheProvider(): Promise<CacheProvider> {
-  try {
-    const { default: createCacheProvider, timestampStorageHandler } =
-      await import("@piotr-cz/swr-idb-cache")
+const db = new SWRDexieDB()
 
-    // Custom storage handler with TTL-based garbage collection
-    const gcStorageHandler = {
-      ...timestampStorageHandler,
-      revive: (key: string, storeObject: { ts: number; value: unknown }) => {
-        // Only revive if not expired
-        if (storeObject.ts > Date.now() - CACHE_TTL) {
-          return timestampStorageHandler.revive(key, storeObject)
+function createDexieProvider(): Cache {
+  // In-memory cache synchronized with IndexedDB
+  const memCache = new Map<string, any>()
+
+  // Initialize from IndexedDB
+  db.cache
+    .toArray()
+    .then((items) => {
+      const now = Date.now()
+      items.forEach((item) => {
+        // Only load non-expired items
+        if (now - item.ts <= CACHE_TTL) {
+          memCache.set(item.key, item.value)
+        } else {
+          // Clean up expired items
+          db.cache.delete(item.key).catch(console.error)
         }
-        // Return undefined to indicate stale
-        return undefined
-      },
-    }
-
-    const provider = await createCacheProvider({
-      dbName: "vex-swr-cache",
-      storeName: "cache",
-      storageHandler: gcStorageHandler,
+      })
+    })
+    .catch((error) => {
+      console.warn("[SWR Cache] Failed to initialize from IndexedDB:", error)
     })
 
-    console.log("✅ IndexedDB SWR cache initialized")
-    // Cast to our CacheProvider type - the library's type is compatible at runtime
-    return provider as unknown as CacheProvider
-  } catch (error) {
-    console.error("Failed to create IDB cache provider:", error)
-    // Fallback to in-memory Map
-    return (() => new Map()) as unknown as CacheProvider
+  return {
+    get: (key: string) => {
+      return memCache.get(key)
+    },
+
+    set: (key: string, value: any) => {
+      memCache.set(key, value)
+      // Persist to IndexedDB asynchronously
+      db.cache.put({ key, value, ts: Date.now() }).catch((error) => {
+        console.error("[SWR Cache] Failed to persist to IndexedDB:", error)
+      })
+    },
+
+    delete: (key: string) => {
+      memCache.delete(key)
+      // Delete from IndexedDB asynchronously
+      db.cache.delete(key).catch((error) => {
+        console.error("[SWR Cache] Failed to delete from IndexedDB:", error)
+      })
+    },
+
+    keys: () => {
+      return memCache.keys()
+    },
   }
 }
 
-/**
- * Get the appropriate cache provider based on platform
- */
-export async function getCacheProvider(): Promise<CacheProvider> {
-  // Web: Use IndexedDB if available
+// -----------------------------------------
+// Memory fallback
+// -----------------------------------------
+
+function createMemoryProvider(): Cache {
+  const cache = new Map<string, any>()
+  return cache as Cache
+}
+
+// -----------------------------------------
+// Main entry
+// -----------------------------------------
+
+export function getCacheProvider(): Cache {
   if (typeof indexedDB !== "undefined") {
-    return await createIDBCacheProvider()
+    try {
+      return createDexieProvider()
+    } catch (error) {
+      console.warn("[SWR Cache] Dexie failed, using memory:", error)
+      return createMemoryProvider()
+    }
   }
 
-  // Native or fallback: In-memory cache
-  // Note: For native MMKV support, use platform-specific imports
-  console.warn("[SWR Cache] IndexedDB not available, using in-memory cache")
-  return createMemoryCacheProvider()
-}
-
-/**
- * Hook version for use in components
- * Returns null while initializing, then the provider
- */
-export function useSWRCacheProvider(): CacheProvider | null {
-  const [cacheProvider] = usePromise(
-    () =>
-      createCacheProvider({
-        dbName: "my-app",
-        storeName: "swr-cache",
-      }),
-    [],
-  )
-
-  return cacheProvider || null
+  return createMemoryProvider()
 }
 
 export default getCacheProvider

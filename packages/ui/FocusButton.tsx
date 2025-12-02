@@ -1052,12 +1052,22 @@ export default function FocusButton({
                                     e.button !== 0
                                   )
                                     return
+
+                                  // Prevent default to stop scroll interference
+                                  e.preventDefault()
+                                  e.stopPropagation()
                                   drag(e)
+                                }}
+                                onPointerUp={(e) => {
+                                  e.stopPropagation()
                                 }}
                                 style={{
                                   ...styles.dragHandle.style,
                                   touchAction: "none",
                                   cursor: "grab",
+                                  // Increase touch target size for better mobile UX
+                                  padding: "8px",
+                                  margin: "-8px",
                                 }}
                               >
                                 <GripVertical width={22} height={22} />

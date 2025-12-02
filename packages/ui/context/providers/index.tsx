@@ -30,7 +30,7 @@ import useSWR, { SWRConfig } from "swr"
 import { thread, paginatedMessages } from "../../types"
 import { TimerContext, TimerContextProvider } from "../TimerContext"
 import { Hey } from "../../Hey"
-import { useSWRCacheProvider } from "../../lib/swrCacheProvider"
+import getCacheProvider from "../../lib/swrCacheProvider"
 
 interface AppProvidersProps {
   translations?: Record<string, any>
@@ -89,7 +89,7 @@ export default function AppProviders({
   // Global SWR configuration with 429 error handling and persistent cache
   const swrConfig = {
     // Use persistent cache provider (IndexedDB on web, MMKV on native)
-    // ...(cacheProvider ? { provider: cacheProvider } : {}),
+    provider: getCacheProvider,
     // Pre-populate cache with SSR data
     // fallback: {
     //   ...(session ? { session: { data: session } } : {}),
