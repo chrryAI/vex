@@ -35,3 +35,4 @@ export {
   useAppMetadata,
   useThreadMetadata,
 } from "./useMetadata"
+export { useSyncedState, useComputedValue } from "./useSyncedState"
