@@ -2289,7 +2289,19 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
       const clientId = data?.clientId
 
-      if (type === "stream_update" && data.chunk && clientId) {
+      const chunk = data?.chunk
+      if (
+        type === "stream_update" &&
+        chunk &&
+        clientId &&
+        data.message &&
+        (isOwner(data.message.message, {
+          userId: user?.id,
+          guestId: guest?.id,
+        })
+          ? data.deviceId === deviceId
+          : true)
+      ) {
         if (isSpeechActive && os !== "ios") {
           return
         }
@@ -2308,10 +2320,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         // Accumulate chunks
         if (!shouldStopRef.current) {
           streamContentRef.current += data.chunk
-          const cleanContent = stripActionText(
-            streamContentRef.current,
-            data.chunk,
-          )
+          const cleanContent = stripActionText(streamContentRef.current, chunk)
           onStreamingUpdate?.({
             content: cleanContent,
             clientId,
