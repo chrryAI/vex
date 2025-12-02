@@ -41,7 +41,11 @@ import { createEvent } from "./createEvent"
 import { createStores } from "./createStores"
 import { createCities } from "./createCities"
 
-const isProd = process.env.DB_URL && !process.env.DB_URL.includes("localhost")
+const isCI = process.env.CI
+
+const isProd = isCI
+  ? false
+  : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
 
 const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
