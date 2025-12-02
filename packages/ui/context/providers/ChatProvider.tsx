@@ -27,6 +27,7 @@ import {
 } from "../../types"
 
 import { pageSizes } from "../../utils"
+import { hasThreadNotification } from "../../utils/hasThreadNotification"
 import { getThreadId } from "../../utils/url"
 import { useThreadId } from "../../utils/useThreadId"
 import {
@@ -117,7 +118,7 @@ const ChatContext = createContext<
       setIsLoadingThreads: (value: boolean) => void
       isIncognito: boolean
       threads?: {
-        threads: thread[]
+        threads?: thread[]
         totalCount: number
       }
       setThreads: (value: { threads: thread[]; totalCount: number }) => void
@@ -233,7 +234,7 @@ export function ChatProvider({
     "pending" | "active" | undefined | null
   >(
     ((searchParams.get("collaborationStatus") as "pending" | "active") ??
-      threads?.threads.every((thread) =>
+      threads?.threads?.every((thread) =>
         thread.collaborations?.find(
           (collaboration) =>
             collaboration.user.id === user?.id &&
@@ -574,6 +575,13 @@ export function ChatProvider({
       }
     },
   })
+
+  useEffect(() => {
+    const hasNotifications = !!threads?.threads?.some((thread: thread) =>
+      hasThreadNotification({ thread }),
+    )
+    setHasNotification(hasNotifications)
+  }, [threads])
 
   const [isVisitor, setIsVisitor] = useState(false)
 

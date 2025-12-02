@@ -35,7 +35,7 @@ const NavigationContext = createContext<
       addParams: ReturnType<typeof useNavigation>["addParams"]
       removeParams: ReturnType<typeof useNavigation>["removeParams"]
       threads?: {
-        threads: thread[]
+        threads?: thread[]
         totalCount: number
       }
       setThreads: (value: { threads: thread[]; totalCount: number }) => void

@@ -73,7 +73,7 @@ const AuthContext = createContext<
       setLoadingAppId: (value: string | undefined) => void
       hasStoreApps: (item: appWithStore | undefined) => boolean
       threads?: {
-        threads: thread[]
+        threads?: thread[]
         totalCount: number
       }
       setHasNotification: (value: boolean) => void
