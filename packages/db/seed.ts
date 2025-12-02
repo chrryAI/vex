@@ -341,7 +341,7 @@ const create = async () => {
     console.log("✅ Admin user already exists, skipping creation")
   }
 
-  const { coder: vex } = await createStores({ user: admin })
+  const { vex } = await createStores({ user: admin })
 
   const { sushiAgent } = await createAgents()
 
@@ -552,7 +552,7 @@ const create = async () => {
     {
       const message = await createMessage({
         threadId: thread.id,
-        agentId: sushiAgent.id,
+        // agentId: sushiAgent.id,
         userId: localswaphub.id,
         content: "Test Collaboration User Message",
         // createdOn: new Date(lastMessageTime),
@@ -581,7 +581,7 @@ const create = async () => {
     {
       const message = await createMessage({
         threadId: publicThread.id,
-        agentId: sushiAgent.id,
+        // agentId: sushiAgent.id,
         userId: localswaphub.id,
         content: "Test Public User Message",
         // createdOn: new Date(lastMessageTime),

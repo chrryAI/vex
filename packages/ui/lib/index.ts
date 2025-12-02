@@ -210,7 +210,7 @@ export const getThreads = async ({
   search?: string
   threadId?: string
   userName?: string
-  collaborationStatus?: "pending" | "active"
+  collaborationStatus?: "pending" | "active" | null
   myPendingCollaborations?: boolean
   onError?: (status: number) => void
   appId?: string
@@ -220,8 +220,11 @@ export const getThreads = async ({
   const url = new URL(`${API_URL}/threads`)
 
   url.searchParams.set("pageSize", pageSize?.toString() || "10")
-  collaborationStatus &&
-    url.searchParams.set("collaborationStatus", collaborationStatus)
+  collaborationStatus === null
+    ? url.searchParams.set("collaborationStatus", "null")
+    : collaborationStatus &&
+      url.searchParams.set("collaborationStatus", collaborationStatus)
+
   appId && url.searchParams.set("appId", appId)
   if (search) url.searchParams.set("search", search)
   if (sort) url.searchParams.set("sort", sort)
@@ -1158,7 +1161,7 @@ export const getActions = ({
       search?: string
       threadId?: string
       userName?: string
-      collaborationStatus?: "pending" | "active"
+      collaborationStatus?: "pending" | "active" | null
       myPendingCollaborations?: boolean
       onError?: (status: number) => void
       slug?: "Atlas" | "Peach" | "Vault" | "Bloom" | string | null
