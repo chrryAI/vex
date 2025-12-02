@@ -570,7 +570,6 @@ export function ChatProvider({
           data?.collaboration?.status === "pending"
         ) {
           setCollaborationStatus(data.collaboration.status)
-          hasNotification && setHasNotification(false)
         }
       }
     },
@@ -580,7 +579,7 @@ export function ChatProvider({
     const hasNotifications = !!threads?.threads?.some((thread: thread) =>
       hasThreadNotification({ thread }),
     )
-    setHasNotification(hasNotifications)
+    hasNotifications && setHasNotification(hasNotifications)
   }, [threads])
 
   const [isVisitor, setIsVisitor] = useState(false)

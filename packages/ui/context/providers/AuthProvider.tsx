@@ -435,6 +435,9 @@ export function AuthProvider({
         setToken(sessionData.guest.fingerprint)
         setUser(undefined)
       }
+
+      setHasNotification(!!sessionData.hasNotification)
+
       // Update versions and apps
       setVersions(sessionData.versions)
       // setApps(sessionData.app?.store.apps || [])
