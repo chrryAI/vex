@@ -228,7 +228,7 @@ export default function Chat({
     setDebateAgent,
     isDebating,
     setIsDebating,
-    setIsChatFloating: setIsChatFloatingContext,
+    setIsChatFloating,
     setIsWebSearchEnabled: setWebSearchEnabledInternal,
     isWebSearchEnabled,
     setInput: setInputInternal,
@@ -382,6 +382,8 @@ export default function Chat({
     }
   }, [user]) // Empty dependency array - no re-creation of listener
 
+  console.log(`🚀 ~ threadId:`, threadId)
+
   useEffect(() => {
     if (isNewChat) {
       setShowChatInput(true)
@@ -398,12 +400,11 @@ export default function Chat({
       ? false
       : isChatFloatingContext && !empty && !showChatInput
 
-  const [isChatFloating, setIsChatFloatingState] = useState(floatingInitial)
+  const isChatFloating = floatingInitial
 
   useEffect(() => {
-    setIsChatFloatingContext(floatingInitial)
-    setIsChatFloatingState(floatingInitial)
-  }, [floatingInitial])
+    setIsChatFloating(floatingInitial)
+  }, [floatingInitial, threadId])
 
   // Strip ACTION JSON sfrom streaming text
   const stripActionFromText = (text: string): string => {
