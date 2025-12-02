@@ -237,6 +237,10 @@ export function ChatProvider({
       ? "pending"
       : undefined,
   )
+  console.log(
+    `🚀 ~ user?.pendingCollaborationThreadsCount:`,
+    user?.pendingCollaborationThreadsCount,
+  )
 
   // Load cached threads immediately on mount
 

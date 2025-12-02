@@ -7,6 +7,13 @@ import * as Sentry from "@sentry/nextjs"
 // Patch console.error to send errors to Sentry (server-side)
 if (process.env.NEXT_PUBLIC_SENTRY === "true" && process.env.SENTRY_DSN) {
   Sentry.init({
+    beforeSend(event, hint) {
+      // Ignore Applebot DOM errors
+      if (event.request?.headers?.["User-Agent"]?.includes("Applebot")) {
+        return null
+      }
+      return event
+    },
     dsn: process.env.SENTRY_DSN,
 
     // Use custom tunnel to bypass ad blockers
