@@ -235,14 +235,14 @@ export function ChatProvider({
   >(
     ((searchParams.get("collaborationStatus") as "pending" | "active") ??
       threads?.threads?.every((thread) =>
-        thread.collaborations?.find(
+        thread.collaborations?.some(
           (collaboration) =>
             collaboration.user.id === user?.id &&
-            collaboration.collaboration.status === "active",
+            collaboration.collaboration.status === "pending",
         ),
       ))
-      ? "active"
-      : "pending",
+      ? "pending"
+      : undefined,
   )
 
   // Load cached threads immediately on mount
