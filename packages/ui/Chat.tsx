@@ -392,8 +392,11 @@ export default function Chat({
   const shouldUseCompactMode = compactMode || hasBottomOffset
   // || windowHeight < 600 // Not at bottom or mobile
 
-  const floatingInitial =
-    (isChatFloatingContext && !empty && !showChatInput) || shouldUseCompactMode
+  const floatingInitial = shouldUseCompactMode
+    ? true
+    : !threadId
+      ? false
+      : isChatFloatingContext && !empty && !showChatInput
 
   const [isChatFloating, setIsChatFloatingState] = useState(floatingInitial)
 
