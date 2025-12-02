@@ -1039,7 +1039,7 @@ export function AuthProvider({
     }
   }, [loadingApp, isLoadingApps, storeApps])
 
-  const canShowFocus = focus && app && app?.id === focus.id && !threadId
+  const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
 
   const [showFocus, setShowFocus] = useState(canShowFocus)
 
@@ -1072,10 +1072,12 @@ export function AuthProvider({
   const userBaseApp = storeApps?.find(
     (app) => user?.userName && app.store?.slug === user?.userName,
   )
+
   const userBaseStore = userBaseApp?.store
   const guestBaseApp = storeApps?.find(
     (app) => guest?.id && app.store?.slug === guest?.id,
   )
+
   const guestBaseStore = guestBaseApp?.store
 
   const [slugState, setSlugState] = useState<string | undefined>(
@@ -1093,6 +1095,14 @@ export function AuthProvider({
   const [stores, setStores] = useState<Paginated<storeWithApps> | undefined>(
     session?.stores,
   )
+
+  useEffect(() => {
+    if (userBaseApp) {
+      setStoreApp(userBaseApp)
+    } else if (guestBaseApp) {
+      setStoreApp(guestBaseApp)
+    }
+  }, [guestBaseApp, userBaseApp])
 
   // Handle pathname changes: extract slug and switch app
 
