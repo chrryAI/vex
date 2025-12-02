@@ -188,7 +188,7 @@ jobs:
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
 
       - name: Run Playwright tests
-        run: pnpm --filter @chrryai/waffles test
+        run: pnpm --filter @chrryai/waffles e2e
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
