@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react"
 
-import { FilePicker, usePlatform, useTheme } from "./platform"
+import { clsx, FilePicker, usePlatform, useTheme } from "./platform"
 import EnableNotifications from "./EnableNotifications"
 import Logo from "./Image"
 import Img from "./Image"
@@ -33,7 +33,7 @@ import {
   useData,
   useNavigationContext,
 } from "./context/providers"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
 
 function FocusButton({ time }: { time: number }) {
@@ -1086,52 +1086,70 @@ export default function App({
                           </>
                         ) : (
                           item.id !== app?.id && (
-                            <A
-                              preventDefault
-                              key={item.slug}
-                              title={t(item.title)}
-                              className={`button ${
-                                isManagingApp ? "transparent" : "inverted"
-                              }`}
+                            <Div
                               style={{
-                                ...utilities.button.style,
-                                ...utilities.small.style,
-                                ...(isManagingApp
-                                  ? utilities.transparent.style
-                                  : utilities.inverted.style),
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "0.35rem",
                                 marginLeft: index === 0 ? "auto" : "",
-                              }}
-                              href={getAppSlug(item)}
-                              onClick={(e) => {
-                                if (isManagingApp) {
-                                  return
-                                }
-                                if (e.metaKey || e.ctrlKey) {
-                                  return
-                                }
-
-                                setIsNewAppChat(item)
-
-                                e.preventDefault()
+                                "--glow-color":
+                                  COLORS[
+                                    item.themeColor as keyof typeof COLORS
+                                  ],
                               }}
                             >
-                              {loadingApp?.id === item.id ? (
-                                <Loading size={24} />
-                              ) : (
-                                <>
-                                  <Img
-                                    showLoading={false}
-                                    app={item}
-                                    alt={item.title}
+                              <A
+                                preventDefault
+                                key={item.slug}
+                                title={t(item.title)}
+                                className={clsx(`button`, {
+                                  ["transparent"]: isManagingApp,
+                                  ["inverted"]: !isManagingApp,
+                                  glow: loadingApp?.id === item.id,
+                                })}
+                                style={{
+                                  ...utilities.button.style,
+                                  ...utilities.small.style,
+                                  ...(isManagingApp
+                                    ? utilities.transparent.style
+                                    : utilities.inverted.style),
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "0.35rem",
+                                }}
+                                href={getAppSlug(item)}
+                                onClick={(e) => {
+                                  if (isManagingApp) {
+                                    return
+                                  }
+                                  if (e.metaKey || e.ctrlKey) {
+                                    return
+                                  }
+
+                                  setIsNewAppChat(item)
+
+                                  e.preventDefault()
+                                }}
+                              >
+                                {loadingApp?.id === item.id ? (
+                                  <Loading
+                                    color={
+                                      COLORS[
+                                        item.themeColor as keyof typeof COLORS
+                                      ]
+                                    }
                                     size={24}
                                   />
-                                </>
-                              )}
-                              <Span>{item.name}</Span>
-                            </A>
+                                ) : (
+                                  <>
+                                    <Img
+                                      showLoading={false}
+                                      app={item}
+                                      alt={item.title}
+                                      size={24}
+                                    />
+                                  </>
+                                )}
+                                <Span>{item.name}</Span>
+                              </A>
+                            </Div>
                           )
                         )}
                         {showAtlasHere && atlas && (
