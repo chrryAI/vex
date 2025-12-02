@@ -78,7 +78,7 @@ export default function Store({
     if (slugParam) {
       const app = storeApps?.find((app) => app.slug === slugParam)
       if (app) {
-        setSelectedApp(app)
+        setSelectedAppInternal(app)
       }
     }
   }, [slugParam, storeAppsContext])
