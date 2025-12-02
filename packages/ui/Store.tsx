@@ -10,7 +10,7 @@ import {
   useChat,
 } from "./context/providers"
 import Img from "./Image"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { appWithStore, storeWithApps } from "./types"
 import { Button, Div, H1, H3, H4, P, Span, useTheme } from "./platform"
 import { useStoreStyles } from "./Store.styles"
@@ -80,11 +80,6 @@ export default function Store({
       if (app) {
         setSelectedApp(app)
       }
-    } else if (
-      store?.appId &&
-      !hasStoreApps(storeAppsContext.find((app) => app.id === app.id))
-    ) {
-      setLoadingAppId(store?.appId)
     }
   }, [slugParam, storeAppsContext])
 
@@ -233,48 +228,60 @@ export default function Store({
         </Div>
         <Div style={styles.content.style}>
           <Div style={styles.apps.style}>
-            {storeApps?.map((app, index) => (
-              <Div
-                key={app.id}
-                className="pointer"
-                style={{
-                  ...styles.app.style,
-                  ...(index === storeApps?.length - 1 && styles.appLast.style),
-                  ...(!isMobileDevice ? styles.appLarge.style : {}),
-                  ...(selectedApp?.id === app.id && styles.appSelected.style),
-                }}
-                onClick={() => setSelectedApp(app)}
-              >
-                <Span
-                  style={{
-                    ...styles.badge.style,
-                    display: isMobileDevice ? "none" : "flex",
-                  }}
-                >
-                  {t(app.status === "active" ? "live" : "testing")}
-                </Span>
-                <Img
-                  style={{ ...styles.appImage.style }}
-                  app={app}
-                  alt={app.name}
-                  size={isMobileDevice ? 40 : 80}
-                />
+            {storeApps?.map((app, index) => {
+              return (
                 <Div
+                  key={app.id}
+                  data-color={COLORS[app.themeColor as keyof typeof COLORS]}
+                  className={`pointer ${loadingApp?.id === app.id ? "placeholderGlow" : ""}`}
                   style={{
-                    ...styles.appInfo.style,
-                    display: isMobileDevice ? "none" : "flex",
+                    ...styles.app.style,
+                    ...(index === storeApps?.length - 1 &&
+                      styles.appLast.style),
+                    ...(!isMobileDevice ? styles.appLarge.style : {}),
+                    ...(selectedApp?.id === app.id && styles.appSelected.style),
+                    boxShadow: COLORS[app.themeColor as keyof typeof COLORS],
+                    borderColor: COLORS[app.themeColor as keyof typeof COLORS],
+                    "--glow-color":
+                      COLORS[app.themeColor as keyof typeof COLORS],
                   }}
+                  onClick={() => setSelectedApp(app)}
                 >
-                  <Span style={{ ...styles.appName.style }}>
-                    {loadingAppId === app.id ? <Loading size={16} /> : app.icon}{" "}
-                    {app.name}
+                  <Span
+                    style={{
+                      ...styles.badge.style,
+                      display: isMobileDevice ? "none" : "flex",
+                    }}
+                  >
+                    {t(app.status === "active" ? "live" : "testing")}
                   </Span>
-                  <Span style={{ ...styles.appSubtitle.style }}>
-                    {t(app.subtitle || "")}
-                  </Span>
+                  <Img
+                    style={{ ...styles.appImage.style }}
+                    app={app}
+                    alt={app.name}
+                    size={isMobileDevice ? 40 : 80}
+                  />
+                  <Div
+                    style={{
+                      ...styles.appInfo.style,
+                      display: isMobileDevice ? "none" : "flex",
+                    }}
+                  >
+                    <Span style={{ ...styles.appName.style }}>
+                      {loadingAppId === app.id ? (
+                        <Loading size={16} />
+                      ) : (
+                        app.icon
+                      )}{" "}
+                      {app.name}
+                    </Span>
+                    <Span style={{ ...styles.appSubtitle.style }}>
+                      {t(app.subtitle || "")}
+                    </Span>
+                  </Div>
                 </Div>
-              </Div>
-            ))}
+              )
+            })}
           </Div>
 
           <Div key={selectedApp?.id} style={styles.footer.style}>

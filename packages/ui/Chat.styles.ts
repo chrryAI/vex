@@ -12,7 +12,7 @@ export const ChatStyleDefs = {
     zIndex: 1000,
     bottom: 3,
     padding: "0 10px",
-    maxWidth: 600,
+    maxWidth: 620,
     width: "100%",
     flexDirection: "column",
     flex: 1,

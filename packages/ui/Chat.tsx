@@ -41,7 +41,7 @@ import {
   Star,
   Link,
 } from "./icons"
-import { useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "./context/AppContext"
 import { validateFile, formatFileSize } from "./utils/fileValidation"
 import {
   useAuth,
@@ -3707,6 +3707,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                   ...styles.chat.style,
                   ...(isStandalone ? styles.standalone : {}),
                   ...(isChatFloating ? styles.chatFloating.style : {}),
+                  "--glow-color":
+                    COLORS[app?.themeColor as keyof typeof COLORS],
                 }}
               >
                 {selectedAgent?.capabilities.imageGeneration && (
