@@ -229,9 +229,9 @@ We welcome contributions! Waffles is extracted from Vex's production test suite,
 
 ## 🔗 Links
 
-- [GitHub](https://github.com/askvex/waffles)
+- [GitHub](https://github.comchrryAIwaffles)
 - [npm](https://npmjs.com/package/@chrryai/waffles)
-- [Issues](https://github.com/askvex/waffles/issues)
+- [Issues](https://github.comchrryAIwaffles/issues)
 - [Vex - Powered by Waffles](https://vex.chrry.ai)
 
 ---

@@ -27,7 +27,7 @@ Chrry is a comprehensive React component library built for AI applications. It i
 
 ## 🌶️ Pepper Router
 
-Chrry pairs perfectly with **[Pepper Router](https://github.com/askvex/pepper)** - our universal router with view transitions:
+Chrry pairs perfectly with **[Pepper Router](https://github.comchrryAIpepper)** - our universal router with view transitions:
 
 ```bash
 npm install @chrryai/pepper
