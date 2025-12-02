@@ -201,7 +201,6 @@ export async function GET(request: Request) {
     userName: sanitizedUserName,
     myPendingCollaborations: myPendingCollaborations ? true : undefined,
   })
-  console.log(`🚀 ~ GET ~ threads:`, threads.totalCount)
 
   return NextResponse.json({
     ...threads,
