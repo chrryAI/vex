@@ -386,7 +386,7 @@ export default function App({
           <Span>{storeApp?.name}</Span>
         </A>
       ),
-    [app, user, guest],
+    [storeApp],
   )
 
   const canAddName = appFormWatcher?.canSubmit
