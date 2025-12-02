@@ -11,6 +11,7 @@ import { validate } from "uuid"
 import Store from "chrry/Store"
 import React from "react"
 import { getApp, getStore } from "@repo/db"
+import { storeWithApps } from "chrry/types"
 
 export async function generateMetadata({
   params,
@@ -79,7 +80,21 @@ export default async function AppPage({
     : await getStore({ id, userId: member?.id, guestId: guest?.id })
 
   if (store) {
-    return <Store slug={store.store.slug} />
+    const baseApp = await getApp({
+      id: store?.app?.id,
+      userId: member?.id,
+      guestId: guest?.id,
+      depth: 1,
+    })
+    if (!baseApp) {
+      return notFound()
+    }
+
+    return (
+      <>
+        <Store store={baseApp.store as unknown as storeWithApps} />
+      </>
+    )
   }
 
   // Otherwise, try to load as an app

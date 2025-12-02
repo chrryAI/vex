@@ -317,7 +317,7 @@ export default function Chat({
   // Scroll detection for auto-hide chat input
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [showChatInput, setShowChatInput] = useState(true)
-  const [windowHeight, setWindowHeight] = useState(600)
+  const [, setWindowHeight] = useState(600)
 
   useEffect(() => {
     // Set actual window height on client
