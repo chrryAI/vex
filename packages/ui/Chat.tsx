@@ -382,8 +382,6 @@ export default function Chat({
     }
   }, [user]) // Empty dependency array - no re-creation of listener
 
-  console.log(`🚀 ~ threadId:`, threadId)
-
   useEffect(() => {
     if (isNewChat) {
       setShowChatInput(true)

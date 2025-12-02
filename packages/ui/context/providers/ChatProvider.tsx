@@ -232,17 +232,8 @@ export function ChatProvider({
   const [collaborationStatus, setCollaborationStatusInternal] = useState<
     "pending" | "active" | undefined | null
   >(
-    user &&
-      threads &&
-      threads?.threads?.length &&
-      ((searchParams.get("collaborationStatus") as "pending" | "active") ??
-        threads?.threads?.every((thread) =>
-          thread.collaborations?.some(
-            (collaboration) =>
-              collaboration.user.id === user?.id &&
-              collaboration.collaboration.status === "pending",
-          ),
-        ))
+    user?.pendingCollaborationThreadsCount ||
+      guest?.pendingCollaborationThreadsCount
       ? "pending"
       : undefined,
   )
@@ -329,7 +320,6 @@ export function ChatProvider({
       setIsLoadingThreads(false)
     }
   }, [threadsSwr])
-  console.log(`🚀 ~ threadsSwr:`, threadsSwr)
 
   const fetchActiveCollaborationThreadsCount = async () => {
     const threads = await actions.getThreads({
@@ -363,9 +353,12 @@ export function ChatProvider({
   }
 
   const setCollaborationStatus = (
-    status: "pending" | "active" | undefined | null,
+    newStatus: "pending" | "active" | undefined | null,
   ) => {
-    setCollaborationStatusInternal(status)
+    if (newStatus === collaborationStatus) {
+      return
+    }
+    setCollaborationStatusInternal(newStatus)
     fetchActiveCollaborationThreadsCount()
     fetchPendingCollaborationThreadsCount()
   }
