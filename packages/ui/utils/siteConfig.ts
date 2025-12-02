@@ -1401,7 +1401,7 @@ export function detectSiteModeDomain(
     (process.env.MODE as SiteMode) ||
     ((import.meta as any)?.env?.VITE_SITE_MODE as SiteMode) ||
     mode ||
-    ("zarathustra" as SiteMode)
+    ("focus" as SiteMode)
 
   // Get hostname from parameter or window (client-side)
   const rawHost =

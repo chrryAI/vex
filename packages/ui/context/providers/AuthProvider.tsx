@@ -1039,7 +1039,7 @@ export function AuthProvider({
     }
   }, [loadingApp, isLoadingApps, storeApps])
 
-  const canShowFocus = !!focus && app?.id === focus.id && !threadId
+  const canShowFocus = focus && app && app?.id === focus.id && !threadId
 
   const [showFocus, setShowFocus] = useState(canShowFocus)
 
@@ -1049,12 +1049,21 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const storeApp = app?.store?.apps.find(
+  const storeAppIternal = app?.store?.apps.find(
     (item) =>
       app?.store?.appId &&
       item.id === app?.store?.appId &&
+      item.store?.id &&
       item.store?.id === app?.store?.id,
   )
+
+  const [storeApp, setStoreApp] = useState<appWithStore | undefined>(
+    storeAppIternal,
+  )
+
+  useEffect(() => {
+    storeAppIternal && setStoreApp(storeAppIternal)
+  }, [storeAppIternal])
 
   const apps = storeApps.filter((item) => {
     return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
