@@ -258,10 +258,14 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
   initialize()
 
   // -----------------------------------------
-  // Cache Interface
+  // Cache Interface (Map-compatible for SWR)
   // -----------------------------------------
 
-  return {
+  const cache: Cache & {
+    has: (key: string) => boolean
+    clear: () => void
+    readonly size: number
+  } = {
     get: (key: string) => {
       const value = memCache.get(key)
 
@@ -276,48 +280,68 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
     set: (key: string, value: any) => {
       memCache.set(key, value)
 
-      if (degradedMode) return
+      if (!degradedMode) {
+        // Persist to IndexedDB with retry
+        const entry: CacheEntry = {
+          key,
+          value,
+          ts: Date.now(),
+          lastAccess: Date.now(),
+          version: SCHEMA_VERSION,
+        }
 
-      // Persist to IndexedDB with retry
-      const entry: CacheEntry = {
-        key,
-        value,
-        ts: Date.now(),
-        lastAccess: Date.now(),
-        version: SCHEMA_VERSION,
-      }
-
-      withRetry(() => db.cache.put(entry), config, `set(${key})`).catch(
-        (error) => {
-          if (isQuotaExceeded(error)) {
-            // Try to free up space
-            runGarbageCollection().then(() => {
-              // Retry once after GC
-              db.cache.put(entry).catch(() => {
-                console.warn("[SWR Cache] Switching to degraded mode")
-                degradedMode = true
+        withRetry(() => db.cache.put(entry), config, `set(${key})`).catch(
+          (error) => {
+            if (isQuotaExceeded(error)) {
+              // Try to free up space
+              runGarbageCollection().then(() => {
+                // Retry once after GC
+                db.cache.put(entry).catch(() => {
+                  console.warn("[SWR Cache] Switching to degraded mode")
+                  degradedMode = true
+                })
               })
-            })
-          }
-        },
-      )
+            }
+          },
+        )
+      }
     },
 
     delete: (key: string) => {
       memCache.delete(key)
 
-      if (degradedMode) return
-
-      // Delete from IndexedDB
-      db.cache.delete(key).catch((error) => {
-        console.error("[SWR Cache] Failed to delete from IndexedDB:", error)
-      })
+      if (!degradedMode) {
+        // Delete from IndexedDB
+        db.cache.delete(key).catch((error) => {
+          console.error("[SWR Cache] Failed to delete from IndexedDB:", error)
+        })
+      }
     },
 
     keys: () => {
       return memCache.keys()
     },
+
+    // Additional Map-like methods for compatibility
+    has: (key: string) => {
+      return memCache.has(key)
+    },
+
+    clear: () => {
+      memCache.clear()
+      if (!degradedMode) {
+        db.cache.clear().catch((error) => {
+          console.error("[SWR Cache] Failed to clear IndexedDB:", error)
+        })
+      }
+    },
+
+    get size() {
+      return memCache.size
+    },
   }
+
+  return cache
 }
 
 // -----------------------------------------

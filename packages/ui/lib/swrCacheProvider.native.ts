@@ -266,10 +266,14 @@ function createMMKVProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
   initialize()
 
   // -----------------------------------------
-  // Cache Interface
+  // Cache Interface (Map-compatible for SWR)
   // -----------------------------------------
 
-  return {
+  const cache: Cache & {
+    has: (key: string) => boolean
+    clear: () => void
+    readonly size: number
+  } = {
     get: (key: string) => {
       if (degradedMode) return undefined
 
@@ -324,7 +328,31 @@ function createMMKVProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
         .filter((k: string) => k !== METADATA_KEY)
       return allKeys[Symbol.iterator]()
     },
-  } as Cache
+
+    // Additional Map-like methods for compatibility
+    has: (key: string) => {
+      if (degradedMode) return false
+      return getEntry(key) !== null
+    },
+
+    clear: () => {
+      keyIndex.clear()
+      if (!degradedMode) {
+        try {
+          mmkv.clearAll()
+        } catch (error) {
+          console.error("[SWR Cache] Failed to clear MMKV:", error)
+        }
+      }
+    },
+
+    get size() {
+      if (degradedMode) return 0
+      return keyIndex.size
+    },
+  }
+
+  return cache
 }
 
 // -----------------------------------------
