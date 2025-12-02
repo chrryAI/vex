@@ -206,8 +206,10 @@ export const chat = async ({
     })
   }
 
-  const login = page.getByTestId("login-from-chat-button")
-  await expect(login).toBeVisible()
+  if (!isMember) {
+    const login = page.getByTestId("login-from-chat-button")
+    await expect(login).toBeVisible()
+  }
 
   expect(await getCreditsLeft()).toBe(credits.toString())
 

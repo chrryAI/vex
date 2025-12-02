@@ -556,7 +556,6 @@ export default function Menu({
                             }}
                             className="menuThreadItem"
                           >
-                            {JSON.stringify(thread.collaborations)}
                             {thread.visibility !== "private" ||
                             thread.collaborations?.length ? (
                               <Span

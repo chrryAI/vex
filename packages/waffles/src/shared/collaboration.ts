@@ -135,11 +135,15 @@ export async function collaboration({
   const context2 = await browser.newContext()
   const page2 = await context2.newPage()
 
+  await wait(5000)
+
   await page2.goto(getMemberUrl(), {
     waitUntil: "networkidle",
   })
 
   await signIn({ page: page2 })
+
+  await wait(5000)
 
   // User 2: Join the same thread
   await page2.goto(
