@@ -10,10 +10,13 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "generate": "drizzle-kit generate",
     "g": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
     "m": "drizzle-kit migrate",
     "push": "drizzle-kit push",
     "studio": "drizzle-kit studio",
+    "seed": "tsx seed.ts",
     "s": "tsx seed.ts",
     "clear": "CLEAR=true tsx seed.ts",
     "migrate:focusbutton": "tsx migrations/migrate-focusbutton-users.ts"
