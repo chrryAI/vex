@@ -125,28 +125,79 @@ export async function GET(request: Request) {
     )
   }
 
-  // Fetch threads based on context
-  const threads = await getThreads({
+  const getVisibilityFilter: () =>
+    | ("public" | "private")[]
+    | undefined = () => {
+    // Viewing own profile - show all
+    if (isSameUser) return undefined
+
+    // Thread context - check collaboration access
+    if (thread) {
+      const hasAccess = canCollaborate({
+        thread,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
+      return hasAccess ? undefined : ["public"]
+    }
+
+    // Viewing pending collaborations - show all
+    if (myPendingCollaborations) return undefined
+
+    // Viewing another user's profile - public only
+    return ["public"]
+  }
+
+  const isSameUser = sanitizedUserName && sanitizedUserName === member?.userName
+
+  const collaborationStatusFinal =
+    collaborationStatus && member?.id ? [collaborationStatus] : undefined
+
+  const payload = {
     appId: app?.id,
     isIncognito: false,
-    // Only apply collaboration filtering for registered members, not guests
-    collaborationStatus:
-      collaborationStatus && member?.id ? [collaborationStatus] : undefined,
     pageSize,
+    search: search || undefined,
+    starred,
+    sort: sort || "bookmark",
+    myPendingCollaborations: myPendingCollaborations ? true : undefined,
+  }
+  const pendingCollaborations = !collaborationStatusFinal
+    ? await getThreads({
+        collaborationStatus: ["pending"],
+        userId,
+        guestId,
+        ...payload,
+        myPendingCollaborations: true,
+      })
+    : undefined
+
+  console.log(
+    `🚀 ~ GET ~ pendingCollaborations:`,
+    pendingCollaborations?.totalCount,
+  )
+
+  if (pendingCollaborations && pendingCollaborations.totalCount) {
+    return NextResponse.json({
+      ...pendingCollaborations,
+      user: member,
+    })
+  }
+
+  // Fetch threads based on context
+  const threads = await getThreads({
+    ...payload,
+    collaborationStatus: collaborationStatusFinal,
     ...(!sanitizedUserName
       ? {
           guestId,
           userId,
         }
-      : {}),
-    search: search || undefined,
-    starred,
-    sort: sort || "bookmark",
-    visibility:
-      (sanitizedUserName && member?.userName !== sanitizedUserName) ||
-      (thread && thread?.userId !== member?.id && thread?.guestId !== guest?.id)
-        ? ["public"]
-        : undefined,
+      : {
+          memberId: undefined,
+          guestId: undefined,
+        }),
+    visibility: getVisibilityFilter(),
     userName: sanitizedUserName,
     myPendingCollaborations: myPendingCollaborations ? true : undefined,
   })
@@ -168,7 +219,7 @@ export async function GET(request: Request) {
               (profile) => profile.visibility === "public",
             ),
           }
-        : member?.userName === sanitizedUserName
+        : isSameUser
           ? member
           : undefined,
   })

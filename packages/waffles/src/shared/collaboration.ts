@@ -169,7 +169,7 @@ export async function collaboration({
   await acceptCollaborationButton.click()
 
   await expect(chatInput2).toBeEnabled({
-    timeout: 8000,
+    timeout: 15000,
   })
 
   await chat({

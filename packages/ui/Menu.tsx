@@ -81,7 +81,6 @@ export default function Menu({
   const {
     router,
     threads,
-
     setIsNewChat,
     collaborationStatus,
     setCollaborationStatus,
@@ -90,14 +89,10 @@ export default function Menu({
     isLoadingThreads,
     refetchThreads,
     setIsAccountVisible,
-    slug,
     goToThreads,
   } = useNavigationContext()
 
-  // App context
   const { app } = useApp()
-
-  app && console.log("ssskacsnckjfnckjjdfc kjf c", getAppSlug(app, ""))
 
   // Platform context
   const { viewPortHeight, isStandalone } = usePlatform()
@@ -561,6 +556,7 @@ export default function Menu({
                             }}
                             className="menuThreadItem"
                           >
+                            {JSON.stringify(thread.collaborations)}
                             {thread.visibility !== "private" ||
                             thread.collaborations?.length ? (
                               <Span

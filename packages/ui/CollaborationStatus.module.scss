@@ -4,14 +4,4 @@
 .collaborationStatus {
   display: inline-flex;
   gap: toRem.toRem(10);
-
-  span {
-    display: none;
-  }
-
-  @media (min-width: breakpoints.$breakpoint-mobile) {
-    span {
-      display: inline-flex;
-    }
-  }
 }

@@ -181,6 +181,8 @@ export function ChatProvider({
     threads,
     setThreads,
     hasStoreApps,
+    hasNotification,
+    setHasNotification,
     ...auth
   } = useAuth()
 
@@ -213,7 +215,7 @@ export function ChatProvider({
 
   const { isExtension, isMobile } = usePlatform()
 
-  const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
+  const [shouldFetchThreads, setShouldFetchThreads] = useState(!threads)
 
   let userNameByUrl: string | undefined = undefined
 
@@ -230,8 +232,16 @@ export function ChatProvider({
   const [collaborationStatus, setCollaborationStatusInternal] = useState<
     "pending" | "active" | undefined | null
   >(
-    (searchParams.get("collaborationStatus") as "pending" | "active") ??
-      undefined,
+    ((searchParams.get("collaborationStatus") as "pending" | "active") ??
+      threads?.threads.every((thread) =>
+        thread.collaborations?.find(
+          (collaboration) =>
+            collaboration.user.id === user?.id &&
+            collaboration.collaboration.status === "active",
+        ),
+      ))
+      ? "active"
+      : "pending",
   )
 
   // Load cached threads immediately on mount
@@ -250,7 +260,9 @@ export function ChatProvider({
     isLoading: isLoadingThreadsSwr,
     error: threadsError,
   } = useSWR(
-    shouldFetchThreads ? ["contextThreads", thread?.id, app?.id] : null,
+    shouldFetchThreads
+      ? ["contextThreads", thread?.id, app?.id, collaborationStatus]
+      : null,
     async () => {
       try {
         const threads = await actions.getThreads({
@@ -273,6 +285,7 @@ export function ChatProvider({
         })
 
         // Cache threads on successful fetch (30 min TTL)
+
         return threads
       } catch (error) {
         toast.error("Something went wrong")
@@ -300,7 +313,11 @@ export function ChatProvider({
   }, [threadsError, isLoadingThreadsSwr])
 
   const [activeCollaborationThreadsCount, setActiveCollaborationThreadsCount] =
-    useState<number>(0)
+    useState<number>(
+      threads?.threads?.filter((t) =>
+        t.collaborations?.some((c) => c.collaboration.status === "active"),
+      ).length || 0,
+    )
 
   useEffect(() => {
     if (threadsSwr && Array.isArray(threadsSwr.threads)) {
@@ -323,7 +340,11 @@ export function ChatProvider({
   const [
     pendingCollaborationThreadsCount,
     setPendingCollaborationThreadsCount,
-  ] = useState<number>(0)
+  ] = useState<number>(
+    threads?.threads?.filter((t) =>
+      t.collaborations?.some((c) => c.collaboration.status === "pending"),
+    ).length || 0,
+  )
 
   const fetchPendingCollaborationThreadsCount = async () => {
     const threads = await actions.getThreads({
@@ -344,40 +365,45 @@ export function ChatProvider({
     fetchPendingCollaborationThreadsCount()
   }
 
-  useEffect(() => {
-    if (user && userNameByUrl && user.userName !== userNameByUrl) return
-    if (guest && userNameByUrl) return
+  // useEffect(() => {
+  //   if (!token) return
+  //   fetchPendingCollaborationThreadsCount()
+  //   fetchActiveCollaborationThreadsCount()
+  // }, [token])
 
-    if (token && !isLoadingThreads && thread?.id && (guest || user)) {
-      const collab = thread?.collaborations?.find(
-        (x) => user && x.user.id === user.id,
-      )
+  // useEffect(() => {
+  //   if (user && userNameByUrl && user.userName !== userNameByUrl) return
+  //   if (guest && userNameByUrl) return
 
-      if (collab) {
-        if (collab.collaboration.status === "pending") {
-          setCollaborationStatus("pending")
-        }
-        if (collab.collaboration.status === "active") {
-          setCollaborationStatus("active")
-        }
-      } else if (thread?.id) {
-        refetchThreads()
-      }
-    }
-  }, [token, isLoadingThreads, thread, guest, user, userNameByUrl, pathname])
+  //   if (token && !isLoadingThreads && thread?.id && (guest || user)) {
+  //     const collab = thread?.collaborations?.find(
+  //       (x) => user && x.user.id === user.id,
+  //     )
+
+  //     if (collab) {
+  //       if (collab.collaboration.status === "pending") {
+  //         setCollaborationStatus("pending")
+  //       }
+  //       if (collab.collaboration.status === "active") {
+  //         setCollaborationStatus("active")
+  //       }
+  //     } else if (thread?.id) {
+  //       refetchThreads()
+  //     }
+  //   }
+  // }, [token, isLoadingThreads, thread, guest, user, userNameByUrl, pathname])
 
   const [isNewChat, setIsNewChatInternal] = useState(false)
 
-  const [hasNotification, setHasNotification] = useState<boolean>(false)
+  // const [hasNotification, setHasNotification] = useState<boolean>(false)
 
   useEffect(() => {
     if (pathname !== "/") return
 
     if (!threadsSwr || !Array.isArray(threadsSwr.threads)) return
-    if (pendingCollaborationThreadsCount > 0) {
+    if (collaborationStatus === undefined) {
       !hasNotification && setHasNotification(true)
       threadsSwr.threads.some((thread: thread) => thread.userId === user?.id) &&
-        collaborationStatus === undefined &&
         setCollaborationStatus("pending")
     }
   }, [
@@ -543,7 +569,7 @@ export function ChatProvider({
           data?.collaboration?.status === "pending"
         ) {
           setCollaborationStatus(data.collaboration.status)
-          !hasNotification && setHasNotification(false)
+          hasNotification && setHasNotification(false)
         }
       }
     },

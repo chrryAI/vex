@@ -55,7 +55,7 @@ export default function CollaborationStatus({
   if (!collaboration) return null
 
   const collaborationId = collaboration.collaboration.id
-  const iconSize = isIcon ? 15 : 16
+  const iconSize = 16
   const fontSize = iconSize - 3
 
   const handleStatusChange = async (
@@ -85,8 +85,12 @@ export default function CollaborationStatus({
 
   return (
     <Div
-      style={{ gap: isIcon ? 5 : 10, ...style }}
-      className={clsx(styles.collaborationStatus, className)}
+      style={{
+        ...styles.collaborationStatus.style,
+        gap: isIcon ? 7.5 : 10,
+        ...style,
+      }}
+      className={className}
     >
       {!isIcon && <UsersRound color="var(--accent-1)" size={16} />}
 
@@ -95,8 +99,8 @@ export default function CollaborationStatus({
           <ConfirmButton
             data-testid={`${dataTestId}-reject-collaboration`}
             style={{ fontSize }}
-            title={isMobileDevice ? t("Reject") : undefined}
-            confirmTitle={isMobileDevice ? t("Are you sure?") : undefined}
+            title={t("Reject")}
+            confirmTitle={t("Are you sure?")}
             className="link"
             processing={isLoading && status === "rejected"}
             onConfirm={() => handleStatusChange("rejected")}
@@ -108,7 +112,7 @@ export default function CollaborationStatus({
             )}
           </ConfirmButton>
           <Button
-            title={isMobileDevice ? t("Accept") : undefined}
+            title={t("Accept")}
             data-testid={`${dataTestId}-accept-collaboration`}
             style={{ fontSize }}
             className="link"
@@ -125,7 +129,7 @@ export default function CollaborationStatus({
       ) : (
         <ConfirmButton
           disabled={isLoading}
-          title={isMobileDevice ? t("Leave") : undefined}
+          title={t("Leave")}
           style={{ fontSize }}
           className="link"
           processing={isLoading && status === "revoked"}
@@ -137,7 +141,6 @@ export default function CollaborationStatus({
             ) : (
               <CircleX color="var(--accent-0)" size={iconSize} />
             )}
-            <Span>{t("Leave")}</Span>
           </>
         </ConfirmButton>
       )}

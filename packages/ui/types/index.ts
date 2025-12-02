@@ -12,6 +12,8 @@ export type user = {
   adConsent?: boolean
   stripeConnectAccountId?: string
   stripeConnectOnboarded?: boolean
+  pendingCollaborationThreadsCount?: number
+  activeCollaborationThreadsCount?: number
   name: string | null
   email: string
   emailVerified: Date | null
@@ -195,6 +197,8 @@ export type guest = {
   email: string | null
   tasksCount: number
   adConsent?: boolean
+  pendingCollaborationThreadsCount?: number
+  activeCollaborationThreadsCount?: number
   favouriteAgent:
     | "deepSeek"
     | "chatGPT"
@@ -276,7 +280,7 @@ export type session = {
   token?: string
   aiAgents?: aiAgent[]
   migratedFromGuest?: boolean
-  hasNotifications?: boolean
+  hasNotification?: boolean
   createdOn?: string
   locale?: string
   aiAgent?: aiAgent
