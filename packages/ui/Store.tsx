@@ -11,7 +11,7 @@ import {
 } from "./context/providers"
 import Img from "./Image"
 import { useAppContext } from "./context/AppContext"
-import { appWithStore } from "./types"
+import { appWithStore, storeWithApps } from "./types"
 import { Button, Div, H1, H3, H4, P, Span, useTheme } from "./platform"
 import { useStoreStyles } from "./Store.styles"
 import { Sparkles, ArrowRight } from "./icons"
@@ -23,9 +23,11 @@ import Loading from "./Loading"
 export default function Store({
   compact,
   slug,
+  ...rest
 }: {
   compact?: boolean
   slug?: string
+  store?: storeWithApps
 }) {
   const { FRONTEND_URL } = useData()
 
@@ -42,13 +44,19 @@ export default function Store({
     storeApps: storeAppsContext,
     getAppSlug,
     loadingApp,
+    setLoadingApp,
+    loadingAppId,
+    setLoadingAppId,
+    hasStoreApps,
   } = useAuth()
 
   const { currentStore } = useApp()
 
-  const store = slug
-    ? storeAppsContext.find((app) => app.slug === slug)?.store
-    : currentStore
+  const store = rest.store
+    ? rest.store
+    : slug
+      ? storeAppsContext.find((app) => app.slug === slug)?.store
+      : currentStore
 
   const apps = store?.apps
 
@@ -59,22 +67,58 @@ export default function Store({
   // Filter apps that belong to this store (exclude Chrry itself)
   const storeApps = apps
 
+  const slugParam = searchParams.get("app")
+
   const [selectedApp, setSelectedAppInternal] = useState<
     appWithStore | undefined
-  >(
-    storeApps?.find(
-      (app) => app.slug === searchParams.get("app") || app.id === store?.appId,
-    ),
-  )
+  >(storeApps?.find((app) => app.slug === slugParam || app.id === store?.appId))
+
+  useEffect(() => {
+    if (!storeApps?.length) return
+    if (slugParam) {
+      const app = storeApps?.find((app) => app.slug === slugParam)
+      if (app) {
+        setSelectedApp(app)
+      }
+    } else if (
+      store?.appId &&
+      !hasStoreApps(storeAppsContext.find((app) => app.id === app.id))
+    ) {
+      setLoadingAppId(store?.appId)
+    }
+  }, [slugParam, storeAppsContext])
+
+  const [loadingAppInternal, setLoadingAppInternal] = useState<
+    appWithStore | undefined
+  >(loadingApp)
 
   const setSelectedApp = (app: appWithStore | undefined) => {
+    if (app && !hasStoreApps(storeAppsContext.find((a) => a.id === app.id))) {
+      setLoadingApp(app)
+      setLoadingAppInternal(app)
+      return
+    }
+
     if (!app?.store?.slug) return
     if (!app?.slug) return
 
+    if (loadingApp?.id === app.id) return
+
     setSelectedAppInternal(app)
 
-    !slug && router.push(`/${app.store.slug}?app=${app.slug}`)
+    !slug && router.push(`/${app.store.slug}?=${app.slug}`)
   }
+
+  useEffect(() => {
+    const loadedApp = storeApps?.find(
+      (app) => app.id === loadingAppInternal?.id,
+    )
+    if (!loadingApp && loadingAppInternal && loadedApp) {
+      setSelectedAppInternal(loadedApp)
+      router.push(`/${loadedApp?.store?.slug}?=${loadedApp?.slug}`)
+      setLoadingAppInternal(undefined)
+    }
+  }, [loadingApp, loadingAppInternal])
 
   useEffect(() => {
     if (store) {
@@ -222,11 +266,7 @@ export default function Store({
                   }}
                 >
                   <Span style={{ ...styles.appName.style }}>
-                    {loadingApp?.id === app.id ? (
-                      <Loading size={16} />
-                    ) : (
-                      app.icon
-                    )}{" "}
+                    {loadingAppId === app.id ? <Loading size={16} /> : app.icon}{" "}
                     {app.name}
                   </Span>
                   <Span style={{ ...styles.appSubtitle.style }}>
