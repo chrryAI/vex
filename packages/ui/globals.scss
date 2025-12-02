@@ -668,13 +668,12 @@ button.favorite {
     box-shadow: 0 0 5px var(--accent-6);
   }
 
-  // Glow effect when placeholder updates
-
   @include utils.respect-reduced-motion;
 }
 
 .placeholderGlow {
   animation: placeholderGlowPulse 1.25s infinite;
+  @include utils.respect-reduced-motion;
 }
 
 .blur {
