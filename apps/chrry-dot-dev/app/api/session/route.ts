@@ -175,9 +175,16 @@ export async function GET(request: Request) {
   const getMember = () => getMemberAction({ full: true, skipCache: true })
 
   let member = await getMember()
+
   const guest = !member ? await getGuestAction({ skipCache: true }) : undefined
   const { success } = await checkRateLimit(request, { member, guest })
 
+  if (!success) {
+    return new Response(JSON.stringify({ error: "Too many requests" }), {
+      status: 429,
+      headers: { "Content-Type": "application/json" },
+    })
+  }
   const url = new URL(request.url)
 
   // Detect domain for cookies from chrryUrl (for extensions), Referer, or Origin header
