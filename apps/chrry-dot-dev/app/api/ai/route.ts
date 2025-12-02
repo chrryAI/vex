@@ -237,70 +237,6 @@ async function getRelevantMemoryContext({
   }
 }
 
-async function enhancedStreamChunk({
-  chunk,
-  chunkNumber,
-  totalChunks,
-  streamingMessage,
-  member,
-  guest,
-  thread,
-  clientId,
-  streamId,
-}: {
-  chunk: string
-  chunkNumber: number
-  totalChunks: number
-  streamingMessage: any
-  member?: user
-  guest?: guest
-  thread: thread & {
-    user: user | null
-    guest: guest | null
-    collaborations?: {
-      collaboration: collaboration
-      user: user
-    }[]
-  }
-  clientId?: string
-  streamId?: string
-}) {
-  console.log(
-    `📤 Sending chunk ${chunkNumber}/${totalChunks}:`,
-    chunk.substring(0, 20) + "...",
-  )
-
-  // Send lightweight notification - only metadata, NOT full content
-  // This prevents 413 Payload Too Large errors
-
-  thread &&
-    notifyOwnerAndCollaborations({
-      notifySender: true,
-      thread,
-      payload: {
-        type: "stream_chunk",
-        data: {
-          message: {
-            ...streamingMessage,
-            message: {
-              ...streamingMessage.message,
-              content: "",
-            },
-          },
-          chunk,
-          isFinal: false,
-          clientId,
-          streamId,
-        },
-      },
-      member,
-      guest,
-    })
-
-  // Add delay between chunks for proper delivery order
-  await wait(30)
-}
-
 /**
  * Get news context based on app name
  * - CNN agent → Only CNN news
@@ -558,6 +494,7 @@ export async function POST(request: Request) {
       draft: formData.get("draft")
         ? JSON.parse(formData.get("draft") as string)
         : null,
+      deviceId: formData.get("deviceId") as string,
     }
 
     // Extract files from form data
@@ -592,8 +529,74 @@ export async function POST(request: Request) {
     weather,
     slug,
     placeholder,
+    deviceId,
     ...rest
   } = requestData
+
+  async function enhancedStreamChunk({
+    chunk,
+    chunkNumber,
+    totalChunks,
+    streamingMessage,
+    member,
+    guest,
+    thread,
+    clientId,
+    streamId,
+  }: {
+    chunk: string
+    chunkNumber: number
+    totalChunks: number
+    streamingMessage: any
+    member?: user
+    guest?: guest
+    thread: thread & {
+      user: user | null
+      guest: guest | null
+      collaborations?: {
+        collaboration: collaboration
+        user: user
+      }[]
+    }
+    clientId?: string
+    streamId?: string
+  }) {
+    console.log(
+      `📤 Sending chunk ${chunkNumber}/${totalChunks}:`,
+      chunk.substring(0, 20) + "...",
+    )
+
+    // Send lightweight notification - only metadata, NOT full content
+    // This prevents 413 Payload Too Large errors
+
+    thread &&
+      notifyOwnerAndCollaborations({
+        notifySender: true,
+        thread,
+        payload: {
+          type: "stream_chunk",
+          data: {
+            message: {
+              ...streamingMessage,
+              message: {
+                ...streamingMessage.message,
+                content: "",
+              },
+            },
+            chunk,
+            isFinal: false,
+            clientId,
+            streamId,
+            deviceId,
+          },
+        },
+        member,
+        guest,
+      })
+
+    // Add delay between chunks for proper delivery order
+    await wait(30)
+  }
 
   console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
 
