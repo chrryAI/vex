@@ -343,13 +343,15 @@ export async function PATCH(request: NextRequest) {
           })
         : undefined
 
-      if (inviter && inviter.email && !isE2E) {
+      const apiKey = process.env.ZEPTOMAIL_API_KEY
+
+      if (inviter && inviter.email && !isE2E && apiKey) {
         const transporter = nodemailer.createTransport({
           host: "smtp.zeptomail.eu",
           port: 587,
           auth: {
             user: "emailapikey",
-            pass: process.env.ZEPTOMAIL_API_KEY!,
+            pass: apiKey,
           },
         })
 

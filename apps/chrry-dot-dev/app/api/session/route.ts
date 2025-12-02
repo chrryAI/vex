@@ -51,8 +51,6 @@ const getGuestDb = ({
   id?: string
 }) => getGuest({ skipCache: true, email, fingerprint, id })
 
-const hasThreadNotification = lib.hasThreadNotification
-
 const isNewBillingPeriod = (subscribedOn: Date) => {
   const subscriptionDate = new Date(subscribedOn)
   const currentDate = new Date()
