@@ -74,6 +74,7 @@
     "ai": "^5.0.0",
     "antd": "^5.26.7",
     "clsx": "^2.1.1",
+    "dexie": "^4.2.1",
     "dnd-core": "^16.0.1",
     "emoji-picker-react": "^4.14.0",
     "expo-keep-awake": "^15.0.7",
