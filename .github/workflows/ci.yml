@@ -172,18 +172,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate
+        run: npm run generate
+
+      - name: Migrate
+        run: npm run migrate
+
+      - name: Seed
+        run: npm run seed
+
+      - name: Start ws
+        run: nohup npm run start:ws > ws.log 2>&1 &
+
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
-
-      - name: Build for E2E
-        run: pnpm turbo build --filter="chrrydotdev"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          NODE_OPTIONS: --max-old-space-size=8192
-          CI: true
 
       - name: Run Playwright tests
         run: pnpm --filter @chrryai/waffles test
