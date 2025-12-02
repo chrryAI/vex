@@ -233,7 +233,7 @@ export default function Store({
                 <Div
                   key={app.id}
                   data-color={COLORS[app.themeColor as keyof typeof COLORS]}
-                  className={`pointer ${loadingApp?.id === app.id ? "placeholderGlow" : ""}`}
+                  className={`pointer ${loadingApp?.id === app.id ? "glow" : ""}`}
                   style={{
                     ...styles.app.style,
                     ...(index === storeApps?.length - 1 &&

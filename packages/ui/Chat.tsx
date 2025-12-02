@@ -2198,7 +2198,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
   const placeholderStages = [".", "..", "..."]
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
-  const [showPlaceholderGlow, setShowPlaceholderGlow] = useState(false)
+  const [showglow, setShowglow] = useState(false)
   const previousPlaceholder = useRef(placeholder)
 
   const animationLoop = useRef<number>(0)
@@ -2211,12 +2211,12 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         !previousPlaceholder.current ||
         placeholder !== previousPlaceholder.current
       ) {
-        setShowPlaceholderGlow(true)
+        setShowglow(true)
         previousPlaceholder.current = placeholder
 
         // Remove glow after animation completes
         const timer = setTimeout(() => {
-          setShowPlaceholderGlow(false)
+          setShowglow(false)
         }, 2000) // Match animation duration
 
         return () => clearTimeout(timer)
@@ -3711,11 +3711,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
               )}
 
               <Div
-                className={
-                  showPlaceholderGlow
-                    ? "chat placeholderGlow blur"
-                    : "chat blur"
-                }
+                className={showglow ? "chat glow blur" : "chat blur"}
                 style={{
                   ...styles.chat.style,
                   ...(isStandalone ? styles.standalone : {}),
