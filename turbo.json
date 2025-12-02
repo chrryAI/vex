@@ -75,6 +75,10 @@
     "start:ws": {
       "cache": false,
       "persistent": true
+    },
+    "start:e2e": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

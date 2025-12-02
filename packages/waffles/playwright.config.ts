@@ -13,7 +13,7 @@ import { defineConfig, devices } from "@playwright/test"
  */
 export default defineConfig({
   webServer: {
-    command: "npm run start",
+    command: "npm run start:e2e",
     url: "http://localhost:3000",
     // timeout: 480000,
     reuseExistingServer: true,
