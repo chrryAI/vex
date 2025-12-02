@@ -47,7 +47,7 @@ export default async function getMember({
       if (token.split(".").length !== 3) {
         const fp = authHeader.replace("Bearer ", "")
 
-        let result = await getUser({ apiKey: fp, skipCache })
+        let result = await getUser({ apiKey: fp, skipCache: skipCache || full })
         if (result) {
           return {
             ...result,
@@ -62,7 +62,10 @@ export default async function getMember({
       // Verify and decode the token
       const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
       if (decoded.email) {
-        const user = await getUser({ email: decoded.email, skipCache })
+        const user = await getUser({
+          email: decoded.email,
+          skipCache: skipCache || full,
+        })
 
         if (user) {
           return {
@@ -105,7 +108,10 @@ export default async function getMember({
 
         if (decodedToken?.email) {
           console.log("✅ Successfully decoded session token")
-          const user = await getUser({ email: decodedToken.email, skipCache })
+          const user = await getUser({
+            email: decodedToken.email,
+            skipCache: skipCache || full,
+          })
 
           if (user) {
             // Generate token from decoded session
@@ -131,7 +137,10 @@ export default async function getMember({
   // Fallback to getServerSession if direct decode didn't work
   const session = (await getServerSession(authOptions as any)) as Session
   if (session?.user?.email) {
-    let user = await getUser({ email: session.user.email, skipCache })
+    let user = await getUser({
+      email: session.user.email,
+      skipCache: skipCache || full,
+    })
     if (user) {
       // Generate token if not present in session (fallback)
       const token =

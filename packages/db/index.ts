@@ -2773,6 +2773,9 @@ export const hasThreadNotifications = async ({
   // If no activeOn timestamp, consider all threads as having notifications
   if (!activeOn) return true
 
+  // Convert to Date object if it's a string (from cached data)
+  const activeOnDate = activeOn instanceof Date ? activeOn : new Date(activeOn)
+
   // Check for threads owned by user/guest with new messages
   const ownedThreadsWithNotifications = await db
     .select({ id: threads.id })
@@ -2781,7 +2784,7 @@ export const hasThreadNotifications = async ({
     .where(
       and(
         userId ? eq(threads.userId, userId) : eq(threads.guestId, guestId!),
-        gt(messages.createdOn, activeOn),
+        gt(messages.createdOn, activeOnDate),
       ),
     )
     .limit(1)

@@ -113,41 +113,45 @@ export async function POST(request: Request) {
     }
   }
 
-  const transporter = nodemailer.createTransport({
-    host: "smtp.zeptomail.eu",
-    port: 587,
-    auth: {
-      user: "emailapikey",
-      pass: process.env.ZEPTOMAIL_API_KEY!,
-    },
-  })
-  if (user.email && !isE2E) {
-    const emailHtml = await render(
-      <Collaboration
-        origin={FRONTEND_URL}
-        thread={thread}
-        type="invited"
-        user={member}
-        guest={guest}
-        language={member?.language || defaultLocale}
-      />,
-    )
+  const apiKey = process.env.ZEPTOMAIL_API_KEY
 
-    try {
-      // ZeptoMail returns void on success, throws on error
-      await transporter.sendMail({
-        from: `${siteConfig.name} Team <no-reply@${siteConfig.domain}>`,
-        to: user.email,
-        subject: `Let's collaborate on ${siteConfig.name}!`,
-        html: emailHtml,
-      })
-    } catch (error) {
-      captureException(error)
-      console.error("ZeptoMail API error:", error)
-      return NextResponse.json(
-        { error: "Failed to send invite" },
-        { status: 500 },
+  if (apiKey) {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.zeptomail.eu",
+      port: 587,
+      auth: {
+        user: "emailapikey",
+        pass: apiKey,
+      },
+    })
+    if (user.email && !isE2E) {
+      const emailHtml = await render(
+        <Collaboration
+          origin={FRONTEND_URL}
+          thread={thread}
+          type="invited"
+          user={member}
+          guest={guest}
+          language={member?.language || defaultLocale}
+        />,
       )
+
+      try {
+        // ZeptoMail returns void on success, throws on error
+        await transporter.sendMail({
+          from: `${siteConfig.name} Team <no-reply@${siteConfig.domain}>`,
+          to: user.email,
+          subject: `Let's collaborate on ${siteConfig.name}!`,
+          html: emailHtml,
+        })
+      } catch (error) {
+        captureException(error)
+        console.error("ZeptoMail API error:", error)
+        return NextResponse.json(
+          { error: "Failed to send invite" },
+          { status: 500 },
+        )
+      }
     }
   }
 
