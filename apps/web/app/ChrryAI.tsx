@@ -170,7 +170,6 @@ export default async function ChrryAI({
       sort: "bookmark",
       token: apiKey,
     })
-    console.log(`🚀 ~ threads:`, threads?.totalCount)
   } catch (error) {
     captureException(error)
     console.error("❌ API Error:", error)

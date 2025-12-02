@@ -131,11 +131,6 @@ export const canCollaborate = ({
   guestId?: string
 }) => {
   if (thread?.visibility === "public") return true
-  console.log(
-    `🚀 ~ thread:`,
-    thread?.collaborations?.map((c) => c.user.name),
-  )
-
   return isOwner(thread, { userId, guestId })
     ? true
     : thread?.collaborations?.some(
