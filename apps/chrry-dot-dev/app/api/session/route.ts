@@ -500,27 +500,6 @@ export async function GET(request: Request) {
 
       const device = await updateDevice({ member })
 
-      const threads = await getThreads({
-        pageSize: 10,
-        userId: member.id,
-      })
-
-      const collaborationThreads = await getThreads({
-        collaborationStatus: ["active", "pending"],
-        userId: member.id,
-        pageSize: 10,
-      })
-
-      const hasNotifications = [
-        ...threads.threads,
-        ...collaborationThreads.threads,
-      ].some((thread) =>
-        hasThreadNotification({
-          thread,
-          user: member,
-        }),
-      )
-
       const guestFingerprint = await getGuestDb({ fingerprint })
 
       let migratedFromGuest = false
@@ -582,7 +561,6 @@ export async function GET(request: Request) {
           fingerprint,
           migratedFromGuest,
           note: "This is a fake guest for bot/crawler traffic.",
-          hasNotifications,
           deviceId,
           app,
           env,
@@ -711,27 +689,6 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Failed to update guest" })
       }
 
-      const threads = await getThreads({
-        pageSize: 10,
-        guestId: updatedGuest.id,
-      })
-
-      const collaborationThreads = await getThreads({
-        collaborationStatus: ["active", "pending"],
-        guestId: updatedGuest.id,
-        pageSize: 10,
-      })
-
-      const hasNotifications = [
-        ...threads.threads,
-        ...collaborationThreads.threads,
-      ].some((thread) =>
-        hasThreadNotification({
-          thread,
-          guest: updatedGuest,
-        }),
-      )
-
       const response = setFingerprintCookie(
         NextResponse.json({
           locale,
@@ -750,7 +707,6 @@ export async function GET(request: Request) {
           user: null,
           aiAgents,
           fingerprint,
-          hasNotifications,
           deviceId,
           env,
         }),

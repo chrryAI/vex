@@ -76,6 +76,7 @@ const AuthContext = createContext<
         threads: thread[]
         totalCount: number
       }
+      setHasNotification: (value: boolean) => void
       lasProcessedSession: React.RefObject<string | undefined>
       setThreads: (value: { threads: thread[]; totalCount: number }) => void
       migratedFromGuestRef: React.RefObject<boolean>
@@ -201,7 +202,7 @@ const AuthContext = createContext<
       isLiveTest?: boolean
       signOut: () => Promise<void>
       onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
-      hasNotifications?: boolean
+      hasNotification: boolean
       isLoading?: boolean
       setIsLoading: (isLoading: boolean) => void
       fetchSession: () => Promise<void>
@@ -426,12 +427,10 @@ export function AuthProvider({
       if (sessionData.user) {
         setUser(sessionData.user)
         setToken(sessionData.user.token)
-        setHasNotifications(sessionData.hasNotifications)
         setFingerprint(sessionData.user.fingerprint || undefined)
         setGuest(undefined)
       } else if (sessionData.guest) {
         setGuest(sessionData.guest)
-        setHasNotifications(sessionData.hasNotifications)
         setFingerprint(sessionData.guest.fingerprint)
         setToken(sessionData.guest.fingerprint)
         setUser(undefined)
@@ -894,9 +893,7 @@ export function AuthProvider({
 
   const migratedFromGuestRef = useRef(false)
 
-  const [hasNotifications, setHasNotifications] = useState<boolean | undefined>(
-    false,
-  )
+  const [hasNotification, setHasNotification] = useState<boolean>(false)
 
   const lasProcessedSession = useRef<string | undefined>(undefined)
 
@@ -1605,7 +1602,7 @@ export function AuthProvider({
         setGuest,
         isCI,
         baseApp,
-        hasNotifications,
+        hasNotification,
         guest,
         threadData: props.thread,
         session,
@@ -1634,6 +1631,7 @@ export function AuthProvider({
         characterProfilesEnabled,
         apps,
         setApps: setAllApps,
+        setHasNotification,
         atlas,
         bloom,
         popcorn,

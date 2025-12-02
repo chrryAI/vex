@@ -138,7 +138,10 @@ export const canCollaborate = ({
   return isOwner(thread, { userId, guestId })
     ? true
     : thread?.collaborations?.some(
-        (collaboration) => collaboration.user.id === userId,
+        (collaboration) =>
+          collaboration.user.id === userId &&
+          collaboration.collaboration.status &&
+          ["active", "pending"].includes(collaboration.collaboration.status),
       )
 }
 
@@ -720,6 +723,18 @@ export const getUser = async ({
         }),
         lastMessage: lastMessage?.messages.at(0)?.message,
         messageCount: lastMessage?.totalCount,
+
+        pendingCollaborationThreadsCount: await getThreads({
+          userId: result.user.id,
+          myPendingCollaborations: true,
+          pageSize: 1,
+        }).then((res) => res.totalCount),
+
+        activeCollaborationThreadsCount: await getThreads({
+          userId: result.user.id,
+          pageSize: 1,
+          collaborationStatus: ["active"],
+        }).then((res) => res.totalCount),
 
         subscription,
         ...result.user,
@@ -2071,6 +2086,16 @@ export const getGuest = async ({
           guestId: result.id,
           pinned: true,
         }),
+        pendingCollaborationThreadsCount: await getThreads({
+          guestId: result.id,
+          myPendingCollaborations: true,
+          pageSize: 1,
+        }).then((res) => res.totalCount),
+        activeCollaborationThreadsCount: await getThreads({
+          guestId: result.id,
+          collaborationStatus: ["active"],
+          pageSize: 1,
+        }).then((res) => res.totalCount),
         lastMessage: lastMessage?.messages.at(0)?.message,
         messageCount: lastMessage?.totalCount,
         subscription: await getSubscription({ guestId: result.id }),

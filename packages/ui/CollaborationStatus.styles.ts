@@ -7,7 +7,7 @@
 
 export const CollaborationStatusStyleDefs = {
   collaborationStatus: {
-    display: "none",
+    display: "inline-flex",
     gap: 10,
   },
 } as const

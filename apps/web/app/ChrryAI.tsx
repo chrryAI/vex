@@ -147,6 +147,10 @@ export default async function ChrryAI({
     session = sessionResult
     translations = translationsResult
     app = appResult
+
+    if (session && app) {
+      session.app = app
+    }
   } catch (error) {
     console.error("❌ API Error:", error)
     apiError = error as Error
@@ -166,6 +170,7 @@ export default async function ChrryAI({
       sort: "bookmark",
       token: apiKey,
     })
+    console.log(`🚀 ~ threads:`, threads?.totalCount)
   } catch (error) {
     captureException(error)
     console.error("❌ API Error:", error)
@@ -338,10 +343,6 @@ export default async function ChrryAI({
 
   if (session && "user" in session) {
     user = session.user
-  }
-
-  if (session && app) {
-    session.app = app
   }
 
   const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark" // Fallback to dark black

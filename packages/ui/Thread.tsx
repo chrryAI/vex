@@ -551,28 +551,7 @@ const Thread = ({
                               thread={thread}
                             />
                           )}
-                          <CollaborationStatus
-                            dataTestId="chat"
-                            key={`${thread.id}-${collaborationVersion}`}
-                            onSave={(status) => {
-                              setCollaborationVersion((v) => v + 1)
-                              collaborationStatus &&
-                                setCollaborationStatus(undefined)
-                              if (
-                                status === "revoked" ||
-                                (status === "rejected" &&
-                                  (thread.userId !== user?.id ||
-                                    thread.guestId !== user?.id))
-                              ) {
-                                setIsNewChat(true)
-                                return
-                              }
 
-                              !collaborationStatus && refetchThreads()
-                              refetch()
-                            }}
-                            thread={thread}
-                          />
                           <Span
                             data-testid="hourly-limit-info"
                             data-hourly-left={hourlyUsageLeft}
@@ -609,6 +588,28 @@ const Thread = ({
                               0}
                             /{hourlyLimit}"
                           </Span>
+                          <CollaborationStatus
+                            dataTestId="chat"
+                            key={`${thread.id}-${collaborationVersion}`}
+                            onSave={(status) => {
+                              setCollaborationVersion((v) => v + 1)
+                              collaborationStatus &&
+                                setCollaborationStatus(undefined)
+                              if (
+                                status === "revoked" ||
+                                (status === "rejected" &&
+                                  (thread.userId !== user?.id ||
+                                    thread.guestId !== user?.id))
+                              ) {
+                                setIsNewChat(true)
+                                return
+                              }
+
+                              !collaborationStatus && refetchThreads()
+                              refetch()
+                            }}
+                            thread={thread}
+                          />
                         </Div>
                       )
                     }

@@ -482,7 +482,7 @@
 //         userId: member.id,
 //         pageSize: 10,
 //       })
-//       const hasNotifications = [
+//       const hasNotification = [
 //         ...threads.threads,
 //         ...collaborationThreads.threads,
 //       ].some((thread) =>
@@ -556,7 +556,7 @@
 //           fingerprint,
 //           migratedFromGuest,
 //           note: "This is a fake guest for bot/crawler traffic.",
-//           hasNotifications,
+//           hasNotification,
 //           deviceId,
 //           app,
 //           env,
@@ -700,7 +700,7 @@
 //         guestId: updatedGuest.id,
 //         pageSize: 10,
 //       })
-//       const hasNotifications = [
+//       const hasNotification = [
 //         ...threads.threads,
 //         ...collaborationThreads.threads,
 //       ].some((thread) =>
@@ -729,7 +729,7 @@
 //           user: null,
 //           aiAgents,
 //           fingerprint,
-//           hasNotifications,
+//           hasNotification,
 //           deviceId,
 //           env,
 //         }),
