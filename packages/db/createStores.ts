@@ -13,6 +13,7 @@ import {
   createOrUpdateStoreInstall,
   getStore,
   eq,
+  db,
 } from "./index"
 
 import enTranslations from "./en.json"
