@@ -2458,7 +2458,6 @@ export const getThreads = async ({
             )
         ).map((c) => c.threadId)
       : undefined
-  console.log(`🚀 ~ collaborationThreadIds:`, collaborationThreadIds)
 
   // Get bookmarked thread IDs
   // Only filter by visibility:public if explicitly requested (viewing others' profiles)
