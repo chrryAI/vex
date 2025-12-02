@@ -76,7 +76,12 @@ import Modal from "./Modal"
 import Loading from "./Loading"
 import sanitizeHtml from "sanitize-html"
 import { validate, v4 as uuidv4 } from "uuid"
-import { useCountdown, useHasHydrated, useLocalStorage } from "./hooks"
+import {
+  useCountdown,
+  useHasHydrated,
+  useLocalStorage,
+  useSyncedState,
+} from "./hooks"
 import toast from "react-hot-toast"
 import useSWR from "swr"
 
@@ -392,17 +397,17 @@ export default function Chat({
   const shouldUseCompactMode = compactMode || hasBottomOffset
   // || windowHeight < 600 // Not at bottom or mobile
 
-  const floatingInitial = shouldUseCompactMode
-    ? true
-    : !threadId
-      ? false
+  const floatingInitial = !threadId
+    ? false
+    : shouldUseCompactMode
+      ? true
       : isChatFloatingContext && !empty && !showChatInput
 
-  const isChatFloating = floatingInitial
+  const [isChatFloating] = useSyncedState(floatingInitial)
 
   useEffect(() => {
-    setIsChatFloating(floatingInitial)
-  }, [floatingInitial, threadId])
+    setIsChatFloating(isChatFloating)
+  }, [isChatFloating])
 
   // Strip ACTION JSON sfrom streaming text
   const stripActionFromText = (text: string): string => {
@@ -3569,7 +3574,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     {Top}
                   </Div>
                 )}
-                {hasBottomOffset && (
+                {isChatFloating && (
                   <Button
                     className="link"
                     style={{
