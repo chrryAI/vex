@@ -181,8 +181,44 @@ jobs:
       - name: Seed
         run: npm run seed
 
-      - name: Start ws
-        run: nohup npm run start:ws > ws.log 2>&1 &
+      - name: Build packages for E2E
+        run: pnpm turbo build --filter="@repo/db" --filter="@chrryai/chrry" --filter="@chrryai/waffles" --filter="@chrryai/pepper"
+        env:
+          TURBO_API: ${{ secrets.TURBO_API }}
+          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+          TURBO_TEAM: "vex"
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      - name: Build web app for E2E
+        run: pnpm turbo build --filter="web"
+        env:
+          TURBO_API: ${{ secrets.TURBO_API }}
+          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+          TURBO_TEAM: "vex"
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      - name: Build chrry-dot-dev for E2E
+        run: pnpm turbo build --filter="chrrydotdev"
+        env:
+          TURBO_API: ${{ secrets.TURBO_API }}
+          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+          TURBO_TEAM: "vex"
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      - name: Build WebSocket server for E2E
+        run: pnpm turbo build --filter="wsserver"
+        env:
+          TURBO_API: ${{ secrets.TURBO_API }}
+          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+          TURBO_TEAM: "vex"
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      - name: Start all
+        run: nohup npm run start:all > all.log 2>&1 &
 
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
