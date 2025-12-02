@@ -29,7 +29,6 @@ import {
 import { pageSizes } from "../../utils"
 import { hasThreadNotification } from "../../utils/hasThreadNotification"
 import { getThreadId } from "../../utils/url"
-import { useThreadId } from "../../utils/useThreadId"
 import {
   toast,
   useLocalStorage,
@@ -39,9 +38,7 @@ import {
 } from "../../platform"
 import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
-import { t } from "i18next"
 import useSWR from "swr"
-import { useNavigationContext } from "./NavigationProvider"
 import { useWebSocket } from "../../hooks/useWebSocket"
 
 interface placeHolder {
@@ -51,6 +48,8 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      fetchActiveCollaborationThreadsCount: () => Promise<void>
+      fetchPendingCollaborationThreadsCount: () => Promise<void>
       setIsNewAppChat: (item: appWithStore | undefined) => void
       shouldFocus: boolean
       setShouldFocus: (shouldFocus: boolean) => void
@@ -233,14 +232,17 @@ export function ChatProvider({
   const [collaborationStatus, setCollaborationStatusInternal] = useState<
     "pending" | "active" | undefined | null
   >(
-    ((searchParams.get("collaborationStatus") as "pending" | "active") ??
-      threads?.threads?.every((thread) =>
-        thread.collaborations?.some(
-          (collaboration) =>
-            collaboration.user.id === user?.id &&
-            collaboration.collaboration.status === "pending",
-        ),
-      ))
+    user &&
+      threads &&
+      threads?.threads?.length &&
+      ((searchParams.get("collaborationStatus") as "pending" | "active") ??
+        threads?.threads?.every((thread) =>
+          thread.collaborations?.some(
+            (collaboration) =>
+              collaboration.user.id === user?.id &&
+              collaboration.collaboration.status === "pending",
+          ),
+        ))
       ? "pending"
       : undefined,
   )
@@ -276,7 +278,8 @@ export function ChatProvider({
           userName: userNameByUrl,
           pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
           sort: "bookmark",
-          collaborationStatus: collaborationStatus ?? undefined,
+          collaborationStatus:
+            collaborationStatus === "pending" ? undefined : collaborationStatus,
           threadId:
             !thread?.collaborations?.some(
               (c) => user && c.user.id === user?.id,
@@ -315,9 +318,9 @@ export function ChatProvider({
 
   const [activeCollaborationThreadsCount, setActiveCollaborationThreadsCount] =
     useState<number>(
-      threads?.threads?.filter((t) =>
-        t.collaborations?.some((c) => c.collaboration.status === "active"),
-      ).length || 0,
+      user?.activeCollaborationThreadsCount ||
+        guest?.activeCollaborationThreadsCount ||
+        0,
     )
 
   useEffect(() => {
@@ -326,6 +329,7 @@ export function ChatProvider({
       setIsLoadingThreads(false)
     }
   }, [threadsSwr])
+  console.log(`🚀 ~ threadsSwr:`, threadsSwr)
 
   const fetchActiveCollaborationThreadsCount = async () => {
     const threads = await actions.getThreads({
@@ -366,53 +370,7 @@ export function ChatProvider({
     fetchPendingCollaborationThreadsCount()
   }
 
-  // useEffect(() => {
-  //   if (!token) return
-  //   fetchPendingCollaborationThreadsCount()
-  //   fetchActiveCollaborationThreadsCount()
-  // }, [token])
-
-  // useEffect(() => {
-  //   if (user && userNameByUrl && user.userName !== userNameByUrl) return
-  //   if (guest && userNameByUrl) return
-
-  //   if (token && !isLoadingThreads && thread?.id && (guest || user)) {
-  //     const collab = thread?.collaborations?.find(
-  //       (x) => user && x.user.id === user.id,
-  //     )
-
-  //     if (collab) {
-  //       if (collab.collaboration.status === "pending") {
-  //         setCollaborationStatus("pending")
-  //       }
-  //       if (collab.collaboration.status === "active") {
-  //         setCollaborationStatus("active")
-  //       }
-  //     } else if (thread?.id) {
-  //       refetchThreads()
-  //     }
-  //   }
-  // }, [token, isLoadingThreads, thread, guest, user, userNameByUrl, pathname])
-
   const [isNewChat, setIsNewChatInternal] = useState(false)
-
-  // const [hasNotification, setHasNotification] = useState<boolean>(false)
-
-  useEffect(() => {
-    if (pathname !== "/") return
-
-    if (!threadsSwr || !Array.isArray(threadsSwr.threads)) return
-    if (collaborationStatus === undefined) {
-      !hasNotification && setHasNotification(true)
-      threadsSwr.threads.some((thread: thread) => thread.userId === user?.id) &&
-        setCollaborationStatus("pending")
-    }
-  }, [
-    pendingCollaborationThreadsCount,
-    threadsSwr,
-    collaborationStatus,
-    hasNotification,
-  ])
 
   const [collaborationStep, setCollaborationStep] = useState(0)
 
@@ -477,12 +435,23 @@ export function ChatProvider({
       router.push(to)
       setStatus(null)
       isIncognito && setWasIncognito(true)
-      setCollaborationStatus(undefined)
+      setCollaborationStatus(null)
       setIsChatFloating(false)
     }
 
     setIsNewChatInternal(value)
   }
+
+  const fetchThreads = async () => {
+    setShouldFetchThreads(true)
+    shouldFetchThreads && (await refetchThreads())
+  }
+
+  useEffect(() => {
+    if (app) {
+      fetchThreads()
+    }
+  }, [app])
 
   useEffect(() => {
     setWasIncognito(isIncognito)
@@ -1113,6 +1082,8 @@ export function ChatProvider({
   return (
     <ChatContext.Provider
       value={{
+        fetchActiveCollaborationThreadsCount,
+        fetchPendingCollaborationThreadsCount,
         setIsNewAppChat,
         shouldFocus,
         setShouldFocus,
@@ -1190,10 +1161,7 @@ export function ChatProvider({
         setCollaborationStep,
         isVisitor,
         setIsVisitor,
-        refetchThreads: async () => {
-          setShouldFetchThreads(true)
-          shouldFetchThreads && (await refetchThreads())
-        },
+        refetchThreads: fetchThreads,
         userNameByUrl,
       }}
     >

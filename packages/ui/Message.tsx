@@ -679,7 +679,9 @@ export default function Message({
           key={message.message.id}
           style={{
             ...styles.userMessageContainer.style,
-            ...(owner && styles.owner.style),
+            ...(owner
+              ? styles.owner.style
+              : { ...styles.owner.style, alignSelf: "flex-start" }),
             flexDirection: !isMobileDevice ? "row" : "column",
           }}
         >
@@ -736,7 +738,7 @@ export default function Message({
             </Span>
           )}
 
-          {!owner && isMobileDevice && (
+          {!owner && !isMobileDevice && (
             <Span
               style={{
                 ...styles.userIcon.style,
@@ -997,6 +999,10 @@ export default function Message({
   }
 
   const agent = message.aiAgent
+
+  if (!agent) {
+    return null
+  }
 
   return (
     <Div style={styles.message.style} data-testid="message">

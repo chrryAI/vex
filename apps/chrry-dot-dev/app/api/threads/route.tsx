@@ -48,21 +48,19 @@ export async function GET(request: Request) {
   const starred = request.url.includes("starred")
   const sort = searchParams.get("sort") as "bookmark" | "date"
   const userName = searchParams.get("userName") || undefined
-  const collaborationStatus = searchParams.get("collaborationStatus") as
+  let collaborationStatus = searchParams.get("collaborationStatus") as
     | "active"
     | "pending"
+    | "null"
     | undefined
   const myPendingCollaborations =
     searchParams.get("myPendingCollaborations") === "true"
 
   if (
     collaborationStatus &&
-    !["active", "pending"].includes(collaborationStatus)
+    !["active", "pending", "null"].includes(collaborationStatus)
   ) {
-    return NextResponse.json(
-      { error: "Invalid collaboration status", status: 400 },
-      { status: 400 },
-    )
+    collaborationStatus = undefined
   }
 
   const app = appId
@@ -146,16 +144,19 @@ export async function GET(request: Request) {
     if (myPendingCollaborations) return undefined
 
     // Viewing another user's profile - public only
-    return ["public"]
+    return userFromUserName ? ["public"] : undefined
   }
 
   const isSameUser = sanitizedUserName && sanitizedUserName === member?.userName
 
   const collaborationStatusFinal =
-    collaborationStatus && member?.id ? [collaborationStatus] : undefined
+    collaborationStatus === "null"
+      ? undefined
+      : collaborationStatus && member?.id
+        ? [collaborationStatus]
+        : undefined
 
   const payload = {
-    appId: app?.id,
     isIncognito: false,
     pageSize,
     search: search || undefined,
@@ -163,20 +164,17 @@ export async function GET(request: Request) {
     sort: sort || "bookmark",
     myPendingCollaborations: myPendingCollaborations ? true : undefined,
   }
-  const pendingCollaborations = !collaborationStatusFinal
-    ? await getThreads({
-        collaborationStatus: ["pending"],
-        userId,
-        guestId,
-        ...payload,
-        myPendingCollaborations: true,
-      })
-    : undefined
-
-  console.log(
-    `🚀 ~ GET ~ pendingCollaborations:`,
-    pendingCollaborations?.totalCount,
-  )
+  const pendingCollaborations =
+    (collaborationStatus !== "null" && !collaborationStatusFinal) ||
+    myPendingCollaborations
+      ? await getThreads({
+          collaborationStatus: ["pending"],
+          userId,
+          guestId,
+          ...payload,
+          myPendingCollaborations: true,
+        })
+      : undefined
 
   if (pendingCollaborations && pendingCollaborations.totalCount) {
     return NextResponse.json({
@@ -188,6 +186,7 @@ export async function GET(request: Request) {
   // Fetch threads based on context
   const threads = await getThreads({
     ...payload,
+    appId: collaborationStatusFinal ? undefined : app?.id,
     collaborationStatus: collaborationStatusFinal,
     ...(!sanitizedUserName
       ? {
@@ -202,6 +201,7 @@ export async function GET(request: Request) {
     userName: sanitizedUserName,
     myPendingCollaborations: myPendingCollaborations ? true : undefined,
   })
+  console.log(`🚀 ~ GET ~ threads:`, threads.totalCount)
 
   return NextResponse.json({
     ...threads,

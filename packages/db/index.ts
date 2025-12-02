@@ -2435,28 +2435,28 @@ export const getThreads = async ({
     search && search.length >= 3 ? formatSearchTerm(search) : undefined
 
   // Get collaboration threads if userId or userName is provided
-  const collaborationThreadIds =
-    !collaborationStatus && !myPendingCollaborations
-      ? []
-      : userId || userName
-        ? (
-            await db
-              .select({ threadId: collaborations.threadId })
-              .from(collaborations)
-              .leftJoin(users, eq(collaborations.userId, users.id))
-              .where(
-                and(
-                  userId ? eq(collaborations.userId, userId) : undefined,
-                  userName ? eq(users.userName, userName) : undefined,
-                  myPendingCollaborations
-                    ? eq(collaborations.status, "pending")
-                    : collaborationStatus
-                      ? inArray(collaborations.status, collaborationStatus)
-                      : eq(collaborations.status, "active"),
-                ),
-              )
-          ).map((c) => c.threadId)
-        : undefined
+  const collaborationThreadIds = !collaborationStatus
+    ? []
+    : userId || userName
+      ? (
+          await db
+            .select({ threadId: collaborations.threadId })
+            .from(collaborations)
+            .leftJoin(users, eq(collaborations.userId, users.id))
+            .where(
+              and(
+                userId ? eq(collaborations.userId, userId) : undefined,
+                userName ? eq(users.userName, userName) : undefined,
+                myPendingCollaborations
+                  ? eq(collaborations.status, "pending")
+                  : collaborationStatus
+                    ? inArray(collaborations.status, collaborationStatus)
+                    : eq(collaborations.status, "active"),
+              ),
+            )
+        ).map((c) => c.threadId)
+      : undefined
+  console.log(`🚀 ~ collaborationThreadIds:`, collaborationThreadIds)
 
   // Get bookmarked thread IDs
   // Only filter by visibility:public if explicitly requested (viewing others' profiles)
