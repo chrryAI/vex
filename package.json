@@ -6,6 +6,7 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "dev:all": "concurrently \"turbo dev --filter=wsserver\" \"turbo dev --filter=chrrydotdev\" \"turbo dev --filter=web\"",
+    "start:all": "concurrently \"turbo start --filter=wsserver\" \"turbo start --filter=chrrydotdev\" \"turbo start --filter=web\"",
     "native": "cd apps/native && npm start",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
