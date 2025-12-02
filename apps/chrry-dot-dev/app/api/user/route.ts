@@ -3,11 +3,10 @@ import getMember from "../../actions/getMember"
 import {
   deleteUser,
   getStore,
-  getSubscription,
   getUser,
+  updateStore,
   updateUser,
 } from "@repo/db"
-import "../../../sentry.server.config"
 import captureException from "../../../lib/captureException"
 import { isValidUsername } from "chrry/utils"
 import { protectedRoutes } from "chrry/utils/url"
@@ -100,6 +99,15 @@ export async function PATCH(request: NextRequest) {
     )
   }
 
+  const userStore = await getStore({ slug: member.userName })
+
+  if (userStore?.store && userName !== member.userName) {
+    await updateStore({
+      ...userStore.store,
+      slug: userName,
+    })
+  }
+
   try {
     // Update user
     await updateUser({
@@ -118,9 +126,10 @@ export async function PATCH(request: NextRequest) {
 
     // If username changed, update store slug if it matches old username
     if (userName && userName !== member.userName) {
-      const userStore = await getStore({ slug: member.userName })
+      const userStore = await getStore({
+        slug: member.userName,
+      })
       if (userStore && userStore.store.userId === member.id) {
-        const { updateStore } = await import("@repo/db")
         await updateStore({
           ...userStore.store,
           slug: userName,
