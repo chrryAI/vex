@@ -67,6 +67,7 @@ import {
   exists,
   cosineDistance,
   notInArray,
+  gt,
 } from "drizzle-orm"
 import postgres from "postgres"
 
@@ -2750,6 +2751,64 @@ export const getThreads = async ({
       nextPage,
     }
   }
+}
+
+export const hasThreadNotifications = async ({
+  userId,
+  guestId,
+}: {
+  userId?: string
+  guestId?: string
+}) => {
+  if (!userId && !guestId) return false
+
+  // Get user/guest to check their activeOn timestamp
+  const user = userId ? await getUser({ id: userId }) : undefined
+  const guest = guestId ? await getGuest({ id: guestId }) : undefined
+
+  if (!user && !guest) return false
+
+  const activeOn = user?.activeOn || guest?.activeOn
+
+  // If no activeOn timestamp, consider all threads as having notifications
+  if (!activeOn) return true
+
+  // Check for threads owned by user/guest with new messages
+  const ownedThreadsWithNotifications = await db
+    .select({ id: threads.id })
+    .from(threads)
+    .innerJoin(messages, eq(threads.id, messages.threadId))
+    .where(
+      and(
+        userId ? eq(threads.userId, userId) : eq(threads.guestId, guestId!),
+        gt(messages.createdOn, activeOn),
+      ),
+    )
+    .limit(1)
+
+  if (ownedThreadsWithNotifications.length > 0) return true
+
+  // Check for collaboration threads with new messages (only for users, not guests)
+  if (userId) {
+    const collaborationThreadsWithNotifications = await db
+      .select({ threadId: collaborations.threadId })
+      .from(collaborations)
+      .innerJoin(threads, eq(collaborations.threadId, threads.id))
+      .innerJoin(messages, eq(threads.id, messages.threadId))
+      .where(
+        and(
+          eq(collaborations.userId, userId),
+          inArray(collaborations.status, ["active", "pending"]),
+          // Message is newer than collaboration activeOn
+          gt(messages.createdOn, collaborations.activeOn),
+        ),
+      )
+      .limit(1)
+
+    if (collaborationThreadsWithNotifications.length > 0) return true
+  }
+
+  return false
 }
 
 export const updateThread = async (thread: thread) => {

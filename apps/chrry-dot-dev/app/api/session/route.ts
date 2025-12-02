@@ -7,6 +7,7 @@ import {
   getCreditUsage,
   getGuest,
   getThreads,
+  hasThreadNotifications,
   migrateUser,
   updateGuest,
   updateUser,
@@ -541,6 +542,10 @@ export async function GET(request: Request) {
         timezone: device?.timezone ?? member.timezone,
       })
 
+      const hasNotification = await hasThreadNotifications({
+        userId: member.id,
+      })
+
       const response = setFingerprintCookie(
         NextResponse.json({
           locale,
@@ -560,6 +565,7 @@ export async function GET(request: Request) {
           aiAgents,
           fingerprint,
           migratedFromGuest,
+          hasNotification,
           note: "This is a fake guest for bot/crawler traffic.",
           deviceId,
           app,
@@ -689,6 +695,10 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Failed to update guest" })
       }
 
+      const hasNotification = await hasThreadNotifications({
+        guestId: updatedGuest.id,
+      })
+
       const response = setFingerprintCookie(
         NextResponse.json({
           locale,
@@ -707,6 +717,7 @@ export async function GET(request: Request) {
           user: null,
           aiAgents,
           fingerprint,
+          hasNotification,
           deviceId,
           env,
         }),

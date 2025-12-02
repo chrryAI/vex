@@ -7,6 +7,7 @@ import {
   getUser,
   isOwner,
   thread,
+  hasThreadNotifications,
   user,
 } from "@repo/db"
 import getGuest from "../../actions/getGuest"
