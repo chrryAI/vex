@@ -652,11 +652,20 @@ const generateCode = (styles, inputFile) => {
     .replace(/-([a-z])/g, (g) => g[1].toUpperCase())
     .replace(/^([a-z])/, (g) => g.toUpperCase())
 
-  // Calculate relative path to styles directory based on file location
-  const inputDir = path.dirname(inputFile)
-  const baseDir = path.resolve(__dirname, "../packages/ui")
-  const relativeDir = path.relative(inputDir, baseDir)
-  const stylesImportPath = relativeDir ? `${relativeDir}/styles` : "./styles"
+  // Calculate relative path to the shared styles directory based on file location
+  // This ensures subfolders like packages/ui/addToHomeScreen generate
+  // imports such as "../styles/createStyleHook" instead of "./styles/..."
+  const inputDir = path.dirname(path.resolve(inputFile))
+  const stylesDir = path.resolve(__dirname, "../packages/ui/styles")
+  let stylesImportPath = path.relative(inputDir, stylesDir)
+
+  // Normalize path separators for cross-platform support
+  stylesImportPath = stylesImportPath.split(path.sep).join("/")
+
+  // If relative path doesn't start with "." (e.g. "styles"), prefix with "./"
+  if (!stylesImportPath.startsWith(".")) {
+    stylesImportPath = `./${stylesImportPath}`
+  }
 
   let code = `/**
  * Generated from ${path.basename(inputFile)}
