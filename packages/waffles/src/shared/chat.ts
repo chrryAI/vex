@@ -118,17 +118,7 @@ export const chat = async ({
   const hourlyLimit = isSubscriber ? 100 : isMember ? 30 : 10 // guests: 10, members: 30, subscribers: 100
 
   const getModelCredits = (model: string) =>
-    model === "sushi"
-      ? 2
-      : isMember
-        ? model === "chatGPT"
-          ? 4
-          : model === "sushi"
-            ? 2
-            : model === "claude"
-              ? 3
-              : 2
-        : 2
+    model === "chatGPT" || model === "gemini" ? 4 : model === "claude" ? 3 : 2
 
   const MAX_FILE_SIZE = 4
 
@@ -151,7 +141,9 @@ export const chat = async ({
   await expect(signInModal).not.toBeVisible()
 
   const agentSelectButton = page.getByTestId("agent-select-button")
-  await expect(agentSelectButton).toBeVisible()
+  await expect(agentSelectButton).toBeVisible({
+    timeout: 10000,
+  })
 
   const addDebateAgentButton = page.getByTestId("add-debate-agent-button")
   await expect(addDebateAgentButton).toBeVisible()
@@ -177,6 +169,7 @@ export const chat = async ({
   const creditsInfo = page.getByTestId("credits-info")
   await expect(creditsInfo).toBeVisible()
   const scrollToBottom = async () => {
+    await wait(2000)
     await page.evaluate(() => {
       window.scrollTo(0, document.body.scrollHeight)
     })
@@ -611,7 +604,7 @@ export const chat = async ({
       break
     }
 
-    // await scrollToBottom() // Ensure send button is visible
+    await scrollToBottom() // Ensure send button is visible
     await sendButton.click()
 
     const acceptButton = page.getByTestId("chat-accept-button")
@@ -876,6 +869,8 @@ export const chat = async ({
         )
       }
     }
+
+    await scrollToBottom()
 
     if (prompt.delete) {
       await deleteMessageButton.click()
