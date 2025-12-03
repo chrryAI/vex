@@ -489,7 +489,7 @@ export default function Menu({
                               <Button
                                 className="link"
                                 onClick={() => {
-                                  setIsNewChat(true)
+                                  setCollaborationStatus(null)
                                 }}
                               >
                                 <ArrowLeft color={colors.accent6} size={16} />

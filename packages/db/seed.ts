@@ -35,6 +35,7 @@ import {
   apps,
   instructions,
   storeInstalls,
+  cities,
 } from "./src/schema"
 
 import { createEvent } from "./createEvent"
@@ -241,7 +242,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(calendarEvents)
   await db.delete(stores)
   await db.delete(apps)
-  // await db.delete(cities)
+  await db.delete(cities)
   await db.delete(characterProfiles)
   await db.delete(threadSummaries)
 }
@@ -319,9 +320,8 @@ const create = async () => {
     return
   }
 
-  // await createCities()
-
   console.log("🌍 Creating cities...")
+  await createCities()
   console.log("✅ Cities created")
 
   // Check if admin user already exists

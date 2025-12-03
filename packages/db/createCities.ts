@@ -7,11 +7,25 @@ export const createCities = async () => {
     name: string
     country: string
   }[] = []
+  const isCI = process.env.CI
+  const isDev = isCI
+    ? false
+    : process.env.DB_URL && process.env.DB_URL.includes("localhost")
+  const filteredCitiesData = isDev
+    ? citiesData.filter((item) => {
+        return ["NL", "JP"].includes(item.country)
+      })
+    : citiesData
+
+  const existingCities = await db.select().from(cities)
 
   await Promise.all(
-    citiesData.map(async (item) => {
+    filteredCitiesData.map(async (item) => {
       if (
         insertedCities.some(
+          (city) => city.name === item.name && city.country === item.country,
+        ) ||
+        existingCities.some(
           (city) => city.name === item.name && city.country === item.country,
         )
       ) {
