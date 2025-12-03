@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { COLORS, useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "../context/AppContext"
 import toast from "react-hot-toast"
 import {
   TrendingUp,
@@ -9,9 +9,9 @@ import {
   Coins,
   UserRoundPlus,
   SmilePlus,
-} from "./icons"
-import Img from "./Image"
-import { useAuth, useData } from "./context/providers"
+} from "../icons"
+import Img from "../Image"
+import { useAuth, useData } from "../context/providers"
 import {
   Button,
   Div,
@@ -23,13 +23,13 @@ import {
   useNavigation,
   usePlatform,
   useTheme,
-} from "./platform"
-import { useHasHydrated } from "./hooks"
-import Skeleton from "./Skeleton"
-import { getSiteConfig } from "./utils/siteConfig"
-import { apiFetch } from "./utils"
+} from "../platform"
+import { useHasHydrated } from "../hooks"
+import Skeleton from "../Skeleton"
+import { getSiteConfig } from "../utils/siteConfig"
+import { apiFetch } from "../utils"
 import { useAffiliateStyles } from "./Affiliate.styles"
-import { useStyles } from "./context/StylesContext"
+import { useStyles } from "../context/StylesContext"
 
 export default function Affiliate() {
   const { user, token, API_URL, FRONTEND_URL } = useAuth()

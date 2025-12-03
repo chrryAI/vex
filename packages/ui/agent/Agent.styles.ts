@@ -143,8 +143,8 @@ export const AgentStyleDefs = {
   error: {},
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
-import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "../styles/createUnifiedStyles"
+import { createStyleHook } from "../styles/createStyleHook"
 
 export const AgentStyles = createUnifiedStyles(AgentStyleDefs)
 

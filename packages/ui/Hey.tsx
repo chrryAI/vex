@@ -28,11 +28,11 @@ const Calendar = lazy(() => import("./Calendar"))
 const Why = lazy(() => import("./Why"))
 const Privacy = lazy(() => import("./Privacy"))
 const Terms = lazy(() => import("./Terms"))
-const About = lazy(() => import("./About/About"))
+const About = lazy(() => import("./about/About"))
 const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
-const Affiliate = lazy(() => import("./Affiliate"))
-const AffiliateDashboard = lazy(() => import("./AffiliateDashboard"))
+const Affiliate = lazy(() => import("./affiliate"))
+const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
 
 // Route map with conditional lazy loading
 const ROUTES: Record<string, ComponentType<any>> = {

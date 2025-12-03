@@ -2,16 +2,16 @@
 
 import React, { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { customZodResolver } from "./utils/customZodResolver"
+import { customZodResolver } from "../utils/customZodResolver"
 import { z } from "zod"
-import Loading from "./Loading"
-import { Task } from "./FocusButton"
+import Loading from "../Loading"
+import { Task } from "../FocusButton"
 import sanitizeHtml from "sanitize-html"
-import { useAppContext } from "./context/AppContext"
-import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "./utils"
-import SignIn from "./SignIn"
-import Subscribe from "./Subscribe"
-import { ArrowLeft } from "./icons"
+import { useAppContext } from "../context/AppContext"
+import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "../utils"
+import SignIn from "../SignIn"
+import Subscribe from "../Subscribe"
+import { ArrowLeft } from "../icons"
 import {
   Button,
   Div,
@@ -21,10 +21,10 @@ import {
   Span,
   toast,
   useNavigation,
-} from "./platform"
-import { useAuth } from "./context/providers"
+} from "../platform"
+import { useAuth } from "../context/providers"
 import { useAddTaskStyles } from "./AddTask.styles"
-import { useStyles } from "./context/StylesContext"
+import { useStyles } from "../context/StylesContext"
 
 const NewTaskSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),

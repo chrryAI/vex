@@ -107,7 +107,7 @@ import Img from "./Image"
 import MoodSelector from "./MoodSelector"
 import { useChatStyles } from "./Chat.styles"
 import { useStyles } from "./context/StylesContext"
-import A from "./A"
+import A from "./a/A"
 
 const MAX_FILES = MAX_FILE_LIMITS.chat
 

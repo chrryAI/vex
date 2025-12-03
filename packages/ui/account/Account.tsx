@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from "react"
-import { UserRound, LogOut, AtSign, Trash2, Pencil } from "./icons"
-import { CircleX } from "./icons"
+import { UserRound, LogOut, AtSign, Trash2, Pencil } from "../icons"
+import { CircleX } from "../icons"
 
 import { FaGoogle, FaApple } from "react-icons/fa"
 import {
@@ -9,21 +9,21 @@ import {
   BrowserInstance,
   checkIsExtension,
   isValidUsername,
-} from "./utils"
+} from "../utils"
 import { validate } from "uuid"
-import ConfirmButton from "./ConfirmButton"
+import ConfirmButton from "../ConfirmButton"
 import toast from "react-hot-toast"
-import Loading from "./Loading"
-import Modal from "./Modal"
+import Loading from "../Loading"
+import Modal from "../Modal"
 
-import { useRouter, useSearchParams } from "./hooks/useWindowHistory"
-import { useAppContext } from "./context/AppContext"
+import { useRouter, useSearchParams } from "../hooks/useWindowHistory"
+import { useAppContext } from "../context/AppContext"
 import {
   useAuth,
   useNavigationContext,
   useError,
   useData,
-} from "./context/providers"
+} from "../context/providers"
 import {
   Button,
   Div,
@@ -31,13 +31,13 @@ import {
   Input,
   usePlatform,
   useTheme,
-} from "./platform"
-import { uploadUserImage } from "./lib"
-import Img from "./Img"
-import CharacterProfiles from "./CharacterProfiles"
-import Checkbox from "./Checkbox"
+} from "../platform"
+import { uploadUserImage } from "../lib"
+import Img from "../Img"
+import CharacterProfiles from "../CharacterProfiles"
+import Checkbox from "../Checkbox"
 import { useAccountStyles } from "./Account.styles"
-import { useStyles } from "./context/StylesContext"
+import { useStyles } from "../context/StylesContext"
 
 export default function Account({ style }: { style?: React.CSSProperties }) {
   const { push } = useRouter()
