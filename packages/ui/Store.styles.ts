@@ -111,9 +111,13 @@ export const StoreStyleDefs = {
     gap: 2,
   },
   appName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 600,
     textAlign: "center",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    color: "var(--shade-7)",
   },
   appSubtitle: {
     fontSize: 12,

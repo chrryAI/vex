@@ -151,9 +151,13 @@
   }
 
   .appName {
-    font-size: toRem.toRem(16);
+    font-size: toRem.toRem(15);
     font-weight: 600;
     text-align: center;
+    display: flex;
+    align-items: center;
+    gap: toRem.toRem(7.5);
+    color: var(--shade-7);
   }
 
   .appSubtitle {

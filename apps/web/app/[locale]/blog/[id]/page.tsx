@@ -40,7 +40,7 @@ export async function generateMetadata({
 
   const title = `${data.title} - Vex`
   const description = data.excerpt
-  const canonicalUrl = `https://chrry.ai/en/blog/${id}` // Always point to English version
+  const canonicalUrl = `https://vex.chrry.ai/en/blog/${id}` // Always point to English version
 
   const metadata: Metadata = getMetadata({
     title,
@@ -50,7 +50,8 @@ export async function generateMetadata({
       canonical: canonicalUrl,
       languages: LANGUAGES.reduce(
         (acc, language) => {
-          acc[language.code] = `https://chrry.ai/${language.code}/blog/${id}`
+          acc[language.code] =
+            `https://vex.chrry.ai/${language.code}/blog/${id}`
           return acc
         },
         {} as Record<string, string>,
