@@ -14,6 +14,12 @@ jobs:
   build:
     runs-on: ubuntu-latest # 4-core runner with 16GB RAM (free tier)
     timeout-minutes: 30
+    env:
+      TURBO_API: ${{ secrets.TURBO_API }}
+      TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+      TURBO_TEAM: "vex"
+      NODE_OPTIONS: --max-old-space-size=8192
 
     steps:
       - name: Checkout code
@@ -44,11 +50,6 @@ jobs:
 
       - name: Lint
         run: pnpm turbo lint
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
 
       - name: Type check
         run: |
@@ -57,46 +58,7 @@ jobs:
           pnpm --filter "chrrydotdev" check-types
 
       - name: Build packages
-        run: pnpm turbo build --filter="@repo/db" --filter="@chrryai/chrry" --filter="@chrryai/waffles" --filter="@chrryai/pepper"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          NODE_OPTIONS: --max-old-space-size=8192
-
-      - name: Build web app
-        run: pnpm turbo build --filter="web"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          DB_URL: ${{ secrets.DB_URL }}
-          NODE_OPTIONS: --max-old-space-size=8192
-          CI: true
-
-      - name: Build chrry-dot-dev app
-        run: pnpm turbo build --filter="chrrydotdev"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          DB_URL: ${{ secrets.DB_URL }}
-          NODE_OPTIONS: --max-old-space-size=8192
-          CI: true
-
-      - name: Build WebSocket server
-        run: pnpm turbo build --filter="wsserver"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          DB_URL: ${{ secrets.DB_URL }}
-          NODE_OPTIONS: --max-old-space-size=8192
-          CI: true
+        run: pnpm run build
 
   # deploy:
   #   runs-on: ubuntu-latest
@@ -159,6 +121,11 @@ jobs:
       TEST_MEMBER_FINGERPRINTS: ${{ secrets.TEST_MEMBER_FINGERPRINTS }}
       TEST_MEMBER_EMAILS: ${{ secrets.TEST_MEMBER_EMAILS }}
       TEST_GUEST_FINGERPRINTS: ${{ secrets.TEST_GUEST_FINGERPRINTS }}
+      TURBO_API: ${{ secrets.TURBO_API }}
+      TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+      TURBO_TEAM: "vex"
+      NODE_OPTIONS: --max-old-space-size=8192
 
     steps:
       - uses: actions/checkout@v4
@@ -181,41 +148,8 @@ jobs:
       - name: Seed
         run: npm run seed
 
-      - name: Build packages for E2E
-        run: pnpm turbo build --filter="@repo/db" --filter="@chrryai/chrry" --filter="@chrryai/waffles" --filter="@chrryai/pepper"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          NODE_OPTIONS: --max-old-space-size=8192
-
-      - name: Build web app for E2E
-        run: pnpm turbo build --filter="web"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          NODE_OPTIONS: --max-old-space-size=8192
-
-      - name: Build chrry-dot-dev for E2E
-        run: pnpm turbo build --filter="chrrydotdev"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          NODE_OPTIONS: --max-old-space-size=8192
-
-      - name: Build WebSocket server for E2E
-        run: pnpm turbo build --filter="wsserver"
-        env:
-          TURBO_API: ${{ secrets.TURBO_API }}
-          TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-          TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-          TURBO_TEAM: "vex"
-          NODE_OPTIONS: --max-old-space-size=8192
+      - name: Build packages
+        run: pnpm run build
 
       - name: Start all
         run: nohup npm run start:all > all.log 2>&1 &
