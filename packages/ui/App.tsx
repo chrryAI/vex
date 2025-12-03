@@ -23,7 +23,7 @@ import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
 import { Div, H1, Button, Label, Span, Input } from "./platform"
-import A from "./A"
+import A from "./a/A"
 import { apiFetch } from "./utils"
 import { useStyles } from "./context/StylesContext"
 import {

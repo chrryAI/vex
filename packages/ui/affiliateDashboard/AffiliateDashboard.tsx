@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect } from "react"
-import { COLORS, useAppContext } from "./context/AppContext"
+import { COLORS, useAppContext } from "../context/AppContext"
 import toast from "react-hot-toast"
 import {
   Copy,
@@ -13,16 +13,16 @@ import {
   Link,
   Clock,
   Share,
-} from "./icons"
-import Logo from "./Logo"
-import Loading from "./Loading"
+} from "../icons"
+import Logo from "../Logo"
+import Loading from "../Loading"
 import clsx from "clsx"
-import { apiFetch } from "./utils"
-import { Button, Div, H1, H2, H3, P, Span, useTheme } from "./platform"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
-import Skeleton from "./Skeleton"
-import { useAffiliateDashboardStyles } from "./AffiliateDashboard.styles"
-import { useStyles } from "./context/StylesContext"
+import { apiFetch } from "../utils"
+import { Button, Div, H1, H2, H3, P, Span, useTheme } from "../platform"
+import { useAuth, useData, useNavigationContext } from "../context/providers"
+import Skeleton from "../Skeleton"
+import { useAffiliateDashboardStyles } from "../AffiliateDashboard.styles"
+import { useStyles } from "../context/StylesContext"
 
 export default function AffiliateDashboard() {
   const { t } = useAppContext()

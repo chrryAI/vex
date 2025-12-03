@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { type appFormData } from "./schemas/appSchema"
+import { type appFormData } from "../schemas/appSchema"
 import clsx from "clsx"
-import { useAppContext } from "./context/AppContext"
-import Modal from "./Modal"
+import { useAppContext } from "../context/AppContext"
+import Modal from "../Modal"
 import {
   Blocks,
   Boxes,
@@ -17,28 +17,28 @@ import {
   ThermometerSun,
   VectorSquare,
   Webhook,
-} from "./icons"
-import Img from "./Image"
+} from "../icons"
+import Img from "../Image"
 import {
   capitalizeFirstLetter,
   FRONTEND_URL,
   PLUS_PRICE,
   PRO_PRICE,
   API_URL,
-} from "./utils"
-import Select from "./Select"
-import Checkbox from "./Checkbox"
-import ColorScheme from "./ColorScheme"
-import { useHasHydrated } from "./hooks"
+} from "../utils"
+import Select from "../Select"
+import Checkbox from "../Checkbox"
+import ColorScheme from "../ColorScheme"
+import { useHasHydrated } from "../hooks"
 import { Controller, useForm } from "react-hook-form"
 import toast from "react-hot-toast"
-import { customZodResolver } from "./utils/customZodResolver"
+import { customZodResolver } from "../utils/customZodResolver"
 import {
   createCustomAiAgentSchema,
   type CreateCustomAiAgent,
-} from "./schemas/agentSchema"
-import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "./icons"
-import Logo from "./Logo"
+} from "../schemas/agentSchema"
+import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "../icons"
+import Logo from "../Logo"
 import {
   Button,
   Div,
@@ -48,17 +48,17 @@ import {
   usePlatform,
   TextArea,
   P,
-} from "./platform"
+} from "../platform"
 import {
   useChat,
   useNavigationContext,
   useApp,
   useAuth,
-} from "./context/providers"
-import ThemeSwitcher from "./ThemeSwitcher"
-import { useTheme } from "./platform"
+} from "../context/providers"
+import ThemeSwitcher from "../ThemeSwitcher"
+import { useTheme } from "../platform"
 import { useAgentStyles } from "./Agent.styles"
-import { useStyles } from "./context/StylesContext"
+import { useStyles } from "../context/StylesContext"
 
 export default function Agent({
   style,

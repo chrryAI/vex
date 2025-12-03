@@ -51,7 +51,7 @@ import { checkSpeechLimits } from "./lib/speechLimits"
 import { stripMarkdown } from "./lib/stripMarkdown"
 import { useMessageStyles } from "./Message.styles"
 import { useStyles } from "./context/StylesContext"
-import A from "./A"
+import A from "./a/A"
 
 export default function Message({
   onDelete,

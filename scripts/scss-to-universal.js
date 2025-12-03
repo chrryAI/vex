@@ -925,9 +925,27 @@ const main = async () => {
       process.exit(1)
     }
 
-    const files = fs
-      .readdirSync(uiDir)
-      .filter((f) => f.endsWith(".module.scss"))
+    // Recursively collect all *.module.scss files inside packages/ui
+    const collectScssFiles = (dir) => {
+      const entries = fs.readdirSync(dir, { withFileTypes: true })
+      const files = []
+
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name)
+        if (entry.isDirectory()) {
+          files.push(...collectScssFiles(fullPath))
+        } else if (
+          entry.isFile() &&
+          entry.name.toLowerCase().endsWith(".module.scss")
+        ) {
+          files.push(fullPath)
+        }
+      }
+
+      return files
+    }
+
+    const files = collectScssFiles(uiDir)
 
     if (files.length === 0) {
       console.log(`ℹ️  No .module.scss files found in ${uiDir}`)
@@ -937,8 +955,7 @@ const main = async () => {
     console.log(`🔄 Converting ${files.length} SCSS files...\n`)
 
     let converted = 0
-    for (const file of files) {
-      const inputPath = path.join(uiDir, file)
+    for (const inputPath of files) {
       const outputPath = inputPath.replace(".module.scss", ".styles.ts")
       if (await convertFile(inputPath, outputPath)) {
         converted++

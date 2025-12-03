@@ -177,8 +177,8 @@ export const AffiliateStyleDefs = {
   },
 } as const
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
-import { useInteractiveStyles } from "./styles/useInteractiveStyles"
+import { createUnifiedStyles } from "../styles/createUnifiedStyles"
+import { useInteractiveStyles } from "../styles/useInteractiveStyles"
 
 export const AffiliateStyles = createUnifiedStyles(AffiliateStyleDefs)
 
