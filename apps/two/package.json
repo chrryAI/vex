@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "node server.js",
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "vite build --outDir dist/client",
-    "build:server": "vite build --outDir dist/server --ssr src/entry-server.tsx",
+    "build": "pnpm run build:client && pnpm run build:server",
+    "build:client": "pnpm exec vite build --outDir dist/client",
+    "build:server": "pnpm exec vite build --outDir dist/server --ssr src/entry-server.tsx",
     "preview": "cross-env NODE_ENV=production node server.js",
     "typecheck": "tsc --noEmit"
   },
