@@ -261,7 +261,8 @@ export default function Store({
                     alt={app.name}
                     size={isMobileDevice ? 40 : 80}
                   />
-                  <Div
+                  <A
+                    href={getAppSlug(app)}
                     style={{
                       ...styles.appInfo.style,
                       display: isMobileDevice ? "none" : "flex",
@@ -278,7 +279,7 @@ export default function Store({
                     <Span style={{ ...styles.appSubtitle.style }}>
                       {t(app.subtitle || "")}
                     </Span>
-                  </Div>
+                  </A>
                 </Div>
               )
             })}
