@@ -3731,7 +3731,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     }}
                     title={
                       isImageGenerationEnabled
-                        ? t("Image Generation Enabled")
+                        ? t("Disable Image Generation")
                         : t("Enable Image Generation")
                     }
                     onClick={() => {
@@ -3740,14 +3740,15 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       setSelectedAgent(sushiAgent)
                     }}
                   >
-                    <Palette
-                      color={
-                        isImageGenerationEnabled
-                          ? "var(--accent-1)"
-                          : "var(--shade-3)"
-                      }
-                      size={22}
-                    />
+                    <Span
+                      style={{
+                        fontSize: 18,
+                        marginRight: 3,
+                        marginTop: 0.5,
+                      }}
+                    >
+                      {isImageGenerationEnabled ? "🔥" : "🎨"}
+                    </Span>
                   </Button>
                 )}
                 {/* File Preview Area */}
