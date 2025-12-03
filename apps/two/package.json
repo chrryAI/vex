@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server",
-    "build": "pnpm run build:client && pnpm run build:server",
+    "build:all": "pnpm run build:client && pnpm run build:server",
     "build:client": "pnpm exec vite build --outDir dist/client",
     "build:server": "pnpm exec vite build --ssr src/entry-server.tsx --outDir dist/server",
     "preview": "cross-env NODE_ENV=production node server"
