@@ -1,57 +1,79 @@
-import { Ratelimit } from "@upstash/ratelimit"
-import {
-  type user,
-  type guest,
-  type subscription,
-  type app,
-  upstashRedis as redis,
-} from "@repo/db"
+import arcjet, { slidingWindow } from "@arcjet/next"
+import { type user, type guest, type subscription, type app } from "@repo/db"
 import { isDevelopment, isE2E, isOwner } from "chrry/utils"
 
-const RATE_LIMITS = {
-  anonymous: {
-    // Before session/guest creation - Very restrictive
-    requests: 30,
-    window: "1 m",
-    titles: 3,
-    perThread: 2,
-  },
-  guest: {
-    // Auto-created guest with ID - Medium limits
-    requests: 100,
-    window: "1 m",
-    titles: 10,
-    perThread: 5,
-  },
-  free: {
-    // Registered user (free tier) - Good limits
-    requests: 300,
-    window: "1 m",
-    titles: 20,
-    perThread: 10,
-  },
-  plus: {
-    // Plus subscriber - High limits
-    requests: 600,
-    window: "1 m",
-    titles: 50,
-    perThread: 15,
-  },
-  pro: {
-    // Pro subscriber - Highest limits
-    requests: 1200,
-    window: "1 m",
-    titles: 150,
-    perThread: 30,
-  },
-  appOwner: {
-    // App owner with own API keys - Very high limits
-    requests: 5000,
-    window: "1 m",
-    titles: 500,
-    perThread: 100,
-  },
-}
+// Create separate Arcjet instances for each tier
+const ajAnonymous = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 60,
+      max: 30,
+    }),
+  ],
+})
+
+const ajGuest = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 60,
+      max: 100,
+    }),
+  ],
+})
+
+const ajFree = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 60,
+      max: 300,
+    }),
+  ],
+})
+
+const ajPlus = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 60,
+      max: 600,
+    }),
+  ],
+})
+
+const ajPro = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 60,
+      max: 1200,
+    }),
+  ],
+})
+
+const ajAppOwner = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 60,
+      max: 5000,
+    }),
+  ],
+})
 
 export async function checkRateLimit(
   request: Request,
@@ -73,48 +95,200 @@ export async function checkRateLimit(
     }
   }
 
-  const isKnown = member || guest ? true : false
-  let identifier = ""
-
-  if (member) {
-    // Use member ID for authenticated users
-    identifier = member.id
-  } else if (guest) {
-    // Use guest ID instead of IP for better tracking
-    identifier = guest.id
-  } else {
-    // Fallback to IP for completely anonymous requests
-    identifier = request.headers.get("x-forwarded-for") || "anonymous"
-  }
-
   const subscription = member?.subscription || guest?.subscription
 
-  const rateLimit = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(
-      subscription?.plan === "pro"
-        ? RATE_LIMITS.pro.requests
-        : subscription?.plan === "plus"
-          ? RATE_LIMITS.plus.requests
-          : member
-            ? RATE_LIMITS.free.requests // Registered user
-            : guest
-              ? RATE_LIMITS.guest.requests // Auto-created guest
-              : RATE_LIMITS.anonymous.requests, // No session yet
-      "1 m",
-    ),
+  // Select the appropriate Arcjet instance based on tier
+  let arcjetInstance
+  let isAuthenticated = false
+
+  if (subscription?.plan === "pro") {
+    arcjetInstance = ajPro
+    isAuthenticated = true
+  } else if (subscription?.plan === "plus") {
+    arcjetInstance = ajPlus
+    isAuthenticated = true
+  } else if (member) {
+    arcjetInstance = ajFree
+    isAuthenticated = true
+  } else if (guest) {
+    arcjetInstance = ajGuest
+    isAuthenticated = true
+  } else {
+    arcjetInstance = ajAnonymous
+    isAuthenticated = false
+  }
+
+  // Determine identifier
+  const identifier = member?.id || guest?.id || "anonymous"
+
+  // Protect with custom characteristic
+  const decision = await arcjetInstance.protect(request, {
+    userId: identifier,
   })
 
-  const { success } = await rateLimit.limit(identifier)
+  // Get remaining requests from rate limit metadata
+  let remaining = 0
+  for (const result of decision.results) {
+    if (result.reason.isRateLimit()) {
+      remaining = result.reason.remaining
+    }
+  }
 
   return {
-    success,
-    isAuthenticated: isKnown,
-    errorMessage: isKnown
+    success: !decision.isDenied(),
+    isAuthenticated,
+    remaining,
+    errorMessage: isAuthenticated
       ? "Too many requests. Please wait a moment before trying again."
       : "Rate limit exceeded. Please sign up for higher limits.",
   }
 }
+
+// Title generation rate limiters (hourly)
+const ajTitleAnonymous = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 3600, // 1 hour
+      max: 3,
+    }),
+  ],
+})
+
+const ajTitleGuest = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 3600,
+      max: 10,
+    }),
+  ],
+})
+
+const ajTitleFree = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 3600,
+      max: 20,
+    }),
+  ],
+})
+
+const ajTitlePlus = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 3600,
+      max: 50,
+    }),
+  ],
+})
+
+const ajTitlePro = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 3600,
+      max: 150,
+    }),
+  ],
+})
+
+const ajTitleAppOwner = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["userId"],
+      interval: 3600,
+      max: 500,
+    }),
+  ],
+})
+
+// Per-thread limiters (24 hour window)
+const ajPerThreadAnonymous = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["threadKey"],
+      interval: 86400, // 24 hours
+      max: 2,
+    }),
+  ],
+})
+
+const ajPerThreadGuest = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["threadKey"],
+      interval: 86400,
+      max: 5,
+    }),
+  ],
+})
+
+const ajPerThreadFree = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["threadKey"],
+      interval: 86400,
+      max: 10,
+    }),
+  ],
+})
+
+const ajPerThreadPlus = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["threadKey"],
+      interval: 86400,
+      max: 15,
+    }),
+  ],
+})
+
+const ajPerThreadPro = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["threadKey"],
+      interval: 86400,
+      max: 30,
+    }),
+  ],
+})
+
+const ajPerThreadAppOwner = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      characteristics: ["threadKey"],
+      interval: 86400,
+      max: 100,
+    }),
+  ],
+})
 
 export async function checkGenerationRateLimit(
   request: Request,
@@ -139,79 +313,100 @@ export async function checkGenerationRateLimit(
   }
 
   const subscription = member?.subscription || guest?.subscription
-
-  // Rate limits for title generation
-  const titleLimit = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(
-      subscription?.plan === "pro"
-        ? RATE_LIMITS.pro.titles
-        : subscription?.plan === "plus"
-          ? RATE_LIMITS.plus.titles
-          : member
-            ? RATE_LIMITS.free.titles // Registered user
-            : guest
-              ? RATE_LIMITS.guest.titles // Auto-created guest
-              : RATE_LIMITS.anonymous.titles, // No session yet
-      "1 h",
-    ),
-  })
-
-  // Check if user is app owner (using their own API keys)
   const isAppOwner =
     app && isOwner(app, { userId: member?.id, guestId: guest?.id })
 
-  // Per-thread limit to prevent obsessive regeneration
-  const perThreadLimit = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(
-      isAppOwner
-        ? RATE_LIMITS.appOwner.perThread // App owner with own keys
-        : subscription?.plan === "pro"
-          ? RATE_LIMITS.pro.perThread
-          : subscription?.plan === "plus"
-            ? RATE_LIMITS.plus.perThread
-            : member
-              ? RATE_LIMITS.free.perThread // Registered user
-              : guest
-                ? RATE_LIMITS.guest.perThread // Auto-created guest
-                : RATE_LIMITS.anonymous.perThread, // No session yet
-      "24 h",
-    ),
-  })
+  // Select instances based on tier
+  let hourlyInstance, perThreadInstance
+  let hourlyLimit, perThreadLimit
 
-  const ip = request.headers.get("x-forwarded-for") || "127.0.0.1"
-  const identifier = member ? member.id : ip
-  const rateLimit = titleLimit
+  if (isAppOwner) {
+    hourlyInstance = ajTitleAppOwner
+    perThreadInstance = ajPerThreadAppOwner
+    hourlyLimit = 500
+    perThreadLimit = 100
+  } else if (subscription?.plan === "pro") {
+    hourlyInstance = ajTitlePro
+    perThreadInstance = ajPerThreadPro
+    hourlyLimit = 150
+    perThreadLimit = 30
+  } else if (subscription?.plan === "plus") {
+    hourlyInstance = ajTitlePlus
+    perThreadInstance = ajPerThreadPlus
+    hourlyLimit = 50
+    perThreadLimit = 15
+  } else if (member) {
+    hourlyInstance = ajTitleFree
+    perThreadInstance = ajPerThreadFree
+    hourlyLimit = 20
+    perThreadLimit = 10
+  } else if (guest) {
+    hourlyInstance = ajTitleGuest
+    perThreadInstance = ajPerThreadGuest
+    hourlyLimit = 10
+    perThreadLimit = 5
+  } else {
+    hourlyInstance = ajTitleAnonymous
+    perThreadInstance = ajPerThreadAnonymous
+    hourlyLimit = 3
+    perThreadLimit = 2
+  }
 
-  // Check both hourly and per-thread limits
-  const [hourlyResult, threadResult] = await Promise.all([
-    rateLimit.limit(identifier),
-    perThreadLimit.limit(`${identifier}:${threadId}`),
+  const identifier =
+    member?.id ||
+    guest?.id ||
+    request.headers.get("x-forwarded-for") ||
+    "127.0.0.1"
+  const threadKey = `${identifier}:${threadId}`
+
+  // Check both limits
+  const [hourlyDecision, threadDecision] = await Promise.all([
+    hourlyInstance.protect(request, { userId: identifier }),
+    perThreadInstance.protect(request, { threadKey }),
   ])
 
-  const success = hourlyResult.success && threadResult.success
-  const remaining = Math.min(hourlyResult.remaining, threadResult.remaining)
+  const success = !hourlyDecision.isDenied() && !threadDecision.isDenied()
+
+  let remaining = 999
+  let errorMessage = ""
+
+  // Extract remaining counts
+  for (const result of hourlyDecision.results) {
+    if (result.reason.isRateLimit()) {
+      remaining = Math.min(remaining, result.reason.remaining)
+    }
+  }
+
+  for (const result of threadDecision.results) {
+    if (result.reason.isRateLimit()) {
+      remaining = Math.min(remaining, result.reason.remaining)
+    }
+  }
+
+  // Generate error messages
+  if (hourlyDecision.isDenied()) {
+    errorMessage =
+      subscription?.plan === "pro"
+        ? `You've reached your hourly limit (${hourlyLimit}/hour). Try again later.`
+        : subscription?.plan === "plus"
+          ? `You've reached your hourly limit (${hourlyLimit}/hour). Try again later.`
+          : member
+            ? `You've reached your hourly limit (${hourlyLimit}/hour). Upgrade for more.`
+            : `You've reached your hourly limit (${hourlyLimit}/hour). Sign up for more.`
+  } else if (threadDecision.isDenied()) {
+    errorMessage =
+      subscription?.plan === "pro"
+        ? `You've regenerated this title ${perThreadLimit} times today. Try tomorrow.`
+        : subscription?.plan === "plus"
+          ? `You've regenerated this title ${perThreadLimit} times today. Try tomorrow.`
+          : member
+            ? `You've regenerated this title ${perThreadLimit} times today. Try tomorrow.`
+            : `You've regenerated this title ${perThreadLimit} times today. Sign up for more.`
+  }
 
   return {
     success,
     remaining,
-    errorMessage: !hourlyResult.success
-      ? subscription?.plan === "pro"
-        ? "You've reached your hourly limit (150/hour). Try again later."
-        : subscription?.plan === "plus"
-          ? "You've reached your hourly limit (50/hour). Try again later."
-          : member
-            ? "You've reached your hourly limit (15/hour). Upgrade for more."
-            : "You've reached your hourly limit (5/hour). Sign up for more."
-      : !threadResult.success
-        ? subscription?.plan === "pro"
-          ? "You've regenerated this title 20 times today. Try tomorrow."
-          : subscription?.plan === "plus"
-            ? "You've regenerated this title 10 times today. Try tomorrow."
-            : member
-              ? "You've regenerated this title 5 times today. Try tomorrow."
-              : "You've regenerated this title 3 times today. Sign up for more."
-        : "",
+    errorMessage,
   }
 }
