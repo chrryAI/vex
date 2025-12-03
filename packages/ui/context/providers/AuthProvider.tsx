@@ -347,6 +347,7 @@ export function AuthProvider({
       setDeviceId(uuidv4())
     }
   }, [deviceId, setDeviceId, isStorageReady])
+  console.log("🚀~ deviceId", deviceId)
 
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
@@ -369,6 +370,8 @@ export function AuthProvider({
     tokenInternal,
     isExtension,
   )
+
+  console.log("🚀~ ", tokenInternal)
 
   useEffect(() => {
     if (tokenInternal) {

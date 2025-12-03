@@ -13,7 +13,7 @@ import Img from "./Image"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useChat } from "./context/providers/ChatProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
-import { useTheme, usePlatform, useLocalStorage, Div } from "./platform"
+import { usePlatform, useLocalStorage, Div } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import { useHasHydrated } from "./hooks"
 import { ErrorBoundary } from "./ErrorBoundary"
@@ -21,6 +21,7 @@ import Thread from "./Thread"
 import Home from "./Home"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
 import { locales } from "./locales"
+import { FRONTEND_URL } from "./utils"
 
 // Lazy load less frequently used components to reduce initial bundle
 const Store = lazy(() => import("./Store"))
@@ -61,6 +62,7 @@ export const Hey = memo(
     const { isHome, pathname, router } = useNavigationContext()
 
     const { isExtension } = usePlatform()
+
     const styles = useSidebarStyles()
 
     const [pathnameLocal, setPathnameLocal] = useLocalStorage<
@@ -197,9 +199,6 @@ export const Hey = memo(
     //   app?.slug && useExtensionIcon?.(app?.slug)
     // }, [app, useExtensionIcon])
     //
-    // console.log("Splash component rendered", splash)
-
-    console.log("Splash component rendered", isSplash)
 
     return (
       <Div>

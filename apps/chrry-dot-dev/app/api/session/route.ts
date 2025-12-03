@@ -26,7 +26,7 @@ import { validate as validateUuid } from "uuid"
 import { UAParser } from "ua-parser-js"
 import arcjet, { detectBot } from "@arcjet/next"
 
-import { isDevelopment, VERSION } from "chrry/utils"
+import { FRONTEND_URL, isDevelopment, VERSION } from "chrry/utils"
 import { checkRateLimit } from "../../../lib/rateLimiting"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -206,11 +206,6 @@ export async function GET(request: Request) {
         cookieDomain = ".chrry.ai" // vex.chrry.ai shares cookies with chrry.ai
       } else if (hostname === "chrry.ai" || hostname.endsWith(".chrry.ai")) {
         cookieDomain = ".chrry.ai"
-      } else if (
-        hostname === "askvex.com" ||
-        hostname.endsWith(".askvex.com")
-      ) {
-        cookieDomain = ".askvex.com"
       } else if (hostname === "chrry.dev" || hostname.endsWith(".chrry.dev")) {
         cookieDomain = ".chrry.dev"
       } else if (
@@ -223,6 +218,7 @@ export async function GET(request: Request) {
       // Invalid URL, leave cookieDomain undefined
     }
   }
+
   const locale = url.searchParams.get("locale") || "en"
 
   const source = url.searchParams.get("source") || "client"
@@ -291,6 +287,7 @@ export async function GET(request: Request) {
       ?.split("=")[1]
 
     const deviceId = deviceIdUrl || deviceIdCookie || deviceIdHeader
+    console.log("🚀~ ssssdwdx", deviceId)
 
     let fingerPrintCookie = request.headers
       .get("cookie")

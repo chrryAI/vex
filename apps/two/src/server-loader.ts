@@ -1,17 +1,8 @@
 import { v4 as uuidv4 } from "uuid"
-import {
-  VERSION,
-  getThreadId,
-  pageSizes,
-} from "chrry/utils"
+import { VERSION, getThreadId, pageSizes } from "chrry/utils"
 import { getSession, getThread, getThreads, getTranslations } from "chrry/lib"
 import { locale } from "chrry/locales"
-import {
-  session,
-  thread,
-  paginatedMessages,
-  appWithStore,
-} from "chrry/types"
+import { session, thread, paginatedMessages, appWithStore } from "chrry/types"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 
 export interface ServerRequest {
@@ -49,7 +40,6 @@ export interface ServerData {
  */
 export async function loadServerData(
   request: ServerRequest,
-  apiKey: string,
 ): Promise<ServerData> {
   const { pathname, hostname, headers, cookies } = request
 
@@ -64,8 +54,10 @@ export async function loadServerData(
   const viewPortWidth = cookies.viewPortWidth || ""
   const viewPortHeight = cookies.viewPortHeight || ""
 
+  const apiKey = fingerprint
+
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
-  const chrryUrl = isDev ? "http://localhost:3000" : "https://vex.chrry.ai"
+  const chrryUrl = getSiteConfig(hostname).url
   const locale: locale = (cookies.locale as locale) || "en"
 
   const siteConfig = getSiteConfig(hostname)
@@ -90,7 +82,7 @@ export async function loadServerData(
     }
   }
 
-  const appId = thread?.thread?.appId
+  const appId = thread?.thread?.appId || undefined
 
   // Fetch session, translations, and app in parallel
   try {
