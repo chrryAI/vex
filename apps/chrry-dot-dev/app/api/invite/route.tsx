@@ -5,23 +5,29 @@ import { render } from "@react-email/render"
 import Invite from "../../../components/emails/Invite"
 import getMember from "../../actions/getMember"
 import getGuest from "../../actions/getGuest"
-import { Ratelimit } from "@upstash/ratelimit"
-import { upstashRedis } from "@repo/db"
 import { isDevelopment, isE2E } from "chrry/utils"
 import nodemailer from "nodemailer"
 import { createInvitation, getInvitation } from "@repo/db"
 import captureException from "../../../lib/captureException"
 import { getSiteConfig } from "chrry/utils/siteConfig"
+import arcjet, { slidingWindow } from "@arcjet/next"
+
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    slidingWindow({
+      mode: "LIVE",
+      interval: 60, // 60 seconds
+      max: 60, // 60 requests per minute
+    }),
+  ],
+})
 
 export async function POST(request: NextRequest) {
   const siteConfig = getSiteConfig()
   if (!(isDevelopment || isE2E)) {
-    const ratelimit = new Ratelimit({
-      redis: upstashRedis,
-      limiter: Ratelimit.slidingWindow(60, "1 m"), // 240 requests per minute (supports real-time collaboration auth)
-    })
-    const ip = request.headers.get("x-forwarded-for") || "127.0.0.1"
-    const { success } = await ratelimit.limit(ip)
+    const decision = await aj.protect(request)
+    const success = !decision.isDenied()
 
     if (!success) {
       return new Response(JSON.stringify({ error: "Too many requests" }), {
@@ -30,6 +36,7 @@ export async function POST(request: NextRequest) {
       })
     }
   }
+
   const member = await getMember()
   const guest = await getGuest()
 
