@@ -46,6 +46,7 @@ import { locale, locales } from "../../locales"
 import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { getAppAndStoreSlugs } from "../../utils/url"
+import getAppSlugUtil from "../../utils/getAppSlug"
 import {
   API_URL,
   apiFetch,
@@ -709,48 +710,7 @@ export function AuthProvider({
   const getAppSlug = (
     targetApp: appWithStore,
     defaultSlug: string = "/",
-  ): string => {
-    const localeMatch = locales.find((loc) => {
-      return pathname === `/${loc}` || pathname.startsWith(`/${loc}/`)
-    })
-    const localePrefix = localeMatch ? `/${localeMatch}` : ""
-
-    let computedSlug = defaultSlug
-
-    if (targetApp) {
-      if (targetApp.id === baseApp?.id) {
-        computedSlug = defaultSlug
-      } else if (
-        targetApp.store?.slug === baseApp?.store?.slug ||
-        baseApp?.store?.apps.some((app) => app.id === targetApp.id)
-      ) {
-        computedSlug = `/${targetApp.slug}`
-      } else {
-        computedSlug = `/${targetApp.store?.slug}/${targetApp.slug}`
-      }
-    }
-
-    if (localePrefix) {
-      if (!computedSlug || computedSlug === "/") {
-        return localePrefix || "/"
-      }
-
-      if (
-        computedSlug === localePrefix ||
-        computedSlug.startsWith(`${localePrefix}/`)
-      ) {
-        return computedSlug
-      }
-
-      if (computedSlug.startsWith("/")) {
-        return `${localePrefix}${computedSlug}`
-      }
-
-      return `${localePrefix}/${computedSlug}`
-    }
-
-    return computedSlug || defaultSlug
-  }
+  ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
   const baseApp = storeApps.find((item) => {
     if (!item) return false
 

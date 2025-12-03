@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { app } from "@repo/db"
 import { appWithStore } from "chrry/types"
+import { getImageSrc } from "chrry/lib"
 
 // Simplified list of most common splash screens
 const splashScreenConfigs = [
@@ -57,35 +58,26 @@ export default function AppMetadata({ app }: { app?: appWithStore | null }) {
   // Get title from app context, fallback to "Vex"
   const appTitle = useMemo(() => app?.title || "Vex", [app?.title])
 
+  const iconSrc = app
+    ? getImageSrc({
+        app,
+        size: 180,
+      })
+    : undefined
   // Get icon from app context or use default
-  const iconHref = useMemo(
-    () =>
-      slug === "vex"
-        ? "/icons/icon-180.png"
-        : `/images/apps/${slug.toLowerCase()}.png`,
-    [slug],
-  )
+  const iconHref = useMemo(() => {
+    if (iconSrc) return iconSrc.src
 
-  const basePath = `/splash_screens/${slug}`
+    return slug === "vex"
+      ? "/icons/icon-180.png"
+      : `/images/apps/${slug.toLowerCase()}.png`
+  }, [slug])
+
+  const basePath = `/splash_screens`
   // Only load manifest if app exists (has an id) and is not vex
-  const manifestPath =
-    slug === "vex" || !app?.id ? undefined : `/manifests/${slug}.webmanifest`
-
-  // Only show splash screens for vex (main app) - other apps may not have them
-  const showSplashScreens = [
-    "vex",
-    "peach",
-    "atlas",
-    "bloom",
-    "vault",
-  ].includes(slug)
 
   return (
     <>
-      {/* Manifest */}
-      {manifestPath && (
-        <link key="manifest" rel="manifest" href={manifestPath} />
-      )}
       {/* App Icon */}
       <link key="apple-touch-icon" rel="apple-touch-icon" href={iconHref} />
       <link
@@ -101,15 +93,14 @@ export default function AppMetadata({ app }: { app?: appWithStore | null }) {
         content={appTitle}
       />
       {/* Splash Screens - only for main app */}
-      {showSplashScreens &&
-        splashScreenConfigs.map((config, index) => (
-          <link
-            key={`splash-${index}`}
-            rel="apple-touch-startup-image"
-            media={`screen and ${config.media}`}
-            href={`${basePath}/${config.file}`}
-          />
-        ))}
+      {splashScreenConfigs.map((config, index) => (
+        <link
+          key={`splash-${index}`}
+          rel="apple-touch-startup-image"
+          media={`screen and ${config.media}`}
+          href={`${basePath}/${config.file}`}
+        />
+      ))}
     </>
   )
 }

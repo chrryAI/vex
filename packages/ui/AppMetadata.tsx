@@ -73,11 +73,11 @@ export default function AppMetadata({
         sizes="180x180"
         href={getImageSrc({ app, size: 180 }).src}
       />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      <meta name="apple-mobile-web-app-title" content={app?.name} />
-      <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="mobile-web-app-status-bar-style" content="default" />
+      {/* <meta name="apple-mobile-web-app-capable" content="yes" /> */}
+      {/* <meta name="apple-mobile-web-app-status-bar-style" content="default" /> */}
+      {/* <meta name="apple-mobile-web-app-title" content={app?.name} /> */}
+      {/* <meta name="mobile-web-app-capable" content="yes" /> */}
+      {/* <meta name="mobile-web-app-status-bar-style" content="default" /> */}
 
       {showSplashScreens &&
         splashScreenConfigs.map((config, index) => (

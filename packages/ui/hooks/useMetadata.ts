@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { storeWithApps, appWithStore, thread } from "../types"
 import { generateStoreMetadata, generateAppMetadata } from "../utils"
+import { useAuth } from "../context/providers"
 
 /**
  * Hook to dynamically update page metadata for client-side navigation
@@ -100,6 +101,8 @@ export function useStoreMetadata(store?: storeWithApps) {
 export function useAppMetadata(app?: appWithStore, enabled = true) {
   const { i18n } = useTranslation()
 
+  const { baseApp } = useAuth()
+
   useEffect(() => {
     if (!enabled || typeof document === "undefined" || !app) return
 
@@ -119,6 +122,7 @@ export function useAppMetadata(app?: appWithStore, enabled = true) {
       locale,
       currentDomain,
       translations,
+      whiteLabel: baseApp,
     })
 
     // Apply metadata to document

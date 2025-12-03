@@ -12,6 +12,7 @@ import Store from "chrry/Store"
 import React from "react"
 import { getApp, getStore } from "@repo/db"
 import { storeWithApps } from "chrry/types"
+import { getWhiteLabel } from "chrry-dot-dev/app/actions/getApp"
 
 export async function generateMetadata({
   params,
@@ -49,6 +50,8 @@ export async function generateMetadata({
     })
   }
 
+  const pathname = headersList.get("x-pathname") || ""
+
   const app = validate(id)
     ? await getApp({ id, userId: member?.id, guestId: guest?.id })
     : await getApp({ slug: id, userId: member?.id, guestId: guest?.id })
@@ -57,11 +60,15 @@ export async function generateMetadata({
     return notFound()
   }
 
+  const whiteLabel = await getWhiteLabel({ app })
+
   return generateAppMetadata({
     translations,
     app,
     locale,
     currentDomain,
+    pathname,
+    whiteLabel,
   })
 }
 

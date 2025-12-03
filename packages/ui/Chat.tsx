@@ -402,7 +402,6 @@ export default function Chat({
     : shouldUseCompactMode
       ? true
       : isChatFloatingContext && !showChatInput
-  console.log(`🚀 ~ shouldUseCompactMode:`, shouldUseCompactMode)
 
   const [isChatFloating] = useSyncedState(floatingInitial)
 
