@@ -10,7 +10,6 @@ interface AppProps {
 
 function App({ serverData }: AppProps) {
   // Debug: Log server data
-  console.log("🔍 App serverData:", serverData)
 
   // Handle API errors
   if (serverData?.apiError) {
@@ -83,7 +82,6 @@ function App({ serverData }: AppProps) {
   return (
     <>
       {/* Debug render outside Chrry */}
-      sssss
       <Chrry
         locale={serverData?.locale as any}
         session={serverData?.session}

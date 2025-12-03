@@ -1,5 +1,7 @@
+import "dotenv/config"
 import fs from "node:fs/promises"
 import express from "express"
+import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 
 // Constants
@@ -15,6 +17,9 @@ const templateHtml = isProduction
 
 // Create http server
 const app = express()
+
+// Add cookie parser middleware
+app.use(cookieParser())
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
@@ -69,7 +74,6 @@ app.use("*all", async (req, res) => {
         pathname: url,
         headers: req.headers,
         cookies: req.cookies || {},
-        apiKey: process.env.API_KEY || "demo-key",
       }
       serverData = await loadData(context)
     }
