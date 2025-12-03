@@ -277,7 +277,8 @@ export default async function ChrryAI({
               <strong>Debug Info:</strong>
               <ul>
                 <li>
-                  <strong>Site:</strong> {siteConfig.url}
+                  <strong>Site:</strong>{" "}
+                  {siteConfig.url || "http://localhost:3000"}
                 </li>
                 <li>
                   <strong>Hostname:</strong> {hostname}

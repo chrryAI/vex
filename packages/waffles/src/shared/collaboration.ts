@@ -3,6 +3,7 @@ import { getURL, VEX_TEST_EMAIL, wait } from ".."
 import { chat } from "./chat"
 import { Page } from "@playwright/test"
 import { signIn } from "./signIn"
+import { v4 as uuidv4 } from "uuid"
 
 export async function collaboration({
   page,
@@ -32,6 +33,7 @@ export async function collaboration({
       isLive,
       isMember: true,
       path,
+      fingerprint: uuidv4(),
     })
 
   // Create two separate browser contexts (simulating two different users)
