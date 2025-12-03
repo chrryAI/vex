@@ -807,10 +807,14 @@ export default function Message({
                 </Span>
               }
               {isTyping && (
-                <Div data-testid="typing-indicator" style={styles.dots.style}>
-                  <Span></Span>
-                  <Span></Span>
-                  <Span></Span>
+                <Div
+                  className="typing"
+                  data-testid="typing-indicator"
+                  style={styles.dots.style}
+                >
+                  <Span style={styles.dotsSpan.style}></Span>
+                  <Span style={styles.dotsSpan.style}></Span>
+                  <Span style={styles.dotsSpan.style}></Span>
                 </Div>
               )}
             </Span>
@@ -1126,10 +1130,14 @@ export default function Message({
                   : "Thinking",
               )}
             </Span>
-            <Div data-testid="typing-indicator" style={styles.dots.style}>
-              <Span></Span>
-              <Span></Span>
-              <Span></Span>
+            <Div
+              className="typing"
+              data-testid="typing-indicator"
+              style={styles.dots.style}
+            >
+              <Span style={styles.dotsSpan.style}></Span>
+              <Span style={styles.dotsSpan.style}></Span>
+              <Span style={styles.dotsSpan.style}></Span>
             </Div>
           </Div>
         ) : (
