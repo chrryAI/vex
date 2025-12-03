@@ -2842,7 +2842,7 @@ export const updateAiAgent = async (data: aiAgent) => {
 export const createAiAgent = async (agent: newAiAgent) => {
   const existing = await getAiAgent({ name: agent.name })
   if (existing) {
-    console.log("Updating agent:", agent.name)
+    console.log("🍣 Updating agent:", agent.name)
     // Merge new data with existing, keeping the id
     return updateAiAgent({ ...existing, ...agent })
   }
