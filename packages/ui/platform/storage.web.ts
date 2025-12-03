@@ -3,8 +3,6 @@
  * Uses localStorage for web browsers
  */
 
-import { getSiteConfig } from "../utils/siteConfig"
-
 /**
  * Cross-platform storage adapter
  * Web: Uses localStorage
@@ -17,11 +15,7 @@ export class PlatformStorage {
       this.storage = window.localStorage
       console.log("✅ Using localStorage for web storage")
     } else {
-      const siteConfig = getSiteConfig()
-      console.warn("⚠️ localStorage not available", {
-        env: process.env,
-        siteConfig,
-      })
+      console.warn("⚠️ localStorage not available")
     }
   }
 

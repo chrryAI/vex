@@ -182,6 +182,8 @@ export async function collaboration({
     page: page2,
     isNewChat: false,
     threadId: threadId,
+    // messagesConsumed:1,
+    // creditsConsumed: 2,
     isMember: true, // Member user (signed in)
     prompts: [
       {
@@ -205,7 +207,8 @@ export async function collaboration({
     isNewChat: false,
     threadId: threadId,
     isMember,
-    creditsConsumed: 1,
+    messagesConsumed: 1,
+    creditsConsumed: 2,
     prompts: [
       {
         text: "That's great! When is the best time to see cherry blossoms?",
