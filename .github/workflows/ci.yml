@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write # Allow pushing to main branch
 
-# Centralized environment variables for all jobs
+# Centralized environment variables for all
 env:
   # Turbo cache
   TURBO_API: ${{ secrets.TURBO_API }}
