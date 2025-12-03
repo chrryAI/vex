@@ -12,8 +12,13 @@ import { getApps } from "./index"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const isCI = process.env.CI
 
 export async function extractTranslations() {
+  if (isCI) {
+    return
+  }
+
   console.log("\n🌍 Extracting translations from database...\n")
 
   // Load existing translations to avoid duplicates
