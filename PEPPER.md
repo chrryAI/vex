@@ -29,7 +29,7 @@ import { HistoryRouterProvider, useNavigation } from "@chrryai/pepper"
 
 function App() {
   const { navigate, pathname } = useNavigation()
-  
+
   return (
     <button onClick={() => navigate("/about")}>
       Go to About
@@ -45,40 +45,46 @@ function App() {
 ## 🚀 Features
 
 ### ⚡ 0ms Navigation
+
 ```typescript
 // Next.js App Router
 router.push("/calendar") // 100-300ms wait ❌
 
-// Pepper Router  
+// Pepper Router
 navigate("/calendar") // 0ms instant ✅
 ```
 
 ### 🎨 Native View Transitions (Web)
+
 Automatic smooth transitions using the browser's View Transitions API:
+
 - **Mobile**: Slide from right (native app feel)
 - **Desktop**: Slide up (elegant, spacious)
 - **Reduced motion**: Instant fade (accessible)
 
 ### 🌍 Universal Platform Support
-| Platform | Support | View Transitions | Bundle Size |
-|----------|---------|------------------|-------------|
-| Web | ✅ | ✅ | 2KB |
-| React Native | ✅ | Native animations | 1.5KB |
-| Browser Extensions | ✅ | ✅ | 2KB |
-| SSR | ✅ | ✅ | 2KB |
+
+| Platform           | Support | View Transitions  | Bundle Size |
+| ------------------ | ------- | ----------------- | ----------- |
+| Web                | ✅      | ✅                | 2KB         |
+| React Native       | ✅      | Native animations | 1.5KB       |
+| Browser Extensions | ✅      | ✅                | 2KB         |
+| SSR                | ✅      | ✅                | 2KB         |
 
 ### 🔥 Hybrid SSR/Client Routing
+
 ```typescript
 // SSR routes (blog, marketing pages)
 /blog → Server-rendered, SEO-friendly
 
-// Client routes (app pages)  
+// Client routes (app pages)
 /calendar → Instant client-side navigation
 
 // Automatic detection - no configuration!
 ```
 
 ### 📦 Tiny Bundle
+
 ```
 Next.js App Router: 50KB+
 React Router: 45KB+
@@ -113,7 +119,7 @@ function App() {
 
 function Navigation() {
   const { navigate, pathname } = useNavigation()
-  
+
   return (
     <nav>
       <button onClick={() => navigate("/")}>Home</button>
@@ -132,7 +138,7 @@ import { Pressable, Text } from "react-native"
 
 function Navigation() {
   const { navigate } = useNavigation()
-  
+
   return (
     <Pressable onPress={() => navigate("/about")}>
       <Text>Go to About</Text>
@@ -176,12 +182,12 @@ Main navigation hook.
 
 ```typescript
 const {
-  navigate,      // Navigate to a path
-  goBack,        // Go back in history
-  goForward,     // Go forward in history
-  pathname,      // Current pathname
-  searchParams,  // URLSearchParams
-  hash,          // URL hash
+  navigate, // Navigate to a path
+  goBack, // Go back in history
+  goForward, // Go forward in history
+  pathname, // Current pathname
+  searchParams, // URLSearchParams
+  hash, // URL hash
 } = useNavigation()
 ```
 
@@ -238,10 +244,10 @@ setParams({ page: "1", sort: "date" })
 ```typescript
 const { goBack, goForward, refresh, prefetch } = useNavigation()
 
-goBack()                    // Navigate back
-goForward()                 // Navigate forward
-refresh()                   // Refresh current route (Next.js)
-prefetch("/about")          // Prefetch route (Next.js)
+goBack() // Navigate back
+goForward() // Navigate forward
+refresh() // Refresh current route (Next.js)
+prefetch("/about") // Prefetch route (Next.js)
 ```
 
 ### Route Helpers
@@ -249,8 +255,8 @@ prefetch("/about")          // Prefetch route (Next.js)
 ```typescript
 import { useCurrentPathname, useCurrentSearchParams } from "@chrryai/pepper"
 
-const pathname = useCurrentPathname()          // "/about"
-const searchParams = useCurrentSearchParams()  // URLSearchParams
+const pathname = useCurrentPathname() // "/about"
+const searchParams = useCurrentSearchParams() // URLSearchParams
 ```
 
 ---
@@ -262,6 +268,7 @@ Pepper automatically uses the View Transitions API when available.
 ### Platform-Aware Animations
 
 **Mobile (≤768px):**
+
 ```css
 /* Slide from right - native iOS/Android feel */
 @keyframes mobile-slide-in-right {
@@ -273,6 +280,7 @@ Pepper automatically uses the View Transitions API when available.
 ```
 
 **Desktop (≥769px):**
+
 ```css
 /* Slide up - elegant and spacious */
 @keyframes desktop-slide-in-up {
@@ -284,6 +292,7 @@ Pepper automatically uses the View Transitions API when available.
 ```
 
 **Reduced Motion:**
+
 ```css
 /* Instant fade - accessible */
 @media (prefers-reduced-motion: reduce) {
@@ -348,12 +357,12 @@ class PepperRouter {
 
 ### Benchmarks
 
-| Router | Navigation Time | Bundle Size | View Transitions | Universal |
-|--------|----------------|-------------|------------------|-----------|
-| Next.js App Router | 100-300ms | 50KB+ | ❌ | ❌ |
-| React Router | 50-100ms | 45KB+ | ❌ | ❌ |
-| Expo Router | Instant | 40KB+ | ❌ | ❌ |
-| **Pepper Router** | **0ms** | **2KB** | **✅** | **✅** |
+| Router             | Navigation Time | Bundle Size | View Transitions | Universal |
+| ------------------ | --------------- | ----------- | ---------------- | --------- |
+| Next.js App Router | 100-300ms       | 50KB+       | ❌               | ❌        |
+| React Router       | 50-100ms        | 45KB+       | ❌               | ❌        |
+| Expo Router        | Instant         | 40KB+       | ❌               | ❌        |
+| **Pepper Router**  | **0ms**         | **2KB**     | **✅**           | **✅**    |
 
 ### Real-World Impact
 
@@ -372,7 +381,7 @@ Pepper:   100 × 0ms   = 0 seconds waiting ✅
 ✅ **Minimal bundle** - 2KB gzipped  
 ✅ **No polling** - Event-driven architecture  
 ✅ **Smart caching** - History state preserved  
-✅ **Debounced listeners** - Prevents update storms  
+✅ **Debounced listeners** - Prevents update storms
 
 ---
 
@@ -402,7 +411,7 @@ import { useNavigation } from "@chrryai/pepper/web"
 
 export default function Home() {
   const { navigate } = useNavigation()
-  
+
   // Instant client-side navigation by default!
   return <button onClick={() => navigate("/about")}>About</button>
 }
@@ -568,6 +577,7 @@ export default function Layout() {
 Pepper is open source and welcomes contributions!
 
 **Guidelines:**
+
 1. **Fast** - 0ms navigation always
 2. **Small** - Under 3KB gzipped
 3. **Simple** - Easy to understand
@@ -607,6 +617,7 @@ Pepper believes routing shouldn't be tied to platforms or frameworks. Write your
 ## 🎬 Real-World Usage
 
 Pepper powers the routing for **Vex**, a production app with:
+
 - 127,309 lines of code
 - 1,095+ components
 - Web + React Native + Extension support
