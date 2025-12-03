@@ -20,7 +20,7 @@
     "seed": "NODE_ENV=production turbo run seed --filter=@repo/db --log-order=stream",
     "migrate": "NODE_ENV=production turbo run migrate --filter=@repo/db --log-order=stream",
     "e2e": "pnpm run generate && pnpm run migrate && pnpm run seed && turbo run e2e --filter=@chrryai/waffles --log-order=stream",
-    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { try { require('husky').install() } catch (e) {} }\"",
+    "prepare": "husky",
     "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
     "check-types": "turbo run check-types",
     "start:ws": "turbo run start --log-order=stream --filter=wsserver ",
