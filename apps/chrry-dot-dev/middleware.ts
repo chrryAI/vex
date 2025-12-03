@@ -62,7 +62,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
     response.headers.set("Access-Control-Allow-Origin", origin)
     response.headers.set("Access-Control-Allow-Credentials", "true")
     response.headers.set("Vary", "Origin")
-  } else if (isDevelopment) {
+  } else if (process.env.NODE_ENV === "development") {
     // Allow all origins in development for testing
     response.headers.set("Access-Control-Allow-Origin", "*")
   } else {
@@ -96,7 +96,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
   )
   response.headers.set(
     "Access-Control-Max-Age",
-    isDevelopment ? "0" : "86400", // Disable in dev, 24h in prod
+    process.env.NODE_ENV === "development" ? "0" : "86400", // Disable in dev, 24h in prod
   )
 }
 
@@ -158,7 +158,7 @@ export default async function middleware(request: NextRequest) {
   if (!existingFingerprintCookie && fingerprint) {
     response.cookies.set("fingerprint", fingerprint, {
       httpOnly: false,
-      secure: !isDevelopment,
+      secure: process.env.NODE_ENV !== "development",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 365 * 10, // 10 years
       path: "/",
