@@ -4,6 +4,11 @@ import {
   renderToPipeableStream,
 } from "react-dom/server"
 import App from "./App"
+import {
+  loadServerData,
+  type ServerRequest,
+  type ServerData,
+} from "./server-loader"
 
 /*
   React SSR streaming with Suspense works by adding JS code to the end of the
@@ -24,10 +29,33 @@ import App from "./App"
   rendering its main content so we can render Vite's HTML after it.
 */
 
-export function render(_url: string, options?: RenderToPipeableStreamOptions) {
+export interface ServerContext extends ServerRequest {
+  apiKey: string
+}
+
+/**
+ * Load server data - call this before rendering
+ */
+export async function loadData(context: ServerContext) {
+  try {
+    return await loadServerData(context, context.apiKey)
+  } catch (error) {
+    console.error("Error loading server data:", error)
+    return undefined
+  }
+}
+
+/**
+ * Render function - synchronous, takes pre-loaded data
+ */
+export function render(
+  url: string,
+  serverData: ServerData | undefined,
+  options?: RenderToPipeableStreamOptions,
+) {
   return renderToPipeableStream(
     <StrictMode>
-      <App />
+      <App serverData={serverData} />
       <vite-streaming-end></vite-streaming-end>
     </StrictMode>,
     options,

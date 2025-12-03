@@ -323,8 +323,11 @@ export function AuthProvider({
   const siteConfig = getSiteConfig()
 
   // URL constants based on env
-  const FE_PORT = process.env.NEXT_PUBLIC_FE_PORT || "3000"
-  const API_PORT = process.env.API_PORT || "3001"
+  const FE_PORT =
+    (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) ||
+    "3000"
+  const API_PORT =
+    (typeof process !== "undefined" && process.env?.API_PORT) || "3001"
   const isTestingDevice = false && isDevelopment
 
   const chrryUrl = CHRRY_URL

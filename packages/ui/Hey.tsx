@@ -196,6 +196,10 @@ export const Hey = memo(
     // useEffect(() => {
     //   app?.slug && useExtensionIcon?.(app?.slug)
     // }, [app, useExtensionIcon])
+    //
+    // console.log("Splash component rendered", splash)
+
+    console.log("Splash component rendered", isSplash)
 
     return (
       <Div>
