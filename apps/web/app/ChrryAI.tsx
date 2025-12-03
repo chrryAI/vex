@@ -108,6 +108,7 @@ export default async function ChrryAI({
   const chrryUrl = await getChrryUrl()
   // Check for app route from middleware
   const siteConfig = getSiteConfig(hostname)
+  console.log(`🚀 ~ file: ChrryAI.tsx:111 ~ siteConfig:`, siteConfig)
 
   let session: session | undefined
   let translations: Record<string, any> | undefined

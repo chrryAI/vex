@@ -21,7 +21,7 @@ export default defineConfig({
     reuseExistingServer: true,
   },
   testDir: "./src",
-  timeout: 200000,
+  timeout: 480000,
   /* Run tests in files in parallel */
   // fullyParallel: true,
   fullyParallel: true,

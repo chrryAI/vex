@@ -15,7 +15,9 @@ export class PlatformStorage {
       this.storage = window.localStorage
       console.log("✅ Using localStorage for web storage")
     } else {
-      console.warn("⚠️ localStorage not available")
+      console.warn("⚠️ localStorage not available", {
+        env: process.env,
+      })
     }
   }
 
