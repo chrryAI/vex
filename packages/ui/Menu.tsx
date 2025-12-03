@@ -348,17 +348,8 @@ export default function Menu({
               >
                 <HatGlasses size={18} /> {t("Incognito Chat")}
               </A>
-              <A
-                href={`${app ? getAppSlug(app, "") : ""}/threads`}
-                onClick={(e) => {
-                  track({
-                    name: "threads-click-menu",
-                  })
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-                  e.preventDefault()
-
+              <Button
+                onClick={() => {
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   goToThreads()
                 }}
@@ -366,7 +357,7 @@ export default function Menu({
                 className="button transparent"
               >
                 <Search size={18} /> {t("Search chats")}
-              </A>
+              </Button>
               {showThreads && (
                 <Div
                   style={{
@@ -680,28 +671,20 @@ export default function Menu({
                       )}
                       {threads?.threads?.length
                         ? (() => {
-                            const url = `${app ? getAppSlug(app, "") : ""}/threads${collaborationStatus ? `?collaborationStatus=${collaborationStatus}` : ""}`
-
                             return (
                               <Div
                                 suppressHydrationWarning
                                 style={styles.loadMoreButtonContainer.style}
                               >
-                                <A
-                                  href={url}
+                                <Button
                                   data-testid="load-more-threads-menu"
-                                  onClick={(e) => {
+                                  onClick={() => {
                                     addHapticFeedback()
 
                                     track({
                                       name: "load-more-threads-menu",
                                     })
 
-                                    if (e.metaKey || e.ctrlKey) {
-                                      return
-                                    }
-
-                                    e.preventDefault()
                                     isSmallDevice ? toggleMenu() : null
                                     collaborationStatus
                                       ? goToThreads({
@@ -713,7 +696,7 @@ export default function Menu({
                                   style={styles.loadMoreButton.style}
                                 >
                                   <LoaderCircle size={14} /> {t("Load more")}
-                                </A>
+                                </Button>
                               </Div>
                             )
                           })()

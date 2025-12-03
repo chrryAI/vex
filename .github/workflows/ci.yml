@@ -179,6 +179,9 @@ jobs:
       - name: Build packages
         run: pnpm run build
 
+      - name: Wait for cache upload
+        run: sleep 30
+
       - name: Start all
         run: nohup npm run start:all > all.log 2>&1 &
 
