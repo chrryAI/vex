@@ -5,7 +5,7 @@ import { getApp, getStore } from "@repo/db"
 import { user, guest } from "@repo/db"
 import getMember from "./getMember"
 import getGuest from "./getGuest"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { getSiteConfig, whiteLabels } from "chrry/utils/siteConfig"
 import { appWithStore } from "chrry/types"
 import getChrryUrl from "./getChrryUrl"
 import { getAppAndStoreSlugs } from "chrry/utils/url"
@@ -19,6 +19,7 @@ export default async function getAppAction({
   appId?: string
   appSlug?: string
   routeType?: string
+  storeSlug?: string
   chrryUrl?: string
   request?: Request
 } = {}) {
@@ -46,10 +47,17 @@ export default async function getAppAction({
     depth: 1, // Populate one level of nested store.apps
   })
 
-  const { appSlug, storeSlug } = getAppAndStoreSlugs(path || "/", {
+  let { appSlug, storeSlug } = getAppAndStoreSlugs(path || "/", {
     defaultAppSlug: siteConfig.slug,
     defaultStoreSlug: siteConfig.storeSlug,
   })
+
+  if (rest.appSlug) {
+    appSlug = rest.appSlug
+  }
+  if (rest.storeSlug) {
+    storeSlug = rest.storeSlug
+  }
   // if (!chrryStore || !chrryStore.app || !chrryStore.store) {
   //   return null
   // }
@@ -150,4 +158,49 @@ export default async function getAppAction({
   }
 
   return app
+}
+
+export const getWhiteLabel = async ({ app }: { app: appWithStore }) => {
+  let whiteLabel = whiteLabels.find(
+    (label) => label.storeSlug === app.store?.slug && label.isStoreApp,
+  )
+
+  const storeApp = whiteLabel
+    ? app?.store?.apps.find(
+        (a) =>
+          a.slug === whiteLabel?.slug &&
+          a.store?.slug === whiteLabel?.storeSlug,
+      )
+    : undefined
+
+  if (storeApp) {
+    return storeApp
+  }
+
+  const chrryUrl = await getChrryUrl()
+
+  const siteConfig = getSiteConfig(chrryUrl)
+
+  if (!whiteLabel) {
+    const baseApp = await getApp({
+      slug: siteConfig.slug,
+      storeSlug: siteConfig.storeSlug,
+      depth: 1,
+    })
+
+    if (baseApp) {
+      whiteLabel = whiteLabels.find(
+        (label) => label.storeSlug === baseApp.store?.slug && label.isStoreApp,
+      )
+
+      if (!baseApp) {
+        return baseApp
+      }
+    }
+  }
+
+  return await getAppAction({
+    storeSlug: whiteLabel?.storeSlug,
+    appSlug: whiteLabel?.slug,
+  })
 }

@@ -3,6 +3,9 @@ import { appWithStore, storeWithApps, store } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
 import { isProduction } from "./env"
+import { whiteLabels } from "./siteConfig"
+import { getAppAndStoreSlugs } from "./url"
+import getAppSlug from "./getAppSlug"
 
 /**
  * Generate dynamic metadata for an app page
@@ -21,6 +24,7 @@ export function generateAppMetadata({
   locale = "en",
   currentDomain,
   translations,
+  whiteLabel,
   ...rest
 }: {
   app: appWithStore
@@ -28,11 +32,17 @@ export function generateAppMetadata({
   locale?: locale | string
   currentDomain: string
   translations: Record<string, any>
+  pathname?: string
+  whiteLabel?: appWithStore
 }): Metadata {
   const title = app.name || app.title || "Chrry App"
   const description = app.description || `${title} - AI-powered agent on Chrry`
 
   const store = rest.store || app.store!
+
+  const pathname =
+    rest.pathname ||
+    (typeof window !== "undefined" ? window.location.pathname : "")
 
   const API_URL = !isProduction
     ? "http://localhost:3001/api"
@@ -45,8 +55,20 @@ export function generateAppMetadata({
   const icon32 = app.images?.[4]?.url || "/logo/logo-32-32.png"
 
   const storeSlug = store.slug || "chrry"
-  const storeName = store.name || "Chrry"
-  const canonicalUrl = `${currentDomain}/${storeSlug}/${app.slug}`
+  const storeName = store.name || "Blossom"
+  // Prefer a dedicated white-label base URL for this storeSlug if configured
+
+  const baseUrl = whiteLabel?.store?.domain || currentDomain
+
+  const slug = whiteLabel
+    ? getAppSlug({
+        targetApp: app,
+        pathname,
+        baseApp: whiteLabel,
+      })
+    : `/${storeSlug}/${app.slug}`
+
+  const canonicalUrl = `${baseUrl}/${slug}`
 
   const t = (key: string) => {
     return tFunc(translations)(key)
@@ -54,7 +76,7 @@ export function generateAppMetadata({
   return {
     title: `${t(app.name)} - ${t(app.title)} - ${storeName}`,
     description: description,
-    manifest: `${API_URL}/manifest/${app.id}`,
+    manifest: `/manifest.webmanifest`,
     icons: [
       ...(icon32
         ? [{ rel: "icon", url: icon32, sizes: "32x32", type: "image/png" }]
@@ -105,14 +127,16 @@ export function generateAppMetadata({
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        en: `${currentDomain}/en/${storeSlug}/${app.slug}`,
-        de: `${currentDomain}/de/${storeSlug}/${app.slug}`,
-        fr: `${currentDomain}/fr/${storeSlug}/${app.slug}`,
-        es: `${currentDomain}/es/${storeSlug}/${app.slug}`,
-        ja: `${currentDomain}/ja/${storeSlug}/${app.slug}`,
-        ko: `${currentDomain}/ko/${storeSlug}/${app.slug}`,
-        pt: `${currentDomain}/pt/${storeSlug}/${app.slug}`,
-        zh: `${currentDomain}/zh/${storeSlug}/${app.slug}`,
+        // Default locale points exactly to the canonical URL (no /en prefix)
+        en: canonicalUrl,
+        // Other locales live on the same canonical base host
+        de: `${baseUrl}/de/${slug}`,
+        fr: `${baseUrl}/fr/${slug}`,
+        es: `${baseUrl}/es/${slug}`,
+        ja: `${baseUrl}/ja/${slug}`,
+        ko: `${baseUrl}/ko/${slug}`,
+        pt: `${baseUrl}/pt/${slug}`,
+        zh: `${baseUrl}/zh/${slug}`,
       },
     },
   }

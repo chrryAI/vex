@@ -3,6 +3,7 @@ import { storeWithApps } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
 import { API_URL } from "."
+import { whiteLabels } from "./siteConfig"
 
 /**
  * Generate dynamic metadata for a store page
@@ -39,7 +40,13 @@ export function generateStoreMetadata({
 
   const storeSlug = store.slug || "chrry"
   const storeName = store.name || "Chrry"
-  const canonicalUrl = `${currentDomain}/${storeSlug}`
+  // Prefer a dedicated white-label base URL for this storeSlug if configured
+  // (e.g. books.chrry.ai for the "books" store) to avoid cross-domain duplicates.
+  const whiteLabel = whiteLabels.find(
+    (label) => label.storeSlug === storeSlug && label.isStoreApp,
+  )
+  const baseUrl = whiteLabel?.url || currentDomain
+  const canonicalUrl = `${baseUrl}/${storeSlug}`
 
   const t = (key: string) => {
     return tFunc(translations)(key)
@@ -99,14 +106,16 @@ export function generateStoreMetadata({
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        en: `${currentDomain}/en/${storeSlug}`,
-        de: `${currentDomain}/de/${storeSlug}`,
-        fr: `${currentDomain}/fr/${storeSlug}`,
-        es: `${currentDomain}/es/${storeSlug}`,
-        ja: `${currentDomain}/ja/${storeSlug}`,
-        ko: `${currentDomain}/ko/${storeSlug}`,
-        pt: `${currentDomain}/pt/${storeSlug}`,
-        zh: `${currentDomain}/zh/${storeSlug}`,
+        // Default locale points exactly to the canonical URL (no /en prefix)
+        en: canonicalUrl,
+        // Other locales live on the same canonical base host
+        de: `${baseUrl}/de/${storeSlug}`,
+        fr: `${baseUrl}/fr/${storeSlug}`,
+        es: `${baseUrl}/es/${storeSlug}`,
+        ja: `${baseUrl}/ja/${storeSlug}`,
+        ko: `${baseUrl}/ko/${storeSlug}`,
+        pt: `${baseUrl}/pt/${storeSlug}`,
+        zh: `${baseUrl}/zh/${storeSlug}`,
       },
     },
   }

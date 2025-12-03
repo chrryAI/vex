@@ -38,6 +38,7 @@ import { getThreadId } from "chrry/utils"
 import { threadId } from "worker_threads"
 import cleanupTest from "../lib/cleanupTest"
 import getApp from "./actions/getApp"
+import { getWhiteLabel } from "chrry-dot-dev/app/actions/getApp"
 
 export const generateMetadata = async () => {
   const headersList = await headers()
@@ -52,6 +53,8 @@ export const generateMetadata = async () => {
 
   const app = await getApp()
 
+  const whiteLabel = app ? await getWhiteLabel({ app }) : undefined
+
   if (!app || !app.store) {
     return generateMeta({ locale })
   }
@@ -64,6 +67,8 @@ export const generateMetadata = async () => {
     app,
     store: app.store,
     currentDomain: siteConfig.url,
+    pathname,
+    whiteLabel,
   })
 }
 

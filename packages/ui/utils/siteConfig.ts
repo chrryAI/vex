@@ -17,6 +17,7 @@ const chrryDev = {
   slug: "chrryDev",
   storeSlug: "chrry",
   favicon: "chrry",
+  isStoreApp: true,
   store: "https://chrry.dev",
   name: "Chrry",
   domain: "chrry.dev",
@@ -96,6 +97,7 @@ const chrryDev = {
 const chrryAI = {
   slug: "chrry",
   favicon: "chrry",
+  isStoreApp: true,
   storeSlug: "blossom",
   mode: "chrryAI" as SiteMode,
   name: "Chrry",
@@ -173,6 +175,7 @@ const chrryAI = {
 
 const focus = {
   favicon: "focus",
+  isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
   version: "26.10.54",
@@ -254,6 +257,7 @@ const atlas = {
   favicon: "atlas",
   mode: "atlas" as SiteMode,
   slug: "atlas",
+  isStoreApp: true,
   storeSlug: "compass",
   name: "Atlas",
   domain: "atlas.chrry.ai",
@@ -309,6 +313,7 @@ const atlas = {
 
 const istanbul = {
   favicon: "atlas",
+  isStoreApp: false,
   mode: "istanbul" as SiteMode,
   slug: "istanbul",
   storeSlug: "compass",
@@ -361,6 +366,7 @@ const amsterdam = {
   favicon: "atlas",
   mode: "amsterdam" as SiteMode,
   slug: "amsterdam",
+  isStoreApp: false,
   storeSlug: "compass",
   name: "Amsterdam",
   domain: "amsterdam.chrry.ai",
@@ -412,6 +418,7 @@ const tokyo = {
   mode: "tokyo" as SiteMode,
   slug: "tokyo",
   storeSlug: "compass",
+  isStoreApp: false,
   name: "Tokyo",
   domain: "tokyo.chrry.ai",
   url: "https://tokyo.chrry.ai",
@@ -463,6 +470,7 @@ const newYork = {
   slug: "newYork",
   storeSlug: "compass",
   name: "New York",
+  isStoreApp: false,
   domain: "newyork.chrry.ai",
   url: "https://newyork.chrry.ai",
   store: "https://atlas.chrry.ai",
@@ -513,6 +521,7 @@ const popcorn = {
   slug: "popcorn",
   storeSlug: "movies",
   name: "Popcorn",
+  isStoreApp: true,
   domain: "popcorn.chrry.ai",
   url: "https://popcorn.chrry.ai",
   store: "https://popcorn.chrry.ai",
@@ -593,6 +602,7 @@ const zarathustra = {
   name: "Zarathustra",
   domain: "books.chrry.ai",
   url: "https://books.chrry.ai",
+  isStoreApp: true,
   store: "https://books.chrry.ai",
   email: "iliyan@chrry.ai",
   description:
@@ -670,6 +680,7 @@ const vex = {
   favicon: "vex",
   storeSlug: "lifeOS",
   name: "Vex",
+  isStoreApp: true,
   domain: "vex.chrry.ai",
   store: "https://vex.chrry.ai",
   email: "iliyan@chrry.ai",
