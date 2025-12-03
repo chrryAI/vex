@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from "uuid"
 import createIntlMiddleware from "next-intl/middleware"
 
 import { locales, defaultLocale } from "chrry/locales"
-import { isDevelopment } from "./lib"
 
 // Static allowed origins (always allowed)
 const STATIC_ALLOWED_ORIGINS = [
@@ -45,6 +44,15 @@ const intlMiddleware = createIntlMiddleware({
 const handleIntlRequest = (request: NextRequest) => {
   return intlMiddleware(request as any)
 }
+
+export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
+
+export const isProduction =
+  !isCI &&
+  (process.env.NODE_ENV === "production" ||
+    process.env.NEXT_PUBLIC_NODE_ENV === "production")
+
+export const isDevelopment = !isProduction
 
 // TODO: Add dynamic store domain loading via API endpoint
 // For now, use static origins to avoid Edge runtime issues with Prisma/bcrypt

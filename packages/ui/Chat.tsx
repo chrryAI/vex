@@ -2712,7 +2712,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   useEffect(() => {
     if (empty) return
 
-    const offset = isE2E ? 250 : 150
+    const offset = 150
     const checkBottomOffset = () => {
       const scrollPosition = window.scrollY
       const documentHeight = document.documentElement.scrollHeight
@@ -3282,14 +3282,13 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                                     />
                                   )) ||
                                   (key === "imageGeneration" && (
-                                    <Palette
-                                      color={
-                                        value
-                                          ? `var(--accent-6)`
-                                          : `var(--shade-3)`
-                                      }
-                                      size={14}
-                                    />
+                                    <Span
+                                      style={{
+                                        fontSize: 14,
+                                      }}
+                                    >
+                                      🎨
+                                    </Span>
                                   )) ||
                                   (key === "audio" && (
                                     <AudioLines
