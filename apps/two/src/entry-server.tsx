@@ -38,7 +38,7 @@ export interface ServerContext extends ServerRequest {
  */
 export async function loadData(context: ServerContext) {
   try {
-    return await loadServerData(context, context.apiKey)
+    return await loadServerData(context)
   } catch (error) {
     console.error("Error loading server data:", error)
     return undefined
