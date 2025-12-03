@@ -26,7 +26,7 @@ import {
   appWithStore,
 } from "../../types"
 
-import { pageSizes } from "../../utils"
+import { pageSizes, isOwner } from "../../utils"
 import { hasThreadNotification } from "../../utils/hasThreadNotification"
 import { getThreadId } from "../../utils/url"
 import {
@@ -544,30 +544,25 @@ export function ChatProvider({
   }, [threadId])
 
   useEffect(() => {
-    let visitor = false
-    if (profile?.userName) {
-      if (guest) visitor = true
-      if (user?.userName !== profile.userName) visitor = true
+    if (profile) {
+      setIsVisitor(user?.id == profile.id)
+      return
     } else if (userNameByUrl) {
-      if (guest) visitor = true
-      if (user?.userName !== userNameByUrl) visitor = true
+      setIsVisitor(user?.userName == userNameByUrl)
+      return
     }
 
     if (thread) {
-      if (user && thread.userId === user?.id) {
-        visitor = false
-      } else if (guest && thread.guestId === guest?.id) {
-        visitor = false
-      } else {
-        visitor = true
-      }
+      setIsVisitor(
+        !isOwner(thread, {
+          userId: user?.id,
+          guestId: guest?.id,
+        }),
+      )
+      return
     }
 
-    if (isNewChat) {
-      visitor = false
-    }
-
-    setIsVisitor(visitor)
+    setIsVisitor(false)
   }, [profile, guest, user, userNameByUrl, thread, isNewChat])
 
   useEffect(() => {
