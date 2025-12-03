@@ -10,16 +10,81 @@ on:
 permissions:
   contents: write # Allow pushing to main branch
 
+# Centralized environment variables for all jobs
+env:
+  # Turbo cache
+  TURBO_API: ${{ secrets.TURBO_API }}
+  TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+  TURBO_TEAM: "vex"
+  NODE_OPTIONS: --max-old-space-size=8192
+
+  # Testing
+  TESTING_ENV: e2e
+  NEXT_PUBLIC_TESTING_ENV: e2e
+  NEXT_PUBLIC_CI: true
+
+  # Node environment
+  NODE_ENV: production
+  NEXT_PUBLIC_NODE_ENV: development
+
+  # Database
+  DB_URL: ${{ secrets.DB_URL }}
+
+  # Auth
+  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+  AUTH_TRUST_HOST: ${{ secrets.AUTH_TRUST_HOST }}
+
+  # Test users
+  VEX_TEST_EMAIL: ${{ secrets.VEX_TEST_EMAIL }}
+  VEX_TEST_NAME: ${{ secrets.VEX_TEST_NAME }}
+  VEX_TEST_PASSWORD: ${{ secrets.VEX_TEST_PASSWORD }}
+  VEX_TEST_EMAIL_2: ${{ secrets.VEX_TEST_EMAIL_2 }}
+  VEX_TEST_NAME_2: ${{ secrets.VEX_TEST_NAME_2 }}
+  VEX_TEST_PASSWORD_2: ${{ secrets.VEX_TEST_PASSWORD_2 }}
+  VEX_TEST_EMAIL_3: ${{ secrets.VEX_TEST_EMAIL_3 }}
+  VEX_TEST_NAME_3: ${{ secrets.VEX_TEST_NAME_3 }}
+  VEX_TEST_PASSWORD_3: ${{ secrets.VEX_TEST_PASSWORD_3 }}
+  VEX_TEST_EMAIL_4: ${{ secrets.VEX_TEST_EMAIL_4 }}
+  VEX_TEST_NAME_4: ${{ secrets.VEX_TEST_NAME_4 }}
+  VEX_TEST_PASSWORD_4: ${{ secrets.VEX_TEST_PASSWORD_4 }}
+  TEST_MEMBER_FINGERPRINTS: ${{ secrets.TEST_MEMBER_FINGERPRINTS }}
+  TEST_MEMBER_EMAILS: ${{ secrets.TEST_MEMBER_EMAILS }}
+  TEST_GUEST_FINGERPRINTS: ${{ secrets.TEST_GUEST_FINGERPRINTS }}
+
+  # Push notifications
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+  VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+
+  # Stripe
+  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+  STRIPE_PRICE_PLUS_ID: ${{ secrets.STRIPE_PRICE_PLUS_ID }}
+  STRIPE_PRICE_CREDITS_ID: ${{ secrets.STRIPE_PRICE_CREDITS_ID }}
+  STRIPE_PRICE_PRO_ID: ${{ secrets.STRIPE_PRICE_PRO_ID }}
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+
+  # OAuth
+  APPLE_CLIENT_ID: ${{ secrets.APPLE_CLIENT_ID }}
+  APPLE_CLIENT_SECRET: ${{ secrets.APPLE_CLIENT_SECRET }}
+  GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+  GOOGLE_WEB_CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_CLIENT_SECRET }}
+
+  # URLs
+  CHRRY_URL: ${{ secrets.CHRRY_URL }}
+  NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+  NEXT_PUBLIC_SITE_MODE: ${{ secrets.NEXT_PUBLIC_SITE_MODE }}
+  NEXT_PUBLIC_WS_URL: ${{ secrets.NEXT_PUBLIC_WS_URL }}
+  WS_SERVER_URL: ${{ secrets.WS_SERVER_URL }}
+
+  # Redis
+  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+  REDIS_URL: ${{ secrets.REDIS_URL }}
+
 jobs:
   build:
     runs-on: ubuntu-latest # 4-core runner with 16GB RAM (free tier)
     timeout-minutes: 30
-    env:
-      TURBO_API: ${{ secrets.TURBO_API }}
-      TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-      TURBO_TEAM: "vex"
-      NODE_OPTIONS: --max-old-space-size=8192
 
     steps:
       - name: Checkout code
@@ -78,54 +143,6 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/chrry' && github.event_name == 'push'
     timeout-minutes: 60
-    env:
-      TESTING_ENV: e2e
-      NEXT_PUBLIC_TESTING_ENV: e2e
-      NEXT_PUBLIC_CI: true
-      NODE_ENV: production
-      NEXT_PUBLIC_NODE_ENV: development
-      DB_URL: ${{ secrets.DB_URL }}
-      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-      VEX_TEST_EMAIL: ${{ secrets.VEX_TEST_EMAIL }}
-      VEX_TEST_NAME: ${{ secrets.VEX_TEST_NAME }}
-      VEX_TEST_PASSWORD: ${{ secrets.VEX_TEST_PASSWORD }}
-      VEX_TEST_EMAIL_2: ${{ secrets.VEX_TEST_EMAIL_2 }}
-      VEX_TEST_NAME_2: ${{ secrets.VEX_TEST_NAME_2 }}
-      VEX_TEST_PASSWORD_2: ${{ secrets.VEX_TEST_PASSWORD_2 }}
-      VEX_TEST_EMAIL_3: ${{ secrets.VEX_TEST_EMAIL_3 }}
-      VEX_TEST_NAME_3: ${{ secrets.VEX_TEST_NAME_3 }}
-      VEX_TEST_PASSWORD_3: ${{ secrets.VEX_TEST_PASSWORD_3 }}
-      VEX_TEST_EMAIL_4: ${{ secrets.VEX_TEST_EMAIL_4 }}
-      VEX_TEST_NAME_4: ${{ secrets.VEX_TEST_NAME_4 }}
-      VEX_TEST_PASSWORD_4: ${{ secrets.VEX_TEST_PASSWORD_4 }}
-      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
-      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-      STRIPE_PRICE_PLUS_ID: ${{ secrets.STRIPE_PRICE_PLUS_ID }}
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-      APPLE_CLIENT_ID: ${{ secrets.APPLE_CLIENT_ID }}
-      APPLE_CLIENT_SECRET: ${{ secrets.APPLE_CLIENT_SECRET }}
-      AUTH_TRUST_HOST: ${{ secrets.AUTH_TRUST_HOST }}
-      CHRRY_URL: ${{ secrets.CHRRY_URL }}
-      GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
-      GOOGLE_WEB_CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_CLIENT_SECRET }}
-      NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-      NEXT_PUBLIC_SITE_MODE: ${{ secrets.NEXT_PUBLIC_SITE_MODE }}
-      NEXT_PUBLIC_WS_URL: ${{ secrets.NEXT_PUBLIC_WS_URL }}
-      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-      REDIS_URL: ${{ secrets.REDIS_URL }}
-      STRIPE_PRICE_CREDITS_ID: ${{ secrets.STRIPE_PRICE_CREDITS_ID }}
-      STRIPE_PRICE_PRO_ID: ${{ secrets.STRIPE_PRICE_PRO_ID }}
-      WS_SERVER_URL: ${{ secrets.WS_SERVER_URL }}
-      TEST_MEMBER_FINGERPRINTS: ${{ secrets.TEST_MEMBER_FINGERPRINTS }}
-      TEST_MEMBER_EMAILS: ${{ secrets.TEST_MEMBER_EMAILS }}
-      TEST_GUEST_FINGERPRINTS: ${{ secrets.TEST_GUEST_FINGERPRINTS }}
-      TURBO_API: ${{ secrets.TURBO_API }}
-      TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-      TURBO_TEAM: "vex"
-      NODE_OPTIONS: --max-old-space-size=8192
 
     steps:
       - uses: actions/checkout@v4
