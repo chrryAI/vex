@@ -9,7 +9,7 @@ export const createCities = async () => {
   }[] = []
   const isCI = process.env.CI
   const isDev = isCI
-    ? false
+    ? true
     : process.env.DB_URL && process.env.DB_URL.includes("localhost")
   const filteredCitiesData = isDev
     ? citiesData.filter((item) => {
