@@ -1,7 +1,8 @@
 import withPWA from "next-pwa"
 import { withSentryConfig } from "@sentry/nextjs"
 import withNextIntl from "next-intl/plugin"
-import { isDevelopment, isProduction } from "./lib"
+
+const isDevelopment = process.env.NODE_ENV === "development"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -165,8 +166,6 @@ const withPwaConfig = withPWA({
         ]
       : [], // Empty array in development
 })
-
-const isDevelopment = process.env.NODE_ENV === "development"
 
 // Conditionally apply Sentry based on environment
 const finalConfig = process.env.CI
