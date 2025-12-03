@@ -177,7 +177,6 @@ export const chat = async ({
   const creditsInfo = page.getByTestId("credits-info")
   await expect(creditsInfo).toBeVisible()
   const scrollToBottom = async () => {
-    return
     await page.evaluate(() => {
       window.scrollTo(0, document.body.scrollHeight)
     })
