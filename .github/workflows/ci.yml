@@ -14,6 +14,7 @@ permissions:
 env:
   # Turbo cache
   TURBO_API: ${{ secrets.TURBO_API }}
+  TURBO_VERBOSE: 1
   TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
   TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
   TURBO_TEAM: "vex"

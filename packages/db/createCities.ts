@@ -33,7 +33,7 @@ export const createCities = async () => {
       }
 
       insertedCities.push(item)
-      console.log("inserting", item.name, item.country)
+      console.log("🏁 inserting City:", item.name, item.country)
       await db.insert(cities).values({
         name: item.name,
         country: item.country,

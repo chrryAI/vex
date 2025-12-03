@@ -400,7 +400,7 @@ const Thread = ({
                 <Div>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
-                    compactMode={true}
+                    compactMode={showFocus}
                     onTyping={notifyTyping}
                     disabled={isPendingCollaboration}
                     placeholder={

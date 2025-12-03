@@ -62,7 +62,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
     response.headers.set("Access-Control-Allow-Origin", origin)
     response.headers.set("Access-Control-Allow-Credentials", "true")
     response.headers.set("Vary", "Origin")
-  } else if (process.env.NODE_ENV === "development") {
+  } else if (isDevelopment) {
     // Allow all origins in development for testing
     response.headers.set("Access-Control-Allow-Origin", "*")
   } else {
@@ -96,7 +96,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
   )
   response.headers.set(
     "Access-Control-Max-Age",
-    process.env.NODE_ENV === "development" ? "0" : "86400", // Disable in dev, 24h in prod
+    isDevelopment ? "0" : "86400", // Disable in dev, 24h in prod
   )
 }
 
