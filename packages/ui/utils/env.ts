@@ -1,5 +1,7 @@
 /// <reference types="chrome" />
 
+export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
+
 export const checkIsExtension = () => {
   if (typeof chrome !== "undefined" && chrome.runtime?.id) {
     return true
@@ -25,10 +27,12 @@ export const isProduction =
   process.env.NODE_ENV === "production" ||
   process.env.NEXT_PUBLIC_NODE_ENV === "production"
 
-export const isDevelopment = checkIsExtension()
-  ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>
-      getExtensionUrl()?.includes(id),
-    )
-  : !isProduction
+export const isDevelopment = isCI
+  ? true
+  : checkIsExtension()
+    ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>
+        getExtensionUrl()?.includes(id),
+      )
+    : !isProduction
 
 export const isTestingDevice = false && isDevelopment

@@ -32,7 +32,17 @@ import {
   isProduction,
   checkIsExtension,
   getExtensionUrl,
+  isCI,
 } from "./env"
+
+export {
+  isCI,
+  isDevelopment,
+  isTestingDevice,
+  isProduction,
+  checkIsExtension,
+  getExtensionUrl,
+}
 
 export { exampleInstructions, getExampleInstructions }
 
@@ -162,8 +172,6 @@ export const expenseCategory = [
 export type expenseCategoryType = (typeof expenseCategory)[number]
 
 export const budgetCategory = expenseCategory
-
-export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
 
 export const isE2E =
   process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
