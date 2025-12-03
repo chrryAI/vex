@@ -73,7 +73,7 @@ const setFingerprintCookie = (
 
   response.cookies.set("fingerprint", fingerprint, {
     httpOnly: true, // 👈 Make it read-only from client-side JS
-    secure: process.env.NODE_ENV === "production",
+    secure: !isDevelopment,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 365, // 1 year
     path: "/",
@@ -93,7 +93,7 @@ const setDeviceIdCookie = (
 
   response.cookies.set("deviceId", deviceId, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: !isDevelopment,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 365, // 1 year
     path: "/",
@@ -196,7 +196,7 @@ export async function GET(request: Request) {
   // Priority: chrryUrl (for extensions) > referer (for web)
   const sourceUrl = chrryUrl ? chrryUrl : referer
 
-  if (sourceUrl && process.env.NODE_ENV === "production") {
+  if (sourceUrl && !isDevelopment) {
     try {
       const parsedUrl = new URL(sourceUrl)
       const hostname = parsedUrl.hostname

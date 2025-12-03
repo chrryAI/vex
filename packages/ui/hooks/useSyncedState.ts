@@ -20,6 +20,7 @@ import { useState, useEffect, useRef } from "react"
  */
 export function useSyncedState<T>(
   computedValue: T,
+  deps?: React.DependencyList,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [localValue, setLocalValue] = useState<T>(computedValue)
   const isFirstRender = useRef(true)
@@ -34,14 +35,14 @@ export function useSyncedState<T>(
     // When deps change, reset to computed value
     setLocalValue(computedValue)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [computedValue])
+  }, [computedValue, ...(deps || [])])
 
   // Also sync when computedValue changes (but not on first render)
   useEffect(() => {
     if (!isFirstRender.current) {
       setLocalValue(computedValue)
     }
-  }, [computedValue])
+  }, [computedValue, ...(deps || [])])
 
   return [localValue, setLocalValue]
 }

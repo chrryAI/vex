@@ -54,6 +54,7 @@ import {
   getExampleInstructions,
   getThreadId,
   instructionBase,
+  isDevelopment,
   isE2E,
   PROD_FRONTEND_URL,
   WS_URL,
@@ -301,15 +302,6 @@ export function AuthProvider({
 
   const { isExtension, isStandalone, isFirefox, device, os, browser } =
     usePlatform()
-
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.NEXT_PUBLIC_NODE_ENV === "production"
-  const extensionId = getExtensionId()
-
-  const isDevelopment = isExtension
-    ? ["ihkpepnfnhmdkmpgfdnfbllldbgabbad"].includes(extensionId || "")
-    : !isProduction
 
   const env = isDevelopment ? "development" : "production"
 

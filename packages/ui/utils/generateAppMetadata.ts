@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { appWithStore, storeWithApps, store } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
+import { isProduction } from "./env"
 
 /**
  * Generate dynamic metadata for an app page
@@ -30,10 +31,6 @@ export function generateAppMetadata({
 }): Metadata {
   const title = app.name || app.title || "Chrry App"
   const description = app.description || `${title} - AI-powered agent on Chrry`
-
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.NEXT_PUBLIC_NODE_ENV === "production"
 
   const store = rest.store || app.store!
 

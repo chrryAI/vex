@@ -94,16 +94,14 @@ async function generateFavicon(
  */
 async function saveFavicon(path: string, buffer: Buffer): Promise<void> {
   // Option 1: Save to public directory (development)
-  if (process.env.NODE_ENV === "development") {
-    const fs = await import("fs/promises")
-    const fullPath = `./public${path}`
-    const dir = fullPath.substring(0, fullPath.lastIndexOf("/"))
-
-    await fs.mkdir(dir, { recursive: true })
-    await fs.writeFile(fullPath, buffer)
-    return
-  }
-
+  // if (process.env.NODE_ENV === "development") {
+  //   const fs = await import("fs/promises")
+  //   const fullPath = `./public${path}`
+  //   const dir = fullPath.substring(0, fullPath.lastIndexOf("/"))
+  //   await fs.mkdir(dir, { recursive: true })
+  //   await fs.writeFile(fullPath, buffer)
+  //   return
+  // }
   // Option 2: Upload to R2/S3 (production)
   // TODO: Implement R2 upload
   // await uploadToR2(path, buffer)

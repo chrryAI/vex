@@ -1,6 +1,7 @@
 import withPWA from "next-pwa"
 import { withSentryConfig } from "@sentry/nextjs"
 import withNextIntl from "next-intl/plugin"
+import { isDevelopment, isProduction } from "./lib"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -117,55 +118,52 @@ const nextConfig = {
 // PWA configuration with development-aware caching
 const withPwaConfig = withPWA({
   dest: "public",
-  disable: process.env.NODE_ENV === "development",
+  disable: isDevelopment,
   register: true,
   skipWaiting: true,
   // Only add caching in production
-  runtimeCaching:
-    process.env.NODE_ENV === "production"
-      ? [
-          {
-            urlPattern: /^https?.*\/api\/.*$/,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              networkTimeoutSeconds: 10,
-              expiration: {
-                maxEntries: 16,
-                maxAgeSeconds: 24 * 60 * 60,
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
+  runtimeCaching: !isDevelopment
+    ? [
+        {
+          urlPattern: /^https?.*\/api\/.*$/,
+          handler: "NetworkFirst",
+          options: {
+            cacheName: "api-cache",
+            networkTimeoutSeconds: 10,
+            expiration: {
+              maxEntries: 16,
+              maxAgeSeconds: 24 * 60 * 60,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
             },
           },
-          {
-            urlPattern: /^https?.*\//,
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "pages-cache",
-              expiration: {
-                maxEntries: 32,
-                maxAgeSeconds: 24 * 60 * 60,
-              },
+        },
+        {
+          urlPattern: /^https?.*\//,
+          handler: "StaleWhileRevalidate",
+          options: {
+            cacheName: "pages-cache",
+            expiration: {
+              maxEntries: 32,
+              maxAgeSeconds: 24 * 60 * 60,
             },
           },
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico|css|js)$/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "static-assets",
-              expiration: {
-                maxEntries: 64,
-                maxAgeSeconds: 30 * 24 * 60 * 60,
-              },
+        },
+        {
+          urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico|css|js)$/i,
+          handler: "CacheFirst",
+          options: {
+            cacheName: "static-assets",
+            expiration: {
+              maxEntries: 64,
+              maxAgeSeconds: 30 * 24 * 60 * 60,
             },
           },
-        ]
-      : [], // Empty array in development
+        },
+      ]
+    : [], // Empty array in development
 })
-
-const isDevelopment = process.env.NODE_ENV === "development"
 
 // Conditionally apply Sentry based on environment
 const finalConfig = process.env.CI
@@ -190,11 +188,6 @@ const finalConfig = process.env.CI
 export default {
   ...finalConfig,
   compiler: {
-    // ssr: !isDevelopment,
-    // removeConsole: false,
-    removeConsole:
-      process.env.TESTING_ENV === "e2e"
-        ? false
-        : process.env.NODE_ENV === "production",
+    removeConsole: isProduction,
   },
 }
