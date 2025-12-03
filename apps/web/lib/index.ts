@@ -14,6 +14,14 @@ export const getIp = (request: Request) => {
   return ip
 }
 
+export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
+
+export const isProduction =
+  process.env.NODE_ENV === "production" ||
+  process.env.NEXT_PUBLIC_NODE_ENV === "production"
+
+export const isDevelopment = isCI ? true : !isProduction
+
 export const extractPDFText = async (buffer: Buffer): Promise<string> => {
   return new Promise((resolve) => {
     console.log("📄 PDF buffer size:", buffer.length)

@@ -40,6 +40,7 @@ import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
+import { useSyncedState } from "chrry/hooks"
 
 interface placeHolder {
   // TODO: Define placeHolder type
@@ -98,7 +99,6 @@ const ChatContext = createContext<
       hourlyLimit: number
       hourlyUsageLeft: number
       isEmpty: boolean
-      setIsEmpty: (isEmpty: boolean) => void
       isChatFloating: boolean
       setIsChatFloating: (isChatFloating: boolean) => void
       input: string
@@ -190,7 +190,6 @@ export function ChatProvider({
 
   // Chat state
   const [input, setInput] = useState<string>("")
-  const [isEmpty, setIsEmpty] = useState(true)
 
   const [messages, setMessages] = useState<
     {
@@ -205,13 +204,7 @@ export function ChatProvider({
     }[]
   >(auth.threadData?.messages.messages || [])
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      isEmpty && setIsEmpty(false)
-    } else {
-      !isEmpty && setIsEmpty(true)
-    }
-  }, [messages, isEmpty])
+  const isEmpty = !messages?.length
 
   const { isExtension, isMobile } = usePlatform()
 
@@ -1110,7 +1103,6 @@ export function ChatProvider({
         error,
         setUntil,
         isEmpty,
-        setIsEmpty,
         scrollToBottom,
         setThreadId,
         isWebSearchEnabled,

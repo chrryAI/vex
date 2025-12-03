@@ -95,7 +95,6 @@ const Thread = ({
     setLiked,
     placeHolderText,
     isEmpty,
-    setIsEmpty,
   } = useChat()
 
   const showFocus = auth.showFocus && isEmpty
@@ -221,10 +220,6 @@ const Thread = ({
 
   const [collaborationVersion, setCollaborationVersion] = useState(0)
   const { utilities } = useStyles()
-
-  useEffect(() => {
-    setIsEmpty(!messages.length)
-  }, [messages.length])
 
   // Memoize the streaming update handler to prevent infinite loops
   const handleStreamingUpdate = useCallback(
@@ -405,7 +400,7 @@ const Thread = ({
                 <Div>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
-                    compactMode={showFocus}
+                    compactMode={true}
                     onTyping={notifyTyping}
                     disabled={isPendingCollaboration}
                     placeholder={

@@ -26,6 +26,7 @@ import { Providers } from "../components/Providers"
 import { captureException } from "@sentry/nextjs"
 import getChrryUrl from "chrry-dot-dev/app/actions/getChrryUrl"
 import getAppAction from "./actions/getApp"
+import { isDevelopment } from "../lib"
 
 export const generateMeta = async ({ locale }: { locale: locale }) => {
   const siteConfig = getSiteConfig()
@@ -81,7 +82,7 @@ export default async function ChrryAI({
       })
     : undefined
 
-  const isDev = process.env.NODE_ENV === "development"
+  const isDev = isDevelopment
 
   const deviceId =
     cookieStore.get("deviceId")?.value ||

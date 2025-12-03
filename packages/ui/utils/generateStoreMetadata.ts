@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { storeWithApps } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
+import { API_URL } from "."
 
 /**
  * Generate dynamic metadata for a store page
@@ -27,14 +28,6 @@ export function generateStoreMetadata({
 }): Metadata {
   const title = store.name || "Chrry Store"
   const description = store.description || `${title} - AI-powered apps on Chrry`
-
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.NEXT_PUBLIC_NODE_ENV === "production"
-
-  const API_URL = !isProduction
-    ? "http://localhost:3001/api"
-    : "https://chrry.dev/api"
 
   // Use store images or fallback to main app images
   const storeImages = store.images || store.app?.images || []

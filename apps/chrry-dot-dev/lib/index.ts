@@ -235,6 +235,14 @@ export function checkThreadSummaryLimit({
   }
 }
 
+export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
+
+export const isProduction =
+  process.env.NODE_ENV === "production" ||
+  process.env.NEXT_PUBLIC_NODE_ENV === "production"
+
+export const isDevelopment = isCI ? true : !isProduction
+
 export const hasThreadNotification = ({
   thread,
   guest,

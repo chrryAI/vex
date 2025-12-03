@@ -22,10 +22,7 @@ import { isValidUsername } from "chrry/utils"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import captureException from "../../../../lib/captureException"
 import { trackSignup } from "../../../../lib/ads"
-
-const isDevelopment =
-  process.env.NODE_ENV === "development" ||
-  process.env.NEXT_PUBLIC_NODE_ENV === "development"
+import { isDevelopment } from "../../../../lib"
 
 // Generate unique username from name
 async function generateUniqueUsername(
