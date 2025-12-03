@@ -1,31 +1,31 @@
 "use client"
 
 import React, { useEffect } from "react"
-import Skeleton from "./Skeleton"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { BrowserInstance, checkIsExtension } from "./utils"
+import Skeleton from "../Skeleton"
+import { COLORS, useAppContext } from "../context/AppContext"
+import { BrowserInstance, checkIsExtension } from "../utils"
 import {
   BadgeCheck,
   CircleArrowLeft,
   Coins,
   Shell,
   UserRoundPlus,
-} from "./icons"
+} from "../icons"
 import { RiNextjsFill } from "react-icons/ri"
 import { BiLogoPostgresql } from "react-icons/bi"
 
 import { SiCssmodules, SiJest, SiDrizzle, SiTypescript } from "react-icons/si"
 import { FaChrome } from "react-icons/fa"
 import clsx from "clsx"
-import Logo from "./Logo"
-import Img from "./Image"
-import { getFeatures } from "./utils/subscription"
+import Logo from "../Logo"
+import Img from "../Image"
+import { getFeatures } from "../utils/subscription"
 import {
   useAuth,
   useData,
   useError,
   useNavigationContext,
-} from "./context/providers"
+} from "../context/providers"
 import {
   Button,
   Div,
@@ -40,12 +40,12 @@ import {
   usePlatform,
   useTheme,
   Video,
-} from "./platform"
-import { getSiteConfig } from "./utils/siteConfig"
-import { Claude, DeepSeek } from "./icons"
-import A from "./A"
+} from "../platform"
+import { getSiteConfig } from "../utils/siteConfig"
+import { Claude, DeepSeek } from "../icons"
+import A from "../A"
 import { useAboutStyles } from "./About.styles"
-import { useStyles } from "./context/StylesContext"
+import { useStyles } from "../context/StylesContext"
 export default function About() {
   const { chrry, track, baseApp, setApp, user } = useAuth()
 

@@ -8,7 +8,7 @@ import Img from "./Img"
 import { FRONTEND_URL } from "./utils"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { Button, Div, H1, H2, P, Section, useTheme } from "./platform"
-import { useAboutStyles } from "./About.styles"
+import { useAboutStyles } from "./About/About.styles"
 
 export default function Privacy() {
   const { t } = useAppContext()
