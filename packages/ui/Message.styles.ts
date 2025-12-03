@@ -306,6 +306,13 @@ export const MessageStyleDefs = {
     display: "inline-flex",
     gap: 2,
     alignItems: "center",
+    marginLeft: 6,
+  },
+  dotsSpan: {
+    width: 4,
+    height: 4,
+    backgroundColor: "var(--accent-4)",
+    borderRadius: "50%",
   },
   nameWithPresence: {
     display: "inline-flex",
