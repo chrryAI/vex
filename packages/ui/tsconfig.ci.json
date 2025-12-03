@@ -21,8 +21,8 @@
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "migrate-components.js",
-    "platform/*.native.ts",
-    "platform/*.native.tsx",
+    "**/*.native.ts",
+    "**/*.native.tsx",
     ".next"
   ]
 }
