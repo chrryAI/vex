@@ -13,7 +13,9 @@ import { defineConfig, devices } from "@playwright/test"
  */
 export default defineConfig({
   webServer: {
-    command: "cd ../../apps/web && npm run start:e2e",
+    command: process.env.CI
+      ? "npm run start:e2e"
+      : "cd ../../apps/web && npm run start:e2e",
     url: "http://localhost:3000",
     // timeout: 480000,
     reuseExistingServer: true,
