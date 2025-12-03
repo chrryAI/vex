@@ -43,19 +43,41 @@ app.use("*all", async (req, res) => {
     let template
     /** @type {import('./src/entry-server.ts').render} */
     let render
+    /** @type {import('./src/entry-server.ts').loadData} */
+    let loadData
     if (!isProduction) {
       // Always read fresh template in development
       template = await fs.readFile("./index.html", "utf-8")
       template = await vite.transformIndexHtml(url, template)
-      render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render
+      const entryServer = await vite.ssrLoadModule("/src/entry-server.tsx")
+      render = entryServer.render
+      loadData = entryServer.loadData
     } else {
       template = templateHtml
-      render = (await import("./dist/server/entry-server.js")).render
+      const entryServer = await import("./dist/server/entry-server.js")
+      render = entryServer.render
+      loadData = entryServer.loadData
+    }
+
+    // Load server data first (optional - can be undefined for client-only rendering)
+    let serverData
+    if (loadData) {
+      // You can build the context from req here
+      const context = {
+        url,
+        hostname: req.hostname || "localhost",
+        pathname: url,
+        headers: req.headers,
+        cookies: req.cookies || {},
+        apiKey: process.env.API_KEY || "demo-key",
+      }
+      serverData = await loadData(context)
     }
 
     let didError = false
 
-    const { pipe, abort } = render(url, {
+    // Render with pre-loaded data
+    const { pipe, abort } = render(url, serverData, {
       onShellError() {
         res.status(500)
         res.set({ "Content-Type": "text/html" })
@@ -65,8 +87,27 @@ app.use("*all", async (req, res) => {
         res.status(didError ? 500 : 200)
         res.set({ "Content-Type": "text/html" })
 
-        const [htmlStart, htmlEnd] = template.split(`<!--app-html-->`)
+        // Split template to inject CSS in head
+        const htmlParts = template.split(`<!--app-head-->`)
+        const headStart = htmlParts[0]
+        const restOfTemplate = htmlParts[1] || ""
+        const [headEnd, htmlEnd] = restOfTemplate.split(`<!--app-html-->`)
+
         let htmlEnded = false
+
+        // Collect CSS from Vite's module graph (dev only)
+        let cssLinks = ""
+        if (!isProduction && vite) {
+          const modules = Array.from(vite.moduleGraph.urlToModuleMap.values())
+          const cssModules = modules.filter(
+            (m) => m.url?.endsWith(".css") || m.url?.endsWith(".scss"),
+          )
+          cssLinks = cssModules
+            .map((m) => `<link rel="stylesheet" href="${m.url}">`)
+            .join("\n")
+        }
+
+        const htmlStart = headStart + cssLinks + headEnd
 
         const transformStream = new Transform({
           transform(chunk, encoding, callback) {
@@ -75,6 +116,7 @@ app.use("*all", async (req, res) => {
               chunk = chunk.toString()
               if (chunk.endsWith("<vite-streaming-end></vite-streaming-end>")) {
                 res.write(chunk.slice(0, -41) + htmlEnd, "utf-8")
+                htmlEnded = true
               } else {
                 res.write(chunk, "utf-8")
               }

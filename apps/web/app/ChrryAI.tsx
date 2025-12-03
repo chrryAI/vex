@@ -1,7 +1,3 @@
-import "chrry/globals.scss"
-import "chrry/globals.css"
-import "chrry/styles/view-transitions.css"
-
 import type { ReactElement, ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
 import {

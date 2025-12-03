@@ -121,8 +121,10 @@ export const addParam = (key: string, value: string) => {
   window.history.replaceState({}, "", newUrl)
 }
 
-const FE_PORT = process.env.NEXT_PUBLIC_FE_PORT || "3000"
-const API_PORT = process.env.API_PORT || "3001"
+const FE_PORT =
+  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "3000"
+const API_PORT =
+  (typeof process !== "undefined" && process.env?.API_PORT) || "3001"
 
 export const FRONTEND_URL = isTestingDevice
   ? `http://192.168.2.27:${FE_PORT}`
