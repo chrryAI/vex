@@ -27,6 +27,7 @@ import ChrryAI, { generateMeta } from "./ChrryAI"
 import { getThreadId } from "chrry/utils"
 import getApp from "./actions/getApp"
 import { getWhiteLabel } from "chrry-dot-dev/app/actions/getApp"
+import { excludedSlugRoutes } from "chrry/utils/url"
 
 export const generateMetadata = async () => {
   const headersList = await headers()
@@ -34,9 +35,24 @@ export const generateMetadata = async () => {
   const siteConfig = getSiteConfig(hostname)
 
   const pathname = headersList.get("x-pathname") || ""
+  const locale = (await getLocale()) as locale
+
+  // Not empty and not multiple segments (e.g., /chrry/app)
+  const pathSegments = pathname.split("/").filter(Boolean)
+
+  const segment =
+    pathSegments.length === 1 && pathSegments[0] ? pathSegments[0] : null
+
+  if (segment && excludedSlugRoutes.includes(segment)) {
+    return generateMeta({ locale })
+  }
+
+  const store =
+    segment && !excludedSlugRoutes.includes(segment)
+      ? await getStore({ slug: segment })
+      : null
 
   const threadId = getThreadId(pathname)
-  const locale = (await getLocale()) as locale
 
   const thread = threadId ? await getThread({ id: threadId }) : undefined
 
@@ -52,12 +68,6 @@ export const generateMetadata = async () => {
   }
 
   // Only check for store if pathname is a single segment (e.g., /chrry, /vex)
-  // Not empty and not multiple segments (e.g., /chrry/app)
-  const pathSegments = pathname.split("/").filter(Boolean)
-  const store =
-    pathSegments.length === 1 && pathSegments[0] && pathSegments[0].length >= 3
-      ? await getStore({ slug: pathSegments[0], depth: 1 })
-      : null
 
   if (store) {
     const storeMetadata = generateStoreMetadata({
