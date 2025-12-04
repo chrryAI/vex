@@ -9,6 +9,7 @@ import { getSiteConfig, whiteLabels } from "chrry/utils/siteConfig"
 import { appWithStore } from "chrry/types"
 import getChrryUrl from "./getChrryUrl"
 import { getAppAndStoreSlugs } from "chrry/utils/url"
+import getWhiteLabelUtil from "chrry/utils/getWhiteLabel"
 
 export default async function getAppAction({
   request,
@@ -161,27 +162,13 @@ export default async function getAppAction({
 }
 
 export const getWhiteLabel = async ({ app }: { app: appWithStore }) => {
-  let whiteLabel = whiteLabels.find(
-    (label) => label.storeSlug === app.store?.slug && label.isStoreApp,
-  )
+  let { storeApp, whiteLabel } = getWhiteLabelUtil({ app })
 
-  const storeApp = whiteLabel
-    ? app?.store?.apps.find(
-        (a) =>
-          a.slug === whiteLabel?.slug &&
-          a.store?.slug === whiteLabel?.storeSlug,
-      )
-    : undefined
+  if (!storeApp) {
+    const chrryUrl = await getChrryUrl()
 
-  if (storeApp) {
-    return storeApp
-  }
+    const siteConfig = getSiteConfig(chrryUrl)
 
-  const chrryUrl = await getChrryUrl()
-
-  const siteConfig = getSiteConfig(chrryUrl)
-
-  if (!whiteLabel) {
     const baseApp = await getApp({
       slug: siteConfig.slug,
       storeSlug: siteConfig.storeSlug,
@@ -189,18 +176,20 @@ export const getWhiteLabel = async ({ app }: { app: appWithStore }) => {
     })
 
     if (baseApp) {
-      whiteLabel = whiteLabels.find(
-        (label) => label.storeSlug === baseApp.store?.slug && label.isStoreApp,
-      )
+      const baseWhiteLabel = getWhiteLabelUtil({ app: baseApp })
 
-      if (!baseApp) {
-        return baseApp
+      if (baseWhiteLabel) {
+        storeApp = baseWhiteLabel.storeApp
+        whiteLabel = baseWhiteLabel.whiteLabel
       }
     }
   }
 
+  if (!storeApp) {
+    return
+  }
+
   return await getAppAction({
-    storeSlug: whiteLabel?.storeSlug,
-    appSlug: whiteLabel?.slug,
+    appId: storeApp?.id,
   })
 }

@@ -2,31 +2,11 @@ import type { ReactElement, ReactNode } from "react"
 import { getMember } from "chrrydotdev"
 import { v4 as uuidv4 } from "uuid"
 
-import {
-  deleteCreditUsage,
-  deleteMessage,
-  deleteSubscription,
-  deleteThread,
-  getGuest as getGuestDb,
-  getMessages,
-  getSubscriptions,
-  getThreads,
-  getUser,
-  updateGuest,
-  updateThread,
-  updateUser,
-  migrateUser,
-} from "@repo/db"
+import { getGuest as getGuestDb, migrateUser } from "@repo/db"
 
 import { getLocale } from "next-intl/server"
 import { locale } from "chrry/locales"
 import { cookies, headers } from "next/headers"
-
-import {
-  TEST_GUEST_FINGERPRINTS,
-  TEST_MEMBER_EMAILS,
-  TEST_MEMBER_FINGERPRINTS,
-} from "@repo/db"
 
 import { generateAppMetadata } from "chrry/utils"
 import { Providers } from "../components/Providers"
@@ -35,8 +15,6 @@ import { getSiteConfig } from "chrry/utils/siteConfig"
 import { getTranslations } from "chrry/lib"
 import ChrryAI, { generateMeta } from "./ChrryAI"
 import { getThreadId } from "chrry/utils"
-import { threadId } from "worker_threads"
-import cleanupTest from "../lib/cleanupTest"
 import getApp from "./actions/getApp"
 import { getWhiteLabel } from "chrry-dot-dev/app/actions/getApp"
 
@@ -66,7 +44,7 @@ export const generateMetadata = async () => {
     locale,
     app,
     store: app.store,
-    currentDomain: siteConfig.url,
+    currentDomain: whiteLabel?.store?.domain || siteConfig.url,
     pathname,
     whiteLabel,
   })

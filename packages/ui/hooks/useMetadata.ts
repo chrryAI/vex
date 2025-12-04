@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { storeWithApps, appWithStore, thread } from "../types"
 import { generateStoreMetadata, generateAppMetadata } from "../utils"
 import { useAuth } from "../context/providers"
+import getWhiteLabel from "chrry/utils/getWhiteLabel"
 
 /**
  * Hook to dynamically update page metadata for client-side navigation
@@ -101,16 +102,21 @@ export function useStoreMetadata(store?: storeWithApps) {
 export function useAppMetadata(app?: appWithStore, enabled = true) {
   const { i18n } = useTranslation()
 
-  const { baseApp } = useAuth()
+  const { baseApp, hasStoreApps } = useAuth()
+
+  const { storeApp } = hasStoreApps(app)
+    ? getWhiteLabel({ app })
+    : { storeApp: baseApp }
 
   useEffect(() => {
-    if (!enabled || typeof document === "undefined" || !app) return
+    if (!enabled || typeof document === "undefined" || !storeApp) return
 
     const locale = i18n.language || "en"
     const currentDomain =
-      typeof window !== "undefined"
+      storeApp?.store?.domain ||
+      (typeof window !== "undefined"
         ? `${window.location.protocol}//${window.location.host}`
-        : ""
+        : "")
 
     // Get translations object from i18n
     const translations =
@@ -118,11 +124,12 @@ export function useAppMetadata(app?: appWithStore, enabled = true) {
 
     // Generate metadata using the same function as server-side
     const metadata = generateAppMetadata({
-      app,
+      app: storeApp,
+      store: storeApp?.store,
       locale,
       currentDomain,
       translations,
-      whiteLabel: baseApp,
+      whiteLabel: storeApp,
     })
 
     // Apply metadata to document

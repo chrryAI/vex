@@ -42,7 +42,7 @@ import {
 import { getLatestNews, getNewsBySource } from "../../../lib/newsFetcher"
 import { getAppKnowledge } from "../../../lib/appRAG"
 import { streamText, generateText, ModelMessage } from "ai"
-import { z } from "zod"
+
 import { createDeepSeek } from "@ai-sdk/deepseek"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createAnthropic } from "@ai-sdk/anthropic"
@@ -1429,7 +1429,7 @@ ${
     ? `### Timer Status & Preferences
 ${focusTimer.isCountingDown ? "⏱️ **TIMER IS ACTIVE** - User is currently in a focus session!" : "⏸️ Timer is idle"}
 - Preset 1: ${focusTimer.preset1} min
-- Preset 2: ${focusTimer.preset2} min  
+- Preset 2: ${focusTimer.preset2} min
 - Preset 3: ${focusTimer.preset3} min
 - Total sessions completed: ${focusTimer.count}
 `
@@ -1586,7 +1586,7 @@ ${(() => {
     aiCoachContext = `
 ## 🎉 First Time Using Your App!
 
-This is the **first message** in your newly created app "${app.name}"! 
+This is the **first message** in your newly created app "${app.name}"!
 
 **Welcome Guide:**
 - This conversation will become your app's **main thread** - the knowledge base for how this app works
@@ -2711,7 +2711,7 @@ You are ${selectedAgent.name} in a structured debate with ${debateAgent.name}.
 3. Directly engage with the last point made
 4. Provide evidence/reasoning
 5. Conclude after 3 exchanges max
-6. Use your own Identity don't Vex identity 
+6. Use your own Identity don't Vex identity
 
 **User's Original Prompt:**
 ${lastMessageContent}
@@ -2748,7 +2748,7 @@ ${lastMessageContent}
 - "I found a 3 PM call today and rescheduled it to tomorrow at 3 PM"
 
 ❌ WRONG Examples (NEVER use these):
-- "I'll schedule that for you" 
+- "I'll schedule that for you"
 - "Let me check your calendar"
 - "Would you like me to..."
 - "I can help you with that"
@@ -3511,7 +3511,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
 
         // First, get enhanced prompt from DeepSeek internally (no streaming)
         // In the enhancement prompt, add conversation context
-        const enhancementPrompt = `You are an expert image generation prompt engineer. 
+        const enhancementPrompt = `You are an expert image generation prompt engineer.
 
 CONVERSATION HISTORY:
 ${messages
