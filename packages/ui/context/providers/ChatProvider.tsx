@@ -277,7 +277,9 @@ export function ChatProvider({
 
         return threads
       } catch (error) {
-        toast.error("Something went wrong")
+        console.log(`🚀 ~ error:`, error)
+        captureException(error)
+        // toast.error("Something went wrong")
       }
     },
 
