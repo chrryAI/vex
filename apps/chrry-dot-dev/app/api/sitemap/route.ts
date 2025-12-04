@@ -1,4 +1,4 @@
-import { defaultLocale, LANGUAGES } from "chrry/locales"
+import { defaultLocale, LANGUAGES, locales } from "chrry/locales"
 import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
@@ -42,6 +42,26 @@ function escapeXml(unsafe: string): string {
     .replace(/'/g, "&apos;")
 }
 
+// Remove locale prefix from URL path
+function clearLocale(url: string): string {
+  try {
+    const parsed = new URL(url)
+    const pathSegments = parsed.pathname.split("/").filter(Boolean)
+
+    // Check if first path segment is a locale
+    if (pathSegments[0] && locales.includes(pathSegments[0] as any)) {
+      // Remove locale from path
+      pathSegments.shift()
+      parsed.pathname =
+        pathSegments.length > 0 ? `/${pathSegments.join("/")}` : "/"
+    }
+
+    return parsed.toString()
+  } catch {
+    return url
+  }
+}
+
 // Validate and sanitize URL
 function sanitizeUrl(url: string | null): string {
   if (!url) return "https://chrry.ai"
@@ -81,58 +101,24 @@ export async function GET(request: Request) {
   const url = new URL(request.url)
   let chrryUrl = url.searchParams.get("chrryUrl")
 
-  // Sanitize the URL to prevent XSS
-  const baseUrl = sanitizeUrl(chrryUrl)
+  // Sanitize the URL to prevent XSS and strip locale
+  const baseUrl = clearLocale(sanitizeUrl(chrryUrl))
   const isVex = baseUrl === "https://vex.chrry.ai"
 
   const blogPosts = !isVex ? [] : getBlogPosts()
 
+  // Only include canonical (non-localized) URLs
+  // Language variants are handled via <link rel="alternate"> in HTML
   const staticRoutes = [
     { url: baseUrl, lastModified: new Date(), priority: 1 },
     { url: `${baseUrl}/about`, lastModified: new Date(), priority: 0.8 },
     { url: `${baseUrl}/privacy`, lastModified: new Date(), priority: 0.8 },
     { url: `${baseUrl}/terms`, lastModified: new Date(), priority: 0.8 },
     { url: `${baseUrl}/why`, lastModified: new Date(), priority: 0.8 },
-
     { url: `${baseUrl}/lifeOS`, lastModified: new Date(), priority: 0.9 },
-    ...LANGUAGES.filter((language) => language.code !== defaultLocale).map(
-      (language) => ({
-        url: `${baseUrl}/${language.code}`,
-        lastModified: new Date(),
-        priority: 0.8,
-      }),
-    ),
     ...(isVex
       ? [{ url: `${baseUrl}/blog`, lastModified: new Date(), priority: 0.9 }]
       : []),
-    ...LANGUAGES.filter((language) => language.code !== defaultLocale).map(
-      (language) => ({
-        url: `${baseUrl}/${language.code}/about`,
-        lastModified: new Date(),
-        priority: 0.8,
-      }),
-    ),
-    ...LANGUAGES.filter((language) => language.code !== defaultLocale).map(
-      (language) => ({
-        url: `${baseUrl}/${language.code}/privacy`,
-        lastModified: new Date(),
-        priority: 0.8,
-      }),
-    ),
-    ...LANGUAGES.filter((language) => language.code !== defaultLocale).map(
-      (language) => ({
-        url: `${baseUrl}/${language.code}/terms`,
-        lastModified: new Date(),
-        priority: 0.8,
-      }),
-    ),
-    ...LANGUAGES.filter((language) => language.code !== defaultLocale).map(
-      (language) => ({
-        url: `${baseUrl}/${language.code}/why`,
-        lastModified: new Date(),
-        priority: 0.8,
-      }),
-    ),
   ]
 
   const blogRoutes = blogPosts.map((post) => ({
