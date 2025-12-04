@@ -159,14 +159,15 @@ export default async function middleware(request: NextRequest) {
 
   // Set fingerprint cookie if not already set
   const existingFingerprintCookie = request.cookies.get("fingerprint")?.value
-  const fingerprintUrl = searchParams.get("fp")
 
   const chrryUrl =
     searchParams.get("chrryUrl") || request.headers.get("x-chrry-url")
 
   chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
 
-  const fingerprint = request.headers.get("x-fp") || fingerprintUrl || uuidv4()
+  const fingerprint =
+    request.nextUrl.searchParams.get("fp") || request.headers.get("x-fp")
+
   if (!existingFingerprintCookie && fingerprint) {
     response.cookies.set("fingerprint", fingerprint, {
       httpOnly: false,
@@ -177,10 +178,8 @@ export default async function middleware(request: NextRequest) {
     })
   }
 
-  // Pass fingerprint to API via header (for cross-domain requests)
-  const fingerprintToPass = existingFingerprintCookie || uuidv4()
-  response.headers.set("x-fp", fingerprintToPass)
-
+  // fingerprint && response.headers.set("x-fp", fingerprint)
+  //
   // Extract path segments to check for reserved paths
   const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}\//, "/")
   const segments = pathWithoutLocale.split("/").filter(Boolean)

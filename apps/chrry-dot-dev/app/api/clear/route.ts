@@ -15,6 +15,7 @@ export async function POST() {
   const member = await getMember({})
 
   const guest = await getGuest()
+  console.log(`🚀 ~ POST ~ guest:`, guest)
 
   const fp = member?.fingerprint || guest?.fingerprint
 

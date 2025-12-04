@@ -211,9 +211,9 @@ export default async function middleware(request: NextRequest) {
 
   // Set fingerprint cookie if not already set
   const existingFingerprintCookie = request.cookies.get("fingerprint")?.value
-  const fingerprintUrl = searchParams.get("fp")
 
-  const fingerprint = request.headers.get("x-fp") || fingerprintUrl || uuidv4()
+  const fingerprint =
+    request.nextUrl.searchParams.get("fp") || request.headers.get("x-fp")
   if (!existingFingerprintCookie && fingerprint) {
     response.cookies.set("fingerprint", fingerprint, {
       httpOnly: false,
@@ -224,9 +224,7 @@ export default async function middleware(request: NextRequest) {
     })
   }
 
-  // Pass fingerprint to API via header (for cross-domain requests)
-  const fingerprintToPass = existingFingerprintCookie || fingerprint || uuidv4()
-  response.headers.set("x-fp", fingerprintToPass)
+  fingerprint && response.headers.set("x-fp", fingerprint)
 
   return response
 }
