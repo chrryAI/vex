@@ -35,6 +35,11 @@ const nextConfig = {
       },
     ]
   },
+  serverExternalPackages: [
+    "@dnd-kit/core",
+    "@dnd-kit/sortable",
+    "@dnd-kit/utilities",
+  ],
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ["lucide-react"], // Tree-shake icons only, chrry has client boundaries
@@ -109,6 +114,19 @@ const nextConfig = {
             enforce: true,
           },
         },
+      }
+    }
+
+    // Exclude @dnd-kit packages from edge runtime (middleware)
+    // These packages use React hooks that aren't available in edge runtime
+    if (isServer && config.name === "edge-server") {
+      config.externals = config.externals || []
+      if (Array.isArray(config.externals)) {
+        config.externals.push(
+          "@dnd-kit/core",
+          "@dnd-kit/sortable",
+          "@dnd-kit/utilities",
+        )
       }
     }
 

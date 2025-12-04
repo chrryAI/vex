@@ -1,6 +1,5 @@
 import getApp, { getWhiteLabel } from "chrry-dot-dev/app/actions/getApp"
 import { COLORS } from "chrry/context/ThemeContext"
-import { API_URL } from "chrry/utils"
 import getAppSlug from "chrry/utils/getAppSlug"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"

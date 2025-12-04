@@ -62,6 +62,7 @@ import {
 } from "../../utils"
 import { Task } from "../TimerContext"
 import useCache from "chrry/hooks/useCache"
+import { useError } from "./ErrorProvider"
 
 // Constants (shared with DataProvider)
 
@@ -585,7 +586,7 @@ export function AuthProvider({
 
         return sessionResult
       } catch (error) {
-        // toast.error("Something went wrong")
+        captureException(error)
         console.error("Error fetching session:", error)
       }
     },
@@ -934,6 +935,8 @@ export function AuthProvider({
     setLoadingAppInternal(appWithStore)
   }
 
+  const { captureException } = useError()
+
   const chrry = storeApps?.find((app) => !app.store?.parentStoreId)
   const vex = storeApps?.find((app) => app.slug === "vex")
   const sushi = storeApps?.find((app) => app.slug === "sushi")
@@ -952,7 +955,8 @@ export function AuthProvider({
 
       return app.store?.apps
     } catch (error) {
-      toast.error("Something went wrong")
+      console.error(`🚀 ~ storeAppsSwr error:`, error)
+      captureException(error)
     }
   })
 
