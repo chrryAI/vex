@@ -287,7 +287,6 @@ export async function GET(request: Request) {
       ?.split("=")[1]
 
     const deviceId = deviceIdUrl || deviceIdCookie || deviceIdHeader
-    console.log("🚀~ ssssdwdx", deviceId)
 
     let fingerPrintCookie = request.headers
       .get("cookie")
@@ -303,6 +302,8 @@ export async function GET(request: Request) {
       fingerPrintCookie ||
       guest?.fingerprint
 
+    console.log(`🚀 ~ GET ~ fingerprint:`, fingerprint)
+
     const { getIp } = lib
 
     // Use UAParser for detailed device detection (more accurate than lib functions)
@@ -313,8 +314,13 @@ export async function GET(request: Request) {
     const os = deviceInfo.os
     const browser = deviceInfo.browser
 
-    fingerprint =
-      fingerprint && validateUuid(fingerprint) ? fingerprint : uuidv4()
+    fingerprint = fingerprint
+      ? validateUuid(fingerprint)
+        ? fingerprint
+        : uuidv4()
+      : uuidv4()
+
+    console.log(`🚀 ~ file: route.ts:319 ~ fingerprint:`, fingerprint)
 
     const appVersion = url.searchParams.get("appVersion")
     const ip = getIp(request)
