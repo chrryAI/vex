@@ -8,7 +8,6 @@ const isDevelopment = process.env.NODE_ENV === "development"
 const nextConfig = {
   transpilePackages: ["@chrryai/chrry"],
   compress: true,
-  webpackHmr: false,
   async redirects() {
     return [
       // Redirect askvex.com to vex.chrry.ai (preserve all paths)
@@ -37,7 +36,7 @@ const nextConfig = {
     ]
   },
   experimental: {
-    serverComponentsHmrCache: false,
+    serverComponentsHmrCache: !isDevelopment,
     optimizeCss: true,
     optimizePackageImports: ["lucide-react"], // Tree-shake icons only, chrry has client boundaries
   },

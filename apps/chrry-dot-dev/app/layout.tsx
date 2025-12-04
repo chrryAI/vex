@@ -25,6 +25,8 @@ export const generateMetadata = async () => {
   })
 }
 
+const isDevelopment = process.env.NODE_ENV === "development"
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -38,7 +40,17 @@ export default async function RootLayout({
       translate="no"
     >
       {/* <ServiceWorkerRegistration /> */}
-      <head>{/* <AppMetadata app={sessionData?.app} /> */}</head>
+      <head>
+        <>
+          {isDevelopment ? null : (
+            <script
+              defer
+              data-domain="chrry.dev"
+              src="https://a.chrry.dev/js/app.js"
+            />
+          )}
+        </>
+      </head>
       <body className="loaded" suppressHydrationWarning>
         {children}
       </body>

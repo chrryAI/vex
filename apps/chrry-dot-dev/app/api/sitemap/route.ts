@@ -103,7 +103,6 @@ function sanitizeUrl(url: string | null): string {
 export async function GET(request: Request) {
   const url = new URL(request.url)
   let chrryUrl = url.searchParams.get("chrryUrl") || "https://chrry.ai"
-  console.log(`🚀 ~ GET ~ chrryUrl:`, chrryUrl)
 
   const siteconfig = getSiteConfig(chrryUrl || undefined)
 

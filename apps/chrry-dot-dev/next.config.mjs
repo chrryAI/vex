@@ -1,6 +1,8 @@
 // Suppress ECONNRESET errors in development (from browser extensions/aborted requests)
 import EventEmitter from "events"
 
+const isDevelopment = process.env.NODE_ENV === "development"
+
 if (process.env.NODE_ENV !== "production") {
   const originalEmit = EventEmitter.prototype.emit
 
@@ -60,7 +62,7 @@ const nextConfig = {
     },
   },
   experimental: {
-    serverComponentsHmrCache: false,
+    serverComponentsHmrCache: !isDevelopment,
     optimizeCss: true,
     turbo: {
       rules: {
