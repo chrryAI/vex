@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { appWithStore, storeWithApps, store } from "../types"
 import { t as tFunc } from "./t"
-import { locale } from "../locales"
+import { locale, locales } from "../locales"
 import { isProduction } from "./env"
 import { whiteLabels } from "./siteConfig"
 import { getAppAndStoreSlugs } from "./url"
@@ -66,7 +66,11 @@ export function generateAppMetadata({
       })
     : `/${storeSlug}/${app.slug}`
 
-  const slug = cleanSlug(rawSlug.startsWith("/") ? rawSlug : `/${rawSlug}`)
+  let slug = cleanSlug(rawSlug.startsWith("/") ? rawSlug : `/${rawSlug}`)
+
+  if (locales.includes(slug.split("/")[0] as locale)) {
+    slug = ""
+  }
 
   const canonicalUrl = baseUrl + slug
 
