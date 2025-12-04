@@ -54,7 +54,17 @@ export function generateAppMetadata({
   const toRelative = (val: string) => {
     return val.replace(baseUrl, "")
   }
-  const baseUrl = cleanSlug(whiteLabel?.store?.domain || currentDomain)
+
+  const clearLocale = (url: string) => {
+    if (locales.includes(url.split("/")[0] as locale)) {
+      return `/${url.split("/").slice(1).join("/")}`
+    }
+
+    return url
+  }
+  const baseUrl = clearLocale(
+    cleanSlug(whiteLabel?.store?.domain || currentDomain),
+  )
 
   // Ensure slug always starts with /
   const rawSlug = whiteLabel
@@ -66,11 +76,9 @@ export function generateAppMetadata({
       })
     : `/${storeSlug}/${app.slug}`
 
-  let slug = cleanSlug(rawSlug.startsWith("/") ? rawSlug : `/${rawSlug}`)
-
-  if (locales.includes(slug.split("/")[0] as locale)) {
-    slug = `/${slug.split("/").slice(1).join("/")}`
-  }
+  const slug = clearLocale(
+    cleanSlug(rawSlug.startsWith("/") ? rawSlug : `/${rawSlug}`),
+  )
 
   const canonicalUrl = baseUrl + slug
 
