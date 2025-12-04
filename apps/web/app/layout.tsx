@@ -51,7 +51,13 @@ export const generateMetadata = async () => {
     })
   }
 
-  const store = await getStore({ slug: pathname.replace("/", ""), depth: 1 })
+  // Only check for store if pathname is a single segment (e.g., /chrry, /vex)
+  // Not empty and not multiple segments (e.g., /chrry/app)
+  const pathSegments = pathname.split("/").filter(Boolean)
+  const store =
+    pathSegments.length === 1 && pathSegments[0] && pathSegments[0].length >= 3
+      ? await getStore({ slug: pathSegments[0], depth: 1 })
+      : null
 
   if (store) {
     const storeMetadata = generateStoreMetadata({
