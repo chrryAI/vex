@@ -248,7 +248,7 @@ export function ChatProvider({
     isLoading: isLoadingThreadsSwr,
     error: threadsError,
   } = useSWR(
-    shouldFetchThreads
+    token && shouldFetchThreads
       ? ["contextThreads", thread?.id, app?.id, collaborationStatus]
       : null,
     async () => {
