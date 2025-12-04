@@ -31,7 +31,6 @@ export default async function getAppAction({
   const appId = rest.appId || headersList.get("x-app-id")
 
   const path = headersList.get("x-pathname")
-  console.log(`🚀 ~ path:`, path)
 
   const chrryUrl = rest.chrryUrl || (await getChrryUrl(request))
 
@@ -53,7 +52,6 @@ export default async function getAppAction({
     defaultAppSlug: siteConfig.slug,
     defaultStoreSlug: siteConfig.storeSlug,
   })
-  console.log(`🚀 ~ { appSlug, storeSlug }:`, { appSlug, storeSlug })
 
   if (rest.appSlug) {
     appSlug = rest.appSlug

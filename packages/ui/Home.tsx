@@ -18,7 +18,6 @@ export default function Home({
 }): React.ReactElement {
   const { language, threadId } = useAuth()
   const { currentStore: store, app } = useApp()
-  console.log(`🚀 ~ store:`, store)
 
   useAppMetadata()
 

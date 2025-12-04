@@ -279,7 +279,6 @@ export function ChatProvider({
       } catch (error) {
         console.log(`🚀 ~ error:`, error)
         captureException(error)
-        // toast.error("Something went wrong")
       }
     },
 
