@@ -62,7 +62,7 @@ export function generateStoreMetadata({
   return {
     title: `${t(storeName)} - Chrry`,
     description: description,
-    manifest: `${API_URL}/manifest/${store?.app?.id}`,
+    manifest: `/manifest.webmanifest?appId=${store?.app?.id}`,
     icons: [16, 48, 128, 180, 192, 512].map((size) => ({
       url: toRelative(
         getImageSrc({ app: storeApp, size, BASE_URL: baseUrl }).src ||

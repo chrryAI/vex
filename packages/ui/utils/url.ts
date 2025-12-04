@@ -5,6 +5,7 @@
 
 import { locales as localesArray } from "../locales"
 import { getThreadId as getThreadIdFromUrl } from "./index"
+import { whiteLabels } from "./siteConfig"
 
 const baseProtectedRoutes = ["threads", "about", "privacy", "terms", "why", "u"]
 
@@ -97,6 +98,7 @@ export function getAppAndStoreSlugs(
   }
 
   const appSlug = cleanedSegments[cleanedSegments.length - 1]
+
   const storeSlug = cleanedSegments[cleanedSegments.length - 2]
 
   return {

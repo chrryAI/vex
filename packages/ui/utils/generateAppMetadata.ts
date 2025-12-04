@@ -77,7 +77,7 @@ export function generateAppMetadata({
   return {
     title: `${t(app.name)} - ${t(app.title)}`,
     description: description,
-    manifest: `/manifest.webmanifest`,
+    manifest: `/manifest.webmanifest?appId=${app.id}`,
     icons: [16, 48, 128, 180, 192, 512].map((size) => ({
       url: toRelative(
         getImageSrc({ app, size, BASE_URL: baseUrl }).src ||

@@ -23,6 +23,7 @@ import { captureException } from "@sentry/nextjs"
 import getChrryUrl from "chrry-dot-dev/app/actions/getChrryUrl"
 import getAppAction from "./actions/getApp"
 import { isDevelopment } from "../lib"
+import Head from "next/head"
 
 export const generateMeta = async ({ locale }: { locale: locale }) => {
   const siteConfig = getSiteConfig()
@@ -362,7 +363,6 @@ export default async function ChrryAI({
         <meta name="google" content="notranslate" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
-        <AppMetadata app={app} />
         {!isDev && user?.role !== "admin" && (
           <>
             <script
@@ -371,6 +371,14 @@ export default async function ChrryAI({
               src="https://a.chrry.dev/js/app.js"
             />
           </>
+        )}
+        {translations && (
+          <AppMetadata
+            translations={translations}
+            locale={locale}
+            currentDomain={siteConfig.domain}
+            app={app}
+          />
         )}
       </head>
 
