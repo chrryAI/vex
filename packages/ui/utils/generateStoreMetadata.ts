@@ -63,19 +63,15 @@ export function generateStoreMetadata({
     title: `${t(storeName)} - Chrry`,
     description: description,
     manifest: `${API_URL}/manifest/${store?.app?.id}`,
-    icons: [16, 48, 128, 180, 192, 512].reduce(
-      (icons, size) =>
-        icons.concat({
-          src: toRelative(
-            getImageSrc({ app: storeApp!, size, BASE_URL: baseUrl }).src ||
-              "/images/pacman/space-invader.png",
-          ),
-          sizes: `${size}x${size}`,
-          type: "image/png",
-          purpose: "any maskable",
-        }),
-      [] as any,
-    ),
+    icons: [16, 48, 128, 180, 192, 512].map((size) => ({
+      url: toRelative(
+        getImageSrc({ app: storeApp, size, BASE_URL: baseUrl }).src ||
+          "/images/pacman/space-invader.png",
+      ),
+      sizes: `${size}x${size}`,
+      type: "image/png",
+      purpose: "any maskable",
+    })),
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",

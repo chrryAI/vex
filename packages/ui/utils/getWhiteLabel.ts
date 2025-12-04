@@ -12,7 +12,7 @@ const getWhiteLabel = ({ app }: { app?: appWithStore }) => {
           a.slug === whiteLabel?.slug &&
           a.store?.slug === whiteLabel?.storeSlug,
       )
-    : app?.store?.apps.find((a) => a.store?.appId && a.store?.appId === app?.id)
+    : undefined
 
   return { storeApp, whiteLabel }
 }

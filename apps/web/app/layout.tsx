@@ -2,13 +2,23 @@ import type { ReactElement, ReactNode } from "react"
 import { getMember } from "chrrydotdev"
 import { v4 as uuidv4 } from "uuid"
 
-import { getGuest as getGuestDb, migrateUser } from "@repo/db"
+import {
+  getGuest as getGuestDb,
+  migrateUser,
+  getThread,
+  getStore,
+  getApp as getAppDb,
+} from "@repo/db"
 
 import { getLocale } from "next-intl/server"
 import { locale } from "chrry/locales"
 import { cookies, headers } from "next/headers"
 
-import { generateAppMetadata } from "chrry/utils"
+import {
+  generateAppMetadata,
+  generateStoreMetadata,
+  generateThreadMetadata,
+} from "chrry/utils"
 import { Providers } from "../components/Providers"
 import { NextIntlClientProvider } from "next-intl"
 import { getSiteConfig } from "chrry/utils/siteConfig"
@@ -21,13 +31,40 @@ import { getWhiteLabel } from "chrry-dot-dev/app/actions/getApp"
 export const generateMetadata = async () => {
   const headersList = await headers()
   const hostname = headersList.get("host") || ""
+  const siteConfig = getSiteConfig(hostname)
 
   const pathname = headersList.get("x-pathname") || ""
 
   const threadId = getThreadId(pathname)
-
-  const siteConfig = getSiteConfig(hostname)
   const locale = (await getLocale()) as locale
+
+  const thread = threadId ? await getThread({ id: threadId }) : undefined
+
+  const translations = await getTranslations({ locale })
+
+  if (thread) {
+    return generateThreadMetadata({
+      thread: thread as any,
+      locale,
+      currentDomain: siteConfig.url,
+      translations,
+    })
+  }
+
+  const store = await getStore({ slug: pathname.replace("/", ""), depth: 1 })
+
+  if (store) {
+    const storeMetadata = generateStoreMetadata({
+      store: (await getAppDb({ id: store.app?.id, depth: 1 }))?.store!,
+      locale,
+      currentDomain: siteConfig.url,
+      translations,
+    })
+
+    console.log(storeMetadata, "storeMetadata")
+
+    return storeMetadata
+  }
 
   const app = await getApp()
 
@@ -36,8 +73,6 @@ export const generateMetadata = async () => {
   if (!app || !app.store) {
     return generateMeta({ locale })
   }
-
-  const translations = await getTranslations({ locale })
 
   return generateAppMetadata({
     translations,

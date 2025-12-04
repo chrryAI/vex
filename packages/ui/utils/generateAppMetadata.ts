@@ -50,12 +50,14 @@ export function generateAppMetadata({
   const storeSlug = store.slug || "chrry"
   const storeName = store.name || "Blossom"
   // Prefer a dedicated white-label base URL for this storeSlug if configured
-
-  const baseUrl = whiteLabel?.store?.domain || currentDomain
-
   const cleanSlug = (slug: string) => slug.replace(/\/+$/, "")
+  const toRelative = (val: string) => {
+    return val.replace(baseUrl, "")
+  }
+  const baseUrl = cleanSlug(whiteLabel?.store?.domain || currentDomain)
 
-  const slug = whiteLabel
+  // Ensure slug always starts with /
+  const rawSlug = whiteLabel
     ? getAppSlug({
         targetApp: app,
         pathname,
@@ -64,32 +66,27 @@ export function generateAppMetadata({
       })
     : `/${storeSlug}/${app.slug}`
 
-  const canonicalUrl = cleanSlug(baseUrl) + cleanSlug(slug)
+  const slug = cleanSlug(rawSlug.startsWith("/") ? rawSlug : `/${rawSlug}`)
+
+  const canonicalUrl = baseUrl + slug
 
   const t = (key: string) => {
     return tFunc(translations)(key)
   }
 
-  const toRelative = (val: string) => {
-    return val.replace(baseUrl, "")
-  }
   return {
-    title: `${t(app.name)} - ${t(app.title)} - ${storeName}`,
+    title: `${t(app.name)} - ${t(app.title)}`,
     description: description,
     manifest: `/manifest.webmanifest`,
-    icons: [16, 48, 128, 180, 192, 512].reduce(
-      (icons, size) =>
-        icons.concat({
-          src: toRelative(
-            getImageSrc({ app, size, BASE_URL: baseUrl }).src ||
-              "/images/pacman/space-invader.png",
-          ),
-          sizes: `${size}x${size}`,
-          type: "image/png",
-          purpose: "any maskable",
-        }),
-      [] as any,
-    ),
+    icons: [16, 48, 128, 180, 192, 512].map((size) => ({
+      url: toRelative(
+        getImageSrc({ app, size, BASE_URL: baseUrl }).src ||
+          "/images/pacman/space-invader.png",
+      ),
+      sizes: `${size}x${size}`,
+      type: "image/png",
+      purpose: "any maskable",
+    })),
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",
@@ -119,9 +116,8 @@ export function generateAppMetadata({
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        // Default locale points exactly to the canonical URL (no /en prefix)
-        en: canonicalUrl,
-        // Other locales live on the same canonical base host
+        "x-default": canonicalUrl, // Default fallback for unmatched locales
+        en: canonicalUrl, // English uses canonical URL (no /en prefix due to localePrefix: "as-needed")
         de: `${baseUrl}/de${slug}`,
         fr: `${baseUrl}/fr${slug}`,
         es: `${baseUrl}/es${slug}`,
@@ -129,6 +125,8 @@ export function generateAppMetadata({
         ko: `${baseUrl}/ko${slug}`,
         pt: `${baseUrl}/pt${slug}`,
         zh: `${baseUrl}/zh${slug}`,
+        nl: `${baseUrl}/nl${slug}`,
+        tr: `${baseUrl}/tr${slug}`,
       },
     },
   }

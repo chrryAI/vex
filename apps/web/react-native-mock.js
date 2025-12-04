@@ -3,6 +3,5 @@
  * Prevents react-native from being bundled in Next.js
  */
 
-// Export empty object to satisfy imports
-module.exports = {}
-module.exports.default = {}
+// Export empty object to satisfy imports (ES module syntax)
+export default {}

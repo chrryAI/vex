@@ -14,63 +14,63 @@ import { getApp, getStore } from "@repo/db"
 import { storeWithApps } from "chrry/types"
 import { getWhiteLabel } from "chrry-dot-dev/app/actions/getApp"
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string; slug: string; locale: string }>
-}): Promise<Metadata> {
-  const { locale, id } = await params
+// export async function generateMetadata({
+//   params,
+// }: {
+//   params: Promise<{ id: string; slug: string; locale: string }>
+// }): Promise<Metadata> {
+//   const { locale, id } = await params
 
-  // Note: Reserved paths (threads, about, etc.) are handled by middleware
-  // and never reach this route. This page only handles store apps.
+//   // Note: Reserved paths (threads, about, etc.) are handled by middleware
+//   // and never reach this route. This page only handles store apps.
 
-  // Find the app in the store by slug
-  const member = await getMember()
-  const guest = await getGuest()
+//   // Find the app in the store by slug
+//   const member = await getMember()
+//   const guest = await getGuest()
 
-  // Check if it's a store first
-  const store = !validate(id)
-    ? await getStore({ slug: id, userId: member?.id, guestId: guest?.id })
-    : await getStore({ id, userId: member?.id, guestId: guest?.id })
+//   // Check if it's a store first
+//   const store = !validate(id)
+//     ? await getStore({ slug: id, userId: member?.id, guestId: guest?.id })
+//     : await getStore({ id, userId: member?.id, guestId: guest?.id })
 
-  const translations = await getTranslations({ locale })
+//   const translations = await getTranslations({ locale })
 
-  // Get the current domain from request headers
-  const headersList = await headers()
-  const host = headersList.get("host") || "chrry.ai"
-  const protocol = host.includes("localhost") ? "http" : "https"
-  const currentDomain = `${protocol}://${host}`
+//   // Get the current domain from request headers
+//   const headersList = await headers()
+//   const host = headersList.get("host") || "chrry.ai"
+//   const protocol = host.includes("localhost") ? "http" : "https"
+//   const currentDomain = `${protocol}://${host}`
 
-  if (store) {
-    return generateStoreMetadata({
-      translations,
-      store: { ...store.store, apps: store.apps, app: store.app || null },
-      locale,
-      currentDomain,
-    })
-  }
+//   if (store) {
+//     return generateStoreMetadata({
+//       translations,
+//       store: { ...store.store, apps: store.apps, app: store.app || null },
+//       locale,
+//       currentDomain,
+//     })
+//   }
 
-  const pathname = headersList.get("x-pathname") || ""
+//   const pathname = headersList.get("x-pathname") || ""
 
-  const app = validate(id)
-    ? await getApp({ id, userId: member?.id, guestId: guest?.id })
-    : await getApp({ slug: id, userId: member?.id, guestId: guest?.id })
+//   const app = validate(id)
+//     ? await getApp({ id, userId: member?.id, guestId: guest?.id })
+//     : await getApp({ slug: id, userId: member?.id, guestId: guest?.id })
 
-  if (!app) {
-    return notFound()
-  }
+//   if (!app) {
+//     return notFound()
+//   }
 
-  const whiteLabel = await getWhiteLabel({ app })
+//   const whiteLabel = await getWhiteLabel({ app })
 
-  return generateAppMetadata({
-    translations,
-    app,
-    locale,
-    currentDomain,
-    pathname,
-    whiteLabel,
-  })
-}
+//   return generateAppMetadata({
+//     translations,
+//     app,
+//     locale,
+//     currentDomain,
+//     pathname,
+//     whiteLabel,
+//   })
+// }
 
 export default async function AppPage({
   params,

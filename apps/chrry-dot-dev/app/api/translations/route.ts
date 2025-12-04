@@ -1,4 +1,4 @@
-import { defaultLocale } from "chrry/locales"
+import { defaultLocale, locales, locale } from "chrry/locales"
 import { NextResponse } from "next/server"
 import { getCachedTranslations, setCachedTranslations } from "@repo/db"
 import { isDevelopment } from "chrry/utils"
@@ -7,7 +7,11 @@ export async function GET(request: Request) {
   console.log("🌍 Translations API called")
   try {
     const url = new URL(request.url)
-    const locale = url.searchParams.get("locale") || defaultLocale
+    let locale = url.searchParams.get("locale") || defaultLocale
+
+    if (!locales.includes(locale as locale)) {
+      locale = defaultLocale
+    }
     console.log(`📝 Loading translations for locale: ${locale}`)
 
     // Try to get from Redis cache first (only in production)

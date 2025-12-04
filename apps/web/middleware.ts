@@ -21,8 +21,8 @@ const STATIC_ALLOWED_ORIGINS = [
 const staticPatterns = [
   "/_next",
   "/favicon.ico",
-  "/manifests",
-  "/manifest.webmanifest",
+  // "/manifests",
+  // "/manifest.webmanifest",
   "/sw.js",
   "/icons",
   "/api",
@@ -30,8 +30,9 @@ const staticPatterns = [
   "/logo",
   "/icons",
   "/sounds",
-  "/sitemap",
+  // "/sitemap",
   "/video",
+  "/splash_screens",
   "/((?!_next|api|favicon.ico|manifest.webmanifest|sw.js|icon-|blob\.mp4|kitasaku\.mp3|birds\.mp3|timer-end\.mp3|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)",
 ]
 
@@ -95,6 +96,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
       "x-source",
       "x-url",
       "x-chrry-url",
+      "x-gift",
     ].join(", "),
   )
   response.headers.set(
@@ -243,5 +245,6 @@ export const config = {
     "/icons/:path*",
     "/images/:path*",
     "/logo/:path*",
+    "/splash_screens/:path*",
   ],
 }

@@ -680,6 +680,9 @@ export { generateAppMetadata } from "./generateAppMetadata"
 // Export generateStoreMetadata
 export { generateStoreMetadata } from "./generateStoreMetadata"
 
+// Export generateThreadMetadata
+export { generateThreadMetadata } from "./generateThreadMetadata"
+
 // Export file validation utilities
 export {
   validateFile,

@@ -17,21 +17,6 @@ const STATIC_ALLOWED_ORIGINS = [
   /^https?:\/\/(.*\.)?chrry\.store$/,
 ]
 
-const staticPatterns = [
-  "/_next",
-  "/favicon.ico",
-  "/manifests",
-  "/manifest.webmanifest",
-  "/sw.js",
-  "/icons",
-  "/images",
-  "/logo",
-  "/icons",
-  "/sounds",
-  "/video",
-  "/((?!_next|favicon.ico|manifest.webmanifest|sw.js|icon-|blob\.mp4|kitasaku\.mp3|birds\.mp3|timer-end\.mp3|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)",
-]
-
 const intlMiddleware = createIntlMiddleware({
   // A list of all locales that are supported
   locales: locales as string[],
@@ -118,7 +103,26 @@ export default async function middleware(request: NextRequest) {
     return response
   }
 
-  if (staticPatterns.some((pattern) => pathname.startsWith(pattern))) {
+  // Skip static assets (images, icons, etc.) - check BEFORE locale handling
+  const staticPrefixes = [
+    "/_next",
+    "/favicon.ico",
+    "/manifests",
+    "/manifest.webmanifest",
+    "/sw.js",
+    "/icons",
+    "/images",
+    "/logo",
+    "/sounds",
+    "/video",
+  ]
+
+  // Check if path matches any static prefix or is an image file
+  const isStaticAsset =
+    staticPrefixes.some((prefix) => pathname.startsWith(prefix)) ||
+    /\.(png|jpg|jpeg|gif|svg|webp|ico)$/i.test(pathname)
+
+  if (isStaticAsset) {
     const response = NextResponse.next()
     setCorsHeaders(response, request)
     return response

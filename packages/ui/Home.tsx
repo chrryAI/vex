@@ -18,8 +18,9 @@ export default function Home({
 }): React.ReactElement {
   const { language, threadId } = useAuth()
   const { currentStore: store, app } = useApp()
+  console.log(`🚀 ~ store:`, store)
 
-  useAppMetadata(app, !store && !threadId)
+  useAppMetadata()
 
   return (
     <Div data-url={language === defaultLocale ? "/" : `/${language}`}>

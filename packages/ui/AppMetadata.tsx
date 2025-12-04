@@ -58,7 +58,7 @@ export default function AppMetadata({
 
   // Get title from app context, fallback to "Vex"
 
-  const basePath = `/splash_screens/${slug}`
+  const basePath = `/splash_screens`
 
   // Only show splash screens for vex (main app) - other apps may not have them
   const showSplashScreens = slug

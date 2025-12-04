@@ -358,10 +358,6 @@ export default async function ChrryAI({
     >
       {/* <ServiceWorkerRegistration /> */}
       <head suppressHydrationWarning>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
-        />
         {/* Disable Google Translate to prevent hydration mismatches */}
         <meta name="google" content="notranslate" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />

@@ -13,10 +13,10 @@ if (process.env.NODE_ENV !== "production") {
         error?.code === "EPIPE" ||
         error?.message?.includes("aborted")
       ) {
-        console.log(
-          "⚠️ Suppressed connection error:",
-          error?.code || error?.message,
-        )
+        // console.log(
+        //   "⚠️ Suppressed connection error:",
+        //   error?.code || error?.message,
+        // )
         return false
       }
     }

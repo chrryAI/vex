@@ -7,7 +7,7 @@ interface SplashProps {
 }
 
 export default function Splash({ app = "vex" }: SplashProps) {
-  const basePath = `/splash_screens/${app}`
+  const basePath = `/splash_screens`
 
   return (
     <>
