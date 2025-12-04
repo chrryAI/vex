@@ -4,6 +4,7 @@ import { t as tFunc } from "./t"
 import { locale } from "../locales"
 import { API_URL } from "."
 import { whiteLabels } from "./siteConfig"
+import getWhiteLabel from "./getWhiteLabel"
 
 /**
  * Generate dynamic metadata for a store page
@@ -42,10 +43,11 @@ export function generateStoreMetadata({
   const storeName = store.name || "Chrry"
   // Prefer a dedicated white-label base URL for this storeSlug if configured
   // (e.g. books.chrry.ai for the "books" store) to avoid cross-domain duplicates.
-  const whiteLabel = whiteLabels.find(
-    (label) => label.storeSlug === storeSlug && label.isStoreApp,
-  )
-  const baseUrl = whiteLabel?.url || currentDomain
+  const { storeApp: whiteLabel } = store.app
+    ? getWhiteLabel({ app: store.app })
+    : { storeApp: store.app }
+
+  const baseUrl = whiteLabel?.store?.domain || currentDomain
   const canonicalUrl = `${baseUrl}/${storeSlug}`
 
   const t = (key: string) => {

@@ -2,11 +2,12 @@ import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 
 const isMember = false
+const isLiveTest = false
 
-test.skip("Chat", async ({ page }) => {
+test.only("Chat", async ({ page }) => {
   test.slow()
   await chat({
-    isLiveTest: true,
+    isLiveTest,
     isNewChat: true,
     page,
     isMember,
@@ -36,7 +37,7 @@ test.skip("Chat", async ({ page }) => {
 
   await chat({
     isNewChat: true,
-    isLiveTest: true,
+    isLiveTest,
     page,
     agentMessageTimeout: 120000,
     isMember,

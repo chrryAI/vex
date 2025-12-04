@@ -60,15 +60,18 @@ export function generateAppMetadata({
 
   const baseUrl = whiteLabel?.store?.domain || currentDomain
 
+  const cleanSlug = (slug: string) => slug.replace(/\/+$/, "")
+
   const slug = whiteLabel
     ? getAppSlug({
         targetApp: app,
         pathname,
         baseApp: whiteLabel,
+        defaultSlug: "/",
       })
     : `/${storeSlug}/${app.slug}`
 
-  const canonicalUrl = `${baseUrl}/${slug}`
+  const canonicalUrl = cleanSlug(baseUrl) + cleanSlug(slug)
 
   const t = (key: string) => {
     return tFunc(translations)(key)
@@ -130,13 +133,13 @@ export function generateAppMetadata({
         // Default locale points exactly to the canonical URL (no /en prefix)
         en: canonicalUrl,
         // Other locales live on the same canonical base host
-        de: `${baseUrl}/de/${slug}`,
-        fr: `${baseUrl}/fr/${slug}`,
-        es: `${baseUrl}/es/${slug}`,
-        ja: `${baseUrl}/ja/${slug}`,
-        ko: `${baseUrl}/ko/${slug}`,
-        pt: `${baseUrl}/pt/${slug}`,
-        zh: `${baseUrl}/zh/${slug}`,
+        de: `${baseUrl}/de${slug}`,
+        fr: `${baseUrl}/fr${slug}`,
+        es: `${baseUrl}/es${slug}`,
+        ja: `${baseUrl}/ja${slug}`,
+        ko: `${baseUrl}/ko${slug}`,
+        pt: `${baseUrl}/pt${slug}`,
+        zh: `${baseUrl}/zh${slug}`,
       },
     },
   }
