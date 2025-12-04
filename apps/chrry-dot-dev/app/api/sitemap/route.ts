@@ -1,4 +1,4 @@
-import { defaultLocale, LANGUAGES, locales } from "chrry/locales"
+import { locales } from "chrry/locales"
 import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
@@ -6,8 +6,6 @@ import matter from "gray-matter"
 import getAppAction, { getWhiteLabel } from "../../actions/getApp"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import getAppSlug from "chrry/utils/getAppSlug"
-
-import sanitize from "sanitize-html"
 
 export const dynamic = "force-dynamic"
 
@@ -117,7 +115,6 @@ export async function GET(request: Request) {
 
   let baseUrl = whiteLabel?.store?.domain || chrryUrl
 
-  console.log(`🚀 ~ GET ~ app:`, app?.name)
   // Remove trailing slash to prevent double slashes in paths
   baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl
   const isVex = baseUrl === "https://vex.chrry.ai"
