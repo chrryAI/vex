@@ -10,7 +10,7 @@ const splashScreenConfigs = [
   {
     media:
       "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)",
-    file: "iPhone_16_Pro_Max_landscape.png",
+    file: "iPhone_17_Pro_Max__iPhone_16_Pro_Max_landscape.png",
   },
   {
     media:
@@ -25,13 +25,13 @@ const splashScreenConfigs = [
   {
     media:
       "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)",
-    file: "iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png",
+    file: "iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png",
   },
   // iPhone portrait
   {
     media:
       "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)",
-    file: "iPhone_16_Pro_Max_portrait.png",
+    file: "iPhone_17_Pro_Max__iPhone_16_Pro_Max_portrait.png",
   },
   {
     media:
@@ -46,7 +46,7 @@ const splashScreenConfigs = [
   {
     media:
       "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)",
-    file: "iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png",
+    file: "iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png",
   },
 ]
 
@@ -70,18 +70,12 @@ export default function AppMetadata({
     [slug],
   )
 
-  const basePath = `/splash_screens/${slug}`
+  const basePath = `/splash_screens`
   const manifestPath =
     slug === "vex" ? undefined : `/manifests/${slug}.webmanifest`
 
   // Only show splash screens for vex (main app) - other apps may not have them
-  const showSplashScreens = [
-    "vex",
-    "peach",
-    "atlas",
-    "bloom",
-    "vault",
-  ].includes(slug)
+  const showSplashScreens = true
 
   return (
     <>
