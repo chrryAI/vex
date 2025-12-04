@@ -3,6 +3,11 @@ import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
 import matter from "gray-matter"
+import getAppAction, { getWhiteLabel } from "../../actions/getApp"
+import { getSiteConfig } from "chrry/utils/siteConfig"
+import getAppSlug from "chrry/utils/getAppSlug"
+
+import sanitize from "sanitize-html"
 
 export const dynamic = "force-dynamic"
 
@@ -99,10 +104,22 @@ function sanitizeUrl(url: string | null): string {
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
-  let chrryUrl = url.searchParams.get("chrryUrl")
+  let chrryUrl = url.searchParams.get("chrryUrl") || "https://chrry.ai"
+  console.log(`🚀 ~ GET ~ chrryUrl:`, chrryUrl)
+
+  const siteconfig = getSiteConfig(chrryUrl || undefined)
 
   // Sanitize the URL to prevent XSS and strip locale
-  const baseUrl = clearLocale(sanitizeUrl(chrryUrl))
+
+  const app = await getAppAction({ request })
+
+  const whiteLabel = app ? await getWhiteLabel({ app }) : null
+
+  let baseUrl = whiteLabel?.store?.domain || chrryUrl
+
+  console.log(`🚀 ~ GET ~ app:`, app?.name)
+  // Remove trailing slash to prevent double slashes in paths
+  baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl
   const isVex = baseUrl === "https://vex.chrry.ai"
 
   const blogPosts = !isVex ? [] : getBlogPosts()
@@ -115,10 +132,50 @@ export async function GET(request: Request) {
     { url: `${baseUrl}/privacy`, lastModified: new Date(), priority: 0.8 },
     { url: `${baseUrl}/terms`, lastModified: new Date(), priority: 0.8 },
     { url: `${baseUrl}/why`, lastModified: new Date(), priority: 0.8 },
-    { url: `${baseUrl}/lifeOS`, lastModified: new Date(), priority: 0.9 },
+    { url: `${baseUrl}/calendar`, lastModified: new Date(), priority: 0.8 },
+
     ...(isVex
       ? [{ url: `${baseUrl}/blog`, lastModified: new Date(), priority: 0.9 }]
       : []),
+
+    ...(app?.store?.slug && app.id === app.store.appId
+      ? [
+          {
+            url: `${baseUrl}/${app.store?.slug}`,
+            lastModified: new Date(),
+            priority: 0.9,
+          },
+        ]
+      : []),
+
+    ...(app?.store?.apps
+      ? app?.store?.apps
+          ?.filter((app) => app.slug !== siteconfig.slug && app.store)
+          .map((app) => {
+            const baseApp = app?.store?.apps.find(
+              (a) => a.id === a.store?.appId,
+            )
+
+            if (!app.store?.domain) {
+              return null
+            }
+            const slug = getAppSlug({
+              targetApp: app,
+              pathname: app.store?.domain,
+              baseApp,
+            })
+
+            if (!slug) {
+              return null
+            }
+            return {
+              url: `${baseUrl}${slug}`,
+              lastModified: new Date(),
+              priority: 0.9,
+            }
+          })
+      : []
+    ).filter(Boolean),
   ]
 
   const blogRoutes = blogPosts.map((post) => ({
@@ -131,7 +188,9 @@ export async function GET(request: Request) {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${[...staticRoutes, ...blogRoutes]
     .map(
-      (route) => `
+      (route) =>
+        route &&
+        `
     <url>
       <loc>${escapeXml(route.url)}</loc>
       <lastmod>${route.lastModified.toISOString()}</lastmod>
