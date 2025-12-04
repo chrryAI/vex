@@ -69,7 +69,7 @@ export function generateAppMetadata({
   let slug = cleanSlug(rawSlug.startsWith("/") ? rawSlug : `/${rawSlug}`)
 
   if (locales.includes(slug.split("/")[0] as locale)) {
-    slug = ""
+    slug = `/${slug.split("/").slice(1).join("/")}`
   }
 
   const canonicalUrl = baseUrl + slug
