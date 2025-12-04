@@ -182,11 +182,17 @@ jobs:
       - name: Wait for cache upload
         run: sleep 30
 
-      - name: Start all
-        run: nohup npm run start:all > all.log 2>&1 &
-
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
+
+      - name: Start ws
+        run: nohup npm run start:ws > ws.log 2>&1 &
+
+      - name: Start api
+        run: nohup npm run start:api > api.log 2>&1 &
+
+      - name: Start web
+        run: nohup npm run start:web > web.log 2>&1 &
 
       - name: Run Playwright tests
         run: pnpm --filter @chrryai/waffles e2e

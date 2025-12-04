@@ -24,6 +24,8 @@
     "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
     "check-types": "turbo run check-types",
     "start:ws": "turbo run start --log-order=stream --filter=wsserver ",
+    "start:web": "turbo run start --log-order=stream --filter=web",
+    "start:api": "turbo run start --log-order=stream --filter=chrrydotdev",
     "c": "bash scripts/commit-with-ai.sh",
     "p": "npm run lint && git push",
     "test-ai": "bash scripts/test-commit-message.sh",
