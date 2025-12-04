@@ -3,6 +3,8 @@
 import { useMemo, type ReactElement } from "react"
 import { app } from "@repo/db"
 import { appWithStore } from "chrry/types"
+import { getImageSrc } from "chrry/lib"
+import { generateAppMetadata } from "chrry/utils"
 
 // Simplified list of most common splash screens
 const splashScreenConfigs = [
@@ -52,30 +54,51 @@ const splashScreenConfigs = [
 
 export default function AppMetadata({
   app,
+  translations,
+  locale,
+  currentDomain,
 }: {
-  app?: appWithStore | null
+  app?: appWithStore
+  translations: Record<string, any>
+  locale: string
+  currentDomain: string
 }): ReactElement {
   // Get slug from app prop, fallback to "vex"
-  const slug = useMemo(() => app?.slug || "vex", [app?.slug])
 
   // Get title from app context, fallback to "Vex"
-  const appTitle = useMemo(() => app?.title || "Vex", [app?.title])
+
+  const iconSrc = app
+    ? getImageSrc({
+        app,
+        size: 180,
+      })
+    : undefined
+
+  const meta = app
+    ? generateAppMetadata({
+        app,
+        translations,
+        locale,
+        currentDomain,
+      })
+    : undefined
 
   // Get icon from app context or use default
   const iconHref = useMemo(
-    () =>
-      slug === "vex"
-        ? "/icons/icon-180.png"
-        : `/images/apps/${slug.toLowerCase()}.png`,
-    [slug],
+    () => (iconSrc ? iconSrc.src : "/icons/icon-180.png"),
+    [iconSrc],
   )
 
   const basePath = `/splash_screens`
-  const manifestPath =
-    slug === "vex" ? undefined : `/manifests/${slug}.webmanifest`
+  // const manifestPath =
+  //   app?.slug === "vex" ? undefined : `/manifests/${app?.slug}.webmanifest`
 
   // Only show splash screens for vex (main app) - other apps may not have them
   const showSplashScreens = true
+
+  const manifestPath = meta?.manifest?.toString()
+
+  const appTitle = meta?.title?.toString()
 
   return (
     <>

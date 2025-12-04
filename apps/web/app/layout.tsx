@@ -67,8 +67,14 @@ export const generateMetadata = async () => {
   }
 
   const app = await getApp()
+  console.log(`🚀 ~ generateMetadata ~ app:`, app?.name)
 
   const whiteLabel = app ? await getWhiteLabel({ app }) : undefined
+  console.log(
+    `🚀 ~ generateMetadata ~ whiteLabel:`,
+    whiteLabel?.store?.domain,
+    app?.store?.domain,
+  )
 
   if (!app || !app.store) {
     return generateMeta({ locale })

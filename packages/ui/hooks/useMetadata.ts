@@ -184,7 +184,7 @@ export function useAppMetadata() {
     }
     if (metadata.alternates?.languages) {
       Object.entries(metadata.alternates.languages).forEach(([lang, url]) => {
-        updateOrCreateLink("alternate", String(url))
+        updateOrCreateLink("alternate", String(url), lang)
       })
     }
   }, [metadata, enabled])
@@ -292,9 +292,7 @@ function updateOrCreateLink(rel: string, href: string, hreflang?: string) {
   if (hreflang) {
     selector += `[hreflang="${hreflang}"]`
   }
-
   let linkTag = document.querySelector(selector)
-
   if (!linkTag) {
     linkTag = document.createElement("link")
     linkTag.setAttribute("rel", rel)
@@ -303,6 +301,5 @@ function updateOrCreateLink(rel: string, href: string, hreflang?: string) {
     }
     document.head.appendChild(linkTag)
   }
-
   linkTag.setAttribute("href", href)
 }
