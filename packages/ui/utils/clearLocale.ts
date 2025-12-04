@@ -1,4 +1,4 @@
-import { locales } from "../locales"
+import { locales, locale } from "../locales"
 
 const cleanSlug = (slug: string) => slug.replace(/\/+$/, "")
 
