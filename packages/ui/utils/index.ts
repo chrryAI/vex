@@ -312,7 +312,7 @@ export const getMetadata = ({
   }
 } = {}) => {
   const metadata = {
-    metadataBase: new URL("https://chrry.dev"),
+    metadataBase: new URL("https://chrry.ai"),
     alternates: alternates
       ? alternates
       : {
@@ -325,7 +325,7 @@ export const getMetadata = ({
     openGraph: {
       title,
       description,
-      url: "https://chrry.dev",
+      url: "https://chrry.ai",
       siteName: "Chrry",
       images: [
         {
@@ -341,7 +341,7 @@ export const getMetadata = ({
       title,
       description,
       card: "summary",
-      site: "https://chrry.dev",
+      site: "https://chrry.ai",
       creator: "@chrryAI",
       images: [
         {
