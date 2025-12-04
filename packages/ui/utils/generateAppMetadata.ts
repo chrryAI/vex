@@ -6,6 +6,7 @@ import { isProduction } from "./env"
 import { whiteLabels } from "./siteConfig"
 import { getAppAndStoreSlugs } from "./url"
 import getAppSlug from "./getAppSlug"
+import { getImageSrc } from "../lib"
 
 /**
  * Generate dynamic metadata for an app page
@@ -35,8 +36,8 @@ export function generateAppMetadata({
   pathname?: string
   whiteLabel?: appWithStore
 }): Metadata {
-  const title = app.name || app.title || "Chrry App"
-  const description = app.description || `${title} - AI-powered agent on Chrry`
+  const title = app.name || app.title || "Chrry"
+  const description = app.description || `${title} - Blossom`
 
   const store = rest.store || app.store!
 
@@ -44,15 +45,7 @@ export function generateAppMetadata({
     rest.pathname ||
     (typeof window !== "undefined" ? window.location.pathname : "")
 
-  const API_URL = !isProduction
-    ? "http://localhost:3001/api"
-    : "https://chrry.dev/api"
-  // images array: [512px, 192px, 180px, 128px, 32px]
   const ogImage = app.images?.[0]?.url || "/logo/logo-512-512.png"
-  const icon512 = app.images?.[0]?.url || "/logo/logo-512-512.png"
-  const icon192 = app.images?.[1]?.url || "/logo/logo-192-192.png"
-  const icon180 = app.images?.[2]?.url || "/logo/logo-180-180.png"
-  const icon32 = app.images?.[4]?.url || "/logo/logo-32-32.png"
 
   const storeSlug = store.slug || "chrry"
   const storeName = store.name || "Blossom"
@@ -76,38 +69,34 @@ export function generateAppMetadata({
   const t = (key: string) => {
     return tFunc(translations)(key)
   }
+
+  const toRelative = (val: string) => {
+    return val.replace(baseUrl, "")
+  }
   return {
     title: `${t(app.name)} - ${t(app.title)} - ${storeName}`,
     description: description,
     manifest: `/manifest.webmanifest`,
-    icons: [
-      ...(icon32
-        ? [{ rel: "icon", url: icon32, sizes: "32x32", type: "image/png" }]
-        : []),
-      ...(icon192
-        ? [{ rel: "icon", url: icon192, sizes: "192x192", type: "image/png" }]
-        : []),
-      ...(icon512
-        ? [{ rel: "icon", url: icon512, sizes: "512x512", type: "image/png" }]
-        : []),
-      ...(icon180
-        ? [
-            {
-              rel: "apple-touch-icon",
-              url: icon180,
-              sizes: "180x180",
-              type: "image/png",
-            },
-          ]
-        : []),
-    ],
+    icons: [16, 48, 128, 180, 192, 512].reduce(
+      (icons, size) =>
+        icons.concat({
+          src: toRelative(
+            getImageSrc({ app, size, BASE_URL: baseUrl }).src ||
+              "/images/pacman/space-invader.png",
+          ),
+          sizes: `${size}x${size}`,
+          type: "image/png",
+          purpose: "any maskable",
+        }),
+      [] as any,
+    ),
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",
       title: app.name,
     },
     openGraph: {
-      title: `${title} | ${storeName} | Chrry`,
+      title: `${title} - ${storeName}`,
       description: description,
       images: [
         {
@@ -123,7 +112,7 @@ export function generateAppMetadata({
     },
     twitter: {
       card: "summary",
-      title: `${title} | ${storeName}`,
+      title: `${title} - ${storeName}`,
       description: description,
       images: [ogImage],
     },

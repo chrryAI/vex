@@ -33,6 +33,8 @@ export function useStoreMetadata(store?: storeWithApps) {
       translations,
     })
 
+    if (!metadata) return
+
     // Apply metadata to document
     if (metadata.title) {
       document.title = metadata.title as string

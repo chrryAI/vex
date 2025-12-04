@@ -41,6 +41,7 @@ import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
 import { useSyncedState } from "chrry/hooks"
+import { useError } from "./ErrorProvider"
 
 interface placeHolder {
   // TODO: Define placeHolder type
@@ -734,6 +735,8 @@ export function ChatProvider({
   }, [placeHolder, app])
 
   const { appStatus, baseApp } = useApp()
+
+  const { captureException } = useError()
 
   useEffect(() => {
     if (appStatus?.part) {
