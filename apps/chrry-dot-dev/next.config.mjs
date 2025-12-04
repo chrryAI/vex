@@ -60,6 +60,7 @@ const nextConfig = {
     },
   },
   experimental: {
+    serverComponentsHmrCache: false,
     optimizeCss: true,
     turbo: {
       rules: {

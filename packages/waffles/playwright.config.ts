@@ -12,14 +12,14 @@ import { defineConfig, devices } from "@playwright/test"
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  webServer: {
-    command: !process.env.CI
-      ? "npm run start:e2e"
-      : "cd ../../apps/web && npm run start:e2e",
-    url: "http://localhost:3000",
-    // timeout: 480000,
-    reuseExistingServer: true,
-  },
+  // webServer: {
+  //   command: !process.env.CI
+  //     ? "npm run start:e2e"
+  //     : "cd ../../apps/web && npm run start:e2e",
+  //   url: "http://localhost:3000",
+  //   // timeout: 480000,
+  //   reuseExistingServer: true,
+  // },
   testDir: "./src",
   timeout: 480000,
   /* Run tests in files in parallel */

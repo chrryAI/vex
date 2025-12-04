@@ -37,6 +37,7 @@ const nextConfig = {
     ]
   },
   experimental: {
+    serverComponentsHmrCache: false,
     optimizeCss: true,
     optimizePackageImports: ["lucide-react"], // Tree-shake icons only, chrry has client boundaries
   },
