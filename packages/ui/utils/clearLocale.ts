@@ -1,6 +1,12 @@
 import { locales, locale } from "../locales"
 
-const cleanSlug = (slug: string) => slug.replace(/\/+$/, "")
+const cleanSlug = (slug: string) => {
+  // Remove trailing slashes safely without regex
+  while (slug.endsWith("/")) {
+    slug = slug.slice(0, -1)
+  }
+  return slug
+}
 
 const clearLocale = (url: string) => {
   // Handle full URLs (with protocol and domain) vs paths

@@ -159,8 +159,11 @@ app.use("*all", async (req, res) => {
     }, ABORT_DELAY)
   } catch (e) {
     vite?.ssrFixStacktrace(e)
-    console.log(e.stack)
-    res.status(500).end(e.stack)
+    console.error(e.stack) // Log for debugging
+    res
+      .status(500)
+      .set("Content-Type", "text/plain")
+      .end("Internal Server Error")
   }
 })
 
