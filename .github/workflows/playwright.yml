@@ -20,6 +20,12 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
+      TURBO_API: ${{ secrets.TURBO_API }}
+      TURBO_VERBOSE: 1
+      TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+      TURBO_TEAM: "vex"
+      NODE_OPTIONS: --max-old-space-size=8192
       TESTING_ENV: e2e
       NEXT_PUBLIC_TESTING_ENV: e2e
       NEXT_PUBLIC_CI: true
