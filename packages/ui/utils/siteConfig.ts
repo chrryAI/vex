@@ -723,6 +723,14 @@ const vex = {
   ],
 }
 
+// E2E testing environment (same as vex but with e2e domain)
+const e2eVex = {
+  ...vex,
+  url: "https://e2e.chrry.ai",
+  domain: "e2e.chrry.ai",
+  // store: "https://e2e.chrry.ai",
+}
+
 export interface SiteConfig {
   mode: SiteMode
   slug: string
@@ -1465,6 +1473,11 @@ export function detectSiteModeDomain(
     return "popcorn"
   }
 
+  // E2E testing environment
+  if (matchesDomain(host, "e2e.chrry.ai")) {
+    return "vex" // Use vex mode for E2E
+  }
+
   if (matchesDomain(host, "vex.chrry.ai")) {
     return "vex"
   }
@@ -1538,6 +1551,11 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     } catch {
       hostname = hostnameOrMode
     }
+  }
+
+  // Check for E2E environment first
+  if (hostname?.includes("e2e.chrry.ai")) {
+    return e2eVex
   }
 
   const mode = detectSiteMode(hostname)
