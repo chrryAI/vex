@@ -186,10 +186,10 @@ jobs:
       #   run: nohup npm run start:ws > ws.log 2>&1 &
 
       - name: Start all
-        run: nohup npm run start:all > ws.log 2>&1 &
+        run: nohup npm run dev:all > ws.log 2>&1 &
 
       - name: Wait
-        run: sleep 50
+        run: sleep 10
 
       # - name: Start api
       #   run: nohup npm run start:api > api.log 2>&1 &
