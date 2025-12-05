@@ -25,13 +25,6 @@ export async function generateMetadata() {
     description,
     alternates: {
       canonical: canonicalUrl,
-      languages: LANGUAGES.reduce(
-        (acc, language) => {
-          acc[language.code] = `https://vex.chrry.ai/${language.code}/blog`
-          return acc
-        },
-        {} as Record<string, string>,
-      ),
     },
   })
 
