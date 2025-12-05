@@ -78,7 +78,7 @@ jobs:
           echo "🚀 Waiting for staging deployment..."
           echo "Expected build ID: ${{ github.sha }}"
 
-          MAX_ATTEMPTS=150
+          MAX_ATTEMPTS=200
           ATTEMPT=0
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
