@@ -150,12 +150,20 @@ console.log("✅ CORS middleware registered")
 
 // Health check endpoint
 app.get("/health", (req, res) => {
-  console.log("💚 /health handler called")
-  res.json({
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-    connections: wss.clients.size,
-  })
+  try {
+    console.log("💚 /health handler called")
+    res.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      connections: wss.clients?.size || 0,
+    })
+  } catch (error) {
+    console.error("❌ Health check error:", error)
+    res.status(500).json({
+      status: "error",
+      error: error instanceof Error ? error.message : "Unknown error",
+    })
+  }
 })
 
 // Add notification endpoint
