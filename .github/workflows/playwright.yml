@@ -82,14 +82,15 @@ jobs:
             # Check web server
             if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
               WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.version // "unknown"')
-              echo "📦 Web build ID: $WEB_BUILD_ID"
+              EXPECTED_VERSION=$(jq -r '.version' package.json)
+              echo "📦 Web version: $WEB_BUILD_ID (expected: $EXPECTED_VERSION)"
               
-              # Check if it matches (or skip if GIT_SHA not set)
-              if [ "$WEB_BUILD_ID" = 1.5.76 ] || [ "$WEB_BUILD_ID" = "unknown" ]; then
+              # Check if it matches
+              if [ "$WEB_BUILD_ID" = "$EXPECTED_VERSION" ] || [ "$WEB_BUILD_ID" = "unknown" ]; then
                 WEB_READY=true
                 echo "✅ Web server is ready"
               else
-                echo "⏳ Web server is up but build ID doesn't match yet"
+                echo "⏳ Web server is up but version doesn't match yet"
               fi
             else
               echo "⏳ Waiting for web server..."
@@ -98,13 +99,14 @@ jobs:
             # Check API server
             if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
               API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.version // "unknown"')
-              echo "📦 API build ID: $API_BUILD_ID"
+              EXPECTED_VERSION=$(jq -r '.version' package.json)
+              echo "📦 API version: $API_BUILD_ID (expected: $EXPECTED_VERSION)"
               
-              if [ "$API_BUILD_ID" = 1.5.76 ] || [ "$API_BUILD_ID" = "unknown" ]; then
+              if [ "$API_BUILD_ID" = "$EXPECTED_VERSION" ] || [ "$API_BUILD_ID" = "unknown" ]; then
                 API_READY=true
                 echo "✅ API server is ready"
               else
-                echo "⏳ API server is up but build ID doesn't match yet"
+                echo "⏳ API server is up but version doesn't match yet"
               fi
             else
               echo "⏳ Waiting for API server..."
