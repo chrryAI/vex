@@ -111,6 +111,13 @@ jobs:
             exit 1
           fi
 
+      # - name: Seed E2E database (if needed)
+      #   run: |
+      #     echo "🌱 Checking if E2E database needs seeding..."
+      #     bash scripts/seed-e2e.sh
+      #   env:
+      #     DB_URL: ${{ secrets.E2E_DB_URL }}
+
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
 
