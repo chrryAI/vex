@@ -40,7 +40,7 @@ export default defineConfig({
     launchOptions: { slowMo: 200 },
     headless: !!process.env.CI,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:3000",
+    baseURL: !process.env.CI ? "http://localhost:3000" : "http://e2e.chrry.ai",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
     /* Grant clipboard permissions by default */
