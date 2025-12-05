@@ -179,9 +179,6 @@ jobs:
       - name: Build packages
         run: pnpm run build
 
-      - name: Wait for cache upload
-        run: sleep 30
-
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
 
@@ -190,6 +187,9 @@ jobs:
 
       - name: Start all
         run: nohup npm run start:all > ws.log 2>&1 &
+
+      - name: Wait
+        run: sleep 10000
 
       # - name: Start api
       #   run: nohup npm run start:api > api.log 2>&1 &
