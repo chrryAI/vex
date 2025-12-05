@@ -60,14 +60,14 @@ jobs:
           echo "🚀 Triggering sequential deployments for cache efficiency..."
           # Deploy API 
           echo "📦 Deploying API app (e2e.chrry.dev) - using cached build..."
-          # curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
-          #   -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
 
-          # # Deploy web
-          # echo "📦 Deploying web app (e2e.chrry.ai)..."
-          # curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
-          #   -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          # Deploy web
+          echo "📦 Deploying web app (e2e.chrry.ai)..."
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
       - name: Wait for staging deployment
         run: |
