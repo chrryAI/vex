@@ -8,7 +8,7 @@ import {
   guest,
   thread,
 } from "@repo/db"
-import { FRONTEND_URL, isDevelopment } from "chrry/utils"
+import { FRONTEND_URL, WS_URL } from "chrry/utils"
 import webpush from "web-push"
 import captureException from "./captureException"
 import { getSiteConfig } from "chrry/utils/siteConfig"
@@ -20,7 +20,6 @@ interface CustomWebSocket {
   OPEN: number
 }
 
-const WS_URL = process.env.WS_SERVER_URL || "ws://localhost:5001"
 const WebSocket: CustomWebSocket = (global as any).WebSocket || require("ws")
 let socket: WebSocket | null = null
 
@@ -93,29 +92,26 @@ export async function notify(
 ) {
   try {
     // Send notification via HTTP to WebSocket server
-    const response = await fetch(
-      `${isDevelopment ? "http://localhost:5001" : "https://ws.chrry.dev"}/notify`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          recipientId,
-          type:
-            payload.type === "message"
-              ? "message"
-              : payload.type === "stream_chunk"
-                ? "stream_update"
-                : payload.type === "stream_complete"
-                  ? "stream_complete"
-                  : payload.type === "delete_message"
-                    ? "delete_message"
-                    : payload.type,
-          data: payload.data,
-        }),
+    const response = await fetch(`${WS_URL}/notify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    )
+      body: JSON.stringify({
+        recipientId,
+        type:
+          payload.type === "message"
+            ? "message"
+            : payload.type === "stream_chunk"
+              ? "stream_update"
+              : payload.type === "stream_complete"
+                ? "stream_complete"
+                : payload.type === "delete_message"
+                  ? "delete_message"
+                  : payload.type,
+        data: payload.data,
+      }),
+    })
 
     if (!response.ok) {
       const error = new Error(`Notification failed: ${response.status}`)

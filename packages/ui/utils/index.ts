@@ -105,11 +105,13 @@ export function getThreadId(pathname?: string): string | undefined {
 
 export const MAX_TOOL_CALLS_PER_MESSAGE = 7
 
-export const WS_URL = isTestingDevice
-  ? "ws://192.168.2.27:5001"
-  : isDevelopment
-    ? "ws://localhost:5001"
-    : "wss://ws.chrry.dev"
+export const WS_URL =
+  process.env.NEXT_PUBLIC_WS_URL ||
+  (isTestingDevice
+    ? "ws://192.168.2.27:5001"
+    : isDevelopment
+      ? "ws://localhost:5001"
+      : "wss://ws.chrry.dev")
 
 export const addParam = (key: string, value: string) => {
   if (typeof window === "undefined") return
