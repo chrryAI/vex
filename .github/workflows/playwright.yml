@@ -6,6 +6,13 @@ on:
 permissions:
   contents: write
 
+#  # Deploy WebSocket server (will use cached build)
+# echo "📦 Deploying WebSocket server (e2e-ws.chrry.dev) - using cached build..."
+# curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=y8kkk00co844wg880cw4w8k0&force=false" \
+#   -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+
+# echo "✅ All deployments triggered sequentially!"
+
 jobs:
   e2e:
     # Only run for PRs from the same repo (not forks/external PRs)
@@ -61,14 +68,6 @@ jobs:
           echo "📦 Deploying web app (e2e.chrry.ai)..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
-
-
-          # Deploy WebSocket server (will use cached build)
-          echo "📦 Deploying WebSocket server (e2e-ws.chrry.dev) - using cached build..."
-          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=y8kkk00co844wg880cw4w8k0&force=false" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
-
-          echo "✅ All deployments triggered sequentially!"
 
       - name: Wait for staging deployment
         run: |
