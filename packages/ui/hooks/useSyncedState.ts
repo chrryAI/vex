@@ -35,14 +35,14 @@ export function useSyncedState<T>(
     // When deps change, reset to computed value
     setLocalValue(computedValue)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [computedValue, ...(deps || [])])
+  }, [...(deps || [])])
 
   // Also sync when computedValue changes (but not on first render)
   useEffect(() => {
     if (!isFirstRender.current) {
       setLocalValue(computedValue)
     }
-  }, [computedValue, ...(deps || [])])
+  }, [...(deps || [])])
 
   return [localValue, setLocalValue]
 }

@@ -407,7 +407,12 @@ export default function Chat({
       ? false
       : isChatFloatingContext && !showChatInput
 
-  const [isChatFloating] = useSyncedState(floatingInitial)
+  const [isChatFloating] = useSyncedState(floatingInitial, [
+    empty,
+    shouldUseCompactMode,
+    isChatFloatingContext,
+    showChatInput,
+  ])
 
   useEffect(() => {
     setIsChatFloating(isChatFloating)
