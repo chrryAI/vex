@@ -989,6 +989,7 @@ export function ChatProvider({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const scrollToBottom = (timeout = 500, force = false) => {
+    if (isE2E && messages.length <= 2) return
     if (isChatFloating && !force) return
     setTimeout(() => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
