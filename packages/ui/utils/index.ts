@@ -113,6 +113,11 @@ export const WS_URL =
       ? "ws://localhost:5001"
       : "wss://ws.chrry.dev")
 
+export const WS_SERVER_URL =
+  process.env.NEXT_PUBLIC_WS_SERVER_URL ||
+  process.env.WS_SERVER_URL ||
+  "http://localhost:5001"
+
 export const addParam = (key: string, value: string) => {
   if (typeof window === "undefined") return
   const searchParams = new URLSearchParams(window.location.search)
