@@ -3,7 +3,7 @@ import fs from "node:fs/promises"
 import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
-
+import rateLimit from "express-rate-limit"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -20,6 +20,15 @@ const app = express()
 
 // Add cookie parser middleware
 app.use(cookieParser())
+
+// Set up rate limiter: maximum 100 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // max 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
+app.use(limiter)
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
