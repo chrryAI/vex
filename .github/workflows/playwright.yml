@@ -68,11 +68,10 @@ jobs:
             ${{ runner.OS }}-node-
 
       - name: Install dependencies
-        run: |
-          npm ci --retry=3 --timeout=60000 || npm ci --retry=3 --timeout=60000 || npm install --legacy-peer-deps
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: pnpm turbo lint
 
       - name: Build
         run: NODE_OPTIONS="--max-old-space-size=4096" npm run build
