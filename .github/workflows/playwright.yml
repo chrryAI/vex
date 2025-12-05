@@ -49,43 +49,17 @@ jobs:
       - name: Trigger Coolify deployments
         run: |
           echo "🚀 Triggering sequential deployments for cache efficiency..."
-
-          # Deploy web app first (builds fresh)
-          echo "📦 Deploying web app (e2e.chrry.ai)..."
-          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
-
-          # Wait for web deployment to complete
-          echo "⏳ Waiting for web deployment to complete..."
-          MAX_WAIT=600  # 10 minutes
-          ELAPSED=0
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
-              echo "✅ Web app is deployed and healthy!"
-              break
-            fi
-            sleep 10
-            ELAPSED=$((ELAPSED + 10))
-            echo "⏳ Still waiting... ($ELAPSED/$MAX_WAIT seconds)"
-          done
-
-          # Deploy API app (will use web's Turbo cache)
+          # Deploy API 
           echo "📦 Deploying API app (e2e.chrry.dev) - using cached build..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
-          # Wait for API deployment to complete
-          echo "⏳ Waiting for API deployment to complete..."
-          ELAPSED=0
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
-              echo "✅ API app is deployed and healthy!"
-              break
-            fi
-            sleep 10
-            ELAPSED=$((ELAPSED + 10))
-            echo "⏳ Still waiting... ($ELAPSED/$MAX_WAIT seconds)"
-          done
+
+          # Deploy web
+          echo "📦 Deploying web app (e2e.chrry.ai)..."
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+
 
           # Deploy WebSocket server (will use cached build)
           echo "📦 Deploying WebSocket server (e2e-ws.chrry.dev) - using cached build..."
@@ -163,13 +137,6 @@ jobs:
             echo "❌ Deployment timeout after 10 minutes"
             exit 1
           fi
-
-      # - name: Seed E2E database (if needed)
-      #   run: |
-      #     echo "🌱 Checking if E2E database needs seeding..."
-      #     bash scripts/seed-e2e.sh
-      #   env:
-      #     DB_URL: ${{ secrets.E2E_DB_URL }}
 
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
