@@ -8,6 +8,8 @@ permissions:
 
 jobs:
   e2e:
+    # Only run for PRs from the same repo (not forks/external PRs)
+    if: github.event.pull_request.head.repo.full_name == github.repository
     timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
