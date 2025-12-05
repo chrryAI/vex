@@ -395,12 +395,16 @@ export default function Chat({
   // Determine if we should use compact mode based on bottom offset
   const [hasBottomOffset, setHasBottomOffset] = useState(false)
   const shouldUseCompactMode = compactMode || hasBottomOffset
+  console.log(
+    `🚀 ~ file: Chat.tsx:398 ~ shouldUseCompactMode:`,
+    shouldUseCompactMode,
+  )
   // || windowHeight < 600 // Not at bottom or mobile
 
-  const floatingInitial = empty
-    ? false
-    : shouldUseCompactMode
-      ? true
+  const floatingInitial = shouldUseCompactMode
+    ? true
+    : empty
+      ? false
       : isChatFloatingContext && !showChatInput
 
   const [isChatFloating] = useSyncedState(floatingInitial)
