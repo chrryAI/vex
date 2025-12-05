@@ -44,7 +44,7 @@ export default function DraggableList<T>({
         newData.splice(toIndex, 0, removed!)
         onDragEnd({ data: newData, from: fromIndex, to: toIndex })
       }}
-      renderItem={renderItemWrapper}
+      renderItem={renderItemWrapper as any}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={ListFooterComponent}
       contentContainerStyle={contentContainerStyle}
