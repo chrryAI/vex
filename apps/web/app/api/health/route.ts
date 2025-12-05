@@ -1,4 +1,4 @@
-import { VERSION } from "lodash"
+import { VERSION } from "chrry/utils"
 import { NextResponse } from "next/server"
 
 // Build ID is set at build time (GIT_SHA) or runtime fallback
