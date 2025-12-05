@@ -11,32 +11,45 @@ permissions:
 # curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=y8kkk00co844wg880cw4w8k0&force=false" \
 #   -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
-# echo "✅ All deployments triggered sequentially!"
+env:
+  STAGING_URL: https://e2e.chrry.ai
+  STAGING_API_URL: https://e2e.chrry.dev
+  TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+  TURBO_TEAM: "vex"
+  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+  TURBO_API: ${{ secrets.TURBO_API }}
+  TURBO_VERBOSE: 1
+  NODE_OPTIONS: --max-old-space-size=8192
+  TESTING_ENV: e2e
+  NEXT_PUBLIC_TESTING_ENV: e2e
+  NEXT_PUBLIC_CI: true
+  CI: true
+  BUILD_ID: ${{ github.sha }}
 
 jobs:
-  e2e:
-    # Only run for PRs from the same repo (not forks/external PRs)
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    timeout-minutes: 30
+  # Safety check: prevent external PRs from triggering deployments
+  check-pr:
     runs-on: ubuntu-latest
-    env:
-      TURBO_API: ${{ secrets.TURBO_API }}
-      TURBO_VERBOSE: 1
-      TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-      TURBO_TEAM: "vex"
-      NODE_OPTIONS: --max-old-space-size=8192
-      TESTING_ENV: e2e
-      NEXT_PUBLIC_TESTING_ENV: e2e
-      NEXT_PUBLIC_CI: true
-      CI: true
-      STAGING_URL: https://e2e.chrry.ai
-      STAGING_API_URL: https://e2e.chrry.dev
-      BUILD_ID: ${{ github.sha }}
-
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Check if PR is from fork
+        id: check
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Skipping deployment for external PR"
+          else
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "✅ Internal PR - will deploy"
+          fi
+
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    needs: check-pr
+    if: needs.check-pr.outputs.should_deploy == 'true'
+    steps:
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -58,79 +71,36 @@ jobs:
       - name: Type check
         run: pnpm turbo check-types
 
-      - name: Trigger Coolify deployments
+  # Deploy API first (for cache efficiency)
+  deploy-api:
+    runs-on: ubuntu-latest
+    needs: [check-pr, lint-and-typecheck]
+    if: needs.check-pr.outputs.should_deploy == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy API to Coolify
         run: |
-          echo "🚀 Triggering sequential deployments for cache efficiency..."
-          # Deploy API 
-          echo "📦 Deploying API app (e2e.chrry.dev) - using cached build..."
+          echo "📦 Deploying API app (e2e.chrry.dev)..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
-          sleep 25
-
-          # Deploy web
-          echo "📦 Deploying web app (e2e.chrry.ai)..."
-          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
-
-      - name: Wait for staging deployment
+      - name: Wait for API deployment
         run: |
-          echo "🚀 Waiting for staging deployment..."
-          echo "Expected build ID: ${{ github.sha }}"
-
-          MAX_ATTEMPTS=200
+          echo "⏳ Waiting for API to finish deploying..."
+          MAX_ATTEMPTS=150
           ATTEMPT=0
+          EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            WEB_READY=false
-            API_READY=false
-            WS_READY=false
-            
-            # Check web server
-            if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
-              WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
-              EXPECTED_VERSION=$(jq -r '.version' package.json)
-              echo "📦 Web version: $WEB_BUILD_ID (expected: $EXPECTED_VERSION)"
-              
-              # Check if it matches
-              if [ "$WEB_BUILD_ID" = "$EXPECTED_VERSION" ] || [ "$WEB_BUILD_ID" = "unknown" ]; then
-                WEB_READY=true
-                echo "✅ Web server is ready"
-              else
-                echo "⏳ Web server is up but version doesn't match yet"
-              fi
-            else
-              echo "⏳ Waiting for web server..."
-            fi
-            
-            # Check API server
             if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
-              API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
-              EXPECTED_VERSION=$(jq -r '.version' package.json)
-              echo "📦 API version: $API_BUILD_ID (expected: $EXPECTED_VERSION)"
+              API_VERSION=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
+              echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
               
-              if [ "$API_BUILD_ID" = "$EXPECTED_VERSION" ] || [ "$API_BUILD_ID" = "unknown" ]; then
-                API_READY=true
-                echo "✅ API server is ready"
-              else
-                echo "⏳ API server is up but version doesn't match yet"
+              if [ "$API_VERSION" = "$EXPECTED_VERSION" ]; then
+                echo "✅ API deployment complete!"
+                exit 0
               fi
-            else
-              echo "⏳ Waiting for API server..."
-            fi
-            
-            # Check WebSocket server
-            if curl -f https://e2e-ws.chrry.dev/health > /dev/null 2>&1; then
-              WS_READY=true
-              echo "✅ WebSocket server is ready"
-            else
-              echo "⏳ Waiting for WebSocket server..."
-            fi
-            
-            # All services ready?
-            if [ "$WEB_READY" = true ] && [ "$API_READY" = true ] && [ "$WS_READY" = true ]; then
-              echo "🎉 All services are deployed and ready!"
-              break
             fi
             
             ATTEMPT=$((ATTEMPT + 1))
@@ -138,10 +108,92 @@ jobs:
             sleep 10
           done
 
-          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-            echo "❌ Deployment timeout after 10 minutes"
-            exit 1
-          fi
+          echo "❌ API deployment timed out"
+          exit 1
+
+  # Deploy Web after API is done (sequential for cache efficiency)
+  deploy-web:
+    runs-on: ubuntu-latest
+    needs: deploy-api # Wait for API to finish first!
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Web to Coolify
+        run: |
+          echo "📦 Deploying web app (e2e.chrry.ai)..."
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+
+      - name: Wait for Web deployment
+        run: |
+          echo "⏳ Waiting for Web to finish deploying..."
+          MAX_ATTEMPTS=150
+          ATTEMPT=0
+          EXPECTED_VERSION=$(jq -r '.version' package.json)
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
+              WEB_VERSION=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
+              echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
+              
+              if [ "$WEB_VERSION" = "$EXPECTED_VERSION" ]; then
+                echo "✅ Web deployment complete!"
+                exit 0
+              fi
+            fi
+            
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            sleep 10
+          done
+
+          echo "❌ Web deployment timed out"
+          exit 1
+
+  # Check WebSocket is ready
+  check-websocket:
+    runs-on: ubuntu-latest
+    needs: deploy-web
+    steps:
+      - name: Check WebSocket server
+        run: |
+          echo "⏳ Checking WebSocket server..."
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            if curl -f https://e2e-ws.chrry.dev/health > /dev/null 2>&1; then
+              echo "✅ WebSocket server is ready"
+              exit 0
+            fi
+            
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            sleep 5
+          done
+
+          echo "❌ WebSocket server not responding"
+          exit 1
+
+  # Run E2E tests only after all services are ready
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: check-websocket
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
