@@ -23,10 +23,9 @@ export const getExtensionUrl = () => {
   return `${window.location.origin}/index.html` // Fallback
 }
 
-export const isProduction = isCI
-  ? false
-  : process.env.NODE_ENV === "production" ||
-    process.env.NEXT_PUBLIC_NODE_ENV === "production"
+export const isProduction =
+  process.env.NODE_ENV === "production" ||
+  process.env.NEXT_PUBLIC_NODE_ENV === "production"
 
 export const isDevelopment = checkIsExtension()
   ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>

@@ -66,6 +66,7 @@ jobs:
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
+          sleep 10
 
           # Deploy web
           echo "📦 Deploying web app (e2e.chrry.ai)..."
@@ -87,7 +88,7 @@ jobs:
             
             # Check web server
             if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
-              WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.version // "unknown"')
+              WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
               EXPECTED_VERSION=$(jq -r '.version' package.json)
               echo "📦 Web version: $WEB_BUILD_ID (expected: $EXPECTED_VERSION)"
               
@@ -104,7 +105,7 @@ jobs:
             
             # Check API server
             if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
-              API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.version // "unknown"')
+              API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
               EXPECTED_VERSION=$(jq -r '.version' package.json)
               echo "📦 API version: $API_BUILD_ID (expected: $EXPECTED_VERSION)"
               
