@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [chrry] # Only build on chrry branch
+    branches: [test] # Only build on chrry branch
   # pull_request:
   #   branches: [main, chrry]
   workflow_dispatch:

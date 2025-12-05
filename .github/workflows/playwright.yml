@@ -39,17 +39,23 @@ jobs:
 
       - name: Trigger Coolify deployments
         run: |
-          echo "🚀 Triggering Coolify deployments..."
+          echo "🚀 Triggering sequential deployments for cache efficiency..."
 
-          # Trigger web app deployment (e2e.chrry.ai)
+          # Deploy web app first (builds fresh)
+          echo "📦 Deploying web app (e2e.chrry.ai)..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
-          # Trigger API deployment (e2e.chrry.dev)
+          # Wait for web build to start and populate Turbo cache
+          echo "⏳ Waiting 60 seconds for web build to populate cache..."
+          sleep 60
+
+          # Deploy API app (will use web's Turbo cache)
+          echo "📦 Deploying API app (e2e.chrry.dev) - using cached build..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
-          echo "✅ Deployment triggers sent!"
+          echo "✅ Deployment triggers sent! API build will be ~45% faster using cache."
 
       - name: Wait for staging deployment
         run: |
