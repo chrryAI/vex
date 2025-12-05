@@ -288,7 +288,7 @@ importers:
         version: link:../../packages/db
       '@sentry/nextjs':
         specifier: ^8.55.0
-        version: 8.55.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react@19.2.0)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
+        version: 8.55.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react@19.2.0)(webpack@5.103.0(@swc/core@1.15.3))
       '@smithy/node-http-handler':
         specifier: ^4.4.5
         version: 4.4.5
@@ -408,7 +408,7 @@ importers:
         version: 4.5.8(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react@19.2.0)(typescript@5.8.2)
       next-pwa:
         specifier: ^5.6.0
-        version: 5.6.0(@babel/core@7.28.5)(@swc/core@1.15.3)(@types/babel__core@7.20.5)(esbuild@0.25.12)(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
+        version: 5.6.0(@babel/core@7.28.5)(@swc/core@1.15.3)(@types/babel__core@7.20.5)(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(webpack@5.103.0(@swc/core@1.15.3))
       next-view-transitions:
         specifier: ^0.3.4
         version: 0.3.4(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -575,7 +575,7 @@ importers:
         version: 2.15.0
       webpack:
         specifier: ^5.89.0
-        version: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+        version: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
       webpack-cli:
         specifier: ^5.1.4
         version: 5.1.4(webpack@5.103.0)
@@ -682,6 +682,9 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.2.1
+      express-rate-limit:
+        specifier: ^8.2.1
+        version: 8.2.1(express@5.2.1)
       react:
         specifier: ^19.1.1
         version: 19.2.0
@@ -781,7 +784,7 @@ importers:
         version: link:../../packages/db
       '@sentry/nextjs':
         specifier: ^8.55.0
-        version: 8.55.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react@19.2.0)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
+        version: 8.55.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react@19.2.0)(webpack@5.103.0(@swc/core@1.15.3))
       '@types/all-the-cities':
         specifier: ^3.1.3
         version: 3.1.3
@@ -901,7 +904,7 @@ importers:
         version: 4.5.8(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react@19.2.0)(typescript@5.8.2)
       next-pwa:
         specifier: ^5.6.0
-        version: 5.6.0(@babel/core@7.28.5)(@swc/core@1.15.3)(@types/babel__core@7.20.5)(esbuild@0.25.12)(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
+        version: 5.6.0(@babel/core@7.28.5)(@swc/core@1.15.3)(@types/babel__core@7.20.5)(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(webpack@5.103.0(@swc/core@1.15.3))
       next-view-transitions:
         specifier: ^0.3.4
         version: 0.3.4(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -8960,6 +8963,12 @@ packages:
   exponential-backoff@3.1.3:
     resolution: {integrity: sha512-ZgEeZXj30q+I0EN+CbSSpIyPaJ5HVQD18Z1m+u1FXbAeT94mr1zw50q4q6jiiC447Nl/YTcIYSAftiGqetwXCA==}
 
+  express-rate-limit@8.2.1:
+    resolution: {integrity: sha512-PCZEIEIxqwhzw4KF0n7QF4QqruVTcF73O5kFKUnGOyjbCCgizBBiFaYpd/fnBLUMPw/BWw9OsiN7GgrNYr7j6g==}
+    engines: {node: '>= 16'}
+    peerDependencies:
+      express: '>= 4.11'
+
   express@5.2.1:
     resolution: {integrity: sha512-hIS4idWWai69NezIdRt2xFVofaF4j+6INOpJlVOLDO8zXGpUVEVzIYk12UUi2JzjEzWL3IOAxcTubgz9Po0yXw==}
     engines: {node: '>= 18'}
@@ -9710,6 +9719,10 @@ packages:
   ioredis@5.8.2:
     resolution: {integrity: sha512-C6uC+kleiIMmjViJINWk80sOQw5lEzse1ZmvD+S/s8p8CWapftSaC+kocGTx6xrbrJ4WmYQGC08ffHLr6ToR6Q==}
     engines: {node: '>=12.22.0'}
+
+  ip-address@10.0.1:
+    resolution: {integrity: sha512-NWv9YLW4PoW2B7xtzaS3NCot75m6nK7Icdv0o3lfMceJVRfSoQwqD4wEH5rLwoKJwUiZ/rfpiVBhnaF0FK4HoA==}
+    engines: {node: '>= 12'}
 
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -11740,6 +11753,7 @@ packages:
     resolution: {integrity: sha512-DgtH8GId1/+oj8n9yYEmhTq1QkxOZZzqHJhHEa1bmtV3t3/u2YsE3LSvRUNpVRWVXRcCdn+3Tu6+mD2YXKL7lA==}
     engines: {node: '>=20.18.0'}
     hasBin: true
+    bundledDependencies: []
 
   peberminta@0.9.0:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
@@ -19845,7 +19859,7 @@ snapshots:
       '@sentry/utils': 7.120.4
       localforage: 1.10.0
 
-  '@sentry/nextjs@8.55.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react@19.2.0)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))':
+  '@sentry/nextjs@8.55.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(react@19.2.0)(webpack@5.103.0(@swc/core@1.15.3))':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/semantic-conventions': 1.38.0
@@ -19856,7 +19870,7 @@ snapshots:
       '@sentry/opentelemetry': 8.55.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.38.0)
       '@sentry/react': 8.55.0(react@19.2.0)
       '@sentry/vercel-edge': 8.55.0
-      '@sentry/webpack-plugin': 2.22.7(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
+      '@sentry/webpack-plugin': 2.22.7(webpack@5.103.0(@swc/core@1.15.3))
       chalk: 3.0.0
       next: 15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2)
       resolve: 1.22.8
@@ -19955,12 +19969,12 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@sentry/core': 8.55.0
 
-  '@sentry/webpack-plugin@2.22.7(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))':
+  '@sentry/webpack-plugin@2.22.7(webpack@5.103.0(@swc/core@1.15.3))':
     dependencies:
       '@sentry/bundler-plugin-core': 2.22.7
       unplugin: 1.0.1
       uuid: 9.0.1
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)
+      webpack: 5.103.0(@swc/core@1.15.3)
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -22368,17 +22382,17 @@ snapshots:
 
   '@webpack-cli/configtest@2.1.1(webpack-cli@5.1.4)(webpack@5.103.0)':
     dependencies:
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack@5.103.0)
 
   '@webpack-cli/info@2.0.2(webpack-cli@5.1.4)(webpack@5.103.0)':
     dependencies:
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack@5.103.0)
 
   '@webpack-cli/serve@2.0.5(webpack-cli@5.1.4)(webpack@5.103.0)':
     dependencies:
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack@5.103.0)
 
   '@xmldom/xmldom@0.8.11': {}
@@ -22764,14 +22778,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  babel-loader@8.4.1(@babel/core@7.28.5)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)):
+  babel-loader@8.4.1(@babel/core@7.28.5)(webpack@5.103.0(@swc/core@1.15.3)):
     dependencies:
       '@babel/core': 7.28.5
       find-cache-dir: 3.3.2
       loader-utils: 2.0.4
       make-dir: 3.1.0
       schema-utils: 2.7.1
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)
+      webpack: 5.103.0(@swc/core@1.15.3)
 
   babel-plugin-istanbul@6.1.1:
     dependencies:
@@ -23269,10 +23283,10 @@ snapshots:
 
   classnames@2.5.1: {}
 
-  clean-webpack-plugin@4.0.0(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)):
+  clean-webpack-plugin@4.0.0(webpack@5.103.0(@swc/core@1.15.3)):
     dependencies:
       del: 4.1.1
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)
+      webpack: 5.103.0(@swc/core@1.15.3)
 
   cli-cursor@2.1.0:
     dependencies:
@@ -23556,7 +23570,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.7.3
     optionalDependencies:
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
 
   css-select@5.2.2:
     dependencies:
@@ -24812,6 +24826,11 @@ snapshots:
 
   exponential-backoff@3.1.3: {}
 
+  express-rate-limit@8.2.1(express@5.2.1):
+    dependencies:
+      express: 5.2.1
+      ip-address: 10.0.1
+
   express@5.2.1:
     dependencies:
       accepts: 2.0.0
@@ -25763,6 +25782,8 @@ snapshots:
       standard-as-callback: 2.1.0
     transitivePeerDependencies:
       - supports-color
+
+  ip-address@10.0.1: {}
 
   ipaddr.js@1.9.1: {}
 
@@ -28029,14 +28050,14 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  next-pwa@5.6.0(@babel/core@7.28.5)(@swc/core@1.15.3)(@types/babel__core@7.20.5)(esbuild@0.25.12)(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)):
+  next-pwa@5.6.0(@babel/core@7.28.5)(@swc/core@1.15.3)(@types/babel__core@7.20.5)(next@15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2))(webpack@5.103.0(@swc/core@1.15.3)):
     dependencies:
-      babel-loader: 8.4.1(@babel/core@7.28.5)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
-      clean-webpack-plugin: 4.0.0(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
+      babel-loader: 8.4.1(@babel/core@7.28.5)(webpack@5.103.0(@swc/core@1.15.3))
+      clean-webpack-plugin: 4.0.0(webpack@5.103.0(@swc/core@1.15.3))
       globby: 11.1.0
       next: 15.5.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.94.2)
-      terser-webpack-plugin: 5.3.14(@swc/core@1.15.3)(esbuild@0.25.12)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
-      workbox-webpack-plugin: 6.6.0(@types/babel__core@7.20.5)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
+      terser-webpack-plugin: 5.3.14(@swc/core@1.15.3)(webpack@5.103.0(@swc/core@1.15.3))
+      workbox-webpack-plugin: 6.6.0(@types/babel__core@7.20.5)(webpack@5.103.0(@swc/core@1.15.3))
       workbox-window: 6.6.0
     transitivePeerDependencies:
       - '@babel/core'
@@ -30230,7 +30251,7 @@ snapshots:
   sass-loader@13.3.3(sass@1.94.2)(webpack@5.103.0):
     dependencies:
       neo-async: 2.6.2
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
     optionalDependencies:
       sass: 1.94.2
 
@@ -30809,7 +30830,7 @@ snapshots:
 
   style-loader@3.3.4(webpack@5.103.0):
     dependencies:
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
 
   style-to-js@1.1.21:
     dependencies:
@@ -30988,29 +31009,27 @@ snapshots:
       ansi-escapes: 4.3.2
       supports-hyperlinks: 2.3.0
 
-  terser-webpack-plugin@5.3.14(@swc/core@1.15.3)(esbuild@0.25.12)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)):
+  terser-webpack-plugin@5.3.14(@swc/core@1.15.3)(webpack@5.103.0(@swc/core@1.15.3)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       serialize-javascript: 6.0.2
       terser: 5.44.1
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)
+      webpack: 5.103.0(@swc/core@1.15.3)
     optionalDependencies:
       '@swc/core': 1.15.3
-      esbuild: 0.25.12
 
-  terser-webpack-plugin@5.3.14(@swc/core@1.15.3)(esbuild@0.25.12)(webpack@5.103.0):
+  terser-webpack-plugin@5.3.14(@swc/core@1.15.3)(webpack@5.103.0):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       serialize-javascript: 6.0.2
       terser: 5.44.1
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
     optionalDependencies:
       '@swc/core': 1.15.3
-      esbuild: 0.25.12
 
   terser@5.44.1:
     dependencies:
@@ -31112,7 +31131,7 @@ snapshots:
       semver: 7.7.3
       source-map: 0.7.6
       typescript: 5.8.3
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
 
   ts-md5@2.0.1: {}
 
@@ -31824,7 +31843,7 @@ snapshots:
       import-local: 3.2.0
       interpret: 3.1.1
       rechoir: 0.8.0
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4)
       webpack-merge: 5.10.0
 
   webpack-merge@5.10.0:
@@ -31842,7 +31861,7 @@ snapshots:
 
   webpack-virtual-modules@0.5.0: {}
 
-  webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12):
+  webpack@5.103.0(@swc/core@1.15.3):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.8
@@ -31866,7 +31885,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.0
-      terser-webpack-plugin: 5.3.14(@swc/core@1.15.3)(esbuild@0.25.12)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12))
+      terser-webpack-plugin: 5.3.14(@swc/core@1.15.3)(webpack@5.103.0(@swc/core@1.15.3))
       watchpack: 2.4.4
       webpack-sources: 3.3.3
     transitivePeerDependencies:
@@ -31874,7 +31893,7 @@ snapshots:
       - esbuild
       - uglify-js
 
-  webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)(webpack-cli@5.1.4):
+  webpack@5.103.0(@swc/core@1.15.3)(webpack-cli@5.1.4):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.8
@@ -31898,7 +31917,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.0
-      terser-webpack-plugin: 5.3.14(@swc/core@1.15.3)(esbuild@0.25.12)(webpack@5.103.0)
+      terser-webpack-plugin: 5.3.14(@swc/core@1.15.3)(webpack@5.103.0)
       watchpack: 2.4.4
       webpack-sources: 3.3.3
     optionalDependencies:
@@ -32096,12 +32115,12 @@ snapshots:
 
   workbox-sw@6.6.0: {}
 
-  workbox-webpack-plugin@6.6.0(@types/babel__core@7.20.5)(webpack@5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)):
+  workbox-webpack-plugin@6.6.0(@types/babel__core@7.20.5)(webpack@5.103.0(@swc/core@1.15.3)):
     dependencies:
       fast-json-stable-stringify: 2.1.0
       pretty-bytes: 5.6.0
       upath: 1.2.0
-      webpack: 5.103.0(@swc/core@1.15.3)(esbuild@0.25.12)
+      webpack: 5.103.0(@swc/core@1.15.3)
       webpack-sources: 1.4.3
       workbox-build: 6.6.0(@types/babel__core@7.20.5)
     transitivePeerDependencies:

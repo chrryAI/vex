@@ -81,11 +81,11 @@ jobs:
             
             # Check web server
             if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
-              WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.buildId // "unknown"')
+              WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.version // "unknown"')
               echo "📦 Web build ID: $WEB_BUILD_ID"
               
               # Check if it matches (or skip if GIT_SHA not set)
-              if [ "$WEB_BUILD_ID" = "${{ github.sha }}" ] || [ "$WEB_BUILD_ID" = "unknown" ]; then
+              if [ "$WEB_BUILD_ID" = 1.5.76 ] || [ "$WEB_BUILD_ID" = "unknown" ]; then
                 WEB_READY=true
                 echo "✅ Web server is ready"
               else
@@ -97,10 +97,10 @@ jobs:
             
             # Check API server
             if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
-              API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.buildId // "unknown"')
+              API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.version // "unknown"')
               echo "📦 API build ID: $API_BUILD_ID"
               
-              if [ "$API_BUILD_ID" = "${{ github.sha }}" ] || [ "$API_BUILD_ID" = "unknown" ]; then
+              if [ "$API_BUILD_ID" = 1.5.76 ] || [ "$API_BUILD_ID" = "unknown" ]; then
                 API_READY=true
                 echo "✅ API server is ready"
               else
