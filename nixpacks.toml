@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_22", "pnpm-9_x", "openssl", "tini"]
+nixPkgs = ["nodejs_22", "pnpm-9_x", "openssl"]
 
 [phases.install]
 cmds = [
@@ -11,5 +11,4 @@ cmds = [
 cmds = ["npx turbo run build"]
 
 [start]
-# Tini will handle zombie process reaping for both apps
-cmd = "tini -- pnpm --filter $NIXPACKS_APP start"
+cmd = "pnpm --filter $NIXPACKS_APP start"
