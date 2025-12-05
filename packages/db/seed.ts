@@ -44,9 +44,15 @@ import { createCities } from "./createCities"
 
 const isCI = process.env.CI
 
-const isProd = isCI
+const isSeedSafe =
+  process.env.DB_URL?.includes("pb9M") ||
+  process.env.DB_URL?.includes("localhost")
+
+const isProd = isSeedSafe
   ? false
-  : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
+  : isCI
+    ? false
+    : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
 
 const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -701,7 +707,8 @@ const prod = async () => {
 const seedDb = async (): Promise<void> => {
   // await prod()
   // process.exit(0)
-  if (isProd) {
+
+  if (isProd && !isSeedSafe) {
     // eslint-disable-next-line no-console
     console.warn(
       "\n⚠️  WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
