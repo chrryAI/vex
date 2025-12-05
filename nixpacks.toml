@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["nodejs_22", "pnpm-9_x", "openssl", "tini"]
+
+[phases.install]
+cmds = [
+  "npm install -g corepack@0.24.1 && corepack enable",
+  "pnpm i --frozen-lockfile"
+]
+
+[phases.build]
+cmds = ["npx turbo run build"]
+
+[start]
+# Tini will handle zombie process reaping for both apps
+cmd = "tini -- pnpm --filter $NIXPACKS_APP start"

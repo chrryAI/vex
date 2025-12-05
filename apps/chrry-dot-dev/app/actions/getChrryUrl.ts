@@ -1,3 +1,4 @@
+import { getSiteConfig } from "chrry/utils/siteConfig"
 import { headers } from "next/headers"
 
 export default async function getChrryUrl(request?: Request) {
@@ -17,14 +18,13 @@ export default async function getChrryUrl(request?: Request) {
   const hostname =
     headersList.get("x-forwarded-host") || headersList.get("host") || ""
 
+  const siteConfig = getSiteConfig(hostname)
+
   const chrryUrlFromHeader = headersList.get("x-chrry-url")
-  const protocol = headersList.get("x-forwarded-proto") || "https"
 
   let chrryUrl = chrryUrlFromHeader
     ? decodeURIComponent(chrryUrlFromHeader)
-    : hostname.startsWith("http")
-      ? hostname
-      : `${protocol}://${hostname}`
+    : siteConfig.url
 
   return chrryUrl
 }

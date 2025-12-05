@@ -23,7 +23,7 @@ export default function DraggableList<T>({
     onStartDrag: () => void
     isActive: boolean
     index: number
-  }) => {
+  }): React.ReactElement | null => {
     // Map native params to our shared interface
     const params: RenderItemParams<T> = {
       item,
