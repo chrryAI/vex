@@ -141,13 +141,19 @@ export const FRONTEND_URL = isTestingDevice
 
 export const PROD_FRONTEND_URL = CHRRY_URL
 
-export const API_URL = isTestingDevice
-  ? `http://192.168.2.27:${API_PORT}/api`
-  : isDevelopment
-    ? `http://localhost:${API_PORT}/api`
-    : isCI
-      ? "https://e2e.chrry.dev/api"
-      : "https://chrry.dev/api"
+export const isE2E =
+  process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
+  process.env.TESTING_ENV === "e2e"
+
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (isTestingDevice
+    ? `http://192.168.2.27:${API_PORT}/api`
+    : isDevelopment
+      ? `http://localhost:${API_PORT}/api`
+      : isE2E
+        ? "https://e2e.chrry.dev/api"
+        : "https://chrry.dev/api")
 
 // API fetch wrapper with credentials for cross-domain requests
 export const apiFetch = (url: string, options?: RequestInit) => {
@@ -184,9 +190,6 @@ export type expenseCategoryType = (typeof expenseCategory)[number]
 
 export const budgetCategory = expenseCategory
 
-export const isE2E =
-  process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
-  process.env.TESTING_ENV === "e2e"
 export const extensionSuggestions = [
   {
     text: "Instantly magic up a quick page summary",
@@ -394,7 +397,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.5.89"
+export const VERSION = config.version || "1.5.90"
 export type instructionBase = {
   id: string
   title: string
