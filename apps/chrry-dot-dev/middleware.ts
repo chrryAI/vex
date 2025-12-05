@@ -1,7 +1,7 @@
 import { getSlugFromPathname } from "chrry/utils"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4, validate } from "uuid"
 import createIntlMiddleware from "next-intl/middleware"
 
 import { locales, defaultLocale } from "chrry/locales"
@@ -161,14 +161,14 @@ export default async function middleware(request: NextRequest) {
   const existingFingerprintCookie = request.cookies.get("fingerprint")?.value
 
   const chrryUrl =
-    searchParams.get("chrryUrl") || request.headers.get("x-chrry-url")
+    decodeURIComponent(searchParams.get("chrryUrl") || "") ||
+    request.headers.get("x-chrry-url")
 
   chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
 
-  const fingerprint =
-    request.nextUrl.searchParams.get("fp") || request.headers.get("x-fp")
+  const fingerprint = searchParams.get("fp") || request.headers.get("x-fp")
 
-  if (!existingFingerprintCookie && fingerprint) {
+  if (!existingFingerprintCookie && fingerprint && validate(fingerprint)) {
     response.cookies.set("fingerprint", fingerprint, {
       httpOnly: false,
       secure: process.env.NODE_ENV !== "development",
