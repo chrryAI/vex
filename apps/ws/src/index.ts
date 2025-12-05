@@ -97,21 +97,6 @@ const wss = new WebSocketServer({ noServer: true })
 // Add middleware
 app.use((req, res, next) => {
   console.log("⏱️ Request received:", req.method, req.url)
-  const start = Date.now()
-  const { method, url } = req
-  res.on("finish", () => {
-    const duration = Date.now() - start
-    console.log("[HTTP]", method, url, res.statusCode, `${duration}ms`)
-  })
-
-  // Add timeout handler
-  const timeout = setTimeout(() => {
-    console.error("⚠️ Request timeout:", method, url)
-  }, 5000)
-
-  res.on("finish", () => clearTimeout(timeout))
-  res.on("close", () => clearTimeout(timeout))
-
   next()
 })
 console.log("✅ Request logger middleware registered")

@@ -69,36 +69,59 @@ jobs:
       - name: Wait for staging deployment
         run: |
           echo "🚀 Waiting for staging deployment..."
-          echo "Expected build ID: ${{ env.BUILD_ID }}"
+          echo "Expected build ID: ${{ github.sha }}"
 
           MAX_ATTEMPTS=60
           ATTEMPT=0
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            # Check if staging web is up
+            WEB_READY=false
+            API_READY=false
+            WS_READY=false
+            
+            # Check web server
             if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
-              WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.buildId')
-              echo "✅ Web server is up (build: $WEB_BUILD_ID)"
+              WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.buildId // "unknown"')
+              echo "📦 Web build ID: $WEB_BUILD_ID"
               
-              # Check if API is up
-              if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
-                API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.buildId')
-                echo "✅ API server is up (build: $API_BUILD_ID)"
-                
-                # Check if WebSocket server is up
-                if curl -f https://e2e-ws.chrry.dev > /dev/null 2>&1; then
-                  echo "✅ WebSocket server is up"
-                  
-                  echo "🎉 All services are ready!"
-                  break
-                else
-                  echo "⏳ Waiting for WebSocket server..."
-                fi
+              # Check if it matches (or skip if GIT_SHA not set)
+              if [ "$WEB_BUILD_ID" = "${{ github.sha }}" ] || [ "$WEB_BUILD_ID" = "unknown" ]; then
+                WEB_READY=true
+                echo "✅ Web server is ready"
               else
-                echo "⏳ Waiting for API server..."
+                echo "⏳ Web server is up but build ID doesn't match yet"
               fi
             else
               echo "⏳ Waiting for web server..."
+            fi
+            
+            # Check API server
+            if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
+              API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.buildId // "unknown"')
+              echo "📦 API build ID: $API_BUILD_ID"
+              
+              if [ "$API_BUILD_ID" = "${{ github.sha }}" ] || [ "$API_BUILD_ID" = "unknown" ]; then
+                API_READY=true
+                echo "✅ API server is ready"
+              else
+                echo "⏳ API server is up but build ID doesn't match yet"
+              fi
+            else
+              echo "⏳ Waiting for API server..."
+            fi
+            
+            # Check WebSocket server
+            if curl -f https://e2e-ws.chrry.dev/health > /dev/null 2>&1; then
+              WS_READY=true
+              echo "✅ WebSocket server is ready"
+            else
+              echo "⏳ Waiting for WebSocket server..."
+            fi
+            
+            # All services ready?
+            if [ "$WEB_READY" = true ] && [ "$API_READY" = true ] && [ "$WS_READY" = true ]; then
+              echo "🎉 All services are deployed and ready!"
+              break
             fi
             
             ATTEMPT=$((ATTEMPT + 1))
