@@ -8,7 +8,7 @@ import {
   guest,
   thread,
 } from "@repo/db"
-import { FRONTEND_URL, WS_URL } from "chrry/utils"
+import { FRONTEND_URL, WS_SERVER_URL, WS_URL } from "chrry/utils"
 import webpush from "web-push"
 import captureException from "./captureException"
 import { getSiteConfig } from "chrry/utils/siteConfig"
@@ -92,7 +92,7 @@ export async function notify(
 ) {
   try {
     // Send notification via HTTP to WebSocket server
-    const response = await fetch(`${WS_URL}/notify`, {
+    const response = await fetch(`${WS_SERVER_URL}/notify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

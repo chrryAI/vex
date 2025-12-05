@@ -55,7 +55,16 @@ jobs:
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
 
-          echo "✅ Deployment triggers sent! API build will be ~45% faster using cache."
+          # Wait a bit for API build to start
+          echo "⏳ Waiting 30 seconds..."
+          sleep 30
+
+          # Deploy WebSocket server (will use cached build)
+          echo "📦 Deploying WebSocket server (e2e-ws.chrry.dev) - using cached build..."
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=y8kkk00co844wg880cw4w8k0&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+
+          echo "✅ All deployment triggers sent! Builds will use shared Turbo cache."
 
       - name: Wait for staging deployment
         run: |
@@ -69,26 +78,31 @@ jobs:
             # Check if staging web is up
             if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
               WEB_BUILD_ID=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.buildId')
-              echo "Web build ID: $WEB_BUILD_ID"
+              echo "✅ Web server is up (build: $WEB_BUILD_ID)"
               
               # Check if API is up
               if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
                 API_BUILD_ID=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.buildId')
-                echo "API build ID: $API_BUILD_ID"
+                echo "✅ API server is up (build: $API_BUILD_ID)"
                 
-                # Optional: Verify build IDs match expected
-                # if [ "$WEB_BUILD_ID" == "${{ env.BUILD_ID }}" ] && [ "$API_BUILD_ID" == "${{ env.BUILD_ID }}" ]; then
-                #   echo "✅ Build IDs match! Ready to test."
-                #   break
-                # fi
-                
-                echo "✅ Staging is ready!"
-                break
+                # Check if WebSocket server is up
+                if curl -f https://e2e-ws.chrry.dev > /dev/null 2>&1; then
+                  echo "✅ WebSocket server is up"
+                  
+                  echo "🎉 All services are ready!"
+                  break
+                else
+                  echo "⏳ Waiting for WebSocket server..."
+                fi
+              else
+                echo "⏳ Waiting for API server..."
               fi
+            else
+              echo "⏳ Waiting for web server..."
             fi
             
             ATTEMPT=$((ATTEMPT + 1))
-            echo "⏳ Waiting for deployment... ($ATTEMPT/$MAX_ATTEMPTS)"
+            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
             sleep 10
           done
 
