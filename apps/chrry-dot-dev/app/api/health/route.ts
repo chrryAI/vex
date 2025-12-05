@@ -1,3 +1,4 @@
+import { VERSION } from "chrry/utils"
 import { NextResponse } from "next/server"
 
 // Build ID is set at build time (GIT_SHA) or runtime fallback
@@ -10,7 +11,7 @@ export async function GET() {
   return NextResponse.json({
     status: "ok",
     buildId,
-    version: process.env.npm_package_version || "unknown",
+    version: VERSION,
     env: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
   })
