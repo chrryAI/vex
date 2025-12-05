@@ -28,12 +28,10 @@ export const isProduction = isCI
   : process.env.NODE_ENV === "production" ||
     process.env.NEXT_PUBLIC_NODE_ENV === "production"
 
-export const isDevelopment = isCI
-  ? true
-  : checkIsExtension()
-    ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>
-        getExtensionUrl()?.includes(id),
-      )
-    : !isProduction
+export const isDevelopment = checkIsExtension()
+  ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>
+      getExtensionUrl()?.includes(id),
+    )
+  : !isProduction
 
 export const isTestingDevice = false && isDevelopment
