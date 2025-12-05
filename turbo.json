@@ -87,6 +87,10 @@
     "start:web": {
       "cache": false,
       "persistent": true
+    },
+    "check-types": {
+      "cache": false,
+      "persistent": true
     }
   }
 }
