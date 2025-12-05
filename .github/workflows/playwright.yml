@@ -37,6 +37,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: pnpm turbo lint
+
+      - name: Type check
+        run: |
+          pnpm --filter "@chrryai/chrry" exec tsc --noEmit --project tsconfig.ci.json
+          pnpm --filter "web" check-types
+          pnpm --filter "chrrydotdev" check-types
+
       - name: Trigger Coolify deployments
         run: |
           echo "🚀 Triggering sequential deployments for cache efficiency..."

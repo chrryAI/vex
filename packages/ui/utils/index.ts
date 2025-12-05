@@ -145,7 +145,9 @@ export const API_URL = isTestingDevice
   ? `http://192.168.2.27:${API_PORT}/api`
   : isDevelopment
     ? `http://localhost:${API_PORT}/api`
-    : "https://chrry.dev/api"
+    : isCI
+      ? "https://e2e.chrry.dev/api"
+      : "https://chrry.dev/api"
 
 // API fetch wrapper with credentials for cross-domain requests
 export const apiFetch = (url: string, options?: RequestInit) => {
