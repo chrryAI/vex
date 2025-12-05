@@ -40,6 +40,7 @@ import captureException from "../../../lib/captureException"
 import getGuestAction from "../../actions/getGuest"
 import getAppAction from "../../actions/getApp"
 import getChrryUrl from "../../actions/getChrryUrl"
+import { whiteLabels } from "chrry/utils/siteConfig"
 
 const getGuestDb = ({
   email,
@@ -201,18 +202,28 @@ export async function GET(request: Request) {
       const parsedUrl = new URL(sourceUrl)
       const hostname = parsedUrl.hostname
 
-      // Use exact hostname match or subdomain check (not .includes())
-      if (hostname === "vex.chrry.ai" || hostname.endsWith(".vex.chrry.ai")) {
-        cookieDomain = ".chrry.ai" // vex.chrry.ai shares cookies with chrry.ai
-      } else if (hostname === "chrry.ai" || hostname.endsWith(".chrry.ai")) {
-        cookieDomain = ".chrry.ai"
-      } else if (hostname === "chrry.dev" || hostname.endsWith(".chrry.dev")) {
-        cookieDomain = ".chrry.dev"
-      } else if (
-        hostname === "focus.chrry.ai" ||
-        hostname.endsWith(".focus.chrry.ai")
-      ) {
-        cookieDomain = ".chrry.ai" // focus.chrry.ai shares cookies with chrry.ai
+      // Dynamically calculate cookie domain based on whiteLabels configuration
+      for (const label of whiteLabels) {
+        const labelDomain = label.domain
+
+        // Check if hostname matches or is a subdomain of this white label
+        if (hostname === labelDomain || hostname.endsWith(`.${labelDomain}`)) {
+          // Extract the root domain (e.g., "chrry.ai" from "vex.chrry.ai")
+          const domainParts = labelDomain.split(".")
+
+          // If it's already a root domain (e.g., "chrry.ai"), use it with a dot prefix
+          // If it's a subdomain (e.g., "vex.chrry.ai"), extract the root (chrry.ai)
+          if (domainParts.length === 2) {
+            // Root domain like "chrry.ai" or "chrry.dev"
+            cookieDomain = `.${labelDomain}`
+          } else if (domainParts.length > 2) {
+            // Subdomain like "vex.chrry.ai" -> extract "chrry.ai"
+            const rootDomain = domainParts.slice(-2).join(".")
+            cookieDomain = `.${rootDomain}`
+          }
+
+          break // Found a match, stop searching
+        }
       }
     } catch {
       // Invalid URL, leave cookieDomain undefined

@@ -186,10 +186,43 @@ jobs:
       #   run: nohup npm run start:ws > ws.log 2>&1 &
 
       - name: Start all
-        run: nohup npm run dev:all > ws.log 2>&1 &
+        run: nohup npm run start:all > all.log 2>&1 &
 
-      - name: Wait
-        run: sleep 10
+      - name: Wait for servers to be ready
+        run: |
+          echo "Waiting for servers to start..."
+
+          # Wait for web (localhost:3000)
+          for i in {1..60}; do
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ Web server is ready"
+              break
+            fi
+            echo "⏳ Waiting for web server... ($i/60)"
+            sleep 2
+          done
+
+          # Wait for API (localhost:3001)
+          for i in {1..60}; do
+            if curl -f http://localhost:3001/api/health > /dev/null 2>&1; then
+              echo "✅ API server is ready"
+              break
+            fi
+            echo "⏳ Waiting for API server... ($i/60)"
+            sleep 2
+          done
+
+          # Wait for WebSocket (localhost:5001)
+          for i in {1..60}; do
+            if curl -f http://localhost:5001 > /dev/null 2>&1; then
+              echo "✅ WebSocket server is ready"
+              break
+            fi
+            echo "⏳ Waiting for WebSocket server... ($i/60)"
+            sleep 2
+          done
+
+          echo "🚀 All servers are ready!"
 
       # - name: Start api
       #   run: nohup npm run start:api > api.log 2>&1 &

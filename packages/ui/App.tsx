@@ -629,7 +629,6 @@ export default function App({
           </Div>
         )}
       </H1>
-
       <Div style={{ ...styles.container.style }}>
         <>
           <Div style={{ ...styles.section.style }}>
