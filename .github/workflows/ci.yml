@@ -189,7 +189,7 @@ jobs:
         run: nohup npm run start:all > ws.log 2>&1 &
 
       - name: Wait
-        run: sleep 10000
+        run: sleep 50
 
       # - name: Start api
       #   run: nohup npm run start:api > api.log 2>&1 &
