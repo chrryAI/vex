@@ -86,6 +86,9 @@ jobs:
       - name: Seed
         run: npm run seed
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
       - name: Start web
         run: nohup npm run start:web > web.log 2>&1 &
 
@@ -125,9 +128,6 @@ jobs:
       #     token: ${{ secrets.CODECOV_TOKEN }} # Ensure this is set in your repo secrets
       #     flags: unittests # Optional: Tag this coverage report
       #     fail_ci_if_error: true # Ensure the job fails if the upload fails
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         run: npm run e2e
