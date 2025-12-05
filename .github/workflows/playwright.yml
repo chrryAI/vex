@@ -86,8 +86,32 @@ jobs:
       - name: Seed
         run: npm run seed
 
+      - name: Start web
+        run: nohup npm run start:web > web.log 2>&1 &
+
+      - name: Wait for web
+        run: |
+          until curl -s http://localhost:3000 > /dev/null; do
+            sleep 1
+          done
+
+      - name: Start api
+        run: nohup npm run start:api > api.log 2>&1 &
+
+      - name: Wait for api
+        run: |
+          until curl -s http://localhost:3001 > /dev/null; do
+            sleep 1
+          done
+
       - name: Start ws
         run: nohup npm run start:ws > ws.log 2>&1 &
+
+      - name: Wait for ws
+        run: |
+          until curl -s http://localhost:3005 > /dev/null; do
+            sleep 1
+          done
 
       # - name: Test
       #   run: npm run test
