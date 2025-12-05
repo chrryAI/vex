@@ -15,7 +15,6 @@ export async function POST() {
   const member = await getMember({})
 
   const guest = await getGuest()
-  console.log(`🚀 ~ POST ~ guest:`, guest)
 
   const fp = member?.fingerprint || guest?.fingerprint
 
@@ -33,7 +32,7 @@ export async function POST() {
     }
   }
 
-  await cleanupTest()
+  await cleanupTest({ fingerprint: !isDevelopment ? fp : undefined })
 
   return NextResponse.json({ success: true })
 }

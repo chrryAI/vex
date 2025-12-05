@@ -20,24 +20,21 @@ export default async function cleanupTest({
   fingerprint?: string
 } = {}) {
   if (!fingerprint) {
-    let cleanedUsers = true
+    for (const email of TEST_MEMBER_EMAILS) {
+      const user = await getUser({ email })
+      if (user) {
+        await cleanupUser({
+          type: "member",
+          userId: user.id,
+        })
+      }
+    }
     for (const fp of TEST_GUEST_FINGERPRINTS) {
       await cleanupTest({
         fingerprint: fp,
       })
-      cleanedUsers = !cleanedUsers
     }
     return
-  }
-
-  for (const email of TEST_MEMBER_EMAILS) {
-    const user = await getUser({ email })
-    if (user) {
-      await cleanupUser({
-        type: "member",
-        userId: user.id,
-      })
-    }
   }
 
   const guest =
