@@ -1,4 +1,4 @@
-import get from "chrrydotdev/app/actions/getMember/getMember"
+import get from "api/app/actions/getMember/getMember"
 
 const getMember = get
 

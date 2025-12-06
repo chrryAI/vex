@@ -20,7 +20,7 @@ import {
 import { getSiteConfig, getSiteTranslation } from "chrry/utils/siteConfig"
 import { Providers } from "../components/Providers"
 import { captureException } from "@sentry/nextjs"
-import getChrryUrl from "chrry-dot-dev/app/actions/getChrryUrl"
+import getChrryUrl from "api/app/actions/getChrryUrl"
 import getAppAction from "./actions/getApp"
 import { isDevelopment } from "../lib"
 import Head from "next/head"

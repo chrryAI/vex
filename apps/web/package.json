@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "1.5.98",
+  "version": "1.5.99",
   "type": "module",
   "private": true,
   "scripts": {
@@ -22,7 +22,7 @@
     "@auth/drizzle-adapter": "^1.8.0",
     "@chrryai/chrry": "workspace:*",
     "@faker-js/faker": "^9.9.0",
-    "chrrydotdev": "workspace:*",
+    "api": "workspace:*",
     "@fastify/busboy": "^3.2.0",
     "@maxmind/geoip2-node": "^6.1.0",
     "@opentelemetry/instrumentation-fastify": "^0.44.1",

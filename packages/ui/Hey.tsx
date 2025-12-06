@@ -143,7 +143,7 @@ export const Hey = memo(
           threadId ||
           isThreadDetailPage ||
           pathname === "/" ||
-          pathname === "/chrryDotDev" ||
+          pathname === "/api" ||
           isAppSlug))
 
     const isHydrated = useHasHydrated()

@@ -18,7 +18,7 @@ Sushi Bridge is a native application that enables browser extensions to securely
 ### 1. Build the Bridge
 
 ```bash
-cd apps/sushi-bridge
+cd apps/bridge
 bun install
 bun run build
 ```
@@ -36,14 +36,14 @@ bun run install:chrome
 This will:
 
 - Compile Sushi Bridge to a standalone executable
-- Install to `/usr/local/bin/sushi-bridge`
+- Install to `/usr/local/bin/bridge`
 - Register as a Chrome native host
 
 ### 3. Verify Installation
 
 ```bash
 # Test the bridge
-echo '{"type":"ping"}' | sushi-bridge
+echo '{"type":"ping"}' | bridge
 
 # Expected output: {"success":true,"message":"pong","version":"1.0.0"}
 ```
@@ -182,7 +182,7 @@ bun run dev /path/to/project
 ### Project Structure
 
 ```
-apps/sushi-bridge/
+apps/bridge/
 ├── src/
 │   ├── index.ts              # Main entry point
 │   ├── transports/
@@ -212,7 +212,7 @@ apps/sushi-bridge/
 1. Check if bridge is installed:
 
    ```bash
-   which sushi-bridge
+   which bridge
    ```
 
 2. Verify manifest exists:

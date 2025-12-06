@@ -12,8 +12,8 @@ echo ""
 # Create .env.example files for each app/package
 echo "1️⃣  Creating .env.example files..."
 
-# apps/chrry-dot-dev
-cat > apps/chrry-dot-dev/.env.example << 'EOF'
+# apps/api
+cat > apps/api/.env.example << 'EOF'
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/chrry
 
@@ -198,7 +198,7 @@ Thank you for considering contributing to Vex! 🎉
 3. **Set up environment variables**
    ```bash
    # Copy example files
-   cp apps/chrry-dot-dev/.env.example apps/chrry-dot-dev/.env
+   cp apps/api/.env.example apps/api/.env
    cp packages/db/.env.example packages/db/.env
 
    # Edit .env files with your credentials
@@ -219,7 +219,7 @@ Thank you for considering contributing to Vex! 🎉
    pnpm run dev
 
    # Or start specific apps
-   pnpm run dev --filter=chrry-dot-dev
+   pnpm run dev --filter=api
    ```
 
 ## Project Structure
@@ -227,7 +227,7 @@ Thank you for considering contributing to Vex! 🎉
 ```
 vex/
 ├── apps/
-│   ├── chrry-dot-dev/    # Main web application
+│   ├── api/    # Main web application
 │   ├── web/              # Alternative frontend
 │   ├── ws/               # WebSocket server
 │   ├── extension/        # Browser extension
@@ -372,7 +372,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup instructions.
 pnpm install
 
 # Set up environment
-cp apps/chrry-dot-dev/.env.example apps/chrry-dot-dev/.env
+cp apps/api/.env.example apps/api/.env
 
 # Start development
 pnpm run dev
