@@ -3,22 +3,14 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcrypt"
 import AppleProvider from "next-auth/providers/apple"
 import GoogleProvider from "next-auth/providers/google"
-import DiscordProvider from "next-auth/providers/discord"
 import jwt from "jsonwebtoken"
 
 import { v4 as uuidv4 } from "uuid"
 import { Adapter } from "next-auth/adapters"
 
-import {
-  createSystemLog,
-  createUser,
-  db,
-  getUser,
-  getStore,
-  updateUser,
-} from "@repo/db"
+import { createUser, db, getUser, getStore, updateUser } from "@repo/db"
 import { AuthOptions } from "next-auth"
-import { isValidUsername } from "chrry/utils"
+import { isE2E, isValidUsername } from "chrry/utils"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import captureException from "../../../../lib/captureException"
 import { trackSignup } from "../../../../lib/ads"
@@ -188,59 +180,63 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async redirect({ url, baseUrl }) {
-      // Extract hostname from baseUrl to get site-specific config
-      try {
-        const urlObj = new URL(url)
+    ...(isE2E
+      ? undefined
+      : {
+          async redirect({ url, baseUrl }) {
+            // Extract hostname from baseUrl to get site-specific config
+            try {
+              const urlObj = new URL(url)
 
-        // Check if there's a chrryUrl parameter (original subdomain to redirect back to)
-        // This handles the case where OAuth callback goes to chrry.ai but user came from atlas.chrry.ai
-        const chrryUrl = urlObj.searchParams.get("chrryUrl")
-        if (chrryUrl) {
-          try {
-            const decodedChrryUrl = decodeURIComponent(chrryUrl)
-            const targetUrl = new URL(decodedChrryUrl)
+              // Check if there's a chrryUrl parameter (original subdomain to redirect back to)
+              // This handles the case where OAuth callback goes to chrry.ai but user came from atlas.chrry.ai
+              const chrryUrl = urlObj.searchParams.get("chrryUrl")
+              if (chrryUrl) {
+                try {
+                  const decodedChrryUrl = decodeURIComponent(chrryUrl)
+                  const targetUrl = new URL(decodedChrryUrl)
 
-            // Preserve other query params (welcome, fp, etc.)
-            urlObj.searchParams.delete("chrryUrl")
-            urlObj.searchParams.forEach((value, key) => {
-              targetUrl.searchParams.set(key, value)
-            })
+                  // Preserve other query params (welcome, fp, etc.)
+                  urlObj.searchParams.delete("chrryUrl")
+                  urlObj.searchParams.forEach((value, key) => {
+                    targetUrl.searchParams.set(key, value)
+                  })
 
-            // Preserve the path from the original URL
-            targetUrl.pathname = urlObj.pathname
+                  // Preserve the path from the original URL
+                  targetUrl.pathname = urlObj.pathname
 
-            console.log(
-              "🔄 Redirecting from OAuth callback to original subdomain:",
-              targetUrl.toString(),
-            )
-            return targetUrl.toString()
-          } catch (e) {
-            console.error("Failed to parse chrryUrl:", e)
-          }
-        }
+                  console.log(
+                    "🔄 Redirecting from OAuth callback to original subdomain:",
+                    targetUrl.toString(),
+                  )
+                  return targetUrl.toString()
+                } catch (e) {
+                  console.error("Failed to parse chrryUrl:", e)
+                }
+              }
 
-        const baseUrlObj = new URL(baseUrl)
-        const siteConfig = getSiteConfig(baseUrlObj.hostname)
-        const siteBaseUrl = siteConfig.url || baseUrl
+              const baseUrlObj = new URL(baseUrl)
+              const siteConfig = getSiteConfig(baseUrlObj.hostname)
+              const siteBaseUrl = siteConfig.url || baseUrl
 
-        // If url is relative, prepend site-specific base URL
-        if (url.startsWith("/")) {
-          return `${siteBaseUrl}${url}`
-        }
+              // If url is relative, prepend site-specific base URL
+              if (url.startsWith("/")) {
+                return `${siteBaseUrl}${url}`
+              }
 
-        // If url is absolute and on same domain, allow it
-        if (urlObj.hostname === baseUrlObj.hostname) {
-          return url
-        }
+              // If url is absolute and on same domain, allow it
+              if (urlObj.hostname === baseUrlObj.hostname) {
+                return url
+              }
 
-        // Otherwise, redirect to site-specific base URL
-        return siteBaseUrl
-      } catch (error) {
-        console.error("Redirect callback error:", error)
-        return baseUrl
-      }
-    },
+              // Otherwise, redirect to site-specific base URL
+              return siteBaseUrl
+            } catch (error) {
+              console.error("Redirect callback error:", error)
+              return baseUrl
+            }
+          },
+        }),
     async session({ session, user, token }: any) {
       try {
         if (token) {
