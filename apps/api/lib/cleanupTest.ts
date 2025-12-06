@@ -19,42 +19,41 @@ export default async function cleanupTest({
 }: {
   fingerprint?: string
 } = {}) {
-  if (!fingerprint) {
-    for (const email of TEST_MEMBER_EMAILS) {
-      const user = await getUser({ email })
-      if (user && email && user.email === email) {
-        await cleanupUser({
-          type: "member",
-          userId: user.id,
-        })
-      }
-    }
-    for (const fp of TEST_GUEST_FINGERPRINTS) {
-      await cleanupTest({
-        fingerprint: fp,
+  for (const email of TEST_MEMBER_EMAILS) {
+    const user = await getUser({ email })
+    if (user && email && user.email === email) {
+      await cleanupUser({
+        type: "member",
+        userId: user.id,
       })
     }
-    return
   }
+  for (const fp of TEST_GUEST_FINGERPRINTS) {
+    const guest =
+      fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)
+        ? await getGuestDb({ fingerprint })
+        : null
+    console.log(
+      `🚀 ~ TEST_GUEST_FINGERPRINTS:`,
+      fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint),
+    )
 
-  const guest =
-    fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)
-      ? await getGuestDb({ fingerprint })
-      : null
+    // Cleanup for test guest
+    if (guest && fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
+      console.log(`🚀 ~ guest:`, guest)
+      await cleanupUser({
+        guestId: guest.id,
+        type: "guest",
+      })
 
-  // Cleanup for test guest
-  if (guest && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
-    await cleanupUser({
-      guestId: guest.id,
-      type: "guest",
-    })
-
-    await updateGuest({
-      ...guest,
-      credits: 30,
-      subscribedOn: null,
-    })
+      await updateGuest({
+        ...guest,
+        credits: 30,
+        subscribedOn: null,
+      })
+    }
   }
+  return
 }
 
 // Shared cleanup logic for both member and guest
