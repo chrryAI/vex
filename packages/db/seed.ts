@@ -332,7 +332,7 @@ const create = async () => {
       password: passwordToSalt(VEX_TEST_PASSWORD),
       role: "admin",
       userName: "ibsukru",
-      credits: 99999999,
+      credits: !isSeedSafe ? 99999999 : undefined,
       city: "Amsterdam",
       country: "Netherlands",
     })
