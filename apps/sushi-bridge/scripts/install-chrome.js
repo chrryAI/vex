@@ -40,8 +40,8 @@ try {
   const source = join(process.cwd(), "dist", "sushi-bridge")
   const dest = "/usr/local/bin/sushi-bridge"
 
-  execSync(`sudo cp ${source} ${dest}`, { stdio: "inherit" })
-  execSync(`sudo chmod +x ${dest}`, { stdio: "inherit" })
+  execFileSync("sudo", ["cp", source, dest], { stdio: "inherit" })
+  execFileSync("sudo", ["chmod", "+x", dest], { stdio: "inherit" })
 
   console.log("✅ Installed to /usr/local/bin/sushi-bridge\n")
 } catch (error) {
