@@ -1,6 +1,6 @@
 import React from "react"
-import api from "../../components/api"
+import ChrryDotDev from "../../components/ChrryDotDev"
 
 export default function Page() {
-  return <api />
+  return <ChrryDotDev />
 }

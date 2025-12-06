@@ -2,7 +2,7 @@
 
 import React from "react"
 import { ExternalLink, Github, Package } from "lucide-react"
-import styles from "./api.module.scss"
+import styles from "./ChrryDotDev.module.scss"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 
 export default function Chrry() {
