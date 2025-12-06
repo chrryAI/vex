@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run src/index.ts",
-    "build": "bun build src/index.ts --compile --outfile dist/sushi-bridge",
+    "build": "command -v bun >/dev/null 2>&1 && bun build src/index.ts --compile --outfile dist/sushi-bridge || echo 'Skipping Sushi Bridge build (Bun not available)'",
     "install:chrome": "node scripts/install-chrome.js",
     "install:firefox": "node scripts/install-firefox.js"
   },
