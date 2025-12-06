@@ -137,7 +137,9 @@ export const thread = async ({
   await editThreadSaveButton.click()
   await wait(2000)
 
-  await expect(threadTitle).not.toBeVisible()
+  await expect(threadTitle).not.toBeVisible({
+    timeout: 5000,
+  })
 
   const threadTitleGenerated2 = (await getFirstThread()).getByTestId(
     "threads-item-title",

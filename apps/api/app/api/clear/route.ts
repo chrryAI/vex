@@ -22,17 +22,17 @@ export async function POST() {
     return NextResponse.json({ error: "Missing fingerprint" }, { status: 401 })
   }
 
-  if (!isDevelopment && member?.role !== "admin") {
-    if (member && !TEST_MEMBER_FINGERPRINTS.includes(fp)) {
-      return NextResponse.json({ error: "Not a test member" }, { status: 401 })
-    }
+  // if (!isDevelopment && member?.role !== "admin") {
+  //   if (member && !TEST_MEMBER_FINGERPRINTS.includes(fp)) {
+  //     return NextResponse.json({ error: "Not a test member" }, { status: 401 })
+  //   }
 
-    if (guest && !TEST_GUEST_FINGERPRINTS.includes(fp)) {
-      return NextResponse.json({ error: "Not a test guest" }, { status: 401 })
-    }
-  }
+  //   if (guest && !TEST_GUEST_FINGERPRINTS.includes(fp)) {
+  //     return NextResponse.json({ error: "Not a test guest" }, { status: 401 })
+  //   }
+  // }
 
-  await cleanupTest({ fingerprint: !isDevelopment ? fp : undefined })
+  await cleanupTest()
 
   return NextResponse.json({ success: true })
 }

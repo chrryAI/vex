@@ -101,6 +101,25 @@ jobs:
             echo "✅ Internal PR - will proceed with deployment"
           fi
 
+    # Cancel any in-progress Coolify deployments
+  cancel-deployments:
+    runs-on: ubuntu-latest
+    needs: [check-pr]
+    steps:
+      - name: Cancel in-progress API deployment
+        continue-on-error: true
+        run: |
+          echo "🛑 Canceling any in-progress API deployment..."
+          curl -X POST "https://coolify.askvex.com/api/v1/applications/z84cko4g4kwss0gockcgkogw/cancel" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
+
+      - name: Cancel in-progress Web deployment
+        continue-on-error: true
+        run: |
+          echo "🛑 Canceling any in-progress Web deployment..."
+          curl -X POST "https://coolify.askvex.com/api/v1/applications/xcgo4kw884kkow40wk040sco/cancel" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
+
   build:
     runs-on: ubuntu-latest
     needs: check-pr
@@ -137,25 +156,6 @@ jobs:
 
       - name: Build packages
         run: pnpm run build
-
-  # Cancel any in-progress Coolify deployments
-  cancel-deployments:
-    runs-on: ubuntu-latest
-    needs: [check-pr, build]
-    steps:
-      - name: Cancel in-progress API deployment
-        continue-on-error: true
-        run: |
-          echo "🛑 Canceling any in-progress API deployment..."
-          curl -X POST "https://coolify.askvex.com/api/v1/applications/z84cko4g4kwss0gockcgkogw/cancel" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
-
-      - name: Cancel in-progress Web deployment
-        continue-on-error: true
-        run: |
-          echo "🛑 Canceling any in-progress Web deployment..."
-          curl -X POST "https://coolify.askvex.com/api/v1/applications/xcgo4kw884kkow40wk040sco/cancel" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
 
   # Deploy API first (for cache efficiency)
   deploy-api:
