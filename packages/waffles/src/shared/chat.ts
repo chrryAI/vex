@@ -166,8 +166,6 @@ export const chat = async ({
   const chatTextarea = page.getByTestId("chat-textarea")
   await expect(chatTextarea).toBeVisible()
 
-  const creditsInfo = page.getByTestId("credits-info")
-  await expect(creditsInfo).toBeVisible()
   const scrollToBottom = async () => {
     await wait(2000)
     await page.evaluate(() => {
@@ -175,6 +173,11 @@ export const chat = async ({
     })
     await wait(500) // Give time for scroll to complete
   }
+
+  await scrollToBottom()
+
+  const creditsInfo = page.getByTestId("credits-info")
+  await expect(creditsInfo).toBeVisible()
 
   const getCreditsLeft = async () => {
     await scrollToBottom() // Ensure credit info is visible
