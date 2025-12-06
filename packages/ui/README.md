@@ -81,7 +81,7 @@ function App() {
 import ChrryAI from "@chrryai/chrry/ChrryAI"
 import { cookies, headers } from "next/headers"
 
-export default async function RootLayout({ children }) {
+export default async function RootLayout({ children }): Promise<JSX.Element> {
   const headersList = await headers()
   const cookieStore = await cookies()
 

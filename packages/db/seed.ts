@@ -411,7 +411,7 @@ const create = async () => {
   // --- BEGIN meaningful threads/messages/AI agent seeding ---
 
   for (const adminUser of [admin]) {
-    const foo = process.env.TESTING_ENV === "e2e"
+    const foo = process.env.TESTING_ENV === "e2e" || isSeedSafe
     // if (foo) return
 
     // Pool of user prompts and AI responses

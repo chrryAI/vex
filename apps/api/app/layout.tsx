@@ -4,6 +4,7 @@ import "chrry/styles/view-transitions.css"
 
 import { getMetadata } from "../utils"
 import { isE2E } from "chrry/utils"
+import { JSX } from "react"
 
 export const generateMetadata = async () => {
   return getMetadata({
@@ -30,7 +31,7 @@ export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
-}>) {
+}>): Promise<JSX.Element> {
   return (
     <html
       lang="en"
