@@ -2,9 +2,8 @@ import "chrry/globals.scss"
 import "chrry/globals.css"
 import "chrry/styles/view-transitions.css"
 
-import getMember from "./actions/getMember"
-import { Providers } from "../components/Providers"
 import { getMetadata } from "../utils"
+import { isE2E } from "chrry/utils"
 
 export const generateMetadata = async () => {
   return getMetadata({
@@ -39,10 +38,9 @@ export default async function RootLayout({
       suppressHydrationWarning
       translate="no"
     >
-      {/* <ServiceWorkerRegistration /> */}
       <head>
         <>
-          {isDevelopment ? null : (
+          {isDevelopment || isE2E ? null : (
             <script
               defer
               data-domain="chrry.dev"
