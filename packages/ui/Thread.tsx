@@ -765,6 +765,8 @@ const Thread = ({
                       if (!message?.aiAgent?.id && !message?.message.agentId)
                         return
 
+                      scrollToBottom(500, true)
+
                       if (
                         isOwner(message.message, {
                           userId: user?.id,

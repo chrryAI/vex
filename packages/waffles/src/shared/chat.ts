@@ -604,7 +604,7 @@ export const chat = async ({
       break
     }
 
-    await scrollToBottom() // Ensure send button is visible
+    prompts.indexOf(prompt) > 1 && (await scrollToBottom()) // Ensure send button is visible
     await sendButton.click()
 
     const acceptButton = page.getByTestId("chat-accept-button")

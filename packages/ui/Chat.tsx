@@ -402,22 +402,17 @@ export default function Chat({
   )
   // || windowHeight < 600 // Not at bottom or mobile
 
-  const floatingInitial =
-    isE2E && messages.length <= 2
+  const floatingInitial = shouldUseCompactMode
+    ? true
+    : empty
       ? false
-      : shouldUseCompactMode
-        ? true
-        : empty
-          ? false
-          : isChatFloatingContext && !showChatInput
+      : isChatFloatingContext && !showChatInput
 
   const [isChatFloating] = useSyncedState(floatingInitial, [
     empty,
     shouldUseCompactMode,
     isChatFloatingContext,
     showChatInput,
-    messages.length,
-    isE2E,
   ])
 
   useEffect(() => {
