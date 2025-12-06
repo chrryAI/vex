@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.5.97",
+  "version": "1.5.77",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -23,7 +23,6 @@
     "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { require('child_process').execSync('husky', { stdio: 'inherit' }) }\" || true",
     "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
     "check-types": "turbo run check-types",
-    "typecheck": "turbo run typecheck",
     "start:ws": "turbo run start --log-order=stream --filter=wsserver ",
     "start:web": "turbo run start --log-order=stream --filter=web",
     "start:api": "turbo run start --log-order=stream --filter=chrrydotdev",

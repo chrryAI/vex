@@ -45,7 +45,7 @@ import { createCities } from "./createCities"
 const isCI = process.env.CI
 
 const isSeedSafe =
-  process.env.DB_URL?.includes("pb9M") ||
+  process.env.DB_URL?.includes("pb9ME51YnaFcs") ||
   process.env.DB_URL?.includes("localhost")
 
 const isProd = isSeedSafe
