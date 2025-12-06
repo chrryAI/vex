@@ -57,26 +57,6 @@ export const signIn = async ({
     force: true,
   })
 
-  if (!!process.env.CI) {
-    // Wait for the redirect URL attribute to be set
-    await page.waitForFunction(
-      () => {
-        const submitButton = document.querySelector(
-          '[data-testid="login-submit"]',
-        )
-        return submitButton && submitButton.hasAttribute("data-redirect-url")
-      },
-      { timeout: 15000 },
-    )
-
-    const redirectUrl = await signInSubmit.getAttribute("data-redirect-url")
-
-    if (!redirectUrl) {
-      throw new Error("Redirect URL not found")
-    }
-    await page.goto(redirectUrl)
-  }
-
   await expect(signInButton).not.toBeVisible({
     timeout: 100000,
   })
