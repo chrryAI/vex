@@ -71,6 +71,9 @@ jobs:
       - name: Type check
         run: pnpm turbo check-types
 
+      - name: Build packages
+        run: pnpm run build
+
   # Deploy API first (for cache efficiency)
   deploy-api:
     runs-on: ubuntu-latest
