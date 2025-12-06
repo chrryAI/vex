@@ -1,4 +1,4 @@
-import { db } from "./index"
+import { db, isProd } from "./index"
 import { cities } from "./src/schema"
 import citiesData from "all-the-cities"
 
@@ -7,10 +7,8 @@ export const createCities = async () => {
     name: string
     country: string
   }[] = []
-  const isCI = process.env.CI
-  const isDev = isCI
-    ? true
-    : process.env.DB_URL && process.env.DB_URL.includes("localhost")
+  const isDev = !isProd
+
   const filteredCitiesData = isDev
     ? citiesData.filter((item) => {
         return ["NL", "JP"].includes(item.country)

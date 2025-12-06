@@ -85,6 +85,16 @@ import {
 
 dotenv.config()
 
+export const isCI = process.env.CI
+
+export const isSeedSafe = process.env.DB_URL?.includes("pb9ME51YnaFcs")
+
+export const isProd = isSeedSafe
+  ? false
+  : isCI
+    ? false
+    : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
+
 // Export cache functions and redis instance for external use
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
@@ -350,8 +360,6 @@ if (!connectionString) {
     "DB_URL environment variable is not set. Please configure your database connection string.",
   )
 }
-
-const isCI = process.env.CI
 
 const client = postgres(connectionString)
 
