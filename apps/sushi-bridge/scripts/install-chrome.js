@@ -5,7 +5,7 @@
  * Compiles the bridge and registers it as a Chrome native host
  */
 
-import { execSync } from "child_process"
+import { execFileSync } from "child_process"
 import {
   readFileSync,
   writeFileSync,
