@@ -180,7 +180,7 @@ Multi-app system works through:
 ```
 vex/
 ├── apps/
-│   ├── chrry-dot-dev/    # Api (localhost:3001)
+│   ├── api/    # Api (localhost:3001)
 │   ├── web/              # Alternative frontend (localhost:3000)
 │   ├── ws/               # WebSocket server (localhost:5001)
 │   ├── extension/        # Browser extension

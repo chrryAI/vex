@@ -1,11 +1,11 @@
 /**
- * Generated from ChrryDotDev.module.scss
+ * Generated from api.module.scss
  * Auto-converted SCSS to Unified Styles
  *
  * Works on both web and native! 🎉
  */
 
-export const ChrryDotDevStyleDefs = {
+export const apiStyleDefs = {
   container: {
     maxWidth: 600,
     margin: "0 auto",
@@ -65,16 +65,15 @@ export const ChrryDotDevStyleDefs = {
 import { createUnifiedStyles } from "../../../packages/ui/styles/createUnifiedStyles"
 import { createStyleHook } from "../../../packages/ui/styles/createStyleHook"
 
-export const ChrryDotDevStyles = createUnifiedStyles(ChrryDotDevStyleDefs)
+export const apiStyles = createUnifiedStyles(apiStyleDefs)
 
 // Type for the hook return value
-type ChrryDotDevStylesHook = {
-  [K in keyof typeof ChrryDotDevStyleDefs]: {
+type apiStylesHook = {
+  [K in keyof typeof apiStyleDefs]: {
     className?: string
     style?: Record<string, any>
   }
 }
 
 // Create the style hook using the factory
-export const useChrryDotDevStyles =
-  createStyleHook<ChrryDotDevStylesHook>(ChrryDotDevStyles)
+export const useapiStyles = createStyleHook<apiStylesHook>(apiStyles)

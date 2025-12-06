@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic"
 
 function getBlogPosts() {
   // Relative to web app directory (apps/web/app/content/blog)
-  // From: apps/chrry-dot-dev/app/api/sitemap
+  // From: apps/api/app/api/sitemap
   // To:   apps/web/app/content/blog
   const BLOG_DIR = path.join(__dirname, "../../../../web/app/content/blog")
 

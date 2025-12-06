@@ -54,10 +54,10 @@ For detailed information about all the available API endpoints, see the [API Doc
 
 ## 🏛️ Architecture
 
-The `chrry-dot-dev` application is a standard Next.js app with the following structure:
+The `api` application is a standard Next.js app with the following structure:
 
 ```
-apps/chrry-dot-dev/
+apps/api/
 ├── app/
 │   ├── api/          # API routes
 │   ├── layout.tsx    # Root layout

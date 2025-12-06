@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from "react"
-import { getMember } from "chrrydotdev"
+import { getMember } from "api"
 import { v4 as uuidv4 } from "uuid"
 
 import {
@@ -26,7 +26,7 @@ import { getTranslations } from "chrry/lib"
 import ChrryAI, { generateMeta } from "./ChrryAI"
 import { getThreadId } from "chrry/utils"
 import getApp from "./actions/getApp"
-import { getWhiteLabel } from "chrry-dot-dev/app/actions/getApp"
+import { getWhiteLabel } from "api/app/actions/getApp"
 import { excludedSlugRoutes } from "chrry/utils/url"
 
 export const generateMetadata = async () => {

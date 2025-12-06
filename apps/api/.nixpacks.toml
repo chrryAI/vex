@@ -6,10 +6,10 @@ nixLibs = []
 cmds = ["corepack enable", "corepack prepare pnpm@9.1.2 --activate", "pnpm install --frozen-lockfile"]
 
 [phases.build]
-cmds = ["pnpm build --filter chrrydotdev..."]
+cmds = ["pnpm build --filter api..."]
 
 [start]
-cmd = "pnpm --filter chrrydotdev start"
+cmd = "pnpm --filter api start"
 
 
 [variables]

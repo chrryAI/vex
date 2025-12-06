@@ -24,7 +24,7 @@ console.log("🍣 Installing Sushi Bridge for Chrome...\n")
 // Step 1: Build the bridge
 console.log("📦 Building Sushi Bridge...")
 try {
-  execSync("bun build src/index.ts --compile --outfile dist/sushi-bridge", {
+  execSync("bun build src/index.ts --compile --outfile dist/bridge", {
     cwd: join(process.cwd()),
     stdio: "inherit",
   })
@@ -37,13 +37,13 @@ try {
 // Step 2: Copy to /usr/local/bin
 console.log("📋 Installing to /usr/local/bin...")
 try {
-  const source = join(process.cwd(), "dist", "sushi-bridge")
-  const dest = "/usr/local/bin/sushi-bridge"
+  const source = join(process.cwd(), "dist", "bridge")
+  const dest = "/usr/local/bin/bridge"
 
   execFileSync("sudo", ["cp", source, dest], { stdio: "inherit" })
   execFileSync("sudo", ["chmod", "+x", dest], { stdio: "inherit" })
 
-  console.log("✅ Installed to /usr/local/bin/sushi-bridge\n")
+  console.log("✅ Installed to /usr/local/bin/bridge\n")
 } catch (error) {
   console.error("❌ Installation failed:", error.message)
   process.exit(1)
@@ -85,4 +85,4 @@ console.log("\nNext steps:")
 console.log("1. Load your Sushi extension in Chrome")
 console.log("2. The extension will connect to Sushi Bridge automatically")
 console.log("\nTo test the bridge:")
-console.log('  echo \'{"type":"ping"}\' | sushi-bridge')
+console.log('  echo \'{"type":"ping"}\' | bridge')

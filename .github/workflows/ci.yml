@@ -120,7 +120,7 @@ jobs:
         run: |
           pnpm --filter "@chrryai/chrry" exec tsc --noEmit --project tsconfig.ci.json
           pnpm --filter "web" check-types
-          pnpm --filter "chrrydotdev" check-types
+          pnpm --filter "api" check-types
 
       - name: Build packages
         run: pnpm run build
