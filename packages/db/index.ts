@@ -85,6 +85,16 @@ import {
 
 dotenv.config()
 
+export const isCI = process.env.CI
+
+export const isSeedSafe = process.env.DB_URL?.includes("pb9ME51YnaFcs")
+
+export const isProd = isSeedSafe
+  ? false
+  : isCI
+    ? false
+    : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
+
 // Export cache functions and redis instance for external use
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
@@ -131,11 +141,6 @@ export const canCollaborate = ({
   guestId?: string
 }) => {
   if (thread?.visibility === "public") return true
-  console.log(
-    `🚀 ~ thread:`,
-    thread?.collaborations?.map((c) => c.user.name),
-  )
-
   return isOwner(thread, { userId, guestId })
     ? true
     : thread?.collaborations?.some(
@@ -358,7 +363,7 @@ if (!connectionString) {
 
 const client = postgres(connectionString)
 
-if (NODE_ENV !== "production") {
+if (NODE_ENV !== "production" && !isCI) {
   if (!global.db) global.db = postgresDrizzle(client, { schema })
   db = global.db
 } else {
@@ -2456,7 +2461,6 @@ export const getThreads = async ({
             )
         ).map((c) => c.threadId)
       : undefined
-  console.log(`🚀 ~ collaborationThreadIds:`, collaborationThreadIds)
 
   // Get bookmarked thread IDs
   // Only filter by visibility:public if explicitly requested (viewing others' profiles)
@@ -2846,7 +2850,7 @@ export const updateAiAgent = async (data: aiAgent) => {
 export const createAiAgent = async (agent: newAiAgent) => {
   const existing = await getAiAgent({ name: agent.name })
   if (existing) {
-    console.log("Updating agent:", agent.name)
+    console.log("🍣 Updating agent:", agent.name)
     // Merge new data with existing, keeping the id
     return updateAiAgent({ ...existing, ...agent })
   }

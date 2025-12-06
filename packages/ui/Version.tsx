@@ -5,7 +5,7 @@ import { FaApple, FaAndroid, FaChrome, FaFirefox } from "react-icons/fa"
 import Img from "./Img"
 import { useTranslation } from "react-i18next"
 import { Button, Div, Span, usePlatform, Video } from "./platform"
-import A from "./A"
+import A from "./a/A"
 import { useVersionStyles } from "./Version.styles"
 import { useStyles } from "./context/StylesContext"
 

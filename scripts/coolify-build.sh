@@ -5,7 +5,7 @@ echo "🚀 Coolify Build Script"
 echo "Checking if build artifacts exist from CI..."
 
 # Check if .next directories exist (from CI build)
-if [ -d "apps/web/.next" ] && [ -d "apps/chrry-dot-dev/.next" ]; then
+if [ -d "apps/web/.next" ] && [ -d "apps/api/.next" ]; then
   echo "✅ Build artifacts found! Skipping build..."
   echo "Using cached build from GitHub Actions CI"
   exit 0
@@ -32,7 +32,7 @@ else
 
   # Build apps
   NODE_OPTIONS='--max-old-space-size=8192' CI=true pnpm turbo build --filter="web"
-  NODE_OPTIONS='--max-old-space-size=8192' CI=true pnpm turbo build --filter="chrrydotdev"
+  NODE_OPTIONS='--max-old-space-size=8192' CI=true pnpm turbo build --filter="api"
 
   echo "✅ Build complete!"
 fi

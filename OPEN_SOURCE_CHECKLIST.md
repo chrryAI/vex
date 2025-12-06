@@ -37,10 +37,10 @@ Run through setup with only `.env.example` files:
 
 ```bash
 # Remove your .env files temporarily
-mv apps/chrry-dot-dev/.env apps/chrry-dot-dev/.env.backup
+mv apps/api/.env apps/api/.env.backup
 
 # Copy example
-cp apps/chrry-dot-dev/.env.example apps/chrry-dot-dev/.env
+cp apps/api/.env.example apps/api/.env
 
 # Try to run
 pnpm run dev
@@ -50,8 +50,8 @@ pnpm run dev
 
 Review these files for email addresses:
 
-- `apps/chrry-dot-dev/app/api/ai/route.ts` - Example email (OK)
-- `apps/chrry-dot-dev/tests/shared/collaboration.ts` - Test email
+- `apps/api/app/api/ai/route.ts` - Example email (OK)
+- `apps/api/tests/shared/collaboration.ts` - Test email
 - `apps/web/tests/shared/collaboration.ts` - Test email
 - `apps/extension/vite.config.ts` - "vex@yourdomain.com" (update)
 

@@ -37,8 +37,10 @@ export const getMetadata = ({
   }
 } = {}) => {
   const siteConfig = getSiteConfig()
+  // Fallback for CI/test environments where siteConfig.url might be empty
+  const baseUrl = siteConfig.url || "http://localhost:3000"
   const metadata = {
-    metadataBase: new URL(siteConfig.url),
+    metadataBase: new URL(baseUrl),
     alternates: alternates
       ? alternates
       : {

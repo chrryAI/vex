@@ -1,7 +1,3 @@
-import "chrry/globals.scss"
-import "chrry/globals.css"
-import "chrry/styles/view-transitions.css"
-
 import type { ReactElement, ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -24,8 +20,10 @@ import {
 import { getSiteConfig, getSiteTranslation } from "chrry/utils/siteConfig"
 import { Providers } from "../components/Providers"
 import { captureException } from "@sentry/nextjs"
-import getChrryUrl from "chrry-dot-dev/app/actions/getChrryUrl"
+import getChrryUrl from "api/app/actions/getChrryUrl"
 import getAppAction from "./actions/getApp"
+import { isDevelopment } from "../lib"
+import Head from "next/head"
 
 export const generateMeta = async ({ locale }: { locale: locale }) => {
   const siteConfig = getSiteConfig()
@@ -81,17 +79,20 @@ export default async function ChrryAI({
       })
     : undefined
 
-  const isDev = process.env.NODE_ENV === "development"
+  const isDev = isDevelopment
 
   const deviceId =
     cookieStore.get("deviceId")?.value ||
     headersList.get("x-device-id") ||
     uuidv4()
 
-  const hostname = headersList.get("host") || ""
+  const hostname =
+    headersList.get("x-forwarded-host") || headersList.get("host") || ""
 
   const fingerprint =
     headersList.get("x-fp") || cookieStore.get("fingerprint")?.value || uuidv4()
+
+  console.log(`🚀 ~ file: ChrryAI.tsx:92 ~ fingerprint:`, fingerprint)
 
   const gift = headersList.get("x-gift") || undefined
 
@@ -170,7 +171,6 @@ export default async function ChrryAI({
       sort: "bookmark",
       token: apiKey,
     })
-    console.log(`🚀 ~ threads:`, threads?.totalCount)
   } catch (error) {
     captureException(error)
     console.error("❌ API Error:", error)
@@ -278,7 +278,8 @@ export default async function ChrryAI({
               <strong>Debug Info:</strong>
               <ul>
                 <li>
-                  <strong>Site:</strong> {siteConfig.url}
+                  <strong>Site:</strong>{" "}
+                  {siteConfig.url || "http://localhost:3000"}
                 </li>
                 <li>
                   <strong>Hostname:</strong> {hostname}
@@ -361,15 +362,10 @@ export default async function ChrryAI({
     >
       {/* <ServiceWorkerRegistration /> */}
       <head suppressHydrationWarning>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
-        />
         {/* Disable Google Translate to prevent hydration mismatches */}
         <meta name="google" content="notranslate" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
-        <AppMetadata app={app} />
         {!isDev && user?.role !== "admin" && (
           <>
             <script
@@ -378,6 +374,14 @@ export default async function ChrryAI({
               src="https://a.chrry.dev/js/app.js"
             />
           </>
+        )}
+        {translations && (
+          <AppMetadata
+            translations={translations}
+            locale={locale}
+            currentDomain={siteConfig.domain}
+            app={app}
+          />
         )}
       </head>
 

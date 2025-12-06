@@ -8,8 +8,8 @@
     ],
     "paths": {
       "chrry/*": ["../../packages/ui/*"],
-      "chrry-dot-dev": ["../chrry-dot-dev"],
-      "chrry-dot-dev/*": ["../chrry-dot-dev/*"]
+      "api": ["../api"],
+      "api/*": ["../api/*"]
     }
   },
   "include": [

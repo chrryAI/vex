@@ -15,7 +15,7 @@ import { appWithStore, storeWithApps } from "./types"
 import { Button, Div, H1, H3, H4, P, Span, useTheme } from "./platform"
 import { useStoreStyles } from "./Store.styles"
 import { Sparkles, ArrowRight } from "./icons"
-import A from "./A"
+import A from "./a/A"
 import { useStoreMetadata } from "./hooks/useMetadata"
 import { useStyles } from "./context/StylesContext"
 import Loading from "./Loading"
@@ -78,7 +78,7 @@ export default function Store({
     if (slugParam) {
       const app = storeApps?.find((app) => app.slug === slugParam)
       if (app) {
-        setSelectedApp(app)
+        setSelectedAppInternal(app)
       }
     }
   }, [slugParam, storeAppsContext])
@@ -233,7 +233,7 @@ export default function Store({
                 <Div
                   key={app.id}
                   data-color={COLORS[app.themeColor as keyof typeof COLORS]}
-                  className={`pointer ${loadingApp?.id === app.id ? "placeholderGlow" : ""}`}
+                  className={`pointer ${loadingApp?.id === app.id ? "glow" : ""}`}
                   style={{
                     ...styles.app.style,
                     ...(index === storeApps?.length - 1 &&
@@ -261,7 +261,8 @@ export default function Store({
                     alt={app.name}
                     size={isMobileDevice ? 40 : 80}
                   />
-                  <Div
+                  <A
+                    href={getAppSlug(app)}
                     style={{
                       ...styles.appInfo.style,
                       display: isMobileDevice ? "none" : "flex",
@@ -278,7 +279,7 @@ export default function Store({
                     <Span style={{ ...styles.appSubtitle.style }}>
                       {t(app.subtitle || "")}
                     </Span>
-                  </Div>
+                  </A>
                 </Div>
               )
             })}

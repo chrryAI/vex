@@ -123,7 +123,7 @@ pnpm turbo build
 ## 🎯 What Gets Cached
 
 - ✅ Package builds (`@chrryai/chrry`, `@chrryai/waffles`, etc.)
-- ✅ App builds (`web`, `chrrydotdev`, `wsserver`)
+- ✅ App builds (`web`, `api`, `wsserver`)
 - ✅ TypeScript compilation
 - ✅ Linting results
 - ✅ Test results

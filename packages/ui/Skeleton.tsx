@@ -28,9 +28,9 @@ import {
   useApp,
 } from "./context/providers"
 import { useTheme } from "./platform"
-import A from "./A"
+import A from "./a/A"
 import Version from "./Version"
-import AddToHomeScreen from "./AddToHomeScreen"
+import AddToHomeScreen from "./addToHomeScreen"
 
 export default function Skeleton({
   className,

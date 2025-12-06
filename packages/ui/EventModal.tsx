@@ -309,7 +309,10 @@ export default function EventModal({
                     (watch("isAllDay") as boolean) ? "date" : "datetime-local"
                   }
                   style={styles.dateTimeInput}
-                  value={formatDateForInput(field.value, !!watch("isAllDay"))}
+                  value={formatDateForInput(
+                    field.value ? new Date(field.value) : new Date(),
+                    !!watch("isAllDay"),
+                  )}
                   onChange={(e) => {
                     const v = e.target.value
 
@@ -340,7 +343,10 @@ export default function EventModal({
                     (watch("isAllDay") as boolean) ? "date" : "datetime-local"
                   }
                   style={styles.dateTimeInput.style}
-                  value={formatDateForInput(field.value, !!watch("isAllDay"))}
+                  value={formatDateForInput(
+                    field.value ? new Date(field.value) : new Date(),
+                    !!watch("isAllDay"),
+                  )}
                   onChange={(e) => {
                     const v = e.target.value
                     field.onChange(new Date(v))

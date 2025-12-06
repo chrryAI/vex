@@ -170,4 +170,4 @@ Every feature, every optimization, every security measure is public and auditabl
 _Document Version: 1.0_  
 _Last Updated: November 11, 2025_  
 _Author: Iliyan Velinov_  
-_File: /apps/chrry-dot-dev/app/api/ai/route.ts (4,446 lines)_
+_File: /apps/api/app/api/ai/route.ts (4,446 lines)_

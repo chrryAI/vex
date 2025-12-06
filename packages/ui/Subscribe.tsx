@@ -36,7 +36,7 @@ import ConfirmButton from "./ConfirmButton"
 
 import Img from "./Image"
 import { getFeatures } from "./utils/subscription"
-import A from "./A"
+import A from "./a/A"
 import { useSubscribeStyles } from "./Subscribe.styles"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"

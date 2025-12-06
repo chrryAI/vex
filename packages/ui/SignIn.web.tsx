@@ -12,7 +12,7 @@ export type DesktopAuthHandler = {
 
 import { BrowserInstance, checkIsExtension, getRedirectURL } from "./utils"
 import toast from "react-hot-toast"
-import Account from "./Account"
+import Account from "./account/Account"
 import { useAppContext } from "./context/AppContext"
 import Modal from "./Modal"
 import {

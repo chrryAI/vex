@@ -19,7 +19,7 @@ export default function Home({
   const { language, threadId } = useAuth()
   const { currentStore: store, app } = useApp()
 
-  useAppMetadata(app, !store && !threadId)
+  useAppMetadata()
 
   return (
     <Div data-url={language === defaultLocale ? "/" : `/${language}`}>

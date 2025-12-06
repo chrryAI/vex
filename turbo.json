@@ -75,6 +75,22 @@
     "start:ws": {
       "cache": false,
       "persistent": true
+    },
+    "start:e2e": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:api": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:web": {
+      "cache": false,
+      "persistent": true
+    },
+    "check-types": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

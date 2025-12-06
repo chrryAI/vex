@@ -1,4 +1,3 @@
-# Run linting and tests before commit
-# Using full path to pnpm since PATH may not include it in git hooks
-export PATH="/usr/local/bin:$PATH"
-pnpm run s:changed && pnpm run t && pnpm run format && pnpm run lint && pnpm run test:scss
+#!/usr/bin/env sh
+
+pnpm run s:changed && pnpm run t && pnpm run format && pnpm run lint && pnpm run check-types && pnpm run test:scss

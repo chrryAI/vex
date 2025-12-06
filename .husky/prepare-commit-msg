@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
 # Only run if commit message is empty (not amending, not merging)
 COMMIT_MSG_FILE=$1

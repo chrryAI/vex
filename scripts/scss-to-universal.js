@@ -652,11 +652,20 @@ const generateCode = (styles, inputFile) => {
     .replace(/-([a-z])/g, (g) => g[1].toUpperCase())
     .replace(/^([a-z])/, (g) => g.toUpperCase())
 
-  // Calculate relative path to styles directory based on file location
-  const inputDir = path.dirname(inputFile)
-  const baseDir = path.resolve(__dirname, "../packages/ui")
-  const relativeDir = path.relative(inputDir, baseDir)
-  const stylesImportPath = relativeDir ? `${relativeDir}/styles` : "./styles"
+  // Calculate relative path to the shared styles directory based on file location
+  // This ensures subfolders like packages/ui/addToHomeScreen generate
+  // imports such as "../styles/createStyleHook" instead of "./styles/..."
+  const inputDir = path.dirname(path.resolve(inputFile))
+  const stylesDir = path.resolve(__dirname, "../packages/ui/styles")
+  let stylesImportPath = path.relative(inputDir, stylesDir)
+
+  // Normalize path separators for cross-platform support
+  stylesImportPath = stylesImportPath.split(path.sep).join("/")
+
+  // If relative path doesn't start with "." (e.g. "styles"), prefix with "./"
+  if (!stylesImportPath.startsWith(".")) {
+    stylesImportPath = `./${stylesImportPath}`
+  }
 
   let code = `/**
  * Generated from ${path.basename(inputFile)}
@@ -925,9 +934,27 @@ const main = async () => {
       process.exit(1)
     }
 
-    const files = fs
-      .readdirSync(uiDir)
-      .filter((f) => f.endsWith(".module.scss"))
+    // Recursively collect all *.module.scss files inside packages/ui
+    const collectScssFiles = (dir) => {
+      const entries = fs.readdirSync(dir, { withFileTypes: true })
+      const files = []
+
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name)
+        if (entry.isDirectory()) {
+          files.push(...collectScssFiles(fullPath))
+        } else if (
+          entry.isFile() &&
+          entry.name.toLowerCase().endsWith(".module.scss")
+        ) {
+          files.push(fullPath)
+        }
+      }
+
+      return files
+    }
+
+    const files = collectScssFiles(uiDir)
 
     if (files.length === 0) {
       console.log(`ℹ️  No .module.scss files found in ${uiDir}`)
@@ -937,8 +964,7 @@ const main = async () => {
     console.log(`🔄 Converting ${files.length} SCSS files...\n`)
 
     let converted = 0
-    for (const file of files) {
-      const inputPath = path.join(uiDir, file)
+    for (const inputPath of files) {
       const outputPath = inputPath.replace(".module.scss", ".styles.ts")
       if (await convertFile(inputPath, outputPath)) {
         converted++

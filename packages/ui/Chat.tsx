@@ -76,7 +76,12 @@ import Modal from "./Modal"
 import Loading from "./Loading"
 import sanitizeHtml from "sanitize-html"
 import { validate, v4 as uuidv4 } from "uuid"
-import { useCountdown, useHasHydrated, useLocalStorage } from "./hooks"
+import {
+  useCountdown,
+  useHasHydrated,
+  useLocalStorage,
+  useSyncedState,
+} from "./hooks"
 import toast from "react-hot-toast"
 import useSWR from "swr"
 
@@ -102,7 +107,7 @@ import Img from "./Image"
 import MoodSelector from "./MoodSelector"
 import { useChatStyles } from "./Chat.styles"
 import { useStyles } from "./context/StylesContext"
-import A from "./A"
+import A from "./a/A"
 
 const MAX_FILES = MAX_FILE_LIMITS.chat
 
@@ -228,7 +233,7 @@ export default function Chat({
     setDebateAgent,
     isDebating,
     setIsDebating,
-    setIsChatFloating: setIsChatFloatingContext,
+    setIsChatFloating,
     setIsWebSearchEnabled: setWebSearchEnabledInternal,
     isWebSearchEnabled,
     setInput: setInputInternal,
@@ -250,6 +255,7 @@ export default function Chat({
     setShouldFocus,
     shouldFocus,
     isChatFloating: isChatFloatingContext,
+    messages,
   } = useChat()
 
   const {
@@ -390,20 +396,28 @@ export default function Chat({
   // Determine if we should use compact mode based on bottom offset
   const [hasBottomOffset, setHasBottomOffset] = useState(false)
   const shouldUseCompactMode = compactMode || hasBottomOffset
+  console.log(
+    `🚀 ~ file: Chat.tsx:398 ~ shouldUseCompactMode:`,
+    shouldUseCompactMode,
+  )
   // || windowHeight < 600 // Not at bottom or mobile
 
   const floatingInitial = shouldUseCompactMode
     ? true
-    : !threadId
+    : empty
       ? false
-      : isChatFloatingContext && !empty && !showChatInput
+      : isChatFloatingContext && !showChatInput
 
-  const [isChatFloating, setIsChatFloatingState] = useState(floatingInitial)
+  const [isChatFloating] = useSyncedState(floatingInitial, [
+    empty,
+    shouldUseCompactMode,
+    isChatFloatingContext,
+    showChatInput,
+  ])
 
   useEffect(() => {
-    setIsChatFloatingContext(floatingInitial)
-    setIsChatFloatingState(floatingInitial)
-  }, [floatingInitial])
+    setIsChatFloating(isChatFloating)
+  }, [isChatFloating])
 
   // Strip ACTION JSON sfrom streaming text
   const stripActionFromText = (text: string): string => {
@@ -2194,7 +2208,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
   const placeholderStages = [".", "..", "..."]
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
-  const [showPlaceholderGlow, setShowPlaceholderGlow] = useState(false)
+  const [showglow, setShowglow] = useState(false)
   const previousPlaceholder = useRef(placeholder)
 
   const animationLoop = useRef<number>(0)
@@ -2207,12 +2221,12 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         !previousPlaceholder.current ||
         placeholder !== previousPlaceholder.current
       ) {
-        setShowPlaceholderGlow(true)
+        setShowglow(true)
         previousPlaceholder.current = placeholder
 
         // Remove glow after animation completes
         const timer = setTimeout(() => {
-          setShowPlaceholderGlow(false)
+          setShowglow(false)
         }, 2000) // Match animation duration
 
         return () => clearTimeout(timer)
@@ -2707,7 +2721,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   useEffect(() => {
     if (empty) return
 
-    const offset = isE2E ? 250 : 150
+    const offset = 150
     const checkBottomOffset = () => {
       const scrollPosition = window.scrollY
       const documentHeight = document.documentElement.scrollHeight
@@ -3277,14 +3291,13 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                                     />
                                   )) ||
                                   (key === "imageGeneration" && (
-                                    <Palette
-                                      color={
-                                        value
-                                          ? `var(--accent-6)`
-                                          : `var(--shade-3)`
-                                      }
-                                      size={14}
-                                    />
+                                    <Span
+                                      style={{
+                                        fontSize: 14,
+                                      }}
+                                    >
+                                      🎨
+                                    </Span>
                                   )) ||
                                   (key === "audio" && (
                                     <AudioLines
@@ -3570,7 +3583,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     {Top}
                   </Div>
                 )}
-                {hasBottomOffset && (
+                {isChatFloating && (
                   <Button
                     className="link"
                     style={{
@@ -3707,11 +3720,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
               )}
 
               <Div
-                className={
-                  showPlaceholderGlow
-                    ? "chat placeholderGlow blur"
-                    : "chat blur"
-                }
+                className={showglow ? "chat glow blur" : "chat blur"}
                 style={{
                   ...styles.chat.style,
                   ...(isStandalone ? styles.standalone : {}),
@@ -3731,7 +3740,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                     }}
                     title={
                       isImageGenerationEnabled
-                        ? t("Image Generation Enabled")
+                        ? t("Disable Image Generation")
                         : t("Enable Image Generation")
                     }
                     onClick={() => {
@@ -3740,14 +3749,15 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       setSelectedAgent(sushiAgent)
                     }}
                   >
-                    <Palette
-                      color={
-                        isImageGenerationEnabled
-                          ? "var(--accent-1)"
-                          : "var(--shade-3)"
-                      }
-                      size={22}
-                    />
+                    <Span
+                      style={{
+                        fontSize: 18,
+                        marginRight: 3,
+                        marginTop: 0.5,
+                      }}
+                    >
+                      {isImageGenerationEnabled ? "🔥" : "🎨"}
+                    </Span>
                   </Button>
                 )}
                 {/* File Preview Area */}

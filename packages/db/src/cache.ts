@@ -6,9 +6,11 @@ import { redis } from "./redis"
  * Uses Upstash Redis for fast, distributed caching
  */
 
+const isCI = process.env.CI
 // Disable cache in development for easier debugging
 const CACHE_ENABLED =
-  process.env.NODE_ENV === "production" || process.env.ENABLE_CACHE === "true"
+  !isCI &&
+  (process.env.NODE_ENV === "production" || process.env.ENABLE_CACHE === "true")
 
 // Cache TTLs (in seconds)
 const CACHE_TTL = {

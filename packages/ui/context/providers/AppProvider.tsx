@@ -28,6 +28,7 @@ import { useData } from "./DataProvider"
 import { instructionBase } from "../../utils/getExampleInstructions"
 import { session, Paginated, storeWithApps } from "../../types"
 import { getSiteConfig } from "../../utils/siteConfig"
+import { useError } from "./ErrorProvider"
 
 export { COLORS } from "../ThemeContext"
 
@@ -249,6 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const [isRemovingApp, setIsRemovingApp] = useState(false)
+  const { captureException } = useError()
 
   const saveApp = async () => {
     try {
@@ -280,6 +282,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       toast.error(t("Something went wrong"))
+      captureException(error)
       return false
     } finally {
       canEditApp && setIsSavingApp(false)
@@ -313,6 +316,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return true
       } catch (error) {
         toast.error(t("Something went wrong"))
+        captureException(error)
         return false
       } finally {
         setIsRemovingApp(false)

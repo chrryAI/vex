@@ -150,8 +150,8 @@ MIT © [Iliyan Velinov](https://github.com/askvex)
 
 ## 🔗 Links
 
-- [GitHub](https://github.com/askvex/pepper)
-- [Issues](https://github.com/askvex/pepper/issues)
+- [GitHub](https://github.comchrryAIpepper)
+- [Issues](https://github.comchrryAIpepper/issues)
 - [Vex - Powered by Pepper](https://vex.chrry.ai)
 
 ---

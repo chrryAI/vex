@@ -126,7 +126,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     router.push(url)
   }
 
-  const { slug, setSlug, getAppSlug, language, setThreadId, session } =
+  const { slug, setSlug, getAppSlug, language, setThreadId, setShowFocus } =
     useAuth()
 
   const goToThreads = (params?: Record<string, string>) => {
@@ -194,6 +194,12 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       setShowAddToHomeScreenInternal(value)
     }
   }
+
+  useEffect(() => {
+    if (showAddToHomeScreen) {
+      setShowFocus(false)
+    }
+  }, [showAddToHomeScreen])
 
   const isOnline = useOnlineStatus()
 

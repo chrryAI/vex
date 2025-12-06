@@ -668,13 +668,12 @@ button.favorite {
     box-shadow: 0 0 5px var(--accent-6);
   }
 
-  // Glow effect when placeholder updates
-
   @include utils.respect-reduced-motion;
 }
 
-.placeholderGlow {
-  animation: placeholderGlowPulse 1.25s infinite;
+.glow {
+  animation: glowPulse 1.25s infinite;
+  @include utils.respect-reduced-motion;
 }
 
 .blur {
@@ -726,7 +725,7 @@ button.favorite {
   transform: translateX(20px);
 }
 
-@keyframes placeholderGlowPulse {
+@keyframes glowPulse {
   0% {
     border-color: var(--glow-color);
     box-shadow: 0 0 6px var(--glow-color);
@@ -849,4 +848,21 @@ button.favorite {
   position: absolute;
   top: 55px !important;
   left: 12.5px !important;
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  30% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.typing {
+  animation: typing 1.4s infinite ease-in-out;
 }

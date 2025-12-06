@@ -1687,5 +1687,6 @@
   "Create custom AI apps with team collaboration": "Erstellen Sie benutzerdefinierte AI-Apps mit Teamzusammenarbeit",
   "Unlimited stores with nested apps": "Unbegrenzte Stores mit verschachtelten Apps",
   "credit_left": "{{count}} übrig",
-  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Laden Sie hier Dateien hoch, damit die KI sie sich merken und in zukünftigen Gesprächen darauf Bezug nehmen kann. Diese Artefakte werden Teil des Thread-Speichers."
+  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Laden Sie hier Dateien hoch, damit die KI sie sich merken und in zukünftigen Gesprächen darauf Bezug nehmen kann. Diese Artefakte werden Teil des Thread-Speichers.",
+  "Disable Image Generation": "Bildgenerierung deaktivieren"
 }

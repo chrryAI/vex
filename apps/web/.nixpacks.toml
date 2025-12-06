@@ -10,3 +10,9 @@ cmds = ["pnpm build --filter web..."]
 
 [start]
 cmd = "pnpm --filter web start"
+
+[variables]
+TURBO_API = "$TURBO_API"
+TURBO_TOKEN = "$TURBO_TOKEN"  
+TURBO_REMOTE_CACHE_SIGNATURE_KEY = "$TURBO_REMOTE_CACHE_SIGNATURE_KEY"
+TURBO_TEAM = "vex"

@@ -3,6 +3,7 @@ import { getURL, VEX_TEST_EMAIL, wait } from ".."
 import { chat } from "./chat"
 import { Page } from "@playwright/test"
 import { signIn } from "./signIn"
+import { v4 as uuidv4 } from "uuid"
 
 export async function collaboration({
   page,
@@ -32,6 +33,7 @@ export async function collaboration({
       isLive,
       isMember: true,
       path,
+      fingerprint: uuidv4(),
     })
 
   // Create two separate browser contexts (simulating two different users)
@@ -180,6 +182,8 @@ export async function collaboration({
     page: page2,
     isNewChat: false,
     threadId: threadId,
+    // messagesConsumed:1,
+    // creditsConsumed: 2,
     isMember: true, // Member user (signed in)
     prompts: [
       {
@@ -203,7 +207,8 @@ export async function collaboration({
     isNewChat: false,
     threadId: threadId,
     isMember,
-    creditsConsumed: 1,
+    messagesConsumed: 1,
+    creditsConsumed: 2,
     prompts: [
       {
         text: "That's great! When is the best time to see cherry blossoms?",

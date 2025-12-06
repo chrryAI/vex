@@ -1,4 +1,4 @@
-import { db } from "./index"
+import { db, isProd } from "./index"
 import { cities } from "./src/schema"
 import citiesData from "all-the-cities"
 
@@ -7,11 +7,23 @@ export const createCities = async () => {
     name: string
     country: string
   }[] = []
+  const isDev = !isProd
+
+  const filteredCitiesData = isDev
+    ? citiesData.filter((item) => {
+        return ["NL", "JP"].includes(item.country)
+      })
+    : citiesData
+
+  const existingCities = await db.select().from(cities)
 
   await Promise.all(
-    citiesData.map(async (item) => {
+    filteredCitiesData.map(async (item) => {
       if (
         insertedCities.some(
+          (city) => city.name === item.name && city.country === item.country,
+        ) ||
+        existingCities.some(
           (city) => city.name === item.name && city.country === item.country,
         )
       ) {
@@ -19,7 +31,7 @@ export const createCities = async () => {
       }
 
       insertedCities.push(item)
-      console.log("inserting", item.name, item.country)
+      console.log("🏁 inserting City:", item.name, item.country)
       await db.insert(cities).values({
         name: item.name,
         country: item.country,

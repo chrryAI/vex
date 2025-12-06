@@ -1686,5 +1686,6 @@
   "Create custom AI apps with team collaboration": "팀 협업으로 맞춤형 AI 앱을 만드세요",
   "Unlimited stores with nested apps": "중첩된 앱이 있는 무제한 스토어",
   "credit_left": "{{count}} 남음",
-  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "AI가 기억하고 미래의 대화에서 참조할 수 있도록 여기에 파일을 업로드하세요. 이러한 아티팩트는 스레드의 메모리의 일부가 됩니다."
+  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "AI가 기억하고 미래의 대화에서 참조할 수 있도록 여기에 파일을 업로드하세요. 이러한 아티팩트는 스레드의 메모리의 일부가 됩니다.",
+  "Disable Image Generation": "이미지 생성 비활성화"
 }
