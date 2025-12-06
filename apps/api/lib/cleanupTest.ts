@@ -14,11 +14,7 @@ import {
   TEST_GUEST_FINGERPRINTS,
 } from "@repo/db"
 
-export default async function cleanupTest({
-  fingerprint,
-}: {
-  fingerprint?: string
-} = {}) {
+export default async function cleanupTest() {
   for (const email of TEST_MEMBER_EMAILS) {
     const user = await getUser({ email })
     if (user && email && user.email === email) {
@@ -28,19 +24,11 @@ export default async function cleanupTest({
       })
     }
   }
-  for (const fp of TEST_GUEST_FINGERPRINTS) {
-    const guest =
-      fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)
-        ? await getGuestDb({ fingerprint })
-        : null
-    console.log(
-      `🚀 ~ TEST_GUEST_FINGERPRINTS:`,
-      fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint),
-    )
+  for (const fingerprint of TEST_GUEST_FINGERPRINTS) {
+    const guest = await getGuestDb({ fingerprint })
 
     // Cleanup for test guest
     if (guest && fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
-      console.log(`🚀 ~ guest:`, guest)
       await cleanupUser({
         guestId: guest.id,
         type: "guest",
