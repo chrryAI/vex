@@ -17,6 +17,9 @@ import {
   getGuest,
   deleteGuest,
   getTasks,
+  isProd,
+  isCI,
+  isSeedSafe,
 } from "./index"
 import { eq, and, isNull, sql, inArray } from "drizzle-orm"
 import {
@@ -41,18 +44,6 @@ import {
 import { createEvent } from "./createEvent"
 import { createStores } from "./createStores"
 import { createCities } from "./createCities"
-
-const isCI = process.env.CI
-
-const isSeedSafe =
-  process.env.DB_URL?.includes("pb9ME51YnaFcs") ||
-  process.env.DB_URL?.includes("localhost")
-
-const isProd = isSeedSafe
-  ? false
-  : isCI
-    ? false
-    : process.env.DB_URL && !process.env.DB_URL.includes("localhost")
 
 const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -336,7 +327,7 @@ const create = async () => {
   if (!admin) {
     console.log("👤 Creating admin user...")
     admin = await createUser({
-      email: VEX_TEST_EMAIL,
+      email: !isSeedSafe ? VEX_TEST_EMAIL : "test@gmail.com",
       name: VEX_TEST_NAME,
       password: passwordToSalt(VEX_TEST_PASSWORD),
       role: "admin",
@@ -708,7 +699,7 @@ const seedDb = async (): Promise<void> => {
   // await prod()
   // process.exit(0)
 
-  if (isProd && !isSeedSafe) {
+  if (isProd) {
     // eslint-disable-next-line no-console
     console.warn(
       "\n⚠️  WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
