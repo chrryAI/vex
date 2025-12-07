@@ -25,6 +25,8 @@ import { getSiteConfig, whiteLabels } from "../../utils/siteConfig"
 
 const NavigationContext = createContext<
   | {
+      isInstructionsModalOpen: boolean
+      setIsInstructionsModalOpen: (value: boolean) => void
       hasNotification: boolean
       userNameByUrl: string | undefined
       searchParams: ReturnType<typeof useNavigation>["searchParams"]
@@ -170,6 +172,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     searchParams.get("showInstall") === "true",
   )
 
+  const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false)
+
   const siteApp = getSiteConfig()
 
   const setShowAddToHomeScreen = (value: boolean) => {
@@ -275,6 +279,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         isVisitor,
         setIsVisitor,
         refetchThreads,
+        isInstructionsModalOpen,
+        setIsInstructionsModalOpen,
       }}
     >
       {children}

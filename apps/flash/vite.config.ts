@@ -5,6 +5,7 @@ import path from "path"
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  publicDir: path.resolve(__dirname, "../web/public"),
   resolve: {
     alias: {
       chrry: path.resolve(__dirname, "../../packages/ui"),

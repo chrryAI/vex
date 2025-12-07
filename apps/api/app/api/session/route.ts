@@ -313,8 +313,6 @@ export async function GET(request: Request) {
       fingerPrintCookie ||
       guest?.fingerprint
 
-    console.log(`🚀 ~ GET ~ fingerprint:`, fingerprint)
-
     const { getIp } = lib
 
     // Use UAParser for detailed device detection (more accurate than lib functions)
@@ -330,8 +328,6 @@ export async function GET(request: Request) {
         ? fingerprint
         : uuidv4()
       : uuidv4()
-
-    console.log(`🚀 ~ file: route.ts:319 ~ fingerprint:`, fingerprint)
 
     const appVersion = url.searchParams.get("appVersion")
     const ip = getIp(request)

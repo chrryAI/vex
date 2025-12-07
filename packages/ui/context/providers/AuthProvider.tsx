@@ -479,8 +479,6 @@ export function AuthProvider({
       ? TEST_GUEST_FINGERPRINTS.includes(fingerprintParam)
       : false,
   )
-  console.log(`🚀 ~ isGuestTest:`, isGuestTest)
-
   const [isMemberTest, setIsLiveMemberTest] = useLocalStorage<boolean>(
     "isMemberTest",
     fingerprintParam

@@ -3,7 +3,7 @@ import getMember from "../../actions/getMember"
 import { after, NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
-import { getAppExtends } from "@repo/db"
+import { getApp, getAppExtends } from "@repo/db"
 
 import {
   getMemories,
@@ -30,6 +30,7 @@ import {
   getTask,
   getMoods,
   getTimer,
+  getAiAgents,
 } from "@repo/db"
 
 import { perplexity } from "@ai-sdk/perplexity"
@@ -80,6 +81,7 @@ import checkFileUploadLimits from "../../../lib/checkFileUploadLimits"
 import { getTools } from "../../../lib/tools"
 import { appFormData } from "chrry/schemas/appSchema"
 import { uploadArtifacts } from "../../actions/uploadArtifacts"
+import { appWithStore } from "chrry/types"
 
 interface StreamController {
   close: () => void
@@ -309,7 +311,7 @@ function getIntroMessage(app: any, language: string): string {
  */
 function renderSystemPrompt(params: {
   template: string
-  app: app | null | undefined
+  app: appWithStore | null | undefined
   appKnowledge: any
   userName?: string
   language: string
@@ -605,10 +607,13 @@ export async function POST(request: Request) {
   }
 
   const app = rest.appId
-    ? await getPureApp({ id: rest.appId })
-    : slug
-      ? await getPureApp({ slug, isSafe: false })
-      : undefined
+    ? await getApp({
+        id: rest.appId,
+        depth: 1,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
+    : undefined
 
   const appExtends = app
     ? await getAppExtends({ appId: app.id, isSafe: false })
@@ -656,11 +661,72 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 `
       : ""
 
+  // Build store context - information about the store and its apps
+  let storeContext = ""
+  if (app?.store) {
+    const storeApps = app.store.apps || []
+
+    // Get agents for each app using forApp parameter
+    const appsWithAgents = await Promise.all(
+      storeApps.map(async (storeApp) => {
+        const agents = await getAiAgents({
+          include: storeApp.id,
+          forApp: storeApp,
+        })
+        return { ...storeApp, agents }
+      }),
+    )
+
+    storeContext = `
+## 🏪 STORE CONTEXT
+
+You are part of the **${app.store.name}** store${app.store.description ? `: ${app.store.description}` : ""}.
+
+${
+  app.store.appId === app.id
+    ? `
+**Important:** You are the **primary app** of this store - the main entry point and representative of the ${app.store.name} ecosystem.
+`
+    : ""
+}
+
+${
+  appsWithAgents.length > 0
+    ? `
+**Apps in this store:**
+${appsWithAgents
+  .map((storeApp) => {
+    const isStoreBaseApp = storeApp.store?.appId === storeApp.id
+    // If onlyAgent is true and has exactly 1 agent, it's mono-agent
+    const isMonoAgent = storeApp.onlyAgent && storeApp.agents?.length === 1
+    const baseAgent = isMonoAgent ? storeApp.agents[0] : null
+
+    return `- **${storeApp.name}**${isStoreBaseApp ? " (primary app)" : ""}${storeApp.description ? `: ${storeApp.description}` : ""}${
+      baseAgent ? ` (based on ${baseAgent.displayName})` : ""
+    }`
+  })
+  .join("\n")}
+`
+    : ""
+}
+
+${
+  app?.onlyAgent
+    ? `
+**Your Mode:** You are a mono-agent app, using a specific AI model consistently.
+`
+    : `
+**Your Mode:** You are multimodal and can use any available AI model when needed.
+`
+}
+`
+  }
+
   const isAppOwner =
     app && isOwner(app, { userId: member?.id, guestId: guest?.id })
 
   // Recursively build knowledge base from app.extends chain (max 5 levels)
-  const buildAppKnowledgeBase = async (currentApp: typeof app, depth = 0) => {
+  const buildAppKnowledgeBase = async (currentApp: appWithStore, depth = 0) => {
     if (!currentApp || depth >= 5) {
       return {
         messages: {
@@ -1961,6 +2027,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   const systemPrompt =
     baseSystemPrompt +
     inheritanceContext +
+    storeContext +
     featureStatusContext +
     memoryContext +
     placeholderContext +
