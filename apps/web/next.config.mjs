@@ -8,6 +8,7 @@ const isDevelopment = process.env.NODE_ENV === "development"
 const nextConfig = {
   transpilePackages: ["@chrryai/chrry"],
   compress: true,
+  serverExternalPackages: ["newrelic"], // Exclude New Relic from bundling
   async redirects() {
     return [
       // Redirect askvex.com to vex.chrry.ai (preserve all paths)
@@ -50,6 +51,10 @@ const nextConfig = {
     },
     rules: {
       "*.html": {
+        loaders: ["raw-loader"],
+        as: "*.js",
+      },
+      "*.md": {
         loaders: ["raw-loader"],
         as: "*.js",
       },
