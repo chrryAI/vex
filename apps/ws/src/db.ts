@@ -124,13 +124,15 @@ if (!connectionString) {
   )
 }
 
+const isCI = process.env.CI
+
 const client = postgres(connectionString, {
   max: 10, // Maximum number of connections
   idle_timeout: 20, // Close idle connections after 20 seconds
   connect_timeout: 10, // Connection timeout in seconds
 })
 
-if (NODE_ENV !== "production") {
+if (NODE_ENV !== "production" && !isCI) {
   if (!global.db) global.db = postgresDrizzle(client, { schema })
   db = global.db
 } else {

@@ -5,7 +5,7 @@
 You have **2 applications** to deploy:
 
 1. **Web App (focus.chrry.ai)** - Port 3000
-2. **API (chrry-dot-dev)** - Port 3001
+2. **API (api)** - Port 3001
 
 ---
 
@@ -70,16 +70,16 @@ SENTRY_AUTH_TOKEN=...
 
 ---
 
-## 🔌 Service 2: API (chrry-dot-dev)
+## 🔌 Service 2: API (api)
 
 ### Coolify Configuration
 
 **General:**
 
-- **Name:** `chrry-dot-dev-api`
+- **Name:** `api-api`
 - **Repository:** `chrryAI/vex`
 - **Branch:** `main`
-- **Base Directory:** `apps/chrry-dot-dev`
+- **Base Directory:** `apps/api`
 - **Build Pack:** `nixpacks`
 - **Port:** `3001`
 
@@ -120,9 +120,9 @@ STRIPE_WEBHOOK_SECRET=...
 
 **Build Config:**
 
-- Uses `apps/chrry-dot-dev/.nixpacks.toml`
-- Builds with: `pnpm --filter chrrydotdev build`
-- Starts with: `pnpm --filter chrrydotdev start`
+- Uses `apps/api/.nixpacks.toml`
+- Builds with: `pnpm --filter api build`
+- Starts with: `pnpm --filter api start`
 
 ---
 
@@ -145,7 +145,7 @@ cmds = ["pnpm --filter web build"]
 cmd = "pnpm --filter web start"
 ```
 
-### `apps/chrry-dot-dev/.nixpacks.toml` (for API)
+### `apps/api/.nixpacks.toml` (for API)
 
 ```toml
 [phases.setup]
@@ -156,10 +156,10 @@ nixLibs = []
 cmds = ["corepack enable", "corepack prepare pnpm@9.1.2 --activate", "pnpm install --frozen-lockfile"]
 
 [phases.build]
-cmds = ["pnpm --filter chrrydotdev build"]
+cmds = ["pnpm --filter api build"]
 
 [start]
-cmd = "pnpm --filter chrrydotdev start"
+cmd = "pnpm --filter api start"
 ```
 
 ### `apps/web/.nixpacks.toml` (alternative for Web)
@@ -209,7 +209,7 @@ git push
 1. **+ New Resource** → **Application**
 2. Select GitHub repo `chrryAI/vex`
 3. Branch: `main`
-4. Base Directory: `apps/chrry-dot-dev`
+4. Base Directory: `apps/api`
 5. Port: `3001`
 6. Add environment variables
 7. Add domain: `api.chrry.ai`
@@ -240,7 +240,7 @@ Coolify will automatically provision Let's Encrypt SSL certificates once DNS is 
 
 - Check **Base Directory** setting in Coolify
 - For Web: Use root `/` or leave empty
-- For API: Use `apps/chrry-dot-dev`
+- For API: Use `apps/api`
 - Verify nixpacks.toml has correct `--filter` commands
 
 ### Build Fails

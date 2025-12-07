@@ -3,6 +3,8 @@
 import { useMemo, type ReactElement } from "react"
 import { app } from "@repo/db"
 import { appWithStore } from "chrry/types"
+import { getImageSrc } from "chrry/lib"
+import { generateAppMetadata } from "chrry/utils"
 
 // Simplified list of most common splash screens
 const splashScreenConfigs = [
@@ -10,7 +12,7 @@ const splashScreenConfigs = [
   {
     media:
       "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)",
-    file: "iPhone_16_Pro_Max_landscape.png",
+    file: "iPhone_17_Pro_Max__iPhone_16_Pro_Max_landscape.png",
   },
   {
     media:
@@ -25,13 +27,13 @@ const splashScreenConfigs = [
   {
     media:
       "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)",
-    file: "iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png",
+    file: "iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png",
   },
   // iPhone portrait
   {
     media:
       "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)",
-    file: "iPhone_16_Pro_Max_portrait.png",
+    file: "iPhone_17_Pro_Max__iPhone_16_Pro_Max_portrait.png",
   },
   {
     media:
@@ -46,42 +48,57 @@ const splashScreenConfigs = [
   {
     media:
       "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)",
-    file: "iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png",
+    file: "iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png",
   },
 ]
 
 export default function AppMetadata({
   app,
+  translations,
+  locale,
+  currentDomain,
 }: {
-  app?: appWithStore | null
+  app?: appWithStore
+  translations: Record<string, any>
+  locale: string
+  currentDomain: string
 }): ReactElement {
   // Get slug from app prop, fallback to "vex"
-  const slug = useMemo(() => app?.slug || "vex", [app?.slug])
 
   // Get title from app context, fallback to "Vex"
-  const appTitle = useMemo(() => app?.title || "Vex", [app?.title])
+
+  const iconSrc = app
+    ? getImageSrc({
+        app,
+        size: 180,
+      })
+    : undefined
+
+  const meta = app
+    ? generateAppMetadata({
+        app,
+        translations,
+        locale,
+        currentDomain,
+      })
+    : undefined
 
   // Get icon from app context or use default
   const iconHref = useMemo(
-    () =>
-      slug === "vex"
-        ? "/icons/icon-180.png"
-        : `/images/apps/${slug.toLowerCase()}.png`,
-    [slug],
+    () => (iconSrc ? iconSrc.src : "/icons/icon-180.png"),
+    [iconSrc],
   )
 
-  const basePath = `/splash_screens/${slug}`
-  const manifestPath =
-    slug === "vex" ? undefined : `/manifests/${slug}.webmanifest`
+  const basePath = `/splash_screens`
+  // const manifestPath =
+  //   app?.slug === "vex" ? undefined : `/manifests/${app?.slug}.webmanifest`
 
   // Only show splash screens for vex (main app) - other apps may not have them
-  const showSplashScreens = [
-    "vex",
-    "peach",
-    "atlas",
-    "bloom",
-    "vault",
-  ].includes(slug)
+  const showSplashScreens = true
+
+  const manifestPath = meta?.manifest?.toString()
+
+  const appTitle = meta?.title?.toString()
 
   return (
     <>

@@ -1,21 +1,13 @@
 import type { ReactElement, ReactNode } from "react"
-import { getMember } from "chrrydotdev"
+import { getMember } from "api"
 import { v4 as uuidv4 } from "uuid"
 
 import {
-  deleteCreditUsage,
-  deleteMessage,
-  deleteSubscription,
-  deleteThread,
   getGuest as getGuestDb,
-  getMessages,
-  getSubscriptions,
-  getThreads,
-  getUser,
-  updateGuest,
-  updateThread,
-  updateUser,
   migrateUser,
+  getThread,
+  getStore,
+  getApp as getAppDb,
 } from "@repo/db"
 
 import { getLocale } from "next-intl/server"
@@ -23,47 +15,89 @@ import { locale } from "chrry/locales"
 import { cookies, headers } from "next/headers"
 
 import {
-  TEST_GUEST_FINGERPRINTS,
-  TEST_MEMBER_EMAILS,
-  TEST_MEMBER_FINGERPRINTS,
-} from "@repo/db"
-
-import { generateAppMetadata } from "chrry/utils"
+  generateAppMetadata,
+  generateStoreMetadata,
+  generateThreadMetadata,
+} from "chrry/utils"
 import { Providers } from "../components/Providers"
 import { NextIntlClientProvider } from "next-intl"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 import { getTranslations } from "chrry/lib"
 import ChrryAI, { generateMeta } from "./ChrryAI"
 import { getThreadId } from "chrry/utils"
-import { threadId } from "worker_threads"
-import cleanupTest from "../lib/cleanupTest"
 import getApp from "./actions/getApp"
+import { getWhiteLabel } from "api/app/actions/getApp"
+import { excludedSlugRoutes } from "chrry/utils/url"
 
 export const generateMetadata = async () => {
   const headersList = await headers()
   const hostname = headersList.get("host") || ""
+  const siteConfig = getSiteConfig(hostname)
 
   const pathname = headersList.get("x-pathname") || ""
+  const locale = (await getLocale()) as locale
+
+  // Not empty and not multiple segments (e.g., /chrry/app)
+  const pathSegments = pathname.split("/").filter(Boolean)
+
+  const segment =
+    pathSegments.length === 1 && pathSegments[0] ? pathSegments[0] : null
+
+  if (segment && excludedSlugRoutes.includes(segment)) {
+    return generateMeta({ locale })
+  }
+
+  const store =
+    segment && !excludedSlugRoutes.includes(segment)
+      ? await getStore({ slug: segment })
+      : null
 
   const threadId = getThreadId(pathname)
 
-  const siteConfig = getSiteConfig(hostname)
-  const locale = (await getLocale()) as locale
+  const thread = threadId ? await getThread({ id: threadId }) : undefined
+
+  const translations = await getTranslations({ locale })
+
+  if (thread) {
+    return generateThreadMetadata({
+      thread: thread as any,
+      locale,
+      currentDomain: siteConfig.url,
+      translations,
+    })
+  }
+
+  // Only check for store if pathname is a single segment (e.g., /chrry, /vex)
+
+  if (store) {
+    const storeMetadata = generateStoreMetadata({
+      store: (await getAppDb({ id: store.app?.id, depth: 1 }))?.store!,
+      locale,
+      currentDomain: siteConfig.url,
+      translations,
+    })
+
+    console.log(storeMetadata, "storeMetadata")
+
+    return storeMetadata
+  }
 
   const app = await getApp()
+
+  const whiteLabel = app ? await getWhiteLabel({ app }) : undefined
 
   if (!app || !app.store) {
     return generateMeta({ locale })
   }
-
-  const translations = await getTranslations({ locale })
 
   return generateAppMetadata({
     translations,
     locale,
     app,
     store: app.store,
-    currentDomain: siteConfig.url,
+    currentDomain: whiteLabel?.store?.domain || siteConfig.url,
+    pathname,
+    whiteLabel,
   })
 }
 

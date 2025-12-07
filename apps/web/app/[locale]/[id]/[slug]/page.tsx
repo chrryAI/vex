@@ -7,37 +7,37 @@ import { generateAppMetadata } from "chrry/utils"
 import { getTranslations } from "chrry/lib"
 import getApp from "../../../actions/getApp"
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string; slug: string; locale: string }>
-}): Promise<Metadata> {
-  const { id, slug, locale } = await params
+// export async function generateMetadata({
+//   params,
+// }: {
+//   params: Promise<{ id: string; slug: string; locale: string }>
+// }): Promise<Metadata> {
+//   const { id, slug, locale } = await params
 
-  // Note: Reserved paths (threads, about, etc.) are handled by middleware
-  // and never reach this route. This page only handles store apps.
+//   // Note: Reserved paths (threads, about, etc.) are handled by middleware
+//   // and never reach this route. This page only handles store apps.
 
-  // Find the app in the store by slug
-  const app = await getApp()
-  if (!app) {
-    return notFound()
-  }
+//   // Find the app in the store by slug
+//   const app = await getApp()
+//   if (!app) {
+//     return notFound()
+//   }
 
-  const translations = await getTranslations({ locale })
+//   const translations = await getTranslations({ locale })
 
-  // Get the current domain from request headers
-  const headersList = await headers()
-  const host = headersList.get("host") || "chrry.ai"
-  const protocol = host.includes("localhost") ? "http" : "https"
-  const currentDomain = `${protocol}://${host}`
+//   // Get the current domain from request headers
+//   const headersList = await headers()
+//   const host = headersList.get("host") || "chrry.ai"
+//   const protocol = host.includes("localhost") ? "http" : "https"
+//   const currentDomain = `${protocol}://${host}`
 
-  return generateAppMetadata({
-    translations,
-    app,
-    locale,
-    currentDomain,
-  })
-}
+//   return generateAppMetadata({
+//     translations,
+//     app,
+//     locale,
+//     currentDomain,
+//   })
+// }
 
 export default async function AppInStorePage({
   params,

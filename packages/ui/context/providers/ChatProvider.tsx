@@ -26,7 +26,7 @@ import {
   appWithStore,
 } from "../../types"
 
-import { pageSizes } from "../../utils"
+import { pageSizes, isOwner } from "../../utils"
 import { hasThreadNotification } from "../../utils/hasThreadNotification"
 import { getThreadId } from "../../utils/url"
 import {
@@ -40,6 +40,8 @@ import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
+import { useSyncedState } from "chrry/hooks"
+import { useError } from "./ErrorProvider"
 
 interface placeHolder {
   // TODO: Define placeHolder type
@@ -98,7 +100,6 @@ const ChatContext = createContext<
       hourlyLimit: number
       hourlyUsageLeft: number
       isEmpty: boolean
-      setIsEmpty: (isEmpty: boolean) => void
       isChatFloating: boolean
       setIsChatFloating: (isChatFloating: boolean) => void
       input: string
@@ -190,7 +191,6 @@ export function ChatProvider({
 
   // Chat state
   const [input, setInput] = useState<string>("")
-  const [isEmpty, setIsEmpty] = useState(true)
 
   const [messages, setMessages] = useState<
     {
@@ -205,13 +205,7 @@ export function ChatProvider({
     }[]
   >(auth.threadData?.messages.messages || [])
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      isEmpty && setIsEmpty(false)
-    } else {
-      !isEmpty && setIsEmpty(true)
-    }
-  }, [messages, isEmpty])
+  const isEmpty = !messages?.length
 
   const { isExtension, isMobile } = usePlatform()
 
@@ -232,17 +226,8 @@ export function ChatProvider({
   const [collaborationStatus, setCollaborationStatusInternal] = useState<
     "pending" | "active" | undefined | null
   >(
-    user &&
-      threads &&
-      threads?.threads?.length &&
-      ((searchParams.get("collaborationStatus") as "pending" | "active") ??
-        threads?.threads?.every((thread) =>
-          thread.collaborations?.some(
-            (collaboration) =>
-              collaboration.user.id === user?.id &&
-              collaboration.collaboration.status === "pending",
-          ),
-        ))
+    user?.pendingCollaborationThreadsCount ||
+      guest?.pendingCollaborationThreadsCount
       ? "pending"
       : undefined,
   )
@@ -263,7 +248,7 @@ export function ChatProvider({
     isLoading: isLoadingThreadsSwr,
     error: threadsError,
   } = useSWR(
-    shouldFetchThreads
+    token && shouldFetchThreads
       ? ["contextThreads", thread?.id, app?.id, collaborationStatus]
       : null,
     async () => {
@@ -292,7 +277,8 @@ export function ChatProvider({
 
         return threads
       } catch (error) {
-        toast.error("Something went wrong")
+        console.log(`🚀 ~ error:`, error)
+        captureException(error)
       }
     },
 
@@ -329,7 +315,6 @@ export function ChatProvider({
       setIsLoadingThreads(false)
     }
   }, [threadsSwr])
-  console.log(`🚀 ~ threadsSwr:`, threadsSwr)
 
   const fetchActiveCollaborationThreadsCount = async () => {
     const threads = await actions.getThreads({
@@ -363,9 +348,12 @@ export function ChatProvider({
   }
 
   const setCollaborationStatus = (
-    status: "pending" | "active" | undefined | null,
+    newStatus: "pending" | "active" | undefined | null,
   ) => {
-    setCollaborationStatusInternal(status)
+    if (newStatus === collaborationStatus) {
+      return
+    }
+    setCollaborationStatusInternal(newStatus)
     fetchActiveCollaborationThreadsCount()
     fetchPendingCollaborationThreadsCount()
   }
@@ -558,30 +546,25 @@ export function ChatProvider({
   }, [threadId])
 
   useEffect(() => {
-    let visitor = false
-    if (profile?.userName) {
-      if (guest) visitor = true
-      if (user?.userName !== profile.userName) visitor = true
+    if (profile) {
+      setIsVisitor(user?.id == profile.id)
+      return
     } else if (userNameByUrl) {
-      if (guest) visitor = true
-      if (user?.userName !== userNameByUrl) visitor = true
+      setIsVisitor(user?.userName == userNameByUrl)
+      return
     }
 
     if (thread) {
-      if (user && thread.userId === user?.id) {
-        visitor = false
-      } else if (guest && thread.guestId === guest?.id) {
-        visitor = false
-      } else {
-        visitor = true
-      }
+      setIsVisitor(
+        !isOwner(thread, {
+          userId: user?.id,
+          guestId: guest?.id,
+        }),
+      )
+      return
     }
 
-    if (isNewChat) {
-      visitor = false
-    }
-
-    setIsVisitor(visitor)
+    setIsVisitor(false)
   }, [profile, guest, user, userNameByUrl, thread, isNewChat])
 
   useEffect(() => {
@@ -735,10 +718,8 @@ export function ChatProvider({
   )
 
   useEffect(() => {
-    if (ph) {
-      setPlaceHolder(ph)
-    }
-  }, [ph])
+    setPlaceHolder(ph)
+  }, [thread, app])
 
   const [placeHolderText, setPlaceHolderText] = React.useState<
     string | undefined
@@ -755,6 +736,8 @@ export function ChatProvider({
   }, [placeHolder, app])
 
   const { appStatus, baseApp } = useApp()
+
+  const { captureException } = useError()
 
   useEffect(() => {
     if (appStatus?.part) {
@@ -1006,7 +989,7 @@ export function ChatProvider({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const scrollToBottom = (timeout = 500, force = false) => {
-    if (isChatFloating && !force) return
+    if (isChatFloating || !force) return
     setTimeout(() => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
     }, timeout)
@@ -1119,7 +1102,6 @@ export function ChatProvider({
         error,
         setUntil,
         isEmpty,
-        setIsEmpty,
         scrollToBottom,
         setThreadId,
         isWebSearchEnabled,

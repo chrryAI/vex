@@ -85,7 +85,7 @@ i18n.use(initReactI18next).init({
     nl: { translation: nl },
     tr: { translation: tr },
   },
-  debug: false && process.env.NODE_ENV === "development",
+  debug: false,
   lng: safeLang,
   fallbackLng: "en",
   interpolation: {

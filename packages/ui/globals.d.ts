@@ -46,4 +46,12 @@ declare global {
         }
       }
     | undefined
+
+  interface ImportMetaEnv {
+    readonly VITE_SITE_MODE?: string
+  }
+
+  interface ImportMeta {
+    readonly env: ImportMetaEnv
+  }
 }

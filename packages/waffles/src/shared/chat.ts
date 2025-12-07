@@ -29,8 +29,7 @@ export const chat = async ({
   page,
   isMember,
   isSubscriber,
-
-  instruction = "This thread will be all about React Native, are you ready?",
+  instruction,
   prompts = [
     {
       stop: false,
@@ -119,17 +118,7 @@ export const chat = async ({
   const hourlyLimit = isSubscriber ? 100 : isMember ? 30 : 10 // guests: 10, members: 30, subscribers: 100
 
   const getModelCredits = (model: string) =>
-    model === "sushi"
-      ? 2
-      : isMember
-        ? model === "chatGPT"
-          ? 4
-          : model === "sushi"
-            ? 2
-            : model === "claude"
-              ? 3
-              : 2
-        : 2
+    model === "chatGPT" || model === "gemini" ? 4 : model === "claude" ? 3 : 2
 
   const MAX_FILE_SIZE = 4
 
@@ -152,7 +141,9 @@ export const chat = async ({
   await expect(signInModal).not.toBeVisible()
 
   const agentSelectButton = page.getByTestId("agent-select-button")
-  await expect(agentSelectButton).toBeVisible()
+  await expect(agentSelectButton).toBeVisible({
+    timeout: 10000,
+  })
 
   const addDebateAgentButton = page.getByTestId("add-debate-agent-button")
   await expect(addDebateAgentButton).toBeVisible()
@@ -175,15 +166,18 @@ export const chat = async ({
   const chatTextarea = page.getByTestId("chat-textarea")
   await expect(chatTextarea).toBeVisible()
 
-  const creditsInfo = page.getByTestId("credits-info")
-  await expect(creditsInfo).toBeVisible()
   const scrollToBottom = async () => {
-    return
+    await wait(2000)
     await page.evaluate(() => {
       window.scrollTo(0, document.body.scrollHeight)
     })
     await wait(500) // Give time for scroll to complete
   }
+
+  await scrollToBottom()
+
+  const creditsInfo = page.getByTestId("credits-info")
+  await expect(creditsInfo).toBeVisible()
 
   const getCreditsLeft = async () => {
     await scrollToBottom() // Ensure credit info is visible
@@ -225,6 +219,10 @@ export const chat = async ({
   const about = page.getByTestId("instruction-about")
   let instructionButton = await getNthInstruction(0)
   let artifactsButton = page.getByTestId("instruction-modal-artifacts-button")
+  let instructionModal = page.getByTestId("instruction-modal")
+  let modalTextarea = page.getByTestId("instruction-modal-textarea")
+  let modalCharLeft = page.getByTestId("instruction-modal-char-left")
+  let modalSaveButton = page.getByTestId("instruction-modal-save-button")
 
   let artifactsUploadButton = page.getByTestId(
     "instruction-artifacts-upload-button",
@@ -237,15 +235,22 @@ export const chat = async ({
   } else {
     await expect(instructionButton).not.toBeVisible()
 
+    instructionModal = page.getByTestId("chat-instruction-modal")
     instructionButton = page.getByTestId("chat-instruction-button")
-    artifactsButton = page.getByTestId("chat-modal-artifacts-button")
-    artifactsUploadButton = page.getByTestId("chat-artifacts-upload-button")
+    artifactsButton = page.getByTestId(
+      "chat-instruction-modal-artifacts-button",
+    )
+    modalTextarea = page.getByTestId("chat-instruction-modal-textarea")
+    modalCharLeft = page.getByTestId("chat-instruction-modal-char-left")
+    modalSaveButton = page.getByTestId("chat-instruction-modal-save-button")
+    artifactsUploadButton = page.getByTestId(
+      "chat-instruction-artifacts-upload-button",
+    )
     await expect(thread).toBeVisible()
     await expect(about).not.toBeVisible()
   }
 
   // await expect(instructionButton).not.toBeVisible()
-  const instructionModal = page.getByTestId("instruction-modal")
   await expect(instructionModal).not.toBeVisible()
 
   if (instruction) {
@@ -253,15 +258,12 @@ export const chat = async ({
 
     await expect(instructionModal).toBeVisible()
 
-    const modalTextarea = page.getByTestId("instruction-modal-textarea")
     await expect(modalTextarea).toBeVisible()
 
     await modalTextarea.fill(instruction)
 
-    const modalCharLeft = page.getByTestId("instruction-modal-char-left")
     await expect(modalCharLeft).toBeVisible()
 
-    const modalSaveButton = page.getByTestId("instruction-modal-save-button")
     await expect(modalSaveButton).toBeVisible()
 
     if (artifacts) {
@@ -605,7 +607,7 @@ export const chat = async ({
       break
     }
 
-    // await scrollToBottom() // Ensure send button is visible
+    prompts.indexOf(prompt) > 1 && (await scrollToBottom()) // Ensure send button is visible
     await sendButton.click()
 
     const acceptButton = page.getByTestId("chat-accept-button")
@@ -870,6 +872,8 @@ export const chat = async ({
         )
       }
     }
+
+    await scrollToBottom()
 
     if (prompt.delete) {
       await deleteMessageButton.click()

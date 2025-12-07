@@ -95,7 +95,6 @@ const Thread = ({
     setLiked,
     placeHolderText,
     isEmpty,
-    setIsEmpty,
   } = useChat()
 
   const showFocus = auth.showFocus && isEmpty
@@ -203,30 +202,24 @@ const Thread = ({
   const titleIsRequired = `✍️ ${t("Give it a title...")}`
 
   // Only show app creation warnings when actually in app creation mode
-  const appFormPlaceholder = !hasHydrated
-    ? null
-    : appStatus?.part
-      ? !appFormWatcher.canSubmit || appFormWatcher.id
-        ? !appFormWatcher.name
-          ? nameIsRequired
-          : appFormWatcher.title
-            ? null
-            : titleIsRequired
-        : !appFormWatcher.highlights?.length
-          ? `${t("You can go next, updating suggestions recommended.")} 🎯`
-          : !appFormWatcher.systemPrompt
-            ? `${t("Updating Description and Settings recommended.")} 🧠`
-            : `${t("You can save it now!")} 🚀`
-      : null
+  const appFormPlaceholder = appStatus?.part
+    ? !appFormWatcher.canSubmit || appFormWatcher.id
+      ? !appFormWatcher.name
+        ? nameIsRequired
+        : appFormWatcher.title
+          ? null
+          : titleIsRequired
+      : !appFormWatcher.highlights?.length
+        ? `${t("You can go next, updating suggestions recommended.")} 🎯`
+        : !appFormWatcher.systemPrompt
+          ? `${t("Updating Description and Settings recommended.")} 🧠`
+          : `${t("You can save it now!")} 🚀`
+    : null
 
   const [isGame, setIsGame] = useState(false)
 
   const [collaborationVersion, setCollaborationVersion] = useState(0)
   const { utilities } = useStyles()
-
-  useEffect(() => {
-    setIsEmpty(!messages.length)
-  }, [messages.length])
 
   // Memoize the streaming update handler to prevent infinite loops
   const handleStreamingUpdate = useCallback(

@@ -46,6 +46,7 @@ import { locale, locales } from "../../locales"
 import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { getAppAndStoreSlugs } from "../../utils/url"
+import getAppSlugUtil from "../../utils/getAppSlug"
 import {
   API_URL,
   apiFetch,
@@ -54,12 +55,14 @@ import {
   getExampleInstructions,
   getThreadId,
   instructionBase,
+  isDevelopment,
   isE2E,
   PROD_FRONTEND_URL,
   WS_URL,
 } from "../../utils"
 import { Task } from "../TimerContext"
 import useCache from "chrry/hooks/useCache"
+import { useError } from "./ErrorProvider"
 
 // Constants (shared with DataProvider)
 
@@ -302,15 +305,6 @@ export function AuthProvider({
   const { isExtension, isStandalone, isFirefox, device, os, browser } =
     usePlatform()
 
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.NEXT_PUBLIC_NODE_ENV === "production"
-  const extensionId = getExtensionId()
-
-  const isDevelopment = isExtension
-    ? ["ihkpepnfnhmdkmpgfdnfbllldbgabbad"].includes(extensionId || "")
-    : !isProduction
-
   const env = isDevelopment ? "development" : "production"
 
   const setEnv = (env: "development" | "production" | "staging") => {
@@ -329,11 +323,6 @@ export function AuthProvider({
 
   const siteConfig = getSiteConfig()
 
-  // URL constants based on env
-  const FE_PORT = process.env.NEXT_PUBLIC_FE_PORT || "3000"
-  const API_PORT = process.env.API_PORT || "3001"
-  const isTestingDevice = false && isDevelopment
-
   const chrryUrl = CHRRY_URL
 
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
@@ -351,6 +340,7 @@ export function AuthProvider({
       setDeviceId(uuidv4())
     }
   }, [deviceId, setDeviceId, isStorageReady])
+  console.log("🚀~ deviceId", deviceId)
 
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
@@ -373,6 +363,8 @@ export function AuthProvider({
     tokenInternal,
     isExtension,
   )
+
+  console.log("🚀~ ", tokenInternal)
 
   useEffect(() => {
     if (tokenInternal) {
@@ -487,6 +479,7 @@ export function AuthProvider({
       ? TEST_GUEST_FINGERPRINTS.includes(fingerprintParam)
       : false,
   )
+  console.log(`🚀 ~ isGuestTest:`, isGuestTest)
 
   const [isMemberTest, setIsLiveMemberTest] = useLocalStorage<boolean>(
     "isMemberTest",
@@ -594,7 +587,7 @@ export function AuthProvider({
 
         return sessionResult
       } catch (error) {
-        // toast.error("Something went wrong")
+        captureException(error)
         console.error("Error fetching session:", error)
       }
     },
@@ -717,48 +710,7 @@ export function AuthProvider({
   const getAppSlug = (
     targetApp: appWithStore,
     defaultSlug: string = "/",
-  ): string => {
-    const localeMatch = locales.find((loc) => {
-      return pathname === `/${loc}` || pathname.startsWith(`/${loc}/`)
-    })
-    const localePrefix = localeMatch ? `/${localeMatch}` : ""
-
-    let computedSlug = defaultSlug
-
-    if (targetApp) {
-      if (targetApp.id === baseApp?.id) {
-        computedSlug = defaultSlug
-      } else if (
-        targetApp.store?.slug === baseApp?.store?.slug ||
-        baseApp?.store?.apps.some((app) => app.id === targetApp.id)
-      ) {
-        computedSlug = `/${targetApp.slug}`
-      } else {
-        computedSlug = `/${targetApp.store?.slug}/${targetApp.slug}`
-      }
-    }
-
-    if (localePrefix) {
-      if (!computedSlug || computedSlug === "/") {
-        return localePrefix || "/"
-      }
-
-      if (
-        computedSlug === localePrefix ||
-        computedSlug.startsWith(`${localePrefix}/`)
-      ) {
-        return computedSlug
-      }
-
-      if (computedSlug.startsWith("/")) {
-        return `${localePrefix}${computedSlug}`
-      }
-
-      return `${localePrefix}/${computedSlug}`
-    }
-
-    return computedSlug || defaultSlug
-  }
+  ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
   const baseApp = storeApps.find((item) => {
     if (!item) return false
 
@@ -984,6 +936,8 @@ export function AuthProvider({
     setLoadingAppInternal(appWithStore)
   }
 
+  const { captureException } = useError()
+
   const chrry = storeApps?.find((app) => !app.store?.parentStoreId)
   const vex = storeApps?.find((app) => app.slug === "vex")
   const sushi = storeApps?.find((app) => app.slug === "sushi")
@@ -1002,7 +956,8 @@ export function AuthProvider({
 
       return app.store?.apps
     } catch (error) {
-      toast.error("Something went wrong")
+      console.error(`🚀 ~ storeAppsSwr error:`, error)
+      captureException(error)
     }
   })
 

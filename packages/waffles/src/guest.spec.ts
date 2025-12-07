@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
   // await acceptAllButton.click()
 })
 
-test.skip("Subscribe As Guest", async ({ page }) => {
+test.only("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -36,7 +36,7 @@ test.skip("Subscribe As Guest", async ({ page }) => {
   await clean({ page })
 })
 
-test.skip("Invite", async ({ page }) => {
+test("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -54,7 +54,7 @@ test.skip("Invite", async ({ page }) => {
   await clean({ page })
 })
 
-test.skip("Gift", async ({ page }) => {
+test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
   })
@@ -77,7 +77,7 @@ test.skip("Gift", async ({ page }) => {
   await clean({ page })
 })
 
-test.skip("File upload", async ({ page }) => {
+test("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -127,19 +127,19 @@ test.skip("File upload", async ({ page }) => {
   await clean({ page })
 })
 
-test.skip("Chat - Hourly Limit Test", async ({ page }) => {
+test("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await limit({ page })
   await clean({ page })
 })
 
-test.skip("Thread", async ({ page }) => {
+test("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, bookmark: true })
   await clean({ page })
 })
 
-test.skip("Long text", async ({ page }) => {
+test("Long text", async ({ page }) => {
   await chat({
     page,
     isMember,
@@ -162,8 +162,10 @@ test.skip("Long text", async ({ page }) => {
       },
     ],
   })
+  await clean({ page })
 })
 
-test.only("Collaboration", async ({ page, browser }) => {
+test("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember })
+  await clean({ page })
 })

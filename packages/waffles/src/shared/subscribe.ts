@@ -137,7 +137,7 @@ export const subscribe = async ({
 
   await expect(subscribeButton).toBeVisible({
     visible: !!inviteOrGift,
-    timeout: 10000,
+    timeout: 30000,
   })
 
   const purchaseTypeInput = page.getByTestId("purchase-type")

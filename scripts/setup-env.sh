@@ -6,7 +6,7 @@ echo "Setting up environment files..."
 
 cp packages/db/.env.example packages/db/.env
 cp apps/web/.env.example apps/web/.env
-cp apps/chrry-dot-dev/.env.example apps/chrry-dot-dev/.env
+cp apps/api/.env.example apps/api/.env
 cp apps/ws/.env.example apps/ws/.env
 
 echo "✅ Environment files created. Please fill them with your credentials."

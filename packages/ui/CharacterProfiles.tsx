@@ -11,7 +11,7 @@ import ConfirmButton from "./ConfirmButton"
 import { updateUser } from "./lib"
 import Loading from "./Loading"
 import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
-import A from "./A"
+import A from "./a/A"
 
 export default function CharacterProfiles() {
   const { t } = useAppContext()

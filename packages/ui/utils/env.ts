@@ -1,5 +1,7 @@
 /// <reference types="chrome" />
 
+export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
+
 export const checkIsExtension = () => {
   if (typeof chrome !== "undefined" && chrome.runtime?.id) {
     return true

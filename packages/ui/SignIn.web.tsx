@@ -12,7 +12,7 @@ export type DesktopAuthHandler = {
 
 import { BrowserInstance, checkIsExtension, getRedirectURL } from "./utils"
 import toast from "react-hot-toast"
-import Account from "./Account"
+import Account from "./account/Account"
 import { useAppContext } from "./context/AppContext"
 import Modal from "./Modal"
 import {
@@ -222,18 +222,7 @@ export default function SignIn({
     } else {
       const redirectUrl = signInResult?.url || successUrl.toString()
 
-      if (isE2E) {
-        setRedirectUrl(redirectUrl)
-        // For e2e tests, use a data attribute to signal the redirect
-        // Small delay to ensure the attribute is set
-        !isCI &&
-          setTimeout(() => {
-            window.location.href = redirectUrl
-          }, 100)
-      } else {
-        // Always use full page refresh for proper session handling
-        window.location.href = redirectUrl
-      }
+      window.location.href = redirectUrl
     }
   }
 

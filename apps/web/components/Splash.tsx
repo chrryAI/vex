@@ -7,19 +7,18 @@ interface SplashProps {
 }
 
 export default function Splash({ app = "vex" }: SplashProps) {
-  const basePath = `/splash_screens/${app}`
-
+  const basePath = `/splash_screens`
   return (
     <>
       <link
         rel="apple-touch-startup-image"
         media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
-        href={`${basePath}/iPhone_16_Pro_Max_landscape.png`}
+        href={`${basePath}/iPhone_17_Pro_Max__iPhone_16_Pro_Max_landscape.png`}
       />
       <link
         rel="apple-touch-startup-image"
         media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
-        href={`${basePath}/iPhone_16_Pro_landscape.png`}
+        href={`${basePath}/iPhone_17_Pro__iPhone_17__iPhone_16_Pro_landscape.png`}
       />
       <link
         rel="apple-touch-startup-image"
@@ -39,7 +38,7 @@ export default function Splash({ app = "vex" }: SplashProps) {
       <link
         rel="apple-touch-startup-image"
         media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
-        href={`${basePath}/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png`}
+        href={`${basePath}/iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png`}
       />
       <link
         rel="apple-touch-startup-image"
@@ -119,12 +118,12 @@ export default function Splash({ app = "vex" }: SplashProps) {
       <link
         rel="apple-touch-startup-image"
         media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        href={`${basePath}/iPhone_16_Pro_Max_portrait.png`}
+        href={`${basePath}/iPhone_17_Pro_Max__iPhone_16_Pro_Max_portrait.png`}
       />
       <link
         rel="apple-touch-startup-image"
         media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        href={`${basePath}/iPhone_16_Pro_portrait.png`}
+        href={`${basePath}/iPhone_17_Pro__iPhone_17__iPhone_16_Pro_portrait.png`}
       />
       <link
         rel="apple-touch-startup-image"
@@ -144,7 +143,7 @@ export default function Splash({ app = "vex" }: SplashProps) {
       <link
         rel="apple-touch-startup-image"
         media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-        href={`${basePath}/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png`}
+        href={`${basePath}/iPhone_16e__iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png`}
       />
       <link
         rel="apple-touch-startup-image"

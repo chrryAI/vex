@@ -1,6 +1,6 @@
 import React from "react"
 import DragList from "react-native-draglist"
-import { DraggableListProps, RenderItemParams } from "./DraggableList.d"
+import { DraggableListProps, RenderItemParams } from "./DraggableList.web"
 
 export default function DraggableList<T>({
   data,
@@ -23,7 +23,7 @@ export default function DraggableList<T>({
     onStartDrag: () => void
     isActive: boolean
     index: number
-  }) => {
+  }): React.ReactElement | null => {
     // Map native params to our shared interface
     const params: RenderItemParams<T> = {
       item,
@@ -44,7 +44,7 @@ export default function DraggableList<T>({
         newData.splice(toIndex, 0, removed!)
         onDragEnd({ data: newData, from: fromIndex, to: toIndex })
       }}
-      renderItem={renderItemWrapper}
+      renderItem={renderItemWrapper as any}
       ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={ListFooterComponent}
       contentContainerStyle={contentContainerStyle}
