@@ -2864,11 +2864,13 @@ export const getAiAgents = async ({
   userId,
   guestId,
   include: appId,
+  forApp,
 }: {
   state?: ("active" | "testing" | "inactive")[]
   userId?: string
   guestId?: string
   include?: string
+  forApp?: app | appWithStore
 } = {}) => {
   const result = await db
     .select()
@@ -2884,7 +2886,10 @@ export const getAiAgents = async ({
       ),
     )
     .orderBy(aiAgents.order)
-  return result
+
+  return forApp?.onlyAgent
+    ? result.filter((a) => a.name === forApp.defaultModel)
+    : result
 }
 
 export const getAiAgent = async ({
@@ -4420,7 +4425,7 @@ export const updatePureApp = async (app: app) => {
     : undefined
 }
 
-export const updateApp = async (app: app) => {
+export const updateApp = async (app: app | appWithStore) => {
   const [updated] = await db
     .update(apps)
     .set(app)
@@ -4841,68 +4846,6 @@ export const getPureApp = async ({
     )
 
   if (!app) return undefined
-
-  // Determine which store to use:
-  // 1. If storeId provided, check if app belongs to that store context
-  // 2. App belongs if: installed via storeInstalls OR in parent store chain
-  // 3. If belongs, use provided storeId (domain store context)
-  // 4. Otherwise, use app's own storeId
-  let targetStoreId = app.app.storeId
-
-  if (storeId && storeId !== app.app.storeId) {
-    // Check if app is installed in the provided store
-    const [installation] = await db
-      .select()
-      .from(storeInstalls)
-      .where(
-        and(
-          eq(storeInstalls.storeId, storeId),
-          eq(storeInstalls.appId, app.app.id),
-        ),
-      )
-      .limit(1)
-
-    // Check if app's store is in the parent chain of provided store
-    const [providedStore] = await db
-      .select({ parentStoreId: stores.parentStoreId })
-      .from(stores)
-      .where(eq(stores.id, storeId))
-      .limit(1)
-
-    let isInParentChain = false
-    let currentParentId = providedStore?.parentStoreId
-    while (currentParentId && !isInParentChain) {
-      if (currentParentId === app.app.storeId) {
-        isInParentChain = true
-      } else {
-        const [parentStore] = await db
-          .select({ parentStoreId: stores.parentStoreId })
-          .from(stores)
-          .where(eq(stores.id, currentParentId))
-          .limit(1)
-        currentParentId = parentStore?.parentStoreId || null
-      }
-    }
-
-    // If installed or in parent chain, use the provided store context
-    if (installation || isInParentChain) {
-      targetStoreId = storeId
-    }
-  }
-
-  const storeData = targetStoreId
-    ? await getStore({ id: targetStoreId, userId, guestId, depth })
-    : undefined
-
-  // Build store with apps array for hyperlink navigation
-  const storeWithApps = storeData
-    ? {
-        ...storeData.store,
-        title: storeData.store.name, // Use name as title
-        apps: storeData.apps,
-        app: storeData.app, // Include the store's base app
-      }
-    : undefined
 
   return {
     ...(isSafe ? (toSafeApp({ app: app.app }) as app) : app.app),

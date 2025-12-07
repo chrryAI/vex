@@ -61,6 +61,7 @@ import { captureException } from "@sentry/nextjs"
 import { z } from "zod"
 import { notifyOwnerAndCollaborations } from "./notify"
 import enTranslations from "chrry/locales/en.json"
+import { appWithStore } from "chrry/types"
 
 // Smart context retrieval from memories
 
@@ -309,7 +310,7 @@ async function generateSuggestionsAndPlaceholders({
   guest?: guest
   latestMessage: message
   calendarEvents?: calendarEvent[]
-  app?: app
+  app?: app | appWithStore
   skipClassification?: boolean
   model: any
   modelName: string
@@ -779,7 +780,7 @@ async function generateAIContent({
   app,
   useCustomAgent = false, // New parameter to opt into using custom agent
 }: {
-  app?: app
+  app?: app | appWithStore
   thread: thread & {
     user: user | null
     guest: guest | null

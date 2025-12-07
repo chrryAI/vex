@@ -129,6 +129,8 @@ export default function App({
     token,
     loadingApp,
     storeApp,
+    hasStoreApps,
+    setLoadingApp,
   } = useAuth()
 
   const { FRONTEND_URL, API_URL } = useData()
@@ -194,6 +196,12 @@ export default function App({
 
   // Use apps from context - sort: store base app first, Chrry second, rest keep original order
   const [appsState, setApps] = React.useState(getApps())
+
+  useEffect(() => {
+    if (app && !hasStoreApps(app)) {
+      setLoadingApp(app)
+    }
+  }, [appsState])
 
   useEffect(() => {
     setApps(getApps())
@@ -394,10 +402,6 @@ export default function App({
   const canAddTitle = isManagingApp
 
   const { appStyles: styles, utilities } = useStyles()
-
-  if (!hasHydrated && (isManagingApp || appFormWatcher?.canSubmit)) {
-    return <Loading fullScreen />
-  }
 
   return (
     <Div>

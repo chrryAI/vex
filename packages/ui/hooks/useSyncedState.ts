@@ -27,10 +27,6 @@ export function useSyncedState<T>(
 
   useEffect(() => {
     // On first render, just use the initial computed value
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
-    }
 
     // When deps change, reset to computed value
     setLocalValue(computedValue)
@@ -39,9 +35,7 @@ export function useSyncedState<T>(
 
   // Also sync when computedValue changes (but not on first render)
   useEffect(() => {
-    if (!isFirstRender.current) {
-      setLocalValue(computedValue)
-    }
+    setLocalValue(computedValue)
   }, [...(deps || [])])
 
   return [localValue, setLocalValue]
