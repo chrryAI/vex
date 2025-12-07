@@ -94,6 +94,7 @@ const simulateInputPaste = async (page: Page, text: string) => {
     textarea.dispatchEvent(inputEvent)
   }, text)
 }
+
 const simulatePaste = async (page: Page, text: string) => {
   // Use Playwright's built-in clipboard API
   await page.evaluate(async (content) => {

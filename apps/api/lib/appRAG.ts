@@ -7,6 +7,7 @@
 
 import { app } from "@repo/db"
 import { buildEnhancedRAGContext } from "../app/actions/ragService"
+import { appWithStore } from "chrry/types"
 
 /**
  * Predefined knowledge bases for branded agents
@@ -170,7 +171,7 @@ obsessively profiling startups, reviewing new Internet products, and breaking te
  * For now, use the app's knowledgeBase field if available
  */
 export async function getAppRAGContext(
-  app: app | null,
+  app: app | appWithStore | null,
   userMessage: string,
 ): Promise<string> {
   if (!app || !app.ragEnabled) {
@@ -206,7 +207,7 @@ export function getBrandKnowledgeBase(appName?: string | null): string {
  * Get complete app knowledge (dynamic RAG + hardcoded fallback)
  */
 export async function getAppKnowledge(
-  app: app | null,
+  app: app | appWithStore | null,
   appName: string | null,
   userMessage: string,
 ): Promise<string> {

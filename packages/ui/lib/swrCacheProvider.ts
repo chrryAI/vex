@@ -143,13 +143,23 @@ function isQuotaExceeded(error: unknown): boolean {
 // -----------------------------------------
 
 function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
-  const db = new SWRDexieDB()
+  let db: SWRDexieDB | null = null
+
+  // Try to initialize Dexie DB
+  try {
+    db = new SWRDexieDB()
+  } catch (error) {
+    console.warn(
+      "[SWR Cache] Failed to initialize IndexedDB, using memory-only mode:",
+      error,
+    )
+  }
 
   // In-memory cache synchronized with IndexedDB
   const memCache = new Map<string, any>()
 
   // Track if we're in degraded mode (memory-only due to errors)
-  let degradedMode = false
+  let degradedMode = !db
 
   // GC timer reference for cleanup
   let gcTimer: ReturnType<typeof setInterval> | null = null
@@ -159,7 +169,7 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
   // -----------------------------------------
 
   async function runGarbageCollection(): Promise<void> {
-    if (degradedMode) return
+    if (degradedMode || !db) return
 
     try {
       const now = Date.now()
@@ -200,7 +210,8 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
         }
       }
     } catch (error) {
-      console.warn("[SWR Cache] GC failed:", error)
+      console.warn("[SWR Cache] GC failed, switching to degraded mode:", error)
+      degradedMode = true
     }
   }
 
@@ -209,6 +220,8 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
   // -----------------------------------------
 
   async function initialize(): Promise<void> {
+    if (!db) return
+
     try {
       const now = Date.now()
       const items = await db.cache.toArray()
@@ -249,7 +262,10 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
       // Run initial GC after a short delay
       setTimeout(runGarbageCollection, 1000)
     } catch (error) {
-      console.warn("[SWR Cache] Failed to initialize from IndexedDB:", error)
+      console.warn(
+        "[SWR Cache] Failed to initialize from IndexedDB, switching to degraded mode:",
+        error,
+      )
       degradedMode = true
     }
   }
@@ -270,7 +286,7 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
       const value = memCache.get(key)
 
       // Update lastAccess in background (for LRU tracking)
-      if (value !== undefined && !degradedMode) {
+      if (value !== undefined && !degradedMode && db) {
         db.cache.update(key, { lastAccess: Date.now() }).catch(() => {})
       }
 
@@ -290,27 +306,29 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
           version: SCHEMA_VERSION,
         }
 
-        withRetry(() => db.cache.put(entry), config, `set(${key})`).catch(
-          (error) => {
-            if (isQuotaExceeded(error)) {
-              // Try to free up space
-              runGarbageCollection().then(() => {
-                // Retry once after GC
-                db.cache.put(entry).catch(() => {
-                  console.warn("[SWR Cache] Switching to degraded mode")
-                  degradedMode = true
+        db &&
+          withRetry(() => db.cache.put(entry), config, `set(${key})`).catch(
+            (error) => {
+              if (isQuotaExceeded(error)) {
+                // Try to free up space
+                runGarbageCollection().then(() => {
+                  // Retry once after GC
+                  db &&
+                    db.cache.put(entry).catch(() => {
+                      console.warn("[SWR Cache] Switching to degraded mode")
+                      degradedMode = true
+                    })
                 })
-              })
-            }
-          },
-        )
+              }
+            },
+          )
       }
     },
 
     delete: (key: string) => {
       memCache.delete(key)
 
-      if (!degradedMode) {
+      if (!degradedMode && db) {
         // Delete from IndexedDB
         db.cache.delete(key).catch((error) => {
           console.error("[SWR Cache] Failed to delete from IndexedDB:", error)
@@ -329,7 +347,7 @@ function createDexieProvider(config: CacheConfig = DEFAULT_CONFIG): Cache {
 
     clear: () => {
       memCache.clear()
-      if (!degradedMode) {
+      if (!degradedMode && db) {
         db.cache.clear().catch((error) => {
           console.error("[SWR Cache] Failed to clear IndexedDB:", error)
         })
@@ -456,12 +474,7 @@ export async function invalidatePattern(
  */
 export function getCacheProvider(_parentCache?: Readonly<Cache>): Cache {
   if (typeof indexedDB !== "undefined") {
-    try {
-      return createDexieProvider(DEFAULT_CONFIG)
-    } catch (error) {
-      console.warn("[SWR Cache] Dexie failed, using memory:", error)
-      return createMemoryProvider()
-    }
+    return createDexieProvider(DEFAULT_CONFIG)
   }
 
   return createMemoryProvider()
@@ -479,12 +492,7 @@ export function createCacheProvider(
 
   return (_parentCache?: Readonly<Cache>) => {
     if (typeof indexedDB !== "undefined") {
-      try {
-        return createDexieProvider(mergedConfig)
-      } catch (error) {
-        console.warn("[SWR Cache] Dexie failed, using memory:", error)
-        return createMemoryProvider()
-      }
+      return createDexieProvider(mergedConfig)
     }
 
     return createMemoryProvider()

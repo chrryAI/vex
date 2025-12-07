@@ -396,11 +396,6 @@ export default function Chat({
   // Determine if we should use compact mode based on bottom offset
   const [hasBottomOffset, setHasBottomOffset] = useState(false)
   const shouldUseCompactMode = compactMode || hasBottomOffset
-  console.log(
-    `🚀 ~ file: Chat.tsx:398 ~ shouldUseCompactMode:`,
-    shouldUseCompactMode,
-  )
-  // || windowHeight < 600 // Not at bottom or mobile
 
   const floatingInitial = shouldUseCompactMode
     ? true
@@ -700,13 +695,17 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     } | null,
   ) => {
     setMessageInternal(message)
-    clientIdRef.current = message?.message?.clientId
+    setClientId(message?.message?.clientId)
   }
 
   const isHydrated = useHasHydrated()
 
   const [isAttaching, setIsAttachingInternal] = useState(false)
-  const clientIdRef = useRef<string | undefined>(uuidv4())
+  const [clientId, setClientId] = useState<string | undefined>()
+
+  useEffect(() => {
+    !clientId && setClientId(uuidv4())
+  }, [clientId])
 
   // State for accumulating incomplete XML messages
   const xmlBufferRef = useRef<string>("")
@@ -1737,7 +1736,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           content: userMessageText,
           isUser: true,
           id: uuidv4(),
-          clientId: clientIdRef.current,
+          clientId,
           createdOn: new Date(),
           guestId: guest?.id,
           userId: user?.id,
@@ -1779,7 +1778,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         formData.append("actionEnabled", JSON.stringify(isExtension))
         formData.append("instructions", instruction)
         formData.append("language", language)
-        clientIdRef.current && formData.append("clientId", clientIdRef.current)
+        clientId && formData.append("clientId", clientId)
 
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
@@ -1802,7 +1801,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           instructions: instruction,
           language,
           attachmentType: "file",
-          clientId: clientIdRef.current,
+          clientId,
           appId: app?.id,
           moodId: mood?.id,
           taskId,
@@ -1876,7 +1875,12 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         return
       }
 
-      if (!selectedAgent || !userMessage?.message?.clientId) {
+      if (!userMessage?.message?.clientId) {
+        toast.error("Failed to send message")
+        return
+      }
+
+      if (!selectedAgent) {
         return
       }
 
@@ -2022,7 +2026,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       // Could add onError callback here
     } finally {
       setIsLoading(false)
-      clientIdRef.current = uuidv4()
+      setClientId(uuidv4())
     }
   }
 
@@ -2305,12 +2309,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       if (!token) return
 
       const clientId = data?.clientId
-      console.log(
-        `🚀 ~ onMessage: ~ data.deviceId === deviceId:`,
-        data?.deviceId,
-        clientId,
-        deviceId,
-      )
 
       const chunk = data?.chunk
       if (
@@ -2338,6 +2336,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         }
 
         data.streamId && setStreamId(data.streamId)
+
         if (shouldStopRef.current) return // Early exit if stopped
 
         // Accumulate chunks
@@ -4583,7 +4582,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                       ) : null}
                     </>
                   )}
-
                   {user && !user?.subscription && (
                     <Button
                       data-testid="subscribe-from-chat-button"
