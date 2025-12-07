@@ -25,11 +25,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if account has calendar scope
-    const authorizedCalendarScope = "https://www.googleapis.com/auth/calendar";
-    const hasCalendarScope = !!account.scope &&
-      account.scope.split(/\s+/)
-        .map(scope => scope.trim())
-        .some(scope => scope === authorizedCalendarScope)
+    const authorizedCalendarScope = "https://www.googleapis.com/auth/calendar"
+    const hasCalendarScope =
+      !!account.scope &&
+      account.scope
+        .split(/\s+/)
+        .map((scope) => scope.trim())
+        .some((scope) => scope === authorizedCalendarScope)
 
     return NextResponse.json({
       connected: true,
