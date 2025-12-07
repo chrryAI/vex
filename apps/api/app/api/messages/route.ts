@@ -546,7 +546,7 @@ export async function POST(request: Request) {
     isAgent,
     appId,
     imageGenerationEnabled,
-    clientId,
+    clientId: clientIdInternal,
     deviceId,
     taskId,
     moodId,
@@ -754,10 +754,12 @@ export async function POST(request: Request) {
 
   let webSearchResults: webSearchResultType[] = []
 
+  const clientId = validate(clientIdInternal) ? clientIdInternal : uuidv4()
+
   if (isAgent && selectedAgent) {
     const agentMessage = await createMessage({
       moodId: mood?.id,
-      id: validate(clientId) ? clientId : uuidv4(),
+      id: clientId,
       content: messageContent,
       threadId: currentThreadId,
       userId: member?.id,
@@ -794,7 +796,7 @@ export async function POST(request: Request) {
     threadId: currentThreadId,
     userId: member?.id,
     guestId: guest?.id,
-    clientId: validate(clientId) ? clientId : uuidv4(),
+    clientId,
     webSearchResult: webSearchResults,
     selectedAgentId: selectedAgent?.id,
     isWebSearchEnabled: webSearchEnabled,

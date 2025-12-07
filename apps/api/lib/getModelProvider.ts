@@ -4,6 +4,7 @@ import { createAnthropic } from "@ai-sdk/anthropic"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { app, getAiAgents } from "@repo/db"
 import type { LanguageModel } from "ai"
+import { appWithStore } from "chrry/types"
 
 /**
  * Get the appropriate AI model provider based on agent configuration
@@ -18,7 +19,7 @@ import type { LanguageModel } from "ai"
  * - Falls back to DeepSeek if agent not found or unsupported
  */
 export async function getModelProvider(
-  app?: app,
+  app?: app | appWithStore,
   name = "deepSeek",
 ): Promise<{ provider: LanguageModel; agentName: string }> {
   const agents = app ? await getAiAgents({ include: app.id }) : []

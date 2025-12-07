@@ -38,6 +38,7 @@ import {
   apps,
   instructions,
   storeInstalls,
+  placeHolders,
   cities,
 } from "./src/schema"
 
@@ -236,6 +237,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(subscriptions)
   await db.delete(threads)
   await db.delete(memories)
+  await db.delete(placeHolders)
   await db.delete(calendarEvents)
   await db.delete(stores)
   await db.delete(apps)
@@ -698,6 +700,20 @@ const prod = async () => {
 const seedDb = async (): Promise<void> => {
   // await prod()
   // process.exit(0)
+
+  if (isSeedSafe) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "\n🏹  WARNING: You are about to run the seed script on a e2e database!\n" +
+        `DB_URL: ${process.env.DB_URL}\n` +
+        "Press Enter to continue, or Ctrl+C to abort.",
+    )
+
+    await new Promise<void>((resolve) => {
+      process.stdin.resume()
+      process.stdin.once("data", () => resolve())
+    })
+  }
 
   if (isProd) {
     // eslint-disable-next-line no-console

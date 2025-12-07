@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test"
+import { expect, Page } from "@playwright/test"
 import { chat } from "./chat"
 import { faker } from "@faker-js/faker"
 import { modelName } from ".."
@@ -12,6 +12,8 @@ export const limit = async ({
   isMember?: boolean
   isSubscriber?: boolean
 }) => {
+  const url = page.url()
+
   // Calculate exact hourly limit for guest users
   const hourlyLimit = isSubscriber ? 100 : isMember ? 30 : 10 // guests: 10, members: 30, subscribers: 100
 

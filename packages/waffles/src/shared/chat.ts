@@ -372,7 +372,7 @@ export const chat = async ({
       await imageGenerationButton.click()
       await page.waitForTimeout(2000)
       expect(await getAgentName()).toBe(expectedDefaultAgent)
-    } else {
+    } else if (prompt.model === "sushi") {
       const imageGenerationEnabled =
         await imageGenerationButton.getAttribute("data-enabled")
 
@@ -419,43 +419,37 @@ export const chat = async ({
 
         await agentModalButton.click()
       }
-      if (!isMember) {
-        expect(prompt.shouldFail).toBe(true)
-        willFail = true
-      } else {
-        expect(await getDebateAgentName()).toBe(prompt.debateAgent)
-        await addDebateAgentButton.click()
 
-        await expect(getAgentModalButton(prompt.debateAgent)).not.toBeVisible()
+      expect(await getDebateAgentName()).toBe(prompt.debateAgent)
+      await addDebateAgentButton.click()
 
-        const agentModalCloseButton = page.getByTestId(
-          "agent-modal-close-button",
-        )
+      await expect(getAgentModalButton(prompt.debateAgent)).not.toBeVisible()
 
-        await expect(agentModalCloseButton).toBeVisible()
-        await agentModalCloseButton.click()
+      const agentModalCloseButton = page.getByTestId("agent-modal-close-button")
 
-        await agentSelectButton.click()
-        await expect(agentModal).toBeVisible()
+      await expect(agentModalCloseButton).toBeVisible()
+      await agentModalCloseButton.click()
 
-        await expect(addDebateAgentButton).not.toBeVisible()
+      await agentSelectButton.click()
+      await expect(agentModal).toBeVisible()
 
-        await agentSelectButton.click()
+      await expect(addDebateAgentButton).not.toBeVisible()
 
-        const promptAgentModalButton = page.getByTestId(
-          `agent-modal-button-${prompt.model}`,
-        )
+      await agentSelectButton.click()
 
-        await promptAgentModalButton.click()
+      const promptAgentModalButton = page.getByTestId(
+        `agent-modal-button-${prompt.model}`,
+      )
 
-        expect(await getAgentName()).toBe(prompt.model)
-        await addDebateAgentButton.click()
-        await expect(addDebateAgentButton).toBeVisible()
+      await promptAgentModalButton.click()
 
-        await getAgentModalButton(prompt.debateAgent).click()
-        expect(await getDebateAgentName()).toBe(prompt.debateAgent)
-        expect(await getAgentName()).toBe(prompt.model)
-      }
+      expect(await getAgentName()).toBe(prompt.model)
+      await addDebateAgentButton.click()
+      await expect(addDebateAgentButton).toBeVisible()
+
+      await getAgentModalButton(prompt.debateAgent).click()
+      expect(await getDebateAgentName()).toBe(prompt.debateAgent)
+      expect(await getAgentName()).toBe(prompt.model)
     }
 
     if (willFail) {

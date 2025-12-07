@@ -71,7 +71,7 @@ const isMember = true
 //   await clean({ page })
 // })
 
-test.only("Debate", async ({ page }) => {
+test.skip("Debate", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",

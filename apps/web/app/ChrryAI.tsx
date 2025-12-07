@@ -92,8 +92,6 @@ export default async function ChrryAI({
   const fingerprint =
     headersList.get("x-fp") || cookieStore.get("fingerprint")?.value || uuidv4()
 
-  console.log(`🚀 ~ file: ChrryAI.tsx:92 ~ fingerprint:`, fingerprint)
-
   const gift = headersList.get("x-gift") || undefined
 
   const agentName = cookieStore.get("agentName")?.value

@@ -77,7 +77,6 @@ export const Hey = memo(
 
     const { threadId } = useChat()
     const { storeApps, app, isSplash, setIsSplash, apps } = useAuth()
-    console.log(`🚀 ~ app:`, app?.name)
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 

@@ -828,7 +828,7 @@ export type app = {
   displayMode: "standalone" | "fullscreen" | "minimal-ui" | "browser" | null
   placeholder: string | null
   extend: Array<string> | null
-  onlyAgent: boolean | null // If true, app only works with user's default agent
+  onlyAgent: boolean // If true, app only works with user's default agent
   capabilities: {
     text: boolean
     image: boolean

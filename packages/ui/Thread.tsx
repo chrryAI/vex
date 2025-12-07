@@ -245,7 +245,7 @@ const Thread = ({
 
       setMessages((prev) => {
         return prev.map((m) =>
-          m.message.id === clientId && !m.message.isStreamingStop
+          m.message.id === clientId
             ? {
                 ...m,
                 message: {
