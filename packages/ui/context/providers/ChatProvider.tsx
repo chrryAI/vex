@@ -921,6 +921,9 @@ export function ChatProvider({
     : hourlyLimit - (guest?.messagesLastHour || 0)
 
   const [isDebating, setIsDebating] = useState(false)
+  useEffect(() => {
+    setIsDebating(!!debateAgent)
+  }, [debateAgent])
 
   const hitHourlyLimit = hourlyUsageLeft <= 0
 
