@@ -236,6 +236,10 @@ const Thread = ({
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
     }) => {
+      console.log("🤖 handleStreamingUpdate", {
+        clientId,
+        content,
+      })
       if (!isLoadingMore && shouldAutoScroll(content)) {
         scrollToBottom()
       }
@@ -762,6 +766,10 @@ const Thread = ({
                       aiAgent?: aiAgent
                       thread?: thread
                     }) => {
+                      console.log("🤖 onStreamingComplete", {
+                        messageId: message?.message?.id,
+                        content: message?.message?.content,
+                      })
                       if (!message?.aiAgent?.id && !message?.message.agentId)
                         return
 
@@ -820,7 +828,14 @@ const Thread = ({
                           }),
                         )
 
-                      if (!isIncognito && !id && message?.message.threadId) {
+                      if (
+                        !isIncognito &&
+                        !id &&
+                        message?.message.threadId &&
+                        (isDebating
+                          ? message.message.agentId === debateAgent?.id
+                          : true)
+                      ) {
                         requestAnimationFrame(() => {
                           const navigationOptions = {
                             state: { preservedThread: thread } as {
