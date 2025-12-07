@@ -3,7 +3,7 @@ import getMember from "../../actions/getMember"
 import { after, NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
-import { getApp, getAppExtends, getApps } from "@repo/db"
+import { getApp, getAppExtends } from "@repo/db"
 
 import {
   getMemories,
