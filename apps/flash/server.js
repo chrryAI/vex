@@ -28,7 +28,7 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 })
-app.use(limiter)
+isProduction && app.use(limiter)
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
@@ -87,76 +87,35 @@ app.use("*all", async (req, res) => {
       serverData = await loadData(context)
     }
 
-    let didError = false
+    // Simple SSR without streaming
+    const { renderToString } = await import("react-dom/server")
+    const { default: React } = await import("react")
 
-    // Render with pre-loaded data
-    const { pipe, abort } = render(url, serverData, {
-      onShellError() {
-        res.status(500)
-        res.set({ "Content-Type": "text/html" })
-        res.send("<h1>Something went wrong</h1>")
-      },
-      onShellReady() {
-        res.status(didError ? 500 : 200)
-        res.set({ "Content-Type": "text/html" })
+    // Get App component
+    const App = !isProduction
+      ? (await vite.ssrLoadModule("/src/App.tsx")).default
+      : (await import("./dist/server/App.js")).default
 
-        // Split template to inject CSS in head
-        const htmlParts = template.split(`<!--app-head-->`)
-        const headStart = htmlParts[0]
-        const restOfTemplate = htmlParts[1] || ""
-        const [headEnd, htmlEnd] = restOfTemplate.split(`<!--app-html-->`)
+    const appHtml = renderToString(React.createElement(App, { serverData }))
 
-        let htmlEnded = false
+    // Collect CSS from Vite's module graph (dev only)
+    let cssLinks = ""
+    if (!isProduction && vite) {
+      const modules = Array.from(vite.moduleGraph.urlToModuleMap.values())
+      const cssModules = modules.filter(
+        (m) => m.url?.endsWith(".css") || m.url?.endsWith(".scss"),
+      )
+      cssLinks = cssModules
+        .map((m) => `<link rel="stylesheet" href="${m.url}">`)
+        .join("\n")
+    }
 
-        // Collect CSS from Vite's module graph (dev only)
-        let cssLinks = ""
-        if (!isProduction && vite) {
-          const modules = Array.from(vite.moduleGraph.urlToModuleMap.values())
-          const cssModules = modules.filter(
-            (m) => m.url?.endsWith(".css") || m.url?.endsWith(".scss"),
-          )
-          cssLinks = cssModules
-            .map((m) => `<link rel="stylesheet" href="${m.url}">`)
-            .join("\n")
-        }
+    // Replace placeholders
+    const html = template
+      .replace(`<!--app-head-->`, cssLinks)
+      .replace(`<!--app-html-->`, appHtml)
 
-        const htmlStart = headStart + cssLinks + headEnd
-
-        const transformStream = new Transform({
-          transform(chunk, encoding, callback) {
-            // See entry-server.tsx for more details of this code
-            if (!htmlEnded) {
-              chunk = chunk.toString()
-              if (chunk.endsWith("<vite-streaming-end></vite-streaming-end>")) {
-                res.write(chunk.slice(0, -41) + htmlEnd, "utf-8")
-                htmlEnded = true
-              } else {
-                res.write(chunk, "utf-8")
-              }
-            } else {
-              res.write(chunk, encoding)
-            }
-            callback()
-          },
-        })
-
-        transformStream.on("finish", () => {
-          res.end()
-        })
-
-        res.write(htmlStart)
-
-        pipe(transformStream)
-      },
-      onError(error) {
-        didError = true
-        console.error(error)
-      },
-    })
-
-    setTimeout(() => {
-      abort()
-    }, ABORT_DELAY)
+    res.status(200).set({ "Content-Type": "text/html" }).end(html)
   } catch (e) {
     vite?.ssrFixStacktrace(e)
     console.error(e.stack) // Log for debugging

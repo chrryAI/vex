@@ -15,107 +15,107 @@ import { collaboration } from "./shared/collaboration"
 import { clean } from "./shared/clean"
 const isMember = true
 
-test("Subscribe", async ({ page }) => {
-  await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
-  })
+// test.only("Subscribe", async ({ page }) => {
+//   await page.goto(getURL({ isLive: false, isMember }), {
+//     waitUntil: "networkidle",
+//   })
 
-  await signIn({ page })
-  await subscribe({ page, isMember })
-  await clean({ page })
-})
+//   await signIn({ page })
+//   await subscribe({ page, isMember })
+//   await clean({ page })
+// })
 
-test("Invite", async ({ page }) => {
-  await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
-  })
-  await signIn({ page })
-  await page.goto(
-    getURL({
-      isLive: false,
-      isMember,
-    }),
-    {
-      waitUntil: "networkidle",
-    },
-  )
-  await subscribe({
-    page,
-    isMember,
-    invite: `${uuidv4()}@gmail.com`,
-  })
-  await clean({ page })
-})
-
-test("Gift", async ({ page }) => {
-  await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
-  })
-  await signIn({ page })
-  await page.goto(
-    getURL({
-      isLive: false,
-      isMember,
-    }),
-    {
-      waitUntil: "networkidle",
-    },
-  )
-  await subscribe({
-    page,
-    isMember,
-    email: process.env.VEX_TEST_EMAIL_4!,
-    password: process.env.VEX_TEST_PASSWORD_4!,
-    gift: process.env.VEX_TEST_EMAIL_4!,
-  })
-  await clean({ page })
-})
-
-// test("Debate", async ({ page }) => {
-//   test.slow()
+// test.only("Invite", async ({ page }) => {
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
 //   })
 //   await signIn({ page })
-
-//   await chat({
-//     isNewChat: false,
+//   await page.goto(
+//     getURL({
+//       isLive: false,
+//       isMember,
+//     }),
+//     {
+//       waitUntil: "networkidle",
+//     },
+//   )
+//   await subscribe({
 //     page,
 //     isMember,
-//     prompts: [
-//       {
-//         text: "Should advanced AI development be regulated by governments? Debate the balance between innovation and safety",
-//         model: "claude",
-//         debateAgent: "sushi",
-//         like: true,
-//       },
-//       {
-//         text: "Is Mars colonization an ethical priority when Earth still faces major problems? Consider resource allocation arguments",
-//         model: "chatGPT",
-//         debateAgent: "sushi",
-//         like: true,
-//       },
-//       {
-//         text: "Universal Basic Income: Solution to automation or threat to work ethic? Debate economic and social impacts.",
-//         model: "sushi",
-//         debateAgent: "claude",
-//       },
-//       {
-//         text: "Is it morally justifiable to prioritize human lives over animal lives in medical research?",
-//         model: "sushi",
-//         debateAgent: "chatGPT",
-//         like: true,
-//       },
-//       {
-//         text: "Will quantum computing ultimately benefit or threaten cybersecurity? Debate both technological possibilities.",
-//         model: "sushi",
-//         debateAgent: "claude",
-//       },
-//     ],
+//     invite: `${uuidv4()}@gmail.com`,
 //   })
+//   await clean({ page })
 // })
 
-// test("Chat - Hourly Limit Test", async ({ page }) => {
+// test.only("Gift", async ({ page }) => {
+//   await page.goto(getURL({ isLive: false, isMember }), {
+//     waitUntil: "networkidle",
+//   })
+//   await signIn({ page })
+//   await page.goto(
+//     getURL({
+//       isLive: false,
+//       isMember,
+//     }),
+//     {
+//       waitUntil: "networkidle",
+//     },
+//   )
+//   await subscribe({
+//     page,
+//     isMember,
+//     email: process.env.VEX_TEST_EMAIL_4!,
+//     password: process.env.VEX_TEST_PASSWORD_4!,
+//     gift: process.env.VEX_TEST_EMAIL_4!,
+//   })
+//   await clean({ page })
+// })
+
+test.only("Debate", async ({ page }) => {
+  test.slow()
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
+  await signIn({ page })
+
+  await chat({
+    isNewChat: false,
+    page,
+    isMember,
+    prompts: [
+      {
+        text: "Should advanced AI development be regulated by governments? Debate the balance between innovation and safety",
+        model: "claude",
+        debateAgent: "sushi",
+        like: true,
+      },
+      {
+        text: "Is Mars colonization an ethical priority when Earth still faces major problems? Consider resource allocation arguments",
+        model: "chatGPT",
+        debateAgent: "sushi",
+        like: true,
+      },
+      {
+        text: "Universal Basic Income: Solution to automation or threat to work ethic? Debate economic and social impacts.",
+        model: "sushi",
+        debateAgent: "claude",
+      },
+      {
+        text: "Is it morally justifiable to prioritize human lives over animal lives in medical research?",
+        model: "sushi",
+        debateAgent: "chatGPT",
+        like: true,
+      },
+      {
+        text: "Will quantum computing ultimately benefit or threaten cybersecurity? Debate both technological possibilities.",
+        model: "sushi",
+        debateAgent: "claude",
+      },
+    ],
+  })
+})
+
+// test.only("Chat - Hourly Limit Test", async ({ page }) => {
 //   test.slow()
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
@@ -125,7 +125,7 @@ test("Gift", async ({ page }) => {
 //   await limit({ page, isMember })
 // })
 
-// test("Thread", async ({ page }) => {
+// test.only("Thread", async ({ page }) => {
 //   test.slow()
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
@@ -135,7 +135,7 @@ test("Gift", async ({ page }) => {
 //   await thread({ page, bookmark: true, isMember })
 // })
 
-// test("Long text", async ({ page }) => {
+// test.only("Long text", async ({ page }) => {
 //   test.slow()
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
@@ -166,7 +166,7 @@ test("Gift", async ({ page }) => {
 //   })
 // })
 
-// test("File upload", async ({ page }) => {
+// test.only("File upload", async ({ page }) => {
 //   test.slow()
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
@@ -239,7 +239,7 @@ test("Gift", async ({ page }) => {
 //   })
 // })
 
-// test("Collaboration", async ({ page, browser }) => {
+// test.only("Collaboration", async ({ page, browser }) => {
 //   await page.goto(
 //     getURL({
 //       isLive: false,
