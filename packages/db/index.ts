@@ -6250,10 +6250,8 @@ export const getTimer = async ({
     await db
       .select()
       .from(timers)
-      .leftJoin(devices, eq(timers.fingerprint, devices.fingerprint))
       .where(
         and(
-          fingerprint ? eq(timers.fingerprint, fingerprint) : undefined,
           userId ? eq(timers.userId, userId) : undefined,
           guestId ? eq(timers.guestId, guestId) : undefined,
         ),
@@ -6261,11 +6259,6 @@ export const getTimer = async ({
   ).at(0)
 
   return result
-    ? {
-        ...result.timer,
-        device: result.device,
-      }
-    : undefined
 }
 
 export const createTimer = async (timer: newTimer) => {
@@ -6280,7 +6273,10 @@ export const updateTimer = async (timer: timer) => {
     .where(eq(timers.id, timer.id))
     .returning()
 
-  return getTimer({ fingerprint: timer.fingerprint })
+  return getTimer({
+    userId: timer.userId || undefined,
+    guestId: timer.guestId || undefined,
+  })
 }
 
 export const deleteTimer = async ({ id }: { id: string }) => {
