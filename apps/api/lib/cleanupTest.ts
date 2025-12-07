@@ -25,7 +25,7 @@ export default async function cleanupTest() {
   for (const email of TEST_MEMBER_EMAILS) {
     const user = await getUser({ email, skipCache: true })
     if (user && email && user.email === email) {
-      await cleanupUser({
+      await cleanup({
         user,
       })
     }
@@ -34,15 +34,19 @@ export default async function cleanupTest() {
     const guest = await getGuestDb({ fingerprint, skipCache: true })
 
     // Cleanup for test guest
-    if (guest && fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
-      await cleanupUser({
+    // SAFETY: Multiple checks to prevent accidental deletion of production data
+    // 1. Guest exists from DB
+    // 2. Fingerprint param provided
+    // 3. Guest's fingerprint matches param (prevents wrong guest cleanup)
+    // 4. Fingerprint is in test whitelist (prevents production user cleanup)
+    if (
+      guest &&
+      fingerprint &&
+      guest.fingerprint === fingerprint &&
+      TEST_GUEST_FINGERPRINTS.includes(fingerprint)
+    ) {
+      await cleanup({
         guest,
-      })
-
-      await updateGuest({
-        ...guest,
-        credits: 30,
-        subscribedOn: null,
       })
     }
   }
@@ -50,7 +54,7 @@ export default async function cleanupTest() {
 }
 
 // Shared cleanup logic for both member and guest
-async function cleanupUser({ user, guest }: { user?: user; guest?: guest }) {
+async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   if (!user && !guest) {
     return
   }

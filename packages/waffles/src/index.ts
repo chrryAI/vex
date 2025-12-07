@@ -115,6 +115,16 @@ function capitalizeFirstLetter(val: string) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
 }
 
+const logs: string[] = []
+
+export const log = ({ page }: { page: Page }) => {
+  page.on("console", (msg) => {
+    if (logs.includes(msg.text())) return
+    console.log(`[browser][${msg.type()}] ${msg.text()}`, msg)
+    logs.push(msg.text())
+  })
+}
+
 export {
   wait,
   getURL,

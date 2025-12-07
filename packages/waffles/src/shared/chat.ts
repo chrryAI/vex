@@ -5,6 +5,7 @@ import {
   wait,
   capitalizeFirstLetter,
   simulatePaste,
+  log,
   modelName,
 } from ".."
 import path from "path"
@@ -99,10 +100,6 @@ export const chat = async ({
   if (creditsConsumed) {
     credits -= creditsConsumed
   }
-
-  // page.on("console", (msg) => {
-  //   console.log(`[browser][${msg.type()}] ${msg.text()}`, msg)
-  // })
 
   // if (threadId) {
   //   instruction = ""

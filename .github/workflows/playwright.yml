@@ -260,11 +260,11 @@ jobs:
           echo "❌ WebSocket server not responding"
           exit 1
 
-  # Run E2E tests only after all services are ready
-  e2e-tests:
+  # Run Guest E2E tests first (uses shared fingerprints)
+  e2e-guest:
     runs-on: ubuntu-latest
     needs: check-websocket
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -283,7 +283,43 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
 
-      - name: Run Playwright tests
+      - name: Run Guest Playwright tests
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
+          TEST_GUEST_FINGERPRINTS: ${{ secrets.TEST_GUEST_FINGERPRINTS }}
+        run: pnpm --filter @chrryai/waffles exec playwright test guest.spec.ts
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-guest
+          path: packages/waffles/playwright-report/
+          retention-days: 30
+
+  # Run Member E2E tests after guest tests (sequential, uses same fingerprints)
+  e2e-member:
+    runs-on: ubuntu-latest
+    needs: e2e-guest # Wait for guest tests to finish first
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
+
+      - name: Run Member Playwright tests
         env:
           PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
           VEX_TEST_EMAIL: ${{ secrets.VEX_TEST_EMAIL }}
@@ -301,11 +337,11 @@ jobs:
           TEST_MEMBER_FINGERPRINTS: ${{ secrets.TEST_MEMBER_FINGERPRINTS }}
           TEST_MEMBER_EMAILS: ${{ secrets.TEST_MEMBER_EMAILS }}
           TEST_GUEST_FINGERPRINTS: ${{ secrets.TEST_GUEST_FINGERPRINTS }}
-        run: pnpm --filter @chrryai/waffles e2e
+        run: pnpm --filter @chrryai/waffles exec playwright test member.spec.ts
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-report-member
           path: packages/waffles/playwright-report/
           retention-days: 30
