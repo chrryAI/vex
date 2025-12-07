@@ -15,61 +15,61 @@ import { collaboration } from "./shared/collaboration"
 import { clean } from "./shared/clean"
 const isMember = true
 
-// test.only("Subscribe", async ({ page }) => {
-//   await page.goto(getURL({ isLive: false, isMember }), {
-//     waitUntil: "networkidle",
-//   })
+test("Subscribe", async ({ page }) => {
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
 
-//   await signIn({ page })
-//   await subscribe({ page, isMember })
-//   await clean({ page })
-// })
+  await signIn({ page })
+  await subscribe({ page, isMember })
+  await clean({ page })
+})
 
-// test.only("Invite", async ({ page }) => {
-//   await page.goto(getURL({ isLive: false, isMember }), {
-//     waitUntil: "networkidle",
-//   })
-//   await signIn({ page })
-//   await page.goto(
-//     getURL({
-//       isLive: false,
-//       isMember,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//     },
-//   )
-//   await subscribe({
-//     page,
-//     isMember,
-//     invite: `${uuidv4()}@gmail.com`,
-//   })
-//   await clean({ page })
-// })
+test("Invite", async ({ page }) => {
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
+  await signIn({ page })
+  await page.goto(
+    getURL({
+      isLive: false,
+      isMember,
+    }),
+    {
+      waitUntil: "networkidle",
+    },
+  )
+  await subscribe({
+    page,
+    isMember,
+    invite: `${uuidv4()}@gmail.com`,
+  })
+  await clean({ page })
+})
 
-// test.only("Gift", async ({ page }) => {
-//   await page.goto(getURL({ isLive: false, isMember }), {
-//     waitUntil: "networkidle",
-//   })
-//   await signIn({ page })
-//   await page.goto(
-//     getURL({
-//       isLive: false,
-//       isMember,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//     },
-//   )
-//   await subscribe({
-//     page,
-//     isMember,
-//     email: process.env.VEX_TEST_EMAIL_4!,
-//     password: process.env.VEX_TEST_PASSWORD_4!,
-//     gift: process.env.VEX_TEST_EMAIL_4!,
-//   })
-//   await clean({ page })
-// })
+test("Gift", async ({ page }) => {
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
+  await signIn({ page })
+  await page.goto(
+    getURL({
+      isLive: false,
+      isMember,
+    }),
+    {
+      waitUntil: "networkidle",
+    },
+  )
+  await subscribe({
+    page,
+    isMember,
+    email: process.env.VEX_TEST_EMAIL_4!,
+    password: process.env.VEX_TEST_PASSWORD_4!,
+    gift: process.env.VEX_TEST_EMAIL_4!,
+  })
+  await clean({ page })
+})
 
 test.skip("Debate", async ({ page }) => {
   test.slow()
@@ -115,7 +115,7 @@ test.skip("Debate", async ({ page }) => {
   })
 })
 
-// test.only("Chat - Hourly Limit Test", async ({ page }) => {
+// test("Chat - Hourly Limit Test", async ({ page }) => {
 //   test.slow()
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
@@ -125,7 +125,7 @@ test.skip("Debate", async ({ page }) => {
 //   await limit({ page, isMember })
 // })
 
-// test.only("Thread", async ({ page }) => {
+// test("Thread", async ({ page }) => {
 //   test.slow()
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
@@ -135,7 +135,7 @@ test.skip("Debate", async ({ page }) => {
 //   await thread({ page, bookmark: true, isMember })
 // })
 
-// test.only("Long text", async ({ page }) => {
+// test("Long text", async ({ page }) => {
 //   test.slow()
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
@@ -166,7 +166,7 @@ test.skip("Debate", async ({ page }) => {
 //   })
 // })
 
-// test.only("File upload", async ({ page }) => {
+// test("File upload", async ({ page }) => {
 //   test.slow()
 //   await page.goto(getURL({ isLive: false, isMember }), {
 //     waitUntil: "networkidle",
@@ -239,7 +239,7 @@ test.skip("Debate", async ({ page }) => {
 //   })
 // })
 
-// test.only("Collaboration", async ({ page, browser }) => {
+// test("Collaboration", async ({ page, browser }) => {
 //   await page.goto(
 //     getURL({
 //       isLive: false,
