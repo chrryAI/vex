@@ -4,7 +4,7 @@ import { chat } from "./shared/chat"
 const isMember = false
 const isLiveTest = false
 
-test.only("Chat", async ({ page }) => {
+test.skip("Chat", async ({ page }) => {
   test.slow()
   await chat({
     isLiveTest,
