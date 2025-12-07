@@ -236,10 +236,6 @@ const Thread = ({
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
     }) => {
-      console.log("🤖 handleStreamingUpdate", {
-        clientId,
-        content,
-      })
       if (!isLoadingMore && shouldAutoScroll(content)) {
         scrollToBottom()
       }

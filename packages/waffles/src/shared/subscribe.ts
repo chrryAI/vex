@@ -1,7 +1,7 @@
 import { expect, Page } from "@playwright/test"
 import { signIn } from "./signIn"
 import { chat } from "./chat"
-import { isCI, modelName, wait } from "../index"
+import { isCI, modelName, wait, log } from "../index"
 
 export const subscribe = async ({
   page,
@@ -18,9 +18,7 @@ export const subscribe = async ({
   gift?: string
   invite?: string
 }) => {
-  page.on("console", (msg) => {
-    console.log(`[browser][${msg.type()}] ${msg.text()}`, msg)
-  })
+  log({ page })
   const inviteOrGift = invite || gift
 
   const createChat = !inviteOrGift && !isMember
