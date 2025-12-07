@@ -887,7 +887,7 @@ export const updateTimer = async (timer: timer) => {
     .where(eq(timers.id, timer.id))
     .returning()
 
-  return getTimer({ fingerprint: timer.fingerprint })
+  return getTimer({ userId: timer.userId, guestId: timer.guestId })
 }
 
 export const deleteTimer = async ({ id }: { id: string }) => {
