@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     } catch (error) {
       // Sanitize locale for logging
       const safeLocale = String(locale).replace(/[^\w-]/g, "_")
-      console.error('Failed to load locale: %s', safeLocale, error)
+      console.error("Failed to load locale: %s", safeLocale, error)
       try {
         const enModule = await import(`chrry/locales/en.json`)
         translations = enModule.default || enModule
