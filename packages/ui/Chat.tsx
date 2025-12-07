@@ -415,9 +415,9 @@ export default function Chat({
     showChatInput,
   ])
 
-  useEffect(() => {
-    setIsChatFloating(isChatFloating)
-  }, [isChatFloating])
+  // useEffect(() => {
+  //   setIsChatFloating(isChatFloating)
+  // }, [isChatFloating])
 
   // Strip ACTION JSON sfrom streaming text
   const stripActionFromText = (text: string): string => {
@@ -2275,7 +2275,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   const isPlayingSillyPopCluster = useRef(false)
 
   // Memoize deps to prevent reconnection loop
-  const webSocketDeps = useMemo(() => [isSpeechActive], [isSpeechActive])
+  const webSocketDeps = useMemo(
+    () => [isSpeechActive, app?.id],
+    [isSpeechActive, app?.id],
+  )
 
   useWebSocket<{
     type: string
@@ -2302,6 +2305,12 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
       if (!token) return
 
       const clientId = data?.clientId
+      console.log(
+        `🚀 ~ onMessage: ~ data.deviceId === deviceId:`,
+        data?.deviceId,
+        clientId,
+        deviceId,
+      )
 
       const chunk = data?.chunk
       if (
@@ -2313,7 +2322,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           userId: user?.id,
           guestId: guest?.id,
         })
-          ? data.deviceId === deviceId
+          ? data?.deviceId === deviceId
           : true)
       ) {
         if (isSpeechActive && os !== "ios") {
@@ -2439,6 +2448,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
             language,
             pauseDebate: true,
             isSpeechActive,
+            deviceId,
+            appId: app?.id,
           })
 
           try {
@@ -4060,6 +4071,8 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                               <Flux color="var(--accent-6)" size={22} />
                             ) : debateAgent.name === "perplexity" ? (
                               <Perplexity color="var(--accent-6)" size={22} />
+                            ) : debateAgent.name === "sushi" ? (
+                              <Img icon="sushi" size={22} />
                             ) : null}
                           </Button>
                         ) : (

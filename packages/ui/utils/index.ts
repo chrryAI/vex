@@ -155,6 +155,8 @@ export const API_URL =
         ? "https://e2e.chrry.dev/api"
         : "https://chrry.dev/api")
 
+console.log(`🚀 ~ API_URL:`, API_URL)
+
 // API fetch wrapper with credentials for cross-domain requests
 export const apiFetch = (url: string, options?: RequestInit) => {
   return fetch(url, {

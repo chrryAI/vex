@@ -1060,6 +1060,8 @@ export default function Message({
                   <Flux size={35} />
                 ) : agent.name === "perplexity" ? (
                   <Perplexity size={35} />
+                ) : agent.name === "sushi" ? (
+                  <Img icon="sushi" size={35} />
                 ) : null}
               </>
             ) : (
@@ -1105,6 +1107,8 @@ export default function Message({
                   <Flux size={35} />
                 ) : agent.name === "perplexity" ? (
                   <Perplexity size={35} />
+                ) : agent.name === "sushi" ? (
+                  <Img icon="sushi" size={35} />
                 ) : null}
               </>
             ) : (
