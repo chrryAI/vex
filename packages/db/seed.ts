@@ -17,6 +17,9 @@ import {
   getGuest,
   deleteGuest,
   getTasks,
+  isProd,
+  isCI,
+  isSeedSafe,
 } from "./index"
 import { eq, and, isNull, sql, inArray } from "drizzle-orm"
 import {
@@ -35,13 +38,12 @@ import {
   apps,
   instructions,
   storeInstalls,
+  cities,
 } from "./src/schema"
 
 import { createEvent } from "./createEvent"
 import { createStores } from "./createStores"
 import { createCities } from "./createCities"
-
-const isProd = process.env.DB_URL && !process.env.DB_URL.includes("localhost")
 
 const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -237,7 +239,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(calendarEvents)
   await db.delete(stores)
   await db.delete(apps)
-  // await db.delete(cities)
+  await db.delete(cities)
   await db.delete(characterProfiles)
   await db.delete(threadSummaries)
 }
@@ -315,9 +317,8 @@ const create = async () => {
     return
   }
 
-  // await createCities()
-
   console.log("🌍 Creating cities...")
+  await createCities()
   console.log("✅ Cities created")
 
   // Check if admin user already exists
@@ -326,12 +327,12 @@ const create = async () => {
   if (!admin) {
     console.log("👤 Creating admin user...")
     admin = await createUser({
-      email: VEX_TEST_EMAIL,
+      email: !isSeedSafe ? VEX_TEST_EMAIL : "test@gmail.com",
       name: VEX_TEST_NAME,
       password: passwordToSalt(VEX_TEST_PASSWORD),
       role: "admin",
       userName: "ibsukru",
-      credits: 99999999,
+      credits: !isSeedSafe ? 99999999 : undefined,
       city: "Amsterdam",
       country: "Netherlands",
     })
@@ -410,8 +411,8 @@ const create = async () => {
   // --- BEGIN meaningful threads/messages/AI agent seeding ---
 
   for (const adminUser of [admin]) {
-    const foo = process.env.TESTING_ENV === "e2e"
-    // if (foo) return
+    const foo = process.env.TESTING_ENV === "e2e" || isSeedSafe
+    if (foo) return
 
     // Pool of user prompts and AI responses
     const prompts = [
@@ -461,7 +462,7 @@ const create = async () => {
 
     // --- JSON-like structure for multi-turn threads ---
     const THREAD_COUNT = foo ? 2 : 20
-    const MESSAGES_PER_THREAD = foo ? 2 : 50
+    const MESSAGES_PER_THREAD = foo ? (isCI ? 5 : 5) : 50
     const threadsData = Array.from({ length: THREAD_COUNT }).map((_, t) => {
       const usedIndexes = new Set<number>()
       const messages: { role: "user" | "ai"; content: string }[] = []
@@ -697,6 +698,7 @@ const prod = async () => {
 const seedDb = async (): Promise<void> => {
   // await prod()
   // process.exit(0)
+
   if (isProd) {
     // eslint-disable-next-line no-console
     console.warn(

@@ -1,5 +1,5 @@
 import React from "react"
-import About from "chrry/About"
+import About from "chrry/about"
 import { useLocale } from "next-intl"
 import { getMetadata } from "../../../utils"
 import { locale } from "chrry/locales"

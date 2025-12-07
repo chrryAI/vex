@@ -13,7 +13,7 @@ import Img from "./Image"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useChat } from "./context/providers/ChatProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
-import { useTheme, usePlatform, useLocalStorage, Div } from "./platform"
+import { usePlatform, useLocalStorage, Div } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import { useHasHydrated } from "./hooks"
 import { ErrorBoundary } from "./ErrorBoundary"
@@ -21,6 +21,7 @@ import Thread from "./Thread"
 import Home from "./Home"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
 import { locales } from "./locales"
+import { FRONTEND_URL } from "./utils"
 
 // Lazy load less frequently used components to reduce initial bundle
 const Store = lazy(() => import("./Store"))
@@ -28,11 +29,11 @@ const Calendar = lazy(() => import("./Calendar"))
 const Why = lazy(() => import("./Why"))
 const Privacy = lazy(() => import("./Privacy"))
 const Terms = lazy(() => import("./Terms"))
-const About = lazy(() => import("./About"))
+const About = lazy(() => import("./about"))
 const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
-const Affiliate = lazy(() => import("./Affiliate"))
-const AffiliateDashboard = lazy(() => import("./AffiliateDashboard"))
+const Affiliate = lazy(() => import("./affiliate"))
+const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
 
 // Route map with conditional lazy loading
 const ROUTES: Record<string, ComponentType<any>> = {
@@ -61,6 +62,7 @@ export const Hey = memo(
     const { isHome, pathname, router } = useNavigationContext()
 
     const { isExtension } = usePlatform()
+
     const styles = useSidebarStyles()
 
     const [pathnameLocal, setPathnameLocal] = useLocalStorage<
@@ -141,7 +143,7 @@ export const Hey = memo(
           threadId ||
           isThreadDetailPage ||
           pathname === "/" ||
-          pathname === "/chrryDotDev" ||
+          pathname === "/api" ||
           isAppSlug))
 
     const isHydrated = useHasHydrated()
@@ -196,6 +198,7 @@ export const Hey = memo(
     // useEffect(() => {
     //   app?.slug && useExtensionIcon?.(app?.slug)
     // }, [app, useExtensionIcon])
+    //
 
     return (
       <Div>

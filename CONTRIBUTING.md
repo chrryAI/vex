@@ -29,7 +29,7 @@ Thank you for considering contributing to Vex! 🎉
 
    ```bash
    # Copy example files
-   cp apps/chrry-dot-dev/.env.example apps/chrry-dot-dev/.env
+   cp apps/api/.env.example apps/api/.env
    cp packages/db/.env.example packages/db/.env
 
    # Edit .env files with your credentials
@@ -52,7 +52,7 @@ Thank you for considering contributing to Vex! 🎉
    pnpm run dev
 
    # Or start specific apps
-   pnpm run dev --filter=chrry-dot-dev
+   pnpm run dev --filter=api
    ```
 
 ## Project Structure
@@ -60,7 +60,7 @@ Thank you for considering contributing to Vex! 🎉
 ```
 vex/
 ├── apps/
-│   ├── chrry-dot-dev/    # Main web application
+│   ├── api/    # Main web application
 │   ├── web/              # Alternative frontend
 │   ├── ws/               # WebSocket server
 │   ├── extension/        # Browser extension

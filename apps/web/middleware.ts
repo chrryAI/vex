@@ -4,7 +4,9 @@ import type { NextRequest } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import createIntlMiddleware from "next-intl/middleware"
 import { locales, defaultLocale } from "chrry/locales"
-import getChrryUrl from "chrry-dot-dev/app/actions/getChrryUrl"
+import getChrryUrl from "api/app/actions/getChrryUrl"
+import { isDevelopment } from "./lib"
+import { validate } from "uuid"
 
 // Static allowed origins (always allowed)
 const STATIC_ALLOWED_ORIGINS = [
@@ -20,8 +22,8 @@ const STATIC_ALLOWED_ORIGINS = [
 const staticPatterns = [
   "/_next",
   "/favicon.ico",
-  "/manifests",
-  "/manifest.webmanifest",
+  // "/manifests",
+  // "/manifest.webmanifest",
   "/sw.js",
   "/icons",
   "/api",
@@ -29,8 +31,9 @@ const staticPatterns = [
   "/logo",
   "/icons",
   "/sounds",
-  "/sitemap",
+  // "/sitemap",
   "/video",
+  "/splash_screens",
   "/((?!_next|api|favicon.ico|manifest.webmanifest|sw.js|icon-|blob\.mp4|kitasaku\.mp3|birds\.mp3|timer-end\.mp3|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)",
 ]
 
@@ -63,7 +66,7 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
     response.headers.set("Access-Control-Allow-Origin", origin)
     response.headers.set("Access-Control-Allow-Credentials", "true")
     response.headers.set("Vary", "Origin")
-  } else if (process.env.NODE_ENV === "development") {
+  } else if (isDevelopment) {
     // Allow all origins in development for testing
     response.headers.set("Access-Control-Allow-Origin", "*")
   } else {
@@ -94,11 +97,12 @@ function setCorsHeaders(response: { headers: Headers }, request: NextRequest) {
       "x-source",
       "x-url",
       "x-chrry-url",
+      "x-gift",
     ].join(", "),
   )
   response.headers.set(
     "Access-Control-Max-Age",
-    process.env.NODE_ENV === "development" ? "0" : "86400", // Disable in dev, 24h in prod
+    isDevelopment ? "0" : "86400", // Disable in dev, 24h in prod
   )
 }
 
@@ -111,8 +115,7 @@ export default async function middleware(request: NextRequest) {
     return response
   }
 
-  const url = new URL(request.url)
-  const searchParams = url.searchParams
+  const searchParams = request.nextUrl.searchParams
   const gift = searchParams.get("gift")
 
   const response = handleIntlRequest(request)
@@ -195,23 +198,18 @@ export default async function middleware(request: NextRequest) {
   const hostname =
     request.headers.get("x-forwarded-host") || request.headers.get("host") || ""
 
-  const chrryUrlFromHeader = request.headers.get("x-chrry-url")
-  const protocol = request.headers.get("x-forwarded-proto") || "https"
+  const chrryUrl =
+    decodeURIComponent(searchParams.get("chrryUrl") || "") ||
+    request.headers.get("x-chrry-url")
 
-  let chrryUrl = chrryUrlFromHeader
-    ? decodeURIComponent(chrryUrlFromHeader)
-    : hostname.startsWith("http")
-      ? hostname
-      : `${protocol}://${hostname}`
-
-  response.headers.set("x-chrry-url", chrryUrl)
+  chrryUrl && response.headers.set("x-chrry-url", chrryUrl)
 
   // Set fingerprint cookie if not already set
   const existingFingerprintCookie = request.cookies.get("fingerprint")?.value
-  const fingerprintUrl = searchParams.get("fp")
 
-  const fingerprint = request.headers.get("x-fp") || fingerprintUrl || uuidv4()
-  if (!existingFingerprintCookie && fingerprint) {
+  const fingerprint =
+    request.nextUrl.searchParams.get("fp") || request.headers.get("x-fp")
+  if (!existingFingerprintCookie && fingerprint && validate(fingerprint)) {
     response.cookies.set("fingerprint", fingerprint, {
       httpOnly: false,
       secure: process.env.NODE_ENV !== "development",
@@ -221,9 +219,7 @@ export default async function middleware(request: NextRequest) {
     })
   }
 
-  // Pass fingerprint to API via header (for cross-domain requests)
-  const fingerprintToPass = existingFingerprintCookie || fingerprint || uuidv4()
-  response.headers.set("x-fp", fingerprintToPass)
+  fingerprint && response.headers.set("x-fp", fingerprint)
 
   return response
 }
@@ -242,5 +238,6 @@ export const config = {
     "/icons/:path*",
     "/images/:path*",
     "/logo/:path*",
+    "/splash_screens/:path*",
   ],
 }

@@ -4,11 +4,24 @@
 
 import React, { useCallback, useMemo, useEffect, useRef } from "react"
 import {
-  useRouter as useNextRouter,
-  usePathname as useNextPathname,
-  useSearchParams as useNextSearchParams,
-} from "next/navigation"
-import { useRouter as useClientRouter } from "../hooks/useWindowHistory"
+  useRouter as useClientRouter,
+  usePathname as useClientPathname,
+  useSearchParams as useClientSearchParams,
+} from "../hooks/useWindowHistory"
+
+// Try to import Next.js hooks, but don't fail if they're not available
+let useNextRouter: any
+let useNextPathname: any
+let useNextSearchParams: any
+
+try {
+  const nextNavigation = require("next/navigation")
+  useNextRouter = nextNavigation.useRouter
+  useNextPathname = nextNavigation.usePathname
+  useNextSearchParams = nextNavigation.useSearchParams
+} catch {
+  // Next.js not available - will use client router
+}
 
 export interface NavigationOptions {
   scroll?: boolean // Scroll to top after navigation (default: true)
@@ -46,9 +59,10 @@ const isNextJsEnvironment = () => {
  * For extensions, use navigation.extension.ts instead
  */
 export function useNavigation(): NavigationParams {
-  const nextRouter = useNextRouter()
-  const pathname = useNextPathname()
-  const searchParams = useNextSearchParams()
+  // Try to use Next.js hooks if available, otherwise fall back to client router
+  const nextRouter = useNextRouter?.()
+  const pathname = useNextPathname?.() || useClientPathname()
+  const searchParams = useNextSearchParams?.() || useClientSearchParams()
 
   // Get clientRouter for bulletproof client-side navigation actions
   const clientRouter = useClientRouter()
@@ -173,7 +187,7 @@ export function useNavigation(): NavigationParams {
  * Get current pathname (web)
  */
 export function useCurrentPathname(): string {
-  const pathname = useNextPathname()
+  const pathname = useNextPathname?.() || useClientPathname()
   return pathname || "/"
 }
 
@@ -181,7 +195,7 @@ export function useCurrentPathname(): string {
  * Get search params (web)
  */
 export function useCurrentSearchParams(): URLSearchParams {
-  const searchParams = useNextSearchParams()
+  const searchParams = useNextSearchParams?.() || useClientSearchParams()
   return searchParams || new URLSearchParams()
 }
 

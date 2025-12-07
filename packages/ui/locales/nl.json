@@ -1687,5 +1687,6 @@
   "Create custom AI apps with team collaboration": "Maak aangepaste AI-apps met team samenwerking",
   "Unlimited stores with nested apps": "Onbeperkte winkels met geneste apps",
   "credit_left": "{{count}} over",
-  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Upload hier bestanden zodat de AI ze kan onthouden en naar kan verwijzen in toekomstige gesprekken. Deze artefacten worden onderdeel van het geheugen van de thread."
+  "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Upload hier bestanden zodat de AI ze kan onthouden en naar kan verwijzen in toekomstige gesprekken. Deze artefacten worden onderdeel van het geheugen van de thread.",
+  "Disable Image Generation": "Afbeeldingsgeneratie uitschakelen"
 }

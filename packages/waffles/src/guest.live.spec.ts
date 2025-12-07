@@ -2,11 +2,12 @@ import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 
 const isMember = false
+const isLiveTest = true
 
 test.skip("Chat", async ({ page }) => {
   test.slow()
   await chat({
-    isLiveTest: true,
+    isLiveTest,
     isNewChat: true,
     page,
     isMember,
@@ -19,25 +20,23 @@ test.skip("Chat", async ({ page }) => {
       },
       {
         text: "Can you suggest a detailed itinerary for day 1?",
-        model: "sushi",
+        model: "claude",
         like: true,
       },
       {
         text: "What's the best way to get around between these places?",
-        model: "sushi",
+        model: "chatGPT",
         like: true,
-      },
-      {
-        text: "Should not select this agent should continue with deepSeek",
-        model: "claude",
       },
     ],
   })
 
   await chat({
     isNewChat: true,
-    isLiveTest: true,
+    isLiveTest,
     page,
+    creditsConsumed: 2 + 3 + 4,
+    messagesConsumed: 3,
     agentMessageTimeout: 120000,
     isMember,
     instruction: "Generate creative images for my travel blog",

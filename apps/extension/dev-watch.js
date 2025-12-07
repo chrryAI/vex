@@ -4,11 +4,60 @@ import { spawn } from "child_process"
 import { watch } from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
+import http from "http"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 let buildProcess = null
 let isBuilding = false
+
+// Auto-reload Chrome extension via Chrome DevTools Protocol
+// Start Chrome with: google-chrome --remote-debugging-port=9222
+async function reloadExtension() {
+  try {
+    // Get list of debuggable targets
+    const targets = await new Promise((resolve, reject) => {
+      http
+        .get("http://localhost:9222/json", (res) => {
+          let data = ""
+          res.on("data", (chunk) => (data += chunk))
+          res.on("end", () => {
+            try {
+              resolve(JSON.parse(data))
+            } catch {
+              reject(new Error("Failed to parse Chrome targets"))
+            }
+          })
+        })
+        .on("error", reject)
+    })
+
+    // Find extension page
+    const extTarget = targets.find(
+      (t) =>
+        t.url?.includes("chrome-extension://") &&
+        (t.title?.toLowerCase().includes("chrry") ||
+          t.title?.toLowerCase().includes("vex") ||
+          t.title?.toLowerCase().includes("zarathustra")),
+    )
+
+    if (extTarget) {
+      console.log("🔄 Auto-reloading extension...")
+      // Send reload command via WebSocket would go here
+      // For now, just notify - full auto-reload needs ws package
+      console.log(
+        "✅ Extension rebuilt! Close & reopen sidebar to see changes.",
+      )
+    } else {
+      console.log("✅ Extension rebuilt! Refresh manually in Chrome.")
+    }
+  } catch (err) {
+    // Chrome not running with debugging or extension not found
+    console.log(
+      "✅ Extension built! Refresh manually (or start Chrome with --remote-debugging-port=9222)",
+    )
+  }
+}
 
 function runBuild() {
   if (isBuilding) {
@@ -28,11 +77,7 @@ function runBuild() {
   buildProcess.on("close", (code) => {
     isBuilding = false
     if (code === 0) {
-      console.log("✅ Extension built successfully!")
-      console.log("🔄 Refresh the extension in Chrome to see changes")
-      console.log("   1. Go to chrome://extensions/")
-      console.log("   2. Click the refresh icon on your extension")
-      console.log("   3. Or use Ctrl+R on the extension popup/sidebar")
+      reloadExtension()
     } else {
       console.log("❌ Build failed with code:", code)
     }

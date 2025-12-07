@@ -19,19 +19,12 @@ import { headers } from "next/headers"
 export async function generateMetadata() {
   const title = "Blog - Vex"
   const description = "Read about the latest news and updates from Vex"
-  const canonicalUrl = `https://chrry.ai/blog` // Always point to English version
+  const canonicalUrl = `https://vex.chrry.ai/blog` // Always point to English version
   const metadata: Metadata = getMetadata({
     title,
     description,
     alternates: {
       canonical: canonicalUrl,
-      languages: LANGUAGES.reduce(
-        (acc, language) => {
-          acc[language.code] = `https://chrry.ai/${language.code}/blog`
-          return acc
-        },
-        {} as Record<string, string>,
-      ),
     },
   })
 

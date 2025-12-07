@@ -2,6 +2,9 @@ import { Metadata } from "next"
 import { appWithStore, storeWithApps, store } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
+import getAppSlug from "./getAppSlug"
+import { getImageSrc } from "../lib"
+import clearLocale from "./clearLocale"
 
 /**
  * Generate dynamic metadata for an app page
@@ -20,6 +23,7 @@ export function generateAppMetadata({
   locale = "en",
   currentDomain,
   translations,
+  whiteLabel,
   ...rest
 }: {
   app: appWithStore
@@ -27,65 +31,67 @@ export function generateAppMetadata({
   locale?: locale | string
   currentDomain: string
   translations: Record<string, any>
+  pathname?: string
+  whiteLabel?: appWithStore
 }): Metadata {
-  const title = app.name || app.title || "Chrry App"
-  const description = app.description || `${title} - AI-powered agent on Chrry`
-
-  const isProduction =
-    process.env.NODE_ENV === "production" ||
-    process.env.NEXT_PUBLIC_NODE_ENV === "production"
+  const title = app.name || app.title || "Chrry"
+  const description = app.description || `${title} - Blossom`
 
   const store = rest.store || app.store!
 
-  const API_URL = !isProduction
-    ? "http://localhost:3001/api"
-    : "https://chrry.dev/api"
-  // images array: [512px, 192px, 180px, 128px, 32px]
+  const pathname =
+    rest.pathname ||
+    (typeof window !== "undefined" ? window.location.pathname : "")
+
   const ogImage = app.images?.[0]?.url || "/logo/logo-512-512.png"
-  const icon512 = app.images?.[0]?.url || "/logo/logo-512-512.png"
-  const icon192 = app.images?.[1]?.url || "/logo/logo-192-192.png"
-  const icon180 = app.images?.[2]?.url || "/logo/logo-180-180.png"
-  const icon32 = app.images?.[4]?.url || "/logo/logo-32-32.png"
 
   const storeSlug = store.slug || "chrry"
-  const storeName = store.name || "Chrry"
-  const canonicalUrl = `${currentDomain}/${storeSlug}/${app.slug}`
+  const storeName = store.name || "Blossom"
+  // Prefer a dedicated white-label base URL for this storeSlug if configured
+
+  const toRelative = (val: string) => {
+    return val.replace(baseUrl, "")
+  }
+  const baseUrl = clearLocale(whiteLabel?.store?.domain || currentDomain)
+
+  // Ensure slug always starts with /
+  const rawSlug = whiteLabel
+    ? getAppSlug({
+        targetApp: app,
+        pathname,
+        baseApp: whiteLabel,
+        defaultSlug: "/",
+      })
+    : `/${storeSlug}/${app.slug}`
+
+  const slug = clearLocale(rawSlug.startsWith("/") ? rawSlug : `/${rawSlug}`)
+
+  const canonicalUrl = baseUrl + slug
 
   const t = (key: string) => {
     return tFunc(translations)(key)
   }
+
   return {
-    title: `${t(app.name)} - ${t(app.title)} - ${storeName}`,
+    title: `${t(app.name)} - ${t(app.title)}`,
     description: description,
-    manifest: `${API_URL}/manifest/${app.id}`,
-    icons: [
-      ...(icon32
-        ? [{ rel: "icon", url: icon32, sizes: "32x32", type: "image/png" }]
-        : []),
-      ...(icon192
-        ? [{ rel: "icon", url: icon192, sizes: "192x192", type: "image/png" }]
-        : []),
-      ...(icon512
-        ? [{ rel: "icon", url: icon512, sizes: "512x512", type: "image/png" }]
-        : []),
-      ...(icon180
-        ? [
-            {
-              rel: "apple-touch-icon",
-              url: icon180,
-              sizes: "180x180",
-              type: "image/png",
-            },
-          ]
-        : []),
-    ],
+    manifest: `/manifest.webmanifest?appId=${app.id}`,
+    icons: [16, 48, 128, 180, 192, 512].map((size) => ({
+      url: toRelative(
+        getImageSrc({ app, size, BASE_URL: baseUrl }).src ||
+          "/images/pacman/space-invader.png",
+      ),
+      sizes: `${size}x${size}`,
+      type: "image/png",
+      purpose: "any maskable",
+    })),
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",
       title: app.name,
     },
     openGraph: {
-      title: `${title} | ${storeName} | Chrry`,
+      title: `${title} - ${storeName}`,
       description: description,
       images: [
         {
@@ -101,21 +107,24 @@ export function generateAppMetadata({
     },
     twitter: {
       card: "summary",
-      title: `${title} | ${storeName}`,
+      title: `${title} - ${storeName}`,
       description: description,
       images: [ogImage],
     },
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        en: `${currentDomain}/en/${storeSlug}/${app.slug}`,
-        de: `${currentDomain}/de/${storeSlug}/${app.slug}`,
-        fr: `${currentDomain}/fr/${storeSlug}/${app.slug}`,
-        es: `${currentDomain}/es/${storeSlug}/${app.slug}`,
-        ja: `${currentDomain}/ja/${storeSlug}/${app.slug}`,
-        ko: `${currentDomain}/ko/${storeSlug}/${app.slug}`,
-        pt: `${currentDomain}/pt/${storeSlug}/${app.slug}`,
-        zh: `${currentDomain}/zh/${storeSlug}/${app.slug}`,
+        "x-default": canonicalUrl, // Default fallback for unmatched locales
+        en: canonicalUrl, // English uses canonical URL (no /en prefix due to localePrefix: "as-needed")
+        de: `${baseUrl}/de${slug}`,
+        fr: `${baseUrl}/fr${slug}`,
+        es: `${baseUrl}/es${slug}`,
+        ja: `${baseUrl}/ja${slug}`,
+        ko: `${baseUrl}/ko${slug}`,
+        pt: `${baseUrl}/pt${slug}`,
+        zh: `${baseUrl}/zh${slug}`,
+        nl: `${baseUrl}/nl${slug}`,
+        tr: `${baseUrl}/tr${slug}`,
       },
     },
   }

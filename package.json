@@ -1,11 +1,12 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.5.66",
+  "version": "1.6.9",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "dev:all": "concurrently \"turbo dev --filter=wsserver\" \"turbo dev --filter=chrrydotdev\" \"turbo dev --filter=web\"",
+    "dev:all": "concurrently \"turbo dev --filter=wsserver\" \"turbo dev --filter=api\" \"turbo dev --filter=web\"",
+    "start:all": "concurrently \"turbo start --filter=wsserver\" \"turbo start --filter=api\" \"turbo start --filter=web\"",
     "native": "cd apps/native && npm start",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -19,10 +20,12 @@
     "seed": "NODE_ENV=production turbo run seed --filter=@repo/db --log-order=stream",
     "migrate": "NODE_ENV=production turbo run migrate --filter=@repo/db --log-order=stream",
     "e2e": "pnpm run generate && pnpm run migrate && pnpm run seed && turbo run e2e --filter=@chrryai/waffles --log-order=stream",
-    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { try { require('husky').install() } catch (e) {} }\"",
+    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { require('child_process').execSync('husky', { stdio: 'inherit' }) }\" || true",
     "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
     "check-types": "turbo run check-types",
     "start:ws": "turbo run start --log-order=stream --filter=wsserver ",
+    "start:web": "turbo run start --log-order=stream --filter=web",
+    "start:api": "turbo run start --log-order=stream --filter=api",
     "c": "bash scripts/commit-with-ai.sh",
     "p": "npm run lint && git push",
     "test-ai": "bash scripts/test-commit-message.sh",
@@ -42,7 +45,8 @@
     "husky": "^9.1.7",
     "is-reference": "^3.0.3",
     "openai": "^5.19.1",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.6"
   },
   "overrides": {
     "zod": "^4.1.5",
@@ -60,7 +64,14 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
-      "react-native": "0.78.3"
+      "react-native": "0.78.3",
+      "markdown-it@<12.3.2": ">=12.3.2",
+      "esbuild@<=0.24.2": ">=0.25.0",
+      "prismjs@<1.30.0": ">=1.30.0",
+      "glob@>=10.2.0 <10.5.0": ">=10.5.0",
+      "next@>=15.5.0-canary.0 <15.5.7": ">=15.5.7",
+      "jws@=4.0.0": ">=4.0.1",
+      "jws@<3.2.3": ">=3.2.3"
     }
   },
   "workspaces": [

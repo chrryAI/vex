@@ -389,12 +389,13 @@
   gap: toRem.toRem(2);
   align-items: center;
   vertical-align: middle;
+  margin-left: toRem.toRem(6);
 }
 
-.dots span {
+.dotsSpan {
   width: toRem.toRem(4);
   height: toRem.toRem(4);
-  background: var(--shade-4);
+  background: var(--accent-4);
   border-radius: 50%;
   animation: typing 1.4s infinite ease-in-out;
 }

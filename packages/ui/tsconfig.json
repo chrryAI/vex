@@ -37,5 +37,5 @@
     ".eslintrc.js",
     "globals.d.ts"
   ],
-  "exclude": ["node_modules", "public"]
+  "exclude": ["node_modules", "public", "**/*.native.tsx", "**/*.native.ts"]
 }

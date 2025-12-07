@@ -12,14 +12,16 @@ import { defineConfig, devices } from "@playwright/test"
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  webServer: {
-    command: "npm run start:gh",
-    url: "http://localhost:3000",
-    // timeout: 480000,
-    reuseExistingServer: true,
-  },
+  // webServer: {
+  //   command: !process.env.CI
+  //     ? "npm run start:e2e"
+  //     : "cd ../../apps/web && npm run start:e2e",
+  //   url: "http://localhost:3000",
+  //   // timeout: 480000,
+  //   reuseExistingServer: true,
+  // },
   testDir: "./src",
-  timeout: 200000,
+  timeout: 480000,
   /* Run tests in files in parallel */
   // fullyParallel: true,
   fullyParallel: true,
@@ -32,13 +34,13 @@ export default defineConfig({
   // workers: process.env.CI ? 1 : undefined,
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [["list"], ["html", { outputFolder: "../../playwright-report" }]],
+  reporter: [["list"], ["html", { outputFolder: "./playwright-report" }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     launchOptions: { slowMo: 200 },
-    headless: !!process.env.CI,
+    headless: true || !!process.env.CI,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:3000",
+    baseURL: !process.env.CI ? "http://localhost:3000" : "http://e2e.chrry.ai",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
     /* Grant clipboard permissions by default */

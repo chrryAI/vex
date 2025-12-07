@@ -1,7 +1,13 @@
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { storeWithApps, appWithStore, thread } from "../types"
-import { generateStoreMetadata, generateAppMetadata } from "../utils"
+import { storeWithApps, thread } from "../types"
+import {
+  generateStoreMetadata,
+  generateAppMetadata,
+  generateThreadMetadata,
+} from "../utils"
+import { useAuth, useApp } from "../context/providers"
+import getWhiteLabel from "chrry/utils/getWhiteLabel"
 
 /**
  * Hook to dynamically update page metadata for client-side navigation
@@ -10,14 +16,16 @@ import { generateStoreMetadata, generateAppMetadata } from "../utils"
 export function useStoreMetadata(store?: storeWithApps) {
   const { i18n } = useTranslation()
 
+  const { baseApp } = useAuth()
+  const currentDomain =
+    baseApp?.store?.domain ||
+    (typeof window !== "undefined"
+      ? `${window.location.protocol}//${window.location.host}`
+      : "")
   useEffect(() => {
     if (typeof document === "undefined" || !store) return
 
     const locale = i18n.language || "en"
-    const currentDomain =
-      typeof window !== "undefined"
-        ? `${window.location.protocol}//${window.location.host}`
-        : ""
 
     // Get translations object from i18n
     const translations =
@@ -31,6 +39,8 @@ export function useStoreMetadata(store?: storeWithApps) {
       translations,
     })
 
+    if (!metadata) return
+
     // Apply metadata to document
     if (metadata.title) {
       document.title = metadata.title as string
@@ -83,45 +93,47 @@ export function useStoreMetadata(store?: storeWithApps) {
     if (metadata.alternates?.canonical) {
       updateOrCreateLink("canonical", String(metadata.alternates.canonical))
     }
-  }, [
-    store?.id,
-    store?.name,
-    store?.slug,
-    store?.description,
-    store?.app?.id,
-    i18n.language,
-  ])
+  }, [store, i18n.language, baseApp])
 }
 
 /**
  * Hook to dynamically update page metadata for app pages
  * Uses the same generateAppMetadata function as server-side
  */
-export function useAppMetadata(app?: appWithStore, enabled = true) {
+export function useAppMetadata() {
   const { i18n } = useTranslation()
 
+  const { currentStore } = useApp()
+
+  const enabled = !currentStore
+
+  const { baseApp, app, language: locale } = useAuth()
+
+  const storeApp = getWhiteLabel({ app }).storeApp || baseApp
+
+  const currentDomain =
+    storeApp?.store?.domain ||
+    (typeof window !== "undefined"
+      ? `${window.location.protocol}//${window.location.host}`
+      : "")
+
+  const translations =
+    (i18n.store.data[locale]?.translation as Record<string, any>) || {}
+
+  const metadata = app
+    ? generateAppMetadata({
+        app,
+        store: storeApp?.store,
+        locale,
+        currentDomain,
+        translations,
+        whiteLabel: storeApp,
+      })
+    : undefined
+
   useEffect(() => {
-    if (!enabled || typeof document === "undefined" || !app) return
+    if (!metadata || !enabled) return
 
-    const locale = i18n.language || "en"
-    const currentDomain =
-      typeof window !== "undefined"
-        ? `${window.location.protocol}//${window.location.host}`
-        : ""
-
-    // Get translations object from i18n
-    const translations =
-      (i18n.store.data[locale]?.translation as Record<string, any>) || {}
-
-    // Generate metadata using the same function as server-side
-    const metadata = generateAppMetadata({
-      app,
-      locale,
-      currentDomain,
-      translations,
-    })
-
-    // Apply metadata to document
     if (metadata.title) {
       document.title = metadata.title as string
     }
@@ -130,7 +142,6 @@ export function useAppMetadata(app?: appWithStore, enabled = true) {
       updateOrCreateMeta("name", "description", metadata.description)
     }
 
-    // Update OG tags
     if (metadata.openGraph) {
       const og = metadata.openGraph
       if (og.title) {
@@ -151,7 +162,6 @@ export function useAppMetadata(app?: appWithStore, enabled = true) {
       }
     }
 
-    // Update Twitter card
     if (metadata.twitter) {
       const twitter = metadata.twitter
       if (twitter.title) {
@@ -169,79 +179,88 @@ export function useAppMetadata(app?: appWithStore, enabled = true) {
       }
     }
 
-    // Update canonical URL
     if (metadata.alternates?.canonical) {
       updateOrCreateLink("canonical", String(metadata.alternates.canonical))
     }
-  }, [
-    app?.id,
-    app?.name,
-    app?.slug,
-    app?.title,
-    app?.description,
-    app?.store?.id,
-    app?.store?.name,
-    app?.store?.slug,
-    i18n.language,
-    enabled,
-  ])
+    if (metadata.alternates?.languages) {
+      Object.entries(metadata.alternates.languages).forEach(([lang, url]) => {
+        updateOrCreateLink("alternate", String(url), lang)
+      })
+    }
+  }, [metadata, enabled])
 }
 
 /**
  * Hook to dynamically update page metadata for thread pages
  */
 export function useThreadMetadata(thread?: thread) {
-  const { i18n, t } = useTranslation()
+  const { i18n } = useTranslation()
+
+  const { baseApp } = useAuth()
+
+  const locale = i18n.language || "en"
+
+  const currentDomain =
+    baseApp?.store?.domain ||
+    (typeof window !== "undefined"
+      ? `${window.location.protocol}//${window.location.host}`
+      : "")
+
+  const translations =
+    (i18n.store.data[locale]?.translation as Record<string, any>) || {}
+
+  const metadata = thread
+    ? generateThreadMetadata({
+        thread,
+        locale,
+        currentDomain,
+        translations,
+      })
+    : undefined
 
   useEffect(() => {
-    if (typeof document === "undefined" || !thread) return
+    if (!metadata || typeof document === "undefined") return
 
-    const locale = i18n.language || "en"
-    const threadTitle = thread.title?.substring(0, 120) || "Thread"
-
-    // Get translation for "Thread" description
-    const descriptions: Record<string, string> = {
-      en: "Thread for Vex AI Assistant",
-      de: "Thread für den Vex KI-Assistenten",
-      fr: "Thread pour l'assistant IA Vex",
-      ja: "Vex AIアシスタントのスレッド",
-      ko: "Vex AI 어시스턴트의 스레드",
-      pt: "Thread para o Assistente de IA Vex",
-      es: "Thread del Asistente de IA Vex",
-      zh: "Vex AI助手的线程",
-      nl: "Thread voor de Vex AI-assistent",
-      tr: "Vex AI Asistanı için konu",
+    if (metadata.title) {
+      document.title = metadata.title as string
     }
 
-    const title = `${threadTitle} | Vex`
-    const description = descriptions[locale] || descriptions.en
-
-    // Update title
-    document.title = title
-
-    // Update meta description
-    if (description) {
-      updateOrCreateMeta("name", "description", description)
+    if (metadata.description) {
+      updateOrCreateMeta("name", "description", metadata.description)
     }
 
-    // Update OG tags
-    updateOrCreateMeta("property", "og:title", title)
-    if (description) {
-      updateOrCreateMeta("property", "og:description", description)
+    if (metadata.openGraph) {
+      const og = metadata.openGraph
+      if (og.title) {
+        updateOrCreateMeta("property", "og:title", String(og.title))
+      }
+      if (og.description) {
+        updateOrCreateMeta("property", "og:description", og.description)
+      }
+      if (og.url) {
+        updateOrCreateMeta("property", "og:url", String(og.url))
+      }
     }
 
-    // Update Twitter card
-    updateOrCreateMeta("name", "twitter:title", title)
-    if (description) {
-      updateOrCreateMeta("name", "twitter:description", description)
+    if (metadata.twitter) {
+      const twitter = metadata.twitter
+      if (twitter.title) {
+        updateOrCreateMeta("name", "twitter:title", twitter.title as string)
+      }
+      if (twitter.description) {
+        updateOrCreateMeta("name", "twitter:description", twitter.description)
+      }
     }
 
-    // Update canonical URL
-    if (typeof window !== "undefined" && thread.id) {
-      const currentDomain = `${window.location.protocol}//${window.location.host}`
-      updateOrCreateLink("canonical", `${currentDomain}/threads/${thread.id}`)
+    if (metadata.alternates?.canonical) {
+      updateOrCreateLink("canonical", String(metadata.alternates.canonical))
     }
-  }, [thread?.id, thread?.title, i18n.language])
+    if (metadata.alternates?.languages) {
+      Object.entries(metadata.alternates.languages).forEach(([lang, url]) => {
+        updateOrCreateLink("alternate", String(url), lang)
+      })
+    }
+  }, [metadata])
 }
 
 /**
@@ -268,14 +287,19 @@ function updateOrCreateMeta(
 /**
  * Helper function to update or create link tags
  */
-function updateOrCreateLink(rel: string, href: string) {
-  let linkTag = document.querySelector(`link[rel="${rel}"]`)
-
+function updateOrCreateLink(rel: string, href: string, hreflang?: string) {
+  let selector = `link[rel="${rel}"]`
+  if (hreflang) {
+    selector += `[hreflang="${hreflang}"]`
+  }
+  let linkTag = document.querySelector(selector)
   if (!linkTag) {
     linkTag = document.createElement("link")
     linkTag.setAttribute("rel", rel)
+    if (hreflang) {
+      linkTag.setAttribute("hreflang", hreflang)
+    }
     document.head.appendChild(linkTag)
   }
-
   linkTag.setAttribute("href", href)
 }

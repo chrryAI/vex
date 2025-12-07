@@ -32,7 +32,17 @@ import {
   isProduction,
   checkIsExtension,
   getExtensionUrl,
+  isCI,
 } from "./env"
+
+export {
+  isCI,
+  isDevelopment,
+  isTestingDevice,
+  isProduction,
+  checkIsExtension,
+  getExtensionUrl,
+}
 
 export { exampleInstructions, getExampleInstructions }
 
@@ -95,11 +105,18 @@ export function getThreadId(pathname?: string): string | undefined {
 
 export const MAX_TOOL_CALLS_PER_MESSAGE = 7
 
-export const WS_URL = isTestingDevice
-  ? "ws://192.168.2.27:5001"
-  : isDevelopment
-    ? "ws://localhost:5001"
-    : "wss://ws.chrry.dev"
+export const WS_URL =
+  process.env.NEXT_PUBLIC_WS_URL ||
+  (isTestingDevice
+    ? "ws://192.168.2.27:5001"
+    : isDevelopment
+      ? "ws://localhost:5001"
+      : "wss://ws.chrry.dev")
+
+export const WS_SERVER_URL =
+  process.env.NEXT_PUBLIC_WS_SERVER_URL ||
+  process.env.WS_SERVER_URL ||
+  "http://localhost:5001"
 
 export const addParam = (key: string, value: string) => {
   if (typeof window === "undefined") return
@@ -111,8 +128,10 @@ export const addParam = (key: string, value: string) => {
   window.history.replaceState({}, "", newUrl)
 }
 
-const FE_PORT = process.env.NEXT_PUBLIC_FE_PORT || "3000"
-const API_PORT = process.env.API_PORT || "3001"
+const FE_PORT =
+  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "3000"
+const API_PORT =
+  (typeof process !== "undefined" && process.env?.API_PORT) || "3001"
 
 export const FRONTEND_URL = isTestingDevice
   ? `http://192.168.2.27:${FE_PORT}`
@@ -122,11 +141,19 @@ export const FRONTEND_URL = isTestingDevice
 
 export const PROD_FRONTEND_URL = CHRRY_URL
 
-export const API_URL = isTestingDevice
-  ? `http://192.168.2.27:${API_PORT}/api`
-  : isDevelopment
-    ? `http://localhost:${API_PORT}/api`
-    : "https://chrry.dev/api"
+export const isE2E =
+  process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
+  process.env.TESTING_ENV === "e2e"
+
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (isTestingDevice
+    ? `http://192.168.2.27:${API_PORT}/api`
+    : isDevelopment
+      ? `http://localhost:${API_PORT}/api`
+      : isE2E
+        ? "https://e2e.chrry.dev/api"
+        : "https://chrry.dev/api")
 
 // API fetch wrapper with credentials for cross-domain requests
 export const apiFetch = (url: string, options?: RequestInit) => {
@@ -163,11 +190,6 @@ export type expenseCategoryType = (typeof expenseCategory)[number]
 
 export const budgetCategory = expenseCategory
 
-export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
-
-export const isE2E =
-  process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
-  process.env.TESTING_ENV === "e2e"
 export const extensionSuggestions = [
   {
     text: "Instantly magic up a quick page summary",
@@ -302,7 +324,7 @@ export const getMetadata = ({
   }
 } = {}) => {
   const metadata = {
-    metadataBase: new URL("https://chrry.dev"),
+    metadataBase: new URL("https://chrry.ai"),
     alternates: alternates
       ? alternates
       : {
@@ -315,7 +337,7 @@ export const getMetadata = ({
     openGraph: {
       title,
       description,
-      url: "https://chrry.dev",
+      url: "https://chrry.ai",
       siteName: "Chrry",
       images: [
         {
@@ -331,7 +353,7 @@ export const getMetadata = ({
       title,
       description,
       card: "summary",
-      site: "https://chrry.dev",
+      site: "https://chrry.ai",
       creator: "@chrryAI",
       images: [
         {
@@ -375,7 +397,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.5.66"
+export const VERSION = config.version || "1.6.9"
 export type instructionBase = {
   id: string
   title: string
@@ -669,6 +691,9 @@ export { generateAppMetadata } from "./generateAppMetadata"
 
 // Export generateStoreMetadata
 export { generateStoreMetadata } from "./generateStoreMetadata"
+
+// Export generateThreadMetadata
+export { generateThreadMetadata } from "./generateThreadMetadata"
 
 // Export file validation utilities
 export {
