@@ -55,6 +55,7 @@ if (process.env.NODE_ENV !== "production") {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@repo/db"],
+  serverExternalPackages: ["newrelic"], // Exclude New Relic from bundling
   // Enable detailed logging
   logging: {
     fetches: {
@@ -67,6 +68,10 @@ const nextConfig = {
     turbo: {
       rules: {
         "*.html": {
+          loaders: ["raw-loader"],
+          as: "*.js",
+        },
+        "*.md": {
           loaders: ["raw-loader"],
           as: "*.js",
         },
