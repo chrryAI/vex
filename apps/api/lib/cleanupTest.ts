@@ -12,26 +12,31 @@ import {
   updateThread,
   TEST_MEMBER_EMAILS,
   TEST_GUEST_FINGERPRINTS,
+  user,
+  guest,
+  updateUser,
 } from "@repo/db"
+import {
+  GUEST_CREDITS_PER_MONTH,
+  MEMBER_CREDITS_PER_MONTH,
+} from "@repo/db/src/schema"
 
 export default async function cleanupTest() {
   for (const email of TEST_MEMBER_EMAILS) {
-    const user = await getUser({ email })
+    const user = await getUser({ email, skipCache: true })
     if (user && email && user.email === email) {
       await cleanupUser({
-        type: "member",
-        userId: user.id,
+        user,
       })
     }
   }
   for (const fingerprint of TEST_GUEST_FINGERPRINTS) {
-    const guest = await getGuestDb({ fingerprint })
+    const guest = await getGuestDb({ fingerprint, skipCache: true })
 
     // Cleanup for test guest
     if (guest && fingerprint && TEST_GUEST_FINGERPRINTS.includes(fingerprint)) {
       await cleanupUser({
-        guestId: guest.id,
-        type: "guest",
+        guest,
       })
 
       await updateGuest({
@@ -45,24 +50,18 @@ export default async function cleanupTest() {
 }
 
 // Shared cleanup logic for both member and guest
-async function cleanupUser({
-  userId,
-  guestId,
-  type,
-}: {
-  userId?: string
-  guestId?: string
-  type: "member" | "guest"
-}) {
-  const idFilter = type === "member" ? { userId } : { guestId }
-
+async function cleanupUser({ user, guest }: { user?: user; guest?: guest }) {
+  if (!user && !guest) {
+    return
+  }
   // 1. Delete credit usage
-  await deleteCreditUsage(idFilter)
+  await deleteCreditUsage({ userId: user?.id, guestId: guest?.id })
 
   // 2. Get and delete messages FIRST (they reference threads)
   const messages = await getMessages({
     pageSize: 100000,
-    ...idFilter,
+    userId: user?.id,
+    guestId: guest?.id,
   })
 
   await Promise.all(
@@ -74,16 +73,16 @@ async function cleanupUser({
   // 3. Get and cleanup threads
   const threads = await getThreads({
     pageSize: 100000,
-    ...idFilter,
+    userId: user?.id,
+    guestId: guest?.id,
     publicBookmarks: true,
   })
 
   await Promise.all(
     threads.threads.map((thread) => {
-      const isOwner =
-        type === "member"
-          ? thread.userId === userId
-          : thread.guestId === guestId
+      const isOwner = user
+        ? thread.userId === user.id
+        : guest && thread.guestId === guest.id
 
       if (isOwner) {
         return deleteThread({ id: thread.id })
@@ -93,9 +92,9 @@ async function cleanupUser({
           ...thread,
           bookmarks:
             thread?.bookmarks?.filter((bookmark) =>
-              type === "member"
-                ? bookmark.userId !== userId
-                : bookmark.guestId !== guestId,
+              user
+                ? bookmark.userId !== user.id
+                : bookmark.guestId !== guest?.id,
             ) || [],
         })
       }
@@ -103,11 +102,28 @@ async function cleanupUser({
   )
 
   // 4. Delete subscriptions
-  const subscriptions = await getSubscriptions(idFilter)
+  const subscriptions = await getSubscriptions({
+    userId: user?.id,
+    guestId: guest?.id,
+  })
 
   await Promise.all(
     subscriptions.map((subscription) =>
       deleteSubscription({ id: subscription.id }),
     ),
   )
+
+  user &&
+    updateUser({
+      ...user,
+      credits: MEMBER_CREDITS_PER_MONTH,
+      subscribedOn: null,
+    })
+
+  guest &&
+    updateGuest({
+      ...guest,
+      credits: GUEST_CREDITS_PER_MONTH,
+      subscribedOn: null,
+    })
 }
