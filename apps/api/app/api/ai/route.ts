@@ -2154,6 +2154,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   if (!characterProfilesEnabled) {
     const pastMessages = await getMessages({
+      threadId: thread.id, // Only load messages from current thread
       pageSize: 75, // Increased for better RAG context from message history
       userId: member?.id,
       guestId: guest?.id,
