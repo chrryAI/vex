@@ -115,13 +115,17 @@ function capitalizeFirstLetter(val: string) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
 }
 
-const logs: string[] = []
-
+const logs = new Map<string, number>() // msg → timestamp
 export const log = ({ page }: { page: Page }) => {
   page.on("console", (msg) => {
-    if (logs.includes(msg.text())) return
-    console.log(`[browser][${msg.type()}] ${msg.text()}`, msg)
-    logs.push(msg.text())
+    const now = Date.now()
+    const lastSeen = logs.get(msg.text())
+
+    // Only skip if seen within last 5 seconds
+    if (lastSeen && now - lastSeen < 5000) return
+
+    console.log(`[browser][${msg.type()}] ${msg.text()}`)
+    logs.set(msg.text(), now)
   })
 }
 
