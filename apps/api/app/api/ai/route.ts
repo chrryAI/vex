@@ -968,6 +968,16 @@ ${
 
   const debateAgentId = message.message.debateAgentId
 
+  const lastMessage = await getMessages({
+    threadId: thread.id,
+    pageSize: 1,
+    userId: member?.id,
+    guestId: guest?.id,
+    agentId: null,
+  }).then((al) => al.messages.at(0))
+
+  const lastMessageContent = lastMessage?.message.content
+
   const debateAgent = debateAgentId
     ? await getAiAgent({ id: debateAgentId })
     : undefined
@@ -984,6 +994,20 @@ ${
     : undefined
 
   const clientId = message.message.clientId
+  let currentThreadId = threadId
+
+  const newMessagePayload = {
+    id: clientId,
+    threadId: currentThreadId,
+    agentId,
+    userId: member?.id,
+    guestId: guest?.id,
+    selectedAgentId: debateAgent?.id,
+    debateAgentId,
+    pauseDebate,
+    webSearchResult: message.message.webSearchResult,
+    isWebSearchEnabled: message.message.isWebSearchEnabled,
+  }
 
   const threadInstructions = thread?.instructions
 
@@ -2757,16 +2781,6 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     }
   }
 
-  const lastMessageContent = (
-    await getMessages({
-      threadId: thread.id,
-      pageSize: 1,
-      userId: member?.id,
-      guestId: guest?.id,
-      agentId: null,
-    })
-  ).messages.at(0)?.message.content
-
   const debatePrompt =
     debateAgent && selectedAgent
       ? `
@@ -3060,7 +3074,6 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   })
 
   // Create thread if not provided
-  let currentThreadId = threadId
   console.log("🧵 Thread handling:", { providedThreadId: threadId })
 
   // Create user message first
@@ -3375,8 +3388,6 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         // Generate test reasoning
         const testReasoning = faker.lorem.sentences(30)
 
-        const clientId = message.message.clientId
-
         // Update thread and create message in the background
 
         // Split reasoning and response into chunks to simulate streaming
@@ -3480,19 +3491,11 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         })
 
         const aiMessage = await createMessage({
-          id: clientId,
+          ...newMessagePayload,
           content: testResponse,
           reasoning: testReasoning, // Save test reasoning
           originalContent: testResponse.trim(),
-          threadId,
-          agentId,
-          userId: member?.id,
-          guestId: guest?.id,
           searchContext: null,
-          selectedAgentId: debateAgentId,
-          debateAgentId,
-          pauseDebate,
-          webSearchResult: message.message.webSearchResult,
           images: imageGenerationEnabled
             ? [
                 {
@@ -3764,16 +3767,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         // Save AI response to database
         const aiMessage = await createMessage({
-          id: clientId,
+          ...newMessagePayload,
           content: aiResponseContent,
           originalContent: aiResponseContent,
-          threadId: currentThreadId,
-          agentId: agent.id,
-          agentVersion: agent.version,
-          userId: member?.id,
-          guestId: guest?.id,
-          selectedAgentId: debateAgent?.id,
-          clientId,
           images: [
             {
               url: permanentUrl, // Use permanent UploadThing URL
@@ -3985,13 +3981,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         if (finalText) {
           console.log("💾 Saving Sushi message to DB...")
           const aiMessage = await createMessage({
-            threadId: currentThreadId,
-            agentId: agent.id,
-            userId: member?.id,
-            guestId: guest?.id,
+            ...newMessagePayload,
             content: finalText,
             reasoning: reasoningText || undefined, // Store reasoning separately
-            clientId,
           })
 
           if (aiMessage) {
@@ -4214,17 +4206,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         })
         // Save AI response to database (no Perplexity processing for DeepSeek)
         const aiMessage = await createMessage({
-          id: clientId,
+          ...newMessagePayload,
           content: finalText.trim(),
           originalContent: finalText.trim(),
-          threadId: currentThreadId,
-          agentId: agent.id,
-          userId: member?.id,
-          guestId: guest?.id,
           searchContext,
-          debateAgentId,
-          pauseDebate,
-          selectedAgentId: debateAgent?.id,
         })
 
         console.timeEnd("messageProcessing")
@@ -4500,19 +4485,12 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
       // Save AI response to database
       const aiMessage = await createMessage({
-        id: clientId,
+        ...newMessagePayload,
         content: processedText,
         originalContent: finalText.trim(),
         threadId: currentThreadId,
-        agentId: agent.id,
-        userId: member?.id,
-        guestId: guest?.id,
         searchContext,
         webSearchResult: webSearchResults,
-        debateAgentId,
-        pauseDebate,
-        isWebSearchEnabled: message.message.isWebSearchEnabled,
-        selectedAgentId: debateAgent?.id,
       })
 
       console.timeEnd("messageProcessing")
