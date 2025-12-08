@@ -828,7 +828,7 @@ const Thread = ({
                         !isIncognito &&
                         !id &&
                         message?.message.threadId &&
-                        (isDebating
+                        (debateAgent
                           ? message.message.agentId === debateAgent?.id
                           : true)
                       ) {

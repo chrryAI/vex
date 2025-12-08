@@ -232,7 +232,6 @@ export default function Chat({
     debateAgent,
     setDebateAgent,
     isDebating,
-    setIsDebating,
     setIsChatFloating,
     setIsWebSearchEnabled: setWebSearchEnabledInternal,
     isWebSearchEnabled,
@@ -2414,11 +2413,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           data.message.message.debateAgentId &&
           !data.message.message.pauseDebate
         ) {
-          isOwner(data.message.message, {
-            userId: user?.id,
-            guestId: guest?.id,
-          }) && setIsDebating(true)
-
           onMessage?.({
             content: "",
             isUser: false,
@@ -2475,15 +2469,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
             console.error("Error updating message:", error)
             captureException(error)
             toast.error("Error starting debate")
-          }
-        } else {
-          if (
-            isOwner(data.message.message, {
-              userId: user?.id,
-              guestId: guest?.id,
-            })
-          ) {
-            setIsDebating(false)
           }
         }
       } else if (type === "message" && data.message) {

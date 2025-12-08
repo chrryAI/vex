@@ -96,7 +96,6 @@ const ChatContext = createContext<
       debateAgent: aiAgent | undefined | null
       setDebateAgent: (agent: aiAgent | undefined | null) => void
       isDebating: boolean
-      setIsDebating: (isDebating: boolean) => void
       hourlyLimit: number
       hourlyUsageLeft: number
       isEmpty: boolean
@@ -920,10 +919,7 @@ export function ChatProvider({
     ? hourlyLimit - (user?.messagesLastHour || 0)
     : hourlyLimit - (guest?.messagesLastHour || 0)
 
-  const [isDebating, setIsDebating] = useState(false)
-  useEffect(() => {
-    setIsDebating(!!debateAgent)
-  }, [debateAgent])
+  const isDebating = !!debateAgent
 
   const hitHourlyLimit = hourlyUsageLeft <= 0
 
@@ -1099,7 +1095,6 @@ export function ChatProvider({
         debateAgent,
         setDebateAgent,
         isDebating,
-        setIsDebating,
         hourlyLimit,
         hourlyUsageLeft,
         setCreditsLeft,
