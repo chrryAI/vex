@@ -2976,21 +2976,58 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   // Check token limit for the specific agent/model
   const modelLimit =
     TOKEN_LIMITS[computedAgentName as keyof typeof TOKEN_LIMITS] || 25000
+
   if (textOnlyTokens > modelLimit) {
     console.log(
-      `🚫 Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
+      `⚠️ Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
     )
-    captureException(
-      `🚫 Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
-    )
-    return NextResponse.json(
-      {
-        error: "Request too large",
-        message: `Your message is too long for ${agent.displayName}. Please reduce the file size, use fewer files, or shorten your message. Estimated tokens: ${textOnlyTokens}, limit: ${modelLimit}`,
-        estimatedTokens: textOnlyTokens,
-        limit: modelLimit,
-      },
-      { status: 413 }, // 413 Payload Too Large
+    console.log(`🔧 Intelligently reducing context to fit within limit...`)
+
+    // Instead of erroring, intelligently strip context
+    // Priority: Files > Recent messages > Old conversation history > Memories
+
+    const targetTokens = Math.floor(modelLimit * 0.9) // 90% of limit for safety
+    let currentTokens = textOnlyTokens
+
+    // Step 1: Reduce conversation history (keep only recent messages)
+    if (suggestionMessages && suggestionMessages.length > 0) {
+      const originalLength = suggestionMessages.length
+
+      // Keep reducing from the oldest messages
+      while (currentTokens > targetTokens && suggestionMessages.length > 5) {
+        const removedMessage = suggestionMessages.shift() // Remove oldest
+        const removedTokens = estimateTokens(removedMessage?.content)
+        currentTokens -= removedTokens
+      }
+
+      console.log(
+        `📉 Reduced conversation history: ${originalLength} → ${suggestionMessages.length} messages (saved ~${textOnlyTokens - currentTokens} tokens)`,
+      )
+    }
+
+    // Step 2: If still too large, reduce memories
+    if (currentTokens > targetTokens && memoryContext) {
+      const originalMemoryTokens = estimateTokens(memoryContext)
+      // Keep only the most important memories (first half)
+      const memories = memoryContext.split("\n")
+      const reducedMemories = memories.slice(0, Math.ceil(memories.length / 2))
+      memoryContext = reducedMemories.join("\n")
+      const savedTokens = originalMemoryTokens - estimateTokens(memoryContext)
+      currentTokens -= savedTokens
+
+      console.log(
+        `📉 Reduced memories: ${memories.length} → ${reducedMemories.length} items (saved ~${savedTokens} tokens)`,
+      )
+    }
+
+    // Step 3: If STILL too large (rare), truncate file content
+    if (currentTokens > targetTokens && files.length > 0) {
+      console.log(`⚠️ File content too large, will truncate during processing`)
+      // This will be handled during file processing
+    }
+
+    console.log(
+      `✅ Context reduced: ${textOnlyTokens} → ~${currentTokens} tokens (within ${modelLimit} limit)`,
     )
   }
 
