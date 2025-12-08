@@ -195,7 +195,7 @@ export default function Chat({
   onTyping?: (isTyping: boolean) => void
 }): React.ReactElement {
   const { t } = useAppContext()
-  const { weather, VERSION } = useData()
+  const { weather, actions } = useData()
 
   const styles = useChatStyles()
 
@@ -238,7 +238,7 @@ export default function Chat({
     setInput: setInputInternal,
     input,
     creditsLeft,
-    setCreditsLeft,
+    setShouldGetCredits,
     hourlyUsageLeft,
     hitHourlyLimit,
     hourlyLimit,
@@ -2141,14 +2141,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     })
       .then((response) => response.json())
       .then((result) => {
-        const costs = !isDebating
-          ? selectedAgent?.creditCost || 1
-          : debateAgent
-            ? debateAgent?.creditCost || 1
-            : 0
-
-        creditsLeft && setCreditsLeft(creditsLeft - costs)
-
+        setShouldGetCredits(true)
         message &&
           onStreamingStop?.({
             ...message,
@@ -3961,9 +3954,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           disabled={isChrry || !!app?.onlyAgent}
                           data-testid={
                             !debateAgent
-                              ? selectedAgent?.name !== "flux"
-                                ? "add-debate-agent-button"
-                                : undefined
+                              ? "add-debate-agent-button"
                               : "agent-select-button"
                           }
                           data-agent-name={selectedAgent.name}

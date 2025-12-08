@@ -21,7 +21,7 @@ export default defineConfig({
   //   reuseExistingServer: true,
   // },
   testDir: "./src",
-  timeout: 480000,
+  timeout: process.env.CI ? 480000 : 100000,
   /* Run tests in files in parallel */
   // fullyParallel: true,
   fullyParallel: true,

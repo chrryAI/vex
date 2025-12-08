@@ -50,6 +50,8 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      shouldGetCredits: boolean
+      setShouldGetCredits: (shouldGetCredits: boolean) => void
       fetchActiveCollaborationThreadsCount: () => Promise<void>
       fetchPendingCollaborationThreadsCount: () => Promise<void>
       setIsNewAppChat: (item: appWithStore | undefined) => void
@@ -451,6 +453,36 @@ export function ChatProvider({
   const userOrGuest = user || guest
 
   const { isSmallDevice, isDrawerOpen, playNotification } = useTheme()
+
+  const [shouldGetCredits, setShouldGetCredits] = useState(false)
+
+  useEffect(() => {
+    if (shouldGetCredits) {
+      ;(async () => {
+        try {
+          if (user) {
+            const item = await actions.getUser()
+
+            if (item) {
+              setCreditsLeft(item.creditsLeft)
+            }
+          }
+
+          if (guest) {
+            const item = await actions.getGuest()
+
+            if (item) {
+              setCreditsLeft(item.creditsLeft)
+            }
+          }
+        } catch (error) {
+          console.error(error)
+        } finally {
+          setShouldGetCredits(false)
+        }
+      })()
+    }
+  }, [shouldGetCredits, user, guest])
 
   const { notifyPresence, connected } = useWebSocket<{
     type: string
@@ -1128,6 +1160,8 @@ export function ChatProvider({
         setIsVisitor,
         refetchThreads: fetchThreads,
         userNameByUrl,
+        shouldGetCredits,
+        setShouldGetCredits,
       }}
     >
       {children}

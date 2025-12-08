@@ -3447,7 +3447,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
 
           const chunkNumber = index + 1
 
-          await wait(150)
+          await wait(30)
 
           thread &&
             enhancedStreamChunk({
