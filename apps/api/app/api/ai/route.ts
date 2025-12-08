@@ -597,7 +597,7 @@ export async function POST(request: Request) {
       })
 
     // Add delay between chunks for proper delivery order
-    await wait(30)
+    await wait(10)
   }
 
   console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
@@ -3483,8 +3483,6 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
             break
           }
 
-          const chunkNumber = index + 1
-
           await wait(30)
 
           thread &&
@@ -3728,7 +3726,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             clientId,
             streamId,
           })
-          await wait(50) // Small delay for smooth streaming
         }
 
         if (!streamControllers.has(streamId)) {
