@@ -30,8 +30,16 @@ export default function MemoryConsent({
   const { utilities } = useStyles()
   const { t } = useAppContext()
 
-  const { user, guest, token, memoriesEnabled, setUser, setGuest, API_URL } =
-    useAuth()
+  const {
+    user,
+    guest,
+    token,
+    memoriesEnabled,
+    setUser,
+    setGuest,
+    API_URL,
+    isLiveTest,
+  } = useAuth()
 
   const {
     router,
@@ -243,7 +251,7 @@ export default function MemoryConsent({
                   )}
                   {t("Disable Memories")}
                 </ConfirmButton>
-                {isE2E && (
+                {isE2E && isLiveTest && (
                   <ConfirmButton
                     className="transparent"
                     processing={isDeletingSession}
