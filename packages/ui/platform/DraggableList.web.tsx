@@ -76,9 +76,13 @@ function SortableItem<T>({
   }
 
   // Map dnd-kit listeners to the 'drag' function expected by the consumer
-  // The consumer uses <Pressable onPressIn={drag} /> or <Pressable onLongPress={drag} />
-  // We'll expose the primary listener (onPointerDown) as 'drag'
-  const drag = listeners?.onPointerDown as any
+  // The drag function should spread all listeners onto the element
+  const drag = (event?: any) => {
+    // If listeners exist, call the onPointerDown handler
+    if (listeners?.onPointerDown) {
+      listeners.onPointerDown(event)
+    }
+  }
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>

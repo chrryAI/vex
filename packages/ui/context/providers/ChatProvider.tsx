@@ -278,7 +278,6 @@ export function ChatProvider({
 
         return threads
       } catch (error) {
-        console.log(`🚀 ~ error:`, error)
         captureException(error)
       }
     },

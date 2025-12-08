@@ -364,10 +364,6 @@ export const chat = async ({
       "debate-agent-delete-button",
     )
     const isDebateAgentVisible = await debateAgentDeleteButton.isVisible()
-    console.log(
-      `🚀 ~ clearDebate ~ isDebateAgentVisible:`,
-      isDebateAgentVisible,
-    )
 
     if (isDebateAgentVisible) {
       await debateAgentDeleteButton.click()
