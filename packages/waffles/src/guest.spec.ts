@@ -9,10 +9,6 @@ const isMember = false
 import { v4 as uuidv4 } from "uuid"
 import { clean } from "./shared/clean"
 
-test.beforeAll(async ({ page }) => {
-  await clean({ page })
-})
-
 test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
