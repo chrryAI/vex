@@ -483,12 +483,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentStore, setCurrentStore] = useState(getCurrentStoreApp()?.store)
   useEffect(() => {
     const matchedApp = getCurrentStoreApp()
-    if (matchedApp && !matchedApp?.store?.apps?.length) {
+    if (currentStore && matchedApp && !matchedApp?.store?.apps?.length) {
       setLoadingApp(matchedApp)
       return
     }
     matchedApp?.store && setCurrentStore(matchedApp.store)
-  }, [pathname, storeApps])
+  }, [pathname, storeApps, currentStore])
 
   const appFormWatcher = {
     ...watcher,

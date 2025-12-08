@@ -198,14 +198,23 @@ export default function App({
   const [appsState, setApps] = React.useState(getApps())
 
   useEffect(() => {
-    if (app && !hasStoreApps(app)) {
-      setLoadingApp(app)
-    }
-  }, [appsState])
-
-  useEffect(() => {
     setApps(getApps())
-  }, [apps, store?.id, store?.appId, currentStoreId, baseApp, app])
+  }, [
+    apps,
+    store,
+    currentStoreId,
+    baseApp,
+    app,
+    userBaseApp,
+    guestBaseApp,
+    atlas,
+    chrry,
+    grape,
+    focus,
+    popcorn,
+    zarathustra,
+    vex,
+  ])
 
   const [file, setFile] = React.useState<File | undefined>()
 
