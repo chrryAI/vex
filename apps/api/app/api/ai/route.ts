@@ -1226,7 +1226,7 @@ You can enable these in your settings anytime!"
     return 5 // Extremely long - just essentials
   })()
 
-  const { context: memoryContext, memoryIds } = await getRelevantMemoryContext({
+  let { context: memoryContext, memoryIds } = await getRelevantMemoryContext({
     userId: member?.id,
     guestId: guest?.id,
     appId: app?.id,
