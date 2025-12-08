@@ -15,6 +15,14 @@ import { collaboration } from "./shared/collaboration"
 import { clean } from "./shared/clean"
 const isMember = true
 
+test.beforeEach(async ({ page }) => {
+  await clean({ page })
+})
+
+test.afterEach(async ({ page }) => {
+  await clean({ page })
+})
+
 test("Subscribe", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -22,7 +30,6 @@ test("Subscribe", async ({ page }) => {
 
   await signIn({ page })
   await subscribe({ page, isMember })
-  await clean({ page })
 })
 
 test("Invite", async ({ page }) => {
@@ -44,7 +51,6 @@ test("Invite", async ({ page }) => {
     isMember,
     invite: `${uuidv4()}@gmail.com`,
   })
-  await clean({ page })
 })
 
 test("Gift", async ({ page }) => {
@@ -68,7 +74,6 @@ test("Gift", async ({ page }) => {
     password: process.env.VEX_TEST_PASSWORD_4!,
     gift: process.env.VEX_TEST_EMAIL_4!,
   })
-  await clean({ page })
 })
 
 test("Debate", async ({ page }) => {
@@ -113,8 +118,6 @@ test("Debate", async ({ page }) => {
       },
     ],
   })
-
-  await clean({ page })
 })
 
 test("Chat - Hourly Limit Test", async ({ page }) => {
@@ -125,7 +128,6 @@ test("Chat - Hourly Limit Test", async ({ page }) => {
 
   await signIn({ page })
   await limit({ page, isMember })
-  await clean({ page })
 })
 
 test("Thread", async ({ page }) => {
@@ -136,7 +138,6 @@ test("Thread", async ({ page }) => {
 
   await signIn({ page })
   await thread({ page, bookmark: true, isMember })
-  await clean({ page })
 })
 
 test("Long text", async ({ page }) => {
@@ -168,7 +169,6 @@ test("Long text", async ({ page }) => {
       },
     ],
   })
-  await clean({ page })
 })
 
 test("File upload", async ({ page }) => {
@@ -242,7 +242,6 @@ test("File upload", async ({ page }) => {
       },
     ],
   })
-  await clean({ page })
 })
 
 test("Collaboration", async ({ page, browser }) => {
@@ -269,6 +268,4 @@ test("Collaboration", async ({ page, browser }) => {
     isMember,
     fingerprint: VEX_TEST_FINGERPRINT_3,
   })
-
-  await clean({ page })
 })
