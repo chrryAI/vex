@@ -97,13 +97,14 @@ test("Debate", async ({ page }) => {
       {
         text: "Is Mars colonization an ethical priority when Earth still faces major problems? Consider resource allocation arguments",
         model: "chatGPT",
-        debateAgent: "sushi",
+        debateAgent: "perplexity",
         like: true,
       },
       {
         text: "Universal Basic Income: Solution to automation or threat to work ethic? Debate economic and social impacts.",
         model: "sushi",
         debateAgent: "claude",
+        like: true,
       },
       {
         text: "Is it morally justifiable to prioritize human lives over animal lives in medical research?",
@@ -114,7 +115,8 @@ test("Debate", async ({ page }) => {
       {
         text: "Will quantum computing ultimately benefit or threaten cybersecurity? Debate both technological possibilities.",
         model: "sushi",
-        debateAgent: "claude",
+        debateAgent: "gemini",
+        like: true,
       },
     ],
   })

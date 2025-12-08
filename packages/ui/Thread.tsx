@@ -73,7 +73,6 @@ const Thread = ({
     aiAgents,
     hitHourlyLimit,
     debateAgent,
-    isDebating,
     hourlyLimit,
     hourlyUsageLeft,
     thread,
@@ -117,7 +116,7 @@ const Thread = ({
     goToCalendar,
   } = useNavigationContext()
 
-  const { threadId, creditsLeft, setCreditsLeft } = useChat()
+  const { threadId, creditsLeft, setShouldGetCredits } = useChat()
 
   // Use setMessagesInternal directly instead of wrapping it
   const setMessages = setMessagesInternal
@@ -775,13 +774,7 @@ const Thread = ({
                           guestId: guest?.id,
                         })
                       ) {
-                        creditsLeft &&
-                          setCreditsLeft(
-                            creditsLeft -
-                              (isDebating
-                                ? debateAgent?.creditCost || 1
-                                : selectedAgent?.creditCost || 1),
-                          )
+                        setShouldGetCredits(true)
                       }
 
                       track({

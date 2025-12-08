@@ -109,7 +109,7 @@ export default function FocusButton({
     showFocus,
   } = useAuth()
 
-  const { searchParams, addParams, push, setParams } = useNavigation()
+  const { searchParams, addParams, push, removeParams } = useNavigation()
 
   const hasHydrated = useHasHydrated()
 
@@ -823,9 +823,11 @@ export default function FocusButton({
                 totalTasksCount={tasks?.tasks?.length || 0}
                 onAdd={async () => {
                   await fetchTasks()
+                  removeParams("addTask")
                   setAddingTask(false)
                 }}
                 onCancel={() => {
+                  removeParams("addTask")
                   setAddingTask(false)
                 }}
               />

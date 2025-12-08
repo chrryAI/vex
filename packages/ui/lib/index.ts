@@ -304,10 +304,10 @@ export const getUser = async ({
   })
 
   if (!response.ok) {
-    return null
+    return
   }
 
-  return response.json()
+  return (await response.json()) as user
 }
 
 export const getUsers = async ({
