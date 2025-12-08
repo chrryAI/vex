@@ -22,7 +22,7 @@ export const VEX_TEST_FINGERPRINT_3 = TEST_MEMBER_FINGERPRINTS[2]
 
 dotenv.config()
 
-export const TEST_URL = process.env.TEST_URL!
+export const TEST_URL = process.env.PLAYWRIGHT_BASE_URL || process.env.TEST_URL!
 export const LIVE_URL = "https://chrry.ai"
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
