@@ -370,11 +370,15 @@ export const chat = async ({
       await page.waitForTimeout(2000)
       expect(await getAgentName()).toBe(expectedDefaultAgent)
     } else if (prompt.model === "sushi") {
-      const imageGenerationEnabled =
-        await imageGenerationButton.getAttribute("data-enabled")
+      try {
+        const imageGenerationEnabled =
+          await imageGenerationButton.getAttribute("data-enabled")
 
-      if (imageGenerationEnabled && imageGenerationEnabled === "true") {
-        await imageGenerationButton.click()
+        if (imageGenerationEnabled && imageGenerationEnabled === "true") {
+          await imageGenerationButton.click()
+        }
+      } catch (error) {
+        console.log(error)
       }
     }
 
