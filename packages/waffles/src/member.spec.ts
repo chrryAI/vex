@@ -15,10 +15,6 @@ import { collaboration } from "./shared/collaboration"
 import { clean } from "./shared/clean"
 const isMember = true
 
-test.beforeAll(async ({ page }) => {
-  await clean({ page })
-})
-
 test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
