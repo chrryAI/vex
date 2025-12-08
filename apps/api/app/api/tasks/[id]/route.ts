@@ -33,20 +33,18 @@ export async function PATCH(request: Request) {
     guestId: guest?.id,
   })
 
-  const existingTask = await getTask({ id })
+  const existingTask = await getTask({
+    id,
+    userId: member?.id,
+    guestId: guest?.id,
+  })
 
   if (!existingTask) {
     return NextResponse.json({ error: "Task not found" })
   }
 
-  if (
-    !(existingTask.userId === member?.id || existingTask.guestId === guest?.id)
-  ) {
-    return NextResponse.json({ error: "Unauthorized" })
-  }
-
   // Handle reordering of tasks if reorder flag is true and order has changed
-  if (reorder === true) {
+  if (reorder) {
     try {
       // Get all tasks sorted by their current order
       const allTasks = [...tasks.tasks].sort((a, b) => {

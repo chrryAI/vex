@@ -122,6 +122,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       ...user,
       credits: MEMBER_CREDITS_PER_MONTH,
       subscribedOn: null,
+      migratedFromGuest: false,
     })
 
   guest &&
@@ -129,5 +130,6 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       ...guest,
       credits: GUEST_CREDITS_PER_MONTH,
       subscribedOn: null,
+      migratedToUser: false,
     })
 }

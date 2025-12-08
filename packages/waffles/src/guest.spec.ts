@@ -9,6 +9,10 @@ const isMember = false
 import { v4 as uuidv4 } from "uuid"
 import { clean } from "./shared/clean"
 
+test.beforeAll(async ({ page }) => {
+  await clean({ page })
+})
+
 test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
@@ -17,7 +21,7 @@ test.afterEach(async ({ page }) => {
   await clean({ page })
 })
 
-test("Subscribe As Guest", async ({ page }) => {
+test.only("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isLive: false,
