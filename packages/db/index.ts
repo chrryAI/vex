@@ -3348,14 +3348,18 @@ export async function getMemories({
 
   if (userId) {
     conditions.push(eq(memories.userId, userId))
+  } else {
+    conditions.push(isNull(memories.userId))
   }
 
   if (guestId) {
     conditions.push(eq(memories.guestId, guestId))
+  } else {
+    conditions.push(isNull(memories.guestId))
   }
 
   if (appId) {
-    conditions.push(eq(memories.appId, appId))
+    conditions.push(and(eq(memories.appId, appId)))
   }
 
   // Exclude memories from current thread
