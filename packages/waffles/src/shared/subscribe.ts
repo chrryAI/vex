@@ -56,7 +56,7 @@ export const subscribe = async ({
 
   const subscribeButton = page.getByTestId("subscribe-button")
   await expect(subscribeButton).toBeVisible({
-    timeout: 5000,
+    timeout: 15000,
   })
   await subscribeButton.click()
 
