@@ -201,8 +201,48 @@ export type suggestionsPayload = {
   lastGenerated: string
 }
 
+// Smart conversation context that preserves recent messages while summarizing older ones
+const getSmartConversationContext = (
+  conversationText: string,
+  maxChars: number = 2000,
+): string => {
+  if (conversationText.length <= maxChars) {
+    return conversationText
+  }
+
+  // Split into messages
+  const messages = conversationText.split("\n")
+
+  if (messages.length <= 15) {
+    // Short conversation - use all
+    return conversationText
+  }
+
+  // For long conversations, use hybrid approach:
+  // 1. Summary of very old messages (before last 20)
+  const veryOldMessages = messages.slice(0, -20)
+  const oldSummary =
+    veryOldMessages.length > 0
+      ? `[Earlier: ${veryOldMessages.length} messages]\n`
+      : ""
+
+  // 2. Compressed middle messages (last 20 to last 10)
+  const middleMessages = messages.slice(-20, -10)
+  const middleCompressed = middleMessages
+    .map((m) => m.slice(0, 100) + (m.length > 100 ? "..." : ""))
+    .join("\n")
+
+  // 3. Full recent messages (last 10)
+  const recentMessages = messages.slice(-10).join("\n")
+
+  const result = `${oldSummary}${middleCompressed}\n\n${recentMessages}`
+
+  // If still too long, truncate to maxChars
+  return result.length > maxChars ? result.slice(-maxChars) : result
+}
+
 // Extract topic keywords from conversation (lightweight alternative to full context)
-function extractTopicKeywords(text: string): string[] {
+const extractTopicKeywords = (text: string): string[] => {
   // Simple keyword extraction - you can make this smarter later
   const keywords = new Set<string>()
   const commonWords = new Set([
@@ -337,7 +377,12 @@ async function generateSuggestionsAndPlaceholders({
 
   // Bloom-specific: Add focus & productivity context
   let bloomContext = ""
-  if (app?.slug === "bloom") {
+  if (
+    app &&
+    "store" in app &&
+    (app.store?.apps.some((a) => a.slug === "focus") ||
+      app.extends?.some((a) => a.slug === "focus"))
+  ) {
     try {
       const subjectId = user?.id || guest?.id
       if (subjectId) {
@@ -603,7 +648,7 @@ Return only valid JSON object.`
       history.push({
         text: homePlaceholder.text,
         generatedAt: homePlaceholder.updatedOn.toISOString(),
-        conversationContext: conversationText.slice(-200), // For debugging
+        conversationContext: getSmartConversationContext(conversationText, 500), // Smart context
         topicKeywords, // Lightweight alternative
       })
 
@@ -648,7 +693,7 @@ Return only valid JSON object.`
       history.push({
         text: threadPlaceHolder.text,
         generatedAt: threadPlaceHolder.updatedOn.toISOString(),
-        conversationContext: conversationText.slice(-200), // For debugging
+        conversationContext: getSmartConversationContext(conversationText, 500), // Smart context
         topicKeywords, // Lightweight alternative
       })
 
@@ -1075,7 +1120,10 @@ Focus on the main discussion points, user preferences, and conversation style.`
             detectedBy: modelName,
             confidence: moodData.confidence,
             reason: moodData.reason,
-            conversationContext: conversationText.slice(-200), // Last 200 chars for context
+            conversationContext: getSmartConversationContext(
+              conversationText,
+              500,
+            ), // Smart context
           },
         })
         console.log(
@@ -1141,7 +1189,10 @@ Focus on the main discussion points, user preferences, and conversation style.`
       ragContext: {
         documentSummaries: [],
         relevantChunks: [],
-        conversationContext: conversationText.slice(0, 1000),
+        conversationContext: getSmartConversationContext(
+          conversationText,
+          2000,
+        ),
       },
       userMemories: memories.map((m: any) => ({
         id: uuidv4(),

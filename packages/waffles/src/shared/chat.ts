@@ -371,6 +371,20 @@ export const chat = async ({
   }
   for (const prompt of prompts) {
     await clearDebate()
+
+    await wait(1000)
+
+    if (prompt.model && prompt.model !== (await getAgentName())) {
+      await addAgent()
+
+      await expect(agentModal).toBeVisible()
+
+      const agentModalButton = getAgentModalButton(prompt.model)
+
+      await agentModalButton.click()
+
+      expect(await getAgentName()).toBe(prompt.model)
+    }
     if (prompt.imageGenerationEnabled) {
       // First click: Toggle off image generation
       await imageGenerationButton.click()
@@ -406,20 +420,6 @@ export const chat = async ({
           console.log(error)
         }
       }
-    }
-
-    await wait(1000)
-
-    if (prompt.model && prompt.model !== (await getAgentName())) {
-      await addAgent()
-
-      await expect(agentModal).toBeVisible()
-
-      const agentModalButton = getAgentModalButton(prompt.model)
-
-      await agentModalButton.click()
-
-      expect(await getAgentName()).toBe(prompt.model)
     }
 
     if (prompt.debateAgent) {
