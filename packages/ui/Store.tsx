@@ -35,7 +35,7 @@ export default function Store({
 
   const { utilities } = useStyles()
 
-  const { router, pathname, searchParams } = useNavigationContext()
+  const { router, searchParams } = useNavigationContext()
 
   const { setIsNewAppChat } = useChat()
 
