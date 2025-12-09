@@ -597,7 +597,7 @@ export async function POST(request: Request) {
       })
 
     // Add delay between chunks for proper delivery order
-    await wait(30)
+    await wait(10)
   }
 
   console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
@@ -612,6 +612,7 @@ export async function POST(request: Request) {
         depth: 1,
         userId: member?.id,
         guestId: guest?.id,
+        skipCache: true,
       })
     : undefined
 
@@ -968,6 +969,16 @@ ${
 
   const debateAgentId = message.message.debateAgentId
 
+  const lastMessage = await getMessages({
+    threadId: thread.id,
+    pageSize: 1,
+    userId: member?.id,
+    guestId: guest?.id,
+    agentId: null,
+  }).then((al) => al.messages.at(0))
+
+  const lastMessageContent = lastMessage?.message.content
+
   const debateAgent = debateAgentId
     ? await getAiAgent({ id: debateAgentId })
     : undefined
@@ -984,6 +995,20 @@ ${
     : undefined
 
   const clientId = message.message.clientId
+  let currentThreadId = threadId
+
+  const newMessagePayload = {
+    id: clientId,
+    threadId: currentThreadId,
+    agentId,
+    userId: member?.id,
+    guestId: guest?.id,
+    selectedAgentId: debateAgent?.id,
+    debateAgentId,
+    pauseDebate,
+    webSearchResult: message.message.webSearchResult,
+    isWebSearchEnabled: message.message.isWebSearchEnabled,
+  }
 
   const threadInstructions = thread?.instructions
 
@@ -1202,7 +1227,7 @@ You can enable these in your settings anytime!"
     return 5 // Extremely long - just essentials
   })()
 
-  const { context: memoryContext, memoryIds } = await getRelevantMemoryContext({
+  let { context: memoryContext, memoryIds } = await getRelevantMemoryContext({
     userId: member?.id,
     guestId: guest?.id,
     appId: app?.id,
@@ -2130,6 +2155,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   if (!characterProfilesEnabled) {
     const pastMessages = await getMessages({
+      threadId: thread.id, // Only load messages from current thread
       pageSize: 75, // Increased for better RAG context from message history
       userId: member?.id,
       guestId: guest?.id,
@@ -2757,16 +2783,6 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     }
   }
 
-  const lastMessageContent = (
-    await getMessages({
-      threadId: thread.id,
-      pageSize: 1,
-      userId: member?.id,
-      guestId: guest?.id,
-      agentId: null,
-    })
-  ).messages.at(0)?.message.content
-
   const debatePrompt =
     debateAgent && selectedAgent
       ? `
@@ -2961,21 +2977,58 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   // Check token limit for the specific agent/model
   const modelLimit =
     TOKEN_LIMITS[computedAgentName as keyof typeof TOKEN_LIMITS] || 25000
+
   if (textOnlyTokens > modelLimit) {
     console.log(
-      `🚫 Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
+      `⚠️ Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
     )
-    captureException(
-      `🚫 Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
-    )
-    return NextResponse.json(
-      {
-        error: "Request too large",
-        message: `Your message is too long for ${agent.displayName}. Please reduce the file size, use fewer files, or shorten your message. Estimated tokens: ${textOnlyTokens}, limit: ${modelLimit}`,
-        estimatedTokens: textOnlyTokens,
-        limit: modelLimit,
-      },
-      { status: 413 }, // 413 Payload Too Large
+    console.log(`🔧 Intelligently reducing context to fit within limit...`)
+
+    // Instead of erroring, intelligently strip context
+    // Priority: Files > Recent messages > Old conversation history > Memories
+
+    const targetTokens = Math.floor(modelLimit * 0.9) // 90% of limit for safety
+    let currentTokens = textOnlyTokens
+
+    // Step 1: Reduce conversation history (keep only recent messages)
+    if (suggestionMessages && suggestionMessages.length > 0) {
+      const originalLength = suggestionMessages.length
+
+      // Keep reducing from the oldest messages
+      while (currentTokens > targetTokens && suggestionMessages.length > 5) {
+        const removedMessage = suggestionMessages.shift() // Remove oldest
+        const removedTokens = estimateTokens(removedMessage?.content)
+        currentTokens -= removedTokens
+      }
+
+      console.log(
+        `📉 Reduced conversation history: ${originalLength} → ${suggestionMessages.length} messages (saved ~${textOnlyTokens - currentTokens} tokens)`,
+      )
+    }
+
+    // Step 2: If still too large, reduce memories
+    if (currentTokens > targetTokens && memoryContext) {
+      const originalMemoryTokens = estimateTokens(memoryContext)
+      // Keep only the most important memories (first half)
+      const memories = memoryContext.split("\n")
+      const reducedMemories = memories.slice(0, Math.ceil(memories.length / 2))
+      memoryContext = reducedMemories.join("\n")
+      const savedTokens = originalMemoryTokens - estimateTokens(memoryContext)
+      currentTokens -= savedTokens
+
+      console.log(
+        `📉 Reduced memories: ${memories.length} → ${reducedMemories.length} items (saved ~${savedTokens} tokens)`,
+      )
+    }
+
+    // Step 3: If STILL too large (rare), truncate file content
+    if (currentTokens > targetTokens && files.length > 0) {
+      console.log(`⚠️ File content too large, will truncate during processing`)
+      // This will be handled during file processing
+    }
+
+    console.log(
+      `✅ Context reduced: ${textOnlyTokens} → ~${currentTokens} tokens (within ${modelLimit} limit)`,
     )
   }
 
@@ -3060,7 +3113,6 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   })
 
   // Create thread if not provided
-  let currentThreadId = threadId
   console.log("🧵 Thread handling:", { providedThreadId: threadId })
 
   // Create user message first
@@ -3375,8 +3427,6 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         // Generate test reasoning
         const testReasoning = faker.lorem.sentences(30)
 
-        const clientId = message.message.clientId
-
         // Update thread and create message in the background
 
         // Split reasoning and response into chunks to simulate streaming
@@ -3434,9 +3484,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
             break
           }
 
-          const chunkNumber = index + 1
-
-          await wait(150)
+          await wait(30)
 
           thread &&
             enhancedStreamChunk({
@@ -3480,19 +3528,11 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         })
 
         const aiMessage = await createMessage({
-          id: clientId,
+          ...newMessagePayload,
           content: testResponse,
           reasoning: testReasoning, // Save test reasoning
           originalContent: testResponse.trim(),
-          threadId,
-          agentId,
-          userId: member?.id,
-          guestId: guest?.id,
           searchContext: null,
-          selectedAgentId: debateAgentId,
-          debateAgentId,
-          pauseDebate,
-          webSearchResult: message.message.webSearchResult,
           images: imageGenerationEnabled
             ? [
                 {
@@ -3687,7 +3727,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             clientId,
             streamId,
           })
-          await wait(50) // Small delay for smooth streaming
         }
 
         if (!streamControllers.has(streamId)) {
@@ -3764,16 +3803,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         // Save AI response to database
         const aiMessage = await createMessage({
-          id: clientId,
+          ...newMessagePayload,
           content: aiResponseContent,
           originalContent: aiResponseContent,
-          threadId: currentThreadId,
-          agentId: agent.id,
-          agentVersion: agent.version,
-          userId: member?.id,
-          guestId: guest?.id,
-          selectedAgentId: debateAgent?.id,
-          clientId,
           images: [
             {
               url: permanentUrl, // Use permanent UploadThing URL
@@ -3985,13 +4017,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         if (finalText) {
           console.log("💾 Saving Sushi message to DB...")
           const aiMessage = await createMessage({
-            threadId: currentThreadId,
-            agentId: agent.id,
-            userId: member?.id,
-            guestId: guest?.id,
+            ...newMessagePayload,
             content: finalText,
             reasoning: reasoningText || undefined, // Store reasoning separately
-            clientId,
           })
 
           if (aiMessage) {
@@ -4214,17 +4242,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         })
         // Save AI response to database (no Perplexity processing for DeepSeek)
         const aiMessage = await createMessage({
-          id: clientId,
+          ...newMessagePayload,
           content: finalText.trim(),
           originalContent: finalText.trim(),
-          threadId: currentThreadId,
-          agentId: agent.id,
-          userId: member?.id,
-          guestId: guest?.id,
           searchContext,
-          debateAgentId,
-          pauseDebate,
-          selectedAgentId: debateAgent?.id,
         })
 
         console.timeEnd("messageProcessing")
@@ -4500,19 +4521,12 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
       // Save AI response to database
       const aiMessage = await createMessage({
-        id: clientId,
+        ...newMessagePayload,
         content: processedText,
         originalContent: finalText.trim(),
         threadId: currentThreadId,
-        agentId: agent.id,
-        userId: member?.id,
-        guestId: guest?.id,
         searchContext,
         webSearchResult: webSearchResults,
-        debateAgentId,
-        pauseDebate,
-        isWebSearchEnabled: message.message.isWebSearchEnabled,
-        selectedAgentId: debateAgent?.id,
       })
 
       console.timeEnd("messageProcessing")

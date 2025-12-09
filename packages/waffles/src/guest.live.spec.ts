@@ -31,21 +31,21 @@ test.skip("Chat", async ({ page }) => {
     ],
   })
 
-  // await chat({
-  //   isNewChat: true,
-  //   isLiveTest,
-  //   page,
-  //   creditsConsumed: 2 + 3 + 4,
-  //   messagesConsumed: 3,
-  //   agentMessageTimeout: 120000,
-  //   isMember,
-  //   instruction: "Generate creative images for my travel blog",
-  //   prompts: [
-  //     {
-  //       text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
-  //       imageGenerationEnabled: true,
-  //       like: true,
-  //     },
-  //   ],
-  // })
+  await chat({
+    isNewChat: true,
+    isLiveTest,
+    page,
+    creditsConsumed: 2 + 3 + 4,
+    messagesConsumed: 3,
+    agentMessageTimeout: 120000,
+    isMember,
+    instruction: "Generate creative images for my travel blog",
+    prompts: [
+      {
+        text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
+        imageGenerationEnabled: true,
+        like: true,
+      },
+    ],
+  })
 })

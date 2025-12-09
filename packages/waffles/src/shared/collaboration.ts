@@ -4,6 +4,7 @@ import { chat } from "./chat"
 import { Page } from "@playwright/test"
 import { signIn } from "./signIn"
 import { v4 as uuidv4 } from "uuid"
+import { clean } from "./clean"
 
 export async function collaboration({
   page,
@@ -253,6 +254,9 @@ export async function collaboration({
   ).toBeGreaterThanOrEqual(1)
   await page1.waitForTimeout(3000)
   expect(await page1.getByTestId("typing-indicator").count()).toBe(0)
+
+  await clean({ page: page1 })
+
   // Clean up
   await context1.close()
   await context2.close()

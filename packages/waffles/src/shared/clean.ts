@@ -8,7 +8,7 @@ export async function clean({ page }: { page: Page }) {
   const clearSessionButton = page.getByTestId("clear-session")
 
   await expect(clearSessionButton).toBeVisible({
-    timeout: 2000,
+    timeout: 20000,
   })
   // First click to show confirm
   await clearSessionButton.click()

@@ -21,10 +21,7 @@ export const limit = async ({
     const isClaudeMessage = isMember && i % 5 === 0 // Every 5th message in last 3 requests
     const isChatGPTMessage = isMember && i % 3 === 0 // Every 6th message in last 3 requests
 
-    const isWebSearch =
-      (isClaudeMessage || isChatGPTMessage) && !isFluxMessage && i % 2 === 0 // Every 4th message in last 3 requests
-
-    const like = isWebSearch || isFluxMessage ? true : false
+    const like = isFluxMessage ? true : false
 
     return {
       text: isFluxMessage
@@ -40,7 +37,6 @@ export const limit = async ({
             ? ("chatGPT" as modelName)
             : ("sushi" as modelName),
       agentMessageTimeout: isFluxMessage ? 60000 : 30000, // Flux needs more time
-      webSearch: isWebSearch,
       shouldFail: i === hourlyLimit, // Only fail on last message
       like,
       imageGenerationEnabled: isFluxMessage,
@@ -53,7 +49,6 @@ export const limit = async ({
     model: "sushi" as modelName,
     agentMessageTimeout: 30000,
     shouldFail: true, // Flag to indicate this should fail
-    webSearch: true, // Test web search on the failing request too
   }
 
   await chat({

@@ -109,7 +109,7 @@ export default function FocusButton({
     showFocus,
   } = useAuth()
 
-  const { searchParams, addParams, push, setParams } = useNavigation()
+  const { searchParams, addParams, push, removeParams } = useNavigation()
 
   const hasHydrated = useHasHydrated()
 
@@ -331,7 +331,7 @@ export default function FocusButton({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...task, total }),
+        body: JSON.stringify({ ...task, total, reorder }),
       })
       const data = await response.json()
       return data
@@ -823,9 +823,11 @@ export default function FocusButton({
                 totalTasksCount={tasks?.tasks?.length || 0}
                 onAdd={async () => {
                   await fetchTasks()
+                  removeParams("addTask")
                   setAddingTask(false)
                 }}
                 onCancel={() => {
+                  removeParams("addTask")
                   setAddingTask(false)
                 }}
               />
@@ -922,7 +924,6 @@ export default function FocusButton({
                           <Div
                             data-task-title={task.title}
                             data-testid="task"
-                            className="pointer"
                             key={task.id}
                             style={{
                               ...styles.task.style,
@@ -975,7 +976,10 @@ export default function FocusButton({
                                     )
                                   }
                                 }}
-                                style={styles.taskTitle.style}
+                                style={{
+                                  ...styles.taskTitle.style,
+                                  cursor: "pointer",
+                                }}
                               >
                                 {selectedTasks?.some(
                                   (t) => t.id === task.id,
@@ -1046,20 +1050,12 @@ export default function FocusButton({
 
                               <Div
                                 onPointerDown={(e) => {
-                                  // Only allow left click for dragging on desktop
-                                  if (
-                                    e.pointerType === "mouse" &&
-                                    e.button !== 0
-                                  )
-                                    return
-
-                                  // Prevent default to stop scroll interference
-                                  e.preventDefault()
-                                  e.stopPropagation()
+                                  // Call drag FIRST - dnd-kit needs the unprevented event
                                   drag(e)
-                                }}
-                                onPointerUp={(e) => {
-                                  e.stopPropagation()
+
+                                  // THEN prevent default to stop scroll interference on the handle
+                                  // (dnd-kit will have already captured the event by now)
+                                  e.preventDefault()
                                 }}
                                 style={{
                                   ...styles.dragHandle.style,

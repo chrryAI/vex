@@ -73,7 +73,6 @@ const Thread = ({
     aiAgents,
     hitHourlyLimit,
     debateAgent,
-    isDebating,
     hourlyLimit,
     hourlyUsageLeft,
     thread,
@@ -117,7 +116,7 @@ const Thread = ({
     goToCalendar,
   } = useNavigationContext()
 
-  const { threadId, creditsLeft, setCreditsLeft } = useChat()
+  const { threadId, creditsLeft, setShouldGetCredits } = useChat()
 
   // Use setMessagesInternal directly instead of wrapping it
   const setMessages = setMessagesInternal
@@ -762,6 +761,10 @@ const Thread = ({
                       aiAgent?: aiAgent
                       thread?: thread
                     }) => {
+                      console.log("🤖 onStreamingComplete", {
+                        messageId: message?.message?.id,
+                        content: message?.message?.content,
+                      })
                       if (!message?.aiAgent?.id && !message?.message.agentId)
                         return
 
@@ -771,13 +774,7 @@ const Thread = ({
                           guestId: guest?.id,
                         })
                       ) {
-                        creditsLeft &&
-                          setCreditsLeft(
-                            creditsLeft -
-                              (isDebating
-                                ? debateAgent?.creditCost || 1
-                                : selectedAgent?.creditCost || 1),
-                          )
+                        setShouldGetCredits(true)
                       }
 
                       track({
@@ -820,7 +817,14 @@ const Thread = ({
                           }),
                         )
 
-                      if (!isIncognito && !id && message?.message.threadId) {
+                      if (
+                        !isIncognito &&
+                        !id &&
+                        message?.message.threadId &&
+                        (debateAgent
+                          ? message.message.agentId === debateAgent?.id
+                          : true)
+                      ) {
                         requestAnimationFrame(() => {
                           const navigationOptions = {
                             state: { preservedThread: thread } as {

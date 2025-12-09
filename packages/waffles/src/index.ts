@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv"
 import { Page } from "@playwright/test"
 
-export type modelName = "chatGPT" | "claude" | "gemini" | "sushi"
+export type modelName = "chatGPT" | "claude" | "gemini" | "sushi" | "perplexity"
 
 export const TEST_GUEST_FINGERPRINTS =
   process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
@@ -22,7 +22,7 @@ export const VEX_TEST_FINGERPRINT_3 = TEST_MEMBER_FINGERPRINTS[2]
 
 dotenv.config()
 
-export const TEST_URL = process.env.TEST_URL!
+export const TEST_URL = process.env.PLAYWRIGHT_BASE_URL || process.env.TEST_URL!
 export const LIVE_URL = "https://chrry.ai"
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -113,6 +113,20 @@ const simulatePaste = async (page: Page, text: string) => {
 
 function capitalizeFirstLetter(val: string) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+}
+
+const logs = new Map<string, number>() // msg → timestamp
+export const log = ({ page }: { page: Page }) => {
+  page.on("console", (msg) => {
+    const now = Date.now()
+    const lastSeen = logs.get(msg.text())
+
+    // Only skip if seen within last 5 seconds
+    if (lastSeen && now - lastSeen < 5000) return
+
+    console.log(`[browser][${msg.type()}] ${msg.text()}`)
+    logs.set(msg.text(), now)
+  })
 }
 
 export {

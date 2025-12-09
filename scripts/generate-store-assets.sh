@@ -89,19 +89,78 @@ $MAGICK "$SOURCE_ICON" \
 echo -e "${GREEN}✅ Marquee promo tile created${NC}"
 
 # 4. Screenshots (1280x800)
-echo -e "${YELLOW}📸 Creating screenshots (1280x800)...${NC}"
+echo -e "${YELLOW}📸 Converting screenshots (1280x800)...${NC}"
 
-# All screenshots: Just centered icon on transparent background
-for i in {1..5}; do
-    $MAGICK "$SOURCE_ICON" \
-        -resize 400x400 \
-        -filter Lanczos \
-        -sharpen 0x1 \
-        -background black \
-        -gravity center \
-        -extent 1280x800 \
-        "$OUTPUT_DIR/screenshot-${i}-1280x800.png"
-done
+# Look for screenshots in a folder named after the app
+SCREENSHOTS_DIR="apps/extension/screenshots/${APP_NAME_LOWER}"
+
+if [ -d "$SCREENSHOTS_DIR" ]; then
+    echo -e "${BLUE}📂 Found screenshots folder: $SCREENSHOTS_DIR${NC}"
+    
+    # Get all image files (png, jpg, jpeg) sorted
+    SCREENSHOT_FILES=($(find "$SCREENSHOTS_DIR" -type f \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" \) | sort))
+    
+    if [ ${#SCREENSHOT_FILES[@]} -eq 0 ]; then
+        echo -e "${RED}❌ No screenshots found in $SCREENSHOTS_DIR${NC}"
+        echo -e "${YELLOW}⚠️  Falling back to icon-based screenshots${NC}"
+        # Fallback: Generate from icon
+        for i in {1..5}; do
+            $MAGICK "$SOURCE_ICON" \
+                -resize 400x400 \
+                -filter Lanczos \
+                -sharpen 0x1 \
+                -background black \
+                -gravity center \
+                -extent 1280x800 \
+                "$OUTPUT_DIR/screenshot-${i}-1280x800.png"
+        done
+    else
+        echo -e "${GREEN}✅ Found ${#SCREENSHOT_FILES[@]} screenshot(s)${NC}"
+        
+        # Convert each screenshot to 1280x800
+        for i in "${!SCREENSHOT_FILES[@]}"; do
+            SCREENSHOT_NUM=$((i + 1))
+            if [ $SCREENSHOT_NUM -le 5 ]; then
+                echo -e "${BLUE}  Converting screenshot $SCREENSHOT_NUM...${NC}"
+                $MAGICK "${SCREENSHOT_FILES[$i]}" \
+                    -resize 1280x800^ \
+                    -gravity center \
+                    -extent 1280x800 \
+                    -quality 95 \
+                    "$OUTPUT_DIR/screenshot-${SCREENSHOT_NUM}-1280x800.png"
+            fi
+        done
+        
+        # If less than 5 screenshots, fill remaining with icon
+        if [ ${#SCREENSHOT_FILES[@]} -lt 5 ]; then
+            echo -e "${YELLOW}⚠️  Only ${#SCREENSHOT_FILES[@]} screenshot(s) found, filling remaining with icon${NC}"
+            for i in $(seq $((${#SCREENSHOT_FILES[@]} + 1)) 5); do
+                $MAGICK "$SOURCE_ICON" \
+                    -resize 400x400 \
+                    -filter Lanczos \
+                    -sharpen 0x1 \
+                    -background black \
+                    -gravity center \
+                    -extent 1280x800 \
+                    "$OUTPUT_DIR/screenshot-${i}-1280x800.png"
+            done
+        fi
+    fi
+else
+    echo -e "${YELLOW}⚠️  Screenshots folder not found: $SCREENSHOTS_DIR${NC}"
+    echo -e "${YELLOW}⚠️  Generating screenshots from icon instead${NC}"
+    # Fallback: Generate from icon
+    for i in {1..5}; do
+        $MAGICK "$SOURCE_ICON" \
+            -resize 400x400 \
+            -filter Lanczos \
+            -sharpen 0x1 \
+            -background black \
+            -gravity center \
+            -extent 1280x800 \
+            "$OUTPUT_DIR/screenshot-${i}-1280x800.png"
+    done
+fi
 
 echo -e "${GREEN}✅ Screenshots created (5)${NC}"
 

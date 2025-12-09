@@ -41,6 +41,8 @@ function FocusButton({ time }: { time: number }) {
   const { isExtension, isFirefox, isWeb } = usePlatform()
   const { focus, getAppSlug, setShowFocus } = useAuth()
 
+  const hasHydrated = useHasHydrated()
+
   const [currentTime, setCurrentTime] = useState(new Date())
 
   useEffect(() => {
@@ -75,7 +77,9 @@ function FocusButton({ time }: { time: number }) {
         ...appStyles.focus.style,
       }}
     >
-      <Span style={appStyles.focusTime.style}>{formatTime()}</Span>
+      {hasHydrated && (
+        <Span style={appStyles.focusTime.style}>{formatTime()}</Span>
+      )}
       <Img style={appStyles.focus.style} logo="focus" width={22} height={22} />
     </A>
   )
@@ -198,14 +202,23 @@ export default function App({
   const [appsState, setApps] = React.useState(getApps())
 
   useEffect(() => {
-    if (app && !hasStoreApps(app)) {
-      setLoadingApp(app)
-    }
-  }, [appsState])
-
-  useEffect(() => {
     setApps(getApps())
-  }, [apps, store?.id, store?.appId, currentStoreId, baseApp, app])
+  }, [
+    apps,
+    store,
+    currentStoreId,
+    baseApp,
+    app,
+    userBaseApp,
+    guestBaseApp,
+    atlas,
+    chrry,
+    grape,
+    focus,
+    popcorn,
+    zarathustra,
+    vex,
+  ])
 
   const [file, setFile] = React.useState<File | undefined>()
 
