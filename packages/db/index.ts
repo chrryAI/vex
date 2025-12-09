@@ -3348,14 +3348,18 @@ export async function getMemories({
 
   if (userId) {
     conditions.push(eq(memories.userId, userId))
+  } else {
+    conditions.push(isNull(memories.userId))
   }
 
   if (guestId) {
     conditions.push(eq(memories.guestId, guestId))
+  } else {
+    conditions.push(isNull(memories.guestId))
   }
 
   if (appId) {
-    conditions.push(eq(memories.appId, appId))
+    conditions.push(and(eq(memories.appId, appId)))
   }
 
   // Exclude memories from current thread
@@ -4605,6 +4609,7 @@ export const getApp = async ({
   depth = 0,
   storeSlug,
   storeDomain,
+  skipCache = false,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
   id?: string
@@ -4616,6 +4621,7 @@ export const getApp = async ({
   depth?: number
   storeSlug?: string
   storeDomain?: string
+  skipCache?: boolean
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -4665,9 +4671,12 @@ export const getApp = async ({
   const cacheKey = `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}`
 
   // Try cache first
-  const cached = await getCache<appWithStore>(cacheKey)
-  if (cached) {
-    return cached
+
+  if (!skipCache) {
+    const cached = await getCache<appWithStore>(cacheKey)
+    if (cached) {
+      return cached
+    }
   }
 
   // Build query with conditional store join
@@ -6250,10 +6259,8 @@ export const getTimer = async ({
     await db
       .select()
       .from(timers)
-      .leftJoin(devices, eq(timers.fingerprint, devices.fingerprint))
       .where(
         and(
-          fingerprint ? eq(timers.fingerprint, fingerprint) : undefined,
           userId ? eq(timers.userId, userId) : undefined,
           guestId ? eq(timers.guestId, guestId) : undefined,
         ),
@@ -6261,11 +6268,6 @@ export const getTimer = async ({
   ).at(0)
 
   return result
-    ? {
-        ...result.timer,
-        device: result.device,
-      }
-    : undefined
 }
 
 export const createTimer = async (timer: newTimer) => {
@@ -6280,7 +6282,10 @@ export const updateTimer = async (timer: timer) => {
     .where(eq(timers.id, timer.id))
     .returning()
 
-  return getTimer({ fingerprint: timer.fingerprint })
+  return getTimer({
+    userId: timer.userId || undefined,
+    guestId: timer.guestId || undefined,
+  })
 }
 
 export const deleteTimer = async ({ id }: { id: string }) => {

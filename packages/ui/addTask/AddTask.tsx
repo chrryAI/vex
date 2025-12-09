@@ -57,14 +57,6 @@ const AddTask = ({
     },
   })
 
-  useEffect(() => {
-    addParams({ addTask: "true" })
-    trackEvent({ name: "add_task" })
-    return () => {
-      removeParams("addTask")
-    }
-  }, [])
-
   const { token, guest, user, language, track: trackEvent } = useAuth()
   const [isAddingTask, setIsAddingTask] = React.useState(false)
 

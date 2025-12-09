@@ -195,7 +195,7 @@ export default function Chat({
   onTyping?: (isTyping: boolean) => void
 }): React.ReactElement {
   const { t } = useAppContext()
-  const { weather, VERSION } = useData()
+  const { weather, actions } = useData()
 
   const styles = useChatStyles()
 
@@ -232,14 +232,13 @@ export default function Chat({
     debateAgent,
     setDebateAgent,
     isDebating,
-    setIsDebating,
     setIsChatFloating,
     setIsWebSearchEnabled: setWebSearchEnabledInternal,
     isWebSearchEnabled,
     setInput: setInputInternal,
     input,
     creditsLeft,
-    setCreditsLeft,
+    setShouldGetCredits,
     hourlyUsageLeft,
     hitHourlyLimit,
     hourlyLimit,
@@ -2142,14 +2141,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     })
       .then((response) => response.json())
       .then((result) => {
-        const costs = !isDebating
-          ? selectedAgent?.creditCost || 1
-          : debateAgent
-            ? debateAgent?.creditCost || 1
-            : 0
-
-        creditsLeft && setCreditsLeft(creditsLeft - costs)
-
+        setShouldGetCredits(true)
         message &&
           onStreamingStop?.({
             ...message,
@@ -2414,11 +2406,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           data.message.message.debateAgentId &&
           !data.message.message.pauseDebate
         ) {
-          isOwner(data.message.message, {
-            userId: user?.id,
-            guestId: guest?.id,
-          }) && setIsDebating(true)
-
           onMessage?.({
             content: "",
             isUser: false,
@@ -2475,15 +2462,6 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
             console.error("Error updating message:", error)
             captureException(error)
             toast.error("Error starting debate")
-          }
-        } else {
-          if (
-            isOwner(data.message.message, {
-              userId: user?.id,
-              guestId: guest?.id,
-            })
-          ) {
-            setIsDebating(false)
           }
         }
       } else if (type === "message" && data.message) {
@@ -3976,9 +3954,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                           disabled={isChrry || !!app?.onlyAgent}
                           data-testid={
                             !debateAgent
-                              ? selectedAgent?.name !== "flux"
-                                ? "add-debate-agent-button"
-                                : undefined
+                              ? "add-debate-agent-button"
                               : "agent-select-button"
                           }
                           data-agent-name={selectedAgent.name}

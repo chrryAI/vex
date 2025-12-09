@@ -164,7 +164,7 @@ export const Hey = memo(
     const getSplash = (isSplash: boolean) => {
       const splashStyle = styles.splash
       const hiddenStyle = styles.splashHidden
-
+      if (!app) return null
       return (
         <Div
           style={{

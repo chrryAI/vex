@@ -26,7 +26,7 @@ import { validate as validateUuid } from "uuid"
 import { UAParser } from "ua-parser-js"
 import arcjet, { detectBot } from "@arcjet/next"
 
-import { FRONTEND_URL, isDevelopment, VERSION } from "chrry/utils"
+import { FRONTEND_URL, isDevelopment, isE2E, VERSION } from "chrry/utils"
 import { checkRateLimit } from "../../../lib/rateLimiting"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -144,7 +144,7 @@ const aj = arcjet({
 
 export async function GET(request: Request) {
   // Arcjet bot detection - block bots from creating guest accounts
-  if (!isDevelopment) {
+  if (!isDevelopment && !isE2E) {
     const decision = await aj.protect(request)
 
     if (decision.isDenied()) {

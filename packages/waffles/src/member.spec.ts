@@ -15,6 +15,10 @@ import { collaboration } from "./shared/collaboration"
 import { clean } from "./shared/clean"
 const isMember = true
 
+test.beforeEach(async ({ page }) => {
+  await clean({ page })
+})
+
 test("Subscribe", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -22,7 +26,6 @@ test("Subscribe", async ({ page }) => {
 
   await signIn({ page })
   await subscribe({ page, isMember })
-  await clean({ page })
 })
 
 test("Invite", async ({ page }) => {
@@ -44,7 +47,6 @@ test("Invite", async ({ page }) => {
     isMember,
     invite: `${uuidv4()}@gmail.com`,
   })
-  await clean({ page })
 })
 
 test("Gift", async ({ page }) => {
@@ -68,10 +70,9 @@ test("Gift", async ({ page }) => {
     password: process.env.VEX_TEST_PASSWORD_4!,
     gift: process.env.VEX_TEST_EMAIL_4!,
   })
-  await clean({ page })
 })
 
-test.skip("Debate", async ({ page }) => {
+test("Debate", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -92,13 +93,14 @@ test.skip("Debate", async ({ page }) => {
       {
         text: "Is Mars colonization an ethical priority when Earth still faces major problems? Consider resource allocation arguments",
         model: "chatGPT",
-        debateAgent: "sushi",
+        debateAgent: "perplexity",
         like: true,
       },
       {
         text: "Universal Basic Income: Solution to automation or threat to work ethic? Debate economic and social impacts.",
         model: "sushi",
         debateAgent: "claude",
+        like: true,
       },
       {
         text: "Is it morally justifiable to prioritize human lives over animal lives in medical research?",
@@ -109,158 +111,159 @@ test.skip("Debate", async ({ page }) => {
       {
         text: "Will quantum computing ultimately benefit or threaten cybersecurity? Debate both technological possibilities.",
         model: "sushi",
-        debateAgent: "claude",
+        debateAgent: "gemini",
+        like: true,
       },
     ],
   })
 })
 
-// test("Chat - Hourly Limit Test", async ({ page }) => {
-//   test.slow()
-//   await page.goto(getURL({ isLive: false, isMember }), {
-//     waitUntil: "networkidle",
-//   })
+test("Chat - Hourly Limit Test", async ({ page }) => {
+  test.slow()
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
 
-//   await signIn({ page })
-//   await limit({ page, isMember })
-// })
+  await signIn({ page })
+  await limit({ page, isMember })
+})
 
-// test("Thread", async ({ page }) => {
-//   test.slow()
-//   await page.goto(getURL({ isLive: false, isMember }), {
-//     waitUntil: "networkidle",
-//   })
+test("Thread", async ({ page }) => {
+  test.slow()
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
 
-//   await signIn({ page })
-//   await thread({ page, bookmark: true, isMember })
-// })
+  await signIn({ page })
+  await thread({ page, bookmark: true, isMember })
+})
 
-// test("Long text", async ({ page }) => {
-//   test.slow()
-//   await page.goto(getURL({ isLive: false, isMember }), {
-//     waitUntil: "networkidle",
-//   })
+test("Long text", async ({ page }) => {
+  test.slow()
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
 
-//   await signIn({ page })
-//   await chat({
-//     page,
-//     isMember,
-//     instruction: "Long text",
-//     // agentMessageTimeout: 12000,
-//     prompts: [
-//       {
-//         text: "Short",
-//         model: "sushi",
-//       },
-//       {
-//         text: "long",
-//         model: "sushi",
-//         stop: true,
-//       },
-//       {
-//         text: "Should delete this message",
-//         model: "sushi",
-//         delete: true,
-//       },
-//     ],
-//   })
-// })
+  await signIn({ page })
+  await chat({
+    page,
+    isMember,
+    instruction: "Long text",
+    // agentMessageTimeout: 12000,
+    prompts: [
+      {
+        text: "Short",
+        model: "sushi",
+      },
+      {
+        text: "long",
+        model: "sushi",
+        stop: true,
+      },
+      {
+        text: "Should delete this message",
+        model: "sushi",
+        delete: true,
+      },
+    ],
+  })
+})
 
-// test("File upload", async ({ page }) => {
-//   test.slow()
-//   await page.goto(getURL({ isLive: false, isMember }), {
-//     waitUntil: "networkidle",
-//   })
+test("File upload", async ({ page }) => {
+  test.slow()
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
 
-//   await signIn({ page })
+  await signIn({ page })
 
-//   await chat({
-//     artifacts: {
-//       paste: 3,
-//       pdf: 3,
-//     },
-//     isNewChat: false,
-//     page,
-//     isMember,
-//     instruction: "Lets upload some files",
-//     prompts: [
-//       {
-//         text: "Hey Vex, Analyze this text",
-//         model: "chatGPT",
-//         mix: {
-//           paste: 4,
-//         },
-//         like: true,
-//       },
-//       {
-//         text: "Hey Vex, Analyze this text",
-//         model: "chatGPT",
-//         mix: {
-//           image: 1,
-//           paste: 1,
-//           audio: 1,
-//           pdf: 1,
-//         },
-//         like: true,
-//       },
-//       {
-//         text: "Hey Vex, Analyze this pdf",
-//         model: "chatGPT",
-//         mix: {
-//           pdf: 4,
-//         },
-//         like: true,
-//       },
-//       {
-//         text: "Hey Vex, Analyze this video",
-//         model: "claude",
-//         mix: {
-//           video: 1,
-//         },
-//         like: true,
-//       },
-//       {
-//         text: "Hey Vex, Analyze this audio",
-//         model: "claude",
-//         mix: {
-//           audio: 4,
-//         },
-//         like: true,
-//       },
-//       {
-//         text: "Hey Vex, Analyze this images",
-//         model: "chatGPT",
-//         mix: {
-//           image: 4,
-//         },
-//         like: true,
-//       },
-//     ],
-//   })
-// })
+  await chat({
+    artifacts: {
+      paste: 3,
+      pdf: 3,
+    },
+    isNewChat: false,
+    page,
+    isMember,
+    instruction: "Lets upload some files",
+    prompts: [
+      {
+        text: "Hey Vex, Analyze this text",
+        model: "chatGPT",
+        mix: {
+          paste: 4,
+        },
+        like: true,
+      },
+      {
+        text: "Hey Vex, Analyze this text",
+        model: "chatGPT",
+        mix: {
+          image: 1,
+          paste: 1,
+          audio: 1,
+          pdf: 1,
+        },
+        like: true,
+      },
+      {
+        text: "Hey Vex, Analyze this pdf",
+        model: "chatGPT",
+        mix: {
+          pdf: 4,
+        },
+        like: true,
+      },
+      {
+        text: "Hey Vex, Analyze this video",
+        model: "claude",
+        mix: {
+          video: 1,
+        },
+        like: true,
+      },
+      {
+        text: "Hey Vex, Analyze this audio",
+        model: "claude",
+        mix: {
+          audio: 4,
+        },
+        like: true,
+      },
+      {
+        text: "Hey Vex, Analyze this images",
+        model: "chatGPT",
+        mix: {
+          image: 4,
+        },
+        like: true,
+      },
+    ],
+  })
+})
 
-// test("Collaboration", async ({ page, browser }) => {
-//   await page.goto(
-//     getURL({
-//       isLive: false,
-//       isMember,
-//       fingerprint: VEX_TEST_FINGERPRINT_3,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//     },
-//   )
+test("Collaboration", async ({ page, browser }) => {
+  await page.goto(
+    getURL({
+      isLive: false,
+      isMember,
+      fingerprint: VEX_TEST_FINGERPRINT_3,
+    }),
+    {
+      waitUntil: "networkidle",
+    },
+  )
 
-//   await signIn({
-//     page,
-//     email: VEX_TEST_EMAIL_3,
-//     password: VEX_TEST_PASSWORD_3,
-//   })
+  await signIn({
+    page,
+    email: VEX_TEST_EMAIL_3,
+    password: VEX_TEST_PASSWORD_3,
+  })
 
-//   await collaboration({
-//     page,
-//     browser,
-//     isMember,
-//     fingerprint: VEX_TEST_FINGERPRINT_3,
-//   })
-// })
+  await collaboration({
+    page,
+    browser,
+    isMember,
+    fingerprint: VEX_TEST_FINGERPRINT_3,
+  })
+})

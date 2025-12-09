@@ -33,9 +33,8 @@ const handleIntlRequest = (request: NextRequest) => {
 export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
 
 export const isProduction =
-  !isCI &&
-  (process.env.NODE_ENV === "production" ||
-    process.env.NEXT_PUBLIC_NODE_ENV === "production")
+  process.env.NODE_ENV === "production" ||
+  process.env.NEXT_PUBLIC_NODE_ENV === "production"
 
 export const isDevelopment = !isProduction
 
