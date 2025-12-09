@@ -4403,7 +4403,10 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                             const sushiAgent = aiAgents.find(
                               (agent) => agent.name === "sushi",
                             )
-                            if (sushiAgent && selectedAgent?.name !== "sushi") {
+                            if (
+                              sushiAgent &&
+                              !selectedAgent?.capabilities?.pdf
+                            ) {
                               setSelectedAgent(sushiAgent)
                             }
 

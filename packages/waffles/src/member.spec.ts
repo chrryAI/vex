@@ -189,7 +189,7 @@ test("File upload", async ({ page }) => {
     prompts: [
       {
         text: "Hey Vex, Analyze this text",
-        model: "chatGPT",
+        model: "sushi",
         mix: {
           paste: 4,
         },
@@ -197,7 +197,7 @@ test("File upload", async ({ page }) => {
       },
       {
         text: "Hey Vex, Analyze this text",
-        model: "chatGPT",
+        model: "gemini",
         mix: {
           image: 1,
           paste: 1,
@@ -224,7 +224,7 @@ test("File upload", async ({ page }) => {
       },
       {
         text: "Hey Vex, Analyze this audio",
-        model: "claude",
+        model: "sushi",
         mix: {
           audio: 4,
         },
@@ -232,7 +232,7 @@ test("File upload", async ({ page }) => {
       },
       {
         text: "Hey Vex, Analyze this images",
-        model: "chatGPT",
+        model: "claude",
         mix: {
           image: 4,
         },
