@@ -22,6 +22,7 @@ import Home from "./Home"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
 import { locales } from "./locales"
 import { FRONTEND_URL } from "./utils"
+import { useApp } from "./context/providers"
 
 // Lazy load less frequently used components to reduce initial bundle
 const Store = lazy(() => import("./Store"))
@@ -59,7 +60,7 @@ export const Hey = memo(
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { isHome, pathname, router } = useNavigationContext()
+    const { pathname, router } = useNavigationContext()
 
     const { isExtension } = usePlatform()
 
@@ -76,13 +77,11 @@ export const Hey = memo(
     }, [pathname, isExtension])
 
     const { threadId } = useChat()
-    const { storeApps, app, isSplash, setIsSplash, apps } = useAuth()
+    const { app, isSplash, setIsSplash } = useAuth()
+
+    const { currentStore } = useApp()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
-
-    const store = storeApps?.find(
-      (app) => app?.store?.slug === lastPathSegment,
-    )?.store
 
     // SSR routes that should be handled by Next.js
     // Check both exact matches and path prefixes (e.g., /blog/dear-claude)
@@ -93,12 +92,6 @@ export const Hey = memo(
       ssrPrefixes.some((prefix) => pathname.startsWith(prefix))
 
     // Detect if this is an app slug (atlas, peach, vault, etc.)
-    const { appSlug } = getAppAndStoreSlugs(pathname, {
-      defaultAppSlug: app?.slug ?? "",
-      defaultStoreSlug: app?.store?.slug ?? "",
-      excludedRoutes: excludedSlugRoutes,
-      locales,
-    })
 
     const pathWithoutLocale = pathname
       .replace(/^\/[a-z]{2}\//, "/")
@@ -113,14 +106,10 @@ export const Hey = memo(
 
     const isChrry = app && app.slug === "chrry"
 
-    const isAppSlug =
-      !!appSlug && storeApps.some((candidate) => candidate.slug === appSlug)
-
     // Check if current route is a store slug by checking all apps
-    const isStorePage = !!store
-
-    // Check if this is a thread detail page (e.g., /threads/abc-123)
-    const isThreadDetailPage = !!threadId
+    const isStorePage = app?.store?.apps?.find(
+      (app) => app.store?.slug === pathWithoutLocale,
+    )
 
     // Auto-detect route component
     // Priority: Store pages > Full path match (nested routes) > Last segment > App slugs > Thread IDs
@@ -130,9 +119,7 @@ export const Hey = memo(
         ? ROUTES[pathWithoutLocale]
         : lastPathSegment && ROUTES[lastPathSegment]
           ? ROUTES[lastPathSegment]
-          : isAppSlug
-            ? Home // App slugs render Home with app context
-            : null
+          : null
 
     // Check if this is a client-side route
     // Skip SSR routes completely - let Next.js handle them
@@ -141,10 +128,10 @@ export const Hey = memo(
       (!isSSRRoute &&
         (!!RouteComponent ||
           threadId ||
-          isThreadDetailPage ||
           pathname === "/" ||
           pathname === "/api" ||
-          isAppSlug))
+          app ||
+          currentStore))
 
     const isHydrated = useHasHydrated()
 
@@ -192,8 +179,8 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        setIsSplash(!apps.length)
-    }, [isImageLoaded, isHydrated, isSplash, apps, minSplashTimeElapsed])
+        setIsSplash(!app?.store?.apps?.length)
+    }, [isImageLoaded, isHydrated, isSplash, minSplashTimeElapsed])
 
     // useEffect(() => {
     //   app?.slug && useExtensionIcon?.(app?.slug)
@@ -214,12 +201,12 @@ export const Hey = memo(
                 {isClientRoute ? (
                   // Client-side routes: SWAP content
                   // Check thread detail FIRST before RouteComponent
-                  isThreadDetailPage && !isHome ? (
+                  threadId ? (
                     <Thread key={threadId} />
                   ) : RouteComponent ? (
-                    <RouteComponent className={className} />
+                    <RouteComponent />
                   ) : (
-                    isHome && <Home className={className} />
+                    <Home />
                   )
                 ) : (
                   children

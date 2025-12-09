@@ -29,6 +29,16 @@ export default async function getAppAction({
 
   const headersList = request?.headers || (await headers())
   const appId = rest.appId || headersList.get("x-app-id")
+  const storeSlugCandidate = headersList.get("x-app-slug")
+
+  const storeFromHeader = storeSlugCandidate
+    ? await getStore({
+        slug: storeSlugCandidate,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1,
+      })
+    : null
 
   const path = headersList.get("x-pathname")
 
@@ -78,13 +88,20 @@ export default async function getAppAction({
         guestId: guest?.id,
         depth: 1,
       })
-    : await getApp({
-        slug: appSlug,
-        storeSlug: storeSlug,
-        userId: member?.id,
-        guestId: guest?.id,
-        depth: 1,
-      })
+    : storeFromHeader?.store?.appId
+      ? await getApp({
+          id: storeFromHeader.store.appId,
+          userId: member?.id,
+          guestId: guest?.id,
+          depth: 1,
+        })
+      : await getApp({
+          slug: appSlug,
+          storeSlug: storeSlug,
+          userId: member?.id,
+          guestId: guest?.id,
+          depth: 1,
+        })
 
   const store = appInternal?.store || chrryStore
 
