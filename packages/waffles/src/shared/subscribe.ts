@@ -2,6 +2,7 @@ import { expect, Page } from "@playwright/test"
 import { signIn } from "./signIn"
 import { chat } from "./chat"
 import { isCI, modelName, wait, log } from "../index"
+import { clean } from "./clean"
 
 export const subscribe = async ({
   page,
@@ -262,6 +263,8 @@ export const subscribe = async ({
     })
 
     expect(await getCreditsLeft(giftPage)).toBeGreaterThan(150)
+
+    await clean({ page: giftPage })
     await giftContext.close()
   }
 }

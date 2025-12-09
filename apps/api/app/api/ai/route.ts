@@ -612,6 +612,7 @@ export async function POST(request: Request) {
         depth: 1,
         userId: member?.id,
         guestId: guest?.id,
+        skipCache: true,
       })
     : undefined
 

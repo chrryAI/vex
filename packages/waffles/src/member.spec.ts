@@ -19,10 +19,6 @@ test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
 
-test.afterEach(async ({ page }) => {
-  await clean({ page })
-})
-
 test("Subscribe", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",

@@ -13,10 +13,6 @@ test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
 
-test.afterEach(async ({ page }) => {
-  await clean({ page })
-})
-
 test("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({

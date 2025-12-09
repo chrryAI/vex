@@ -19,6 +19,7 @@ import toast from "react-hot-toast"
 import { useMemoryConsentStyles } from "./MemoryConsent.styles"
 import { Button, Div } from "./platform"
 import { useStyles } from "./context/StylesContext"
+import { useHasHydrated } from "./hooks"
 
 export default function MemoryConsent({
   style,
@@ -54,6 +55,8 @@ export default function MemoryConsent({
 
   const [isDeleting, setIsDeleting] = useState(false)
 
+  const isHydrated = useHasHydrated()
+
   const [isDeletingSession, setIsDeletingSession] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -80,9 +83,10 @@ export default function MemoryConsent({
     return null
   }
 
-  if (isManagingApp || canEditApp) {
+  if (isManagingApp || canEditApp || !isHydrated) {
     return null
   }
+
   return (
     <Div
       ref={containerRef}
