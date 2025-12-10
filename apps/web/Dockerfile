@@ -38,7 +38,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Restore pnpm workspace links (fast, uses existing node_modules)
-RUN pnpm install --offline --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED=1
