@@ -1,20 +1,15 @@
 import { NextRequest } from "next/server"
 import app from "../../../hono"
 
-// Forward all /api/session requests to Hono
+// Forward to Hono's /threads route
 export async function GET(request: NextRequest) {
   const url = new URL(request.url)
-  const path = "/session" + url.search
-
-  // Manually create headers to ensure cookies are included
-  const headers = new Headers()
-  request.headers.forEach((value, key) => {
-    headers.set(key, value)
-  })
+  const path = "/threads" + url.search
 
   const honoRequest = new Request(new URL(path, url.origin), {
     method: request.method,
-    headers: headers,
+    headers: request.headers,
+    body: request.body,
   })
 
   return await app.fetch(honoRequest)

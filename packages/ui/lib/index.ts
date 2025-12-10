@@ -217,7 +217,7 @@ export const getThreads = async ({
   API_URL?: string
   slug?: "Atlas" | "Peach" | "Vault" | "Bloom" | string | null
 }) => {
-  const url = new URL(`${API_URL}/hono/threads`)
+  const url = new URL(`${API_URL}/threads`)
 
   url.searchParams.set("pageSize", pageSize?.toString() || "10")
   collaborationStatus === null
@@ -267,7 +267,7 @@ export const getThread = async ({
   API_URL?: string
 }) => {
   const response = await fetch(
-    `${API_URL}/hono/threads/${id}?pageSize=${pageSize}${liked ? `&liked=${liked}` : ""}`,
+    `${API_URL}/threads/${id}?pageSize=${pageSize}${liked ? `&liked=${liked}` : ""}`,
     {
       method: "GET",
       headers: {
@@ -1010,7 +1010,7 @@ export const getSession = async ({
     ...(source ? { source } : {}),
   })
 
-  const response = await fetch(`${API_URL}/hono/session?${params}`, {
+  const response = await fetch(`${API_URL}/session?${params}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "x-device-id": deviceId,
@@ -1128,14 +1128,11 @@ export const getTranslations = async ({
   token?: string
   locale?: string
 } = {}) => {
-  const response = await fetch(
-    `${API_URL}/hono/translations?locale=${locale}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const response = await fetch(`${API_URL}/translations?locale=${locale}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  )
+  })
 
   if (!response.ok) {
     return {
