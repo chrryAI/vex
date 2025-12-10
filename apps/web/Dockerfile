@@ -37,7 +37,10 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code (this includes workspace packages)
 COPY . .
 
-# Restore pnpm workspace links (fast, uses existing node_modules)
+# Remove node_modules to prevent pnpm from prompting for confirmation
+RUN rm -rf node_modules
+
+# Restore pnpm workspace links
 RUN pnpm install --frozen-lockfile
 
 # Build the application
