@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [prod] # Only build on staging branch
+    branches: [staging] # Only build on staging branch
   # pull_request:
   #   branches: [main, chrry]
   workflow_dispatch:
