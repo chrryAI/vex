@@ -3410,6 +3410,21 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     // E2E test mode - simulate streaming via WebSocket notifications
     // No need for ReadableStream since we're using WebSocket for communication
 
+    // Create AbortController for E2E stream cancellation
+    const abortController = new AbortController()
+
+    // Register stream controller for E2E mode to enable cancellation
+    const controller: StreamController = {
+      close: () => {
+        console.log("🛑 Aborting E2E stream:", streamId)
+        abortController.abort()
+      },
+      desiredSize: null,
+      enqueue: () => {},
+      error: () => {},
+    }
+    streamControllers.set(streamId, controller)
+
     const testResponse = faker.lorem.sentence({
       min: content.includes("long") ? 550 : 80,
       max: content.includes("long") ? 750 : 80,
@@ -3445,6 +3460,11 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     for (const reasoningChunk of reasoningChunks) {
       await wait(10)
 
+      if (abortController.signal.aborted) {
+        console.log("🛑 E2E stream was stopped, breaking reasoning loop")
+        break
+      }
+
       thread &&
         enhancedStreamChunk({
           chunk: `__REASONING__${reasoningChunk}__/REASONING__`,
@@ -3465,6 +3485,11 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     for (const [index, chunk] of chunks.entries()) {
       await wait(30)
 
+      if (abortController.signal.aborted) {
+        console.log("🛑 E2E stream was stopped, breaking response loop")
+        break
+      }
+
       thread &&
         enhancedStreamChunk({
           chunk,
@@ -3482,6 +3507,12 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     console.log(
       `🎯 All ${totalChunks} chunks sent - now sending stream_complete`,
     )
+
+    if (abortController.signal.aborted) {
+      console.log("🛑 E2E stream was stopped, breaking response loop")
+
+      return NextResponse.json({ error: "Stream was stopped" }, { status: 400 })
+    }
 
     if (!thread) {
       return NextResponse.json({ error: "Thread not found" }, { status: 404 })
@@ -3537,6 +3568,9 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     }
 
     console.log("✅ E2E test streaming complete")
+
+    // Clean up stream controller
+    streamControllers.delete(streamId)
 
     checkThreadSummaryLimit({ user: member, guest, thread }) &&
       notifyOwnerAndCollaborations({
