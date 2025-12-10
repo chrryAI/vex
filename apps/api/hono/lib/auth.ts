@@ -45,6 +45,7 @@ export async function getMember(
       if (token.split(".").length !== 3) {
         const fp = authHeader.replace("Bearer ", "")
 
+        // Try API key first
         const result = await getUser({
           apiKey: fp,
           skipCache: skipCache || full,
@@ -55,6 +56,17 @@ export async function getMember(
             token,
             password: full ? result.password : null,
           }
+        }
+
+        // If not an API key, try as guest fingerprint
+        const guestResult = await getGuestDb({
+          fingerprint: fp,
+          skipCache: skipCache || false,
+        })
+
+        if (guestResult) {
+          // Return null for member, but the guest will be picked up by getGuest
+          return null
         }
 
         return null
@@ -89,6 +101,8 @@ export async function getMember(
 
   try {
     const cookieHeader = request.headers.get("cookie")
+    console.log(`🚀 ~ cookieHeader:`, cookieHeader)
+    console.log(`🚀 ~ All headers:`, Array.from(request.headers.entries()))
 
     if (cookieHeader) {
       // Look for __Secure-next-auth.session-token or next-auth.session-token
@@ -150,7 +164,28 @@ export async function getGuest(
   const { skipCache } = options
 
   try {
+    // First try Authorization header (for cross-origin requests)
+    const authHeader = request.headers.get("authorization")
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "")
+
+      // If it's a GUID (not a JWT), try it as a fingerprint
+      if (token.split(".").length !== 3) {
+        const guest = await getGuestDb({
+          fingerprint: token,
+          skipCache: skipCache || false,
+        })
+
+        if (guest) {
+          return guest
+        }
+      }
+    }
+
+    // Fall back to cookie-based authentication
     const cookieHeader = request.headers.get("cookie")
+    console.log(`🚀 ~ cookieHeader:`, cookieHeader)
+    console.log(`🚀 ~ All headers:`, Array.from(request.headers.entries()))
 
     if (!cookieHeader) {
       return null

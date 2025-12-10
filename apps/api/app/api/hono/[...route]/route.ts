@@ -32,13 +32,15 @@ async function handleRequest(request: NextRequest) {
   // Create a new URL with the Hono path
   const honoUrl = new URL(path + url.search, url.origin)
 
+  // Debug: Check if cookies are present
+  const cookieHeader = request.headers.get("cookie")
+  console.log(`🍪 Cookie header in Next.js:`, cookieHeader ? "present" : "null")
+
   // Create a new Request with the Hono URL
   const honoRequest = new Request(honoUrl, {
     method: request.method,
     headers: request.headers,
     body: request.body,
-    // @ts-ignore
-    duplex: "half",
   })
 
   // Call Hono app

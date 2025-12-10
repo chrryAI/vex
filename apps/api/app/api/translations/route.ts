@@ -1,55 +1,21 @@
-import { defaultLocale, locales, locale } from "chrry/locales"
-import { NextResponse } from "next/server"
-import { getCachedTranslations, setCachedTranslations } from "@repo/db"
-import { isDevelopment } from "chrry/utils"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-export async function GET(request: Request) {
-  console.log("🌍 Translations API called")
-  try {
-    const url = new URL(request.url)
-    let locale = url.searchParams.get("locale") || defaultLocale
+// Forward all /api/translations requests to Hono
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/translations" + url.search
 
-    if (!locales.includes(locale as locale)) {
-      locale = defaultLocale
-    }
-    console.log(`📝 Loading translations for locale: ${locale}`)
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-    // Try to get from Redis cache first (only in production)
-    const cached = isDevelopment ? null : await getCachedTranslations(locale)
-    if (cached) {
-      return NextResponse.json(cached)
-    }
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
 
-    // Cache miss or development mode - load from file system and auto-cache
-    let translations: Record<string, any> = {}
-    try {
-      const translationsModule = await import(`chrry/locales/${locale}.json`)
-      translations = translationsModule.default || translationsModule
-
-      // Store in Redis cache for future requests
-      await setCachedTranslations(locale, translations)
-    } catch (error) {
-      // Sanitize locale for logging
-      const safeLocale = String(locale).replace(/[^\w-]/g, "_")
-      console.error("Failed to load locale: %s", safeLocale, error)
-      try {
-        const enModule = await import(`chrry/locales/en.json`)
-        translations = enModule.default || enModule
-
-        // Cache the fallback too
-        await setCachedTranslations(locale, translations)
-      } catch (fallbackError) {
-        console.error("Failed to load fallback locale (en)", fallbackError)
-        translations = {}
-      }
-    }
-
-    return NextResponse.json(translations)
-  } catch (error) {
-    console.error("❌ Translations API error:", error)
-    return NextResponse.json(
-      { error: "Failed to load translations" },
-      { status: 500 },
-    )
-  }
+  return await app.fetch(honoRequest)
 }
