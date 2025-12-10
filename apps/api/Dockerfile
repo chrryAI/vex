@@ -13,7 +13,6 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/
 COPY packages/db/package.json packages/db/
 COPY packages/ui/package.json packages/ui/
-COPY packages/chrry/package.json packages/chrry/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
