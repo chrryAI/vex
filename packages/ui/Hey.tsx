@@ -99,11 +99,16 @@ export const Hey = memo(
       .slice(1)
       .split("?")[0]
 
-    useEffect(() => {
-      if (pathnameLocal && isExtension && pathnameLocal !== "/") {
-        router.push(pathnameLocal)
-      }
-    }, [pathnameLocal, isExtension])
+    // useEffect(() => {
+    //   if (
+    //     pathnameLocal &&
+    //     isExtension &&
+    //     pathnameLocal !== "/" &&
+    //     pathnameLocal !== pathname
+    //   ) {
+    //     router.push(pathnameLocal)
+    //   }
+    // }, [pathnameLocal, isExtension, pathname])
 
     const isChrry = app && app.slug === "chrry"
 

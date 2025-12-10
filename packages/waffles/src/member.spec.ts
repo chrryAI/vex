@@ -138,7 +138,7 @@ test("Thread", async ({ page }) => {
   await thread({ page, bookmark: true, isMember })
 })
 
-test.skip("Long text", async ({ page }) => {
+test("Long text", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
