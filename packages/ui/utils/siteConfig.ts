@@ -178,7 +178,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.55",
+  version: "26.10.58",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1404,6 +1404,10 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
   },
 }
 
+const matchesDomain = (host: string, domain: string): boolean => {
+  return host === domain || host.endsWith(`.${domain}`)
+}
+
 export function getSiteTranslation(
   mode: SiteMode,
   locale: string,
@@ -1443,9 +1447,6 @@ export function detectSiteModeDomain(
   }
 
   // Helper function to check if hostname matches or is subdomain of domain
-  const matchesDomain = (host: string, domain: string): boolean => {
-    return host === domain || host.endsWith(`.${domain}`)
-  }
 
   // Domain-based detection (use exact match or subdomain check)
   console.log(`🔍 Detecting mode for host: "${host}"`)
@@ -1554,7 +1555,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   }
 
   // Check for E2E environment first
-  if (hostname?.includes("e2e.chrry.ai")) {
+  if (hostname && matchesDomain(hostname, "e2e.chrry.ai")) {
     return e2eVex
   }
 

@@ -4609,6 +4609,7 @@ export const getApp = async ({
   depth = 0,
   storeSlug,
   storeDomain,
+  skipCache = false,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
   id?: string
@@ -4620,6 +4621,7 @@ export const getApp = async ({
   depth?: number
   storeSlug?: string
   storeDomain?: string
+  skipCache?: boolean
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -4669,9 +4671,12 @@ export const getApp = async ({
   const cacheKey = `app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}`
 
   // Try cache first
-  const cached = await getCache<appWithStore>(cacheKey)
-  if (cached) {
-    return cached
+
+  if (!skipCache) {
+    const cached = await getCache<appWithStore>(cacheKey)
+    if (cached) {
+      return cached
+    }
   }
 
   // Build query with conditional store join

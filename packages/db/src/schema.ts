@@ -1813,6 +1813,8 @@ export const apps = pgTable(
     installType: text("installType", {
       enum: ["pwa", "native", "web", "hybrid"],
     }).default("pwa"), // Type of installation
+    firefoxAddOnUrl: text("firefoxAddOnUrl"), // Firefox Add-on URL
+    chromeWebStoreUrl: text("chromeWebStoreUrl"), // Chrome Web Store URL
     appStoreUrl: text("appStoreUrl"), // iOS App Store URL
     playStoreUrl: text("playStoreUrl"), // Google Play Store URL
     bundleId: text("bundleId"), // iOS bundle ID (e.g., com.chrry.app)

@@ -934,6 +934,7 @@ export function ChatProvider({
     if (!a) return
 
     setSelectedAgent(a)
+    setDebateAgent(null)
   }, [app, aiAgents])
 
   const { isDevelopment, isE2E, actions } = useData()

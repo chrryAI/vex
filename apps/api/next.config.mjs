@@ -54,6 +54,7 @@ if (process.env.NODE_ENV !== "production") {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone", // Required for Docker deployment
   transpilePackages: ["@repo/db"],
   serverExternalPackages: ["newrelic"], // Exclude New Relic from bundling
   // Enable detailed logging

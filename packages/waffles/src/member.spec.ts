@@ -15,15 +15,7 @@ import { collaboration } from "./shared/collaboration"
 import { clean } from "./shared/clean"
 const isMember = true
 
-test.beforeAll(async ({ page }) => {
-  await clean({ page })
-})
-
 test.beforeEach(async ({ page }) => {
-  await clean({ page })
-})
-
-test.afterEach(async ({ page }) => {
   await clean({ page })
 })
 
@@ -197,7 +189,7 @@ test("File upload", async ({ page }) => {
     prompts: [
       {
         text: "Hey Vex, Analyze this text",
-        model: "chatGPT",
+        model: "sushi",
         mix: {
           paste: 4,
         },
@@ -205,7 +197,7 @@ test("File upload", async ({ page }) => {
       },
       {
         text: "Hey Vex, Analyze this text",
-        model: "chatGPT",
+        model: "gemini",
         mix: {
           image: 1,
           paste: 1,
@@ -232,7 +224,7 @@ test("File upload", async ({ page }) => {
       },
       {
         text: "Hey Vex, Analyze this audio",
-        model: "claude",
+        model: "sushi",
         mix: {
           audio: 4,
         },
@@ -240,7 +232,7 @@ test("File upload", async ({ page }) => {
       },
       {
         text: "Hey Vex, Analyze this images",
-        model: "chatGPT",
+        model: "claude",
         mix: {
           image: 4,
         },

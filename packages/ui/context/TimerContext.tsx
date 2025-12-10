@@ -379,7 +379,6 @@ export function TimerContextProvider({
           selectedTasks,
           type: "timer",
           isCountingDown: false,
-          fingerprint,
         })
 
         return
@@ -391,13 +390,18 @@ export function TimerContextProvider({
           timer: data,
           selectedTasks,
           type: "timer",
-          fingerprint,
         })
         lastSent.current = now
       }
     },
     [send, selectedTasks, token, isCountingDown, isFinished, remoteTimer],
   )
+
+  useEffect(() => {
+    if (!isCountingDown || !timer) return
+
+    updateTimer(timer)
+  }, [isCountingDown, timer])
 
   const setPresetMin1 = useCallback(
     (value: number) => {
@@ -476,7 +480,7 @@ export function TimerContextProvider({
     setPresetMin3Internal(timer.preset3)
   }, [timer?.id])
 
-  const [shouldFetchTimer, setShouldFetchTimer] = useState(false)
+  const [shouldFetchTimer, setShouldFetchTimer] = useState(true)
 
   const {
     data: timerData,
@@ -551,7 +555,12 @@ export function TimerContextProvider({
         return
       }
 
+      // Collect updates to apply after setTasks completes
+      const updatedSelectedTasks: Task[] = []
+
       for (const selectedTask of selectedTasks) {
+        let updatedTotal: any = null
+
         setTasks((prevTasks) => {
           if (!prevTasks) return prevTasks
           return {
@@ -578,17 +587,8 @@ export function TimerContextProvider({
                       ]
                     : [{ date: currentDay.toISOString(), count: 1 }]
 
-                setSelectedTasks(
-                  selectedTasks?.map((t) => {
-                    if (t.id === task.id) {
-                      return {
-                        ...t,
-                        total,
-                      }
-                    }
-                    return t
-                  }),
-                )
+                // Store the updated total to apply later
+                updatedTotal = total
 
                 return {
                   ...task,
@@ -599,6 +599,21 @@ export function TimerContextProvider({
             }),
           }
         })
+
+        // Collect the updated task for batch update
+        if (updatedTotal) {
+          updatedSelectedTasks.push({
+            ...selectedTask,
+            total: updatedTotal,
+          })
+        } else {
+          updatedSelectedTasks.push(selectedTask)
+        }
+      }
+
+      // Update selectedTasks after all setTasks calls complete
+      if (updatedSelectedTasks.length > 0) {
+        setSelectedTasks(updatedSelectedTasks)
       }
     }
   }, [time, isCountingDown, isPaused, token])

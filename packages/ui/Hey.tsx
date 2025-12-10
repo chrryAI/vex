@@ -5,6 +5,7 @@ import {
   lazy,
   memo,
   Suspense,
+  useCallback,
   useEffect,
   useState,
 } from "react"
@@ -22,6 +23,7 @@ import Home from "./Home"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
 import { locales } from "./locales"
 import { FRONTEND_URL } from "./utils"
+import { useApp } from "./context/providers"
 
 // Lazy load less frequently used components to reduce initial bundle
 const Store = lazy(() => import("./Store"))
@@ -59,7 +61,7 @@ export const Hey = memo(
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { isHome, pathname, router } = useNavigationContext()
+    const { pathname, router } = useNavigationContext()
 
     const { isExtension } = usePlatform()
 
@@ -76,13 +78,11 @@ export const Hey = memo(
     }, [pathname, isExtension])
 
     const { threadId } = useChat()
-    const { storeApps, app, isSplash, setIsSplash, apps } = useAuth()
+    const { app, isSplash, setIsSplash, storeApps } = useAuth()
+
+    const { currentStore } = useApp()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
-
-    const store = storeApps?.find(
-      (app) => app?.store?.slug === lastPathSegment,
-    )?.store
 
     // SSR routes that should be handled by Next.js
     // Check both exact matches and path prefixes (e.g., /blog/dear-claude)
@@ -93,34 +93,29 @@ export const Hey = memo(
       ssrPrefixes.some((prefix) => pathname.startsWith(prefix))
 
     // Detect if this is an app slug (atlas, peach, vault, etc.)
-    const { appSlug } = getAppAndStoreSlugs(pathname, {
-      defaultAppSlug: app?.slug ?? "",
-      defaultStoreSlug: app?.store?.slug ?? "",
-      excludedRoutes: excludedSlugRoutes,
-      locales,
-    })
 
     const pathWithoutLocale = pathname
       .replace(/^\/[a-z]{2}\//, "/")
       .slice(1)
       .split("?")[0]
 
-    useEffect(() => {
-      if (pathnameLocal && isExtension && pathnameLocal !== "/") {
-        router.push(pathnameLocal)
-      }
-    }, [pathnameLocal, isExtension])
+    // useEffect(() => {
+    //   if (
+    //     pathnameLocal &&
+    //     isExtension &&
+    //     pathnameLocal !== "/" &&
+    //     pathnameLocal !== pathname
+    //   ) {
+    //     router.push(pathnameLocal)
+    //   }
+    // }, [pathnameLocal, isExtension, pathname])
 
     const isChrry = app && app.slug === "chrry"
 
-    const isAppSlug =
-      !!appSlug && storeApps.some((candidate) => candidate.slug === appSlug)
-
     // Check if current route is a store slug by checking all apps
-    const isStorePage = !!store
-
-    // Check if this is a thread detail page (e.g., /threads/abc-123)
-    const isThreadDetailPage = !!threadId
+    const isStorePage = storeApps?.find(
+      (app) => app.store?.slug === pathWithoutLocale,
+    )
 
     // Auto-detect route component
     // Priority: Store pages > Full path match (nested routes) > Last segment > App slugs > Thread IDs
@@ -130,9 +125,7 @@ export const Hey = memo(
         ? ROUTES[pathWithoutLocale]
         : lastPathSegment && ROUTES[lastPathSegment]
           ? ROUTES[lastPathSegment]
-          : isAppSlug
-            ? Home // App slugs render Home with app context
-            : null
+          : null
 
     // Check if this is a client-side route
     // Skip SSR routes completely - let Next.js handle them
@@ -141,10 +134,10 @@ export const Hey = memo(
       (!isSSRRoute &&
         (!!RouteComponent ||
           threadId ||
-          isThreadDetailPage ||
           pathname === "/" ||
           pathname === "/api" ||
-          isAppSlug))
+          app ||
+          currentStore))
 
     const isHydrated = useHasHydrated()
 
@@ -154,36 +147,40 @@ export const Hey = memo(
     // Minimum splash screen duration (300ms) - starts when image loads
     useEffect(() => {
       if (!isImageLoaded) return
+      if (!app?.store?.apps?.length) return
 
       const timer = setTimeout(() => {
         setMinSplashTimeElapsed(true)
       }, 1000)
       return () => clearTimeout(timer)
-    }, [isImageLoaded])
+    }, [isImageLoaded, app])
 
-    const getSplash = (isSplash: boolean) => {
-      const splashStyle = styles.splash
-      const hiddenStyle = styles.splashHidden
-      if (!app) return null
-      return (
-        <Div
-          style={{
-            ...splashStyle.style,
-            ...(!isSplash ? hiddenStyle.style : {}),
-          }}
-        >
-          <Img
-            onLoad={(src) => {
-              setIsImageLoaded(true)
+    const getSplash = useCallback(
+      (isSplash: boolean) => {
+        const splashStyle = styles.splash
+        const hiddenStyle = styles.splashHidden
+        if (!app) return null
+        return (
+          <Div
+            style={{
+              ...splashStyle.style,
+              ...(!isSplash ? hiddenStyle.style : {}),
             }}
-            app={isChrry ? undefined : app}
-            logo={isChrry ? "blossom" : undefined}
-            showLoading={false}
-            size={isChrry ? 72 : 64}
-          />
-        </Div>
-      )
-    }
+          >
+            <Img
+              onLoad={(src) => {
+                setIsImageLoaded(true)
+              }}
+              app={isChrry ? undefined : app}
+              logo={isChrry ? "blossom" : undefined}
+              showLoading={false}
+              size={isChrry ? 72 : 64}
+            />
+          </Div>
+        )
+      },
+      [app, isSplash],
+    )
     // Memoize splash component to prevent re-renders
     const splash = getSplash(isSplash)
 
@@ -192,8 +189,8 @@ export const Hey = memo(
         isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
-        setIsSplash(!apps.length)
-    }, [isImageLoaded, isHydrated, isSplash, apps, minSplashTimeElapsed])
+        setIsSplash(!app?.store?.apps?.length)
+    }, [isImageLoaded, isHydrated, isSplash, minSplashTimeElapsed])
 
     // useEffect(() => {
     //   app?.slug && useExtensionIcon?.(app?.slug)
@@ -214,12 +211,12 @@ export const Hey = memo(
                 {isClientRoute ? (
                   // Client-side routes: SWAP content
                   // Check thread detail FIRST before RouteComponent
-                  isThreadDetailPage && !isHome ? (
+                  threadId ? (
                     <Thread key={threadId} />
                   ) : RouteComponent ? (
-                    <RouteComponent className={className} />
+                    <RouteComponent />
                   ) : (
-                    isHome && <Home className={className} />
+                    <Home />
                   )
                 ) : (
                   children
