@@ -37,6 +37,9 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
 COPY . .
 
+# Restore pnpm workspace links (fast, uses existing node_modules)
+RUN pnpm install --frozen-lockfile
+
 # Ensure public directory exists (create if missing)
 RUN mkdir -p apps/api/public
 
