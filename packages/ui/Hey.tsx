@@ -5,6 +5,7 @@ import {
   lazy,
   memo,
   Suspense,
+  useCallback,
   useEffect,
   useState,
 } from "react"
@@ -148,29 +149,32 @@ export const Hey = memo(
       return () => clearTimeout(timer)
     }, [isImageLoaded])
 
-    const getSplash = (isSplash: boolean) => {
-      const splashStyle = styles.splash
-      const hiddenStyle = styles.splashHidden
-      if (!app) return null
-      return (
-        <Div
-          style={{
-            ...splashStyle.style,
-            ...(!isSplash ? hiddenStyle.style : {}),
-          }}
-        >
-          <Img
-            onLoad={(src) => {
-              setIsImageLoaded(true)
+    const getSplash = useCallback(
+      (isSplash: boolean) => {
+        const splashStyle = styles.splash
+        const hiddenStyle = styles.splashHidden
+        if (!app) return null
+        return (
+          <Div
+            style={{
+              ...splashStyle.style,
+              ...(!isSplash ? hiddenStyle.style : {}),
             }}
-            app={isChrry ? undefined : app}
-            logo={isChrry ? "blossom" : undefined}
-            showLoading={false}
-            size={isChrry ? 72 : 64}
-          />
-        </Div>
-      )
-    }
+          >
+            <Img
+              onLoad={(src) => {
+                setIsImageLoaded(true)
+              }}
+              app={isChrry ? undefined : app}
+              logo={isChrry ? "blossom" : undefined}
+              showLoading={false}
+              size={isChrry ? 72 : 64}
+            />
+          </Div>
+        )
+      },
+      [app, isSplash],
+    )
     // Memoize splash component to prevent re-renders
     const splash = getSplash(isSplash)
 

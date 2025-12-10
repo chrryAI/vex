@@ -87,8 +87,6 @@ export default async function ChrryAI({
     headersList.get("x-device-id") ||
     uuidv4()
 
-  const appSlug = headersList.get("x-app-slug") || undefined
-
   const hostname =
     headersList.get("x-forwarded-host") || headersList.get("host") || ""
 
