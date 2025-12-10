@@ -25,7 +25,16 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm
 
+# Copy workspace configuration first
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/
+COPY packages/db/package.json packages/db/
+COPY packages/ui/package.json packages/ui/
+
+# Now copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source code
 COPY . .
 
 # Build the application
