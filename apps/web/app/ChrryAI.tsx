@@ -1,5 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
+import "chrry/styles/view-transitions.css"
 import {
   getMetadata,
   VERSION,

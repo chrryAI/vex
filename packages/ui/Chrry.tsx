@@ -2,7 +2,7 @@
 
 import "./globals.scss"
 import "./globals.css"
-import "./styles/view-transitions.css"
+// import "./styles/view-transitions.css"
 
 import React from "react"
 import AppProviders from "./context/providers"
