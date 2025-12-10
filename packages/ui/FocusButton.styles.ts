@@ -406,7 +406,7 @@ export const FocusButtonStyleDefs = {
   taskContent: {
     display: "flex",
     alignItems: "center",
-    gap: 5,
+    gap: 10,
     flex: 1,
   },
   addTaskButtons: {

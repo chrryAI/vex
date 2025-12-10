@@ -1073,6 +1073,10 @@ export default function FocusButton({
                                 <GripVertical width={22} height={22} />
                               </Div>
                               <ConfirmButton
+                                style={{
+                                  position: "relative",
+                                  bottom: 1.5,
+                                }}
                                 data-testid="edit-task-button"
                                 className={"link"}
                                 onClick={() => {
@@ -1104,6 +1108,7 @@ export default function FocusButton({
                                       toast.error(result.error)
                                       return
                                     }
+                                    await fetchTasks()
                                     toast.success(t("Deleted"))
                                   } catch (error) {
                                     toast.error(t("Something went wrong"))
