@@ -31,11 +31,11 @@ COPY apps/web/package.json apps/web/
 COPY packages/db/package.json packages/db/
 COPY packages/ui/package.json packages/ui/
 
+# Copy node_modules from deps stage BEFORE source code
+COPY --from=deps /app/node_modules ./node_modules
+
 # Copy source code (this includes workspace packages)
 COPY . .
-
-# Now copy node_modules from deps stage (this will have all dependencies)
-COPY --from=deps /app/node_modules ./node_modules
 
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED=1
