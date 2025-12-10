@@ -862,13 +862,17 @@ export function ChatProvider({
     setIsWebSearchEnabledInternal(agent?.capabilities?.webSearch || false)
   }
 
+  const defaultAgent =
+    aiAgents.find((a) => app?.defaultModel && a.name === app?.defaultModel) ||
+    favouriteAgent
+
   const [selectedAgent, setSelectedAgentInternal] = useLocalStorage<
     aiAgent | undefined | null
-  >(
-    "selectedAgent",
-    aiAgents.find((a) => app?.defaultModel && a.name === app?.defaultModel) ||
-      favouriteAgent,
-  )
+  >("selectedAgent", defaultAgent)
+
+  useEffect(() => {
+    !selectedAgent && setSelectedAgent(defaultAgent)
+  }, [defaultAgent, selectedAgent])
 
   const setIsWebSearchEnabled = (value: boolean) => {
     value ? setSelectedAgent(perplexityAgent) : undefined
