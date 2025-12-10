@@ -31,14 +31,11 @@ COPY apps/api/package.json apps/api/
 COPY packages/db/package.json packages/db/
 COPY packages/ui/package.json packages/ui/
 
-# Now copy node_modules from deps stage
+# Copy node_modules from deps stage BEFORE source code
 COPY --from=deps /app/node_modules ./node_modules
 
 # Copy source code
 COPY . .
-
-# Restore pnpm workspace links (fast, uses existing node_modules)
-RUN pnpm install --frozen-lockfile
 
 # Ensure public directory exists (create if missing)
 RUN mkdir -p apps/api/public
