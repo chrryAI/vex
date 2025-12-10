@@ -37,6 +37,9 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code (this includes workspace packages)
 COPY . .
 
+# Restore pnpm workspace links (fast, uses existing node_modules)
+RUN pnpm install --frozen-lockfile
+
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS='--max-old-space-size=8192'
