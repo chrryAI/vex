@@ -15,8 +15,9 @@ export async function scanFileForMalware(
 
   try {
     const formData = new FormData()
-    // Node.js FormData requires a Blob-like object with proper filename
-    const blob = new Blob([buffer], { type: "application/octet-stream" })
+    // Convert Buffer to Uint8Array for proper Blob compatibility
+    const uint8Array = new Uint8Array(buffer)
+    const blob = new Blob([uint8Array], { type: "application/octet-stream" })
     formData.append("file", blob, "file")
 
     console.log(`🔍 Scanning file at ${scannerUrl}/scan`)
@@ -54,7 +55,7 @@ export async function scanFileForMalware(
       hasApiKey: !!process.env.MALWARE_SCANNER_API_KEY,
     })
     // Fail open in development, fail closed in production
-    return { safe: isDevelopment }
+    return { safe: false }
   }
 }
 

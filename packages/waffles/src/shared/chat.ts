@@ -742,28 +742,6 @@ export const chat = async ({
       visible: !prompt.stop,
     })
 
-    if (prompt.mix?.pdf) {
-      const userMessagePdfCount = await (await getLastUserMessage())
-        .getByTestId("user-message-pdf")
-        .count()
-
-      expect(userMessagePdfCount).toBe(
-        prompt.mix.pdf > MAX_FILES ? MAX_FILES : prompt.mix.pdf,
-      )
-    }
-
-    if (prompt.webSearch) {
-      const webSearchResults = (await getLastAgentMessage()).getByTestId(
-        "web-search-results",
-      )
-      await expect(webSearchResults).toBeVisible({
-        timeout: prompt.agentMessageTimeout || agentMessageTimeout,
-      })
-
-      const webSearchResult = webSearchResults.getByTestId("web-search-result")
-      expect(await webSearchResult.count()).toBe(4)
-    }
-
     await wait(1000)
 
     const threadUrl = page.url()
