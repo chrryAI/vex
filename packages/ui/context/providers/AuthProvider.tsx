@@ -321,7 +321,7 @@ export function AuthProvider({
 
   const isCI = process.env.NEXT_PUBLIC_CI === "true"
 
-  const siteConfig = getSiteConfig()
+  const siteConfig = getSiteConfig(CHRRY_URL)
 
   const chrryUrl = CHRRY_URL
 
@@ -748,8 +748,7 @@ export function AuthProvider({
     props?: Record<string, any>
   }) => {
     if (!user && !guest) return
-
-    if (user?.role === "admin") return
+    if (!isE2E && user?.role === "admin") return
 
     trackEvent({
       name,
