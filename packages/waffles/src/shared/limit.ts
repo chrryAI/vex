@@ -21,7 +21,7 @@ export const limit = async ({
     const isClaudeMessage = isMember && i % 5 === 0 // Every 5th message in last 3 requests
     const isChatGPTMessage = isMember && i % 3 === 0 // Every 6th message in last 3 requests
 
-    const like = isFluxMessage ? true : false
+    const like = false
 
     return {
       text: isFluxMessage
