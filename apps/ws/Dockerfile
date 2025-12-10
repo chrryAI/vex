@@ -21,8 +21,18 @@ RUN pnpm --filter wsserver run build
 # Remove devDependencies for a smaller final image
 RUN pnpm prune --prod --workspace-root
 
+# Create non-root user
+RUN addgroup --system --gid 1001 wsgroup && \
+    adduser --system --uid 1001 wsuser
+
+# Set proper ownership
+RUN chown -R wsuser:wsgroup /app
+
 # Switch to the service directory for runtime
 WORKDIR /app/apps/ws
+
+# Switch to non-root user
+USER wsuser
 
 EXPOSE 5001
 

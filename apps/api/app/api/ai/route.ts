@@ -3404,179 +3404,137 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   if (isE2E) {
     console.log("🤖 Starting E2E testing for thread:", threadId)
     await new Promise((resolve) => setTimeout(resolve, 2000))
-    // Create a test stream response for E2E testing
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        // Try logging after a small delay
-        setTimeout(() => {
-          console.log("Controller after delay:", controller)
-        }, 0)
+    // E2E test mode - simulate streaming via WebSocket notifications
+    // No need for ReadableStream since we're using WebSocket for communication
 
-        // Or check specific properties
-        console.log("Controller type:", typeof controller)
-        console.log("Controller constructor:", controller?.constructor?.name)
-
-        streamControllers.set(streamId, controller) // Store the stream instance
-
-        const testResponse = faker.lorem.sentence({
-          min: content.includes("long") ? 550 : 80,
-          max: content.includes("long") ? 750 : 80,
-        })
-
-        // Generate test reasoning
-        const testReasoning = faker.lorem.sentences(30)
-
-        // Update thread and create message in the background
-
-        // Split reasoning and response into chunks to simulate streaming
-        const reasoningChunks = testReasoning.match(/.{1,15}/g) || []
-        const chunks = testResponse.match(/.{1,10}/g) || [testResponse]
-
-        // Create AI message structure for E2E streaming chunks
-        const e2eStreamingMessage = {
-          message: {
-            id: clientId,
-            threadId,
-            agentId,
-            userId: member?.id,
-            guestId: guest?.id,
-            content: "",
-            isStreaming: true,
-          },
-          aiAgent: pauseDebate ? debateAgent : agent,
-          user: member,
-          guest: guest,
-          thread: thread,
-        }
-
-        let currentChunk = 0
-
-        // Stream reasoning first
-        for (const reasoningChunk of reasoningChunks) {
-          if (!streamControllers.has(streamId)) {
-            console.log("Stream was stopped, breaking loop")
-            break
-          }
-
-          await wait(10)
-
-          thread &&
-            enhancedStreamChunk({
-              chunk: `__REASONING__${reasoningChunk}__/REASONING__`,
-              chunkNumber: currentChunk++,
-              totalChunks: -1,
-              streamingMessage: e2eStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-            })
-        }
-
-        // Then stream the answer
-        const totalChunks = chunks.length
-
-        for (const [index, chunk] of chunks.entries()) {
-          if (!streamControllers.has(streamId)) {
-            console.log("Stream was stopped, breaking loop")
-            break
-          }
-
-          await wait(30)
-
-          thread &&
-            enhancedStreamChunk({
-              chunk,
-              chunkNumber: currentChunk++,
-              totalChunks,
-              streamingMessage: e2eStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-            })
-        }
-
-        console.log(
-          `🎯 All ${totalChunks} chunks sent - now sending stream_complete`,
-        )
-
-        if (!streamControllers.has(streamId)) {
-          console.log("Stream was stopped, previous message will be deleted")
-          response = NextResponse.json(
-            { error: "Stream was stopped" },
-            { status: 400 },
-          )
-          return
-        }
-
-        if (!thread) {
-          response = NextResponse.json(
-            { error: "Thread not found" },
-            { status: 404 },
-          )
-          return
-        }
-        await updateThread({
-          ...thread,
-          aiResponse:
-            testResponse.slice(0, 150) +
-            (testResponse.length > 150 ? "..." : ""),
-        })
-
-        const aiMessage = await createMessage({
-          ...newMessagePayload,
-          content: testResponse,
-          reasoning: testReasoning, // Save test reasoning
-          originalContent: testResponse.trim(),
-          searchContext: null,
-          images: imageGenerationEnabled
-            ? [
-                {
-                  url: "https://3cgunoyddd.ufs.sh/f/MwscKX46dv5bvbXGhy8iLAyQ5oWlezrwqhECfbKvk8PJmgZN",
-                  prompt: "test",
-                  id: uuidv4(),
-                },
-              ]
-            : undefined,
-        })
-
-        console.timeEnd("messageProcessing")
-
-        if (!aiMessage) {
-          response = NextResponse.json(
-            { error: "Failed to create AI message" },
-            { status: 500 },
-          )
-          return
-        }
-
-        if (thread) {
-          const fullMessage = await getMessage({ id: aiMessage.id })
-          notifyOwnerAndCollaborations({
-            notifySender: true,
-            thread,
-            payload: {
-              type: "stream_complete",
-              data: {
-                message: fullMessage,
-                isFinal: true,
-              },
-            },
-            member,
-            guest,
-          })
-        }
-
-        // Close the stream
-        console.log("✅ Closing E2E stream")
-        controller.close()
-        streamControllers.delete(streamId)
-      },
+    const testResponse = faker.lorem.sentence({
+      min: content.includes("long") ? 550 : 80,
+      max: content.includes("long") ? 750 : 80,
     })
+
+    // Generate test reasoning
+    const testReasoning = faker.lorem.sentences(30)
+
+    // Split reasoning and response into chunks to simulate streaming
+    const reasoningChunks = testReasoning.match(/.{1,15}/g) || []
+    const chunks = testResponse.match(/.{1,10}/g) || [testResponse]
+
+    // Create AI message structure for E2E streaming chunks
+    const e2eStreamingMessage = {
+      message: {
+        id: clientId,
+        threadId,
+        agentId,
+        userId: member?.id,
+        guestId: guest?.id,
+        content: "",
+        isStreaming: true,
+      },
+      aiAgent: pauseDebate ? debateAgent : agent,
+      user: member,
+      guest: guest,
+      thread: thread,
+    }
+
+    let currentChunk = 0
+
+    // Stream reasoning first
+    for (const reasoningChunk of reasoningChunks) {
+      await wait(10)
+
+      thread &&
+        enhancedStreamChunk({
+          chunk: `__REASONING__${reasoningChunk}__/REASONING__`,
+          chunkNumber: currentChunk++,
+          totalChunks: -1,
+          streamingMessage: e2eStreamingMessage,
+          member,
+          guest,
+          thread,
+          clientId,
+          streamId,
+        })
+    }
+
+    // Then stream the answer
+    const totalChunks = chunks.length
+
+    for (const [index, chunk] of chunks.entries()) {
+      await wait(30)
+
+      thread &&
+        enhancedStreamChunk({
+          chunk,
+          chunkNumber: currentChunk++,
+          totalChunks,
+          streamingMessage: e2eStreamingMessage,
+          member,
+          guest,
+          thread,
+          clientId,
+          streamId,
+        })
+    }
+
+    console.log(
+      `🎯 All ${totalChunks} chunks sent - now sending stream_complete`,
+    )
+
+    if (!thread) {
+      return NextResponse.json({ error: "Thread not found" }, { status: 404 })
+    }
+
+    await updateThread({
+      ...thread,
+      aiResponse:
+        testResponse.slice(0, 150) + (testResponse.length > 150 ? "..." : ""),
+    })
+
+    const aiMessage = await createMessage({
+      ...newMessagePayload,
+      content: testResponse,
+      reasoning: testReasoning, // Save test reasoning
+      originalContent: testResponse.trim(),
+      searchContext: null,
+      images: imageGenerationEnabled
+        ? [
+            {
+              url: "https://3cgunoyddd.ufs.sh/f/MwscKX46dv5bvbXGhy8iLAyQ5oWlezrwqhECfbKvk8PJmgZN",
+              prompt: "test",
+              id: uuidv4(),
+            },
+          ]
+        : undefined,
+    })
+
+    console.timeEnd("messageProcessing")
+
+    if (!aiMessage) {
+      return NextResponse.json(
+        { error: "Failed to create AI message" },
+        { status: 500 },
+      )
+    }
+
+    if (thread) {
+      const fullMessage = await getMessage({ id: aiMessage.id })
+      notifyOwnerAndCollaborations({
+        notifySender: true,
+        thread,
+        payload: {
+          type: "stream_complete",
+          data: {
+            message: fullMessage,
+            isFinal: true,
+          },
+        },
+        member,
+        guest,
+      })
+    }
+
+    console.log("✅ E2E test streaming complete")
 
     checkThreadSummaryLimit({ user: member, guest, thread }) &&
       notifyOwnerAndCollaborations({
