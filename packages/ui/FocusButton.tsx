@@ -21,6 +21,7 @@ import {
   SmilePlus,
   Repeat,
   CloudDownload,
+  Trash2,
 } from "./icons"
 
 import { FaDiscord } from "react-icons/fa"
@@ -63,6 +64,7 @@ import Testimonials from "./Testimonials"
 import { getSiteConfig } from "./utils/siteConfig"
 import { useFocusButtonStyles } from "./FocusButton.styles"
 import ThemeSwitcher from "./ThemeSwitcher"
+import ConfirmButton from "./ConfirmButton"
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -153,6 +155,8 @@ export default function FocusButton({
     setSelectedTasks,
     remoteTimer,
   } = useTimerContext()
+
+  const [isDeletingTask, setIsDeletingTask] = useState(false)
 
   const isMovingItemRef = useRef(false)
   const { isDark, setTheme: setThemeInContext } = useTheme()
@@ -1068,7 +1072,7 @@ export default function FocusButton({
                               >
                                 <GripVertical width={22} height={22} />
                               </Div>
-                              <Button
+                              <ConfirmButton
                                 data-testid="edit-task-button"
                                 className={"link"}
                                 onClick={() => {
@@ -1079,9 +1083,37 @@ export default function FocusButton({
                                   }
                                   setEditingTask(task)
                                 }}
+                                processing={isDeletingTask}
+                                onConfirm={async () => {
+                                  try {
+                                    setIsDeletingTask(true)
+                                    const response = await fetch(
+                                      `${API_URL}/tasks/${task.id}`,
+                                      {
+                                        method: "DELETE",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                          Authorization: `Bearer ${token}`,
+                                        },
+                                      },
+                                    )
+
+                                    const result = await response.json()
+
+                                    if (result.error) {
+                                      toast.error(result.error)
+                                      return
+                                    }
+                                    toast.success(t("Deleted"))
+                                  } catch (error) {
+                                    toast.error(t("Something went wrong"))
+                                  } finally {
+                                    setIsDeletingTask(false)
+                                  }
+                                }}
                               >
-                                <Pencil width={18} height={18} />
-                              </Button>
+                                <Trash2 width={18} height={18} />
+                              </ConfirmButton>
                             </Div>
                           </Div>
                         )}
