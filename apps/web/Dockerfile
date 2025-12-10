@@ -2,7 +2,7 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install pnpm
@@ -14,8 +14,9 @@ COPY apps/web/package.json apps/web/
 COPY packages/db/package.json packages/db/
 COPY packages/ui/package.json packages/ui/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install ALL dependencies (including devDependencies needed for build)
+# Explicitly unset NODE_ENV to prevent Coolify's production setting from skipping devDependencies
+RUN NODE_ENV= pnpm install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
