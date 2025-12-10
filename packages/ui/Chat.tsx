@@ -2125,7 +2125,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
     addHapticFeedback()
     isPlayingSillyPopCluster.current = false
 
-    apiFetch(`${API_URL}/ai`, {
+    await apiFetch(`${API_URL}/ai`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

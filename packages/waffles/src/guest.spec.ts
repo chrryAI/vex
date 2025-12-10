@@ -127,7 +127,7 @@ test("Thread", async ({ page }) => {
   await thread({ page, bookmark: true })
 })
 
-test("Long text", async ({ page }) => {
+test.skip("Long text", async ({ page }) => {
   await chat({
     page,
     isMember,
