@@ -388,12 +388,14 @@ function renderSystemPrompt(params: {
               appName: mem.appName,
               content: mem.content,
             })),
-            messages: appKnowledge.messages?.slice(-10).map((msg: any) => ({
-              role: msg.role,
-              content:
-                msg.content?.substring(0, 120) +
-                (msg.content?.length > 120 ? "..." : ""),
-            })),
+            messages: Array.isArray(appKnowledge.messages)
+              ? appKnowledge.messages.slice(-10).map((msg: any) => ({
+                  role: msg.role,
+                  content:
+                    msg.content?.substring(0, 120) +
+                    (msg.content?.length > 120 ? "..." : ""),
+                }))
+              : [],
           }
         : null,
       user: userName ? { name: userName } : null,
