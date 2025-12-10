@@ -40,6 +40,9 @@ COPY . .
 # Restore pnpm workspace links (fast, uses existing node_modules)
 RUN pnpm install --frozen-lockfile
 
+# Ensure public directory exists (create if missing)
+RUN mkdir -p apps/api/public
+
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS='--max-old-space-size=8192'
