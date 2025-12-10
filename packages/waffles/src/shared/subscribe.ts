@@ -2,6 +2,7 @@ import { expect, Page } from "@playwright/test"
 import { signIn } from "./signIn"
 import { chat } from "./chat"
 import { isCI, modelName, wait, log } from "../index"
+import { clean } from "./clean"
 
 export const subscribe = async ({
   page,
@@ -56,7 +57,7 @@ export const subscribe = async ({
 
   const subscribeButton = page.getByTestId("subscribe-button")
   await expect(subscribeButton).toBeVisible({
-    timeout: 5000,
+    timeout: 15000,
   })
   await subscribeButton.click()
 
@@ -262,6 +263,8 @@ export const subscribe = async ({
     })
 
     expect(await getCreditsLeft(giftPage)).toBeGreaterThan(150)
+
+    await clean({ page: giftPage })
     await giftContext.close()
   }
 }

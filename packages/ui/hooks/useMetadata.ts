@@ -16,13 +16,14 @@ import getWhiteLabel from "chrry/utils/getWhiteLabel"
 export function useStoreMetadata(store?: storeWithApps) {
   const { i18n } = useTranslation()
 
-  const { baseApp } = useAuth()
+  const { baseApp, showFocus } = useAuth()
   const currentDomain =
     baseApp?.store?.domain ||
     (typeof window !== "undefined"
       ? `${window.location.protocol}//${window.location.host}`
       : "")
   useEffect(() => {
+    if (showFocus) return
     if (typeof document === "undefined" || !store) return
 
     const locale = i18n.language || "en"
@@ -93,7 +94,7 @@ export function useStoreMetadata(store?: storeWithApps) {
     if (metadata.alternates?.canonical) {
       updateOrCreateLink("canonical", String(metadata.alternates.canonical))
     }
-  }, [store, i18n.language, baseApp])
+  }, [store, i18n.language, baseApp, showFocus])
 }
 
 /**
@@ -107,7 +108,7 @@ export function useAppMetadata() {
 
   const enabled = !currentStore
 
-  const { baseApp, app, language: locale } = useAuth()
+  const { baseApp, app, language: locale, showFocus } = useAuth()
 
   const storeApp = getWhiteLabel({ app }).storeApp || baseApp
 
@@ -132,6 +133,7 @@ export function useAppMetadata() {
     : undefined
 
   useEffect(() => {
+    if (showFocus) return
     if (!metadata || !enabled) return
 
     if (metadata.title) {
@@ -187,7 +189,7 @@ export function useAppMetadata() {
         updateOrCreateLink("alternate", String(url), lang)
       })
     }
-  }, [metadata, enabled])
+  }, [metadata, enabled, showFocus])
 }
 
 /**

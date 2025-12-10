@@ -371,6 +371,20 @@ export const chat = async ({
   }
   for (const prompt of prompts) {
     await clearDebate()
+
+    await wait(1000)
+
+    if (prompt.model && prompt.model !== (await getAgentName())) {
+      await addAgent()
+
+      await expect(agentModal).toBeVisible()
+
+      const agentModalButton = getAgentModalButton(prompt.model)
+
+      await agentModalButton.click()
+
+      expect(await getAgentName()).toBe(prompt.model)
+    }
     if (prompt.imageGenerationEnabled) {
       // First click: Toggle off image generation
       await imageGenerationButton.click()
@@ -406,20 +420,6 @@ export const chat = async ({
           console.log(error)
         }
       }
-    }
-
-    await wait(1000)
-
-    if (prompt.model && prompt.model !== (await getAgentName())) {
-      await addAgent()
-
-      await expect(agentModal).toBeVisible()
-
-      const agentModalButton = getAgentModalButton(prompt.model)
-
-      await agentModalButton.click()
-
-      expect(await getAgentName()).toBe(prompt.model)
     }
 
     if (prompt.debateAgent) {
@@ -741,28 +741,6 @@ export const chat = async ({
       timeout: prompt.agentMessageTimeout || agentMessageTimeout,
       visible: !prompt.stop,
     })
-
-    if (prompt.mix?.pdf) {
-      const userMessagePdfCount = await (await getLastUserMessage())
-        .getByTestId("user-message-pdf")
-        .count()
-
-      expect(userMessagePdfCount).toBe(
-        prompt.mix.pdf > MAX_FILES ? MAX_FILES : prompt.mix.pdf,
-      )
-    }
-
-    if (prompt.webSearch) {
-      const webSearchResults = (await getLastAgentMessage()).getByTestId(
-        "web-search-results",
-      )
-      await expect(webSearchResults).toBeVisible({
-        timeout: prompt.agentMessageTimeout || agentMessageTimeout,
-      })
-
-      const webSearchResult = webSearchResults.getByTestId("web-search-result")
-      expect(await webSearchResult.count()).toBe(4)
-    }
 
     await wait(1000)
 

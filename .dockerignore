@@ -1,0 +1,12 @@
+.next
+.turbo
+dist
+build
+.git
+.env.local
+.env.*.local
+*.log
+.DS_Store
+coverage
+.vscode
+.idea

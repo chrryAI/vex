@@ -35,6 +35,7 @@ export async function GET(request: Request) {
     (await createTimer({
       fingerprint,
       guestId: guest?.id,
+      userId: member?.id,
     }))
 
   return NextResponse.json(timer)

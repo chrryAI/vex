@@ -132,15 +132,15 @@ export async function DELETE(request: Request) {
   if (!member && !guest) {
     return NextResponse.json({ error: "Invalid credentials" })
   }
-  const existingTask = await getTask({ id })
+  const existingTask = await getTask({
+    id,
+    userId: member?.id,
+    guestId: guest?.id,
+  })
   if (!existingTask) {
     return NextResponse.json({ error: "Task not found" })
   }
-  if (
-    !(existingTask.userId === member?.id || existingTask.guestId === guest?.id)
-  ) {
-    return NextResponse.json({ error: "Unauthorized" })
-  }
+
   const task = await deleteTask({ id })
   if (!task) {
     return NextResponse.json({ error: "Failed to delete task" })

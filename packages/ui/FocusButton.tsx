@@ -21,6 +21,7 @@ import {
   SmilePlus,
   Repeat,
   CloudDownload,
+  Trash2,
 } from "./icons"
 
 import { FaDiscord } from "react-icons/fa"
@@ -55,7 +56,7 @@ import { useTimerContext } from "./context/TimerContext"
 import SwipeableTimeControl from "./SwipeableTimeControl"
 import { useAuth, useChat } from "./context/providers"
 import { useNavigation, usePlatform, useTheme } from "./platform"
-import { themeType } from "./context/ThemeContext"
+import { COLORS, themeType } from "./context/ThemeContext"
 import Img from "./Image"
 import A from "./a/A"
 import { useStyles } from "./context/StylesContext"
@@ -63,6 +64,7 @@ import Testimonials from "./Testimonials"
 import { getSiteConfig } from "./utils/siteConfig"
 import { useFocusButtonStyles } from "./FocusButton.styles"
 import ThemeSwitcher from "./ThemeSwitcher"
+import ConfirmButton from "./ConfirmButton"
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -107,6 +109,7 @@ export default function FocusButton({
     focus,
     setShowFocus,
     showFocus,
+    loadingApp,
   } = useAuth()
 
   const { searchParams, addParams, push, removeParams } = useNavigation()
@@ -154,9 +157,16 @@ export default function FocusButton({
     remoteTimer,
   } = useTimerContext()
 
+  const [isDeletingTask, setIsDeletingTask] = useState(false)
+
   const isMovingItemRef = useRef(false)
   const { isDark, setTheme: setThemeInContext } = useTheme()
-  const { setPlaceHolderText, placeHolderText, setShouldFocus } = useChat()
+  const {
+    setPlaceHolderText,
+    placeHolderText,
+    setShouldFocus,
+    setIsNewAppChat,
+  } = useChat()
 
   const adjustIntervalRef = useRef<number | null>(null)
   const secondsUpButtonRef = useRef<HTMLButtonElement>(null)
@@ -859,24 +869,36 @@ export default function FocusButton({
                         {t("New task")}
                       </Button>
                       {focus && (
-                        <A
-                          className="button inverted"
+                        <Span
+                          className={`${loadingApp?.id === focus?.id ? "glow" : ""}`}
                           style={{
-                            ...utilities.button.style,
-                            ...utilities.inverted.style,
-                            ...utilities.small.style,
+                            "--glow-color":
+                              COLORS[focus.themeColor as keyof typeof COLORS],
                           }}
-                          onClick={() => {
-                            setShowFocus(false)
-                            app?.id === focus?.id
-                              ? setShowFocus(false)
-                              : push(getAppSlug(focus))
-                          }}
-                          // href={getAppSlug(refApp)}
                         >
-                          <Img size={20} app={focus} />
-                          {focus.name}
-                        </A>
+                          <A
+                            className={`button inverted`}
+                            style={{
+                              ...utilities.button.style,
+                              ...utilities.inverted.style,
+                              ...utilities.small.style,
+                            }}
+                            onClick={() => {
+                              setShowFocus(false)
+                              app?.id === focus?.id
+                                ? setShowFocus(false)
+                                : setIsNewAppChat(focus)
+                            }}
+                            // href={getAppSlug(refApp)}
+                          >
+                            {loadingApp?.id !== focus?.id ? (
+                              <Img size={20} app={focus} />
+                            ) : (
+                              <Loading size={20} />
+                            )}
+                            {focus.name}
+                          </A>
+                        </Span>
                       )}
                     </Div>
                   </Div>
@@ -1068,7 +1090,11 @@ export default function FocusButton({
                               >
                                 <GripVertical width={22} height={22} />
                               </Div>
-                              <Button
+                              <ConfirmButton
+                                style={{
+                                  position: "relative",
+                                  bottom: 1.5,
+                                }}
                                 data-testid="edit-task-button"
                                 className={"link"}
                                 onClick={() => {
@@ -1079,9 +1105,38 @@ export default function FocusButton({
                                   }
                                   setEditingTask(task)
                                 }}
+                                processing={isDeletingTask}
+                                onConfirm={async () => {
+                                  try {
+                                    setIsDeletingTask(true)
+                                    const response = await fetch(
+                                      `${API_URL}/tasks/${task.id}`,
+                                      {
+                                        method: "DELETE",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                          Authorization: `Bearer ${token}`,
+                                        },
+                                      },
+                                    )
+
+                                    const result = await response.json()
+
+                                    if (result.error) {
+                                      toast.error(result.error)
+                                      return
+                                    }
+                                    await fetchTasks()
+                                    toast.success(t("Deleted"))
+                                  } catch (error) {
+                                    toast.error(t("Something went wrong"))
+                                  } finally {
+                                    setIsDeletingTask(false)
+                                  }
+                                }}
                               >
-                                <Pencil width={18} height={18} />
-                              </Button>
+                                <Trash2 width={18} height={18} />
+                              </ConfirmButton>
                             </Div>
                           </Div>
                         )}

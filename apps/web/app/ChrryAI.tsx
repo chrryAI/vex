@@ -1,5 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 import { v4 as uuidv4 } from "uuid"
+import "chrry/styles/view-transitions.css"
 import {
   getMetadata,
   VERSION,
@@ -24,6 +25,7 @@ import getChrryUrl from "api/app/actions/getChrryUrl"
 import getAppAction from "./actions/getApp"
 import { isDevelopment } from "../lib"
 import Head from "next/head"
+import { TEST_GUEST_FINGERPRINTS, TEST_MEMBER_FINGERPRINTS } from "@repo/db"
 
 export const generateMeta = async ({ locale }: { locale: locale }) => {
   const siteConfig = getSiteConfig()
@@ -364,15 +366,19 @@ export default async function ChrryAI({
         <meta name="google" content="notranslate" />
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
-        {!isDev && user?.role !== "admin" && (
-          <>
-            <script
-              defer
-              data-domain={siteConfig.domain}
-              src="https://a.chrry.dev/js/app.js"
-            />
-          </>
-        )}
+        {!isDev &&
+          user?.role !== "admin" &&
+          !TEST_MEMBER_FINGERPRINTS.concat(TEST_GUEST_FINGERPRINTS).includes(
+            fingerprint,
+          ) && (
+            <>
+              <script
+                defer
+                data-domain={siteConfig.domain}
+                src="https://a.chrry.dev/js/app.js"
+              />
+            </>
+          )}
         {translations && (
           <AppMetadata
             translations={translations}

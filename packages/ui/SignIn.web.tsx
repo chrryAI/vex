@@ -392,7 +392,7 @@ export default function SignIn({
   return (
     <>
       <>
-        {!user && !isExtension ? (
+        {!user ? (
           <>
             {showSignIn && (
               <button

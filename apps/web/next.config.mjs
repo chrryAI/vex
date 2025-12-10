@@ -6,6 +6,7 @@ const isDevelopment = process.env.NODE_ENV === "development"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone", // Required for Docker deployment
   transpilePackages: ["@chrryai/chrry"],
   compress: true,
   serverExternalPackages: ["newrelic"], // Exclude New Relic from bundling

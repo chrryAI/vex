@@ -388,12 +388,14 @@ function renderSystemPrompt(params: {
               appName: mem.appName,
               content: mem.content,
             })),
-            messages: appKnowledge.messages?.slice(-10).map((msg: any) => ({
-              role: msg.role,
-              content:
-                msg.content?.substring(0, 120) +
-                (msg.content?.length > 120 ? "..." : ""),
-            })),
+            messages: Array.isArray(appKnowledge.messages)
+              ? appKnowledge.messages.slice(-10).map((msg: any) => ({
+                  role: msg.role,
+                  content:
+                    msg.content?.substring(0, 120) +
+                    (msg.content?.length > 120 ? "..." : ""),
+                }))
+              : [],
           }
         : null,
       user: userName ? { name: userName } : null,
@@ -597,7 +599,7 @@ export async function POST(request: Request) {
       })
 
     // Add delay between chunks for proper delivery order
-    await wait(30)
+    await wait(10)
   }
 
   console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
@@ -612,6 +614,7 @@ export async function POST(request: Request) {
         depth: 1,
         userId: member?.id,
         guestId: guest?.id,
+        skipCache: true,
       })
     : undefined
 
@@ -1226,7 +1229,7 @@ You can enable these in your settings anytime!"
     return 5 // Extremely long - just essentials
   })()
 
-  const { context: memoryContext, memoryIds } = await getRelevantMemoryContext({
+  let { context: memoryContext, memoryIds } = await getRelevantMemoryContext({
     userId: member?.id,
     guestId: guest?.id,
     appId: app?.id,
@@ -2154,6 +2157,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   if (!characterProfilesEnabled) {
     const pastMessages = await getMessages({
+      threadId: thread.id, // Only load messages from current thread
       pageSize: 75, // Increased for better RAG context from message history
       userId: member?.id,
       guestId: guest?.id,
@@ -2975,21 +2979,58 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   // Check token limit for the specific agent/model
   const modelLimit =
     TOKEN_LIMITS[computedAgentName as keyof typeof TOKEN_LIMITS] || 25000
+
   if (textOnlyTokens > modelLimit) {
     console.log(
-      `🚫 Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
+      `⚠️ Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
     )
-    captureException(
-      `🚫 Token limit exceeded: ~${textOnlyTokens} tokens > ${modelLimit} limit for ${agent.name}`,
-    )
-    return NextResponse.json(
-      {
-        error: "Request too large",
-        message: `Your message is too long for ${agent.displayName}. Please reduce the file size, use fewer files, or shorten your message. Estimated tokens: ${textOnlyTokens}, limit: ${modelLimit}`,
-        estimatedTokens: textOnlyTokens,
-        limit: modelLimit,
-      },
-      { status: 413 }, // 413 Payload Too Large
+    console.log(`🔧 Intelligently reducing context to fit within limit...`)
+
+    // Instead of erroring, intelligently strip context
+    // Priority: Files > Recent messages > Old conversation history > Memories
+
+    const targetTokens = Math.floor(modelLimit * 0.9) // 90% of limit for safety
+    let currentTokens = textOnlyTokens
+
+    // Step 1: Reduce conversation history (keep only recent messages)
+    if (suggestionMessages && suggestionMessages.length > 0) {
+      const originalLength = suggestionMessages.length
+
+      // Keep reducing from the oldest messages
+      while (currentTokens > targetTokens && suggestionMessages.length > 5) {
+        const removedMessage = suggestionMessages.shift() // Remove oldest
+        const removedTokens = estimateTokens(removedMessage?.content)
+        currentTokens -= removedTokens
+      }
+
+      console.log(
+        `📉 Reduced conversation history: ${originalLength} → ${suggestionMessages.length} messages (saved ~${textOnlyTokens - currentTokens} tokens)`,
+      )
+    }
+
+    // Step 2: If still too large, reduce memories
+    if (currentTokens > targetTokens && memoryContext) {
+      const originalMemoryTokens = estimateTokens(memoryContext)
+      // Keep only the most important memories (first half)
+      const memories = memoryContext.split("\n")
+      const reducedMemories = memories.slice(0, Math.ceil(memories.length / 2))
+      memoryContext = reducedMemories.join("\n")
+      const savedTokens = originalMemoryTokens - estimateTokens(memoryContext)
+      currentTokens -= savedTokens
+
+      console.log(
+        `📉 Reduced memories: ${memories.length} → ${reducedMemories.length} items (saved ~${savedTokens} tokens)`,
+      )
+    }
+
+    // Step 3: If STILL too large (rare), truncate file content
+    if (currentTokens > targetTokens && files.length > 0) {
+      console.log(`⚠️ File content too large, will truncate during processing`)
+      // This will be handled during file processing
+    }
+
+    console.log(
+      `✅ Context reduced: ${textOnlyTokens} → ~${currentTokens} tokens (within ${modelLimit} limit)`,
     )
   }
 
@@ -3365,181 +3406,171 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
   if (isE2E) {
     console.log("🤖 Starting E2E testing for thread:", threadId)
     await new Promise((resolve) => setTimeout(resolve, 2000))
-    // Create a test stream response for E2E testing
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        // Try logging after a small delay
-        setTimeout(() => {
-          console.log("Controller after delay:", controller)
-        }, 0)
+    // E2E test mode - simulate streaming via WebSocket notifications
+    // No need for ReadableStream since we're using WebSocket for communication
 
-        // Or check specific properties
-        console.log("Controller type:", typeof controller)
-        console.log("Controller constructor:", controller?.constructor?.name)
+    // Create AbortController for E2E stream cancellation
+    const abortController = new AbortController()
 
-        streamControllers.set(streamId, controller) // Store the stream instance
-
-        const testResponse = faker.lorem.sentence({
-          min: content.includes("long") ? 550 : 80,
-          max: content.includes("long") ? 750 : 80,
-        })
-
-        // Generate test reasoning
-        const testReasoning = faker.lorem.sentences(30)
-
-        // Update thread and create message in the background
-
-        // Split reasoning and response into chunks to simulate streaming
-        const reasoningChunks = testReasoning.match(/.{1,15}/g) || []
-        const chunks = testResponse.match(/.{1,10}/g) || [testResponse]
-
-        // Create AI message structure for E2E streaming chunks
-        const e2eStreamingMessage = {
-          message: {
-            id: clientId,
-            threadId,
-            agentId,
-            userId: member?.id,
-            guestId: guest?.id,
-            content: "",
-            isStreaming: true,
-          },
-          aiAgent: pauseDebate ? debateAgent : agent,
-          user: member,
-          guest: guest,
-          thread: thread,
-        }
-
-        let currentChunk = 0
-
-        // Stream reasoning first
-        for (const reasoningChunk of reasoningChunks) {
-          if (!streamControllers.has(streamId)) {
-            console.log("Stream was stopped, breaking loop")
-            break
-          }
-
-          await wait(10)
-
-          thread &&
-            enhancedStreamChunk({
-              chunk: `__REASONING__${reasoningChunk}__/REASONING__`,
-              chunkNumber: currentChunk++,
-              totalChunks: -1,
-              streamingMessage: e2eStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-            })
-        }
-
-        // Then stream the answer
-        const totalChunks = chunks.length
-
-        for (const [index, chunk] of chunks.entries()) {
-          if (!streamControllers.has(streamId)) {
-            console.log("Stream was stopped, breaking loop")
-            break
-          }
-
-          const chunkNumber = index + 1
-
-          await wait(30)
-
-          thread &&
-            enhancedStreamChunk({
-              chunk,
-              chunkNumber: currentChunk++,
-              totalChunks,
-              streamingMessage: e2eStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-            })
-        }
-
-        console.log(
-          `🎯 All ${totalChunks} chunks sent - now sending stream_complete`,
-        )
-
-        if (!streamControllers.has(streamId)) {
-          console.log("Stream was stopped, previous message will be deleted")
-          response = NextResponse.json(
-            { error: "Stream was stopped" },
-            { status: 400 },
-          )
-          return
-        }
-
-        if (!thread) {
-          response = NextResponse.json(
-            { error: "Thread not found" },
-            { status: 404 },
-          )
-          return
-        }
-        await updateThread({
-          ...thread,
-          aiResponse:
-            testResponse.slice(0, 150) +
-            (testResponse.length > 150 ? "..." : ""),
-        })
-
-        const aiMessage = await createMessage({
-          ...newMessagePayload,
-          content: testResponse,
-          reasoning: testReasoning, // Save test reasoning
-          originalContent: testResponse.trim(),
-          searchContext: null,
-          images: imageGenerationEnabled
-            ? [
-                {
-                  url: "https://3cgunoyddd.ufs.sh/f/MwscKX46dv5bvbXGhy8iLAyQ5oWlezrwqhECfbKvk8PJmgZN",
-                  prompt: "test",
-                  id: uuidv4(),
-                },
-              ]
-            : undefined,
-        })
-
-        console.timeEnd("messageProcessing")
-
-        if (!aiMessage) {
-          response = NextResponse.json(
-            { error: "Failed to create AI message" },
-            { status: 500 },
-          )
-          return
-        }
-
-        if (thread) {
-          const fullMessage = await getMessage({ id: aiMessage.id })
-          notifyOwnerAndCollaborations({
-            notifySender: true,
-            thread,
-            payload: {
-              type: "stream_complete",
-              data: {
-                message: fullMessage,
-                isFinal: true,
-              },
-            },
-            member,
-            guest,
-          })
-        }
-
-        // Close the stream
-        console.log("✅ Closing E2E stream")
-        controller.close()
-        streamControllers.delete(streamId)
+    // Register stream controller for E2E mode to enable cancellation
+    const controller: StreamController = {
+      close: () => {
+        console.log("🛑 Aborting E2E stream:", streamId)
+        abortController.abort()
       },
+      desiredSize: null,
+      enqueue: () => {},
+      error: () => {},
+    }
+    streamControllers.set(streamId, controller)
+
+    const testResponse = faker.lorem.sentence({
+      min: content.includes("long") ? 550 : 80,
+      max: content.includes("long") ? 750 : 80,
     })
+
+    // Generate test reasoning
+    const testReasoning = faker.lorem.sentences(30)
+
+    // Split reasoning and response into chunks to simulate streaming
+    const reasoningChunks = testReasoning.match(/.{1,15}/g) || []
+    const chunks = testResponse.match(/.{1,10}/g) || [testResponse]
+
+    // Create AI message structure for E2E streaming chunks
+    const e2eStreamingMessage = {
+      message: {
+        id: clientId,
+        threadId,
+        agentId,
+        userId: member?.id,
+        guestId: guest?.id,
+        content: "",
+        isStreaming: true,
+      },
+      aiAgent: pauseDebate ? debateAgent : agent,
+      user: member,
+      guest: guest,
+      thread: thread,
+    }
+
+    let currentChunk = 0
+
+    // Stream reasoning first
+    for (const reasoningChunk of reasoningChunks) {
+      await wait(10)
+
+      if (abortController.signal.aborted) {
+        console.log("🛑 E2E stream was stopped, breaking reasoning loop")
+        break
+      }
+
+      thread &&
+        enhancedStreamChunk({
+          chunk: `__REASONING__${reasoningChunk}__/REASONING__`,
+          chunkNumber: currentChunk++,
+          totalChunks: -1,
+          streamingMessage: e2eStreamingMessage,
+          member,
+          guest,
+          thread,
+          clientId,
+          streamId,
+        })
+    }
+
+    // Then stream the answer
+    const totalChunks = chunks.length
+
+    for (const [index, chunk] of chunks.entries()) {
+      await wait(30)
+
+      if (abortController.signal.aborted) {
+        console.log("🛑 E2E stream was stopped, breaking response loop")
+        break
+      }
+
+      thread &&
+        enhancedStreamChunk({
+          chunk,
+          chunkNumber: currentChunk++,
+          totalChunks,
+          streamingMessage: e2eStreamingMessage,
+          member,
+          guest,
+          thread,
+          clientId,
+          streamId,
+        })
+    }
+
+    console.log(
+      `🎯 All ${totalChunks} chunks sent - now sending stream_complete`,
+    )
+
+    if (abortController.signal.aborted) {
+      console.log("🛑 E2E stream was stopped, breaking response loop")
+
+      return NextResponse.json({ error: "Stream was stopped" }, { status: 400 })
+    }
+
+    if (!thread) {
+      return NextResponse.json({ error: "Thread not found" }, { status: 404 })
+    }
+
+    await updateThread({
+      ...thread,
+      aiResponse:
+        testResponse.slice(0, 150) + (testResponse.length > 150 ? "..." : ""),
+    })
+
+    const aiMessage = await createMessage({
+      ...newMessagePayload,
+      content: testResponse,
+      reasoning: testReasoning, // Save test reasoning
+      originalContent: testResponse.trim(),
+      searchContext: null,
+      images: imageGenerationEnabled
+        ? [
+            {
+              url: "https://3cgunoyddd.ufs.sh/f/MwscKX46dv5bvbXGhy8iLAyQ5oWlezrwqhECfbKvk8PJmgZN",
+              prompt: "test",
+              id: uuidv4(),
+            },
+          ]
+        : undefined,
+    })
+
+    console.timeEnd("messageProcessing")
+
+    if (!aiMessage) {
+      return NextResponse.json(
+        { error: "Failed to create AI message" },
+        { status: 500 },
+      )
+    }
+
+    if (thread) {
+      const fullMessage = await getMessage({ id: aiMessage.id })
+      notifyOwnerAndCollaborations({
+        notifySender: true,
+        thread,
+        payload: {
+          type: "stream_complete",
+          data: {
+            message: fullMessage,
+            isFinal: true,
+          },
+        },
+        member,
+        guest,
+      })
+    }
+
+    console.log("✅ E2E test streaming complete")
+
+    // Clean up stream controller
+    streamControllers.delete(streamId)
 
     checkThreadSummaryLimit({ user: member, guest, thread }) &&
       notifyOwnerAndCollaborations({
@@ -3690,7 +3721,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             clientId,
             streamId,
           })
-          await wait(50) // Small delay for smooth streaming
         }
 
         if (!streamControllers.has(streamId)) {

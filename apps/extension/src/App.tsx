@@ -1,7 +1,6 @@
 import "chrry/globals.scss"
-import "chrry/styles/view-transitions.css"
+// import "chrry/styles/view-transitions.css"
 import "./App.css"
-import Sidebar from "../../../packages/ui/Sidebar"
 import Chrry from "../../../packages/ui/Chrry"
 import { HistoryRouterProvider } from "../../../packages/ui/context/providers/HistoryRouterProvider"
 import { updateExtensionIcon } from "./utils/updateIcon"

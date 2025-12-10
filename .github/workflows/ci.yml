@@ -159,11 +159,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Merge chrry to main
+      - name: Merge prod to main
         run: |
           git fetch origin main
           git checkout main
-          git merge origin/chrry --no-edit -m "Auto-merge chrry to main after successful build
+          git merge origin/prod --no-edit -m "Auto-merge prod to main after successful build
 
           ✅ CI passed - ready for deployment
           ✅ E2E tests passed

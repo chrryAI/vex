@@ -672,12 +672,12 @@ button.favorite {
 }
 
 .glow {
-  animation: glowPulse 1.25s infinite;
+  animation: glowPulse 3s ease-in-out;
   @include utils.respect-reduced-motion;
 }
 
 .blur {
-  backdrop-filter: blur(5.5px);
+  backdrop-filter: blur(13px);
 }
 
 .dateTimeInput {
@@ -728,21 +728,21 @@ button.favorite {
 @keyframes glowPulse {
   0% {
     border-color: var(--glow-color);
-    box-shadow: 0 0 6px var(--glow-color);
-  }
-
-  25% {
-    border-color: var(--glow-color);
-    box-shadow:
-      0 0 10px var(--glow-color),
-      0 0 14px var(--glow-color),
-      inset 0 0 6px var(--glow-color);
+    box-shadow: 0 0 3px var(--glow-color);
   }
 
   100% {
     border-color: var(--glow-color);
-    box-shadow: 0 0 6px var(--glow-color);
+    box-shadow:
+      0 0 5px var(--glow-color),
+      0 0 7px var(--glow-color),
+      inset 0 0 4px var(--glow-color);
   }
+
+  // 100% {
+  //   border-color: var(--glow-color);
+  //   box-shadow: 0 0 6px var(--glow-color);
+  // }
 }
 
 .letsFocusContainer {
