@@ -74,7 +74,7 @@ async function flushTaskUpdates() {
 // Schedule task flush (debounced)
 function scheduleTaskFlush() {
   if (taskFlushTimeout) clearTimeout(taskFlushTimeout)
-  taskFlushTimeout = setTimeout(flushTaskUpdates, 10000) // Flush every 10 seconds
+  taskFlushTimeout = setTimeout(flushTaskUpdates, 5000) // Flush every 5 seconds
 }
 
 // Graceful shutdown: flush on exit
