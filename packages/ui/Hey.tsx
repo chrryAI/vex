@@ -78,7 +78,7 @@ export const Hey = memo(
     }, [pathname, isExtension])
 
     const { threadId } = useChat()
-    const { app, isSplash, setIsSplash } = useAuth()
+    const { app, isSplash, setIsSplash, storeApps } = useAuth()
 
     const { currentStore } = useApp()
 
@@ -108,7 +108,7 @@ export const Hey = memo(
     const isChrry = app && app.slug === "chrry"
 
     // Check if current route is a store slug by checking all apps
-    const isStorePage = app?.store?.apps?.find(
+    const isStorePage = storeApps?.find(
       (app) => app.store?.slug === pathWithoutLocale,
     )
 
@@ -142,12 +142,13 @@ export const Hey = memo(
     // Minimum splash screen duration (300ms) - starts when image loads
     useEffect(() => {
       if (!isImageLoaded) return
+      if (!app?.store?.apps?.length) return
 
       const timer = setTimeout(() => {
         setMinSplashTimeElapsed(true)
       }, 1000)
       return () => clearTimeout(timer)
-    }, [isImageLoaded])
+    }, [isImageLoaded, app])
 
     const getSplash = useCallback(
       (isSplash: boolean) => {
