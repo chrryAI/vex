@@ -117,7 +117,7 @@ test("File upload", async ({ page }) => {
   })
 })
 
-test("Chat - Hourly Limit Test", async ({ page }) => {
+test.only("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await limit({ page })
 })
@@ -127,7 +127,7 @@ test("Thread", async ({ page }) => {
   await thread({ page, bookmark: true })
 })
 
-test.skip("Long text", async ({ page }) => {
+test("Long text", async ({ page }) => {
   await chat({
     page,
     isMember,

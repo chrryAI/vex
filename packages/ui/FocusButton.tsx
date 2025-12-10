@@ -56,7 +56,7 @@ import { useTimerContext } from "./context/TimerContext"
 import SwipeableTimeControl from "./SwipeableTimeControl"
 import { useAuth, useChat } from "./context/providers"
 import { useNavigation, usePlatform, useTheme } from "./platform"
-import { themeType } from "./context/ThemeContext"
+import { COLORS, themeType } from "./context/ThemeContext"
 import Img from "./Image"
 import A from "./a/A"
 import { useStyles } from "./context/StylesContext"
@@ -109,6 +109,7 @@ export default function FocusButton({
     focus,
     setShowFocus,
     showFocus,
+    loadingApp,
   } = useAuth()
 
   const { searchParams, addParams, push, removeParams } = useNavigation()
@@ -160,7 +161,12 @@ export default function FocusButton({
 
   const isMovingItemRef = useRef(false)
   const { isDark, setTheme: setThemeInContext } = useTheme()
-  const { setPlaceHolderText, placeHolderText, setShouldFocus } = useChat()
+  const {
+    setPlaceHolderText,
+    placeHolderText,
+    setShouldFocus,
+    setIsNewAppChat,
+  } = useChat()
 
   const adjustIntervalRef = useRef<number | null>(null)
   const secondsUpButtonRef = useRef<HTMLButtonElement>(null)
@@ -863,24 +869,36 @@ export default function FocusButton({
                         {t("New task")}
                       </Button>
                       {focus && (
-                        <A
-                          className="button inverted"
+                        <Span
+                          className={`${loadingApp?.id === focus?.id ? "glow" : ""}`}
                           style={{
-                            ...utilities.button.style,
-                            ...utilities.inverted.style,
-                            ...utilities.small.style,
+                            "--glow-color":
+                              COLORS[focus.themeColor as keyof typeof COLORS],
                           }}
-                          onClick={() => {
-                            setShowFocus(false)
-                            app?.id === focus?.id
-                              ? setShowFocus(false)
-                              : push(getAppSlug(focus))
-                          }}
-                          // href={getAppSlug(refApp)}
                         >
-                          <Img size={20} app={focus} />
-                          {focus.name}
-                        </A>
+                          <A
+                            className={`button inverted`}
+                            style={{
+                              ...utilities.button.style,
+                              ...utilities.inverted.style,
+                              ...utilities.small.style,
+                            }}
+                            onClick={() => {
+                              setShowFocus(false)
+                              app?.id === focus?.id
+                                ? setShowFocus(false)
+                                : setIsNewAppChat(focus)
+                            }}
+                            // href={getAppSlug(refApp)}
+                          >
+                            {loadingApp?.id !== focus?.id ? (
+                              <Img size={20} app={focus} />
+                            ) : (
+                              <Loading size={20} />
+                            )}
+                            {focus.name}
+                          </A>
+                        </Span>
                       )}
                     </Div>
                   </Div>
