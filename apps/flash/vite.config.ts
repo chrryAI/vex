@@ -4,7 +4,12 @@ import path from "path"
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxRuntime: "automatic",
+      jsxImportSource: "react",
+    }),
+  ],
   publicDir: path.resolve(__dirname, "../web/public"),
   resolve: {
     alias: {
@@ -36,18 +41,26 @@ export default defineConfig({
     },
   },
   ssr: {
-    noExternal: [/^@lobehub\//, "uuid"],
+    external: ["i18n-iso-countries"], // Don't bundle this - it has dynamic requires
+    resolve: {
+      externalConditions: ["node", "import"],
+    },
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-dom/server"],
   },
   build: {
     rollupOptions: {
       output: {
         manualChunks: undefined,
+        format: "es", // Force ES module format
       },
     },
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
       ignoreDynamicRequires: true, // Ignore dynamic requires that can't be resolved
+      defaultIsModuleExports: true,
     },
   },
 })

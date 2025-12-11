@@ -75,7 +75,7 @@ function App({ serverData }: AppProps) {
   }
 
   // Handle session errors
-  if (serverData?.session?.error) {
+  if (serverData?.session && "error" in serverData.session) {
     return (
       <div
         style={{

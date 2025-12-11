@@ -46,7 +46,7 @@ RUN NODE_ENV= pnpm install --frozen-lockfile
 # Build the Vite application (client + server)
 ENV NODE_OPTIONS='--max-old-space-size=8192'
 
-RUN pnpm --filter flash run build:all
+RUN pnpm --filter flash run build
 
 # Production image
 FROM base AS runner
