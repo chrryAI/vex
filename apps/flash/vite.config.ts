@@ -28,6 +28,15 @@ export default defineConfig({
     "process.env.NEXT_PUBLIC_TESTING_ENV": JSON.stringify(
       process.env.NEXT_PUBLIC_TESTING_ENV || "false",
     ),
+    "process.env.NEXT_PUBLIC_API_URL": JSON.stringify(
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
+    ),
+    "process.env.NEXT_PUBLIC_WS_URL": JSON.stringify(
+      process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/ws",
+    ),
+    "process.env.NEXT_PUBLIC_NODE_ENV": JSON.stringify(
+      process.env.NEXT_PUBLIC_NODE_ENV || "development",
+    ),
     "process.env.MODE": JSON.stringify(process.env.MODE || "development"),
   },
   server: {
