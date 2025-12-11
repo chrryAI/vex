@@ -51,6 +51,7 @@ const files = [
   "packages/waffles/package.json",
   "packages/ui/utils/index.ts",
   "packages/db/package.json",
+  "apps/flash/server.js",
 ].map((f) => path.resolve(__dirname, "..", f))
 
 function updatePackageJson(file, version) {
@@ -62,7 +63,7 @@ function updatePackageJson(file, version) {
 
 // 4. Helper to replace version in text/code files
 function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
 function replaceVersionInFile(file, oldVersion, newVersion) {
