@@ -173,12 +173,12 @@ session.get("/", async (c) => {
     chromeVersion: "1.1.47",
   }
 
-  let member = await getMemberAction(request, { full: true, skipCache: true })
+  let member = await getMemberAction(c, { full: true, skipCache: true })
 
   const guest = !member
-    ? await getGuestAction(request, { skipCache: true })
+    ? await getGuestAction(c, { skipCache: true })
     : undefined
-  const { success } = await checkRateLimit(request, {
+  const { success } = await checkRateLimit(c.req.raw, {
     member: member ?? undefined,
     guest: guest ?? undefined,
   })
@@ -481,7 +481,7 @@ session.get("/", async (c) => {
           })
         }
 
-        member = await getMemberAction(request, { full: true, skipCache: true })
+        member = await getMemberAction(c, { full: true, skipCache: true })
       } else if (member.creditsLeft === 0) {
         await updateUser({
           ...member,
@@ -493,7 +493,7 @@ session.get("/", async (c) => {
                 : MEMBER_CREDITS_PER_MONTH,
         })
 
-        member = await getMemberAction(request, { full: true, skipCache: true })
+        member = await getMemberAction(c, { full: true, skipCache: true })
       }
 
       if (!member) {
@@ -518,7 +518,7 @@ session.get("/", async (c) => {
 
           member.migratedFromGuest = true
           migratedFromGuest = true
-          member = await getMemberAction(request, {
+          member = await getMemberAction(c, {
             full: true,
             skipCache: true,
           })
