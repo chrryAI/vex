@@ -1,8 +1,7 @@
 import { Hono } from "hono"
 import { getAiAgents, createAiAgent } from "@repo/db"
 import { createCustomAiAgentSchema } from "chrry/schemas/agentSchema"
-import { getMember } from "../lib/getMember"
-import { getGuest } from "../lib/getGuest"
+import { getMember, getGuest } from "../lib/auth"
 
 const app = new Hono()
 
@@ -10,7 +9,7 @@ app.get("/", async (c) => {
   const appId = c.req.query("appId")
 
   const member = await getMember(c)
-  const guest = await getGuest()
+  const guest = await getGuest(c)
 
   // BACKWARD COMPATIBLE FIX AFTER RELEASE ALL PLATFORMS
   // if (!member && !guest) {

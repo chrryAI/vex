@@ -1,15 +1,17 @@
-import { getUser, getGuest as getGuestDb, app } from "@repo/db"
+import { getUser, getGuest as getGuestDb } from "@repo/db"
 import jwt from "jsonwebtoken"
 import { decode } from "next-auth/jwt"
 import captureException from "../../lib/captureException"
 import { isOwner, OWNER_CREDITS } from "chrry/utils"
+import { Context } from "hono"
+import { validate } from "uuid"
 
 /**
  * Get authenticated member from request
  * Pure function - no Next.js dependencies
  */
 export async function getMember(
-  request: Request,
+  c: Context,
   options: {
     byEmail?: string
     full?: boolean
@@ -18,10 +20,9 @@ export async function getMember(
 ) {
   const { byEmail, full, skipCache } = options
 
-  // If fetching by email directly
   if (byEmail) {
     const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
-    const user = await getUser({ email: byEmail, skipCache: skipCache || full })
+    let user = await getUser({ email: byEmail, skipCache: skipCache || full })
 
     if (user) {
       return {
@@ -31,12 +32,12 @@ export async function getMember(
         password: full ? user.password : null,
       }
     }
-    return null
+    return
   }
 
   try {
     // Check for token in Authorization header
-    const authHeader = request.headers.get("authorization")
+    const authHeader = c.req.header("authorization")
 
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "")
@@ -45,11 +46,7 @@ export async function getMember(
       if (token.split(".").length !== 3) {
         const fp = authHeader.replace("Bearer ", "")
 
-        // Try API key first
-        const result = await getUser({
-          apiKey: fp,
-          skipCache: skipCache || full,
-        })
+        let result = await getUser({ apiKey: fp, skipCache: skipCache || full })
         if (result) {
           return {
             ...result,
@@ -58,18 +55,7 @@ export async function getMember(
           }
         }
 
-        // If not an API key, try as guest fingerprint
-        const guestResult = await getGuestDb({
-          fingerprint: fp,
-          skipCache: skipCache || false,
-        })
-
-        if (guestResult) {
-          // Return null for member, but the guest will be picked up by getGuest
-          return null
-        }
-
-        return null
+        return
       }
 
       // Verify and decode the token
@@ -87,131 +73,65 @@ export async function getMember(
             password: full ? user.password : null,
           }
         }
-        return null
+        return
       }
     }
   } catch (error) {
     captureException(error)
     console.error("Error verifying token:", error)
   }
-
-  // Try to decode session cookie directly
-  let sessionCookie: string | undefined
-  let decodedToken: any = null
-
-  try {
-    const cookieHeader = request.headers.get("cookie")
-    console.log(`🚀 ~ cookieHeader:`, cookieHeader)
-    console.log(`🚀 ~ All headers:`, Array.from(request.headers.entries()))
-
-    if (cookieHeader) {
-      // Look for __Secure-next-auth.session-token or next-auth.session-token
-      const sessionTokenMatch =
-        cookieHeader.match(/__Secure-next-auth\.session-token=([^;]+)/) ||
-        cookieHeader.match(/next-auth\.session-token=([^;]+)/)
-
-      if (sessionTokenMatch) {
-        sessionCookie = decodeURIComponent(sessionTokenMatch[1]!)
-        console.log("✅ Found session cookie, attempting to decode...")
-
-        // Try to decode the session token
-        decodedToken = await decode({
-          token: sessionCookie,
-          secret: process.env.NEXTAUTH_SECRET!,
-        })
-
-        if (decodedToken?.email) {
-          console.log("✅ Successfully decoded session token")
-          const user = await getUser({
-            email: decodedToken.email,
-            skipCache: skipCache || full,
-          })
-
-          if (user) {
-            // Generate token from decoded session
-            const token = jwt.sign(
-              { email: decodedToken.email, sub: user.id },
-              process.env.NEXTAUTH_SECRET!,
-            )
-
-            return {
-              ...user,
-              token,
-              sessionCookie,
-              password: full ? user.password : null,
-            }
-          }
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Error decoding session cookie:", error)
-  }
-
-  return null
 }
-
 /**
  * Get guest from request
  * Pure function - no Next.js dependencies
  */
 export async function getGuest(
-  request: Request,
-  options: {
-    skipCache?: boolean
-  } = {},
+  c?: Context,
+  { skipCache }: { skipCache?: boolean } = {},
 ) {
-  const { skipCache } = options
-
   try {
-    // First try Authorization header (for cross-origin requests)
-    const authHeader = request.headers.get("authorization")
+    // If no context provided, return undefined (for backward compatibility)
+    if (!c) {
+      return undefined
+    }
+
+    const authHeader = c.req.header("authorization")
+
     if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.replace("Bearer ", "")
+      const fp = authHeader.replace("Bearer ", "")
 
-      // If it's a GUID (not a JWT), try it as a fingerprint
-      if (token.split(".").length !== 3) {
-        const guest = await getGuestDb({
-          fingerprint: token,
-          skipCache: skipCache || false,
-        })
+      if (!validate(fp)) {
+        return
+      }
 
-        if (guest) {
-          return guest
+      let result = await getGuestDb({ fingerprint: fp, skipCache })
+
+      if (!result) {
+        const cookieFingerprint = c.req
+          .header("cookie")
+          ?.split(";")
+          .find((c) => c.trim().startsWith("fingerprint="))
+          ?.split("=")[1]
+
+        const headerFingerprint = c.req.header("x-fp")
+
+        const fingerprint = cookieFingerprint || headerFingerprint
+
+        if (fingerprint) {
+          let result = await getGuestDb({ fingerprint })
+          return result || undefined
         }
       }
+
+      return result || undefined
     }
 
-    // Fall back to cookie-based authentication
-    const cookieHeader = request.headers.get("cookie")
-    console.log(`🚀 ~ cookieHeader:`, cookieHeader)
-    console.log(`🚀 ~ All headers:`, Array.from(request.headers.entries()))
-
-    if (!cookieHeader) {
-      return null
-    }
-
-    // Extract fingerprint from cookie
-    const fingerprintMatch = cookieHeader.match(/fingerprint=([^;]+)/)
-    if (!fingerprintMatch?.[1]) {
-      return null
-    }
-
-    const fingerprint = decodeURIComponent(fingerprintMatch[1])
-
-    const guest = await getGuestDb({
-      fingerprint,
-      skipCache: skipCache || false,
-    })
-
-    return guest || null
+    return
   } catch (error) {
-    captureException(error)
-    console.error("Error getting guest:", error)
-    return null
+    console.error("Error verifying token:", error)
+    return
   }
 }
-
 /**
  * Get chrryUrl from request headers
  * Pure function - no Next.js dependencies

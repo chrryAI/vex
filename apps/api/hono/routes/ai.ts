@@ -1,7 +1,5 @@
 import { Hono } from "hono"
 import { stream } from "hono/streaming"
-import { getGuest } from "../lib/getGuest"
-import { getMember } from "../lib/getMember"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
 import { getApp, getAppExtends } from "@repo/db"
@@ -83,6 +81,7 @@ import { getTools } from "../../lib/tools"
 import { appWithStore } from "chrry/types"
 import { appFormData } from "chrry/schemas/appSchema"
 import { uploadArtifacts } from "../../app/actions/uploadArtifacts"
+import { getGuest, getMember } from "../lib/auth"
 
 interface StreamController {
   close: () => void
