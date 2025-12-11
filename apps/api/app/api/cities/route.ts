@@ -1,54 +1,21 @@
-"use server"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-import { NextRequest, NextResponse } from "next/server"
-import { headers } from "next/headers"
-import getMember from "../../actions/getMember"
-import getGuest from "../../actions/getGuest"
-import { getCities } from "@repo/db"
-import countries from "i18n-iso-countries"
-
-function getCountryCode(countryName: string): string {
-  const code = countries.getAlpha2Code(countryName, "en")
-  return code || countryName
-}
-
+// Forward GET /api/cities requests to Hono
 export async function GET(request: NextRequest) {
-  const member = await getMember()
-  const guest = member ? undefined : await getGuest()
+  const url = new URL(request.url)
+  const path = "/cities" + url.search
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const search = request.nextUrl.searchParams.get("search") || undefined
-
-  // Convert stored country name to country code for compatibility
-  const memberCountryCode = member?.country
-    ? getCountryCode(member.country)
-    : undefined
-  const guestCountryCode = guest?.country
-    ? getCountryCode(guest.country)
-    : undefined
-
-  const country = (() => {
-    if (memberCountryCode) {
-      return memberCountryCode
-    }
-
-    if (guestCountryCode) {
-      return guestCountryCode
-    }
-
-    return "US" // Default fallback
-  })()
-
-  const cityName = member?.city || guest?.city || undefined
-
-  const cities = await getCities({
-    search,
-    country,
-    name: cityName,
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  return NextResponse.json(cities)
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }

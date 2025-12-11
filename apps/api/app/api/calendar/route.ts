@@ -1,119 +1,41 @@
-import getMember from "../../actions/getMember"
-import getGuest from "../../actions/getGuest"
-import { NextRequest, NextResponse } from "next/server"
-import {
-  createCalendarEventSchema,
-  getCalendarEventsSchema,
-} from "chrry/utils/calendarValidation"
-import { createCalendarEvent, getCalendarEvents } from "@repo/db"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-import superjson from "superjson"
-import { notify, notifyOwnerAndCollaborations } from "../../../lib/notify"
-
+// Forward GET /api/calendar requests to Hono
 export async function GET(request: NextRequest) {
-  const member = await getMember()
-  const guest = await getGuest()
+  const url = new URL(request.url)
+  const path = "/calendar" + url.search
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  // Validate query parameters
-  const queryParams = Object.fromEntries(request.nextUrl.searchParams)
-  const validation = getCalendarEventsSchema.safeParse(queryParams)
-
-  if (!validation.success) {
-    const errors = validation.error.issues.map((issue) => ({
-      field: issue.path.join("."),
-      message: issue.message,
-    }))
-
-    return NextResponse.json(
-      { error: "Invalid query parameters", errors },
-      { status: 400 },
-    )
-  }
-
-  const { startDate, endDate } = validation.data
-  const startTime = startDate ? new Date(startDate) : undefined
-  const endTime = endDate ? new Date(endDate) : undefined
-
-  const now = new Date()
-  const todayUTC = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  )
-
-  todayUTC.setHours(0, 0, 0, 0)
-
-  const thisMonthUTC = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth()),
-  )
-
-  const events = await getCalendarEvents({
-    userId: member?.id,
-    guestId: guest?.id,
-    startTime: startTime || todayUTC,
-    endTime:
-      endTime ||
-      new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0)), // End of current month
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  return NextResponse.json({ events })
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }
 
+// Forward POST /api/calendar requests to Hono
 export async function POST(request: NextRequest) {
-  const member = await getMember()
-  const guest = await getGuest()
+  const url = new URL(request.url)
+  const path = "/calendar" + url.search
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-  try {
-    const body = await request.text()
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+  })
 
-    const parsed = superjson.parse(body)
-
-    // Validate request body
-    const validation = createCalendarEventSchema.safeParse(parsed)
-
-    if (!validation.success) {
-      const errors = validation.error.issues.map((issue) => ({
-        field: issue.path.join("."),
-        message: issue.message,
-      }))
-
-      return NextResponse.json(
-        { error: "Invalid event data", errors },
-        { status: 400 },
-      )
-    }
-
-    const event = await createCalendarEvent({
-      ...validation.data,
-      userId: member?.id,
-      guestId: guest?.id,
-    })
-    if (!event) {
-      return NextResponse.json(
-        { error: "Failed to create calendar event" },
-        { status: 500 },
-      )
-    }
-
-    notify(event.userId || event.guestId || "", {
-      type: "calendar_event",
-      data: {
-        event,
-      },
-    })
-
-    return NextResponse.json(event)
-  } catch (error) {
-    console.error("Error creating calendar event:", error)
-    return NextResponse.json(
-      { error: "Failed to create calendar event" },
-      { status: 500 },
-    )
-  }
+  return await app.fetch(honoRequest)
 }

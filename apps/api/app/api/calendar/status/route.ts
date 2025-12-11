@@ -1,50 +1,21 @@
-import { NextRequest, NextResponse } from "next/server"
-import getMember from "../../../actions/getMember"
-import { getAccount } from "@repo/db"
+import { NextRequest } from "next/server"
+import app from "../../../../hono"
 
+// Forward GET /api/calendar/status requests to Hono
 export async function GET(request: NextRequest) {
-  const member = await getMember()
+  const url = new URL(request.url)
+  const path = "/calendar/status" + url.search
 
-  if (!member) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-  try {
-    // Check if user has Google account linked
-    const account = await getAccount({
-      userId: member.id,
-      provider: "google",
-    })
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
 
-    if (!account) {
-      return NextResponse.json({
-        connected: false,
-        hasCalendarScope: false,
-        hasRefreshToken: false,
-      })
-    }
-
-    // Check if account has calendar scope
-    const authorizedCalendarScope = "https://www.googleapis.com/auth/calendar"
-    const hasCalendarScope =
-      !!account.scope &&
-      account.scope
-        .split(/\s+/)
-        .map((scope) => scope.trim())
-        .some((scope) => scope === authorizedCalendarScope)
-
-    return NextResponse.json({
-      connected: true,
-      hasCalendarScope: hasCalendarScope || false,
-      hasRefreshToken: !!account.refresh_token,
-      hasAccessToken: !!account.access_token,
-      expiresAt: account.expires_at,
-    })
-  } catch (error) {
-    console.error("Error checking Google Calendar status:", error)
-    return NextResponse.json(
-      { error: "Failed to check connection status" },
-      { status: 500 },
-    )
-  }
+  return await app.fetch(honoRequest)
 }

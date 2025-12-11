@@ -1,34 +1,22 @@
-import { isE2E } from "chrry/utils"
-import { NextResponse } from "next/server"
-import cleanupTest from "../../../lib/cleanupTest"
-import getMember from "../../actions/getMember"
-import getGuest from "../../actions/getGuest"
-import { TEST_GUEST_FINGERPRINTS, TEST_MEMBER_EMAILS } from "@repo/db"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-export async function POST() {
-  if (!isE2E) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+// Forward POST /api/clear requests to Hono
+export async function POST(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/clear" + url.search
 
-  const member = await getMember()
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-  const guest = await getGuest()
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+  })
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  if (member && TEST_MEMBER_EMAILS.includes(member?.email)) {
-    await cleanupTest()
-
-    return NextResponse.json({ success: true })
-  }
-
-  if (guest && TEST_GUEST_FINGERPRINTS.includes(guest?.fingerprint)) {
-    await cleanupTest()
-
-    return NextResponse.json({ success: true })
-  }
-
-  return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  return await app.fetch(honoRequest)
 }
