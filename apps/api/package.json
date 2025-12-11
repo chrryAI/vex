@@ -43,6 +43,7 @@
     "@react-email/render": "^1.2.0",
     "@repo/db": "workspace:*",
     "@sentry/nextjs": "^8.55.0",
+    "@sentry/node": "^7.120.3",
     "@smithy/node-http-handler": "^4.4.5",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.3",

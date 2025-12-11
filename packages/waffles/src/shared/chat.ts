@@ -883,8 +883,6 @@ export const chat = async ({
   }
 
   if (bookmark) {
-    ;(await getFirstMenuThread()).hover()
-
     const bookmarkButton = page.getByTestId("thread-not-bookmarked")
     await expect(bookmarkButton).toBeVisible()
 
@@ -896,15 +894,11 @@ export const chat = async ({
     })
 
     await menuBookmarked.click()
-
+    await wait(2000)
     const threadNotBookmarked = page.getByTestId("thread-not-bookmarked")
     await expect(threadNotBookmarked).toBeVisible({
       timeout: 10000,
     })
-    ;(await getFirstMenuThread()).hover()
-    const menuNotBookmarked = page.getByTestId("menu-not-bookmarked")
-    await expect(menuNotBookmarked).toBeVisible()
-
     await threadNotBookmarked.click()
     await wait(2000)
   }

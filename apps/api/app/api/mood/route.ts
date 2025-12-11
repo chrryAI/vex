@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const path = "/mood" + url.search
-  console.log(`🚀 ~ GET ~ path:`, path)
 
   // Manually create headers to ensure cookies are included
   const headers = new Headers()

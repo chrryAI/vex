@@ -55,6 +55,12 @@ export default defineConfig({
     "process.env.NEXT_PUBLIC_NODE_ENV": JSON.stringify(
       process.env.NEXT_PUBLIC_NODE_ENV || "development",
     ),
+    "process.env.TEST_MEMBER_FINGERPRINTS": JSON.stringify(
+      process.env.TEST_MEMBER_FINGERPRINTS,
+    ),
+    "process.env.TEST_GUEST_FINGERPRINTS": JSON.stringify(
+      process.env.TEST_GUEST_FINGERPRINTS,
+    ),
     "process.env.MODE": JSON.stringify(process.env.MODE || "development"),
   },
   server: {
