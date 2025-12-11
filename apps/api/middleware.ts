@@ -127,6 +127,13 @@ export default async function middleware(request: NextRequest) {
     return response
   }
 
+  // Better Auth routes: skip locale handling, only add CORS
+  if (pathname.startsWith("/auth")) {
+    const response = NextResponse.next()
+    setCorsHeaders(response, request)
+    return response
+  }
+
   const response = handleIntlRequest(request)
   setCorsHeaders(response, request)
 

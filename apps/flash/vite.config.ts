@@ -20,7 +20,20 @@ export default defineConfig({
     "process.env.NEXT_PUBLIC_CI": JSON.stringify(
       process.env.NEXT_PUBLIC_CI || "false",
     ),
+    "process.env.NEXT_PUBLIC_TESTING_ENV": JSON.stringify(
+      process.env.NEXT_PUBLIC_TESTING_ENV || "false",
+    ),
     "process.env.MODE": JSON.stringify(process.env.MODE || "development"),
+  },
+  server: {
+    proxy: {
+      "/auth": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/auth/, "/api/auth"),
+      },
+    },
   },
   ssr: {
     noExternal: [/^@lobehub\//, "uuid"],

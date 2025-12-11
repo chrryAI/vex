@@ -19,25 +19,25 @@ import { v4 as uuid } from "uuid"
 import { reorderApps } from "chrry/lib"
 import { appWithStore } from "chrry/types"
 import { getSiteConfig } from "chrry/utils/siteConfig"
-import getAppAction from "../../actions/getApp"
+import app from "../../../hono"
 
+// Forward GET requests to Hono for intelligent app resolution
 export async function GET(request: NextRequest) {
-  const appId = request.nextUrl.searchParams.get("appId") || undefined
+  const url = new URL(request.url)
+  const path = "/apps" + url.search
 
-  const member = await getMember()
-  const guest = await getGuest()
-
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  let app = await getAppAction({
-    appId,
-    member,
-    guest,
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  return NextResponse.json(app?.store?.apps || [])
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }
 
 export async function POST(request: NextRequest) {

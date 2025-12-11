@@ -1,6 +1,12 @@
 import { v4 as uuidv4 } from "uuid"
 import { VERSION, getThreadId, pageSizes } from "chrry/utils"
-import { getSession, getThread, getThreads, getTranslations } from "chrry/lib"
+import {
+  getApp,
+  getSession,
+  getThread,
+  getThreads,
+  getTranslations,
+} from "chrry/lib"
 import { locale } from "chrry/locales"
 import { session, thread, paginatedMessages, appWithStore } from "chrry/types"
 import { getSiteConfig } from "chrry/utils/siteConfig"
@@ -54,8 +60,7 @@ export async function loadServerData(
   const viewPortWidth = cookies.viewPortWidth || ""
   const viewPortHeight = cookies.viewPortHeight || ""
 
-  const apiKey = fingerprint
-
+  const apiKey = cookies.token || headers["x-token"] || fingerprint
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
   const locale: locale = (cookies.locale as locale) || "en"
@@ -66,7 +71,6 @@ export async function loadServerData(
   let session: session | undefined
   let translations: Record<string, any> | undefined
   let app: appWithStore | undefined
-  let threads: { threads: thread[]; totalCount: number } | undefined
   let apiError: Error | undefined
 
   // Fetch thread if threadId exists
@@ -82,11 +86,10 @@ export async function loadServerData(
     }
   }
 
-  const appId = thread?.thread?.appId || undefined
+  const appId = thread?.thread?.appId || headers["x-app-id"]
 
-  // Fetch session, translations, and app in parallel
   try {
-    const [sessionResult, translationsResult] = await Promise.all([
+    const [sessionResult, translationsResult, appResult] = await Promise.all([
       getSession({
         appId,
         deviceId,
@@ -101,26 +104,50 @@ export async function loadServerData(
         screenWidth: Number(viewPortWidth),
         screenHeight: Number(viewPortHeight),
         gift,
-        source: "ssr",
-        userAgent: headers["user-agent"] || `Chrry/${VERSION}`,
+        source: "layout",
       }),
 
       getTranslations({
         token: apiKey,
         locale,
       }),
+
+      getApp({
+        chrryUrl,
+        appId,
+        token: apiKey,
+      }),
     ])
 
     session = sessionResult
     translations = translationsResult
+    app = appResult
 
-    // Extract app from session if available
-    if (session && "app" in session) {
-      app = session.app as appWithStore
+    if (session && app) {
+      session.app = app
     }
   } catch (error) {
     console.error("❌ API Error:", error)
     apiError = error as Error
+  }
+
+  let threads:
+    | {
+        threads: thread[]
+        totalCount: number
+      }
+    | undefined
+
+  try {
+    threads = await getThreads({
+      appId: (session as session)?.app?.id,
+      pageSize: pageSizes.menuThreads,
+      sort: "bookmark",
+      token: apiKey,
+    })
+  } catch (error) {
+    // captureException(error)
+    console.error("❌ API Error:", error)
   }
 
   // Fetch threads

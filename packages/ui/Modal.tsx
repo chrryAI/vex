@@ -106,6 +106,7 @@ export default function Modal({
       if (params) {
         const urlParams = new URLSearchParams(params.split("?")[1] || "")
         const paramToRemove = Array.from(urlParams.entries())[0]?.[0]
+        console.log(`🚀 ~ useEffect ~ paramToRemove:`, paramToRemove)
 
         if (paramToRemove) {
           removeParams([paramToRemove])
