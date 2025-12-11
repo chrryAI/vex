@@ -656,6 +656,9 @@ importers:
       '@chrryai/chrry':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@vitejs/plugin-react':
+        specifier: ^5.0.2
+        version: 5.1.1(vite@7.2.6(@types/node@24.10.1)(lightningcss@1.30.2)(sass@1.94.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
       compression:
         specifier: ^1.8.1
         version: 1.8.1
@@ -689,6 +692,9 @@ importers:
       vite:
         specifier: ^7.2.6
         version: 7.2.6(@types/node@24.10.1)(lightningcss@1.30.2)(sass@1.94.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2)
+      vite-plugin-static-copy:
+        specifier: ^3.1.1
+        version: 3.1.4(vite@7.2.6(@types/node@24.10.1)(lightningcss@1.30.2)(sass@1.94.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
     devDependencies:
       '@types/express':
         specifier: ^5.0.3
@@ -702,9 +708,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.1.9
         version: 19.2.3(@types/react@19.2.7)
-      '@vitejs/plugin-react':
-        specifier: ^5.0.2
-        version: 5.1.1(vite@7.2.6(@types/node@24.10.1)(lightningcss@1.30.2)(sass@1.94.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
       cross-env:
         specifier: ^10.0.0
         version: 10.1.0
@@ -714,9 +717,6 @@ importers:
       typescript:
         specifier: ~5.9.2
         version: 5.9.3
-      vite-plugin-static-copy:
-        specifier: ^3.1.1
-        version: 3.1.4(vite@7.2.6(@types/node@24.10.1)(lightningcss@1.30.2)(sass@1.94.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
 
   apps/web:
     dependencies:
