@@ -16,7 +16,8 @@ export async function POST(request: NextRequest) {
     method: request.method,
     headers: headers,
     body: request.body,
-  })
+    duplex: "half",
+  } as RequestInit)
 
   return await app.fetch(honoRequest)
 }
@@ -36,7 +37,8 @@ export async function PUT(request: NextRequest) {
     method: request.method,
     headers: headers,
     body: request.body,
-  })
+    duplex: "half",
+  } as RequestInit)
 
   return await app.fetch(honoRequest)
 }
