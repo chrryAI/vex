@@ -94,7 +94,7 @@ app.use("*all", async (req, res) => {
     // Get App component
     const App = !isProduction
       ? (await vite.ssrLoadModule("/src/App.tsx")).default
-      : (await import("./dist/server/App.js")).default
+      : (await import("./dist/server/entry-server.js")).App
 
     const appHtml = renderToString(React.createElement(App, { serverData }))
 
