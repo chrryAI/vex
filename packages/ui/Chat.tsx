@@ -3396,7 +3396,13 @@ export default function Chat({
                 {/* Call to action for guests */}
               </Div>
 
-              <Div>
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
                 {guest && !user && (
                   <Button
                     className="transparent"

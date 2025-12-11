@@ -1,184 +1,58 @@
-import { NextRequest, NextResponse } from "next/server"
-import getMember from "../../actions/getMember"
-import {
-  deleteUser,
-  getStore,
-  getUser,
-  updateStore,
-  updateUser,
-} from "@repo/db"
-import captureException from "../../../lib/captureException"
-import { isValidUsername } from "chrry/utils"
-import { protectedRoutes } from "chrry/utils/url"
-import Stripe from "stripe"
-import { deleteFile } from "../../../lib/minio"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-export async function GET() {
-  const member = await getMember({ skipCache: true })
+// Forward GET /api/user requests to Hono
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/user" + url.search
 
-  if (!member) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  return NextResponse.json(member)
-}
-
-export async function PATCH(request: NextRequest) {
-  const member = await getMember({ full: true, skipCache: true })
-
-  const {
-    language,
-    name,
-    image,
-    userName,
-    favouriteAgent,
-    characterProfilesEnabled,
-    memoriesEnabled,
-    city,
-    country,
-  } = await request.json()
-
-  if (!member) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  if (protectedRoutes.includes(userName)) {
-    return NextResponse.json(
-      { error: "Username is protected" },
-      { status: 400 },
-    )
-  }
-
-  if (!isValidUsername(userName)) {
-    return NextResponse.json(
-      { error: "Username must be 3-20 alphanumeric characters" },
-      { status: 400 },
-    )
-  }
-
-  const exists = async (username: string) => {
-    // Check if username taken by another user
-    const existingUser = await getUser({ userName: username })
-    if (existingUser && existingUser.id !== member.id) {
-      return true // Username taken by someone else
-    }
-
-    // Check if slug taken by another user's store
-    const existingStore = await getStore({ slug: username })
-    if (existingStore?.store) {
-      const store = existingStore.store
-
-      // It's taken UNLESS it's owned by current user
-      const isOwnStore = store.userId === member.id
-
-      if (!isOwnStore) {
-        return true // Slug taken by someone else
-      }
-    }
-
-    return false // Username/slug is available
-  }
-
-  if (userName && (await exists(userName))) {
-    return NextResponse.json(
-      { error: "Username already exists" },
-      { status: 400 },
-    )
-  }
-
-  const existingUser = userName
-    ? await getUser({
-        userName,
-      })
-    : undefined
-
-  if (existingUser && existingUser.id !== member.id) {
-    return NextResponse.json(
-      { error: "Username already exists" },
-      { status: 400 },
-    )
-  }
-
-  const userStore = await getStore({ slug: member.userName })
-
-  if (userStore?.store && userName !== member.userName) {
-    await updateStore({
-      ...userStore.store,
-      slug: userName,
-    })
-  }
-
-  try {
-    // Update user
-    await updateUser({
-      ...member,
-      language: language ?? "en",
-      name: name ?? member.name,
-      image: image ?? member.image,
-      userName: userName ?? member.userName,
-      characterProfilesEnabled:
-        characterProfilesEnabled ?? member.characterProfilesEnabled,
-      memoriesEnabled: memoriesEnabled ?? member.memoriesEnabled,
-      favouriteAgent: favouriteAgent ?? member.favouriteAgent,
-      city: city ?? member.city,
-      country: country ?? member.country,
-    })
-
-    // If username changed, update store slug if it matches old username
-    if (userName && userName !== member.userName) {
-      const userStore = await getStore({
-        slug: member.userName,
-      })
-      if (userStore && userStore.store.userId === member.id) {
-        await updateStore({
-          ...userStore.store,
-          slug: userName,
-        })
-      }
-    }
-
-    return NextResponse.json({
-      ...(await getUser({
-        id: member.id,
-      })),
-      password: undefined,
-    })
-  } catch (error) {
-    captureException(error)
-    console.error("Error updating user:", error)
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
-  }
-}
-
-export async function DELETE() {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
-  const member = await getMember({
-    skipCache: true,
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  if (!member) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
 
-  const stripeSubscriptionId =
-    member.subscription?.provider === "stripe"
-      ? member.subscription.subscriptionId
-      : null
+  return await app.fetch(honoRequest)
+}
 
-  if (member.image) {
-    await deleteFile(member.image)
-  }
+// Forward PATCH /api/user requests to Hono
+export async function PATCH(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/user" + url.search
 
-  try {
-    if (stripeSubscriptionId) {
-      await stripe.subscriptions.cancel(stripeSubscriptionId)
-    }
-    await deleteUser(member.id)
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    captureException(error)
-    console.error("Error deleting user:", error)
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
-  }
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
+
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+    duplex: "half",
+  } as RequestInit)
+
+  return await app.fetch(honoRequest)
+}
+
+// Forward DELETE /api/user requests to Hono
+export async function DELETE(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/user" + url.search
+
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
+
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }

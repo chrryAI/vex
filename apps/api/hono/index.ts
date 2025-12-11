@@ -30,6 +30,8 @@ import { stripeWebhook } from "./routes/stripeWebhook"
 import { subscriptions } from "./routes/subscriptions"
 import { tasks } from "./routes/tasks"
 import { timers } from "./routes/timers"
+import { tts } from "./routes/tts"
+import { user } from "./routes/user"
 import { health } from "./routes/health"
 import authRoutes from "./routes/auth"
 
@@ -158,6 +160,8 @@ app.route("/stripeWebhook", stripeWebhook)
 app.route("/subscriptions", subscriptions)
 app.route("/tasks", tasks)
 app.route("/timers", timers)
+app.route("/tts", tts)
+app.route("/user", user)
 app.route("/health", health)
 app.route("/api/auth", authRoutes)
 
