@@ -1394,6 +1394,9 @@ importers:
       nprogress:
         specifier: ^0.2.0
         version: 0.2.0
+      react:
+        specifier: ^19.1.1
+        version: 19.2.0
       react-audio-play:
         specifier: ^1.0.4
         version: 1.0.4(react@19.2.0)
@@ -1403,6 +1406,9 @@ importers:
       react-dnd-html5-backend:
         specifier: ^16.0.1
         version: 16.0.1
+      react-dom:
+        specifier: ^19.1.1
+        version: 19.2.0(react@19.2.0)
       react-hook-form:
         specifier: ^7.63.0
         version: 7.67.0(react@19.2.0)
@@ -1513,12 +1519,6 @@ importers:
       eslint:
         specifier: ^9.34.0
         version: 9.39.1
-      react:
-        specifier: ^19.1.1
-        version: 19.2.0
-      react-dom:
-        specifier: ^19.1.1
-        version: 19.2.0(react@19.2.0)
       react-native:
         specifier: 0.78.3
         version: 0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@react-native-community/cli@20.0.2(typescript@5.8.2))(@types/react@19.1.12)(react@19.2.0)
