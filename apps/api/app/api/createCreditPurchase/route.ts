@@ -1,52 +1,22 @@
-import { NextResponse } from "next/server"
-import Stripe from "stripe"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-import captureException from "../../../lib/captureException"
+// Forward POST /api/createCreditPurchase requests to Hono
+export async function POST(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/createCreditPurchase" + url.search
 
-export async function POST(request: Request) {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-  try {
-    const {
-      customerEmail,
-      successUrl,
-      cancelUrl,
-      creditAmount,
-      userId,
-      guestId,
-      affiliateCode,
-    } = await request.json()
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+  })
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: process.env.STRIPE_PRICE_CREDIT_ID!, // Different from subscription price
-          quantity: creditAmount,
-        },
-      ],
-      customer_email: customerEmail,
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      automatic_tax: {
-        enabled: true, // Add this line
-      },
-      metadata: {
-        userId,
-        guestId,
-        plan: "credits",
-        ...(affiliateCode && { affiliateCode }),
-      },
-    })
-
-    return NextResponse.json({
-      sessionId: session.id,
-      checkoutUrl: session.url,
-    })
-  } catch (err: any) {
-    captureException(err)
-    console.error("Stripe error:", err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
-  }
+  return await app.fetch(honoRequest)
 }
