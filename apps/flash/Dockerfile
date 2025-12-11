@@ -40,8 +40,8 @@ COPY . .
 # Remove node_modules to prevent pnpm from prompting for confirmation
 RUN rm -rf node_modules
 
-# Restore pnpm workspace links
-RUN pnpm install --frozen-lockfile
+# Restore pnpm workspace links (install ALL dependencies including devDependencies for build)
+RUN NODE_ENV= pnpm install --frozen-lockfile
 
 # Build the Vite application (client + server)
 ENV NODE_OPTIONS='--max-old-space-size=8192'
