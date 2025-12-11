@@ -21,6 +21,24 @@ export default defineConfig({
     "process.env.NEXT_PUBLIC_FE_PORT": JSON.stringify(
       process.env.NEXT_PUBLIC_FE_PORT || "3000",
     ),
+    "process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": JSON.stringify(
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    ),
+    "process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID": JSON.stringify(
+      process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    ),
+    "process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID": JSON.stringify(
+      process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    ),
+    "process.env.NEXT_PUBLIC_SENTRY_DSN": JSON.stringify(
+      process.env.NEXT_PUBLIC_SENTRY_DSN,
+    ),
+    "process.env.NEXT_PUBLIC_SITE_MODE": JSON.stringify(
+      process.env.NEXT_PUBLIC_SITE_MODE || "chrryAI",
+    ),
+    "process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY": JSON.stringify(
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    ),
     "process.env.API_PORT": JSON.stringify(process.env.API_PORT || "3001"),
     "process.env.NEXT_PUBLIC_CI": JSON.stringify(
       process.env.NEXT_PUBLIC_CI || "false",
