@@ -51,9 +51,9 @@ export const threads = new Hono()
 // GET /threads - List threads
 threads.get("/", async (c) => {
   const request = c.req.raw
-  const member = await getMemberAction(request, { full: true, skipCache: true })
+  const member = await getMemberAction(c, { full: true, skipCache: true })
   const guest = !member
-    ? await getGuestAction(request, { skipCache: true })
+    ? await getGuestAction(c, { skipCache: true })
     : undefined
 
   if (!member && !guest) {
@@ -262,9 +262,9 @@ threads.get("/:id", async (c) => {
     return c.json({ error: "Thread not found", status: 404 }, 404)
   }
 
-  const member = await getMemberAction(request, { full: true, skipCache: true })
+  const member = await getMemberAction(c, { full: true, skipCache: true })
   const guest = !member
-    ? await getGuestAction(request, { skipCache: true })
+    ? await getGuestAction(c, { skipCache: true })
     : undefined
 
   if (!member && !guest) {
@@ -307,9 +307,9 @@ threads.delete("/:id", async (c) => {
     return c.json({ error: "Thread not found", status: 404 }, 404)
   }
 
-  const member = await getMemberAction(request, { full: true, skipCache: true })
+  const member = await getMemberAction(c, { full: true, skipCache: true })
   const guest = !member
-    ? await getGuestAction(request, { skipCache: true })
+    ? await getGuestAction(c, { skipCache: true })
     : undefined
 
   if (!member && !guest) {
@@ -463,9 +463,9 @@ threads.patch("/:id", async (c) => {
     return c.json({ error: "Thread not found", status: 404 }, 404)
   }
 
-  const member = await getMemberAction(request, { full: true, skipCache: true })
+  const member = await getMemberAction(c, { full: true, skipCache: true })
   const guest = !member
-    ? await getGuestAction(request, { skipCache: true })
+    ? await getGuestAction(c, { skipCache: true })
     : undefined
 
   if (!member && !guest) {
