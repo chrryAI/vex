@@ -38,4 +38,16 @@ export default defineConfig({
   ssr: {
     noExternal: [/^@lobehub\//, "uuid"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+      ignoreDynamicRequires: true, // Ignore dynamic requires that can't be resolved
+    },
+  },
 })
