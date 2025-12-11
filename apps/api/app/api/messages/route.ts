@@ -6,11 +6,6 @@ import { getMood, getPureApp, getTask, guest, updateTask } from "@repo/db"
 
 // Initialize with a pretrained model
 
-const estimateTokens = (content?: string): number => {
-  if (!content) return 0
-  return Math.ceil(content.length / 4) // 4 chars ≈ 1 token
-}
-
 interface StreamController {
   close: () => void
   desiredSize: number | null

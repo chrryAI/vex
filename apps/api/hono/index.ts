@@ -15,6 +15,7 @@ import { collaborations } from "./routes/collaborations"
 import { createCreditPurchase } from "./routes/createCreditPurchase"
 import { createSubscription } from "./routes/createSubscription"
 import { cron } from "./routes/cron"
+import { guest } from "./routes/guest"
 import { health } from "./routes/health"
 import authRoutes from "./routes/auth"
 
@@ -95,6 +96,7 @@ app.route("/collaborations", collaborations)
 app.route("/createCreditPurchase", createCreditPurchase)
 app.route("/createSubscription", createSubscription)
 app.route("/cron", cron)
+app.route("/guest", guest)
 app.route("/health", health)
 app.route("/api/auth", authRoutes)
 

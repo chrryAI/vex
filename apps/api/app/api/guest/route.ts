@@ -1,55 +1,42 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getGuest, updateGuest } from "@repo/db"
-import "../../../sentry.server.config"
-import getGuestAction from "../../actions/getGuest"
-import captureException from "../../../lib/captureException"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
+// Forward PATCH /api/guest requests to Hono
 export async function PATCH(request: NextRequest) {
-  const guest = await getGuestAction()
+  const url = new URL(request.url)
+  const path = "/guest" + url.search
 
-  const {
-    favouriteAgent,
-    characterProfilesEnabled,
-    city,
-    country,
-    memoriesEnabled,
-  } = await request.json()
-
-  if (!guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  try {
-    await updateGuest({
-      ...guest,
-      favouriteAgent: favouriteAgent ?? guest.favouriteAgent,
-      characterProfilesEnabled:
-        characterProfilesEnabled ?? guest.characterProfilesEnabled,
-      memoriesEnabled: memoriesEnabled ?? guest.memoriesEnabled,
-      city: city ?? guest.city,
-      country: country ?? guest.country,
-    })
-
-    return NextResponse.json(
-      await getGuest({
-        id: guest.id,
-      }),
-    )
-  } catch (error) {
-    captureException(error)
-    console.error("Error updating user:", error)
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
-  }
-}
-
-export async function GET(request: NextRequest) {
-  const guest = await getGuestAction({
-    skipCache: true,
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  if (!guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+    duplex: "half", // Required when sending a body
+  } as RequestInit)
 
-  return NextResponse.json(guest)
+  return await app.fetch(honoRequest)
+}
+
+// Forward GET /api/guest requests to Hono
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/guest" + url.search
+
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
+
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }

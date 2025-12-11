@@ -7,9 +7,8 @@ export async function POST(request: NextRequest) {
     method: "POST",
     headers: request.headers,
     body: request.body,
-    // @ts-ignore - duplex is required for streaming bodies
     duplex: "half",
-  })
+  } as RequestInit)
 
   const honoResponse = await app.fetch(honoRequest)
   return honoResponse
