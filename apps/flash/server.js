@@ -4,6 +4,8 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 import rateLimit from "express-rate-limit"
+
+const VERSION = "1.6.38"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -47,6 +49,20 @@ if (!isProduction) {
   app.use(compression())
   app.use(base, sirv("./dist/client", { extensions: [] }))
 }
+
+// Build ID is set at build time (GIT_SHA) or runtime fallback
+const buildId = process.env.GIT_SHA || Date.now().toString()
+
+// Health check endpoint for CI/CD
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    buildId,
+    version: VERSION,
+    env: process.env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+  })
+})
 
 // Serve HTML
 app.use("*all", async (req, res) => {

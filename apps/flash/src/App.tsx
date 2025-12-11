@@ -105,29 +105,7 @@ function App({ serverData }: AppProps) {
         viewPortHeight={serverData?.viewPortHeight}
         signInContext={signInContext}
         signOutContext={signOutContext}
-      >
-        <main>
-          <h1>Chrry on Vite SSR ⚡️</h1>
-          <p>Testing streaming SSR performance</p>
-
-          {serverData && (
-            <div
-              style={{ marginTop: "2rem", fontSize: "0.875rem", opacity: 0.7 }}
-            >
-              <p>Site: {serverData.siteConfig.name}</p>
-              <p>Mode: {serverData.siteConfig.mode}</p>
-              <p>Domain: {serverData.siteConfig.domain}</p>
-              <p>
-                Environment: {serverData.isDev ? "Development" : "Production"}
-              </p>
-              <p>Theme: {serverData.theme}</p>
-              {serverData.session && "user" in serverData.session && (
-                <p>User: {serverData.session.user?.email || "Guest"}</p>
-              )}
-            </div>
-          )}
-        </main>
-      </Chrry>
+      />
     </>
   )
 }
