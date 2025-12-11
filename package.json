@@ -1,12 +1,12 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.6.36",
+  "version": "1.6.37",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "dev:all": "concurrently \"turbo dev --filter=wsserver\" \"turbo dev --filter=api\" \"turbo dev --filter=web\"",
-    "start:all": "concurrently \"turbo start --filter=wsserver\" \"turbo start --filter=api\" \"turbo start --filter=web\"",
+    "dev:all": "concurrently \"turbo dev --filter=wsserver\" \"turbo dev --filter=api\" \"turbo dev --filter=flash\"",
+    "start:all": "concurrently \"turbo start --filter=wsserver\" \"turbo start --filter=api\" \"turbo start --filter=flash\"",
     "native": "cd apps/native && npm start",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

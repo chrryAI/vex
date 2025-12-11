@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { cors } from "hono/cors"
 import { session } from "./routes/session"
 import { threads } from "./routes/threads"
 import { translations } from "./routes/translations"
@@ -6,6 +7,15 @@ import { apps } from "./routes/apps"
 import authRoutes from "./routes/auth"
 
 const app = new Hono()
+
+// CORS for Flash (5173) and web (3000)
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+  }),
+)
 
 app.route("/session", session)
 app.route("/threads", threads)
