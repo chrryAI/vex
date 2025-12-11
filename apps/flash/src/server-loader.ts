@@ -7,6 +7,7 @@ import {
   getThreads,
   getTranslations,
 } from "chrry/lib"
+import { migrateUser, getGuest as getGuestDb, getUser } from "@repo/db"
 import { locale } from "chrry/locales"
 import { session, thread, paginatedMessages, appWithStore } from "chrry/types"
 import { getSiteConfig } from "chrry/utils/siteConfig"
@@ -57,19 +58,21 @@ export async function loadServerData(
   const threadId = getThreadId(pathname)
   const isDev = process.env.MODE === "development"
 
-  // Parse query string for fp parameter
-  const urlObj = new URL(url, `http://${hostname}`)
-  let fpFromQuery = urlObj.searchParams.get("fp")
+  // Parse query string for fp parameter (only if URL contains query params)
+  let fpFromQuery: string | null = null
+  if (url.includes("?")) {
+    const urlObj = new URL(url, `http://${hostname}`)
+    fpFromQuery = urlObj.searchParams.get("fp")
+  }
 
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
   const fingerprint =
-    (fpFromQuery &&
-      (TEST_MEMBER_FINGERPRINTS?.concat(TEST_GUEST_FINGERPRINTS).includes(
-        fpFromQuery,
-      )
-        ? fpFromQuery
-        : headers["x-fp"] || cookies.fingerprint)) ||
-    uuidv4()
+    (TEST_MEMBER_FINGERPRINTS?.concat(TEST_GUEST_FINGERPRINTS).includes(
+      fpFromQuery || "",
+    )
+      ? fpFromQuery
+      : headers["x-fp"] || cookies.fingerprint) || uuidv4()
+
   const gift = headers["x-gift"]
   const agentName = cookies.agentName
   const routeType = headers["x-route-type"]
@@ -176,6 +179,29 @@ export async function loadServerData(
     })
   } catch (error) {
     console.error("Error fetching threads:", error)
+  }
+
+  try {
+    const member = await getUser({ id: session?.user?.id })
+
+    const guest = await getGuestDb({ fingerprint })
+
+    if (member && !member?.migratedFromGuest) {
+      const toMigrate = member.email
+        ? (await getGuestDb({ email: member.email })) || guest
+        : guest
+
+      if (toMigrate && !toMigrate?.migratedToUser) {
+        await migrateUser({
+          user: member,
+          guest: toMigrate,
+        })
+
+        member.migratedFromGuest = true
+      }
+    }
+  } catch (error) {
+    console.error("Error migrating user:", error)
   }
 
   const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"

@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 import rateLimit from "express-rate-limit"
 
-const VERSION = "1.6.49"
+const VERSION = "1.6.50"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -72,6 +72,42 @@ app.get("/api/health", (req, res) => {
 app.use("*all", async (req, res) => {
   try {
     const url = req.originalUrl.replace(base, "")
+
+    // Skip SSR for static assets (CSS, JS, images, fonts, etc.)
+    // Vite middleware already handles these in dev, sirv handles in production
+    const assetExtensions = [
+      ".js",
+      ".css",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".svg",
+      ".ico",
+      ".woff",
+      ".woff2",
+      ".ttf",
+      ".eot",
+      ".webp",
+      ".mp4",
+      ".webm",
+      ".json",
+      ".map",
+      ".txt",
+      ".xml",
+    ]
+    const isAsset =
+      assetExtensions.some((ext) => url.endsWith(ext)) ||
+      url.includes("/@fs/") ||
+      url.includes("/.well-known/") ||
+      url.startsWith("/@vite/") ||
+      url.startsWith("/node_modules/")
+
+    if (isAsset) {
+      // Asset requests shouldn't reach here (Vite/sirv should handle them)
+      // If they do, return 404 to avoid SSR
+      return res.status(404).end()
+    }
 
     /** @type {string} */
     let template

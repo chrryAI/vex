@@ -411,8 +411,6 @@ export function ChatProvider({
     }
   }, [loading, storeApps, loadingApp])
 
-  console.log("threaddssdsdsd", threadId)
-
   const setIsNewChat = (
     value: boolean,
     to = app?.slug ? getAppSlug(app) : "/",

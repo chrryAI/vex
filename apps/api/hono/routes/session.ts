@@ -294,10 +294,12 @@ session.get("/", async (c) => {
     let fingerPrintCookie = getCookie(c, "fingerprint")
 
     let fingerprint =
-      fingerprintHeader ||
       fingerPrintUrl ||
+      fingerprintHeader ||
       fingerPrintCookie ||
       guest?.fingerprint
+
+    console.log("fingerprintsssss", fingerprint)
 
     const { getIp } = lib
 

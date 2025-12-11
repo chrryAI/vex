@@ -1,29 +1,26 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getStores, createStore } from "@repo/db"
-import getMember from "../../actions/getMember"
-import getGuest from "../../actions/getGuest"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
+// Forward GET /api/stores requests to Hono
 export async function GET(request: NextRequest) {
-  try {
-    const member = await getMember()
-    const guest = await getGuest()
+  const url = new URL(request.url)
+  const path = "/stores" + url.search
 
-    if (!member && !guest) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-    const stores = await getStores({
-      userId: member?.id,
-      guestId: guest?.id,
-      page: 1,
-      pageSize: 100,
-    })
-    return NextResponse.json(stores)
-  } catch (error) {
-    console.error("Error fetching stores:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch stores" },
-      { status: 500 },
-    )
-  }
+  // Add custom headers to pass info to Hono
+  headers.set("x-app-id", request.headers.get("x-app-id") || "")
+  headers.set("x-app-slug", request.headers.get("x-app-slug") || "")
+  headers.set("x-pathname", request.headers.get("x-pathname") || "")
+
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }

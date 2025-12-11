@@ -20,13 +20,49 @@ import { image } from "./routes/image"
 import { invite } from "./routes/invite"
 import { manifest } from "./routes/manifest"
 import { memories } from "./routes/memories"
+import { messages } from "./routes/messages"
 import { mood } from "./routes/mood"
+import { pushSubscription } from "./routes/pushSubscription"
+import { sitemap } from "./routes/sitemap"
+import { stores } from "./routes/stores"
+import { stripeWebhook } from "./routes/stripeWebhook"
 import { health } from "./routes/health"
 import authRoutes from "./routes/auth"
+
+import * as Sentry from "@sentry/node"
+
+// Patch console.error to send errors to Sentry (server-side)
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    beforeSend(event, hint) {
+      // Ignore Applebot DOM errors
+      if (event.request?.headers?.["User-Agent"]?.includes("Applebot")) {
+        return null
+      }
+      return event
+    },
+    dsn: process.env.SENTRY_DSN,
+
+    // Use custom tunnel to bypass ad blockers
+    tunnel: "https://g.chrry.dev/api/submit/",
+
+    // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
+    tracesSampleRate: 1,
+
+    // Setting this option to true will print useful information to the console while you're setting up Sentry.
+    debug: false,
+  })
+}
 
 const isDevelopment = process.env.NODE_ENV !== "production"
 
 const app = new Hono()
+
+app.onError((err, c) => {
+  Sentry.captureException(err)
+  console.error("Hono error:", err)
+  return c.json({ error: "Internal server error" }, 500)
+})
 
 // Static allowed origins (matching Next.js middleware)
 const STATIC_ALLOWED_ORIGINS = [
@@ -106,7 +142,12 @@ app.route("/image", image)
 app.route("/invite", invite)
 app.route("/manifest", manifest)
 app.route("/memories", memories)
+app.route("/messages", messages)
 app.route("/mood", mood)
+app.route("/pushSubscription", pushSubscription)
+app.route("/sitemap.xml", sitemap)
+app.route("/stores", stores)
+app.route("/stripeWebhook", stripeWebhook)
 app.route("/health", health)
 app.route("/api/auth", authRoutes)
 

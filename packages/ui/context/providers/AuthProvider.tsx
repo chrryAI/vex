@@ -961,7 +961,6 @@ export function AuthProvider({
 
       return app.store?.apps
     } catch (error) {
-      console.error(`🚀 ~ storeAppsSwr error:`, error)
       captureException(error)
     }
   })
