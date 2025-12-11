@@ -8,6 +8,10 @@ import { app as apps } from "./routes/apps"
 import { affiliates } from "./routes/affiliates"
 import { ai } from "./routes/ai"
 import { aiAgents } from "./routes/aiAgents"
+import { calendar } from "./routes/calendar"
+import { cities } from "./routes/cities"
+import { clear } from "./routes/clear"
+import { collaborations } from "./routes/collaborations"
 import { health } from "./routes/health"
 import authRoutes from "./routes/auth"
 
@@ -81,6 +85,10 @@ app.route("/apps", apps)
 app.route("/affiliates", affiliates)
 app.route("/ai", ai)
 app.route("/aiAgents", aiAgents)
+app.route("/calendar", calendar)
+app.route("/cities", cities)
+app.route("/clear", clear)
+app.route("/collaborations", collaborations)
 app.route("/health", health)
 app.route("/api/auth", authRoutes)
 

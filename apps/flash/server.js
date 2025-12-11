@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 import rateLimit from "express-rate-limit"
 
-const VERSION = "1.6.43"
+const VERSION = "1.6.44"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -19,6 +19,10 @@ const templateHtml = isProduction
 
 // Create http server
 const app = express()
+
+// Trust proxy - needed for X-Forwarded-For header from reverse proxy
+// Set to true to trust all proxies, or set to number of hops (e.g., 1 for single proxy)
+app.set("trust proxy", true)
 
 // Add cookie parser middleware
 app.use(cookieParser())
