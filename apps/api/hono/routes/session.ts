@@ -242,12 +242,12 @@ session.get("/", async (c) => {
   const appId = url.searchParams.get("appId") || undefined
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
-  const app =
-    source !== "layout"
-      ? await getAppAction(request, {
-          appId: appId && validateUuid(appId) ? appId : undefined,
-        })
-      : undefined
+  // const app =
+  //   source !== "layout"
+  //     ? await getAppAction(request, {
+  //         appId: appId && validateUuid(appId) ? appId : undefined,
+  //       })
+  //     : undefined
 
   try {
     if (member?.id) {
@@ -507,7 +507,7 @@ session.get("/", async (c) => {
       const guestFingerprint = await getGuestDb({ fingerprint })
 
       let migratedFromGuest = false
-      if (!member.migratedFromGuest && appType && appType !== "web") {
+      if (!member.migratedFromGuest) {
         const toMigrate = member.email
           ? (await getGuestDb({ email: member.email })) || guestFingerprint
           : guestFingerprint
@@ -576,7 +576,7 @@ session.get("/", async (c) => {
         hasNotification,
         note: "This is a fake guest for bot/crawler traffic.",
         deviceId,
-        app,
+        // app,
         env,
       })
     }
@@ -713,7 +713,7 @@ session.get("/", async (c) => {
         device,
         os,
         browser,
-        app,
+        // app,
         aiAgent,
         versions,
         guest: {
@@ -762,7 +762,7 @@ session.get("/", async (c) => {
       os,
       browser,
       aiAgent,
-      app,
+      // app,
       versions,
       aiAgents,
       guest: {

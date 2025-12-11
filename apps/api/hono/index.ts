@@ -32,6 +32,9 @@ import { tasks } from "./routes/tasks"
 import { timers } from "./routes/timers"
 import { tts } from "./routes/tts"
 import { user } from "./routes/user"
+import { users } from "./routes/users"
+import { verifyPayment } from "./routes/verifyPayment"
+import { weather } from "./routes/weather"
 import { health } from "./routes/health"
 import authRoutes from "./routes/auth"
 
@@ -162,6 +165,9 @@ app.route("/tasks", tasks)
 app.route("/timers", timers)
 app.route("/tts", tts)
 app.route("/user", user)
+app.route("/users", users)
+app.route("/verifyPayment", verifyPayment)
+app.route("/weather", weather)
 app.route("/health", health)
 app.route("/api/auth", authRoutes)
 

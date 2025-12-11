@@ -7,7 +7,6 @@ import {
   getThreads,
   getTranslations,
 } from "chrry/lib"
-import { migrateUser, getGuest as getGuestDb, getUser } from "@repo/db"
 import { locale } from "chrry/locales"
 import { session, thread, paginatedMessages, appWithStore } from "chrry/types"
 import { getSiteConfig } from "chrry/utils/siteConfig"
@@ -179,29 +178,6 @@ export async function loadServerData(
     })
   } catch (error) {
     console.error("Error fetching threads:", error)
-  }
-
-  try {
-    const member = await getUser({ id: session?.user?.id })
-
-    const guest = await getGuestDb({ fingerprint })
-
-    if (member && !member?.migratedFromGuest) {
-      const toMigrate = member.email
-        ? (await getGuestDb({ email: member.email })) || guest
-        : guest
-
-      if (toMigrate && !toMigrate?.migratedToUser) {
-        await migrateUser({
-          user: member,
-          guest: toMigrate,
-        })
-
-        member.migratedFromGuest = true
-      }
-    }
-  } catch (error) {
-    console.error("Error migrating user:", error)
   }
 
   const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"

@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken"
 import captureException from "../../../lib/captureException"
 import getApp from "../getApp"
 import { isOwner, OWNER_CREDITS } from "chrry/utils"
-import { auth } from "../../../hono/lib/better-auth"
 
 export default async function getMember({
   byEmail,
@@ -77,45 +76,6 @@ export default async function getMember({
   } catch (error) {
     captureException(error)
     console.error("Error verifying token:", error)
-  }
-
-  // Try Better Auth session
-  try {
-    const headersList = await headers()
-    const cookieHeader = headersList.get("cookie") || ""
-
-    // Create a Request object for Better Auth
-    const request = new Request("http://localhost:3001/api/auth/session", {
-      headers: {
-        cookie: cookieHeader,
-      },
-    })
-
-    // Get session from Better Auth
-    const session = await auth.api.getSession({ headers: request.headers })
-
-    if (session?.user?.email) {
-      const user = await getUser({
-        email: session.user.email,
-        skipCache: skipCache || full,
-      })
-
-      if (user) {
-        // Generate token
-        const token = jwt.sign(
-          { email: session.user.email, sub: user.id },
-          process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET!,
-        )
-
-        return {
-          ...user,
-          token,
-          password: full ? user.password : null,
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Error getting Better Auth session:", error)
   }
 
   // If no session, return null
