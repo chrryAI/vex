@@ -1,72 +1,24 @@
-import { NextResponse } from "next/server"
-import { validate } from "uuid"
-import { deleteCollaboration, getCollaborations, getThread } from "@repo/db"
-import getMember from "../../../../actions/getMember"
-import getGuest from "../../../../actions/getGuest"
+import { NextRequest } from "next/server"
+import app from "../../../../../hono"
 
-export async function DELETE(request: Request) {
-  // Extract thread ID from URL: /api/threads/[id]/collaborations
-  const urlParts = request.url.split("/")
-  const threadsIndex = urlParts.findIndex((part) => part === "threads")
-  const id = threadsIndex !== -1 ? urlParts[threadsIndex + 1] : null
+// Forward DELETE /api/threads/:id/collaborations requests to Hono
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params
+  const url = new URL(request.url)
+  const path = `/threads/${id}/collaborations` + url.search
 
-  if (!id) {
-    return NextResponse.json(
-      { error: "Thread not found", status: 404 },
-      { status: 404 },
-    )
-  }
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-  if (!validate(id)) {
-    return NextResponse.json(
-      { error: "Thread not found", status: 404 },
-      { status: 404 },
-    )
-  }
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
 
-  const member = await getMember()
-  const guest = member ? undefined : await getGuest()
-
-  if (!member && !guest) {
-    return NextResponse.json(
-      { error: "Unauthorized", status: 401 },
-      { status: 401 },
-    )
-  }
-
-  const thread = await getThread({ id: id! })
-
-  if (!thread) {
-    return NextResponse.json(
-      { error: "Thread not found", status: 404 },
-      { status: 404 },
-    )
-  }
-
-  // Check if user is the thread owner (either member or guest)
-  const isThreadOwner =
-    (member && thread.userId === member.id) ||
-    (guest && thread.guestId === guest.id)
-
-  if (!isThreadOwner) {
-    return NextResponse.json(
-      { error: "Unauthorized", status: 401 },
-      { status: 401 },
-    )
-  }
-
-  const collaborations = await getCollaborations({ threadId: id })
-
-  if (!collaborations.length) {
-    return NextResponse.json(
-      { error: "Collaboration not found", status: 404 },
-      { status: 404 },
-    )
-  }
-
-  await Promise.all(
-    collaborations.map((c) => deleteCollaboration({ id: c.collaboration.id })),
-  )
-
-  return NextResponse.json({ thread })
+  return await app.fetch(honoRequest)
 }

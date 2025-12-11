@@ -21,11 +21,15 @@ import { invite } from "./routes/invite"
 import { manifest } from "./routes/manifest"
 import { memories } from "./routes/memories"
 import { messages } from "./routes/messages"
-import { mood } from "./routes/mood"
-import { pushSubscription } from "./routes/pushSubscription"
+import { mood, moods } from "./routes/mood"
+import { news } from "./routes/news"
+import { pushSubscription, pushSubscriptions } from "./routes/pushSubscription"
 import { sitemap } from "./routes/sitemap"
 import { stores } from "./routes/stores"
 import { stripeWebhook } from "./routes/stripeWebhook"
+import { subscriptions } from "./routes/subscriptions"
+import { tasks } from "./routes/tasks"
+import { timers } from "./routes/timers"
 import { health } from "./routes/health"
 import authRoutes from "./routes/auth"
 
@@ -144,10 +148,16 @@ app.route("/manifest", manifest)
 app.route("/memories", memories)
 app.route("/messages", messages)
 app.route("/mood", mood)
+app.route("/moods", moods)
+app.route("/news", news)
 app.route("/pushSubscription", pushSubscription)
+app.route("/pushSubscriptions", pushSubscriptions)
 app.route("/sitemap.xml", sitemap)
 app.route("/stores", stores)
 app.route("/stripeWebhook", stripeWebhook)
+app.route("/subscriptions", subscriptions)
+app.route("/tasks", tasks)
+app.route("/timers", timers)
 app.route("/health", health)
 app.route("/api/auth", authRoutes)
 

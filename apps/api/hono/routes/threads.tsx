@@ -711,3 +711,47 @@ threads.patch("/:id", async (c) => {
     thread: await getThread({ id }),
   })
 })
+
+// DELETE /threads/:id/collaborations - Delete all collaborations for a thread
+threads.delete("/:id/collaborations", async (c) => {
+  const id = c.req.param("id")
+
+  if (!id || !validate(id)) {
+    return c.json({ error: "Thread not found", status: 404 }, 404)
+  }
+
+  const member = await getMemberAction(c)
+  const guest = member ? undefined : await getGuestAction(c)
+
+  if (!member && !guest) {
+    return c.json({ error: "Unauthorized", status: 401 }, 401)
+  }
+
+  const thread = await getThread({ id })
+
+  if (!thread) {
+    return c.json({ error: "Thread not found", status: 404 }, 404)
+  }
+
+  // Check if user is the thread owner (either member or guest)
+  const isThreadOwner =
+    (member && thread.userId === member.id) ||
+    (guest && thread.guestId === guest.id)
+
+  if (!isThreadOwner) {
+    return c.json({ error: "Unauthorized", status: 401 }, 401)
+  }
+
+  const { getCollaborations, deleteCollaboration } = await import("@repo/db")
+  const collaborations = await getCollaborations({ threadId: id })
+
+  if (!collaborations.length) {
+    return c.json({ error: "Collaboration not found", status: 404 }, 404)
+  }
+
+  await Promise.all(
+    collaborations.map((c) => deleteCollaboration({ id: c.collaboration.id })),
+  )
+
+  return c.json({ thread })
+})

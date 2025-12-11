@@ -1,5 +1,10 @@
 import { Hono } from "hono"
-import { deletePushSubscription, getPushSubscription } from "@repo/db"
+import {
+  deletePushSubscription,
+  getPushSubscription,
+  createPushSubscription,
+  NewCustomPushSubscription,
+} from "@repo/db"
 import { getGuest, getMember } from "../lib/auth"
 
 export const pushSubscription = new Hono()
@@ -58,4 +63,38 @@ pushSubscription.delete("/", async (c) => {
   })
 
   return c.json({ success: true })
+})
+
+// New app for /pushSubscriptions (plural) - for creating subscriptions
+export const pushSubscriptions = new Hono()
+
+// POST /pushSubscriptions - Create a new push subscription
+pushSubscriptions.post("/", async (c) => {
+  const member = await getMember(c)
+  const guest = !member ? await getGuest(c) : undefined
+
+  if (!member && !guest) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  const { endpoint, keys } = await c.req.json()
+
+  if (!endpoint || !keys) {
+    return c.json({ error: "Missing endpoint or keys" }, 400)
+  }
+
+  const subscription: NewCustomPushSubscription = {
+    endpoint,
+    keys,
+    createdOn: new Date(),
+    updatedOn: new Date(),
+  }
+
+  const createdSubscription = await createPushSubscription({
+    userId: member?.id,
+    guestId: guest?.id,
+    subscription,
+  })
+
+  return c.json({ subscription: createdSubscription })
 })

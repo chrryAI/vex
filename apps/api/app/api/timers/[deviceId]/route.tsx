@@ -1,83 +1,48 @@
-import { createTimer, getTimer, updateTimer } from "@repo/db"
-import { NextResponse } from "next/server"
-import getMember from "../../../actions/getMember"
-import "../../../../sentry.server.config"
-import { notify } from "../../../../lib/notify"
-import getGuest from "../../../actions/getGuest"
+import { NextRequest } from "next/server"
+import app from "../../../../hono"
 
-export async function GET(request: Request) {
+// Forward GET /api/timers/:deviceId requests to Hono
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ deviceId: string }> },
+) {
+  const { deviceId } = await params
   const url = new URL(request.url)
-  const pathParts = url.pathname.split("/")
-  let deviceId = pathParts[pathParts.length - 1]
+  const path = `/timers/${deviceId}` + url.search
 
-  const member = await getMember()
-  const guest = await getGuest()
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Member not found" })
-  }
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
 
-  if (!deviceId) {
-    return NextResponse.json({ error: "Invalid deviceId" })
-  }
-
-  const fingerprint = member?.fingerprint || guest?.fingerprint
-
-  if (!fingerprint) {
-    return NextResponse.json({ error: "Invalid fingerprint" })
-  }
-
-  const timer =
-    (await getTimer({
-      userId: member?.id,
-      guestId: guest?.id,
-    })) ||
-    (await createTimer({
-      fingerprint,
-      guestId: guest?.id,
-      userId: member?.id,
-    }))
-
-  return NextResponse.json(timer)
+  return await app.fetch(honoRequest)
 }
 
-export const PATCH = async (request: Request) => {
+// Forward PATCH /api/timers/:deviceId requests to Hono
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ deviceId: string }> },
+) {
+  const { deviceId } = await params
   const url = new URL(request.url)
-  const pathParts = url.pathname.split("/")
-  const id = pathParts[pathParts.length - 1]
-  if (!id) {
-    return NextResponse.json({ error: "Invalid id" })
-  }
-  const member = await getMember()
-  const guest = await getGuest()
+  const path = `/timers/${deviceId}` + url.search
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Member not found" })
-  }
-
-  const { count, preset1, preset2, preset3, isCountingDown, fingerprint } =
-    await request.json()
-
-  const timer = await getTimer({ userId: member?.id, guestId: guest?.id })
-
-  if (!timer) {
-    return NextResponse.json({ error: "Timer not found" })
-  }
-
-  const updatedTimer = await updateTimer({
-    ...timer,
-    count: count ?? timer.count,
-    preset1: preset1 ?? timer.preset1,
-    preset2: preset2 ?? timer.preset2,
-    preset3: preset3 ?? timer.preset3,
-    isCountingDown: isCountingDown ?? timer.isCountingDown,
-    fingerprint: fingerprint ?? timer.fingerprint,
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  notify(member?.id || guest?.id!, {
-    type: "timer",
-    data: { ...updatedTimer, deviceId: id },
-  })
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+    duplex: "half",
+  } as RequestInit)
 
-  return NextResponse.json(updatedTimer)
+  return await app.fetch(honoRequest)
 }
