@@ -88,6 +88,8 @@ export default defineConfig({
       output: {
         manualChunks: undefined,
         format: "es", // Force ES module format
+        banner:
+          "import { createRequire } from 'module';const require = createRequire(import.meta.url);globalThis.require = require;",
       },
     },
     commonjsOptions: {
