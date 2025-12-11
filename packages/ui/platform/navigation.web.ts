@@ -125,9 +125,15 @@ export function useNavigation(): NavigationParams {
         newSearchParams.set(key, String(value))
       })
       const newUrl = `${pathname}?${newSearchParams.toString()}`
-      nextRouter?.push(newUrl)
+
+      // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
+      if (nextRouter) {
+        nextRouter.push(newUrl)
+      } else {
+        clientRouter.push(newUrl)
+      }
     },
-    [nextRouter, pathname, searchParams],
+    [nextRouter, clientRouter, pathname, searchParams],
   )
 
   const removeParams = useCallback(
@@ -136,9 +142,15 @@ export function useNavigation(): NavigationParams {
       const keysArray = Array.isArray(keys) ? keys : [keys]
       keysArray.forEach((key) => newSearchParams.delete(key))
       const newUrl = `${pathname}?${newSearchParams.toString()}`
-      nextRouter?.push(newUrl)
+
+      // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
+      if (nextRouter) {
+        nextRouter.push(newUrl)
+      } else {
+        clientRouter.push(newUrl)
+      }
     },
-    [nextRouter, pathname, searchParams],
+    [nextRouter, clientRouter, pathname, searchParams],
   )
 
   const setParams = useCallback(
@@ -148,9 +160,15 @@ export function useNavigation(): NavigationParams {
         newSearchParams.set(key, String(value))
       })
       const newUrl = `${pathname}?${newSearchParams.toString()}`
-      nextRouter?.push(newUrl)
+
+      // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
+      if (nextRouter) {
+        nextRouter.push(newUrl)
+      } else {
+        clientRouter.push(newUrl)
+      }
     },
-    [nextRouter, pathname],
+    [nextRouter, clientRouter, pathname],
   )
 
   return useMemo(

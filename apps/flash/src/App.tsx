@@ -3,12 +3,47 @@ import "chrry/globals.css"
 import "chrry/styles/view-transitions.css"
 import Chrry from "chrry/Chrry"
 import { ServerData } from "./server-loader"
+import { useAuth } from "chrry/hooks/useAuth"
 
 interface AppProps {
   serverData?: ServerData
 }
 
 function App({ serverData }: AppProps) {
+  // Use custom auth hook
+  const auth = useAuth()
+
+  // Create sign in wrapper to match Chrry's expected interface
+  const signInContext = async (
+    provider: "google" | "apple" | "credentials",
+    options: {
+      email?: string
+      password?: string
+      redirect?: boolean
+      callbackUrl: string
+      errorUrl?: string
+      blankTarget?: boolean
+    },
+  ) => {
+    if (provider === "google") {
+      return auth.signInWithGoogle()
+    } else if (provider === "apple") {
+      return auth.signInWithApple()
+    } else if (
+      provider === "credentials" &&
+      options.email &&
+      options.password
+    ) {
+      return auth.signInWithPassword(options.email, options.password)
+    }
+    return { success: false, error: "Invalid provider or missing credentials" }
+  }
+
+  // Create sign out wrapper
+  const signOutContext = async () => {
+    return auth.signOut()
+  }
+
   // Debug: Log server data
 
   // Handle API errors
@@ -25,45 +60,22 @@ function App({ serverData }: AppProps) {
           minHeight: "100vh",
         }}
       >
-        <div
+        <pre
           style={{
             background: "#1a1a1a",
-            border: "1px solid #333",
-            borderRadius: "8px",
-            padding: "24px",
+            padding: "20px",
+            borderRadius: "4px",
+            overflow: "auto",
           }}
         >
-          <h1 style={{ color: "#ef4444", margin: "0 0 16px 0" }}>
-            🚨 API Connection Error
-          </h1>
-          <p>Unable to connect to the API server.</p>
-          <div
-            style={{
-              background: "#2a2a2a",
-              padding: "16px",
-              borderRadius: "4px",
-              margin: "16px 0",
-              fontFamily: "monospace",
-              fontSize: "14px",
-            }}
-          >
-            <strong>Error:</strong> {serverData.apiError.message}
-          </div>
-          <div style={{ marginTop: "16px", fontSize: "14px", opacity: 0.7 }}>
-            <p>
-              <strong>Site:</strong> {serverData.siteConfig.url}
-            </p>
-            <p>
-              <strong>Locale:</strong> {serverData.locale}
-            </p>
-          </div>
-        </div>
+          {JSON.stringify(serverData, null, 2)}
+        </pre>
       </div>
     )
   }
 
   // Handle session errors
-  if (serverData?.session && "error" in serverData.session) {
+  if (serverData?.session?.error) {
     return (
       <div
         style={{
@@ -88,8 +100,11 @@ function App({ serverData }: AppProps) {
         thread={serverData?.thread}
         threads={serverData?.threads}
         translations={serverData?.translations}
+        app={serverData?.app}
         viewPortWidth={serverData?.viewPortWidth}
         viewPortHeight={serverData?.viewPortHeight}
+        signInContext={signInContext}
+        signOutContext={signOutContext}
       >
         <main>
           <h1>Chrry on Vite SSR ⚡️</h1>

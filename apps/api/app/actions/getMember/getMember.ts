@@ -1,15 +1,12 @@
 "use server"
 
 import { getUser, app } from "@repo/db"
-import { getServerSession } from "next-auth"
 import { headers } from "next/headers"
 import jwt from "jsonwebtoken"
-import { Session } from "next-auth"
 import captureException from "../../../lib/captureException"
 import getApp from "../getApp"
 import { isOwner, OWNER_CREDITS } from "chrry/utils"
-import { authOptions } from "../../api/auth/[...nextauth]/options"
-import { decode } from "next-auth/jwt"
+import { auth } from "../../../hono/lib/better-auth"
 
 export default async function getMember({
   byEmail,
@@ -82,90 +79,45 @@ export default async function getMember({
     console.error("Error verifying token:", error)
   }
 
-  // Try to decode session cookie directly if getServerSession fails
-  let sessionCookie: string | undefined
-  let decodedToken: any = null
-
+  // Try Better Auth session
   try {
     const headersList = await headers()
-    const cookieHeader = headersList.get("cookie")
+    const cookieHeader = headersList.get("cookie") || ""
 
-    if (cookieHeader) {
-      // Look for __Secure-next-auth.session-token or next-auth.session-token
-      const sessionTokenMatch =
-        cookieHeader.match(/__Secure-next-auth\.session-token=([^;]+)/) ||
-        cookieHeader.match(/next-auth\.session-token=([^;]+)/)
+    // Create a Request object for Better Auth
+    const request = new Request("http://localhost:3001/api/auth/session", {
+      headers: {
+        cookie: cookieHeader,
+      },
+    })
 
-      if (sessionTokenMatch) {
-        sessionCookie = decodeURIComponent(sessionTokenMatch[1]!)
-        console.log("✅ Found session cookie, attempting to decode...")
+    // Get session from Better Auth
+    const session = await auth.api.getSession({ headers: request.headers })
 
-        // Try to decode the session token
-        decodedToken = await decode({
-          token: sessionCookie,
-          secret: process.env.NEXTAUTH_SECRET!,
-        })
+    if (session?.user?.email) {
+      const user = await getUser({
+        email: session.user.email,
+        skipCache: skipCache || full,
+      })
 
-        if (decodedToken?.email) {
-          console.log("✅ Successfully decoded session token")
-          const user = await getUser({
-            email: decodedToken.email,
-            skipCache: skipCache || full,
-          })
+      if (user) {
+        // Generate token
+        const token = jwt.sign(
+          { email: session.user.email, sub: user.id },
+          process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET!,
+        )
 
-          if (user) {
-            // Generate token from decoded session
-            const token = jwt.sign(
-              { email: decodedToken.email, sub: user.id },
-              process.env.NEXTAUTH_SECRET!,
-            )
-
-            return {
-              ...user,
-              token,
-              sessionCookie,
-              password: full ? user.password : null,
-            }
-          }
+        return {
+          ...user,
+          token,
+          password: full ? user.password : null,
         }
       }
     }
   } catch (error) {
-    console.error("Error decoding session cookie:", error)
+    console.error("Error getting Better Auth session:", error)
   }
 
-  // Fallback to getServerSession if direct decode didn't work
-  const session = (await getServerSession(authOptions as any)) as Session
-  if (session?.user?.email) {
-    let user = await getUser({
-      email: session.user.email,
-      skipCache: skipCache || full,
-    })
-    if (user) {
-      // Generate token if not present in session (fallback)
-      const token =
-        session.token ||
-        jwt.sign(
-          { email: session.user.email, sub: user.id },
-          process.env.NEXTAUTH_SECRET!,
-        )
-
-      return {
-        ...user,
-        token,
-        sessionCookie, // Include the raw session cookie if it exists
-        password: full ? user.password : null,
-      }
-    }
-
-    return
-  }
-
-  // Fallback: Check if session cookie exists (indicates user is authenticated)
-  // Even if getServerSession() failed, the cookie presence means they're logged in
-
-  // If no session, try to get user from Authorization header token
-
-  // If neither method worked, return null
+  // If no session, return null
   return
 }

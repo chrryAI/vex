@@ -79,6 +79,7 @@ export const Hey = memo(
 
     const { threadId } = useChat()
     const { app, isSplash, setIsSplash, storeApps } = useAuth()
+    // console.log(`🚀 ~ app:`, app)
 
     const { currentStore } = useApp()
 

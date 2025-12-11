@@ -84,6 +84,7 @@ export default function SignIn({
     TEST_GUEST_FINGERPRINTS,
     TEST_MEMBER_FINGERPRINTS,
   } = useData()
+  console.log(`🚀 ~ isE2E:`, process.env)
 
   const { threadId } = useChat()
 

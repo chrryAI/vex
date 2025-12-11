@@ -281,6 +281,7 @@ export function AuthProvider({
   gift?: string
   error?: string
   session?: session
+  app?: appWithStore
   threads?: {
     threads: thread[]
     totalCount: number
@@ -561,7 +562,7 @@ export function AuthProvider({
         // 🔍 LOG: Check what apps are returned from session API
         const sessionResult = result as session
         console.log("📦 Session API Response - Apps:", {
-          app: sessionResult.app.name,
+          app: sessionResult.app?.name,
           totalApps: sessionResult.app?.store?.apps?.length || 0,
           apps: sessionResult.app?.store?.apps?.map((a: any) => ({
             slug: a.slug,
@@ -721,7 +722,8 @@ export function AuthProvider({
 
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
-  >(session?.app || baseApp)
+  >(props.app || session?.app || baseApp)
+
   useEffect(() => {
     const signInParam = searchParams.get("signIn")
     const currentPart = signInParam as

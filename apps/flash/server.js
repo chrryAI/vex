@@ -110,9 +110,14 @@ app.use("*all", async (req, res) => {
         .join("\n")
     }
 
+    // Serialize serverData for client-side hydration
+    const serverDataScript = serverData
+      ? `<script>window.__SERVER_DATA__ = ${JSON.stringify(serverData).replace(/</g, "\\u003c")}</script>`
+      : ""
+
     // Replace placeholders
     const html = template
-      .replace(`<!--app-head-->`, cssLinks)
+      .replace(`<!--app-head-->`, cssLinks + serverDataScript)
       .replace(`<!--app-html-->`, appHtml)
 
     res.status(200).set({ "Content-Type": "text/html" }).end(html)

@@ -1,14 +1,16 @@
 import { Hono } from "hono"
 import { session } from "./routes/session"
-import { translations } from "./routes/translations"
 import { threads } from "./routes/threads"
+import { translations } from "./routes/translations"
+import { apps } from "./routes/apps"
+import authRoutes from "./routes/auth"
 
-// Create Hono app
 const app = new Hono()
 
-// Mount routes
 app.route("/session", session)
-app.route("/translations", translations)
 app.route("/threads", threads)
+app.route("/translations", translations)
+app.route("/apps", apps)
+app.route("/api/auth", authRoutes)
 
 export default app
