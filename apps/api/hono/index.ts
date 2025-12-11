@@ -16,6 +16,11 @@ import { createCreditPurchase } from "./routes/createCreditPurchase"
 import { createSubscription } from "./routes/createSubscription"
 import { cron } from "./routes/cron"
 import { guest } from "./routes/guest"
+import { image } from "./routes/image"
+import { invite } from "./routes/invite"
+import { manifest } from "./routes/manifest"
+import { memories } from "./routes/memories"
+import { mood } from "./routes/mood"
 import { health } from "./routes/health"
 import authRoutes from "./routes/auth"
 
@@ -97,6 +102,11 @@ app.route("/createCreditPurchase", createCreditPurchase)
 app.route("/createSubscription", createSubscription)
 app.route("/cron", cron)
 app.route("/guest", guest)
+app.route("/image", image)
+app.route("/invite", invite)
+app.route("/manifest", manifest)
+app.route("/memories", memories)
+app.route("/mood", mood)
 app.route("/health", health)
 app.route("/api/auth", authRoutes)
 

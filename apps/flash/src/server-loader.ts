@@ -40,6 +40,11 @@ export interface ServerData {
   theme: "light" | "dark"
 }
 
+const TEST_MEMBER_FINGERPRINTS =
+  process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || []
+const TEST_GUEST_FINGERPRINTS =
+  process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
+
 /**
  * Load all server-side data for SSR
  * This replaces Next.js server components data fetching
@@ -47,13 +52,21 @@ export interface ServerData {
 export async function loadServerData(
   request: ServerRequest,
 ): Promise<ServerData> {
-  const { pathname, hostname, headers, cookies } = request
+  const { pathname, hostname, headers, cookies, url } = request
 
   const threadId = getThreadId(pathname)
   const isDev = process.env.MODE === "development"
 
+  // Parse query string for fp parameter
+  const urlObj = new URL(url, `http://${hostname}`)
+  let fpFromQuery = urlObj.searchParams.get("fp")
+
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
-  const fingerprint = headers["x-fp"] || cookies.fingerprint || uuidv4()
+  const fingerprint = TEST_MEMBER_FINGERPRINTS?.concat(
+    TEST_GUEST_FINGERPRINTS,
+  ).includes(fpFromQuery)
+    ? fpFromQuery
+    : headers["x-fp"] || cookies.fingerprint || uuidv4()
   const gift = headers["x-gift"]
   const agentName = cookies.agentName
   const routeType = headers["x-route-type"]

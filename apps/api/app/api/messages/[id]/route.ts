@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { deleteMessage, getMessage, getThread, updateMessage } from "@repo/db"
 import getMember from "../../../actions/getMember"
-import { getIp } from "../../../../lib"
 import getGuest from "../../../actions/getGuest"
 import { validate } from "uuid"
 import { isOwner } from "chrry/utils"

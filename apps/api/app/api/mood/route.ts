@@ -1,60 +1,43 @@
-import { createMood, getLastMood, updateMood } from "@repo/db"
-import getGuest from "../../actions/getGuest"
-import getMember from "../../actions/getMember"
-import { NextResponse } from "next/server"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-export async function POST(request: Request) {
-  const { type, ...rest } = await request.json()
+// Forward POST /api/mood requests to Hono
+export async function POST(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/mood" + url.search
 
-  const guest = await getGuest()
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-  const member = await getMember()
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+    duplex: "half",
+  } as RequestInit)
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  if (!type) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 })
-  }
-
-  let mood = await getLastMood(member?.id, guest?.id)
-
-  // Check if last mood was created today
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const isToday = mood && new Date(mood.createdOn) >= today
-
-  if (mood && isToday) {
-    // Update today's mood
-    const updatedMood = await updateMood({
-      ...mood,
-      type,
-      updatedOn: new Date(),
-    })
-
-    mood = updatedMood
-  } else {
-    // Create new mood (first mood today or no mood exists)
-    mood = await createMood({
-      type,
-      userId: member?.id,
-      guestId: guest?.id,
-    })
-  }
-
-  return NextResponse.json(mood)
+  return await app.fetch(honoRequest)
 }
 
-export async function GET() {
-  const member = await getMember()
-  const guest = await getGuest()
+// Forward GET /api/mood requests to Hono
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/mood" + url.search
+  console.log(`🚀 ~ GET ~ path:`, path)
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
 
-  const mood = await getLastMood(member?.id, guest?.id)
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
 
-  return NextResponse.json(mood || {})
+  return await app.fetch(honoRequest)
 }

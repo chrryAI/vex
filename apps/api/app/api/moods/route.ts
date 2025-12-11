@@ -7,12 +7,6 @@ import getGuest from "../../actions/getGuest"
 export async function GET(request: Request) {
   const member = await getMember()
 
-  const ip = getIp(request)
-
-  if (!ip) {
-    return NextResponse.json({ error: "IP address not found" })
-  }
-
   const guest = member ? undefined : await getGuest()
 
   if (!member && !guest) {

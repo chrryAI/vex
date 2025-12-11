@@ -415,7 +415,6 @@ export const useWebSocket = <T extends { type: string }>({
 }) => {
   const isOnline = useOnlineStatus()
   const wsManager = WebSocketManager.getInstance()
-  console.log(`🚀 ~ wsManager:`, wsManager)
 
   const connectionStateRef = useRef<ConnectionState>("disconnected")
   const [connected, setConnected] = useState<boolean>(false)
