@@ -1,9 +1,11 @@
 import { Hono } from "hono"
 import { sign, verify } from "jsonwebtoken"
 import { compare, hash } from "bcrypt"
-import { db } from "@repo/db"
+import { getUser, createUser, getStore } from "@repo/db"
 import { users } from "@repo/db/src/schema"
 import { eq } from "drizzle-orm"
+import { v4 as uuidv4 } from "uuid"
+import { isValidUsername } from "chrry/utils"
 
 const authRoutes = new Hono()
 
@@ -32,6 +34,53 @@ function verifyToken(token: string) {
   }
 }
 
+async function generateUniqueUsername(
+  fullName: string | null | undefined,
+): Promise<string> {
+  if (!fullName) return uuidv4()
+
+  // Extract first name and clean it
+  const firstNameRaw = fullName.split(" ")[0]
+  if (!firstNameRaw) return uuidv4()
+
+  const firstName = firstNameRaw.toLowerCase().replace(/[^a-z0-9]/g, "")
+
+  // Early validation check
+  if (!firstName || !isValidUsername(firstName)) return uuidv4()
+
+  // Check if username exists (checks both users and stores)
+  const exists = async (username: string): Promise<boolean> => {
+    const existingUser = await getUser({ userName: username })
+    if (existingUser) return true
+
+    const existingStore = await getStore({ slug: username })
+    if (existingStore?.store) return true
+
+    return false
+  }
+
+  // Try the first name first
+  let username = firstName
+  if (!(await exists(username))) {
+    return username // Available!
+  }
+
+  // If taken, try with numbers
+  let counter = 1
+  while (counter <= 999) {
+    username = `${firstName}${counter}`
+
+    if (!(await exists(username)) && isValidUsername(username)) {
+      return username // Found available username
+    }
+
+    counter++
+  }
+
+  // Fallback to UUID if we've tried too many variations
+  return uuidv4()
+}
+
 /**
  * POST /api/auth/signup/password
  * Register new user with email/password
@@ -45,8 +94,8 @@ authRoutes.post("/signup/password", async (c) => {
     }
 
     // Check if user exists
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, email),
+    const existingUser = await getUser({
+      email,
     })
 
     if (existingUser) {
@@ -57,15 +106,16 @@ authRoutes.post("/signup/password", async (c) => {
     const passwordHash = await hash(password, 10)
 
     // Create user
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        email,
-        password: passwordHash,
-        name: name || email.split("@")[0],
-        emailVerified: new Date(), // Auto-verify for now
-      })
-      .returning()
+    const newUser = await createUser({
+      email,
+      password: passwordHash,
+      name,
+      userName: await generateUniqueUsername(name),
+    })
+
+    if (!newUser) {
+      return c.json({ error: "User creation failed" }, 500)
+    }
 
     // Generate token
     const token = generateToken(newUser.id, newUser.email)
@@ -103,8 +153,8 @@ authRoutes.post("/signin/password", async (c) => {
     }
 
     // Find user
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email),
+    const user = await getUser({
+      email,
     })
 
     if (!user || !user.password) {
@@ -173,8 +223,8 @@ authRoutes.get("/session", async (c) => {
     }
 
     // Get user from database
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, payload.userId),
+    const user = await getUser({
+      id: payload.userId,
     })
 
     if (!user) {
