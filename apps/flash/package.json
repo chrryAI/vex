@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "node server",
     "build": "pnpm run build:client && pnpm run build:server",
-    "build:client": "NODE_ENV=production vite build --outDir dist/client",
-    "build:server": "NODE_ENV=production vite build --ssr src/entry-server.tsx --outDir dist/server",
+    "build:client": "NODE_ENV=production pnpm vite build --outDir dist/client",
+    "build:server": "NODE_ENV=production pnpm vite build --ssr src/entry-server.tsx --outDir dist/server",
     "start": "cross-env NODE_ENV=production node server",
     "preview": "cross-env NODE_ENV=production node server"
   },
