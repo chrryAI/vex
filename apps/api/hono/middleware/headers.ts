@@ -55,7 +55,7 @@ export async function headersMiddleware(c: Context, next: Next) {
       httpOnly: false,
       secure: process.env.NODE_ENV !== "development",
       sameSite: "Lax",
-      maxAge: 60 * 60 * 24 * 365 * 10, // 10 years
+      maxAge: 60 * 60 * 24 * 400, // 400 days (browser maximum)
       path: "/",
     })
   }

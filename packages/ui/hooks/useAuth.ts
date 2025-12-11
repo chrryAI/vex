@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-
-const API_URL = process.env.VITE_API_URL || "http://localhost:3001"
+import { API_URL } from ".."
 
 interface User {
   id: string
@@ -29,7 +28,7 @@ export function useAuth() {
    */
   const fetchSession = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/session`, {
+      const response = await fetch(`${API_URL}/auth/session`, {
         credentials: "include", // Include cookies for web
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +53,7 @@ export function useAuth() {
   const signUp = useCallback(
     async (email: string, password: string, name?: string) => {
       try {
-        const response = await fetch(`${API_URL}/api/auth/signup/password`, {
+        const response = await fetch(`${API_URL}/auth/signup/password`, {
           method: "POST",
           credentials: "include",
           headers: {
@@ -85,7 +84,7 @@ export function useAuth() {
   const signInWithPassword = useCallback(
     async (email: string, password: string) => {
       try {
-        const response = await fetch(`${API_URL}/api/auth/signin/password`, {
+        const response = await fetch(`${API_URL}/auth/signin/password`, {
           method: "POST",
           credentials: "include",
           headers: {
@@ -123,7 +122,7 @@ export function useAuth() {
       const top = window.screenY + (window.outerHeight - height) / 2
 
       const popup = window.open(
-        `${API_URL}/api/auth/signin/google`,
+        `${API_URL}/auth/signin/google`,
         "Google Sign In",
         `width=${width},height=${height},left=${left},top=${top}`,
       )
@@ -159,7 +158,7 @@ export function useAuth() {
       const top = window.screenY + (window.outerHeight - height) / 2
 
       const popup = window.open(
-        `${API_URL}/api/auth/signin/apple`,
+        `${API_URL}/auth/signin/apple`,
         "Apple Sign In",
         `width=${width},height=${height},left=${left},top=${top}`,
       )
@@ -187,7 +186,7 @@ export function useAuth() {
    */
   const signOut = useCallback(async () => {
     try {
-      await fetch(`${API_URL}/api/auth/signout`, {
+      await fetch(`${API_URL}/auth/signout`, {
         method: "POST",
         credentials: "include",
       })
