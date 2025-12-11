@@ -74,7 +74,7 @@ export default defineConfig({
     },
   },
   ssr: {
-    external: ["i18n-iso-countries"], // Don't bundle - has dynamic requires
+    external: ["i18n-iso-countries", "bcrypt"], // Don't bundle - has dynamic requires
     noExternal: [/@lobehub\//], // Force bundle @lobehub packages to fix directory imports
     resolve: {
       externalConditions: ["node", "import"],
