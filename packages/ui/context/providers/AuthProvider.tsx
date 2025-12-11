@@ -720,6 +720,15 @@ export function AuthProvider({
 
   const [threadId, setThreadId] = useState(getThreadId(pathname))
 
+  useEffect(() => {
+    const id = getThreadId(pathname)
+    if (id) {
+      setThreadId(id)
+    } else {
+      setThreadId(undefined)
+    }
+  }, [pathname])
+
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
   >(props.app || session?.app || baseApp)

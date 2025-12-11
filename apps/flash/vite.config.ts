@@ -32,7 +32,7 @@ export default defineConfig({
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
     ),
     "process.env.NEXT_PUBLIC_WS_URL": JSON.stringify(
-      process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001/ws",
+      process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:5001",
     ),
     "process.env.NEXT_PUBLIC_NODE_ENV": JSON.stringify(
       process.env.NEXT_PUBLIC_NODE_ENV || "development",
@@ -50,7 +50,8 @@ export default defineConfig({
     },
   },
   ssr: {
-    external: ["i18n-iso-countries"], // Don't bundle this - it has dynamic requires
+    external: ["i18n-iso-countries"], // Don't bundle - has dynamic requires
+    noExternal: [/@lobehub\//], // Force bundle @lobehub packages to fix directory imports
     resolve: {
       externalConditions: ["node", "import"],
     },

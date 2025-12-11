@@ -50,6 +50,8 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      shouldFetchThread: boolean
+      setShouldFetchThread: (shouldFetchThread: boolean) => void
       shouldGetCredits: boolean
       setShouldGetCredits: (shouldGetCredits: boolean) => void
       fetchActiveCollaborationThreadsCount: () => Promise<void>
@@ -409,6 +411,8 @@ export function ChatProvider({
     }
   }, [loading, storeApps, loadingApp])
 
+  console.log("threaddssdsdsd", threadId)
+
   const setIsNewChat = (
     value: boolean,
     to = app?.slug ? getAppSlug(app) : "/",
@@ -417,14 +421,16 @@ export function ChatProvider({
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
-      refetchThreads()
-      setThreadId(undefined)
+      // setThreadId(undefined)
       setMessages([])
-      router.push(to)
       setStatus(null)
       isIncognito && setWasIncognito(true)
       setCollaborationStatus(null)
       setIsChatFloating(false)
+
+      router.push(to)
+
+      refetchThreads()
     }
 
     setIsNewChatInternal(value)
@@ -685,15 +691,15 @@ export function ChatProvider({
     }
   }, [user, guest, threadId, connected])
 
-  useEffect(() => {
-    const id = getThreadId(pathname)
-    if (id) {
-      setThreadId(id)
-      setShouldFetchThread(true)
-    } else {
-      setIsChatFloating(false)
-    }
-  }, [pathname])
+  // useEffect(() => {
+  //   const id = getThreadId(pathname)
+  //   if (id) {
+  //     setThreadId(id)
+  //     setShouldFetchThread(true)
+  //   } else {
+  //     setIsChatFloating(false)
+  //   }
+  // }, [pathname])
 
   // Credits tracking
   const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
@@ -1098,6 +1104,8 @@ export function ChatProvider({
         isLoadingMore,
         setIsLoadingMore,
         isLoading,
+        shouldFetchThread,
+        setShouldFetchThread,
         refetchThread: async () => {
           setShouldFetchThread(true)
           shouldFetchThread && (await mutate())
