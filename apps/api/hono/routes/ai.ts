@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { stream } from "hono/streaming"
-import getGuest from "../../app/actions/getGuest"
+import { getGuest } from "../lib/getGuest"
 import { getMember } from "../lib/getMember"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
@@ -456,7 +456,7 @@ app.post("/", async (c) => {
   console.time("messageProcessing")
 
   const member = await getMember(c, { full: true, skipCache: true })
-  const guest = member ? undefined : await getGuest({ skipCache: true })
+  const guest = member ? undefined : await getGuest(c, { skipCache: true })
 
   if (!member && !guest) {
     console.log("❌ No valid credentials")
