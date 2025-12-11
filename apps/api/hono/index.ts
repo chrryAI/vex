@@ -3,7 +3,7 @@ import { cors } from "hono/cors"
 import { session } from "./routes/session"
 import { threads } from "./routes/threads"
 import { translations } from "./routes/translations"
-import { app } from "./routes/apps"
+import { app as apps } from "./routes/apps"
 import { affiliates } from "./routes/affiliates"
 import { ai } from "./routes/ai"
 import { aiAgents } from "./routes/aiAgents"
@@ -24,7 +24,7 @@ app.use(
 app.route("/session", session)
 app.route("/threads", threads)
 app.route("/translations", translations)
-app.route("/apps", app)
+app.route("/apps", apps)
 app.route("/affiliates", affiliates)
 app.route("/ai", ai)
 app.route("/aiAgents", aiAgents)
