@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { createMood, getLastMood, updateMood } from "@repo/db"
+import { createMood, getLastMood, updateMood, getMoods } from "@repo/db"
 import { getGuest, getMember } from "../lib/auth"
 
 export const mood = new Hono()
@@ -59,4 +59,25 @@ mood.get("/", async (c) => {
   const moodData = await getLastMood(member?.id, guest?.id)
 
   return c.json(moodData || {})
+})
+
+// New app for /moods (plural) - for getting all moods
+export const moods = new Hono()
+
+// GET /moods - Get all moods for user/guest
+moods.get("/", async (c) => {
+  const member = await getMember(c)
+  const guest = member ? undefined : await getGuest(c)
+
+  if (!member && !guest) {
+    return c.json({ error: "Invalid credentials" }, 401)
+  }
+
+  const moodsData = await getMoods({
+    userId: member?.id,
+    guestId: guest?.id,
+    pageSize: 5000,
+  })
+
+  return c.json(moodsData)
 })

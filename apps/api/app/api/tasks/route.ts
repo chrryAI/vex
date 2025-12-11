@@ -1,95 +1,60 @@
-import { after, NextResponse } from "next/server"
-import getMember from "../../actions/getMember"
-import { createTask, getTasks, updateTask } from "@repo/db"
-import getGuest from "../../actions/getGuest"
-import "../../../sentry.server.config"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-export async function POST(request: Request) {
-  const req = await request.json()
-  const { title, total, order } = req
+// Forward POST /api/tasks requests to Hono
+export async function POST(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/tasks" + url.search
 
-  if (!title) {
-    return NextResponse.json({ error: "Title is required" }, { status: 400 })
-  }
-
-  const member = await getMember()
-
-  const guest = await getGuest()
-
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
-  }
-
-  const tasks = await getTasks({
-    userId: member?.id,
-    guestId: guest?.id,
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  const task = await createTask({
-    title,
-    userId: member?.id,
-    guestId: !member ? guest?.id : undefined,
-    modifiedOn: new Date(),
-    total: total ? total : [],
-    order: order ? order : 0,
-  })
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+    duplex: "half",
+  } as RequestInit)
 
-  if (!task) {
-    return NextResponse.json({ error: "Failed to create task" })
-  }
-
-  return NextResponse.json({ task })
+  return await app.fetch(honoRequest)
 }
 
-export const PATCH = async (request: Request) => {
-  const member = await getMember()
+// Forward PATCH /api/tasks requests to Hono
+export async function PATCH(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/tasks" + url.search
 
-  const guest = !member ? await getGuest() : undefined
-
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
-  }
-
-  const req = await request.json()
-  const { selectedTasks, fingerprint } = req
-
-  if (!Array.isArray(selectedTasks)) {
-    return NextResponse.json({ error: "Invalid tasks", status: 400 })
-  }
-
-  const tasks = await getTasks({
-    userId: member?.id,
-    guestId: guest?.id,
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  for (const task of tasks.tasks) {
-    const selected = selectedTasks.includes(task.id)
-    if (selected !== task.selected) {
-      await updateTask({
-        ...task,
-        selected,
-        modifiedOn: new Date(),
-      })
-    }
-  }
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+    duplex: "half",
+  } as RequestInit)
 
-  return NextResponse.json({ selectedTasks })
+  return await app.fetch(honoRequest)
 }
 
-export async function GET(request: Request) {
-  const member = await getMember()
+// Forward GET /api/tasks requests to Hono
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/tasks" + url.search
 
-  const guest = !member ? await getGuest() : undefined
-
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
-  }
-
-  const tasks = await getTasks({
-    userId: member?.id,
-    guestId: guest?.id,
-    pageSize: 15,
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  return NextResponse.json(tasks)
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }

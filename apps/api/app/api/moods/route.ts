@@ -1,23 +1,21 @@
-import { getMoods } from "@repo/db"
-import getMember from "../../actions/getMember"
-import { NextResponse } from "next/server"
-import { getIp } from "../../../lib"
-import getGuest from "../../actions/getGuest"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-export async function GET(request: Request) {
-  const member = await getMember()
+// Forward GET /api/moods requests to Hono
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/moods" + url.search
 
-  const guest = member ? undefined : await getGuest()
-
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Invalid credentials" })
-  }
-
-  const moods = await getMoods({
-    userId: member?.id,
-    guestId: guest?.id,
-    pageSize: 5000,
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  return NextResponse.json(moods)
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }

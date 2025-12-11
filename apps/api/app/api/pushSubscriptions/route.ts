@@ -1,41 +1,23 @@
-import { NextRequest, NextResponse } from "next/server"
-import {
-  createPushSubscription,
-  getPushSubscriptions,
-  NewCustomPushSubscription,
-} from "@repo/db"
-import getMember from "../../actions/getMember"
-import getGuest from "../../actions/getGuest"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
+// Forward POST /api/pushSubscriptions requests to Hono
 export async function POST(request: NextRequest) {
-  const member = await getMember()
-  const guest = await getGuest()
+  const url = new URL(request.url)
+  const path = "/pushSubscriptions" + url.search
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const { endpoint, keys } = await request.json()
-
-  if (!endpoint || !keys) {
-    return NextResponse.json(
-      { error: "Missing endpoint or keys" },
-      { status: 400 },
-    )
-  }
-
-  const subscription: NewCustomPushSubscription = {
-    endpoint,
-    keys,
-    createdOn: new Date(),
-    updatedOn: new Date(),
-  }
-
-  const createdSubscription = await createPushSubscription({
-    userId: member?.id,
-    guestId: guest?.id,
-    subscription,
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  return NextResponse.json({ subscription: createdSubscription })
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+    duplex: "half",
+  } as RequestInit)
+
+  return await app.fetch(honoRequest)
 }
