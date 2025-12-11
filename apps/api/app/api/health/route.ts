@@ -1,18 +1,21 @@
-import { VERSION } from "chrry/utils"
-import { NextResponse } from "next/server"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-// Build ID is set at build time (GIT_SHA) or runtime fallback
-const buildId =
-  process.env.GIT_SHA ||
-  process.env.VERCEL_GIT_COMMIT_SHA ||
-  Date.now().toString()
+// Forward GET /api/health requests to Hono
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/health" + url.search
 
-export async function GET() {
-  return NextResponse.json({
-    status: "ok",
-    buildId,
-    version: VERSION,
-    env: process.env.NODE_ENV,
-    timestamp: new Date().toISOString(),
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
+
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
+
+  return await app.fetch(honoRequest)
 }

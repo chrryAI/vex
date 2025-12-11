@@ -1,68 +1,40 @@
-import getMember from "../../actions/getMember"
-import getGuest from "../../actions/getGuest"
-import { NextResponse } from "next/server"
-import {
-  getMemories,
-  deleteMemory,
-  getThreadSummaries,
-  updateThreadSummary,
-} from "@repo/db"
+import { NextRequest } from "next/server"
+import app from "../../../hono"
 
-export async function GET() {
-  const member = await getMember({ full: true })
-  const guest = member ? undefined : await getGuest()
+// Forward GET /api/memories requests to Hono
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/memories" + url.search
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const memories = await getMemories({
-    userId: member?.id,
-    guestId: guest?.id,
-    pageSize: 100000,
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  // GDPR Article 20 - Right to Data Portability
-  return NextResponse.json({
-    exportedAt: new Date().toISOString(),
-    userId: member?.id || guest?.id,
-    memories: memories.memories,
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
   })
+
+  return await app.fetch(honoRequest)
 }
 
-export async function DELETE() {
-  const member = await getMember({ full: true })
-  const guest = member ? undefined : await getGuest()
+// Forward DELETE /api/memories requests to Hono
+export async function DELETE(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/memories" + url.search
 
-  if (!member && !guest) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const memories = await getMemories({
-    userId: member?.id,
-    guestId: guest?.id,
-    pageSize: 100000,
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
 
-  const threadSummaries = await getThreadSummaries({
-    userId: member?.id,
-    guestId: guest?.id,
-    pageSize: 100000,
-    hasMemories: true,
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
   })
 
-  await Promise.all(
-    threadSummaries.threadSummaries.map((threadSummary) =>
-      updateThreadSummary({
-        ...threadSummary,
-        userMemories: null,
-      }),
-    ),
-  )
-
-  await Promise.all(
-    memories.memories.map((memory) => deleteMemory({ id: memory.id })),
-  )
-
-  return NextResponse.json({ success: true })
+  return await app.fetch(honoRequest)
 }
