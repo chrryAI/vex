@@ -62,18 +62,21 @@ export async function loadServerData(
   let fpFromQuery = urlObj.searchParams.get("fp")
 
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
-  const fingerprint = TEST_MEMBER_FINGERPRINTS?.concat(
-    TEST_GUEST_FINGERPRINTS,
-  ).includes(fpFromQuery)
-    ? fpFromQuery
-    : headers["x-fp"] || cookies.fingerprint || uuidv4()
+  const fingerprint =
+    (fpFromQuery &&
+      (TEST_MEMBER_FINGERPRINTS?.concat(TEST_GUEST_FINGERPRINTS).includes(
+        fpFromQuery,
+      )
+        ? fpFromQuery
+        : headers["x-fp"] || cookies.fingerprint)) ||
+    uuidv4()
   const gift = headers["x-gift"]
   const agentName = cookies.agentName
   const routeType = headers["x-route-type"]
   const viewPortWidth = cookies.viewPortWidth || ""
   const viewPortHeight = cookies.viewPortHeight || ""
 
-  const apiKey = cookies.token || headers["x-token"] || fingerprint
+  const apiKey = cookies.token || headers["x-token"] || fingerprint || uuidv4()
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
   const locale: locale = (cookies.locale as locale) || "en"

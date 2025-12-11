@@ -46,16 +46,17 @@ const STAGING_CONFIG = {
 Vex uses browser fingerprints to create isolated testing environments within production, enabling real-world testing without affecting actual users.
 
 ```typescript
-// Fingerprint-based test isolation
-export const TEST_FINGERPRINTS = {
-  GUEST_USERS: ["test-guest-1", "test-guest-2", "test-guest-3"],
-  MEMBER_USERS: ["test-member-1", "test-member-2", "test-member-3"],
-  ADMIN_USERS: ["test-admin-1"],
-}
+// Secure fingerprint-based test isolation using environment variables
+const TEST_MEMBER_FINGERPRINTS =
+  process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || []
+const TEST_GUEST_FINGERPRINTS =
+  process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
 
-// Test environment detection
+// Test environment detection with whitelist validation
 export const isTestEnvironment = (fingerprint: string): boolean => {
-  return Object.values(TEST_FINGERPRINTS).flat().includes(fingerprint)
+  return TEST_MEMBER_FINGERPRINTS.concat(TEST_GUEST_FINGERPRINTS).includes(
+    fingerprint,
+  )
 }
 ```
 
@@ -109,17 +110,15 @@ export const getLiveTestConfig = () => ({
   },
 })
 
-// Test execution with fingerprint injection
+// Test execution with fingerprint via URL parameter
 test("Live guest subscription flow", async ({ page }) => {
-  // Inject test fingerprint
-  await page.addInitScript((fingerprint) => {
-    window.localStorage.setItem("fingerprint", fingerprint)
-  }, TEST_FINGERPRINTS.GUEST_USERS[0])
+  // Use test fingerprint from environment variable
+  const testFingerprint = TEST_GUEST_FINGERPRINTS[0]
 
-  // Test on actual production
-  await page.goto("https://vex.chrry.ai")
+  // Pass fingerprint via URL (validated against whitelist on server)
+  await page.goto(`https://vex.chrry.ai?fp=${testFingerprint}`)
 
-  // Execute real user journey
+  // Execute real user journey on production
   await testGuestSubscriptionFlow({ page })
 })
 ```
@@ -179,29 +178,48 @@ export const testDataManager = {
 ### Fingerprint Validation
 
 ```typescript
-// Secure fingerprint validation
-export const validateTestFingerprint = (fingerprint: string): boolean => {
-  // Ensure fingerprint follows test pattern
-  const testPattern = /^test-(guest|member|admin)-\d+$/
+// Simple and secure fingerprint validation with environment variables
+export const validateTestFingerprint = (fpFromQuery: string | null): string => {
+  // Check if fingerprint is in whitelist from environment variables
+  const isWhitelisted = TEST_MEMBER_FINGERPRINTS.concat(
+    TEST_GUEST_FINGERPRINTS,
+  ).includes(fpFromQuery)
 
-  if (!testPattern.test(fingerprint)) {
-    return false
-  }
-
-  // Verify against whitelist
-  const allTestFingerprints = Object.values(TEST_FINGERPRINTS).flat()
-  return allTestFingerprints.includes(fingerprint)
+  // Only accept query fingerprint if it's whitelisted
+  return isWhitelisted
+    ? fpFromQuery
+    : headers["x-fp"] || cookies.fingerprint || uuidv4()
 }
 
-// Prevent test fingerprint leakage
+// Prevent test fingerprint leakage in logs
 export const sanitizeFingerprint = (fingerprint: string): string => {
   if (isTestEnvironment(fingerprint)) {
-    // Never expose test fingerprints in logs or responses
     return "[TEST_USER]"
   }
-
   return fingerprint
 }
+```
+
+### Why Environment Variables?
+
+The environment variable approach provides significant security advantages over hardcoded values:
+
+```typescript
+// ❌ INSECURE: Hardcoded in source code
+export const TEST_FINGERPRINTS = {
+  GUEST_USERS: ["abc-123", "def-456"], // Exposed in git!
+}
+
+// ✅ SECURE: Environment variables
+const TEST_GUEST_FINGERPRINTS =
+  process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
+
+// Benefits:
+// - Not in source code or git history
+// - Easy rotation without code changes
+// - Different per environment (dev/staging/prod)
+// - Stored securely in GitHub Secrets
+// - Access controlled via deployment permissions
 ```
 
 ### Production Safety Guards
