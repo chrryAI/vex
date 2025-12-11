@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 import rateLimit from "express-rate-limit"
 
-const VERSION = "1.6.44"
+const VERSION = "1.6.45"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
