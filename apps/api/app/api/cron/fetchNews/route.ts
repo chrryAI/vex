@@ -1,66 +1,41 @@
-import { NextResponse } from "next/server"
-import { fetchAllNews } from "../../../../lib/newsFetcher"
+import { NextRequest } from "next/server"
+import app from "../../../../hono"
 
-/**
- * Cron job to fetch news from all sources
- *
- * Setup with Vercel Cron:
- * Add to vercel.json:
- * {
- *   "crons": [{
- *     "path": "/api/cron/fetch-news",
- *     "schedule": "0 * * * *"  // Every hour
- *   }]
- * }
- *
- * Or call manually:
- * - GET /api/cron/fetchNews (for testing)
- * - POST /api/cron/fetchNews (for production cron)
- */
+// Forward GET /api/cron/fetchNews requests to Hono (for testing)
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/cron/fetchNews" + url.search
 
-async function handleFetchNews(request: Request) {
-  return NextResponse.json({
-    success: true,
-    message: "Maybe later",
-    timestamp: new Date().toISOString(),
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
   })
-  // try {
-  //   // Verify cron secret (optional but recommended)
-  //   const authHeader = request.headers.get("authorization")
-  //   const cronSecret = process.env.CRON_SECRET
 
-  //   // Only check auth if CRON_SECRET is set
-  //   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-  //     console.log("❌ Unauthorized: Invalid or missing authorization header")
-  //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  //   }
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+  })
 
-  //   console.log("🗞️ Cron: Starting news fetch...")
-
-  //   await fetchAllNews()
-
-  //   return NextResponse.json({
-  //     success: true,
-  //     message: "News fetched successfully",
-  //     timestamp: new Date().toISOString(),
-  //   })
-  // } catch (error) {
-  //   console.error("❌ Cron error:", error)
-  //   return NextResponse.json(
-  //     {
-  //       success: false,
-  //       error: error instanceof Error ? error.message : "Unknown error",
-  //     },
-  //     { status: 500 },
-  //   )
-  // }
+  return await app.fetch(honoRequest)
 }
 
-// Support both GET (for testing) and POST (for cron)
-export async function GET(request: Request) {
-  return handleFetchNews(request)
-}
+// Forward POST /api/cron/fetchNews requests to Hono (for production cron)
+export async function POST(request: NextRequest) {
+  const url = new URL(request.url)
+  const path = "/cron/fetchNews" + url.search
 
-export async function POST(request: Request) {
-  return handleFetchNews(request)
+  // Manually create headers to ensure cookies are included
+  const headers = new Headers()
+  request.headers.forEach((value, key) => {
+    headers.set(key, value)
+  })
+
+  const honoRequest = new Request(new URL(path, url.origin), {
+    method: request.method,
+    headers: headers,
+    body: request.body,
+  })
+
+  return await app.fetch(honoRequest)
 }

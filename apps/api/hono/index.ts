@@ -13,6 +13,8 @@ import { cities } from "./routes/cities"
 import { clear } from "./routes/clear"
 import { collaborations } from "./routes/collaborations"
 import { createCreditPurchase } from "./routes/createCreditPurchase"
+import { createSubscription } from "./routes/createSubscription"
+import { cron } from "./routes/cron"
 import { health } from "./routes/health"
 import authRoutes from "./routes/auth"
 
@@ -91,6 +93,8 @@ app.route("/cities", cities)
 app.route("/clear", clear)
 app.route("/collaborations", collaborations)
 app.route("/createCreditPurchase", createCreditPurchase)
+app.route("/createSubscription", createSubscription)
+app.route("/cron", cron)
 app.route("/health", health)
 app.route("/api/auth", authRoutes)
 

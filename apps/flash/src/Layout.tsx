@@ -22,6 +22,7 @@ export default function Layout({
   // These would normally come from your API/server
   // For Vite, you'll need to handle data fetching client-side or via SSR context
   const classnames = [theme].filter(Boolean).join(" ")
+  console.log(process.env.NEXT_PUBLIC_API_URL)
 
   return (
     <>
