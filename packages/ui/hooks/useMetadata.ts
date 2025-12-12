@@ -7,7 +7,7 @@ import {
   generateThreadMetadata,
 } from "../utils"
 import { useAuth, useApp } from "../context/providers"
-import getWhiteLabel from "chrry/utils/getWhiteLabel"
+import getWhiteLabel from "../utils/getWhiteLabel"
 
 /**
  * Hook to dynamically update page metadata for client-side navigation
