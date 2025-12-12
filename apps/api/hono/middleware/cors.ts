@@ -1,5 +1,5 @@
 import { Context, Next } from "hono"
-import { getSlugFromPathname } from "chrry/utils"
+import { getSlugFromPathname } from "@chrryai/chrry/utils"
 import { validate } from "uuid"
 
 // Static allowed origins (always allowed)

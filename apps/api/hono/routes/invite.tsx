@@ -2,11 +2,11 @@ import { Hono } from "hono"
 import { render } from "@react-email/render"
 import Invite from "../../components/emails/Invite"
 import { getMember, getGuest } from "../lib/auth"
-import { isDevelopment, isE2E } from "chrry/utils"
+import { isDevelopment, isE2E } from "@chrryai/chrry/utils"
 import nodemailer from "nodemailer"
 import { createInvitation, getInvitation } from "@repo/db"
 import captureException from "../../lib/captureException"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import arcjet, { slidingWindow } from "@arcjet/node"
 
 const aj = arcjet({

@@ -6,7 +6,7 @@ import {
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
-import { isE2E } from "chrry/utils"
+import { isE2E } from "@chrryai/chrry/utils"
 import captureException from "../../lib/captureException"
 
 const API_KEY = process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY

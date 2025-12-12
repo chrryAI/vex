@@ -1,4 +1,4 @@
-import { VERSION } from "chrry/utils/index"
+import { VERSION } from "@chrryai/chrry/utils/index"
 import { Hono } from "hono"
 
 const app = new Hono()

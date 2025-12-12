@@ -10,7 +10,7 @@ import {
   Text,
   Link,
 } from "@react-email/components"
-import { SiteConfig, getSiteConfig } from "chrry/utils/siteConfig"
+import { SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 export default function InviteEmail({
   origin,

@@ -14,7 +14,7 @@ import captureException from "./captureException"
 import dns from "dns"
 import net from "net"
 import { parse as parseDomain } from "tldts"
-import { isDevelopment } from "chrry/utils"
+import { isDevelopment } from "@chrryai/chrry/utils"
 
 // Validate S3 configuration
 if (

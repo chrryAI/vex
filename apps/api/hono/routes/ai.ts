@@ -53,7 +53,7 @@ import {
   isOwner,
   MAX_FILE_SIZES,
   MAX_FILE_LIMITS,
-} from "chrry/utils"
+} from "@chrryai/chrry/utils"
 import Replicate from "replicate"
 import { webSearchResultType } from "@repo/db/src/schema"
 import {
@@ -77,8 +77,8 @@ import { checkThreadSummaryLimit } from "../../lib"
 import extractVideoFrames from "../../lib/extractVideoFrames"
 import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
 import { getTools } from "../../lib/tools"
-import { appWithStore } from "chrry/types"
-import { appFormData } from "chrry/schemas/appSchema"
+import { appWithStore } from "@chrryai/chrry/types"
+import { appFormData } from "@chrryai/chrry/schemas/appSchema"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { getGuest, getMember } from "../lib/auth"
 

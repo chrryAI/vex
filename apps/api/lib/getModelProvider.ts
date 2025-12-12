@@ -4,7 +4,7 @@ import { createAnthropic } from "@ai-sdk/anthropic"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { app, getAiAgents } from "@repo/db"
 import type { LanguageModel } from "ai"
-import { appWithStore } from "chrry/types"
+import { appWithStore } from "@chrryai/chrry/types"
 
 /**
  * Get the appropriate AI model provider based on agent configuration

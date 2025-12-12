@@ -1,14 +1,14 @@
 import { Hono } from "hono"
-import { locales } from "chrry/locales"
+import { locales } from "@chrryai/chrry/locales"
 import fs from "fs"
 import path from "path"
 import matter from "gray-matter"
 import { getApp, getStore } from "@repo/db"
-import { getSiteConfig, whiteLabels } from "chrry/utils/siteConfig"
-import getAppSlug from "chrry/utils/getAppSlug"
-import getWhiteLabelUtil from "chrry/utils/getWhiteLabel"
-import { getAppAndStoreSlugs } from "chrry/utils/url"
-import { appWithStore } from "chrry/types"
+import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
+import getAppSlug from "@chrryai/chrry/utils/getAppSlug"
+import getWhiteLabelUtil from "@chrryai/chrry/utils/getWhiteLabel"
+import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
+import { appWithStore } from "@chrryai/chrry/types"
 
 export const sitemap = new Hono()
 

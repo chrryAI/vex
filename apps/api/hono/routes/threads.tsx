@@ -35,12 +35,12 @@ import {
   generateThreadInstructions,
   generateThreadTitle,
 } from "../../utils/titleGenerator"
-import { FRONTEND_URL, isE2E, MAX_FILE_LIMITS } from "chrry/utils"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { FRONTEND_URL, isE2E, MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import nodemailer from "nodemailer"
 import { render } from "@react-email/render"
 import Collaboration from "../../components/emails/Collaboration"
-import { defaultLocale } from "chrry/locales"
+import { defaultLocale } from "@chrryai/chrry/locales"
 import captureException from "../../lib/captureException"
 import { scanFileForMalware } from "../../lib/security"
 import { deleteFile } from "../../lib/minio"

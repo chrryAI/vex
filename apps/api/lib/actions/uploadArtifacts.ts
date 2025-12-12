@@ -13,7 +13,7 @@ import {
 } from "@repo/db"
 import { extractPDFText } from "../../lib"
 import { v4 as uuidv4 } from "uuid"
-import { isE2E } from "chrry/utils"
+import { isE2E } from "@chrryai/chrry/utils"
 import captureException from "../../lib/captureException"
 
 export const uploadArtifacts = async ({
