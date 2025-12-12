@@ -61,7 +61,6 @@ import {
   WS_URL,
 } from "../../utils"
 import { Task } from "../TimerContext"
-import useCache from "chrry/hooks/useCache"
 import { useError } from "./ErrorProvider"
 
 // Constants (shared with DataProvider)

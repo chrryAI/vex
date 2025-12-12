@@ -29,7 +29,11 @@ import {
   PLUS_CREDITS_PER_MONTH,
   PRO_CREDITS_PER_MONTH,
 } from "@repo/db/src/schema"
-import { capitalizeFirstLetter, FRONTEND_URL, isE2E } from "@chrryai/chrry/utils"
+import {
+  capitalizeFirstLetter,
+  FRONTEND_URL,
+  isE2E,
+} from "@chrryai/chrry/utils"
 import { trackPurchase } from "../../lib/ads"
 import Gift from "../../components/emails/Gift"
 
