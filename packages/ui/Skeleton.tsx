@@ -5,7 +5,6 @@ import Menu from "./Menu"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
 import { CircleEllipsis } from "./icons"
-import { useHasHydrated } from "../ui/hooks"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { useEffect } from "react"
 import Img from "./Image"
@@ -31,6 +30,7 @@ import { useTheme } from "./platform"
 import A from "./a/A"
 import Version from "./Version"
 import AddToHomeScreen from "./addToHomeScreen"
+import { useHasHydrated } from "./hooks"
 
 export default function Skeleton({
   className,
@@ -57,6 +57,7 @@ export default function Skeleton({
 
   const { isDrawerOpen, setIsDrawerOpen, isSmallDevice, isMobileDevice } =
     useTheme()
+  console.log(`🚀 ~ isSmallDevice:`, isSmallDevice)
 
   // Platform context
   const { isStandalone } = usePlatform()
