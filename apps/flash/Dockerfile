@@ -58,6 +58,9 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 viteuser
 
+# Install build tools needed for native modules like bcrypt
+RUN apk add --no-cache python3 make g++
+
 # Install pnpm for production dependencies
 RUN npm install -g pnpm
 

@@ -76,7 +76,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       },
     },
     ssr: {
-      external: ["i18n-iso-countries"], // Don't bundle - has dynamic requires
+      external: ["i18n-iso-countries", "bcrypt"], // Don't bundle - has dynamic requires and native bindings
       noExternal: [/@lobehub\//, "@chrryai/chrry", "chrry"], // Force bundle @lobehub packages and chrry to fix directory imports
       resolve: {
         externalConditions: ["node", "import"],
