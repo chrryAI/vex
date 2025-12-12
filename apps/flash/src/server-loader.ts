@@ -21,6 +21,7 @@ import {
   type BlogPost,
   type BlogPostWithContent,
 } from "./blog-loader"
+import { generateServerMetadata } from "./server-metadata"
 
 export interface ServerRequest {
   url: string
@@ -237,7 +238,6 @@ export async function loadServerData(
   // Generate metadata for this route
   let metadata
   try {
-    const { generateServerMetadata } = await import("./server-metadata")
     metadata = await generateServerMetadata(pathname, hostname, locale, {
       session,
       thread,
