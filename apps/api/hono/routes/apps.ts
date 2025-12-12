@@ -56,8 +56,11 @@ app.get("/", async (c) => {
 
   // Get headers
   const appIdHeader = request.headers.get("x-app-id")
+  console.log(`🚀 ~ app.get ~ appIdHeader:`, Object.keys(request.headers))
   const storeSlugHeader = request.headers.get("x-app-slug")
+  console.log(`🚀 ~ app.get ~ storeSlugHeader:`, storeSlugHeader)
   const pathname = request.headers.get("x-pathname")
+  console.log(`🚀 ~ app.get ~ pathname:`, pathname)
 
   // Determine appId (priority: param > header)
   const appId = appIdParam || appIdHeader || undefined
