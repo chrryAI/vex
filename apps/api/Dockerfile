@@ -42,8 +42,8 @@ COPY --from=deps --chown=hono:nodejs /app ./
 COPY --chown=hono:nodejs apps/api ./apps/api
 COPY --chown=hono:nodejs packages ./packages
 
-# Copy chrry symlink for direct imports (chrry -> packages/ui)
-COPY --chown=hono:nodejs chrry ./chrry
+# Copy packages/ui as chrry for direct imports (Docker doesn't follow symlinks)
+COPY --chown=hono:nodejs packages/ui ./chrry
 
 # Ensure tsconfig.json is in the root (copy again to be safe)
 COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
