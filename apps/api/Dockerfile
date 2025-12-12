@@ -32,15 +32,18 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 hono
 
+# Copy tsconfig.json FIRST for Bun path mappings
+COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
+
 # Copy the ENTIRE node_modules including workspace structure
 COPY --from=deps --chown=hono:nodejs /app ./
 
-# Copy tsconfig.json for Bun path mappings (Bun respects tsconfig paths)
-COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
-
-# Copy application code
+# Copy application code (this will overwrite if needed)
 COPY --chown=hono:nodejs apps/api ./apps/api
 COPY --chown=hono:nodejs packages ./packages
+
+# Ensure tsconfig.json is in the root (copy again to be safe)
+COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
 # Install Bun for runtime (much faster than Node)
 RUN npm install -g bun
