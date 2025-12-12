@@ -12,6 +12,8 @@ const port = process.env.PORT || 5173
 const base = process.env.BASE || "/"
 const ABORT_DELAY = 10000
 
+const isDev = process.env.NODE_ENV === "development"
+
 // Cached production assets
 const templateHtml = isProduction
   ? await fs.readFile("./dist/client/index.html", "utf-8")
@@ -35,7 +37,7 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again later.",
 })
 
-app.use(limiter)
+if (!isDev) app.use(limiter)
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
