@@ -53,6 +53,7 @@ export async function loadServerData(
   request: ServerRequest,
 ): Promise<ServerData> {
   const { pathname, hostname, headers, cookies, url } = request
+  console.log(`🚀 ~ pathname:`, pathname)
 
   const threadId = getThreadId(pathname)
   const isDev = process.env.MODE === "development"
@@ -114,7 +115,7 @@ export async function loadServerData(
         fingerprint,
         token: apiKey,
         agentName,
-        pathname,
+        pathname: `/${pathname}`,
         routeType,
         translate: true,
         locale,
