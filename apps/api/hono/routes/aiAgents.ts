@@ -11,10 +11,9 @@ app.get("/", async (c) => {
   const member = await getMember(c)
   const guest = await getGuest(c)
 
-  // BACKWARD COMPATIBLE FIX AFTER RELEASE ALL PLATFORMS
-  // if (!member && !guest) {
-  //   return c.json({ error: "Unauthorized" }, 401)
-  // }
+  if (!member && !guest) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
 
   const aiAgents = await getAiAgents({
     include: appId || undefined,
