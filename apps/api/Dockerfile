@@ -35,8 +35,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy the ENTIRE node_modules including workspace structure
 COPY --from=deps --chown=hono:nodejs /app ./
 
-# Copy bunfig.toml for Bun path mappings
-COPY --chown=hono:nodejs bunfig.toml ./bunfig.toml
+# Copy tsconfig.json for Bun path mappings (Bun respects tsconfig paths)
+COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
 # Copy application code
 COPY --chown=hono:nodejs apps/api ./apps/api
