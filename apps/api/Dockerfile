@@ -45,9 +45,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 hono
+# Create non-root user (Debian-style commands for Bun image)
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs hono
 
 # Copy necessary files
 COPY --from=builder /app/apps/api ./apps/api
