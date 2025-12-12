@@ -1,4 +1,23 @@
-FROM oven/bun:1 AS base
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy only package files for better caching
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY packages/db/package.json ./packages/db/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
+COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
+COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
 
 # Production image
 FROM base AS runner
@@ -7,21 +26,19 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Create non-root user
-RUN groupadd --system --gid 1001 nodejs && \
-    useradd --system --uid 1001 --gid nodejs hono
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 hono
 
-# Copy workspace configuration files first
-COPY --chown=hono:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy node_modules from deps stage
+COPY --from=deps --chown=hono:nodejs /app/node_modules ./node_modules
 
-# Copy the application and its dependencies
+# Copy application code
 COPY --chown=hono:nodejs apps/api ./apps/api
-COPY --chown=hono:nodejs packages/db ./packages/db
-COPY --chown=hono:nodejs packages/ui ./packages/ui
-COPY --chown=hono:nodejs packages/eslint-config ./packages/eslint-config
-COPY --chown=hono:nodejs packages/typescript-config ./packages/typescript-config
+COPY --chown=hono:nodejs packages ./packages
+COPY --chown=hono:nodejs package.json ./
 
-# Install dependencies using Bun (it can read pnpm-lock.yaml)
-RUN bun install --production
+# Install Bun for runtime (much faster than Node)
+RUN npm install -g bun
 
 # Switch to non-root user
 USER hono
@@ -31,5 +48,5 @@ EXPOSE 3001
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
-# Run with Bun
+# Run with Bun for better performance
 CMD ["bun", "run", "apps/api/server.ts"]
