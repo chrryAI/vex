@@ -29,13 +29,12 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 hono
 
-# Copy node_modules from deps stage
-COPY --from=deps --chown=hono:nodejs /app/node_modules ./node_modules
+# Copy the ENTIRE node_modules including workspace structure
+COPY --from=deps --chown=hono:nodejs /app ./
 
 # Copy application code
 COPY --chown=hono:nodejs apps/api ./apps/api
 COPY --chown=hono:nodejs packages ./packages
-COPY --chown=hono:nodejs package.json ./
 
 # Install Bun for runtime (much faster than Node)
 RUN npm install -g bun
