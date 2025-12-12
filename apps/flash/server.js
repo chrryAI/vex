@@ -3,6 +3,7 @@ import fs from "node:fs/promises"
 import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
+import rateLimit from "express-rate-limit"
 
 const VERSION = "1.6.68"
 // Constants
@@ -24,6 +25,17 @@ const app = express()
 app.set("trust proxy", true)
 
 app.use(cookieParser())
+
+// Rate limiting to prevent DoS attacks
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: "Too many requests from this IP, please try again later.",
+})
+
+app.use(limiter)
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
