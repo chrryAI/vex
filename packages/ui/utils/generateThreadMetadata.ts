@@ -1,7 +1,55 @@
-import { Metadata } from "next"
 import { thread } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
+
+export interface MetadataResult {
+  title?: string
+  description?: string
+  manifest?: string
+  keywords?: string[]
+  appleWebApp?: {
+    capable?: boolean
+    statusBarStyle?: string
+    title?: string
+    icon?: string
+  }
+  icons?: { url: string; sizes: string; type: string; purpose: string }[]
+  openGraph?: {
+    title?: string
+    description?: string
+    url?: string
+    siteName?: string
+    images?: Array<{
+      url: string
+      width?: number
+      height?: number
+      alt?: string
+    }>
+    locale?: string
+    type?: string
+  }
+  twitter?: {
+    title?: string
+    description?: string
+    card?: string
+    site?: string
+    creator?: string
+    images?: Array<{
+      url: string
+      width?: number
+      height?: number
+      alt?: string
+    }>
+  }
+  robots?: {
+    index?: boolean
+    follow?: boolean
+  }
+  alternates?: {
+    canonical?: string
+    languages?: Record<string, string>
+  }
+}
 
 /**
  * Generate dynamic metadata for a thread page
@@ -24,7 +72,7 @@ export function generateThreadMetadata({
   locale?: locale | string
   currentDomain: string
   translations: Record<string, any>
-}): Metadata {
+}): MetadataResult {
   const threadTitle = thread.title?.substring(0, 120) || "Thread"
 
   // Get translation for thread description
