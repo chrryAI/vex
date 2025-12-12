@@ -1,4 +1,4 @@
-import { test } from "@playwright/test"
+import { test, expect } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { subscribe } from "./shared/subscribe"
 import { getURL, TEST_MEMBER_FINGERPRINTS } from "."
@@ -75,7 +75,7 @@ test("File upload", async ({ page }) => {
     waitUntil: "networkidle",
   })
 
-  await chat({
+  const result = await chat({
     artifacts: {
       paste: 3,
       pdf: 3,
@@ -128,7 +128,7 @@ test("Thread", async ({ page }) => {
 })
 
 test("Long text", async ({ page }) => {
-  await chat({
+  const result = await chat({
     page,
     isMember,
     instruction: "Long text",

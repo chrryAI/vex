@@ -1,3 +1,3 @@
-import { captureException as captureExceptionSentry } from "@sentry/nextjs"
+import { captureException as captureExceptionSentry } from "@sentry/node"
 
 export default captureExceptionSentry

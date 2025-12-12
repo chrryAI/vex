@@ -7,7 +7,7 @@
 
 import { app } from "@repo/db"
 import { buildEnhancedRAGContext } from "../app/actions/ragService"
-import { appWithStore } from "chrry/types"
+import { appWithStore } from "@chrryai/chrry/types"
 
 /**
  * Predefined knowledge bases for branded agents

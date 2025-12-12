@@ -12,6 +12,7 @@ import {
   updateThread,
   TEST_MEMBER_EMAILS,
   TEST_GUEST_FINGERPRINTS,
+  TEST_MEMBER_FINGERPRINTS,
   user,
   guest,
   updateUser,
@@ -20,6 +21,10 @@ import {
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
 } from "@repo/db/src/schema"
+
+const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
+  TEST_MEMBER_FINGERPRINTS,
+)
 
 export default async function cleanupTest() {
   for (const email of TEST_MEMBER_EMAILS) {
@@ -30,9 +35,10 @@ export default async function cleanupTest() {
       })
     }
   }
-  for (const fingerprint of TEST_GUEST_FINGERPRINTS) {
+  for (const fingerprint of allowedFingerprints) {
     const guest = await getGuestDb({ fingerprint, skipCache: true })
 
+    // console.log(`🚀 ~ cleanupTest ~ guest:`, guest, fingerprint)
     // Cleanup for test guest
     // SAFETY: Multiple checks to prevent accidental deletion of production data
     // 1. Guest exists from DB
@@ -43,7 +49,7 @@ export default async function cleanupTest() {
       guest &&
       fingerprint &&
       guest.fingerprint === fingerprint &&
-      TEST_GUEST_FINGERPRINTS.includes(fingerprint)
+      allowedFingerprints.includes(fingerprint)
     ) {
       await cleanup({
         guest,
@@ -58,6 +64,9 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   if (!user && !guest) {
     return
   }
+
+  console.log(`🚀 ~ cleanup ~ guest:`, guest)
+
   // 1. Delete credit usage
   await deleteCreditUsage({ userId: user?.id, guestId: guest?.id })
 
@@ -79,8 +88,9 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
     pageSize: 100000,
     userId: user?.id,
     guestId: guest?.id,
-    publicBookmarks: true,
+    // publicBookmarks: true,
   })
+  console.log(`🚀 ~ cleanup ~ threads:`, threads.totalCount, guest?.id)
 
   await Promise.all(
     threads.threads.map((thread) => {

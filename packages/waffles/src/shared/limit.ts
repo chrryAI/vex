@@ -51,11 +51,13 @@ export const limit = async ({
     shouldFail: true, // Flag to indicate this should fail
   }
 
-  await chat({
+  const result = await chat({
     isNewChat: true,
     page,
     isMember,
     instruction: `Testing hourly limit of ${hourlyLimit} requests`,
     prompts: [...limitPrompts, failPrompt],
   })
+
+  return !!result
 }

@@ -10,9 +10,9 @@ import {
   Text,
 } from "@react-email/components"
 import { thread, user, guest } from "@repo/db"
-import { locale } from "chrry/locales"
+import { locale } from "@chrryai/chrry/locales"
 import * as React from "react"
-import { SiteConfig, getSiteConfig } from "chrry/utils/siteConfig"
+import { SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 interface CollaborationEmailProps {
   origin?: string

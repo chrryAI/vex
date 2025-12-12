@@ -61,7 +61,7 @@ const nextConfig = {
       },
     },
   },
-  productionBrowserSourceMaps: false, // Temporarily enable for debugging
+  productionBrowserSourceMaps: process.env.TESTING_ENV === "e2e", // Enable for E2E debugging
   generateBuildId: async () => {
     return process.env.GIT_SHA || Date.now().toString()
   },

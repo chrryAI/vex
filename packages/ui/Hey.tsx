@@ -7,6 +7,7 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react"
 import Img from "./Image"
@@ -22,7 +23,7 @@ import Thread from "./Thread"
 import Home from "./Home"
 import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
 import { locales } from "./locales"
-import { FRONTEND_URL } from "./utils"
+import { FRONTEND_URL, getThreadId } from "./utils"
 import { useApp } from "./context/providers"
 
 // Lazy load less frequently used components to reduce initial bundle
@@ -77,7 +78,20 @@ export const Hey = memo(
       }
     }, [pathname, isExtension])
 
-    const { threadId } = useChat()
+    const threadIdRef = useRef<string | undefined>(getThreadId(pathname))
+
+    const threadId = threadIdRef.current
+
+    const setThreadId = (id: string | undefined) => {
+      threadIdRef.current = id
+    }
+
+    useEffect(() => {
+      const id = getThreadId(pathname)
+      if (id) {
+        setThreadId(id)
+      }
+    }, [pathname])
     const { app, isSplash, setIsSplash, storeApps } = useAuth()
 
     const { currentStore } = useApp()

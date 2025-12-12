@@ -100,6 +100,15 @@ class WebSocketManager {
     // Set connecting flag IMMEDIATELY to prevent race conditions
     this.isConnecting = true
 
+    // Add timeout to prevent hanging in connecting state
+    const connectionTimeout = setTimeout(() => {
+      if (this.isConnecting) {
+        console.log("⏰ Connection timeout, resetting isConnecting flag")
+        this.isConnecting = false
+        this.ws?.close()
+      }
+    }, 10000) // 10 second timeout
+
     // Close existing connection if URL changed
     if (this.ws && this.currentUrl !== targetUrl) {
       console.log("🚀 Closing existing WebSocket for reconnection")
@@ -107,6 +116,7 @@ class WebSocketManager {
     }
 
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      clearTimeout(connectionTimeout)
       this.isConnecting = false
       return
     }
@@ -119,6 +129,7 @@ class WebSocketManager {
 
       this.ws.onopen = () => {
         console.log("✅ WebSocket opened successfully")
+        clearTimeout(connectionTimeout)
         this.isConnecting = false
         this.connectionState = "connected"
         this.reconnectAttempts = 0
@@ -167,6 +178,7 @@ class WebSocketManager {
 
       this.ws.onclose = (event) => {
         console.log("🔌 WebSocket closed", event.code, event.reason)
+        clearTimeout(connectionTimeout)
         this.ws = null
         this.isConnecting = false
         this.connectionState = "disconnected"
@@ -191,6 +203,7 @@ class WebSocketManager {
       this.ws.onerror = this.handleError.bind(this)
     } catch (error) {
       console.error("Failed to create WebSocket:", error)
+      clearTimeout(connectionTimeout)
       this.isConnecting = false
       this.connectionState = "disconnected"
       this.reconnect()
@@ -198,12 +211,26 @@ class WebSocketManager {
   }
 
   private reconnect() {
+    // Ensure we're not in connecting state before reconnecting
+    this.isConnecting = false
+
     this.handleReconnecting()
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      setTimeout(() => {
+      this.reconnectAttempts++
+      const delay = Math.min(
+        this.reconnectInterval * this.reconnectAttempts,
+        30000,
+      )
+      console.log(
+        `🔄 Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`,
+      )
+
+      this.reconnectTimeout = setTimeout(() => {
         this.connect()
-        this.reconnectAttempts++
-      }, this.reconnectInterval)
+      }, delay)
+    } else {
+      console.error("❌ Max reconnection attempts reached")
+      this.connectionLostCallbacks.forEach((cb) => cb())
     }
   }
 

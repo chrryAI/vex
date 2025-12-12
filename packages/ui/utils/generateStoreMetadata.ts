@@ -1,11 +1,9 @@
-import { Metadata } from "next"
 import { storeWithApps } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
-import { API_URL } from "."
-import { whiteLabels } from "./siteConfig"
 import getWhiteLabel from "./getWhiteLabel"
 import { getImageSrc } from "../lib"
+import { MetadataResult } from "./generateThreadMetadata"
 
 /**
  * Generate dynamic metadata for a store page
@@ -28,7 +26,7 @@ export function generateStoreMetadata({
   locale?: locale | string
   currentDomain: string
   translations: Record<string, any>
-}): Metadata | undefined {
+}): MetadataResult | undefined {
   const title = store.name || "Blossom"
   const description = store.description || `${title} - Blossom`
 
@@ -96,7 +94,14 @@ export function generateStoreMetadata({
       card: "summary",
       title: `${title}`,
       description: description,
-      images: [ogImage],
+      images: [
+        {
+          url: ogImage,
+          width: 512,
+          height: 512,
+          alt: title,
+        },
+      ],
     },
     alternates: {
       canonical: canonicalUrl,

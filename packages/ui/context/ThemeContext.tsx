@@ -114,7 +114,7 @@ export function ThemeProvider({
   )
 
   const [isSmallDevice, setIsSmallDeviceInternal] = useState(
-    viewPortWidth ? viewPortWidth < 960 : device !== "desktop",
+    viewPortWidth != undefined ? viewPortWidth < 960 : device !== "desktop",
   )
 
   const setIsSmallDevice = (isSmallDevice: boolean) => {

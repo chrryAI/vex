@@ -18,6 +18,9 @@ export * from "./schemas"
 
 // Re-export UI components
 export { default as Sidebar } from "./Sidebar"
-// export { default as Chrry } from "./api" // Commented out - component doesn't exist
+export { default as Chrry } from "./Chrry"
 export { default as Store } from "./Store"
 export { HistoryRouterProvider } from "./context/providers/HistoryRouterProvider"
+
+// Make Chrry the default export
+export { default } from "./Chrry"

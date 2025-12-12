@@ -101,7 +101,7 @@ export default function Store({
 
     setSelectedAppInternal(app)
 
-    !slug && router.push(`/${app.store.slug}?=${app.slug}`)
+    !slug && router.push(`/${app.store.slug}?app=${app.slug}`)
   }
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function Store({
     )
     if (!loadingApp && loadingAppInternal && loadedApp) {
       setSelectedAppInternal(loadedApp)
-      router.push(`/${loadedApp?.store?.slug}?=${loadedApp?.slug}`)
+      router.push(`/${loadedApp?.store?.slug}?app=${loadedApp?.slug}`)
       setLoadingAppInternal(undefined)
     }
   }, [loadingApp, loadingAppInternal])

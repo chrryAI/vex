@@ -7,14 +7,13 @@ import {
   PutBucketPolicyCommand,
 } from "@aws-sdk/client-s3"
 import { Upload } from "@aws-sdk/lib-storage"
-import { NodeHttpHandler } from "@smithy/node-http-handler"
-import https from "https"
+import { FetchHttpHandler } from "@smithy/fetch-http-handler"
 import sharp from "sharp"
 import captureException from "./captureException"
 import dns from "dns"
 import net from "net"
 import { parse as parseDomain } from "tldts"
-import { isDevelopment } from "chrry/utils"
+import { isDevelopment } from "@chrryai/chrry/utils"
 
 // Validate S3 configuration
 if (
@@ -31,7 +30,7 @@ if (
   console.warn("   S3_PUBLIC_URL=${MINIO_SERVER_URL}")
 }
 
-// S3 Client Configuration
+// S3 Client Configuration with FetchHttpHandler for Bun compatibility
 const s3Client = new S3Client({
   endpoint: process.env.S3_ENDPOINT,
   region: process.env.S3_REGION || "us-east-1",
@@ -40,6 +39,9 @@ const s3Client = new S3Client({
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
   },
   forcePathStyle: true, // Required for MinIO/Coolify
+  requestHandler: new FetchHttpHandler({
+    requestTimeout: 30000, // 30 second timeout
+  }),
 })
 
 // Bucket names for different contexts

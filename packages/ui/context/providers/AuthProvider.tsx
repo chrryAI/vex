@@ -61,7 +61,6 @@ import {
   WS_URL,
 } from "../../utils"
 import { Task } from "../TimerContext"
-import useCache from "chrry/hooks/useCache"
 import { useError } from "./ErrorProvider"
 
 // Constants (shared with DataProvider)
@@ -281,6 +280,7 @@ export function AuthProvider({
   gift?: string
   error?: string
   session?: session
+  app?: appWithStore
   threads?: {
     threads: thread[]
     totalCount: number
@@ -561,7 +561,7 @@ export function AuthProvider({
         // 🔍 LOG: Check what apps are returned from session API
         const sessionResult = result as session
         console.log("📦 Session API Response - Apps:", {
-          app: sessionResult.app.name,
+          app: sessionResult.app?.name,
           totalApps: sessionResult.app?.store?.apps?.length || 0,
           apps: sessionResult.app?.store?.apps?.map((a: any) => ({
             slug: a.slug,
@@ -717,11 +717,25 @@ export function AuthProvider({
     }
   })
 
-  const [threadId, setThreadId] = useState(getThreadId(pathname))
+  const threadIdRef = useRef<string | undefined>(getThreadId(pathname))
+
+  const threadId = threadIdRef.current
+
+  const setThreadId = (id: string | undefined) => {
+    threadIdRef.current = id
+  }
+
+  useEffect(() => {
+    const id = getThreadId(pathname)
+    if (id) {
+      setThreadId(id)
+    }
+  }, [pathname])
 
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
-  >(session?.app || baseApp)
+  >(props.app || session?.app || baseApp)
+
   useEffect(() => {
     const signInParam = searchParams.get("signIn")
     const currentPart = signInParam as
@@ -946,11 +960,10 @@ export function AuthProvider({
   } = useSWR(token && appId ? ["app", appId] : null, async () => {
     try {
       if (!token || !appId) return
-      const app = await getApp({ token, appId, chrryUrl })
+      const app = await getApp({ token, appId, chrryUrl, pathname })
 
       return app.store?.apps
     } catch (error) {
-      console.error(`🚀 ~ storeAppsSwr error:`, error)
       captureException(error)
     }
   })
@@ -1209,7 +1222,7 @@ export function AuthProvider({
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
       if (!item) return
-      ;(item?.id !== baseApp?.id || !isExtension) && setLastAppId(item?.id)
+      setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
           ? {
@@ -1237,7 +1250,14 @@ export function AuthProvider({
     [setColorScheme, setAppTheme, baseApp, mergeApps],
   )
 
-  const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
+  const [thread, setThreadInternal] = useState<thread | undefined>(
+    props.thread?.thread,
+  )
+
+  const setThread = (thread: thread | undefined) => {
+    setThreadInternal(thread)
+    setThreadId(thread?.id)
+  }
 
   const [tasks, setTasks] = useState<
     | {
@@ -1490,6 +1510,16 @@ export function AuthProvider({
       showAccountStatusRef.current = true
     }
   }, [isLoggedOut, isWelcome])
+
+  const auth_token = searchParams.get("auth_token")
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (auth_token) {
+      // Remove auth_token from URL
+      removeParams("auth_token")
+    }
+  }, [searchParams])
 
   return (
     <AuthContext.Provider
