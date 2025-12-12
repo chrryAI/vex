@@ -124,7 +124,8 @@ export function useNavigation(): NavigationParams {
       Object.entries(params).forEach(([key, value]) => {
         newSearchParams.set(key, String(value))
       })
-      const newUrl = `${pathname}?${newSearchParams.toString()}`
+      const queryString = newSearchParams.toString()
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
       // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
       if (nextRouter) {
@@ -141,7 +142,8 @@ export function useNavigation(): NavigationParams {
       const newSearchParams = new URLSearchParams(searchParams?.toString())
       const keysArray = Array.isArray(keys) ? keys : [keys]
       keysArray.forEach((key) => newSearchParams.delete(key))
-      const newUrl = `${pathname}?${newSearchParams.toString()}`
+      const queryString = newSearchParams.toString()
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
       // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
       if (nextRouter) {
@@ -159,7 +161,8 @@ export function useNavigation(): NavigationParams {
       Object.entries(params).forEach(([key, value]) => {
         newSearchParams.set(key, String(value))
       })
-      const newUrl = `${pathname}?${newSearchParams.toString()}`
+      const queryString = newSearchParams.toString()
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
       // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
       if (nextRouter) {

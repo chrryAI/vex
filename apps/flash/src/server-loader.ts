@@ -135,6 +135,7 @@ export async function loadServerData(
         chrryUrl,
         appId,
         token: apiKey,
+        pathname,
       }),
     ])
 

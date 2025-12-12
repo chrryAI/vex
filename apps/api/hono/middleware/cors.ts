@@ -88,57 +88,10 @@ const RESERVED_PATHS = [
 ]
 
 export const corsMiddleware = async (c: Context, next: Next) => {
-  const pathname = c.req.header("x-pathname") || "/"
-
   // Handle OPTIONS preflight requests FIRST (before any other checks)
   if (c.req.method === "OPTIONS") {
     setCorsHeaders(c)
     return c.text("", 200)
-  }
-
-  // Skip static assets (images, icons, etc.)
-  const staticPrefixes = [
-    "/_next",
-    "/favicon.ico",
-    "/manifests",
-    "/manifest.webmanifest",
-    "/sw.js",
-    "/icons",
-    "/images",
-    "/logo",
-    "/sounds",
-    "/video",
-  ]
-
-  // Check if path matches any static prefix or is an image file
-  const isStaticAsset =
-    staticPrefixes.some((prefix) => pathname.startsWith(prefix)) ||
-    /\.(png|jpg|jpeg|gif|svg|webp|ico)$/i.test(pathname)
-
-  if (isStaticAsset) {
-    setCorsHeaders(c)
-    return next()
-  }
-
-  // Better Auth routes: skip locale handling, only add CORS
-  if (pathname.startsWith("/auth")) {
-    setCorsHeaders(c)
-    return next()
-  }
-
-  // Add pathname to headers for app detection
-  //   c.header("x-pathname", pathname)
-  c.req.header("x-pathname") &&
-    console.log(`🚀 ~ corsMiddleware ~ pathname:`, pathname)
-
-  const slug = getSlugFromPathname(pathname)
-  c.req.header("x-pathname") && console.log(`🚀 ~ corsMiddleware ~ slug:`, slug)
-
-  // Handle route detection for app/store routing
-  if (slug.appSlug) {
-    c.header("x-app-slug", slug.appSlug)
-    c.header("x-store-slug", slug.storeSlug)
-    c.header("x-route-type", "store-app")
   }
 
   // Get search params
@@ -149,19 +102,6 @@ export const corsMiddleware = async (c: Context, next: Next) => {
   const existingFingerprintCookie = c.req
     .header("cookie")
     ?.match(/fingerprint=([^;]+)/)?.[1]
-
-  console.log(
-    `🚀 ~ corsMiddleware ~ searchParams.get("chrryUrl"):`,
-    searchParams.get("chrryUrl"),
-  )
-
-  const chrryUrl =
-    decodeURIComponent(searchParams.get("chrryUrl") || "") ||
-    c.req.header("x-chrry-url")
-
-  if (chrryUrl) {
-    c.header("x-chrry-url", chrryUrl)
-  }
 
   const fingerprint = searchParams.get("fp") || c.req.header("x-fp")
 
@@ -174,18 +114,7 @@ export const corsMiddleware = async (c: Context, next: Next) => {
     c.header("Set-Cookie", cookieValue)
   }
 
-  // Extract path segments to check for reserved paths
-  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}\//, "/")
-  const segments = pathWithoutLocale.split("/").filter(Boolean)
-
-  // API routes: only add CORS
-  if (pathname.startsWith("/api")) {
-    setCorsHeaders(c)
-    if (chrryUrl) {
-      c.header("x-chrry-url", chrryUrl)
-    }
-    return next()
-  }
+  setCorsHeaders(c)
 
   // Set CORS headers for all other routes
   setCorsHeaders(c)
