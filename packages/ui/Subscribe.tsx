@@ -205,6 +205,7 @@ export default function Subscribe({
   const [giftedFingerPrint, setGiftedFingerPrint] = useState<string | null>(
     null,
   )
+  console.log(`🚀 ~ giftedFingerPrint:`, giftedFingerPrint)
 
   const handlePlanChange = async (newPlan: "plus" | "pro") => {
     setLoading(true)

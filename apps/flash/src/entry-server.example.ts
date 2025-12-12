@@ -27,7 +27,7 @@ export async function render(request: ServerRequest) {
   )
 
   // Convert metadata to HTML tags
-  const metaTags = metadataToHtml(metadata)
+  const metaTags = metadata ? metadataToHtml(metadata) : ""
 
   // Read the base HTML template
   const template = await fs.readFile(
