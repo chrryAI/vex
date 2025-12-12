@@ -1,10 +1,10 @@
-import { Metadata } from "next"
 import { appWithStore, storeWithApps, store } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
 import getAppSlug from "./getAppSlug"
 import { getImageSrc } from "../lib"
 import clearLocale from "./clearLocale"
+import { MetadataResult } from "./generateThreadMetadata"
 
 /**
  * Generate dynamic metadata for an app page
@@ -23,7 +23,6 @@ export function generateAppMetadata({
   locale = "en",
   currentDomain,
   translations,
-  whiteLabel,
   ...rest
 }: {
   app: appWithStore
@@ -33,9 +32,14 @@ export function generateAppMetadata({
   translations: Record<string, any>
   pathname?: string
   whiteLabel?: appWithStore
-}): Metadata {
+}): MetadataResult | undefined {
+  console.log(`🚀 ~ appssss:`, app.name)
   const title = app.name || app.title || "Chrry"
   const description = app.description || `${title} - Blossom`
+
+  const whiteLabel =
+    rest.whiteLabel ||
+    app.store?.apps.find((app) => app.id === app.store?.app?.id)
 
   const store = rest.store || app.store!
 
@@ -109,7 +113,14 @@ export function generateAppMetadata({
       card: "summary",
       title: `${title} - ${storeName}`,
       description: description,
-      images: [ogImage],
+      images: [
+        {
+          url: ogImage,
+          width: 512,
+          height: 512,
+          alt: title,
+        },
+      ],
     },
     alternates: {
       canonical: canonicalUrl,

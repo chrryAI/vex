@@ -71,7 +71,7 @@ export async function generateServerMetadata(
   hostname: string,
   locale: locale,
   serverData: ServerData,
-): Promise<MetadataResult> {
+): Promise<MetadataResult | undefined> {
   const siteConfig = getSiteConfig(hostname)
 
   // Parse pathname segments
@@ -101,7 +101,7 @@ export async function generateServerMetadata(
       const thread = await getThread({ id: threadId })
       if (thread) {
         return generateThreadMetadata({
-          thread: thread.thread as any,
+          thread: thread as any,
           locale,
           currentDomain: siteConfig.url,
           translations: serverData.translations || {},
