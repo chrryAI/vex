@@ -11,6 +11,22 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./utils": "./utils/index.ts",
+    "./utils/*": "./utils/*.ts",
+    "./types": "./types/index.ts",
+    "./types/*": "./types/*.ts",
+    "./locales": "./locales.ts",
+    "./locales/*": "./locales/*.json",
+    "./schemas/*": "./schemas/*.ts",
+    "./hooks": "./hooks/index.ts",
+    "./hooks/*": "./hooks/*.ts",
+    "./context": "./context/index.ts",
+    "./context/*": "./context/*.ts",
+    "./context/providers": "./context/providers/index.ts",
+    "./context/providers/*": "./context/providers/*.tsx",
+    "./lib": "./lib/index.ts",
+    "./lib/*": "./lib/*.ts",
+    "./package.json": "./package.json",
     "./*": "./*"
   },
   "files": [
