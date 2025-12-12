@@ -371,13 +371,17 @@ if (!connectionString) {
 }
 
 // Configure SSL for production databases (non-localhost)
+// Can be disabled with DISABLE_DB_SSL=true for internal databases
 const isRemoteDB = connectionString && !connectionString.includes("localhost")
+const disableSSL = process.env.DISABLE_DB_SSL === "true"
+
 const client = postgres(connectionString, {
-  ssl: isRemoteDB
-    ? {
-        rejectUnauthorized: false, // Accept self-signed certificates
-      }
-    : false,
+  ssl:
+    isRemoteDB && !disableSSL
+      ? {
+          rejectUnauthorized: false, // Accept self-signed certificates
+        }
+      : false,
 })
 
 if (NODE_ENV !== "production" && !isCI) {
