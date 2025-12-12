@@ -1,6 +1,6 @@
 import { ReactNode } from "react"
-import { getSiteConfig } from "chrry/utils/siteConfig"
-import { locale } from "chrry/locales"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { locale } from "@chrryai/chrry/locales"
 
 interface LayoutProps {
   children: ReactNode
@@ -8,6 +8,7 @@ interface LayoutProps {
   theme?: "light" | "dark"
   appName?: string
   isDev?: boolean
+  pathname?: string
 }
 
 export default function Layout({
@@ -16,25 +17,17 @@ export default function Layout({
   theme = "dark",
   appName = "Chrry",
   isDev = true,
+  pathname = "/",
 }: LayoutProps) {
   const siteConfig = getSiteConfig()
-
-  // These would normally come from your API/server
-  // For Vite, you'll need to handle data fetching client-side or via SSR context
   const classnames = [theme].filter(Boolean).join(" ")
-  console.log(process.env.NEXT_PUBLIC_API_URL)
 
   return (
     <>
-      {/* Head metadata - in Vite, use react-helmet-async or similar */}
-      <div id="meta-tags" style={{ display: "none" }}>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
-        />
-        <meta name="google" content="notranslate" />
-        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-      </div>
+      {/* 
+        Metadata is already server-rendered in index.html by server.js
+        No need for client-side Helmet or API calls
+      */}
 
       {/* Analytics script */}
       {!isDev && (

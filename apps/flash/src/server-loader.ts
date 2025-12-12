@@ -1,15 +1,20 @@
 import { v4 as uuidv4 } from "uuid"
-import { VERSION, getThreadId, pageSizes } from "chrry/utils"
+import { VERSION, getThreadId, pageSizes } from "@chrryai/chrry/utils"
 import {
   getApp,
   getSession,
   getThread,
   getThreads,
   getTranslations,
-} from "chrry/lib"
-import { locale } from "chrry/locales"
-import { session, thread, paginatedMessages, appWithStore } from "chrry/types"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+} from "@chrryai/chrry/lib"
+import { locale } from "@chrryai/chrry/locales"
+import {
+  session,
+  thread,
+  paginatedMessages,
+  appWithStore,
+} from "@chrryai/chrry/types"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 export interface ServerRequest {
   url: string
@@ -38,6 +43,15 @@ export interface ServerData {
   isDev: boolean
   apiError?: Error
   theme: "light" | "dark"
+  metadata?: {
+    title?: string
+    description?: string
+    keywords?: string[]
+    openGraph?: any
+    twitter?: any
+    robots?: any
+    alternates?: any
+  }
 }
 
 const TEST_MEMBER_FINGERPRINTS =
@@ -184,6 +198,31 @@ export async function loadServerData(
 
   const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"
 
+  // Generate metadata for this route
+  let metadata
+  try {
+    const { generateServerMetadata } = await import("./server-metadata")
+    metadata = await generateServerMetadata(pathname, hostname, locale, {
+      session,
+      thread,
+      threads,
+      translations,
+      app,
+      siteConfig,
+      locale,
+      deviceId,
+      fingerprint,
+      viewPortWidth,
+      viewPortHeight,
+      chrryUrl,
+      isDev,
+      apiError,
+      theme,
+    })
+  } catch (error) {
+    console.error("Error generating metadata in server-loader:", error)
+  }
+
   return {
     session,
     thread,
@@ -200,5 +239,6 @@ export async function loadServerData(
     isDev,
     apiError,
     theme,
+    metadata,
   }
 }
