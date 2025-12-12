@@ -21,8 +21,8 @@ const templateHtml = isProduction
 const app = express()
 
 // Trust proxy - needed for X-Forwarded-For header from reverse proxy
-// Set to true to trust all proxies, or set to number of hops (e.g., 1 for single proxy)
-app.set("trust proxy", true)
+// Set to 1 for single proxy (Nginx) - more secure than 'true'
+app.set("trust proxy", 1)
 
 app.use(cookieParser())
 
