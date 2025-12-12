@@ -4,7 +4,6 @@ import type { NextRequest } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import createIntlMiddleware from "next-intl/middleware"
 import { locales, defaultLocale } from "chrry/locales"
-import getChrryUrl from "api/app/actions/getChrryUrl"
 import { isDevelopment } from "./lib"
 import { validate } from "uuid"
 

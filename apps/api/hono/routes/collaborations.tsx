@@ -20,7 +20,7 @@ import { FRONTEND_URL, isE2E } from "chrry/utils"
 import Collaboration from "../../components/emails/Collaboration"
 import { defaultLocale } from "chrry/locales"
 import { getSiteConfig } from "chrry/utils/siteConfig"
-import { captureException } from "@sentry/nextjs"
+import { captureException } from "@sentry/node"
 
 export const collaborations = new Hono()
 

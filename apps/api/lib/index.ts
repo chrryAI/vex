@@ -9,7 +9,7 @@ import {
   app,
   isOwner,
 } from "@repo/db"
-import { headers } from "next/headers"
+// import { headers } from "next/headers" // Not needed for Hono standalone
 export const DEV_IP = "192.168.2.27"
 export const getIp = (request: Request) => {
   const isDev = process.env.NODE_ENV !== "production"
@@ -278,6 +278,8 @@ export const hasThreadNotification = ({
 
 export { extractPDFText } from "./pdf"
 
+// These functions are only used in old Next.js actions, not needed for Hono
+/*
 export async function getDevice() {
   const headersList = await headers()
 
@@ -339,6 +341,7 @@ export async function getBrowser() {
 
   return browser
 }
+*/
 
 export const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
 export const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET

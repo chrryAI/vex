@@ -1,5 +1,5 @@
 import { user, subscription, guest, updateUser, updateGuest } from "@repo/db"
-import { captureException } from "@sentry/nextjs"
+import { captureException } from "@sentry/node"
 
 const ONE_HOUR_MS = 60 * 60 * 1000
 const ONE_DAY_MS = 24 * 60 * 60 * 1000

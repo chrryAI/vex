@@ -1,4 +1,4 @@
-import getApp, { getWhiteLabel } from "api/app/actions/getApp"
+import getApp, { getWhiteLabel } from "../actions/getApp"
 import { COLORS } from "chrry/context/ThemeContext"
 import getAppSlug from "chrry/utils/getAppSlug"
 import { NextResponse } from "next/server"

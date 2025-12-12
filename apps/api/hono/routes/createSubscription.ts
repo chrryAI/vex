@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
-import { captureException } from "@sentry/nextjs"
+import { captureException } from "@sentry/node"
 import { isE2E } from "chrry/utils"
 
 export const createSubscription = new Hono()
