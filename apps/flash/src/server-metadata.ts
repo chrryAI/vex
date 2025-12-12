@@ -10,6 +10,15 @@ import { getThread, getStore, getApp as getAppDb } from "@repo/db"
 import { locale } from "@chrryai/chrry/locales"
 import { ServerData } from "./server-loader"
 import { BlogPostWithContent } from "./blog-loader"
+import {
+  generateAboutMetadata,
+  generateWhyMetadata,
+  generatePrivacyMetadata,
+  generateTermsMetadata,
+  generateCalendarMetadata,
+  generateAffiliateMetadata,
+  generateUsersMetadata,
+} from "./static-route-metadata"
 
 interface MetadataResult {
   title?: string
@@ -146,9 +155,26 @@ export async function generateServerMetadata(
   const segment =
     pathSegments.length === 1 && pathSegments[0] ? pathSegments[0] : null
 
-  // Check if it's an excluded route
+  // Check if it's an excluded route - generate specific metadata
   if (segment && excludedSlugRoutes.includes(segment)) {
-    return generateMeta({ locale })
+    switch (segment) {
+      case "about":
+        return generateAboutMetadata(locale, siteConfig)
+      case "why":
+        return generateWhyMetadata(locale, siteConfig)
+      case "privacy":
+        return generatePrivacyMetadata(locale, siteConfig)
+      case "terms":
+        return generateTermsMetadata(locale, siteConfig)
+      case "calendar":
+        return generateCalendarMetadata(locale, siteConfig)
+      case "affiliate":
+        return generateAffiliateMetadata(locale, siteConfig)
+      case "u":
+        return generateUsersMetadata(locale, siteConfig)
+      default:
+        return generateMeta({ locale })
+    }
   }
 
   // If we have thread data from server loader, use it

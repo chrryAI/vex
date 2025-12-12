@@ -4,7 +4,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 
-const VERSION = "1.6.62"
+const VERSION = "1.6.63"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173

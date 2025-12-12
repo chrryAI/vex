@@ -2,18 +2,13 @@ import { Hono } from "hono"
 import { sign, verify } from "jsonwebtoken"
 import { compare, hash } from "bcrypt"
 import { getUser, createUser, getStore } from "@repo/db"
-import { users } from "@repo/db/src/schema"
-import { eq } from "drizzle-orm"
 import { v4 as uuidv4 } from "uuid"
 import { isValidUsername } from "@chrryai/chrry/utils"
 
 const authRoutes = new Hono()
 
 // JWT secret (reuse existing env var)
-const JWT_SECRET =
-  process.env.BETTER_AUTH_SECRET ||
-  process.env.NEXTAUTH_SECRET ||
-  "development-secret"
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
 const JWT_EXPIRY = "30d"
 
 /**

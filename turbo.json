@@ -4,7 +4,7 @@
     "signature": true
   },
   "envMode": "loose",
-  "globalPassThroughEnv": ["SENTRY_AUTH_TOKEN"],
+  "globalEnv": ["SENTRY_AUTH_TOKEN", "NEXTAUTH_SECRET"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

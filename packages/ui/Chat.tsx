@@ -254,6 +254,7 @@ export default function Chat({
     setShouldFocus,
     shouldFocus,
     isChatFloating: isChatFloatingContext,
+    setThreadId: setThreadIdInternal,
     messages,
   } = useChat()
 
@@ -273,7 +274,7 @@ export default function Chat({
   const threadIdRef = useRef(threadId)
 
   useEffect(() => {
-    threadIdRef.current = threadId
+    threadId && (threadIdRef.current = threadId)
   }, [threadId])
 
   const setThreadId = (id: string) => {
@@ -603,6 +604,7 @@ export default function Chat({
   ) => {
     setMessageInternal(message)
     setClientId(message?.message?.clientId)
+    message?.message?.threadId && setThreadId(message?.message?.threadId)
   }
 
   const isHydrated = useHasHydrated()
@@ -1655,6 +1657,11 @@ export default function Chat({
 
     setIsLoading(true)
 
+    const sanitizedThreadId =
+      threadIdRef.current && validate(threadIdRef.current)
+        ? threadIdRef.current
+        : null
+
     try {
       let postRequestBody: FormData | string
       let postRequestHeaders: Record<string, string> = {
@@ -1673,7 +1680,7 @@ export default function Chat({
         formData.append("isIncognito", JSON.stringify(isIncognito))
         selectedAgent && formData.append("agentId", selectedAgent?.id)
         debateAgent && formData.append("debateAgentId", debateAgent?.id)
-        threadId && validate(threadId) && formData.append("threadId", threadId)
+        sanitizedThreadId && formData.append("threadId", sanitizedThreadId)
         formData.append("attachmentType", "file")
         formData.append("webSearchEnabled", JSON.stringify(isWebSearchEnabled))
         formData.append(
@@ -1701,7 +1708,7 @@ export default function Chat({
           isIncognito: isIncognito,
           agentId: selectedAgent?.id,
           debateAgentId: debateAgent?.id,
-          threadId: threadId && validate(threadId) ? threadId : null,
+          threadId: sanitizedThreadId,
           webSearchEnabled: isWebSearchEnabled && !isExtension,
           imageGenerationEnabled: isImageGenerationEnabled,
           actionEnabled: isExtension,

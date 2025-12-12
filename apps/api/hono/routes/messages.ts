@@ -210,7 +210,7 @@ messages.post("/", async (c) => {
 
   const contentType = c.req.header("content-type") || ""
   let requestData: any
-  let files: File[] = []
+  const files: File[] = []
 
   if (contentType.includes("multipart/form-data")) {
     const body = await c.req.parseBody({ all: true })
@@ -289,7 +289,6 @@ messages.post("/", async (c) => {
     debateAgentId,
     threadId,
     isIncognito,
-    actionEnabled,
     instructions,
     language,
     isAgent,
@@ -312,7 +311,7 @@ messages.post("/", async (c) => {
       try {
         controller.close()
       } catch (error) {
-        console.log("Stream already closed or errored")
+        console.log("Stream already closed or errored", error)
       }
       streamControllers.delete(stopStreamId)
     }
@@ -345,12 +344,10 @@ messages.post("/", async (c) => {
     ? await getAiAgent({ id: debateAgentId })
     : undefined
 
-  let searchContext = ""
-
   let currentThreadId = threadId
 
   if (!currentThreadId) {
-    let threadTitle = trimTitle(messageContent)
+    const threadTitle = trimTitle(messageContent)
     const newThread = await createThread({
       taskId: task?.id,
       title: threadTitle,
@@ -401,7 +398,7 @@ messages.post("/", async (c) => {
     }
   }
 
-  let thread = currentThreadId
+  const thread = currentThreadId
     ? await getThread({ id: currentThreadId })
     : undefined
 
@@ -422,7 +419,7 @@ messages.post("/", async (c) => {
     )
   }
 
-  let webSearchResults: webSearchResultType[] = []
+  const webSearchResults: webSearchResultType[] = []
   const clientId = validate(clientIdInternal) ? clientIdInternal : uuidv4()
 
   if (isAgent && selectedAgent) {
@@ -436,7 +433,6 @@ messages.post("/", async (c) => {
       webSearchResult: webSearchResults,
       agentId: selectedAgent.id,
       agentVersion: selectedAgent.version,
-      searchContext,
     })
 
     if (!agentMessage) {
@@ -461,7 +457,6 @@ messages.post("/", async (c) => {
     isWebSearchEnabled: webSearchEnabled,
     isImageGenerationEnabled: imageGenerationEnabled,
     debateAgentId: selectedDebateAgent?.id,
-    searchContext,
   })
 
   if (userMessage) {
@@ -492,25 +487,23 @@ messages.post("/", async (c) => {
     })
   }
 
-  if (thread) {
-    notifyOwnerAndCollaborations({
-      notifySender: true,
-      pushNotification: true,
-      thread,
-      payload: {
-        type: "message",
-        data: {
-          deviceId,
-          message: m,
-          isFinal: true,
-          isWebSearchEnabled: webSearchEnabled,
-          isImageGenerationEnabled: imageGenerationEnabled,
-        },
+  notifyOwnerAndCollaborations({
+    notifySender: true,
+    pushNotification: true,
+    thread,
+    payload: {
+      type: "message",
+      data: {
+        deviceId,
+        message: m,
+        isFinal: true,
+        isWebSearchEnabled: webSearchEnabled,
+        isImageGenerationEnabled: imageGenerationEnabled,
       },
-      member,
-      guest,
-    })
-  }
+    },
+    member,
+    guest,
+  })
 
   return c.json({
     message: m,
@@ -550,7 +543,7 @@ messages.patch("/:id", async (c) => {
   if (!id) return c.json({ error: "ID is required" }, 400)
 
   const body = await c.req.json()
-  let { like, clientId } = body
+  const { like, clientId } = body
 
   if (clientId && !validate(clientId)) {
     return c.json({ error: "Invalid client ID" }, 400)

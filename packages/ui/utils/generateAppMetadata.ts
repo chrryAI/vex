@@ -33,7 +33,6 @@ export function generateAppMetadata({
   pathname?: string
   whiteLabel?: appWithStore
 }): MetadataResult | undefined {
-  console.log(`🚀 ~ appssss:`, app.name)
   const title = app.name || app.title || "Chrry"
   const description = app.description || `${title} - Blossom`
 

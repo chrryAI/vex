@@ -22,7 +22,6 @@ const RESERVED_PATHS = [
  */
 export async function headersMiddleware(c: Context, next: Next) {
   const url = new URL(c.req.url)
-  console.log(`🚀 ~ headersMiddleware ~ url:`, url)
 
   const searchParams = url.searchParams
 
@@ -37,8 +36,6 @@ export async function headersMiddleware(c: Context, next: Next) {
 
   // Get slug from pathname for app/store routing
   const slug = getSlugFromPathname(pathname)
-  console.log(`🚀 ~ headersMiddleware ~ pathname:`, pathname)
-  console.log(`🚀 ~ headersMiddleware ~ slug:`, slug)
 
   // Handle route detection for app/store routing
   if (slug.appSlug) {

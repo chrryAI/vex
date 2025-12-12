@@ -330,6 +330,11 @@ export default function Subscribe({
       setIsAdding(true)
       const result = await apiFetch(
         `${API_URL}/users?search=${encodeURIComponent(search)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       )
 
       if (!result.ok) {
