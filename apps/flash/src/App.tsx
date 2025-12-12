@@ -7,6 +7,7 @@ import { useAuth } from "@chrryai/chrry/hooks/useAuth"
 import BlogList from "./components/BlogList"
 import BlogPost from "./components/BlogPost"
 import Skeleton from "chrry/Skeleton"
+import { useEffect } from "react"
 
 interface AppProps {
   serverData?: ServerData
@@ -15,6 +16,8 @@ interface AppProps {
 function App({ serverData }: AppProps) {
   // Use custom auth hook
   const auth = useAuth()
+
+  // Clean auth_token from URL after OAuth redirect
 
   // Create sign in wrapper to match Chrry's expected interface
   const signInContext = async (

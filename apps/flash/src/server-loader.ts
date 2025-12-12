@@ -106,7 +106,11 @@ export async function loadServerData(
   const viewPortWidth = cookies.viewPortWidth || ""
   const viewPortHeight = cookies.viewPortHeight || ""
 
-  const apiKey = cookies.token || headers["x-token"] || fingerprint || uuidv4()
+  // Handle OAuth callback token
+  const authToken = urlObj.searchParams.get("auth_token")
+
+  const apiKey =
+    authToken || cookies.token || headers["x-token"] || fingerprint || uuidv4()
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
   const locale: locale = (cookies.locale as locale) || "en"

@@ -28,11 +28,18 @@ export function useAuth() {
    */
   const fetchSession = useCallback(async () => {
     try {
+      const token = localStorage.getItem("auth_token")
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      }
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
       const response = await fetch(`${API_URL}/auth/session`, {
         credentials: "include", // Include cookies for web
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       })
 
       if (response.ok) {
@@ -111,75 +118,33 @@ export function useAuth() {
 
   /**
    * Sign in with Google OAuth
-   * Opens popup window for OAuth flow
+   * Redirects to Google OAuth page
    */
   const signInWithGoogle = useCallback(async () => {
     try {
-      // Open OAuth popup
-      const width = 500
-      const height = 600
-      const left = window.screenX + (window.outerWidth - width) / 2
-      const top = window.screenY + (window.outerHeight - height) / 2
-
-      const popup = window.open(
-        `${API_URL}/auth/signin/google`,
-        "Google Sign In",
-        `width=${width},height=${height},left=${left},top=${top}`,
-      )
-
-      // Listen for OAuth callback
-      return new Promise((resolve) => {
-        const checkPopup = setInterval(() => {
-          if (!popup || popup.closed) {
-            clearInterval(checkPopup)
-            // Refresh session after OAuth
-            fetchSession().then(() => {
-              resolve({ success: true })
-            })
-          }
-        }, 500)
-      })
+      // Redirect to Google OAuth
+      window.location.href = `${API_URL}/auth/signin/google`
+      return { success: true }
     } catch (error) {
       console.error("Google sign in error:", error)
       return { success: false, error: "Google sign in failed" }
     }
-  }, [fetchSession])
+  }, [])
 
   /**
    * Sign in with Apple OAuth
-   * Opens popup window for OAuth flow
+   * Redirects to Apple OAuth page
    */
   const signInWithApple = useCallback(async () => {
     try {
-      // Open OAuth popup
-      const width = 500
-      const height = 600
-      const left = window.screenX + (window.outerWidth - width) / 2
-      const top = window.screenY + (window.outerHeight - height) / 2
-
-      const popup = window.open(
-        `${API_URL}/auth/signin/apple`,
-        "Apple Sign In",
-        `width=${width},height=${height},left=${left},top=${top}`,
-      )
-
-      // Listen for OAuth callback
-      return new Promise((resolve) => {
-        const checkPopup = setInterval(() => {
-          if (!popup || popup.closed) {
-            clearInterval(checkPopup)
-            // Refresh session after OAuth
-            fetchSession().then(() => {
-              resolve({ success: true })
-            })
-          }
-        }, 500)
-      })
+      // Redirect to Apple OAuth
+      window.location.href = `${API_URL}/auth/signin/apple`
+      return { success: true }
     } catch (error) {
       console.error("Apple sign in error:", error)
       return { success: false, error: "Apple sign in failed" }
     }
-  }, [fetchSession])
+  }, [])
 
   /**
    * Sign out

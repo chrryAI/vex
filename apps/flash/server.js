@@ -4,7 +4,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 
-const VERSION = "1.6.65"
+const VERSION = "1.6.67"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -155,6 +155,14 @@ app.use("*all", async (req, res) => {
         cookies: req.cookies || {},
       }
       serverData = await loadData(context)
+
+      // Handle OAuth redirect
+      if (serverData?.redirect) {
+        if (serverData.redirect.setCookie) {
+          res.setHeader("Set-Cookie", serverData.redirect.setCookie)
+        }
+        return res.redirect(serverData.redirect.url)
+      }
     }
 
     // Generate metadata for SSR
