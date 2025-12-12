@@ -1,6 +1,5 @@
-[run]
-# Configure path mappings for Bun to resolve chrry/* imports
-[run.paths]
-"chrry/*" = ["./packages/ui/*"]
-"web" = ["./apps/web"]
-"web/*" = ["./apps/web/*"]
+# Bun configuration for path mappings
+[module]
+# Configure path aliases for module resolution
+[module.paths]
+"chrry" = ["./packages/ui"]

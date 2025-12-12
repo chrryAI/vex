@@ -1,6 +1,7 @@
 import { Context, Next } from "hono"
 import { getCookie, setCookie } from "hono/cookie"
 import { validate } from "uuid"
+import { getSlugFromPathname } from "chrry/utils"
 
 const RESERVED_PATHS = [
   "threads",
@@ -26,15 +27,15 @@ export async function headersMiddleware(c: Context, next: Next) {
   // Add pathname to headers for app detection
   c.header("x-pathname", pathname)
 
-  // // Get slug from pathname for app/store routing
-  // const slug = getSlugFromPathname(pathname)
+  // Get slug from pathname for app/store routing
+  const slug = getSlugFromPathname(pathname)
 
-  // // Handle route detection for app/store routing
-  // if (slug.appSlug) {
-  //   c.header("x-app-slug", slug.appSlug)
-  //   c.header("x-store-slug", slug.storeSlug)
-  //   c.header("x-route-type", "store-app")
-  // }
+  // Handle route detection for app/store routing
+  if (slug.appSlug) {
+    c.header("x-app-slug", slug.appSlug)
+    c.header("x-store-slug", slug.storeSlug)
+    c.header("x-route-type", "store-app")
+  }
 
   // Handle chrryUrl from query params or headers
   const chrryUrl =
