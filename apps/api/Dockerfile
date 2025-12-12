@@ -16,8 +16,8 @@ COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
 COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
 
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+# Install all dependencies (hono is needed at runtime)
+RUN pnpm install --frozen-lockfile
 
 # Production image
 FROM base AS runner
