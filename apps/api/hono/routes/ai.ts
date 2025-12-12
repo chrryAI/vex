@@ -38,7 +38,7 @@ import {
   processFileForRAG,
   buildEnhancedRAGContext,
   processMessageForRAG,
-} from "../../app/actions/ragService"
+} from "../../lib/actions/ragService"
 import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
 import { getAppKnowledge } from "../../lib/appRAG"
 import { streamText, generateText, ModelMessage } from "ai"
@@ -72,7 +72,7 @@ import { upload } from "../../lib/minio"
 import slugify from "slug"
 import { notifyOwnerAndCollaborations } from "../../lib/notify"
 import { checkRateLimit } from "../../lib/rateLimiting"
-import { captureException } from "@sentry/nextjs"
+import { captureException } from "@sentry/node"
 import generateAIContent from "../../lib/generateAIContent"
 import { checkThreadSummaryLimit } from "../../lib"
 import extractVideoFrames from "../../lib/extractVideoFrames"
@@ -80,7 +80,7 @@ import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
 import { getTools } from "../../lib/tools"
 import { appWithStore } from "chrry/types"
 import { appFormData } from "chrry/schemas/appSchema"
-import { uploadArtifacts } from "../../app/actions/uploadArtifacts"
+import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { getGuest, getMember } from "../lib/auth"
 
 interface StreamController {
@@ -1101,7 +1101,7 @@ You can enable these in your settings anytime!"
   // Auto-upload files as thread artifacts if thread has no existing artifacts
   const hasNoArtifacts = !thread.artifacts || thread.artifacts.length === 0
   if (hasNoArtifacts && files.length > 0) {
-    await uploadArtifacts({ files, thread })
+    await uploadArtifacts({ files, thread, member, guest })
   }
 
   // Get system prompt template from database (or use default Vex template)

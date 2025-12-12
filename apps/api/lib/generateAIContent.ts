@@ -57,7 +57,7 @@ import { generateText, ModelMessage } from "ai"
 import { checkThreadSummaryLimit } from "./index"
 import { getModelProvider } from "./getModelProvider"
 
-import { captureException } from "@sentry/nextjs"
+import { captureException } from "@sentry/node"
 import { z } from "zod"
 import { notifyOwnerAndCollaborations } from "./notify"
 import enTranslations from "chrry/locales/en.json"

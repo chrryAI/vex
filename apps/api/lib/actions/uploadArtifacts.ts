@@ -3,8 +3,7 @@
 import slugify from "slug"
 import { upload } from "../../lib/minio"
 import { processFileForRAG } from "./ragService"
-import getMember from "./getMember"
-import getGuest from "./getGuest"
+// Note: getMember/getGuest are passed as parameters, not imported
 import {
   getMessages,
   thread,
@@ -20,13 +19,14 @@ import captureException from "../../lib/captureException"
 export const uploadArtifacts = async ({
   files,
   thread,
+  member,
+  guest,
 }: {
   files: File[]
   thread: thread
+  member?: any
+  guest?: any
 }) => {
-  const member = await getMember()
-  const guest = await getGuest()
-
   if (!member && !guest) {
     throw new Error("User or guest not found")
   }

@@ -44,7 +44,7 @@ import { defaultLocale } from "chrry/locales"
 import captureException from "../../lib/captureException"
 import { scanFileForMalware } from "../../lib/security"
 import { deleteFile } from "../../lib/minio"
-import { uploadArtifacts } from "../../app/actions/uploadArtifacts"
+import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 
 export const threads = new Hono()
 
@@ -703,6 +703,8 @@ threads.patch("/:id", async (c) => {
       await uploadArtifacts({
         files,
         thread: updatedThread,
+        member,
+        guest,
       })
     }
   }

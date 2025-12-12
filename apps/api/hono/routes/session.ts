@@ -30,7 +30,7 @@ import * as lib from "../../lib"
 
 import { validate as validateUuid } from "uuid"
 import { UAParser } from "ua-parser-js"
-import arcjet, { detectBot } from "@arcjet/next"
+import arcjet, { detectBot } from "@arcjet/node"
 
 import { FRONTEND_URL, isDevelopment, isE2E, VERSION } from "chrry/utils"
 import { v4 as uuidv4 } from "uuid"

@@ -1,4 +1,4 @@
-import arcjet, { slidingWindow } from "@arcjet/next"
+import arcjet, { slidingWindow } from "@arcjet/node"
 import { type user, type guest, type subscription, type app } from "@repo/db"
 import { isDevelopment, isE2E, isOwner } from "chrry/utils"
 

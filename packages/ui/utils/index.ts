@@ -116,7 +116,7 @@ export const WS_URL =
 export const WS_SERVER_URL =
   process.env.NEXT_PUBLIC_WS_SERVER_URL ||
   process.env.WS_SERVER_URL ||
-  "http://localhost:5001"
+  "http://127.0.0.1:5001"
 
 export const addParam = (key: string, value: string) => {
   if (typeof window === "undefined") return
@@ -397,7 +397,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.6.53"
+export const VERSION = config.version || "1.6.57"
 export type instructionBase = {
   id: string
   title: string

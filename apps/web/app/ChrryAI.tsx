@@ -21,8 +21,9 @@ import {
 import { getSiteConfig, getSiteTranslation } from "chrry/utils/siteConfig"
 import { Providers } from "../components/Providers"
 import { captureException } from "@sentry/nextjs"
-import getChrryUrl from "api/app/actions/getChrryUrl"
+
 import getAppAction from "./actions/getApp"
+import getChrryUrl from "./actions/getChrryUrl"
 import { isDevelopment } from "../lib"
 import Head from "next/head"
 import { TEST_GUEST_FINGERPRINTS, TEST_MEMBER_FINGERPRINTS } from "@repo/db"

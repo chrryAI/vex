@@ -24,9 +24,9 @@ import { isE2E, isOwner, MAX_FILE_LIMITS } from "chrry/utils"
 
 import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
 import { notifyOwnerAndCollaborations } from "../../lib/notify"
-import { processMessageForRAG } from "../../app/actions/ragService"
+import { processMessageForRAG } from "../../lib/actions/ragService"
 import { isCollaborator, getDailyImageLimit } from "../../lib"
-import { uploadArtifacts } from "../../app/actions/uploadArtifacts"
+import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import captureException from "../../lib/captureException"
 import { scanFileForMalware } from "../../lib/security"
@@ -468,6 +468,8 @@ messages.post("/", async (c) => {
     await uploadArtifacts({
       files,
       thread,
+      member,
+      guest,
     })
   }
 

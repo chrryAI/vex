@@ -14,6 +14,11 @@ import captureException from "./captureException"
 import { getSiteConfig } from "chrry/utils/siteConfig"
 
 const siteConfig = getSiteConfig()
+console.log("🔔 Notify Lib Config:", {
+  WS_SERVER_URL,
+  WS_URL,
+  siteConfigURL: siteConfig.url,
+})
 
 interface CustomWebSocket {
   new (url: string): WebSocket
