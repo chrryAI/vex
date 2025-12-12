@@ -370,7 +370,14 @@ if (!connectionString) {
   )
 }
 
-const client = postgres(connectionString)
+// Configure SSL for production
+const client = postgres(connectionString, {
+  ssl: isProd
+    ? {
+        rejectUnauthorized: false, // Accept self-signed certificates
+      }
+    : false,
+})
 
 if (NODE_ENV !== "production" && !isCI) {
   if (!global.db) global.db = postgresDrizzle(client, { schema })

@@ -38,7 +38,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     launchOptions: { slowMo: 200 },
-    headless: !!process.env.CI,
+    headless: true, // !!process.env.CI,
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: !process.env.CI ? "http://localhost:3000" : "http://e2e.chrry.ai",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
