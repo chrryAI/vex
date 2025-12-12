@@ -4,7 +4,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 
-const VERSION = "1.6.59"
+const VERSION = "1.6.60"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -132,6 +132,22 @@ app.use("*all", async (req, res) => {
       serverData = await loadData(context)
     }
 
+    // Generate metadata for SSR
+    let metaTags = ""
+    if (serverData?.metadata) {
+      try {
+        // Import metadataToHtml function
+        const { metadataToHtml } = !isProduction
+          ? await vite.ssrLoadModule("/src/server-metadata.ts")
+          : await import("./dist/server/server-metadata.js")
+
+        metaTags = metadataToHtml(serverData.metadata)
+      } catch (error) {
+        console.error("Error converting metadata to HTML:", error)
+        // Continue without metadata if conversion fails
+      }
+    }
+
     // Simple SSR without streaming
     const { renderToString } = await import("react-dom/server")
     const { default: React } = await import("react")
@@ -160,9 +176,12 @@ app.use("*all", async (req, res) => {
       ? `<script>window.__SERVER_DATA__ = ${JSON.stringify(serverData).replace(/</g, "\\u003c")}</script>`
       : ""
 
-    // Replace placeholders
+    // Replace placeholders - inject metadata, CSS, and server data
     const html = template
-      .replace(`<!--app-head-->`, cssLinks + serverDataScript)
+      .replace(
+        `<!--app-head-->`,
+        `${metaTags}\n  ${cssLinks}\n  ${serverDataScript}`,
+      )
       .replace(`<!--app-html-->`, appHtml)
 
     res.status(200).set({ "Content-Type": "text/html" }).end(html)

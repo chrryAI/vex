@@ -1,9 +1,9 @@
-import "chrry/globals.scss"
-import "chrry/globals.css"
-import "chrry/styles/view-transitions.css"
-import Chrry from "chrry/Chrry"
+import "@chrryai/chrry/globals.scss"
+import "@chrryai/chrry/globals.css"
+import "@chrryai/chrry/styles/view-transitions.css"
+import Chrry from "@chrryai/chrry/Chrry"
 import { ServerData } from "./server-loader"
-import { useAuth } from "chrry/hooks/useAuth"
+import { useAuth } from "@chrryai/chrry/hooks/useAuth"
 
 interface AppProps {
   serverData?: ServerData

@@ -75,7 +75,7 @@ export default defineConfig({
   },
   ssr: {
     external: ["i18n-iso-countries"], // Don't bundle - has dynamic requires
-    noExternal: [/@lobehub\//], // Force bundle @lobehub packages to fix directory imports
+    noExternal: [/@lobehub\//, "@chrryai/chrry", "chrry"], // Force bundle @lobehub packages and chrry to fix directory imports
     resolve: {
       externalConditions: ["node", "import"],
     },
