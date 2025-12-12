@@ -69,7 +69,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test.only("File upload", async ({ page }) => {
+test("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -152,6 +152,6 @@ test("Long text", async ({ page }) => {
   })
 })
 
-test.only("Collaboration", async ({ page, browser }) => {
+test("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember })
 })

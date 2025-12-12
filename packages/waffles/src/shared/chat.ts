@@ -791,7 +791,7 @@ export const chat = async ({
         })
 
         await likeButton.click()
-        await wait(4000)
+        await wait(5000)
 
         await getFilterLikedButton({ liked: false }).click()
 
@@ -804,6 +804,8 @@ export const chat = async ({
         })
 
         await unlikeButton.click()
+
+        await wait(5000)
 
         await expect(await getLastAgentMessage()).not.toBeVisible({
           timeout: 8000,
@@ -822,7 +824,7 @@ export const chat = async ({
         })
 
         await getFilterLikedButton({ liked: true }).click()
-        await wait(4000)
+        await wait(5000)
       }
       // // Verify delete button is visible
 
