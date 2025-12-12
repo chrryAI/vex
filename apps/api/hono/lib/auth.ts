@@ -1,8 +1,6 @@
 import { getUser, getGuest as getGuestDb } from "@repo/db"
 import jwt from "jsonwebtoken"
-import { decode } from "next-auth/jwt"
 import captureException from "../../lib/captureException"
-import { isOwner, OWNER_CREDITS } from "@chrryai/chrry/utils"
 import { Context } from "hono"
 import { validate } from "uuid"
 

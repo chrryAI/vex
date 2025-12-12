@@ -116,7 +116,7 @@ const Thread = ({
     goToCalendar,
   } = useNavigationContext()
 
-  const { threadId, creditsLeft, setShouldGetCredits } = useChat()
+  const { threadId, setShouldGetCredits } = useChat()
 
   // Use setMessagesInternal directly instead of wrapping it
   const setMessages = setMessagesInternal
@@ -831,7 +831,8 @@ const Thread = ({
                               preservedThread?: ThreadWithLikeCount
                             },
                           }
-                          setIsNewChat(false)
+
+                          // setIsNewChat(false)
                           // Update URL without triggering route change
                           if (typeof window !== "undefined") {
                             window.history.pushState(

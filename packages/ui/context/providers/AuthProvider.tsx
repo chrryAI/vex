@@ -723,8 +723,6 @@ export function AuthProvider({
     const id = getThreadId(pathname)
     if (id) {
       setThreadId(id)
-    } else {
-      setThreadId(undefined)
     }
   }, [pathname])
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { Hono } from "hono"
 import { getApp, getApp as getAppDb, getApps, getStore } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
@@ -60,10 +61,8 @@ app.get("/", async (c) => {
   const appIdHeader = request.headers.get("x-app-id")
   const storeSlugHeader = request.headers.get("x-app-slug")
 
-  const appSlugHeader = request.headers.get("x-app-slug")
   const pathnameHeader = request.headers.get("x-pathname")
 
-  const appSlug = appSlugParam || appSlugHeader || undefined
   const storeSlug = storeSlugParam || storeSlugHeader || undefined
 
   const pathname =
@@ -107,12 +106,6 @@ app.get("/", async (c) => {
       defaultAppSlug: siteConfig.slug,
       defaultStoreSlug: siteConfig.storeSlug,
     })
-
-  console.log(`🚀 ~ app.get ~ appSlugGenerated:`, {
-    appSlugGenerated,
-    pathname,
-  })
-  console.log(`🚀 ~ app.get ~ storeSlugGenerated:`, storeSlugGenerated)
 
   // Override with params if provided
   if (appSlugParam) appSlugGenerated = appSlugParam
@@ -233,7 +226,6 @@ app.get("/", async (c) => {
 // GET /apps/:id - Get single app by ID
 app.get("/:id", async (c) => {
   const id = c.req.param("id")
-  const request = c.req.raw
 
   const member = await getMember(c, { full: true, skipCache: true })
   const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
@@ -422,11 +414,10 @@ app.post("/", async (c) => {
               console.log("🔍 Looking up extended app:", extendedAppId)
 
               // Try to look up by ID first (handles UUIDs)
-              let extendedApp = await getApp({
+
+              return await getApp({
                 id: extendedAppId,
               })
-
-              return extendedApp
             }),
           )
         ).filter(Boolean)
