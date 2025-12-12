@@ -61,26 +61,23 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Install pnpm for production dependencies
 RUN npm install -g pnpm
 
-# Copy package files for production install
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/flash/package.json apps/flash/
-COPY packages/db/package.json packages/db/
-COPY packages/ui/package.json packages/ui/
+# Copy package files for production install with proper ownership
+COPY --chown=viteuser:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --chown=viteuser:nodejs apps/flash/package.json apps/flash/
+COPY --chown=viteuser:nodejs packages/db/package.json packages/db/
+COPY --chown=viteuser:nodejs packages/ui/package.json packages/ui/
 
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy built application
-COPY --from=builder /app/apps/flash/dist ./apps/flash/dist
-COPY --from=builder /app/apps/flash/server.js ./apps/flash/
-COPY --from=builder /app/apps/flash/public ./apps/flash/public
-COPY --from=builder /app/apps/flash/index.html ./apps/flash/
+# Copy built application with proper ownership
+COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/dist ./apps/flash/dist
+COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/server.js ./apps/flash/
+COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/public ./apps/flash/public
+COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/index.html ./apps/flash/
 
-# Copy workspace packages (needed for imports)
-COPY --from=builder /app/packages ./packages
-
-# Set proper ownership
-RUN chown -R viteuser:nodejs /app
+# Copy workspace packages (needed for imports) with proper ownership
+COPY --chown=viteuser:nodejs --from=builder /app/packages ./packages
 
 # Switch to non-root user
 USER viteuser
