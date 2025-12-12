@@ -7,6 +7,16 @@ import { isValidUsername } from "@chrryai/chrry/utils"
 
 const authRoutes = new Hono()
 
+const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
+const GOOGLE_REDIRECT_URI =
+  process.env.GOOGLE_REDIRECT_URI ||
+  `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/google`
+
+const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
+
+// Frontend URL for redirecting after OAuth
+const FRONTEND_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:5173"
+
 // JWT secret (reuse existing env var)
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
 const JWT_EXPIRY = "30d"
@@ -257,37 +267,276 @@ authRoutes.post("/signout", async (c) => {
 /**
  * GET /api/auth/signin/google
  * Initiate Google OAuth flow
- * TODO: Implement Google OAuth
  */
 authRoutes.get("/signin/google", async (c) => {
-  return c.json({ error: "Google OAuth not yet implemented" }, 501)
+  try {
+    if (!GOOGLE_WEB_CLIENT_ID) {
+      return c.json({ error: "Google OAuth not configured" }, 500)
+    }
+
+    // Generate state for CSRF protection
+    const state = uuidv4()
+
+    // Store state in cookie for verification
+    c.header(
+      "Set-Cookie",
+      `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=Lax`,
+    )
+
+    // Build Google OAuth URL
+    const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth")
+    authUrl.searchParams.set("client_id", GOOGLE_WEB_CLIENT_ID)
+    authUrl.searchParams.set("redirect_uri", GOOGLE_REDIRECT_URI)
+    authUrl.searchParams.set("response_type", "code")
+    authUrl.searchParams.set("scope", "openid email profile")
+    authUrl.searchParams.set("state", state)
+
+    // Redirect to Google
+    return c.redirect(authUrl.toString())
+  } catch (error) {
+    console.error("Google OAuth initiation error:", error)
+    return c.json({ error: "OAuth initiation failed" }, 500)
+  }
 })
 
 /**
  * GET /api/auth/callback/google
  * Google OAuth callback
- * TODO: Implement Google OAuth callback
  */
 authRoutes.get("/callback/google", async (c) => {
-  return c.json({ error: "Google OAuth not yet implemented" }, 501)
+  try {
+    const code = c.req.query("code")
+    const state = c.req.query("state")
+
+    if (!code || !state) {
+      // Redirect to home with error
+      return c.redirect(`${FRONTEND_URL}/?error=oauth_failed`)
+    }
+
+    // Verify state (CSRF protection)
+    const cookieHeader = c.req.header("cookie")
+    const stateMatch = cookieHeader?.match(/oauth_state=([^;]+)/)
+    const storedState = stateMatch ? stateMatch[1] : null
+
+    if (state !== storedState) {
+      return c.redirect(`${FRONTEND_URL}/?error=invalid_state`)
+    }
+
+    // Exchange code for tokens
+    if (!GOOGLE_WEB_CLIENT_ID || !GOOGLE_WEB_CLIENT_SECRET) {
+      return c.redirect(`${FRONTEND_URL}/?error=oauth_not_configured`)
+    }
+
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: GOOGLE_WEB_CLIENT_ID,
+        client_secret: GOOGLE_WEB_CLIENT_SECRET,
+        redirect_uri: GOOGLE_REDIRECT_URI,
+        grant_type: "authorization_code",
+      }),
+    })
+
+    if (!tokenResponse.ok) {
+      return c.redirect(`${FRONTEND_URL}/?error=token_exchange_failed`)
+    }
+
+    const tokens = await tokenResponse.json()
+
+    // Get user info from Google
+    const userInfoResponse = await fetch(
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      },
+    )
+
+    if (!userInfoResponse.ok) {
+      return c.redirect(`${FRONTEND_URL}/?error=user_info_failed`)
+    }
+
+    const googleUser = await userInfoResponse.json()
+
+    // Find or create user
+    let user = await getUser({ email: googleUser.email })
+
+    if (!user) {
+      // Create new user
+      user = await createUser({
+        email: googleUser.email,
+        name: googleUser.name,
+        image: googleUser.picture,
+        userName: await generateUniqueUsername(googleUser.name),
+        emailVerified: new Date(), // Google emails are verified
+      })
+    }
+
+    if (!user) {
+      return c.redirect(`${FRONTEND_URL}/?error=user_creation_failed`)
+    }
+
+    // Generate JWT token
+    const token = generateToken(user.id, user.email)
+
+    // Clear oauth_state cookie
+    c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
+
+    // Redirect back to app with token in URL
+    // Frontend will exchange this for a proper session
+    return c.redirect(`${FRONTEND_URL}/?auth_token=${token}`)
+  } catch (error) {
+    console.error("Google OAuth callback error:", error)
+    return c.redirect(`${FRONTEND_URL}/?error=oauth_callback_failed`)
+  }
 })
 
 /**
  * GET /api/auth/signin/apple
  * Initiate Apple OAuth flow
- * TODO: Implement Apple OAuth
+ * Note: Apple requires HTTPS, won't work on localhost
  */
 authRoutes.get("/signin/apple", async (c) => {
-  return c.json({ error: "Apple OAuth not yet implemented" }, 501)
+  try {
+    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
+    const APPLE_REDIRECT_URI =
+      process.env.APPLE_REDIRECT_URI ||
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/apple`
+
+    if (!APPLE_CLIENT_ID) {
+      return c.json({ error: "Apple OAuth not configured" }, 500)
+    }
+
+    // Generate state for CSRF protection
+    const state = uuidv4()
+
+    // Store state in cookie for verification
+    c.header(
+      "Set-Cookie",
+      `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=Lax`,
+    )
+
+    // Build Apple OAuth URL
+    const authUrl = new URL("https://appleid.apple.com/auth/authorize")
+    authUrl.searchParams.set("client_id", APPLE_CLIENT_ID)
+    authUrl.searchParams.set("redirect_uri", APPLE_REDIRECT_URI)
+    authUrl.searchParams.set("response_type", "code")
+    authUrl.searchParams.set("response_mode", "form_post")
+    authUrl.searchParams.set("scope", "name email")
+    authUrl.searchParams.set("state", state)
+
+    // Redirect to Apple
+    return c.redirect(authUrl.toString())
+  } catch (error) {
+    console.error("Apple OAuth initiation error:", error)
+    return c.json({ error: "OAuth initiation failed" }, 500)
+  }
 })
 
 /**
  * POST /api/auth/callback/apple
- * Apple OAuth callback
- * TODO: Implement Apple OAuth callback
+ * Apple OAuth callback (POST because Apple uses form_post)
  */
 authRoutes.post("/callback/apple", async (c) => {
-  return c.json({ error: "Apple OAuth not yet implemented" }, 501)
+  try {
+    const body = await c.req.parseBody()
+    const code = body.code as string
+    const state = body.state as string
+
+    if (!code || !state) {
+      return c.redirect(`${FRONTEND_URL}/?error=oauth_failed`)
+    }
+
+    // Verify state (CSRF protection)
+    const cookieHeader = c.req.header("cookie")
+    const stateMatch = cookieHeader?.match(/oauth_state=([^;]+)/)
+    const storedState = stateMatch ? stateMatch[1] : null
+
+    if (state !== storedState) {
+      return c.redirect(`${FRONTEND_URL}/?error=invalid_state`)
+    }
+
+    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
+    const APPLE_CLIENT_SECRET = process.env.APPLE_CLIENT_SECRET
+    const APPLE_REDIRECT_URI =
+      process.env.APPLE_REDIRECT_URI ||
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/apple`
+
+    if (!APPLE_CLIENT_ID || !APPLE_CLIENT_SECRET) {
+      return c.redirect(`${FRONTEND_URL}/?error=oauth_not_configured`)
+    }
+
+    // Exchange code for tokens
+    const tokenResponse = await fetch("https://appleid.apple.com/auth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: APPLE_CLIENT_ID,
+        client_secret: APPLE_CLIENT_SECRET,
+        redirect_uri: APPLE_REDIRECT_URI,
+        grant_type: "authorization_code",
+      }),
+    })
+
+    if (!tokenResponse.ok) {
+      return c.redirect(`${FRONTEND_URL}/?error=token_exchange_failed`)
+    }
+
+    const tokens = await tokenResponse.json()
+
+    // Decode the id_token to get user info (Apple doesn't have a userinfo endpoint)
+    const idToken = tokens.id_token
+    const payload = JSON.parse(
+      Buffer.from(idToken.split(".")[1], "base64").toString(),
+    )
+
+    // Apple only provides email in the token
+    const email = payload.email
+    const emailVerified = payload.email_verified === "true"
+
+    // Get user name from the initial request (only provided on first auth)
+    let name = null
+    if (body.user) {
+      try {
+        const userData = JSON.parse(body.user as string)
+        name =
+          `${userData.name?.firstName || ""} ${userData.name?.lastName || ""}`.trim()
+      } catch (e) {
+        // Name not provided or parsing failed
+      }
+    }
+
+    // Find or create user
+    let user = await getUser({ email })
+
+    if (!user) {
+      // Create new user
+      user = await createUser({
+        email,
+        name: name || email.split("@")[0], // Fallback to email username
+        userName: await generateUniqueUsername(name || email.split("@")[0]),
+        emailVerified: emailVerified ? new Date() : undefined,
+      })
+    }
+
+    if (!user) {
+      return c.redirect(`${FRONTEND_URL}/?error=user_creation_failed`)
+    }
+
+    // Generate JWT token
+    const token = generateToken(user.id, user.email)
+
+    // Clear oauth_state cookie
+    c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
+
+    // Redirect back to app with token in URL
+    return c.redirect(`${FRONTEND_URL}/?auth_token=${token}`)
+  } catch (error) {
+    console.error("Apple OAuth callback error:", error)
+    return c.redirect(`${FRONTEND_URL}/?error=oauth_callback_failed`)
+  }
 })
 
 export default authRoutes

@@ -717,7 +717,13 @@ export function AuthProvider({
     }
   })
 
-  const [threadId, setThreadId] = useState(getThreadId(pathname))
+  const threadIdRef = useRef<string | undefined>(getThreadId(pathname))
+
+  const threadId = threadIdRef.current
+
+  const setThreadId = (id: string | undefined) => {
+    threadIdRef.current = id
+  }
 
   useEffect(() => {
     const id = getThreadId(pathname)
@@ -1216,7 +1222,7 @@ export function AuthProvider({
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
       if (!item) return
-      ;(item?.id !== baseApp?.id || !isExtension) && setLastAppId(item?.id)
+      setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
           ? {
@@ -1244,7 +1250,14 @@ export function AuthProvider({
     [setColorScheme, setAppTheme, baseApp, mergeApps],
   )
 
-  const [thread, setThread] = useState<thread | undefined>(props.thread?.thread)
+  const [thread, setThreadInternal] = useState<thread | undefined>(
+    props.thread?.thread,
+  )
+
+  const setThread = (thread: thread | undefined) => {
+    setThreadInternal(thread)
+    setThreadId(thread?.id)
+  }
 
   const [tasks, setTasks] = useState<
     | {
@@ -1497,6 +1510,16 @@ export function AuthProvider({
       showAccountStatusRef.current = true
     }
   }, [isLoggedOut, isWelcome])
+
+  const auth_token = searchParams.get("auth_token")
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (auth_token) {
+      // Remove auth_token from URL
+      removeParams("auth_token")
+    }
+  }, [searchParams])
 
   return (
     <AuthContext.Provider

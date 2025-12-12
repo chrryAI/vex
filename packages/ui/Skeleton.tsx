@@ -57,7 +57,6 @@ export default function Skeleton({
 
   const { isDrawerOpen, setIsDrawerOpen, isSmallDevice, isMobileDevice } =
     useTheme()
-  console.log(`🚀 ~ isSmallDevice:`, isSmallDevice)
 
   // Platform context
   const { isStandalone } = usePlatform()

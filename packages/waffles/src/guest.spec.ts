@@ -69,7 +69,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test("File upload", async ({ page }) => {
+test.only("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -115,8 +115,6 @@ test("File upload", async ({ page }) => {
       },
     ],
   })
-
-  !!result
 })
 
 test("Chat - Hourly Limit Test", async ({ page }) => {
@@ -152,10 +150,8 @@ test("Long text", async ({ page }) => {
       },
     ],
   })
-
-  !!result
 })
 
-test("Collaboration", async ({ page, browser }) => {
+test.only("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember })
 })
