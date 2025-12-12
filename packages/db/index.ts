@@ -370,9 +370,10 @@ if (!connectionString) {
   )
 }
 
-// Configure SSL for production
+// Configure SSL for production databases (non-localhost)
+const isRemoteDB = connectionString && !connectionString.includes("localhost")
 const client = postgres(connectionString, {
-  ssl: isProd
+  ssl: isRemoteDB
     ? {
         rejectUnauthorized: false, // Accept self-signed certificates
       }
