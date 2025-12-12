@@ -13,6 +13,7 @@ const RESERVED_PATHS = [
   "privacy",
   "terms",
   "affiliate",
+  "api",
 ]
 
 /**
@@ -21,14 +22,23 @@ const RESERVED_PATHS = [
  */
 export async function headersMiddleware(c: Context, next: Next) {
   const url = new URL(c.req.url)
-  const pathname = url.pathname
+  console.log(`🚀 ~ headersMiddleware ~ url:`, url)
+
   const searchParams = url.searchParams
+
+  const pathnameFromParams = searchParams.get("pathname")
+
+  const pathname = pathnameFromParams
+    ? decodeURIComponent(pathnameFromParams)
+    : url.pathname
 
   // Add pathname to headers for app detection
   c.header("x-pathname", pathname)
 
   // Get slug from pathname for app/store routing
   const slug = getSlugFromPathname(pathname)
+  console.log(`🚀 ~ headersMiddleware ~ pathname:`, pathname)
+  console.log(`🚀 ~ headersMiddleware ~ slug:`, slug)
 
   // Handle route detection for app/store routing
   if (slug.appSlug) {

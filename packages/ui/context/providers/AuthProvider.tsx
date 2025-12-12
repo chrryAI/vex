@@ -957,7 +957,7 @@ export function AuthProvider({
   } = useSWR(token && appId ? ["app", appId] : null, async () => {
     try {
       if (!token || !appId) return
-      const app = await getApp({ token, appId, chrryUrl })
+      const app = await getApp({ token, appId, chrryUrl, pathname })
 
       return app.store?.apps
     } catch (error) {

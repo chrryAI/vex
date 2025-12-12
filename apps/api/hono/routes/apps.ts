@@ -54,21 +54,29 @@ app.get("/", async (c) => {
   const storeSlugParam = c.req.query("storeSlug")
   const chrryUrlParam = c.req.query("chrryUrl")
 
+  const pathnameParam = c.req.query("pathname")
+
   // Get headers
   const appIdHeader = request.headers.get("x-app-id")
-  console.log(`🚀 ~ app.get ~ appIdHeader:`, Object.keys(request.headers))
   const storeSlugHeader = request.headers.get("x-app-slug")
-  console.log(`🚀 ~ app.get ~ storeSlugHeader:`, storeSlugHeader)
-  const pathname = request.headers.get("x-pathname")
-  console.log(`🚀 ~ app.get ~ pathname:`, pathname)
 
-  // Determine appId (priority: param > header)
+  const appSlugHeader = request.headers.get("x-app-slug")
+  const pathnameHeader = request.headers.get("x-pathname")
+
+  const appSlug = appSlugParam || appSlugHeader || undefined
+  const storeSlug = storeSlugParam || storeSlugHeader || undefined
+
+  const pathname =
+    (pathnameParam
+      ? decodeURIComponent(pathnameParam)
+      : pathnameHeader || "/"
+    ).split("?")[0] || "/"
   const appId = appIdParam || appIdHeader || undefined
 
   // Get store from header if provided
-  const storeFromHeader = storeSlugHeader
+  const storeFromHeader = storeSlug
     ? await getStore({
-        slug: storeSlugHeader,
+        slug: storeSlug,
         userId: member?.id,
         guestId: guest?.id,
         depth: 1,
@@ -94,21 +102,28 @@ app.get("/", async (c) => {
   })
 
   // Parse app/store slugs from pathname
-  let { appSlug, storeSlug } = getAppAndStoreSlugs(pathname || "/", {
-    defaultAppSlug: siteConfig.slug,
-    defaultStoreSlug: siteConfig.storeSlug,
+  let { appSlug: appSlugGenerated, storeSlug: storeSlugGenerated } =
+    getAppAndStoreSlugs(pathname, {
+      defaultAppSlug: siteConfig.slug,
+      defaultStoreSlug: siteConfig.storeSlug,
+    })
+
+  console.log(`🚀 ~ app.get ~ appSlugGenerated:`, {
+    appSlugGenerated,
+    pathname,
   })
+  console.log(`🚀 ~ app.get ~ storeSlugGenerated:`, storeSlugGenerated)
 
   // Override with params if provided
-  if (appSlugParam) appSlug = appSlugParam
-  if (storeSlugParam) storeSlug = storeSlugParam
+  if (appSlugParam) appSlugGenerated = appSlugParam
+  if (storeSlugParam) storeSlugGenerated = storeSlugParam
 
   // Check white label
   const whiteLabel = whiteLabels.find(
-    (label) => label.slug === appSlug && label.isStoreApp,
+    (label) => label.slug === appSlugGenerated && label.isStoreApp,
   )
   if (whiteLabel) {
-    storeSlug = whiteLabel.storeSlug
+    storeSlugGenerated = whiteLabel.storeSlug
   }
 
   // Resolve app (priority: appId > storeFromHeader > slug)
@@ -127,8 +142,8 @@ app.get("/", async (c) => {
           depth: 1,
         })
       : await getAppDb({
-          slug: appSlug,
-          storeSlug: storeSlug,
+          slug: appSlugGenerated,
+          storeSlug: storeSlugGenerated,
           userId: member?.id,
           guestId: guest?.id,
           depth: 1,
