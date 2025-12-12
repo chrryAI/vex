@@ -297,10 +297,11 @@ export default function Menu({
             }}
           >
             <Div
+              suppressHydrationWarning
               style={{
                 ...styles.menuItems.style,
                 display: "flex",
-                marginTop: viewPortHeight > 700 ? "1rem" : undefined,
+                // marginTop: viewPortHeight > 700 ? "1rem" : undefined,
               }}
             >
               <A
