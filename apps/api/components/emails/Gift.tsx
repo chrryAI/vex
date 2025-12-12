@@ -9,9 +9,9 @@ import {
   Section,
   Text,
 } from "@react-email/components"
-import { capitalizeFirstLetter } from "chrry/utils"
+import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
 import * as React from "react"
-import { SiteConfig, getSiteConfig } from "chrry/utils/siteConfig"
+import { SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 export default function GiftEmail({
   origin,

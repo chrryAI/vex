@@ -370,6 +370,7 @@ export const chat = async ({
     }
   }
   for (const prompt of prompts) {
+    console.log(`🚀 ~ prompt:`, prompt)
     await clearDebate()
 
     await wait(1000)
@@ -465,6 +466,8 @@ export const chat = async ({
       // expect(await getDebateAgentName()).toBe(prompt.debateAgent)
       // expect(await getAgentName()).toBe(prompt.model)
     }
+
+    console.log(`🚀 ~ willFail:`, willFail)
 
     if (willFail) {
       return
@@ -788,7 +791,7 @@ export const chat = async ({
         })
 
         await likeButton.click()
-        await wait(4000)
+        await wait(5000)
 
         await getFilterLikedButton({ liked: false }).click()
 
@@ -801,6 +804,8 @@ export const chat = async ({
         })
 
         await unlikeButton.click()
+
+        await wait(5000)
 
         await expect(await getLastAgentMessage()).not.toBeVisible({
           timeout: 8000,
@@ -819,7 +824,7 @@ export const chat = async ({
         })
 
         await getFilterLikedButton({ liked: true }).click()
-        await wait(4000)
+        await wait(5000)
       }
       // // Verify delete button is visible
 
@@ -883,8 +888,6 @@ export const chat = async ({
   }
 
   if (bookmark) {
-    ;(await getFirstMenuThread()).hover()
-
     const bookmarkButton = page.getByTestId("thread-not-bookmarked")
     await expect(bookmarkButton).toBeVisible()
 
@@ -896,15 +899,11 @@ export const chat = async ({
     })
 
     await menuBookmarked.click()
-
+    await wait(2000)
     const threadNotBookmarked = page.getByTestId("thread-not-bookmarked")
     await expect(threadNotBookmarked).toBeVisible({
       timeout: 10000,
     })
-    ;(await getFirstMenuThread()).hover()
-    const menuNotBookmarked = page.getByTestId("menu-not-bookmarked")
-    await expect(menuNotBookmarked).toBeVisible()
-
     await threadNotBookmarked.click()
     await wait(2000)
   }

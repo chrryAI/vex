@@ -1,12 +1,13 @@
 {
   "name": "@repo/db",
-  "version": "1.6.33",
+  "version": "1.6.68",
   "description": "",
   "type": "module",
   "main": "./index.ts",
   "exports": {
     ".": "./index.ts",
-    "./src/schema": "./src/schema.ts"
+    "./src/schema": "./src/schema.ts",
+    "./src/better-auth-schema": "./src/better-auth-schema.ts"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

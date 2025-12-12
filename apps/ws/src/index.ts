@@ -119,6 +119,7 @@ app.use(
       "http://localhost:3001",
       "http://localhost:3004",
       "http://localhost:3005",
+      "http://localhost:5173",
       /^https?:\/\/[a-z0-9-]+\.chrry\.dev$/,
       /^https?:\/\/[a-z0-9-]+\.chrry\.ai$/,
       /^https?:\/\/[a-z0-9-]+\.chrry\.store$/,

@@ -164,7 +164,11 @@ export default function Share({
     if (!search) return
     try {
       setIsAdding(true)
-      const result = await apiFetch(`${API_URL}/users?search=${search}`)
+      const result = await apiFetch(`${API_URL}/users?search=${search}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
       if (!result.ok) {
         setIsAdding(false)

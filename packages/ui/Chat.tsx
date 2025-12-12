@@ -254,6 +254,7 @@ export default function Chat({
     setShouldFocus,
     shouldFocus,
     isChatFloating: isChatFloatingContext,
+    setThreadId: setThreadIdInternal,
     messages,
   } = useChat()
 
@@ -273,7 +274,7 @@ export default function Chat({
   const threadIdRef = useRef(threadId)
 
   useEffect(() => {
-    threadIdRef.current = threadId
+    threadId && (threadIdRef.current = threadId)
   }, [threadId])
 
   const setThreadId = (id: string) => {
@@ -574,98 +575,6 @@ export default function Chat({
       })
   }
 
-  const getPossibleApp = async (text: string) => {
-    console.log(`🚀 Analyzing text:`, text)
-
-    // Only analyze if text is long enough
-    if (text.length < 10) return null
-
-    try {
-      // Try Chrome AI first
-      if ((window as any).ai?.languageModel) {
-        try {
-          console.log("🤖 Using Chrome AI...")
-          const session = await (window as any).ai.languageModel.create({
-            temperature: 0.3,
-            topK: 1,
-          })
-
-          const prompt = `Analyze this text and return ONLY the app name that matches best:
-"${text}"
-
-Apps:
-${apps.map((app) => `- ${app.name}: ${app.description || ""}`).join("\n")}
-
-Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
-
-          const result = await session.prompt(prompt)
-          console.log(`🤖 Chrome AI result:`, result)
-
-          const slug = result.trim().toLowerCase()
-          const matchedApp = apps.find((app) => app.name.toLowerCase() === slug)
-
-          if (matchedApp) {
-            console.log(`✅ Chrome AI detected: ${matchedApp.name}`)
-            return matchedApp
-          }
-        } catch (aiError) {
-          console.log("⚠️ Chrome AI failed, using fallback:", aiError)
-        }
-      }
-
-      // Fallback: Keyword-based detection
-      console.log("🔍 Using keyword detection...")
-      const lowerText = text.toLowerCase()
-
-      // Get localized keywords from translations
-      const appPatterns = {
-        atlas: t("app_keywords_atlas").split(","),
-        bloom: t("app_keywords_bloom").split(","),
-        peach: t("app_keywords_peach").split(","),
-        vault: t("app_keywords_vault").split(","),
-      }
-
-      // Score each app based on keyword matches
-      const scores: { [key: string]: number } = {}
-
-      for (const [slug, keywords] of Object.entries(appPatterns)) {
-        let score = 0
-
-        for (const keyword of keywords) {
-          if (lowerText.includes(keyword)) {
-            // Longer keywords get higher scores (more specific)
-            score += keyword.split(" ").length
-          }
-        }
-
-        if (score > 0) {
-          scores[slug] = score
-        }
-      }
-
-      console.log(`🎯 App scores:`, scores)
-
-      // Find app with highest score
-      const bestMatch = Object.entries(scores).sort(([, a], [, b]) => b - a)[0]
-
-      if (bestMatch) {
-        const [slug, score] = bestMatch
-        const matchedApp = apps.find((app) => app.name.toLowerCase() === slug)
-
-        if (matchedApp) {
-          console.log(`✅ Detected app: ${matchedApp.name} (score: ${score})`)
-          return matchedApp
-        }
-      }
-
-      console.log(`❌ No app detected`)
-      return null
-    } catch (error) {
-      console.error("Error detecting app:", error)
-      return null
-    }
-  }
-
   const setInput = (value: string) => {
     inputRef.current = value
 
@@ -695,6 +604,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
   ) => {
     setMessageInternal(message)
     setClientId(message?.message?.clientId)
+    message?.message?.threadId && setThreadId(message?.message?.threadId)
   }
 
   const isHydrated = useHasHydrated()
@@ -1747,6 +1657,11 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
 
     setIsLoading(true)
 
+    const sanitizedThreadId =
+      threadIdRef.current && validate(threadIdRef.current)
+        ? threadIdRef.current
+        : null
+
     try {
       let postRequestBody: FormData | string
       let postRequestHeaders: Record<string, string> = {
@@ -1765,7 +1680,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
         formData.append("isIncognito", JSON.stringify(isIncognito))
         selectedAgent && formData.append("agentId", selectedAgent?.id)
         debateAgent && formData.append("debateAgentId", debateAgent?.id)
-        threadId && validate(threadId) && formData.append("threadId", threadId)
+        sanitizedThreadId && formData.append("threadId", sanitizedThreadId)
         formData.append("attachmentType", "file")
         formData.append("webSearchEnabled", JSON.stringify(isWebSearchEnabled))
         formData.append(
@@ -1793,7 +1708,7 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
           isIncognito: isIncognito,
           agentId: selectedAgent?.id,
           debateAgentId: debateAgent?.id,
-          threadId: threadId && validate(threadId) ? threadId : null,
+          threadId: sanitizedThreadId,
           webSearchEnabled: isWebSearchEnabled && !isExtension,
           imageGenerationEnabled: isImageGenerationEnabled,
           actionEnabled: isExtension,
@@ -3488,7 +3403,13 @@ Return ONLY ONE WORD: ${apps.map((a) => a.name).join(", ")}, or "none"`
                 {/* Call to action for guests */}
               </Div>
 
-              <Div>
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
                 {guest && !user && (
                   <Button
                     className="transparent"

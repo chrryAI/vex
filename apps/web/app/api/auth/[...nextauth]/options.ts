@@ -3,18 +3,23 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcrypt"
 import AppleProvider from "next-auth/providers/apple"
 import GoogleProvider from "next-auth/providers/google"
+import DiscordProvider from "next-auth/providers/discord"
 import jwt from "jsonwebtoken"
 
 import { v4 as uuidv4 } from "uuid"
 import { Adapter } from "next-auth/adapters"
 
-import { createUser, db, getUser, getStore, updateUser } from "@repo/db"
+import {
+  createSystemLog,
+  createUser,
+  db,
+  getStore,
+  getUser,
+  updateUser,
+} from "@repo/db"
 import { AuthOptions } from "next-auth"
-import { isE2E, isValidUsername } from "chrry/utils"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { isDevelopment, isE2E, isValidUsername } from "chrry/utils"
 import captureException from "../../../../lib/captureException"
-import { trackSignup } from "../../../../lib/ads"
-import { isDevelopment } from "../../../../lib"
 
 // Generate unique username from name
 async function generateUniqueUsername(
@@ -33,7 +38,7 @@ async function generateUniqueUsername(
 
   // Check if username exists (checks both users and stores)
   const exists = async (username: string): Promise<boolean> => {
-    const existingUser = await getUser({ userName: username, skipCache: true })
+    const existingUser = await getUser({ userName: username })
     if (existingUser) return true
 
     const existingStore = await getStore({ slug: username })
@@ -90,7 +95,6 @@ export const authOptions: AuthOptions = {
         }
 
         const user = await getUser({
-          skipCache: true,
           email,
         })
 
@@ -112,7 +116,6 @@ export const authOptions: AuthOptions = {
       },
     }),
 
-    // https://chrry.ai/api/auth/callback/apple
     AppleProvider({
       clientId: process.env.APPLE_CLIENT_ID!, // Hardcoded to match Apple Developer Services ID
       clientSecret: process.env.APPLE_CLIENT_SECRET!, // Use pre-generated token from .env
@@ -161,7 +164,7 @@ export const authOptions: AuthOptions = {
           access_type: "offline",
           response_type: "code",
           // Always include calendar scope on localhost for testing
-          scope: false
+          scope: isDevelopment
             ? "openid email profile https://www.googleapis.com/auth/calendar.events"
             : "openid email profile",
         },
@@ -180,85 +183,23 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    ...(isE2E
-      ? undefined
-      : {
-          async redirect({ url, baseUrl }) {
-            // Extract hostname from baseUrl to get site-specific config
-            try {
-              const urlObj = new URL(url)
-
-              // Check if there's a chrryUrl parameter (original subdomain to redirect back to)
-              // This handles the case where OAuth callback goes to chrry.ai but user came from atlas.chrry.ai
-              const chrryUrl = urlObj.searchParams.get("chrryUrl")
-              if (chrryUrl) {
-                try {
-                  const decodedChrryUrl = decodeURIComponent(chrryUrl)
-                  const targetUrl = new URL(decodedChrryUrl)
-
-                  // Preserve other query params (welcome, fp, etc.)
-                  urlObj.searchParams.delete("chrryUrl")
-                  urlObj.searchParams.forEach((value, key) => {
-                    targetUrl.searchParams.set(key, value)
-                  })
-
-                  // Preserve the path from the original URL
-                  targetUrl.pathname = urlObj.pathname
-
-                  console.log(
-                    "🔄 Redirecting from OAuth callback to original subdomain:",
-                    targetUrl.toString(),
-                  )
-                  return targetUrl.toString()
-                } catch (e) {
-                  console.error("Failed to parse chrryUrl:", e)
-                }
-              }
-
-              const baseUrlObj = new URL(baseUrl)
-              const siteConfig = getSiteConfig(baseUrlObj.hostname)
-              const siteBaseUrl = siteConfig.url || baseUrl
-
-              // If url is relative, prepend site-specific base URL
-              if (url.startsWith("/")) {
-                return `${siteBaseUrl}${url}`
-              }
-
-              // If url is absolute and on same domain, allow it
-              if (urlObj.hostname === baseUrlObj.hostname) {
-                return url
-              }
-
-              // Otherwise, redirect to site-specific base URL
-              return siteBaseUrl
-            } catch (error) {
-              console.error("Redirect callback error:", error)
-              return baseUrl
-            }
-          },
-        }),
     async session({ session, user, token }: any) {
-      try {
-        if (token) {
-          session.user = {
-            ...session.user,
-            ...token,
-          }
-          session.token = jwt.sign(token, process.env.NEXTAUTH_SECRET!)
-
-          // Pass Google tokens to session for calendar access
-          session.accessToken = token.accessToken
-          session.refreshToken = token.refreshToken
-          session.expiresAt = token.expiresAt
+      if (token) {
+        session.user = {
+          ...session.user,
+          ...token,
         }
+        session.token = jwt.sign(token, process.env.NEXTAUTH_SECRET!)
 
-        session.appleId = user?.appleId || token?.appleId
-
-        return session
-      } catch (error) {
-        console.error("❌ Session callback error:", error)
-        return session
+        // Pass Google tokens to session for calendar access
+        session.accessToken = token.accessToken
+        session.refreshToken = token.refreshToken
+        session.expiresAt = token.expiresAt
       }
+
+      session.appleId = user?.appleId || token?.appleId
+
+      return session
     },
     async jwt({ token, account, profile }) {
       if (account?.provider === "apple" && profile?.sub) {
@@ -321,18 +262,12 @@ export const authOptions: AuthOptions = {
       return token
     },
     async signIn({ user, account, profile }: any) {
-      console.log("🔐 SignIn callback triggered:", {
-        provider: account?.provider,
-        email: user?.email,
-        hasProfile: !!profile,
-      })
-
       if (account?.provider === "apple" && profile?.sub) {
         // Try to find user by appleId
-        let dbUser = await getUser({ appleId: profile.sub, skipCache: true })
+        let dbUser = await getUser({ appleId: profile.sub })
         if (!dbUser && user.email) {
           // Fallback: try to find by email
-          dbUser = await getUser({ email: user.email, skipCache: true })
+          dbUser = await getUser({ email: user.email })
         }
         if (!dbUser) {
           // Create user with appleId
@@ -345,13 +280,6 @@ export const authOptions: AuthOptions = {
             userName: await generateUniqueUsername(profile.name || user.name),
             // ...other fields
           })
-
-          // Track signup conversion (server-side, zero client tracking)
-          if (createdUser?.id) {
-            await trackSignup(createdUser.id).catch((err) =>
-              console.error("Failed to track signup:", err),
-            )
-          }
         } else if (!dbUser.appleId) {
           // Update user to include appleId
           await updateUser({ ...dbUser, appleId: profile.sub })
@@ -360,23 +288,20 @@ export const authOptions: AuthOptions = {
       }
       if (account?.provider === "google") {
         try {
-          console.log("✅ Google OAuth callback received")
-
           if (!user.email) {
-            console.error("❌ Google sign-in: No email provided")
+            console.error("Google sign-in: No email provided")
             throw new Error("No email provided")
           }
 
-          console.log("🔍 Google sign-in attempt:", {
+          console.log("Google sign-in attempt:", {
             email: user.email,
             hasAccessToken: !!account.access_token,
             hasRefreshToken: !!account.refresh_token,
             scope: account.scope,
-            userId: user.id,
           })
 
           // Check if user exists in database
-          const dbUser = await getUser({ email: user.email, skipCache: true })
+          const dbUser = await getUser({ email: user.email })
 
           if (dbUser) {
             await updateUser({
@@ -416,32 +341,20 @@ export const authOptions: AuthOptions = {
               updatedOn: new Date(),
               userName: await generateUniqueUsername(profile.name || user.name),
             })
-            console.log("✅ Google sign-in: Created new user", createdUser?.id)
-
-            // Track signup conversion (server-side, zero client tracking)
-            if (createdUser?.id) {
-              await trackSignup(createdUser.id).catch((err) =>
-                console.error("Failed to track signup:", err),
-              )
-            }
+            console.log("Google sign-in: Created new user", createdUser?.id)
           }
 
-          console.log("✅ Google sign-in successful")
           return true
         } catch (error) {
           captureException(error)
-          console.error("❌ Google signIn callback error:", error)
-          console.error("❌ Error details:", {
-            message: error instanceof Error ? error.message : "Unknown error",
-            stack: error instanceof Error ? error.stack : undefined,
-          })
+          console.error("Error in Google signIn callback:", error)
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error"
 
           // Return false to show error on sign-in page
           return false
         }
       }
-
-      console.log("✅ SignIn callback completed successfully")
       return true
     },
   },
@@ -450,16 +363,7 @@ export const authOptions: AuthOptions = {
   },
   logger: {
     error(code, metadata) {
-      console.error("❌ NextAuth Error:", code)
-      console.error("📋 Error metadata:", JSON.stringify(metadata, null, 2))
-    },
-    warn(code) {
-      console.warn("⚠️ NextAuth Warning:", code)
-    },
-    debug(code, metadata) {
-      if (code.includes("OAUTH") || code.includes("callback")) {
-        console.log("🔍 NextAuth Debug:", code, metadata)
-      }
+      console.error("NextAuth Error:", code, metadata)
     },
   },
   jwt: {
@@ -472,40 +376,12 @@ export const authOptions: AuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: isDevelopment
-        ? "next-auth.session-token"
-        : "__Secure-next-auth.session-token",
+      name: `next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: !isDevelopment,
-        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain in production
-      },
-    },
-    callbackUrl: {
-      name: isDevelopment
-        ? "next-auth.callback-url"
-        : "__Secure-next-auth.callback-url",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: !isDevelopment,
-        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain in production
-      },
-    },
-    csrfToken: {
-      name: isDevelopment
-        ? "next-auth.csrf-token"
-        : "__Host-next-auth.csrf-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: !isDevelopment,
-        // Note: __Host- prefix requires domain to be undefined for security
-        domain: undefined,
+        secure: isDevelopment ? false : true,
       },
     },
     pkceCodeVerifier: {
@@ -515,7 +391,6 @@ export const authOptions: AuthOptions = {
         sameSite: isDevelopment ? "lax" : "none",
         path: "/",
         secure: !isDevelopment,
-        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain in production
       },
     },
     state: {
@@ -526,7 +401,6 @@ export const authOptions: AuthOptions = {
         path: "/",
         secure: !isDevelopment,
         maxAge: 900,
-        domain: isDevelopment ? undefined : ".chrry.ai", // ✅ Cross-subdomain in production
       },
     },
   },

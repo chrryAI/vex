@@ -27,7 +27,7 @@ import { AppProvider } from "./AppProvider"
 import { AppContextProvider } from "../AppContext"
 import { locale } from "../../locales"
 import useSWR, { SWRConfig } from "swr"
-import { thread, paginatedMessages } from "../../types"
+import { thread, paginatedMessages, appWithStore } from "../../types"
 import { TimerContext, TimerContextProvider } from "../TimerContext"
 import { Hey } from "../../Hey"
 import getCacheProvider from "../../lib/swrCacheProvider"
@@ -38,6 +38,7 @@ interface AppProvidersProps {
   apiKey?: string
   children: ReactNode
   session?: session
+  app?: appWithStore
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   signInContext?: (
     provider: "google" | "apple" | "credentials",
@@ -72,6 +73,7 @@ interface AppProvidersProps {
 export default function AppProviders({
   children,
   session,
+  app,
   onSetLanguage,
   apiKey,
   signInContext,
@@ -142,6 +144,7 @@ export default function AppProviders({
               locale={locale}
               error={error}
               apiKey={apiKey}
+              app={app}
               threads={threads}
               onSetLanguage={onSetLanguage}
               signInContext={signInContext}

@@ -242,4 +242,6 @@ export const thread = async ({
       createChat: false,
     })
   }
+
+  return true
 }

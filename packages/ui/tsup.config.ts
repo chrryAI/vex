@@ -22,6 +22,7 @@ export default defineConfig({
     "uuid",
     "swr",
     "motion",
+    "react-big-calendar",
   ],
   // Don't bundle CSS/SCSS - let consumers handle it
   loader: {

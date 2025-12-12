@@ -6,7 +6,7 @@ import "./styles/view-transitions.css"
 
 import React from "react"
 import AppProviders from "./context/providers"
-import { session, thread, paginatedMessages } from "./types"
+import { session, thread, paginatedMessages, appWithStore } from "./types"
 import { locale } from "./locales"
 
 export default function Chrry({
@@ -23,6 +23,7 @@ export default function Chrry({
   translations,
   useExtensionIcon,
   threads,
+  app,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -31,6 +32,7 @@ export default function Chrry({
   apiKey?: string
   children?: React.ReactNode
   session?: session
+  app?: appWithStore
   viewPortWidth?: string
   viewPortHeight?: string
   threads?: {
@@ -59,6 +61,7 @@ export default function Chrry({
       useExtensionIcon={useExtensionIcon}
       locale={locale}
       session={session}
+      app={app}
       viewPortWidth={viewPortWidth}
       viewPortHeight={viewPortHeight}
       onSetLanguage={onSetLanguage}

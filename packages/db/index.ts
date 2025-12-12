@@ -43,6 +43,12 @@ import {
   timers,
   moods,
 } from "./src/schema"
+// Better Auth tables
+import {
+  baSessions,
+  baAccounts,
+  baVerifications,
+} from "./src/better-auth-schema"
 import { v4 as uuidv4 } from "uuid"
 import * as schema from "./src/schema"
 import { drizzle as postgresDrizzle } from "drizzle-orm/postgres-js"
@@ -99,6 +105,9 @@ export const isProd = isSeedSafe
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
 export { sql, eq, desc, and, isNull, cosineDistance, notInArray }
+
+// Export Better Auth tables
+export { baSessions, baAccounts, baVerifications }
 
 export const TEST_MEMBER_EMAILS =
   process.env.TEST_MEMBER_EMAILS?.split(",") || []
@@ -361,7 +370,19 @@ if (!connectionString) {
   )
 }
 
-const client = postgres(connectionString)
+// Configure SSL for production databases (non-localhost)
+// Can be disabled with DISABLE_DB_SSL=true for internal databases
+const isRemoteDB = connectionString && !connectionString.includes("localhost")
+const disableSSL = process.env.DISABLE_DB_SSL === "true"
+
+const client = postgres(connectionString, {
+  ssl:
+    isRemoteDB && !disableSSL
+      ? {
+          rejectUnauthorized: false, // Accept self-signed certificates
+        }
+      : false,
+})
 
 if (NODE_ENV !== "production" && !isCI) {
   if (!global.db) global.db = postgresDrizzle(client, { schema })

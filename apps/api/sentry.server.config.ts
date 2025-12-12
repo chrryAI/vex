@@ -2,7 +2,7 @@
 // The config you add here will be used whenever the server handles a request.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-import * as Sentry from "@sentry/nextjs"
+import * as Sentry from "@sentry/node"
 
 // Patch console.error to send errors to Sentry (server-side)
 if (process.env.NEXT_PUBLIC_SENTRY === "true" && process.env.SENTRY_DSN) {

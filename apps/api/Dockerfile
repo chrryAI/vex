@@ -2,82 +2,62 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install pnpm
 RUN npm install -g pnpm
 
-# Copy package files
+# Copy only package files for better caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json apps/api/
-COPY packages/db/package.json packages/db/
-COPY packages/ui/package.json packages/ui/
+COPY apps/api/package.json ./apps/api/package.json
+COPY packages/db/package.json ./packages/db/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
+COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
+COPY packages/typescript-config/package.json ./packages/typescript-config/package.json
 
-# Install ALL dependencies (including devDependencies needed for build)
-# Explicitly unset NODE_ENV to prevent Coolify's production setting from skipping devDependencies
-RUN NODE_ENV= pnpm install --frozen-lockfile
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-
-# Install pnpm
-RUN npm install -g pnpm
-
-# Copy workspace configuration first
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json apps/api/
-COPY packages/db/package.json packages/db/
-COPY packages/ui/package.json packages/ui/
-
-# Copy node_modules from deps stage BEFORE source code
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy source code
-COPY . .
-
-# Remove node_modules to prevent pnpm from prompting for confirmation
-RUN rm -rf node_modules
-
-# Restore pnpm workspace links
+# Install all dependencies (hono is needed at runtime)
 RUN pnpm install --frozen-lockfile
 
-# Ensure public directory exists (create if missing)
-RUN mkdir -p apps/api/public
+# Build only the DB package (UI package doesn't need building for API)
+RUN cd packages/db && pnpm run build || true
 
-# Build the application
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS='--max-old-space-size=8192'
-ENV SENTRY_DISABLE_SOURCEMAPS=1
-
-RUN pnpm --filter api run build
-
-# Production image, copy all the files and run next
+# Production image
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+    adduser --system --uid 1001 hono
 
-# Copy built application
-COPY --from=builder /app/apps/api/.next/standalone ./
-COPY --from=builder /app/apps/api/.next/static ./apps/api/.next/static
-COPY --from=builder /app/apps/api/public ./apps/api/public
+# Copy tsconfig.json FIRST for Bun path mappings
+COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
 
-# Set proper ownership
-RUN chown -R nextjs:nodejs /app
+# Copy the ENTIRE node_modules including workspace structure
+COPY --from=deps --chown=hono:nodejs /app ./
+
+# Copy application code (this will overwrite if needed)
+COPY --chown=hono:nodejs apps/api ./apps/api
+COPY --chown=hono:nodejs packages ./packages
+
+# Copy packages/ui as chrry for direct imports (Docker doesn't follow symlinks)
+COPY --chown=hono:nodejs packages/ui ./chrry
+
+# Ensure tsconfig.json is in the root (copy again to be safe)
+COPY --chown=hono:nodejs tsconfig.json ./tsconfig.json
+
+# Install Bun for runtime (much faster than Node)
+RUN npm install -g bun
 
 # Switch to non-root user
-USER nextjs
+USER hono
 
 EXPOSE 3001
 
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/api/server.js"]
+# Run with Bun for better performance
+CMD ["bun", "run", "apps/api/server.ts"]

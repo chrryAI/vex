@@ -1,4 +1,4 @@
-import { isDevelopment } from "chrry/utils"
+import { isDevelopment } from "@chrryai/chrry/utils"
 
 /**
  * Scan file for malware using external ClamAV service

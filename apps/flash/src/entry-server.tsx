@@ -10,6 +10,9 @@ import {
   type ServerData,
 } from "./server-loader"
 
+// Export App for server.js
+export { App }
+
 /*
   React SSR streaming with Suspense works by adding JS code to the end of the
   HTML to update the suspended element in the client side. However, there are 2

@@ -23,8 +23,7 @@ const chrryDev = {
   domain: "chrry.dev",
   url: "https://chrry.dev",
   email: "iliyan@chrry.ai",
-  description:
-    "A modern, cross-platform AI UI library for React, React Native, and Next.js",
+  description: "A modern, cross-platform AI UI library for React, React Native",
   logo: "/assets/cherry-logo.svg", // Cross-platform SVG
   primaryColor: "#E91E63", // Cherry pink
   links: {
@@ -178,7 +177,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.58",
+  version: "26.10.59",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",

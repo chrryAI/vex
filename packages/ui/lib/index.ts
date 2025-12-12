@@ -1008,6 +1008,7 @@ export const getSession = async ({
     ...(isStandalone ? { isStandalone: "true" } : {}),
     ...(locale ? { locale } : {}),
     ...(source ? { source } : {}),
+    ...(pathname ? { pathname: encodeURIComponent(pathname) } : {}),
   })
 
   const response = await fetch(`${API_URL}/session?${params}`, {
@@ -1099,21 +1100,35 @@ export const getApp = async ({
   token,
   appId,
   chrryUrl,
+  pathname,
 }: {
   API_URL?: string
   token: string
-  appId: string
+  appId?: string
   chrryUrl?: string
+  pathname?: string
 }) => {
+  // Build query params for intelligent resolution
   const params = new URLSearchParams()
-  chrryUrl && params.append("chrryUrl", chrryUrl)
-  const response = await fetch(`${API_URL}/apps/${appId}`, {
+  if (chrryUrl) params.append("chrryUrl", chrryUrl)
+  if (appId) params.append("appId", appId)
+  if (pathname) params.append("pathname", encodeURIComponent(pathname))
+
+  // Use /apps for intelligent resolution (no ID in path)
+  const url = `${API_URL}/apps${params.toString() ? `?${params.toString()}` : ""}`
+
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
-      "x-app-id": appId,
       ...(chrryUrl ? { "x-chrry-url": chrryUrl } : {}),
     },
   })
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch app: ${response.status} ${response.statusText}`,
+    )
+  }
 
   const data = await response.json()
   return data as appWithStore

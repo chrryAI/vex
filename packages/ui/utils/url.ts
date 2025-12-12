@@ -21,6 +21,7 @@ export const excludedSlugRoutes = Array.from(
     "onboarding",
     "calendar",
     "affiliate",
+    "api",
   ]),
 )
 

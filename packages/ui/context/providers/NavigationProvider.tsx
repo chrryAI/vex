@@ -121,6 +121,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     setIsVisitor,
     refetchThreads,
     userNameByUrl,
+    setShouldFetchThread,
   } = useChat()
 
   const goToCalendar = () => {

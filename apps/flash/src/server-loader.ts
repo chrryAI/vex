@@ -1,9 +1,26 @@
 import { v4 as uuidv4 } from "uuid"
-import { VERSION, getThreadId, pageSizes } from "chrry/utils"
-import { getSession, getThread, getThreads, getTranslations } from "chrry/lib"
-import { locale } from "chrry/locales"
-import { session, thread, paginatedMessages, appWithStore } from "chrry/types"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { VERSION, getThreadId, pageSizes } from "@chrryai/chrry/utils"
+import {
+  getApp,
+  getSession,
+  getThread,
+  getThreads,
+  getTranslations,
+} from "@chrryai/chrry/lib"
+import { locale } from "@chrryai/chrry/locales"
+import {
+  session,
+  thread,
+  paginatedMessages,
+  appWithStore,
+} from "@chrryai/chrry/types"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import {
+  getBlogPosts,
+  getBlogPost,
+  type BlogPost,
+  type BlogPostWithContent,
+} from "./blog-loader"
 
 export interface ServerRequest {
   url: string
@@ -32,7 +49,25 @@ export interface ServerData {
   isDev: boolean
   apiError?: Error
   theme: "light" | "dark"
+  metadata?: {
+    title?: string
+    description?: string
+    keywords?: string[]
+    openGraph?: any
+    twitter?: any
+    robots?: any
+    alternates?: any
+  }
+  // Blog data
+  blogPosts?: BlogPost[]
+  blogPost?: BlogPostWithContent
+  isBlogRoute?: boolean
 }
+
+const TEST_MEMBER_FINGERPRINTS =
+  process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || []
+const TEST_GUEST_FINGERPRINTS =
+  process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
 
 /**
  * Load all server-side data for SSR
@@ -41,21 +76,41 @@ export interface ServerData {
 export async function loadServerData(
   request: ServerRequest,
 ): Promise<ServerData> {
-  const { pathname, hostname, headers, cookies } = request
+  const { hostname, headers, cookies, url } = request
+
+  const pathname = request.pathname.startsWith("/")
+    ? request.pathname
+    : `/${request.pathname}`
 
   const threadId = getThreadId(pathname)
   const isDev = process.env.MODE === "development"
+  const urlObj = new URL(url, `http://${hostname}`)
+
+  // Parse query string for fp parameter (only if URL contains query params)
+  let fpFromQuery: string | null = null
+  if (url.includes("?")) {
+    fpFromQuery = urlObj.searchParams.get("fp")
+  }
 
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
-  const fingerprint = headers["x-fp"] || cookies.fingerprint || uuidv4()
-  const gift = headers["x-gift"]
+  const fingerprint =
+    (TEST_MEMBER_FINGERPRINTS?.concat(TEST_GUEST_FINGERPRINTS).includes(
+      fpFromQuery || "",
+    )
+      ? fpFromQuery
+      : headers["x-fp"] || cookies.fingerprint) || uuidv4()
+
+  const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
   const routeType = headers["x-route-type"]
   const viewPortWidth = cookies.viewPortWidth || ""
   const viewPortHeight = cookies.viewPortHeight || ""
 
-  const apiKey = fingerprint
+  // Handle OAuth callback token
+  const authToken = urlObj.searchParams.get("auth_token")
 
+  const apiKey =
+    authToken || cookies.token || headers["x-token"] || fingerprint || uuidv4()
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
   const locale: locale = (cookies.locale as locale) || "en"
@@ -66,7 +121,6 @@ export async function loadServerData(
   let session: session | undefined
   let translations: Record<string, any> | undefined
   let app: appWithStore | undefined
-  let threads: { threads: thread[]; totalCount: number } | undefined
   let apiError: Error | undefined
 
   // Fetch thread if threadId exists
@@ -82,11 +136,10 @@ export async function loadServerData(
     }
   }
 
-  const appId = thread?.thread?.appId || undefined
+  const appId = thread?.thread?.appId || headers["x-app-id"]
 
-  // Fetch session, translations, and app in parallel
   try {
-    const [sessionResult, translationsResult] = await Promise.all([
+    const [sessionResult, translationsResult, appResult] = await Promise.all([
       getSession({
         appId,
         deviceId,
@@ -101,26 +154,51 @@ export async function loadServerData(
         screenWidth: Number(viewPortWidth),
         screenHeight: Number(viewPortHeight),
         gift,
-        source: "ssr",
-        userAgent: headers["user-agent"] || `Chrry/${VERSION}`,
+        source: "layout",
       }),
 
       getTranslations({
         token: apiKey,
         locale,
       }),
+
+      getApp({
+        chrryUrl,
+        appId,
+        token: apiKey,
+        pathname,
+      }),
     ])
 
     session = sessionResult
     translations = translationsResult
+    app = appResult
 
-    // Extract app from session if available
-    if (session && "app" in session) {
-      app = session.app as appWithStore
+    if (session && app) {
+      session.app = app
     }
   } catch (error) {
     console.error("❌ API Error:", error)
     apiError = error as Error
+  }
+
+  let threads:
+    | {
+        threads: thread[]
+        totalCount: number
+      }
+    | undefined
+
+  try {
+    threads = await getThreads({
+      appId: (session as session)?.app?.id,
+      pageSize: pageSizes.menuThreads,
+      sort: "bookmark",
+      token: apiKey,
+    })
+  } catch (error) {
+    // captureException(error)
+    console.error("❌ API Error:", error)
   }
 
   // Fetch threads
@@ -136,6 +214,50 @@ export async function loadServerData(
   }
 
   const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"
+
+  // Detect blog routes and load blog data
+  let blogPosts: BlogPost[] | undefined
+  let blogPost: BlogPostWithContent | undefined
+  let isBlogRoute = false
+
+  // Check if this is a blog route
+  if (pathname === "/blog" || pathname.startsWith("/blog/")) {
+    isBlogRoute = true
+
+    if (pathname === "/blog") {
+      // Blog list page
+      blogPosts = getBlogPosts()
+    } else {
+      // Individual blog post page
+      const slug = pathname.replace("/blog/", "")
+      blogPost = getBlogPost(slug) || undefined
+    }
+  }
+
+  // Generate metadata for this route
+  let metadata
+  try {
+    const { generateServerMetadata } = await import("./server-metadata")
+    metadata = await generateServerMetadata(pathname, hostname, locale, {
+      session,
+      thread,
+      threads,
+      translations,
+      app,
+      siteConfig,
+      locale,
+      deviceId,
+      fingerprint,
+      viewPortWidth,
+      viewPortHeight,
+      chrryUrl,
+      isDev,
+      apiError,
+      theme,
+    })
+  } catch (error) {
+    console.error("Error generating metadata in server-loader:", error)
+  }
 
   return {
     session,
@@ -153,5 +275,9 @@ export async function loadServerData(
     isDev,
     apiError,
     theme,
+    metadata,
+    blogPosts,
+    blogPost,
+    isBlogRoute,
   }
 }

@@ -2,7 +2,7 @@ import { spawn } from "child_process"
 import { writeFileSync, unlinkSync, existsSync } from "fs"
 import { join } from "path"
 import { tmpdir } from "os"
-import { captureException } from "@sentry/nextjs"
+import { captureException } from "@sentry/node"
 
 async function extractVideoFrames(
   base64Data: string,

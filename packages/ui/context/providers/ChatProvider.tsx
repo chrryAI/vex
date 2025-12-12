@@ -40,7 +40,6 @@ import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
-import { useSyncedState } from "chrry/hooks"
 import { useError } from "./ErrorProvider"
 
 interface placeHolder {
@@ -50,6 +49,8 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      shouldFetchThread: boolean
+      setShouldFetchThread: (shouldFetchThread: boolean) => void
       shouldGetCredits: boolean
       setShouldGetCredits: (shouldGetCredits: boolean) => void
       fetchActiveCollaborationThreadsCount: () => Promise<void>
@@ -417,14 +418,16 @@ export function ChatProvider({
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
-      refetchThreads()
       setThreadId(undefined)
       setMessages([])
-      router.push(to)
       setStatus(null)
       isIncognito && setWasIncognito(true)
       setCollaborationStatus(null)
       setIsChatFloating(false)
+
+      router.push(to)
+
+      refetchThreads()
     }
 
     setIsNewChatInternal(value)
@@ -685,15 +688,15 @@ export function ChatProvider({
     }
   }, [user, guest, threadId, connected])
 
-  useEffect(() => {
-    const id = getThreadId(pathname)
-    if (id) {
-      setThreadId(id)
-      setShouldFetchThread(true)
-    } else {
-      setIsChatFloating(false)
-    }
-  }, [pathname])
+  // useEffect(() => {
+  //   const id = getThreadId(pathname)
+  //   if (id) {
+  //     setThreadId(id)
+  //     setShouldFetchThread(true)
+  //   } else {
+  //     setIsChatFloating(false)
+  //   }
+  // }, [pathname])
 
   // Credits tracking
   const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
@@ -789,19 +792,13 @@ export function ChatProvider({
   const [status, setStatus] = useState<number | null>(null)
 
   // Build cache key - only include values that affect the response
-  const keyParts = { threadId, liked, until }
-  const finalKey =
-    Object.entries(keyParts)
-      .filter(([_, value]) => value !== undefined && value !== null)
-      .map(([key, value]) => `${key}-${value}`)
-      .join("-") || "thread"
 
   const {
     data: threadSWR,
     mutate,
     error,
   } = useSWR(
-    shouldFetchThread && token && threadId ? [finalKey] : null,
+    shouldFetchThread && token && threadId ? [threadId, liked, until] : null,
     async () => {
       if (!threadId) return
 
@@ -862,13 +859,17 @@ export function ChatProvider({
     setIsWebSearchEnabledInternal(agent?.capabilities?.webSearch || false)
   }
 
+  const defaultAgent =
+    aiAgents.find((a) => app?.defaultModel && a.name === app?.defaultModel) ||
+    favouriteAgent
+
   const [selectedAgent, setSelectedAgentInternal] = useLocalStorage<
     aiAgent | undefined | null
-  >(
-    "selectedAgent",
-    aiAgents.find((a) => app?.defaultModel && a.name === app?.defaultModel) ||
-      favouriteAgent,
-  )
+  >("selectedAgent", defaultAgent)
+
+  useEffect(() => {
+    !selectedAgent && setSelectedAgent(defaultAgent)
+  }, [defaultAgent, selectedAgent])
 
   const setIsWebSearchEnabled = (value: boolean) => {
     value ? setSelectedAgent(perplexityAgent) : undefined
@@ -1094,6 +1095,8 @@ export function ChatProvider({
         isLoadingMore,
         setIsLoadingMore,
         isLoading,
+        shouldFetchThread,
+        setShouldFetchThread,
         refetchThread: async () => {
           setShouldFetchThread(true)
           shouldFetchThread && (await mutate())

@@ -133,7 +133,9 @@ export default function About() {
             {config.mode === "vex" && (
               <>
                 {", "}
-                <a
+                <A
+                  openInNewTab
+                  href={`${FRONTEND_URL}/blog`}
                   onClick={(e) => {
                     addHapticFeedback()
                     if (e.metaKey || e.ctrlKey) {
@@ -141,21 +143,11 @@ export default function About() {
                     }
                     e.preventDefault()
 
-                    if (checkIsExtension()) {
-                      BrowserInstance?.runtime?.sendMessage({
-                        action: "openInSameTab",
-                        url: `${FRONTEND_URL}/blog`,
-                      })
-
-                      return
-                    }
-
-                    router.push("/blog")
+                    window.location.href = `${FRONTEND_URL}/blog`
                   }}
-                  href={isStandalone ? undefined : `${FRONTEND_URL}/blog`}
                 >
                   {t("Blog")}
-                </a>
+                </A>
               </>
             )}
             {", "}

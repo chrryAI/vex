@@ -1,4 +1,4 @@
-import { isE2E } from "chrry/utils"
+import { isE2E } from "@chrryai/chrry/utils"
 import { generateText } from "ai"
 import { faker } from "@faker-js/faker"
 import captureException from "../lib/captureException"

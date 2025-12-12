@@ -176,16 +176,6 @@ export default function SignIn({
         : baseUrl,
     )
 
-    if (E2E) {
-      if (user?.fingerprint) {
-        successUrl.searchParams.set("fp", user.fingerprint)
-      } else if (guest?.fingerprint) {
-        successUrl.searchParams.set("fp", guest.fingerprint)
-      }
-    } else {
-      successUrl.searchParams.set("welcome", "true")
-    }
-
     // Store original subdomain URL for post-OAuth redirect
     // This allows us to use a single OAuth callback URL (chrry.ai) for all subdomains
     if (!isDevelopment && CHRRY_URL !== "https://chrry.ai") {
