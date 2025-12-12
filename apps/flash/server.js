@@ -58,6 +58,144 @@ if (!isProduction) {
 // Build ID is set at build time (GIT_SHA) or runtime fallback
 const buildId = process.env.GIT_SHA || Date.now().toString()
 
+// Helper function to escape HTML
+function escapeHtml(text) {
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  }
+  return String(text).replace(/[&<>"']/g, (m) => map[m] || m)
+}
+
+// Convert metadata object to HTML meta tags
+function metadataToHtml(metadata) {
+  const tags = []
+
+  if (metadata.title) {
+    tags.push(`<title>${escapeHtml(metadata.title)}</title>`)
+  }
+
+  if (metadata.description) {
+    tags.push(
+      `<meta name="description" content="${escapeHtml(metadata.description)}" />`,
+    )
+  }
+
+  if (metadata.keywords && metadata.keywords.length > 0) {
+    tags.push(
+      `<meta name="keywords" content="${escapeHtml(metadata.keywords.join(", "))}" />`,
+    )
+  }
+
+  if (metadata.openGraph) {
+    const og = metadata.openGraph
+    if (og.title) {
+      tags.push(
+        `<meta property="og:title" content="${escapeHtml(og.title)}" />`,
+      )
+    }
+    if (og.description) {
+      tags.push(
+        `<meta property="og:description" content="${escapeHtml(og.description)}" />`,
+      )
+    }
+    if (og.url) {
+      tags.push(`<meta property="og:url" content="${escapeHtml(og.url)}" />`)
+    }
+    if (og.siteName) {
+      tags.push(
+        `<meta property="og:site_name" content="${escapeHtml(og.siteName)}" />`,
+      )
+    }
+    if (og.type) {
+      tags.push(`<meta property="og:type" content="${escapeHtml(og.type)}" />`)
+    }
+    if (og.locale) {
+      tags.push(
+        `<meta property="og:locale" content="${escapeHtml(og.locale)}" />`,
+      )
+    }
+    if (og.images && og.images.length > 0) {
+      og.images.forEach((image) => {
+        tags.push(
+          `<meta property="og:image" content="${escapeHtml(image.url)}" />`,
+        )
+        if (image.width) {
+          tags.push(
+            `<meta property="og:image:width" content="${image.width}" />`,
+          )
+        }
+        if (image.height) {
+          tags.push(
+            `<meta property="og:image:height" content="${image.height}" />`,
+          )
+        }
+      })
+    }
+  }
+
+  if (metadata.twitter) {
+    const twitter = metadata.twitter
+    if (twitter.card) {
+      tags.push(
+        `<meta name="twitter:card" content="${escapeHtml(twitter.card)}" />`,
+      )
+    }
+    if (twitter.title) {
+      tags.push(
+        `<meta name="twitter:title" content="${escapeHtml(twitter.title)}" />`,
+      )
+    }
+    if (twitter.description) {
+      tags.push(
+        `<meta name="twitter:description" content="${escapeHtml(twitter.description)}" />`,
+      )
+    }
+    if (twitter.site) {
+      tags.push(
+        `<meta name="twitter:site" content="${escapeHtml(twitter.site)}" />`,
+      )
+    }
+    if (twitter.creator) {
+      tags.push(
+        `<meta name="twitter:creator" content="${escapeHtml(twitter.creator)}" />`,
+      )
+    }
+    if (twitter.images && twitter.images.length > 0) {
+      twitter.images.forEach((image) => {
+        const imageUrl = typeof image === "string" ? image : image.url
+        tags.push(
+          `<meta name="twitter:image" content="${escapeHtml(imageUrl)}" />`,
+        )
+      })
+    }
+  }
+
+  if (metadata.robots) {
+    const robotsContent = `${metadata.robots.index ? "index" : "noindex"}, ${metadata.robots.follow ? "follow" : "nofollow"}`
+    tags.push(`<meta name="robots" content="${robotsContent}" />`)
+  }
+
+  if (metadata.alternates?.canonical) {
+    tags.push(
+      `<link rel="canonical" href="${escapeHtml(metadata.alternates.canonical)}" />`,
+    )
+  }
+
+  if (metadata.alternates?.languages) {
+    Object.entries(metadata.alternates.languages).forEach(([lang, url]) => {
+      tags.push(
+        `<link rel="alternate" hreflang="${escapeHtml(lang)}" href="${escapeHtml(url)}" />`,
+      )
+    })
+  }
+
+  return tags.join("\n  ")
+}
+
 // Health check endpoint for CI/CD
 app.get("/api/health", (req, res) => {
   res.json({
@@ -181,11 +319,6 @@ app.use("*all", async (req, res) => {
     let metaTags = ""
     if (serverData?.metadata) {
       try {
-        // Import metadataToHtml function
-        const { metadataToHtml } = !isProduction
-          ? await vite.ssrLoadModule("/src/server-metadata.ts")
-          : await import("./dist/server/server-metadata.js")
-
         metaTags = metadataToHtml(serverData.metadata)
       } catch (error) {
         console.error("Error converting metadata to HTML:", error)
