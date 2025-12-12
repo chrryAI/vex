@@ -15,6 +15,12 @@ import {
   appWithStore,
 } from "@chrryai/chrry/types"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import {
+  getBlogPosts,
+  getBlogPost,
+  type BlogPost,
+  type BlogPostWithContent,
+} from "./blog-loader"
 
 export interface ServerRequest {
   url: string
@@ -52,6 +58,10 @@ export interface ServerData {
     robots?: any
     alternates?: any
   }
+  // Blog data
+  blogPosts?: BlogPost[]
+  blogPost?: BlogPostWithContent
+  isBlogRoute?: boolean
 }
 
 const TEST_MEMBER_FINGERPRINTS =
@@ -66,8 +76,11 @@ const TEST_GUEST_FINGERPRINTS =
 export async function loadServerData(
   request: ServerRequest,
 ): Promise<ServerData> {
-  const { pathname, hostname, headers, cookies, url } = request
-  console.log(`🚀 ~ pathname:`, pathname)
+  const { hostname, headers, cookies, url } = request
+
+  const pathname = request.pathname.startsWith("/")
+    ? request.pathname
+    : `/${request.pathname}`
 
   const threadId = getThreadId(pathname)
   const isDev = process.env.MODE === "development"
@@ -129,7 +142,7 @@ export async function loadServerData(
         fingerprint,
         token: apiKey,
         agentName,
-        pathname: `/${pathname}`,
+        pathname,
         routeType,
         translate: true,
         locale,
@@ -198,6 +211,25 @@ export async function loadServerData(
 
   const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"
 
+  // Detect blog routes and load blog data
+  let blogPosts: BlogPost[] | undefined
+  let blogPost: BlogPostWithContent | undefined
+  let isBlogRoute = false
+
+  // Check if this is a blog route
+  if (pathname === "/blog" || pathname.startsWith("/blog/")) {
+    isBlogRoute = true
+
+    if (pathname === "/blog") {
+      // Blog list page
+      blogPosts = getBlogPosts()
+    } else {
+      // Individual blog post page
+      const slug = pathname.replace("/blog/", "")
+      blogPost = getBlogPost(slug) || undefined
+    }
+  }
+
   // Generate metadata for this route
   let metadata
   try {
@@ -240,5 +272,8 @@ export async function loadServerData(
     apiError,
     theme,
     metadata,
+    blogPosts,
+    blogPost,
+    isBlogRoute,
   }
 }

@@ -1,9 +1,12 @@
 import "@chrryai/chrry/globals.scss"
 import "@chrryai/chrry/globals.css"
 import "@chrryai/chrry/styles/view-transitions.css"
-import Chrry from "@chrryai/chrry/Chrry"
+import Chrry from "chrry/Chrry"
 import { ServerData } from "./server-loader"
 import { useAuth } from "@chrryai/chrry/hooks/useAuth"
+import BlogList from "./components/BlogList"
+import BlogPost from "./components/BlogPost"
+import Skeleton from "chrry/Skeleton"
 
 interface AppProps {
   serverData?: ServerData
@@ -93,7 +96,6 @@ function App({ serverData }: AppProps) {
 
   return (
     <>
-      {/* Debug render outside Chrry */}
       <Chrry
         locale={serverData?.locale as any}
         session={serverData?.session}
@@ -105,7 +107,20 @@ function App({ serverData }: AppProps) {
         viewPortHeight={serverData?.viewPortHeight}
         signInContext={signInContext}
         signOutContext={signOutContext}
-      />
+      >
+        {serverData?.isBlogRoute ? (
+          <Skeleton>
+            {serverData.blogPosts ? (
+              <BlogList
+                posts={serverData.blogPosts}
+                locale={serverData.locale}
+              />
+            ) : serverData?.isBlogRoute && serverData.blogPost ? (
+              <BlogPost post={serverData.blogPost} locale={serverData.locale} />
+            ) : null}
+          </Skeleton>
+        ) : null}
+      </Chrry>
     </>
   )
 }

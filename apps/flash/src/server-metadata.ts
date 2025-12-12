@@ -9,6 +9,7 @@ import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import { getThread, getStore, getApp as getAppDb } from "@repo/db"
 import { locale } from "@chrryai/chrry/locales"
 import { ServerData } from "./server-loader"
+import { BlogPostWithContent } from "./blog-loader"
 
 interface MetadataResult {
   title?: string
@@ -63,6 +64,61 @@ const generateMeta = ({ locale }: { locale: locale }): MetadataResult => {
 }
 
 /**
+ * Generate metadata for blog list page
+ */
+function generateBlogListMetadata(
+  siteConfig: ReturnType<typeof getSiteConfig>,
+): MetadataResult {
+  return {
+    title: "Blog - Vex",
+    description: "Read about the latest news and updates from Vex",
+    openGraph: {
+      title: "Blog - Vex",
+      description: "Read about the latest news and updates from Vex",
+      url: `${siteConfig.url}/blog`,
+      siteName: "Vex",
+    },
+    twitter: {
+      card: "summary",
+      title: "Blog - Vex",
+      description: "Read about the latest news and updates from Vex",
+    },
+    alternates: {
+      canonical: `${siteConfig.url}/blog`,
+    },
+  }
+}
+
+/**
+ * Generate metadata for individual blog post
+ */
+function generateBlogPostMetadata(
+  post: BlogPostWithContent,
+  siteConfig: ReturnType<typeof getSiteConfig>,
+): MetadataResult {
+  return {
+    title: `${post.title} - Vex`,
+    description: post.excerpt,
+    keywords: post.keywords,
+    openGraph: {
+      title: `${post.title} - Vex`,
+      description: post.excerpt,
+      url: `${siteConfig.url}/blog/${post.slug}`,
+      siteName: "Vex",
+      type: "article",
+    },
+    twitter: {
+      card: "summary",
+      title: `${post.title} - Vex`,
+      description: post.excerpt,
+    },
+    alternates: {
+      canonical: `${siteConfig.url}/blog/${post.slug}`,
+    },
+  }
+}
+
+/**
  * Generate metadata for SSR
  * This is called during server-side rendering to inject meta tags into HTML
  */
@@ -73,6 +129,17 @@ export async function generateServerMetadata(
   serverData: ServerData,
 ): Promise<MetadataResult | undefined> {
   const siteConfig = getSiteConfig(hostname)
+
+  // Handle blog routes
+  if (serverData.isBlogRoute) {
+    if (serverData.blogPost) {
+      // Individual blog post
+      return generateBlogPostMetadata(serverData.blogPost, siteConfig)
+    } else if (serverData.blogPosts) {
+      // Blog list page
+      return generateBlogListMetadata(siteConfig)
+    }
+  }
 
   // Parse pathname segments
   const pathSegments = pathname.split("/").filter(Boolean)
