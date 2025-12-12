@@ -325,6 +325,7 @@ session.get("/", async (c) => {
     const appVersion = url.searchParams.get("appVersion")
     const ip = getIp(request)
     const gift = url.searchParams.get("gift")
+    console.log(`🚀 ~ session.get ~ gift:`, gift)
 
     if (!ip) {
       return c.json({ error: "IP address not found" })

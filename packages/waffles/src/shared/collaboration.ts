@@ -260,4 +260,6 @@ export async function collaboration({
   // Clean up
   await context1.close()
   await context2.close()
+
+  return true
 }

@@ -2,7 +2,11 @@ import { Hono } from "hono"
 import { getMember, getGuest } from "../lib/auth"
 import { isE2E } from "@chrryai/chrry/utils"
 import cleanupTest from "../../lib/cleanupTest"
-import { TEST_GUEST_FINGERPRINTS, TEST_MEMBER_EMAILS } from "@repo/db"
+import {
+  TEST_GUEST_FINGERPRINTS,
+  TEST_MEMBER_EMAILS,
+  TEST_MEMBER_FINGERPRINTS,
+} from "@repo/db"
 
 export const clear = new Hono()
 
@@ -15,16 +19,23 @@ clear.post("/", async (c) => {
   const member = await getMember(c)
   const guest = await getGuest(c)
 
+  console.log(
+    `🚀 ~ clear.post ~ TEST_GUEST_FINGERPRINTS:`,
+    TEST_GUEST_FINGERPRINTS,
+    guest?.fingerprint,
+  )
+
+  const fingerprint = guest?.fingerprint || member?.fingerprint
+
   if (!member && !guest) {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
-  if (member && TEST_MEMBER_EMAILS.includes(member?.email)) {
-    await cleanupTest()
-    return c.json({ success: true })
-  }
+  const CAN_CLEAR = TEST_GUEST_FINGERPRINTS.concat(
+    TEST_MEMBER_FINGERPRINTS,
+  ).includes(fingerprint)
 
-  if (guest && TEST_GUEST_FINGERPRINTS.includes(guest?.fingerprint)) {
+  if (CAN_CLEAR) {
     await cleanupTest()
     return c.json({ success: true })
   }

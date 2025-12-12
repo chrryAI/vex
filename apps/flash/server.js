@@ -4,7 +4,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 
-const VERSION = "1.6.64"
+const VERSION = "1.6.65"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -55,6 +55,31 @@ app.get("/api/health", (req, res) => {
     env: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
   })
+})
+
+// Sitemap.xml route - proxy to API
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+    const response = await fetch(`${apiUrl}/sitemap.xml`, {
+      headers: {
+        "X-Forwarded-Host": req.hostname,
+        "X-Forwarded-Proto": req.protocol,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`)
+    }
+
+    const xml = await response.text()
+    res.header("Content-Type", "application/xml")
+    res.send(xml)
+  } catch (error) {
+    console.error("❌ Sitemap error:", error)
+    res.status(500).send("Error generating sitemap")
+  }
 })
 
 // Serve HTML

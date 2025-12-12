@@ -84,11 +84,11 @@ export async function loadServerData(
 
   const threadId = getThreadId(pathname)
   const isDev = process.env.MODE === "development"
+  const urlObj = new URL(url, `http://${hostname}`)
 
   // Parse query string for fp parameter (only if URL contains query params)
   let fpFromQuery: string | null = null
   if (url.includes("?")) {
-    const urlObj = new URL(url, `http://${hostname}`)
     fpFromQuery = urlObj.searchParams.get("fp")
   }
 
@@ -100,7 +100,7 @@ export async function loadServerData(
       ? fpFromQuery
       : headers["x-fp"] || cookies.fingerprint) || uuidv4()
 
-  const gift = headers["x-gift"]
+  const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
   const routeType = headers["x-route-type"]
   const viewPortWidth = cookies.viewPortWidth || ""
