@@ -29,7 +29,7 @@ import {
   getLastMood,
   updateMood,
 } from "@repo/db"
-import { expenseCategoryType } from "chrry/utils"
+import { expenseCategoryType } from "@chrryai/chrry/utils"
 import {
   searchNews,
   getNewsBySource,

@@ -10,8 +10,8 @@ import {
 } from "@repo/db"
 import { getMember } from "../lib/auth"
 import captureException from "../../lib/captureException"
-import { isValidUsername } from "chrry/utils"
-import { protectedRoutes } from "chrry/utils/url"
+import { isValidUsername } from "@chrryai/chrry/utils"
+import { protectedRoutes } from "@chrryai/chrry/utils/url"
 import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"
 

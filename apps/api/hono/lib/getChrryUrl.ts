@@ -1,4 +1,4 @@
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 /**
  * Get chrryUrl from request (Hono version)

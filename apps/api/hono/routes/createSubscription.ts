@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
 import { captureException } from "@sentry/node"
-import { isE2E } from "chrry/utils"
+import { isE2E } from "@chrryai/chrry/utils"
 
 export const createSubscription = new Hono()
 

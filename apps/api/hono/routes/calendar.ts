@@ -4,7 +4,7 @@ import {
   createCalendarEventSchema,
   getCalendarEventsSchema,
   updateCalendarEventSchema,
-} from "chrry/utils/calendarValidation"
+} from "@chrryai/chrry/utils/calendarValidation"
 import {
   createCalendarEvent,
   getCalendarEvents,

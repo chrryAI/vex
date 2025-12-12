@@ -60,8 +60,8 @@ import { getModelProvider } from "./getModelProvider"
 import { captureException } from "@sentry/node"
 import { z } from "zod"
 import { notifyOwnerAndCollaborations } from "./notify"
-import enTranslations from "chrry/locales/en.json"
-import { appWithStore } from "chrry/types"
+import enTranslations from "@chrryai/chrry/locales/en.json"
+import { appWithStore } from "@chrryai/chrry/types"
 
 // Smart context retrieval from memories
 

@@ -8,10 +8,10 @@ import {
   guest,
   thread,
 } from "@repo/db"
-import { FRONTEND_URL, WS_SERVER_URL, WS_URL } from "chrry/utils"
+import { FRONTEND_URL, WS_SERVER_URL, WS_URL } from "@chrryai/chrry/utils"
 import webpush from "web-push"
 import captureException from "./captureException"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const siteConfig = getSiteConfig()
 console.log("🔔 Notify Lib Config:", {

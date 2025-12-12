@@ -5,7 +5,7 @@ import { getUser, createUser, getStore } from "@repo/db"
 import { users } from "@repo/db/src/schema"
 import { eq } from "drizzle-orm"
 import { v4 as uuidv4 } from "uuid"
-import { isValidUsername } from "chrry/utils"
+import { isValidUsername } from "@chrryai/chrry/utils"
 
 const authRoutes = new Hono()
 

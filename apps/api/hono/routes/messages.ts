@@ -20,7 +20,7 @@ import {
   updateMessage,
 } from "@repo/db"
 import { PROMPT_LIMITS, webSearchResultType } from "@repo/db/src/schema"
-import { isE2E, isOwner, MAX_FILE_LIMITS } from "chrry/utils"
+import { isE2E, isOwner, MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
 
 import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
 import { notifyOwnerAndCollaborations } from "../../lib/notify"

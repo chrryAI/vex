@@ -5,8 +5,8 @@ import {
   getAffiliateReferrals,
   getAffiliatePayouts,
 } from "@repo/db"
-import { FRONTEND_URL } from "chrry/utils"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { getMember } from "../lib/auth"
 
 const app = new Hono()

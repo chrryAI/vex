@@ -1,7 +1,7 @@
 import { Context, Next } from "hono"
 import { getCookie, setCookie } from "hono/cookie"
 import { validate } from "uuid"
-import { getSlugFromPathname } from "chrry/utils"
+import { getSlugFromPathname } from "@chrryai/chrry/utils"
 
 const RESERVED_PATHS = [
   "threads",

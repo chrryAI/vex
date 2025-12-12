@@ -3,10 +3,10 @@ import { getApp, getApp as getAppDb, getApps, getStore } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
 import { getMember, getGuest } from "../lib/auth"
 import { getChrryUrl } from "../lib/getChrryUrl"
-import { getSiteConfig, whiteLabels } from "chrry/utils/siteConfig"
-import { getAppAndStoreSlugs } from "chrry/utils/url"
-import { appWithStore } from "chrry/types"
-import { appSchema } from "chrry/schemas/appSchema"
+import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
+import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
+import { appWithStore } from "@chrryai/chrry/types"
+import { appSchema } from "@chrryai/chrry/schemas/appSchema"
 
 import {
   installApp,
@@ -25,7 +25,7 @@ import captureException from "../../lib/captureException"
 import { upload, deleteFile } from "../../lib/minio"
 import slugify from "slug"
 import { v4 as uuid } from "uuid"
-import { reorderApps } from "chrry/lib"
+import { reorderApps } from "@chrryai/chrry/lib"
 
 export const app = new Hono()
 

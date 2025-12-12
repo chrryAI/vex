@@ -4,7 +4,7 @@ import { checkRateLimit } from "../../lib/rateLimiting"
 import { getIp } from "../../lib"
 import { getLocationFromIP, GeoLocation } from "../../lib/geoLocation"
 import { updateGuest, updateUser } from "@repo/db"
-import { getWeatherCacheTime, isDevelopment } from "chrry/utils"
+import { getWeatherCacheTime, isDevelopment } from "@chrryai/chrry/utils"
 
 interface WeatherApiResponse {
   location: {

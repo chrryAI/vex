@@ -20,7 +20,7 @@ import {
   updateAffiliateLink,
 } from "@repo/db"
 import { getMember } from "../lib/auth"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import captureException from "../../lib/captureException"
 import {
   ADDITIONAL_CREDITS,
@@ -29,7 +29,7 @@ import {
   PLUS_CREDITS_PER_MONTH,
   PRO_CREDITS_PER_MONTH,
 } from "@repo/db/src/schema"
-import { capitalizeFirstLetter, FRONTEND_URL, isE2E } from "chrry/utils"
+import { capitalizeFirstLetter, FRONTEND_URL, isE2E } from "@chrryai/chrry/utils"
 import { trackPurchase } from "../../lib/ads"
 import Gift from "../../components/emails/Gift"
 

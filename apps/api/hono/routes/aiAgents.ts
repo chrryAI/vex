@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { getAiAgents, createAiAgent } from "@repo/db"
-import { createCustomAiAgentSchema } from "chrry/schemas/agentSchema"
+import { createCustomAiAgentSchema } from "@chrryai/chrry/schemas/agentSchema"
 import { getMember, getGuest } from "../lib/auth"
 
 const app = new Hono()

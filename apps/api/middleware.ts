@@ -1,10 +1,10 @@
-// import { getSlugFromPathname } from "chrry/utils"
+// import { getSlugFromPathname } from "@chrryai/chrry/utils"
 // import { NextResponse } from "next/server"
 // import type { NextRequest } from "next/server"
 // import { v4 as uuidv4, validate } from "uuid"
 // import createIntlMiddleware from "next-intl/middleware"
 
-// import { locales, defaultLocale } from "chrry/locales"
+// import { locales, defaultLocale } from "@chrryai/chrry/locales"
 
 // // Static allowed origins (always allowed)
 // const STATIC_ALLOWED_ORIGINS = [

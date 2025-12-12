@@ -2,7 +2,7 @@
 
 import React from "react"
 import { ExternalLink, Github, Package } from "lucide-react"
-import { getSiteConfig } from "chrry/utils/siteConfig"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const css = `
 
