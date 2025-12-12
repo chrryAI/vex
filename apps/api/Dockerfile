@@ -19,6 +19,10 @@ COPY packages/typescript-config/package.json ./packages/typescript-config/packag
 # Install all dependencies (hono is needed at runtime)
 RUN pnpm install --frozen-lockfile
 
+# Build packages that need to be built (chrry/utils comes from @chrryai/chrry)
+RUN cd packages/ui && pnpm run build
+RUN cd packages/db && pnpm run build
+
 # Production image
 FROM base AS runner
 WORKDIR /app

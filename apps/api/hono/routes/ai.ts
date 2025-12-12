@@ -1,5 +1,4 @@
 import { Hono } from "hono"
-import { stream } from "hono/streaming"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
 import { getApp, getAppExtends } from "@repo/db"
