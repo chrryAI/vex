@@ -212,7 +212,11 @@ app.get("/api/health", (req, res) => {
 // Sitemap.xml route - proxy to API
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    // Use internal API URL to avoid Cloudflare round-trip
+    const apiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.API_URL ||
+      "http://localhost:3001/api"
 
     const response = await fetch(`${apiUrl}/sitemap.xml`, {
       headers: {
