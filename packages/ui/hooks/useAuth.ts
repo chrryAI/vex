@@ -173,20 +173,25 @@ export function useAuth() {
   /**
    * Sign out
    */
-  const signOut = useCallback(async () => {
-    try {
-      await fetch(`${API_URL}/auth/signout`, {
-        method: "POST",
-        credentials: "include",
-      })
+  const signOut = useCallback(
+    async ({ callbackUrl }: { callbackUrl?: string }) => {
+      try {
+        await fetch(`${API_URL}/auth/signout`, {
+          method: "POST",
+          credentials: "include",
+        })
 
-      setState({ user: null, loading: false })
-      return { success: true }
-    } catch (error) {
-      console.error("Sign out error:", error)
-      return { success: false, error: "Sign out failed" }
-    }
-  }, [])
+        setState({ user: null, loading: false })
+
+        callbackUrl ? (window.location.href = `${callbackUrl}`) : undefined
+        return { success: true }
+      } catch (error) {
+        console.error("Sign out error:", error)
+        return { success: false, error: "Sign out failed" }
+      }
+    },
+    [],
+  )
 
   // Fetch session on mount
   useEffect(() => {

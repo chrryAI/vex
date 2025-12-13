@@ -52,8 +52,8 @@ function App({ serverData }: AppProps) {
   }
 
   // Create sign out wrapper
-  const signOutContext = async () => {
-    return auth.signOut()
+  const signOutContext = async (options: { callbackUrl?: string }) => {
+    return auth.signOut(options)
   }
 
   // Debug: Log server data
