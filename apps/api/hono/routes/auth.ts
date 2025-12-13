@@ -286,8 +286,8 @@ authRoutes.get("/signin/google", async (c) => {
       `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=Lax`,
     )
 
-    // Build Google OAuth URL with site-specific callback
-    const redirectUri = `${siteconfig.url}/api/auth/callback/google`
+    // Build Google OAuth URL with API server callback
+    const redirectUri = `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/google`
     const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth")
     authUrl.searchParams.set("client_id", GOOGLE_WEB_CLIENT_ID)
     authUrl.searchParams.set("redirect_uri", redirectUri)
@@ -342,7 +342,7 @@ authRoutes.get("/callback/google", async (c) => {
       return c.redirect(`${siteconfig.url}/?error=oauth_not_configured`)
     }
 
-    const redirectUri = `${siteconfig.url}/api/auth/callback/google`
+    const redirectUri = `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/google`
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
