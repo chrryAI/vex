@@ -126,7 +126,7 @@ if (!connectionString) {
 
 const isCI = process.env.CI
 
-const isRemoteDB = process.env.DB_URL.startsWith("postgres://")
+const isRemoteDB = process.env.DB_URL?.startsWith("postgres://") ?? false
 const disableSSL = process.env.DISABLE_DB_SSL === "true"
 
 const client = postgres(connectionString, {
