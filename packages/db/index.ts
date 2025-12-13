@@ -1021,6 +1021,7 @@ export const deleteUser = async (id: string) => {
 
 export const createMessage = async (message: newMessage) => {
   const [inserted] = await db.insert(messages).values(message).returning()
+  console.log(`🚀 ~ createMessage ~ inserted:`, inserted)
 
   const thread = inserted?.threadId
     ? await getThread({ id: inserted.threadId })
@@ -1051,13 +1052,15 @@ export const createMessage = async (message: newMessage) => {
     }
   }
 
+  console.log(`🚀 ~ createMessage ~ inserted:`, inserted)
+
   // Invalidate user/guest cache (credits, lastMessage, character profiles changed)
-  if (inserted?.userId) {
-    await invalidateUser(inserted.userId)
-  }
-  if (inserted?.guestId) {
-    await invalidateGuest(inserted.guestId)
-  }
+  // if (inserted?.userId) {
+  //   await invalidateUser(inserted.userId)
+  // }
+  // if (inserted?.guestId) {
+  //   await invalidateGuest(inserted.guestId)
+  // }
 
   return inserted
 }
