@@ -504,8 +504,12 @@ app.post("/", async (c) => {
     }
 
     // Extract files from form data
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
+    for (const [, value] of formData.entries()) {
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        (value as unknown as File) instanceof File
+      ) {
         files.push(value)
       }
     }
@@ -3845,7 +3849,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // Run in background after response
         Promise.resolve()
           .then(() => generateContent(m))
-          .catch(console.error)
+          .catch((err) => {
+            console.error("❌ Error in background generateContent:", err)
+            captureException(err)
+          })
 
         return c.json({ success: true })
       } catch (error) {
@@ -3939,104 +3946,197 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
         console.log("🍣 Step 5: Message structure created")
 
-        console.log("🍣 Step 6: About to start fullStream loop...")
+        console.log("🍣 Step 6: About to start streaming...")
         console.log("🍣 fullStream exists?", !!result.fullStream)
+        console.log("🍣 Files present?", files.length > 0)
 
-        // Stream reasoning and answer parts
-        for await (const part of result.fullStream) {
-          console.log("🔍 Stream part type:", part.type)
+        // Sushi uses Claude when files are present, DeepSeek Reasoner otherwise
+        // Claude doesn't support fullStream with reasoning parts
+        const usesClaudeForFiles = files.length > 0
 
-          if (!streamControllers.has(streamId)) {
-            console.log("🍣 Sushi stream was stopped")
-            break
+        if (usesClaudeForFiles) {
+          // Use text stream approach for Claude (same as regular DeepSeek handler)
+          console.log("🍣 Using Claude - converting to text stream...")
+          const stream = result.toTextStreamResponse()
+          const reader = stream.body?.getReader()
+
+          let currentChunk = 0
+
+          if (reader) {
+            while (true) {
+              if (!streamControllers.has(streamId)) {
+                console.log("🍣 Sushi stream was stopped")
+                break
+              }
+              const { done, value } = await reader.read()
+              if (done) break
+              const chunk = new TextDecoder().decode(value)
+              answerText += chunk
+
+              await enhancedStreamChunk({
+                chunk,
+                chunkNumber: currentChunk++,
+                totalChunks: -1,
+                streamingMessage: sushiStreamingMessage,
+                member,
+                guest,
+                thread,
+                streamId,
+                clientId,
+              })
+            }
           }
+          console.log("🍣 Claude text stream completed")
+        } else {
+          // Use fullStream for DeepSeek Reasoner (supports reasoning parts)
+          console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
+          try {
+            let streamFinished = false
 
-          if (part.type === "reasoning-start") {
-            console.log("🧠 Reasoning started")
-          } else if (part.type === "reasoning-delta") {
-            // DeepSeek Reasoner's thinking process chunks
-            reasoningText += part.text
-            console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
-            // Stream reasoning with special marker for UI to handle separately
-            await enhancedStreamChunk({
-              chunk: `__REASONING__${part.text}__/REASONING__`,
-              chunkNumber: currentChunk++,
-              totalChunks: -1,
-              streamingMessage: sushiStreamingMessage,
-              member,
-              guest,
-              thread,
-              streamId,
-              clientId,
-            })
-          } else if (part.type === "reasoning-end") {
-            console.log("🧠 Reasoning complete")
-          } else if (part.type === "text-delta") {
-            // Final answer text
-            answerText += part.text
-            console.log("💬 Text delta:", part.text)
-            await enhancedStreamChunk({
-              chunk: part.text,
-              chunkNumber: currentChunk++,
-              totalChunks: -1,
-              streamingMessage: sushiStreamingMessage,
-              member,
-              guest,
-              thread,
-              streamId,
-              clientId,
-            })
-          } else if (part.type === "tool-call") {
-            console.log("🛠️ Tool call:", part.toolName)
-          } else if (part.type === "finish") {
-            console.log("🏁 Stream finish event received")
-            break
+            for await (const part of result.fullStream) {
+              // Skip processing if stream is finished or stopped
+              if (streamFinished) continue
+
+              console.log("🔍 Stream part type:", part.type)
+
+              if (!streamControllers.has(streamId)) {
+                console.log("🍣 Sushi stream was stopped")
+                streamFinished = true
+                continue
+              }
+
+              if (part.type === "reasoning-start") {
+                console.log("🧠 Reasoning started")
+              } else if (part.type === "reasoning-delta") {
+                // DeepSeek Reasoner's thinking process chunks
+                reasoningText += part.text
+                console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
+                await enhancedStreamChunk({
+                  chunk: `__REASONING__${part.text}__/REASONING__`,
+                  chunkNumber: currentChunk++,
+                  totalChunks: -1,
+                  streamingMessage: sushiStreamingMessage,
+                  member,
+                  guest,
+                  thread,
+                  streamId,
+                  clientId,
+                })
+              } else if (part.type === "reasoning-end") {
+                console.log("🧠 Reasoning complete")
+              } else if (part.type === "text-delta") {
+                // Final answer text
+                answerText += part.text
+                console.log("💬 Text delta:", part.text)
+                await enhancedStreamChunk({
+                  chunk: part.text,
+                  chunkNumber: currentChunk++,
+                  totalChunks: -1,
+                  streamingMessage: sushiStreamingMessage,
+                  member,
+                  guest,
+                  thread,
+                  streamId,
+                  clientId,
+                })
+              } else if (part.type === "tool-call") {
+                console.log("🛠️ Tool call:", part.toolName)
+              } else if (part.type === "finish") {
+                console.log("🏁 Stream finish event received")
+                streamFinished = true
+                // Don't break - let the iterator finish naturally to avoid Bun polyfill issues
+              }
+            }
+            console.log("🍣 Successfully completed fullStream iteration")
+          } catch (streamError) {
+            console.error("❌ Error during fullStream iteration:", streamError)
+            console.error("❌ Error type:", typeof streamError)
+            console.error(
+              "❌ Error constructor:",
+              streamError?.constructor?.name,
+            )
+            if (streamError instanceof Error) {
+              console.error("❌ Error message:", streamError.message)
+              console.error("❌ Error stack:", streamError.stack)
+            }
+            // Re-throw to be caught by outer try-catch
+            throw streamError
           }
         }
+        // return c.json({ success: true })
 
         console.log("🍣 Stream loop completed")
 
         finalText = answerText || finalText
 
+        if (!streamControllers.has(streamId)) {
+          console.log("Stream was stopped, breaking loop")
+          return c.json({ success: true })
+        }
+
         streamControllers.delete(streamId)
 
-        // Save final message to database
+        // // Save final message to database
         if (finalText) {
           console.log("💾 Saving Sushi message to DB...")
-          const aiMessage = await createMessage({
-            ...newMessagePayload,
-            content: finalText,
-            reasoning: reasoningText || undefined, // Store reasoning separately
-          })
+          try {
+            const aiMessage = await createMessage({
+              ...newMessagePayload,
+              content: finalText,
+              reasoning: reasoningText || undefined, // Store reasoning separately
+            })
+            console.log("✅ createMessage completed successfully")
 
-          if (aiMessage) {
-            console.log("✅ Sushi message saved to DB")
+            if (aiMessage) {
+              console.log("✅ Sushi message saved to DB")
+              console.log("🔍 Fetching full message with relations...")
 
-            // Get full message with relations
-            const m = await getMessage({ id: aiMessage.id })
+              // Get full message with relations
+              const m = await getMessage({ id: aiMessage.id })
+              console.log("✅ Message retrieved:", m ? "success" : "failed")
 
-            // Send stream_complete notification
-            thread &&
-              notifyOwnerAndCollaborations({
-                notifySender: true,
-                thread,
-                payload: {
-                  type: "stream_complete",
-                  data: {
-                    message: m,
-                    isFinal: true,
+              console.log(
+                "📡 Preparing to send stream_complete notification...",
+              )
+              console.log("🔍 Thread exists:", !!thread)
+              console.log("🔍 Message exists:", !!m)
+
+              // Send stream_complete notification
+              if (thread && m) {
+                console.log("📡 Sending stream_complete notification...")
+                notifyOwnerAndCollaborations({
+                  notifySender: true,
+                  thread,
+                  payload: {
+                    type: "stream_complete",
+                    data: {
+                      message: m,
+                      isFinal: true,
+                    },
                   },
-                },
-                member,
-                guest,
-              })
+                  member,
+                  guest,
+                })
+                console.log("✅ stream_complete notification call completed")
+              } else {
+                console.error(
+                  "❌ Cannot send notification - missing thread or message",
+                )
+              }
 
-            // Run in background after response
-            Promise.resolve()
-              .then(async () => generateContent(m))
-              .catch(console.error)
+              // Run in background after response
+              Promise.resolve()
+                .then(async () => generateContent(m))
+                .catch((err) => {
+                  console.error("❌ Error in generateContent:", err)
+                  captureException(err)
+                })
 
-            console.log("✅ Sushi stream_complete notification sent")
+              console.log("✅ Sushi stream_complete notification sent")
+            }
+          } catch (createError) {
+            console.error("❌ Error in createMessage:", createError)
+            captureException(createError)
           }
         }
 
@@ -4261,7 +4361,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // Run in background after response
         Promise.resolve()
           .then(async () => generateContent(m))
-          .catch(console.error)
+          .catch((err) => {
+            console.error(
+              "❌ Error in background generateContent (DeepSeek):",
+              err,
+            )
+            captureException(err)
+          })
 
         return c.json({ success: true })
       } catch (error: unknown) {
@@ -4395,7 +4501,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         console.error("❌ Stream reading error:", streamError)
         throw new Error("Failed to read AI response stream")
       } finally {
-        reader.releaseLock()
+        try {
+          if (reader && typeof reader.releaseLock === "function") {
+            reader.releaseLock()
+          }
+        } catch (releaseError) {
+          console.error("❌ Error releasing reader lock:", releaseError)
+        }
       }
 
       if (!streamControllers.has(streamId)) {
@@ -4567,14 +4679,20 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               console.error("❌ Memory reinforcement failed:", error)
             }
           })
-          .catch(console.error)
+          .catch((err) => {
+            console.error("❌ Error in memory reinforcement:", err)
+            captureException(err)
+          })
       }
 
       // Background processing with DeepSeek for content generation
       // Run in background after response
       Promise.resolve()
         .then(async () => generateContent(m))
-        .catch(console.error)
+        .catch((err) => {
+          console.error("❌ Error in background generateContent (final):", err)
+          captureException(err)
+        })
 
       console.log("📡 Returning provider stream response")
 

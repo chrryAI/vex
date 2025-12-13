@@ -126,10 +126,19 @@ if (!connectionString) {
 
 const isCI = process.env.CI
 
+const isRemoteDB = process.env.DB_URL?.startsWith("postgres://") ?? false
+const disableSSL = process.env.DISABLE_DB_SSL === "true"
+
 const client = postgres(connectionString, {
+  ssl:
+    isRemoteDB && !disableSSL
+      ? {
+          rejectUnauthorized: false, // Accept self-signed certificates
+        }
+      : false,
   max: 10, // Maximum number of connections
   idle_timeout: 20, // Close idle connections after 20 seconds
-  connect_timeout: 10, // Connection timeout in seconds
+  connect_timeout: 10, // Connec
 })
 
 if (NODE_ENV !== "production" && !isCI) {

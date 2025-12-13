@@ -24,7 +24,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@repo/db": ["../../packages/db"],
       "chrry": ["../../packages/ui"],
       "chrry/*": ["../../packages/ui/*"]
     }

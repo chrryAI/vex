@@ -6,7 +6,6 @@ import {
 } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
-import { getThread, getStore, getApp as getAppDb } from "@repo/db"
 import { locale } from "@chrryai/chrry/locales"
 import { ServerData } from "./server-loader"
 import { BlogPostWithContent } from "./blog-loader"
@@ -185,44 +184,6 @@ export async function generateServerMetadata(
       currentDomain: siteConfig.url,
       translations: serverData.translations || {},
     })
-  }
-
-  // Check for thread ID in pathname
-  const threadId = getThreadId(pathname)
-  if (threadId) {
-    try {
-      const thread = await getThread({ id: threadId })
-      if (thread) {
-        return generateThreadMetadata({
-          thread: thread as any,
-          locale,
-          currentDomain: siteConfig.url,
-          translations: serverData.translations || {},
-        })
-      }
-    } catch (error) {
-      console.error("Error fetching thread for metadata:", error)
-    }
-  }
-
-  // Check for store
-  if (segment && !excludedSlugRoutes.includes(segment)) {
-    try {
-      const store = await getStore({ slug: segment })
-      if (store) {
-        const fullStore = await getAppDb({ id: store.app?.id, depth: 1 })
-        if (fullStore?.store) {
-          return generateStoreMetadata({
-            store: fullStore.store,
-            locale,
-            currentDomain: siteConfig.url,
-            translations: serverData.translations || {},
-          })
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching store for metadata:", error)
-    }
   }
 
   // Use app data from server loader if available

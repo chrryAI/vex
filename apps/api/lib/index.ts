@@ -19,7 +19,7 @@ export const getIp = (request: Request) => {
       request.headers.get("cf-connecting-ip") ||
       (request.headers.get("x-forwarded-for") || "")?.split(",")?.[0]?.trim()
 
-  return ip
+  return ip || "0.0.0.0"
 }
 
 const THREAD_SUMMARY_LIMITS = {
