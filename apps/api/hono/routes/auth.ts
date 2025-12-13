@@ -9,10 +9,6 @@ import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 const authRoutes = new Hono()
 
 const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
-const GOOGLE_REDIRECT_URI =
-  process.env.GOOGLE_REDIRECT_URI ||
-  `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/google`
-
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
 
 // JWT secret (reuse existing env var)
