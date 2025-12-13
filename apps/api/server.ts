@@ -1,9 +1,10 @@
 // Initialize New Relic APM (must be first!)
+let newrelic: any = null
 if (
   process.env.NODE_ENV === "production" &&
   process.env.NEW_RELIC_LICENSE_KEY
 ) {
-  await import("newrelic")
+  newrelic = await import("newrelic")
   console.log("✅ New Relic APM initialized for Hono API")
 }
 
@@ -71,6 +72,13 @@ process.on("unhandledRejection", (reason, promise) => {
 })
 
 import app from "./hono/index"
+import { newRelicMiddleware } from "./hono/middleware/newrelic"
+
+// Apply New Relic middleware if initialized
+if (newrelic) {
+  app.use("*", newRelicMiddleware(newrelic))
+  console.log("✅ New Relic middleware applied to Hono")
+}
 
 const port = Number(process.env.PORT) || 3001
 

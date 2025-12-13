@@ -129,7 +129,7 @@ export const addParam = (key: string, value: string) => {
 }
 
 const FE_PORT =
-  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "3000"
+  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "5173"
 const API_PORT =
   (typeof process !== "undefined" && process.env?.API_PORT) || "3001"
 
@@ -397,7 +397,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.6.69"
+export const VERSION = config.version || "1.6.84"
 export type instructionBase = {
   id: string
   title: string

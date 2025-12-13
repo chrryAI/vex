@@ -153,7 +153,7 @@ session.get("/", async (c) => {
 
   // Arcjet bot detection - block bots from creating guest accounts
   if (!isDevelopment && !isE2E) {
-    const decision = await aj.protect(request)
+    const decision = await aj.protect(c.req)
 
     if (decision.isDenied()) {
       console.log("🤖 Bot detected:", {
@@ -196,6 +196,7 @@ session.get("/", async (c) => {
 
   // Detect domain for cookies from chrryUrl (for extensions), Referer, or Origin header
   const chrryUrl = getChrryUrl(request)
+
   const referer =
     request.headers.get("referer") || request.headers.get("origin")
   let cookieDomain: string | undefined = undefined
@@ -323,7 +324,6 @@ session.get("/", async (c) => {
     const appVersion = url.searchParams.get("appVersion")
     const ip = getIp(request) // Fallback for internal Docker calls
     const gift = url.searchParams.get("gift")
-    console.log(`🚀 ~ session.get ~ gift:`, gift)
 
     // IP is now guaranteed to have a value (either real or fallback)
 

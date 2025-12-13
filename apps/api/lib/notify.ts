@@ -148,15 +148,7 @@ export async function notify(
   }
 }
 
-export const notifyOwnerAndCollaborations = async ({
-  notifySender,
-  member,
-  guest,
-  thread,
-  pushNotification,
-  payload,
-}: {
-  pushNotification?: boolean
+export type notifyOwnerAndCollaborationsPayload = {
   notifySender?: boolean
   member?: user
   guest?: guest
@@ -168,6 +160,7 @@ export const notifyOwnerAndCollaborations = async ({
       user: user
     }[]
   }
+  pushNotification?: boolean
   payload: {
     type:
       | "stream_chunk"
@@ -199,7 +192,16 @@ export const notifyOwnerAndCollaborations = async ({
           clientId?: string
         }
   }
-}) => {
+}
+
+export const notifyOwnerAndCollaborations = async ({
+  notifySender,
+  member,
+  guest,
+  thread,
+  pushNotification,
+  payload,
+}: notifyOwnerAndCollaborationsPayload) => {
   if (notifySender) {
     const recipientId = member?.id || guest?.id || ""
     console.log(

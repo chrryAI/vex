@@ -19,7 +19,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/chrry
 
 # NextAuth
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:5173
 
 # AI Provider Keys (Get from respective providers)
 CHATGPT_API_KEY=sk-your-openai-key-here

@@ -39,6 +39,7 @@ interface AppProvidersProps {
   children: ReactNode
   session?: session
   app?: appWithStore
+  pathname?: string // SSR pathname for thread ID extraction
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   signInContext?: (
     provider: "google" | "apple" | "credentials",
@@ -74,6 +75,7 @@ export default function AppProviders({
   children,
   session,
   app,
+  pathname,
   onSetLanguage,
   apiKey,
   signInContext,
@@ -145,6 +147,7 @@ export default function AppProviders({
               error={error}
               apiKey={apiKey}
               app={app}
+              pathname={pathname}
               threads={threads}
               onSetLanguage={onSetLanguage}
               signInContext={signInContext}

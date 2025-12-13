@@ -78,21 +78,7 @@ export const Hey = memo(
       }
     }, [pathname, isExtension])
 
-    const threadIdRef = useRef<string | undefined>(getThreadId(pathname))
-
-    const threadId = threadIdRef.current
-
-    const setThreadId = (id: string | undefined) => {
-      threadIdRef.current = id
-    }
-
-    useEffect(() => {
-      const id = getThreadId(pathname)
-      if (id) {
-        setThreadId(id)
-      }
-    }, [pathname])
-    const { app, isSplash, setIsSplash, storeApps } = useAuth()
+    const { app, isSplash, setIsSplash, storeApps, threadId } = useAuth()
 
     const { currentStore } = useApp()
 

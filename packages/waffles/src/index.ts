@@ -47,9 +47,12 @@ const getURL = (
   },
 ) => {
   const base = isLive ? LIVE_URL : TEST_URL
-  return isMember
+  const url = isMember
     ? `${base}${path}?fp=${fingerprint || TEST_MEMBER_FINGERPRINTS[0]}`
     : `${base}${path}?fp=${fingerprint || TEST_GUEST_FINGERPRINTS[0]}`
+
+  console.log(`🚀 ~ url:`, url)
+  return url
 }
 
 const simulateInputPaste = async (page: Page, text: string) => {

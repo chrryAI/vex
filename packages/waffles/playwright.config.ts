@@ -16,7 +16,7 @@ export default defineConfig({
   //   command: !process.env.CI
   //     ? "npm run start:e2e"
   //     : "cd ../../apps/web && npm run start:e2e",
-  //   url: "http://localhost:3000",
+  //   url: "http://localhost:5173",
   //   // timeout: 480000,
   //   reuseExistingServer: true,
   // },
@@ -40,7 +40,7 @@ export default defineConfig({
     launchOptions: { slowMo: 200 },
     headless: true, // !!process.env.CI,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: !process.env.CI ? "http://localhost:3000" : "http://e2e.chrry.ai",
+    baseURL: !process.env.CI ? "http://localhost:5173" : "http://e2e.chrry.ai",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
     /* Grant clipboard permissions by default */

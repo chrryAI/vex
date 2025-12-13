@@ -255,6 +255,7 @@ export default function MemoryConsent({
                   )}
                   {t("Disable Memories")}
                 </ConfirmButton>
+
                 {isE2E && isLiveTest && (
                   <ConfirmButton
                     className="transparent"

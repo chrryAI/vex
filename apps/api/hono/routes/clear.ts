@@ -19,21 +19,17 @@ clear.post("/", async (c) => {
   const member = await getMember(c)
   const guest = await getGuest(c)
 
-  console.log(
-    `🚀 ~ clear.post ~ TEST_GUEST_FINGERPRINTS:`,
-    TEST_GUEST_FINGERPRINTS,
-    guest?.fingerprint,
-  )
-
   const fingerprint = guest?.fingerprint || member?.fingerprint
 
   if (!member && !guest) {
     return c.json({ error: "Unauthorized" }, 401)
   }
 
-  const CAN_CLEAR = TEST_GUEST_FINGERPRINTS.concat(
-    TEST_MEMBER_FINGERPRINTS,
-  ).includes(fingerprint)
+  const CAN_CLEAR =
+    fingerprint &&
+    TEST_GUEST_FINGERPRINTS.concat(TEST_MEMBER_FINGERPRINTS).includes(
+      fingerprint,
+    )
 
   if (CAN_CLEAR) {
     await cleanupTest()

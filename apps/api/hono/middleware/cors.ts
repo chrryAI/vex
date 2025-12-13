@@ -39,6 +39,16 @@ function setCorsHeaders(c: Context) {
   } else if (isDevelopment) {
     // Allow all origins in development for testing
     c.header("Access-Control-Allow-Origin", "*")
+  } else if (
+    origin &&
+    (origin.includes(".chrry.ai") ||
+      origin.includes(".chrry.dev") ||
+      origin.includes(".chrry.store"))
+  ) {
+    // Production: allow cross-domain requests between chrry domains (e.g., e2e.chrry.ai → e2e.chrry.dev)
+    c.header("Access-Control-Allow-Origin", origin)
+    c.header("Access-Control-Allow-Credentials", "true")
+    c.header("Vary", "Origin")
   } else {
     // Production: only allow chrry.ai for unmatched origins
     c.header("Access-Control-Allow-Origin", "https://chrry.ai")

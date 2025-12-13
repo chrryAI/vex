@@ -24,6 +24,7 @@ export default function Chrry({
   useExtensionIcon,
   threads,
   app,
+  pathname,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -35,6 +36,7 @@ export default function Chrry({
   app?: appWithStore
   viewPortWidth?: string
   viewPortHeight?: string
+  pathname?: string // SSR pathname for thread ID extraction
   threads?: {
     threads: thread[]
     totalCount: number
@@ -64,6 +66,7 @@ export default function Chrry({
       app={app}
       viewPortWidth={viewPortWidth}
       viewPortHeight={viewPortHeight}
+      pathname={pathname}
       onSetLanguage={onSetLanguage}
       signInContext={signInContext}
       apiKey={apiKey}
