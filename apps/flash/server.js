@@ -1,3 +1,12 @@
+// Initialize New Relic APM (must be first!)
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.NEW_RELIC_LICENSE_KEY
+) {
+  await import("newrelic")
+  console.log("✅ New Relic APM initialized for Flash SSR")
+}
+
 import "dotenv/config"
 import fs from "node:fs/promises"
 import express from "express"
