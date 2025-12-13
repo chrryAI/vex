@@ -120,31 +120,55 @@ export function useAuth() {
    * Sign in with Google OAuth
    * Redirects to Google OAuth page
    */
-  const signInWithGoogle = useCallback(async () => {
-    try {
-      // Redirect to Google OAuth
-      window.location.href = `${API_URL}/auth/signin/google`
-      return { success: true }
-    } catch (error) {
-      console.error("Google sign in error:", error)
-      return { success: false, error: "Google sign in failed" }
-    }
-  }, [])
+  const signInWithGoogle = useCallback(
+    async (options?: { callbackUrl?: string; errorUrl?: string }) => {
+      try {
+        // Build OAuth URL with callback parameters
+        const url = new URL(`${API_URL}/auth/signin/google`)
+        if (options?.callbackUrl) {
+          url.searchParams.set("callbackUrl", options.callbackUrl)
+        }
+        if (options?.errorUrl) {
+          url.searchParams.set("errorUrl", options.errorUrl)
+        }
+
+        // Redirect to Google OAuth
+        window.location.href = url.toString()
+        return { success: true }
+      } catch (error) {
+        console.error("Google sign in error:", error)
+        return { success: false, error: "Google sign in failed" }
+      }
+    },
+    [],
+  )
 
   /**
    * Sign in with Apple OAuth
    * Redirects to Apple OAuth page
    */
-  const signInWithApple = useCallback(async () => {
-    try {
-      // Redirect to Apple OAuth
-      window.location.href = `${API_URL}/auth/signin/apple`
-      return { success: true }
-    } catch (error) {
-      console.error("Apple sign in error:", error)
-      return { success: false, error: "Apple sign in failed" }
-    }
-  }, [])
+  const signInWithApple = useCallback(
+    async (options?: { callbackUrl?: string; errorUrl?: string }) => {
+      try {
+        // Build OAuth URL with callback parameters
+        const url = new URL(`${API_URL}/auth/signin/apple`)
+        if (options?.callbackUrl) {
+          url.searchParams.set("callbackUrl", options.callbackUrl)
+        }
+        if (options?.errorUrl) {
+          url.searchParams.set("errorUrl", options.errorUrl)
+        }
+
+        // Redirect to Apple OAuth
+        window.location.href = url.toString()
+        return { success: true }
+      } catch (error) {
+        console.error("Apple sign in error:", error)
+        return { success: false, error: "Apple sign in failed" }
+      }
+    },
+    [],
+  )
 
   /**
    * Sign out
