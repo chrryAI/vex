@@ -155,7 +155,7 @@ export async function loadServerData(
         chrryUrl,
         screenWidth: Number(viewPortWidth),
         screenHeight: Number(viewPortHeight),
-        gift,
+        gift: gift || undefined,
         source: "layout",
         API_URL,
       }),
