@@ -2217,7 +2217,7 @@ export default function Chat({
       const clientId = data?.clientId
 
       if (
-        data.message &&
+        data?.message &&
         isOwner(data.message.message, {
           userId: user?.id,
           guestId: guest?.id,

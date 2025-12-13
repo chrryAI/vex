@@ -120,10 +120,11 @@ authRoutes.post("/signup/password", async (c) => {
     // Generate token
     const token = generateToken(newUser.id, newUser.email)
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie (skip HttpOnly in development for easier debugging)
+    const isDev = process.env.NODE_ENV === "development"
     c.header(
       "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
+      `token=${token}; ${isDev ? "" : "HttpOnly; "}Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
     )
 
     return c.json({
@@ -144,53 +145,53 @@ authRoutes.post("/signup/password", async (c) => {
  * POST /api/auth/signin/password
  * Sign in with email/password
  */
-// authRoutes.post("/signin/password", async (c) => {
-//   try {
-//     const { email, password } = await c.req.json()
+authRoutes.post("/signin/password", async (c) => {
+  try {
+    const { email, password } = await c.req.json()
 
-//     if (!email || !password) {
-//       return c.json({ error: "Email and password required" }, 400)
-//     }
+    if (!email || !password) {
+      return c.json({ error: "Email and password required" }, 400)
+    }
 
-//     // Find user
-//     const user = await getUser({
-//       email,
-//     })
+    // Find user
+    const user = await getUser({
+      email,
+    })
 
-//     if (!user || !user.password) {
-//       return c.json({ error: "Invalid credentials" }, 401)
-//     }
+    if (!user || !user.password) {
+      return c.json({ error: "Invalid credentials" }, 401)
+    }
 
-//     // Verify password
-//     const valid = await compare(password, user.password)
+    // Verify password
+    const valid = await compare(password, user.password)
 
-//     if (!valid) {
-//       return c.json({ error: "Invalid credentials" }, 401)
-//     }
+    if (!valid) {
+      return c.json({ error: "Invalid credentials" }, 401)
+    }
 
-//     // Generate token
-//     const token = generateToken(user.id, user.email)
+    // Generate token
+    const token = generateToken(user.id, user.email)
 
-//     // Set HTTP-only cookie
-//     c.header(
-//       "Set-Cookie",
-//       `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
-//     )
+    // Set HTTP-only cookie
+    c.header(
+      "Set-Cookie",
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
+    )
 
-//     return c.json({
-//       user: {
-//         id: user.id,
-//         email: user.email,
-//         name: user.name,
-//         image: user.image,
-//       },
-//       token,
-//     })
-//   } catch (error) {
-//     console.error("Signin error:", error)
-//     return c.json({ error: "Signin failed" }, 500)
-//   }
-// })
+    return c.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      },
+      token,
+    })
+  } catch (error) {
+    console.error("Signin error:", error)
+    return c.json({ error: "Signin failed" }, 500)
+  }
+})
 
 /**
  * GET /api/auth/session
@@ -250,10 +251,12 @@ authRoutes.get("/session", async (c) => {
  * Sign out user
  */
 authRoutes.post("/signout", async (c) => {
-  // Clear cookie
+  // Clear token cookie (with and without HttpOnly for compatibility)
+  const isDev = process.env.NODE_ENV === "development"
+
   c.header(
     "Set-Cookie",
-    "auth-token=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax",
+    `token=; ${isDev ? "" : "HttpOnly; "}Path=/; Max-Age=0; SameSite=Lax`,
   )
 
   return c.json({ success: true })

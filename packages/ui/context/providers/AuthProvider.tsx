@@ -358,20 +358,29 @@ export function AuthProvider({
       fingerprintParam,
   )
 
-  const tokenInternal =
-    session?.user?.token || session?.guest?.fingerprint || apiKey
+  const ssrToken = session?.user?.token || session?.guest?.fingerprint || apiKey
   // Local state for token and versions (no dependency on DataProvider)
-  const [token, setTokenInternal] = useCookieOrLocalStorage(
+  const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
-    tokenInternal,
+    ssrToken,
     isExtension,
   )
 
+  const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
+
+  const token = isExtension ? tokenExtension : tokenWeb
+  const setToken = isExtension
+    ? setTokenExtension
+    : (token: string | undefined) => {
+        setTokenWeb(token)
+        setTokenExtension(token)
+      }
+
   useEffect(() => {
-    if (tokenInternal) {
-      setTokenInternal(tokenInternal)
+    if (ssrToken) {
+      setToken(ssrToken)
     }
-  }, [tokenInternal])
+  }, [ssrToken])
 
   // Track if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)
@@ -404,10 +413,6 @@ export function AuthProvider({
       setIsCookieReady(true)
     }
   }, [isExtension])
-
-  const setToken = (token?: string) => {
-    setTokenInternal(token || "")
-  }
 
   function processSession(sessionData?: session) {
     if (sessionData) {
@@ -1472,6 +1477,10 @@ export function AuthProvider({
     setUser(undefined)
     setGuest(undefined)
     setToken(fingerprint)
+
+    // if (typeof window !== "undefined") {
+    //   window.location.href = "/?loggedOut=true"
+    // }
   }
 
   const isExtensionRedirect = searchParams.get("extension") === "true"
