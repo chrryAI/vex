@@ -69,7 +69,10 @@ import {
 import { scanFileForMalware } from "../../lib/security"
 import { upload } from "../../lib/minio"
 import slugify from "slug"
-import { notifyOwnerAndCollaborations } from "../../lib/notify"
+import {
+  notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
+  notifyOwnerAndCollaborationsPayload,
+} from "../../lib/notify"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import { captureException } from "@sentry/node"
 import generateAIContent from "../../lib/generateAIContent"
@@ -542,6 +545,23 @@ app.post("/", async (c) => {
     deviceId,
     ...rest
   } = requestData
+
+  const notifyOwnerAndCollaborations = (
+    x: notifyOwnerAndCollaborationsPayload,
+  ) => {
+    notifyOwnerAndCollaborationsInternal({
+      ...x,
+      payload: {
+        ...x.payload,
+        data: {
+          ...x.payload.data,
+          deviceId,
+          clientId,
+          streamId,
+        },
+      },
+    })
+  }
 
   async function enhancedStreamChunk({
     chunk,
