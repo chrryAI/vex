@@ -2216,19 +2216,19 @@ export default function Chat({
 
       const clientId = data?.clientId
 
-      const chunk = data?.chunk
       if (
-        type === "stream_update" &&
-        chunk &&
-        clientId &&
         data.message &&
-        (isOwner(data.message.message, {
+        isOwner(data.message.message, {
           userId: user?.id,
           guestId: guest?.id,
         })
-          ? data?.deviceId === deviceId
-          : true)
-      ) {
+          ? data?.deviceId !== deviceId
+          : true
+      )
+        return
+
+      const chunk = data?.chunk
+      if (type === "stream_update" && chunk && clientId && data.message) {
         if (isSpeechActive && os !== "ios") {
           return
         }

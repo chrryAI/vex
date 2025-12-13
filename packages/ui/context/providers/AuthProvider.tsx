@@ -948,9 +948,9 @@ export function AuthProvider({
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && appId ? ["app", appId] : null, async () => {
+  } = useSWR(token && ["app", appId], async () => {
     try {
-      if (!token || !appId) return
+      if (!token) return
       const app = await getApp({ token, appId, chrryUrl, pathname })
 
       return app.store?.apps
