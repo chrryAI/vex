@@ -321,13 +321,11 @@ session.get("/", async (c) => {
       : uuidv4()
 
     const appVersion = url.searchParams.get("appVersion")
-    const ip = getIp(request)
+    const ip = getIp(request) || "0.0.0.0" // Fallback for internal Docker calls
     const gift = url.searchParams.get("gift")
     console.log(`🚀 ~ session.get ~ gift:`, gift)
 
-    if (!ip) {
-      return c.json({ error: "IP address not found" })
-    }
+    // IP is now guaranteed to have a value (either real or fallback)
 
     if (!fingerprint) {
       return c.json({ error: "Missing fingerprint" })
