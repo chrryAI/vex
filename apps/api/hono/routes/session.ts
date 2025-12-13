@@ -153,7 +153,7 @@ session.get("/", async (c) => {
 
   // Arcjet bot detection - block bots from creating guest accounts
   if (!isDevelopment && !isE2E) {
-    const decision = await aj.protect(request)
+    const decision = await aj.protect(c.req)
 
     if (decision.isDenied()) {
       console.log("🤖 Bot detected:", {
