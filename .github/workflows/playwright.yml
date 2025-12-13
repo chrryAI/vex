@@ -157,8 +157,8 @@ jobs:
       - name: Build packages
         run: pnpm run build
 
-  # Deploy API first (for cache efficiency)
-  deploy-api:
+  # Deploy both API and Web sequentially
+  deploy:
     runs-on: ubuntu-latest
     needs: [check-pr, build, cancel-deployments]
     steps:
@@ -196,13 +196,6 @@ jobs:
           echo "❌ API deployment timed out"
           exit 1
 
-  # Deploy Web after API is done (sequential for cache efficiency)
-  deploy-web:
-    runs-on: ubuntu-latest
-    needs: deploy-api # Wait for API to finish first!
-    steps:
-      - uses: actions/checkout@v4
-
       - name: Deploy Web to Coolify
         run: |
           echo "📦 Deploying web app (e2e.chrry.ai)..."
@@ -238,7 +231,7 @@ jobs:
   # Check WebSocket is ready
   check-websocket:
     runs-on: ubuntu-latest
-    needs: deploy-web
+    needs: deploy
     steps:
       - name: Check WebSocket server
         run: |
