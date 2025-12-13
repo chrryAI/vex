@@ -63,7 +63,6 @@ export const setCookieWeb = (
   value: string,
   options: CookieOptions = {},
 ) => {
-  console.log(`🚀 ~ setCookieWeb:`, name, value, options)
   if (!isBrowser) return
 
   const isLocalhost =
@@ -91,12 +90,10 @@ export const setCookieWeb = (
     expires +
     stringifyOptions(optionsWithDefaults)
 
-  console.log(`🚀 ~ Setting cookie:`, cookieString)
   document.cookie = cookieString
 
   // Verify cookie was set
   const wasSet = document.cookie.includes(name)
-  console.log(`🚀 ~ Cookie ${name} was ${wasSet ? "SET ✅" : "NOT SET ❌"}`)
 }
 
 /**
