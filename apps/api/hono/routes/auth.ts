@@ -4,6 +4,7 @@ import { compare, hash } from "bcrypt"
 import { getUser, createUser, getStore } from "@repo/db"
 import { v4 as uuidv4 } from "uuid"
 import { isValidUsername } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/config"
 
 const authRoutes = new Hono()
 
@@ -15,7 +16,7 @@ const GOOGLE_REDIRECT_URI =
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
 
 // Frontend URL for redirecting after OAuth
-const FRONTEND_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:5173"
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://chrry.ai"
 
 // JWT secret (reuse existing env var)
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
@@ -274,6 +275,15 @@ authRoutes.get("/signin/google", async (c) => {
       return c.json({ error: "Google OAuth not configured" }, 500)
     }
 
+    const forwardedHost = c.req.header("X-Forwarded-Host")
+    const requestUrl = new URL(c.req.url)
+
+    const chrryUrl =
+      requestUrl.searchParams.get("chrryUrl") ||
+      forwardedHost ||
+      "https://chrry.ai"
+    const siteconfig = getSiteConfig(chrryUrl || undefined)
+
     // Generate state for CSRF protection
     const state = uuidv4()
 
@@ -283,10 +293,11 @@ authRoutes.get("/signin/google", async (c) => {
       `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=Lax`,
     )
 
-    // Build Google OAuth URL
+    // Build Google OAuth URL with site-specific callback
+    const redirectUri = `${siteconfig.url}/api/auth/callback/google`
     const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth")
     authUrl.searchParams.set("client_id", GOOGLE_WEB_CLIENT_ID)
-    authUrl.searchParams.set("redirect_uri", GOOGLE_REDIRECT_URI)
+    authUrl.searchParams.set("redirect_uri", redirectUri)
     authUrl.searchParams.set("response_type", "code")
     authUrl.searchParams.set("scope", "openid email profile")
     authUrl.searchParams.set("state", state)
@@ -313,6 +324,15 @@ authRoutes.get("/callback/google", async (c) => {
       return c.redirect(`${FRONTEND_URL}/?error=oauth_failed`)
     }
 
+    const forwardedHost = c.req.header("X-Forwarded-Host")
+    const requestUrl = new URL(c.req.url)
+
+    const chrryUrl =
+      requestUrl.searchParams.get("chrryUrl") ||
+      forwardedHost ||
+      "https://chrry.ai"
+    const siteconfig = getSiteConfig(chrryUrl || undefined)
+
     // Verify state (CSRF protection)
     const cookieHeader = c.req.header("cookie")
     const stateMatch = cookieHeader?.match(/oauth_state=([^;]+)/)
@@ -327,6 +347,7 @@ authRoutes.get("/callback/google", async (c) => {
       return c.redirect(`${FRONTEND_URL}/?error=oauth_not_configured`)
     }
 
+    const redirectUri = `${siteconfig.url}/api/auth/callback/google`
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -334,7 +355,7 @@ authRoutes.get("/callback/google", async (c) => {
         code,
         client_id: GOOGLE_WEB_CLIENT_ID,
         client_secret: GOOGLE_WEB_CLIENT_SECRET,
-        redirect_uri: GOOGLE_REDIRECT_URI,
+        redirect_uri: redirectUri,
         grant_type: "authorization_code",
       }),
     })
@@ -383,9 +404,8 @@ authRoutes.get("/callback/google", async (c) => {
     // Clear oauth_state cookie
     c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
 
-    // Redirect back to app with token in URL
-    // Frontend will exchange this for a proper session
-    return c.redirect(`${FRONTEND_URL}/?auth_token=${token}`)
+    // Redirect back to the original site with token in URL
+    return c.redirect(`${siteconfig.url}/?auth_token=${token}`)
   } catch (error) {
     console.error("Google OAuth callback error:", error)
     return c.redirect(`${FRONTEND_URL}/?error=oauth_callback_failed`)
