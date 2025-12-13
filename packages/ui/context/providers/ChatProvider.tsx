@@ -113,7 +113,6 @@ const ChatContext = createContext<
       creditsLeft?: number
       thread?: thread
       threadId?: string
-      setThreadId: (threadId?: string) => void
       setThread: (thread?: thread) => void
       userNameByUrl: string | undefined
       isLoadingThreads: boolean
@@ -176,7 +175,6 @@ export function ChatProvider({
     claudeAgent,
     favouriteAgent,
     threadId,
-    setThreadId,
     migratedFromGuestRef,
     fetchSession,
     loadingApp,
@@ -418,7 +416,6 @@ export function ChatProvider({
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
-      setThreadId(undefined)
       setMessages([])
       setStatus(null)
       isIncognito && setWasIncognito(true)
@@ -687,16 +684,6 @@ export function ChatProvider({
       }
     }
   }, [user, guest, threadId, connected])
-
-  // useEffect(() => {
-  //   const id = getThreadId(pathname)
-  //   if (id) {
-  //     setThreadId(id)
-  //     setShouldFetchThread(true)
-  //   } else {
-  //     setIsChatFloating(false)
-  //   }
-  // }, [pathname])
 
   // Credits tracking
   const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
@@ -1122,7 +1109,6 @@ export function ChatProvider({
         setUntil,
         isEmpty,
         scrollToBottom,
-        setThreadId,
         isWebSearchEnabled,
         selectedAgent,
         setSelectedAgent,

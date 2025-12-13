@@ -114,6 +114,7 @@ function App({ serverData }: AppProps) {
         app={serverData?.app}
         viewPortWidth={serverData?.viewPortWidth}
         viewPortHeight={serverData?.viewPortHeight}
+        pathname={serverData?.pathname}
         signInContext={signInContext}
         signOutContext={signOutContext}
       >

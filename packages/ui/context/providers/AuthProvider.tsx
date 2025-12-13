@@ -112,7 +112,6 @@ const AuthContext = createContext<
         >
       >
       threadId?: string
-      setThreadId: (threadId?: string) => void
       taskId?: string
       updateMood: ({ type }: { type: moodType }) => Promise<void>
       focus: appWithStore | undefined
@@ -259,11 +258,13 @@ export function AuthProvider({
   error,
   locale,
   translations,
+  pathname: ssrPathname, // SSR pathname from server
   ...props
 }: {
   translations?: Record<string, any>
   locale?: locale
   apiKey?: string
+  pathname?: string // SSR pathname for thread ID extraction
   signInContext?: (
     provider: "google" | "apple" | "credentials",
     options: {
@@ -296,6 +297,9 @@ export function AuthProvider({
 
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
+
+  console.log(`🚀 ~ pathname from useNavigation:`, pathname)
+
   useEffect(() => {
     if (error) {
       toast.error(error)
@@ -717,20 +721,7 @@ export function AuthProvider({
     }
   })
 
-  const threadIdRef = useRef<string | undefined>(getThreadId(pathname))
-
-  const threadId = threadIdRef.current
-
-  const setThreadId = (id: string | undefined) => {
-    threadIdRef.current = id
-  }
-
-  useEffect(() => {
-    const id = getThreadId(pathname)
-    if (id) {
-      setThreadId(id)
-    }
-  }, [pathname])
+  const threadId = getThreadId(pathname)
 
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
@@ -957,9 +948,9 @@ export function AuthProvider({
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && ["app", appId], async () => {
+  } = useSWR(token && appId ? ["app", appId] : null, async () => {
     try {
-      if (!token) return
+      if (!token || !appId) return
       const app = await getApp({ token, appId, chrryUrl, pathname })
 
       return app.store?.apps
@@ -1256,7 +1247,6 @@ export function AuthProvider({
 
   const setThread = (thread: thread | undefined) => {
     setThreadInternal(thread)
-    setThreadId(thread?.id)
   }
 
   const [tasks, setTasks] = useState<
@@ -1533,7 +1523,6 @@ export function AuthProvider({
         tasks,
         setTasks,
         threadId,
-        setThreadId,
         loadingApp,
         setLoadingApp,
         taskId,

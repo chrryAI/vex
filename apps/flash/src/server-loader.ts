@@ -50,6 +50,7 @@ export interface ServerData {
   isDev: boolean
   apiError?: Error
   theme: "light" | "dark"
+  pathname: string // SSR pathname for thread ID extraction
   metadata?: {
     title?: string
     description?: string
@@ -260,6 +261,7 @@ export async function loadServerData(
       isDev,
       apiError,
       theme,
+      pathname,
     })
   } catch (error) {
     console.error("Error generating metadata in server-loader:", error)
@@ -285,5 +287,6 @@ export async function loadServerData(
     blogPosts,
     blogPost,
     isBlogRoute,
+    pathname, // Add pathname so client knows the SSR route
   }
 }

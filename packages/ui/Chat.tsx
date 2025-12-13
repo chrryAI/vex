@@ -254,7 +254,6 @@ export default function Chat({
     setShouldFocus,
     shouldFocus,
     isChatFloating: isChatFloatingContext,
-    setThreadId: setThreadIdInternal,
     messages,
   } = useChat()
 
