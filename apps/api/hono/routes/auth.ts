@@ -119,10 +119,10 @@ authRoutes.post("/signup/password", async (c) => {
     // Generate token
     const token = generateToken(newUser.id, newUser.email)
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie with domain for cross-subdomain auth
     c.header(
       "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax; Domain=.chrry.ai`,
     )
 
     return c.json({
@@ -170,10 +170,10 @@ authRoutes.post("/signin/password", async (c) => {
     // Generate token
     const token = generateToken(user.id, user.email)
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie with domain for cross-subdomain auth
     c.header(
       "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax; Domain=.chrry.ai`,
     )
 
     return c.json({
@@ -396,11 +396,17 @@ authRoutes.get("/callback/google", async (c) => {
     // Generate JWT token
     const token = generateToken(user.id, user.email)
 
+    // Set auth cookie with domain for cross-subdomain auth
+    c.header(
+      "Set-Cookie",
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax; Domain=.chrry.ai`,
+    )
+
     // Clear oauth_state cookie
     c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
 
-    // Redirect back to the original site with token in URL
-    return c.redirect(`${siteconfig.url}/?auth_token=${token}`)
+    // Redirect back to the original chrryUrl (subdomain) with token in URL
+    return c.redirect(`${chrryUrl}/?auth_token=${token}`)
   } catch (error) {
     console.error("Google OAuth callback error:", error)
     // Fallback to chrry.ai if we can't determine the site
@@ -557,13 +563,25 @@ authRoutes.post("/callback/apple", async (c) => {
     // Generate JWT token
     const token = generateToken(user.id, user.email)
 
+    // Set auth cookie with domain for cross-subdomain auth
+    c.header(
+      "Set-Cookie",
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax; Domain=.chrry.ai`,
+    )
+
     // Clear oauth_state cookie
     c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
 
-    // Redirect back to app with token in URL
+    // Get the original chrryUrl from the request
     const forwardedHost = c.req.header("X-Forwarded-Host")
-    const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-    return c.redirect(`${siteconfig.url}/?auth_token=${token}`)
+    const requestUrl = new URL(c.req.url)
+    const chrryUrl =
+      requestUrl.searchParams.get("chrryUrl") ||
+      forwardedHost ||
+      "https://chrry.ai"
+
+    // Redirect back to the original chrryUrl (subdomain) with token in URL
+    return c.redirect(`${chrryUrl}/?auth_token=${token}`)
   } catch (error) {
     console.error("Apple OAuth callback error:", error)
     const forwardedHost = c.req.header("X-Forwarded-Host")

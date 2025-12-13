@@ -179,10 +179,10 @@ export default function SignIn({
     )
 
     // Store original subdomain URL for post-OAuth redirect
-    // // This allows us to use a single OAuth callback URL (chrry.ai) for all subdomains
-    // if (!isDevelopment && CHRRY_URL !== "https://chrry.ai") {
-    //   successUrl.searchParams.set("chrryUrl", encodeURIComponent(CHRRY_URL))
-    // }
+    // This allows us to use a single OAuth callback URL (chrry.ai) for all subdomains
+    if (!isDevelopment) {
+      successUrl.searchParams.set("chrryUrl", encodeURIComponent(CHRRY_URL))
+    }
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")
 
