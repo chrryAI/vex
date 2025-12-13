@@ -14,11 +14,6 @@ import captureException from "./captureException"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const siteConfig = getSiteConfig()
-console.log("🔔 Notify Lib Config:", {
-  WS_SERVER_URL,
-  WS_URL,
-  siteConfigURL: siteConfig.url,
-})
 
 interface CustomWebSocket {
   new (url: string): WebSocket
@@ -96,30 +91,47 @@ export async function notify(
   callback?: (success: boolean, error?: Error) => void,
 ) {
   try {
+    const notifyUrl = `${WS_SERVER_URL}/notify`
+    const notificationPayload = {
+      recipientId,
+      type:
+        payload.type === "message"
+          ? "message"
+          : payload.type === "stream_chunk"
+            ? "stream_update"
+            : payload.type === "stream_complete"
+              ? "stream_complete"
+              : payload.type === "delete_message"
+                ? "delete_message"
+                : payload.type,
+      data: payload.data,
+    }
+
+    console.log("🌐 Sending notification to:", notifyUrl)
+    console.log("📦 Payload type:", notificationPayload.type)
+
     // Send notification via HTTP to WebSocket server
-    const response = await fetch(`${WS_SERVER_URL}/notify`, {
+    const response = await fetch(notifyUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        recipientId,
-        type:
-          payload.type === "message"
-            ? "message"
-            : payload.type === "stream_chunk"
-              ? "stream_update"
-              : payload.type === "stream_complete"
-                ? "stream_complete"
-                : payload.type === "delete_message"
-                  ? "delete_message"
-                  : payload.type,
-        data: payload.data,
-      }),
+      body: JSON.stringify(notificationPayload),
     })
 
+    console.log("📡 Response status:", response.status, response.statusText)
+
     if (!response.ok) {
-      const error = new Error(`Notification failed: ${response.status}`)
+      const errorText = await response.text().catch(() => "No response body")
+      console.error("❌ Notification failed:", {
+        url: notifyUrl,
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      })
+      const error = new Error(
+        `Notification failed: ${response.status} - ${errorText}`,
+      )
       callback?.(false, error)
       throw error
     }
