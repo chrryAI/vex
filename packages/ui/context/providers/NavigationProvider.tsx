@@ -129,13 +129,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     router.push(url)
   }
 
-  const { slug, setSlug, getAppSlug, language, setThreadId, setShowFocus } =
-    useAuth()
+  const { slug, setSlug, getAppSlug, language, setShowFocus } = useAuth()
 
   const goToThreads = (params?: Record<string, string>) => {
     const appSlug = app ? getAppSlug(app, "") : undefined
-    setThreadId(undefined)
-
     const url = new URLSearchParams(params)
     router.push(
       appSlug

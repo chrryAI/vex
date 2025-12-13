@@ -30,6 +30,7 @@ class ClientRouter {
   private lastNavigationTime = 0
   private navigationDebounceMs = 10 // Prevent double-tap navigation
   private isSwipeNavigation = false // Track mobile swipe gestures
+  private isInitialized = false // Track if client-side init has run
 
   constructor() {
     // SSR hydration: Use server state if available
@@ -50,7 +51,15 @@ class ClientRouter {
       )
     }
 
-    if (typeof window === "undefined") return
+    // Don't set up listeners in constructor - do it in init() on client-side
+  }
+
+  // Initialize client-side event listeners (called after hydration)
+  init() {
+    if (typeof window === "undefined" || this.isInitialized) return
+
+    this.isInitialized = true
+    console.log("🎬 ClientRouter: Initializing event listeners")
 
     // Listen to browser navigation events (passive for better performance)
     window.addEventListener("popstate", this.handlePopState, { passive: true })
@@ -157,6 +166,9 @@ class ClientRouter {
   }
 
   subscribe(listener: () => void) {
+    // Initialize event listeners on first subscription (client-side hydration)
+    this.init()
+
     this.listeners.add(listener)
     return () => {
       this.listeners.delete(listener)
@@ -281,6 +293,11 @@ class ClientRouter {
 export const clientRouter = new ClientRouter()
 
 export function useRouter() {
+  // Initialize router on first mount (client-side only)
+  useEffect(() => {
+    clientRouter.init()
+  }, [])
+
   return {
     push: clientRouter.push.bind(clientRouter),
     replace: clientRouter.replace.bind(clientRouter),
@@ -294,11 +311,18 @@ export function usePathname() {
   const [pathname, setPathname] = useState(clientRouter.getState().pathname)
 
   useEffect(() => {
+    console.log("🎬 usePathname: Setting up subscription")
     const unsubscribe = clientRouter.subscribe(() => {
-      setPathname(clientRouter.getState().pathname)
+      const newPathname = clientRouter.getState().pathname
+      console.log(
+        "🎬 usePathname: Router state changed, new pathname:",
+        newPathname,
+      )
+      setPathname(newPathname)
     })
 
     return () => {
+      console.log("🎬 usePathname: Cleaning up subscription")
       unsubscribe()
     }
   }, [])
