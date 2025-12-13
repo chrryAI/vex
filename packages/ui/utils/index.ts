@@ -707,3 +707,6 @@ export type {
   AgentCapabilities,
   AgentModel,
 } from "./fileValidation"
+
+// Export API URL utilities
+export { getApiUrl, getApiEndpoint } from "./getApiUrl"
