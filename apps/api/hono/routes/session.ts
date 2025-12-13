@@ -304,8 +304,6 @@ session.get("/", async (c) => {
       fingerPrintCookie ||
       guest?.fingerprint
 
-    console.log("fingerprintsssss", fingerprint)
-
     const { getIp } = lib
 
     // Use UAParser for detailed device detection (more accurate than lib functions)
