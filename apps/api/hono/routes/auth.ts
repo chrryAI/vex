@@ -3,12 +3,13 @@ import { sign, verify } from "jsonwebtoken"
 import { compare, hash } from "bcrypt"
 import { getUser, createUser, getStore } from "@repo/db"
 import { v4 as uuidv4 } from "uuid"
-import { isValidUsername } from "@chrryai/chrry/utils"
+import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const authRoutes = new Hono()
 
 const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
+
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
 
 // JWT secret (reuse existing env var)
@@ -119,10 +120,10 @@ authRoutes.post("/signup/password", async (c) => {
     // Generate token
     const token = generateToken(newUser.id, newUser.email)
 
-    // Set HTTP-only cookie with domain for cross-subdomain auth
+    // Set HTTP-only cookie
     c.header(
       "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax; Domain=.chrry.ai`,
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
     )
 
     return c.json({
@@ -143,53 +144,53 @@ authRoutes.post("/signup/password", async (c) => {
  * POST /api/auth/signin/password
  * Sign in with email/password
  */
-authRoutes.post("/signin/password", async (c) => {
-  try {
-    const { email, password } = await c.req.json()
+// authRoutes.post("/signin/password", async (c) => {
+//   try {
+//     const { email, password } = await c.req.json()
 
-    if (!email || !password) {
-      return c.json({ error: "Email and password required" }, 400)
-    }
+//     if (!email || !password) {
+//       return c.json({ error: "Email and password required" }, 400)
+//     }
 
-    // Find user
-    const user = await getUser({
-      email,
-    })
+//     // Find user
+//     const user = await getUser({
+//       email,
+//     })
 
-    if (!user || !user.password) {
-      return c.json({ error: "Invalid credentials" }, 401)
-    }
+//     if (!user || !user.password) {
+//       return c.json({ error: "Invalid credentials" }, 401)
+//     }
 
-    // Verify password
-    const valid = await compare(password, user.password)
+//     // Verify password
+//     const valid = await compare(password, user.password)
 
-    if (!valid) {
-      return c.json({ error: "Invalid credentials" }, 401)
-    }
+//     if (!valid) {
+//       return c.json({ error: "Invalid credentials" }, 401)
+//     }
 
-    // Generate token
-    const token = generateToken(user.id, user.email)
+//     // Generate token
+//     const token = generateToken(user.id, user.email)
 
-    // Set HTTP-only cookie with domain for cross-subdomain auth
-    c.header(
-      "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax; Domain=.chrry.ai`,
-    )
+//     // Set HTTP-only cookie
+//     c.header(
+//       "Set-Cookie",
+//       `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
+//     )
 
-    return c.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.image,
-      },
-      token,
-    })
-  } catch (error) {
-    console.error("Signin error:", error)
-    return c.json({ error: "Signin failed" }, 500)
-  }
-})
+//     return c.json({
+//       user: {
+//         id: user.id,
+//         email: user.email,
+//         name: user.name,
+//         image: user.image,
+//       },
+//       token,
+//     })
+//   } catch (error) {
+//     console.error("Signin error:", error)
+//     return c.json({ error: "Signin failed" }, 500)
+//   }
+// })
 
 /**
  * GET /api/auth/session
@@ -268,26 +269,45 @@ authRoutes.get("/signin/google", async (c) => {
       return c.json({ error: "Google OAuth not configured" }, 500)
     }
 
+    // Get callback URLs from query params and ensure they're strings
+    const callbackUrlParam = c.req.query("callbackUrl")
+    // Decode if already encoded (to prevent double-encoding)
+    let callbackUrl =
+      typeof callbackUrlParam === "string" ? callbackUrlParam : undefined
+    if (callbackUrl && callbackUrl.includes("%")) {
+      try {
+        callbackUrl = decodeURIComponent(callbackUrl)
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+    }
+
+    const errorUrlParam = c.req.query("errorUrl")
+    let errorUrl = typeof errorUrlParam === "string" ? errorUrlParam : undefined
+    if (errorUrl && errorUrl.includes("%")) {
+      try {
+        errorUrl = decodeURIComponent(errorUrl)
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+    }
+
     const forwardedHost = c.req.header("X-Forwarded-Host")
     const requestUrl = new URL(c.req.url)
 
-    const chrryUrl =
-      requestUrl.searchParams.get("chrryUrl") ||
-      forwardedHost ||
-      "https://chrry.ai"
-    const siteconfig = getSiteConfig(chrryUrl || undefined)
-
-    // Generate state for CSRF protection
-    const state = uuidv4()
-
-    // Store state in cookie for verification
-    c.header(
-      "Set-Cookie",
-      `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=Lax`,
-    )
+    // Generate state for CSRF protection and encode callback URLs in it
+    // Format: {stateId}:{callbackUrl}:{errorUrl}
+    const stateId = uuidv4()
+    const stateData = {
+      id: stateId,
+      callbackUrl: callbackUrl || "",
+      errorUrl: errorUrl || "",
+    }
+    // Base64 encode the state to make it URL-safe
+    const state = Buffer.from(JSON.stringify(stateData)).toString("base64url")
 
     // Build Google OAuth URL with API server callback
-    const redirectUri = `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/google`
+    const redirectUri = `${API_URL}/auth/callback/google`
     const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth")
     authUrl.searchParams.set("client_id", GOOGLE_WEB_CLIENT_ID)
     authUrl.searchParams.set("redirect_uri", redirectUri)
@@ -313,6 +333,23 @@ authRoutes.get("/callback/google", async (c) => {
     const state = c.req.query("state")
 
     if (!code || !state) {
+      return c.redirect(`https://chrry.ai/?error=oauth_failed`)
+    }
+
+    // Decode state to get callback URLs
+    let stateData: { id: string; callbackUrl: string; errorUrl: string }
+    try {
+      const stateJson = Buffer.from(state, "base64url").toString("utf-8")
+      stateData = JSON.parse(stateJson)
+    } catch (e) {
+      console.error("Failed to decode state:", e)
+      return c.redirect(`https://chrry.ai/?error=invalid_state`)
+    }
+
+    const storedCallbackUrl = stateData.callbackUrl
+    const storedErrorUrl = stateData.errorUrl
+
+    if (!code || !storedCallbackUrl || !storedErrorUrl) {
       // Get site config for error redirect
       const forwardedHost = c.req.header("X-Forwarded-Host")
       const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
@@ -322,27 +359,20 @@ authRoutes.get("/callback/google", async (c) => {
     const forwardedHost = c.req.header("X-Forwarded-Host")
     const requestUrl = new URL(c.req.url)
 
-    const chrryUrl =
-      requestUrl.searchParams.get("chrryUrl") ||
-      forwardedHost ||
-      "https://chrry.ai"
-    const siteconfig = getSiteConfig(chrryUrl || undefined)
+    // const chrryUrl =
+    //   requestUrl.searchParams.get("chrryUrl") ||
+    //   forwardedHost ||
+    //   "https://chrry.ai"
+    // const siteconfig = getSiteConfig(chrryUrl || undefined)
 
     // Verify state (CSRF protection)
-    const cookieHeader = c.req.header("cookie")
-    const stateMatch = cookieHeader?.match(/oauth_state=([^;]+)/)
-    const storedState = stateMatch ? stateMatch[1] : null
-
-    if (state !== storedState) {
-      return c.redirect(`${siteconfig.url}/?error=invalid_state`)
-    }
 
     // Exchange code for tokens
     if (!GOOGLE_WEB_CLIENT_ID || !GOOGLE_WEB_CLIENT_SECRET) {
-      return c.redirect(`${siteconfig.url}/?error=oauth_not_configured`)
+      return c.redirect(`${storedErrorUrl}/?error=oauth_not_configured`)
     }
 
-    const redirectUri = `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/google`
+    const redirectUri = `${API_URL}/auth/callback/google`
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -356,7 +386,7 @@ authRoutes.get("/callback/google", async (c) => {
     })
 
     if (!tokenResponse.ok) {
-      return c.redirect(`${siteconfig.url}/?error=token_exchange_failed`)
+      return c.redirect(`${storedErrorUrl}/?error=token_exchange_failed`)
     }
 
     const tokens = await tokenResponse.json()
@@ -370,7 +400,7 @@ authRoutes.get("/callback/google", async (c) => {
     )
 
     if (!userInfoResponse.ok) {
-      return c.redirect(`${siteconfig.url}/?error=user_info_failed`)
+      return c.redirect(`${storedErrorUrl}/?error=user_info_failed`)
     }
 
     const googleUser = await userInfoResponse.json()
@@ -390,23 +420,38 @@ authRoutes.get("/callback/google", async (c) => {
     }
 
     if (!user) {
-      return c.redirect(`${siteconfig.url}/?error=user_creation_failed`)
+      return c.redirect(`${storedErrorUrl}/?error=user_creation_failed`)
     }
 
     // Generate JWT token
     const token = generateToken(user.id, user.email)
 
+    // Determine cookie domain from callback URL
+    let cookieDomain = ""
+    try {
+      const callbackHostname = new URL(storedCallbackUrl).hostname
+      // Extract root domain (e.g., "chrry.ai" from "vex.chrry.ai")
+      const domainParts = callbackHostname.split(".")
+      if (domainParts.length >= 2) {
+        const rootDomain = domainParts.slice(-2).join(".")
+        cookieDomain = `; Domain=.${rootDomain}`
+      }
+    } catch (e) {
+      // If URL parsing fails, don't set domain (cookie will be host-only)
+    }
+
     // Set auth cookie with domain for cross-subdomain auth
+    const isDev = process.env.NODE_ENV === "development"
+    const secureFlag = isDev ? "" : "; Secure"
     c.header(
       "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax; Domain=.chrry.ai`,
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax${cookieDomain}${secureFlag}`,
     )
 
-    // Clear oauth_state cookie
-    c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
-
-    // Redirect back to the original chrryUrl (subdomain) with token in URL
-    return c.redirect(`${chrryUrl}/?auth_token=${token}`)
+    // Redirect back to the original site with token in URL
+    const redirectUrl = new URL(storedCallbackUrl)
+    redirectUrl.searchParams.set("auth_token", token)
+    return c.redirect(redirectUrl.toString())
   } catch (error) {
     console.error("Google OAuth callback error:", error)
     // Fallback to chrry.ai if we can't determine the site
@@ -563,25 +608,13 @@ authRoutes.post("/callback/apple", async (c) => {
     // Generate JWT token
     const token = generateToken(user.id, user.email)
 
-    // Set auth cookie with domain for cross-subdomain auth
-    c.header(
-      "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax; Domain=.chrry.ai`,
-    )
-
     // Clear oauth_state cookie
     c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
 
-    // Get the original chrryUrl from the request
+    // Redirect back to app with token in URL
     const forwardedHost = c.req.header("X-Forwarded-Host")
-    const requestUrl = new URL(c.req.url)
-    const chrryUrl =
-      requestUrl.searchParams.get("chrryUrl") ||
-      forwardedHost ||
-      "https://chrry.ai"
-
-    // Redirect back to the original chrryUrl (subdomain) with token in URL
-    return c.redirect(`${chrryUrl}/?auth_token=${token}`)
+    const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+    return c.redirect(`${siteconfig.url}/?auth_token=${token}`)
   } catch (error) {
     console.error("Apple OAuth callback error:", error)
     const forwardedHost = c.req.header("X-Forwarded-Host")

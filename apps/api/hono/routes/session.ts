@@ -196,6 +196,7 @@ session.get("/", async (c) => {
 
   // Detect domain for cookies from chrryUrl (for extensions), Referer, or Origin header
   const chrryUrl = getChrryUrl(request)
+
   const referer =
     request.headers.get("referer") || request.headers.get("origin")
   let cookieDomain: string | undefined = undefined

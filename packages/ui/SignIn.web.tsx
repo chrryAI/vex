@@ -180,9 +180,9 @@ export default function SignIn({
 
     // Store original subdomain URL for post-OAuth redirect
     // This allows us to use a single OAuth callback URL (chrry.ai) for all subdomains
-    if (!isDevelopment) {
-      successUrl.searchParams.set("chrryUrl", encodeURIComponent(CHRRY_URL))
-    }
+    // if (!isDevelopment) {
+    // successUrl.searchParams.set("chrryUrl", encodeURIComponent(CHRRY_URL))
+    // }
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")
 
@@ -312,9 +312,9 @@ export default function SignIn({
       // }
 
       await signInContext?.("google", {
-        callbackUrl: successUrl.toString(),
         redirect: true,
         errorUrl: errorUrl.href,
+        callbackUrl: successUrl.toString(),
       })
     }
 

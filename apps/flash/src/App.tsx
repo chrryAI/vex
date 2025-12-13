@@ -32,9 +32,15 @@ function App({ serverData }: AppProps) {
     },
   ) => {
     if (provider === "google") {
-      return auth.signInWithGoogle()
+      return auth.signInWithGoogle({
+        callbackUrl: options.callbackUrl,
+        errorUrl: options.errorUrl,
+      })
     } else if (provider === "apple") {
-      return auth.signInWithApple()
+      return auth.signInWithApple({
+        callbackUrl: options.callbackUrl,
+        errorUrl: options.errorUrl,
+      })
     } else if (
       provider === "credentials" &&
       options.email &&
