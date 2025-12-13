@@ -70,6 +70,7 @@ const TEST_MEMBER_FINGERPRINTS =
 const TEST_GUEST_FINGERPRINTS =
   process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
 
+const API_URL = process.env.INTERNAL_API_URL
 /**
  * Load all server-side data for SSR
  * This replaces Next.js server components data fetching
@@ -156,11 +157,13 @@ export async function loadServerData(
         screenHeight: Number(viewPortHeight),
         gift,
         source: "layout",
+        API_URL,
       }),
 
       getTranslations({
         token: apiKey,
         locale,
+        API_URL,
       }),
 
       getApp({
@@ -168,6 +171,7 @@ export async function loadServerData(
         appId,
         token: apiKey,
         pathname,
+        API_URL,
       }),
     ])
 
@@ -196,6 +200,7 @@ export async function loadServerData(
       pageSize: pageSizes.menuThreads,
       sort: "bookmark",
       token: apiKey,
+      API_URL,
     })
   } catch (error) {
     // captureException(error)
@@ -209,6 +214,7 @@ export async function loadServerData(
       pageSize: pageSizes.menuThreads,
       sort: "bookmark",
       token: apiKey,
+      API_URL,
     })
   } catch (error) {
     console.error("Error fetching threads:", error)
