@@ -292,7 +292,7 @@ export const getURL = ({
   isMember = false,
   extension = false,
 }: URLConfig) => {
-  const baseURL = isLive ? "https://vex.chrry.ai" : "http://localhost:3000"
+  const baseURL = isLive ? "https://vex.chrry.ai" : "http://localhost:5173"
   const fingerprint = isMember ? TEST_MEMBER_FINGERPRINTS[0] : undefined
   const params = new URLSearchParams()
 
