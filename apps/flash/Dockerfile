@@ -75,6 +75,7 @@ COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/dist ./apps/flash/di
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/server.js ./apps/flash/
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/public ./apps/flash/public
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/index.html ./apps/flash/
+COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/content ./apps/flash/content
 
 # Copy workspace packages (needed for imports) with proper ownership
 COPY --chown=viteuser:nodejs --from=builder /app/packages ./packages
