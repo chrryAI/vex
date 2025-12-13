@@ -269,6 +269,14 @@ authRoutes.get("/signin/google", async (c) => {
       return c.json({ error: "Google OAuth not configured" }, 500)
     }
 
+    // Allowed domains for callback URLs (security validation)
+    const ALLOWED_DOMAINS = [
+      ".chrry.ai",
+      ".chrry.dev",
+      ".chrry.store",
+      "localhost",
+    ]
+
     // Get callback URLs from query params and ensure they're strings
     const callbackUrlParam = c.req.query("callbackUrl")
     // Decode if already encoded (to prevent double-encoding)
@@ -282,6 +290,29 @@ authRoutes.get("/signin/google", async (c) => {
       }
     }
 
+    // Validate callback URL belongs to allowed domain
+    if (callbackUrl) {
+      try {
+        const callbackUrlObj = new URL(callbackUrl)
+        const isValidDomain = ALLOWED_DOMAINS.some(
+          (domain) =>
+            callbackUrlObj.hostname === domain.replace(".", "") ||
+            callbackUrlObj.hostname.endsWith(domain),
+        )
+        if (!isValidDomain) {
+          console.error("Invalid callback domain:", callbackUrlObj.hostname)
+          return c.json({ error: "Invalid callback domain" }, 400)
+        }
+      } catch (e) {
+        console.error("Invalid callback URL:", callbackUrl)
+        return c.json({ error: "Invalid callback URL" }, 400)
+      }
+    } else {
+      // Fallback to current origin if no callback URL provided
+      const requestUrl = new URL(c.req.url)
+      callbackUrl = `${requestUrl.protocol}//${requestUrl.host}`
+    }
+
     const errorUrlParam = c.req.query("errorUrl")
     let errorUrl = typeof errorUrlParam === "string" ? errorUrlParam : undefined
     if (errorUrl && errorUrl.includes("%")) {
@@ -290,6 +321,11 @@ authRoutes.get("/signin/google", async (c) => {
       } catch (e) {
         // If decode fails, use as-is
       }
+    }
+
+    // Fallback for error URL
+    if (!errorUrl) {
+      errorUrl = callbackUrl + "/?error=oauth_failed"
     }
 
     const forwardedHost = c.req.header("X-Forwarded-Host")
@@ -426,7 +462,8 @@ authRoutes.get("/callback/google", async (c) => {
     // Generate JWT token
     const token = generateToken(user.id, user.email)
 
-    // Determine cookie domain from callback URL
+    // Determine cookie domain from callback URL with validation
+    const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store"]
     let cookieDomain = ""
     try {
       const callbackHostname = new URL(storedCallbackUrl).hostname
@@ -434,9 +471,20 @@ authRoutes.get("/callback/google", async (c) => {
       const domainParts = callbackHostname.split(".")
       if (domainParts.length >= 2) {
         const rootDomain = domainParts.slice(-2).join(".")
-        cookieDomain = `; Domain=.${rootDomain}`
+        // Validate the root domain is in our allowed list
+        const isAllowed = ALLOWED_DOMAINS.some(
+          (allowed) =>
+            allowed === `.${rootDomain}` || rootDomain === "localhost",
+        )
+        if (isAllowed) {
+          cookieDomain = `; Domain=.${rootDomain}`
+        } else {
+          console.warn("Callback domain not in allowed list:", rootDomain)
+          // Don't set domain - cookie will be host-only for security
+        }
       }
     } catch (e) {
+      console.error("Failed to parse callback URL for cookie domain:", e)
       // If URL parsing fails, don't set domain (cookie will be host-only)
     }
 
