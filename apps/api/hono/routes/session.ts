@@ -323,7 +323,6 @@ session.get("/", async (c) => {
     const appVersion = url.searchParams.get("appVersion")
     const ip = getIp(request) // Fallback for internal Docker calls
     const gift = url.searchParams.get("gift")
-    console.log(`🚀 ~ session.get ~ gift:`, gift)
 
     // IP is now guaranteed to have a value (either real or fallback)
 
