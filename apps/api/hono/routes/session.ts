@@ -321,7 +321,7 @@ session.get("/", async (c) => {
       : uuidv4()
 
     const appVersion = url.searchParams.get("appVersion")
-    const ip = getIp(request) || "0.0.0.0" // Fallback for internal Docker calls
+    const ip = getIp(request) // Fallback for internal Docker calls
     const gift = url.searchParams.get("gift")
     console.log(`🚀 ~ session.get ~ gift:`, gift)
 
