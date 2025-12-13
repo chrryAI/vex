@@ -4,7 +4,7 @@ import { compare, hash } from "bcrypt"
 import { getUser, createUser, getStore } from "@repo/db"
 import { v4 as uuidv4 } from "uuid"
 import { isValidUsername } from "@chrryai/chrry/utils"
-import { getSiteConfig } from "@chrryai/chrry/config"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const authRoutes = new Hono()
 
