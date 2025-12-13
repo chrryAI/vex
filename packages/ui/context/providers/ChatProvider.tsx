@@ -174,7 +174,7 @@ export function ChatProvider({
     perplexityAgent,
     claudeAgent,
     favouriteAgent,
-    threadId,
+    threadIdRef,
     migratedFromGuestRef,
     fetchSession,
     loadingApp,
@@ -186,6 +186,8 @@ export function ChatProvider({
     setHasNotification,
     ...auth
   } = useAuth()
+
+  const threadId = threadIdRef.current
 
   const [isChatFloating, setIsChatFloating] = useState(false)
 

@@ -78,6 +78,7 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      threadIdRef: React.RefObject<string | undefined>
       setHasNotification: (value: boolean) => void
       lasProcessedSession: React.RefObject<string | undefined>
       setThreads: (value: { threads: thread[]; totalCount: number }) => void
@@ -297,8 +298,6 @@ export function AuthProvider({
 
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
-
-  console.log(`🚀 ~ pathname from useNavigation:`, pathname)
 
   useEffect(() => {
     if (error) {
@@ -727,6 +726,8 @@ export function AuthProvider({
   })
 
   const threadId = getThreadId(pathname)
+
+  const threadIdRef = useRef(threadId)
 
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
@@ -1252,6 +1253,7 @@ export function AuthProvider({
 
   const setThread = (thread: thread | undefined) => {
     setThreadInternal(thread)
+    threadIdRef.current = thread?.id
   }
 
   const [tasks, setTasks] = useState<
@@ -1561,6 +1563,7 @@ export function AuthProvider({
         userBaseApp,
         guestBaseApp,
         hasStoreApps,
+        threadIdRef,
         vex,
         fetchApps: async () => {
           await refetchApps()

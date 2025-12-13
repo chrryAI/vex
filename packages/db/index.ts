@@ -375,14 +375,19 @@ if (!connectionString) {
 const isRemoteDB = connectionString && !connectionString.includes("localhost")
 const disableSSL = process.env.DISABLE_DB_SSL === "true"
 
-const client = postgres(connectionString, {
-  ssl:
-    isRemoteDB && !disableSSL
-      ? {
-          rejectUnauthorized: false, // Accept self-signed certificates
-        }
-      : false,
-})
+const client = postgres(
+  connectionString,
+  isSeedSafe
+    ? undefined
+    : {
+        ssl:
+          isRemoteDB && !disableSSL
+            ? {
+                rejectUnauthorized: false, // Accept self-signed certificates
+              }
+            : false,
+      },
+)
 
 if (NODE_ENV !== "production" && !isCI) {
   if (!global.db) global.db = postgresDrizzle(client, { schema })
