@@ -74,7 +74,9 @@ const getClientHostname = () => {
 const hostname = getClientHostname()
 export const CHRRY_URL = hostname
   ? getSiteConfig(hostname).url
-  : "https://vex.chrry.ai"
+  : isDevelopment
+    ? `http://localhost:${(typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "5173"}`
+    : "https://vex.chrry.ai"
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99

@@ -2,6 +2,7 @@ import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import path from "path"
 import type { UserConfig } from "vite"
+import { swVersionPlugin } from "./vite-plugin-sw-version"
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode, isSsrBuild }) => {
@@ -11,8 +12,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
         jsxRuntime: "automatic",
         jsxImportSource: "react",
       }),
+      swVersionPlugin(),
     ],
-    publicDir: path.resolve(__dirname, "../web/public"),
+    publicDir: path.resolve(__dirname, "public"),
     resolve: {
       alias: {
         chrry: path.resolve(__dirname, "../../packages/ui"),
