@@ -135,13 +135,23 @@ const isValidFingerprint = (fp: string | null): boolean => {
 }
 
 // Initialize Arcjet with bot detection
+// Skip in development/E2E to avoid IP fingerprinting errors
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
-  rules: [
-    detectBot({
-      allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
-    }),
-  ],
+  rules:
+    process.env.ARCJET_ENV === "development" ||
+    process.env.NODE_ENV === "development" ||
+    process.env.E2E === "true"
+      ? [] // No rules in dev/E2E
+      : [
+          detectBot({
+            allow: [
+              "CATEGORY:SEARCH_ENGINE",
+              "CATEGORY:PREVIEW",
+              "CATEGORY:MONITOR",
+            ],
+          }),
+        ],
 })
 
 export const session = new Hono()

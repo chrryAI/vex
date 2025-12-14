@@ -18,7 +18,7 @@ const isE2E =
   process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
   process.env.TESTING_ENV === "e2e"
 
-const VERSION = "1.6.89"
+const VERSION = "1.6.90"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -322,6 +322,11 @@ app.use("*all", async (req, res) => {
         pathname: url,
         headers: req.headers,
         cookies: req.cookies || {},
+        ip:
+          req.ip ||
+          req.headers["x-forwarded-for"] ||
+          req.headers["x-real-ip"] ||
+          "0.0.0.0", // Extract client IP
       }
       serverData = await loadData(context)
 
