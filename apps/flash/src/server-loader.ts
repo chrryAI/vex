@@ -29,6 +29,7 @@ export interface ServerRequest {
   pathname: string
   headers: Record<string, string | undefined>
   cookies: Record<string, string | undefined>
+  ip?: string // Client IP address from x-forwarded-for or req.ip
 }
 
 export interface ServerData {
@@ -109,6 +110,13 @@ export async function loadServerData(
   const viewPortWidth = cookies.viewPortWidth || ""
   const viewPortHeight = cookies.viewPortHeight || ""
 
+  // Extract client IP from request (for Arcjet fingerprinting)
+  const clientIp =
+    request.ip ||
+    headers["x-forwarded-for"] ||
+    headers["x-real-ip"] ||
+    "0.0.0.0"
+
   // Handle OAuth callback token
   const authToken = urlObj.searchParams.get("auth_token")
 
@@ -159,6 +167,7 @@ export async function loadServerData(
         gift: gift || undefined,
         source: "layout",
         API_URL,
+        ip: clientIp, // Pass client IP for Arcjet
       }),
 
       getTranslations({

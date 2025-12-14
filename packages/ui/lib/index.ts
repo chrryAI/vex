@@ -968,6 +968,7 @@ export const getSession = async ({
   translate,
   locale,
   source = "client",
+  ip, // Client IP address for Arcjet
 }: {
   appId?: string
   pathname?: string
@@ -989,6 +990,7 @@ export const getSession = async ({
   translate?: boolean
   locale?: string
   source?: string
+  ip?: string // Client IP address
 }) => {
   if (!deviceId) {
     return
@@ -1027,6 +1029,7 @@ export const getSession = async ({
       ...(locale ? { "x-locale": locale } : {}),
       ...(fingerprint ? { "x-fp": fingerprint } : {}),
       ...(chrryUrl ? { "x-chrry-url": chrryUrl } : {}),
+      ...(ip ? { "x-forwarded-for": ip } : {}), // Pass client IP for Arcjet
     },
   })
 
