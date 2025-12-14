@@ -27,17 +27,28 @@ export interface CookieOptions {
  * Stringify cookie options for document.cookie
  */
 export function stringifyOptions(options: CookieOptions) {
+  const keyMap: Record<string, string> = {
+    sameSite: "SameSite",
+    maxAge: "Max-Age",
+    path: "Path",
+    domain: "Domain",
+    secure: "Secure",
+    expires: "Expires",
+  }
+
   return Object.keys(options).reduce((acc, key) => {
     if (key === "days") {
       return acc
     } else {
       const value = options[key as keyof CookieOptions]
-      if (value === false) {
+      const cookieKey = keyMap[key] || key
+
+      if (value === false || value === undefined) {
         return acc
       } else if (value === true) {
-        return `${acc}; ${key}`
+        return `${acc}; ${cookieKey}`
       } else if (value) {
-        return `${acc}; ${key}=${value}`
+        return `${acc}; ${cookieKey}=${value}`
       }
       return acc
     }
@@ -54,23 +65,35 @@ export const setCookieWeb = (
 ) => {
   if (!isBrowser) return
 
+  const isLocalhost =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+
   const optionsWithDefaults = {
     days: 7,
     path: "/",
+    sameSite: "lax" as const,
     ...options,
+    // Skip domain and secure on localhost (they don't work on http://)
+    ...(isLocalhost ? { domain: undefined, secure: undefined } : {}),
   }
 
   const expires = new Date(
     Date.now() + (optionsWithDefaults.days || 7) * 864e5,
   ).toUTCString()
 
-  document.cookie =
+  const cookieString =
     name +
     "=" +
     encodeURIComponent(value) +
     "; expires=" +
     expires +
     stringifyOptions(optionsWithDefaults)
+
+  document.cookie = cookieString
+
+  // Verify cookie was set
+  const wasSet = document.cookie.includes(name)
 }
 
 /**
@@ -95,6 +118,40 @@ export const removeCookieWeb = (name: string) => {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
 }
 
+export function useCookieWeb(
+  key: string,
+  initialValue: string = "",
+): [string, (value: string, options?: CookieOptions) => void, () => void] {
+  // For web: use synchronous cookie access
+  const [item, setItem] = useState<string>(() => {
+    const existingCookie = getCookieWeb(key, "")
+
+    // If cookie doesn't exist and we have an initialValue, set it
+    if (!existingCookie && initialValue) {
+      setCookieWeb(key, initialValue)
+      return initialValue
+    }
+
+    return existingCookie || initialValue
+  })
+
+  const updateItem = useCallback(
+    (value: string, options?: CookieOptions) => {
+      setItem(value)
+      setCookieWeb(key, value, options)
+    },
+    [key],
+  )
+
+  const removeItem = useCallback(() => {
+    setItem(initialValue)
+
+    removeCookieWeb(key)
+  }, [key, initialValue])
+
+  return [item, updateItem, removeItem]
+}
+
 /**
  * Cross-platform cookie hook
  * - Web: Uses document.cookie (synchronous)
@@ -105,36 +162,7 @@ export function useCookie(
   key: string,
   initialValue: string = "",
 ): [string, (value: string, options?: CookieOptions) => void, () => void] {
-  // For web: use synchronous cookie access
-  if (isBrowser && !isNative() && !isBrowserExtension()) {
-    const [item, setItem] = useState<string>(() => {
-      const existingCookie = getCookieWeb(key, "")
-
-      // If cookie doesn't exist and we have an initialValue, set it
-      if (!existingCookie && initialValue) {
-        setCookieWeb(key, initialValue)
-        return initialValue
-      }
-
-      return existingCookie || initialValue
-    })
-
-    const updateItem = useCallback(
-      (value: string, options?: CookieOptions) => {
-        setItem(value)
-        setCookieWeb(key, value, options)
-      },
-      [key],
-    )
-
-    const removeItem = useCallback(() => {
-      setItem(initialValue)
-      removeCookieWeb(key)
-    }, [key, initialValue])
-
-    return [item, updateItem, removeItem]
-  }
-
+  const [i, s, r] = useCookieWeb(key, initialValue)
   // For native/extension: use async storage
   const [value, setValue] = useState<string>(initialValue)
 
@@ -150,6 +178,10 @@ export function useCookie(
     setValue(initialValue)
     storage.removeItem(key)
   }, [key, initialValue])
+
+  if (isBrowser && !isNative() && !isBrowserExtension()) {
+    return [i, s, r]
+  }
 
   return [value, updateItem, removeItem]
 }
@@ -291,26 +323,33 @@ async function setCookieValue(
     let cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
 
     if (options.maxAge) {
-      cookieString += `; max-age=${options.maxAge}`
+      cookieString += `; Max-Age=${options.maxAge}`
     }
 
     if (options.expires) {
-      cookieString += `; expires=${options.expires.toUTCString()}`
+      cookieString += `; Expires=${options.expires.toUTCString()}`
     }
 
     // Always set path to root if not specified
-    cookieString += `; path=${options.path || "/"}`
+    cookieString += `; Path=${options.path || "/"}`
 
     if (options.domain) {
-      cookieString += `; domain=${options.domain}`
+      cookieString += `; Domain=${options.domain}`
     }
 
     if (options.secure) {
-      cookieString += "; secure"
+      cookieString += "; Secure"
     }
 
     if (options.sameSite) {
-      cookieString += `; samesite=${options.sameSite}`
+      // Capitalize standard values for consistency
+      const ss =
+        options.sameSite === "none"
+          ? "None"
+          : options.sameSite === "lax"
+            ? "Lax"
+            : "Strict"
+      cookieString += `; SameSite=${ss}`
     }
 
     document.cookie = cookieString

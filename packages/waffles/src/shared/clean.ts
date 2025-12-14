@@ -5,6 +5,7 @@ export async function clean({ page }: { page: Page }) {
   await page.goto(getURL({ isLive: false, isMember: false }), {
     waitUntil: "networkidle",
   })
+
   const clearSessionButton = page.getByTestId("clear-session")
 
   await expect(clearSessionButton).toBeVisible({

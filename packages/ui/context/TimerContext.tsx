@@ -976,9 +976,7 @@ export function TimerContextProvider({
   const kitasakuRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    playBirds === true
-      ? trackEvent({ name: "play_bird_sound" })
-      : playBirds === false && trackEvent({ name: "stop_bird_sound" })
+    playBirds && trackEvent({ name: "play_bird_sound" })
 
     // Only use Audio API on web (check for global Audio constructor)
     if (typeof window !== "undefined" && "Audio" in window) {

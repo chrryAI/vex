@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid"
-import { VERSION, getThreadId, pageSizes } from "@chrryai/chrry/utils"
+import { VERSION, getThreadId, pageSizes, isE2E } from "@chrryai/chrry/utils"
 import {
   getApp,
   getSession,
@@ -29,6 +29,7 @@ export interface ServerRequest {
   pathname: string
   headers: Record<string, string | undefined>
   cookies: Record<string, string | undefined>
+  ip?: string // Client IP address from x-forwarded-for or req.ip
 }
 
 export interface ServerData {
@@ -50,6 +51,7 @@ export interface ServerData {
   isDev: boolean
   apiError?: Error
   theme: "light" | "dark"
+  pathname: string // SSR pathname for thread ID extraction
   metadata?: {
     title?: string
     description?: string
@@ -65,12 +67,6 @@ export interface ServerData {
   isBlogRoute?: boolean
 }
 
-const TEST_MEMBER_FINGERPRINTS =
-  process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || []
-const TEST_GUEST_FINGERPRINTS =
-  process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
-
-const API_URL = process.env.INTERNAL_API_URL
 /**
  * Load all server-side data for SSR
  * This replaces Next.js server components data fetching
@@ -80,12 +76,35 @@ export async function loadServerData(
 ): Promise<ServerData> {
   const { hostname, headers, cookies, url } = request
 
+  const isDev = process.env.MODE === "development"
+
+  const API_URL = isDev ? "http://localhost:3001/api" : "http://api:3001/api"
+
+  // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
+  let TEST_MEMBER_FINGERPRINTS: string[] = []
+  let TEST_GUEST_FINGERPRINTS: string[] = []
+  let TEST_MEMBER_EMAILS: string[] = []
+
+  if (isE2E) {
+    try {
+      const testConfigUrl = `${API_URL}/test-config`
+      const testConfigResponse = await fetch(testConfigUrl)
+      if (testConfigResponse.ok) {
+        const testConfig = await testConfigResponse.json()
+        TEST_MEMBER_FINGERPRINTS = testConfig.TEST_MEMBER_FINGERPRINTS || []
+        TEST_GUEST_FINGERPRINTS = testConfig.TEST_GUEST_FINGERPRINTS || []
+        TEST_MEMBER_EMAILS = testConfig.TEST_MEMBER_EMAILS || []
+      }
+    } catch (error) {
+      console.error("Failed to fetch test config:", error)
+    }
+  }
+
   const pathname = request.pathname.startsWith("/")
     ? request.pathname
     : `/${request.pathname}`
 
   const threadId = getThreadId(pathname)
-  const isDev = process.env.MODE === "development"
   const urlObj = new URL(url, `http://${hostname}`)
 
   // Parse query string for fp parameter (only if URL contains query params)
@@ -93,6 +112,12 @@ export async function loadServerData(
   if (url.includes("?")) {
     fpFromQuery = urlObj.searchParams.get("fp")
   }
+
+  console.log(`🚀 ~ fpFromQuery:`, {
+    fpFromQuery,
+    TEST_MEMBER_FINGERPRINTS,
+    TEST_GUEST_FINGERPRINTS,
+  })
 
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
   const fingerprint =
@@ -107,6 +132,13 @@ export async function loadServerData(
   const routeType = headers["x-route-type"]
   const viewPortWidth = cookies.viewPortWidth || ""
   const viewPortHeight = cookies.viewPortHeight || ""
+
+  // Extract client IP from request (for Arcjet fingerprinting)
+  const clientIp =
+    request.ip ||
+    headers["x-forwarded-for"] ||
+    headers["x-real-ip"] ||
+    "0.0.0.0"
 
   // Handle OAuth callback token
   const authToken = urlObj.searchParams.get("auth_token")
@@ -155,9 +187,10 @@ export async function loadServerData(
         chrryUrl,
         screenWidth: Number(viewPortWidth),
         screenHeight: Number(viewPortHeight),
-        gift,
+        gift: gift || undefined,
         source: "layout",
         API_URL,
+        ip: clientIp, // Pass client IP for Arcjet
       }),
 
       getTranslations({
@@ -260,6 +293,7 @@ export async function loadServerData(
       isDev,
       apiError,
       theme,
+      pathname,
     })
   } catch (error) {
     console.error("Error generating metadata in server-loader:", error)
@@ -285,5 +319,6 @@ export async function loadServerData(
     blogPosts,
     blogPost,
     isBlogRoute,
+    pathname, // Add pathname so client knows the SSR route
   }
 }

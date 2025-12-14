@@ -69,7 +69,10 @@ import {
 import { scanFileForMalware } from "../../lib/security"
 import { upload } from "../../lib/minio"
 import slugify from "slug"
-import { notifyOwnerAndCollaborations } from "../../lib/notify"
+import {
+  notifyOwnerAndCollaborations as notifyOwnerAndCollaborationsInternal,
+  notifyOwnerAndCollaborationsPayload,
+} from "../../lib/notify"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import { captureException } from "@sentry/node"
 import generateAIContent from "../../lib/generateAIContent"
@@ -542,6 +545,24 @@ app.post("/", async (c) => {
     deviceId,
     ...rest
   } = requestData
+
+  const notifyOwnerAndCollaborations = (
+    x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
+  ) => {
+    notifyOwnerAndCollaborationsInternal({
+      ...x,
+      payload: {
+        ...x.payload,
+        data: {
+          ...x.payload.data,
+          deviceId: x.payload.data?.deviceId ?? deviceId,
+          clientId: x.payload.data?.clientId ?? clientId,
+          streamId: x.payload.data?.streamId ?? streamId,
+        },
+      },
+      c,
+    })
+  }
 
   async function enhancedStreamChunk({
     chunk,
@@ -2211,6 +2232,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     try {
       if (m && selectedAgent) {
         await generateAIContent({
+          c,
           thread,
           user: member,
           guest,

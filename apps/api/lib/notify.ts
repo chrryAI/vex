@@ -12,6 +12,8 @@ import { FRONTEND_URL, WS_SERVER_URL, WS_URL } from "@chrryai/chrry/utils"
 import webpush from "web-push"
 import captureException from "./captureException"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { sendWebPush } from "./sendWebPush"
+import { Context } from "hono"
 
 const siteConfig = getSiteConfig()
 
@@ -148,15 +150,8 @@ export async function notify(
   }
 }
 
-export const notifyOwnerAndCollaborations = async ({
-  notifySender,
-  member,
-  guest,
-  thread,
-  pushNotification,
-  payload,
-}: {
-  pushNotification?: boolean
+export type notifyOwnerAndCollaborationsPayload = {
+  c: Context
   notifySender?: boolean
   member?: user
   guest?: guest
@@ -168,6 +163,7 @@ export const notifyOwnerAndCollaborations = async ({
       user: user
     }[]
   }
+  pushNotification?: boolean
   payload: {
     type:
       | "stream_chunk"
@@ -199,7 +195,17 @@ export const notifyOwnerAndCollaborations = async ({
           clientId?: string
         }
   }
-}) => {
+}
+
+export const notifyOwnerAndCollaborations = async ({
+  c,
+  notifySender,
+  member,
+  guest,
+  thread,
+  pushNotification,
+  payload,
+}: notifyOwnerAndCollaborationsPayload) => {
   if (notifySender) {
     const recipientId = member?.id || guest?.id || ""
     console.log(
@@ -211,11 +217,6 @@ export const notifyOwnerAndCollaborations = async ({
       console.error(`❌ Failed to notify ${recipientId}:`, error)
     }
   }
-  webpush.setVapidDetails(
-    `mailto:${siteConfig.email}`,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!,
-  )
 
   thread?.collaborations?.map(async (collaboration) => {
     if (collaboration.user.id !== member?.id) {
@@ -228,6 +229,19 @@ export const notifyOwnerAndCollaborations = async ({
 
         if (subscription && collaboration.collaboration.status === "active") {
           // Always send push notifications, let client handle deduplication
+
+          sendWebPush({
+            c,
+            userId: collaboration.user.id,
+            payload: {
+              title: "Collaboration Request",
+              body: "You have a new collaboration request",
+              icon: "/icon-128.png",
+              data: {
+                url: `${FRONTEND_URL}/threads/${thread.id}`,
+              },
+            },
+          })
           const result = await webpush.sendNotification(
             {
               endpoint: subscription.endpoint,

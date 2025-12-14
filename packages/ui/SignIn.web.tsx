@@ -5,7 +5,7 @@ import clsx from "clsx"
 import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
 import { apiFetch, CHRRY_URL, isDevelopment } from "./utils"
 import { FaGoogle, FaApple } from "react-icons/fa"
-
+import { getSiteConfig } from "./utils/siteConfig"
 export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
 }
@@ -162,9 +162,11 @@ export default function SignIn({
       }
     }
 
+    const siteConfig = getSiteConfig(CHRRY_URL)
+
     // For OAuth (Google/Apple), always use chrry.ai as callback to avoid URL limit issues
     // We'll redirect back to the original subdomain after auth
-    const baseUrl = isDevelopment ? FRONTEND_URL : "https://chrry.ai"
+    const baseUrl = isDevelopment ? FRONTEND_URL : siteConfig.url
 
     const errorUrl = new URL(baseUrl + "/?signIn=login&error")
     // Create URLs for both success and error cases
@@ -178,9 +180,9 @@ export default function SignIn({
 
     // Store original subdomain URL for post-OAuth redirect
     // This allows us to use a single OAuth callback URL (chrry.ai) for all subdomains
-    if (!isDevelopment && CHRRY_URL !== "https://chrry.ai") {
-      successUrl.searchParams.set("chrryUrl", encodeURIComponent(CHRRY_URL))
-    }
+    // if (!isDevelopment) {
+    // successUrl.searchParams.set("chrryUrl", encodeURIComponent(CHRRY_URL))
+    // }
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")
 
@@ -310,9 +312,9 @@ export default function SignIn({
       // }
 
       await signInContext?.("google", {
-        callbackUrl: successUrl.toString(),
         redirect: true,
         errorUrl: errorUrl.href,
+        callbackUrl: successUrl.toString(),
       })
     }
 

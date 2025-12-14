@@ -15,6 +15,7 @@ import { apiFetch } from "./utils"
 import { Button, Div, usePlatform } from "./platform"
 import toast from "react-hot-toast"
 import Weather from "./Weather"
+import { isDevelopment, getEnv } from "./utils"
 import { useEnableNotificationsStyles } from "./EnableNotifications.styles"
 
 export default function EnableNotifications({
@@ -188,7 +189,7 @@ export default function EnableNotifications({
       return
     }
     if (swRegistration && !pushSubscription) {
-      const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+      const publicVapidKey = getEnv().NEXT_PUBLIC_VAPID_PUBLIC_KEY!
 
       const subscription = await subscribeToPushNotifications(
         swRegistration,
@@ -211,9 +212,9 @@ export default function EnableNotifications({
 
   // Show notification button for extensions if permission not granted, for web if service worker ready
   const shouldShow =
-    (device === "desktop" || isStandalone) &&
+    (device !== "mobile" || isStandalone) &&
     !isExtension &&
-    (user || guest)?.lastMessage &&
+    (isDevelopment || (user || guest)?.lastMessage) &&
     isSubscribed === false &&
     swRegistration
 

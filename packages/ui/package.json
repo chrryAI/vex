@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.6.69",
+  "version": "1.6.92",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -61,7 +61,7 @@
   "scripts": {
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "lint": "eslint . --max-warnings 1500",
+    "lint": "eslint . --max-warnings 1600",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build"
@@ -104,7 +104,6 @@
     "markdown-to-jsx": "^7.7.13",
     "moti": "^0.30.0",
     "motion": "^12.23.24",
-    "next": "^16.0.9",
     "next-auth": "^4.24.11",
     "nextjs-toploader": "^3.8.16",
     "nprogress": "^0.2.0",

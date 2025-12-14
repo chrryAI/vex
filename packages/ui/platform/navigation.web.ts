@@ -9,19 +9,8 @@ import {
   useSearchParams as useClientSearchParams,
 } from "../hooks/useWindowHistory"
 
-// Try to import Next.js hooks, but don't fail if they're not available
-let useNextRouter: any
-let useNextPathname: any
-let useNextSearchParams: any
-
-try {
-  const nextNavigation = require("next/navigation")
-  useNextRouter = nextNavigation.useRouter
-  useNextPathname = nextNavigation.usePathname
-  useNextSearchParams = nextNavigation.useSearchParams
-} catch {
-  // Next.js not available - will use client router
-}
+// No longer using Next.js - fully migrated to Vite
+// All navigation now uses client-side router from useWindowHistory
 
 export interface NavigationOptions {
   scroll?: boolean // Scroll to top after navigation (default: true)
@@ -44,79 +33,51 @@ export interface NavigationParams {
 }
 
 // Detect if we're in a Next.js environment
-const isNextJsEnvironment = () => {
-  if (typeof window === "undefined") return true // SSR
-  // Check if Next.js router context exists
-  try {
-    return !!(window as any).__NEXT_DATA__
-  } catch {
-    return false
-  }
-}
+// No longer needed - fully migrated to Vite
+// Keeping function for backwards compatibility but always returns false
+const isNextJsEnvironment = () => false
 
 /**
- * Web navigation hook using Next.js router ONLY
+ * Web navigation hook using client-side router (Vite)
  * For extensions, use navigation.extension.ts instead
  */
 export function useNavigation(): NavigationParams {
-  // Try to use Next.js hooks if available, otherwise fall back to client router
-  const nextRouter = useNextRouter?.()
-  const pathname = useNextPathname?.() || useClientPathname()
-  const searchParams = useNextSearchParams?.() || useClientSearchParams()
-
-  // Get clientRouter for bulletproof client-side navigation actions
+  // Use client router for all navigation (Vite migration complete)
+  const pathname = useClientPathname()
+  const searchParams = useClientSearchParams()
   const clientRouter = useClientRouter()
 
   const push = useCallback(
     (path: string, options?: NavigationOptions) => {
-      // Default to clientOnly: true for blazing fast navigation! ⚡️
-      const useClientOnly = options?.clientOnly !== false
-
-      if (useClientOnly) {
-        // Bulletproof client-side navigation using window.history (DEFAULT)
-        clientRouter.push(path, { scroll: options?.scroll })
-      } else {
-        // Next.js navigation with server data fetching (opt-in with clientOnly: false)
-        nextRouter?.push(path, { scroll: options?.scroll })
-      }
+      // Client-side navigation using window.history
+      clientRouter.push(path, { scroll: options?.scroll })
     },
-    [nextRouter, clientRouter],
+    [clientRouter],
   )
 
   const replace = useCallback(
     (path: string, options?: NavigationOptions) => {
-      // Default to clientOnly: true for blazing fast navigation! ⚡️
-      const useClientOnly = options?.clientOnly !== false
-
-      if (useClientOnly) {
-        // Bulletproof client-side navigation using window.history (DEFAULT)
-        clientRouter.replace(path, { scroll: options?.scroll })
-      } else {
-        // Next.js navigation with server data fetching (opt-in with clientOnly: false)
-        nextRouter?.replace(path, { scroll: options?.scroll })
-      }
+      // Client-side navigation using window.history
+      clientRouter.replace(path, { scroll: options?.scroll })
     },
-    [nextRouter, clientRouter],
+    [clientRouter],
   )
 
   const back = useCallback(() => {
-    nextRouter?.back()
-  }, [nextRouter])
+    clientRouter.back()
+  }, [clientRouter])
 
   const forward = useCallback(() => {
-    nextRouter?.forward()
-  }, [nextRouter])
+    clientRouter.forward()
+  }, [clientRouter])
 
   const refresh = useCallback(() => {
-    nextRouter?.refresh()
-  }, [nextRouter])
+    window.location.reload()
+  }, [])
 
-  const prefetch = useCallback(
-    (path: string) => {
-      nextRouter?.prefetch(path)
-    },
-    [nextRouter],
-  )
+  const prefetch = useCallback((path: string) => {
+    // No-op for now - could implement link prefetching later
+  }, [])
 
   const addParams = useCallback(
     (params: Record<string, string | number | boolean>) => {
@@ -127,14 +88,10 @@ export function useNavigation(): NavigationParams {
       const queryString = newSearchParams.toString()
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
-      // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
-      if (nextRouter) {
-        nextRouter.push(newUrl)
-      } else {
-        clientRouter.push(newUrl)
-      }
+      // Use client router for all navigation
+      clientRouter.push(newUrl)
     },
-    [nextRouter, clientRouter, pathname, searchParams],
+    [clientRouter, pathname, searchParams],
   )
 
   const removeParams = useCallback(
@@ -145,14 +102,10 @@ export function useNavigation(): NavigationParams {
       const queryString = newSearchParams.toString()
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
-      // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
-      if (nextRouter) {
-        nextRouter.push(newUrl)
-      } else {
-        clientRouter.push(newUrl)
-      }
+      // Use client router for all navigation
+      clientRouter.push(newUrl)
     },
-    [nextRouter, clientRouter, pathname, searchParams],
+    [clientRouter, pathname, searchParams],
   )
 
   const setParams = useCallback(
@@ -164,14 +117,10 @@ export function useNavigation(): NavigationParams {
       const queryString = newSearchParams.toString()
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
-      // Use clientRouter if nextRouter is not available (Vite/non-Next.js)
-      if (nextRouter) {
-        nextRouter.push(newUrl)
-      } else {
-        clientRouter.push(newUrl)
-      }
+      // Use client router for all navigation
+      clientRouter.push(newUrl)
     },
-    [nextRouter, clientRouter, pathname],
+    [clientRouter, pathname],
   )
 
   return useMemo(
@@ -208,7 +157,7 @@ export function useNavigation(): NavigationParams {
  * Get current pathname (web)
  */
 export function useCurrentPathname(): string {
-  const pathname = useNextPathname?.() || useClientPathname()
+  const pathname = useClientPathname()
   return pathname || "/"
 }
 
@@ -216,7 +165,7 @@ export function useCurrentPathname(): string {
  * Get search params (web)
  */
 export function useCurrentSearchParams(): URLSearchParams {
-  const searchParams = useNextSearchParams?.() || useClientSearchParams()
+  const searchParams = useClientSearchParams()
   return searchParams || new URLSearchParams()
 }
 

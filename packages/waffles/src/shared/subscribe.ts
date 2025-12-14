@@ -168,7 +168,7 @@ export const subscribe = async ({
       timeout: 25000,
     })
 
-    await (await getFirstMenuThread()).click()
+    await first.click()
 
     await wait(5000)
 

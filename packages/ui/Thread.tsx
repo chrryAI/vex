@@ -62,8 +62,17 @@ const Thread = ({
   const { t } = useAppContext()
 
   // Auth context
-  const { user, guest, track, memoriesEnabled, setShowFocus, ...auth } =
-    useAuth()
+  const {
+    user,
+    guest,
+    track,
+    threadIdRef,
+    memoriesEnabled,
+    setShowFocus,
+    ...auth
+  } = useAuth()
+
+  const threadId = auth.threadId || threadIdRef.current
 
   // Chat context
   const {
@@ -116,7 +125,7 @@ const Thread = ({
     goToCalendar,
   } = useNavigationContext()
 
-  const { threadId, setShouldGetCredits } = useChat()
+  const { setShouldGetCredits } = useChat()
 
   // Use setMessagesInternal directly instead of wrapping it
   const setMessages = setMessagesInternal
@@ -243,21 +252,71 @@ const Thread = ({
       if (!clientId) return
 
       setMessages((prev) => {
-        return prev.map((m) =>
-          m.message.id === clientId && !m.message.isStreamingStop
-            ? {
-                ...m,
-                message: {
-                  ...m.message,
-                  content,
-                  isStreaming: true,
-                  isWebSearchEnabled: !!isWebSearchEnabled,
-                  isImageGenerationEnabled: !!isImageGenerationEnabled,
-                },
-                aiAgent: aiAgent ?? m.aiAgent,
-              }
-            : m,
+        const existingIndex = prev.findIndex(
+          (m) => m.message.id === clientId && !m.message.isStreamingStop,
         )
+
+        // If message exists, update it
+        if (existingIndex >= 0) {
+          return prev.map((m) =>
+            m.message.id === clientId && !m.message.isStreamingStop
+              ? {
+                  ...m,
+                  message: {
+                    ...m.message,
+                    content,
+                    isStreaming: true,
+                    isWebSearchEnabled: !!isWebSearchEnabled,
+                    isImageGenerationEnabled: !!isImageGenerationEnabled,
+                  },
+                  aiAgent: aiAgent ?? m.aiAgent,
+                }
+              : m,
+          )
+        }
+
+        // If message doesn't exist, add it (from other device/collaboration)
+        return [
+          ...prev,
+          {
+            message: {
+              id: clientId,
+              type: "chat" as const,
+              content,
+              createdOn: new Date(),
+              updatedOn: new Date(),
+              agentId: aiAgent?.id || null,
+              agentVersion: aiAgent?.version || null,
+              threadId: threadId || "",
+              readOn: new Date(),
+              userId: user?.id || null,
+              guestId: guest?.id || null,
+              searchContext: null,
+              webSearchResult: null,
+              metadata: null,
+              originalContent: content,
+              images: null,
+              files: null,
+              isWebSearchEnabled: !!isWebSearchEnabled,
+              isImageGenerationEnabled: !!isImageGenerationEnabled,
+              isStreaming: true,
+              reasoning: null,
+              like: null,
+              dislike: null,
+              creditCost: aiAgent?.creditCost || 1,
+              task: "chat",
+              reactions: null,
+              clientId,
+              audio: null,
+              video: null,
+              selectedAgentId: aiAgent?.id || null,
+              debateAgentId: null,
+              pauseDebate: false,
+            },
+            aiAgent: aiAgent,
+            thread: thread,
+          },
+        ]
       })
     },
     [isLoadingMore, scrollToBottom, setMessages, shouldAutoScroll],
@@ -407,31 +466,30 @@ const Thread = ({
                         ? appFormPlaceholder
                         : !!appStatus?.part
                           ? `${t("Ask anything, I will explain")} 💭`
-                          : (t(placeHolderText || "") ??
-                            (selectedAgent?.capabilities.imageGeneration
-                              ? t("Describe anything...")
-                              : isWebSearchEnabled
-                                ? `${t("Search anything")}${iWillRemember}`
-                                : debateAgent && selectedAgent
+                          : debateAgent && selectedAgent
+                            ? t(
+                                "Start the {{selectedAgent}} vs {{debateAgent}} debate...",
+                                {
+                                  selectedAgent: selectedAgent.displayName,
+                                  debateAgent: debateAgent.displayName,
+                                },
+                              )
+                            : isPendingCollaboration
+                              ? t("Accept collaboration to continue")
+                              : selectedAgent === null
+                                ? thread?.collaborations &&
+                                  thread?.collaborations?.length > 0
                                   ? t(
-                                      "Start the {{selectedAgent}} vs {{debateAgent}} debate...",
-                                      {
-                                        selectedAgent:
-                                          selectedAgent.displayName,
-                                        debateAgent: debateAgent.displayName,
-                                      },
+                                      "Chatting with your team. Invite AI to conversation...",
                                     )
-                                  : isPendingCollaboration
-                                    ? t("Accept collaboration to continue")
-                                    : selectedAgent === null
-                                      ? thread?.collaborations &&
-                                        thread?.collaborations?.length > 0
-                                        ? t(
-                                            "Chatting with your team. Invite AI to conversation...",
-                                          )
-                                        : t("Message yourself...")
-                                      : collaborator
-                                        ? t("Add AI to conversation...")
+                                  : t("Message yourself...")
+                                : collaborator
+                                  ? t("Add AI to conversation...")
+                                  : (t(placeHolderText || "") ??
+                                    (selectedAgent?.capabilities.imageGeneration
+                                      ? t("Describe anything...")
+                                      : isWebSearchEnabled
+                                        ? `${t("Search anything")}${iWillRemember}`
                                         : `${t("Ask anything")}${iWillRemember}`))
                     }
                     Top={
@@ -817,14 +875,7 @@ const Thread = ({
                           }),
                         )
 
-                      if (
-                        !isIncognito &&
-                        !id &&
-                        message?.message.threadId &&
-                        (debateAgent
-                          ? message.message.agentId === debateAgent?.id
-                          : true)
-                      ) {
+                      if (!isIncognito && !id && message?.message.threadId) {
                         requestAnimationFrame(() => {
                           const navigationOptions = {
                             state: { preservedThread: thread } as {

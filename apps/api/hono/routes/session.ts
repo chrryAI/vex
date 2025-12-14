@@ -80,10 +80,11 @@ const setFingerprintCookie = (
   // Extensions manage their own storage - don't set web cookies
   if (isExtension) return
 
+  // Cross-subdomain cookie for auth: SameSite=None; Secure; scoped to root domain
   setCookie(c, "fingerprint", fingerprint, {
-    httpOnly: true,
+    httpOnly: false, // allow client access when needed
     secure: !isDevelopment,
-    sameSite: "Lax",
+    sameSite: "None",
     maxAge: 60 * 60 * 24 * 365, // 1 year
     path: "/",
     domain: domain || undefined,
@@ -100,9 +101,9 @@ const setDeviceIdCookie = (
   if (isExtension) return
 
   setCookie(c, "deviceId", deviceId, {
-    httpOnly: true,
+    httpOnly: false,
     secure: !isDevelopment,
-    sameSite: "Lax",
+    sameSite: "None",
     maxAge: 60 * 60 * 24 * 365, // 1 year
     path: "/",
     domain: domain || undefined,
@@ -134,13 +135,23 @@ const isValidFingerprint = (fp: string | null): boolean => {
 }
 
 // Initialize Arcjet with bot detection
+// Skip in development/E2E to avoid IP fingerprinting errors
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
-  rules: [
-    detectBot({
-      allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
-    }),
-  ],
+  rules:
+    process.env.ARCJET_ENV === "development" ||
+    process.env.NODE_ENV === "development" ||
+    process.env.E2E === "true"
+      ? [] // No rules in dev/E2E
+      : [
+          detectBot({
+            allow: [
+              "CATEGORY:SEARCH_ENGINE",
+              "CATEGORY:PREVIEW",
+              "CATEGORY:MONITOR",
+            ],
+          }),
+        ],
 })
 
 export const session = new Hono()
@@ -153,7 +164,15 @@ session.get("/", async (c) => {
 
   // Arcjet bot detection - block bots from creating guest accounts
   if (!isDevelopment && !isE2E) {
-    const decision = await aj.protect(request)
+    // Extract client IP from x-forwarded-for header (sent by SSR server)
+    const clientIp =
+      c.req.header("x-forwarded-for") ||
+      c.req.header("x-real-ip") ||
+      "127.0.0.1"
+
+    const decision = await aj.protect(c.req, {
+      ip: clientIp, // Pass the real client IP to Arcjet
+    })
 
     if (decision.isDenied()) {
       console.log("🤖 Bot detected:", {
@@ -196,6 +215,7 @@ session.get("/", async (c) => {
 
   // Detect domain for cookies from chrryUrl (for extensions), Referer, or Origin header
   const chrryUrl = getChrryUrl(request)
+
   const referer =
     request.headers.get("referer") || request.headers.get("origin")
   let cookieDomain: string | undefined = undefined
@@ -323,7 +343,6 @@ session.get("/", async (c) => {
     const appVersion = url.searchParams.get("appVersion")
     const ip = getIp(request) // Fallback for internal Docker calls
     const gift = url.searchParams.get("gift")
-    console.log(`🚀 ~ session.get ~ gift:`, gift)
 
     // IP is now guaranteed to have a value (either real or fallback)
 

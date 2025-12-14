@@ -3,19 +3,14 @@ import { sign, verify } from "jsonwebtoken"
 import { compare, hash } from "bcrypt"
 import { getUser, createUser, getStore } from "@repo/db"
 import { v4 as uuidv4 } from "uuid"
-import { isValidUsername } from "@chrryai/chrry/utils"
+import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
+import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 const authRoutes = new Hono()
 
 const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
-const GOOGLE_REDIRECT_URI =
-  process.env.GOOGLE_REDIRECT_URI ||
-  `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/google`
 
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
-
-// Frontend URL for redirecting after OAuth
-const FRONTEND_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:5173"
 
 // JWT secret (reuse existing env var)
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
@@ -125,10 +120,11 @@ authRoutes.post("/signup/password", async (c) => {
     // Generate token
     const token = generateToken(newUser.id, newUser.email)
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie (skip HttpOnly in development for easier debugging)
+    const isDev = process.env.NODE_ENV === "development"
     c.header(
       "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
+      `token=${token}; ${isDev ? "" : "HttpOnly; "}Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
     )
 
     return c.json({
@@ -255,10 +251,12 @@ authRoutes.get("/session", async (c) => {
  * Sign out user
  */
 authRoutes.post("/signout", async (c) => {
-  // Clear cookie
+  // Clear token cookie (with and without HttpOnly for compatibility)
+  const isDev = process.env.NODE_ENV === "development"
+
   c.header(
     "Set-Cookie",
-    "auth-token=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax",
+    `token=; ${isDev ? "" : "HttpOnly; "}Path=/; Max-Age=0; SameSite=Lax`,
   )
 
   return c.json({ success: true })
@@ -274,19 +272,84 @@ authRoutes.get("/signin/google", async (c) => {
       return c.json({ error: "Google OAuth not configured" }, 500)
     }
 
-    // Generate state for CSRF protection
-    const state = uuidv4()
+    // Allowed domains for callback URLs (security validation)
+    const ALLOWED_DOMAINS = [
+      ".chrry.ai",
+      ".chrry.dev",
+      ".chrry.store",
+      "localhost",
+    ]
 
-    // Store state in cookie for verification
-    c.header(
-      "Set-Cookie",
-      `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=Lax`,
-    )
+    // Get callback URLs from query params and ensure they're strings
+    const callbackUrlParam = c.req.query("callbackUrl")
+    // Decode if already encoded (to prevent double-encoding)
+    let callbackUrl =
+      typeof callbackUrlParam === "string" ? callbackUrlParam : undefined
+    if (callbackUrl && callbackUrl.includes("%")) {
+      try {
+        callbackUrl = decodeURIComponent(callbackUrl)
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+    }
 
-    // Build Google OAuth URL
+    // Validate callback URL belongs to allowed domain
+    if (callbackUrl) {
+      try {
+        const callbackUrlObj = new URL(callbackUrl)
+        const isValidDomain = ALLOWED_DOMAINS.some(
+          (domain) =>
+            callbackUrlObj.hostname === domain.replace(".", "") ||
+            callbackUrlObj.hostname.endsWith(domain),
+        )
+        if (!isValidDomain) {
+          console.error("Invalid callback domain:", callbackUrlObj.hostname)
+          return c.json({ error: "Invalid callback domain" }, 400)
+        }
+      } catch (e) {
+        console.error("Invalid callback URL:", callbackUrl)
+        return c.json({ error: "Invalid callback URL" }, 400)
+      }
+    } else {
+      // Fallback to current origin if no callback URL provided
+      const requestUrl = new URL(c.req.url)
+      callbackUrl = `${requestUrl.protocol}//${requestUrl.host}`
+    }
+
+    const errorUrlParam = c.req.query("errorUrl")
+    let errorUrl = typeof errorUrlParam === "string" ? errorUrlParam : undefined
+    if (errorUrl && errorUrl.includes("%")) {
+      try {
+        errorUrl = decodeURIComponent(errorUrl)
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+    }
+
+    // Fallback for error URL
+    if (!errorUrl) {
+      errorUrl = callbackUrl + "/?error=oauth_failed"
+    }
+
+    const forwardedHost = c.req.header("X-Forwarded-Host")
+    const requestUrl = new URL(c.req.url)
+
+    // Generate state for CSRF protection and encode callback URLs in it
+    // Format: {stateId}:{callbackUrl}:{errorUrl}
+    const stateId = uuidv4()
+    const stateData = {
+      id: stateId,
+      callbackUrl: callbackUrl || "",
+      errorUrl: errorUrl || "",
+    }
+    // Base64 encode the state to make it URL-safe
+    const state = Buffer.from(JSON.stringify(stateData)).toString("base64url")
+
+    // Build Google OAuth URL with API server callback
+    const redirectUri = `${API_URL}/auth/callback/google`
     const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth")
     authUrl.searchParams.set("client_id", GOOGLE_WEB_CLIENT_ID)
-    authUrl.searchParams.set("redirect_uri", GOOGLE_REDIRECT_URI)
+    authUrl.searchParams.set("redirect_uri", redirectUri)
     authUrl.searchParams.set("response_type", "code")
     authUrl.searchParams.set("scope", "openid email profile")
     authUrl.searchParams.set("state", state)
@@ -309,24 +372,46 @@ authRoutes.get("/callback/google", async (c) => {
     const state = c.req.query("state")
 
     if (!code || !state) {
-      // Redirect to home with error
-      return c.redirect(`${FRONTEND_URL}/?error=oauth_failed`)
+      return c.redirect(`https://chrry.ai/?error=oauth_failed`)
     }
+
+    // Decode state to get callback URLs
+    let stateData: { id: string; callbackUrl: string; errorUrl: string }
+    try {
+      const stateJson = Buffer.from(state, "base64url").toString("utf-8")
+      stateData = JSON.parse(stateJson)
+    } catch (e) {
+      console.error("Failed to decode state:", e)
+      return c.redirect(`https://chrry.ai/?error=invalid_state`)
+    }
+
+    const storedCallbackUrl = stateData.callbackUrl
+    const storedErrorUrl = stateData.errorUrl
+
+    if (!code || !storedCallbackUrl || !storedErrorUrl) {
+      // Get site config for error redirect
+      const forwardedHost = c.req.header("X-Forwarded-Host")
+      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+      return c.redirect(`${siteconfig.url}/?error=oauth_failed`)
+    }
+
+    const forwardedHost = c.req.header("X-Forwarded-Host")
+    const requestUrl = new URL(c.req.url)
+
+    // const chrryUrl =
+    //   requestUrl.searchParams.get("chrryUrl") ||
+    //   forwardedHost ||
+    //   "https://chrry.ai"
+    // const siteconfig = getSiteConfig(chrryUrl || undefined)
 
     // Verify state (CSRF protection)
-    const cookieHeader = c.req.header("cookie")
-    const stateMatch = cookieHeader?.match(/oauth_state=([^;]+)/)
-    const storedState = stateMatch ? stateMatch[1] : null
-
-    if (state !== storedState) {
-      return c.redirect(`${FRONTEND_URL}/?error=invalid_state`)
-    }
 
     // Exchange code for tokens
     if (!GOOGLE_WEB_CLIENT_ID || !GOOGLE_WEB_CLIENT_SECRET) {
-      return c.redirect(`${FRONTEND_URL}/?error=oauth_not_configured`)
+      return c.redirect(`${storedErrorUrl}/?error=oauth_not_configured`)
     }
 
+    const redirectUri = `${API_URL}/auth/callback/google`
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -334,13 +419,13 @@ authRoutes.get("/callback/google", async (c) => {
         code,
         client_id: GOOGLE_WEB_CLIENT_ID,
         client_secret: GOOGLE_WEB_CLIENT_SECRET,
-        redirect_uri: GOOGLE_REDIRECT_URI,
+        redirect_uri: redirectUri,
         grant_type: "authorization_code",
       }),
     })
 
     if (!tokenResponse.ok) {
-      return c.redirect(`${FRONTEND_URL}/?error=token_exchange_failed`)
+      return c.redirect(`${storedErrorUrl}/?error=token_exchange_failed`)
     }
 
     const tokens = await tokenResponse.json()
@@ -354,7 +439,7 @@ authRoutes.get("/callback/google", async (c) => {
     )
 
     if (!userInfoResponse.ok) {
-      return c.redirect(`${FRONTEND_URL}/?error=user_info_failed`)
+      return c.redirect(`${storedErrorUrl}/?error=user_info_failed`)
     }
 
     const googleUser = await userInfoResponse.json()
@@ -374,21 +459,56 @@ authRoutes.get("/callback/google", async (c) => {
     }
 
     if (!user) {
-      return c.redirect(`${FRONTEND_URL}/?error=user_creation_failed`)
+      return c.redirect(`${storedErrorUrl}/?error=user_creation_failed`)
     }
 
     // Generate JWT token
     const token = generateToken(user.id, user.email)
 
-    // Clear oauth_state cookie
-    c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
+    // Determine cookie domain from callback URL with validation
+    const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store"]
+    let cookieDomain = ""
+    try {
+      const callbackHostname = new URL(storedCallbackUrl).hostname
+      // Extract root domain (e.g., "chrry.ai" from "vex.chrry.ai")
+      const domainParts = callbackHostname.split(".")
+      if (domainParts.length >= 2) {
+        const rootDomain = domainParts.slice(-2).join(".")
+        // Validate the root domain is in our allowed list
+        const isAllowed = ALLOWED_DOMAINS.some(
+          (allowed) =>
+            allowed === `.${rootDomain}` || rootDomain === "localhost",
+        )
+        if (isAllowed) {
+          cookieDomain = `; Domain=.${rootDomain}`
+        } else {
+          console.warn("Callback domain not in allowed list:", rootDomain)
+          // Don't set domain - cookie will be host-only for security
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse callback URL for cookie domain:", e)
+      // If URL parsing fails, don't set domain (cookie will be host-only)
+    }
 
-    // Redirect back to app with token in URL
-    // Frontend will exchange this for a proper session
-    return c.redirect(`${FRONTEND_URL}/?auth_token=${token}`)
+    // Set auth cookie with domain for cross-subdomain auth
+    const isDev = process.env.NODE_ENV === "development"
+    const secureFlag = isDev ? "" : "; Secure"
+    c.header(
+      "Set-Cookie",
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax${cookieDomain}${secureFlag}`,
+    )
+
+    // Redirect back to the original site with token in URL
+    const redirectUrl = new URL(storedCallbackUrl)
+    redirectUrl.searchParams.set("auth_token", token)
+    return c.redirect(redirectUrl.toString())
   } catch (error) {
     console.error("Google OAuth callback error:", error)
-    return c.redirect(`${FRONTEND_URL}/?error=oauth_callback_failed`)
+    // Fallback to chrry.ai if we can't determine the site
+    const forwardedHost = c.req.header("X-Forwarded-Host")
+    const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+    return c.redirect(`${siteconfig.url}/?error=oauth_callback_failed`)
   }
 })
 
@@ -445,7 +565,10 @@ authRoutes.post("/callback/apple", async (c) => {
     const state = body.state as string
 
     if (!code || !state) {
-      return c.redirect(`${FRONTEND_URL}/?error=oauth_failed`)
+      // Get site config for error redirect
+      const forwardedHost = c.req.header("X-Forwarded-Host")
+      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+      return c.redirect(`${siteconfig.url}/?error=oauth_failed`)
     }
 
     // Verify state (CSRF protection)
@@ -454,7 +577,9 @@ authRoutes.post("/callback/apple", async (c) => {
     const storedState = stateMatch ? stateMatch[1] : null
 
     if (state !== storedState) {
-      return c.redirect(`${FRONTEND_URL}/?error=invalid_state`)
+      const forwardedHost = c.req.header("X-Forwarded-Host")
+      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+      return c.redirect(`${siteconfig.url}/?error=invalid_state`)
     }
 
     const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
@@ -464,7 +589,9 @@ authRoutes.post("/callback/apple", async (c) => {
       `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/apple`
 
     if (!APPLE_CLIENT_ID || !APPLE_CLIENT_SECRET) {
-      return c.redirect(`${FRONTEND_URL}/?error=oauth_not_configured`)
+      const forwardedHost = c.req.header("X-Forwarded-Host")
+      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+      return c.redirect(`${siteconfig.url}/?error=oauth_not_configured`)
     }
 
     // Exchange code for tokens
@@ -481,7 +608,9 @@ authRoutes.post("/callback/apple", async (c) => {
     })
 
     if (!tokenResponse.ok) {
-      return c.redirect(`${FRONTEND_URL}/?error=token_exchange_failed`)
+      const forwardedHost = c.req.header("X-Forwarded-Host")
+      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+      return c.redirect(`${siteconfig.url}/?error=token_exchange_failed`)
     }
 
     const tokens = await tokenResponse.json()
@@ -522,7 +651,9 @@ authRoutes.post("/callback/apple", async (c) => {
     }
 
     if (!user) {
-      return c.redirect(`${FRONTEND_URL}/?error=user_creation_failed`)
+      const forwardedHost = c.req.header("X-Forwarded-Host")
+      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+      return c.redirect(`${siteconfig.url}/?error=user_creation_failed`)
     }
 
     // Generate JWT token
@@ -532,10 +663,14 @@ authRoutes.post("/callback/apple", async (c) => {
     c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
 
     // Redirect back to app with token in URL
-    return c.redirect(`${FRONTEND_URL}/?auth_token=${token}`)
+    const forwardedHost = c.req.header("X-Forwarded-Host")
+    const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+    return c.redirect(`${siteconfig.url}/?auth_token=${token}`)
   } catch (error) {
     console.error("Apple OAuth callback error:", error)
-    return c.redirect(`${FRONTEND_URL}/?error=oauth_callback_failed`)
+    const forwardedHost = c.req.header("X-Forwarded-Host")
+    const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+    return c.redirect(`${siteconfig.url}/?error=oauth_callback_failed`)
   }
 })
 

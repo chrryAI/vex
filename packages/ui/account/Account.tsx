@@ -176,6 +176,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
 
     await signOut()
     // setIsModalOpen(false)
+
     !isExtension &&
       signOutContext?.({
         callbackUrl: `${FRONTEND_URL}/?loggedOut=true${isExtensionRedirect ? "&extension=true" : ""}`,
