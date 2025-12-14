@@ -84,7 +84,7 @@
       "cache": false,
       "persistent": true
     },
-    "start:web": {
+    "start:flash": {
       "cache": false,
       "persistent": true
     },
