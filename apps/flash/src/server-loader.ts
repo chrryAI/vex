@@ -1,5 +1,11 @@
 import { v4 as uuidv4 } from "uuid"
-import { VERSION, getThreadId, pageSizes, isE2E } from "@chrryai/chrry/utils"
+import {
+  VERSION,
+  getThreadId,
+  pageSizes,
+  isE2E,
+  getEnv,
+} from "@chrryai/chrry/utils"
 import {
   getApp,
   getSession,
@@ -78,11 +84,8 @@ export async function loadServerData(
 
   const isDev = process.env.MODE === "development"
 
-  const API_URL = isDev
-    ? "http://localhost:3001/api"
-    : isE2E
-      ? "http://e2e.chrry.dev/api"
-      : "http://api:3001/api"
+  const API_URL = getEnv().VITE_API_INTERNAL_URL
+  console.log(`🚀 ~ API_URL:`, API_URL)
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []

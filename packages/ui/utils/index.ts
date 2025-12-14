@@ -144,6 +144,8 @@ export const PROD_FRONTEND_URL = CHRRY_URL
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
 
+export const API_INTERNAL_URL = getEnv().VITE_API_INTERNAL_URL
+
 export const API_URL =
   getEnv().VITE_API_URL ||
   (isTestingDevice
@@ -396,7 +398,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.6.94"
+export const VERSION = config.version || "1.6.95"
 export type instructionBase = {
   id: string
   title: string
