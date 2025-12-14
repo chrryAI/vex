@@ -2,10 +2,8 @@ import { Hono } from "hono"
 import { getMember, getGuest } from "../lib/auth"
 import {
   createCollaboration,
-  deletePushSubscription,
   getCollaboration,
   getCollaborations,
-  getPushSubscription,
   getThread,
   getUser,
   updateThread,
@@ -13,26 +11,17 @@ import {
   deleteCollaboration,
 } from "@repo/db"
 import { collaborationStatus } from "@repo/db/src/schema"
-import nodemailer from "nodemailer"
 import { render } from "@react-email/render"
-import webpush from "web-push"
-import { FRONTEND_URL, isE2E } from "@chrryai/chrry/utils"
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import Collaboration from "../../components/emails/Collaboration"
 import { defaultLocale } from "@chrryai/chrry/locales"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import { captureException } from "@sentry/node"
+import { sendWebPush } from "../../lib/sendWebPush"
+import { sendEmail } from "../../lib/sendEmail"
 
 export const collaborations = new Hono()
 
 // POST /collaborations - Create collaboration
 collaborations.post("/", async (c) => {
-  const siteConfig = getSiteConfig()
-  webpush.setVapidDetails(
-    `mailto:${siteConfig.email}`,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!,
-  )
-
   const { threadId, userId } = await c.req.json()
 
   const thread = await getThread({ id: threadId })
@@ -84,72 +73,39 @@ collaborations.post("/", async (c) => {
     return c.json({ error: "Collaboration not created" }, 500)
   }
 
-  const subscription = await getPushSubscription({
+  // Send push notification (with timeout)
+  await sendWebPush({
+    c,
     userId,
+    payload: {
+      title: "Collaboration Request",
+      body: "You have a new collaboration request",
+      icon: "/icon-128.png",
+      data: {
+        url: `${FRONTEND_URL}/threads/${thread.id}`,
+      },
+    },
   })
 
-  if (subscription) {
-    try {
-      const result = await webpush.sendNotification(
-        {
-          endpoint: subscription.endpoint,
-          keys: subscription.keys,
-        },
-        JSON.stringify({
-          title: "Collaboration Request",
-          body: "You have a new collaboration request",
-          icon: "/icon-128.png", // Optional: path to notification icon
-          data: {
-            url: `${FRONTEND_URL}/threads/${thread.id}`, // URL to open when notification is clicked
-          },
-        }),
-      )
+  // Send email notification (with timeout)
+  if (user.email) {
+    const emailHtml = await render(
+      <Collaboration
+        origin={FRONTEND_URL}
+        thread={thread}
+        type="invited"
+        user={member}
+        guest={guest}
+        language={member?.language || defaultLocale}
+      />,
+    )
 
-      if (result.statusCode !== 201) {
-        await deletePushSubscription({ id: subscription.id })
-      }
-    } catch (error) {
-      console.error("WebPush error:", error)
-    }
-  }
-
-  const apiKey = process.env.ZEPTOMAIL_API_KEY
-
-  if (apiKey) {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.zeptomail.eu",
-      port: 587,
-      auth: {
-        user: "emailapikey",
-        pass: apiKey,
-      },
+    await sendEmail({
+      c,
+      to: user.email,
+      subject: "Let's collaborate!",
+      html: emailHtml,
     })
-    if (user.email && !isE2E) {
-      const emailHtml = await render(
-        <Collaboration
-          origin={FRONTEND_URL}
-          thread={thread}
-          type="invited"
-          user={member}
-          guest={guest}
-          language={member?.language || defaultLocale}
-        />,
-      )
-
-      try {
-        // ZeptoMail returns void on success, throws on error
-        await transporter.sendMail({
-          from: `${siteConfig.name} Team <no-reply@${siteConfig.domain}>`,
-          to: user.email,
-          subject: `Let's collaborate on ${siteConfig.name}!`,
-          html: emailHtml,
-        })
-      } catch (error) {
-        captureException(error)
-        console.error("ZeptoMail API error:", error)
-        return c.json({ error: "Failed to send invite" }, 500)
-      }
-    }
   }
 
   return c.json({ collaboration })

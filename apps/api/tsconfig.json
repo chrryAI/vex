@@ -8,9 +8,7 @@
     ],
     "paths": {
       "@chrryai/chrry/*": ["../../packages/ui/*"],
-      "chrry/*": ["../../packages/ui/*"],
-      "web": ["../web"],
-      "web/*": ["../web/*"]
+      "chrry/*": ["../../packages/ui/*"]
     }
   },
   "include": [

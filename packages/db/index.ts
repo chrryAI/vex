@@ -375,14 +375,19 @@ if (!connectionString) {
 const isRemoteDB = connectionString && !connectionString.includes("localhost")
 const disableSSL = process.env.DISABLE_DB_SSL === "true"
 
-const client = postgres(connectionString, {
-  ssl:
-    isRemoteDB && !disableSSL
-      ? {
-          rejectUnauthorized: false, // Accept self-signed certificates
-        }
-      : false,
-})
+const client = postgres(
+  connectionString,
+  isSeedSafe
+    ? undefined
+    : {
+        ssl:
+          isRemoteDB && !disableSSL
+            ? {
+                rejectUnauthorized: false, // Accept self-signed certificates
+              }
+            : false,
+      },
+)
 
 if (NODE_ENV !== "production" && !isCI) {
   if (!global.db) global.db = postgresDrizzle(client, { schema })
@@ -1021,7 +1026,6 @@ export const deleteUser = async (id: string) => {
 
 export const createMessage = async (message: newMessage) => {
   const [inserted] = await db.insert(messages).values(message).returning()
-  console.log(`🚀 ~ createMessage ~ inserted:`, inserted)
 
   const thread = inserted?.threadId
     ? await getThread({ id: inserted.threadId })
@@ -1052,15 +1056,13 @@ export const createMessage = async (message: newMessage) => {
     }
   }
 
-  console.log(`🚀 ~ createMessage ~ inserted:`, inserted)
-
   // Invalidate user/guest cache (credits, lastMessage, character profiles changed)
-  // if (inserted?.userId) {
-  //   await invalidateUser(inserted.userId)
-  // }
-  // if (inserted?.guestId) {
-  //   await invalidateGuest(inserted.guestId)
-  // }
+  if (inserted?.userId) {
+    await invalidateUser(inserted.userId)
+  }
+  if (inserted?.guestId) {
+    await invalidateGuest(inserted.guestId)
+  }
 
   return inserted
 }

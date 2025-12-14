@@ -113,7 +113,6 @@ const ChatContext = createContext<
       creditsLeft?: number
       thread?: thread
       threadId?: string
-      setThreadId: (threadId?: string) => void
       setThread: (thread?: thread) => void
       userNameByUrl: string | undefined
       isLoadingThreads: boolean
@@ -175,8 +174,8 @@ export function ChatProvider({
     perplexityAgent,
     claudeAgent,
     favouriteAgent,
+    threadIdRef,
     threadId,
-    setThreadId,
     migratedFromGuestRef,
     fetchSession,
     loadingApp,
@@ -186,8 +185,11 @@ export function ChatProvider({
     hasStoreApps,
     hasNotification,
     setHasNotification,
+    setThreadId,
     ...auth
   } = useAuth()
+
+  // const threadId = threadIdRef.current
 
   const [isChatFloating, setIsChatFloating] = useState(false)
 
@@ -234,6 +236,8 @@ export function ChatProvider({
       : undefined,
   )
 
+  const toFetch = threadId || threadIdRef.current
+
   // Load cached threads immediately on mount
 
   useEffect(() => {
@@ -251,7 +255,7 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     token && shouldFetchThreads
-      ? ["contextThreads", thread?.id, app?.id, collaborationStatus]
+      ? ["contextThreads", toFetch, app?.id, collaborationStatus]
       : null,
     async () => {
       try {
@@ -271,7 +275,7 @@ export function ChatProvider({
             !thread?.collaborations?.some(
               (c) => user && c.user.id === user?.id,
             ) || guest
-              ? thread?.id
+              ? toFetch
               : undefined,
         })
 
@@ -418,13 +422,12 @@ export function ChatProvider({
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
-      setThreadId(undefined)
       setMessages([])
       setStatus(null)
       isIncognito && setWasIncognito(true)
       setCollaborationStatus(null)
       setIsChatFloating(false)
-
+      setThreadId(undefined)
       router.push(to)
 
       refetchThreads()
@@ -575,8 +578,8 @@ export function ChatProvider({
   const [isVisitor, setIsVisitor] = useState(false)
 
   useEffect(() => {
-    threadId && setIsNewChat(false)
-  }, [threadId])
+    toFetch && setIsNewChat(false)
+  }, [toFetch])
 
   useEffect(() => {
     if (profile) {
@@ -688,16 +691,6 @@ export function ChatProvider({
     }
   }, [user, guest, threadId, connected])
 
-  // useEffect(() => {
-  //   const id = getThreadId(pathname)
-  //   if (id) {
-  //     setThreadId(id)
-  //     setShouldFetchThread(true)
-  //   } else {
-  //     setIsChatFloating(false)
-  //   }
-  // }, [pathname])
-
   // Credits tracking
   const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
 
@@ -778,7 +771,7 @@ export function ChatProvider({
     }
   }, [appStatus?.part])
 
-  const [shouldFetchThread, setShouldFetchThread] = useState(true)
+  const [shouldFetchThread, setShouldFetchThread] = useState(!auth.threadData)
 
   const [until, setUntil] = useState<number>(1)
   const [liked, setLiked] = useState<boolean | undefined>(undefined)
@@ -791,19 +784,17 @@ export function ChatProvider({
 
   const [status, setStatus] = useState<number | null>(null)
 
-  // Build cache key - only include values that affect the response
-
   const {
     data: threadSWR,
     mutate,
     error,
   } = useSWR(
-    shouldFetchThread && token && threadId ? [threadId, liked, until] : null,
+    shouldFetchThread && token && toFetch ? [toFetch, liked, until] : null,
     async () => {
-      if (!threadId) return
+      if (!toFetch) return
 
       const threadData = await actions.getThread({
-        id: threadId,
+        id: toFetch,
         pageSize: until * pageSizes.threads,
         liked: !!liked,
         onError: (error: number) => {
@@ -813,7 +804,6 @@ export function ChatProvider({
       })
 
       setIsLoading(false)
-
       return threadData
     },
     {
@@ -868,6 +858,8 @@ export function ChatProvider({
   >("selectedAgent", defaultAgent)
 
   useEffect(() => {
+    if (selectedAgent == null) return
+
     !selectedAgent && setSelectedAgent(defaultAgent)
   }, [defaultAgent, selectedAgent])
 
@@ -1017,7 +1009,7 @@ export function ChatProvider({
   }, [error, isLoading])
 
   useEffect(() => {
-    if (!threadId) {
+    if (!toFetch) {
       status && setStatus(null)
       return
     }
@@ -1029,17 +1021,7 @@ export function ChatProvider({
       if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
 
-      // Simple logic: If server has messages, use them. Otherwise keep client messages.
-      if (liked) {
-        setMessages(serverMessages.messages)
-      } else if (serverMessages.messages.length > 0) {
-        // Server has data - use it as source of truth
-        setMessages(serverMessages.messages)
-      } else if (isNewChat) {
-        // New chat with no server messages - clear everything
-        setMessages([])
-      }
-      // If server is empty but not a new chat, keep existing client messages (optimistic UI)
+      !isDebating && setMessages(serverMessages.messages)
 
       setNextPage(threadData.messages.nextPage)
       setThread(threadData.thread)
@@ -1099,7 +1081,7 @@ export function ChatProvider({
         setShouldFetchThread,
         refetchThread: async () => {
           setShouldFetchThread(true)
-          shouldFetchThread && (await mutate())
+          await mutate()
         },
         setIsWebSearchEnabled,
         input,
@@ -1122,7 +1104,6 @@ export function ChatProvider({
         setUntil,
         isEmpty,
         scrollToBottom,
-        setThreadId,
         isWebSearchEnabled,
         selectedAgent,
         setSelectedAgent,

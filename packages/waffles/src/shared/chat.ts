@@ -370,7 +370,6 @@ export const chat = async ({
     }
   }
   for (const prompt of prompts) {
-    console.log(`🚀 ~ prompt:`, prompt)
     await clearDebate()
 
     await wait(1000)
@@ -466,8 +465,6 @@ export const chat = async ({
       // expect(await getDebateAgentName()).toBe(prompt.debateAgent)
       // expect(await getAgentName()).toBe(prompt.model)
     }
-
-    console.log(`🚀 ~ willFail:`, willFail)
 
     if (willFail) {
       return

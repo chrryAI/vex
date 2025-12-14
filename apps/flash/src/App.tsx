@@ -32,9 +32,15 @@ function App({ serverData }: AppProps) {
     },
   ) => {
     if (provider === "google") {
-      return auth.signInWithGoogle()
+      return auth.signInWithGoogle({
+        callbackUrl: options.callbackUrl,
+        errorUrl: options.errorUrl,
+      })
     } else if (provider === "apple") {
-      return auth.signInWithApple()
+      return auth.signInWithApple({
+        callbackUrl: options.callbackUrl,
+        errorUrl: options.errorUrl,
+      })
     } else if (
       provider === "credentials" &&
       options.email &&
@@ -46,8 +52,8 @@ function App({ serverData }: AppProps) {
   }
 
   // Create sign out wrapper
-  const signOutContext = async () => {
-    return auth.signOut()
+  const signOutContext = async (options: { callbackUrl?: string }) => {
+    return auth.signOut(options)
   }
 
   // Debug: Log server data
@@ -108,6 +114,7 @@ function App({ serverData }: AppProps) {
         app={serverData?.app}
         viewPortWidth={serverData?.viewPortWidth}
         viewPortHeight={serverData?.viewPortHeight}
+        pathname={serverData?.pathname}
         signInContext={signInContext}
         signOutContext={signOutContext}
       >

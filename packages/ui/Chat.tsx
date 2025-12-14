@@ -219,7 +219,10 @@ export default function Chat({
     updateMood,
     taskId,
     fetchTasks,
+    ...auth
   } = useAuth()
+
+  const threadId = auth.threadId || auth.threadIdRef.current
 
   const [isSelectingMood, setIsSelectingMood] = useState(false)
 
@@ -243,7 +246,6 @@ export default function Chat({
     hitHourlyLimit,
     hourlyLimit,
     isEmpty: empty,
-    threadId,
     isAgentModalOpen,
     setIsAgentModalOpen,
     isDebateAgentModalOpen,
@@ -254,13 +256,12 @@ export default function Chat({
     setShouldFocus,
     shouldFocus,
     isChatFloating: isChatFloatingContext,
-    setThreadId: setThreadIdInternal,
     messages,
+    isNewChat,
   } = useChat()
 
   const {
     router,
-    isNewChat,
     isShowingCollaborate,
     collaborationStep,
     setCollaborationStep,
@@ -277,9 +278,16 @@ export default function Chat({
     threadId && (threadIdRef.current = threadId)
   }, [threadId])
 
-  const setThreadId = (id: string) => {
+  const setThreadId = (id?: string) => {
     threadIdRef.current = id
   }
+
+  useEffect(() => {
+    if (isNewChat) {
+      setThreadId(undefined)
+      auth.setThreadId(undefined)
+    }
+  }, [isNewChat])
 
   const { captureException } = useError()
 
@@ -2217,19 +2225,20 @@ export default function Chat({
 
       const clientId = data?.clientId
 
-      const chunk = data?.chunk
       if (
-        type === "stream_update" &&
-        chunk &&
-        clientId &&
-        data.message &&
-        (isOwner(data.message.message, {
+        data?.message &&
+        isOwner(data.message.message, {
           userId: user?.id,
           guestId: guest?.id,
         })
-          ? data?.deviceId === deviceId
-          : true)
+          ? data?.deviceId && data?.deviceId !== deviceId
+          : false
       ) {
+        return
+      }
+
+      const chunk = data?.chunk
+      if (type === "stream_update" && chunk && clientId && data.message) {
         if (isSpeechActive && os !== "ios") {
           return
         }

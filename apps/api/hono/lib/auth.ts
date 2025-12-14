@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import captureException from "../../lib/captureException"
 import { Context } from "hono"
 import { validate } from "uuid"
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 
 /**
  * Get authenticated member from request
@@ -134,13 +135,13 @@ export async function getGuest(
  * Get chrryUrl from request headers
  * Pure function - no Next.js dependencies
  */
-export function getChrryUrl(request: Request): string | null {
+export function getChrryUrl(request: Request): string | undefined {
   try {
     const chrryUrlHeader = request.headers.get("x-chrry-url")
-    return chrryUrlHeader || null
+    return chrryUrlHeader || FRONTEND_URL
   } catch (error) {
     console.error("Error getting chrryUrl:", error)
-    return null
+    return undefined
   }
 }
 
