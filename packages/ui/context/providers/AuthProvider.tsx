@@ -58,6 +58,7 @@ import {
   isDevelopment,
   isE2E,
   PROD_FRONTEND_URL,
+  isCI,
   WS_URL,
 } from "../../utils"
 import { Task } from "../TimerContext"
@@ -78,6 +79,8 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      setThreadId: (value: string | undefined) => void
+      threadIdRef: React.RefObject<string | undefined>
       setHasNotification: (value: boolean) => void
       lasProcessedSession: React.RefObject<string | undefined>
       setThreads: (value: { threads: thread[]; totalCount: number }) => void
@@ -112,7 +115,6 @@ const AuthContext = createContext<
         >
       >
       threadId?: string
-      setThreadId: (threadId?: string) => void
       taskId?: string
       updateMood: ({ type }: { type: moodType }) => Promise<void>
       focus: appWithStore | undefined
@@ -259,11 +261,13 @@ export function AuthProvider({
   error,
   locale,
   translations,
+  pathname: ssrPathname, // SSR pathname from server
   ...props
 }: {
   translations?: Record<string, any>
   locale?: locale
   apiKey?: string
+  pathname?: string // SSR pathname for thread ID extraction
   signInContext?: (
     provider: "google" | "apple" | "credentials",
     options: {
@@ -296,6 +300,7 @@ export function AuthProvider({
 
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
+
   useEffect(() => {
     if (error) {
       toast.error(error)
@@ -318,8 +323,6 @@ export function AuthProvider({
       }
     | undefined
   >(props.threads)
-
-  const isCI = process.env.NEXT_PUBLIC_CI === "true"
 
   const siteConfig = getSiteConfig(CHRRY_URL)
 
@@ -354,20 +357,29 @@ export function AuthProvider({
       fingerprintParam,
   )
 
-  const tokenInternal =
-    session?.user?.token || session?.guest?.fingerprint || apiKey
+  const ssrToken = session?.user?.token || session?.guest?.fingerprint || apiKey
   // Local state for token and versions (no dependency on DataProvider)
-  const [token, setTokenInternal] = useCookieOrLocalStorage(
+  const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
-    tokenInternal,
+    ssrToken,
     isExtension,
   )
 
+  const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
+
+  const token = isExtension ? tokenExtension : tokenWeb
+  const setToken = isExtension
+    ? setTokenExtension
+    : (token: string | undefined) => {
+        setTokenWeb(token)
+        setTokenExtension(token)
+      }
+
   useEffect(() => {
-    if (tokenInternal) {
-      setTokenInternal(tokenInternal)
+    if (ssrToken) {
+      setToken(ssrToken)
     }
-  }, [tokenInternal])
+  }, [ssrToken])
 
   // Track if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)
@@ -400,10 +412,6 @@ export function AuthProvider({
       setIsCookieReady(true)
     }
   }, [isExtension])
-
-  const setToken = (token?: string) => {
-    setTokenInternal(token || "")
-  }
 
   function processSession(sessionData?: session) {
     if (sessionData) {
@@ -717,20 +725,9 @@ export function AuthProvider({
     }
   })
 
-  const threadIdRef = useRef<string | undefined>(getThreadId(pathname))
+  const threadId = getThreadId(pathname)
 
-  const threadId = threadIdRef.current
-
-  const setThreadId = (id: string | undefined) => {
-    threadIdRef.current = id
-  }
-
-  useEffect(() => {
-    const id = getThreadId(pathname)
-    if (id) {
-      setThreadId(id)
-    }
-  }, [pathname])
+  const threadIdRef = useRef(threadId)
 
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
@@ -957,9 +954,9 @@ export function AuthProvider({
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && appId ? ["app", appId] : null, async () => {
+  } = useSWR(token && ["app", appId], async () => {
     try {
-      if (!token || !appId) return
+      if (!token) return
       const app = await getApp({ token, appId, chrryUrl, pathname })
 
       return app.store?.apps
@@ -1254,9 +1251,13 @@ export function AuthProvider({
     props.thread?.thread,
   )
 
+  const setThreadId = (id?: string) => {
+    threadIdRef.current = id
+  }
+
   const setThread = (thread: thread | undefined) => {
-    setThreadInternal(thread)
     setThreadId(thread?.id)
+    setThreadInternal(thread)
   }
 
   const [tasks, setTasks] = useState<
@@ -1482,6 +1483,10 @@ export function AuthProvider({
     setUser(undefined)
     setGuest(undefined)
     setToken(fingerprint)
+
+    // if (typeof window !== "undefined") {
+    //   window.location.href = "/?loggedOut=true"
+    // }
   }
 
   const isExtensionRedirect = searchParams.get("extension") === "true"
@@ -1533,7 +1538,6 @@ export function AuthProvider({
         tasks,
         setTasks,
         threadId,
-        setThreadId,
         loadingApp,
         setLoadingApp,
         taskId,
@@ -1563,6 +1567,7 @@ export function AuthProvider({
         userBaseApp,
         guestBaseApp,
         hasStoreApps,
+        threadIdRef,
         vex,
         fetchApps: async () => {
           await refetchApps()
@@ -1638,6 +1643,7 @@ export function AuthProvider({
         popcorn,
         zarathustra,
         updateMood,
+        setThreadId,
         lastAppId,
         storeApps, // All apps from all stores
         refetchSession: async (newApp?: appWithStore) => {

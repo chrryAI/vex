@@ -27,7 +27,7 @@ import useSWR from "swr"
 import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
 import { useError } from "./ErrorProvider"
 import { getSiteConfig } from "../../utils/siteConfig"
-import { ADDITIONAL_CREDITS, apiFetch } from "../../utils"
+import { ADDITIONAL_CREDITS, apiFetch, isDevelopment, isE2E } from "../../utils"
 
 export type affiliateStats = {
   hasAffiliateLink: boolean
@@ -149,13 +149,8 @@ const DataContext = createContext<
 // Check if running in development mode
 // For extensions: check if extension ID matches dev ID
 // For web: check NODE_ENV
-const isProduction = process.env.NEXT_PUBLIC_NODE_ENV === "production"
 const isExtension = isBrowserExtension()
 const extensionId = getExtensionId()
-
-export const isDevelopment = isExtension
-  ? ["ihkpepnfnhmdkmpgfdnfbllldbgabbad"].includes(extensionId || "")
-  : !isProduction
 
 export const MONTHLY_GUEST_CREDITS = 30
 
@@ -205,7 +200,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.6.69"
+  const VERSION = "1.6.92"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -452,19 +447,16 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
         condition: weatherData.current.condition.text,
         code: weatherData.current.condition.code,
         createdOn: new Date(),
-        lastUpdated: weatherData.current.last_updated,
       })
     }
   }, [weatherData])
 
-  const isE2E = process.env.NEXT_PUBLIC_TESTING_ENV === "e2e"
-
   const [aiAgents, setAiAgents] = useState<aiAgent[]>(session?.aiAgents || [])
 
   const { data: aiAgentsData } = useSWR<aiAgent[]>(
-    token && siteConfig.mode !== "chrryDev" && aiAgents?.length > 0
+    siteConfig.mode !== "chrryDev" && aiAgents?.length > 0
       ? null
-      : ["aiAgents", token, app?.id],
+      : token && ["aiAgents", token, app?.id],
     async () => {
       const url = new URL(`${API_URL}/aiAgents`)
       if (app?.id) {

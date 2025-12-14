@@ -6,9 +6,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "paths": {
-      "chrry/*": ["./packages/ui/*"],
-      "web": ["./apps/web"],
-      "web/*": ["./apps/web/*"]
+      "chrry/*": ["./packages/ui/*"]
     }
   }
 }

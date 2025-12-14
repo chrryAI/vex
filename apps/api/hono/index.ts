@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import { headersMiddleware } from "./middleware/headers"
 import { corsMiddleware } from "./middleware/cors"
+import { newRelicMiddleware } from "./middleware/newrelic"
 import { session } from "./routes/session"
 import { threads } from "./routes/threads"
 import { translations } from "./routes/translations"
@@ -38,6 +39,7 @@ import { weather } from "./routes/weather"
 import { landing } from "./routes/landing"
 import { health } from "./routes/health"
 import { metadata } from "./routes/metadata"
+import { testConfig } from "./routes/test-config"
 import authRoutes from "./routes/auth"
 
 import * as Sentry from "@sentry/node"
@@ -123,6 +125,7 @@ api.route("/verifyPayment", verifyPayment)
 api.route("/weather", weather)
 api.route("/health", health)
 api.route("/metadata", metadata)
+api.route("/test-config", testConfig)
 api.route("/auth", authRoutes)
 
 // Mount API routes under /api

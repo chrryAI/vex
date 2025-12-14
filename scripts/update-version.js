@@ -44,7 +44,6 @@ const files = [
   "package.json",
   "apps/extension/package.json",
   "apps/extension/vite.config.ts",
-  "apps/web/package.json",
   "packages/ui/package.json",
   "packages/pepper/package.json",
   "packages/ui/context/providers/DataProvider.tsx",

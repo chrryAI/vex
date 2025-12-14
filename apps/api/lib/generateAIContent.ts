@@ -62,6 +62,7 @@ import { z } from "zod"
 import { notifyOwnerAndCollaborations } from "./notify"
 import enTranslations from "@chrryai/chrry/locales/en.json"
 import { appWithStore } from "@chrryai/chrry/types"
+import { Context } from "hono"
 
 // Smart context retrieval from memories
 
@@ -333,8 +334,10 @@ async function generateSuggestionsAndPlaceholders({
   skipClassification = false,
   model,
   modelName,
+  c,
   ...rest
 }: {
+  c: Context
   conversationText: string
   memories: MemoryData
   language: string
@@ -789,6 +792,7 @@ Return only valid JSON object.`
   }
 
   notifyOwnerAndCollaborations({
+    c,
     notifySender: true,
     member: user,
     guest,
@@ -822,9 +826,11 @@ async function generateAIContent({
   language,
   calendarEvents,
   skipClassification = false,
+  c,
   app,
   useCustomAgent = false, // New parameter to opt into using custom agent
 }: {
+  c: Context
   app?: app | appWithStore
   thread: thread & {
     user: user | null
@@ -899,6 +905,7 @@ async function generateAIContent({
     // Get calendar events for context (optional)
 
     generateSuggestionsAndPlaceholders({
+      c,
       conversationText,
       memories,
       language,
@@ -1316,6 +1323,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
 
     characterTag &&
       notifyOwnerAndCollaborations({
+        c,
         notifySender: true,
         member: user,
         guest,
