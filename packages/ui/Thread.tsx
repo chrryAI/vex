@@ -252,21 +252,71 @@ const Thread = ({
       if (!clientId) return
 
       setMessages((prev) => {
-        return prev.map((m) =>
-          m.message.id === clientId && !m.message.isStreamingStop
-            ? {
-                ...m,
-                message: {
-                  ...m.message,
-                  content,
-                  isStreaming: true,
-                  isWebSearchEnabled: !!isWebSearchEnabled,
-                  isImageGenerationEnabled: !!isImageGenerationEnabled,
-                },
-                aiAgent: aiAgent ?? m.aiAgent,
-              }
-            : m,
+        const existingIndex = prev.findIndex(
+          (m) => m.message.id === clientId && !m.message.isStreamingStop,
         )
+
+        // If message exists, update it
+        if (existingIndex >= 0) {
+          return prev.map((m) =>
+            m.message.id === clientId && !m.message.isStreamingStop
+              ? {
+                  ...m,
+                  message: {
+                    ...m.message,
+                    content,
+                    isStreaming: true,
+                    isWebSearchEnabled: !!isWebSearchEnabled,
+                    isImageGenerationEnabled: !!isImageGenerationEnabled,
+                  },
+                  aiAgent: aiAgent ?? m.aiAgent,
+                }
+              : m,
+          )
+        }
+
+        // If message doesn't exist, add it (from other device/collaboration)
+        return [
+          ...prev,
+          {
+            message: {
+              id: clientId,
+              type: "chat" as const,
+              content,
+              createdOn: new Date(),
+              updatedOn: new Date(),
+              agentId: aiAgent?.id || null,
+              agentVersion: aiAgent?.version || null,
+              threadId: threadId || "",
+              readOn: new Date(),
+              userId: user?.id || null,
+              guestId: guest?.id || null,
+              searchContext: null,
+              webSearchResult: null,
+              metadata: null,
+              originalContent: content,
+              images: null,
+              files: null,
+              isWebSearchEnabled: !!isWebSearchEnabled,
+              isImageGenerationEnabled: !!isImageGenerationEnabled,
+              isStreaming: true,
+              reasoning: null,
+              like: null,
+              dislike: null,
+              creditCost: aiAgent?.creditCost || 1,
+              task: "chat",
+              reactions: null,
+              clientId,
+              audio: null,
+              video: null,
+              selectedAgentId: aiAgent?.id || null,
+              debateAgentId: null,
+              pauseDebate: false,
+            },
+            aiAgent: aiAgent,
+            thread: thread,
+          },
+        ]
       })
     },
     [isLoadingMore, scrollToBottom, setMessages, shouldAutoScroll],
@@ -826,14 +876,7 @@ const Thread = ({
                           }),
                         )
 
-                      if (
-                        !isIncognito &&
-                        !id &&
-                        message?.message.threadId &&
-                        (debateAgent
-                          ? message.message.agentId === debateAgent?.id
-                          : true)
-                      ) {
+                      if (!isIncognito && !id && message?.message.threadId) {
                         requestAnimationFrame(() => {
                           const navigationOptions = {
                             state: { preservedThread: thread } as {

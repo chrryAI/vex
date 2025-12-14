@@ -18,7 +18,7 @@ const isE2E =
   process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
   process.env.TESTING_ENV === "e2e"
 
-const VERSION = "1.6.86"
+const VERSION = "1.6.87"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173

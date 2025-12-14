@@ -547,7 +547,7 @@ app.post("/", async (c) => {
   } = requestData
 
   const notifyOwnerAndCollaborations = (
-    x: notifyOwnerAndCollaborationsPayload,
+    x: Omit<notifyOwnerAndCollaborationsPayload, "c">,
   ) => {
     notifyOwnerAndCollaborationsInternal({
       ...x,
@@ -560,6 +560,7 @@ app.post("/", async (c) => {
           streamId: x.payload.data?.streamId ?? streamId,
         },
       },
+      c,
     })
   }
 
@@ -2231,6 +2232,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     try {
       if (m && selectedAgent) {
         await generateAIContent({
+          c,
           thread,
           user: member,
           guest,
