@@ -323,26 +323,33 @@ async function setCookieValue(
     let cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
 
     if (options.maxAge) {
-      cookieString += `; max-age=${options.maxAge}`
+      cookieString += `; Max-Age=${options.maxAge}`
     }
 
     if (options.expires) {
-      cookieString += `; expires=${options.expires.toUTCString()}`
+      cookieString += `; Expires=${options.expires.toUTCString()}`
     }
 
     // Always set path to root if not specified
-    cookieString += `; path=${options.path || "/"}`
+    cookieString += `; Path=${options.path || "/"}`
 
     if (options.domain) {
-      cookieString += `; domain=${options.domain}`
+      cookieString += `; Domain=${options.domain}`
     }
 
     if (options.secure) {
-      cookieString += "; secure"
+      cookieString += "; Secure"
     }
 
     if (options.sameSite) {
-      cookieString += `; samesite=${options.sameSite}`
+      // Capitalize standard values for consistency
+      const ss =
+        options.sameSite === "none"
+          ? "None"
+          : options.sameSite === "lax"
+            ? "Lax"
+            : "Strict"
+      cookieString += `; SameSite=${ss}`
     }
 
     document.cookie = cookieString

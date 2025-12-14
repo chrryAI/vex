@@ -80,10 +80,11 @@ const setFingerprintCookie = (
   // Extensions manage their own storage - don't set web cookies
   if (isExtension) return
 
+  // Cross-subdomain cookie for auth: SameSite=None; Secure; scoped to root domain
   setCookie(c, "fingerprint", fingerprint, {
-    httpOnly: true,
+    httpOnly: false, // allow client access when needed
     secure: !isDevelopment,
-    sameSite: "Lax",
+    sameSite: "None",
     maxAge: 60 * 60 * 24 * 365, // 1 year
     path: "/",
     domain: domain || undefined,
@@ -100,9 +101,9 @@ const setDeviceIdCookie = (
   if (isExtension) return
 
   setCookie(c, "deviceId", deviceId, {
-    httpOnly: true,
+    httpOnly: false,
     secure: !isDevelopment,
-    sameSite: "Lax",
+    sameSite: "None",
     maxAge: 60 * 60 * 24 * 365, // 1 year
     path: "/",
     domain: domain || undefined,
