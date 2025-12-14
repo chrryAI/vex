@@ -62,8 +62,17 @@ const Thread = ({
   const { t } = useAppContext()
 
   // Auth context
-  const { user, guest, track, memoriesEnabled, setShowFocus, ...auth } =
-    useAuth()
+  const {
+    user,
+    guest,
+    track,
+    threadIdRef,
+    memoriesEnabled,
+    setShowFocus,
+    ...auth
+  } = useAuth()
+
+  const threadId = auth.threadId || threadIdRef.current
 
   // Chat context
   const {
@@ -116,7 +125,7 @@ const Thread = ({
     goToCalendar,
   } = useNavigationContext()
 
-  const { threadId, setShouldGetCredits } = useChat()
+  const { setShouldGetCredits } = useChat()
 
   // Use setMessagesInternal directly instead of wrapping it
   const setMessages = setMessagesInternal

@@ -175,6 +175,7 @@ export function ChatProvider({
     claudeAgent,
     favouriteAgent,
     threadIdRef,
+    threadId,
     migratedFromGuestRef,
     fetchSession,
     loadingApp,
@@ -187,7 +188,7 @@ export function ChatProvider({
     ...auth
   } = useAuth()
 
-  const threadId = threadIdRef.current
+  // const threadId = threadIdRef.current
 
   const [isChatFloating, setIsChatFloating] = useState(false)
 
@@ -208,6 +209,7 @@ export function ChatProvider({
   >(auth.threadData?.messages.messages || [])
 
   const isEmpty = !messages?.length
+  console.log(`🚀 ~ isEmpty:`, isEmpty)
 
   const { isExtension, isMobile } = usePlatform()
 
@@ -782,17 +784,28 @@ export function ChatProvider({
 
   // Build cache key - only include values that affect the response
 
+  const toFetch = threadId || threadIdRef.current
+
+  console.log(`🚀 ~ threadId, liked, until:`, {
+    shouldFetchThread,
+    threadId,
+    liked,
+    toFetch,
+    until,
+  })
   const {
     data: threadSWR,
     mutate,
     error,
   } = useSWR(
-    shouldFetchThread && token && threadId ? [threadId, liked, until] : null,
+    shouldFetchThread && token && toFetch ? [toFetch, liked, until] : null,
     async () => {
-      if (!threadId) return
+      console.log(`🚀 ~ toFetch:`, toFetch)
+
+      if (!toFetch) return
 
       const threadData = await actions.getThread({
-        id: threadId,
+        id: toFetch,
         pageSize: until * pageSizes.threads,
         liked: !!liked,
         onError: (error: number) => {
@@ -801,8 +814,9 @@ export function ChatProvider({
         },
       })
 
-      setIsLoading(false)
+      console.log(`🚀 ~ threadData:`, threadData)
 
+      setIsLoading(false)
       return threadData
     },
     {
@@ -1006,7 +1020,7 @@ export function ChatProvider({
   }, [error, isLoading])
 
   useEffect(() => {
-    if (!threadId) {
+    if (!toFetch) {
       status && setStatus(null)
       return
     }
@@ -1088,7 +1102,7 @@ export function ChatProvider({
         setShouldFetchThread,
         refetchThread: async () => {
           setShouldFetchThread(true)
-          shouldFetchThread && (await mutate())
+          await mutate()
         },
         setIsWebSearchEnabled,
         input,

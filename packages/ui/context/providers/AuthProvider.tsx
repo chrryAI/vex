@@ -726,6 +726,7 @@ export function AuthProvider({
   })
 
   const threadId = getThreadId(pathname)
+  console.log(`🚀 ~ threadId:`, threadId)
 
   const threadIdRef = useRef(threadId)
 
