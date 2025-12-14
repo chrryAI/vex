@@ -11,6 +11,7 @@ import type {
   app,
 } from "../types"
 import countries from "i18n-iso-countries"
+import { getEnv } from "./env"
 
 // Browser API type for extension compatibility
 type BrowserAPIType = typeof chrome | typeof browser
@@ -74,9 +75,7 @@ const getClientHostname = () => {
 const hostname = getClientHostname()
 export const CHRRY_URL = hostname
   ? getSiteConfig(hostname).url
-  : isDevelopment
-    ? `http://localhost:${(typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "5173"}`
-    : "https://vex.chrry.ai"
+  : "https://vex.chrry.ai"
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99
@@ -89,6 +88,7 @@ export function isValidUuidV4(uuid: string): boolean {
     uuid,
   )
 }
+
 export function getThreadId(pathname?: string): string | undefined {
   if (!pathname) return undefined
   // Server-safe: check if window exists
@@ -103,12 +103,12 @@ export function getThreadId(pathname?: string): string | undefined {
   return threadId && isValidUuidV4(threadId) ? threadId : undefined
 }
 
-// export const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV !== "production"
+// export const isDevelopment = process.env.VITE_NODE_ENV !== "production"
 
 export const MAX_TOOL_CALLS_PER_MESSAGE = 7
 
 export const WS_URL =
-  process.env.NEXT_PUBLIC_WS_URL ||
+  getEnv().VITE_WS_URL ||
   (isTestingDevice
     ? "ws://192.168.2.27:5001"
     : isDevelopment
@@ -116,8 +116,8 @@ export const WS_URL =
       : "wss://ws.chrry.dev")
 
 export const WS_SERVER_URL =
-  process.env.NEXT_PUBLIC_WS_SERVER_URL ||
-  process.env.WS_SERVER_URL ||
+  getEnv().VITE_WS_SERVER_URL ||
+  getEnv().WS_SERVER_URL ||
   "http://127.0.0.1:5001"
 
 export const addParam = (key: string, value: string) => {
@@ -130,10 +130,8 @@ export const addParam = (key: string, value: string) => {
   window.history.replaceState({}, "", newUrl)
 }
 
-const FE_PORT =
-  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "5173"
-const API_PORT =
-  (typeof process !== "undefined" && process.env?.API_PORT) || "3001"
+const FE_PORT = getEnv().VITE_FE_PORT || "5173"
+const API_PORT = getEnv().API_PORT || "3001"
 
 export const FRONTEND_URL = isTestingDevice
   ? `http://192.168.2.27:${FE_PORT}`
@@ -144,11 +142,10 @@ export const FRONTEND_URL = isTestingDevice
 export const PROD_FRONTEND_URL = CHRRY_URL
 
 export const isE2E =
-  process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
-  process.env.TESTING_ENV === "e2e"
+  getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
 
 export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
+  getEnv().VITE_API_URL ||
   (isTestingDevice
     ? `http://192.168.2.27:${API_PORT}/api`
     : isDevelopment
@@ -399,7 +396,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.6.91"
+export const VERSION = config.version || "1.6.87"
 export type instructionBase = {
   id: string
   title: string
@@ -711,4 +708,3 @@ export type {
 } from "./fileValidation"
 
 // Export API URL utilities
-export { getApiUrl, getApiEndpoint } from "./getApiUrl"

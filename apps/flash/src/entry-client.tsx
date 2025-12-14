@@ -8,6 +8,13 @@ import { hydrateRoot } from "react-dom/client"
 import App from "./App"
 import { ServerData } from "./server-loader"
 
+// Polyfill process.env for compatibility with libraries expecting it
+if (typeof process === "undefined") {
+  ;(window as any).process = { env: {} }
+}
+// Copy Vite env vars to process.env for backward compatibility
+Object.assign((window as any).process.env, import.meta.env)
+
 // Read server data from window (injected by server)
 declare global {
   interface Window {

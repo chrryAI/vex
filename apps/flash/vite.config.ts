@@ -3,6 +3,10 @@ import react from "@vitejs/plugin-react"
 import path from "path"
 import type { UserConfig } from "vite"
 import { swVersionPlugin } from "./vite-plugin-sw-version"
+import dotenv from "dotenv"
+
+// Load environment variables from .env file
+dotenv.config({ path: path.resolve(__dirname, "../../.env") })
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode, isSsrBuild }) => {
@@ -21,9 +25,12 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       },
     },
     define: {
+      "process.env.NEXT_PUBLIC_FE_URL": JSON.stringify(
+        process.env.NEXT_PUBLIC_FE_URL || "http://localhost:5173",
+      ),
       // Make process.env available for compatibility with Next.js code
       "process.env.NEXT_PUBLIC_FE_PORT": JSON.stringify(
-        process.env.NEXT_PUBLIC_FE_PORT || "3000",
+        process.env.NEXT_PUBLIC_FE_PORT || "5173",
       ),
       "process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": JSON.stringify(
         process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
@@ -64,6 +71,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       ),
       "process.env.TEST_GUEST_FINGERPRINTS": JSON.stringify(
         process.env.TEST_GUEST_FINGERPRINTS,
+      ),
+      "process.env.VITE_TESTING_ENV": JSON.stringify(
+        process.env.VITE_TESTING_ENV || "false",
       ),
       "process.env.MODE": JSON.stringify(process.env.MODE || "development"),
     },

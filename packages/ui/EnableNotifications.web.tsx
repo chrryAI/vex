@@ -15,7 +15,7 @@ import { apiFetch } from "./utils"
 import { Button, Div, usePlatform } from "./platform"
 import toast from "react-hot-toast"
 import Weather from "./Weather"
-import { isDevelopment } from "./utils"
+import { isDevelopment, getEnv } from "./utils"
 import { useEnableNotificationsStyles } from "./EnableNotifications.styles"
 
 export default function EnableNotifications({
@@ -52,7 +52,6 @@ export default function EnableNotifications({
   const [isSubscribed, setIsSubscribed] = useState<boolean | undefined>(
     undefined,
   )
-  console.log(`🚀 ~ isSubscribed:`, isSubscribed)
 
   async function addPushSubscription(
     subscription: PushSubscription,
@@ -157,10 +156,6 @@ export default function EnableNotifications({
       // If we get here, either permission isn't granted or no subscription exists
       const registration = await registerServiceWorker()
       if (registration) {
-        console.log(
-          `🚀 ~ initializeServiceWorker ~ registration:`,
-          registration,
-        )
         setSwRegistration(registration)
         setIsSubscribed(false)
       }
@@ -194,7 +189,7 @@ export default function EnableNotifications({
       return
     }
     if (swRegistration && !pushSubscription) {
-      const publicVapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+      const publicVapidKey = getEnv().NEXT_PUBLIC_VAPID_PUBLIC_KEY!
 
       const subscription = await subscribeToPushNotifications(
         swRegistration,
