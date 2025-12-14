@@ -164,7 +164,15 @@ session.get("/", async (c) => {
 
   // Arcjet bot detection - block bots from creating guest accounts
   if (!isDevelopment && !isE2E) {
-    const decision = await aj.protect(c.req)
+    // Extract client IP from x-forwarded-for header (sent by SSR server)
+    const clientIp =
+      c.req.header("x-forwarded-for") ||
+      c.req.header("x-real-ip") ||
+      "127.0.0.1"
+
+    const decision = await aj.protect(c.req, {
+      ip: clientIp, // Pass the real client IP to Arcjet
+    })
 
     if (decision.isDenied()) {
       console.log("🤖 Bot detected:", {
