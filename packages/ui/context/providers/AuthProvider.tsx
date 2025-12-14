@@ -78,6 +78,7 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      setThreadId: (value: string | undefined) => void
       threadIdRef: React.RefObject<string | undefined>
       setHasNotification: (value: boolean) => void
       lasProcessedSession: React.RefObject<string | undefined>
@@ -726,7 +727,6 @@ export function AuthProvider({
   })
 
   const threadId = getThreadId(pathname)
-  console.log(`🚀 ~ threadId:`, threadId)
 
   const threadIdRef = useRef(threadId)
 
@@ -1252,9 +1252,13 @@ export function AuthProvider({
     props.thread?.thread,
   )
 
+  const setThreadId = (id?: string) => {
+    threadIdRef.current = id
+  }
+
   const setThread = (thread: thread | undefined) => {
+    setThreadId(thread?.id)
     setThreadInternal(thread)
-    threadIdRef.current = thread?.id
   }
 
   const [tasks, setTasks] = useState<
@@ -1640,6 +1644,7 @@ export function AuthProvider({
         popcorn,
         zarathustra,
         updateMood,
+        setThreadId,
         lastAppId,
         storeApps, // All apps from all stores
         refetchSession: async (newApp?: appWithStore) => {
