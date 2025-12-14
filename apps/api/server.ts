@@ -73,6 +73,7 @@ process.on("unhandledRejection", (reason, promise) => {
 
 import app from "./hono/index"
 import { newRelicMiddleware } from "./hono/middleware/newrelic"
+import { websocketHandler, upgradeWebSocket } from "./lib/websocket"
 
 // Apply New Relic middleware if initialized
 if (newrelic) {
@@ -82,9 +83,19 @@ if (newrelic) {
 
 const port = Number(process.env.PORT) || 3001
 
-Bun.serve({
+const server = Bun.serve({
   port,
-  fetch: app.fetch,
+  fetch: async (req, server) => {
+    // Handle WebSocket upgrade requests
+    if (req.headers.get("upgrade") === "websocket") {
+      return upgradeWebSocket(req)
+    }
+
+    // Handle regular HTTP requests with Hono
+    return app.fetch(req, server)
+  },
+  websocket: websocketHandler,
 })
 
 console.log(`🚀 Hono API running on http://localhost:${port}`)
+console.log(`🔌 WebSocket server running on ws://localhost:${port}`)

@@ -157,9 +157,6 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.6
-      '@types/jsonwebtoken':
-        specifier: ^9.0.10
-        version: 9.0.10
       '@types/lodash':
         specifier: ^4.17.20
         version: 4.17.21
@@ -217,6 +214,9 @@ importers:
       cookie:
         specifier: ^0.7.2
         version: 0.7.2
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
       critters:
         specifier: ^0.0.23
         version: 0.0.23
@@ -224,7 +224,7 @@ importers:
         specifier: ^0.44.4
         version: 0.44.7(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.4)(kysely@0.28.8)(postgres@3.4.7)
       express:
-        specifier: ^5.1.0
+        specifier: ^5.2.1
         version: 5.2.1
       fast-xml-parser:
         specifier: ^4.4.0
@@ -374,6 +374,9 @@ importers:
       '@rollup/plugin-commonjs':
         specifier: ^28.0.1
         version: 28.0.9(rollup@4.52.5)
+      '@types/jsonwebtoken':
+        specifier: ^9.0.10
+        version: 9.0.10
       concurrently:
         specifier: ^9.2.0
         version: 9.2.1
@@ -10150,7 +10153,6 @@ packages:
     resolution: {integrity: sha512-DgtH8GId1/+oj8n9yYEmhTq1QkxOZZzqHJhHEa1bmtV3t3/u2YsE3LSvRUNpVRWVXRcCdn+3Tu6+mD2YXKL7lA==}
     engines: {node: '>=20.18.0'}
     hasBin: true
-    bundledDependencies: []
 
   peberminta@0.9.0:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
