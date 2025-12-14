@@ -219,7 +219,10 @@ export default function Chat({
     updateMood,
     taskId,
     fetchTasks,
+    ...auth
   } = useAuth()
+
+  const threadId = auth.threadId || auth.threadIdRef.current
 
   const [isSelectingMood, setIsSelectingMood] = useState(false)
 
@@ -243,7 +246,6 @@ export default function Chat({
     hitHourlyLimit,
     hourlyLimit,
     isEmpty: empty,
-    threadId,
     isAgentModalOpen,
     setIsAgentModalOpen,
     isDebateAgentModalOpen,

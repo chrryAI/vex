@@ -5,6 +5,7 @@ node_modules
 .pnp
 .pnp.js
 
+
 # testing
 coverage
 
@@ -81,3 +82,5 @@ packages/waffles/test-results/*
 # apps/two
 apps/api/newrelic_agent.log
 apps/web/newrelic_agent.log
+
+.kombai

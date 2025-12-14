@@ -16,14 +16,14 @@ export default function Home({
   app?: app
   slug?: string
 }): React.ReactElement {
-  const { language, threadId } = useAuth()
+  const { language, threadId, threadIdRef } = useAuth()
   const { currentStore: store, app } = useApp()
 
   useAppMetadata()
 
   return (
     <Div data-url={language === defaultLocale ? "/" : `/${language}`}>
-      <Thread isHome />
+      <Thread isHome={!threadId && !threadIdRef.current} />
     </Div>
   )
 }
