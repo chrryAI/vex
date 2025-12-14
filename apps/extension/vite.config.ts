@@ -56,7 +56,7 @@ export default defineConfig(({ command, mode }) => {
     const permissions = [
       `https://*.chrry.ai/*`,
       `https://chrry.dev/*`,
-      mode === "development" && "http://localhost:3000/*",
+      mode === "development" && "http://localhost:5173/*",
       mode === "development" && "http://localhost:3001/*",
       // Add other dev URLs if needed
       // "http://localhost:5001/*"
@@ -74,7 +74,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.6.69",
+    version: siteConfig.version || "1.6.91",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission

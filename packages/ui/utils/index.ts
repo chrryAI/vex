@@ -74,7 +74,9 @@ const getClientHostname = () => {
 const hostname = getClientHostname()
 export const CHRRY_URL = hostname
   ? getSiteConfig(hostname).url
-  : "https://vex.chrry.ai"
+  : isDevelopment
+    ? `http://localhost:${(typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "5173"}`
+    : "https://vex.chrry.ai"
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99
@@ -129,7 +131,7 @@ export const addParam = (key: string, value: string) => {
 }
 
 const FE_PORT =
-  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "3000"
+  (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_FE_PORT) || "5173"
 const API_PORT =
   (typeof process !== "undefined" && process.env?.API_PORT) || "3001"
 
@@ -397,7 +399,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.6.69"
+export const VERSION = config.version || "1.6.91"
 export type instructionBase = {
   id: string
   title: string

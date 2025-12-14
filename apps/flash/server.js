@@ -14,7 +14,11 @@ import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 import rateLimit from "express-rate-limit"
 
-const VERSION = "1.6.69"
+const isE2E =
+  process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
+  process.env.TESTING_ENV === "e2e"
+
+const VERSION = "1.6.91"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -46,7 +50,7 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again later.",
 })
 
-if (!isDev) app.use(limiter)
+if (!isDev && !isE2E) app.use(limiter)
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
@@ -318,6 +322,11 @@ app.use("*all", async (req, res) => {
         pathname: url,
         headers: req.headers,
         cookies: req.cookies || {},
+        ip:
+          req.ip ||
+          req.headers["x-forwarded-for"] ||
+          req.headers["x-real-ip"] ||
+          "0.0.0.0", // Extract client IP
       }
       serverData = await loadData(context)
 

@@ -9,8 +9,35 @@ const registerServiceWorker =
           {
             scope: "/",
             type: "classic", // Explicitly disable module mode
+            updateViaCache: "none", // Always check for SW updates
           },
         )
+
+        // Check for updates immediately
+        registration.update()
+
+        // Listen for new service worker installation
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing
+          if (!newWorker) return
+
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "activated") {
+              // New service worker activated, reload to use it
+              if (navigator.serviceWorker.controller) {
+                console.log("New service worker activated, reloading page...")
+                window.location.reload()
+              }
+            }
+          })
+        })
+
+        // Listen for controller change (new SW took over)
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          console.log("Service worker controller changed")
+        })
+
+        console.log("Service Worker registered successfully")
         return registration
       } catch (error) {
         console.error("Service Worker registration failed:", error)
@@ -21,6 +48,20 @@ const registerServiceWorker =
       return null
     }
   }
+
+/**
+ * Manually check for service worker updates
+ */
+export const checkForServiceWorkerUpdate = async (): Promise<boolean> => {
+  if ("serviceWorker" in navigator) {
+    const registration = await navigator.serviceWorker.getRegistration()
+    if (registration) {
+      await registration.update()
+      return true
+    }
+  }
+  return false
+}
 
 export const subscribeToPushNotifications = async (
   registration: ServiceWorkerRegistration,

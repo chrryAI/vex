@@ -45,6 +45,7 @@ import captureException from "../../lib/captureException"
 import { scanFileForMalware } from "../../lib/security"
 import { deleteFile } from "../../lib/minio"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
+import { sendEmail } from "../../lib/sendEmail"
 
 export const threads = new Hono()
 
@@ -402,7 +403,11 @@ threads.patch("/:id", async (c) => {
 
     // Extract files from form data
     for (const [key, value] of formData.entries()) {
-      if (value instanceof File && key.startsWith("artifact_")) {
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        (value as unknown as File) instanceof File
+      ) {
         files.push(value)
       }
     }
@@ -511,15 +516,6 @@ threads.patch("/:id", async (c) => {
       const apiKey = process.env.ZEPTOMAIL_API_KEY
 
       if (inviter && inviter.email && !isE2E && apiKey) {
-        const transporter = nodemailer.createTransport({
-          host: "smtp.zeptomail.eu",
-          port: 587,
-          auth: {
-            user: "emailapikey",
-            pass: apiKey,
-          },
-        })
-
         const emailHtml = await render(
           Collaboration({
             origin: FRONTEND_URL,
@@ -530,7 +526,8 @@ threads.patch("/:id", async (c) => {
         )
 
         try {
-          await transporter.sendMail({
+          await sendEmail({
+            c,
             from: `"${siteConfig.name} Team" <no-reply@${siteConfig.domain}>`,
             to: inviter.email,
             subject: `Let's get started with ${siteConfig.name}!`,

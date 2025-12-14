@@ -39,6 +39,16 @@ function setCorsHeaders(c: Context) {
   } else if (isDevelopment) {
     // Allow all origins in development for testing
     c.header("Access-Control-Allow-Origin", "*")
+  } else if (
+    origin &&
+    (origin.includes(".chrry.ai") ||
+      origin.includes(".chrry.dev") ||
+      origin.includes(".chrry.store"))
+  ) {
+    // Production: allow cross-domain requests between chrry domains (e.g., e2e.chrry.ai → e2e.chrry.dev)
+    c.header("Access-Control-Allow-Origin", origin)
+    c.header("Access-Control-Allow-Credentials", "true")
+    c.header("Vary", "Origin")
   } else {
     // Production: only allow chrry.ai for unmatched origins
     c.header("Access-Control-Allow-Origin", "https://chrry.ai")
@@ -105,17 +115,18 @@ export const corsMiddleware = async (c: Context, next: Next) => {
   const fingerprint = searchParams.get("fp") || c.req.header("x-fp")
 
   if (!existingFingerprintCookie && fingerprint && validate(fingerprint)) {
-    // Set cookie using Hono's cookie helper
-    const cookieValue = `fingerprint=${fingerprint}; HttpOnly=false; ${
-      process.env.NODE_ENV !== "development" ? "Secure; " : ""
-    }SameSite=Lax; Max-Age=${60 * 60 * 24 * 365 * 10}; Path=/`
+    // Set cookie for cross-subdomain access
+    // Note: Do NOT set HttpOnly=false (invalid). Omit HttpOnly to allow JS access when needed.
+    // Use SameSite=None; Secure for cross-site requests in production.
+    const isDev = process.env.NODE_ENV === "development"
+    const cookieValue = `fingerprint=${fingerprint}; ${
+      isDev ? "" : "Secure; "
+    }SameSite=None; Max-Age=${60 * 60 * 24 * 365 * 10}; Path=/`
 
     c.header("Set-Cookie", cookieValue)
   }
 
-  setCorsHeaders(c)
-
-  // Set CORS headers for all other routes
+  // Set CORS headers once
   setCorsHeaders(c)
 
   return next()
