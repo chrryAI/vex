@@ -1,6 +1,13 @@
 /// <reference types="chrome" />
 
-export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
+export const getEnv = () => {
+  if (typeof import.meta !== "undefined") {
+    return (import.meta as any).env
+  }
+  return process.env
+}
+
+export const isCI = getEnv().NEXT_PUBLIC_CI === "true" || getEnv().CI === "true"
 
 export const checkIsExtension = () => {
   if (typeof chrome !== "undefined" && chrome.runtime?.id) {
@@ -24,8 +31,8 @@ export const getExtensionUrl = () => {
 }
 
 export const isProduction =
-  process.env.NODE_ENV === "production" ||
-  process.env.NEXT_PUBLIC_NODE_ENV === "production"
+  getEnv().NODE_ENV === "production" ||
+  getEnv().NEXT_PUBLIC_NODE_ENV === "production"
 
 export const isDevelopment = checkIsExtension()
   ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>

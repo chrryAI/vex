@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { COLORS } from "./ThemeContext"
 import { useAuth, useData, useError } from "./providers"
 import { getSiteConfig } from "../utils/siteConfig"
+import { getEnv, isCI, isE2E } from "../utils"
 
 export { COLORS }
 
@@ -61,8 +62,6 @@ export const AppContextProvider = ({
 }) => {
   const { t: i18nT } = useTranslation()
   const { user, storeApps, atlas } = useAuth()
-  const isE2E = process.env.NEXT_PUBLIC_TESTING_ENV === "e2e"
-  const isCI = process.env.NEXT_PUBLIC_CI === "true"
 
   // Get site config for dynamic app name
   const config = getSiteConfig()
