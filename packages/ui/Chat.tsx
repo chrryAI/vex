@@ -257,11 +257,11 @@ export default function Chat({
     shouldFocus,
     isChatFloating: isChatFloatingContext,
     messages,
+    isNewChat,
   } = useChat()
 
   const {
     router,
-    isNewChat,
     isShowingCollaborate,
     collaborationStep,
     setCollaborationStep,
@@ -278,9 +278,16 @@ export default function Chat({
     threadId && (threadIdRef.current = threadId)
   }, [threadId])
 
-  const setThreadId = (id: string) => {
+  const setThreadId = (id?: string) => {
     threadIdRef.current = id
   }
+
+  useEffect(() => {
+    if (isNewChat) {
+      setThreadId(undefined)
+      auth.setThreadId(undefined)
+    }
+  }, [isNewChat])
 
   const { captureException } = useError()
 

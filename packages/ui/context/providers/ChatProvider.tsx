@@ -185,6 +185,7 @@ export function ChatProvider({
     hasStoreApps,
     hasNotification,
     setHasNotification,
+    setThreadId,
     ...auth
   } = useAuth()
 
@@ -209,7 +210,6 @@ export function ChatProvider({
   >(auth.threadData?.messages.messages || [])
 
   const isEmpty = !messages?.length
-  console.log(`🚀 ~ isEmpty:`, isEmpty)
 
   const { isExtension, isMobile } = usePlatform()
 
@@ -236,6 +236,8 @@ export function ChatProvider({
       : undefined,
   )
 
+  const toFetch = threadId || threadIdRef.current
+
   // Load cached threads immediately on mount
 
   useEffect(() => {
@@ -253,7 +255,7 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     token && shouldFetchThreads
-      ? ["contextThreads", thread?.id, app?.id, collaborationStatus]
+      ? ["contextThreads", toFetch, app?.id, collaborationStatus]
       : null,
     async () => {
       try {
@@ -273,7 +275,7 @@ export function ChatProvider({
             !thread?.collaborations?.some(
               (c) => user && c.user.id === user?.id,
             ) || guest
-              ? thread?.id
+              ? toFetch
               : undefined,
         })
 
@@ -425,7 +427,7 @@ export function ChatProvider({
       isIncognito && setWasIncognito(true)
       setCollaborationStatus(null)
       setIsChatFloating(false)
-
+      setThreadId(undefined)
       router.push(to)
 
       refetchThreads()
@@ -576,8 +578,8 @@ export function ChatProvider({
   const [isVisitor, setIsVisitor] = useState(false)
 
   useEffect(() => {
-    threadId && setIsNewChat(false)
-  }, [threadId])
+    toFetch && setIsNewChat(false)
+  }, [toFetch])
 
   useEffect(() => {
     if (profile) {
@@ -782,17 +784,6 @@ export function ChatProvider({
 
   const [status, setStatus] = useState<number | null>(null)
 
-  // Build cache key - only include values that affect the response
-
-  const toFetch = threadId || threadIdRef.current
-
-  console.log(`🚀 ~ threadId, liked, until:`, {
-    shouldFetchThread,
-    threadId,
-    liked,
-    toFetch,
-    until,
-  })
   const {
     data: threadSWR,
     mutate,
@@ -800,8 +791,6 @@ export function ChatProvider({
   } = useSWR(
     shouldFetchThread && token && toFetch ? [toFetch, liked, until] : null,
     async () => {
-      console.log(`🚀 ~ toFetch:`, toFetch)
-
       if (!toFetch) return
 
       const threadData = await actions.getThread({
@@ -813,8 +802,6 @@ export function ChatProvider({
           setStatus(error)
         },
       })
-
-      console.log(`🚀 ~ threadData:`, threadData)
 
       setIsLoading(false)
       return threadData
