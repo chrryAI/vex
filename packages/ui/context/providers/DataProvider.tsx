@@ -447,6 +447,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
         condition: weatherData.current.condition.text,
         code: weatherData.current.condition.code,
         createdOn: new Date(),
+        lastUpdated: weatherData.current.last_updated,
       })
     }
   }, [weatherData])
