@@ -8,6 +8,7 @@ import { createInvitation, getInvitation } from "@repo/db"
 import captureException from "../../lib/captureException"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import arcjet, { slidingWindow } from "@arcjet/node"
+import { sendEmail } from "../../lib/sendEmail"
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -57,37 +58,24 @@ invite.post("/", async (c) => {
     return c.json({ error: "Invitation already exists" }, 400)
   }
 
-  const apiKey = process.env.ZEPTOMAIL_API_KEY
-
-  if (!isE2E && apiKey) {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.zeptomail.eu",
-      port: 587,
-      auth: {
-        user: "emailapikey",
-        pass: apiKey,
+  const emailHtml = await render(<Invite />)
+  try {
+    // ZeptoMail returns void on success, throws on error
+    await sendEmail({
+      c,
+      from: `"${siteConfig.name} Team" <no-reply@${siteConfig.domain}>`,
+      to: email,
+      subject: `Let's get started with ${siteConfig.name}!`,
+      html: emailHtml,
+      headers: {
+        "List-Unsubscribe": `<mailto:unsubscribe@${siteConfig.domain}>`,
+        "X-Mailer": `${siteConfig.name} Collaboration System`,
       },
     })
-
-    const emailHtml = await render(<Invite />)
-
-    try {
-      // ZeptoMail returns void on success, throws on error
-      await transporter.sendMail({
-        from: `"${siteConfig.name} Team" <no-reply@${siteConfig.domain}>`,
-        to: email,
-        subject: `Let's get started with ${siteConfig.name}!`,
-        html: emailHtml,
-        headers: {
-          "List-Unsubscribe": `<mailto:unsubscribe@${siteConfig.domain}>`,
-          "X-Mailer": `${siteConfig.name} Collaboration System`,
-        },
-      })
-    } catch (error) {
-      captureException(error)
-      console.error("ZeptoMail API error:", error)
-      return c.json({ error: "Failed to send invite" }, 500)
-    }
+  } catch (error) {
+    captureException(error)
+    console.error("ZeptoMail API error:", error)
+    return c.json({ error: "Failed to send invite" }, 500)
   }
 
   await createInvitation({

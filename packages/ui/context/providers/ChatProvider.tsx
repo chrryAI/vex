@@ -771,7 +771,7 @@ export function ChatProvider({
     }
   }, [appStatus?.part])
 
-  const [shouldFetchThread, setShouldFetchThread] = useState(true)
+  const [shouldFetchThread, setShouldFetchThread] = useState(!auth.threadData)
 
   const [until, setUntil] = useState<number>(1)
   const [liked, setLiked] = useState<boolean | undefined>(undefined)
@@ -858,7 +858,7 @@ export function ChatProvider({
   >("selectedAgent", defaultAgent)
 
   useEffect(() => {
-    !selectedAgent && setSelectedAgent(defaultAgent)
+    selectedAgent !== null && setSelectedAgent(defaultAgent)
   }, [defaultAgent, selectedAgent])
 
   const setIsWebSearchEnabled = (value: boolean) => {
@@ -1019,17 +1019,7 @@ export function ChatProvider({
       if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
 
-      // Simple logic: If server has messages, use them. Otherwise keep client messages.
-      if (liked) {
-        setMessages(serverMessages.messages)
-      } else if (serverMessages.messages.length > 0) {
-        // Server has data - use it as source of truth
-        setMessages(serverMessages.messages)
-      } else if (isNewChat) {
-        // New chat with no server messages - clear everything
-        setMessages([])
-      }
-      // If server is empty but not a new chat, keep existing client messages (optimistic UI)
+      !isDebating && setMessages(serverMessages.messages)
 
       setNextPage(threadData.messages.nextPage)
       setThread(threadData.thread)

@@ -88,31 +88,26 @@ test("Debate", async ({ page }) => {
         text: "Should advanced AI development be regulated by governments? Debate the balance between innovation and safety",
         model: "claude",
         debateAgent: "sushi",
-        like: true,
       },
       {
         text: "Is Mars colonization an ethical priority when Earth still faces major problems? Consider resource allocation arguments",
         model: "chatGPT",
         debateAgent: "perplexity",
-        like: true,
       },
       {
         text: "Universal Basic Income: Solution to automation or threat to work ethic? Debate economic and social impacts.",
         model: "sushi",
         debateAgent: "claude",
-        like: true,
       },
       {
         text: "Is it morally justifiable to prioritize human lives over animal lives in medical research?",
         model: "sushi",
         debateAgent: "chatGPT",
-        like: true,
       },
       {
         text: "Will quantum computing ultimately benefit or threaten cybersecurity? Debate both technological possibilities.",
         model: "sushi",
         debateAgent: "gemini",
-        like: true,
       },
     ],
   })

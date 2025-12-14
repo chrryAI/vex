@@ -488,6 +488,7 @@ messages.post("/", async (c) => {
   }
 
   notifyOwnerAndCollaborations({
+    c,
     notifySender: true,
     pushNotification: true,
     thread,
@@ -693,6 +694,7 @@ messages.delete("/:id", async (c) => {
   }
 
   notifyOwnerAndCollaborations({
+    c,
     thread,
     payload: {
       type: "delete_message",

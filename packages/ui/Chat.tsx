@@ -2231,10 +2231,11 @@ export default function Chat({
           userId: user?.id,
           guestId: guest?.id,
         })
-          ? data?.deviceId !== deviceId
-          : true
-      )
+          ? data?.deviceId && data?.deviceId !== deviceId
+          : false
+      ) {
         return
+      }
 
       const chunk = data?.chunk
       if (type === "stream_update" && chunk && clientId && data.message) {
