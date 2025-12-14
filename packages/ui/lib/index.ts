@@ -105,7 +105,7 @@ export const getImageSrc = ({
 
   const iconSrc = icon
     ? icon === "spaceInvader"
-      ? `${PROD_FRONTEND_URL}/images/pacman/space-invader.png`
+      ? `${BASE_URL}/images/pacman/space-invader.png`
       : icon === "pacman"
         ? `${BASE_URL}/images/pacman/pacman.png`
         : icon === "heart"

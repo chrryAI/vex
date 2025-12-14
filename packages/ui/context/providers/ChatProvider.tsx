@@ -858,7 +858,9 @@ export function ChatProvider({
   >("selectedAgent", defaultAgent)
 
   useEffect(() => {
-    selectedAgent !== null && setSelectedAgent(defaultAgent)
+    if (selectedAgent == null) return
+
+    !selectedAgent && setSelectedAgent(defaultAgent)
   }, [defaultAgent, selectedAgent])
 
   const setIsWebSearchEnabled = (value: boolean) => {
