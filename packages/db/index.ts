@@ -4894,6 +4894,7 @@ export function toSafeApp({ app }: { app: app }) {
     tools: app.tools,
     title: app.title,
     slug: app.slug,
+    status: app.status,
     visibility: app.visibility,
     capabilities: app.capabilities,
     description: app.description,

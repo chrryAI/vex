@@ -72,47 +72,6 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test.skip("Debate", async ({ page }) => {
-  test.slow()
-  await page.goto(getURL({ isLive: false, isMember }), {
-    waitUntil: "networkidle",
-  })
-  await signIn({ page })
-
-  await chat({
-    isNewChat: false,
-    page,
-    isMember,
-    prompts: [
-      {
-        text: "Should advanced AI development be regulated by governments? Debate the balance between innovation and safety",
-        model: "claude",
-        debateAgent: "sushi",
-      },
-      {
-        text: "Is Mars colonization an ethical priority when Earth still faces major problems? Consider resource allocation arguments",
-        model: "chatGPT",
-        debateAgent: "perplexity",
-      },
-      {
-        text: "Universal Basic Income: Solution to automation or threat to work ethic? Debate economic and social impacts.",
-        model: "sushi",
-        debateAgent: "claude",
-      },
-      {
-        text: "Is it morally justifiable to prioritize human lives over animal lives in medical research?",
-        model: "sushi",
-        debateAgent: "chatGPT",
-      },
-      {
-        text: "Will quantum computing ultimately benefit or threaten cybersecurity? Debate both technological possibilities.",
-        model: "sushi",
-        debateAgent: "gemini",
-      },
-    ],
-  })
-})
-
 test("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
@@ -260,5 +219,46 @@ test("Collaboration", async ({ page, browser }) => {
     browser,
     isMember,
     fingerprint: VEX_TEST_FINGERPRINT_3,
+  })
+})
+
+test("Debate", async ({ page }) => {
+  test.slow()
+  await page.goto(getURL({ isLive: false, isMember }), {
+    waitUntil: "networkidle",
+  })
+  await signIn({ page })
+
+  await chat({
+    isNewChat: false,
+    page,
+    isMember,
+    prompts: [
+      {
+        text: "Should advanced AI development be regulated by governments? Debate the balance between innovation and safety",
+        model: "claude",
+        debateAgent: "sushi",
+      },
+      {
+        text: "Is Mars colonization an ethical priority when Earth still faces major problems? Consider resource allocation arguments",
+        model: "chatGPT",
+        debateAgent: "perplexity",
+      },
+      {
+        text: "Universal Basic Income: Solution to automation or threat to work ethic? Debate economic and social impacts.",
+        model: "sushi",
+        debateAgent: "claude",
+      },
+      {
+        text: "Is it morally justifiable to prioritize human lives over animal lives in medical research?",
+        model: "sushi",
+        debateAgent: "chatGPT",
+      },
+      {
+        text: "Will quantum computing ultimately benefit or threaten cybersecurity? Debate both technological possibilities.",
+        model: "sushi",
+        debateAgent: "gemini",
+      },
+    ],
   })
 })
