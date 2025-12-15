@@ -13,7 +13,7 @@ import {
   getThreads,
   getTranslations,
 } from "@chrryai/chrry/lib"
-import { locale } from "@chrryai/chrry/locales"
+import { locale, locales } from "@chrryai/chrry/locales"
 import {
   session,
   thread,
@@ -96,6 +96,39 @@ export async function loadServerData(
     ? request.pathname
     : `/${request.pathname}`
 
+  const isLocalePathname =
+    pathname &&
+    (locales.includes(pathname.split("/")?.[1] as locale) || pathname === "/")
+
+  const localeCookie = cookies.locale as locale
+
+  // Parse Accept-Language header to get browser's preferred language
+  const acceptLanguage = headers["accept-language"]
+  let browserLocale: locale = "en"
+
+  if (acceptLanguage) {
+    // Parse Accept-Language header (e.g., "en-US,en;q=0.9,tr;q=0.8")
+    const languages = acceptLanguage
+      .split(",")
+      .map((lang) => {
+        const [code] = lang.trim().split(";")
+        // Extract base language code (e.g., "en" from "en-US")
+        return code.split("-")[0].toLowerCase()
+      })
+      .filter((code) => locales.includes(code as locale))
+
+    if (languages.length > 0) {
+      browserLocale = languages[0] as locale
+    }
+  }
+
+  // Priority: URL locale → Cookie → Browser language → Default (en)
+  const locale = (
+    isLocalePathname
+      ? pathname.split("/")?.[1] || browserLocale
+      : localeCookie || browserLocale
+  ) as locale
+
   const threadId = getThreadId(pathname)
   const urlObj = new URL(url, `http://${hostname}`)
 
@@ -149,7 +182,6 @@ export async function loadServerData(
     authToken || cookies.token || headers["x-token"] || fingerprint || uuidv4()
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
-  const locale: locale = (cookies.locale as locale) || "en"
 
   const siteConfig = getSiteConfig(hostname)
 

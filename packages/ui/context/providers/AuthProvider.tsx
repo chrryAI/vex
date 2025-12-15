@@ -22,6 +22,7 @@ import {
 } from "../../platform"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
+import { cleanSlug } from "../../utils/clearLocale"
 
 import {
   aiAgent,
@@ -825,10 +826,17 @@ export function AuthProvider({
     }
   }, [user, guest])
 
-  const [language, setLanguageInternal] = useLocalStorage<locale>(
-    "language",
+  const [language, setLanguageInternal] = useCookieOrLocalStorage(
+    "locale",
     locale || (session?.locale as locale) || i18n.language || "en",
+    isExtension,
   )
+
+  useEffect(() => {
+    if (session?.locale) {
+      setLanguageInternal(session?.locale)
+    }
+  }, [session?.locale])
 
   const setLanguage = async (language: locale) => {
     setLanguageInternal(language)
@@ -848,7 +856,7 @@ export function AuthProvider({
       }
     }
 
-    onSetLanguage?.(pathWithoutLocale, language)
+    router.push(cleanSlug(`/${language}${pathWithoutLocale}`))
   }
 
   const migratedFromGuestRef = useRef(false)
