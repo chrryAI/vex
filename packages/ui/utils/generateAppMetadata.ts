@@ -77,7 +77,7 @@ export function generateAppMetadata({
 
   return {
     title: `${t(app.name)} - ${t(app.title)}`,
-    description: description,
+    description: t(description),
     manifest: `/manifest.webmanifest?appId=${app.id}`,
     icons: [16, 48, 128, 180, 192, 512].map((size) => ({
       url: toRelative(
@@ -94,8 +94,8 @@ export function generateAppMetadata({
       title: app.name,
     },
     openGraph: {
-      title: `${title} - ${storeName}`,
-      description: description,
+      title: `${t(title)} - ${storeName}`,
+      description: t(description),
       images: [
         {
           url: ogImage,
@@ -110,8 +110,8 @@ export function generateAppMetadata({
     },
     twitter: {
       card: "summary",
-      title: `${title} - ${storeName}`,
-      description: description,
+      title: `${t(title)} - ${storeName}`,
+      description: t(description),
       images: [
         {
           url: ogImage,

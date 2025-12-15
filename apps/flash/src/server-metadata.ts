@@ -93,7 +93,7 @@ function generateBlogListMetadata(
       description: "Read about the latest news and updates from Vex",
     },
     alternates: {
-      canonical: `${siteConfig.url}/blog`,
+      canonical: `https://vex.chrry.ai/blog`,
     },
   }
 }
@@ -112,7 +112,7 @@ function generateBlogPostMetadata(
     openGraph: {
       title: `${post.title} - Vex`,
       description: post.excerpt,
-      url: `${siteConfig.url}/blog/${post.slug}`,
+      url: `https://vex.chrry.ai/blog/${post.slug}`,
       siteName: "Vex",
       type: "article",
     },
@@ -138,6 +138,8 @@ export async function generateServerMetadata(
   serverData: ServerData,
 ): Promise<MetadataResult | undefined> {
   const siteConfig = getSiteConfig(hostname)
+
+  console.log(`🚀 ~ serverData.isBlogRoute:`, serverData.isBlogRoute)
 
   // Handle blog routes
   if (serverData.isBlogRoute) {
