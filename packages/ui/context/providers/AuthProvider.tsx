@@ -43,7 +43,7 @@ import toast from "react-hot-toast"
 import { getApp, getSession } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
-import { locale, locales } from "../../locales"
+import { defaultLocale, locale, locales } from "../../locales"
 import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { getAppAndStoreSlugs } from "../../utils/url"
@@ -856,7 +856,11 @@ export function AuthProvider({
       }
     }
 
-    router.push(cleanSlug(`/${language}${pathWithoutLocale}`))
+    router.push(
+      cleanSlug(
+        `/${language === defaultLocale ? "" : language}${pathWithoutLocale}`,
+      ),
+    )
   }
 
   const migratedFromGuestRef = useRef(false)
