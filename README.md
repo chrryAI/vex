@@ -80,7 +80,7 @@ All powered by the same infrastructure, yet each app is a fully independent PWA 
 
    Then, edit the new `.env` files and add:
    - Your PostgreSQL database URL
-   - Your AI provider API keys (ChatGPT, Claude, DeepSeek, etc.) or NEXT_PUBLIC_TESTING_ENV='e2e'
+   - Your AI provider API keys (ChatGPT, Claude, DeepSeek, etc.) or VITE_TESTING_ENV='e2e'
    - Other required credentials (see `.env.example` files)
 
 4. **Set up the database**

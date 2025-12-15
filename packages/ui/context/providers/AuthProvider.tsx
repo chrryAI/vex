@@ -58,6 +58,7 @@ import {
   isDevelopment,
   isE2E,
   PROD_FRONTEND_URL,
+  isCI,
   WS_URL,
 } from "../../utils"
 import { Task } from "../TimerContext"
@@ -322,8 +323,6 @@ export function AuthProvider({
       }
     | undefined
   >(props.threads)
-
-  const isCI = process.env.NEXT_PUBLIC_CI === "true"
 
   const siteConfig = getSiteConfig(CHRRY_URL)
 

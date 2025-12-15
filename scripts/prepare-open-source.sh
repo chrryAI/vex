@@ -33,7 +33,7 @@ REPLICATE_API_KEY=your-replicate-key-here
 
 # Stripe (optional, for payments)
 STRIPE_SECRET_KEY=sk_test_your-stripe-key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-key
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-key
 
 # UploadThing (optional, for file uploads)
 UPLOADTHING_SECRET=your-uploadthing-secret
@@ -44,7 +44,7 @@ SENTRY_DSN=your-sentry-dsn
 
 # Development
 NODE_ENV=development
-NEXT_PUBLIC_TESTING_ENV=development
+VITE_TESTING_ENV=development
 EOF
 
 # apps/web

@@ -39,7 +39,9 @@ import { weather } from "./routes/weather"
 import { landing } from "./routes/landing"
 import { health } from "./routes/health"
 import { metadata } from "./routes/metadata"
+import { testConfig } from "./routes/test-config"
 import authRoutes from "./routes/auth"
+import notify from "./routes/notify"
 
 import * as Sentry from "@sentry/node"
 
@@ -124,7 +126,9 @@ api.route("/verifyPayment", verifyPayment)
 api.route("/weather", weather)
 api.route("/health", health)
 api.route("/metadata", metadata)
+api.route("/test-config", testConfig)
 api.route("/auth", authRoutes)
+api.route("/notify", notify)
 
 // Mount API routes under /api
 app.route("/api", api)

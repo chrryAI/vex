@@ -213,8 +213,9 @@ export default function SignIn({
       return
     } else {
       const redirectUrl = signInResult?.url || successUrl.toString()
+      console.log(`🚀 ~ handleLogin ~ redirectUrl:`, redirectUrl)
 
-      window.location.href = redirectUrl
+      window.location.href = `${redirectUrl}?auth_token=${signInResult?.token}`
     }
   }
 

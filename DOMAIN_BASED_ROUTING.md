@@ -11,8 +11,8 @@ Consolidated from multiple servers to **one server** that automatically detects 
 ### **Before: Multi-Server Setup**
 
 ```
-Server 1: chrry.ai (NEXT_PUBLIC_API_URL=https://chrry.ai/api)
-Server 2: vex.chrry.ai (NEXT_PUBLIC_API_URL=https://vex.chrry.ai/api)
+Server 1: chrry.ai (VITE_API_URL=https://chrry.ai/api)
+Server 2: vex.chrry.ai (VITE_API_URL=https://vex.chrry.ai/api)
 Server 3: focus.chrry.ai (needs new env vars)
 ```
 
@@ -72,15 +72,15 @@ export function detectSiteMode(hostname?: string): SiteMode {
   }
 
   // Fallback to environment variables (for special cases)
-  if (process.env.NEXT_PUBLIC_SITE_MODE === "chrryDev") {
+  if (process.env.VITE_SITE_MODE === "chrryDev") {
     return "chrryDev"
   }
 
-  if (process.env.NEXT_PUBLIC_SITE_MODE === "chrryAI") {
+  if (process.env.VITE_SITE_MODE === "chrryAI") {
     return "chrryAI"
   }
 
-  if (process.env.NEXT_PUBLIC_SITE_MODE === "chrryStore") {
+  if (process.env.VITE_SITE_MODE === "chrryStore") {
     return "chrryStore"
   }
 
@@ -180,8 +180,8 @@ export default async function Page() {
 
 ```
 Before:
-- NEXT_PUBLIC_SITE_MODE=chrryAI
-- NEXT_PUBLIC_API_URL=https://chrry.ai/api
+- VITE_SITE_MODE=chrryAI
+- VITE_API_URL=https://chrry.ai/api
 
 After:
 - Nothing! Domain detection handles it

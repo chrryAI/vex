@@ -14,11 +14,21 @@ import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
 import rateLimit from "express-rate-limit"
 
-const isE2E =
-  process.env.NEXT_PUBLIC_TESTING_ENV === "e2e" ||
-  process.env.TESTING_ENV === "e2e"
+// const getEnv = () => {
+//   if (typeof import.meta !== "undefined") {
+//     return import.meta.env
+//   }
+//   if (typeof process.env !== "undefined") {
+//     return process.env
+//   }
 
-const VERSION = "1.6.91"
+//   return {}
+// }
+
+const isE2E = process.env.VITE_TESTING_ENV === "e2e"
+console.log(`🚀 ~ isE2E:`, isE2E)
+
+const VERSION = "1.7.4"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
