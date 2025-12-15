@@ -85,7 +85,7 @@ export async function loadServerData(
   const isDev = process.env.MODE === "development"
 
   const API_URL = getEnv().VITE_API_URL
-  console.log(`🚀 ~ API_URL:`, API_URL)
+  console.log(`🔥 HONO API_URL:`, API_URL)
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []
@@ -105,12 +105,6 @@ export async function loadServerData(
     fpFromQuery = urlObj.searchParams.get("fp") || undefined
   }
 
-  console.log(`🚀 ~ fpFromQuery:`, {
-    fpFromQuery,
-    TEST_MEMBER_FINGERPRINTS,
-    TEST_GUEST_FINGERPRINTS,
-  })
-
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
 
   if (isE2E && fpFromQuery) {
@@ -119,7 +113,6 @@ export async function loadServerData(
       const testConfigResponse = await fetch(testConfigUrl)
       if (testConfigResponse.ok) {
         const testConfig = await testConfigResponse.json()
-        console.log(`🚀 ~ testConfig:`, testConfig)
         TEST_MEMBER_FINGERPRINTS = testConfig.TEST_MEMBER_FINGERPRINTS || []
         TEST_GUEST_FINGERPRINTS = testConfig.TEST_GUEST_FINGERPRINTS || []
         TEST_MEMBER_EMAILS = testConfig.TEST_MEMBER_EMAILS || []
@@ -135,7 +128,6 @@ export async function loadServerData(
     )
       ? fpFromQuery
       : fpFromQuery || headers["x-fp"] || cookies.fingerprint) || uuidv4()
-  console.log(`🚀 ~ TEST_MEMBER_FINGERPRINTS:`, TEST_MEMBER_FINGERPRINTS)
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName

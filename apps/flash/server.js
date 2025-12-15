@@ -26,7 +26,6 @@ import rateLimit from "express-rate-limit"
 // }
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
-console.log(`🚀 ~ isE2E:`, isE2E)
 
 const VERSION = "1.7.4"
 // Constants

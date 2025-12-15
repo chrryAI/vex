@@ -1433,8 +1433,6 @@ export function detectSiteModeDomain(
   const defaultMode =
     (getEnv().VITE_SITE_MODE as SiteMode) || mode || ("vex" as SiteMode)
 
-  console.log(`🚀 ~ defaultMode:`, defaultMode)
-
   // Get hostname from parameter or window (client-side)
   const rawHost =
     hostname ||
