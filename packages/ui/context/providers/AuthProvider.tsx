@@ -976,18 +976,6 @@ export function AuthProvider({
     }
   }, [storeAppsSwr])
 
-  // useEffect(() => {
-  //   if (hasStoreApps(loadingApp)) {
-  //     setLoadingApp(undefined)
-  //     return
-  //   }
-
-  //   if (loadingApp) {
-  //     console.log(`🚀 ~ useEffect ~ loadingApp:`, loadingApp)
-  //     refetchApps()
-  //   }
-  // }, [loadingApp, isLoadingApps, storeApps])
-
   const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
 
   const [showFocus, setShowFocus] = useState(canShowFocus)
