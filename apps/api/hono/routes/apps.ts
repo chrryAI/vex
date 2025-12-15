@@ -252,7 +252,9 @@ app.post("/", async (c) => {
   try {
     const member = await getMember(c)
 
-    if (!member) {
+    const guest = !member ? await getGuest(c) : undefined
+
+    if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -293,8 +295,6 @@ app.post("/", async (c) => {
       apiKeys,
       tips,
     } = body
-
-    const guest = await getGuest(c)
 
     // Validate app name: no spaces, must be unique
     if (!name || typeof name !== "string") {
@@ -684,7 +684,7 @@ app.post("/", async (c) => {
 })
 
 // POST /apps/reorder - Reorder apps
-app.post("/apps/reorder", async (c) => {
+app.post("/reorder", async (c) => {
   try {
     const member = await getMember(c)
     const guest = await getGuest(c)

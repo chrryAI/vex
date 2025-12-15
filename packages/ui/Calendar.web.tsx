@@ -335,12 +335,7 @@ export default function Calendar({
   })
 
   useEffect(() => {
-    if (
-      // DELETE AFTER DEMO
-      user?.role === "admin"
-        ? calendarEventsData?.events?.some((e: calendarEvent) => e.externalId)
-        : true && calendarEventsData && Array.isArray(calendarEventsData.events)
-    ) {
+    if (calendarEventsData && Array.isArray(calendarEventsData.events)) {
       setCalendarEvents(calendarEventsData.events)
     }
   }, [calendarEventsData, isGoogleConnected])
@@ -866,8 +861,8 @@ export default function Calendar({
             localizer={localizer}
             messages={messages}
             events={transformedEvents}
-            startAccessor={(event) => event.startTime}
-            endAccessor={(event) => event.endTime}
+            startAccessor={(event) => new Date(event.startTime)}
+            endAccessor={(event) => new Date(event.endTime)}
             titleAccessor="title"
             allDayAccessor={(event) => event.isAllDay}
             // Views
