@@ -85,26 +85,12 @@ export async function loadServerData(
   const isDev = process.env.MODE === "development"
 
   const API_URL = getEnv().VITE_API_URL
+  console.log(`🚀 ~ API_URL:`, API_URL)
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []
   let TEST_GUEST_FINGERPRINTS: string[] = []
   let TEST_MEMBER_EMAILS: string[] = []
-
-  if (isE2E) {
-    try {
-      const testConfigUrl = `${API_URL}/test-config`
-      const testConfigResponse = await fetch(testConfigUrl)
-      if (testConfigResponse.ok) {
-        const testConfig = await testConfigResponse.json()
-        TEST_MEMBER_FINGERPRINTS = testConfig.TEST_MEMBER_FINGERPRINTS || []
-        TEST_GUEST_FINGERPRINTS = testConfig.TEST_GUEST_FINGERPRINTS || []
-        TEST_MEMBER_EMAILS = testConfig.TEST_MEMBER_EMAILS || []
-      }
-    } catch (error) {
-      console.error("Failed to fetch test config:", error)
-    }
-  }
 
   const pathname = request.pathname.startsWith("/")
     ? request.pathname
@@ -114,9 +100,9 @@ export async function loadServerData(
   const urlObj = new URL(url, `http://${hostname}`)
 
   // Parse query string for fp parameter (only if URL contains query params)
-  let fpFromQuery: string | null = null
+  let fpFromQuery: string | undefined = undefined
   if (url.includes("?")) {
-    fpFromQuery = urlObj.searchParams.get("fp")
+    fpFromQuery = urlObj.searchParams.get("fp") || undefined
   }
 
   console.log(`🚀 ~ fpFromQuery:`, {
@@ -126,12 +112,30 @@ export async function loadServerData(
   })
 
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
+
+  if (isE2E && fpFromQuery) {
+    try {
+      const testConfigUrl = `${API_URL}/test-config?fp=${fpFromQuery}`
+      const testConfigResponse = await fetch(testConfigUrl)
+      if (testConfigResponse.ok) {
+        const testConfig = await testConfigResponse.json()
+        console.log(`🚀 ~ testConfig:`, testConfig)
+        TEST_MEMBER_FINGERPRINTS = testConfig.TEST_MEMBER_FINGERPRINTS || []
+        TEST_GUEST_FINGERPRINTS = testConfig.TEST_GUEST_FINGERPRINTS || []
+        TEST_MEMBER_EMAILS = testConfig.TEST_MEMBER_EMAILS || []
+      }
+    } catch (error) {
+      console.error("Failed to fetch test config:", error)
+    }
+  }
+
   const fingerprint =
     (TEST_MEMBER_FINGERPRINTS?.concat(TEST_GUEST_FINGERPRINTS).includes(
       fpFromQuery || "",
     )
       ? fpFromQuery
-      : headers["x-fp"] || cookies.fingerprint) || uuidv4()
+      : fpFromQuery || headers["x-fp"] || cookies.fingerprint) || uuidv4()
+  console.log(`🚀 ~ TEST_MEMBER_FINGERPRINTS:`, TEST_MEMBER_FINGERPRINTS)
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
