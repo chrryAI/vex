@@ -78,7 +78,8 @@ export const Hey = memo(
       }
     }, [pathname, isExtension])
 
-    const { app, isSplash, setIsSplash, storeApps, threadId } = useAuth()
+    const { app, isSplash, setIsSplash, storeApps, threadId, hasStoreApps } =
+      useAuth()
 
     const { currentStore } = useApp()
 
