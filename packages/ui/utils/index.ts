@@ -73,9 +73,9 @@ const getClientHostname = () => {
 
 // Priority: env var > dynamic detection > hardcoded fallback
 const hostname = getClientHostname()
-export const CHRRY_URL = hostname
-  ? getSiteConfig(hostname).url
-  : "https://vex.chrry.ai"
+export const CHRRY_URL =
+  getEnv().VITE_CHRRY_URL ||
+  (hostname ? getSiteConfig(hostname).url : "https://vex.chrry.ai")
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99
@@ -398,7 +398,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.6.95"
+export const VERSION = config.version || "1.6.97"
 export type instructionBase = {
   id: string
   title: string

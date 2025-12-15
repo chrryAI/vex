@@ -189,7 +189,7 @@ export default function EnableNotifications({
       return
     }
     if (swRegistration && !pushSubscription) {
-      const publicVapidKey = getEnv().NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+      const publicVapidKey = getEnv().VITE_VAPID_PUBLIC_KEY!
 
       const subscription = await subscribeToPushNotifications(
         swRegistration,

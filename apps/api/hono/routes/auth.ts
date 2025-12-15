@@ -522,7 +522,7 @@ authRoutes.get("/signin/apple", async (c) => {
     const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
     const APPLE_REDIRECT_URI =
       process.env.APPLE_REDIRECT_URI ||
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/apple`
+      `${process.env.VITE_API_URL}/auth/callback/apple`
 
     if (!APPLE_CLIENT_ID) {
       return c.json({ error: "Apple OAuth not configured" }, 500)
@@ -586,7 +586,7 @@ authRoutes.post("/callback/apple", async (c) => {
     const APPLE_CLIENT_SECRET = process.env.APPLE_CLIENT_SECRET
     const APPLE_REDIRECT_URI =
       process.env.APPLE_REDIRECT_URI ||
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/callback/apple`
+      `${process.env.VITE_API_URL}/auth/callback/apple`
 
     if (!APPLE_CLIENT_ID || !APPLE_CLIENT_SECRET) {
       const forwardedHost = c.req.header("X-Forwarded-Host")

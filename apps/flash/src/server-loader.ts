@@ -154,6 +154,7 @@ export async function loadServerData(
     authToken || cookies.token || headers["x-token"] || fingerprint || uuidv4()
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
+  console.log(`🚀 ~ chrryUrl:`, chrryUrl)
   const locale: locale = (cookies.locale as locale) || "en"
 
   const siteConfig = getSiteConfig(hostname)

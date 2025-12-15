@@ -1420,10 +1420,11 @@ export function detectSiteModeDomain(
   mode?: SiteMode,
 ): SiteMode {
   const defaultMode =
-    (process.env.MODE as SiteMode) ||
     ((import.meta as any).env?.VITE_SITE_MODE as SiteMode) ||
     mode ||
     ("vex" as SiteMode)
+
+  console.log(`🚀 ~ defaultMode:`, defaultMode)
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -1541,6 +1542,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
  * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
+  console.log(`🚀 ~ getSiteConfig ~ hostnameOrMode:`, hostnameOrMode)
   // If it's a valid SiteMode, use it directly
 
   // Extract hostname from URL if needed
