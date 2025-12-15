@@ -212,7 +212,6 @@ export default function EnableNotifications({
 
   // Show notification button for extensions if permission not granted, for web if service worker ready
   const shouldShow =
-    (device !== "mobile" || isStandalone) &&
     !isExtension &&
     (isDevelopment || (user || guest)?.lastMessage) &&
     isSubscribed === false &&

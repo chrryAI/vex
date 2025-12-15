@@ -148,8 +148,10 @@ authRoutes.post("/signup/password", async (c) => {
 authRoutes.post("/signin/password", async (c) => {
   try {
     const { email, password } = await c.req.json()
+    console.log(`🔐 Signin attempt for:`, email)
 
     if (!email || !password) {
+      console.log(`❌ Missing credentials`)
       return c.json({ error: "Email and password required" }, 400)
     }
 
@@ -159,6 +161,7 @@ authRoutes.post("/signin/password", async (c) => {
     })
 
     if (!user || !user.password) {
+      console.log(`❌ User not found or no password:`, email)
       return c.json({ error: "Invalid credentials" }, 401)
     }
 
@@ -166,19 +169,23 @@ authRoutes.post("/signin/password", async (c) => {
     const valid = await compare(password, user.password)
 
     if (!valid) {
+      console.log(`❌ Invalid password for:`, email)
       return c.json({ error: "Invalid credentials" }, 401)
     }
 
+    console.log(`✅ Password valid for:`, email)
+
     // Generate token
     const token = generateToken(user.id, user.email)
+    console.log(`🎫 Generated token for:`, user.id)
 
     // Set HTTP-only cookie
-    c.header(
-      "Set-Cookie",
-      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
-    )
+    const cookieValue = `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`
+    console.log(`🍪 Setting cookie:`, cookieValue.substring(0, 50) + "...")
 
-    return c.json({
+    c.header("Set-Cookie", cookieValue)
+
+    const response = {
       user: {
         id: user.id,
         email: user.email,
@@ -186,9 +193,12 @@ authRoutes.post("/signin/password", async (c) => {
         image: user.image,
       },
       token,
-    })
+    }
+
+    console.log(`📤 Returning response for:`, user.id)
+    return c.json(response)
   } catch (error) {
-    console.error("Signin error:", error)
+    console.error("❌ Signin error:", error)
     return c.json({ error: "Signin failed" }, 500)
   }
 })
