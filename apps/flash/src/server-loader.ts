@@ -197,14 +197,14 @@ export async function loadServerData(
         screenHeight: Number(viewPortHeight),
         gift: gift || undefined,
         source: "layout",
-        API_URL,
+        // API_URL,
         ip: clientIp, // Pass client IP for Arcjet
       }),
 
       getTranslations({
         token: apiKey,
         locale,
-        API_URL,
+        // API_URL,
       }),
 
       getApp({
@@ -212,7 +212,7 @@ export async function loadServerData(
         appId,
         token: apiKey,
         pathname,
-        API_URL,
+        // API_URL,
       }),
     ])
 

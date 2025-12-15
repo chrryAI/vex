@@ -133,13 +133,15 @@ export const addParam = (key: string, value: string) => {
 const FE_PORT = getEnv().VITE_FE_PORT || "5173"
 const API_PORT = getEnv().API_PORT || "3001"
 
-export const FRONTEND_URL = isTestingDevice
-  ? `http://192.168.2.27:${FE_PORT}`
-  : isDevelopment
-    ? `http://localhost:${FE_PORT}`
-    : CHRRY_URL
+export const FRONTEND_URL =
+  getEnv().VITE_FRONTEND_URL ||
+  (isTestingDevice
+    ? `http://192.168.2.27:${FE_PORT}`
+    : isDevelopment
+      ? `http://localhost:${FE_PORT}`
+      : CHRRY_URL)
 
-export const PROD_FRONTEND_URL = CHRRY_URL
+export const PROD_FRONTEND_URL = FRONTEND_URL
 
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
@@ -398,7 +400,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.6.97"
+export const VERSION = config.version || "1.6.98"
 export type instructionBase = {
   id: string
   title: string

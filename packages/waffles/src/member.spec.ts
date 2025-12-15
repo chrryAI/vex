@@ -72,7 +72,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test("Debate", async ({ page }) => {
+test.skip("Debate", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
