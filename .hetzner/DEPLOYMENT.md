@@ -26,7 +26,7 @@ You have **2 applications** to deploy:
 
 ```bash
 NODE_ENV=production
-NEXT_PUBLIC_SITE_MODE=focus
+VITE_SITE_MODE=focus
 NEXTAUTH_URL=https://focus.chrry.ai
 NEXTAUTH_SECRET=<generate-secret>
 PORT=3000

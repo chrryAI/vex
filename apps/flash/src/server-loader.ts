@@ -1,5 +1,11 @@
 import { v4 as uuidv4 } from "uuid"
-import { VERSION, getThreadId, pageSizes } from "@chrryai/chrry/utils"
+import {
+  VERSION,
+  getThreadId,
+  pageSizes,
+  isE2E,
+  getEnv,
+} from "@chrryai/chrry/utils"
 import {
   getApp,
   getSession,
@@ -67,12 +73,6 @@ export interface ServerData {
   isBlogRoute?: boolean
 }
 
-const TEST_MEMBER_FINGERPRINTS =
-  process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || []
-const TEST_GUEST_FINGERPRINTS =
-  process.env.TEST_GUEST_FINGERPRINTS?.split(",") || []
-
-const API_URL = process.env.INTERNAL_API_URL
 /**
  * Load all server-side data for SSR
  * This replaces Next.js server components data fetching
@@ -82,27 +82,60 @@ export async function loadServerData(
 ): Promise<ServerData> {
   const { hostname, headers, cookies, url } = request
 
+  const isDev = process.env.MODE === "development"
+
+  const API_URL = getEnv().VITE_API_URL
+  console.log(`🚀 ~ API_URL:`, API_URL)
+
+  // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
+  let TEST_MEMBER_FINGERPRINTS: string[] = []
+  let TEST_GUEST_FINGERPRINTS: string[] = []
+  let TEST_MEMBER_EMAILS: string[] = []
+
   const pathname = request.pathname.startsWith("/")
     ? request.pathname
     : `/${request.pathname}`
 
   const threadId = getThreadId(pathname)
-  const isDev = process.env.MODE === "development"
   const urlObj = new URL(url, `http://${hostname}`)
 
   // Parse query string for fp parameter (only if URL contains query params)
-  let fpFromQuery: string | null = null
+  let fpFromQuery: string | undefined = undefined
   if (url.includes("?")) {
-    fpFromQuery = urlObj.searchParams.get("fp")
+    fpFromQuery = urlObj.searchParams.get("fp") || undefined
   }
 
+  console.log(`🚀 ~ fpFromQuery:`, {
+    fpFromQuery,
+    TEST_MEMBER_FINGERPRINTS,
+    TEST_GUEST_FINGERPRINTS,
+  })
+
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
+
+  if (isE2E && fpFromQuery) {
+    try {
+      const testConfigUrl = `${API_URL}/test-config?fp=${fpFromQuery}`
+      const testConfigResponse = await fetch(testConfigUrl)
+      if (testConfigResponse.ok) {
+        const testConfig = await testConfigResponse.json()
+        console.log(`🚀 ~ testConfig:`, testConfig)
+        TEST_MEMBER_FINGERPRINTS = testConfig.TEST_MEMBER_FINGERPRINTS || []
+        TEST_GUEST_FINGERPRINTS = testConfig.TEST_GUEST_FINGERPRINTS || []
+        TEST_MEMBER_EMAILS = testConfig.TEST_MEMBER_EMAILS || []
+      }
+    } catch (error) {
+      console.error("Failed to fetch test config:", error)
+    }
+  }
+
   const fingerprint =
     (TEST_MEMBER_FINGERPRINTS?.concat(TEST_GUEST_FINGERPRINTS).includes(
       fpFromQuery || "",
     )
       ? fpFromQuery
-      : headers["x-fp"] || cookies.fingerprint) || uuidv4()
+      : fpFromQuery || headers["x-fp"] || cookies.fingerprint) || uuidv4()
+  console.log(`🚀 ~ TEST_MEMBER_FINGERPRINTS:`, TEST_MEMBER_FINGERPRINTS)
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
@@ -166,14 +199,14 @@ export async function loadServerData(
         screenHeight: Number(viewPortHeight),
         gift: gift || undefined,
         source: "layout",
-        API_URL,
+        // API_URL,
         ip: clientIp, // Pass client IP for Arcjet
       }),
 
       getTranslations({
         token: apiKey,
         locale,
-        API_URL,
+        // API_URL,
       }),
 
       getApp({
@@ -181,7 +214,7 @@ export async function loadServerData(
         appId,
         token: apiKey,
         pathname,
-        API_URL,
+        // API_URL,
       }),
     ])
 

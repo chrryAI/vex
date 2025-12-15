@@ -30,7 +30,7 @@ export const sendWebPush = async ({
 
   webpush.setVapidDetails(
     `mailto:${siteConfig.email}`,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VITE_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!,
   )
 
