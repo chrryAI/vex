@@ -28,6 +28,7 @@ import {
   type BlogPostWithContent,
 } from "./blog-loader"
 import { generateServerMetadata } from "./server-metadata"
+import { themeType } from "chrry/context/ThemeContext"
 
 export interface ServerRequest {
   url: string
@@ -297,10 +298,12 @@ export async function loadServerData(
   // Check if this is a blog route
   if (pathname === "/blog" || pathname.startsWith("/blog/")) {
     isBlogRoute = true
+    console.log(`🚀 ~ isBlogRoute:`, isBlogRoute)
 
     if (pathname === "/blog") {
       // Blog list page
       blogPosts = getBlogPosts()
+      console.log(`🚀 ~ blogPosts:`, blogPosts)
     } else {
       // Individual blog post page
       const slug = pathname.replace("/blog/", "")
@@ -308,32 +311,7 @@ export async function loadServerData(
     }
   }
 
-  // Generate metadata for this route
-  let metadata
-  try {
-    metadata = await generateServerMetadata(pathname, hostname, locale, {
-      session,
-      thread,
-      threads,
-      translations,
-      app,
-      siteConfig,
-      locale,
-      deviceId,
-      fingerprint,
-      viewPortWidth,
-      viewPortHeight,
-      chrryUrl,
-      isDev,
-      apiError,
-      theme,
-      pathname,
-    })
-  } catch (error) {
-    console.error("Error generating metadata in server-loader:", error)
-  }
-
-  return {
+  const result = {
     session,
     thread,
     threads,
@@ -348,11 +326,23 @@ export async function loadServerData(
     chrryUrl,
     isDev,
     apiError,
-    theme,
-    metadata,
+    theme: theme as themeType,
     blogPosts,
     blogPost,
     isBlogRoute,
     pathname, // Add pathname so client knows the SSR route
+  }
+
+  // Generate metadata for this route
+  let metadata
+  try {
+    metadata = await generateServerMetadata(pathname, hostname, locale, result)
+  } catch (error) {
+    console.error("Error generating metadata in server-loader:", error)
+  }
+
+  return {
+    ...result,
+    metadata,
   }
 }
