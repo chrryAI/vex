@@ -964,38 +964,29 @@ export function AuthProvider({
       captureException(error)
     }
   })
-
+  const hasStoreApps = (app: appWithStore | undefined) => {
+    return Boolean(app?.store?.app && app?.store?.apps.length)
+  }
   useEffect(() => {
     if (storeAppsSwr) {
       mergeApps(storeAppsSwr)
+
+      storeAppsSwr?.find((app) => app.id === loadingAppId) &&
+        setLoadingApp(undefined)
     }
   }, [storeAppsSwr])
 
-  const hasStoreApps = (item: appWithStore | undefined) => {
-    if (!item || !storeApps.length) return false
-    const app = storeApps?.find((app) => {
-      return app.id === item?.id
-    })
+  // useEffect(() => {
+  //   if (hasStoreApps(loadingApp)) {
+  //     setLoadingApp(undefined)
+  //     return
+  //   }
 
-    return Boolean(
-      app?.store?.app &&
-        app?.store?.apps.length &&
-        storeApps?.find(
-          (app) => app.store?.appId && app.id === item?.store?.appId,
-        ),
-    )
-  }
-
-  useEffect(() => {
-    if (hasStoreApps(loadingApp)) {
-      setLoadingApp(undefined)
-      return
-    }
-
-    if (loadingApp) {
-      refetchApps()
-    }
-  }, [loadingApp, isLoadingApps, storeApps])
+  //   if (loadingApp) {
+  //     console.log(`🚀 ~ useEffect ~ loadingApp:`, loadingApp)
+  //     refetchApps()
+  //   }
+  // }, [loadingApp, isLoadingApps, storeApps])
 
   const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
 
@@ -1020,7 +1011,7 @@ export function AuthProvider({
   )
 
   useEffect(() => {
-    storeAppIternal && setStoreApp(storeAppIternal)
+    hasStoreApps(app) && setStoreApp(storeAppIternal)
   }, [storeAppIternal])
 
   const apps = storeApps.filter((item) => {
@@ -1217,7 +1208,11 @@ export function AuthProvider({
 
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
-      if (!item) return
+      if (!hasStoreApps(item)) {
+        setLoadingApp(item)
+        return
+      }
+
       setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
