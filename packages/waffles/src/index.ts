@@ -26,7 +26,7 @@ export const TEST_URL = process.env.PLAYWRIGHT_BASE_URL || process.env.TEST_URL!
 export const LIVE_URL = "https://chrry.ai"
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-export const isCI = process.env.NEXT_PUBLIC_CI || process.env.CI
+export const isCI = process.env.VITE_CI || process.env.CI
 
 const getURL = (
   {

@@ -5,7 +5,7 @@
 import * as Sentry from "@sentry/node"
 
 // Patch console.error to send errors to Sentry (server-side)
-if (process.env.NEXT_PUBLIC_SENTRY === "true" && process.env.SENTRY_DSN) {
+if (process.env.VITE_SENTRY === "true" && process.env.SENTRY_DSN) {
   Sentry.init({
     beforeSend(event, hint) {
       // Ignore Applebot DOM errors
