@@ -19,8 +19,8 @@ export function useOnlineStatus() {
 
     async function checkConnection() {
       try {
-        // use a lightweight request; avoid caching
-        const response = await fetch("/icon.ico", {
+        // Check API health endpoint to detect server outages
+        const response = await fetch("/api/health", {
           method: "HEAD",
           cache: "no-store",
         })
@@ -34,18 +34,18 @@ export function useOnlineStatus() {
       }
     }
 
-    // initial check in case navigator.onLine is wrong
-    // checkConnection()
+    // Initial check in case navigator.onLine is wrong
+    checkConnection()
 
-    // recheck every 15s
-    // const interval = setInterval(checkConnection, 15000)
+    // Recheck every 30s to detect server outages
+    const interval = setInterval(checkConnection, 30000)
 
     return () => {
       if (window.removeEventListener) {
         window.removeEventListener("online", updateStatus)
         window.removeEventListener("offline", updateStatus)
       }
-      // clearInterval(interval)
+      clearInterval(interval)
     }
   }, [])
 
