@@ -1,5 +1,3 @@
-import { isE2E } from "."
-
 export type SiteMode =
   | "chrryDev"
   | "vex"
@@ -13,6 +11,17 @@ export type SiteMode =
   | "newYork"
   | "popcorn"
   | "zarathustra"
+
+// Function declaration is hoisted, so it's available before const declarations
+function getEnv() {
+  if (typeof import.meta !== "undefined") {
+    return (import.meta as any).env
+  }
+  return process.env
+}
+
+export const isE2E =
+  getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
 
 const chrryDev = {
   mode: "chrryDev" as SiteMode,
@@ -1422,11 +1431,7 @@ export function detectSiteModeDomain(
   mode?: SiteMode,
 ): SiteMode {
   const defaultMode =
-    (typeof import.meta !== "undefined"
-      ? (import.meta as any).env?.VITE_SITE_MODE
-      : process.env.VITE_SITE_MODE) ||
-    mode ||
-    ("vex" as SiteMode)
+    (getEnv().VITE_SITE_MODE as SiteMode) || mode || ("vex" as SiteMode)
 
   console.log(`🚀 ~ defaultMode:`, defaultMode)
 
