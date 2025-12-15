@@ -119,12 +119,36 @@ authRoutes.post("/signup/password", async (c) => {
 
     // Generate token
     const token = generateToken(newUser.id, newUser.email)
+    console.log(`🚀 ~ authRoutes.post ~ token:`, token)
 
-    // Set HTTP-only cookie (skip HttpOnly in development for easier debugging)
+    // Determine cookie domain from request headers (for cross-subdomain auth)
+    const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store"]
+    let cookieDomain = ""
+
+    const forwardedHost =
+      c.req.header("X-Forwarded-Host") || c.req.header("Host")
+    if (forwardedHost) {
+      const domainParts = forwardedHost.split(".")
+      if (domainParts.length >= 2) {
+        const rootDomain = domainParts.slice(-2).join(".")
+        const isAllowed = ALLOWED_DOMAINS.some(
+          (allowed) =>
+            allowed === `.${rootDomain}` || rootDomain === "localhost",
+        )
+        if (isAllowed) {
+          cookieDomain = `; Domain=.${rootDomain}`
+        }
+      }
+    }
+
+    // Set HTTP-only cookie with cross-domain support
     const isDev = process.env.NODE_ENV === "development"
+    const secureFlag = isDev ? "" : "; Secure"
+    const sameSite = isDev ? "Lax" : "None" // None required for cross-domain in production
+
     c.header(
       "Set-Cookie",
-      `token=${token}; ${isDev ? "" : "HttpOnly; "}Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`,
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=${sameSite}${cookieDomain}${secureFlag}`,
     )
 
     return c.json({
@@ -147,7 +171,7 @@ authRoutes.post("/signup/password", async (c) => {
  */
 authRoutes.post("/signin/password", async (c) => {
   try {
-    const { email, password } = await c.req.json()
+    const { email, password, callbackUrl } = await c.req.json()
     console.log(`🔐 Signin attempt for:`, email)
 
     if (!email || !password) {
@@ -179,9 +203,33 @@ authRoutes.post("/signin/password", async (c) => {
     const token = generateToken(user.id, user.email)
     console.log(`🎫 Generated token for:`, user.id)
 
-    // Set HTTP-only cookie
-    const cookieValue = `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`
-    console.log(`🍪 Setting cookie:`, cookieValue.substring(0, 50) + "...")
+    // Determine cookie domain from request headers (for cross-subdomain auth)
+    const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store"]
+    let cookieDomain = ""
+
+    const forwardedHost =
+      c.req.header("X-Forwarded-Host") || c.req.header("Host")
+    if (forwardedHost) {
+      const domainParts = forwardedHost.split(".")
+      if (domainParts.length >= 2) {
+        const rootDomain = domainParts.slice(-2).join(".")
+        const isAllowed = ALLOWED_DOMAINS.some(
+          (allowed) =>
+            allowed === `.${rootDomain}` || rootDomain === "localhost",
+        )
+        if (isAllowed) {
+          cookieDomain = `; Domain=.${rootDomain}`
+        }
+      }
+    }
+
+    // Set HTTP-only cookie with cross-domain support
+    const isDev = process.env.NODE_ENV === "development"
+    const secureFlag = isDev ? "" : "; Secure"
+    const sameSite = isDev ? "Lax" : "None" // None required for cross-domain in production
+
+    const cookieValue = `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=${sameSite}${cookieDomain}${secureFlag}`
+    console.log(`🍪 Setting cookie:`, cookieValue.substring(0, 80) + "...")
 
     c.header("Set-Cookie", cookieValue)
 
@@ -193,6 +241,10 @@ authRoutes.post("/signin/password", async (c) => {
         image: user.image,
       },
       token,
+      // If callbackUrl provided, include it with token param (like Google OAuth)
+      ...(callbackUrl && {
+        callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${token}`,
+      }),
     }
 
     console.log(`📤 Returning response for:`, user.id)

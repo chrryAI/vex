@@ -30,7 +30,7 @@ translations.get("/", async (c) => {
     let translations: Record<string, any> = {}
     try {
       const translationsModule = await import(
-        `chrry/locales/${validLocale}.json`
+        `@chrryai/chrry/locales/${validLocale}.json`
       )
       translations = translationsModule.default || translationsModule
 
@@ -42,7 +42,7 @@ translations.get("/", async (c) => {
       console.error("Failed to load locale: %s", safeLocale, error)
 
       try {
-        const enModule = await import(`chrry/locales/en.json`)
+        const enModule = await import(`@chrryai/chrry/locales/en.json`)
         translations = enModule.default || enModule
 
         // Cache the fallback too

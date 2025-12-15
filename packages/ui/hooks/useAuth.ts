@@ -103,7 +103,7 @@ export function useAuth() {
         if (response.ok) {
           const data = await response.json()
           setState({ user: data.user, loading: false })
-          return { success: true, user: data.user }
+          return { success: true, user: data.user, token: data.token }
         } else {
           const error = await response.json()
           return { success: false, error: error.error || "Sign in failed" }
