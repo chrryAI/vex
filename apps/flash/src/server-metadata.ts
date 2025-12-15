@@ -7,6 +7,7 @@ import {
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import { locale } from "@chrryai/chrry/locales"
+import clearLocale from "@chrryai/chrry/utils/clearLocale"
 import { ServerData } from "./server-loader"
 import { BlogPostWithContent } from "./blog-loader"
 import {
@@ -149,8 +150,11 @@ export async function generateServerMetadata(
     }
   }
 
+  // Strip locale from pathname to handle both /about and /tr/about
+  const pathnameWithoutLocale = clearLocale(pathname)
+
   // Parse pathname segments
-  const pathSegments = pathname.split("/").filter(Boolean)
+  const pathSegments = pathnameWithoutLocale.split("/").filter(Boolean)
   const segment =
     pathSegments.length === 1 && pathSegments[0] ? pathSegments[0] : null
 
