@@ -67,6 +67,10 @@ const config = {
         projectRoot,
         'node_modules/lucide-react-native',
       ),
+      'copy-anything': path.resolve(
+        workspaceRoot,
+        'node_modules/.pnpm/copy-anything@3.0.5/node_modules/copy-anything/dist/index.js',
+      ),
     },
     // Block problematic modules that use dynamic imports
     blockList: [

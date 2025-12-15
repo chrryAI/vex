@@ -296,6 +296,8 @@ export type session = {
   }
   deviceId?: string
   app: appWithStore
+  userBaseApp?: appWithStore
+  guestBaseApp?: appWithStore
   // Device info from UAParser (server-side detection)
   device?: {
     vendor?: string

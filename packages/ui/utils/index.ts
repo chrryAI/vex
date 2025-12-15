@@ -687,6 +687,7 @@ export const isDeepEqual = (obj1: any, obj2: any): boolean => {
 }
 
 // Export getHourlyLimit
+export { decodeHtmlEntities } from "./decodeHtmlEntities"
 export { getHourlyLimit } from "./getHourlyLimit"
 
 // Export generateAppMetadata

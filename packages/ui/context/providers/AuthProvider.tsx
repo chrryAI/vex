@@ -302,6 +302,10 @@ export function AuthProvider({
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
 
+  const hasStoreApps = (app: appWithStore | undefined) => {
+    return Boolean(app?.store?.app && app?.store?.apps.length)
+  }
+
   useEffect(() => {
     if (error) {
       toast.error(error)
@@ -707,9 +711,41 @@ export function AuthProvider({
       isPWA,
     })
   }
-  const [storeApps, setAllApps] = useState<appWithStore[]>(
+
+  const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
+    // Create a map of existing apps by ID
+    const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+
+    // Add or update apps
+    newApps.forEach((newApp) => {
+      const existingApp = existingAppsMap.get(newApp.id)
+
+      // If app doesn't exist, add it
+
+      // If new app has more data (store.apps populated), update it
+      if (hasStoreApps(newApp) && !hasStoreApps(existingApp)) {
+        existingAppsMap.set(newApp.id, newApp)
+      } else {
+        existingAppsMap.set(newApp.id, newApp)
+      }
+    })
+
+    return Array.from(existingAppsMap.values())
+  }
+
+  const userBaseApp = session?.userBaseApp
+
+  const userBaseStore = userBaseApp?.store
+  const guestBaseApp = session?.guestBaseApp
+
+  const guestBaseStore = guestBaseApp?.store
+
+  const allApps = merge(
     sessionData?.app?.store?.apps || [],
+    userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
+
+  const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
   const getAppSlug = (
     targetApp: appWithStore,
@@ -903,26 +939,7 @@ export function AuthProvider({
 
   // Centralized function to merge apps without duplicates
   const mergeApps = useCallback((newApps: appWithStore[]) => {
-    setAllApps((prevApps) => {
-      // Create a map of existing apps by ID
-      const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-
-      // Add or update apps
-      newApps.forEach((newApp) => {
-        const existingApp = existingAppsMap.get(newApp.id)
-
-        // If app doesn't exist, add it
-
-        // If new app has more data (store.apps populated), update it
-        if (hasStoreApps(newApp) && !hasStoreApps(existingApp)) {
-          existingAppsMap.set(newApp.id, newApp)
-        } else {
-          existingAppsMap.set(newApp.id, newApp)
-        }
-      })
-
-      return Array.from(existingAppsMap.values())
-    })
+    setAllApps(merge(storeApps, newApps))
   }, [])
 
   const fetchSession = async (newApp?: appWithStore) => {
@@ -976,9 +993,7 @@ export function AuthProvider({
       captureException(error)
     }
   })
-  const hasStoreApps = (app: appWithStore | undefined) => {
-    return Boolean(app?.store?.app && app?.store?.apps.length)
-  }
+
   useEffect(() => {
     if (storeAppsSwr) {
       mergeApps(storeAppsSwr)
@@ -998,6 +1013,10 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
+  const apps = storeApps.filter((item) => {
+    return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
+  })
+
   const storeAppIternal = storeApps?.find(
     (item) =>
       app?.store?.appId &&
@@ -1013,21 +1032,6 @@ export function AuthProvider({
   useEffect(() => {
     hasStoreApps(app) && setStoreApp(storeAppIternal)
   }, [storeAppIternal])
-
-  const apps = storeApps.filter((item) => {
-    return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
-  })
-
-  const userBaseApp = storeApps?.find(
-    (app) => user?.userName && app.store?.slug === user?.userName,
-  )
-
-  const userBaseStore = userBaseApp?.store
-  const guestBaseApp = storeApps?.find(
-    (app) => guest?.id && app.store?.slug === guest?.id,
-  )
-
-  const guestBaseStore = guestBaseApp?.store
 
   const [slugState, setSlugState] = useState<string | undefined>(
     (app && getAppSlug(app)) || undefined,
@@ -1314,7 +1318,7 @@ export function AuthProvider({
     storeApps,
     pathname,
     baseApp,
-    app?.id,
+    // app?.id removed - causes infinite loop since setApp() changes it
     thread,
     threadId,
     lastAppId,
