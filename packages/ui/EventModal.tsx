@@ -55,22 +55,29 @@ const getColorOptions = (t: (key: string) => string) =>
   ] as const
 
 // Helper function to convert Date to local datetime-local string
-const formatDateForInput = (date: Date, isAllDay: boolean): string => {
-  if (!(date instanceof Date)) return ""
+const formatDateForInput = (
+  date: Date | string | number,
+  isAllDay: boolean,
+): string => {
+  // Convert to Date if it's not already
+  const dateObj = date instanceof Date ? date : new Date(date)
+
+  // Check if it's a valid date
+  if (isNaN(dateObj.getTime())) return ""
 
   if (isAllDay) {
     // For all-day events, just return the date part in local timezone
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const day = String(date.getDate()).padStart(2, "0")
+    const year = dateObj.getFullYear()
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0")
+    const day = String(dateObj.getDate()).padStart(2, "0")
     return `${year}-${month}-${day}`
   } else {
     // For datetime, format in local timezone
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const day = String(date.getDate()).padStart(2, "0")
-    const hours = String(date.getHours()).padStart(2, "0")
-    const minutes = String(date.getMinutes()).padStart(2, "0")
+    const year = dateObj.getFullYear()
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0")
+    const day = String(dateObj.getDate()).padStart(2, "0")
+    const hours = String(dateObj.getHours()).padStart(2, "0")
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0")
     return `${year}-${month}-${day}T${hours}:${minutes}`
   }
 }
