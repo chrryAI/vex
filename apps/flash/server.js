@@ -414,8 +414,9 @@ app.use("*all", async (req, res) => {
       ? `<script>window.__SERVER_DATA__ = ${JSON.stringify(serverData).replace(/</g, "\\u003c")}</script>`
       : ""
 
-    // Replace placeholders - inject metadata, CSS, and server data
+    // Replace placeholders - inject metadata, CSS, server data, and lang attribute
     const html = template
+      .replace(`<html lang="en"`, `<html lang="${serverData?.locale || "en"}"`)
       .replace(
         `<!--app-head-->`,
         `${metaTags}\n  ${cssLinks}\n  ${serverDataScript}`,
