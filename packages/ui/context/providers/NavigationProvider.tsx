@@ -11,9 +11,9 @@ import {
   toast,
   useNavigation,
   usePlatform,
-  useOnlineStatus,
   NavigationParams,
 } from "../../platform"
+import { useOnlineStatus } from "../../hooks/useOnlineStatus"
 import { useApp } from "./AppProvider"
 import { useChat } from "./ChatProvider"
 import { useAuth } from "./AuthProvider"
@@ -210,9 +210,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isOnline) {
       setWasOffline(true)
-      // toast.error(t("You are offline"), {
-      //   duration: 6000,
-      // })
+      toast.error(t("You are offline"), {
+        duration: 6000,
+      })
     }
   }, [isOnline])
 
