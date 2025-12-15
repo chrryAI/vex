@@ -968,7 +968,6 @@ export function AuthProvider({
   useEffect(() => {
     if (storeAppsSwr) {
       mergeApps(storeAppsSwr)
-      setLoadingAppId(undefined)
     }
   }, [storeAppsSwr])
 
