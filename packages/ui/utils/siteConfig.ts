@@ -1,3 +1,5 @@
+import { isE2E } from "."
+
 export type SiteMode =
   | "chrryDev"
   | "vex"
@@ -1537,16 +1539,25 @@ export function detectSiteMode(hostname?: string): SiteMode {
   return detectSiteModeDomain(hostname)
 }
 
+const getClientHostname = () => {
+  if (typeof window !== "undefined" && window.location) {
+    return window.location.hostname
+  }
+  return undefined
+}
+
 /**
  * Get site configuration based on current domain
  * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
-  console.log(`🚀 ~ getSiteConfig ~ hostnameOrMode:`, hostnameOrMode)
+  if (isE2E) {
+    return e2eVex
+  }
   // If it's a valid SiteMode, use it directly
 
   // Extract hostname from URL if needed
-  let hostname = hostnameOrMode
+  let hostname = hostnameOrMode || getClientHostname()
   if (hostnameOrMode && hostnameOrMode.includes("://")) {
     try {
       hostname = new URL(hostnameOrMode).hostname

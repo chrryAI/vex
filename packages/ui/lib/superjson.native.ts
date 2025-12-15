@@ -1,8 +1,9 @@
 /**
  * Native-specific superjson wrapper
- * Uses actual superjson for proper Date serialization in calendar API
+ * Uses superjson/dist/index workaround for React Native
+ * See: https://stackoverflow.com/questions/77336033/import-superjson-in-react-native
  */
-import superjson from "superjson"
+import superjson from "superjson/dist/index"
 
 export const stringify = (data: any): string => {
   return superjson.stringify(data)
