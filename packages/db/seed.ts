@@ -20,6 +20,8 @@ import {
   isProd,
   isCI,
   isSeedSafe,
+  user,
+  updateApp,
 } from "./index"
 import { eq, and, isNull, sql, inArray } from "drizzle-orm"
 import {
@@ -346,6 +348,8 @@ const create = async () => {
 
   const { vex } = await createStores({ user: admin })
 
+  await updateStoreUrls({ user: admin })
+
   const { sushiAgent } = await createAgents()
 
   if (!sushiAgent) throw new Error("Failed to add agent")
@@ -619,13 +623,108 @@ const create = async () => {
   // console.log("Guest created:", guest.ip)
 }
 
+const updateStoreUrls = async ({ user }: { user: user }) => {
+  const vex = await getApp({ slug: "vex", userId: user.id })
+  if (!vex) throw new Error("Vex app not found")
+  await updateApp({
+    ...vex,
+    chromeWebStoreUrl:
+      "https://chromewebstore.google.com/detail/vex-🍒/enpllenkofnbmnflnlkbomkcilamjgac",
+  })
+
+  console.log(
+    "Vex app updated",
+    await getApp({ slug: "vex", userId: user.id }).then(
+      (app) => app?.chromeWebStoreUrl,
+    ),
+  )
+
+  const chrry = await getApp({ slug: "chrry", userId: user.id })
+  if (!chrry) throw new Error("Chrry app not found")
+  await updateApp({
+    ...chrry,
+    chromeWebStoreUrl:
+      "https://chromewebstore.google.com/detail/chrry-🍒/odgdgbbddopmblglebfngmaebmnhegfc",
+  })
+
+  console.log(
+    "Chrry app updated",
+    await getApp({ slug: "chrry", userId: user.id }).then(
+      (app) => app?.chromeWebStoreUrl,
+    ),
+  )
+
+  const popcorn = await getApp({ slug: "popcorn", userId: user.id })
+  if (!popcorn) throw new Error("Popcorn app not found")
+  await updateApp({
+    ...popcorn,
+    chromeWebStoreUrl:
+      "https://chromewebstore.google.com/detail/popcorn-🍒/lfokfhplbjckmfmbakfgpkhaanfencah",
+  })
+
+  console.log(
+    "Popcorn app updated",
+    await getApp({ slug: "popcorn", userId: user.id }).then(
+      (app) => app?.chromeWebStoreUrl,
+    ),
+  )
+
+  const zarathustra = await getApp({ slug: "zarathustra", userId: user.id })
+  if (!zarathustra) throw new Error("Zarathustra app not found")
+  await updateApp({
+    ...zarathustra,
+    chromeWebStoreUrl:
+      "https://chromewebstore.google.com/detail/zarathustra-🍒/jijgmcofljfalongocihccblcboppnad",
+  })
+
+  console.log(
+    "Zarathustra app updated",
+    await getApp({ slug: "zarathustra", userId: user.id }).then(
+      (app) => app?.chromeWebStoreUrl,
+    ),
+  )
+
+  const atlas = await getApp({ slug: "atlas", userId: user.id })
+  if (!atlas) throw new Error("Atlas app not found")
+  await updateApp({
+    ...atlas,
+    chromeWebStoreUrl:
+      "https://chromewebstore.google.com/detail/atlas-🍒/adopnldifkjlgholfcijjgocgnolknpb",
+  })
+
+  console.log(
+    "Atlas app updated",
+    await getApp({ slug: "atlas", userId: user.id }).then(
+      (app) => app?.chromeWebStoreUrl,
+    ),
+  )
+
+  const focus = await getApp({ slug: "focus", userId: user.id })
+  if (!focus) throw new Error("Focus app not found")
+  await updateApp({
+    ...focus,
+    chromeWebStoreUrl:
+      "https://chromewebstore.google.com/detail/focus-🍒/nkomoiomfaeodakglkihapminhpgnibl",
+  })
+
+  console.log(
+    "Focus app updated",
+    await getApp({ slug: "focus", userId: user.id }).then(
+      (app) => app?.chromeWebStoreUrl,
+    ),
+  )
+}
+
 const prod = async () => {
   // Check if admin user already exists
-  let admin = await getUser({ email: VEX_TEST_EMAIL })
+  let admin = await getUser({ email: "ibsukru@gmail.com" })
   if (!admin) throw new Error("Admin user not found")
+
+  await updateStoreUrls({ user: admin })
+
   // Delete inactive bot guests in batches
   // await clearGuests()
-  const vex = await createStores({ user: admin, isProd: true })
+  // const vex = await createStores({ user: admin, isProd: true })
   // const allInstructions = await db.select().from(instructions)
   // const seen = new Map<string, string>() // Map of unique key -> instruction ID
   // const duplicateIds: string[] = []
@@ -734,12 +833,9 @@ const seedDb = async (): Promise<void> => {
     process.exit(0)
   } else {
     await clearDb()
-
     await create()
     process.exit(0)
   }
-  // await updateInvalidDates()
-  // process.exit(0)
 }
 
 seedDb()

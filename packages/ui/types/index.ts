@@ -886,6 +886,7 @@ export type app = {
   apiMonthlyPrice: number | null
   apiRateLimit: number | null
   apiKey: string | null
+  chromeWebStoreUrl: string | null
   apiRequestCount: number
   apiRevenue: number
   usageCount: number
