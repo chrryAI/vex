@@ -377,7 +377,7 @@ const disableSSL = process.env.DISABLE_DB_SSL === "true"
 
 const client = postgres(
   connectionString,
-  isSeedSafe
+  isDevelopment
     ? undefined
     : {
         ssl:
@@ -4894,6 +4894,8 @@ export function toSafeApp({ app }: { app: app }) {
     tools: app.tools,
     title: app.title,
     slug: app.slug,
+    chromeWebStoreUrl: app.chromeWebStoreUrl,
+    status: app.status,
     visibility: app.visibility,
     capabilities: app.capabilities,
     description: app.description,

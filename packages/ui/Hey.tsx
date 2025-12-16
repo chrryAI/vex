@@ -7,13 +7,11 @@ import {
   Suspense,
   useCallback,
   useEffect,
-  useRef,
   useState,
 } from "react"
 import Img from "./Image"
 // Import hooks directly from their source files to avoid circular dependency with context/providers/index.tsx
 import { useAuth } from "./context/providers/AuthProvider"
-import { useChat } from "./context/providers/ChatProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
 import { usePlatform, useLocalStorage, Div } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
@@ -21,9 +19,6 @@ import { useHasHydrated } from "./hooks"
 import { ErrorBoundary } from "./ErrorBoundary"
 import Thread from "./Thread"
 import Home from "./Home"
-import { excludedSlugRoutes, getAppAndStoreSlugs } from "./utils/url"
-import { locales } from "./locales"
-import { FRONTEND_URL, getThreadId } from "./utils"
 import { useApp } from "./context/providers"
 
 // Lazy load less frequently used components to reduce initial bundle
@@ -78,7 +73,8 @@ export const Hey = memo(
       }
     }, [pathname, isExtension])
 
-    const { app, isSplash, setIsSplash, storeApps, threadId } = useAuth()
+    const { app, isSplash, setIsSplash, storeApps, threadId, hasStoreApps } =
+      useAuth()
 
     const { currentStore } = useApp()
 

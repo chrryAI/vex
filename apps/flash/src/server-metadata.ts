@@ -7,6 +7,7 @@ import {
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { excludedSlugRoutes } from "@chrryai/chrry/utils/url"
 import { locale } from "@chrryai/chrry/locales"
+import clearLocale from "@chrryai/chrry/utils/clearLocale"
 import { ServerData } from "./server-loader"
 import { BlogPostWithContent } from "./blog-loader"
 import {
@@ -92,7 +93,7 @@ function generateBlogListMetadata(
       description: "Read about the latest news and updates from Vex",
     },
     alternates: {
-      canonical: `${siteConfig.url}/blog`,
+      canonical: `https://vex.chrry.ai/blog`,
     },
   }
 }
@@ -111,7 +112,7 @@ function generateBlogPostMetadata(
     openGraph: {
       title: `${post.title} - Vex`,
       description: post.excerpt,
-      url: `${siteConfig.url}/blog/${post.slug}`,
+      url: `https://vex.chrry.ai/blog/${post.slug}`,
       siteName: "Vex",
       type: "article",
     },
@@ -138,6 +139,8 @@ export async function generateServerMetadata(
 ): Promise<MetadataResult | undefined> {
   const siteConfig = getSiteConfig(hostname)
 
+  console.log(`🚀 ~ serverData.isBlogRoute:`, serverData.isBlogRoute)
+
   // Handle blog routes
   if (serverData.isBlogRoute) {
     if (serverData.blogPost) {
@@ -149,8 +152,11 @@ export async function generateServerMetadata(
     }
   }
 
+  // Strip locale from pathname to handle both /about and /tr/about
+  const pathnameWithoutLocale = clearLocale(pathname)
+
   // Parse pathname segments
-  const pathSegments = pathname.split("/").filter(Boolean)
+  const pathSegments = pathnameWithoutLocale.split("/").filter(Boolean)
   const segment =
     pathSegments.length === 1 && pathSegments[0] ? pathSegments[0] : null
 

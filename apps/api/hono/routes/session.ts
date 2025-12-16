@@ -138,20 +138,11 @@ const isValidFingerprint = (fp: string | null): boolean => {
 // Skip in development/E2E to avoid IP fingerprinting errors
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
-  rules:
-    process.env.ARCJET_ENV === "development" ||
-    process.env.NODE_ENV === "development" ||
-    process.env.E2E === "true"
-      ? [] // No rules in dev/E2E
-      : [
-          detectBot({
-            allow: [
-              "CATEGORY:SEARCH_ENGINE",
-              "CATEGORY:PREVIEW",
-              "CATEGORY:MONITOR",
-            ],
-          }),
-        ],
+  rules: [
+    detectBot({
+      allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
+    }),
+  ],
 })
 
 export const session = new Hono()
@@ -170,9 +161,7 @@ session.get("/", async (c) => {
       c.req.header("x-real-ip") ||
       "127.0.0.1"
 
-    const decision = await aj.protect(c.req, {
-      ip: clientIp, // Pass the real client IP to Arcjet
-    })
+    const decision = await aj.protect(c.req)
 
     if (decision.isDenied()) {
       console.log("🤖 Bot detected:", {
@@ -199,9 +188,18 @@ session.get("/", async (c) => {
 
   let member = await getMemberAction(c, { full: true, skipCache: true })
 
+  const accountApp = await getAppAction({
+    c,
+    accountApp: true,
+  })
+  const userBaseApp = member ? accountApp : undefined
+
   const guest = !member
     ? await getGuestAction(c, { skipCache: true })
     : undefined
+
+  const guestBaseApp = guest ? accountApp : undefined
+
   const { success } = await checkRateLimit(c.req.raw, {
     member: member ?? undefined,
     guest: guest ?? undefined,
@@ -597,6 +595,8 @@ session.get("/", async (c) => {
         hasNotification,
         note: "This is a fake guest for bot/crawler traffic.",
         deviceId,
+        userBaseApp,
+        guestBaseApp,
         // app,
         env,
       })
@@ -735,6 +735,8 @@ session.get("/", async (c) => {
         os,
         browser,
         // app,
+        userBaseApp,
+        guestBaseApp,
         aiAgent,
         versions,
         guest: {
@@ -775,6 +777,8 @@ session.get("/", async (c) => {
     setDeviceIdCookie(c, deviceId!, cookieDomain, isExtension)
 
     return c.json({
+      userBaseApp,
+      guestBaseApp,
       locale,
       TEST_MEMBER_FINGERPRINTS,
       TEST_GUEST_FINGERPRINTS,

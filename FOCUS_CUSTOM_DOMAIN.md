@@ -405,7 +405,7 @@ If domain detection fails, you can still use env vars:
 
 ```bash
 # .env
-NEXT_PUBLIC_SITE_MODE=focus
+VITE_SITE_MODE=focus
 ```
 
 ```typescript

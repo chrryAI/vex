@@ -67,6 +67,10 @@ const config = {
         projectRoot,
         'node_modules/lucide-react-native',
       ),
+      'copy-anything': path.resolve(
+        workspaceRoot,
+        'node_modules/.pnpm/copy-anything@3.0.5/node_modules/copy-anything/dist/index.js',
+      ),
     },
     // Block problematic modules that use dynamic imports
     blockList: [
@@ -106,19 +110,6 @@ const config = {
               workspaceRoot,
               'packages/ui/platform/toast.native.ts',
             ),
-          };
-        }
-
-        // Fix copy-anything module resolution (used by superjson)
-        // The package uses "exports" field but Metro needs explicit path
-        if (moduleName === 'copy-anything') {
-          const copyAnythingPath = path.resolve(
-            workspaceRoot,
-            'node_modules/.pnpm/superjson@2.2.3/node_modules/copy-anything/dist/index.js',
-          );
-          return {
-            type: 'sourceFile',
-            filePath: copyAnythingPath,
           };
         }
 

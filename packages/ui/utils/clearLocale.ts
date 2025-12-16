@@ -1,6 +1,6 @@
 import { locales, locale } from "../locales"
 
-const cleanSlug = (slug: string) => {
+export const cleanSlug = (slug: string) => {
   // Remove trailing slashes safely without regex
   while (slug.endsWith("/")) {
     slug = slug.slice(0, -1)

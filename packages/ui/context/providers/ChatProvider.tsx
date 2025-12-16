@@ -386,33 +386,13 @@ export function ChatProvider({
 
   const [wasIncognito, setWasIncognito] = useState(isIncognito)
 
-  const [loading, setLoading] = useState<boolean>(false)
-
   const setIsNewAppChat = (item: appWithStore | undefined) => {
-    if (!loadingApp && hasStoreApps(item) && item) {
-      setIsNewChat(true, getAppSlug(item))
-      setLoading(false)
+    if (!item) {
       return
     }
 
-    if (!loadingApp && item) {
-      setLoading(true)
-      setLoadingApp(item)
-      return
-    }
+    setIsNewChat(true, getAppSlug(item))
   }
-
-  useEffect(() => {
-    if (!loading) {
-      return
-    }
-
-    if (hasStoreApps(loadingApp) && loadingApp) {
-      setIsNewChat(true, getAppSlug(loadingApp))
-      setLoading(false)
-      return
-    }
-  }, [loading, storeApps, loadingApp])
 
   const setIsNewChat = (
     value: boolean,
