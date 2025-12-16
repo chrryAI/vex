@@ -113,7 +113,7 @@ export const WS_URL =
     ? "ws://192.168.2.27:3001"
     : isDevelopment
       ? "ws://localhost:3001"
-      : "wss://api.chrry.dev")
+      : "wss://api.chrry.dev") // Unified WebSocket on API server
 
 export const WS_SERVER_URL =
   getEnv().VITE_WS_SERVER_URL ||
