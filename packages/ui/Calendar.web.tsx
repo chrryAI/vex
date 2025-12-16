@@ -12,12 +12,7 @@ import {
 } from "react-big-calendar"
 // Import drag and drop - using dynamic import for better compatibility
 import * as DnDModule from "react-big-calendar/lib/addons/dragAndDrop"
-console.log("DnDModule:", DnDModule)
-console.log("DnDModule.default:", (DnDModule as any).default)
-console.log("DnDModule keys:", Object.keys(DnDModule))
 const withDragAndDrop = (DnDModule as any).default || DnDModule
-console.log("withDragAndDrop:", withDragAndDrop)
-console.log("typeof withDragAndDrop:", typeof withDragAndDrop)
 import {
   format,
   startOfMonth,
@@ -867,7 +862,7 @@ export default function Calendar({
   const DnDCalendar = useMemo(() => {
     try {
       if (typeof withDragAndDrop === "function") {
-        return withDragAndDrop<calendarEvent, object>(BigCalendar)
+        return (withDragAndDrop as any)(BigCalendar)
       }
       console.warn(
         "withDragAndDrop is not a function, falling back to regular calendar",
@@ -903,7 +898,7 @@ export default function Calendar({
             startAccessor={(event: any) => event.start}
             endAccessor={(event: any) => event.end}
             titleAccessor="title"
-            allDayAccessor={(event) => event.isAllDay}
+            allDayAccessor={(event: any) => event.isAllDay}
             // Views
             views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
             view={view}
@@ -932,7 +927,7 @@ export default function Calendar({
             slotPropGetter={slotPropGetter}
             // Custom components
             components={{
-              toolbar: (props) => (
+              toolbar: (props: any) => (
                 <CustomToolbar
                   {...props}
                   onGoogleSync={
@@ -946,7 +941,7 @@ export default function Calendar({
               eventWrapper:
                 view === Views.MONTH ? EventContainerWrapper : undefined,
               month: {
-                dateHeader: ({ date }) => (
+                dateHeader: ({ date }: any) => (
                   <div
                     className={clsx(
                       styles.dateHeader,
@@ -1005,10 +1000,18 @@ export default function Calendar({
             // Formats
             formats={{
               timeGutterFormat: "HH:mm",
-              eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
+              eventTimeRangeFormat: (
+                { start, end }: any,
+                culture: any,
+                localizer: any,
+              ) =>
                 `${localizer?.format(start, "HH:mm", culture)} - ${localizer?.format(end, "HH:mm", culture)}`,
               agendaTimeFormat: "HH:mm",
-              agendaTimeRangeFormat: ({ start, end }, culture, localizer) =>
+              agendaTimeRangeFormat: (
+                { start, end }: any,
+                culture: any,
+                localizer: any,
+              ) =>
                 `${localizer?.format(start, "HH:mm", culture)} - ${localizer?.format(end, "HH:mm", culture)}`,
             }}
           />
