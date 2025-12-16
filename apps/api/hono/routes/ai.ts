@@ -4438,6 +4438,188 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       } finally {
         clearTimeout(timeoutId!) // Clean up the timeout
       }
+    }
+
+    // Special handling for Gemini streaming (show reasoning immediately)
+    if (agent.name === "gemini") {
+      console.log("🔄 Gemini fullStream path (with reasoning)")
+      console.log("📤 Sending to Gemini:", {
+        content: content?.substring(0, 100),
+      })
+
+      let finalText = ""
+      let responseMetadata: any = null
+      console.time("geminiFullProcessing")
+
+      try {
+        console.time("geminiProviderCall")
+        const result = streamText({
+          model,
+          messages,
+          maxRetries: 3,
+          temperature: app?.temperature ?? 0.7,
+          tools: allTools,
+          providerOptions: {
+            google: {
+              thinkingConfig: {
+                thinkingLevel: "high", // Enable deep reasoning for Gemini 3
+                includeThoughts: true, // Stream reasoning tokens
+              },
+            },
+          },
+          async onFinish({ text, usage, response }) {
+            finalText = text
+            responseMetadata = response
+            console.log("✅ Gemini response finished:", {
+              textLength: text?.length,
+              usage,
+            })
+          },
+        })
+        console.timeEnd("geminiProviderCall")
+
+        // Set up stream controller for cancellation support
+        const controller: StreamController = {
+          close: () => {
+            console.log("Gemini stream controller close called")
+          },
+          desiredSize: null,
+          enqueue: () => {},
+          error: () => {},
+        }
+        streamControllers.set(streamId, controller)
+
+        // Create AI message structure for Gemini streaming
+        const geminiStreamingMessage = {
+          message: {
+            id: clientId,
+            threadId: currentThreadId,
+            agentId: agent.id,
+            userId: member?.id,
+            guestId: guest?.id,
+            content: "",
+            isStreaming: true,
+          },
+          aiAgent: pauseDebate ? debateAgent : agent,
+          user: member,
+          guest: guest,
+          thread: thread,
+        }
+
+        let currentChunk = 0
+        let hasReceivedText = false
+        let reasoningText = ""
+
+        // Use fullStream to get reasoning parts immediately
+        for await (const part of result.fullStream) {
+          console.log(`🚀 ~ forawait ~ part:`, part.type)
+          if (!streamControllers.has(streamId)) {
+            console.log("Gemini stream was stopped")
+            break
+          }
+
+          if (part.type === "text-delta") {
+            hasReceivedText = true
+            await enhancedStreamChunk({
+              chunk: part.text,
+              chunkNumber: currentChunk++,
+              totalChunks: -1,
+              streamingMessage: geminiStreamingMessage,
+              member,
+              guest,
+              thread,
+              clientId,
+              streamId,
+            })
+          } else if (part.type === "reasoning-delta") {
+            // Capture reasoning text
+            reasoningText += part.text
+
+            // Stream reasoning/thinking process immediately
+            await enhancedStreamChunk({
+              chunk: `__REASONING__${part.text}__/REASONING__`,
+              chunkNumber: currentChunk++,
+              totalChunks: -1,
+              streamingMessage: geminiStreamingMessage,
+              member,
+              guest,
+              thread,
+              clientId,
+              streamId,
+            })
+          }
+        }
+
+        if (!streamControllers.has(streamId)) {
+          console.log("Gemini stream was stopped")
+          return c.json({ error: "Stream was stopped" }, { status: 400 })
+        }
+
+        console.timeEnd("geminiFullProcessing")
+
+        // Save final message to database
+        try {
+          // Combine reasoning and text like Sushi does
+          const fullContent = reasoningText
+            ? `__REASONING__${reasoningText}__/REASONING__\n\n${finalText}`
+            : finalText
+
+          const aiMessage = await createMessage({
+            id: clientId,
+            threadId: currentThreadId,
+            agentId: agent.id,
+            userId: member?.id,
+            guestId: guest?.id,
+            content: fullContent,
+            metadata: responseMetadata,
+          })
+
+          if (!aiMessage) {
+            console.error(
+              "❌ Error in createMessage (Gemini):",
+              "Message not created",
+            )
+            return c.json({ error: "Failed to save message" }, { status: 500 })
+          }
+
+          const m = await getMessage({ id: aiMessage.id })
+
+          await notifyOwnerAndCollaborations({
+            notifySender: true,
+            thread,
+            payload: {
+              type: "stream_complete",
+              data: {
+                message: m,
+                isFinal: true,
+              },
+            },
+            member,
+            guest,
+          })
+
+          // Run in background
+          Promise.resolve()
+            .then(async () => generateContent(m))
+            .catch((err) => {
+              console.error(
+                "❌ Error in background generateContent (Gemini):",
+                err,
+              )
+              captureException(err)
+            })
+
+          return c.json({ success: true })
+        } catch (createError) {
+          console.error("❌ Error in createMessage (Gemini):", createError)
+          captureException(createError)
+          return c.json({ error: "Failed to save message" }, { status: 500 })
+        }
+      } catch (error: unknown) {
+        console.error("❌ Error in Gemini API call:", error)
+        captureException(error)
+        return c.json({ error: "Failed to generate response" }, { status: 500 })
+      }
     } else {
       console.log("🔄 Other provider streaming path:", agent.name)
       console.log("📤 Sending to provider:", {
