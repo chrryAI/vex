@@ -139,8 +139,6 @@ export async function generateServerMetadata(
 ): Promise<MetadataResult | undefined> {
   const siteConfig = getSiteConfig(hostname)
 
-  console.log(`🚀 ~ serverData.isBlogRoute:`, serverData.isBlogRoute)
-
   // Handle blog routes
   if (serverData.isBlogRoute) {
     if (serverData.blogPost) {

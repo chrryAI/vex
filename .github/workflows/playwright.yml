@@ -338,3 +338,39 @@ jobs:
           name: playwright-report-member
           path: packages/waffles/playwright-report/
           retention-days: 30
+
+  # Run Live Guest E2E tests with real AI (after all other tests)
+  e2e-guest-live:
+    runs-on: ubuntu-latest
+    needs: e2e-member # Wait for member tests to finish first
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
+
+      - name: Run Live Guest Playwright tests (Real AI)
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
+          VEX_LIVE_FINGERPRINT: ${{ secrets.VEX_LIVE_FINGERPRINT }}
+        run: pnpm --filter @chrryai/waffles exec playwright test guest.live.spec.ts
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-guest-live
+          path: packages/waffles/playwright-report/
+          retention-days: 30

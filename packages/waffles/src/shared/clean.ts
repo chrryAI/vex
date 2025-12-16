@@ -1,8 +1,14 @@
 import { Page, expect } from "@playwright/test"
 import { getURL } from "../index"
 
-export async function clean({ page }: { page: Page }) {
-  await page.goto(getURL({ isLive: false, isMember: false }), {
+export async function clean({
+  page,
+  fingerprint,
+}: {
+  page: Page
+  fingerprint?: string
+}) {
+  await page.goto(getURL({ isLive: false, isMember: false, fingerprint }), {
     waitUntil: "networkidle",
   })
 

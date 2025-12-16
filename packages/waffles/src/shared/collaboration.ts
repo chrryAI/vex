@@ -1,5 +1,5 @@
 import { Browser, expect, test } from "@playwright/test"
-import { getURL, VEX_TEST_EMAIL, wait } from ".."
+import { getURL, VEX_TEST_EMAIL, VEX_TEST_EMAIL_2, wait } from ".."
 import { chat } from "./chat"
 import { Page } from "@playwright/test"
 import { signIn } from "./signIn"

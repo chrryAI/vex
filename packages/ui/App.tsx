@@ -161,7 +161,6 @@ export default function App({
 
   const totalApps =
     guestBaseApp?.store?.apps.length || userBaseApp?.store?.apps.length || 0
-  console.log(`🚀 ~ totalApps:`, totalApps)
 
   const getApps = () => {
     return apps
