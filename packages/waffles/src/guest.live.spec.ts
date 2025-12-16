@@ -1,15 +1,7 @@
 import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
-import {
-  getURL,
-  VEX_TEST_EMAIL,
-  VEX_TEST_EMAIL_2,
-  VEX_TEST_FINGERPRINT_2,
-  VEX_TEST_PASSWORD,
-  VEX_LIVE_FINGERPRINT,
-} from "."
-import { signIn } from "./shared/signIn"
+import { getURL, VEX_LIVE_FINGERPRINT } from "."
 
 const isMember = false
 const isLive = false
@@ -18,7 +10,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, fingerprint: VEX_LIVE_FINGERPRINT })
 })
 
-test.only("Chat", async ({ page }) => {
+test("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(
