@@ -177,6 +177,7 @@ class ClientRouter {
 
   push(href: string, options: NavigateOptions = {}) {
     if (typeof window === "undefined") return
+    // debugger
 
     // Debounce: Prevent double navigation (mobile double-tap)
     const now = Date.now()
