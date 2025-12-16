@@ -50,7 +50,7 @@ import {
   TextArea,
   toRem,
 } from "./platform"
-import { getExampleInstructions, decodeHtmlEntities } from "./utils"
+import { decodeHtmlEntities } from "./utils"
 import { thread, instruction } from "./types"
 import { updateThread } from "./lib"
 import { useHasHydrated } from "./hooks"
@@ -117,7 +117,7 @@ export default function Instructions({
 
   const { defaultInstructions, isAppInstructions } = useApp()
 
-  const { token, language, user, guest, app, focus } = useAuth()
+  const { token, language, user, guest, app, storeApp } = useAuth()
 
   const {
     selectedAgent,
@@ -306,9 +306,9 @@ export default function Instructions({
   }
 
   const extensionUrl =
-    app?.id === focus?.id
-      ? "https://chromewebstore.google.com/detail/focus-%F0%9F%8D%92/nkomoiomfaeodakglkihapminhpgnibl"
-      : "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
+    app?.chromeWebStoreUrl ||
+    storeApp?.chromeWebStoreUrl ||
+    "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
 
   const extensionId = getExtensionId()
 
