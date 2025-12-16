@@ -279,8 +279,6 @@ export async function getApp({
     return null
   }
 
-  console.log(`🚀 ~ appInternal:`, appInternal?.name)
-
   const store = appInternal?.store || chrryStore
 
   // Find base app

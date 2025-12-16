@@ -57,7 +57,7 @@ export default function Modal({
   const { utilities } = useStyles()
   // Split contexts
   const { track } = useAuth()
-  const { addParams, removeParams } = useNavigation()
+  const { addParams, removeParams, searchParams } = useNavigation()
   const { isDrawerOpen } = useTheme()
   const innerRef = React.useRef<HTMLDivElement>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(

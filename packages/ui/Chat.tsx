@@ -2221,6 +2221,8 @@ export default function Chat({
     onMessage: async ({ type, data }) => {
       const threadId = threadIdRef.current
 
+      data.streamId && setStreamId(data.streamId)
+
       if (!token) return
 
       const clientId = data?.clientId
@@ -2250,8 +2252,6 @@ export default function Chat({
           playNotification()
           isPlayingSillyPopCluster.current = true
         }
-
-        data.streamId && setStreamId(data.streamId)
 
         if (shouldStopRef.current) return // Early exit if stopped
 
@@ -2301,6 +2301,7 @@ export default function Chat({
 
         // Notify completion
         onStreamingComplete?.(data.message)
+        data.streamId === streamId && setStreamId(null)
 
         if (
           message?.message &&
@@ -2347,6 +2348,7 @@ export default function Chat({
             isImageGenerationEnabled: data?.isImageGenerationEnabled,
             isWebSearchEnabled: data?.isWebSearchEnabled,
           })
+          setIsStreaming(true)
           const requestHeaders = {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

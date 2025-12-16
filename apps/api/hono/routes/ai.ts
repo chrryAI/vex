@@ -3831,7 +3831,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             },
           })
           permanentUrl = result.url
-          console.log(`🚀 ~ app.post ~ result:`, result)
           title = result.title
         } catch (error: any) {
           console.error("❌ Flux image upload failed:", error)
