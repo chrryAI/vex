@@ -122,7 +122,7 @@ async function getMemberWithToken(token: string) {
 
 async function getGuestWithToken(token: string) {
   console.log("getGuestWithToken: lookup by fingerprint", token)
-  const guest = await getGuest({ fingerprint: token })
+  const guest = await getGuest({ fingerprint: token, skipCache: true })
   if (guest) {
     console.log("getGuestWithToken: guest resolved", guest.id)
   }

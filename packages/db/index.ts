@@ -2380,12 +2380,11 @@ export const getThread = async ({
           guestId: result.threads.guestId || undefined,
         }),
         app: result.threads.appId
-          ? toSafeApp({
-              app: await getPureApp({
-                id: result.threads.appId,
-                userId,
-                guestId,
-              }),
+          ? await getPureApp({
+              id: result.threads.appId,
+              userId,
+              guestId,
+              isSafe: true,
             })
           : undefined,
       }

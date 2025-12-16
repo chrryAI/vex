@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
 import { getApp, getAppExtends } from "@repo/db"
 
+const VEX_LIVE_FINGERPRINT = process.env.VEX_LIVE_FINGERPRINT
+
 import {
   getMemories,
   getMessages,
@@ -48,7 +50,7 @@ import { createAnthropic } from "@ai-sdk/anthropic"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { faker } from "@faker-js/faker"
 import {
-  isE2E,
+  isE2E as isE2EInternal,
   isDevelopment,
   isOwner,
   MAX_FILE_SIZES,
@@ -2096,6 +2098,10 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     return c.json({ error: "No credits left" }, { status: 403 })
   }
 
+  const fingerprint = member?.fingerprint || guest?.fingerprint
+
+  const isE2E = fingerprint !== VEX_LIVE_FINGERPRINT && isE2EInternal
+
   const hourlyLimit =
     isDevelopment && !isE2E
       ? 50000
@@ -3769,15 +3775,31 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         console.log("📝 Flux raw output type:", typeof output, output)
 
         // Handle different output formats from Replicate
-        let imageUrl: string
+        let imageUrl: string | URL
         if (Array.isArray(output)) {
-          imageUrl = output[0]
+          // Array of URLs
+          const firstItem = output[0]
+          if (typeof firstItem === "string") {
+            imageUrl = firstItem
+          } else if (
+            firstItem &&
+            typeof (firstItem as any).url === "function"
+          ) {
+            imageUrl = await (firstItem as any).url()
+          } else {
+            imageUrl = String(firstItem)
+          }
         } else if (typeof output === "string") {
           imageUrl = output
         } else if (output && typeof output === "object" && "url" in output) {
-          imageUrl = (output as any).url
+          // FileOutput object with .url() method
+          if (typeof (output as any).url === "function") {
+            imageUrl = await (output as any).url()
+          } else {
+            imageUrl = (output as any).url
+          }
         } else {
-          // If it's a ReadableStream or other format, convert to string
+          // Fallback - try to get URL from FileOutput
           imageUrl = String(output)
         }
 
@@ -3785,13 +3807,21 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           throw new Error("No image URL returned from Flux")
         }
 
-        console.log("✅ Flux image generation complete:", imageUrl)
+        // Convert URL object to string if needed
+        const imageUrlString =
+          typeof imageUrl === "string" ? imageUrl : imageUrl.toString()
+
+        console.log(
+          "✅ Flux image generation complete:",
+          imageUrlString,
+          currentMessageContent.trim().substring(0, 10),
+        )
 
         // Upload to UploadThing for permanent storage
         let permanentUrl, title
         try {
           const result = await upload({
-            url: imageUrl,
+            url: imageUrlString, // Use string URL
             messageId: slugify(currentMessageContent.trim().substring(0, 10)),
             options: {
               maxWidth: 1024,
@@ -3801,6 +3831,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             },
           })
           permanentUrl = result.url
+          console.log(`🚀 ~ app.post ~ result:`, result)
           title = result.title
         } catch (error: any) {
           console.error("❌ Flux image upload failed:", error)

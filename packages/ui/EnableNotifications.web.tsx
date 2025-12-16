@@ -102,8 +102,6 @@ export default function EnableNotifications({
     return result
   }
 
-  console.log(`🚀 ~ guestBaseApp:`, guestBaseApp)
-
   const storeApp = userBaseApp || guestBaseApp
 
   const { utilities } = useStyles()

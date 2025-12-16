@@ -328,9 +328,12 @@ export async function upload({
     const blob = await response.blob()
     let processedBuffer = await blob.arrayBuffer()
 
-    const fileType = validateFileType(blob.type)
+    console.log(`🔍 Downloaded file type: "${blob.type}", size: ${blob.size}`)
+
+    const fileType = validateFileType(blob.type) || options.type
 
     if (!fileType) {
+      console.error(`❌ Unsupported file type: "${blob.type}"`)
       return {
         url: "",
         width: undefined,
