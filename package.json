@@ -22,7 +22,6 @@
     "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { require('child_process').execSync('husky', { stdio: 'inherit' }) }\" || true",
     "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
     "check-types": "turbo run check-types",
-    "start:ws": "turbo run start --log-order=stream --filter=wsserver ",
     "start:flash": "turbo run start --log-order=stream --filter=flash",
     "start:api": "turbo run start --log-order=stream --filter=api",
     "c": "bash scripts/commit-with-ai.sh",
