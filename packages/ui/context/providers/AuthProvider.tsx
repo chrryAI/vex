@@ -1025,9 +1025,13 @@ export function AuthProvider({
       item.store?.id === app?.store?.id,
   )
 
-  const [storeApp, setStoreApp] = useState<appWithStore | undefined>(
+  const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppIternal,
   )
+
+  const setStoreApp = (appWithStore?: appWithStore) => {
+    appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
+  }
 
   useEffect(() => {
     hasStoreApps(app) && setStoreApp(storeAppIternal)
