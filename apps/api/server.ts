@@ -88,7 +88,7 @@ const server = Bun.serve({
   fetch: async (req, server) => {
     // Handle WebSocket upgrade requests
     if (req.headers.get("upgrade") === "websocket") {
-      return upgradeWebSocket(req)
+      return upgradeWebSocket(req, server)
     }
 
     // Handle regular HTTP requests with Hono

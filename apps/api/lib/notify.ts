@@ -59,6 +59,8 @@ async function ensureConnected(): Promise<WebSocket> {
   return socket!
 }
 
+import { notifyClients } from "./wsClients"
+
 export async function notify(
   recipientId: string,
   payload: {
@@ -93,9 +95,7 @@ export async function notify(
   callback?: (success: boolean, error?: Error) => void,
 ) {
   try {
-    const notifyUrl = `${WS_SERVER_URL}/notify`
     const notificationPayload = {
-      recipientId,
       type:
         payload.type === "message"
           ? "message"
@@ -109,39 +109,17 @@ export async function notify(
       data: payload.data,
     }
 
-    console.log("🌐 Sending notification to:", notifyUrl)
-    console.log("📦 Payload type:", notificationPayload.type)
+    console.log(
+      "📦 Sending notification type:",
+      notificationPayload.type,
+      "to:",
+      recipientId,
+    )
 
-    // Send notification via HTTP to WebSocket server
-    const response = await fetch(notifyUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(notificationPayload),
-    })
+    // Use internal WebSocket notification instead of HTTP
+    notifyClients(recipientId, notificationPayload)
 
-    console.log("📡 Response status:", response.status, response.statusText)
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "No response body")
-      console.error("❌ Notification failed:", {
-        url: notifyUrl,
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      })
-      const error = new Error(
-        `Notification failed: ${response.status} - ${errorText}`,
-      )
-      callback?.(false, error)
-      throw error
-    }
-
-    const result = await response.json()
-
-    // If expecting acknowledgment, the callback will be called by WebSocket server
-    // Otherwise, call success callback immediately
+    callback?.(true)
   } catch (error) {
     captureException(error)
     console.error("Notification error:", error)

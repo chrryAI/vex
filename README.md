@@ -113,7 +113,7 @@ This will start:
 
 - Web app (localhost:3000)
 - Chrry.dev (localhost:3001)
-- WebSocket server (localhost:5001)
+- WebSocket server (localhost:3001)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more detailed setup instructions.
 
@@ -182,7 +182,7 @@ vex/
 ├── apps/
 │   ├── api/    # Api (localhost:3001)
 │   ├── web/              # Alternative frontend (localhost:3000)
-│   ├── ws/               # WebSocket server (localhost:5001)
+│   ├── ws/               # WebSocket server (localhost:3001)
 │   ├── extension/        # Browser extension
 │   └── native/           # React Native mobile app
 ├── packages/

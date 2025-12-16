@@ -34,6 +34,6 @@ WORKDIR /app/apps/ws
 # Switch to non-root user
 USER wsuser
 
-EXPOSE 5001
+EXPOSE 3001
 
 CMD ["node", "dist/index.js"]
