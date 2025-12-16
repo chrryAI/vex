@@ -132,13 +132,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const { slug, setSlug, getAppSlug, language, setShowFocus } = useAuth()
 
   const goToThreads = (params?: Record<string, string>) => {
-    const appSlug = app ? getAppSlug(app, "") : undefined
     const url = new URLSearchParams(params)
-    router.push(
-      appSlug
-        ? `/${appSlug}/threads${params ? "?" + url : ""}`
-        : `/threads${params ? "?" + url : ""}`,
-    )
+    router.push(`/threads${params ? "?" + url : ""}`)
   }
 
   const getStoreSlug = (slug: string) => {
