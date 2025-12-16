@@ -37,7 +37,7 @@ PODS:
     - hermes-engine/Pre-built (= 0.78.3)
   - hermes-engine/Pre-built (0.78.3)
   - MMKVCore (2.2.4)
-  - NitroMmkv (4.0.1):
+  - NitroMmkv (4.1.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -62,7 +62,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - NitroModules (0.31.9):
+  - NitroModules (0.31.10):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1900,7 +1900,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSVG (15.15.0):
+  - RNSVG (15.15.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1920,9 +1920,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.15.0)
+    - RNSVG/common (= 15.15.1)
     - Yoga
-  - RNSVG/common (15.15.0):
+  - RNSVG/common (15.15.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2203,15 +2203,15 @@ SPEC CHECKSUMS:
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: e053802577a711add20e45bbbf5dd1180b6ca62e
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
-  glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
   GoogleSignIn: c7f09cfbc85a1abf69187be091997c317cc33b77
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   hermes-engine: b5c9cfbe6415f1b0b24759f2942c8f33e9af6347
   MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
-  NitroMmkv: 8c0bfa097692df75f0a0625e385b4af7277f333e
-  NitroModules: 1adced198b8c90f2bcd80011f9f3a7b5dc2c70d9
+  NitroMmkv: 6777592008094d8fd52fa05ddcdb9a045e14f685
+  NitroModules: d62698198c896838eee15b07709d0d925d009238
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: 36fe2295e44b10d831836cc0d1daec5f8abcf809
   RCTDeprecation: cf39863b43871c2031050605fb884019b6193910
@@ -2276,9 +2276,9 @@ SPEC CHECKSUMS:
   ReactCommon: 7ea8ee50e489e9cc75922f19a06ea45c1b59b4bd
   RNGestureHandler: b80aa3492a4e83181b4777f7e37fde6d01eb271c
   RNGoogleSignin: b8652e37b311cf27ef944afb972ead2aa2317a27
-  RNReanimated: a811fbf8f4e9be462ddf345355f943626eb90c28
+  RNReanimated: 32698ab825997c75c29511a3ddcc7392293d90d9
   RNScreens: 3bd1e11f556f1ac51ea88223cadc9f6a95cd33fa
-  RNSVG: 17ecf94f01f36124607b239fa7c025b052d1d382
+  RNSVG: 7278a358387f753cd858d86d476fe137f178290c
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftAudioEx: f6aa653770f3a0d3851edaf8d834a30aee4a7646
   Yoga: eca8dd841b7cd47d82d66be58af8e3aeb819012f

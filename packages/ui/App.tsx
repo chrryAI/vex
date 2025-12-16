@@ -39,7 +39,8 @@ import { useTimerContext } from "./context/TimerContext"
 function FocusButton({ time }: { time: number }) {
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, isWeb } = usePlatform()
-  const { focus, getAppSlug, setShowFocus } = useAuth()
+  const { focus, getAppSlug, setShowFocus, userBaseApp, guestBaseApp } =
+    useAuth()
 
   const hasHydrated = useHasHydrated()
 
@@ -132,10 +133,11 @@ export default function App({
     userBaseApp,
     token,
     loadingApp,
-    storeApp,
-    hasStoreApps,
-    setLoadingApp,
+    userBaseStore,
+    ...auth
   } = useAuth()
+
+  const storeApp = auth.storeApp
 
   const { FRONTEND_URL, API_URL } = useData()
 
@@ -157,11 +159,18 @@ export default function App({
 
   const isBlossom = app?.store?.id === chrry?.store?.id
 
+  const totalApps =
+    guestBaseApp?.store?.apps.length || userBaseApp?.store?.apps.length || 0
+  console.log(`🚀 ~ totalApps:`, totalApps)
+
   const getApps = () => {
     return apps
       .filter(
         (item) =>
-          item.id !== store?.appId &&
+          (item.id !== store?.appId ||
+            (totalApps <= 3
+              ? item.id === guestBaseApp?.id || item.id === userBaseApp?.id
+              : false)) &&
           item.id !== chrry?.id &&
           item.id !== grape?.id &&
           (isBlossom
@@ -191,9 +200,9 @@ export default function App({
         return 0
       })
       .map((item) => {
-        if (item.id === vex?.id && app?.id === chrry?.id) {
-          return userBaseApp || guestBaseApp || item
-        }
+        // if (item.id === vex?.id && (userBaseApp || guestBaseApp)) {
+        //   return userBaseApp || guestBaseApp || item
+        // }
         return item
       })
   }
@@ -379,13 +388,14 @@ export default function App({
   }
 
   const StoreApp = useCallback(
-    () =>
+    ({ icon }: { icon?: boolean }) =>
       storeApp && (
         <A
-          className="button transparent"
+          className={`${icon ? "link" : "button transparent"}`}
           style={{
-            ...utilities.button.style,
-            ...utilities.transparent.style,
+            ...(icon
+              ? utilities.link.style
+              : { ...utilities.button.style, ...utilities.transparent.style }),
             ...utilities.small.style,
             display: "flex",
             alignItems: "center",
@@ -743,7 +753,6 @@ export default function App({
                           ...styles.formInfo.style,
                           ...(appForm?.formState.errors.name?.message &&
                             styles.formInfoError.style),
-                          display: "inline",
                         }}
                       >
                         {appForm?.formState.errors.name?.message ? (
@@ -751,7 +760,14 @@ export default function App({
                             {t(appForm?.formState.errors.name.message)}
                           </Span>
                         ) : (
-                          <Span style={styles.field.style}>
+                          <Span
+                            style={{
+                              ...styles.field.style,
+                              display: "flex",
+                              textAlign: "center",
+                              justifyContent: "center",
+                            }}
+                          >
                             {t("Keep it short!")}
                           </Span>
                         )}
@@ -885,7 +901,7 @@ export default function App({
                 </A>
               )
             )}
-            {!isManagingApp && (
+            {!isManagingApp && appsState.length > 3 && (
               <A
                 href={`${FRONTEND_URL}/calendar`}
                 title={t("Organize your life")}

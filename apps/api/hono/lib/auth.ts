@@ -1,10 +1,13 @@
-import { getUser, getGuest as getGuestDb } from "@repo/db"
+import { getUser, getGuest as getGuestDb, getStore } from "@repo/db"
 import jwt from "jsonwebtoken"
 import captureException from "../../lib/captureException"
 import { Context } from "hono"
 import { validate } from "uuid"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
-
+import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
+import { getApp as getAppDb } from "@repo/db"
+import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
+import { appWithStore } from "@chrryai/chrry/types"
 /**
  * Get authenticated member from request
  * Pure function - no Next.js dependencies
@@ -149,13 +152,212 @@ export function getChrryUrl(request: Request): string | undefined {
  * Get app from request
  * Pure function - no Next.js dependencies
  */
-export async function getApp(
-  request: Request,
-  options: {
-    appId?: string
-  } = {},
-) {
-  // This is a simplified version - you may need to port the full getAppAction logic
-  // For now, returning null to keep it simple
-  return null
+export async function getApp({
+  c,
+  accountApp = false,
+  ...params
+}: {
+  c: Context
+  appId?: string
+  storeSlug?: string
+  accountApp?: boolean
+}) {
+  const request = c.req.raw
+
+  const member = await getMember(c, { full: true, skipCache: true })
+  const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
+
+  // Get query parameters
+  const appIdParam = c.req.query("appId")
+  const appSlugParam = c.req.query("appSlug")
+  const storeSlugParam = c.req.query("storeSlug")
+  const chrryUrlParam = c.req.query("chrryUrl")
+
+  const pathnameParam = c.req.query("pathname")
+
+  // Get headers
+  const appIdHeader = request.headers.get("x-app-id")
+  const storeSlugHeader = request.headers.get("x-app-slug")
+
+  const pathnameHeader = request.headers.get("x-pathname")
+
+  const storeSlug =
+    params.storeSlug || storeSlugParam || storeSlugHeader || undefined
+
+  const pathname =
+    (pathnameParam
+      ? decodeURIComponent(pathnameParam)
+      : pathnameHeader || "/"
+    ).split("?")[0] || "/"
+  const appId = params.appId || appIdParam || appIdHeader || undefined
+
+  // Get store from header if provided
+  const storeFromRequest = storeSlug
+    ? await getStore({
+        slug: storeSlug,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1,
+      })
+    : null
+
+  // Get chrryUrl
+  const chrryUrl = chrryUrlParam || (await getChrryUrl(request))
+  const siteConfig = getSiteConfig(chrryUrl)
+
+  // Get site app
+  const siteApp = await getAppDb({
+    slug: siteConfig.slug,
+    storeSlug: siteConfig.storeSlug,
+  })
+
+  // Get chrry store
+  const chrryStore = await getStore({
+    domain: siteConfig.store,
+    userId: member?.id,
+    guestId: guest?.id,
+    depth: 1,
+  })
+
+  // Parse app/store slugs from pathname
+  let { appSlug: appSlugGenerated, storeSlug: storeSlugGenerated } =
+    getAppAndStoreSlugs(pathname, {
+      defaultAppSlug: siteConfig.slug,
+      defaultStoreSlug: siteConfig.storeSlug,
+    })
+
+  // Override with params if provided
+  if (appSlugParam) appSlugGenerated = appSlugParam
+  if (storeSlugParam) storeSlugGenerated = storeSlugParam
+
+  // Check white label
+  const whiteLabel = whiteLabels.find(
+    (label) => label.slug === appSlugGenerated && label.isStoreApp,
+  )
+  if (whiteLabel) {
+    storeSlugGenerated = whiteLabel.storeSlug
+  }
+
+  // Resolve app (priority: appId > storeFromHeader > slug)
+  let appInternal = accountApp
+    ? guest
+      ? await getAppDb({
+          storeSlug: guest.id,
+          guestId: guest.id,
+          depth: 1,
+        })
+      : member
+        ? await getAppDb({
+            storeSlug: member.userName,
+            userId: member.id,
+            depth: 1,
+          })
+        : undefined
+    : appId
+      ? await getAppDb({
+          id: appId,
+          userId: member?.id,
+          guestId: guest?.id,
+          depth: 1,
+        })
+      : storeFromRequest?.store?.appId
+        ? await getAppDb({
+            id: storeFromRequest.store.appId,
+            userId: member?.id,
+            guestId: guest?.id,
+            depth: 1,
+          })
+        : await getAppDb({
+            slug: appSlugGenerated,
+            storeSlug: storeSlugGenerated,
+            userId: member?.id,
+            guestId: guest?.id,
+            depth: 1,
+          })
+
+  if (!appInternal && accountApp) {
+    return null
+  }
+
+  console.log(`🚀 ~ appInternal:`, appInternal?.name)
+
+  const store = appInternal?.store || chrryStore
+
+  // Find base app
+  const baseApp =
+    store?.apps?.find(
+      (app) =>
+        app.slug === siteConfig.slug &&
+        app.store?.slug === siteConfig.storeSlug,
+    ) || store?.app
+
+  // Get final app
+  const app =
+    appInternal ||
+    (await getAppDb({
+      id: baseApp?.id,
+      userId: member?.id,
+      guestId: guest?.id,
+      depth: 1,
+    }))
+
+  if (!app) {
+    return null
+  }
+
+  // Enrich store.apps with store.app references
+  if (app?.store?.apps?.length) {
+    const currentStoreApps = app.store.apps || []
+    const storeApps = [...currentStoreApps]
+
+    const enrichedApps = await Promise.all(
+      storeApps.map(async (storeApp) => {
+        if (!storeApp) return null
+
+        const isBaseApp = storeApp?.id === storeApp?.store?.appId
+
+        let storeBaseApp: appWithStore | null = null
+        if (isBaseApp) {
+          storeBaseApp =
+            (await getAppDb({
+              id: storeApp?.id,
+              userId: member?.id,
+              guestId: guest?.id,
+              depth: 1,
+            })) || null
+        } else if (storeApp?.store?.appId) {
+          const baseAppData = await getAppDb({
+            id: storeApp.store.appId,
+            userId: member?.id,
+            guestId: guest?.id,
+            depth: 0,
+          })
+          storeBaseApp = baseAppData ?? null
+        }
+
+        return {
+          ...storeApp,
+          store: {
+            ...storeApp?.store,
+            app: storeBaseApp,
+          },
+        } as appWithStore
+      }),
+    )
+
+    const validApps = enrichedApps.filter(Boolean) as appWithStore[]
+    app.store.apps = validApps
+  }
+
+  // Add site app if not already in list
+  if (
+    app &&
+    siteApp &&
+    app.store?.apps &&
+    !app.store.apps.some((a) => a.id === siteApp.id)
+  ) {
+    app.store.apps.push(siteApp)
+  }
+
+  return app
 }

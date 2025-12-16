@@ -73,9 +73,9 @@ const getClientHostname = () => {
 
 // Priority: env var > dynamic detection > hardcoded fallback
 const hostname = getClientHostname()
-export const CHRRY_URL = hostname
-  ? getSiteConfig(hostname).url
-  : "https://vex.chrry.ai"
+export const CHRRY_URL =
+  getEnv().VITE_CHRRY_URL ||
+  (hostname ? getSiteConfig(hostname).url : "https://vex.chrry.ai")
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99
@@ -133,16 +133,20 @@ export const addParam = (key: string, value: string) => {
 const FE_PORT = getEnv().VITE_FE_PORT || "5173"
 const API_PORT = getEnv().API_PORT || "3001"
 
-export const FRONTEND_URL = isTestingDevice
-  ? `http://192.168.2.27:${FE_PORT}`
-  : isDevelopment
-    ? `http://localhost:${FE_PORT}`
-    : CHRRY_URL
+export const FRONTEND_URL =
+  getEnv().VITE_FRONTEND_URL ||
+  (isTestingDevice
+    ? `http://192.168.2.27:${FE_PORT}`
+    : isDevelopment
+      ? `http://localhost:${FE_PORT}`
+      : CHRRY_URL)
 
-export const PROD_FRONTEND_URL = CHRRY_URL
+export const PROD_FRONTEND_URL = FRONTEND_URL
 
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
+
+export const API_INTERNAL_URL = getEnv().VITE_API_INTERNAL_URL
 
 export const API_URL =
   getEnv().VITE_API_URL ||
@@ -396,7 +400,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.6.87"
+export const VERSION = config.version || "1.7.6"
 export type instructionBase = {
   id: string
   title: string
@@ -683,6 +687,7 @@ export const isDeepEqual = (obj1: any, obj2: any): boolean => {
 }
 
 // Export getHourlyLimit
+export { decodeHtmlEntities } from "./decodeHtmlEntities"
 export { getHourlyLimit } from "./getHourlyLimit"
 
 // Export generateAppMetadata

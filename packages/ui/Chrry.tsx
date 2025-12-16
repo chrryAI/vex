@@ -1,8 +1,16 @@
 "use client"
 
-import "./globals.scss"
-import "./globals.css"
-import "./styles/view-transitions.css"
+// Only import styles on web platforms (not React Native)
+// React Native will skip these imports during bundling
+if (typeof window !== "undefined") {
+  try {
+    require("./globals.scss")
+    require("./globals.css")
+    require("./styles/view-transitions.css")
+  } catch (e) {
+    // React Native will throw here, which is fine
+  }
+}
 
 import React from "react"
 import AppProviders from "./context/providers"

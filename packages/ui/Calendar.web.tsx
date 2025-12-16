@@ -10,7 +10,9 @@ import {
   View,
   ToolbarProps,
 } from "react-big-calendar"
-import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop"
+// Import drag and drop - using dynamic import for better compatibility
+import * as DnDModule from "react-big-calendar/lib/addons/dragAndDrop"
+const withDragAndDrop = (DnDModule as any).default || DnDModule
 import {
   format,
   startOfMonth,
@@ -71,18 +73,22 @@ const locales = {
 const createLocalizer = (locale: string) => {
   const dateFnsLocale = locales[locale as keyof typeof locales] || enUS
   return dateFnsLocalizer({
-    format: (date: Date, formatStr: string) =>
-      format(date, formatStr, { locale: dateFnsLocale }),
+    format: (date: Date | string | number, formatStr: string) => {
+      const dateObj = date instanceof Date ? date : new Date(date)
+      return format(dateObj, formatStr, { locale: dateFnsLocale })
+    },
     parse: (str: string, formatStr: string) =>
       parse(str, formatStr, new Date(), { locale: dateFnsLocale }),
-    startOfWeek: (date: Date) => startOfWeek(date, { locale: dateFnsLocale }),
+    startOfWeek: (date: Date | string | number) => {
+      const dateObj = date instanceof Date ? date : new Date(date)
+      return startOfWeek(dateObj, { locale: dateFnsLocale })
+    },
     getDay,
     locales: { [locale]: dateFnsLocale },
   })
 }
 
-// Create drag-and-drop enabled calendar
-const DnDCalendar = withDragAndDrop<calendarEvent, object>(BigCalendar)
+// Create drag-and-drop enabled calendar (will be created inside component to avoid SSR issues)
 
 // Custom toolbar component
 const CustomToolbar = (
@@ -226,6 +232,43 @@ export default function Calendar({
 }) {
   const { actions } = useData()
 
+  useHasHydrated()
+
+  const [calendarEvents, setCalendarEvents] = useState<calendarEvent[]>([])
+
+  // Handle event selection - open modal for editing
+  const handleSelectEvent = useCallback(
+    (event: calendarEvent, e?: any) => {
+      // Don't open modal if clicking "show more" button
+
+      // Find the full event data from calendarEvents
+      const fullEvent = calendarEvents.find((e) => e.id === event.id)
+
+      // Open modal with event data for editing
+      setModalData({
+        start: (event as any).start || new Date(event.startTime),
+        end: (event as any).end || new Date(event.endTime),
+        title: event.title,
+        eventId: event.id, // Pass event ID for update
+        description: fullEvent?.description,
+        location: fullEvent?.location,
+        color: fullEvent?.color,
+        category: fullEvent?.category,
+        isAllDay: fullEvent?.isAllDay,
+        timezone: fullEvent?.timezone,
+        attendees: fullEvent?.attendees,
+        reminders: fullEvent?.reminders,
+        // recurrence: fullEvent?.recurrence,
+      })
+      setIsModalOpen(true)
+
+      if (onSelectEvent) {
+        onSelectEvent(event)
+      }
+    },
+    [onSelectEvent, calendarEvents],
+  )
+
   const { t } = useAppContext()
   const [date, setDate] = useState<Date>(new Date()) // Force current date
   const {
@@ -289,7 +332,6 @@ export default function Calendar({
   }, [defaultView])
   const hasCalendarScope = user?.hasCalendarScope
 
-  const [calendarEvents, setCalendarEvents] = useState<calendarEvent[]>([])
   const [isGoogleConnected, setIsGoogleConnected] = useState(!!hasCalendarScope)
   const [isSyncing, setIsSyncing] = useState(false)
 
@@ -335,19 +377,14 @@ export default function Calendar({
   })
 
   useEffect(() => {
-    if (
-      // DELETE AFTER DEMO
-      user?.role === "admin"
-        ? calendarEventsData?.events?.some((e: calendarEvent) => e.externalId)
-        : true && calendarEventsData && Array.isArray(calendarEventsData.events)
-    ) {
+    if (calendarEventsData && Array.isArray(calendarEventsData.events)) {
       setCalendarEvents(calendarEventsData.events)
     }
   }, [calendarEventsData, isGoogleConnected])
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Transform API events to calendar format with 3-event limit per day
+  // Transform API events to calendar format with proper Date objects
   const { transformedEvents, eventsByDay } = useMemo(() => {
     if (!calendarEvents) return { transformedEvents: [], eventsByDay: {} }
 
@@ -361,12 +398,20 @@ export default function Calendar({
           new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
       )
       .forEach((calendarEvent) => {
-        const dayKey = format(calendarEvent.startTime, "yyyy-MM-dd")
+        const dayKey = format(new Date(calendarEvent.startTime), "yyyy-MM-dd")
         if (!eventsByDay[dayKey]) {
           eventsByDay[dayKey] = []
         }
-        eventsByDay[dayKey].push(calendarEvent)
-        allEvents.push(calendarEvent)
+
+        // Transform event with Date objects for react-big-calendar
+        const transformedEvent = {
+          ...calendarEvent,
+          start: new Date(calendarEvent.startTime),
+          end: new Date(calendarEvent.endTime),
+        }
+
+        eventsByDay[dayKey].push(transformedEvent)
+        allEvents.push(transformedEvent)
       })
 
     // Don't limit events - let react-big-calendar handle "show more"
@@ -427,39 +472,6 @@ export default function Calendar({
       }
     },
     [onSelectSlot],
-  )
-
-  // Handle event selection - open modal for editing
-  const handleSelectEvent = useCallback(
-    (event: calendarEvent, e?: any) => {
-      // Don't open modal if clicking "show more" button
-
-      // Find the full event data from calendarEvents
-      const fullEvent = calendarEvents.find((e) => e.id === event.id)
-
-      // Open modal with event data for editing
-      setModalData({
-        start: new Date(event.startTime),
-        end: new Date(event.endTime),
-        title: event.title,
-        eventId: event.id, // Pass event ID for update
-        description: fullEvent?.description,
-        location: fullEvent?.location,
-        color: fullEvent?.color,
-        category: fullEvent?.category,
-        isAllDay: fullEvent?.isAllDay,
-        timezone: fullEvent?.timezone,
-        attendees: fullEvent?.attendees,
-        reminders: fullEvent?.reminders,
-        // recurrence: fullEvent?.recurrence,
-      })
-      setIsModalOpen(true)
-
-      if (onSelectEvent) {
-        onSelectEvent(event)
-      }
-    },
-    [onSelectEvent, calendarEvents],
   )
 
   // Handle modal close
@@ -845,6 +857,23 @@ export default function Calendar({
 
   const hasHydrated = useHasHydrated()
 
+  // Create DnDCalendar inside component to avoid SSR issues
+  // Use conditional check in case withDragAndDrop fails to load
+  const DnDCalendar = useMemo(() => {
+    try {
+      if (typeof withDragAndDrop === "function") {
+        return (withDragAndDrop as any)(BigCalendar)
+      }
+      console.warn(
+        "withDragAndDrop is not a function, falling back to regular calendar",
+      )
+      return BigCalendar
+    } catch (error) {
+      console.error("Failed to create DnD calendar:", error)
+      return BigCalendar
+    }
+  }, [])
+
   if (!hasHydrated) return null
 
   return (
@@ -866,10 +895,10 @@ export default function Calendar({
             localizer={localizer}
             messages={messages}
             events={transformedEvents}
-            startAccessor={(event) => event.startTime}
-            endAccessor={(event) => event.endTime}
+            startAccessor={(event: any) => event.start}
+            endAccessor={(event: any) => event.end}
             titleAccessor="title"
-            allDayAccessor={(event) => event.isAllDay}
+            allDayAccessor={(event: any) => event.isAllDay}
             // Views
             views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
             view={view}
@@ -898,7 +927,7 @@ export default function Calendar({
             slotPropGetter={slotPropGetter}
             // Custom components
             components={{
-              toolbar: (props) => (
+              toolbar: (props: any) => (
                 <CustomToolbar
                   {...props}
                   onGoogleSync={
@@ -912,7 +941,7 @@ export default function Calendar({
               eventWrapper:
                 view === Views.MONTH ? EventContainerWrapper : undefined,
               month: {
-                dateHeader: ({ date }) => (
+                dateHeader: ({ date }: any) => (
                   <div
                     className={clsx(
                       styles.dateHeader,
@@ -971,10 +1000,18 @@ export default function Calendar({
             // Formats
             formats={{
               timeGutterFormat: "HH:mm",
-              eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
+              eventTimeRangeFormat: (
+                { start, end }: any,
+                culture: any,
+                localizer: any,
+              ) =>
                 `${localizer?.format(start, "HH:mm", culture)} - ${localizer?.format(end, "HH:mm", culture)}`,
               agendaTimeFormat: "HH:mm",
-              agendaTimeRangeFormat: ({ start, end }, culture, localizer) =>
+              agendaTimeRangeFormat: (
+                { start, end }: any,
+                culture: any,
+                localizer: any,
+              ) =>
                 `${localizer?.format(start, "HH:mm", culture)} - ${localizer?.format(end, "HH:mm", culture)}`,
             }}
           />

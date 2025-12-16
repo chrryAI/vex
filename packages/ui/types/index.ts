@@ -296,6 +296,8 @@ export type session = {
   }
   deviceId?: string
   app: appWithStore
+  userBaseApp?: appWithStore
+  guestBaseApp?: appWithStore
   // Device info from UAParser (server-side detection)
   device?: {
     vendor?: string
@@ -884,6 +886,7 @@ export type app = {
   apiMonthlyPrice: number | null
   apiRateLimit: number | null
   apiKey: string | null
+  chromeWebStoreUrl: string | null
   apiRequestCount: number
   apiRevenue: number
   usageCount: number

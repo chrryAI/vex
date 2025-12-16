@@ -2,7 +2,7 @@
 
 /// <reference types="chrome" />
 
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { BellRing } from "./icons"
 
 import { customPushSubscription } from "./types"
@@ -10,13 +10,21 @@ import registerServiceWorker, {
   subscribeToPushNotifications,
 } from "./utils/registerServiceWorker"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useNavigationContext } from "./context/providers"
+import {
+  useApp,
+  useAuth,
+  useChat,
+  useNavigationContext,
+} from "./context/providers"
 import { apiFetch } from "./utils"
-import { Button, Div, usePlatform } from "./platform"
+import { Button, Div, Span, usePlatform } from "./platform"
 import toast from "react-hot-toast"
 import Weather from "./Weather"
 import { isDevelopment, getEnv } from "./utils"
 import { useEnableNotificationsStyles } from "./EnableNotifications.styles"
+import { useStyles } from "./context/StylesContext"
+import A from "./a/A"
+import Img from "./Image"
 
 export default function EnableNotifications({
   text = "Notifications",
@@ -32,13 +40,26 @@ export default function EnableNotifications({
   // Split contexts for better organization
   const { t } = useAppContext()
 
+  const { isManagingApp, setAppStatus } = useApp()
+
   const { isExtension } = usePlatform()
 
   // Auth context
-  const { user, token, guest, API_URL } = useAuth()
+  const {
+    user,
+    token,
+    guest,
+    API_URL,
+    userBaseApp,
+    guestBaseApp,
+    getAppSlug,
+    app,
+  } = useAuth()
 
   // Platform context
   const { os, isStandalone, device } = usePlatform()
+
+  const { setIsNewAppChat } = useChat()
 
   const { setShowAddToHomeScreen } = useNavigationContext()
 
@@ -80,6 +101,44 @@ export default function EnableNotifications({
     const result = await response.json()
     return result
   }
+
+  console.log(`🚀 ~ guestBaseApp:`, guestBaseApp)
+
+  const storeApp = userBaseApp || guestBaseApp
+
+  const { utilities } = useStyles()
+
+  const StoreApp = useCallback(
+    ({ icon }: { icon?: boolean }) =>
+      storeApp && (
+        <A
+          className={`${icon ? "link" : "button transparent"}`}
+          style={{
+            ...(icon
+              ? utilities.link.style
+              : { ...utilities.button.style, ...utilities.transparent.style }),
+            ...utilities.small.style,
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+          }}
+          href={getAppSlug(storeApp)}
+          onClick={(e) => {
+            e.preventDefault()
+
+            setIsNewAppChat(storeApp)
+            setAppStatus(undefined)
+            if (e.metaKey || e.ctrlKey) {
+              return
+            }
+          }}
+        >
+          <Img app={storeApp} showLoading={false} size={24} />
+          <Span>{storeApp?.name}</Span>
+        </A>
+      ),
+    [storeApp],
+  )
 
   const [pushSubscription, setPushSubscription] =
     useState<customPushSubscription | null>()
@@ -189,7 +248,7 @@ export default function EnableNotifications({
       return
     }
     if (swRegistration && !pushSubscription) {
-      const publicVapidKey = getEnv().NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+      const publicVapidKey = getEnv().VITE_VAPID_PUBLIC_KEY!
 
       const subscription = await subscribeToPushNotifications(
         swRegistration,
@@ -208,32 +267,36 @@ export default function EnableNotifications({
     }
   }
 
-  if (!isMounted) return null
+  if (!isMounted || isManagingApp) return null
 
   // Show notification button for extensions if permission not granted, for web if service worker ready
   const shouldShow =
-    (device !== "mobile" || isStandalone) &&
-    !isExtension &&
-    (isDevelopment || (user || guest)?.lastMessage) &&
-    isSubscribed === false &&
-    swRegistration
+    (storeApp && storeApp?.id !== app?.id) ||
+    (!isExtension &&
+      (isDevelopment || (user || guest)?.lastMessage) &&
+      isSubscribed === false &&
+      swRegistration)
 
   return (
     <Div style={styles.enableNotificationsContainer.style}>
       <Weather onLocationClick={onLocationClick} showLocation={!shouldShow} />
-
-      {isMounted && shouldShow && (
-        <Div style={styles.enableNotifications.style}>
-          <Button
-            data-testid="enableNotificationsButton"
-            onClick={handleSubscribe}
-            className={"small"}
-            style={styles.enableNotificationsButton.style}
-            disabled={!swRegistration}
-          >
-            <BellRing size={16} /> {t(text)}
-          </Button>
-        </Div>
+      {storeApp && storeApp?.id !== app?.id ? (
+        <StoreApp />
+      ) : (
+        isMounted &&
+        shouldShow && (
+          <Div style={styles.enableNotifications.style}>
+            <Button
+              data-testid="enableNotificationsButton"
+              onClick={handleSubscribe}
+              className={"small"}
+              style={styles.enableNotificationsButton.style}
+              disabled={!swRegistration}
+            >
+              <BellRing size={16} /> {t(text)}
+            </Button>
+          </Div>
+        )
       )}
     </Div>
   )

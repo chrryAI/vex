@@ -12,6 +12,17 @@ export type SiteMode =
   | "popcorn"
   | "zarathustra"
 
+// Function declaration is hoisted, so it's available before const declarations
+function getEnv() {
+  if (typeof import.meta !== "undefined") {
+    return (import.meta as any).env
+  }
+  return process.env
+}
+
+export const isE2E =
+  getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
+
 const chrryDev = {
   mode: "chrryDev" as SiteMode,
   slug: "chrryDev",
@@ -1420,10 +1431,7 @@ export function detectSiteModeDomain(
   mode?: SiteMode,
 ): SiteMode {
   const defaultMode =
-    (process.env.MODE as SiteMode) ||
-    ((import.meta as any).env?.VITE_SITE_MODE as SiteMode) ||
-    mode ||
-    ("vex" as SiteMode)
+    (getEnv().VITE_SITE_MODE as SiteMode) || mode || ("vex" as SiteMode)
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -1536,15 +1544,25 @@ export function detectSiteMode(hostname?: string): SiteMode {
   return detectSiteModeDomain(hostname)
 }
 
+const getClientHostname = () => {
+  if (typeof window !== "undefined" && window.location) {
+    return window.location.hostname
+  }
+  return undefined
+}
+
 /**
  * Get site configuration based on current domain
  * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
+  if (isE2E) {
+    return e2eVex
+  }
   // If it's a valid SiteMode, use it directly
 
   // Extract hostname from URL if needed
-  let hostname = hostnameOrMode
+  let hostname = hostnameOrMode || getClientHostname()
   if (hostnameOrMode && hostnameOrMode.includes("://")) {
     try {
       hostname = new URL(hostnameOrMode).hostname

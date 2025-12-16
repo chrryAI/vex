@@ -46,12 +46,12 @@ export default function SignIn() {
   // const { colors, isDark } = useTheme()
 
   // // Get environment variables from utils
-  // const API_URL = process.env.NEXT_PUBLIC_API_URL || ""
+  // const API_URL = process.env.VITE_API_URL || ""
   // const SIGN_IN_URL = `${API_URL}/signIn`
   // const GOOGLE_WEB_CLIENT_ID =
-  //   process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID || ""
+  //   process.env.VITE_GOOGLE_WEB_CLIENT_ID || ""
   // const GOOGLE_IOS_CLIENT_ID =
-  //   process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID || ""
+  //   process.env.VITE_GOOGLE_IOS_CLIENT_ID || ""
 
   // // Configure Google Sign-In
   // useEffect(() => {
