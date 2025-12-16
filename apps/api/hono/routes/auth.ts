@@ -119,7 +119,6 @@ authRoutes.post("/signup/password", async (c) => {
 
     // Generate token
     const token = generateToken(newUser.id, newUser.email)
-    console.log(`🚀 ~ authRoutes.post ~ token:`, token)
 
     // Determine cookie domain from request headers (for cross-subdomain auth)
     const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store"]

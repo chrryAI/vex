@@ -13,7 +13,7 @@ import {
   getThreads,
   getTranslations,
 } from "@chrryai/chrry/lib"
-import { locale } from "@chrryai/chrry/locales"
+import { locale, locales } from "@chrryai/chrry/locales"
 import {
   session,
   thread,
@@ -28,6 +28,7 @@ import {
   type BlogPostWithContent,
 } from "./blog-loader"
 import { generateServerMetadata } from "./server-metadata"
+import { themeType } from "chrry/context/ThemeContext"
 
 export interface ServerRequest {
   url: string
@@ -85,7 +86,7 @@ export async function loadServerData(
   const isDev = process.env.MODE === "development"
 
   const API_URL = getEnv().VITE_API_URL
-  console.log(`🚀 ~ API_URL:`, API_URL)
+  console.log(`🔥 HONO API_URL:`, API_URL)
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []
@@ -96,6 +97,39 @@ export async function loadServerData(
     ? request.pathname
     : `/${request.pathname}`
 
+  const isLocalePathname =
+    pathname &&
+    (locales.includes(pathname.split("/")?.[1] as locale) || pathname === "/")
+
+  const localeCookie = cookies.locale as locale
+
+  // Parse Accept-Language header to get browser's preferred language
+  const acceptLanguage = headers["accept-language"]
+  let browserLocale: locale = "en"
+
+  if (acceptLanguage) {
+    // Parse Accept-Language header (e.g., "en-US,en;q=0.9,tr;q=0.8")
+    const languages = acceptLanguage
+      .split(",")
+      .map((lang) => {
+        const [code] = lang.trim().split(";")
+        // Extract base language code (e.g., "en" from "en-US")
+        return code.split("-")[0].toLowerCase()
+      })
+      .filter((code) => locales.includes(code as locale))
+
+    if (languages.length > 0) {
+      browserLocale = languages[0] as locale
+    }
+  }
+
+  // Priority: URL locale → Cookie → Browser language → Default (en)
+  const locale = (
+    isLocalePathname
+      ? pathname.split("/")?.[1] || browserLocale
+      : localeCookie || browserLocale
+  ) as locale
+
   const threadId = getThreadId(pathname)
   const urlObj = new URL(url, `http://${hostname}`)
 
@@ -105,12 +139,6 @@ export async function loadServerData(
     fpFromQuery = urlObj.searchParams.get("fp") || undefined
   }
 
-  console.log(`🚀 ~ fpFromQuery:`, {
-    fpFromQuery,
-    TEST_MEMBER_FINGERPRINTS,
-    TEST_GUEST_FINGERPRINTS,
-  })
-
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
 
   if (isE2E && fpFromQuery) {
@@ -119,7 +147,6 @@ export async function loadServerData(
       const testConfigResponse = await fetch(testConfigUrl)
       if (testConfigResponse.ok) {
         const testConfig = await testConfigResponse.json()
-        console.log(`🚀 ~ testConfig:`, testConfig)
         TEST_MEMBER_FINGERPRINTS = testConfig.TEST_MEMBER_FINGERPRINTS || []
         TEST_GUEST_FINGERPRINTS = testConfig.TEST_GUEST_FINGERPRINTS || []
         TEST_MEMBER_EMAILS = testConfig.TEST_MEMBER_EMAILS || []
@@ -135,7 +162,6 @@ export async function loadServerData(
     )
       ? fpFromQuery
       : fpFromQuery || headers["x-fp"] || cookies.fingerprint) || uuidv4()
-  console.log(`🚀 ~ TEST_MEMBER_FINGERPRINTS:`, TEST_MEMBER_FINGERPRINTS)
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
@@ -157,7 +183,6 @@ export async function loadServerData(
     authToken || cookies.token || headers["x-token"] || fingerprint || uuidv4()
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
-  const locale: locale = (cookies.locale as locale) || "en"
 
   const siteConfig = getSiteConfig(hostname)
 
@@ -273,10 +298,12 @@ export async function loadServerData(
   // Check if this is a blog route
   if (pathname === "/blog" || pathname.startsWith("/blog/")) {
     isBlogRoute = true
+    console.log(`🚀 ~ isBlogRoute:`, isBlogRoute)
 
     if (pathname === "/blog") {
       // Blog list page
       blogPosts = getBlogPosts()
+      console.log(`🚀 ~ blogPosts:`, blogPosts)
     } else {
       // Individual blog post page
       const slug = pathname.replace("/blog/", "")
@@ -284,32 +311,7 @@ export async function loadServerData(
     }
   }
 
-  // Generate metadata for this route
-  let metadata
-  try {
-    metadata = await generateServerMetadata(pathname, hostname, locale, {
-      session,
-      thread,
-      threads,
-      translations,
-      app,
-      siteConfig,
-      locale,
-      deviceId,
-      fingerprint,
-      viewPortWidth,
-      viewPortHeight,
-      chrryUrl,
-      isDev,
-      apiError,
-      theme,
-      pathname,
-    })
-  } catch (error) {
-    console.error("Error generating metadata in server-loader:", error)
-  }
-
-  return {
+  const result = {
     session,
     thread,
     threads,
@@ -324,11 +326,23 @@ export async function loadServerData(
     chrryUrl,
     isDev,
     apiError,
-    theme,
-    metadata,
+    theme: theme as themeType,
     blogPosts,
     blogPost,
     isBlogRoute,
     pathname, // Add pathname so client knows the SSR route
+  }
+
+  // Generate metadata for this route
+  let metadata
+  try {
+    metadata = await generateServerMetadata(pathname, hostname, locale, result)
+  } catch (error) {
+    console.error("Error generating metadata in server-loader:", error)
+  }
+
+  return {
+    ...result,
+    metadata,
   }
 }
