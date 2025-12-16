@@ -37,7 +37,7 @@ This is the WebSocket server for the Vex platform. It is built using Express and
     pnpm dev
     ```
 
-    The WebSocket server will be available at `ws://localhost:5001`.
+    The WebSocket server will be available at `ws://localhost:3001`.
 
 ## 🛠️ Development
 

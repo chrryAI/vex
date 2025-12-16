@@ -2380,10 +2380,12 @@ export const getThread = async ({
           guestId: result.threads.guestId || undefined,
         }),
         app: result.threads.appId
-          ? await getApp({
-              id: result.threads.appId,
-              userId,
-              guestId,
+          ? toSafeApp({
+              app: await getPureApp({
+                id: result.threads.appId,
+                userId,
+                guestId,
+              }),
             })
           : undefined,
       }
@@ -4887,7 +4889,8 @@ export const getPureApp = async ({
   } as app
 }
 
-export function toSafeApp({ app }: { app: app }) {
+export function toSafeApp({ app }: { app?: app }) {
+  if (!app) return undefined
   const result: Partial<app> = {
     id: app.id,
     name: app.name,
@@ -5662,7 +5665,7 @@ export async function getStores({
             ? toSafeGuest({ guest: row.guest })
             : row.guest,
         team: row.teams,
-        app: row.app,
+        app: row.app ? toSafeApp({ app: row.app }) : undefined,
         apps: await Promise.all(
           appsResult.items.map(
             (app) => getApp({ id: app.id, userId, guestId })!,

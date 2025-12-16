@@ -91,7 +91,7 @@ process.on("SIGINT", async () => {
 })
 
 const app = express()
-const PORT = Number(process.env.PORT) || 5001
+const PORT = Number(process.env.PORT) || 3001
 const wss = new WebSocketServer({ noServer: true })
 
 // Add middleware

@@ -409,7 +409,10 @@ export const websocketHandler = {
   },
 }
 
-export async function upgradeWebSocket(req: Request): Promise<Response> {
+export async function upgradeWebSocket(
+  req: Request,
+  server: any,
+): Promise<Response> {
   const url = new URL(req.url)
   const token = url.searchParams.get("token")
   const deviceId = url.searchParams.get("deviceId")
@@ -434,7 +437,7 @@ export async function upgradeWebSocket(req: Request): Promise<Response> {
   const clientId = (member?.id || guest?.id) as string
 
   // Upgrade to WebSocket
-  const success = Bun.upgrade(req, {
+  const success = server.upgrade(req, {
     data: {
       token,
       deviceId,

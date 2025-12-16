@@ -59,7 +59,7 @@ export default defineConfig(({ command, mode }) => {
       mode === "development" && "http://localhost:5173/*",
       mode === "development" && "http://localhost:3001/*",
       // Add other dev URLs if needed
-      // "http://localhost:5001/*"
+      // "http://localhost:3001/*"
     ]
 
     return permissions.filter(Boolean)
