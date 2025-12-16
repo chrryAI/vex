@@ -400,7 +400,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.7.4"
+export const VERSION = config.version || "1.7.6"
 export type instructionBase = {
   id: string
   title: string
@@ -687,6 +687,7 @@ export const isDeepEqual = (obj1: any, obj2: any): boolean => {
 }
 
 // Export getHourlyLimit
+export { decodeHtmlEntities } from "./decodeHtmlEntities"
 export { getHourlyLimit } from "./getHourlyLimit"
 
 // Export generateAppMetadata

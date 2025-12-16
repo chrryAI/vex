@@ -22,6 +22,7 @@ import {
 } from "../../platform"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
+import { cleanSlug } from "../../utils/clearLocale"
 
 import {
   aiAgent,
@@ -42,7 +43,7 @@ import toast from "react-hot-toast"
 import { getApp, getSession } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
-import { locale, locales } from "../../locales"
+import { defaultLocale, locale, locales } from "../../locales"
 import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { getAppAndStoreSlugs } from "../../utils/url"
@@ -300,6 +301,10 @@ export function AuthProvider({
 
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
+
+  const hasStoreApps = (app: appWithStore | undefined) => {
+    return Boolean(app?.store?.app && app?.store?.apps.length)
+  }
 
   useEffect(() => {
     if (error) {
@@ -706,9 +711,41 @@ export function AuthProvider({
       isPWA,
     })
   }
-  const [storeApps, setAllApps] = useState<appWithStore[]>(
+
+  const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
+    // Create a map of existing apps by ID
+    const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+
+    // Add or update apps
+    newApps.forEach((newApp) => {
+      const existingApp = existingAppsMap.get(newApp.id)
+
+      // If app doesn't exist, add it
+
+      // If new app has more data (store.apps populated), update it
+      if (hasStoreApps(newApp) && !hasStoreApps(existingApp)) {
+        existingAppsMap.set(newApp.id, newApp)
+      } else {
+        existingAppsMap.set(newApp.id, newApp)
+      }
+    })
+
+    return Array.from(existingAppsMap.values())
+  }
+
+  const userBaseApp = session?.userBaseApp
+
+  const userBaseStore = userBaseApp?.store
+  const guestBaseApp = session?.guestBaseApp
+
+  const guestBaseStore = guestBaseApp?.store
+
+  const allApps = merge(
     sessionData?.app?.store?.apps || [],
+    userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
+
+  const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
   const getAppSlug = (
     targetApp: appWithStore,
@@ -825,10 +862,17 @@ export function AuthProvider({
     }
   }, [user, guest])
 
-  const [language, setLanguageInternal] = useLocalStorage<locale>(
-    "language",
+  const [language, setLanguageInternal] = useCookieOrLocalStorage(
+    "locale",
     locale || (session?.locale as locale) || i18n.language || "en",
+    isExtension,
   )
+
+  useEffect(() => {
+    if (session?.locale) {
+      setLanguageInternal(session?.locale)
+    }
+  }, [session?.locale])
 
   const setLanguage = async (language: locale) => {
     setLanguageInternal(language)
@@ -848,7 +892,11 @@ export function AuthProvider({
       }
     }
 
-    onSetLanguage?.(pathWithoutLocale, language)
+    router.push(
+      cleanSlug(
+        `/${language === defaultLocale ? "" : language}${pathWithoutLocale}`,
+      ),
+    )
   }
 
   const migratedFromGuestRef = useRef(false)
@@ -891,26 +939,7 @@ export function AuthProvider({
 
   // Centralized function to merge apps without duplicates
   const mergeApps = useCallback((newApps: appWithStore[]) => {
-    setAllApps((prevApps) => {
-      // Create a map of existing apps by ID
-      const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-
-      // Add or update apps
-      newApps.forEach((newApp) => {
-        const existingApp = existingAppsMap.get(newApp.id)
-
-        // If app doesn't exist, add it
-
-        // If new app has more data (store.apps populated), update it
-        if (hasStoreApps(newApp) && !hasStoreApps(existingApp)) {
-          existingAppsMap.set(newApp.id, newApp)
-        } else {
-          existingAppsMap.set(newApp.id, newApp)
-        }
-      })
-
-      return Array.from(existingAppsMap.values())
-    })
+    setAllApps(merge(storeApps, newApps))
   }, [])
 
   const fetchSession = async (newApp?: appWithStore) => {
@@ -968,35 +997,11 @@ export function AuthProvider({
   useEffect(() => {
     if (storeAppsSwr) {
       mergeApps(storeAppsSwr)
-      setLoadingAppId(undefined)
+
+      storeAppsSwr?.find((app) => app.id === loadingAppId) &&
+        setLoadingApp(undefined)
     }
   }, [storeAppsSwr])
-
-  const hasStoreApps = (item: appWithStore | undefined) => {
-    if (!item || !storeApps.length) return false
-    const app = storeApps?.find((app) => {
-      return app.id === item?.id
-    })
-
-    return Boolean(
-      app?.store?.app &&
-        app?.store?.apps.length &&
-        storeApps?.find(
-          (app) => app.store?.appId && app.id === item?.store?.appId,
-        ),
-    )
-  }
-
-  useEffect(() => {
-    if (hasStoreApps(loadingApp)) {
-      setLoadingApp(undefined)
-      return
-    }
-
-    if (loadingApp) {
-      refetchApps()
-    }
-  }, [loadingApp, isLoadingApps, storeApps])
 
   const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
 
@@ -1008,7 +1013,11 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const storeAppIternal = app?.store?.apps.find(
+  const apps = storeApps.filter((item) => {
+    return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
+  })
+
+  const storeAppIternal = storeApps?.find(
     (item) =>
       app?.store?.appId &&
       item.id === app?.store?.appId &&
@@ -1021,23 +1030,8 @@ export function AuthProvider({
   )
 
   useEffect(() => {
-    storeAppIternal && setStoreApp(storeAppIternal)
+    hasStoreApps(app) && setStoreApp(storeAppIternal)
   }, [storeAppIternal])
-
-  const apps = storeApps.filter((item) => {
-    return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
-  })
-
-  const userBaseApp = storeApps?.find(
-    (app) => user?.userName && app.store?.slug === user?.userName,
-  )
-
-  const userBaseStore = userBaseApp?.store
-  const guestBaseApp = storeApps?.find(
-    (app) => guest?.id && app.store?.slug === guest?.id,
-  )
-
-  const guestBaseStore = guestBaseApp?.store
 
   const [slugState, setSlugState] = useState<string | undefined>(
     (app && getAppSlug(app)) || undefined,
@@ -1218,7 +1212,11 @@ export function AuthProvider({
 
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
-      if (!item) return
+      if (!hasStoreApps(item)) {
+        setLoadingApp(item)
+        return
+      }
+
       setLastAppId(item?.id)
       setAppInternal((prevApp) => {
         const newApp = item
@@ -1320,7 +1318,7 @@ export function AuthProvider({
     storeApps,
     pathname,
     baseApp,
-    app?.id,
+    // app?.id removed - causes infinite loop since setApp() changes it
     thread,
     threadId,
     lastAppId,

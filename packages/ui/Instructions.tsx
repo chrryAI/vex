@@ -50,6 +50,7 @@ import {
   TextArea,
   toRem,
 } from "./platform"
+import { getExampleInstructions, decodeHtmlEntities } from "./utils"
 import { thread, instruction } from "./types"
 import { updateThread } from "./lib"
 import { useHasHydrated } from "./hooks"
@@ -1338,7 +1339,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             }}
           >
             <Button
-              className={icon ? "link" : "inverted"}
+              className={icon ? "link" : "inverted small"}
               data-testid={`${dataTestId}-button`}
               onClick={() => {
                 // Clear content if it matches the currently selected instruction
@@ -1356,20 +1357,12 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 ...(icon
                   ? {
                       ...utilities.link.style,
-                      ...styles.instructionsButtonIcon.style,
                     }
                   : utilities.inverted.style),
-                ...styles.instructionsButton.style,
               }}
             >
               <Brain color="var(--accent-6)" size={16} />
-              {!icon ? (
-                <>
-                  {t("Instructions")} <Plus size={16} />
-                </>
-              ) : (
-                <Plus size={12} />
-              )}
+              {!icon ? <>{t("Instructions")}</> : <Plus size={12} />}
             </Button>
             {!isMobileDevice && (
               <Button
@@ -1431,9 +1424,11 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                       {instruction.emoji}
                     </Span>
                     <Span style={styles.instructionTitle.style}>
-                      {t(
-                        instruction.title,
-                        isManaging ? undefined : instructionConfig,
+                      {decodeHtmlEntities(
+                        t(
+                          instruction.title,
+                          isManaging ? undefined : instructionConfig,
+                        ),
                       )}
                     </Span>
                     {isManaging && (

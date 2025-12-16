@@ -8,7 +8,7 @@ export default function useCookieOrLocalStorage(
   initialValue: any,
   canReadCookie: boolean = false,
 ) {
-  const { isExtension, isNative } = usePlatform()
+  const { isWeb } = usePlatform()
 
   const [cookie, setCookieInternal] = useCookie(key, initialValue)
   const [local, setLocalInternal] = useLocalStorage(
@@ -32,16 +32,16 @@ export default function useCookieOrLocalStorage(
 
   // Extensions/native: read from cookie (cross-site), write to localStorage
   // Web: read and write to cookie
-  const state = isExtension || isNative ? local : cookie
+  const state = isWeb ? cookie : local
 
   const setState = useCallback(
     (value: any) => {
-      if (!isExtension && !isNative) {
+      if (isWeb) {
         setCookieInternal(value)
       }
       setLocalInternal(value)
     },
-    [isExtension, isNative, setCookieInternal, setLocalInternal],
+    [isWeb, setCookieInternal, setLocalInternal],
   )
 
   return [state, setState] as const
