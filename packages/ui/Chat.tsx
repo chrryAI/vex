@@ -2221,7 +2221,7 @@ export default function Chat({
     onMessage: async ({ type, data }) => {
       const threadId = threadIdRef.current
 
-      data.streamId && setStreamId(data.streamId)
+      data?.streamId && setStreamId(data.streamId)
 
       if (!token) return
 
