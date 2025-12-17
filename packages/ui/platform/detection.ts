@@ -14,6 +14,7 @@ export type BrowserType = "chrome" | "firefox" | "safari" | "edge" | "unknown"
 export function isWeb(): boolean {
   return (
     !isNative() &&
+    // !isBrowserExtension() &&
     typeof window !== "undefined" &&
     typeof document !== "undefined"
   )

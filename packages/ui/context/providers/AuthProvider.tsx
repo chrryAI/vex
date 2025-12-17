@@ -433,11 +433,13 @@ export function AuthProvider({
         setToken(sessionData.user.token)
         setFingerprint(sessionData.user.fingerprint || undefined)
         setGuest(undefined)
+        sessionData.userBaseApp && setUserBaseApp(sessionData.userBaseApp)
       } else if (sessionData.guest) {
         setGuest(sessionData.guest)
         setFingerprint(sessionData.guest.fingerprint)
         setToken(sessionData.guest.fingerprint)
         setUser(undefined)
+        sessionData.guestBaseApp && setGuestBaseApp(sessionData.guestBaseApp)
       }
 
       setHasNotification(!!sessionData.hasNotification)
@@ -739,6 +741,7 @@ export function AuthProvider({
   const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
     session?.userBaseApp,
   )
+  console.log(`🚀 ~ userBaseApp:`, userBaseApp)
 
   const userBaseStore = userBaseApp?.store
   const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
