@@ -149,6 +149,7 @@ export const session = new Hono()
 
 session.get("/", async (c) => {
   console.log("🔥 HONO SESSION ROUTE CALLED - This is Hono, not Next.js!")
+  const url = new URL(c.req.url)
 
   // Convert Hono request to standard Request for Arcjet
   const request = c.req.raw
@@ -157,11 +158,13 @@ session.get("/", async (c) => {
   if (!isDevelopment && !isE2E) {
     // Extract client IP from x-forwarded-for header (sent by SSR server)
     const clientIp =
+      url.searchParams.get("ip") ||
       c.req.header("x-forwarded-for") ||
       c.req.header("x-real-ip") ||
       "127.0.0.1"
 
-    const decision = await aj.protect(c.req)
+    // Pass IP via context object
+    const decision = await aj.protect(request, { ip: clientIp })
 
     if (decision.isDenied()) {
       console.log("🤖 Bot detected:", {
@@ -208,8 +211,6 @@ session.get("/", async (c) => {
   if (!success) {
     return c.json({ error: "Too many requests" }, 429)
   }
-
-  const url = new URL(request.url)
 
   // Detect domain for cookies from chrryUrl (for extensions), Referer, or Origin header
   const chrryUrl = getChrryUrl(request)
