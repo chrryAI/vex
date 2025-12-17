@@ -1,0 +1,266 @@
+name: PR
+on:
+  pull_request:
+    branches: [web, api]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+#  # Deploy WebSocket server (will use cached build)
+# echo "📦 Deploying WebSocket server (e2e-ws.chrry.dev) - using cached build..."
+# curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=y8kkk00co844wg880cw4w8k0&force=false" \
+#   -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+
+env:
+  STAGING_URL: https://e2e.chrry.ai
+  STAGING_API_URL: https://e2e.chrry.dev
+  TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+  TURBO_TEAM: "vex"
+  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+  TURBO_API: ${{ secrets.TURBO_API }}
+  TURBO_VERBOSE: 1
+  NODE_OPTIONS: --max-old-space-size=8192
+  TESTING_ENV: e2e
+  VITE_TESTING_ENV: e2e
+  VITE_CI: true
+  CI: true
+  BUILD_ID: ${{ github.sha }}
+
+  # Node environment
+  NODE_ENV: production
+  VITE_NODE_ENV: production
+
+  # Database
+  DB_URL: ${{ secrets.DB_URL }}
+
+  # Auth
+  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+  AUTH_TRUST_HOST: ${{ secrets.AUTH_TRUST_HOST }}
+
+  # Test users
+  VEX_TEST_EMAIL: ${{ secrets.VEX_TEST_EMAIL }}
+  VEX_TEST_NAME: ${{ secrets.VEX_TEST_NAME }}
+  VEX_TEST_PASSWORD: ${{ secrets.VEX_TEST_PASSWORD }}
+  VEX_TEST_EMAIL_2: ${{ secrets.VEX_TEST_EMAIL_2 }}
+  VEX_TEST_NAME_2: ${{ secrets.VEX_TEST_NAME_2 }}
+  VEX_TEST_PASSWORD_2: ${{ secrets.VEX_TEST_PASSWORD_2 }}
+  VEX_TEST_EMAIL_3: ${{ secrets.VEX_TEST_EMAIL_3 }}
+  VEX_TEST_NAME_3: ${{ secrets.VEX_TEST_NAME_3 }}
+  VEX_TEST_PASSWORD_3: ${{ secrets.VEX_TEST_PASSWORD_3 }}
+  VEX_TEST_EMAIL_4: ${{ secrets.VEX_TEST_EMAIL_4 }}
+  VEX_TEST_NAME_4: ${{ secrets.VEX_TEST_NAME_4 }}
+  VEX_TEST_PASSWORD_4: ${{ secrets.VEX_TEST_PASSWORD_4 }}
+  TEST_MEMBER_FINGERPRINTS: ${{ secrets.TEST_MEMBER_FINGERPRINTS }}
+  TEST_MEMBER_EMAILS: ${{ secrets.TEST_MEMBER_EMAILS }}
+  TEST_GUEST_FINGERPRINTS: ${{ secrets.TEST_GUEST_FINGERPRINTS }}
+
+  # Push notifications
+  VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
+  VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+
+  # Stripe
+  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+  STRIPE_PRICE_PLUS_ID: ${{ secrets.STRIPE_PRICE_PLUS_ID }}
+  STRIPE_PRICE_CREDITS_ID: ${{ secrets.STRIPE_PRICE_CREDITS_ID }}
+  STRIPE_PRICE_PRO_ID: ${{ secrets.STRIPE_PRICE_PRO_ID }}
+  VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+
+  # OAuth
+  APPLE_CLIENT_ID: ${{ secrets.APPLE_CLIENT_ID }}
+  APPLE_CLIENT_SECRET: ${{ secrets.APPLE_CLIENT_SECRET }}
+  GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+  GOOGLE_WEB_CLIENT_SECRET: ${{ secrets.GOOGLE_WEB_CLIENT_SECRET }}
+
+  # URLs
+  CHRRY_URL: ${{ secrets.CHRRY_URL }}
+  VITE_API_URL: ${{ secrets.VITE_API_URL }}
+  VITE_SITE_MODE: ${{ secrets.VITE_SITE_MODE }}
+  VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+  WS_SERVER_URL: ${{ secrets.WS_SERVER_URL }}
+
+  # Redis
+  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+  REDIS_URL: ${{ secrets.REDIS_URL }}
+
+jobs:
+  # Safety check: prevent external PRs from triggering deployments
+  check-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is from fork
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "⚠️ External PR detected - failing to prevent deployment"
+            exit 1
+          else
+            echo "✅ Internal PR - will proceed with deployment"
+          fi
+
+    # Cancel any in-progress Coolify deployments
+  cancel-deployments:
+    runs-on: ubuntu-latest
+    needs: [check-pr]
+    steps:
+      - name: Cancel in-progress API deployment
+        continue-on-error: true
+        run: |
+          echo "🛑 Canceling any in-progress API deployment..."
+          curl -X POST "https://coolify.askvex.com/api/v1/applications/z84cko4g4kwss0gockcgkogw/cancel" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
+
+      - name: Cancel in-progress Web deployment
+        continue-on-error: true
+        run: |
+          echo "🛑 Canceling any in-progress Web deployment..."
+          curl -X POST "https://coolify.askvex.com/api/v1/applications/xcgo4kw884kkow40wk040sco/cancel" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: check-pr
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ hashFiles('**/pnpm-lock.yaml', 'turbo.json') }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm turbo lint
+
+      - name: Type check
+        run: pnpm turbo check-types
+
+      - name: Build packages
+        run: pnpm run build
+
+  # Deploy both API and Web sequentially
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [check-pr, build, cancel-deployments]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy API to Coolify
+        run: |
+          echo "📦 Deploying API app (e2e.chrry.dev)..."
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+
+      - name: Wait for API deployment
+        run: |
+          echo "⏳ Waiting for API to finish deploying..."
+          MAX_ATTEMPTS=150
+          ATTEMPT=0
+          EXPECTED_VERSION=$(jq -r '.version' package.json)
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
+              API_VERSION=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
+              echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
+
+              if [ "$API_VERSION" = "$EXPECTED_VERSION" ]; then
+                echo "✅ API deployment complete!"
+                exit 0
+              fi
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            sleep 10
+          done
+
+          echo "❌ API deployment timed out"
+          exit 1
+
+      - name: Deploy Web to Coolify
+        run: |
+          echo "📦 Deploying web app (e2e.chrry.ai)..."
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+
+      - name: Wait for Web deployment
+        run: |
+          echo "⏳ Waiting for Web to finish deploying..."
+          MAX_ATTEMPTS=150
+          ATTEMPT=0
+          EXPECTED_VERSION=$(jq -r '.version' package.json)
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
+              WEB_VERSION=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
+              echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
+
+              if [ "$WEB_VERSION" = "$EXPECTED_VERSION" ]; then
+                echo "✅ Web deployment complete!"
+                exit 0
+              fi
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            sleep 10
+          done
+
+          echo "❌ Web deployment timed out"
+          exit 1
+
+  # Run Guest E2E tests first (uses shared fingerprints)
+
+  e2e-guest-live:
+    runs-on: ubuntu-latest
+    needs: deploy
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
+
+      - name: Run Live Guest Playwright tests (Real AI)
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
+          VEX_LIVE_FINGERPRINT: ${{ secrets.VEX_LIVE_FINGERPRINT }}
+        run: pnpm --filter @chrryai/waffles exec playwright test guest.live.spec.ts
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-guest-live
+          path: packages/waffles/playwright-report/
+          retention-days: 30
