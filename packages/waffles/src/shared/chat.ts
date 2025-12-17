@@ -623,7 +623,7 @@ export const chat = async ({
     const isAcceptButtonVisible = await acceptButton.isVisible()
 
     if (isAcceptButtonVisible) {
-      await wait(2000)
+      await wait(500)
       await sendButton.click()
     }
 
@@ -631,12 +631,12 @@ export const chat = async ({
       await expect(page.getByText("Uploading artifacts...")).toBeVisible()
     }
 
-    await page.waitForTimeout(5000)
-
     const stopButton = page.getByTestId("chat-stop-streaming-button")
     await expect(stopButton).toBeVisible({
       timeout: prompt.agentMessageTimeout || agentMessageTimeout,
     })
+
+    await wait(1500)
 
     const getLastMessage = async () => {
       // Wait for either user or guest messages to appear

@@ -19,17 +19,14 @@ export const AgentStyleDefs = {
     flexWrap: "wrap",
     display: "flex",
     justifyContent: "center",
-    gap: 10,
+    gap: 7.5,
     borderTop: "1px dashed var(--shade-2)",
     paddingTop: 10,
   },
-  tabButton: {
-    transform: "scale(1.1)",
-  },
+  tabButton: {},
   currentTab: {
     fontSize: 13,
     margin: "0 5px",
-    transform: "scale(1.1)",
   },
   placeholder: {
     flex: 1,

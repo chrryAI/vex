@@ -4512,7 +4512,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         // Use fullStream to get reasoning parts immediately
         for await (const part of result.fullStream) {
-          console.log(`🚀 ~ forawait ~ part:`, part.type)
           if (!streamControllers.has(streamId)) {
             console.log("Gemini stream was stopped")
             break

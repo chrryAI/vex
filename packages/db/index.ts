@@ -4519,7 +4519,6 @@ export const createOrUpdateApp = async ({
 
   // Invalidate app cache
   await invalidateApp(result.id, result.slug)
-
   // Handle extends relationships
   if (extendsList && extendsList.length > 0) {
     // Delete existing extends relationships
@@ -5943,7 +5942,9 @@ export async function getAppExtends({
 
   // Return apps with extends property set to empty array to prevent infinite recursion
   return result.map((r) => ({
-    ...(isSafe ? toSafeApp({ app: r.app }) : r.app),
+    ...(true
+      ? { ...toSafeApp({ app: r.app }), highlights: [], tips: [] }
+      : r.app),
     extends: [],
   }))
 }
@@ -6320,6 +6321,35 @@ export const updateTimer = async (timer: timer) => {
 
 export const deleteTimer = async ({ id }: { id: string }) => {
   const [deleted] = await db.delete(timers).where(eq(timers.id, id)).returning()
+
+  return deleted
+}
+
+export const getStoreInstalls = async ({ storeId }: { storeId?: string }) => {
+  const result = await db
+    .select()
+    .from(storeInstalls)
+    .where(and(storeId ? eq(storeInstalls.storeId, storeId) : undefined))
+
+  return result
+}
+
+export const deleteInstall = async ({
+  appId,
+  storeId,
+}: {
+  appId?: string
+  storeId?: string
+}) => {
+  const [deleted] = await db
+    .delete(storeInstalls)
+    .where(
+      and(
+        appId ? eq(storeInstalls.appId, appId) : undefined,
+        storeId ? eq(storeInstalls.storeId, storeId) : undefined,
+      ),
+    )
+    .returning()
 
   return deleted
 }

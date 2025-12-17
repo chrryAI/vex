@@ -15,6 +15,8 @@ import {
   usePlatform,
   toast,
 } from "../../platform"
+import useCache from "../../hooks/useCache"
+
 import { appFormData, appSchema } from "../../schemas/appSchema"
 import { useForm } from "react-hook-form"
 import { customZodResolver } from "../../utils/customZodResolver"
@@ -63,6 +65,7 @@ interface AppStatus {
 }
 
 interface AppFormContextType {
+  defaultExtends: string[]
   setStoreSlug: (storeSlug: string) => void
   currentStore: storeWithApps | undefined
   showingCustom: boolean
@@ -151,7 +154,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     guest,
     slug,
     setSlug,
-    refetchSession,
+    fetchSession,
+    fetchApps,
     apps,
     setApps,
     app,
@@ -171,6 +175,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     sushi,
     focus,
     setLoadingApp,
+    setNewApp,
+    setUpdatedApp,
   } = useAuth()
   const { actions } = useData()
 
@@ -237,7 +243,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const clearFormDraft = () => {
-    setFormDraft(undefined)
+    setFormDraft(defaultFormValues)
     appForm.reset(defaultFormValues)
     // Don't clear appStatus here - it should be managed by URL params
     // setAppStatusInternal(undefined)
@@ -251,6 +257,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [isRemovingApp, setIsRemovingApp] = useState(false)
   const { captureException } = useError()
+
+  const { clear } = useCache()
 
   const saveApp = async () => {
     try {
@@ -269,12 +277,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       if (result) {
+        clear("app")
         if (canEditApp) {
-          setApp(result)
-          await refetchSession()
-          toast.success(`${t("Updated")} 🚀`)
+          setUpdatedApp(result)
         } else {
-          await refetchSession(result)
+          setNewApp(result)
         }
         clearFormDraft()
         setAppStatus(undefined)
@@ -309,7 +316,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
 
         setApp(undefined)
-        await refetchSession()
+        await fetchSession()
         clearFormDraft()
         toast.success(`${t("Deleted")} 😭`)
         push("/")
@@ -321,9 +328,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } finally {
         setIsRemovingApp(false)
       }
-
-      clearFormDraft()
-      return true
     }
 
     setAppStatus(undefined)
@@ -333,10 +337,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  // Cross-platform localStorage hook (works on web, native, extension)
-  const [formDraft, setFormDraftInternal] = useLocalStorage<
-    Partial<appFormData> | undefined
-  >("draft", undefined)
+  const defaultExtends = baseApp?.store?.apps
+    ?.slice(0, 5)
+    .map((app) => app.id) as string[]
+
   const defaultFormValues = {
     name: t("MyAgent"),
     title: t("Your personal AI agent"),
@@ -360,39 +364,46 @@ export function AppProvider({ children }: { children: ReactNode }) {
       pdf: true,
     },
     themeColor: "#8B5CF6", // Default purple color
-    extends: [
-      chrry?.id,
-      baseApp?.id || userBaseApp?.id || guestBaseApp?.id,
-    ].filter(Boolean) as string[], // Default: Chrry (required) and base app (if exists)
+    extends: defaultExtends, // Default: Chrry (required) and base app (if exists)
     tools: ["calendar", "location", "weather"],
     apiEnabled: false,
     apiPricing: "per-request" as const,
     displayMode: "standalone" as const,
   }
+  // Cross-platform localStorage hook (works on web, native, extension)
+  const [formDraft, setFormDraftInternal] = useLocalStorage<
+    Partial<appFormData> | undefined
+  >("draft", defaultFormValues)
 
-  const setFormDraft = (draft: Partial<appFormData> | undefined) => {
+  const setFormDraft = (
+    draft:
+      | Partial<appFormData>
+      | undefined
+      | ((
+          prev: Partial<appFormData> | undefined,
+        ) => Partial<appFormData> | undefined),
+  ) => {
     setFormDraftInternal(draft)
   }
 
   useEffect(() => {
-    if (!formDraft || !formDraft.extends) return
-
     // Filter out stale app IDs that no longer exist in storeApps
     const validAppIds = new Set(storeApps.map((app) => app.id))
-    const validExtends = formDraft.extends.filter((id) => validAppIds.has(id))
+    const validExtends =
+      formDraft?.extends?.filter((id) => validAppIds.has(id)) || []
 
     // If all extends were stale, reset to defaults
-    if (validExtends.length === 0 && vex && chrry) {
+    if (validExtends.length === 0) {
       console.log("✅ All extends stale, setting defaults")
       setFormDraft({
         ...formDraft,
-        extends: [vex.id, chrry.id],
+        extends: defaultExtends,
       })
     }
     // If some were stale, keep only valid ones
-    else if (validExtends.length !== formDraft.extends.length) {
+    if (validExtends.length !== formDraft?.extends?.length) {
       console.log("✅ Filtering out stale extends:", {
-        before: formDraft.extends.length,
+        before: formDraft?.extends?.length,
         after: validExtends.length,
       })
       setFormDraft({
@@ -400,7 +411,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         extends: validExtends,
       })
     }
-  }, [formDraft, vex, chrry, storeApps])
+  }, [formDraft, storeApps, baseApp])
 
   const getInitialFormValues = (): Partial<appFormData> => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
@@ -419,7 +430,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         visibility: app.visibility || "private",
         capabilities: app.capabilities || defaultFormValues.capabilities,
         themeColor: app.themeColor || "orange",
-        extends: app.extends?.map((e) => e.id),
+        extends: app.extends?.map((e) => e.id) || defaultExtends,
         tools: app.tools || [],
         apiEnabled: app.apiEnabled || false,
         apiPricing: app.apiPricing || "per-request",
@@ -498,7 +509,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     systemPrompt: appForm?.watch("systemPrompt"),
     pricing: appForm.watch("pricing"),
     tier: appForm.watch("tier"),
-    extends: appForm.watch("extends"),
+    extends: appForm.watch("extends") || defaultExtends,
     tools: appForm.watch("tools"),
     capabilities: appForm.watch("capabilities"),
     apiKeys: appForm.watch("apiKeys"),
@@ -576,10 +587,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     appFormWatcher.systemPrompt && appFormWatcher.canSubmit
   )
 
-  const canEditApp =
-    isAppOwner &&
-    !!appFormWatcher?.id &&
-    (step === "update" || step === "restore")
+  const canEditApp = isAppOwner
 
   const setAppStatus = (
     payload:
@@ -610,8 +618,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         newSearchParams.set(key, String(value))
       })
 
-      const slug = userBaseApp?.slug || guestBaseApp?.slug || baseApp?.slug
-      const newUrl = `${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/?${newSearchParams.toString()}`
+      const slug =
+        userBaseApp?.store?.slug ||
+        guestBaseApp?.store?.slug ||
+        baseApp?.store?.slug
+      const newUrl = `/${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/${app?.slug}?${newSearchParams.toString()}`
       push(newUrl)
     } else {
       push("/")
@@ -636,10 +647,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // Recalculate default extends to include chrry and base app
         const freshDefaults = {
           ...defaultFormValues,
-          extends: [
-            chrry?.id,
-            baseApp?.id || userBaseApp?.id || guestBaseApp?.id,
-          ].filter(Boolean) as string[],
           id: undefined, // Explicitly clear id to prevent conflicts
         }
         appForm.reset(freshDefaults)
@@ -658,12 +665,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const subscription = appForm.watch((data) => {
-      setFormDraft(data as Partial<appFormData>)
+      // Only update if data actually changed
+      setFormDraft((prev) => {
+        if (JSON.stringify(prev) === JSON.stringify(data)) {
+          return prev // No change, don't trigger re-render
+        }
+        return data as Partial<appFormData>
+      })
     })
 
     return () => subscription.unsubscribe()
-  }, [appForm, setFormDraft])
-
+  }, [appForm])
   useEffect(() => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
       const appValues = getInitialFormValues()
@@ -749,6 +761,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppFormContext.Provider
       value={{
+        defaultExtends,
         currentStore,
         showingCustom,
         storeApp,

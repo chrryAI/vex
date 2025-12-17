@@ -172,11 +172,12 @@ export default function App({
               : false)) &&
           item.id !== chrry?.id &&
           item.id !== grape?.id &&
-          (isBlossom
-            ? item.id !== atlas?.id &&
-              item.id !== zarathustra?.id &&
-              item.id !== popcorn?.id
-            : true),
+          item.id !== zarathustra?.id &&
+          (item.id === atlas?.id
+            ? app?.store?.app?.id === vex?.id || baseApp?.id === vex?.id
+            : true) &&
+          item.id !== popcorn?.id &&
+          (isBlossom ? item.id !== atlas?.id : true),
       )
       .filter((item) => item.id !== focus?.id)
       .sort((a, b) => {
@@ -631,7 +632,7 @@ export default function App({
               </Div>
             ) : appFormWatcher && appFormWatcher.canSubmit ? (
               <Div style={styles.titleFormTitle.style}>
-                <Logo app={app} showLoading={false} logo="isVivid" size={35} />
+                <Logo app={app} showLoading={false} size={35} />
                 {t(appFormWatcher?.title || "Your personal AI agent")}
               </Div>
             ) : (
@@ -665,8 +666,9 @@ export default function App({
               }}
             />
           </Div>
+
           <Div style={{ ...styles.section.style }}>
-            {appStatus?.part ? null : (
+            {appStatus?.part || userBaseApp || guestBaseApp ? null : (
               <Button
                 className="link"
                 style={{
@@ -900,7 +902,7 @@ export default function App({
                 </A>
               )
             )}
-            {!isManagingApp && appsState.length > 3 && (
+            {!isManagingApp && (
               <A
                 href={`${FRONTEND_URL}/calendar`}
                 title={t("Organize your life")}
@@ -948,6 +950,7 @@ export default function App({
               )
             )}
           </Div>
+
           {!isManagingApp && (
             <Div
               style={{
@@ -957,11 +960,14 @@ export default function App({
             >
               <Div style={{ ...styles.apps.style }}>
                 {appsState.slice(0, 5)?.map((item, index) => {
-                  const showAtlasHere = index === 1 && app?.id === chrry?.id
+                  const showAtlasHere = index === 1 && isBlossom
+
                   const showFocusHere = focus && !showAtlasHere && index === 1
 
                   const showPacmanHere =
+                    // !showAtlasThere &&
                     app?.store?.id !== popcorn?.store?.id && index === 2
+
                   const showSpaceInvaderHere = index === 3
 
                   const showChrryHere =
