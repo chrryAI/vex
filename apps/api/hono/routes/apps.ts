@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import { Hono } from "hono"
-import { getApp, getApp as getAppDb, getApps, getStore } from "@repo/db"
+import {
+  getApp,
+  getApp as getAppDb,
+  getApps,
+  getStore,
+  getStoreInstalls,
+  deleteInstall,
+} from "@repo/db"
 import { apps } from "@repo/db/src/schema"
 import { getMember, getGuest } from "../lib/auth"
 import { getChrryUrl } from "../lib/getChrryUrl"
@@ -20,13 +27,17 @@ import {
   db,
   and,
   eq,
+  getPureApp,
+  getAppExtends,
+  deleteApp,
 } from "@repo/db"
 import { appOrders, storeInstalls } from "@repo/db/src/schema"
 import captureException from "../../lib/captureException"
 import { upload, deleteFile } from "../../lib/minio"
 import slugify from "slug"
-import { v4 as uuid } from "uuid"
+import { v4 as uuid, validate } from "uuid"
 import { reorderApps } from "@chrryai/chrry/lib"
+import { isOwner } from "@chrryai/chrry/utils"
 
 export const app = new Hono()
 
@@ -452,6 +463,8 @@ app.post("/", async (c) => {
           "uploadthing.com",
           "images.unsplash.com",
           "cdn.jsdelivr.net",
+          "minio.chrry.dev", // Our MinIO server (development/staging)
+          "minio.chrry.ai", // Our MinIO server (production)
         ]
         const isAllowed = ALLOWED_HOSTNAMES.some(
           (hostname) =>
@@ -536,7 +549,7 @@ app.post("/", async (c) => {
 
       const created = await createStore({
         slug: storeSlug,
-        name: member?.userName || `Guest Store`,
+        name: member?.userName || `GuestStore`,
         title: `${member?.userName + "'s" || "My"} Store`,
         // domain: `${storeSlug}.chrry.dev`,
         userId: member?.id,
@@ -877,5 +890,328 @@ app.post("/reorder", async (c) => {
     console.error("Error reordering apps:", error)
     captureException(error)
     return c.json({ error: "Failed to reorder apps" }, { status: 500 })
+  }
+})
+
+// PATCH /apps/:id - Update existing app
+app.patch("/:id", async (c) => {
+  try {
+    const member = await getMember(c)
+    const guest = !member ? await getGuest(c) : undefined
+
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const appId = c.req.param("id")
+
+    // Get existing app
+    const existingApp = validate(appId)
+      ? await getPureApp({
+          id: appId,
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+      : await getPureApp({
+          slug: appId,
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+
+    if (!existingApp) {
+      return c.json({ error: "App not found" }, { status: 404 })
+    }
+
+    // Verify ownership
+    if (!isOwner(existingApp, { userId: member?.id, guestId: guest?.id })) {
+      return c.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    const storeInstalls = existingApp.storeId
+      ? await getStoreInstalls({
+          storeId: existingApp.storeId,
+        })
+      : undefined
+
+    if (storeInstalls) {
+      await Promise.all(
+        storeInstalls.map(async (storeInstall) => {
+          deleteInstall({
+            appId: storeInstall.appId,
+            storeId: storeInstall.storeId,
+          })
+        }),
+      )
+    }
+
+    // Parse JSON body
+    const body = await c.req.json()
+
+    // Extract fields from JSON (all optional for PATCH)
+    const {
+      name,
+      title,
+      description,
+      icon,
+      systemPrompt,
+      tone,
+      language,
+      defaultModel,
+      temperature,
+      visibility,
+      themeColor,
+      backgroundColor,
+      displayMode,
+      pricing,
+      price,
+      currency,
+      subscriptionInterval,
+      apiEnabled,
+      apiPricing,
+      apiPricePerRequest,
+      apiMonthlyPrice,
+      apiRateLimit,
+      capabilities,
+      highlights,
+      tags,
+      extends: extendsData,
+      tools,
+      image: imageUrl,
+    } = body
+
+    // Handle image - accept URL from /api/image endpoint
+    let images = existingApp.images || []
+    let shouldUpdateImages = false
+
+    // Build the update data object (only include provided fields)
+    const updateData: any = {}
+
+    if (name !== null) updateData.name = name
+    if (title !== null) updateData.title = title
+    if (description !== null) updateData.description = description
+    if (icon !== null) updateData.icon = icon
+    if (systemPrompt !== null) updateData.systemPrompt = systemPrompt
+    if (tone !== null) updateData.tone = tone
+    if (language !== null) updateData.language = language
+    if (defaultModel !== null) updateData.defaultModel = defaultModel
+    if (temperature !== undefined) updateData.temperature = temperature
+    if (capabilities !== undefined) updateData.capabilities = capabilities
+    if (highlights !== undefined) updateData.highlights = highlights
+    if (tags !== undefined) updateData.tags = tags
+    if (tools !== undefined) updateData.tools = tools
+    if (extendsData !== undefined) updateData.extends = extendsData
+    if (visibility !== null) updateData.visibility = visibility
+    if (themeColor !== null) updateData.themeColor = themeColor
+    if (backgroundColor !== null) updateData.backgroundColor = backgroundColor
+    if (displayMode !== null) updateData.displayMode = displayMode
+    if (pricing !== null) updateData.pricing = pricing
+    if (price !== undefined) updateData.price = price
+    if (currency !== null) updateData.currency = currency
+    if (subscriptionInterval !== null)
+      updateData.subscriptionInterval = subscriptionInterval
+    if (apiEnabled !== undefined) updateData.apiEnabled = apiEnabled
+    if (apiPricing !== null) updateData.apiPricing = apiPricing
+    if (apiPricePerRequest !== undefined)
+      updateData.apiPricePerRequest = apiPricePerRequest
+    if (apiMonthlyPrice !== undefined)
+      updateData.apiMonthlyPrice = apiMonthlyPrice
+    if (apiRateLimit !== undefined) updateData.apiRateLimit = apiRateLimit
+    if (shouldUpdateImages) updateData.images = images
+
+    console.log("🔍 Update data before validation:", {
+      shouldUpdateImages,
+      imagesCount: images?.length,
+      updateDataImages: updateData.images,
+    })
+
+    // Validate with Zod schema (partial validation)
+    const validationResult = appSchema.partial().safeParse(updateData)
+
+    if (!validationResult.success) {
+      console.error("❌ Validation failed:", validationResult.error.format())
+      return c.json(
+        {
+          error: "Validation failed",
+          details: validationResult.error.format(),
+        },
+        { status: 400 },
+      )
+    }
+
+    const extendedApps = validationResult?.data.extends
+      ? (
+          await Promise.all(
+            validationResult?.data.extends.map(async (extendedAppId) => {
+              console.log("🔍 Looking up extended app:", extendedAppId)
+
+              // Try to look up by ID first (handles UUIDs)
+              let extendedApp = await getApp({
+                id: extendedAppId,
+              })
+
+              return extendedApp
+            }),
+          )
+        ).filter(Boolean)
+      : []
+
+    if (!extendedApps.length) {
+      return c.json(
+        { error: "You must provide at least one extended app" },
+        { status: 400 },
+      )
+    }
+
+    console.log("✅ Validation passed")
+
+    // If name changed, update slug and check uniqueness
+    if (name && name !== existingApp.name) {
+      const newSlug = slugify(name, { lower: true })
+
+      // Check if new slug conflicts with another app in the same store
+      const conflictingApp = await getApp({ slug: newSlug })
+
+      if (
+        conflictingApp &&
+        conflictingApp.id !== existingApp.id &&
+        conflictingApp.store?.appId === existingApp.id
+      ) {
+        return c.json(
+          {
+            error: `An app with the slug "${newSlug}" already exists in this store. Please choose a different name.`,
+          },
+          { status: 400 },
+        )
+      }
+
+      updateData.slug = newSlug
+      console.log(`📝 Updating app slug: ${existingApp.slug} → ${newSlug}`)
+    }
+
+    // If image field is explicitly set to empty string or null, delete images
+    if ("image" in body && (!imageUrl || imageUrl === "")) {
+      console.log("🗑️ Removing app images (user cleared image)")
+
+      // Delete old images
+      if (existingApp.images && existingApp.images.length > 0) {
+        for (const img of existingApp.images) {
+          try {
+            await deleteFile(img.url)
+            console.log("🗑️ Deleted old image:", img.url)
+          } catch (deleteError) {
+            console.error("⚠️ Failed to delete old image:", deleteError)
+          }
+        }
+      }
+
+      images = []
+      shouldUpdateImages = true
+    }
+    // If new image URL provided, process it
+    else if (imageUrl && imageUrl.startsWith("http")) {
+      try {
+        console.log("📸 Processing updated app image from URL:", imageUrl)
+
+        // Delete old images
+        if (existingApp.images && existingApp.images.length > 0) {
+          for (const img of existingApp.images) {
+            try {
+              await deleteFile(img.url)
+              console.log("🗑️ Deleted old image:", img.url)
+            } catch (deleteError) {
+              console.error("⚠️ Failed to delete old image:", deleteError)
+            }
+          }
+        }
+
+        // Generate optimized versions for all use cases
+        const versions = [
+          { size: 512, name: "large" }, // PWA icon (required)
+          { size: 192, name: "medium" }, // PWA icon (required)
+          { size: 180, name: "apple" }, // Apple touch icon
+          { size: 128, name: "small" }, // UI thumbnails
+          { size: 32, name: "favicon" }, // Browser favicon
+        ]
+
+        const uploadPromises = versions.map(async ({ size, name }) => {
+          const result = await upload({
+            url: imageUrl,
+            messageId: `${slugify(name)}-${Date.now()}`,
+            options: {
+              width: size,
+              height: size,
+              fit: "contain", // Center image, don't crop (adds padding if needed)
+              position: "center",
+              title: `${name}-${size}x${size}`,
+            },
+          })
+          return {
+            url: result.url,
+            width: size,
+            height: size,
+            id: uuid(),
+          }
+        })
+
+        images = await Promise.all(uploadPromises)
+
+        console.log("✅ Generated image versions:", {
+          large: images[0]?.url,
+          medium: images[1]?.url,
+          favicon: images[2]?.url,
+        })
+
+        // Delete temporary image
+        try {
+          await deleteFile(imageUrl)
+          console.log("🗑️ Deleted temporary image:", imageUrl)
+        } catch (deleteError) {
+          console.error("⚠️ Failed to delete temp image:", deleteError)
+          // Continue anyway - not critical
+        }
+
+        shouldUpdateImages = true
+      } catch (uploadError) {
+        console.error("❌ Image processing failed:", uploadError)
+        // Continue with existing images
+      }
+    }
+
+    // Update the app in the database
+    // Remove any nested fields that shouldn't be in updateApp
+    const updatedApp = await createOrUpdateApp({
+      app: {
+        ...existingApp,
+        ...validationResult.data,
+        ...(shouldUpdateImages && { images }), // Add images if updated
+        tools: (validationResult.data.tools ?? existingApp.tools) as
+          | ("calendar" | "location" | "weather")[]
+          | null,
+        defaultModel: (validationResult.data.defaultModel ??
+          existingApp.defaultModel) as
+          | "deepSeek"
+          | "chatGPT"
+          | "claude"
+          | "gemini"
+          | "flux"
+          | "perplexity"
+          | null,
+      },
+      extends: extendedApps
+        .map((app) => (app ? app.id : undefined))
+        .filter(Boolean) as string[],
+    })
+
+    if (!updatedApp) {
+      return c.json({ error: "Failed to update app" }, { status: 500 })
+    }
+
+    console.log("✅ Updated app with images:", updatedApp.images)
+
+    return c.json(updatedApp)
+  } catch (error) {
+    console.error("Error updating app:", error)
+    captureException(error)
+    return c.json({ error: "Failed to update app" }, { status: 500 })
   }
 })

@@ -76,8 +76,15 @@ export default function Agent({
   const bordered = {
     border: "1px dashed var(--shade-2)",
   }
-  const { app, apps, appForm, appFormWatcher, appStatus, setAppStatus } =
-    useApp()
+  const {
+    defaultExtends,
+    app,
+    apps,
+    appForm,
+    appFormWatcher,
+    appStatus,
+    setAppStatus,
+  } = useApp()
 
   const { aiAgents } = useChat()
 
@@ -540,7 +547,9 @@ export default function Agent({
                         >
                           <ThemeSwitcher
                             size={26}
-                            onThemeChange={field.onChange}
+                            onThemeChange={(theme) => {
+                              field.onChange(theme)
+                            }}
                           />
                           {t("Theme & Color")}
                         </Div>
@@ -728,24 +737,20 @@ export default function Agent({
                         name="capabilities.webSearch"
                         control={control}
                         render={({ field }) => (
-                          <Label
-                            onClick={(e) => {
-                              if (aiAgent?.capabilities?.webSearch === true) {
-                                e.preventDefault()
-                                toast.error(
-                                  t("Web Search required by {{model}}", {
-                                    model: aiAgent.name,
-                                  }),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={field.value}
-                              disabled={
-                                aiAgent?.capabilities?.webSearch === true
-                              }
-                              onChange={(checked) => field.onChange(checked)}
+                              onChange={(checked) => {
+                                if (aiAgent?.capabilities?.webSearch === true) {
+                                  toast.error(
+                                    t("Web Search required by {{model}}", {
+                                      model: aiAgent.name,
+                                    }),
+                                  )
+                                  return
+                                }
+                                field.onChange(checked)
+                              }}
                             >
                               <Span>{t("Web Search")}</Span>
                             </Checkbox>
@@ -756,26 +761,26 @@ export default function Agent({
                         name="capabilities.imageGeneration"
                         control={control}
                         render={({ field }) => (
-                          <Label
-                            onClick={(e) => {
-                              if (
-                                aiAgent?.capabilities?.imageGeneration === true
-                              ) {
-                                e.preventDefault()
-                                toast.error(
-                                  t("Image Generation required by {{model}}", {
-                                    model: aiAgent.name,
-                                  }),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={field.value}
-                              disabled={
-                                aiAgent?.capabilities?.imageGeneration === true
-                              }
-                              onChange={(checked) => field.onChange(checked)}
+                              onChange={(checked) => {
+                                if (
+                                  aiAgent?.capabilities?.imageGeneration ===
+                                  true
+                                ) {
+                                  toast.error(
+                                    t(
+                                      "Image Generation required by {{model}}",
+                                      {
+                                        model: aiAgent.name,
+                                      },
+                                    ),
+                                  )
+                                  return
+                                }
+                                field.onChange(checked)
+                              }}
                             >
                               <Span>{t("ImageGeneration")}</Span>
                             </Checkbox>
@@ -786,22 +791,20 @@ export default function Agent({
                         name="capabilities.pdf"
                         control={control}
                         render={({ field }) => (
-                          <Label
-                            onClick={(e) => {
-                              if (aiAgent?.capabilities?.pdf === true) {
-                                e.preventDefault()
-                                toast.error(
-                                  t("File Analysis required by {{model}}", {
-                                    model: aiAgent.name,
-                                  }),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={field.value}
-                              disabled={aiAgent?.capabilities?.pdf === true}
-                              onChange={(checked) => field.onChange(checked)}
+                              onChange={(checked) => {
+                                if (aiAgent?.capabilities?.pdf === true) {
+                                  toast.error(
+                                    t("File Analysis required by {{model}}", {
+                                      model: aiAgent.name,
+                                    }),
+                                  )
+                                  return
+                                }
+                                field.onChange(checked)
+                              }}
                             >
                               <Span>{t("File Analysis")}</Span>
                             </Checkbox>
@@ -812,22 +815,20 @@ export default function Agent({
                         name="capabilities.audio"
                         control={control}
                         render={({ field }) => (
-                          <Label
-                            onClick={(e) => {
-                              if (aiAgent?.capabilities?.audio === true) {
-                                e.preventDefault()
-                                toast.error(
-                                  t("Voice required by {{model}}", {
-                                    model: aiAgent.name,
-                                  }),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={field.value}
-                              disabled={aiAgent?.capabilities?.audio === true}
-                              onChange={(checked) => field.onChange(checked)}
+                              onChange={(checked) => {
+                                if (aiAgent?.capabilities?.audio === true) {
+                                  toast.error(
+                                    t("Voice required by {{model}}", {
+                                      model: aiAgent.name,
+                                    }),
+                                  )
+                                  return
+                                }
+                                field.onChange(checked)
+                              }}
                             >
                               <Span>{t("Voice")}</Span>
                             </Checkbox>
@@ -838,22 +839,20 @@ export default function Agent({
                         name="capabilities.video"
                         control={control}
                         render={({ field }) => (
-                          <Label
-                            onClick={(e) => {
-                              if (aiAgent?.capabilities?.video === true) {
-                                e.preventDefault()
-                                toast.error(
-                                  t("Video required by {{model}}", {
-                                    model: aiAgent.name,
-                                  }),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={field.value}
-                              disabled={aiAgent?.capabilities?.video === true}
-                              onChange={(checked) => field.onChange(checked)}
+                              onChange={(checked) => {
+                                if (aiAgent?.capabilities?.video === true) {
+                                  toast.error(
+                                    t("Video required by {{model}}", {
+                                      model: aiAgent.name,
+                                    }),
+                                  )
+                                  return
+                                }
+                                field.onChange(checked)
+                              }}
                             >
                               <Span>{t("Video")}</Span>
                             </Checkbox>
@@ -864,26 +863,22 @@ export default function Agent({
                         name="capabilities.codeExecution"
                         control={control}
                         render={({ field }) => (
-                          <Label
-                            onClick={(e) => {
-                              if (
-                                aiAgent?.capabilities?.codeExecution === true
-                              ) {
-                                e.preventDefault()
-                                toast.error(
-                                  t("Code Execution required by {{model}}", {
-                                    model: aiAgent.name,
-                                  }),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={field.value}
-                              disabled={
-                                aiAgent?.capabilities?.codeExecution === true
-                              }
-                              onChange={(checked) => field.onChange(checked)}
+                              onChange={(checked) => {
+                                if (
+                                  aiAgent?.capabilities?.codeExecution === true
+                                ) {
+                                  toast.error(
+                                    t("Code Execution required by {{model}}", {
+                                      model: aiAgent.name,
+                                    }),
+                                  )
+                                  return
+                                }
+                                field.onChange(checked)
+                              }}
                             >
                               <Span>{t("Code Execution")}</Span>
                             </Checkbox>
@@ -917,24 +912,23 @@ export default function Agent({
                       control={control}
                       render={({ field }) => {
                         // Get store-based apps from Chrry store
-                        const storeApps = chrry?.store?.apps || []
+                        const storeApps = baseApp?.store?.apps || []
 
                         return (
                           <>
                             {/* Store-based apps */}
-                            {storeApps.map((app) => {
+                            {storeApps.map((item) => {
                               // Chrry is required (checked and disabled)
-                              const isChrry = app.id === chrry?.id
+                              const isChrry = item.id === chrry?.id
                               // Vex is optional (checked by default but can be unchecked)
-                              const isBaseApp = app.id === baseApp?.id
+                              const isBaseApp = item.id === baseApp?.id
 
                               const checked =
                                 isChrry ||
                                 isBaseApp ||
-                                field.value?.includes(app.id)
-
+                                !!appFormWatcher?.extends?.includes(item.id)
                               return (
-                                <Label key={app.id || app.name}>
+                                <Label key={item.id || item.name}>
                                   <Checkbox
                                     checked={checked}
                                     // disabled={isDisabled || isChrry}
@@ -942,7 +936,7 @@ export default function Agent({
                                       if (checked) {
                                         if (isChrry) {
                                           toast.error(
-                                            `${app.name} is required and cannot be removed.`,
+                                            `${item.name} is required and cannot be removed.`,
                                           )
 
                                           return
@@ -950,21 +944,21 @@ export default function Agent({
 
                                         if (isBaseApp) {
                                           toast.error(
-                                            `${app.name} is your base app.`,
+                                            `${item.name} is your base app.`,
                                           )
 
                                           return
                                         }
                                       }
                                       const newValue = isChecked
-                                        ? [...(field.value || []), app.id]
+                                        ? [...(field.value || []), item.id]
                                         : field.value?.filter(
-                                            (v) => v !== app.id,
+                                            (v) => v !== item.id,
                                           )
                                       field.onChange(newValue)
                                     }}
                                   >
-                                    {app.icon} {app.name}
+                                    {item.icon} {item.name}
                                   </Checkbox>
                                 </Label>
                               )
@@ -1034,26 +1028,24 @@ export default function Agent({
                       control={control}
                       render={({ field }) => (
                         <>
-                          <Label
-                            onClick={() => {
-                              if (calendarRequiredApp) {
-                                toast.error(
-                                  t(
-                                    "Calendar required because you are using {{app}}",
-                                    {
-                                      app: calendarRequiredApp.name,
-                                    },
-                                  ),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={
                                 field.value?.includes("calendar") || false
                               }
-                              disabled={!!calendarRequiredApp}
+                              // disabled={!!calendarRequiredApp}
                               onChange={(checked) => {
+                                if (calendarRequiredApp) {
+                                  toast.error(
+                                    t(
+                                      "Calendar required because you are using {{app}}",
+                                      {
+                                        app: calendarRequiredApp.name,
+                                      },
+                                    ),
+                                  )
+                                  return
+                                }
                                 const newValue = checked
                                   ? [...(field.value || []), "calendar"]
                                   : field.value?.filter((v) => v !== "calendar")
@@ -1063,30 +1055,28 @@ export default function Agent({
                               📅 {t("Calendar")}
                             </Checkbox>
                           </Label>
-                          <Label
-                            onClick={() => {
-                              if (isLocationRequired || locationRequiredApp) {
-                                toast.error(
-                                  t(
-                                    isLocationRequired
-                                      ? "Location required because you are using {{location}} templates on your instructions"
-                                      : "Location required because you are using {{app}}",
-                                    locationRequiredApp
-                                      ? { app: locationRequiredApp.name }
-                                      : {},
-                                  ),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={
                                 field.value?.includes("location") || false
                               }
-                              disabled={
-                                isLocationRequired || !!locationRequiredApp
-                              }
+                              // disabled={
+                              //   isLocationRequired || !!locationRequiredApp
+                              // }
                               onChange={(checked) => {
+                                if (isLocationRequired || locationRequiredApp) {
+                                  toast.error(
+                                    t(
+                                      isLocationRequired
+                                        ? "Location required because you are using {{location}} templates on your instructions"
+                                        : "Location required because you are using {{app}}",
+                                      locationRequiredApp
+                                        ? { app: locationRequiredApp.name }
+                                        : {},
+                                    ),
+                                  )
+                                  return
+                                }
                                 const newValue = checked
                                   ? [...(field.value || []), "location"]
                                   : field.value?.filter((v) => v !== "location")
@@ -1096,30 +1086,28 @@ export default function Agent({
                               🌍 {t("Location")}
                             </Checkbox>
                           </Label>
-                          <Label
-                            onClick={() => {
-                              if (isWeatherRequired || weatherRequiredApp) {
-                                toast.error(
-                                  t(
-                                    isWeatherRequired
-                                      ? "Weather required because you are using {{weather}} templates on your instructions"
-                                      : "Weather required because you are using {{app}}",
-                                    weatherRequiredApp
-                                      ? { app: weatherRequiredApp.name }
-                                      : {},
-                                  ),
-                                )
-                              }
-                            }}
-                          >
+                          <Label>
                             <Checkbox
                               checked={
                                 field.value?.includes("weather") || false
                               }
-                              disabled={
-                                isWeatherRequired || !!weatherRequiredApp
-                              }
+                              // disabled={
+                              //   isWeatherRequired || !!weatherRequiredApp
+                              // }
                               onChange={(checked) => {
+                                if (isWeatherRequired || weatherRequiredApp) {
+                                  toast.error(
+                                    t(
+                                      isWeatherRequired
+                                        ? "Weather required because you are using {{weather}} templates on your instructions"
+                                        : "Weather required because you are using {{app}}",
+                                      weatherRequiredApp
+                                        ? { app: weatherRequiredApp.name }
+                                        : {},
+                                    ),
+                                  )
+                                  return
+                                }
                                 const newValue = checked
                                   ? [...(field.value || []), "weather"]
                                   : field.value?.filter((v) => v !== "weather")

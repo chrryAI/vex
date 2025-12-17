@@ -26,7 +26,6 @@
 }
 .icon {
   position: absolute;
-  right: toRem.toRem(10);
-  transform: translateY(-50%);
+  right: toRem.toRem(7.5);
   pointer-events: none;
 }

@@ -19,7 +19,9 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
 >(({ children, className, checked, disabled, onChange, style }, ref) => {
   const styles = useCheckboxStyles()
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (!disabled && onChange) {
       onChange(!checked)
     }
@@ -41,7 +43,6 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
         type="checkbox"
         checked={checked}
         disabled={disabled}
-        onChange={(e) => onChange?.(e.target.checked)}
         style={{ display: "none" }}
       />
 

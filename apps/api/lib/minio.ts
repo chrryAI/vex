@@ -233,6 +233,8 @@ export async function upload({
     "replicate.com",
     "utfs.io", // Legacy UploadThing (for migration)
     "uploadthing.com",
+    "chrry.dev", // Our own MinIO server (minio.chrry.dev)
+    "chrry.ai", // Our production MinIO server (minio.chrry.ai)
   ]
   try {
     // Validate URL to prevent SSRF attacks
@@ -330,10 +332,31 @@ export async function upload({
 
     console.log(`🔍 Downloaded file type: "${blob.type}", size: ${blob.size}`)
 
-    const fileType = validateFileType(blob.type) || options.type
+    // Infer file type from URL extension if Content-Type is missing
+    let inferredType = blob.type
+    if (!inferredType || inferredType === "") {
+      const urlPath = parsedUrl.pathname.toLowerCase()
+      if (urlPath.endsWith(".png")) inferredType = "image/png"
+      else if (urlPath.endsWith(".jpg") || urlPath.endsWith(".jpeg"))
+        inferredType = "image/jpeg"
+      else if (urlPath.endsWith(".webp")) inferredType = "image/webp"
+      else if (urlPath.endsWith(".mp4")) inferredType = "video/mp4"
+      else if (urlPath.endsWith(".webm")) inferredType = "video/webm"
+      else if (urlPath.endsWith(".mp3")) inferredType = "audio/mpeg"
+      else if (urlPath.endsWith(".wav")) inferredType = "audio/wav"
+      else if (urlPath.endsWith(".pdf")) inferredType = "application/pdf"
+
+      if (inferredType !== blob.type) {
+        console.log(
+          `🔍 Inferred file type from URL extension: "${inferredType}"`,
+        )
+      }
+    }
+
+    const fileType = validateFileType(inferredType) || options.type
 
     if (!fileType) {
-      console.error(`❌ Unsupported file type: "${blob.type}"`)
+      console.error(`❌ Unsupported file type: "${inferredType}"`)
       return {
         url: "",
         width: undefined,
@@ -343,7 +366,8 @@ export async function upload({
     }
 
     // Generate file extension
-    const ext = fileType === "image" ? "png" : blob.type.split("/")[1] || "bin"
+    const ext =
+      fileType === "image" ? "png" : inferredType.split("/")[1] || "bin"
     const fileName = `${messageId}-${Date.now()}.${ext}`
 
     let width, height

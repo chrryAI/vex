@@ -37,7 +37,7 @@ export interface BoxProps
     | "main"
     | "aside"
   id?: string
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
   handlers?: any
   state?: any
 }

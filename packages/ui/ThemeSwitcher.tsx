@@ -28,7 +28,7 @@ export default function ThemeSwitcher({
           title={isDark ? t("Light") : t("Dark")}
           onClick={() => {
             setTheme(isDark ? "light" : "dark")
-            onThemeChange?.(isDark ? "#000000" : "#ffffff")
+            onThemeChange?.(!isDark ? "#000000" : "#ffffff")
           }}
           style={{ ...utilities.link.style, ...style }}
           className={clsx("link")}
