@@ -1697,9 +1697,6 @@ const getClientHostname = () => {
  * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
-  if (isE2E) {
-    return e2eVex
-  }
   // If it's a valid SiteMode, use it directly
 
   // Extract hostname from URL if needed
@@ -1711,13 +1708,20 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
       hostname = hostnameOrMode
     }
   }
+  const mode = detectSiteMode(hostname)
+
+  if (mode === "search") {
+    return search
+  }
+
+  if (isE2E) {
+    return e2eVex
+  }
 
   // Check for E2E environment first
   if (hostname && matchesDomain(hostname, "e2e.chrry.ai")) {
     return e2eVex
   }
-
-  const mode = detectSiteMode(hostname)
 
   if (mode === "chrryDev") {
     return chrryDev
@@ -1767,9 +1771,6 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   }
 
   // Search configuration
-  if (mode === "search") {
-    return search
-  }
 
   // Vex configuration
   return vex
