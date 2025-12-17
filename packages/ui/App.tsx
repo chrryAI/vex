@@ -674,7 +674,7 @@ export default function App({
                 style={{
                   ...utilities.link,
                   gap: "0.5rem",
-                  fontSize: "0.7rem",
+                  fontSize: "0.675rem",
                   position: "relative",
                 }}
                 key={suggestSaveApp ? "highlights" : "settings"}
@@ -708,6 +708,7 @@ export default function App({
                 >
                   🤯
                 </Span>
+                Add Agent
                 <Img
                   showLoading={false}
                   alt="Plus"
