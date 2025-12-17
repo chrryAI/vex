@@ -110,15 +110,15 @@ export const MAX_TOOL_CALLS_PER_MESSAGE = 7
 export const WS_URL =
   getEnv().VITE_WS_URL ||
   (isTestingDevice
-    ? "ws://192.168.2.27:5001"
+    ? "ws://192.168.2.27:3001"
     : isDevelopment
-      ? "ws://localhost:5001"
-      : "wss://ws.chrry.dev")
+      ? "ws://localhost:3001"
+      : "wss://chrry.dev") // Unified WebSocket on production
 
 export const WS_SERVER_URL =
   getEnv().VITE_WS_SERVER_URL ||
   getEnv().WS_SERVER_URL ||
-  "http://127.0.0.1:5001"
+  "http://127.0.0.1:3001"
 
 export const addParam = (key: string, value: string) => {
   if (typeof window === "undefined") return
@@ -400,7 +400,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.7.6"
+export const VERSION = config.version || "1.7.17"
 export type instructionBase = {
   id: string
   title: string

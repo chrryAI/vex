@@ -161,14 +161,7 @@ export const appSchema = z.object({
 
   // Settings (Tab 7)
   visibility: z.enum(["private", "public", "unlisted"]).optional(),
-  extends: z
-    .array(
-      z.union([
-        z.enum(["Vex", "Chrry", "Atlas", "Peach", "Vault", "Bloom"]),
-        z.string().uuid("Invalid agent ID"),
-      ]),
-    )
-    .optional(),
+  extends: z.array(z.uuid("Invalid agent ID")).optional(),
 
   // Agent Exclusivity - boolean flag
   // If true, app only works with user's default agent (not other agents)

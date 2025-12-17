@@ -209,6 +209,8 @@ const AuthContext = createContext<
       onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
       hasNotification: boolean
       isLoading?: boolean
+      updatedApp?: appWithStore
+      setUpdatedApp: (updatedApp: appWithStore | undefined) => void
       setIsLoading: (isLoading: boolean) => void
       fetchSession: () => Promise<void>
       setUser: (user?: sessionUser) => void
@@ -431,11 +433,13 @@ export function AuthProvider({
         setToken(sessionData.user.token)
         setFingerprint(sessionData.user.fingerprint || undefined)
         setGuest(undefined)
+        sessionData.userBaseApp && setUserBaseApp(sessionData.userBaseApp)
       } else if (sessionData.guest) {
         setGuest(sessionData.guest)
         setFingerprint(sessionData.guest.fingerprint)
         setToken(sessionData.guest.fingerprint)
         setUser(undefined)
+        sessionData.guestBaseApp && setGuestBaseApp(sessionData.guestBaseApp)
       }
 
       setHasNotification(!!sessionData.hasNotification)
@@ -720,10 +724,11 @@ export function AuthProvider({
     newApps.forEach((newApp) => {
       const existingApp = existingAppsMap.get(newApp.id)
 
-      // If app doesn't exist, add it
+      if (newApp.name === "MyAgent") {
+        // debugger
+      }
 
-      // If new app has more data (store.apps populated), update it
-      if (hasStoreApps(newApp) && !hasStoreApps(existingApp)) {
+      if (existingApp && hasStoreApps(newApp)) {
         existingAppsMap.set(newApp.id, newApp)
       } else {
         existingAppsMap.set(newApp.id, newApp)
@@ -733,10 +738,20 @@ export function AuthProvider({
     return Array.from(existingAppsMap.values())
   }
 
-  const userBaseApp = session?.userBaseApp
+  const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
+    session?.userBaseApp,
+  )
+  console.log(`🚀 ~ userBaseApp:`, userBaseApp)
 
   const userBaseStore = userBaseApp?.store
-  const guestBaseApp = session?.guestBaseApp
+  const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
+    session?.guestBaseApp,
+  )
+
+  // useEffect(() => {
+  //   session?.userBaseApp && setUserBaseApp(session?.userBaseApp)
+  //   session?.guestBaseApp && setGuestBaseApp(session?.guestBaseApp)
+  // }, [session, guestBaseApp, userBaseApp])
 
   const guestBaseStore = guestBaseApp?.store
 
@@ -751,7 +766,7 @@ export function AuthProvider({
     targetApp: appWithStore,
     defaultSlug: string = "/",
   ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
-  const baseApp = storeApps.find((item) => {
+  const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
 
     if (
@@ -761,6 +776,14 @@ export function AuthProvider({
       return true
     }
   })
+
+  const [baseApp, setBaseApp] = useState<appWithStore | undefined>(
+    baseAppInternal,
+  )
+
+  useEffect(() => {
+    hasStoreApps(baseAppInternal) && setBaseApp(baseAppInternal)
+  }, [baseAppInternal])
 
   const threadId = getThreadId(pathname)
 
@@ -917,6 +940,22 @@ export function AuthProvider({
       defaultStoreSlug: baseApp?.store?.slug || siteConfig.storeSlug,
     })
 
+    if (
+      userBaseApp &&
+      storeSlug === userBaseApp.store?.slug &&
+      appSlug === userBaseApp.slug
+    ) {
+      return userBaseApp
+    }
+
+    if (
+      guestBaseApp &&
+      storeSlug === guestBaseApp.store?.slug &&
+      appSlug === guestBaseApp.slug
+    ) {
+      return guestBaseApp
+    }
+
     const matchedApp = storeApps?.find(
       (item) =>
         item.slug === appSlug &&
@@ -934,25 +973,24 @@ export function AuthProvider({
   )
 
   const [newApp, setNewApp] = useState<appWithStore | undefined>(undefined)
+  const [updatedApp, setUpdatedApp] = useState<appWithStore | undefined>(
+    undefined,
+  )
 
   // Get isStorageReady from platform context
 
   // Centralized function to merge apps without duplicates
-  const mergeApps = useCallback((newApps: appWithStore[]) => {
-    setAllApps(merge(storeApps, newApps))
-  }, [])
+  const mergeApps = useCallback(
+    (newApps: appWithStore[]) => {
+      setAllApps(merge(storeApps, newApps))
+    },
+    [storeApps],
+  )
 
-  const fetchSession = async (newApp?: appWithStore) => {
-    if (newApp) {
-      await refetchApps()
-      setNewApp(newApp)
-    }
-
+  const fetchSession = async () => {
     setIsLoading(true)
     setShouldFetchSession(true)
-
-    shouldFetchSession &&
-      (await refetchSession(undefined, { revalidate: true }))
+    shouldFetchSession && (await refetchSession())
   }
 
   const [isSplash, setIsSplash] = useState(true)
@@ -977,7 +1015,7 @@ export function AuthProvider({
   const sushi = storeApps?.find((app) => app.slug === "sushi")
   const focus = storeApps?.find((app) => app.slug === "focus")
 
-  const appId = loadingAppId || app?.id
+  const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
 
   const {
     data: storeAppsSwr,
@@ -987,21 +1025,63 @@ export function AuthProvider({
     try {
       if (!token) return
       const app = await getApp({ token, appId, chrryUrl, pathname })
-
-      return app.store?.apps
+      return app
     } catch (error) {
       captureException(error)
     }
   })
 
   useEffect(() => {
-    if (storeAppsSwr) {
-      mergeApps(storeAppsSwr)
-
-      storeAppsSwr?.find((app) => app.id === loadingAppId) &&
-        setLoadingApp(undefined)
+    if (newApp?.id || updatedApp?.id) {
+      refetchApps()
     }
-  }, [storeAppsSwr])
+  }, [newApp?.id, updatedApp?.id])
+
+  useEffect(() => {
+    if (storeAppsSwr) {
+      storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId) &&
+        setLoadingApp(undefined)
+
+      mergeApps(storeAppsSwr.store?.apps || [])
+
+      const u = storeAppsSwr.store?.apps?.find(
+        (app) => app.id === updatedApp?.id,
+      )
+
+      if (u) {
+        // debugger
+
+        if (guest) {
+          setGuestBaseApp(u)
+        } else {
+          setUserBaseApp(u)
+        }
+        setUpdatedApp(undefined)
+        router.push(getAppSlug(u) || "")
+
+        toast.success(t("Updated") + " 🚀")
+      }
+
+      const n = storeAppsSwr.store?.apps?.find((app) => app.id === newApp?.id)
+      if (n) {
+        if (guest) {
+          setGuestBaseApp(n)
+        } else {
+          setUserBaseApp(n)
+        }
+        toast.success(t("🥳 WOW!, you created something amazing"))
+        router.push(getAppSlug(n) || "")
+
+        // setTimeout(() => {
+        //   window.location.reload()
+        // }, 500)
+
+        // setShouldFetchApps(false)
+        setNewApp(undefined)
+        setIsSavingApp(false)
+      }
+    }
+  }, [storeAppsSwr, guest, user, newApp, updatedApp, loadingAppId])
 
   const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
 
@@ -1014,7 +1094,9 @@ export function AuthProvider({
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
   const apps = storeApps.filter((item) => {
-    return app?.store?.app?.store?.apps?.some((app) => app.id === item.id)
+    return app?.store?.app?.store?.apps?.some((app) => {
+      return app.id === item.id
+    })
   })
 
   const storeAppIternal = storeApps?.find(
@@ -1025,9 +1107,13 @@ export function AuthProvider({
       item.store?.id === app?.store?.id,
   )
 
-  const [storeApp, setStoreApp] = useState<appWithStore | undefined>(
+  const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppIternal,
   )
+
+  const setStoreApp = (appWithStore?: appWithStore) => {
+    appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
+  }
 
   useEffect(() => {
     hasStoreApps(app) && setStoreApp(storeAppIternal)
@@ -1227,18 +1313,14 @@ export function AuthProvider({
           : undefined
 
         // Only update theme if app actually changed
-        if (newApp?.id !== prevApp?.id) {
-          // Defer theme updates to avoid "setState during render" error
-          setTimeout(() => {
-            newApp?.themeColor && setColorScheme(newApp.themeColor)
-            newApp?.backgroundColor && setAppTheme(newApp.backgroundColor)
-          }, 0)
+        // Defer theme updates to avoid "setState during render" error
+        setTimeout(() => {
+          newApp?.themeColor && setColorScheme(newApp.themeColor)
+          newApp?.backgroundColor && setAppTheme(newApp.backgroundColor)
+        }, 0)
 
-          // Merge apps from the new app's store
-          newApp?.store?.apps && mergeApps(newApp?.store?.apps)
-          return newApp
-        }
-
+        // Merge apps from the new app's store
+        newApp?.store?.apps && mergeApps(newApp?.store?.apps)
         return newApp
       })
     },
@@ -1277,6 +1359,9 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
+    if (updatedApp || newApp) {
+      return
+    }
     if (!storeApps.length || (!thread && threadId)) return
 
     // Priority 1: If there's a thread, use the thread's app
@@ -1315,6 +1400,8 @@ export function AuthProvider({
       setSlug(getAppSlug(matchedApp) || "")
     }
   }, [
+    updatedApp,
+    newApp,
     storeApps,
     pathname,
     baseApp,
@@ -1421,30 +1508,31 @@ export function AuthProvider({
       content: t(inst.content || ""),
     }))
 
-  useEffect(() => {
-    const created = storeApps?.some((app) => app.id === newApp?.id)
-    if (newApp && created && app?.id !== newApp.id) {
-      const finalURL = getAppSlug(newApp)
+  // useEffect(() => {
+  //   const created = storeApps?.some((app) => app.id === newApp?.id)
+  //   if (newApp && created && app?.id !== newApp.id) {
+  //     const finalURL = getAppSlug(newApp)
 
-      toast.success(t("🥳 WOW!, you created something amazing"))
+  //     toast.success(t("🥳 WOW!, you created something amazing"))
 
-      if (newApp) {
-        // setApp(newApp)
-        setNewApp(undefined)
-        setIsSavingApp(false)
-      }
+  //     if (newApp) {
+  //       mergeApps([newApp])
+  //       setApp(newApp)
+  //       setNewApp(undefined)
+  //       setIsSavingApp(false)
+  //     }
 
-      if (
-        newApp.highlights?.some?.((h) =>
-          defaultInstructions.some((i) => i.content === h.content),
-        )
-      ) {
-        router.push(`${finalURL}?part=highlights`)
-      } else {
-        router.push(`${finalURL}`)
-      }
-    }
-  }, [newApp, app, storeApps])
+  //     if (
+  //       newApp.highlights?.some?.((h) =>
+  //         defaultInstructions.some((i) => i.content === h.content),
+  //       )
+  //     ) {
+  //       router.push(`${finalURL}?part=highlights`)
+  //     } else {
+  //       router.push(`${finalURL}`)
+  //     }
+  //   }
+  // }, [newApp, app, storeApps])
 
   const lastRateLimitErrorRef = useRef<string | null>(null)
 
@@ -1531,6 +1619,8 @@ export function AuthProvider({
         setThreads,
         showFocus,
         setShowFocus,
+        updatedApp,
+        setUpdatedApp,
         isLoadingTasks,
         fetchTasks,
         tasks,
@@ -1644,8 +1734,8 @@ export function AuthProvider({
         setThreadId,
         lastAppId,
         storeApps, // All apps from all stores
-        refetchSession: async (newApp?: appWithStore) => {
-          await fetchSession(newApp)
+        refetchSession: async () => {
+          await fetchSession()
         },
         setNewApp,
         fetchSession,

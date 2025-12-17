@@ -623,7 +623,7 @@ export const chat = async ({
     const isAcceptButtonVisible = await acceptButton.isVisible()
 
     if (isAcceptButtonVisible) {
-      await wait(2000)
+      await wait(500)
       await sendButton.click()
     }
 
@@ -631,12 +631,12 @@ export const chat = async ({
       await expect(page.getByText("Uploading artifacts...")).toBeVisible()
     }
 
-    await page.waitForTimeout(5000)
-
     const stopButton = page.getByTestId("chat-stop-streaming-button")
     await expect(stopButton).toBeVisible({
       timeout: prompt.agentMessageTimeout || agentMessageTimeout,
     })
+
+    await wait(1500)
 
     const getLastMessage = async () => {
       // Wait for either user or guest messages to appear
@@ -775,6 +775,7 @@ export const chat = async ({
       })
 
       if (prompt.like) {
+        await wait(3000)
         await getFilterLikedButton({ liked: false }).click()
 
         await expect(await getLastAgentMessage()).not.toBeVisible({
@@ -800,19 +801,23 @@ export const chat = async ({
           timeout: 8000,
         })
 
-        await unlikeButton.click()
+        await wait(3000)
 
-        await wait(5000)
+        await unlikeButton.click()
 
         await expect(await getLastAgentMessage()).not.toBeVisible({
           timeout: 8000,
         })
+
+        await wait(3000)
 
         await getFilterLikedButton({ liked: true }).click()
 
         await expect(await getLastAgentMessage()).toBeVisible({
           timeout: 8000,
         })
+
+        await wait(3000)
 
         await getFilterLikedButton({ liked: false }).click()
 
@@ -821,7 +826,7 @@ export const chat = async ({
         })
 
         await getFilterLikedButton({ liked: true }).click()
-        await wait(5000)
+        await wait(3000)
       }
       // // Verify delete button is visible
 

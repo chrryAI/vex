@@ -29,7 +29,7 @@ export default defineConfig({
   forbidOnly: false, //!!process.env.CI,
   // forbidOnly: false,
 
-  retries: process.env.CI ? 0 : 0,
+  retries: process.env.CI ? 1 : 0,
   /* Opt out of parallel tests on CI. */
   // workers: process.env.CI ? 1 : undefined,
   workers: 1,
@@ -38,7 +38,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     launchOptions: { slowMo: 200 },
-    headless: !!process.env.CI, // Run headless in CI, headed locally
+    headless: true, //!!process.env.CI, // Run headless in CI, headed locally
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: !process.env.CI ? "http://localhost:5173" : "http://e2e.chrry.ai",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
