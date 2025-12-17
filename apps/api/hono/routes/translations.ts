@@ -3,6 +3,32 @@ import { defaultLocale, locales, locale } from "@chrryai/chrry/locales"
 import { getCachedTranslations, setCachedTranslations } from "@repo/db"
 import { isDevelopment } from "@chrryai/chrry/utils"
 
+// Static imports for all translation files (works in production)
+import enTranslations from "@chrryai/chrry/locales/en.json"
+import deTranslations from "@chrryai/chrry/locales/de.json"
+import esTranslations from "@chrryai/chrry/locales/es.json"
+import frTranslations from "@chrryai/chrry/locales/fr.json"
+import jaTranslations from "@chrryai/chrry/locales/ja.json"
+import koTranslations from "@chrryai/chrry/locales/ko.json"
+import nlTranslations from "@chrryai/chrry/locales/nl.json"
+import ptTranslations from "@chrryai/chrry/locales/pt.json"
+import trTranslations from "@chrryai/chrry/locales/tr.json"
+import zhTranslations from "@chrryai/chrry/locales/zh.json"
+
+// Translation map for quick lookup
+const translationMap: Record<string, Record<string, any>> = {
+  en: enTranslations,
+  de: deTranslations,
+  es: esTranslations,
+  fr: frTranslations,
+  ja: jaTranslations,
+  ko: koTranslations,
+  nl: nlTranslations,
+  pt: ptTranslations,
+  tr: trTranslations,
+  zh: zhTranslations,
+}
+
 export const translations = new Hono()
 
 translations.get("/", async (c) => {
@@ -26,31 +52,12 @@ translations.get("/", async (c) => {
       return c.json(cached)
     }
 
-    // Cache miss or development mode - load from file system and auto-cache
-    let translations: Record<string, any> = {}
-    try {
-      const translationsModule = await import(
-        `@chrryai/chrry/locales/${validLocale}.json`
-      )
-      translations = translationsModule.default || translationsModule
+    // Get translations from static import map
+    const translations = translationMap[validLocale] || translationMap.en
 
-      // Store in Redis cache for future requests
+    // Store in Redis cache for future requests (production only)
+    if (!isDevelopment) {
       await setCachedTranslations(validLocale, translations)
-    } catch (error) {
-      // Sanitize locale for logging
-      const safeLocale = String(validLocale).replace(/[^\w-]/g, "_")
-      console.error("Failed to load locale: %s", safeLocale, error)
-
-      try {
-        const enModule = await import(`@chrryai/chrry/locales/en.json`)
-        translations = enModule.default || enModule
-
-        // Cache the fallback too
-        await setCachedTranslations(validLocale, translations)
-      } catch (fallbackError) {
-        console.error("Failed to load fallback locale (en)", fallbackError)
-        translations = {}
-      }
     }
 
     return c.json(translations)
