@@ -265,7 +265,7 @@ app.get("/sitemap.xml", async (req, res) => {
     const apiUrl =
       process.env.INTERNAL_API_URL ||
       process.env.API_URL ||
-      "http://localhost:3001/api"
+      "https://chrry.dev/api"
 
     const response = await fetch(`${apiUrl}/sitemap.xml`, {
       headers: {
@@ -294,7 +294,7 @@ app.get("/manifest.json", async (req, res) => {
     const apiUrl =
       process.env.INTERNAL_API_URL ||
       process.env.API_URL ||
-      "http://localhost:3001/api"
+      "https://chrry.dev/api"
 
     console.log(`🚀 ~ app.get ~ apiUrl:`, apiUrl)
 
