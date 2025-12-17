@@ -1,7 +1,6 @@
 import { Hono } from "hono"
 import { headersMiddleware } from "./middleware/headers"
 import { corsMiddleware } from "./middleware/cors"
-import { newRelicMiddleware } from "./middleware/newrelic"
 import { session } from "./routes/session"
 import { threads } from "./routes/threads"
 import { translations } from "./routes/translations"

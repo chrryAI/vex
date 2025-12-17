@@ -154,7 +154,15 @@ export const websocketHandler = {
     try {
       const data = JSON.parse(message.toString())
       const { type } = data
-      const { member, guest, deviceId, clientId } = ws.data as any
+      const {
+        member: memberData,
+        guest: guestData,
+        deviceId,
+        clientId,
+      } = ws.data as any
+
+      const member = await getUser({ id: memberData?.id, skipCache: true })
+      const guest = await getGuest({ id: guestData?.id, skipCache: true })
 
       // Handle ping/pong
       if (type === "ping") {
@@ -258,10 +266,23 @@ export const websocketHandler = {
               if (collaboration) {
                 await updateCollaboration({
                   ...collaboration,
+                  // Convert cached timestamps to Date objects
+                  createdOn: collaboration.createdOn
+                    ? new Date(collaboration.createdOn)
+                    : new Date(),
+                  activeOn: collaboration.activeOn
+                    ? new Date(collaboration.activeOn)
+                    : null,
+                  lastTypedOn: collaboration.lastTypedOn
+                    ? new Date(collaboration.lastTypedOn)
+                    : null,
+                  // Update with new values
                   isTyping,
                   lastTypedOn: isTyping
                     ? new Date()
-                    : collaboration.lastTypedOn,
+                    : collaboration.lastTypedOn
+                      ? new Date(collaboration.lastTypedOn)
+                      : null,
                 })
               }
             } catch (error) {
@@ -323,16 +344,30 @@ export const websocketHandler = {
         if (guest) {
           await updateGuest({
             ...guest,
+            // Convert string timestamps back to Date objects from cached ws.data
+            createdOn: guest.createdOn ? new Date(guest.createdOn) : new Date(),
             isOnline,
-            activeOn: isOnline ? new Date() : guest.activeOn,
+            activeOn: isOnline
+              ? new Date()
+              : guest.activeOn
+                ? new Date(guest.activeOn)
+                : null,
           })
         }
 
         if (member) {
           await updateUser({
             ...member,
+            // Convert string timestamps back to Date objects from cached ws.data
+            createdOn: member.createdOn
+              ? new Date(member.createdOn)
+              : new Date(),
             isOnline,
-            activeOn: isOnline ? new Date() : member.activeOn,
+            activeOn: isOnline
+              ? new Date()
+              : member.activeOn
+                ? new Date(member.activeOn)
+                : null,
           })
         }
 
@@ -350,8 +385,20 @@ export const websocketHandler = {
               if (collaboration) {
                 await updateCollaboration({
                   ...collaboration,
+                  // Convert cached timestamps to Date objects
+                  createdOn: collaboration.createdOn
+                    ? new Date(collaboration.createdOn)
+                    : new Date(),
+                  lastTypedOn: collaboration.lastTypedOn
+                    ? new Date(collaboration.lastTypedOn)
+                    : null,
+                  // Update with new values
                   isOnline,
-                  activeOn: isOnline ? new Date() : collaboration.activeOn,
+                  activeOn: isOnline
+                    ? new Date()
+                    : collaboration.activeOn
+                      ? new Date(collaboration.activeOn)
+                      : null,
                 })
               }
             } catch (error) {
