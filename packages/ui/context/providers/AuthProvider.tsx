@@ -1094,7 +1094,7 @@ export function AuthProvider({
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
   const apps = storeApps.filter((item) => {
-    return app?.store?.apps?.some((app) => {
+    return app?.store?.app?.store?.apps?.some((app) => {
       return app.id === item.id
     })
   })
