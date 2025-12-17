@@ -287,6 +287,37 @@ app.get("/sitemap.xml", async (req, res) => {
   }
 })
 
+// Manifest.json route - proxy to API
+app.get("/manifest.json", async (req, res) => {
+  try {
+    // Use internal API URL to avoid Cloudflare round-trip
+    const apiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.API_URL ||
+      "http://localhost:3001/api"
+
+    console.log(`🚀 ~ app.get ~ apiUrl:`, apiUrl)
+
+    const response = await fetch(`${apiUrl}/manifest`, {
+      headers: {
+        "X-Forwarded-Host": req.hostname,
+        "X-Forwarded-Proto": req.protocol,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`)
+    }
+
+    const json = await response.json()
+    res.header("Content-Type", "application/json")
+    res.json(json)
+  } catch (error) {
+    console.error("❌ Manifest error:", error)
+    res.status(500).send("Error generating manifest")
+  }
+})
+
 // Serve HTML
 app.use("*all", async (req, res) => {
   try {

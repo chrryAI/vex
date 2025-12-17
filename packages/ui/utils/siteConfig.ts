@@ -700,7 +700,7 @@ const search = {
   store: "https://search.chrry.ai",
   email: "iliyan@chrry.ai",
   description:
-    "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references from across the internet.",
+    "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references worldwide.",
   logo: "🔍",
   primaryColor: "#3B82F6", // Blue
   links: {

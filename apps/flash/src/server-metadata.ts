@@ -339,6 +339,8 @@ export function metadataToHtml(metadata: MetadataResult): string {
     })
   }
 
+  // PWA Manifest
+
   return tags.join("\n  ")
 }
 
