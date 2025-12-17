@@ -226,8 +226,6 @@ export default function Chat({
 
   const [isSelectingMood, setIsSelectingMood] = useState(false)
 
-  const isChrry = chrry?.id === app?.id
-
   const {
     aiAgents,
     selectedAgent,
@@ -3883,7 +3881,7 @@ export default function Chat({
                         }}
                       >
                         <Button
-                          disabled={isChrry || !!app?.onlyAgent}
+                          disabled={!!app?.onlyAgent}
                           data-testid={
                             !debateAgent
                               ? "add-debate-agent-button"
@@ -3906,7 +3904,7 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             ...styles.debateAgentButton.style,
-                            ...(isChrry || !!app?.onlyAgent
+                            ...(!!app?.onlyAgent
                               ? styles.debateAgentButtonDisabled
                               : {}),
                           }}
@@ -3926,8 +3924,7 @@ export default function Chat({
                           ) : selectedAgent.name === "sushi" ? (
                             <Img icon="sushi" size={22} />
                           ) : null}
-                          {isChrry ||
-                          app?.onlyAgent ||
+                          {app?.onlyAgent ||
                           selectedAgent?.name === "flux" ||
                           debateAgent ? null : (
                             <Plus
@@ -3956,7 +3953,7 @@ export default function Chat({
                             style={{
                               ...utilities.link.style,
                               ...styles.debateAgentButton.style,
-                              ...(isChrry || !!app?.onlyAgent
+                              ...(!!app?.onlyAgent
                                 ? styles.debateAgentButtonDisabled
                                 : {}),
                             }}
@@ -3984,7 +3981,7 @@ export default function Chat({
                           </Button>
                         ) : (
                           <Button
-                            disabled={isChrry || !!app?.onlyAgent}
+                            disabled={!!app?.onlyAgent}
                             data-agent-name={selectedAgent.name}
                             data-testid="agent-select-button"
                             onClick={() => {
@@ -4001,10 +3998,9 @@ export default function Chat({
                             style={{
                               ...utilities.link.style,
                               ...styles.agentButton.style,
-                              color:
-                                isChrry || app?.onlyAgent
-                                  ? "var(--shade-6)"
-                                  : undefined,
+                              color: app?.onlyAgent
+                                ? "var(--shade-6)"
+                                : undefined,
                             }}
                             type="submit"
                           >
@@ -4022,7 +4018,7 @@ export default function Chat({
                           </Button>
                         )}
                       </Span>
-                      {!appStatus?.part && !isChrry && !app?.onlyAgent && (
+                      {!appStatus?.part && !app?.onlyAgent && (
                         <Button
                           data-testid={
                             debateAgent
