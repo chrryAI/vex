@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { FRONTEND_URL } from "../utils"
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(
@@ -20,7 +21,7 @@ export function useOnlineStatus() {
     async function checkConnection() {
       try {
         // Check API health endpoint to detect server outages
-        const response = await fetch("/api/health", {
+        const response = await fetch(`${FRONTEND_URL}/api/health`, {
           method: "HEAD",
           cache: "no-store",
         })

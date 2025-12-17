@@ -14,10 +14,14 @@ export type SiteMode =
 
 // Function declaration is hoisted, so it's available before const declarations
 function getEnv() {
+  let result = undefined
   if (typeof import.meta !== "undefined") {
-    return (import.meta as any).env
+    result = (import.meta as any).env
   }
-  return process.env
+  if (typeof process !== "undefined") {
+    result = process.env
+  }
+  return result || {}
 }
 
 export const isE2E =
@@ -188,7 +192,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.61",
+  version: "26.10.62",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
