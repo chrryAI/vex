@@ -104,6 +104,7 @@ export default function ImageComponent(props: ImageProps) {
   const isAgent =
     app?.onlyAgent &&
     app?.defaultModel &&
+    app.slug !== "search" &&
     ["deepSeek", "chatGPT", "claude", "gemini", "flux", "perplexity"].includes(
       app?.defaultModel,
     )

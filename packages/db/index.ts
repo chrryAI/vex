@@ -1943,6 +1943,7 @@ export async function migrateUser({
         ...store.store,
         guestId: null,
         userId,
+        slug: user.username,
       })
     }),
   )

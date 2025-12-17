@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.7.17"
+const VERSION = "1.7.18"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -265,7 +265,7 @@ app.get("/sitemap.xml", async (req, res) => {
     const apiUrl =
       process.env.INTERNAL_API_URL ||
       process.env.API_URL ||
-      "http://localhost:3001/api"
+      "https://chrry.dev/api"
 
     const response = await fetch(`${apiUrl}/sitemap.xml`, {
       headers: {
@@ -284,6 +284,37 @@ app.get("/sitemap.xml", async (req, res) => {
   } catch (error) {
     console.error("❌ Sitemap error:", error)
     res.status(500).send("Error generating sitemap")
+  }
+})
+
+// Manifest.json route - proxy to API
+app.get("/manifest.json", async (req, res) => {
+  try {
+    // Use internal API URL to avoid Cloudflare round-trip
+    const apiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.API_URL ||
+      "https://chrry.dev/api"
+
+    console.log(`🚀 ~ app.get ~ apiUrl:`, apiUrl)
+
+    const response = await fetch(`${apiUrl}/manifest`, {
+      headers: {
+        "X-Forwarded-Host": req.hostname,
+        "X-Forwarded-Proto": req.protocol,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`)
+    }
+
+    const json = await response.json()
+    res.header("Content-Type", "application/json")
+    res.json(json)
+  } catch (error) {
+    console.error("❌ Manifest error:", error)
+    res.status(500).send("Error generating manifest")
   }
 })
 
