@@ -1,14 +1,27 @@
 import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
+import { clean } from "./shared/clean"
+import { getURL, VEX_LIVE_FINGERPRINT } from "."
 
 const isMember = false
-const isLiveTest = false
+const isLive = false
 
-test.skip("Chat", async ({ page }) => {
+test.beforeEach(async ({ page }) => {
+  await clean({ page, fingerprint: VEX_LIVE_FINGERPRINT })
+})
+
+test("Chat", async ({ page }) => {
   test.slow()
+
+  await page.goto(
+    getURL({ isLive, isMember, fingerprint: VEX_LIVE_FINGERPRINT }),
+    {
+      waitUntil: "networkidle",
+    },
+  )
+
   await chat({
-    isLiveTest,
-    isNewChat: true,
+    isNewChat: false,
     page,
     isMember,
     agentMessageTimeout: 120000,
@@ -17,6 +30,7 @@ test.skip("Chat", async ({ page }) => {
       {
         text: "What are the must-see attractions in Tokyo?",
         model: "sushi",
+        like: true,
       },
       {
         text: "Can you suggest a detailed itinerary for day 1?",
@@ -28,23 +42,21 @@ test.skip("Chat", async ({ page }) => {
         model: "chatGPT",
         like: true,
       },
-    ],
-  })
-
-  await chat({
-    isNewChat: true,
-    isLiveTest,
-    page,
-    creditsConsumed: 2 + 3 + 4,
-    messagesConsumed: 3,
-    agentMessageTimeout: 120000,
-    isMember,
-    instruction: "Generate creative images for my travel blog",
-    prompts: [
+      {
+        text: "Which model are stored in app are you using?",
+        model: "gemini",
+        like: true,
+      },
+      {
+        text: "How can I enable character profile?",
+        model: "perplexity",
+        like: true,
+      },
       {
         text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
         imageGenerationEnabled: true,
         like: true,
+        model: "sushi",
       },
     ],
   })

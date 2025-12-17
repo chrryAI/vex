@@ -26,8 +26,7 @@ export const SelectStyleDefs = {
   },
   icon: {
     position: "absolute",
-    right: 10,
-    transform: "translateY(-50%)",
+    right: 7.5,
   },
 } as const
 

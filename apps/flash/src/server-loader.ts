@@ -298,12 +298,10 @@ export async function loadServerData(
   // Check if this is a blog route
   if (pathname === "/blog" || pathname.startsWith("/blog/")) {
     isBlogRoute = true
-    console.log(`🚀 ~ isBlogRoute:`, isBlogRoute)
 
     if (pathname === "/blog") {
       // Blog list page
       blogPosts = getBlogPosts()
-      console.log(`🚀 ~ blogPosts:`, blogPosts)
     } else {
       // Individual blog post page
       const slug = pathname.replace("/blog/", "")

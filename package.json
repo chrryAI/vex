@@ -1,12 +1,12 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.7.6",
+  "version": "1.7.17",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "dev:all": "concurrently \"turbo dev --filter=wsserver\" \"turbo dev --filter=api\" \"turbo dev --filter=flash\"",
-    "start:all": "concurrently \"turbo start --filter=wsserver\" \"turbo start --filter=api\" \"turbo start --filter=flash\"",
+    "dev:all": "concurrently \"turbo dev --filter=api\" \"turbo dev --filter=flash\"",
+    "start:all": "concurrently \"turbo start --filter=api\" \"turbo start --filter=flash\"",
     "native": "cd apps/native && npm start",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -22,7 +22,6 @@
     "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { require('child_process').execSync('husky', { stdio: 'inherit' }) }\" || true",
     "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
     "check-types": "turbo run check-types",
-    "start:ws": "turbo run start --log-order=stream --filter=wsserver ",
     "start:flash": "turbo run start --log-order=stream --filter=flash",
     "start:api": "turbo run start --log-order=stream --filter=api",
     "c": "bash scripts/commit-with-ai.sh",

@@ -88,8 +88,8 @@ export function useNavigation(): NavigationParams {
       const queryString = newSearchParams.toString()
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
-      // Use client router for all navigation
-      clientRouter.push(newUrl)
+      // Use client router for all navigation (shallow to skip view transitions)
+      clientRouter.push(newUrl, { shallow: true })
     },
     [clientRouter, pathname, searchParams],
   )
@@ -98,12 +98,21 @@ export function useNavigation(): NavigationParams {
     (keys: string | string[]) => {
       const newSearchParams = new URLSearchParams(searchParams?.toString())
       const keysArray = Array.isArray(keys) ? keys : [keys]
+
+      // Check if any of the keys actually exist
+      const hasAnyKey = keysArray.some((key) => newSearchParams.has(key))
+
+      if (!hasAnyKey) {
+        // No params to remove, skip navigation
+        return
+      }
+
       keysArray.forEach((key) => newSearchParams.delete(key))
       const queryString = newSearchParams.toString()
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
-      // Use client router for all navigation
-      clientRouter.push(newUrl)
+      // Use client router for all navigation (shallow to skip view transitions)
+      clientRouter.push(newUrl, { shallow: true })
     },
     [clientRouter, pathname, searchParams],
   )
@@ -117,8 +126,8 @@ export function useNavigation(): NavigationParams {
       const queryString = newSearchParams.toString()
       const newUrl = queryString ? `${pathname}?${queryString}` : pathname
 
-      // Use client router for all navigation
-      clientRouter.push(newUrl)
+      // Use client router for all navigation (shallow to skip view transitions)
+      clientRouter.push(newUrl, { shallow: true })
     },
     [clientRouter, pathname],
   )
