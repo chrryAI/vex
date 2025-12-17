@@ -653,7 +653,7 @@ export default function Subscribe({
                 <Div className={clsx(styles.feature, "feature")}>
                   <A openInNewTab href={"https://chrry.dev"} className={"link"}>
                     <Img logo="chrry" width={16} height={16} />
-                    {t("Open Source")}
+                    {t("0 trackers")}. {t("Open Source")}
                   </A>
                 </Div>
               </MotiView>
