@@ -4176,6 +4176,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 )
               }
 
+              await updateThread({
+                ...thread,
+                aiResponse:
+                  finalText.slice(0, 150) +
+                  (finalText.length > 150 ? "..." : ""),
+              })
+
               // Run in background after response
               Promise.resolve()
                 .then(async () => generateContent(m))
