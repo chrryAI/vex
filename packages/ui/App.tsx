@@ -708,7 +708,7 @@ export default function App({
                 >
                   🤯
                 </Span>
-                Add Agent
+                {t("Add agent")}
                 <Img
                   showLoading={false}
                   alt="Plus"
