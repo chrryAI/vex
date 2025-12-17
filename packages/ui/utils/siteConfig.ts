@@ -11,6 +11,7 @@ export type SiteMode =
   | "newYork"
   | "popcorn"
   | "zarathustra"
+  | "search"
 
 // Function declaration is hoisted, so it's available before const declarations
 function getEnv() {
@@ -682,6 +683,85 @@ const zarathustra = {
       description: "Philosophical insights daily",
       icon: "✨",
       link: "/daily",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const search = {
+  favicon: "search",
+  mode: "search" as SiteMode,
+  slug: "search",
+  storeSlug: "perplexityStore",
+  name: "Search",
+  domain: "search.chrry.ai",
+  url: "https://search.chrry.ai",
+  isStoreApp: false,
+  store: "https://search.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references from across the internet.",
+  logo: "🔍",
+  primaryColor: "#3B82F6", // Blue
+  links: {
+    github: "https://github.com/chrryai/vex",
+    docs: "https://search.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Real-Time Search",
+      description: "Live web search with instant results",
+      icon: "⚡",
+      link: "/search",
+      isOpenSource: false,
+    },
+    {
+      title: "Source Citations",
+      description: "Verifiable sources for every answer",
+      icon: "📚",
+      link: "/sources",
+      isOpenSource: false,
+    },
+    {
+      title: "Multi-Source Aggregation",
+      description: "Combine information from multiple sources",
+      icon: "🌐",
+      link: "/aggregation",
+      isOpenSource: false,
+    },
+    {
+      title: "Fact-Checking",
+      description: "Cross-reference for accuracy",
+      icon: "✓",
+      link: "/fact-check",
+      isOpenSource: false,
+    },
+    {
+      title: "Follow-Up Questions",
+      description: "Suggested questions to explore deeper",
+      icon: "💡",
+      link: "/explore",
+      isOpenSource: false,
+    },
+    {
+      title: "Visual Results",
+      description: "Rich media including images and videos",
+      icon: "🖼️",
+      link: "/visual",
+      isOpenSource: false,
+    },
+    {
+      title: "Context Awareness",
+      description: "Understands search intent and context",
+      icon: "🧠",
+      link: "/context",
+      isOpenSource: false,
+    },
+    {
+      title: "Global Knowledge",
+      description: "Access information worldwide",
+      icon: "🌍",
+      link: "/global",
       isOpenSource: false,
     },
   ],
@@ -1416,6 +1496,58 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Yapay zeka felsefe rehberiniz. Akıllı sohbetler aracılığıyla Nietzsche, varoluşçuluk ve zamansız bilgeliği keşfedin.",
     },
   },
+  search: {
+    en: {
+      title: "Search - AI-Powered Web Search",
+      description:
+        "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references.",
+    },
+    de: {
+      title: "Search - KI-gestützte Websuche",
+      description:
+        "KI-gestützte Echtzeit-Websuche mit zitierten Quellen. Erhalten Sie sofortige, genaue Antworten mit überprüfbaren Referenzen.",
+    },
+    fr: {
+      title: "Search - Recherche Web IA",
+      description:
+        "Recherche web en temps réel alimentée par l'IA avec sources citées. Obtenez des réponses instantanées et précises avec des références vérifiables.",
+    },
+    ja: {
+      title: "Search - AI搭載ウェブ検索",
+      description:
+        "引用元付きのAI搭載リアルタイムウェブ検索。検証可能な参照で即座に正確な回答を取得。",
+    },
+    ko: {
+      title: "Search - AI 기반 웹 검색",
+      description:
+        "인용 출처가 포함된 AI 기반 실시간 웹 검색. 검증 가능한 참조로 즉각적이고 정확한 답변을 얻으세요.",
+    },
+    pt: {
+      title: "Search - Busca Web com IA",
+      description:
+        "Busca web em tempo real com IA e fontes citadas. Obtenha respostas instantâneas e precisas com referências verificáveis.",
+    },
+    es: {
+      title: "Search - Búsqueda Web con IA",
+      description:
+        "Búsqueda web en tiempo real con IA y fuentes citadas. Obtén respuestas instantáneas y precisas con referencias verificables.",
+    },
+    zh: {
+      title: "Search - AI驱动的网络搜索",
+      description:
+        "带引用来源的AI驱动实时网络搜索。获取即时、准确的答案和可验证的参考资料。",
+    },
+    nl: {
+      title: "Search - AI-aangedreven webzoekmachine",
+      description:
+        "AI-aangedreven realtime webzoekmachine met geciteerde bronnen. Krijg directe, nauwkeurige antwoorden met verifieerbare referenties.",
+    },
+    tr: {
+      title: "Search - Yapay Zeka Destekli Web Arama",
+      description:
+        "Alıntılanan kaynaklarla yapay zeka destekli gerçek zamanlı web arama. Doğrulanabilir referanslarla anında, doğru yanıtlar alın.",
+    },
+  },
 }
 
 const matchesDomain = (host: string, domain: string): boolean => {
@@ -1435,7 +1567,7 @@ export function detectSiteModeDomain(
   mode?: SiteMode,
 ): SiteMode {
   const defaultMode =
-    (getEnv().VITE_SITE_MODE as SiteMode) || mode || ("vex" as SiteMode)
+    (getEnv().VITE_SITE_MODE as SiteMode) || mode || ("search" as SiteMode)
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -1464,6 +1596,10 @@ export function detectSiteModeDomain(
 
   if (matchesDomain(host, "books.chrry.ai")) {
     return "zarathustra"
+  }
+
+  if (matchesDomain(host, "search.chrry.ai")) {
+    return "search"
   }
 
   if (matchesDomain(host, "atlas.chrry.ai")) {
@@ -1537,6 +1673,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "newYork",
     "popcorn",
     "zarathustra",
+    "search",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -1629,6 +1766,11 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return zarathustra
   }
 
+  // Search configuration
+  if (mode === "search") {
+    return search
+  }
+
   // Vex configuration
   return vex
 }
@@ -1644,6 +1786,7 @@ export const whiteLabels = [
   newYork,
   popcorn,
   zarathustra,
+  search,
   vex,
 ]
 
