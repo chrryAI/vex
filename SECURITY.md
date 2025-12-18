@@ -28,6 +28,33 @@ We'll respond within 48 hours and work with you to address the issue.
 - Keep your API keys and secrets in `.env.local`
 - Rotate keys if accidentally exposed
 
+### Secret Scanning (Pre-Commit Hook)
+
+We use **Gitleaks** to automatically scan for secrets before every commit.
+
+**For Contributors:**
+
+1. Install Gitleaks (if not already installed):
+
+   ```bash
+   brew install gitleaks
+   ```
+
+2. The pre-commit hook runs automatically when you commit
+
+3. If secrets are detected:
+   - Review the findings
+   - Remove the secret or add the file to `.gitignore`
+   - If it's a false positive, update `gitleaks.toml` allowlist
+
+**Emergency Bypass** (use only when absolutely necessary):
+
+```bash
+SKIP=gitleaks git commit -m "your message"
+```
+
+**Note**: All bypasses are logged. If you bypass the check, ensure the secret is properly handled before pushing.
+
 ### API Keys
 
 When using Vex:
