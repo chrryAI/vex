@@ -10,6 +10,23 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, fingerprint: VEX_LIVE_FINGERPRINT })
 })
 
+test("Subscribe As Guest", async ({ page }) => {
+  await page.goto(
+    getURL({
+      isLive,
+      isMember,
+      fingerprint: VEX_LIVE_FINGERPRINT,
+    }),
+    {
+      waitUntil: "networkidle",
+    },
+  )
+  await subscribe({
+    page,
+    isMember,
+  })
+})
+
 test("Chat", async ({ page }) => {
   test.slow()
 
@@ -57,6 +74,59 @@ test("Chat", async ({ page }) => {
         imageGenerationEnabled: true,
         like: true,
         model: "sushi",
+      },
+    ],
+  })
+})
+
+test("File upload", async ({ page }) => {
+  // test.slow()
+  await page.goto(
+    getURL({ isLive, isMember, fingerprint: VEX_LIVE_FINGERPRINT }),
+    {
+      waitUntil: "networkidle",
+    },
+  )
+
+  const result = await chat({
+    artifacts: {
+      paste: 2,
+      pdf: 1,
+    },
+    isNewChat: false,
+    page,
+    isMember,
+    instruction: "Lets upload some files",
+    prompts: [
+      {
+        text: "Hey Vex, Analyze this files",
+        model: "sushi",
+        mix: {
+          paste: 1,
+          pdf: 1,
+          image: 1,
+        },
+        like: true,
+      },
+      {
+        text: "Hey Vex, Analyze this pdf(s) and images",
+        model: "sushi",
+        mix: {
+          pdf: 1,
+          image: 2,
+        },
+        like: true,
+      },
+
+      {
+        text: "Hey Vex, Analyze this paste(s) and video",
+        model: "sushi",
+        mix: {
+          paste: 1,
+          pdf: 1,
+          video: 1,
+        },
+        like: true,
       },
     ],
   })
