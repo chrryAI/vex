@@ -4372,7 +4372,6 @@ export const getInstructions = async ({
     const uniqueAppIds = Array.from(
       new Set([null, ...storeApps.items.map((app) => app.id)]),
     )
-    console.log(`🚀 ~ uniqueAppIds:`, uniqueAppIds)
 
     const instructionsByApp = await Promise.all(
       uniqueAppIds.map(async (currentAppId) => {
