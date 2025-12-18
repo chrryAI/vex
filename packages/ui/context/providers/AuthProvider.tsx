@@ -1090,6 +1090,7 @@ export function AuthProvider({
         } else {
           setUserBaseApp(u)
         }
+        setApp(u)
         setUpdatedApp(undefined)
         router.push(getAppSlug(u) || "")
 
@@ -1104,6 +1105,7 @@ export function AuthProvider({
           setUserBaseApp(n)
         }
         toast.success(t("🥳 WOW!, you created something amazing"))
+        setApp(n)
         router.push(getAppSlug(n) || "")
 
         // setTimeout(() => {
