@@ -1,20 +1,21 @@
 import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
-import { getURL, VEX_LIVE_FINGERPRINT } from "."
+import { getURL } from "."
 import { subscribe } from "./shared/subscribe"
 
 const isMember = false
 
+const isLive = true
 test.beforeEach(async ({ page }) => {
-  await clean({ page, fingerprint: VEX_LIVE_FINGERPRINT })
+  await clean({ page, isLive })
 })
 
-test.skip("Subscribe As Guest", async ({ page }) => {
+test.only("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
-      fingerprint: VEX_LIVE_FINGERPRINT,
+      isLive,
     }),
     {
       waitUntil: "networkidle",
@@ -29,7 +30,7 @@ test.skip("Subscribe As Guest", async ({ page }) => {
 test.only("Chat", async ({ page }) => {
   test.slow()
 
-  await page.goto(getURL({ isMember, fingerprint: VEX_LIVE_FINGERPRINT }), {
+  await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
   })
 
@@ -75,9 +76,9 @@ test.only("Chat", async ({ page }) => {
   })
 })
 
-test.skip("File upload", async ({ page }) => {
+test.only("File upload", async ({ page }) => {
   // test.slow()
-  await page.goto(getURL({ isMember, fingerprint: VEX_LIVE_FINGERPRINT }), {
+  await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
   })
 
