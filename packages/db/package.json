@@ -19,6 +19,7 @@
     "studio": "pnpm exec drizzle-kit studio",
     "seed": "pnpm exec tsx seed.ts",
     "s": "pnpm exec tsx seed.ts",
+    "check-types": "tsc --noEmit",
     "clear": "CLEAR=true pnpm exec tsx seed.ts",
     "migrate:focusbutton": "pnpm exec tsx migrations/migrate-focusbutton-users.ts"
   },
