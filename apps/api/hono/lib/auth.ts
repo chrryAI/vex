@@ -217,6 +217,7 @@ export async function getApp({
   const siteApp = await getAppDb({
     slug: siteConfig.slug,
     storeSlug: siteConfig.storeSlug,
+    skipCache,
   })
 
   // Get chrry store
@@ -225,6 +226,7 @@ export async function getApp({
     userId: member?.id,
     guestId: guest?.id,
     depth: 1,
+    skipCache,
   })
 
   // Parse app/store slugs from pathname
@@ -253,12 +255,14 @@ export async function getApp({
           storeSlug: guest.id,
           guestId: guest.id,
           depth: 1,
+          skipCache,
         })
       : member
         ? await getAppDb({
             storeSlug: member.userName,
             userId: member.id,
             depth: 1,
+            skipCache,
           })
         : undefined
     : appId
@@ -267,6 +271,7 @@ export async function getApp({
           userId: member?.id,
           guestId: guest?.id,
           depth: 1,
+          skipCache,
         })
       : storeFromRequest?.store?.appId
         ? await getAppDb({
@@ -274,6 +279,7 @@ export async function getApp({
             userId: member?.id,
             guestId: guest?.id,
             depth: 1,
+            skipCache,
           })
         : await getAppDb({
             slug: appSlugGenerated,
@@ -281,6 +287,7 @@ export async function getApp({
             userId: member?.id,
             guestId: guest?.id,
             depth: 1,
+            skipCache,
           })
 
   if (!appInternal && accountApp) {
@@ -305,6 +312,7 @@ export async function getApp({
       userId: member?.id,
       guestId: guest?.id,
       depth: 1,
+      skipCache,
     }))
 
   if (!app) {
@@ -330,12 +338,14 @@ export async function getApp({
               userId: member?.id,
               guestId: guest?.id,
               depth: 1,
+              skipCache,
             })) || null
         } else if (storeApp?.store?.appId) {
           const baseAppData = await getAppDb({
             id: storeApp.store.appId,
             userId: member?.id,
             guestId: guest?.id,
+            skipCache,
             depth: 0,
           })
           storeBaseApp = baseAppData ?? null
