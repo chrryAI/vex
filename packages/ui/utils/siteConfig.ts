@@ -1710,12 +1710,12 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   }
   const mode = detectSiteMode(hostname)
 
-  if (mode === "search") {
-    return search
-  }
-
   if (isE2E) {
     return e2eVex
+  }
+
+  if (mode === "search") {
+    return search
   }
 
   // Check for E2E environment first

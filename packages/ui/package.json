@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.7.18",
+  "version": "1.7.25",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -31,6 +31,7 @@
   },
   "files": [
     "dist",
+    "locales",
     "**/*.css",
     "**/*.scss",
     "README.md"

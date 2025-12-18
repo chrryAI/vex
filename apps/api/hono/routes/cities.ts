@@ -20,6 +20,7 @@ cities.get("/", async (c) => {
   }
 
   const search = c.req.query("search") || undefined
+  const countryCode = c.req.query("country") || undefined
 
   // Convert stored country name to country code for compatibility
   const memberCountryCode = member?.country
@@ -29,17 +30,19 @@ cities.get("/", async (c) => {
     ? getCountryCode(guest.country)
     : undefined
 
-  const country = (() => {
-    if (memberCountryCode) {
-      return memberCountryCode
-    }
+  const country =
+    countryCode ||
+    (() => {
+      if (memberCountryCode) {
+        return memberCountryCode
+      }
 
-    if (guestCountryCode) {
-      return guestCountryCode
-    }
+      if (guestCountryCode) {
+        return guestCountryCode
+      }
 
-    return "US" // Default fallback
-  })()
+      return "" // Default fallback
+    })()
 
   const cityName = member?.city || guest?.city || undefined
 

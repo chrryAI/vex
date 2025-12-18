@@ -168,9 +168,11 @@ export const subscribe = async ({
       timeout: 25000,
     })
 
+    await wait(3000)
+
     await first.click()
 
-    await wait(5000)
+    await wait(3000)
 
     const getLastMessage = async () => {
       // Wait for either user or guest messages to appear

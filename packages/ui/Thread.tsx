@@ -30,6 +30,7 @@ import DeleteThread from "./DeleteThread"
 import Instructions from "./Instructions"
 import EditThread from "./EditThread"
 import Share from "./Share"
+import { useUserScroll } from "./hooks/useUserScroll"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
@@ -229,6 +230,9 @@ const Thread = ({
   const [collaborationVersion, setCollaborationVersion] = useState(0)
   const { utilities } = useStyles()
 
+  const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
+    useUserScroll()
+
   // Memoize the streaming update handler to prevent infinite loops
   const handleStreamingUpdate = useCallback(
     ({
@@ -244,7 +248,7 @@ const Thread = ({
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
     }) => {
-      if (!isLoadingMore && shouldAutoScroll(content)) {
+      if (!isLoadingMore && !isUserScrolling && !hasStoppedScrolling) {
         scrollToBottom()
       }
 
@@ -319,7 +323,15 @@ const Thread = ({
         ]
       })
     },
-    [isLoadingMore, scrollToBottom, setMessages, shouldAutoScroll],
+    [
+      isLoadingMore,
+      scrollToBottom,
+      setMessages,
+      shouldAutoScroll,
+      resetScrollState,
+      isUserScrolling,
+      hasStoppedScrolling,
+    ],
   )
 
   const render = () => {
@@ -690,6 +702,7 @@ const Thread = ({
                       if (msg.isUser && msg.message) {
                         console.log("✅ Adding user message to state")
                         scrollToBottom(500, true)
+                        resetScrollState()
                         shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
 
                         if (

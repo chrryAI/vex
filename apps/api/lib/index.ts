@@ -1,3 +1,4 @@
+import { isE2E } from "@chrryai/chrry/utils/siteConfig"
 import {
   user,
   threadSummary,
@@ -55,6 +56,9 @@ export const getHourlyLimit = ({
   member?: user & { subscription?: subscription | null }
   guest?: (guest & { subscription?: subscription | null }) | null
 }) => {
+  if (isE2E) {
+    return 5000
+  }
   if (app && isOwner(app, { userId: app?.userId, guestId: app?.guestId }))
     return 5000
   if (member?.role === "admin") return 500

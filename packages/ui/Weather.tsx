@@ -116,18 +116,25 @@ export default function Weather({
 
   const [isLoading, setIsLoading] = useState(false)
 
-  async function callApi(value: string) {
+  const userOrGuestCountry = (user || guest)?.country || ""
+
+  const userOrGuestCity = (user || guest)?.city || ""
+
+  async function callApi(value: string = userOrGuestCity) {
     if (!token) {
       console.warn("Token not ready yet")
       return []
     }
     setIsLoading(true)
-    const data = await apiFetch(`${API_URL}/cities?search=${value}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+    const data = await apiFetch(
+      `${API_URL}/cities?search=${value}&country=${getCountryCode(userOrGuestCountry)}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       },
-    })
+    )
       .then((response) => response.json())
       .then((response) => {
         return response.map((data: city) => ({
