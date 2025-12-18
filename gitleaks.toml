@@ -24,6 +24,8 @@ regexes = [
 
 # Paths to ignore completely
 paths = [
+  '''\.env$''',
+  '''\.env\..*$''',
   '''node_modules/''',
   '''dist/''',
   '''build/''',
