@@ -533,8 +533,8 @@ INSTRUCTION RULES:
 
 DYNAMIC PLACEHOLDER SYSTEM:
 - You can use {{placeholder}} syntax in BOTH title and content fields
-- These placeholders will be replaced with real-time user context at runtime
-- ⚠️ ONLY USE THESE EXACT PLACEHOLDERS (no others are supported):
+- These placeholders are AUTOMATICALLY FILLED by the frontend with real-time user context
+- ⚠️ CRITICAL: ONLY USE THESE EXACT PLACEHOLDERS - NO CUSTOM PLACEHOLDERS ARE SUPPORTED:
   * {{city}} - User's current city (e.g., "Tokyo")
   * {{country}} - User's current country (e.g., "Japan")
   * {{flag}} - Country flag emoji (e.g., "🇯🇵")
@@ -543,15 +543,21 @@ DYNAMIC PLACEHOLDER SYSTEM:
   * {{weather}} - Weather description (e.g., "Current weather: 15°C ☀️")
   * {{weatherEmoji}} - Weather emoji (e.g., "☀️", "🌧️", "☁️", "❄️")
   * {{timeOfDay}} - Time period (e.g., "morning", "afternoon", "evening", "night")
-- ❌ DO NOT create custom placeholders like {{emoji}}, {{topic}}, {{name}}, etc.
+- ❌ NEVER CREATE CUSTOM PLACEHOLDERS like {{topic}}, {{movie}}, {{duration}}, {{name}}, {{project}}, etc.
+- ❌ If you need specific content, write it directly - DO NOT use placeholders for it
 - ✅ For emojis: Put actual emoji characters directly in the text, NOT placeholders
-- Examples:
+- ✅ For specific topics: Write them directly (e.g., "Analyze React hooks" NOT "Analyze {{topic}}")
+- Examples of CORRECT usage:
   * Title: "Find best restaurants in {{city}} {{flag}}"
   * Content: "You are a food expert in {{location}}. Weather: {{temp}} {{weatherEmoji}}"
   * Title: "Plan {{timeOfDay}} activities {{weatherEmoji}}"
   * Content: "Suggest activities for {{timeOfDay}} in {{city}}. Consider {{weather}}"
-- Use placeholders to make instructions feel dynamic and context-aware
-- Placeholders work especially well for location-based and time-sensitive instructions
+- Examples of INCORRECT usage:
+  * ❌ "Analyze film {{movie}} scenes" - Write specific movie or make it general
+  * ❌ "Start {{duration}} focus session" - Write specific duration or make it general
+  * ❌ "Research {{topic}} with citations" - Write specific topic or make it general
+- Use placeholders ONLY for location, weather, and time context
+- For everything else, be specific based on the conversation or keep it general
 
 CRITICAL PLACEHOLDER RULES:
 - NEVER hardcode time-specific values like "morning", "afternoon", "evening" - use {{timeOfDay}} instead
