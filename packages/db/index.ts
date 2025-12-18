@@ -1913,14 +1913,16 @@ export async function migrateUser({
   )
 
   // Migrate guest-created apps
-  const guestApps = await getApps({ guestId: guest.id, pageSize: limit })
+  const guestApps = await getApps({ ownerId: guest.id, pageSize: limit })
   await Promise.all(
     guestApps.items.map(async (app) => {
-      await updateApp({
-        ...(app as app),
-        guestId: null,
-        userId,
-      })
+      if (isOwner(app, { guestId: guest.id })) {
+        await updateApp({
+          ...(app as app),
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
@@ -1936,16 +1938,18 @@ export async function migrateUser({
     }),
   )
 
-  // Migrate guest stores
-  const guestStores = await getStores({ guestId: guest.id })
+  // // Migrate guest stores
+  const guestStores = await getStores({ ownerId: guest.id })
   await Promise.all(
     guestStores.stores.map(async (store) => {
-      await updateStore({
-        ...store.store,
-        guestId: null,
-        userId,
-        slug: user.userName,
-      })
+      if (isOwner(store.store, { guestId: guest.id })) {
+        await updateStore({
+          ...store.store,
+          guestId: null,
+          userId,
+          slug: user.userName,
+        })
+      }
     }),
   )
 
@@ -4985,6 +4989,7 @@ export function toSafeGuest({ guest }: { guest: guest }) {
 
 export const getApps = async (
   {
+    ownerId,
     userId,
     guestId,
     isSafe = true,
@@ -4998,6 +5003,7 @@ export const getApps = async (
     page?: number
     storeId?: string
     pageSize?: number
+    ownerId?: string
   } = {
     isSafe: true,
   },
@@ -5026,6 +5032,9 @@ export const getApps = async (
   }
 
   const conditions = and(
+    ownerId
+      ? or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId))
+      : undefined,
     // Filter by storeId if provided - include apps that belong to this store OR are explicitly installed
     storeId
       ? or(

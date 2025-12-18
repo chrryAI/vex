@@ -26,7 +26,6 @@ export const VEX_LIVE_FINGERPRINT = process.env.VEX_LIVE_FINGERPRINT!
 dotenv.config()
 
 export const TEST_URL = process.env.PLAYWRIGHT_BASE_URL || process.env.TEST_URL!
-export const LIVE_URL = "https://chrry.ai"
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 export const isCI = process.env.VITE_CI || process.env.CI
@@ -38,7 +37,7 @@ const getURL = (
     path = "",
     fingerprint = "",
   }: {
-    isLive: boolean
+    isLive?: boolean
     isMember?: boolean
     path?: string
     fingerprint?: string
@@ -49,10 +48,10 @@ const getURL = (
     fingerprint: "",
   },
 ) => {
-  const base = isLive ? LIVE_URL : TEST_URL
+  const base = TEST_URL
   const url = isMember
-    ? `${base}${path}?fp=${fingerprint || TEST_MEMBER_FINGERPRINTS[0]}`
-    : `${base}${path}?fp=${fingerprint || TEST_GUEST_FINGERPRINTS[0]}`
+    ? `${base}${path}?fp=${isLive ? VEX_LIVE_FINGERPRINT : fingerprint || TEST_MEMBER_FINGERPRINTS[0]}`
+    : `${base}${path}?fp=${isLive ? VEX_LIVE_FINGERPRINT : fingerprint || TEST_GUEST_FINGERPRINTS[0]}`
 
   return url
 }
