@@ -1039,3 +1039,55 @@ app.patch("/:id", async (c) => {
     return c.json({ error: "Failed to update app" }, { status: 500 })
   }
 })
+
+app.delete("/:id", async (c) => {
+  const id = c.req.param("id")
+  try {
+    const member = await getMember(c)
+    const guest = await getGuest(c)
+
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const app = await getAppDb({ id, userId: member?.id, guestId: guest?.id })
+
+    if (!app) {
+      return c.json({ error: "App not found" }, { status: 404 })
+    }
+
+    if (!isOwner(app, { userId: member?.id, guestId: guest?.id })) {
+      return c.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    if (app.store?.slug !== guest?.id && app.store?.slug !== member?.userName) {
+      return c.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    // Verify ownership
+
+    // Delete associated images
+    if (app.images && app.images.length > 0) {
+      for (const img of app.images) {
+        try {
+          await deleteFile(img.id)
+        } catch (deleteError) {
+          console.error("Failed to delete image:", deleteError)
+        }
+      }
+    }
+
+    // Delete the app
+    const deleted = await deleteApp({ id: app.id })
+
+    if (!deleted) {
+      return c.json({ error: "Failed to delete app" }, { status: 500 })
+    }
+
+    return c.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting app:", error)
+    captureException(error)
+    return c.json({ error: "Failed to delete app" }, { status: 500 })
+  }
+})
