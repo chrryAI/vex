@@ -95,6 +95,7 @@ export const chat = async ({
   creditsConsumed?: number
   bookmark?: boolean
 }) => {
+  log({ page })
   let credits = isSubscriber ? 2000 : isMember ? 150 : 30
 
   if (creditsConsumed) {
