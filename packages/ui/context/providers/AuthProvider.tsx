@@ -73,6 +73,11 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      isManagingApp: boolean
+      setIsManagingApp: (value: boolean) => void
+      isRemovingApp: boolean
+      setIsRemovingApp: (value: boolean) => void
+      accountApp: appWithStore | undefined
       loadingAppId: string | undefined
       setLoadingAppId: (value: string | undefined) => void
       hasStoreApps: (item: appWithStore | undefined) => boolean
@@ -80,6 +85,7 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      setBaseAccountApp: (value: appWithStore | undefined) => void
       setThreadId: (value: string | undefined) => void
       threadIdRef: React.RefObject<string | undefined>
       setHasNotification: (value: boolean) => void
@@ -506,6 +512,8 @@ export function AuthProvider({
     "login" | "register" | "credentials" | undefined
   >(undefined)
 
+  const [isRemovingApp, setIsRemovingApp] = useState(false)
+
   const setSignInPart = (
     part: "login" | "register" | "credentials" | undefined,
   ) => {
@@ -529,7 +537,8 @@ export function AuthProvider({
     (isExtension ? isStorageReady && isCookieReady : true) &&
       (fingerprint || token) &&
       deviceId &&
-      shouldFetchSession
+      shouldFetchSession &&
+      !isRemovingApp
       ? "session"
       : null,
     async () => {
@@ -746,6 +755,18 @@ export function AuthProvider({
   const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
     session?.guestBaseApp,
   )
+
+  const accountApp = userBaseApp || guestBaseApp
+  console.log(`🚀 ~ guestBaseApp:`, guestBaseApp)
+
+  const setBaseAccountApp = (app: appWithStore | undefined) => {
+    console.log(`🚀 ~ setBaseAccountApp ~ app:`, app)
+    if (app) {
+      debugger
+    }
+    user && setUserBaseApp(app)
+    guest && setGuestBaseApp(app)
+  }
 
   // useEffect(() => {
   //   session?.userBaseApp && setUserBaseApp(session?.userBaseApp)
@@ -1018,11 +1039,13 @@ export function AuthProvider({
 
   const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
 
+  const [isManagingApp, setIsManagingApp] = useState(false)
+
   const {
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && ["app", appId], async () => {
+  } = useSWR(token && !isRemovingApp && ["app", appId], async () => {
     try {
       if (!token) return
       const app = await getApp({
@@ -1030,7 +1053,11 @@ export function AuthProvider({
         appId,
         chrryUrl,
         pathname,
-        skipCache: !!accountAppId || appId === accountAppId || !!newApp?.id,
+        skipCache:
+          !!accountAppId ||
+          appId === accountAppId ||
+          !!newApp?.id ||
+          isManagingApp,
       })
       return app
     } catch (error) {
@@ -1043,19 +1070,6 @@ export function AuthProvider({
       refetchApps()
     }
   }, [newApp?.id, updatedApp?.id])
-
-  useEffect(() => {
-    const isAccountApp =
-      app?.store?.slug === guest?.id || app?.store?.slug === user?.userName
-
-    if (isAccountApp) {
-      if (user && userBaseApp?.id !== app?.id) {
-        setUserBaseApp(app)
-      } else if (guest && guestBaseApp?.id !== app?.id) {
-        setGuestBaseApp(app)
-      }
-    }
-  }, [userBaseApp, guestBaseApp, user, guest, app])
 
   useEffect(() => {
     if (storeAppsSwr) {
@@ -1669,6 +1683,7 @@ export function AuthProvider({
         getAppSlug,
         language,
         setLanguage,
+        accountApp,
         memoriesEnabled,
         setMemoriesEnabled,
         gift,
@@ -1727,11 +1742,15 @@ export function AuthProvider({
         updateMood,
         setThreadId,
         lastAppId,
+        isRemovingApp,
         storeApps, // All apps from all stores
         refetchSession: async () => {
           await fetchSession()
         },
+        setIsManagingApp,
+        isManagingApp,
         setNewApp,
+        setIsRemovingApp,
         fetchSession,
         env,
         setEnv,
@@ -1740,6 +1759,7 @@ export function AuthProvider({
         FRONTEND_URL,
         PROD_FRONTEND_URL,
         findAppByPathname,
+        setBaseAccountApp,
         setApp,
         aiAgents,
         timeAgo: (date: string | Date, locale = language || "en-US") =>

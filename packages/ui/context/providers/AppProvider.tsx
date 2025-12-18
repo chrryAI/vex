@@ -177,6 +177,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoadingApp,
     setNewApp,
     setUpdatedApp,
+    setBaseAccountApp,
+    setIsManagingApp,
+    isRemovingApp,
+    setIsRemovingApp,
   } = useAuth()
   const { actions } = useData()
 
@@ -251,11 +255,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const isManagingApp = !!appStatus?.part || isSavingApp
 
+  useEffect(() => {
+    setIsManagingApp(isManagingApp)
+  }, [isManagingApp])
+
   const setApp = (app: appWithStore | undefined) => {
     setAppInternal(app)
   }
 
-  const [isRemovingApp, setIsRemovingApp] = useState(false)
   const { captureException } = useError()
 
   const { clear } = useCache()
@@ -314,12 +321,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
           toast.error(response.error)
           return false
         }
+        // setApp(undefined)
 
-        setApp(undefined)
         await fetchSession()
+        setBaseAccountApp(undefined)
+
+        // setApps(storeApps.filter((app) => app.id !== app?.id))
+
         clearFormDraft()
+        setAppStatus(undefined)
+
         toast.success(`${t("Deleted")} 😭`)
-        push("/")
+        // push("/")
         return true
       } catch (error) {
         toast.error(t("Something went wrong"))
@@ -327,6 +340,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return false
       } finally {
         setIsRemovingApp(false)
+        setIsSavingApp(false)
       }
     }
 
