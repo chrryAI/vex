@@ -1014,6 +1014,8 @@ export function AuthProvider({
   const sushi = storeApps?.find((app) => app.slug === "sushi")
   const focus = storeApps?.find((app) => app.slug === "focus")
 
+  const accountAppId = userBaseApp?.id || guestBaseApp?.id
+
   const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
 
   const {
@@ -1028,7 +1030,7 @@ export function AuthProvider({
         appId,
         chrryUrl,
         pathname,
-        skipCache: !!(updatedApp?.id || newApp?.id),
+        skipCache: !!accountAppId || appId === accountAppId,
       })
       return app
     } catch (error) {
@@ -1041,6 +1043,19 @@ export function AuthProvider({
       refetchApps()
     }
   }, [newApp?.id, updatedApp?.id])
+
+  useEffect(() => {
+    const isAccountApp =
+      app?.store?.slug === guest?.id || app?.store?.slug === user?.userName
+
+    if (isAccountApp) {
+      if (user && userBaseApp?.id !== app?.id) {
+        setUserBaseApp(app)
+      } else if (guest && guestBaseApp?.id !== app?.id) {
+        setGuestBaseApp(app)
+      }
+    }
+  }, [userBaseApp, guestBaseApp, user, guest, app])
 
   useEffect(() => {
     if (storeAppsSwr) {
