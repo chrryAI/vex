@@ -741,7 +741,6 @@ export function AuthProvider({
   const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
     session?.userBaseApp,
   )
-  console.log(`🚀 ~ userBaseApp:`, userBaseApp)
 
   const userBaseStore = userBaseApp?.store
   const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(

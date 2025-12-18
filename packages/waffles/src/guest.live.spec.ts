@@ -2,18 +2,17 @@ import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
 import { getURL, VEX_LIVE_FINGERPRINT } from "."
+import { subscribe } from "./shared/subscribe"
 
 const isMember = false
-const isLive = false
 
 test.beforeEach(async ({ page }) => {
-  await clean({ page, fingerprint: VEX_LIVE_FINGERPRINT })
+  await clean({ page })
 })
 
-test("Subscribe As Guest", async ({ page }) => {
+test.only("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
-      isLive,
       isMember,
       fingerprint: VEX_LIVE_FINGERPRINT,
     }),
@@ -30,12 +29,9 @@ test("Subscribe As Guest", async ({ page }) => {
 test("Chat", async ({ page }) => {
   test.slow()
 
-  await page.goto(
-    getURL({ isLive, isMember, fingerprint: VEX_LIVE_FINGERPRINT }),
-    {
-      waitUntil: "networkidle",
-    },
-  )
+  await page.goto(getURL({ isMember, fingerprint: VEX_LIVE_FINGERPRINT }), {
+    waitUntil: "networkidle",
+  })
 
   await chat({
     isNewChat: false,
@@ -81,12 +77,9 @@ test("Chat", async ({ page }) => {
 
 test("File upload", async ({ page }) => {
   // test.slow()
-  await page.goto(
-    getURL({ isLive, isMember, fingerprint: VEX_LIVE_FINGERPRINT }),
-    {
-      waitUntil: "networkidle",
-    },
-  )
+  await page.goto(getURL({ isMember, fingerprint: VEX_LIVE_FINGERPRINT }), {
+    waitUntil: "networkidle",
+  })
 
   const result = await chat({
     artifacts: {
