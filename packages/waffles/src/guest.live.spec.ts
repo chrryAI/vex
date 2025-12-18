@@ -26,7 +26,7 @@ test.skip("Subscribe As Guest", async ({ page }) => {
   })
 })
 
-test("Chat", async ({ page }) => {
+test.only("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, fingerprint: VEX_LIVE_FINGERPRINT }), {
@@ -62,7 +62,7 @@ test("Chat", async ({ page }) => {
       },
       {
         text: "How can I enable character profile?",
-        model: "perplexity",
+        model: "sushi",
         like: true,
       },
       {
