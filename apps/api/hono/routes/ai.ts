@@ -576,6 +576,7 @@ app.post("/", async (c) => {
     thread,
     clientId,
     streamId,
+    waitFor = 10,
   }: {
     chunk: string
     chunkNumber: number
@@ -628,7 +629,7 @@ app.post("/", async (c) => {
       })
 
     // Add delay between chunks for proper delivery order
-    await wait(10)
+    await wait(waitFor)
   }
 
   console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
@@ -4519,6 +4520,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         // Use fullStream to get reasoning parts immediately
         for await (const part of result.fullStream) {
+          // await wait(175)
           if (!streamControllers.has(streamId)) {
             console.log("Gemini stream was stopped")
             break
@@ -4536,6 +4538,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               thread,
               clientId,
               streamId,
+              waitFor: 100,
             })
           } else if (part.type === "reasoning-delta") {
             // Capture reasoning text
@@ -4552,6 +4555,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               thread,
               clientId,
               streamId,
+              waitFor: 100,
             })
           }
         }
