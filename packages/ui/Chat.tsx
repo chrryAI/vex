@@ -4419,6 +4419,7 @@ export default function Chat({
                         data-hourly-left={hourlyUsageLeft}
                         style={styles.hourlyLimit.style}
                       >
+                        {isE2E && hourlyUsageLeft}
                         {!user?.subscription || !guest?.subscription ? (
                           <Button
                             onClick={() => {
