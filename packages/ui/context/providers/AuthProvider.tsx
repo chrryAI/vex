@@ -181,6 +181,7 @@ const AuthContext = createContext<
       setApp: (app: appWithStore | undefined) => void
       apps: appWithStore[]
       storeApps: appWithStore[] // All apps from all stores
+      storeAppsSwr?: appWithStore
       setSlug: (slug: string | undefined) => void
       setApps: (apps: appWithStore[]) => void
       getAppSlug: (app: appWithStore, defaultSlug?: string) => string
@@ -757,21 +758,11 @@ export function AuthProvider({
   )
 
   const accountApp = userBaseApp || guestBaseApp
-  console.log(`🚀 ~ guestBaseApp:`, guestBaseApp)
 
   const setBaseAccountApp = (app: appWithStore | undefined) => {
-    console.log(`🚀 ~ setBaseAccountApp ~ app:`, app)
-    if (app) {
-      debugger
-    }
     user && setUserBaseApp(app)
     guest && setGuestBaseApp(app)
   }
-
-  // useEffect(() => {
-  //   session?.userBaseApp && setUserBaseApp(session?.userBaseApp)
-  //   session?.guestBaseApp && setGuestBaseApp(session?.guestBaseApp)
-  // }, [session, guestBaseApp, userBaseApp])
 
   const guestBaseStore = guestBaseApp?.store
 
@@ -1078,44 +1069,44 @@ export function AuthProvider({
 
       mergeApps(storeAppsSwr.store?.apps || [])
 
-      const u = storeAppsSwr.store?.apps?.find(
-        (app) => app.id === updatedApp?.id,
-      )
+      // const u = storeAppsSwr.store?.apps?.find(
+      //   (app) => app.id === updatedApp?.id,
+      // )
 
-      if (u) {
-        // debugger
+      // if (u) {
+      //   // debugger
 
-        if (guest) {
-          setGuestBaseApp(u)
-        } else {
-          setUserBaseApp(u)
-        }
-        setApp(u)
-        setUpdatedApp(undefined)
-        router.push(getAppSlug(u) || "")
+      //   if (guest) {
+      //     setGuestBaseApp(u)
+      //   } else {
+      //     setUserBaseApp(u)
+      //   }
+      //   // setApp(u)
+      //   // setUpdatedApp(undefined)
+      //   // router.push(getAppSlug(u) || "")
 
-        toast.success(t("Updated") + " 🚀")
-      }
+      //   toast.success(t("Updated") + " 🚀")
+      // }
 
-      const n = storeAppsSwr.store?.apps?.find((app) => app.id === newApp?.id)
-      if (n) {
-        if (guest) {
-          setGuestBaseApp(n)
-        } else {
-          setUserBaseApp(n)
-        }
-        toast.success(t("🥳 WOW!, you created something amazing"))
-        setApp(n)
-        router.push(getAppSlug(n) || "")
+      // const n = storeAppsSwr.store?.apps?.find((app) => app.id === newApp?.id)
+      // if (n) {
+      //   if (guest) {
+      //     setGuestBaseApp(n)
+      //   } else {
+      //     setUserBaseApp(n)
+      //   }
+      //   toast.success(t("🥳 WOW!, you created something amazing"))
+      //   // setApp(n)
+      //   // router.push(getAppSlug(n) || "")
 
-        // setTimeout(() => {
-        //   window.location.reload()
-        // }, 500)
+      //   // setTimeout(() => {
+      //   //   window.location.reload()
+      //   // }, 500)
 
-        // setShouldFetchApps(false)
-        setNewApp(undefined)
-        setIsSavingApp(false)
-      }
+      //   // setShouldFetchApps(false)
+      //   // setNewApp(undefined)
+      //   setIsSavingApp(false)
+      // }
     }
   }, [storeAppsSwr, guest, user, newApp, updatedApp, loadingAppId])
 
@@ -1665,6 +1656,7 @@ export function AuthProvider({
         userBaseApp,
         guestBaseApp,
         hasStoreApps,
+        storeAppsSwr,
         threadIdRef,
         vex,
         fetchApps: async () => {
