@@ -4430,6 +4430,18 @@ export const getInstructions = async ({
 export const createApp = async (app: newApp) => {
   const [inserted] = await db.insert(apps).values(app).returning()
 
+  // Invalidate cache for ALL stores that have this app
+  if (inserted?.id) {
+    const stores = await getStores({
+      appId: inserted.id,
+    })
+
+    // Invalidate each store's cache
+    await Promise.all(
+      stores.items.map((store) => invalidateStore(store.id, store.slug)),
+    )
+  }
+
   return inserted
 }
 
