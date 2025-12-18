@@ -726,8 +726,14 @@ app.post("/reorder", async (c) => {
 // PATCH /apps/:id - Update existing app
 app.patch("/:id", async (c) => {
   try {
-    const member = await getMember(c)
-    const guest = !member ? await getGuest(c) : undefined
+    const member = await getMember(c, {
+      skipCache: true,
+    })
+    const guest = !member
+      ? await getGuest(c, {
+          skipCache: true,
+        })
+      : undefined
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
