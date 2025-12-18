@@ -164,6 +164,7 @@ export async function getApp({
   appId?: string
   storeSlug?: string
   accountApp?: boolean
+  skipCache?: boolean
 }) {
   const request = c.req.raw
 
@@ -175,8 +176,11 @@ export async function getApp({
   const appSlugParam = c.req.query("appSlug")
   const storeSlugParam = c.req.query("storeSlug")
   const chrryUrlParam = c.req.query("chrryUrl")
+  const skipCacheParam = c.req.query("skipCache") === "true"
 
   const pathnameParam = c.req.query("pathname")
+
+  const skipCache = skipCacheParam || params.skipCache || false
 
   // Get headers
   const appIdHeader = request.headers.get("x-app-id")
@@ -201,6 +205,7 @@ export async function getApp({
         userId: member?.id,
         guestId: guest?.id,
         depth: 1,
+        skipCache,
       })
     : null
 

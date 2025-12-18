@@ -741,7 +741,7 @@ export const getUser = async ({
         }).then((res) => res.totalCount),
         creditsLeft,
         instructions: await getInstructions({
-          appId: app?.app.id,
+          appId: app?.id,
           userId: result.user.id,
           pageSize: 7, // 7 instructions per app
           // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
@@ -1944,7 +1944,7 @@ export async function migrateUser({
         ...store.store,
         guestId: null,
         userId,
-        slug: user.username,
+        slug: user.userName,
       })
     }),
   )
@@ -2111,7 +2111,7 @@ export const getGuest = async ({
         }).then((res) => res.totalCount),
         creditsLeft,
         instructions: await getInstructions({
-          appId: app?.app.id,
+          appId: app?.id,
           guestId: result.id,
           pageSize: 7, // 7 instructions per app
           // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
@@ -4438,7 +4438,9 @@ export const createApp = async (app: newApp) => {
 
     // Invalidate each store's cache
     await Promise.all(
-      stores.items.map((store) => invalidateStore(store.id, store.slug)),
+      stores.stores.map((store) =>
+        invalidateStore(store.store.id, store.store.slug),
+      ),
     )
   }
 
@@ -5719,6 +5721,7 @@ export async function getStore({
   isSafe = false,
   appId,
   depth = 0,
+  skipCache = false,
   parentStoreId,
 }: {
   id?: string
@@ -5729,6 +5732,7 @@ export async function getStore({
   isSafe?: boolean
   appId?: string
   depth?: number
+  skipCache?: boolean
   parentStoreId?: string | null
 }) {
   // Check if user owns any stores to determine cache strategy
@@ -5751,10 +5755,12 @@ export async function getStore({
     ? `store:${id || slug || domain || appId}:user:${userId}:guest:${guestId}:depth:${depth}:parent:${parentStoreId || "none"}`
     : `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
 
-  // Try cache first
-  const cached = await getCache<storeWithRelations>(cacheKey)
-  if (cached) {
-    return cached
+  if (!skipCache) {
+    // Try cache first
+    const cached = await getCache<storeWithRelations>(cacheKey)
+    if (cached) {
+      return cached
+    }
   }
 
   // Map vex.chrry.ai and askvex.com to the vex store
