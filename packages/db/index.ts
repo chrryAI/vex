@@ -741,9 +741,10 @@ export const getUser = async ({
         }).then((res) => res.totalCount),
         creditsLeft,
         instructions: await getInstructions({
+          appId: app?.app.id,
           userId: result.user.id,
           pageSize: 7, // 7 instructions per app
-          perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+          // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
         }),
         placeHolder: await getPlaceHolder({
           userId: result.user.id,
@@ -2110,9 +2111,10 @@ export const getGuest = async ({
         }).then((res) => res.totalCount),
         creditsLeft,
         instructions: await getInstructions({
+          appId: app?.app.id,
           guestId: result.id,
           pageSize: 7, // 7 instructions per app
-          perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+          // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
         }),
 
         placeHolder: await getPlaceHolder({
@@ -4366,6 +4368,7 @@ export const getInstructions = async ({
     const uniqueAppIds = Array.from(
       new Set([null, ...storeApps.items.map((app) => app.id)]),
     )
+    console.log(`🚀 ~ uniqueAppIds:`, uniqueAppIds)
 
     const instructionsByApp = await Promise.all(
       uniqueAppIds.map(async (currentAppId) => {
