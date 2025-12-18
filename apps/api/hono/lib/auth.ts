@@ -109,6 +109,7 @@ export async function getGuest(
 
       let result = await getGuestDb({ fingerprint: fp, skipCache })
 
+      console.log(`🚀 ~ result:`, result?.instructions)
       if (!result) {
         const cookieFingerprint = c.req
           .header("cookie")
