@@ -194,6 +194,7 @@ session.get("/", async (c) => {
   const accountApp = await getAppAction({
     c,
     accountApp: true,
+    skipCache: true,
   })
   const userBaseApp = member ? accountApp : undefined
 
