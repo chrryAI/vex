@@ -4467,6 +4467,11 @@ export const updateApp = async (app: app | appWithStore) => {
     .where(eq(apps.id, app.id))
     .returning()
 
+  if (updated) {
+    // Invalidate app cache
+    await invalidateApp(updated.id, updated.slug)
+  }
+
   return updated
     ? await getApp({
         id: updated.id,

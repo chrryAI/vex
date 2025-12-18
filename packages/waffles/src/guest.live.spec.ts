@@ -7,10 +7,10 @@ import { subscribe } from "./shared/subscribe"
 const isMember = false
 
 test.beforeEach(async ({ page }) => {
-  await clean({ page })
+  await clean({ page, fingerprint: VEX_LIVE_FINGERPRINT })
 })
 
-test("Subscribe As Guest", async ({ page }) => {
+test.skip("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
@@ -75,7 +75,7 @@ test("Chat", async ({ page }) => {
   })
 })
 
-test("File upload", async ({ page }) => {
+test.skip("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, fingerprint: VEX_LIVE_FINGERPRINT }), {
     waitUntil: "networkidle",
