@@ -90,6 +90,7 @@ export async function getMember(
 export async function getGuest(
   c?: Context,
   { skipCache }: { skipCache?: boolean } = {},
+  debug = false,
 ) {
   try {
     // If no context provided, return undefined (for backward compatibility)
@@ -108,6 +109,7 @@ export async function getGuest(
 
       let result = await getGuestDb({ fingerprint: fp, skipCache })
 
+      console.log(`🚀 ~ result:`, result?.instructions)
       if (!result) {
         const cookieFingerprint = c.req
           .header("cookie")
@@ -120,7 +122,8 @@ export async function getGuest(
         const fingerprint = cookieFingerprint || headerFingerprint
 
         if (fingerprint) {
-          let result = await getGuestDb({ fingerprint })
+          let result = await getGuestDb({ fingerprint, skipCache })
+
           return result || undefined
         }
       }

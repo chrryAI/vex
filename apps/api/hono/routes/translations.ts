@@ -3,30 +3,30 @@ import { defaultLocale, locales, locale } from "@chrryai/chrry/locales"
 import { getCachedTranslations, setCachedTranslations } from "@repo/db"
 import { isDevelopment } from "@chrryai/chrry/utils"
 
-// Static imports for all translation files (works in production)
-import enTranslations from "@chrryai/chrry/locales/en.json"
-import deTranslations from "@chrryai/chrry/locales/de.json"
-import esTranslations from "@chrryai/chrry/locales/es.json"
-import frTranslations from "@chrryai/chrry/locales/fr.json"
-import jaTranslations from "@chrryai/chrry/locales/ja.json"
-import koTranslations from "@chrryai/chrry/locales/ko.json"
-import nlTranslations from "@chrryai/chrry/locales/nl.json"
-import ptTranslations from "@chrryai/chrry/locales/pt.json"
-import trTranslations from "@chrryai/chrry/locales/tr.json"
-import zhTranslations from "@chrryai/chrry/locales/zh.json"
+// Static imports for all locales
+import de from "../../locales/de.json"
+import en from "../../locales/en.json"
+import es from "../../locales/es.json"
+import fr from "../../locales/fr.json"
+import ja from "../../locales/ja.json"
+import ko from "../../locales/ko.json"
+import nl from "../../locales/nl.json"
+import pt from "../../locales/pt.json"
+import tr from "../../locales/tr.json"
+import zh from "../../locales/zh.json"
 
 // Translation map for quick lookup
 const translationMap: Record<string, Record<string, any>> = {
-  en: enTranslations,
-  de: deTranslations,
-  es: esTranslations,
-  fr: frTranslations,
-  ja: jaTranslations,
-  ko: koTranslations,
-  nl: nlTranslations,
-  pt: ptTranslations,
-  tr: trTranslations,
-  zh: zhTranslations,
+  de,
+  en,
+  es,
+  fr,
+  ja,
+  ko,
+  nl,
+  pt,
+  tr,
+  zh,
 }
 
 export const translations = new Hono()
@@ -54,6 +54,11 @@ translations.get("/", async (c) => {
 
     // Get translations from static import map
     const translations = translationMap[validLocale] || translationMap.en
+
+    if (!translations || Object.keys(translations).length === 0) {
+      console.error(`❌ No translations found for locale: ${validLocale}`)
+      return c.json({ error: "Translations not available" }, 500)
+    }
 
     // Store in Redis cache for future requests (production only)
     if (!isDevelopment) {

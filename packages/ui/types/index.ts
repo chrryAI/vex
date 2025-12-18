@@ -936,6 +936,7 @@ export type store = {
 export type appWithStore = app & {
   store?: storeWithApps
   placeHolder?: placeHolder
+  instructions?: instruction[]
 }
 
 export type storeWithApps = store & { apps: appWithStore[] }
