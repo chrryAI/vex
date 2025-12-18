@@ -3,8 +3,9 @@ import { getMember, getGuest } from "../lib/auth"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import { getIp } from "../../lib"
 import { getLocationFromIP, GeoLocation } from "../../lib/geoLocation"
-import { updateGuest, updateUser } from "@repo/db"
+import { updateGuest, updateUser, redis as dbRedis } from "@repo/db"
 import { getWeatherCacheTime, isDevelopment } from "@chrryai/chrry/utils"
+import { isE2E } from "@chrryai/chrry/utils/siteConfig"
 
 interface WeatherApiResponse {
   location: {
@@ -29,18 +30,40 @@ export const weather = new Hono()
 // GET /weather - Get weather for user's location
 weather.get("/", async (c) => {
   const member = await getMember(c, { full: true, skipCache: true })
-  const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
+  const guest = !member
+    ? await getGuest(c, { skipCache: true }, true)
+    : undefined
+
+  const redis =
+    isDevelopment || isE2E
+      ? {
+          get: async (key: string) => {
+            return null
+          },
+          setex: async (key: string, ttl: number, value: string) => {},
+          del: async (key: string) => {},
+          ttl: async (key: string) => {},
+          exists: async (key: string) => {},
+        }
+      : dbRedis
+
+  const skipCache = c.req.query("skipCache") === "true"
 
   if (!member && !guest) {
     return c.json({ error: "Authentication required" }, 401)
   }
 
+  const memberOrGuestCity =
+    member?.city || guest?.city || (isDevelopment ? "Tokyo" : "")
+
+  const memberOrGuestCountry =
+    member?.country || guest?.country || (isDevelopment ? "Japan" : "")
   // Development mode: Return simulated Tokyo weather
-  if (isDevelopment) {
+  if (isDevelopment || isE2E) {
     const location = {
-      name: "Tokyo",
-      country: "Japan",
-      city: "Tokyo",
+      name: memberOrGuestCity,
+      country: memberOrGuestCountry,
+      city: memberOrGuestCity,
       latitude: 35.6895,
       longitude: 139.6917,
       timezone: "Asia/Tokyo",
@@ -92,15 +115,12 @@ weather.get("/", async (c) => {
       }
     }
 
-    return c.json(tokyoWeather, {
-      headers: {
-        "Cache-Control": "public, max-age=1800",
-        "X-Dev-Mode": "true",
-      },
-    })
+    return c.json(tokyoWeather)
   }
 
   // Rate limiting
+
+  let location: GeoLocation | null = null
   const { success } = await checkRateLimit(c.req.raw, { member, guest })
   if (!success) {
     return c.json(
@@ -120,10 +140,8 @@ weather.get("/", async (c) => {
     // Priority 1: Use stored city from user/guest
     let weatherQuery: string | null = null
 
-    if (member?.city && member?.country) {
-      weatherQuery = `${member.city}, ${member.country}`
-    } else if (guest?.city && guest?.country) {
-      weatherQuery = `${guest.city}, ${guest.country}`
+    if (memberOrGuestCity && memberOrGuestCountry) {
+      weatherQuery = `${memberOrGuestCity}, ${memberOrGuestCountry}`
     }
 
     // Fallback: Use IP geolocation only if no stored city
@@ -133,27 +151,12 @@ weather.get("/", async (c) => {
         return c.json({ error: "Unable to determine location" }, 400)
       }
 
-      const location: GeoLocation | null = await getLocationFromIP(clientIp)
+      location = await getLocationFromIP(clientIp)
       if (!location?.latitude || !location.longitude) {
         return c.json({ error: "Unable to resolve location" }, 502)
       }
 
       // Store the detected location for future use
-      if (location) {
-        if (member) {
-          await updateUser({
-            ...member,
-            city: location.city,
-            country: location.country,
-          })
-        } else if (guest) {
-          await updateGuest({
-            ...guest,
-            city: location.city,
-            country: location.country,
-          })
-        }
-      }
 
       weatherQuery = `${location.latitude},${location.longitude}`
     }
@@ -164,20 +167,43 @@ weather.get("/", async (c) => {
     weatherUrl.searchParams.set("q", weatherQuery)
     weatherUrl.searchParams.set("aqi", "no")
 
-    const response = await fetch(weatherUrl.toString(), {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(10000),
-    })
+    // Check Redis cache first
+    const cacheKey = `weather:${weatherQuery}`
 
-    if (!response.ok) {
-      return c.json({ error: `Weather API error ${response.status}` }, 502)
+    let weatherData: WeatherApiResponse | null = null
+
+    if (!skipCache && !isDevelopment) {
+      const cachedWeather = await redis.get(cacheKey)
+      if (cachedWeather) {
+        console.log(`✅ Weather cache hit for: ${weatherQuery}`)
+        weatherData = JSON.parse(cachedWeather)
+      }
     }
 
-    const weatherData: WeatherApiResponse = await response.json()
+    // Fetch fresh weather if not cached
+    if (!weatherData) {
+      console.log(`🌤️ Fetching fresh weather for: ${weatherQuery}`)
+      const response = await fetch(weatherUrl.toString(), {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
+      })
 
-    const cacheTime = getWeatherCacheTime(weatherData)
+      if (!response.ok) {
+        return c.json({ error: `Weather API error ${response.status}` }, 502)
+      }
 
-    // Update weather on user/guest after successful fetch
+      weatherData = await response.json()
+
+      const cacheTime = getWeatherCacheTime(weatherData)
+
+      // Store in Redis cache with TTL
+      if (!isDevelopment) {
+        await redis.setex(cacheKey, cacheTime, JSON.stringify(weatherData))
+      }
+      console.log(`💾 Cached weather for ${weatherQuery} (TTL: ${cacheTime}s)`)
+    }
+
+    // Update weather on user/guest (runs for both cached and fresh data)
     const weatherCache = {
       location: weatherData.location.name,
       country: weatherData.location.country,
@@ -188,23 +214,34 @@ weather.get("/", async (c) => {
       lastUpdated: new Date(),
     }
 
-    if (member) {
-      await updateUser({
-        ...member,
-        weather: weatherCache,
-      })
-    } else if (guest) {
-      await updateGuest({
-        ...guest,
-        weather: weatherCache,
-      })
+    location = {
+      city: weatherData.location.name,
+      country: weatherData.location.country,
     }
 
-    return c.json(weatherData, {
-      headers: {
-        "Cache-Control": `public, max-age=${cacheTime}`,
-      },
-    })
+    if (location) {
+      if (member) {
+        await updateUser({
+          ...member,
+          city: location.city,
+          country: location.country,
+          weather: weatherCache,
+        })
+        // Invalidate guest cache after updating
+        await redis.del(`user:${member.id}`)
+      } else if (guest) {
+        await updateGuest({
+          ...guest,
+          city: location.city,
+          country: location.country,
+          weather: weatherCache,
+        })
+        // Invalidate guest cache after updating
+        await redis.del(`guest:${guest.fingerprint}`)
+      }
+    }
+
+    return c.json(weatherData)
   } catch (err) {
     console.error("Weather route error:", err)
     return c.json({ error: "Internal server error" }, 500)

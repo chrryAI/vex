@@ -200,7 +200,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.7.19"
+  const VERSION = "1.7.22"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -237,7 +237,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     error,
     mutate: refetchWeather,
   } = useSWR(
-    siteConfig.mode !== "chrryDev" && token && deviceId ? ["weather"] : null,
+    token && deviceId ? ["weather"] : null,
     async () => {
       // return
       if (!token) return null
@@ -247,7 +247,10 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
           headers: { Authorization: `Bearer ${token}` },
         })
 
-        if (!res.ok) return
+        if (!res.ok) {
+          console.error(`Error fetching weather`, res)
+          return null
+        }
         return res.json()
       } catch (error) {
         captureException(error)
