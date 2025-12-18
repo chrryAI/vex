@@ -1023,7 +1023,13 @@ export function AuthProvider({
   } = useSWR(token && ["app", appId], async () => {
     try {
       if (!token) return
-      const app = await getApp({ token, appId, chrryUrl, pathname })
+      const app = await getApp({
+        token,
+        appId,
+        chrryUrl,
+        pathname,
+        skipCache: !!(updatedApp?.id || newApp?.id),
+      })
       return app
     } catch (error) {
       captureException(error)
