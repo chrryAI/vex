@@ -2100,6 +2100,8 @@ export const getGuest = async ({
     ? {
         ...result,
         memoriesCount,
+        city: result.city,
+        country: result.country,
         messagesLastHour: await getMessages({
           guestId: result.id,
           createdAfter: oneHourAgo,
@@ -2112,6 +2114,7 @@ export const getGuest = async ({
           pageSize: 7, // 7 instructions per app
           perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
         }),
+
         placeHolder: await getPlaceHolder({
           guestId: result.id,
         }),

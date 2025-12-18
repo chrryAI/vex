@@ -682,46 +682,59 @@ Return only valid JSON object.`
 
   let threadPlaceHolder
   if (responseData.placeholders.thread) {
-    threadPlaceHolder = await getPlaceHolder({
-      threadId: thread.id,
-      userId: user?.id,
-      guestId: guest?.id,
-    })
-
-    if (threadPlaceHolder) {
-      // Preserve history
-      const history = threadPlaceHolder.metadata?.history || []
-      const topicKeywords = extractTopicKeywords(conversationText)
-
-      history.push({
-        text: threadPlaceHolder.text,
-        generatedAt: threadPlaceHolder.updatedOn.toISOString(),
-        conversationContext: getSmartConversationContext(conversationText, 500), // Smart context
-        topicKeywords, // Lightweight alternative
-      })
-
-      threadPlaceHolder = await updatePlaceHolder({
-        ...threadPlaceHolder,
-        text: responseData.placeholders.thread,
-        updatedOn: new Date(),
-        metadata: {
-          ...threadPlaceHolder.metadata,
-          history: history.slice(-10), // Keep last 10 versions
-          generatedBy: modelName,
-        },
-      })
-    } else {
-      threadPlaceHolder = await createPlaceHolder({
-        text: responseData.placeholders.thread,
-        userId: user?.id || null,
-        guestId: guest?.id || null,
+    try {
+      threadPlaceHolder = await getPlaceHolder({
         threadId: thread.id,
-        appId: finalAppId || null, // ✅ Link to app
-        metadata: {
-          generatedBy: modelName,
-          history: [],
-        },
+        userId: user?.id,
+        guestId: guest?.id,
       })
+
+      if (threadPlaceHolder) {
+        // Preserve history
+        const history = threadPlaceHolder.metadata?.history || []
+        const topicKeywords = extractTopicKeywords(conversationText)
+
+        history.push({
+          text: threadPlaceHolder.text,
+          generatedAt: threadPlaceHolder.updatedOn.toISOString(),
+          conversationContext: getSmartConversationContext(
+            conversationText,
+            500,
+          ), // Smart context
+          topicKeywords, // Lightweight alternative
+        })
+
+        threadPlaceHolder = await updatePlaceHolder({
+          ...threadPlaceHolder,
+          text: responseData.placeholders.thread,
+          updatedOn: new Date(),
+          metadata: {
+            ...threadPlaceHolder.metadata,
+            history: history.slice(-10), // Keep last 10 versions
+            generatedBy: modelName,
+          },
+        })
+      } else {
+        threadPlaceHolder = await createPlaceHolder({
+          text: responseData.placeholders.thread,
+          userId: user?.id || null,
+          guestId: guest?.id || null,
+          threadId: thread.id,
+          appId: finalAppId || null, // ✅ Link to app
+          metadata: {
+            generatedBy: modelName,
+            history: [],
+          },
+        })
+      }
+    } catch (error) {
+      // Handle foreign key constraint violation gracefully
+      // This can happen when thread isn't fully committed yet (especially for guests)
+      console.warn(
+        `⚠️ Skipping thread placeholder creation - thread may not be committed yet:`,
+        error,
+      )
+      threadPlaceHolder = null
     }
   }
 
