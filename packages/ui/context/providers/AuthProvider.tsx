@@ -1030,7 +1030,7 @@ export function AuthProvider({
         appId,
         chrryUrl,
         pathname,
-        skipCache: !!accountAppId || appId === accountAppId,
+        skipCache: !!accountAppId || appId === accountAppId || !!newApp?.id,
       })
       return app
     } catch (error) {
