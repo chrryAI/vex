@@ -89,6 +89,7 @@ interface AppFormContextType {
   saveApp: () => Promise<boolean>
   isSavingApp: boolean
   setIsSavingApp: (isSavingApp: boolean) => void
+  setIsManagingApp: (isManagingApp: boolean) => void
   isRemovingApp: boolean
   clearFormDraft: () => void
   canEditApp: boolean
@@ -179,6 +180,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUpdatedApp,
     setBaseAccountApp,
     setIsManagingApp,
+    isManagingApp,
     isRemovingApp,
     setIsRemovingApp,
   } = useAuth()
@@ -253,11 +255,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // setAppStatusInternal(undefined)
   }
 
-  const isManagingApp = !!appStatus?.part || isSavingApp
+  const isManagingAppInternal = !!appStatus?.part || isSavingApp
 
   useEffect(() => {
-    setIsManagingApp(isManagingApp)
-  }, [isManagingApp])
+    setIsManagingApp(isManagingAppInternal)
+  }, [isManagingAppInternal])
 
   const setApp = (app: appWithStore | undefined) => {
     setAppInternal(app)
@@ -813,6 +815,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isAppInstructions,
         hasCustomInstructions,
         setStoreSlug,
+        setIsManagingApp,
       }}
     >
       {children}

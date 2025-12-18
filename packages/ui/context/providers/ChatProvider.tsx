@@ -41,7 +41,7 @@ import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
 import { useError } from "./ErrorProvider"
-
+import { t } from "i18next"
 interface placeHolder {
   // TODO: Define placeHolder type
   [key: string]: any
@@ -154,6 +154,7 @@ export function ChatProvider({
     setUser,
     setApp,
     storeApps,
+    storeAppsSwr,
     app,
     chrry,
     track,
@@ -186,6 +187,11 @@ export function ChatProvider({
     hasNotification,
     setHasNotification,
     setThreadId,
+    newApp,
+    updatedApp,
+    setNewApp,
+    setUpdatedApp,
+    setBaseAccountApp,
     ...auth
   } = useAuth()
 
@@ -385,6 +391,32 @@ export function ChatProvider({
   }, [searchParams])
 
   const [wasIncognito, setWasIncognito] = useState(isIncognito)
+
+  useEffect(() => {
+    const n = storeApps.find((app) => app.id === newApp?.id)
+    if (n) {
+      setNewApp(undefined)
+
+      setBaseAccountApp(n)
+      setApp(n)
+
+      setIsNewAppChat(n)
+      setIsSavingApp(false)
+      setIsManagingApp(false)
+      toast.success(t("🥳 WOW!, you created something amazing"))
+    }
+
+    const u = storeAppsSwr?.store?.apps.find((app) => app.id === updatedApp?.id)
+    if (u) {
+      setUpdatedApp(undefined)
+      setBaseAccountApp(u)
+      setApp(u)
+      setIsManagingApp(false)
+      setIsNewAppChat(u)
+      setIsSavingApp(false)
+      toast.success(t("Updated") + " 🚀")
+    }
+  }, [newApp, storeApps, updatedApp, storeAppsSwr])
 
   const setIsNewAppChat = (item: appWithStore | undefined) => {
     if (!item) {
@@ -741,7 +773,7 @@ export function ChatProvider({
     }
   }, [placeHolder, app])
 
-  const { appStatus, baseApp } = useApp()
+  const { appStatus, setIsSavingApp, setIsManagingApp } = useApp()
 
   const { captureException } = useError()
 
@@ -978,8 +1010,6 @@ export function ChatProvider({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const scrollToBottom = (timeout = 500, force = false) => {
-    console.log(`🚀 ~ scrollToBottom ~ timeout:`, timeout)
-    // if (isChatFloating || !force) return
     setTimeout(() => {
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
     }, timeout)
