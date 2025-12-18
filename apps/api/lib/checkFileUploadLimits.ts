@@ -1,3 +1,4 @@
+import { isDevelopment, isE2E } from "@chrryai/chrry/utils"
 import { user, subscription, guest, updateUser, updateGuest } from "@repo/db"
 import { captureException } from "@sentry/node"
 
@@ -57,6 +58,8 @@ const checkFileUploadLimits = async ({
     dailySize: { used: number; limit: number; resetTime: string }
   }
 }> => {
+  if (isDevelopment || isE2E) return { allowed: true }
+
   if ((!member && !guest) || files.length === 0) {
     return { allowed: true }
   }
