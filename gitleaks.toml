@@ -1,0 +1,51 @@
+# Gitleaks configuration file
+# https://github.com/gitleaks/gitleaks#configuration
+
+title = "Vex Gitleaks Config"
+
+[extend]
+# Extend default gitleaks config
+useDefault = true
+
+[allowlist]
+description = "Allowlist for known false positives"
+
+# Ignore common test/example patterns
+regexes = [
+  # Test files with dummy secrets
+  '''(?i)(test|example|dummy|fake|mock).*secret''',
+  '''(?i)secret.*(test|example|dummy|fake|mock)''',
+  
+  # Common false positives
+  '''EXAMPLE''',
+  '''YOUR_.*_HERE''',
+  '''<.*>''',  # Placeholder syntax
+]
+
+# Paths to ignore completely
+paths = [
+  '''node_modules/''',
+  '''dist/''',
+  '''build/''',
+  '''.turbo/''',
+  '''.next/''',
+  '''pnpm-lock.yaml''',
+  '''package-lock.json''',
+  '''yarn.lock''',
+  '''.git/''',
+  '''\.min\.js$''',
+  '''\.bundle\.js$''',
+  '''PITCH_DECK.pdf''',
+  '''playwright-report/''',
+]
+
+# Specific files to ignore
+# Add any files here that contain legitimate secrets that are already in .gitignore
+# Example: '''path/to/file.env'''
+
+# Custom rules (optional - add your own patterns)
+# [[rules]]
+# id = "custom-api-key"
+# description = "Custom API key pattern"
+# regex = '''custom-pattern-here'''
+# tags = ["key", "custom"]
