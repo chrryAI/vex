@@ -1507,32 +1507,6 @@ export function AuthProvider({
       content: t(inst.content || ""),
     }))
 
-  // useEffect(() => {
-  //   const created = storeApps?.some((app) => app.id === newApp?.id)
-  //   if (newApp && created && app?.id !== newApp.id) {
-  //     const finalURL = getAppSlug(newApp)
-
-  //     toast.success(t("🥳 WOW!, you created something amazing"))
-
-  //     if (newApp) {
-  //       mergeApps([newApp])
-  //       setApp(newApp)
-  //       setNewApp(undefined)
-  //       setIsSavingApp(false)
-  //     }
-
-  //     if (
-  //       newApp.highlights?.some?.((h) =>
-  //         defaultInstructions.some((i) => i.content === h.content),
-  //       )
-  //     ) {
-  //       router.push(`${finalURL}?part=highlights`)
-  //     } else {
-  //       router.push(`${finalURL}`)
-  //     }
-  //   }
-  // }, [newApp, app, storeApps])
-
   const lastRateLimitErrorRef = useRef<string | null>(null)
 
   useEffect(() => {
