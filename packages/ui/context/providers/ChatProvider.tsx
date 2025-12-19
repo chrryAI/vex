@@ -392,32 +392,6 @@ export function ChatProvider({
 
   const [wasIncognito, setWasIncognito] = useState(isIncognito)
 
-  useEffect(() => {
-    const n = storeApps.find((app) => app.id === newApp?.id)
-    if (n) {
-      setNewApp(undefined)
-
-      setBaseAccountApp(n)
-      setApp(n)
-
-      setIsNewAppChat(n)
-      setIsSavingApp(false)
-      setIsManagingApp(false)
-      toast.success(t("🥳 WOW!, you created something amazing"))
-    }
-
-    const u = storeAppsSwr?.store?.apps.find((app) => app.id === updatedApp?.id)
-    if (u) {
-      setUpdatedApp(undefined)
-      setBaseAccountApp(u)
-      setApp(u)
-      setIsManagingApp(false)
-      setIsNewAppChat(u)
-      setIsSavingApp(false)
-      toast.success(t("Updated") + " 🚀")
-    }
-  }, [newApp, storeApps, updatedApp, storeAppsSwr])
-
   const setIsNewAppChat = (item: appWithStore | undefined) => {
     if (!item) {
       return
