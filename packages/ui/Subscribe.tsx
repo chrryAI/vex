@@ -30,7 +30,7 @@ import {
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
-import { apiFetch } from "./utils"
+import { apiFetch, isE2E } from "./utils"
 import Modal from "./Modal"
 import ConfirmButton from "./ConfirmButton"
 
@@ -137,6 +137,7 @@ export default function Subscribe({
       const checkoutSuccessUrl = (() => {
         params.set("checkout", "success")
         params.set("purchaseType", part)
+        token && params.set("auth_token", token)
 
         return `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
       })()
@@ -242,6 +243,22 @@ export default function Subscribe({
       setLoading(false)
     }
   }
+
+  const [loggedIn, setLoggedIn] = useState<boolean>(
+    searchParams.get("loggedIn") === "true",
+  )
+
+  useEffect(() => {
+    if (searchParams.get("loggedIn") === "true") {
+      setLoggedIn(true)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    if (!user && loggedIn) {
+      setSignInPart("login")
+    }
+  }, [user, loggedIn])
 
   const verifyPayment = async (sessionId: string) => {
     track({ name: "subscribe_verify_payment" })
@@ -1087,7 +1104,7 @@ export default function Subscribe({
                   if (isExtension) {
                     BrowserInstance?.runtime?.sendMessage({
                       action: "openInSameTab",
-                      url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=${subs.plan}`,
+                      url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=${subs.plan}&loggedIn=${!!user}`,
                     })
 
                     return

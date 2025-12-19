@@ -741,7 +741,7 @@ export const getUser = async ({
         }).then((res) => res.totalCount),
         creditsLeft,
         instructions: await getInstructions({
-          appId: app?.app.id,
+          appId: app?.id,
           userId: result.user.id,
           pageSize: 7, // 7 instructions per app
           // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
@@ -1913,14 +1913,16 @@ export async function migrateUser({
   )
 
   // Migrate guest-created apps
-  const guestApps = await getApps({ guestId: guest.id, pageSize: limit })
+  const guestApps = await getApps({ ownerId: guest.id, pageSize: limit })
   await Promise.all(
     guestApps.items.map(async (app) => {
-      await updateApp({
-        ...(app as app),
-        guestId: null,
-        userId,
-      })
+      if (isOwner(app, { guestId: guest.id })) {
+        await updateApp({
+          ...(app as app),
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
@@ -1936,16 +1938,18 @@ export async function migrateUser({
     }),
   )
 
-  // Migrate guest stores
-  const guestStores = await getStores({ guestId: guest.id })
+  // // Migrate guest stores
+  const guestStores = await getStores({ ownerId: guest.id })
   await Promise.all(
     guestStores.stores.map(async (store) => {
-      await updateStore({
-        ...store.store,
-        guestId: null,
-        userId,
-        slug: user.username,
-      })
+      if (isOwner(store.store, { guestId: guest.id })) {
+        await updateStore({
+          ...store.store,
+          guestId: null,
+          userId,
+          slug: user.userName,
+        })
+      }
     }),
   )
 
@@ -2111,7 +2115,7 @@ export const getGuest = async ({
         }).then((res) => res.totalCount),
         creditsLeft,
         instructions: await getInstructions({
-          appId: app?.app.id,
+          appId: app?.id,
           guestId: result.id,
           pageSize: 7, // 7 instructions per app
           // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
@@ -2307,14 +2311,14 @@ export async function upsertDevice(deviceData: newDevice) {
   const device = await getDevice({ fingerprint })
 
   if (device) {
-    await updateDevice({
+    const updated = await updateDevice({
       ...device,
       ...updateData,
     })
-    return device
+    return updated
   }
 
-  await createDevice(deviceData)
+  return await createDevice(deviceData)
 }
 
 export const createThread = async (thread: newThread) => {
@@ -4222,6 +4226,22 @@ export const deleteAffiliatePayout = async ({ id }: { id: string }) => {
 }
 
 export const createPlaceHolder = async (placeHolder: newPlaceHolder) => {
+  // Validate that guestId exists if provided (prevent foreign key violations)
+  if (placeHolder.guestId) {
+    const guestExists = await db
+      .select({ id: guests.id })
+      .from(guests)
+      .where(eq(guests.id, placeHolder.guestId))
+      .limit(1)
+
+    if (guestExists.length === 0) {
+      console.warn(
+        `⚠️ Skipping placeholder creation - guest ${placeHolder.guestId} does not exist (may have been migrated to user)`,
+      )
+      return undefined
+    }
+  }
+
   const [inserted] = await db
     .insert(placeHolders)
     .values(placeHolder)
@@ -4368,7 +4388,6 @@ export const getInstructions = async ({
     const uniqueAppIds = Array.from(
       new Set([null, ...storeApps.items.map((app) => app.id)]),
     )
-    console.log(`🚀 ~ uniqueAppIds:`, uniqueAppIds)
 
     const instructionsByApp = await Promise.all(
       uniqueAppIds.map(async (currentAppId) => {
@@ -4438,7 +4457,9 @@ export const createApp = async (app: newApp) => {
 
     // Invalidate each store's cache
     await Promise.all(
-      stores.items.map((store) => invalidateStore(store.id, store.slug)),
+      stores.stores.map((store) =>
+        invalidateStore(store.store.id, store.store.slug),
+      ),
     )
   }
 
@@ -4815,8 +4836,8 @@ export const getApp = async ({
     ? {
         ...storeData.store,
         title: storeData.store.name, // Use name as title
-        apps: storeData.apps,
-        app: storeData.app, // Include the store's base app
+        apps: storeData.apps.map((app) => toSafeApp({ app })),
+        app: toSafeApp({ app: storeData.app }), // Include the store's base app
       }
     : undefined
 
@@ -4911,9 +4932,13 @@ export const getPureApp = async ({
   } as app
 }
 
-export function toSafeApp({ app }: { app?: app }) {
+export function toSafeApp({ app }: { app?: app | appWithStore }) {
   if (!app) return undefined
-  const result: Partial<app> = {
+
+  if ("store" in app && app?.store?.apps) {
+    return { ...app, systemPrompt: undefined }
+  }
+  const result: Partial<app | appWithStore> = {
     id: app.id,
     name: app.name,
     tools: app.tools,
@@ -4983,6 +5008,7 @@ export function toSafeGuest({ guest }: { guest: guest }) {
 
 export const getApps = async (
   {
+    ownerId,
     userId,
     guestId,
     isSafe = true,
@@ -4996,6 +5022,7 @@ export const getApps = async (
     page?: number
     storeId?: string
     pageSize?: number
+    ownerId?: string
   } = {
     isSafe: true,
   },
@@ -5024,6 +5051,9 @@ export const getApps = async (
   }
 
   const conditions = and(
+    ownerId
+      ? or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId))
+      : undefined,
     // Filter by storeId if provided - include apps that belong to this store OR are explicitly installed
     storeId
       ? or(
@@ -5719,6 +5749,7 @@ export async function getStore({
   isSafe = false,
   appId,
   depth = 0,
+  skipCache = false,
   parentStoreId,
 }: {
   id?: string
@@ -5729,6 +5760,7 @@ export async function getStore({
   isSafe?: boolean
   appId?: string
   depth?: number
+  skipCache?: boolean
   parentStoreId?: string | null
 }) {
   // Check if user owns any stores to determine cache strategy
@@ -5751,10 +5783,12 @@ export async function getStore({
     ? `store:${id || slug || domain || appId}:user:${userId}:guest:${guestId}:depth:${depth}:parent:${parentStoreId || "none"}`
     : `store:${id || slug || domain || appId}:public:depth:${depth}:parent:${parentStoreId || "none"}`
 
-  // Try cache first
-  const cached = await getCache<storeWithRelations>(cacheKey)
-  if (cached) {
-    return cached
+  if (!skipCache) {
+    // Try cache first
+    const cached = await getCache<storeWithRelations>(cacheKey)
+    if (cached) {
+      return cached
+    }
   }
 
   // Map vex.chrry.ai and askvex.com to the vex store
@@ -5817,11 +5851,13 @@ export async function getStore({
         })
 
         return {
-          ...appItem,
+          ...toSafeApp({ app: appItem }),
+
           store: appItem.store
             ? {
                 ...appItem.store,
-                apps: nestedStoreData?.apps || [],
+                apps:
+                  nestedStoreData?.apps.map((app) => toSafeApp({ app })) || [],
                 app: null, // Set to null to prevent circular references
               }
             : appItem.store,
@@ -5875,7 +5911,12 @@ export async function updateStore(store: store) {
 
   // Invalidate store cache
   if (updated) {
-    await invalidateStore(updated.id, updated.slug)
+    await invalidateStore(
+      updated.id,
+      updated.slug,
+      updated.domain,
+      updated.appId,
+    )
   }
 
   return updated
@@ -5886,7 +5927,12 @@ export async function deleteStore({ id }: { id: string }) {
 
   // Invalidate store cache
   if (deleted) {
-    await invalidateStore(deleted.id, deleted.slug)
+    await invalidateStore(
+      deleted.id,
+      deleted.slug,
+      deleted.domain,
+      deleted.appId,
+    )
   }
 
   return deleted
@@ -5967,7 +6013,13 @@ export async function getAppExtends({
   // Return apps with extends property set to empty array to prevent infinite recursion
   return result.map((r) => ({
     ...(true
-      ? { ...toSafeApp({ app: r.app }), highlights: [], tips: [] }
+      ? {
+          id: r.app.id,
+          slug: r.app.slug,
+          name: r.app.name,
+          storeId: r.app.storeId,
+          description: r.app.description,
+        }
       : r.app),
     extends: [],
   }))
@@ -6365,6 +6417,7 @@ export const deleteInstall = async ({
   appId?: string
   storeId?: string
 }) => {
+  const store = await getStore({ id: storeId, skipCache: true })
   const [deleted] = await db
     .delete(storeInstalls)
     .where(
@@ -6374,6 +6427,14 @@ export const deleteInstall = async ({
       ),
     )
     .returning()
+
+  store?.store.id &&
+    invalidateStore(
+      store.store.id,
+      store.app?.id,
+      store.store.domain,
+      store.store.slug,
+    )
 
   return deleted
 }

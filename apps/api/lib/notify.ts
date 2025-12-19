@@ -131,11 +131,11 @@ export async function notify(
 export type notifyOwnerAndCollaborationsPayload = {
   c: Context
   notifySender?: boolean
-  member?: user
-  guest?: guest
+  member?: user | null
+  guest?: guest | null
   thread: thread & {
-    user: user | null
-    guest: guest | null
+    user?: user | null
+    guest?: guest | null
     collaborations?: {
       collaboration: collaboration
       user: user

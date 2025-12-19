@@ -166,10 +166,7 @@ export default function App({
     return apps
       .filter(
         (item) =>
-          (item.id !== store?.appId ||
-            (totalApps <= 3
-              ? item.id === guestBaseApp?.id || item.id === userBaseApp?.id
-              : false)) &&
+          item.id !== store?.appId &&
           item.id !== chrry?.id &&
           item.id !== grape?.id &&
           item.id !== zarathustra?.id &&
