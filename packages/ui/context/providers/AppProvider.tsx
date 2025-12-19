@@ -634,10 +634,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         newSearchParams.set(key, String(value))
       })
 
-      const slug =
-        userBaseApp?.store?.slug ||
-        guestBaseApp?.store?.slug ||
-        baseApp?.store?.slug
+      const slug = baseApp?.store?.slug
       const newUrl = `/${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/${app?.slug}?${newSearchParams.toString()}`
       push(newUrl)
     } else {
