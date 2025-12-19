@@ -4820,8 +4820,8 @@ export const getApp = async ({
     ? {
         ...storeData.store,
         title: storeData.store.name, // Use name as title
-        apps: storeData.apps,
-        app: storeData.app, // Include the store's base app
+        apps: storeData.apps.map((app) => toSafeApp({ app })),
+        app: toSafeApp({ app: storeData.app }), // Include the store's base app
       }
     : undefined
 
@@ -4916,9 +4916,13 @@ export const getPureApp = async ({
   } as app
 }
 
-export function toSafeApp({ app }: { app?: app }) {
+export function toSafeApp({ app }: { app?: app | appWithStore }) {
   if (!app) return undefined
-  const result: Partial<app> = {
+
+  if ("store" in app && app?.store?.apps) {
+    return { ...app, systemPrompt: undefined }
+  }
+  const result: Partial<app | appWithStore> = {
     id: app.id,
     name: app.name,
     tools: app.tools,
@@ -5831,11 +5835,13 @@ export async function getStore({
         })
 
         return {
-          ...appItem,
+          ...toSafeApp({ app: appItem }),
+
           store: appItem.store
             ? {
                 ...appItem.store,
-                apps: nestedStoreData?.apps || [],
+                apps:
+                  nestedStoreData?.apps.map((app) => toSafeApp({ app })) || [],
                 app: null, // Set to null to prevent circular references
               }
             : appItem.store,
@@ -5991,7 +5997,13 @@ export async function getAppExtends({
   // Return apps with extends property set to empty array to prevent infinite recursion
   return result.map((r) => ({
     ...(true
-      ? { ...toSafeApp({ app: r.app }), highlights: [], tips: [] }
+      ? {
+          id: r.app.id,
+          slug: r.app.slug,
+          name: r.app.name,
+          storeId: r.app.storeId,
+          description: r.app.description,
+        }
       : r.app),
     extends: [],
   }))
