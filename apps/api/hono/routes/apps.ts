@@ -751,18 +751,16 @@ app.patch("/:id", async (c) => {
 
     const appId = c.req.param("id")
 
+    if (!validate(appId)) {
+      return c.json({ error: "Invalid app ID" }, { status: 400 })
+    }
+
     // Get existing app
-    const existingApp = validate(appId)
-      ? await getPureApp({
-          id: appId,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
-      : await getPureApp({
-          slug: appId,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
+    const existingApp = await getApp({
+      c,
+      appId,
+      skipCache: true,
+    })
 
     if (!existingApp) {
       return c.json({ error: "App not found" }, { status: 404 })
