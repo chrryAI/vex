@@ -664,8 +664,15 @@ app.post("/", async (c) => {
 You inherit capabilities from ${appExtends.length} parent app${appExtends.length > 1 ? "s" : ""}:
 
 ${appExtends
-  .map(
-    (parentApp, index) => `
+  .map(async (a, index) => {
+    const parentApp = await getApp({
+      id: a.id,
+    })
+
+    if (!parentApp) {
+      return ""
+    }
+    return `
 ### ${index + 1}. ${parentApp.name}${parentApp.title ? ` - ${parentApp.title}` : ""}
 ${parentApp.description ? `${parentApp.description}\n` : ""}
 ${
@@ -685,8 +692,8 @@ ${
 ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemPrompt.split("\n").length > 10 ? "\n..." : ""}
 `
     : ""
-}`,
-  )
+}`
+  })
   .join("\n")}
 
 **How to Use Inheritance:**
