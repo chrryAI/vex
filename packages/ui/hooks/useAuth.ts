@@ -27,31 +27,28 @@ export function useAuth() {
    * Fetch current session
    */
   const fetchSession = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("auth_token")
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      }
-
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`
-      }
-
-      const response = await fetch(`${API_URL}/auth/session`, {
-        credentials: "include", // Include cookies for web
-        headers,
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setState({ user: data.user || null, loading: false })
-      } else {
-        setState({ user: null, loading: false })
-      }
-    } catch (error) {
-      console.error("Session fetch error:", error)
-      setState({ user: null, loading: false })
-    }
+    // try {
+    //   const token = localStorage.getItem("auth_token")
+    //   const headers: HeadersInit = {
+    //     "Content-Type": "application/json",
+    //   }
+    //   if (token) {
+    //     headers["Authorization"] = `Bearer ${token}`
+    //   }
+    //   const response = await fetch(`${API_URL}/auth/session`, {
+    //     credentials: "include", // Include cookies for web
+    //     headers,
+    //   })
+    //   if (response.ok) {
+    //     const data = await response.json()
+    //     setState({ user: data.user || null, loading: false })
+    //   } else {
+    //     setState({ user: null, loading: false })
+    //   }
+    // } catch (error) {
+    //   console.error("Session fetch error:", error)
+    //   setState({ user: null, loading: false })
+    // }
   }, [])
 
   /**

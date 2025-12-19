@@ -260,7 +260,7 @@ const Thread = ({
 
       if (isE2E)
         console.log("🤖 onStreamingUpdate", {
-          content,
+          content: content.replace(/__REASONING__.*?__\/REASONING__/gs, ""),
           clientId,
           aiAgent,
           isWebSearchEnabled,

@@ -156,12 +156,18 @@ export async function loadServerData(
     }
   }
 
-  const fingerprint =
-    (TEST_MEMBER_FINGERPRINTS?.concat(TEST_GUEST_FINGERPRINTS).includes(
-      fpFromQuery || "",
-    )
-      ? fpFromQuery
-      : fpFromQuery || headers["x-fp"] || cookies.fingerprint) || uuidv4()
+  const fingerprint = TEST_MEMBER_FINGERPRINTS?.concat(
+    TEST_GUEST_FINGERPRINTS,
+  ).includes(fpFromQuery || "")
+    ? fpFromQuery
+    : fpFromQuery || headers["x-fp"] || cookies.fingerprint || undefined
+
+  console.log(
+    `🚀 ~ fingerprheaders["x-fp"]int:`,
+    fingerprint,
+    cookies.fingerprint,
+    headers["x-fp"],
+  )
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
