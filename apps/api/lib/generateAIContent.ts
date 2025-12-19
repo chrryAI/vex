@@ -342,15 +342,15 @@ async function generateSuggestionsAndPlaceholders({
   memories: MemoryData
   language: string
   thread: thread & {
-    user: user | null
-    guest: guest | null
+    user?: user | null
+    guest?: guest | null
     collaborations?: {
       collaboration: collaboration
       user: user
     }[]
   }
-  user?: user
-  guest?: guest
+  user?: user | null
+  guest?: guest | null
   latestMessage: message
   calendarEvents?: calendarEvent[]
   app?: app | appWithStore
@@ -683,6 +683,13 @@ Return only valid JSON object.`
           history: [],
         },
       })
+
+      // If placeholder creation failed (e.g., guest doesn't exist), log and continue
+      if (!homePlaceholder) {
+        console.warn(
+          "⚠️ Home placeholder creation failed - guest may not exist",
+        )
+      }
     }
   }
 
@@ -732,6 +739,13 @@ Return only valid JSON object.`
             history: [],
           },
         })
+
+        // If placeholder creation failed (e.g., guest doesn't exist), log and continue
+        if (!threadPlaceHolder) {
+          console.warn(
+            "⚠️ Thread placeholder creation failed - guest may not exist",
+          )
+        }
       }
     } catch (error) {
       // Handle foreign key constraint violation gracefully
@@ -852,16 +866,16 @@ async function generateAIContent({
   c: Context
   app?: app | appWithStore
   thread: thread & {
-    user: user | null
-    guest: guest | null
+    user?: user | null
+    guest?: guest | null
     collaborations?: {
       collaboration: collaboration
       user: user
     }[]
     summary?: threadSummary
   }
-  user?: user
-  guest?: guest
+  user?: user | null
+  guest?: guest | null
   agentId: string
   conversationHistory: ModelMessage[]
   latestMessage: message

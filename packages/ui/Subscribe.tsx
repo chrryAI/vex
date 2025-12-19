@@ -244,6 +244,22 @@ export default function Subscribe({
     }
   }
 
+  const [loggedIn, setLoggedIn] = useState<boolean>(
+    searchParams.get("loggedIn") === "true",
+  )
+
+  useEffect(() => {
+    if (searchParams.get("loggedIn") === "true") {
+      setLoggedIn(true)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    if (!user && loggedIn) {
+      setSignInPart("login")
+    }
+  }, [user, loggedIn])
+
   const verifyPayment = async (sessionId: string) => {
     track({ name: "subscribe_verify_payment" })
     const params = new URLSearchParams(window.location.search)
@@ -1088,7 +1104,7 @@ export default function Subscribe({
                   if (isExtension) {
                     BrowserInstance?.runtime?.sendMessage({
                       action: "openInSameTab",
-                      url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=${subs.plan}`,
+                      url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=${subs.plan}&loggedIn=${!!user}`,
                     })
 
                     return

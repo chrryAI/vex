@@ -1,7 +1,12 @@
 import { Hono } from "hono"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
-import { getApp, getAppExtends } from "@repo/db"
+import {
+  getApp,
+  getAppExtends,
+  getUser as getUserDb,
+  getGuest as getGuestDb,
+} from "@repo/db"
 
 const VEX_LIVE_FINGERPRINT = process.env.VEX_LIVE_FINGERPRINT
 const VEX_TEST_EMAIL_4 = process.env.VEX_TEST_EMAIL_4
@@ -2251,11 +2256,20 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   const generateContent = async (m?: typeof message) => {
     try {
       if (m && selectedAgent) {
+        // Use user/guest from the message object to avoid race conditions
+        // (guest might be migrated to user between message creation and background task)
+        const messageUser = m.user || undefined
+        const messageGuest = m.guest || undefined
+
         await generateAIContent({
           c,
           thread,
-          user: member,
-          guest,
+          user: messageUser
+            ? await getUserDb({ id: messageUser?.id, skipCache: true })
+            : undefined,
+          guest: messageGuest
+            ? await getGuestDb({ id: messageGuest?.id, skipCache: true })
+            : undefined,
           agentId: selectedAgent.id,
           conversationHistory: !suggestionMessages
             ? messages
@@ -2278,7 +2292,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
           type: "background_task",
           task: "content_generation",
           threadId: thread.id,
-          userId: member?.id || guest?.id,
+          userId: m?.user?.id || m?.guest?.id,
         },
       })
     }
