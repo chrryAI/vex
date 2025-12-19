@@ -4820,8 +4820,8 @@ export const getApp = async ({
     ? {
         ...storeData.store,
         title: storeData.store.name, // Use name as title
-        apps: storeData.apps,
-        app: storeData.app, // Include the store's base app
+        apps: storeData.apps.map((app) => toSafeApp({ app })),
+        app: toSafeApp({ app: storeData.app }), // Include the store's base app
       }
     : undefined
 
@@ -4916,7 +4916,7 @@ export const getPureApp = async ({
   } as app
 }
 
-export function toSafeApp({ app }: { app?: app }) {
+export function toSafeApp({ app }: { app?: app | appWithStore }) {
   if (!app) return undefined
   const result: Partial<app> = {
     id: app.id,
@@ -5831,11 +5831,13 @@ export async function getStore({
         })
 
         return {
-          ...appItem,
+          ...toSafeApp({ app: appItem }),
+
           store: appItem.store
             ? {
                 ...appItem.store,
-                apps: nestedStoreData?.apps || [],
+                apps:
+                  nestedStoreData?.apps.map((app) => toSafeApp({ app })) || [],
                 app: null, // Set to null to prevent circular references
               }
             : appItem.store,
