@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.7.33"
+const VERSION = "1.7.34"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -291,10 +291,11 @@ app.get("/sitemap.xml", async (req, res) => {
 app.get("/manifest.json", async (req, res) => {
   try {
     // Use internal API URL to avoid Cloudflare round-trip
-    const apiUrl =
-      process.env.INTERNAL_API_URL ||
-      process.env.API_URL ||
-      "https://chrry.dev/api"
+    const apiUrl = isDev
+      ? "http://localhost:3001/api"
+      : process.env.INTERNAL_API_URL ||
+        process.env.API_URL ||
+        "https://chrry.dev/api"
 
     const response = await fetch(`${apiUrl}/manifest`, {
       headers: {

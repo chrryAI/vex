@@ -1155,14 +1155,11 @@ export function AuthProvider({
   )
 
   const setSlug = (slug: string | undefined) => {
-    console.log(`🚀 ~ setSlug ~ slug:`, slug)
     if (isExtension) {
       setSlugStorage(slug)
     } else {
       setSlugState(slug)
     }
-
-    // router.push(`${slug}`)
   }
 
   const slug = isExtension ? slugStorage : slugState

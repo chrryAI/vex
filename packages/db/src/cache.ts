@@ -31,6 +31,8 @@ export const cacheKeys = {
     `apps:${userId || "all"}:${storeId || "all"}`,
   store: (id: string) => `store:${id}`,
   storeBySlug: (slug: string) => `store:slug:${slug}`,
+  storeByDomain: (domain: string) => `store:domain:${domain}`,
+  storeByAppId: (appId: string) => `store:app:${appId}`,
   stores: (userId?: string, parentStoreId?: string) =>
     `stores:${userId || "all"}:${parentStoreId || "all"}`,
   user: (id: string) => `user:${id}`,
@@ -134,7 +136,7 @@ export async function invalidateApp(id: string, slug?: string) {
     await deleteCache(cacheKeys.appBySlug(slug))
   }
   // Invalidate all app lists
-  await deleteCachePattern("apps:*")
+  await deleteCachePattern(cacheKeys.app(id))
 }
 
 // Store cache helpers
@@ -154,13 +156,22 @@ export async function setCachedStoreBySlug(slug: string, store: any) {
   await setCache(cacheKeys.storeBySlug(slug), store, CACHE_TTL.STORE)
 }
 
-export async function invalidateStore(id: string, slug?: string) {
-  await deleteCache(cacheKeys.store(id))
+export async function invalidateStore(
+  id: string,
+  slug?: string | null,
+  domain?: string | null,
+  appId?: string | null,
+) {
+  await deleteCachePattern(cacheKeys.store(id))
   if (slug) {
-    await deleteCache(cacheKeys.storeBySlug(slug))
+    await deleteCachePattern(cacheKeys.storeBySlug(slug))
   }
-  // Invalidate all store lists
-  await deleteCachePattern("stores:*")
+  if (domain) {
+    await deleteCachePattern(cacheKeys.storeByDomain(domain))
+  }
+  if (appId) {
+    await deleteCachePattern(cacheKeys.storeByAppId(appId))
+  }
 }
 
 // List cache helpers
@@ -211,11 +222,11 @@ export async function setCachedUserByEmail(email: string, user: any) {
 
 export async function invalidateUser(
   id: string,
-  email?: string,
-  appleId?: string,
-  fingerprint?: string,
-  userName?: string,
-  apiKey?: string,
+  email?: string | null,
+  appleId?: string | null,
+  fingerprint?: string | null,
+  userName?: string | null,
+  apiKey?: string | null,
 ) {
   await deleteCache(cacheKeys.user(id))
   if (email) {
@@ -261,9 +272,9 @@ export async function setCachedGuestByFingerprint(
 
 export async function invalidateGuest(
   id: string,
-  fingerprint?: string,
-  ip?: string,
-  email?: string,
+  fingerprint?: string | null,
+  ip?: string | null,
+  email?: string | null,
 ) {
   await deleteCache(cacheKeys.guest(id))
   if (fingerprint) {
