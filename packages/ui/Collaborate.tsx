@@ -89,7 +89,7 @@ ${t(`Share your vision and invite others to join the conversation!`)}`}
             disabled={isLoading || !content}
             className={"button inverted"}
             onClick={async () => {
-              let postRequestHeaders: Record<string, string> = {
+              const postRequestHeaders: Record<string, string> = {
                 Authorization: `Bearer ${token}`,
               }
 

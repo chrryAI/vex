@@ -36,7 +36,7 @@ export function generateStoreMetadata({
   const storeName = store.name || "Blossom"
   // Prefer a dedicated white-label base URL for this storeSlug if configured
   // (e.g. books.chrry.ai for the "books" store) to avoid cross-domain duplicates.
-  let { storeApp } = store.app
+  const { storeApp } = store.app
     ? getWhiteLabel({ app: store.app })
     : { storeApp: store.app }
 

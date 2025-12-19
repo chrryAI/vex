@@ -328,7 +328,7 @@ session.get("/", async (c) => {
     const deviceIdCookie = getCookie(c, "deviceId")
     const deviceId = deviceIdUrl || deviceIdCookie || deviceIdHeader
 
-    let fingerPrintCookie = getCookie(c, "fingerprint")
+    const fingerPrintCookie = getCookie(c, "fingerprint")
 
     let fingerprint =
       fingerPrintUrl ||

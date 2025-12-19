@@ -72,11 +72,11 @@ tts.post("/", async (c) => {
     const isNewDay = !lastReset || lastReset < today
 
     // Reset counters if new day
-    let speechRequestsToday = isNewDay ? 0 : userData.speechRequestsToday || 0
+    const speechRequestsToday = isNewDay ? 0 : userData.speechRequestsToday || 0
     let speechRequestsThisHour = isNewDay
       ? 0
       : userData.speechRequestsThisHour || 0
-    let speechCharactersToday = isNewDay
+    const speechCharactersToday = isNewDay
       ? 0
       : userData.speechCharactersToday || 0
 
