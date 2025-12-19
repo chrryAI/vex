@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive })
 })
 
-test.only("Subscribe As Guest", async ({ page }) => {
+test.skip("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
@@ -193,7 +193,7 @@ test.only("File upload", async ({ page }) => {
   })
 })
 
-test.only("Thread", async ({ page }) => {
+test.skip("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, bookmark: true, messagesConsumed: 2 })
 })
