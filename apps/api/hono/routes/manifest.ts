@@ -66,11 +66,11 @@ manifest.get("/", async (c) => {
       process.env.API_URL ||
       "https://chrry.dev/api"
 
-    // Use our resize API for on-the-fly resizing
-    return `${apiUrl}/resize?url=${encodeURIComponent(url)}&w=${size}&h=${size}&fit=cover&q=100`
+    // Use our resize API - centers image on canvas without upscaling
+    return `${apiUrl}/resize?url=${encodeURIComponent(url)}&w=${size}&h=${size}&fit=contain&q=100`
   }
 
-  const icon512 = app.images?.[0]?.url || baseIcon // Use original 500x500, don't upscale to 512px
+  const icon512 = app.images?.[0]?.url || resizeIcon(baseIcon, 512) // Resize to exact 512x512
   const icon192 = app.images?.[1]?.url || resizeIcon(baseIcon, 192)
   const icon180 = app.images?.[2]?.url || resizeIcon(baseIcon, 180)
 
@@ -159,8 +159,8 @@ manifest.get("/:id", async (c) => {
       process.env.API_URL ||
       "https://chrry.dev/api"
 
-    // Use our resize API for on-the-fly resizing
-    return `${apiUrl}/resize?url=${encodeURIComponent(url)}&w=${size}&h=${size}&fit=cover&q=100`
+    // Use our resize API - centers image on canvas without upscaling
+    return `${apiUrl}/resize?url=${encodeURIComponent(url)}&w=${size}&h=${size}&fit=contain&q=100`
   }
 
   const icon512 = app.images?.[0]?.url || resizeIcon(baseIcon, 512)
