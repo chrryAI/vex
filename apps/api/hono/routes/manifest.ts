@@ -21,8 +21,7 @@ manifest.get("/", async (c) => {
   const url = new URL(c.req.url)
   const forwardedHost = c.req.header("X-Forwarded-Host")
 
-  const chrryUrl =
-    url.searchParams.get("chrryUrl") || forwardedHost || "https://chrry.ai"
+  const chrryUrl = url.searchParams.get("chrryUrl") || forwardedHost
 
   // Get site config based on hostname
   const siteConfig = getSiteConfig(chrryUrl || undefined)
@@ -56,10 +55,24 @@ manifest.get("/", async (c) => {
   const backgroundColor = app.backgroundColor || "#ffffff"
 
   // Get app icons by size
-  // images array: [512px, 192px, 180px, 128px, 32px]
-  const icon512 = app.images?.[0]?.url || `/images/apps/${app?.slug}.png`
-  const icon192 = app.images?.[1]?.url || icon512
-  const icon180 = app.images?.[2]?.url || icon512
+  // images array: [512px, 192x192, 180x180, 128px, 32px]
+  const baseIcon = app.images?.[0]?.url || `/images/apps/${app?.slug}.png`
+
+  // Helper to resize images for exact dimensions (prevents blurriness on iPhone)
+  const resizeIcon = (url: string, size: number) => {
+    // Get API URL (use internal URL in production to avoid Cloudflare round-trip)
+    const apiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.API_URL ||
+      "https://chrry.dev/api"
+
+    // Use our resize API for on-the-fly resizing
+    return `${apiUrl}/resize?url=${encodeURIComponent(url)}&w=${size}&h=${size}&fit=cover&q=100`
+  }
+
+  const icon512 = app.images?.[0]?.url || baseIcon // Use original 500x500, don't upscale to 512px
+  const icon192 = app.images?.[1]?.url || resizeIcon(baseIcon, 192)
+  const icon180 = app.images?.[2]?.url || resizeIcon(baseIcon, 180)
 
   // Build manifest
   const manifestData = {
@@ -136,9 +149,23 @@ manifest.get("/:id", async (c) => {
 
   // Get app icons by size
   // images array: [512px, 192px, 180px, 128px, 32px]
-  const icon512 = app.images?.[0]?.url || "/images/pacman/space-invader.png"
-  const icon192 = app.images?.[1]?.url || icon512
-  const icon180 = app.images?.[2]?.url || icon512
+  const baseIcon = app.images?.[0]?.url || `/images/apps/${app?.slug}.png`
+
+  // Helper to resize images for exact dimensions (prevents blurriness on iPhone)
+  const resizeIcon = (url: string, size: number) => {
+    // Get API URL (use internal URL in production to avoid Cloudflare round-trip)
+    const apiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.API_URL ||
+      "https://chrry.dev/api"
+
+    // Use our resize API for on-the-fly resizing
+    return `${apiUrl}/resize?url=${encodeURIComponent(url)}&w=${size}&h=${size}&fit=cover&q=100`
+  }
+
+  const icon512 = app.images?.[0]?.url || resizeIcon(baseIcon, 512)
+  const icon192 = app.images?.[1]?.url || resizeIcon(baseIcon, 192)
+  const icon180 = app.images?.[2]?.url || resizeIcon(baseIcon, 180)
 
   // Build manifest
   const manifestData = {

@@ -324,6 +324,12 @@ session.get("/", async (c) => {
       fingerPrintCookie ||
       guest?.fingerprint
 
+    console.log(
+      `🚀 ~ session.get ~ fingerPrintCookie:`,
+      guest?.fingerprint,
+      fingerPrintCookie,
+    )
+
     const { getIp } = lib
 
     // Use UAParser for detailed device detection (more accurate than lib functions)
@@ -339,6 +345,12 @@ session.get("/", async (c) => {
         ? fingerprint
         : uuidv4()
       : uuidv4()
+
+    console.log(
+      `🚀 ~ session.get ~ fingerprint:`,
+      fingerprint,
+      validateUuid(fingerprint),
+    )
 
     const appVersion = url.searchParams.get("appVersion")
     const ip = getIp(request) // Fallback for internal Docker calls
@@ -528,7 +540,10 @@ session.get("/", async (c) => {
       const guestFingerprint = await getGuestDb({ fingerprint })
 
       let migratedFromGuest = false
-      if (!member.migratedFromGuest) {
+      if (
+        !member.migratedFromGuest &&
+        (source === "layout" || appType !== "web")
+      ) {
         const toMigrate = member.email
           ? (await getGuestDb({ email: member.email })) || guestFingerprint
           : guestFingerprint
@@ -568,6 +583,8 @@ session.get("/", async (c) => {
         // ip,
         timezone: device?.timezone ?? member.timezone,
       })
+
+      member = await getMemberAction(c, { full: true, skipCache: true })
 
       const hasNotification = await hasThreadNotifications({
         userId: member.id,

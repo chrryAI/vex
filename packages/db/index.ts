@@ -5889,7 +5889,12 @@ export async function updateStore(store: store) {
 
   // Invalidate store cache
   if (updated) {
-    await invalidateStore(updated.id, updated.slug)
+    await invalidateStore(
+      updated.id,
+      updated.slug,
+      updated.domain,
+      updated.appId,
+    )
   }
 
   return updated
@@ -5900,7 +5905,12 @@ export async function deleteStore({ id }: { id: string }) {
 
   // Invalidate store cache
   if (deleted) {
-    await invalidateStore(deleted.id, deleted.slug)
+    await invalidateStore(
+      deleted.id,
+      deleted.slug,
+      deleted.domain,
+      deleted.appId,
+    )
   }
 
   return deleted
@@ -6379,6 +6389,7 @@ export const deleteInstall = async ({
   appId?: string
   storeId?: string
 }) => {
+  const store = await getStore({ id: storeId, skipCache: true })
   const [deleted] = await db
     .delete(storeInstalls)
     .where(
@@ -6388,6 +6399,14 @@ export const deleteInstall = async ({
       ),
     )
     .returning()
+
+  store?.store.id &&
+    invalidateStore(
+      store.store.id,
+      store.app?.id,
+      store.store.domain,
+      store.store.slug,
+    )
 
   return deleted
 }
