@@ -76,7 +76,7 @@ const Threads = ({
   const [sortByDate, setSortByDate] = useLocalStorage("sortByDate", true)
 
   // Extract username based on URL pattern
-  let userName = rest.userName || userNameByUrl
+  const userName = rest.userName || userNameByUrl
 
   const [threads, setThreads] = useState<{
     threads: (thread & {
@@ -111,7 +111,7 @@ const Threads = ({
   const [lastStarredId, setLastStarredId] = useState<string | null>(null)
 
   // Use backend sorting - no client-side sorting needed when sortByDate is false
-  let sortedThreads = threads.threads
+  const sortedThreads = threads.threads
 
   const threadRefs = useRef<{ [id: string]: HTMLDivElement | null }>({})
 

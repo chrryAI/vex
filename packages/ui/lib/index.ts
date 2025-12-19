@@ -461,7 +461,7 @@ export const updateThread = async ({
   appId?: string | null
 }) => {
   let postRequestBody: FormData | string
-  let postRequestHeaders: Record<string, string> = {
+  const postRequestHeaders: Record<string, string> = {
     Authorization: `Bearer ${token}`,
   }
 

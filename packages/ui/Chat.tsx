@@ -1671,7 +1671,7 @@ export default function Chat({
 
     try {
       let postRequestBody: FormData | string
-      let postRequestHeaders: Record<string, string> = {
+      const postRequestHeaders: Record<string, string> = {
         Authorization: `Bearer ${token}`,
       }
       if (artifacts && artifacts.length > 0) {
@@ -1807,7 +1807,7 @@ export default function Chat({
 
       // Prepare request data - use FormData if files are present, JSON otherwise
       let requestBody: FormData | string
-      let requestHeaders: Record<string, string> = {
+      const requestHeaders: Record<string, string> = {
         Authorization: `Bearer ${token}`,
       }
 
@@ -3905,7 +3905,7 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             ...styles.debateAgentButton.style,
-                            ...(!!app?.onlyAgent
+                            ...(app?.onlyAgent
                               ? styles.debateAgentButtonDisabled
                               : {}),
                           }}
@@ -3954,7 +3954,7 @@ export default function Chat({
                             style={{
                               ...utilities.link.style,
                               ...styles.debateAgentButton.style,
-                              ...(!!app?.onlyAgent
+                              ...(app?.onlyAgent
                                 ? styles.debateAgentButtonDisabled
                                 : {}),
                             }}
