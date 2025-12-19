@@ -1430,7 +1430,7 @@ export function AuthProvider({
       setStore(n.store)
 
       setSlug(getAppSlug(n) || "")
-      // return
+      return
     }
 
     const u = storeAppsSwr?.store?.apps.find((app) => app.id === updatedApp?.id)
@@ -1446,7 +1446,7 @@ export function AuthProvider({
       setStore(u.store)
 
       setSlug(getAppSlug(u) || "")
-      // return
+      return
     }
 
     if (!matchedApp && thread?.appId) {
