@@ -21,6 +21,7 @@ resize.get("/", async (c) => {
     const quality = parseInt(
       c.req.query("q") || c.req.query("quality") || "100",
     )
+    const padding = parseInt(c.req.query("padding") || c.req.query("p") || "0")
 
     if (!url) {
       return c.json({ error: "Missing 'url' parameter" }, 400)
@@ -65,17 +66,40 @@ resize.get("/", async (c) => {
       `📐 Original image: ${metadata.width}x${metadata.height}, requested: ${width}x${height}`,
     )
 
-    // Resize using Sharp - use 'inside' to prevent upscaling
-    const resizeOptions: any = {
-      fit: "inside", // Never upscale, only downscale if needed
-      withoutEnlargement: true, // Prevent upscaling
-      background: { r: 0, g: 0, b: 0, alpha: 0 }, // Transparent background
-    }
-    if (width) resizeOptions.width = width
-    if (height) resizeOptions.height = height
+    // Step 1: Process the image content (resize if needed, but never upscale)
+    // withoutEnlargement prevents 500px image from stretching to 512px
+    console.log(
+      `🎯 Processing ${metadata.width}x${metadata.height} image for ${width}x${height} canvas (fit: ${fit})`,
+    )
 
-    const resizedBuffer = await sharp(buffer)
-      .resize(resizeOptions)
+    const processedBuffer = await sharp(buffer)
+      .resize({
+        width,
+        height,
+        fit, // respects 'cover' vs 'contain' logic for downscaling
+        withoutEnlargement: true, // Prevents upscaling - 500x500 stays 500x500
+        background: { r: 255, g: 255, b: 255, alpha: 0 },
+      })
+      .toBuffer()
+
+    // Step 2: Create fixed-size transparent canvas and center the image
+    // This ensures output is always exactly width x height (e.g. 512x512)
+    console.log(`🎨 Creating ${width}x${height} canvas and centering image`)
+
+    const resizedBuffer = await sharp({
+      create: {
+        width,
+        height,
+        channels: 4,
+        background: { r: 255, g: 255, b: 255, alpha: 0 }, // Transparent canvas
+      },
+    })
+      .composite([
+        {
+          input: processedBuffer,
+          gravity: "center", // Centers the image on the canvas
+        },
+      ])
       .png({ quality, compressionLevel: 9 })
       .toBuffer()
 

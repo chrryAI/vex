@@ -209,7 +209,10 @@ export async function generateServerMetadata(
 /**
  * Convert metadata object to HTML meta tags
  */
-export function metadataToHtml(metadata: MetadataResult): string {
+export function metadataToHtml(
+  metadata: MetadataResult,
+  serverData?: ServerData,
+): string {
   const tags: string[] = []
 
   // Title
@@ -338,6 +341,19 @@ export function metadataToHtml(metadata: MetadataResult): string {
       )
     })
   }
+
+  // Apple Touch Icons - use resize endpoint for proper sizing
+  // Get the base icon from metadata or use app slug
+  const appSlug = serverData?.app?.slug || "chrry"
+  const baseIcon =
+    metadata.openGraph?.images?.[0]?.url || `/images/apps/${appSlug}.png`
+  const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
+  const appleIcon180 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=180&h=180&fit=contain&q=100`
+
+  tags.push(`<link rel="apple-touch-icon" href="${appleIcon180}" />`)
+  tags.push(
+    `<link rel="apple-touch-icon" sizes="180x180" href="${appleIcon180}" />`,
+  )
 
   // PWA Manifest
 
