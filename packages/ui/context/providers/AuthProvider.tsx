@@ -321,8 +321,15 @@ export function AuthProvider({
     }
   }, [error])
 
-  const { isExtension, isStandalone, isFirefox, device, os, browser } =
-    usePlatform()
+  const {
+    isExtension,
+    isStandalone,
+    isFirefox,
+    device,
+    os,
+    browser,
+    isNative,
+  } = usePlatform()
 
   const env = isDevelopment ? "development" : "production"
 
@@ -382,6 +389,7 @@ export function AuthProvider({
   const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
 
   const token = isExtension ? tokenExtension : tokenWeb
+
   const setToken = isExtension
     ? setTokenExtension
     : (token: string | undefined) => {
@@ -536,13 +544,17 @@ export function AuthProvider({
     error: sessionError,
   } = useSWR(
     (isExtension ? isStorageReady && isCookieReady : true) &&
-      (fingerprint || token) &&
+      fingerprint &&
+      token &&
       deviceId &&
       shouldFetchSession &&
       !isRemovingApp
       ? "session"
       : null,
     async () => {
+      // debugger
+      console.log(`🚀 ~ fingerprint:`, fingerprint)
+
       try {
         // Don't pass appSlug - let the API determine base app by domain
         // Call the API action
