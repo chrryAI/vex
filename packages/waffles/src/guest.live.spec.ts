@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive })
 })
 
-test.skip("Subscribe As Guest", async ({ page }) => {
+test.only("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,

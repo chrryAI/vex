@@ -156,9 +156,11 @@ export async function loadServerData(
     }
   }
 
-  const fingerprint = TEST_MEMBER_FINGERPRINTS?.concat(
+  const isTestFP = TEST_MEMBER_FINGERPRINTS?.concat(
     TEST_GUEST_FINGERPRINTS,
   ).includes(fpFromQuery || "")
+
+  const fingerprint = isTestFP
     ? fpFromQuery
     : fpFromQuery || headers["x-fp"] || cookies.fingerprint || undefined
 
@@ -179,7 +181,11 @@ export async function loadServerData(
   const authToken = urlObj.searchParams.get("auth_token")
 
   const apiKey =
-    authToken || cookies.token || headers["x-token"] || fingerprint || uuidv4()
+    authToken ||
+    fpFromQuery ||
+    cookies.token ||
+    headers["x-token"] ||
+    fingerprint
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
 
