@@ -17,6 +17,7 @@ import { createSubscription } from "./routes/createSubscription"
 import { cron } from "./routes/cron"
 import { guest } from "./routes/guest"
 import { image } from "./routes/image"
+import { resize } from "./routes/resize"
 import { invite } from "./routes/invite"
 import { manifest } from "./routes/manifest"
 import { memories } from "./routes/memories"
@@ -103,6 +104,7 @@ api.route("/createSubscription", createSubscription)
 api.route("/cron", cron)
 api.route("/guest", guest)
 api.route("/image", image)
+api.route("/resize", resize)
 api.route("/invite", invite)
 api.route("/manifest", manifest)
 api.route("/memories", memories)

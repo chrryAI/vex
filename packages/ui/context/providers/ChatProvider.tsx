@@ -759,6 +759,16 @@ export function ChatProvider({
 
   const [shouldFetchThread, setShouldFetchThread] = useState(!auth.threadData)
 
+  useEffect(() => {
+    if (
+      threadId &&
+      auth?.threadData?.thread.id !== threadId &&
+      !shouldFetchThread
+    ) {
+      setShouldFetchThread(true)
+    }
+  }, [threadId, auth?.threadData?.thread.id, shouldFetchThread])
+
   const [until, setUntil] = useState<number>(1)
   const [liked, setLiked] = useState<boolean | undefined>(undefined)
 

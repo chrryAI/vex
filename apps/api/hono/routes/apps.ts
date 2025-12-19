@@ -241,10 +241,12 @@ app.post("/", async (c) => {
     let subjectStore = member
       ? await getStore({
           slug: member?.userName,
+          skipCache: true,
         })
       : guest
         ? await getStore({
             slug: guest?.id,
+            skipCache: true,
           })
         : undefined
 
@@ -258,6 +260,7 @@ app.post("/", async (c) => {
 
               return await getAppDb({
                 id: extendedAppId,
+                skipCache: true,
               })
             }),
           )
@@ -418,6 +421,7 @@ app.post("/", async (c) => {
       userId: member?.id,
       guestId: guest?.id,
       slug: appSlug,
+      skipCache: true,
     })
 
     if (
@@ -518,7 +522,9 @@ app.post("/", async (c) => {
       autoInstall: false, // New app already installed above, just reorder
     })
 
-    return c.json(await getAppDb({ id: newApp.id }), { status: 201 })
+    return c.json(await getAppDb({ id: newApp.id, skipCache: true }), {
+      status: 201,
+    })
   } catch (error) {
     console.error("Error creating app:", error)
     captureException(error)
@@ -883,6 +889,7 @@ app.patch("/:id", async (c) => {
               // Try to look up by ID first (handles UUIDs)
               let extendedApp = await getAppDb({
                 id: extendedAppId,
+                skipCache: true,
               })
 
               return extendedApp
@@ -905,7 +912,7 @@ app.patch("/:id", async (c) => {
       const newSlug = slugify(name, { lower: true })
 
       // Check if new slug conflicts with another app in the same store
-      const conflictingApp = await getAppDb({ slug: newSlug })
+      const conflictingApp = await getAppDb({ slug: newSlug, skipCache: true })
 
       if (
         conflictingApp &&
@@ -1062,7 +1069,12 @@ app.delete("/:id", async (c) => {
       return c.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const app = await getAppDb({ id, userId: member?.id, guestId: guest?.id })
+    const app = await getAppDb({
+      id,
+      userId: member?.id,
+      guestId: guest?.id,
+      skipCache: true,
+    })
 
     if (!app) {
       return c.json({ error: "App not found" }, { status: 404 })

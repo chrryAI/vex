@@ -747,17 +747,16 @@ export const chat = async ({
 
     const threadUrl = page.url()
 
-    if (!prompt.debateAgent) {
-      const threadId = threadUrl.split("/threads/")[1]?.split("?")[0]
-      expect(threadId).toBeTruthy()
-      console.log("Thread:", threadId)
-    }
-
     const likeButton = (await getLastAgentMessage()).locator(
       "[data-testid=like-button]",
     )
 
     if (!prompt.stop) {
+      if (!prompt.debateAgent) {
+        const threadId = threadUrl.split("/threads/")[1]?.split("?")[0]
+        expect(threadId).toBeTruthy()
+        console.log("Thread:", threadId)
+      }
       await expect(likeButton).toBeVisible({
         timeout: prompt.agentMessageTimeout || agentMessageTimeout,
       })
