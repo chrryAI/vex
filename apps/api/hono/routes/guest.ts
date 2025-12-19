@@ -36,6 +36,7 @@ guest.patch("/", async (c) => {
 
     const updatedGuest = await getGuest({
       id: guestData.id,
+      skipCache: true,
     })
 
     return c.json(updatedGuest)
