@@ -1063,19 +1063,56 @@ export function AuthProvider({
     }
   })
 
-  // useEffect(() => {
-  //   if (newApp?.id || updatedApp?.id) {
-  //     refetchApps()
-  //   }
-  // }, [newApp?.id, updatedApp?.id])
-
   useEffect(() => {
     if (storeAppsSwr) {
       storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId) &&
         setLoadingApp(undefined)
       mergeApps(storeAppsSwr.store?.apps || [])
+
+      const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
+      if (n) {
+        toast.success(t("🥳 WOW!, you created something amazing"))
+        // if (!isExtension && !isNative) {
+        //   // setSlug(getAppSlug(n) || "")
+        //   window.location.href = getAppSlug(n)
+        //   return
+        // }
+        setNewApp(undefined)
+
+        setBaseAccountApp(n)
+
+        setIsSavingApp(false)
+        setIsManagingApp(false)
+
+        setApp(n)
+        setStore(n.store)
+      }
+
+      const u = storeAppsSwr?.store?.apps.find(
+        (app) => app.id === updatedApp?.id,
+      )
+      if (u) {
+        toast.success(t("Updated") + " 🚀")
+        // if (!isExtension && !isNative) {
+        //   // setSlug(getAppSlug(n) || "")
+        //   window.location.href = getAppSlug(u)
+        //   return
+        // }
+        setUpdatedApp(undefined)
+        setBaseAccountApp(u)
+
+        setIsManagingApp(false)
+        setIsSavingApp(false)
+
+        setApp(u)
+        setStore(u.store)
+
+        setSlug(getAppSlug(u) || "")
+
+        return
+      }
     }
-  }, [storeAppsSwr])
+  }, [storeAppsSwr, newApp, updatedApp])
 
   const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
 
@@ -1371,39 +1408,6 @@ export function AuthProvider({
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
 
-    const n = storeApps.find((app) => app.id === newApp?.id)
-    if (n) {
-      setNewApp(undefined)
-
-      setBaseAccountApp(n)
-
-      setIsSavingApp(false)
-      setIsManagingApp(false)
-      toast.success(t("🥳 WOW!, you created something amazing"))
-
-      setApp(n)
-      setStore(n.store)
-
-      setSlug(getAppSlug(n) || "")
-      return
-    }
-
-    const u = storeAppsSwr?.store?.apps.find((app) => app.id === updatedApp?.id)
-    if (u) {
-      setUpdatedApp(undefined)
-      setBaseAccountApp(u)
-
-      setIsManagingApp(false)
-      setIsSavingApp(false)
-      toast.success(t("Updated") + " 🚀")
-
-      setApp(u)
-      setStore(u.store)
-
-      setSlug(getAppSlug(u) || "")
-      return
-    }
-
     if (!matchedApp && thread?.appId) {
       const threadApp = storeApps.find((app) => app.id === thread.appId)
       matchedApp = threadApp
@@ -1437,8 +1441,6 @@ export function AuthProvider({
       setSlug(getAppSlug(matchedApp) || "")
     }
   }, [
-    updatedApp,
-    newApp,
     storeApps,
     pathname,
     baseApp,
@@ -1448,7 +1450,6 @@ export function AuthProvider({
     isExtension,
     loadingAppId,
     updatedApp,
-    newApp,
   ])
   // Thread app takes priority over pathname, then falls back to pathname detection
 

@@ -289,8 +289,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         clear("app")
         if (canEditApp) {
           setUpdatedApp(result)
+          await fetchApps()
         } else {
           setNewApp(result)
+          await fetchApps()
         }
         clearFormDraft()
         setAppStatus(undefined)
@@ -635,8 +637,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
 
       const slug = baseApp?.store?.slug
-      const newUrl = `/${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/${app?.slug}?${newSearchParams.toString()}`
-      push(newUrl)
+      // const newUrl = `/${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/${app?.slug}?${newSearchParams.toString()}`
+      // push(newUrl)
     } else {
       push("/")
     }
