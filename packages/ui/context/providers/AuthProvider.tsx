@@ -566,7 +566,7 @@ export function AuthProvider({
   const setSignInPart = (
     part: "login" | "register" | "credentials" | undefined,
   ) => {
-    const newPart = part && isE2E ? "credentials" : !!user ? undefined : part
+    const newPart = part && isE2E ? "credentials" : user ? undefined : part
 
     setSignInPartInternal(newPart)
 
@@ -838,7 +838,7 @@ export function AuthProvider({
 
     // Only update state if it's different from URL to avoid loops
     if (currentPart !== signInPart) {
-      setSignInPartInternal(!!user ? undefined : currentPart || undefined)
+      setSignInPartInternal(user ? undefined : currentPart || undefined)
     }
   }, [searchParams, user])
 

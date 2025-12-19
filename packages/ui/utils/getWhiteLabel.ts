@@ -2,7 +2,7 @@ import { appWithStore } from "../types"
 import { whiteLabels } from "./siteConfig"
 
 const getWhiteLabel = ({ app }: { app?: appWithStore }) => {
-  let whiteLabel = whiteLabels.find(
+  const whiteLabel = whiteLabels.find(
     (label) => label.storeSlug === app?.store?.slug && label.isStoreApp,
   )
 

@@ -27,7 +27,7 @@ export async function getMember(
 
   if (byEmail) {
     const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
-    let user = await getUser({ email: byEmail, skipCache })
+    const user = await getUser({ email: byEmail, skipCache })
 
     if (user) {
       return {
@@ -51,7 +51,7 @@ export async function getMember(
       if (token.split(".").length !== 3) {
         const fp = authHeader.replace("Bearer ", "")
 
-        let result = await getUser({ apiKey: fp, skipCache: skipCache })
+        const result = await getUser({ apiKey: fp, skipCache: skipCache })
         if (result) {
           return {
             ...result,
@@ -110,7 +110,7 @@ export async function getGuest(
         return
       }
 
-      let result = await getGuestDb({ fingerprint: fp, skipCache })
+      const result = await getGuestDb({ fingerprint: fp, skipCache })
 
       if (!result) {
         const cookieFingerprint = c.req
@@ -124,7 +124,7 @@ export async function getGuest(
         const fingerprint = cookieFingerprint || headerFingerprint
 
         if (fingerprint) {
-          let result = await getGuestDb({ fingerprint, skipCache })
+          const result = await getGuestDb({ fingerprint, skipCache })
 
           return result || undefined
         }
@@ -182,7 +182,7 @@ export async function getApp({
 
   const pathnameParam = c.req.query("pathname")
 
-  let skipCache = skipCacheParam || params.skipCache || false
+  const skipCache = skipCacheParam || params.skipCache || false
 
   // Get headers
   const appIdHeader = request.headers.get("x-app-id")
@@ -251,7 +251,7 @@ export async function getApp({
   }
 
   // Resolve app (priority: appId > storeFromHeader > slug)
-  let appInternal = accountApp
+  const appInternal = accountApp
     ? guest
       ? await getAppDb({
           storeSlug: guest.id,

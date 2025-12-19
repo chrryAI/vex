@@ -491,7 +491,7 @@ const Thread = ({
                     placeholder={
                       appFormPlaceholder
                         ? appFormPlaceholder
-                        : !!appStatus?.part
+                        : appStatus?.part
                           ? `${t("Ask anything, I will explain")} 💭`
                           : debateAgent && selectedAgent
                             ? t(

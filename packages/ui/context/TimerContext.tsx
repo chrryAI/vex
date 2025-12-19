@@ -466,7 +466,7 @@ export function TimerContextProvider({
     timer?.count || 0,
   )
   const timerRef = useRef<any | null>(null)
-  const isTimerEndingRef = useRef<Boolean>(false)
+  const isTimerEndingRef = useRef<boolean>(false)
   const adjustIntervalRef = useRef<number | null>(null)
   const lastVisibilityUpdateRef = useRef<number>(0)
   const hasRestoredTimerRef = useRef<boolean>(false)

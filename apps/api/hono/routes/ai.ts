@@ -484,7 +484,7 @@ app.post("/", async (c) => {
   // Check if request contains files (multipart/form-data) or JSON
   const contentType = request.headers.get("content-type") || ""
   let requestData: any
-  let files: File[] = []
+  const files: File[] = []
 
   if (contentType.includes("multipart/form-data")) {
     // Handle file uploads
@@ -846,7 +846,7 @@ ${
       })) || []
 
     // Recursively get parent apps knowledge if extend exists (array of parent IDs)
-    let parentKnowledge = {
+    const parentKnowledge = {
       messages: {
         messages: [],
         totalCount: 0,
@@ -1039,7 +1039,7 @@ ${
     : undefined
 
   const clientId = message.message.clientId
-  let currentThreadId = threadId
+  const currentThreadId = threadId
 
   const newMessagePayload = {
     id: clientId,
@@ -1365,7 +1365,7 @@ ${calendarEvents
       start.toDateString() ===
       new Date(now.getTime() + 24 * 60 * 60 * 1000).toDateString()
 
-    let timeLabel = isPast
+    const timeLabel = isPast
       ? "(Past)"
       : isToday
         ? "(Today)"

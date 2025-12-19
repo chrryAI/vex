@@ -359,7 +359,7 @@ app.post("/", async (c) => {
 
     if (!subjectStore) {
       // Create a new store for the user
-      let storeSlug = member
+      const storeSlug = member
         ? member.userName
           ? slugify(member.userName)
           : member.id
@@ -889,7 +889,7 @@ app.patch("/:id", async (c) => {
               console.log("🔍 Looking up extended app:", extendedAppId)
 
               // Try to look up by ID first (handles UUIDs)
-              let extendedApp = await getAppDb({
+              const extendedApp = await getAppDb({
                 id: extendedAppId,
                 skipCache: true,
               })
