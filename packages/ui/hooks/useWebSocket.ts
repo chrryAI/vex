@@ -463,6 +463,12 @@ export const useWebSocket = <T extends { type: string }>({
     const base = WS_URL
     const wsUrl = `${base}?token=${encodeURIComponent(token)}&deviceId=${encodeURIComponent(deviceId)}`
 
+    // Only connect if not already connected to this URL
+    // if (wsManager.isConnected() && wsManager["currentUrl"] === wsUrl) {
+    //   console.log("✅ Already connected to", wsUrl, "- skipping reconnect")
+    //   return
+    // }
+
     wsManager.connect(wsUrl, {
       onConnect: () => {
         setConnected(true)

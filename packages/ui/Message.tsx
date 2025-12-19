@@ -566,6 +566,7 @@ export default function Message({
     userId: user?.id,
     guestId: guest?.id,
   })
+  console.log(`🚀 ~ guest:`, guest, message.guest)
 
   // Don't render messages that have no user, guest, or agent association
 

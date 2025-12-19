@@ -267,7 +267,7 @@ export default defineConfig(({ command, mode }) => {
           inlineDynamicImports: true,
         },
       },
-      sourcemap: !isProduction,
+      sourcemap: false, // Disabled for extensions - sourcemaps use eval() which violates CSP
       minify: isProduction ? "esbuild" : false,
       outDir: "dist",
       emptyOutDir: true,
