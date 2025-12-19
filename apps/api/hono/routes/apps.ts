@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import { Hono } from "hono"
 import {
-  getApp,
   getApp as getAppDb,
   getApps,
   getStore,
@@ -15,6 +14,8 @@ import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
 import { appWithStore } from "@chrryai/chrry/types"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"
+
+import { getApp } from "../lib/auth"
 
 import {
   installApp,
@@ -55,180 +56,11 @@ interface ReorderRequest {
 
 // GET /apps - Intelligent app resolution (no ID)
 app.get("/", async (c) => {
-  const request = c.req.raw
-
-  const member = await getMember(c, { full: true, skipCache: true })
-  const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
-
-  // Get query parameters
-  const appIdParam = c.req.query("appId")
-  const appSlugParam = c.req.query("appSlug")
-  const storeSlugParam = c.req.query("storeSlug")
-  const chrryUrlParam = c.req.query("chrryUrl")
-
-  const pathnameParam = c.req.query("pathname")
-
-  // Get headers
-  const appIdHeader = request.headers.get("x-app-id")
-  const storeSlugHeader = request.headers.get("x-app-slug")
-
-  const pathnameHeader = request.headers.get("x-pathname")
-
-  const storeSlug = storeSlugParam || storeSlugHeader || undefined
-
-  const pathname =
-    (pathnameParam
-      ? decodeURIComponent(pathnameParam)
-      : pathnameHeader || "/"
-    ).split("?")[0] || "/"
-  const appId = appIdParam || appIdHeader || undefined
-
-  // Get store from header if provided
-  const storeFromHeader = storeSlug
-    ? await getStore({
-        slug: storeSlug,
-        userId: member?.id,
-        guestId: guest?.id,
-        depth: 1,
-      })
-    : null
-
-  // Get chrryUrl
-  const chrryUrl = chrryUrlParam || (await getChrryUrl(request))
-  const siteConfig = getSiteConfig(chrryUrl)
-
-  // Get site app
-  const siteApp = await getAppDb({
-    slug: siteConfig.slug,
-    storeSlug: siteConfig.storeSlug,
-  })
-
-  // Get chrry store
-  const chrryStore = await getStore({
-    domain: siteConfig.store,
-    userId: member?.id,
-    guestId: guest?.id,
-    depth: 1,
-  })
-
-  // Parse app/store slugs from pathname
-  let { appSlug: appSlugGenerated, storeSlug: storeSlugGenerated } =
-    getAppAndStoreSlugs(pathname, {
-      defaultAppSlug: siteConfig.slug,
-      defaultStoreSlug: siteConfig.storeSlug,
-    })
-
-  // Override with params if provided
-  if (appSlugParam) appSlugGenerated = appSlugParam
-  if (storeSlugParam) storeSlugGenerated = storeSlugParam
-
-  // Check white label
-  const whiteLabel = whiteLabels.find(
-    (label) => label.slug === appSlugGenerated && label.isStoreApp,
-  )
-  if (whiteLabel) {
-    storeSlugGenerated = whiteLabel.storeSlug
-  }
-
-  // Resolve app (priority: appId > storeFromHeader > slug)
-  const appInternal = appId
-    ? await getAppDb({
-        id: appId,
-        userId: member?.id,
-        guestId: guest?.id,
-        depth: 1,
-      })
-    : storeFromHeader?.store?.appId
-      ? await getAppDb({
-          id: storeFromHeader.store.appId,
-          userId: member?.id,
-          guestId: guest?.id,
-          depth: 1,
-        })
-      : await getAppDb({
-          slug: appSlugGenerated,
-          storeSlug: storeSlugGenerated,
-          userId: member?.id,
-          guestId: guest?.id,
-          depth: 1,
-        })
-
-  const store = appInternal?.store || chrryStore
-
-  // Find base app
-  const baseApp =
-    store?.apps?.find(
-      (app) =>
-        app.slug === siteConfig.slug &&
-        app.store?.slug === siteConfig.storeSlug,
-    ) || store?.app
-
   // Get final app
-  const app =
-    appInternal ||
-    (await getAppDb({
-      id: baseApp?.id,
-      userId: member?.id,
-      guestId: guest?.id,
-      depth: 1,
-    }))
+  const app = await getApp({ c })
 
   if (!app) {
     return c.json({ error: "App not found" }, 404)
-  }
-
-  // Enrich store.apps with store.app references
-  if (app?.store?.apps?.length) {
-    const currentStoreApps = app.store.apps || []
-    const storeApps = [...currentStoreApps]
-
-    const enrichedApps = await Promise.all(
-      storeApps.map(async (storeApp) => {
-        if (!storeApp) return null
-
-        const isBaseApp = storeApp?.id === storeApp?.store?.appId
-
-        let storeBaseApp: appWithStore | null = null
-        if (isBaseApp) {
-          storeBaseApp =
-            (await getAppDb({
-              id: storeApp?.id,
-              userId: member?.id,
-              guestId: guest?.id,
-              depth: 1,
-            })) || null
-        } else if (storeApp?.store?.appId) {
-          const baseAppData = await getAppDb({
-            id: storeApp.store.appId,
-            userId: member?.id,
-            guestId: guest?.id,
-            depth: 0,
-          })
-          storeBaseApp = baseAppData ?? null
-        }
-
-        return {
-          ...storeApp,
-          store: {
-            ...storeApp?.store,
-            app: storeBaseApp,
-          },
-        } as appWithStore
-      }),
-    )
-
-    const validApps = enrichedApps.filter(Boolean) as appWithStore[]
-    app.store.apps = validApps
-  }
-
-  // Add site app if not already in list
-  if (
-    app &&
-    siteApp &&
-    app.store?.apps &&
-    !app.store.apps.some((a) => a.id === siteApp.id)
-  ) {
-    app.store.apps.push(siteApp)
   }
 
   return c.json(app)
@@ -238,19 +70,7 @@ app.get("/", async (c) => {
 app.get("/:id", async (c) => {
   const id = c.req.param("id")
 
-  const member = await getMember(c, { full: true, skipCache: true })
-  const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
-
-  if (!member && !guest) {
-    return c.json({ error: "Unauthorized" }, 401)
-  }
-
-  const app = await getAppDb({
-    id,
-    userId: member?.id,
-    guestId: guest?.id,
-    depth: 1,
-  })
+  const app = await getApp({ c, appId: id })
 
   if (!app) {
     return c.json({ error: "App not found" }, 404)
@@ -261,9 +81,15 @@ app.get("/:id", async (c) => {
 
 app.post("/", async (c) => {
   try {
-    const member = await getMember(c)
+    const member = await getMember(c, {
+      skipCache: true,
+    })
 
-    const guest = !member ? await getGuest(c) : undefined
+    const guest = !member
+      ? await getGuest(c, {
+          skipCache: true,
+        })
+      : undefined
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
@@ -326,6 +152,7 @@ app.post("/", async (c) => {
     const existingApps = await getApps({
       userId: member?.id,
       guestId: guest?.id,
+      ownerId: member?.id || guest?.id,
     })
 
     const nameExists = existingApps.items.some(
@@ -411,10 +238,12 @@ app.post("/", async (c) => {
     let subjectStore = member
       ? await getStore({
           slug: member?.userName,
+          skipCache: true,
         })
       : guest
         ? await getStore({
             slug: guest?.id,
+            skipCache: true,
           })
         : undefined
 
@@ -426,8 +255,9 @@ app.post("/", async (c) => {
 
               // Try to look up by ID first (handles UUIDs)
 
-              return await getApp({
+              return await getAppDb({
                 id: extendedAppId,
+                skipCache: true,
               })
             }),
           )
@@ -543,8 +373,7 @@ app.post("/", async (c) => {
       const existingStore = await getStore({ slug: storeSlug })
       if (existingStore) {
         // Slug taken, append UUID to make it unique
-        storeSlug = `${storeSlug}-${uuid().slice(0, 8)}`
-        console.log(`⚠️ Store slug taken, using: ${storeSlug}`)
+        return c.json({ error: "Store slug taken" }, { status: 400 })
       }
 
       const created = await createStore({
@@ -567,6 +396,7 @@ app.post("/", async (c) => {
         id: created.id,
         userId: member?.id,
         guestId: guest?.id,
+        skipCache: true,
       })
 
       if (!subjectStore) {
@@ -584,10 +414,11 @@ app.post("/", async (c) => {
     let appSlug = slugify(name, { lower: true })
 
     // Check if slug is unique within the store
-    const existingAppInStore = await getApp({
+    const existingAppInStore = await getAppDb({
       userId: member?.id,
       guestId: guest?.id,
       slug: appSlug,
+      skipCache: true,
     })
 
     if (
@@ -641,6 +472,7 @@ app.post("/", async (c) => {
         id: updated.id,
         userId: member?.id,
         guestId: guest?.id,
+        skipCache: true,
       })
 
       if (!subjectStore) {
@@ -688,7 +520,9 @@ app.post("/", async (c) => {
       autoInstall: false, // New app already installed above, just reorder
     })
 
-    return c.json(await getApp({ id: newApp.id }), { status: 201 })
+    return c.json(await getAppDb({ id: newApp.id, skipCache: true }), {
+      status: 201,
+    })
   } catch (error) {
     console.error("Error creating app:", error)
     captureException(error)
@@ -699,8 +533,14 @@ app.post("/", async (c) => {
 // POST /apps/reorder - Reorder apps
 app.post("/reorder", async (c) => {
   try {
-    const member = await getMember(c)
-    const guest = await getGuest(c)
+    const member = await getMember(c, {
+      skipCache: true,
+    })
+    const guest = !member
+      ? await getGuest(c, {
+          skipCache: true,
+        })
+      : undefined
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
@@ -896,8 +736,14 @@ app.post("/reorder", async (c) => {
 // PATCH /apps/:id - Update existing app
 app.patch("/:id", async (c) => {
   try {
-    const member = await getMember(c)
-    const guest = !member ? await getGuest(c) : undefined
+    const member = await getMember(c, {
+      skipCache: true,
+    })
+    const guest = !member
+      ? await getGuest(c, {
+          skipCache: true,
+        })
+      : undefined
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
@@ -905,18 +751,16 @@ app.patch("/:id", async (c) => {
 
     const appId = c.req.param("id")
 
+    if (!validate(appId)) {
+      return c.json({ error: "Invalid app ID" }, { status: 400 })
+    }
+
     // Get existing app
-    const existingApp = validate(appId)
-      ? await getPureApp({
-          id: appId,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
-      : await getPureApp({
-          slug: appId,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
+    const existingApp = await getApp({
+      c,
+      appId,
+      skipCache: true,
+    })
 
     if (!existingApp) {
       return c.json({ error: "App not found" }, { status: 404 })
@@ -1045,8 +889,9 @@ app.patch("/:id", async (c) => {
               console.log("🔍 Looking up extended app:", extendedAppId)
 
               // Try to look up by ID first (handles UUIDs)
-              let extendedApp = await getApp({
+              let extendedApp = await getAppDb({
                 id: extendedAppId,
+                skipCache: true,
               })
 
               return extendedApp
@@ -1069,7 +914,7 @@ app.patch("/:id", async (c) => {
       const newSlug = slugify(name, { lower: true })
 
       // Check if new slug conflicts with another app in the same store
-      const conflictingApp = await getApp({ slug: newSlug })
+      const conflictingApp = await getAppDb({ slug: newSlug, skipCache: true })
 
       if (
         conflictingApp &&
@@ -1213,5 +1058,66 @@ app.patch("/:id", async (c) => {
     console.error("Error updating app:", error)
     captureException(error)
     return c.json({ error: "Failed to update app" }, { status: 500 })
+  }
+})
+
+app.delete("/:id", async (c) => {
+  const id = c.req.param("id")
+  try {
+    const member = await getMember(c, {
+      skipCache: true,
+    })
+    const guest = await getGuest(c, {
+      skipCache: true,
+    })
+
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const app = await getAppDb({
+      id,
+      userId: member?.id,
+      guestId: guest?.id,
+      skipCache: true,
+    })
+
+    if (!app) {
+      return c.json({ error: "App not found" }, { status: 404 })
+    }
+
+    if (!isOwner(app, { userId: member?.id, guestId: guest?.id })) {
+      return c.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    if (app.store?.slug !== guest?.id && app.store?.slug !== member?.userName) {
+      return c.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    // Verify ownership
+
+    // Delete associated images
+    if (app.images && app.images.length > 0) {
+      for (const img of app.images) {
+        try {
+          await deleteFile(img.id)
+        } catch (deleteError) {
+          console.error("Failed to delete image:", deleteError)
+        }
+      }
+    }
+
+    // Delete the app
+    const deleted = await deleteApp({ id: app.id })
+
+    if (!deleted) {
+      return c.json({ error: "Failed to delete app" }, { status: 500 })
+    }
+
+    return c.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting app:", error)
+    captureException(error)
+    return c.json({ error: "Failed to delete app" }, { status: 500 })
   }
 })

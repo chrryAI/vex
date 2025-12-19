@@ -46,7 +46,7 @@ export function generateAppMetadata({
     rest.pathname ||
     (typeof window !== "undefined" ? window.location.pathname : "")
 
-  const ogImage = app.images?.[0]?.url || "/logo/logo-512-512.png"
+  const ogImage = app.images?.[0]?.url || `/images/apps/${app.slug}.png`
 
   const storeSlug = store.slug || "chrry"
   const storeName = store.name || "Blossom"

@@ -707,6 +707,14 @@ const updateStoreUrls = async ({ user }: { user: user }) => {
       "https://chromewebstore.google.com/detail/focus-🍒/nkomoiomfaeodakglkihapminhpgnibl",
   })
 
+  const search = await getApp({ slug: "search", userId: user.id })
+  if (!search) throw new Error("Search app not found")
+  await updateApp({
+    ...search,
+    chromeWebStoreUrl:
+      "https://chromewebstore.google.com/detail/search-🍒/cloblmampohoemdaojenlkjbnkpmkiop?authuser=0&hl=en",
+  })
+
   console.log(
     "Focus app updated",
     await getApp({ slug: "focus", userId: user.id }).then(

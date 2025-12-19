@@ -1104,19 +1104,25 @@ export const getApp = async ({
   token,
   appId,
   chrryUrl,
+  skipCache,
   pathname,
+  storeSlug,
 }: {
   API_URL?: string
   token: string
   appId?: string
   chrryUrl?: string
   pathname?: string
+  skipCache?: boolean
+  storeSlug?: string
 }) => {
   // Build query params for intelligent resolution
   const params = new URLSearchParams()
   if (chrryUrl) params.append("chrryUrl", chrryUrl)
   if (appId) params.append("appId", appId)
   if (pathname) params.append("pathname", encodeURIComponent(pathname))
+  if (skipCache) params.append("skipCache", "true")
+  // if (storeSlug) params.append("storeSlug", storeSlug)
 
   // Use /apps for intelligent resolution (no ID in path)
   const url = `${API_URL}/apps${params.toString() ? `?${params.toString()}` : ""}`

@@ -163,8 +163,20 @@ session.get("/", async (c) => {
       c.req.header("x-real-ip") ||
       "127.0.0.1"
 
-    // Pass IP via context object
-    const decision = await aj.protect(request, { ip: clientIp })
+    // Convert Headers to plain object for Arcjet compatibility
+    const headersObj: Record<string, string | string[] | undefined> = {}
+    request.headers.forEach((value, key) => {
+      headersObj[key] = value
+    })
+
+    // Create Arcjet-compatible request object
+    const arcjetRequest = {
+      ...request,
+      ip: clientIp,
+      headers: headersObj,
+    }
+
+    const decision = await aj.protect(arcjetRequest)
 
     if (decision.isDenied()) {
       console.log("🤖 Bot detected:", {
@@ -194,6 +206,7 @@ session.get("/", async (c) => {
   const accountApp = await getAppAction({
     c,
     accountApp: true,
+    skipCache: true,
   })
   const userBaseApp = member ? accountApp : undefined
 
@@ -527,7 +540,10 @@ session.get("/", async (c) => {
       const guestFingerprint = await getGuestDb({ fingerprint })
 
       let migratedFromGuest = false
-      if (!member.migratedFromGuest) {
+      if (
+        !member.migratedFromGuest &&
+        (source === "layout" || appType !== "web")
+      ) {
         const toMigrate = member.email
           ? (await getGuestDb({ email: member.email })) || guestFingerprint
           : guestFingerprint
@@ -567,6 +583,12 @@ session.get("/", async (c) => {
         // ip,
         timezone: device?.timezone ?? member.timezone,
       })
+
+      member = await getMemberAction(c, { full: true, skipCache: true })
+
+      if (!member) {
+        return c.json({ error: "Unauthorized" }, 401)
+      }
 
       const hasNotification = await hasThreadNotifications({
         userId: member.id,

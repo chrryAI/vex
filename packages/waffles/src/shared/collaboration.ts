@@ -1,5 +1,13 @@
 import { Browser, expect, test } from "@playwright/test"
-import { getURL, VEX_TEST_EMAIL, VEX_TEST_EMAIL_2, wait } from ".."
+import {
+  getURL,
+  VEX_TEST_EMAIL,
+  VEX_TEST_EMAIL_2,
+  wait,
+  VEX_TEST_EMAIL_3,
+  VEX_TEST_EMAIL_4,
+  VEX_TEST_PASSWORD_4,
+} from ".."
 import { chat } from "./chat"
 import { Page } from "@playwright/test"
 import { signIn } from "./signIn"
@@ -92,7 +100,7 @@ export async function collaboration({
   const collaborateInput = page1.getByTestId("chat-collaborate-input")
   expect(collaborateInput).toBeVisible()
 
-  await collaborateInput.fill(VEX_TEST_EMAIL)
+  await collaborateInput.fill(isLive ? VEX_TEST_EMAIL_4 : VEX_TEST_EMAIL)
 
   const collaborateAddButton = page1.getByTestId("chat-collaborate-add-button")
   await collaborateAddButton.click()
@@ -144,7 +152,11 @@ export async function collaboration({
     waitUntil: "networkidle",
   })
 
-  await signIn({ page: page2 })
+  await signIn({
+    page: page2,
+    email: VEX_TEST_EMAIL_4,
+    password: VEX_TEST_PASSWORD_4,
+  })
 
   await wait(5000)
 
