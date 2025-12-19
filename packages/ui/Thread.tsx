@@ -21,7 +21,13 @@ import {
 } from "./context/providers"
 import { A, usePlatform, useTheme, Div, Button, Span } from "./platform"
 import Loading from "./Loading"
-import { FRONTEND_URL, isCollaborator, isOwner, pageSizes } from "./utils"
+import {
+  FRONTEND_URL,
+  isCollaborator,
+  isOwner,
+  pageSizes,
+  isE2E,
+} from "./utils"
 import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
 import Chat from "./Chat"
 import Messages from "./Messages"
@@ -251,6 +257,15 @@ const Thread = ({
       if (!isLoadingMore && !isUserScrolling && !hasStoppedScrolling) {
         scrollToBottom()
       }
+
+      if (isE2E)
+        console.log("🤖 onStreamingUpdate", {
+          content,
+          clientId,
+          aiAgent,
+          isWebSearchEnabled,
+          isImageGenerationEnabled,
+        })
 
       // Only update if content actually changed and clientId exists
       if (!clientId) return

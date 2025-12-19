@@ -4,6 +4,7 @@ import Handlebars from "handlebars"
 import { getApp, getAppExtends } from "@repo/db"
 
 const VEX_LIVE_FINGERPRINT = process.env.VEX_LIVE_FINGERPRINT
+const VEX_TEST_EMAIL_4 = process.env.VEX_TEST_EMAIL_4
 
 import {
   getMemories,
@@ -2101,7 +2102,10 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
-  const isE2E = fingerprint !== VEX_LIVE_FINGERPRINT && isE2EInternal
+  const isE2E =
+    member?.email !== VEX_TEST_EMAIL_4 &&
+    fingerprint !== VEX_LIVE_FINGERPRINT &&
+    isE2EInternal
 
   const hourlyLimit =
     isDevelopment && !isE2E

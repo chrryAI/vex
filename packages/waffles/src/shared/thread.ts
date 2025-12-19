@@ -9,10 +9,12 @@ export const thread = async ({
   isMember,
   bookmark,
   createChat = true,
+  messagesConsumed = 3,
 }: {
   page: Page
   isMember?: boolean
   createChat?: boolean
+  messagesConsumed?: number
   bookmark?: boolean
 }) => {
   let total = 0
@@ -23,7 +25,7 @@ export const thread = async ({
       page,
       isMember,
       instruction: "Help me write a short story",
-      prompts: Array.from({ length: 3 }, (_, i) => {
+      prompts: Array.from({ length: messagesConsumed }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
           model: "sushi",
@@ -180,7 +182,7 @@ export const thread = async ({
       isMember,
       instruction: "Help me write a short story",
       bookmark,
-      prompts: Array.from({ length: 3 }, (_, i) => {
+      prompts: Array.from({ length: messagesConsumed }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
           model: "sushi",
@@ -202,12 +204,12 @@ export const thread = async ({
     await chat({
       isNewChat: false,
       creditsConsumed: total * 2,
-      messagesConsumed: 3,
+      messagesConsumed,
       bookmark: false,
       page,
       isMember,
       instruction: "Help me write a short story",
-      prompts: Array.from({ length: 3 }, (_, i) => {
+      prompts: Array.from({ length: messagesConsumed }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
           model: "sushi",
