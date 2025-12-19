@@ -37,17 +37,9 @@ resize.get("/", async (c) => {
     let fullUrl = url
     if (url.startsWith("/")) {
       // For static files, use the frontend server URL
-      // In Docker: use internal service name (http://flash:5173)
-      // In local dev: use FRONTEND_URL or localhost
-      const isDocker =
-        process.env.DOCKER === "true" || process.env.NODE_ENV === "production"
-      const frontendUrl = isDocker
-        ? "http://flash:5173" // Docker service name
-        : process.env.FRONTEND_URL || "http://localhost:5173"
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173"
       fullUrl = `${frontendUrl}${url}`
-      console.log(
-        `🔗 Converted relative path: ${url} → ${fullUrl} (Docker: ${isDocker})`,
-      )
+      console.log(`🔗 Converted relative path: ${url} → ${fullUrl}`)
     }
 
     console.log(`🖼️  Resizing image: ${fullUrl} → ${width}x${height}`)
