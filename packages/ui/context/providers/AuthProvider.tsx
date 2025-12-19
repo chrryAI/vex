@@ -435,6 +435,46 @@ export function AuthProvider({
     }
   }, [isExtension])
 
+  const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
+    // Create a map of existing apps by ID
+    const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
+
+    // Add or update apps
+    newApps.forEach((newApp) => {
+      const existingApp = existingAppsMap.get(newApp.id)
+
+      if (newApp.name === "MyAgent") {
+        // debugger
+      }
+
+      if (existingApp && hasStoreApps(newApp)) {
+        existingAppsMap.set(newApp.id, newApp)
+      } else {
+        existingAppsMap.set(newApp.id, newApp)
+      }
+    })
+
+    return Array.from(existingAppsMap.values())
+  }
+
+  const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
+    session?.userBaseApp,
+  )
+
+  const userBaseStore = userBaseApp?.store
+  const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
+    session?.guestBaseApp,
+  )
+
+  const accountApp = userBaseApp || guestBaseApp
+
+  const setBaseAccountApp = (app: appWithStore | undefined) => {
+    user && setUserBaseApp(app)
+    guest && setGuestBaseApp(app)
+  }
+
+  const guestBaseStore = guestBaseApp?.store
+
   function processSession(sessionData?: session) {
     if (sessionData) {
       setSession(sessionData)
@@ -537,6 +577,48 @@ export function AuthProvider({
       removeParams("signIn")
     }
   }
+
+  const [newApp, setNewApp] = useState<appWithStore | undefined>(undefined)
+  const [updatedApp, setUpdatedApp] = useState<appWithStore | undefined>(
+    undefined,
+  )
+  const [loadingAppId, setLoadingAppId] = useState<string | undefined>(
+    undefined,
+  )
+  const allApps = merge(
+    session?.app?.store?.apps || [],
+    userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
+  )
+  const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
+
+  const getAppSlug = (
+    targetApp: appWithStore,
+    defaultSlug: string = "/",
+  ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
+  const baseAppInternal = storeApps.find((item) => {
+    if (!item) return false
+
+    if (
+      siteConfig.slug === item.slug &&
+      item.store?.slug === siteConfig.storeSlug
+    ) {
+      return true
+    }
+  })
+
+  const [baseApp, setBaseApp] = useState<appWithStore | undefined>(
+    baseAppInternal,
+  )
+
+  const [app, setAppInternal] = useState<
+    (appWithStore & { image?: string }) | undefined
+  >(props.app || session?.app || baseApp)
+
+  const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
+
+  const [isSavingApp, setIsSavingApp] = useState(false)
+  const [isManagingApp, setIsManagingApp] = useState(false)
+
   const {
     data: sessionSwr,
     mutate: refetchSession,
@@ -548,12 +630,13 @@ export function AuthProvider({
       token &&
       deviceId &&
       shouldFetchSession &&
-      !isRemovingApp
+      !isRemovingApp &&
+      !isSavingApp &&
+      !isManagingApp
       ? "session"
       : null,
     async () => {
       // debugger
-      console.log(`🚀 ~ fingerprint:`, fingerprint)
 
       try {
         // Don't pass appSlug - let the API determine base app by domain
@@ -641,7 +724,6 @@ export function AuthProvider({
       },
     },
   )
-
   const sessionData = sessionSwr || session
 
   function trackPlausibleEvent({
@@ -738,72 +820,6 @@ export function AuthProvider({
     })
   }
 
-  const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
-    // Create a map of existing apps by ID
-    const existingAppsMap = new Map(prevApps.map((app) => [app.id, app]))
-
-    // Add or update apps
-    newApps.forEach((newApp) => {
-      const existingApp = existingAppsMap.get(newApp.id)
-
-      if (newApp.name === "MyAgent") {
-        // debugger
-      }
-
-      if (existingApp && hasStoreApps(newApp)) {
-        existingAppsMap.set(newApp.id, newApp)
-      } else {
-        existingAppsMap.set(newApp.id, newApp)
-      }
-    })
-
-    return Array.from(existingAppsMap.values())
-  }
-
-  const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
-    session?.userBaseApp,
-  )
-
-  const userBaseStore = userBaseApp?.store
-  const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
-    session?.guestBaseApp,
-  )
-
-  const accountApp = userBaseApp || guestBaseApp
-
-  const setBaseAccountApp = (app: appWithStore | undefined) => {
-    user && setUserBaseApp(app)
-    guest && setGuestBaseApp(app)
-  }
-
-  const guestBaseStore = guestBaseApp?.store
-
-  const allApps = merge(
-    sessionData?.app?.store?.apps || [],
-    userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
-  )
-
-  const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
-
-  const getAppSlug = (
-    targetApp: appWithStore,
-    defaultSlug: string = "/",
-  ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
-  const baseAppInternal = storeApps.find((item) => {
-    if (!item) return false
-
-    if (
-      siteConfig.slug === item.slug &&
-      item.store?.slug === siteConfig.storeSlug
-    ) {
-      return true
-    }
-  })
-
-  const [baseApp, setBaseApp] = useState<appWithStore | undefined>(
-    baseAppInternal,
-  )
-
   useEffect(() => {
     hasStoreApps(baseAppInternal) && setBaseApp(baseAppInternal)
   }, [baseAppInternal])
@@ -811,10 +827,6 @@ export function AuthProvider({
   const threadId = getThreadId(pathname)
 
   const threadIdRef = useRef(threadId)
-
-  const [app, setAppInternal] = useState<
-    (appWithStore & { image?: string }) | undefined
-  >(props.app || session?.app || baseApp)
 
   useEffect(() => {
     const signInParam = searchParams.get("signIn")
@@ -995,11 +1007,6 @@ export function AuthProvider({
     undefined,
   )
 
-  const [newApp, setNewApp] = useState<appWithStore | undefined>(undefined)
-  const [updatedApp, setUpdatedApp] = useState<appWithStore | undefined>(
-    undefined,
-  )
-
   // Get isStorageReady from platform context
 
   // Centralized function to merge apps without duplicates
@@ -1017,10 +1024,6 @@ export function AuthProvider({
   }
 
   const [isSplash, setIsSplash] = useState(true)
-
-  const [loadingAppId, setLoadingAppId] = useState<string | undefined>(
-    undefined,
-  )
 
   const [loadingApp, setLoadingAppInternal] = useState<
     appWithStore | undefined
@@ -1040,10 +1043,6 @@ export function AuthProvider({
 
   const accountAppId = userBaseApp?.id || guestBaseApp?.id
 
-  const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
-
-  const [isManagingApp, setIsManagingApp] = useState(false)
-
   const {
     data: storeAppsSwr,
     mutate: refetchApps,
@@ -1051,76 +1050,32 @@ export function AuthProvider({
   } = useSWR(token && !isRemovingApp && ["app", appId], async () => {
     try {
       if (!token) return
-      const app = await getApp({
+      const result = await getApp({
         token,
         appId,
         chrryUrl,
         pathname,
-        skipCache:
-          !!accountAppId ||
-          appId === accountAppId ||
-          !!newApp?.id ||
-          isManagingApp,
+        skipCache: appId !== app?.id || appId === accountAppId,
       })
-      return app
+      return result
     } catch (error) {
       captureException(error)
     }
   })
 
-  useEffect(() => {
-    if (newApp?.id || updatedApp?.id) {
-      refetchApps()
-    }
-  }, [newApp?.id, updatedApp?.id])
+  // useEffect(() => {
+  //   if (newApp?.id || updatedApp?.id) {
+  //     refetchApps()
+  //   }
+  // }, [newApp?.id, updatedApp?.id])
 
   useEffect(() => {
     if (storeAppsSwr) {
       storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId) &&
         setLoadingApp(undefined)
-
       mergeApps(storeAppsSwr.store?.apps || [])
-
-      // const u = storeAppsSwr.store?.apps?.find(
-      //   (app) => app.id === updatedApp?.id,
-      // )
-
-      // if (u) {
-      //   // debugger
-
-      //   if (guest) {
-      //     setGuestBaseApp(u)
-      //   } else {
-      //     setUserBaseApp(u)
-      //   }
-      //   // setApp(u)
-      //   // setUpdatedApp(undefined)
-      //   // router.push(getAppSlug(u) || "")
-
-      //   toast.success(t("Updated") + " 🚀")
-      // }
-
-      // const n = storeAppsSwr.store?.apps?.find((app) => app.id === newApp?.id)
-      // if (n) {
-      //   if (guest) {
-      //     setGuestBaseApp(n)
-      //   } else {
-      //     setUserBaseApp(n)
-      //   }
-      //   toast.success(t("🥳 WOW!, you created something amazing"))
-      //   // setApp(n)
-      //   // router.push(getAppSlug(n) || "")
-
-      //   // setTimeout(() => {
-      //   //   window.location.reload()
-      //   // }, 500)
-
-      //   // setShouldFetchApps(false)
-      //   // setNewApp(undefined)
-      //   setIsSavingApp(false)
-      // }
     }
-  }, [storeAppsSwr, guest, user, newApp, updatedApp, loadingAppId])
+  }, [storeAppsSwr])
 
   const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
 
@@ -1537,8 +1492,6 @@ export function AuthProvider({
       console.warn("PerformanceObserver not supported:", error)
     }
   }, [track])
-
-  const [isSavingApp, setIsSavingApp] = useState(false)
 
   const [shouldFetchTasks, setShouldFetchTasks] = useState(false)
   const [isLoadingTasks, setIsLoadingTasks] = useState(false)

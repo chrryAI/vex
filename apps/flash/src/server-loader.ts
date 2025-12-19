@@ -162,13 +162,6 @@ export async function loadServerData(
     ? fpFromQuery
     : fpFromQuery || headers["x-fp"] || cookies.fingerprint || undefined
 
-  console.log(
-    `🚀 ~ fingerprheaders["x-fp"]int:`,
-    fingerprint,
-    cookies.fingerprint,
-    headers["x-fp"],
-  )
-
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
   const routeType = headers["x-route-type"]
@@ -324,7 +317,7 @@ export async function loadServerData(
     siteConfig,
     locale,
     deviceId,
-    fingerprint,
+    fingerprint: session?.fingerprint!,
     viewPortWidth,
     viewPortHeight,
     chrryUrl,
@@ -347,6 +340,7 @@ export async function loadServerData(
 
   return {
     ...result,
+    fingerprint: session?.fingerprint!,
     metadata,
   }
 }

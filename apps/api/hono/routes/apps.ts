@@ -76,10 +76,6 @@ app.get("/:id", async (c) => {
     return c.json({ error: "App not found" }, 404)
   }
 
-  if (!app) {
-    return c.json({ error: "App not found" }, 404)
-  }
-
   return c.json(app)
 })
 
@@ -156,6 +152,7 @@ app.post("/", async (c) => {
     const existingApps = await getApps({
       userId: member?.id,
       guestId: guest?.id,
+      ownerId: member?.id || guest?.id,
     })
 
     const nameExists = existingApps.items.some(
@@ -376,8 +373,7 @@ app.post("/", async (c) => {
       const existingStore = await getStore({ slug: storeSlug })
       if (existingStore) {
         // Slug taken, append UUID to make it unique
-        storeSlug = `${storeSlug}-${uuid().slice(0, 8)}`
-        console.log(`⚠️ Store slug taken, using: ${storeSlug}`)
+        return c.json({ error: "Store slug taken" }, { status: 400 })
       }
 
       const created = await createStore({
@@ -400,6 +396,7 @@ app.post("/", async (c) => {
         id: created.id,
         userId: member?.id,
         guestId: guest?.id,
+        skipCache: true,
       })
 
       if (!subjectStore) {
@@ -475,6 +472,7 @@ app.post("/", async (c) => {
         id: updated.id,
         userId: member?.id,
         guestId: guest?.id,
+        skipCache: true,
       })
 
       if (!subjectStore) {
@@ -535,8 +533,14 @@ app.post("/", async (c) => {
 // POST /apps/reorder - Reorder apps
 app.post("/reorder", async (c) => {
   try {
-    const member = await getMember(c)
-    const guest = await getGuest(c)
+    const member = await getMember(c, {
+      skipCache: true,
+    })
+    const guest = !member
+      ? await getGuest(c, {
+          skipCache: true,
+        })
+      : undefined
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
@@ -1062,8 +1066,12 @@ app.patch("/:id", async (c) => {
 app.delete("/:id", async (c) => {
   const id = c.req.param("id")
   try {
-    const member = await getMember(c)
-    const guest = await getGuest(c)
+    const member = await getMember(c, {
+      skipCache: true,
+    })
+    const guest = await getGuest(c, {
+      skipCache: true,
+    })
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
