@@ -4,6 +4,8 @@ import { clean } from "./shared/clean"
 import { getURL } from "."
 import { subscribe } from "./shared/subscribe"
 import { collaboration } from "./shared/collaboration"
+import { thread } from "./shared/thread"
+import { v4 as uuidv4 } from "uuid"
 
 const isMember = false
 
