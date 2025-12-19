@@ -182,7 +182,10 @@ export async function getApp({
 
   const pathnameParam = c.req.query("pathname")
 
-  const skipCache = skipCacheParam || params.skipCache || false
+  const skipCache =
+    skipCacheParam ||
+    params.skipCache ||
+    ["POST", "PUT", "DELETE", "PATCH"].includes(request.method)
 
   // Get headers
   const appIdHeader = request.headers.get("x-app-id")
