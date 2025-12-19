@@ -577,14 +577,16 @@ app.post("/", async (c) => {
     thread,
     clientId,
     streamId,
-    waitFor = 10,
+    waitFor = 20,
   }: {
+    waitFor?: number
     chunk: string
     chunkNumber: number
     totalChunks: number
     streamingMessage: any
     member?: user
     guest?: guest
+
     thread: thread & {
       user: user | null
       guest: guest | null
@@ -4047,77 +4049,135 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         } else {
           // Use fullStream for DeepSeek Reasoner (supports reasoning parts)
           console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
+
+          // Monitor inactivity to detect stuck streams (Bun-compatible)
+          const INACTIVITY_TIMEOUT_MS = 10000 // 10 seconds of no activity = stuck
+          let lastActivityTime = Date.now()
+          let streamFinished = false
+          let monitoringInterval: NodeJS.Timeout | null = null
+
+          const streamPromise = (async () => {
+            try {
+              for await (const part of result.fullStream) {
+                // Skip processing if stream is finished or stopped
+                if (streamFinished) continue
+
+                // Update activity timestamp on every part received
+                lastActivityTime = Date.now()
+
+                console.log("🔍 Stream part type:", part.type)
+
+                if (!streamControllers.has(streamId)) {
+                  console.log("🍣 Sushi stream was stopped")
+                  streamFinished = true
+                  continue
+                }
+
+                if (part.type === "reasoning-start") {
+                  console.log("🧠 Reasoning started")
+                } else if (part.type === "reasoning-delta") {
+                  // DeepSeek Reasoner's thinking process chunks
+                  reasoningText += part.text
+                  console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
+                  await enhancedStreamChunk({
+                    chunk: `__REASONING__${part.text}__/REASONING__`,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+                } else if (part.type === "reasoning-end") {
+                  console.log("🧠 Reasoning complete")
+                } else if (part.type === "text-delta") {
+                  // Final answer text
+                  answerText += part.text
+                  console.log("💬 Text delta:", part.text)
+                  await enhancedStreamChunk({
+                    chunk: part.text,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+                } else if (part.type === "tool-call") {
+                  console.log("🛠️ Tool call:", part.toolName)
+                } else if (part.type === "finish") {
+                  console.log("🏁 Stream finish event received")
+                  streamFinished = true
+                  // Don't break - let the iterator finish naturally to avoid Bun polyfill issues
+                }
+              }
+              console.log("🍣 Successfully completed fullStream iteration")
+            } catch (streamError) {
+              console.error(
+                "❌ Error during fullStream iteration:",
+                streamError,
+              )
+              console.error("❌ Error type:", typeof streamError)
+              console.error(
+                "❌ Error constructor:",
+                streamError?.constructor?.name,
+              )
+              if (streamError instanceof Error) {
+                console.error("❌ Error message:", streamError.message)
+                console.error("❌ Error stack:", streamError.stack)
+              }
+              // Re-throw to be caught by outer try-catch
+              throw streamError
+            } finally {
+              // Clean up monitoring interval
+              if (monitoringInterval) {
+                clearInterval(monitoringInterval)
+              }
+            }
+          })()
+
+          // Monitor for inactivity - check every 5 seconds
+          const inactivityMonitor = new Promise<void>((_, reject) => {
+            monitoringInterval = setInterval(() => {
+              const timeSinceLastActivity = Date.now() - lastActivityTime
+
+              if (timeSinceLastActivity > INACTIVITY_TIMEOUT_MS) {
+                console.error(
+                  `⏱️ DeepSeek Reasoner stuck - no activity for ${timeSinceLastActivity / 1000}s`,
+                )
+                if (monitoringInterval) {
+                  clearInterval(monitoringInterval)
+                }
+                reject(
+                  new Error(
+                    `DeepSeek Reasoner stuck - no activity for ${timeSinceLastActivity / 1000}s`,
+                  ),
+                )
+              }
+            }, 5000) // Check every 5 seconds
+          })
+
           try {
-            let streamFinished = false
-
-            for await (const part of result.fullStream) {
-              // Skip processing if stream is finished or stopped
-              if (streamFinished) continue
-
-              console.log("🔍 Stream part type:", part.type)
-
-              if (!streamControllers.has(streamId)) {
-                console.log("🍣 Sushi stream was stopped")
-                streamFinished = true
-                continue
+            await Promise.race([streamPromise, inactivityMonitor])
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("stuck")) {
+              console.error("⏱️ Stream stuck - using partial response")
+              // Continue with whatever we have so far instead of failing completely
+              if (!answerText && !reasoningText) {
+                throw error // Only throw if we got nothing at all
               }
-
-              if (part.type === "reasoning-start") {
-                console.log("🧠 Reasoning started")
-              } else if (part.type === "reasoning-delta") {
-                // DeepSeek Reasoner's thinking process chunks
-                reasoningText += part.text
-                console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
-                await enhancedStreamChunk({
-                  chunk: `__REASONING__${part.text}__/REASONING__`,
-                  chunkNumber: currentChunk++,
-                  totalChunks: -1,
-                  streamingMessage: sushiStreamingMessage,
-                  member,
-                  guest,
-                  thread,
-                  streamId,
-                  clientId,
-                })
-              } else if (part.type === "reasoning-end") {
-                console.log("🧠 Reasoning complete")
-              } else if (part.type === "text-delta") {
-                // Final answer text
-                answerText += part.text
-                console.log("💬 Text delta:", part.text)
-                await enhancedStreamChunk({
-                  chunk: part.text,
-                  chunkNumber: currentChunk++,
-                  totalChunks: -1,
-                  streamingMessage: sushiStreamingMessage,
-                  member,
-                  guest,
-                  thread,
-                  streamId,
-                  clientId,
-                })
-              } else if (part.type === "tool-call") {
-                console.log("🛠️ Tool call:", part.toolName)
-              } else if (part.type === "finish") {
-                console.log("🏁 Stream finish event received")
-                streamFinished = true
-                // Don't break - let the iterator finish naturally to avoid Bun polyfill issues
-              }
+            } else {
+              throw error
             }
-            console.log("🍣 Successfully completed fullStream iteration")
-          } catch (streamError) {
-            console.error("❌ Error during fullStream iteration:", streamError)
-            console.error("❌ Error type:", typeof streamError)
-            console.error(
-              "❌ Error constructor:",
-              streamError?.constructor?.name,
-            )
-            if (streamError instanceof Error) {
-              console.error("❌ Error message:", streamError.message)
-              console.error("❌ Error stack:", streamError.stack)
+          } finally {
+            // Ensure cleanup
+            if (monitoringInterval) {
+              clearInterval(monitoringInterval)
             }
-            // Re-throw to be caught by outer try-catch
-            throw streamError
           }
         }
         // return c.json({ success: true })
