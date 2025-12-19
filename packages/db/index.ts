@@ -4918,7 +4918,11 @@ export const getPureApp = async ({
 
 export function toSafeApp({ app }: { app?: app | appWithStore }) {
   if (!app) return undefined
-  const result: Partial<app> = {
+
+  if ("store" in app && app?.store?.apps) {
+    return { ...app, systemPrompt: undefined }
+  }
+  const result: Partial<app | appWithStore> = {
     id: app.id,
     name: app.name,
     tools: app.tools,
@@ -5993,7 +5997,13 @@ export async function getAppExtends({
   // Return apps with extends property set to empty array to prevent infinite recursion
   return result.map((r) => ({
     ...(true
-      ? { ...toSafeApp({ app: r.app }), highlights: [], tips: [] }
+      ? {
+          id: r.app.id,
+          slug: r.app.slug,
+          name: r.app.name,
+          storeId: r.app.storeId,
+          description: r.app.description,
+        }
       : r.app),
     extends: [],
   }))
