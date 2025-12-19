@@ -358,7 +358,7 @@ async function generateSuggestionsAndPlaceholders({
   model: any
   modelName: string
 }) {
-  let app = rest.app
+  const app = rest.app
   // Get all apps for classification
   const apps = await getApps()
   const appDescriptions = apps.items

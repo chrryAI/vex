@@ -515,6 +515,7 @@ export default function SignIn({
 
                       window.open(`${FRONTEND_URL}/privacy`, "_blank")
                     }}
+                    rel="noreferrer"
                   >
                     <LinkIcon size={16} /> {t("Privacy")}
                   </a>

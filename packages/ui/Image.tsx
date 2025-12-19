@@ -93,7 +93,7 @@ export default function ImageComponent(props: ImageProps) {
 
   const { appFormWatcher, canEditApp } = useApp()
 
-  let { src, width, height, size } = getImageSrc({
+  const { src, width, height, size } = getImageSrc({
     ...props,
     canEditApp,
     image: appFormWatcher?.image,
