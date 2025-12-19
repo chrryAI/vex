@@ -20,11 +20,14 @@ export async function getMember(
     skipCache?: boolean
   } = {},
 ) {
-  const { byEmail, full, skipCache } = options
+  const { byEmail } = options
+
+  const skipCache = options.skipCache || c.req.method !== "GET"
+  const full = options.full || skipCache
 
   if (byEmail) {
     const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
-    let user = await getUser({ email: byEmail, skipCache: skipCache || full })
+    let user = await getUser({ email: byEmail, skipCache })
 
     if (user) {
       return {
@@ -48,7 +51,7 @@ export async function getMember(
       if (token.split(".").length !== 3) {
         const fp = authHeader.replace("Bearer ", "")
 
-        let result = await getUser({ apiKey: fp, skipCache: skipCache || full })
+        let result = await getUser({ apiKey: fp, skipCache: skipCache })
         if (result) {
           return {
             ...result,
@@ -65,7 +68,7 @@ export async function getMember(
       if (decoded.email) {
         const user = await getUser({
           email: decoded.email,
-          skipCache: skipCache || full,
+          skipCache: skipCache,
         })
 
         if (user) {
@@ -179,7 +182,7 @@ export async function getApp({
 
   const pathnameParam = c.req.query("pathname")
 
-  const skipCache = skipCacheParam || params.skipCache || false
+  let skipCache = skipCacheParam || params.skipCache || false
 
   // Get headers
   const appIdHeader = request.headers.get("x-app-id")

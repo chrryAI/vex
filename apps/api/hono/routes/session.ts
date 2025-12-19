@@ -163,8 +163,20 @@ session.get("/", async (c) => {
       c.req.header("x-real-ip") ||
       "127.0.0.1"
 
-    // Pass IP via context object
-    const decision = await aj.protect(request, { ip: clientIp })
+    // Convert Headers to plain object for Arcjet compatibility
+    const headersObj: Record<string, string | string[] | undefined> = {}
+    request.headers.forEach((value, key) => {
+      headersObj[key] = value
+    })
+
+    // Create Arcjet-compatible request object
+    const arcjetRequest = {
+      ...request,
+      ip: clientIp,
+      headers: headersObj,
+    }
+
+    const decision = await aj.protect(arcjetRequest)
 
     if (decision.isDenied()) {
       console.log("🤖 Bot detected:", {
@@ -324,12 +336,6 @@ session.get("/", async (c) => {
       fingerPrintCookie ||
       guest?.fingerprint
 
-    console.log(
-      `🚀 ~ session.get ~ fingerPrintCookie:`,
-      guest?.fingerprint,
-      fingerPrintCookie,
-    )
-
     const { getIp } = lib
 
     // Use UAParser for detailed device detection (more accurate than lib functions)
@@ -345,12 +351,6 @@ session.get("/", async (c) => {
         ? fingerprint
         : uuidv4()
       : uuidv4()
-
-    console.log(
-      `🚀 ~ session.get ~ fingerprint:`,
-      fingerprint,
-      validateUuid(fingerprint),
-    )
 
     const appVersion = url.searchParams.get("appVersion")
     const ip = getIp(request) // Fallback for internal Docker calls
@@ -585,6 +585,10 @@ session.get("/", async (c) => {
       })
 
       member = await getMemberAction(c, { full: true, skipCache: true })
+
+      if (!member) {
+        return c.json({ error: "Unauthorized" }, 401)
+      }
 
       const hasNotification = await hasThreadNotifications({
         userId: member.id,
