@@ -1122,7 +1122,7 @@ export const getApp = async ({
   if (appId) params.append("appId", appId)
   if (pathname) params.append("pathname", encodeURIComponent(pathname))
   if (skipCache) params.append("skipCache", "true")
-  if (storeSlug) params.append("storeSlug", storeSlug)
+  // if (storeSlug) params.append("storeSlug", storeSlug)
 
   // Use /apps for intelligent resolution (no ID in path)
   const url = `${API_URL}/apps${params.toString() ? `?${params.toString()}` : ""}`
