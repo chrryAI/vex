@@ -325,18 +325,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
           toast.error(response.error)
           return false
         }
-        // setApp(undefined)
+
+        clear("app")
 
         await fetchSession()
+        await fetchApps()
+
+        // setApps(apps.filter((app) => app.id !== app?.id))
+
+        // setApp(undefined)
         setBaseAccountApp(undefined)
+        // setBaseAccountApp(undefined)
 
         // setApps(storeApps.filter((app) => app.id !== app?.id))
 
-        clearFormDraft()
+        // clearFormDraft()
         setAppStatus(undefined)
 
         toast.success(`${t("Deleted")} 😭`)
-        // push("/")
+
+        push("/")
+
         return true
       } catch (error) {
         toast.error(t("Something went wrong"))
@@ -624,24 +633,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   ) => {
     setAppStatusInternal(payload)
 
-    if (payload) {
-      // Add query params to current URL
-      const params: Record<string, string> = {}
-      if (payload.step) params.step = payload.step || appStatus?.step
-      if (payload.part) params.part = payload.part || appStatus?.part
+    // if (payload) {
+    //   // Add query params to current URL
+    //   const params: Record<string, string> = {}
+    //   if (payload.step) params.step = payload.step || appStatus?.step
+    //   if (payload.part) params.part = payload.part || appStatus?.part
 
-      const newSearchParams = new URLSearchParams(searchParams?.toString())
+    //   const newSearchParams = new URLSearchParams(searchParams?.toString())
 
-      Object.entries(payload).forEach(([key, value]) => {
-        newSearchParams.set(key, String(value))
-      })
+    //   Object.entries(payload).forEach(([key, value]) => {
+    //     newSearchParams.set(key, String(value))
+    //   })
 
-      const slug = baseApp?.store?.slug
-      // const newUrl = `/${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/${app?.slug}?${newSearchParams.toString()}`
-      // push(newUrl)
-    } else {
-      push("/")
-    }
+    //   const slug = baseApp?.store?.slug
+    //   // const newUrl = `/${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/${app?.slug}?${newSearchParams.toString()}`
+    //   // push(newUrl)
+    // } else {
+    //   // push("/")
+    // }
   }
 
   const stepRef = useRef(step)
