@@ -1154,7 +1154,16 @@ export function AuthProvider({
     (app && getAppSlug(app)) || undefined,
   )
 
-  const setSlug = isExtension ? setSlugStorage : setSlugState
+  const setSlug = (slug: string | undefined) => {
+    console.log(`🚀 ~ setSlug ~ slug:`, slug)
+    if (isExtension) {
+      setSlugStorage(slug)
+    } else {
+      setSlugState(slug)
+    }
+
+    // router.push(`${slug}`)
+  }
 
   const slug = isExtension ? slugStorage : slugState
 
@@ -1383,18 +1392,55 @@ export function AuthProvider({
     }
   }, [threadId])
 
+  useEffect(() => {
+    const slug = accountApp ? getAppSlug(accountApp) : ""
+    if (slug !== pathname && accountApp?.id === app?.id) {
+      router.push(slug)
+    }
+  }, [accountApp, app, pathname])
+
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
-    if (updatedApp || newApp) {
-      return
-    }
     if (!storeApps.length || (!thread && threadId)) return
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
 
-    if (thread?.appId) {
+    const n = storeApps.find((app) => app.id === newApp?.id)
+    if (n) {
+      setNewApp(undefined)
+
+      setBaseAccountApp(n)
+
+      setIsSavingApp(false)
+      setIsManagingApp(false)
+      toast.success(t("🥳 WOW!, you created something amazing"))
+
+      setApp(n)
+      setStore(n.store)
+
+      setSlug(getAppSlug(n) || "")
+      // return
+    }
+
+    const u = storeAppsSwr?.store?.apps.find((app) => app.id === updatedApp?.id)
+    if (u) {
+      setUpdatedApp(undefined)
+      setBaseAccountApp(u)
+
+      setIsManagingApp(false)
+      setIsSavingApp(false)
+      toast.success(t("Updated") + " 🚀")
+
+      setApp(u)
+      setStore(u.store)
+
+      setSlug(getAppSlug(u) || "")
+      // return
+    }
+
+    if (!matchedApp && thread?.appId) {
       const threadApp = storeApps.find((app) => app.id === thread.appId)
       matchedApp = threadApp
     }
@@ -1432,12 +1478,13 @@ export function AuthProvider({
     storeApps,
     pathname,
     baseApp,
-    // app?.id removed - causes infinite loop since setApp() changes it
     thread,
     threadId,
     lastAppId,
     isExtension,
     loadingAppId,
+    updatedApp,
+    newApp,
   ])
   // Thread app takes priority over pathname, then falls back to pathname detection
 
