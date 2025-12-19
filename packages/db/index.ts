@@ -2311,14 +2311,14 @@ export async function upsertDevice(deviceData: newDevice) {
   const device = await getDevice({ fingerprint })
 
   if (device) {
-    await updateDevice({
+    const updated = await updateDevice({
       ...device,
       ...updateData,
     })
-    return device
+    return updated
   }
 
-  await createDevice(deviceData)
+  return await createDevice(deviceData)
 }
 
 export const createThread = async (thread: newThread) => {
@@ -4226,6 +4226,22 @@ export const deleteAffiliatePayout = async ({ id }: { id: string }) => {
 }
 
 export const createPlaceHolder = async (placeHolder: newPlaceHolder) => {
+  // Validate that guestId exists if provided (prevent foreign key violations)
+  if (placeHolder.guestId) {
+    const guestExists = await db
+      .select({ id: guests.id })
+      .from(guests)
+      .where(eq(guests.id, placeHolder.guestId))
+      .limit(1)
+
+    if (guestExists.length === 0) {
+      console.warn(
+        `⚠️ Skipping placeholder creation - guest ${placeHolder.guestId} does not exist (may have been migrated to user)`,
+      )
+      return undefined
+    }
+  }
+
   const [inserted] = await db
     .insert(placeHolders)
     .values(placeHolder)

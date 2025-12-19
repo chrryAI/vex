@@ -1047,7 +1047,7 @@ export function AuthProvider({
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
-  } = useSWR(token && !isRemovingApp && ["app", appId], async () => {
+  } = useSWR(token && ["app", appId], async () => {
     try {
       if (!token) return
       const result = await getApp({
@@ -1086,6 +1086,7 @@ export function AuthProvider({
 
         setApp(n)
         setStore(n.store)
+        router.push(getAppSlug(n))
       }
 
       const u = storeAppsSwr?.store?.apps.find(
@@ -1108,6 +1109,7 @@ export function AuthProvider({
         setStore(u.store)
 
         setSlug(getAppSlug(u) || "")
+        router.push(getAppSlug(u))
 
         return
       }
@@ -1393,17 +1395,19 @@ export function AuthProvider({
     }
   }, [threadId])
 
-  useEffect(() => {
-    const slug = accountApp ? getAppSlug(accountApp) : ""
-    if (slug !== pathname && accountApp?.id === app?.id) {
-      router.push(slug)
-    }
-  }, [accountApp, app, pathname])
+  // useEffect(() => {
+  //   const slug = accountApp ? getAppSlug(accountApp) : ""
+  //   if (slug !== pathname && accountApp?.id === app?.id) {
+  //     router.push(slug)
+  //   }
+  // }, [accountApp, app, pathname])
 
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
     if (!storeApps.length || (!thread && threadId)) return
+
+    // debugger
 
     // Priority 1: If there's a thread, use the thread's app
     let matchedApp: appWithStore | undefined
