@@ -342,15 +342,15 @@ async function generateSuggestionsAndPlaceholders({
   memories: MemoryData
   language: string
   thread: thread & {
-    user: user | null
-    guest: guest | null
+    user?: user | null
+    guest?: guest | null
     collaborations?: {
       collaboration: collaboration
       user: user
     }[]
   }
-  user?: user
-  guest?: guest
+  user?: user | null
+  guest?: guest | null
   latestMessage: message
   calendarEvents?: calendarEvent[]
   app?: app | appWithStore
@@ -533,8 +533,8 @@ INSTRUCTION RULES:
 
 DYNAMIC PLACEHOLDER SYSTEM:
 - You can use {{placeholder}} syntax in BOTH title and content fields
-- These placeholders will be replaced with real-time user context at runtime
-- ⚠️ ONLY USE THESE EXACT PLACEHOLDERS (no others are supported):
+- These placeholders are AUTOMATICALLY FILLED by the frontend with real-time user context
+- ⚠️ CRITICAL: ONLY USE THESE EXACT PLACEHOLDERS - NO CUSTOM PLACEHOLDERS ARE SUPPORTED:
   * {{city}} - User's current city (e.g., "Tokyo")
   * {{country}} - User's current country (e.g., "Japan")
   * {{flag}} - Country flag emoji (e.g., "🇯🇵")
@@ -543,15 +543,21 @@ DYNAMIC PLACEHOLDER SYSTEM:
   * {{weather}} - Weather description (e.g., "Current weather: 15°C ☀️")
   * {{weatherEmoji}} - Weather emoji (e.g., "☀️", "🌧️", "☁️", "❄️")
   * {{timeOfDay}} - Time period (e.g., "morning", "afternoon", "evening", "night")
-- ❌ DO NOT create custom placeholders like {{emoji}}, {{topic}}, {{name}}, etc.
+- ❌ NEVER CREATE CUSTOM PLACEHOLDERS like {{topic}}, {{movie}}, {{duration}}, {{name}}, {{project}}, etc.
+- ❌ If you need specific content, write it directly - DO NOT use placeholders for it
 - ✅ For emojis: Put actual emoji characters directly in the text, NOT placeholders
-- Examples:
+- ✅ For specific topics: Write them directly (e.g., "Analyze React hooks" NOT "Analyze {{topic}}")
+- Examples of CORRECT usage:
   * Title: "Find best restaurants in {{city}} {{flag}}"
   * Content: "You are a food expert in {{location}}. Weather: {{temp}} {{weatherEmoji}}"
   * Title: "Plan {{timeOfDay}} activities {{weatherEmoji}}"
   * Content: "Suggest activities for {{timeOfDay}} in {{city}}. Consider {{weather}}"
-- Use placeholders to make instructions feel dynamic and context-aware
-- Placeholders work especially well for location-based and time-sensitive instructions
+- Examples of INCORRECT usage:
+  * ❌ "Analyze film {{movie}} scenes" - Write specific movie or make it general
+  * ❌ "Start {{duration}} focus session" - Write specific duration or make it general
+  * ❌ "Research {{topic}} with citations" - Write specific topic or make it general
+- Use placeholders ONLY for location, weather, and time context
+- For everything else, be specific based on the conversation or keep it general
 
 CRITICAL PLACEHOLDER RULES:
 - NEVER hardcode time-specific values like "morning", "afternoon", "evening" - use {{timeOfDay}} instead
@@ -677,51 +683,78 @@ Return only valid JSON object.`
           history: [],
         },
       })
+
+      // If placeholder creation failed (e.g., guest doesn't exist), log and continue
+      if (!homePlaceholder) {
+        console.warn(
+          "⚠️ Home placeholder creation failed - guest may not exist",
+        )
+      }
     }
   }
 
   let threadPlaceHolder
   if (responseData.placeholders.thread) {
-    threadPlaceHolder = await getPlaceHolder({
-      threadId: thread.id,
-      userId: user?.id,
-      guestId: guest?.id,
-    })
-
-    if (threadPlaceHolder) {
-      // Preserve history
-      const history = threadPlaceHolder.metadata?.history || []
-      const topicKeywords = extractTopicKeywords(conversationText)
-
-      history.push({
-        text: threadPlaceHolder.text,
-        generatedAt: threadPlaceHolder.updatedOn.toISOString(),
-        conversationContext: getSmartConversationContext(conversationText, 500), // Smart context
-        topicKeywords, // Lightweight alternative
-      })
-
-      threadPlaceHolder = await updatePlaceHolder({
-        ...threadPlaceHolder,
-        text: responseData.placeholders.thread,
-        updatedOn: new Date(),
-        metadata: {
-          ...threadPlaceHolder.metadata,
-          history: history.slice(-10), // Keep last 10 versions
-          generatedBy: modelName,
-        },
-      })
-    } else {
-      threadPlaceHolder = await createPlaceHolder({
-        text: responseData.placeholders.thread,
-        userId: user?.id || null,
-        guestId: guest?.id || null,
+    try {
+      threadPlaceHolder = await getPlaceHolder({
         threadId: thread.id,
-        appId: finalAppId || null, // ✅ Link to app
-        metadata: {
-          generatedBy: modelName,
-          history: [],
-        },
+        userId: user?.id,
+        guestId: guest?.id,
       })
+
+      if (threadPlaceHolder) {
+        // Preserve history
+        const history = threadPlaceHolder.metadata?.history || []
+        const topicKeywords = extractTopicKeywords(conversationText)
+
+        history.push({
+          text: threadPlaceHolder.text,
+          generatedAt: threadPlaceHolder.updatedOn.toISOString(),
+          conversationContext: getSmartConversationContext(
+            conversationText,
+            500,
+          ), // Smart context
+          topicKeywords, // Lightweight alternative
+        })
+
+        threadPlaceHolder = await updatePlaceHolder({
+          ...threadPlaceHolder,
+          text: responseData.placeholders.thread,
+          updatedOn: new Date(),
+          metadata: {
+            ...threadPlaceHolder.metadata,
+            history: history.slice(-10), // Keep last 10 versions
+            generatedBy: modelName,
+          },
+        })
+      } else {
+        threadPlaceHolder = await createPlaceHolder({
+          text: responseData.placeholders.thread,
+          userId: user?.id || null,
+          guestId: guest?.id || null,
+          threadId: thread.id,
+          appId: finalAppId || null, // ✅ Link to app
+          metadata: {
+            generatedBy: modelName,
+            history: [],
+          },
+        })
+
+        // If placeholder creation failed (e.g., guest doesn't exist), log and continue
+        if (!threadPlaceHolder) {
+          console.warn(
+            "⚠️ Thread placeholder creation failed - guest may not exist",
+          )
+        }
+      }
+    } catch (error) {
+      // Handle foreign key constraint violation gracefully
+      // This can happen when thread isn't fully committed yet (especially for guests)
+      console.warn(
+        `⚠️ Skipping thread placeholder creation - thread may not be committed yet:`,
+        error,
+      )
+      threadPlaceHolder = null
     }
   }
 
@@ -833,16 +866,16 @@ async function generateAIContent({
   c: Context
   app?: app | appWithStore
   thread: thread & {
-    user: user | null
-    guest: guest | null
+    user?: user | null
+    guest?: guest | null
     collaborations?: {
       collaboration: collaboration
       user: user
     }[]
     summary?: threadSummary
   }
-  user?: user
-  guest?: guest
+  user?: user | null
+  guest?: guest | null
   agentId: string
   conversationHistory: ModelMessage[]
   latestMessage: message

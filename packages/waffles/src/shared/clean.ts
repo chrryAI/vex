@@ -4,11 +4,13 @@ import { getURL } from "../index"
 export async function clean({
   page,
   fingerprint,
+  isLive,
 }: {
   page: Page
   fingerprint?: string
+  isLive?: boolean
 }) {
-  await page.goto(getURL({ isLive: false, isMember: false, fingerprint }), {
+  await page.goto(getURL({ isLive, isMember: false, fingerprint }), {
     waitUntil: "networkidle",
   })
 

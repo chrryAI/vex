@@ -9,7 +9,8 @@
     "build:client": "NODE_ENV=production pnpm vite build --outDir dist/client",
     "build:server": "NODE_ENV=production pnpm vite build --ssr src/entry-server.tsx --outDir dist/server",
     "start": "cross-env NODE_ENV=production node server",
-    "preview": "cross-env NODE_ENV=production node server"
+    "preview": "cross-env NODE_ENV=production node server",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@arcjet/node": "1.0.0-beta.15",

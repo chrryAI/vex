@@ -20,11 +20,14 @@ export async function getMember(
     skipCache?: boolean
   } = {},
 ) {
-  const { byEmail, full, skipCache } = options
+  const { byEmail } = options
+
+  const skipCache = options.skipCache || c.req.method !== "GET"
+  const full = options.full || skipCache
 
   if (byEmail) {
     const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
-    let user = await getUser({ email: byEmail, skipCache: skipCache || full })
+    let user = await getUser({ email: byEmail, skipCache })
 
     if (user) {
       return {
@@ -48,7 +51,7 @@ export async function getMember(
       if (token.split(".").length !== 3) {
         const fp = authHeader.replace("Bearer ", "")
 
-        let result = await getUser({ apiKey: fp, skipCache: skipCache || full })
+        let result = await getUser({ apiKey: fp, skipCache: skipCache })
         if (result) {
           return {
             ...result,
@@ -65,7 +68,7 @@ export async function getMember(
       if (decoded.email) {
         const user = await getUser({
           email: decoded.email,
-          skipCache: skipCache || full,
+          skipCache: skipCache,
         })
 
         if (user) {
@@ -90,6 +93,7 @@ export async function getMember(
 export async function getGuest(
   c?: Context,
   { skipCache }: { skipCache?: boolean } = {},
+  debug = false,
 ) {
   try {
     // If no context provided, return undefined (for backward compatibility)
@@ -120,7 +124,8 @@ export async function getGuest(
         const fingerprint = cookieFingerprint || headerFingerprint
 
         if (fingerprint) {
-          let result = await getGuestDb({ fingerprint })
+          let result = await getGuestDb({ fingerprint, skipCache })
+
           return result || undefined
         }
       }
@@ -161,6 +166,7 @@ export async function getApp({
   appId?: string
   storeSlug?: string
   accountApp?: boolean
+  skipCache?: boolean
 }) {
   const request = c.req.raw
 
@@ -172,8 +178,11 @@ export async function getApp({
   const appSlugParam = c.req.query("appSlug")
   const storeSlugParam = c.req.query("storeSlug")
   const chrryUrlParam = c.req.query("chrryUrl")
+  const skipCacheParam = c.req.query("skipCache") === "true"
 
   const pathnameParam = c.req.query("pathname")
+
+  let skipCache = skipCacheParam || params.skipCache || false
 
   // Get headers
   const appIdHeader = request.headers.get("x-app-id")
@@ -198,6 +207,7 @@ export async function getApp({
         userId: member?.id,
         guestId: guest?.id,
         depth: 1,
+        skipCache,
       })
     : null
 
@@ -209,6 +219,7 @@ export async function getApp({
   const siteApp = await getAppDb({
     slug: siteConfig.slug,
     storeSlug: siteConfig.storeSlug,
+    skipCache,
   })
 
   // Get chrry store
@@ -217,6 +228,7 @@ export async function getApp({
     userId: member?.id,
     guestId: guest?.id,
     depth: 1,
+    skipCache,
   })
 
   // Parse app/store slugs from pathname
@@ -245,12 +257,14 @@ export async function getApp({
           storeSlug: guest.id,
           guestId: guest.id,
           depth: 1,
+          skipCache,
         })
       : member
         ? await getAppDb({
             storeSlug: member.userName,
             userId: member.id,
             depth: 1,
+            skipCache,
           })
         : undefined
     : appId
@@ -259,6 +273,7 @@ export async function getApp({
           userId: member?.id,
           guestId: guest?.id,
           depth: 1,
+          skipCache,
         })
       : storeFromRequest?.store?.appId
         ? await getAppDb({
@@ -266,6 +281,7 @@ export async function getApp({
             userId: member?.id,
             guestId: guest?.id,
             depth: 1,
+            skipCache,
           })
         : await getAppDb({
             slug: appSlugGenerated,
@@ -273,6 +289,7 @@ export async function getApp({
             userId: member?.id,
             guestId: guest?.id,
             depth: 1,
+            skipCache,
           })
 
   if (!appInternal && accountApp) {
@@ -297,6 +314,7 @@ export async function getApp({
       userId: member?.id,
       guestId: guest?.id,
       depth: 1,
+      skipCache,
     }))
 
   if (!app) {
@@ -322,12 +340,14 @@ export async function getApp({
               userId: member?.id,
               guestId: guest?.id,
               depth: 1,
+              skipCache,
             })) || null
         } else if (storeApp?.store?.appId) {
           const baseAppData = await getAppDb({
             id: storeApp.store.appId,
             userId: member?.id,
             guestId: guest?.id,
+            skipCache,
             depth: 0,
           })
           storeBaseApp = baseAppData ?? null

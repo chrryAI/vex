@@ -21,7 +21,13 @@ import {
 } from "./context/providers"
 import { A, usePlatform, useTheme, Div, Button, Span } from "./platform"
 import Loading from "./Loading"
-import { FRONTEND_URL, isCollaborator, isOwner, pageSizes } from "./utils"
+import {
+  FRONTEND_URL,
+  isCollaborator,
+  isOwner,
+  pageSizes,
+  isE2E,
+} from "./utils"
 import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
 import Chat from "./Chat"
 import Messages from "./Messages"
@@ -30,6 +36,7 @@ import DeleteThread from "./DeleteThread"
 import Instructions from "./Instructions"
 import EditThread from "./EditThread"
 import Share from "./Share"
+import { useUserScroll } from "./hooks/useUserScroll"
 import { useThreadPresence } from "./hooks/useThreadPresence"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
@@ -229,6 +236,9 @@ const Thread = ({
   const [collaborationVersion, setCollaborationVersion] = useState(0)
   const { utilities } = useStyles()
 
+  const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
+    useUserScroll()
+
   // Memoize the streaming update handler to prevent infinite loops
   const handleStreamingUpdate = useCallback(
     ({
@@ -244,9 +254,18 @@ const Thread = ({
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
     }) => {
-      if (!isLoadingMore && shouldAutoScroll(content)) {
+      if (!isLoadingMore && !isUserScrolling && !hasStoppedScrolling) {
         scrollToBottom()
       }
+
+      if (isE2E)
+        console.log("🤖 onStreamingUpdate", {
+          content: content.replace(/__REASONING__.*?__\/REASONING__/gs, ""),
+          clientId,
+          aiAgent,
+          isWebSearchEnabled,
+          isImageGenerationEnabled,
+        })
 
       // Only update if content actually changed and clientId exists
       if (!clientId) return
@@ -319,7 +338,15 @@ const Thread = ({
         ]
       })
     },
-    [isLoadingMore, scrollToBottom, setMessages, shouldAutoScroll],
+    [
+      isLoadingMore,
+      scrollToBottom,
+      setMessages,
+      shouldAutoScroll,
+      resetScrollState,
+      isUserScrolling,
+      hasStoppedScrolling,
+    ],
   )
 
   const render = () => {
@@ -690,6 +717,7 @@ const Thread = ({
                       if (msg.isUser && msg.message) {
                         console.log("✅ Adding user message to state")
                         scrollToBottom(500, true)
+                        resetScrollState()
                         shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
 
                         if (

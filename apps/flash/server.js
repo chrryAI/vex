@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.7.18"
+const VERSION = "1.7.47"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -122,7 +122,7 @@ function escapeHtml(text) {
 }
 
 // Convert metadata object to HTML meta tags
-function metadataToHtml(metadata) {
+function metadataToHtml(metadata, serverData) {
   const tags = []
 
   if (metadata.title) {
@@ -244,6 +244,20 @@ function metadataToHtml(metadata) {
     })
   }
 
+  // Apple Touch Icons - use resize endpoint for proper sizing
+  // Get the base icon from metadata or use app slug
+  const appSlug = serverData?.app?.slug || "chrry"
+  const baseIcon =
+    metadata.openGraph?.images?.[0]?.url || `/images/apps/${appSlug}.png`
+  console.log(`🍎 Apple touch icon base:`, baseIcon, `(app: ${appSlug})`)
+  const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
+  const appleIcon180 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=180&h=180&fit=contain&q=100`
+
+  tags.push(`<link rel="apple-touch-icon" href="${appleIcon180}" />`)
+  tags.push(
+    `<link rel="apple-touch-icon" sizes="180x180" href="${appleIcon180}" />`,
+  )
+
   return tags.join("\n  ")
 }
 
@@ -291,12 +305,11 @@ app.get("/sitemap.xml", async (req, res) => {
 app.get("/manifest.json", async (req, res) => {
   try {
     // Use internal API URL to avoid Cloudflare round-trip
-    const apiUrl =
-      process.env.INTERNAL_API_URL ||
-      process.env.API_URL ||
-      "https://chrry.dev/api"
-
-    console.log(`🚀 ~ app.get ~ apiUrl:`, apiUrl)
+    const apiUrl = isDev
+      ? "http://localhost:3001/api"
+      : process.env.INTERNAL_API_URL ||
+        process.env.API_URL ||
+        "https://chrry.dev/api"
 
     const response = await fetch(`${apiUrl}/manifest`, {
       headers: {
@@ -410,7 +423,7 @@ app.use("*all", async (req, res) => {
     let metaTags = ""
     if (serverData?.metadata) {
       try {
-        metaTags = metadataToHtml(serverData.metadata)
+        metaTags = metadataToHtml(serverData.metadata, serverData)
       } catch (error) {
         console.error("Error converting metadata to HTML:", error)
         // Continue without metadata if conversion fails

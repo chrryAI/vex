@@ -1,9 +1,15 @@
 import { Hono } from "hono"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
-import { getApp, getAppExtends } from "@repo/db"
+import {
+  getApp,
+  getAppExtends,
+  getUser as getUserDb,
+  getGuest as getGuestDb,
+} from "@repo/db"
 
 const VEX_LIVE_FINGERPRINT = process.env.VEX_LIVE_FINGERPRINT
+const VEX_TEST_EMAIL_4 = process.env.VEX_TEST_EMAIL_4
 
 import {
   getMemories,
@@ -576,13 +582,16 @@ app.post("/", async (c) => {
     thread,
     clientId,
     streamId,
+    waitFor = 20,
   }: {
+    waitFor?: number
     chunk: string
     chunkNumber: number
     totalChunks: number
     streamingMessage: any
     member?: user
     guest?: guest
+
     thread: thread & {
       user: user | null
       guest: guest | null
@@ -628,7 +637,7 @@ app.post("/", async (c) => {
       })
 
     // Add delay between chunks for proper delivery order
-    await wait(10)
+    await wait(waitFor)
   }
 
   console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
@@ -660,8 +669,15 @@ app.post("/", async (c) => {
 You inherit capabilities from ${appExtends.length} parent app${appExtends.length > 1 ? "s" : ""}:
 
 ${appExtends
-  .map(
-    (parentApp, index) => `
+  .map(async (a, index) => {
+    const parentApp = await getApp({
+      id: a.id,
+    })
+
+    if (!parentApp) {
+      return ""
+    }
+    return `
 ### ${index + 1}. ${parentApp.name}${parentApp.title ? ` - ${parentApp.title}` : ""}
 ${parentApp.description ? `${parentApp.description}\n` : ""}
 ${
@@ -681,8 +697,8 @@ ${
 ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemPrompt.split("\n").length > 10 ? "\n..." : ""}
 `
     : ""
-}`,
-  )
+}`
+  })
   .join("\n")}
 
 **How to Use Inheritance:**
@@ -2100,7 +2116,10 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
-  const isE2E = fingerprint !== VEX_LIVE_FINGERPRINT && isE2EInternal
+  const isE2E =
+    member?.email !== VEX_TEST_EMAIL_4 &&
+    fingerprint !== VEX_LIVE_FINGERPRINT &&
+    isE2EInternal
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -2237,11 +2256,20 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   const generateContent = async (m?: typeof message) => {
     try {
       if (m && selectedAgent) {
+        // Use user/guest from the message object to avoid race conditions
+        // (guest might be migrated to user between message creation and background task)
+        const messageUser = m.user || undefined
+        const messageGuest = m.guest || undefined
+
         await generateAIContent({
           c,
           thread,
-          user: member,
-          guest,
+          user: messageUser
+            ? await getUserDb({ id: messageUser?.id, skipCache: true })
+            : undefined,
+          guest: messageGuest
+            ? await getGuestDb({ id: messageGuest?.id, skipCache: true })
+            : undefined,
           agentId: selectedAgent.id,
           conversationHistory: !suggestionMessages
             ? messages
@@ -2264,7 +2292,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
           type: "background_task",
           task: "content_generation",
           threadId: thread.id,
-          userId: member?.id || guest?.id,
+          userId: m?.user?.id || m?.guest?.id,
         },
       })
     }
@@ -4042,77 +4070,135 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         } else {
           // Use fullStream for DeepSeek Reasoner (supports reasoning parts)
           console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
+
+          // Monitor inactivity to detect stuck streams (Bun-compatible)
+          const INACTIVITY_TIMEOUT_MS = 10000 // 10 seconds of no activity = stuck
+          let lastActivityTime = Date.now()
+          let streamFinished = false
+          let monitoringInterval: NodeJS.Timeout | null = null
+
+          const streamPromise = (async () => {
+            try {
+              for await (const part of result.fullStream) {
+                // Skip processing if stream is finished or stopped
+                if (streamFinished) continue
+
+                // Update activity timestamp on every part received
+                lastActivityTime = Date.now()
+
+                console.log("🔍 Stream part type:", part.type)
+
+                if (!streamControllers.has(streamId)) {
+                  console.log("🍣 Sushi stream was stopped")
+                  streamFinished = true
+                  continue
+                }
+
+                if (part.type === "reasoning-start") {
+                  console.log("🧠 Reasoning started")
+                } else if (part.type === "reasoning-delta") {
+                  // DeepSeek Reasoner's thinking process chunks
+                  reasoningText += part.text
+                  console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
+                  await enhancedStreamChunk({
+                    chunk: `__REASONING__${part.text}__/REASONING__`,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+                } else if (part.type === "reasoning-end") {
+                  console.log("🧠 Reasoning complete")
+                } else if (part.type === "text-delta") {
+                  // Final answer text
+                  answerText += part.text
+                  console.log("💬 Text delta:", part.text)
+                  await enhancedStreamChunk({
+                    chunk: part.text,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+                } else if (part.type === "tool-call") {
+                  console.log("🛠️ Tool call:", part.toolName)
+                } else if (part.type === "finish") {
+                  console.log("🏁 Stream finish event received")
+                  streamFinished = true
+                  // Don't break - let the iterator finish naturally to avoid Bun polyfill issues
+                }
+              }
+              console.log("🍣 Successfully completed fullStream iteration")
+            } catch (streamError) {
+              console.error(
+                "❌ Error during fullStream iteration:",
+                streamError,
+              )
+              console.error("❌ Error type:", typeof streamError)
+              console.error(
+                "❌ Error constructor:",
+                streamError?.constructor?.name,
+              )
+              if (streamError instanceof Error) {
+                console.error("❌ Error message:", streamError.message)
+                console.error("❌ Error stack:", streamError.stack)
+              }
+              // Re-throw to be caught by outer try-catch
+              throw streamError
+            } finally {
+              // Clean up monitoring interval
+              if (monitoringInterval) {
+                clearInterval(monitoringInterval)
+              }
+            }
+          })()
+
+          // Monitor for inactivity - check every 5 seconds
+          const inactivityMonitor = new Promise<void>((_, reject) => {
+            monitoringInterval = setInterval(() => {
+              const timeSinceLastActivity = Date.now() - lastActivityTime
+
+              if (timeSinceLastActivity > INACTIVITY_TIMEOUT_MS) {
+                console.error(
+                  `⏱️ DeepSeek Reasoner stuck - no activity for ${timeSinceLastActivity / 1000}s`,
+                )
+                if (monitoringInterval) {
+                  clearInterval(monitoringInterval)
+                }
+                reject(
+                  new Error(
+                    `DeepSeek Reasoner stuck - no activity for ${timeSinceLastActivity / 1000}s`,
+                  ),
+                )
+              }
+            }, 5000) // Check every 5 seconds
+          })
+
           try {
-            let streamFinished = false
-
-            for await (const part of result.fullStream) {
-              // Skip processing if stream is finished or stopped
-              if (streamFinished) continue
-
-              console.log("🔍 Stream part type:", part.type)
-
-              if (!streamControllers.has(streamId)) {
-                console.log("🍣 Sushi stream was stopped")
-                streamFinished = true
-                continue
+            await Promise.race([streamPromise, inactivityMonitor])
+          } catch (error) {
+            if (error instanceof Error && error.message.includes("stuck")) {
+              console.error("⏱️ Stream stuck - using partial response")
+              // Continue with whatever we have so far instead of failing completely
+              if (!answerText && !reasoningText) {
+                throw error // Only throw if we got nothing at all
               }
-
-              if (part.type === "reasoning-start") {
-                console.log("🧠 Reasoning started")
-              } else if (part.type === "reasoning-delta") {
-                // DeepSeek Reasoner's thinking process chunks
-                reasoningText += part.text
-                console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
-                await enhancedStreamChunk({
-                  chunk: `__REASONING__${part.text}__/REASONING__`,
-                  chunkNumber: currentChunk++,
-                  totalChunks: -1,
-                  streamingMessage: sushiStreamingMessage,
-                  member,
-                  guest,
-                  thread,
-                  streamId,
-                  clientId,
-                })
-              } else if (part.type === "reasoning-end") {
-                console.log("🧠 Reasoning complete")
-              } else if (part.type === "text-delta") {
-                // Final answer text
-                answerText += part.text
-                console.log("💬 Text delta:", part.text)
-                await enhancedStreamChunk({
-                  chunk: part.text,
-                  chunkNumber: currentChunk++,
-                  totalChunks: -1,
-                  streamingMessage: sushiStreamingMessage,
-                  member,
-                  guest,
-                  thread,
-                  streamId,
-                  clientId,
-                })
-              } else if (part.type === "tool-call") {
-                console.log("🛠️ Tool call:", part.toolName)
-              } else if (part.type === "finish") {
-                console.log("🏁 Stream finish event received")
-                streamFinished = true
-                // Don't break - let the iterator finish naturally to avoid Bun polyfill issues
-              }
+            } else {
+              throw error
             }
-            console.log("🍣 Successfully completed fullStream iteration")
-          } catch (streamError) {
-            console.error("❌ Error during fullStream iteration:", streamError)
-            console.error("❌ Error type:", typeof streamError)
-            console.error(
-              "❌ Error constructor:",
-              streamError?.constructor?.name,
-            )
-            if (streamError instanceof Error) {
-              console.error("❌ Error message:", streamError.message)
-              console.error("❌ Error stack:", streamError.stack)
+          } finally {
+            // Ensure cleanup
+            if (monitoringInterval) {
+              clearInterval(monitoringInterval)
             }
-            // Re-throw to be caught by outer try-catch
-            throw streamError
           }
         }
         // return c.json({ success: true })
@@ -4519,6 +4605,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         // Use fullStream to get reasoning parts immediately
         for await (const part of result.fullStream) {
+          // await wait(175)
           if (!streamControllers.has(streamId)) {
             console.log("Gemini stream was stopped")
             break
@@ -4536,6 +4623,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               thread,
               clientId,
               streamId,
+              waitFor: 100,
             })
           } else if (part.type === "reasoning-delta") {
             // Capture reasoning text
@@ -4552,6 +4640,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               thread,
               clientId,
               streamId,
+              waitFor: 100,
             })
           }
         }

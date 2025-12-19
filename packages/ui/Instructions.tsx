@@ -1185,6 +1185,7 @@ export default function Instructions({
                   onChange={(e) => setEditedTitle(e.target.value)}
                   type="text"
                   placeholder={t("Feature title")}
+                  style={{ flex: 1 }}
                 />
               </Div>
             )}

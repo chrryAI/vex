@@ -82,11 +82,16 @@ export default function AppMetadata({
       })
     : undefined
 
-  // Get icon from app context or use default
-  const iconHref = useMemo(
-    () => (iconSrc ? iconSrc.src : "/icons/icon-180.png"),
-    [iconSrc],
-  )
+  // Get icon from app context or use resize endpoint for proper sizing
+  const iconHref = useMemo(() => {
+    if (!app) return "/icons/icon-180.png"
+
+    // Use resize endpoint to ensure proper sizing and centering
+    const baseIcon = app.images?.[0]?.url || `/images/apps/${app.slug}.png`
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://chrry.dev/api"
+
+    return `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=180&h=180&fit=contain&q=100`
+  }, [app])
 
   const basePath = `/splash_screens`
   // const manifestPath =

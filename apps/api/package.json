@@ -12,7 +12,8 @@
     "dev": "bun --watch server.ts",
     "start": "bun server.ts",
     "build": "echo 'No build needed for Hono'",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.0",

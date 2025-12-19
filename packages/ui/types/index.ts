@@ -778,6 +778,7 @@ export const emojiMap: Record<moodType, string> = {
 export type app = {
   id: string
   image?: string
+  storeId: string | null
   userId: string | null
   guestId: string | null
   mainThreadId: string | null
@@ -936,6 +937,7 @@ export type store = {
 export type appWithStore = app & {
   store?: storeWithApps
   placeHolder?: placeHolder
+  instructions?: instruction[]
 }
 
 export type storeWithApps = store & { apps: appWithStore[] }
