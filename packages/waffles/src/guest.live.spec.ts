@@ -199,5 +199,5 @@ test.only("File upload", async ({ page }) => {
 
 test.only("Thread", async ({ page }) => {
   test.slow()
-  await thread({ page, isLive, messagesConsumed: 2 })
+  await thread({ page, isLive })
 })
