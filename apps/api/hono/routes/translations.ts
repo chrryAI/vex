@@ -129,29 +129,27 @@ translations.post("/missing", async (c) => {
     const { writeFile, readFile } = await import("fs/promises")
     const { join } = await import("path")
 
-    // Path to en.json
-    const enJsonPath = join(process.cwd(), "../../packages/ui/locales/en.json")
+    // Paths to BOTH translation files (sync both locations)
+    const uiEnJsonPath = join(process.cwd(), "../../packages/db/en.json")
+    const apiEnJsonPath = join(process.cwd(), "locales/en.json")
 
-    const tempPath = join(
-      process.cwd(),
-      "../../packages/ui/locales/en.new.json",
-    )
+    const tempPath = join(process.cwd(), "../../packages/db/en.new.json")
 
     // Use file lock to prevent concurrent writes
     return await withFileLock(tempPath, async () => {
-      // Read main en.json to check if key exists
-      const mainFileContent = await readFile(enJsonPath, "utf-8")
+      // Read UI en.json to check if key exists
+      const uiFileContent = await readFile(uiEnJsonPath, "utf-8")
 
-      // Validate main JSON
-      if (!validateJSON(mainFileContent)) {
-        console.error("❌ Invalid JSON detected in en.json")
+      // Validate JSON
+      if (!validateJSON(uiFileContent)) {
+        console.error("❌ Invalid JSON detected in packages/db/en.json")
         return c.json({ error: "Invalid JSON in main translation file" }, 500)
       }
 
-      const mainTranslations = JSON.parse(mainFileContent)
+      const uiTranslations = JSON.parse(uiFileContent)
 
-      // Check if key already exists in main file
-      if (mainTranslations[key]) {
+      // Check if key already exists
+      if (uiTranslations[key]) {
         return c.json({ exists: true, skipped: true })
       }
 
@@ -198,6 +196,41 @@ translations.post("/missing", async (c) => {
 
       // Write to en.new.json (only missing translations)
       await writeFile(tempPath, newContent, "utf-8")
+
+      // SYNC: Also update the API locale file
+      try {
+        const apiFileContent = await readFile(apiEnJsonPath, "utf-8")
+        if (validateJSON(apiFileContent)) {
+          const apiTranslations = JSON.parse(apiFileContent)
+
+          // Add the new key
+          apiTranslations[key] = defaultValue || key
+
+          // Sort keys alphabetically
+          const sortedApiTranslations = Object.keys(apiTranslations)
+            .sort()
+            .reduce(
+              (acc, k) => {
+                const value = apiTranslations[k]
+                if (value) acc[k] = value
+                return acc
+              },
+              {} as Record<string, string>,
+            )
+
+          // Write back to API locale file
+          const apiContent =
+            JSON.stringify(sortedApiTranslations, null, 2) + "\n"
+          await writeFile(apiEnJsonPath, apiContent, "utf-8")
+
+          console.log(
+            `✅ Synced translation to apps/api/locales/en.json: "${key}"`,
+          )
+        }
+      } catch (error) {
+        console.warn("⚠️ Could not sync to API locale file:", error)
+        // Don't fail the whole operation if API sync fails
+      }
 
       console.log(`✅ Added missing translation key to en.new.json: "${key}"`)
 

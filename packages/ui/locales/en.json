@@ -1679,5 +1679,7 @@
   "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.": "Automatically generate unit tests, integration tests, and E2E tests. Sushi ensures comprehensive test coverage for your code.",
   "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.": "Generate clear, comprehensive documentation and comments. Sushi explains complex code in human-readable language.",
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.",
-  "Disable Image Generation": "Disable Image Generation"
+  "Disable Image Generation": "Disable Image Generation",
+  "Reconnecting...": "Reconnecting...",
+  "Back online": "Back online"
 }
