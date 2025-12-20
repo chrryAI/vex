@@ -184,7 +184,8 @@ export async function loadServerData(
     fpFromQuery ||
     cookies.token ||
     headers["x-token"] ||
-    fingerprint
+    fingerprint ||
+    uuidv4()
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
 

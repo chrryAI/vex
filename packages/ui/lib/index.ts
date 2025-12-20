@@ -261,7 +261,7 @@ export const getThread = async ({
 }: {
   pageSize?: number
   id: string
-  token: string
+  token?: string
   liked?: boolean
   onError?: (status: number) => void
 
