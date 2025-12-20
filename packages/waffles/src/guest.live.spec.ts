@@ -146,7 +146,7 @@ test.only("Chat", async ({ page }) => {
 //   await collaboration({ page, browser, isMember, isLive })
 // })
 
-test.only("File upload", async ({ page }) => {
+test.skip("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",

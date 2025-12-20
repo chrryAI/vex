@@ -74,7 +74,7 @@ export default function SignIn({
     clear()
     return signInContextInternal?.(provider, options)
   }
-  const { t } = useAppContext()
+  const { t, console } = useAppContext()
 
   const {
     FRONTEND_URL,

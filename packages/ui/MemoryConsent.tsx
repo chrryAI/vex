@@ -20,6 +20,7 @@ import { useMemoryConsentStyles } from "./MemoryConsent.styles"
 import { Button, Div } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
+import useCache from "./hooks/useCache"
 
 export default function MemoryConsent({
   style,
@@ -48,6 +49,7 @@ export default function MemoryConsent({
     setIsMemoryConsentManageVisible,
   } = useNavigationContext()
 
+  const { clear } = useCache()
   const { isManagingApp, canEditApp } = useApp()
   const { actions } = useData()
 
@@ -280,6 +282,7 @@ export default function MemoryConsent({
                         }
 
                         data.success && toast.success(t("Session cleared"))
+                        clear()
                       } catch (error) {
                         console.error("Error updating guest:", error)
                       } finally {

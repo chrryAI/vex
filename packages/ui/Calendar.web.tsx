@@ -269,7 +269,7 @@ export default function Calendar({
     [onSelectEvent, calendarEvents],
   )
 
-  const { t } = useAppContext()
+  const { t, console } = useAppContext()
   const [date, setDate] = useState<Date>(new Date()) // Force current date
   const {
     token,

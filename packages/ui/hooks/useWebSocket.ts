@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
-import { BrowserInstance, checkIsExtension, WS_URL } from "../utils"
-import { useAppContext } from "../context/AppContext"
+import { WS_URL } from "../utils"
 import { useOnlineStatus } from "./useOnlineStatus"
+import console from "../utils/log"
 
 // websocketManager.ts
 type Handler<T> = (data: T) => void
