@@ -294,7 +294,6 @@ async function clearGuests() {
 
     // Delete batch
     const idsToDelete = inactiveGuests.map((g) => g.id)
-    console.log(`🚀 ~ clearGuests ~ idsToDelete:`, idsToDelete)
     await db.delete(guests).where(inArray(guests.id, idsToDelete))
 
     totalDeleted += inactiveGuests.length
@@ -368,7 +367,7 @@ const create = async () => {
       password: passwordToSalt(VEX_TEST_PASSWORD_2),
       role: "user",
       userName: VEX_TEST_NAME_2,
-      fingerprint: TEST_MEMBER_FINGERPRINTS[0],
+      // fingerprint: TEST_MEMBER_FINGERPRINTS[0],
     })
     if (!feedback) throw new Error("Failed to add user")
     console.log("✅ Feedback user created")
@@ -387,7 +386,7 @@ const create = async () => {
       password: passwordToSalt(VEX_TEST_PASSWORD_3),
       role: "user",
       userName: VEX_TEST_NAME_3,
-      fingerprint: TEST_MEMBER_FINGERPRINTS[1],
+      // fingerprint: TEST_MEMBER_FINGERPRINTS[1],
     })
     if (!diplomatic) throw new Error("Failed to add user")
     console.log("✅ Diplomatic user created")
@@ -406,7 +405,7 @@ const create = async () => {
       password: passwordToSalt(VEX_TEST_PASSWORD_4),
       role: "user",
       userName: VEX_TEST_NAME_4,
-      fingerprint: TEST_MEMBER_FINGERPRINTS[2],
+      // fingerprint: TEST_MEMBER_FINGERPRINTS[2],
     })
     if (!localswaphub) throw new Error("Failed to add user")
     console.log("✅ Localswaphub user created")
@@ -841,8 +840,8 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    // await clearDb()
-    // await create()
+    await clearDb()
+    await create()
     process.exit(0)
   }
 }

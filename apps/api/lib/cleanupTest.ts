@@ -15,6 +15,7 @@ import {
   TEST_MEMBER_FINGERPRINTS,
   user,
   guest,
+  deleteGuest,
   updateUser,
 } from "@repo/db"
 import {
@@ -129,13 +130,8 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       credits: MEMBER_CREDITS_PER_MONTH,
       subscribedOn: null,
       migratedFromGuest: false,
+      fingerprint: null,
     })
 
-  guest &&
-    updateGuest({
-      ...guest,
-      credits: GUEST_CREDITS_PER_MONTH,
-      subscribedOn: null,
-      migratedToUser: false,
-    })
+  guest && deleteGuest({ id: guest.id })
 }
