@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react"
 import path from "path"
 import type { UserConfig } from "vite"
 import { swVersionPlugin } from "./vite-plugin-sw-version"
+import viteCompression from "vite-plugin-compression"
 import dotenv from "dotenv"
 
 // Load environment variables from .env file
@@ -17,6 +18,20 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
         jsxImportSource: "react",
       }),
       swVersionPlugin(),
+      // Generate gzip compressed files
+      viteCompression({
+        algorithm: "gzip",
+        ext: ".gz",
+        threshold: 1024, // Only compress files > 1KB
+        deleteOriginFile: false, // Keep original files
+      }),
+      // Generate brotli compressed files (better compression than gzip)
+      viteCompression({
+        algorithm: "brotliCompress",
+        ext: ".br",
+        threshold: 1024,
+        deleteOriginFile: false,
+      }),
     ],
     publicDir: path.resolve(__dirname, "public"),
     resolve: {
@@ -48,7 +63,22 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks: undefined,
+          // Better chunk splitting for caching
+          manualChunks: (id) => {
+            // Vendor chunks
+            if (id.includes("node_modules")) {
+              if (id.includes("react") || id.includes("react-dom")) {
+                return "react-vendor"
+              }
+              if (id.includes("framer-motion")) {
+                return "animation-vendor"
+              }
+              if (id.includes("@lobehub")) {
+                return "ui-vendor"
+              }
+              return "vendor"
+            }
+          },
           format: "es", // Force ES module format
           // Only add Node.js polyfills for SSR builds, not client builds
           banner: isSsrBuild
@@ -56,6 +86,17 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
             : undefined,
         },
       },
+      // Enable minification
+      minify: "terser",
+      terserOptions: {
+        compress: {
+          drop_console: mode === "production", // Remove console.logs in production
+          drop_debugger: true,
+          pure_funcs: ["console.log", "console.info"], // Remove specific console methods
+        },
+      },
+      // Increase chunk size warning limit (we're splitting chunks now)
+      chunkSizeWarningLimit: 1000,
       commonjsOptions: {
         include: [/node_modules/],
         transformMixedEsModules: true,
