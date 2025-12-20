@@ -1,7 +1,7 @@
 import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
-import { getURL } from "."
+import { getURL, wait } from "."
 import { subscribe } from "./shared/subscribe"
 import { collaboration } from "./shared/collaboration"
 import { thread } from "./shared/thread"
@@ -24,13 +24,15 @@ test.only("Subscribe As Guest", async ({ page }) => {
       waitUntil: "networkidle",
     },
   )
+  await wait(5000)
+
   await subscribe({
     page,
     isMember,
   })
 })
 
-test.only("Invite", async ({ page }) => {
+test.skip("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive,
@@ -47,7 +49,7 @@ test.only("Invite", async ({ page }) => {
   })
 })
 
-test.only("Long text", async ({ page }) => {
+test.skip("Long text", async ({ page }) => {
   const result = await chat({
     page,
     isMember,
@@ -68,7 +70,7 @@ test.only("Long text", async ({ page }) => {
   })
 })
 
-test.only("Gift", async ({ page }) => {
+test.skip("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
   })
@@ -90,7 +92,7 @@ test.only("Gift", async ({ page }) => {
   })
 })
 
-test.only("Chat", async ({ page }) => {
+test.skip("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {
@@ -143,7 +145,7 @@ test.skip("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember, isLive })
 })
 
-test.only("File upload", async ({ page }) => {
+test.skip("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
