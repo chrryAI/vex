@@ -1664,7 +1664,6 @@ export function detectSiteModeDomain(
   // City subdomains
 
   // Default to defaultMode (vex.chrry.ai or localhost)
-  console.log(`🚀 ~ defaultMode:`, defaultMode)
   return defaultMode
 }
 

@@ -392,9 +392,6 @@ export function AuthProvider({
 
   const token = isExtension ? tokenExtension : tokenWeb
 
-  console.log(`🚀 ~ tokenWeb:`, tokenWeb)
-  console.log(`🚀 ~ tokenExtension:`, tokenExtension)
-
   const setToken = isExtension
     ? setTokenExtension
     : (token: string | undefined) => {
@@ -410,7 +407,6 @@ export function AuthProvider({
 
   // Track if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)
-  console.log(`🚀 ~ useEffect ~ isExtension:`, isExtension)
 
   useEffect(() => {
     // For extensions, check if cookies have been loaded from chrome.cookies API
@@ -427,7 +423,6 @@ export function AuthProvider({
           const interval = setInterval(async () => {
             attempts++
             const ready = await storage.getItem("_cookiesReady")
-            console.log(`🚀 ~ interval ~ ready:`, ready)
             if (ready === "true" || attempts > 40) {
               setIsCookieReady(true)
               clearInterval(interval)
@@ -465,12 +460,12 @@ export function AuthProvider({
   }
 
   const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
-    session?.userBaseApp,
+    props.session?.userBaseApp,
   )
 
   const userBaseStore = userBaseApp?.store
   const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
-    session?.guestBaseApp,
+    props.session?.guestBaseApp,
   )
 
   const accountApp = userBaseApp || guestBaseApp
