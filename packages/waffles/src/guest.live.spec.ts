@@ -92,28 +92,6 @@ test.only("Long text", async ({ page }) => {
   })
 })
 
-test.only("Gift", async ({ page }) => {
-  await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
-  })
-  await page.goto(
-    getURL({
-      isLive,
-      isMember,
-    }),
-    {
-      waitUntil: "networkidle",
-    },
-  )
-  await subscribe({
-    page,
-    isMember,
-    email: process.env.VEX_TEST_EMAIL_3!,
-    password: process.env.VEX_TEST_PASSWORD_3!,
-    gift: process.env.VEX_TEST_EMAIL_3!,
-  })
-})
-
 test.only("Chat", async ({ page }) => {
   test.slow()
 
