@@ -75,9 +75,6 @@ const Threads = ({
 
   const [sortByDate, setSortByDate] = useLocalStorage("sortByDate", true)
 
-  // Extract username based on URL pattern
-  const userName = rest.userName || userNameByUrl
-
   const [threads, setThreads] = useState<{
     threads: (thread & {
       collaborations?: { collaboration: collaboration; user: user }[]
