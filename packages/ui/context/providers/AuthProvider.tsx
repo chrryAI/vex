@@ -334,7 +334,7 @@ export function AuthProvider({
   const env = isDevelopment ? "development" : "production"
 
   const setEnv = (env: "development" | "production" | "staging") => {
-    fetchSession()
+    // fetchSession()
   }
 
   const [threads, setThreads] = useState<
@@ -351,7 +351,7 @@ export function AuthProvider({
 
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
-    session?.deviceId,
+    props.session?.deviceId,
   )
 
   const { isStorageReady } = usePlatform()
@@ -376,9 +376,11 @@ export function AuthProvider({
     session?.guest?.fingerprint ||
       session?.user?.fingerprint ||
       fingerprintParam,
+    isExtension,
   )
 
-  const ssrToken = session?.user?.token || session?.guest?.fingerprint || apiKey
+  const ssrToken =
+    props?.session?.user?.token || props?.session?.guest?.fingerprint || apiKey
   // Local state for token and versions (no dependency on DataProvider)
   const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
@@ -389,6 +391,9 @@ export function AuthProvider({
   const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
 
   const token = isExtension ? tokenExtension : tokenWeb
+
+  console.log(`🚀 ~ tokenWeb:`, tokenWeb)
+  console.log(`🚀 ~ tokenExtension:`, tokenExtension)
 
   const setToken = isExtension
     ? setTokenExtension
@@ -405,6 +410,7 @@ export function AuthProvider({
 
   // Track if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)
+  console.log(`🚀 ~ useEffect ~ isExtension:`, isExtension)
 
   useEffect(() => {
     // For extensions, check if cookies have been loaded from chrome.cookies API
@@ -421,6 +427,7 @@ export function AuthProvider({
           const interval = setInterval(async () => {
             attempts++
             const ready = await storage.getItem("_cookiesReady")
+            console.log(`🚀 ~ interval ~ ready:`, ready)
             if (ready === "true" || attempts > 40) {
               setIsCookieReady(true)
               clearInterval(interval)
@@ -517,7 +524,7 @@ export function AuthProvider({
       setFingerprint(fp)
       // setToken(fp)
     }
-  }, [fingerprint])
+  }, [fingerprint, token])
   // setFingerprint/setToken are stable from useLocalStorage/useState
   const [versions, setVersions] = useState(
     session?.versions || {

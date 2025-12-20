@@ -74,7 +74,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.7.47",
+    version: siteConfig.version || "1.7.48",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -267,7 +267,7 @@ export default defineConfig(({ command, mode }) => {
           inlineDynamicImports: true,
         },
       },
-      sourcemap: !isProduction,
+      sourcemap: false, // Disabled for extensions - sourcemaps use eval() which violates CSP
       minify: isProduction ? "esbuild" : false,
       outDir: "dist",
       emptyOutDir: true,
