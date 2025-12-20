@@ -61,13 +61,13 @@ user.patch("/", async (c) => {
 
   const exists = async (username: string) => {
     // Check if username taken by another user
-    const existingUser = await getUser({ userName: username })
+    const existingUser = await getUser({ userName: username, skipCache: true })
     if (existingUser && existingUser.id !== member.id) {
       return true // Username taken by someone else
     }
 
     // Check if slug taken by another user's store
-    const existingStore = await getStore({ slug: username })
+    const existingStore = await getStore({ slug: username, skipCache: true })
     if (existingStore?.store) {
       const store = existingStore.store
 
@@ -96,7 +96,7 @@ user.patch("/", async (c) => {
     return c.json({ error: "Username already exists" }, 400)
   }
 
-  const userStore = await getStore({ slug: member.userName })
+  const userStore = await getStore({ slug: member.userName, skipCache: true })
 
   if (userStore?.store && userName !== member.userName) {
     await updateStore({
@@ -125,6 +125,7 @@ user.patch("/", async (c) => {
     if (userName && userName !== member.userName) {
       const userStore = await getStore({
         slug: member.userName,
+        skipCache: true,
       })
       if (userStore && userStore.store.userId === member.id) {
         await updateStore({
@@ -137,6 +138,7 @@ user.patch("/", async (c) => {
     return c.json({
       ...(await getUser({
         id: member.id,
+        skipCache: true,
       })),
       password: undefined,
     })

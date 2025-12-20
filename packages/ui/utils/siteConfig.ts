@@ -193,7 +193,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.62",
+  version: "26.10.63",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1591,6 +1591,18 @@ export function detectSiteModeDomain(
 
   // Helper function to check if hostname matches or is subdomain of domain
 
+  // Check if running in a browser extension
+  if (
+    typeof window !== "undefined" &&
+    window.location?.protocol?.startsWith("chrome-extension")
+  ) {
+    console.log(
+      "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
+      defaultMode,
+    )
+    return defaultMode
+  }
+
   // Domain-based detection (use exact match or subdomain check)
   console.log(`🔍 Detecting mode for host: "${host}"`)
 
@@ -1652,6 +1664,7 @@ export function detectSiteModeDomain(
   // City subdomains
 
   // Default to defaultMode (vex.chrry.ai or localhost)
+  console.log(`🚀 ~ defaultMode:`, defaultMode)
   return defaultMode
 }
 
@@ -1710,10 +1723,6 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   }
   const mode = detectSiteMode(hostname)
 
-  if (isE2E) {
-    return e2eVex
-  }
-
   if (mode === "search") {
     return search
   }
@@ -1768,6 +1777,10 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Zarathustra configuration
   if (mode === "zarathustra") {
     return zarathustra
+  }
+
+  if (isE2E) {
+    return e2eVex
   }
 
   // Search configuration
