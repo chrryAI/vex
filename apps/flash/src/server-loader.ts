@@ -5,6 +5,7 @@ import {
   pageSizes,
   isE2E,
   getEnv,
+  API_INTERNAL_URL,
 } from "@chrryai/chrry/utils"
 import {
   getApp,
@@ -85,7 +86,7 @@ export async function loadServerData(
 
   const isDev = process.env.MODE === "development"
 
-  const API_URL = getEnv().VITE_API_URL
+  const API_URL = isE2E ? API_INTERNAL_URL : undefined
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []
@@ -163,7 +164,8 @@ export async function loadServerData(
 
   let apiKey =
     authToken ||
-    (isTestFP ? fpFromQuery : cookies.token || headers["x-token"] || uuidv4())
+    (isTestFP ? fpFromQuery : cookies.token || headers["x-token"]) ||
+    uuidv4()
 
   let fingerprint = isTestFP
     ? fpFromQuery
@@ -228,26 +230,24 @@ export async function loadServerData(
       screenHeight: Number(viewPortHeight),
       gift: gift || undefined,
       source: "layout",
-      // API_URL,
+      API_URL,
       ip: clientIp, // Pass client IP for Arcjet
     })
 
     apiKey = session?.user?.token || session?.guest?.fingerprint || apiKey
-    fingerprint =
-      session?.user?.fingerprint || session?.guest?.fingerprint || fingerprint
 
     const [translationsResult, appResult] = await Promise.all([
       getTranslations({
         token: apiKey,
         locale,
-        // API_URL,
+        API_URL,
       }),
       getApp({
         chrryUrl,
         appId,
         token: apiKey,
         pathname,
-        // API_URL,
+        API_URL,
       }),
     ])
 
