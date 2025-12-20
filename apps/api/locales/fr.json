@@ -1687,5 +1687,7 @@
   "Unlimited stores with nested apps": "Boutiques illimitées avec des applications imbriquées",
   "credit_left": "{{count}} restant",
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Téléchargez des fichiers ici pour que l'IA se souvienne et se réfère dans les futures conversations. Ces artefacts deviennent une partie de la mémoire du fil de discussion.",
-  "Disable Image Generation": "Désactiver la génération d'images"
+  "Disable Image Generation": "Désactiver la génération d'images",
+  "Reconnecting...": "Reconnexion...",
+  "Back online": "De retour en ligne"
 }

@@ -1687,5 +1687,7 @@
   "Unlimited stores with nested apps": "İç içe uygulamalarla sınırsız mağaza",
   "credit_left": "{{count}} kaldı",
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "AI'ın hatırlaması ve gelecekteki konuşmalarda referans alması için dosyaları buraya yükleyin. Bu eserler, konuşma dizisinin hafızasının bir parçası olur.",
-  "Disable Image Generation": "Görüntü Oluşturmayı Devre Dışı Bırak"
+  "Disable Image Generation": "Görüntü Oluşturmayı Devre Dışı Bırak",
+  "Reconnecting...": "Yeniden bağlanıyor...",
+  "Back online": "Çevrimiçiye geri döndü"
 }

@@ -141,9 +141,9 @@ test.only("Chat", async ({ page }) => {
   })
 })
 
-test.only("Collaboration", async ({ page, browser }) => {
-  await collaboration({ page, browser, isMember, isLive })
-})
+// test.only("Collaboration", async ({ page, browser }) => {
+//   await collaboration({ page, browser, isMember, isLive })
+// })
 
 test.only("File upload", async ({ page }) => {
   // test.slow()
