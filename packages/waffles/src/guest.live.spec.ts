@@ -1,7 +1,7 @@
 import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
-import { getURL, wait } from "."
+import { getURL, wait, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3 } from "."
 import { subscribe } from "./shared/subscribe"
 import { collaboration } from "./shared/collaboration"
 import { thread } from "./shared/thread"
@@ -14,25 +14,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive })
 })
 
-test.only("Subscribe As Guest", async ({ page }) => {
-  await page.goto(
-    getURL({
-      isMember,
-      isLive,
-    }),
-    {
-      waitUntil: "networkidle",
-    },
-  )
-  await wait(5000)
-
-  await subscribe({
-    page,
-    isMember,
-  })
-})
-
-test.skip("Invite", async ({ page }) => {
+test.only("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive,
@@ -49,7 +31,47 @@ test.skip("Invite", async ({ page }) => {
   })
 })
 
-test.skip("Long text", async ({ page }) => {
+test.only("Gift", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+  })
+  await page.goto(
+    getURL({
+      isLive,
+      isMember,
+    }),
+    {
+      waitUntil: "networkidle",
+    },
+  )
+  await subscribe({
+    page,
+    isMember,
+    email: VEX_TEST_EMAIL_3!,
+    password: VEX_TEST_PASSWORD_3!,
+    gift: VEX_TEST_EMAIL_3!,
+  })
+})
+
+test.only("Subscribe As Guest", async ({ page }) => {
+  await page.goto(
+    getURL({
+      isMember,
+      isLive,
+    }),
+    {
+      waitUntil: "networkidle",
+    },
+  )
+  await wait(2000)
+
+  await subscribe({
+    page,
+    isMember,
+  })
+})
+
+test.only("Long text", async ({ page }) => {
   const result = await chat({
     page,
     isMember,
@@ -70,7 +92,7 @@ test.skip("Long text", async ({ page }) => {
   })
 })
 
-test.skip("Gift", async ({ page }) => {
+test.only("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
   })
@@ -92,7 +114,7 @@ test.skip("Gift", async ({ page }) => {
   })
 })
 
-test.skip("Chat", async ({ page }) => {
+test.only("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {
@@ -141,11 +163,11 @@ test.skip("Chat", async ({ page }) => {
   })
 })
 
-test.skip("Collaboration", async ({ page, browser }) => {
+test.only("Collaboration", async ({ page, browser }) => {
   await collaboration({ page, browser, isMember, isLive })
 })
 
-test.skip("File upload", async ({ page }) => {
+test.only("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
@@ -195,7 +217,7 @@ test.skip("File upload", async ({ page }) => {
   })
 })
 
-test.skip("Thread", async ({ page }) => {
+test.only("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, bookmark: true, messagesConsumed: 2 })
 })
