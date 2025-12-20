@@ -5,8 +5,7 @@ import { useTranslation } from "react-i18next"
 import { COLORS } from "./ThemeContext"
 import { useAuth, useData, useError } from "./providers"
 import { getSiteConfig } from "../utils/siteConfig"
-import { getEnv, isCI, isE2E } from "../utils"
-import { isDevelopment } from "../../db"
+import { getEnv, isCI, isE2E, isDevelopment } from "../utils"
 
 export { COLORS }
 

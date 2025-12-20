@@ -249,7 +249,9 @@ export async function loadServerData(
 
     session = sessionResult
     translations = translationsResult
-    app = appResult
+
+    const accountApp = session?.userBaseApp || session?.guestBaseApp
+    app = appResult.id === accountApp?.id ? accountApp : appResult
 
     if (session && app) {
       session.app = app
@@ -313,19 +315,12 @@ export async function loadServerData(
     }
   }
 
-  const accountApp = session?.userBaseApp || session?.guestBaseApp
-
   const result = {
     session,
     thread,
     threads,
     translations,
-    app: (() => {
-      if (app?.id === accountApp?.id) {
-        return accountApp
-      }
-      return app
-    })(),
+    app,
     siteConfig,
     locale,
     deviceId,
