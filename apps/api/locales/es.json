@@ -1687,5 +1687,7 @@
   "Unlimited stores with nested apps": "Tiendas ilimitadas con aplicaciones anidadas",
   "credit_left": "{{count}} restante",
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Sube archivos aquí para que Vex los recuerde y los referencie en futuras conversaciones. Estos artefactos se convierten en parte de la memoria del hilo.",
-  "Disable Image Generation": "Desactivar Generación de Imágenes"
+  "Disable Image Generation": "Desactivar Generación de Imágenes",
+  "Reconnecting...": "Reconectando...",
+  "Back online": "De vuelta en línea"
 }
