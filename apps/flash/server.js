@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.7.52"
+const VERSION = "1.7.53"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -122,7 +122,7 @@ function escapeHtml(text) {
 }
 
 // Convert metadata object to HTML meta tags
-async function metadataToHtml(metadata, serverData) {
+function metadataToHtml(metadata, serverData) {
   const tags = []
 
   if (metadata.title) {
@@ -245,10 +245,10 @@ async function metadataToHtml(metadata, serverData) {
   }
 
   // Favicon and Apple Touch Icons - use hostname for white-label detection
-  const { getSiteConfig } = await import("@chrryai/chrry/utils/siteConfig")
+  // Use serverData.siteConfig which is already available from server-loader
   const hostname = serverData?.hostname || "localhost"
-  const iconSiteConfig = getSiteConfig(hostname)
-  const iconSlug = iconSiteConfig.slug || serverData?.app?.slug || "chrry"
+  const iconSlug =
+    serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
   const baseIcon = `/images/apps/${iconSlug}.png`
   const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
 
@@ -441,7 +441,7 @@ app.use("*all", async (req, res) => {
     let metaTags = ""
     if (serverData?.metadata) {
       try {
-        metaTags = await metadataToHtml(serverData.metadata, serverData)
+        metaTags = metadataToHtml(serverData.metadata, serverData)
       } catch (error) {
         console.error("Error converting metadata to HTML:", error)
         // Continue without metadata if conversion fails
