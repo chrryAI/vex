@@ -10,12 +10,14 @@ export const thread = async ({
   bookmark,
   createChat = true,
   messagesConsumed = 3,
+  isLive = false,
 }: {
   page: Page
   isMember?: boolean
   createChat?: boolean
   messagesConsumed?: number
   bookmark?: boolean
+  isLive?: boolean
 }) => {
   let total = 0
   createChat &&
@@ -24,6 +26,7 @@ export const thread = async ({
       isNewChat: true,
       page,
       isMember,
+      isLiveTest: isLive,
       instruction: "Help me write a short story",
       prompts: Array.from({ length: messagesConsumed }, (_, i) => {
         return {
@@ -206,6 +209,7 @@ export const thread = async ({
       creditsConsumed: total * 2,
       messagesConsumed,
       bookmark: false,
+      isLiveTest: isLive,
       page,
       isMember,
       instruction: "Help me write a short story",
@@ -242,6 +246,7 @@ export const thread = async ({
       page,
       isMember,
       createChat: false,
+      isLive,
     })
   }
 

@@ -3,7 +3,7 @@ import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
 import { getURL, wait, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3 } from "."
 import { subscribe } from "./shared/subscribe"
-import { collaboration } from "./shared/collaboration"
+// import { collaboration } from "./shared/collaboration"
 import { thread } from "./shared/thread"
 import { v4 as uuidv4 } from "uuid"
 
@@ -103,6 +103,7 @@ test.only("Chat", async ({ page }) => {
     isNewChat: false,
     page,
     isMember,
+    isLiveTest: isLive,
     agentMessageTimeout: 120000,
     instruction: "Help me plan a 3-day trip to Tokyo",
     prompts: [
@@ -158,6 +159,7 @@ test.only("File upload", async ({ page }) => {
     },
     isNewChat: false,
     page,
+    isLiveTest: isLive,
     isMember,
     instruction: "Lets upload some files",
     prompts: [
@@ -197,5 +199,5 @@ test.only("File upload", async ({ page }) => {
 
 test.only("Thread", async ({ page }) => {
   test.slow()
-  await thread({ page, bookmark: true, messagesConsumed: 2 })
+  await thread({ page, isLive })
 })
