@@ -16,6 +16,10 @@ async function main() {
 
   for (const lang of languages) {
     try {
+      const transPaths = [
+        path.join(__dirname, `../packages/ui/locales/${lang}.json`),
+        path.join(__dirname, `../apps/api/locales/${lang}.json`),
+      ]
       const transPath = path.join(
         __dirname,
         `../packages/ui/locales/${lang}.json`,
@@ -82,8 +86,10 @@ Return the translations as JSON:`
             existing[key] = translatedData[key]
           })
 
-          // Save after each chunk to prevent data loss
-          fs.writeFileSync(transPath, JSON.stringify(existing, null, 2))
+          for (const path of transPaths) {
+            // Save after each chunk to prevent data loss
+            fs.writeFileSync(path, JSON.stringify(existing, null, 2))
+          }
 
           console.log(
             `Translated chunk ${Math.floor(i / CHUNK_SIZE) + 1} for ${lang}`,
