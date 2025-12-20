@@ -93,7 +93,7 @@ export default function Message({
   const styles = useMessageStyles()
 
   const { setIsAccountVisible } = useNavigationContext()
-  const { refetchThread } = useChat()
+  const { refetchThread, scrollToBottom } = useChat()
   const { addParams } = useNavigationContext()
 
   const { slug, apps, app } = useApp()
@@ -398,14 +398,16 @@ export default function Message({
         type === "message_update" &&
         data.message?.message.id === message.message.id
       ) {
-        data.message?.message.images?.length &&
-          setImages(data.message?.message.images)
-        data.message?.message.video?.length &&
-          setVideo(data.message?.message.video)
-        data.message?.message.audio?.length &&
-          setAudio(data.message?.message.audio)
-        data.message?.message.files?.length &&
-          setFiles(data.message?.message.files)
+        data.message?.message?.images?.length &&
+          setImages(data.message.message.images)
+        data.message?.message?.video?.length &&
+          setVideo(data.message.message.video)
+        data.message?.message?.audio?.length &&
+          setAudio(data.message.message.audio)
+        data.message?.message?.files?.length &&
+          setFiles(data.message.message.files)
+
+        scrollToBottom()
 
         // await refetchThread()
       }

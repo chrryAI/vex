@@ -295,6 +295,10 @@ export async function getApp({
             skipCache,
           })
 
+  if (appId && !appInternal) {
+    return null
+  }
+
   if (!appInternal && accountApp) {
     return null
   }
