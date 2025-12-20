@@ -18,20 +18,24 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
         jsxImportSource: "react",
       }),
       swVersionPlugin(),
-      // Generate gzip compressed files
-      viteCompression({
-        algorithm: "gzip",
-        ext: ".gz",
-        threshold: 1024, // Only compress files > 1KB
-        deleteOriginFile: false, // Keep original files
-      }),
-      // Generate brotli compressed files (better compression than gzip)
-      viteCompression({
-        algorithm: "brotliCompress",
-        ext: ".br",
-        threshold: 1024,
-        deleteOriginFile: false,
-      }),
+      // Generate gzip compressed files (client build only)
+      ...(!isSsrBuild
+        ? [
+            viteCompression({
+              algorithm: "gzip",
+              ext: ".gz",
+              threshold: 1024, // Only compress files > 1KB
+              deleteOriginFile: false, // Keep original files
+            }),
+            // Generate brotli compressed files (better compression than gzip)
+            viteCompression({
+              algorithm: "brotliCompress",
+              ext: ".br",
+              threshold: 1024,
+              deleteOriginFile: false,
+            }),
+          ]
+        : []),
     ],
     publicDir: path.resolve(__dirname, "public"),
     resolve: {

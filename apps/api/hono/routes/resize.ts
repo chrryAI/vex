@@ -79,7 +79,9 @@ resize.get("/", async (c) => {
         fit, // respects 'cover' vs 'contain' logic for downscaling
         withoutEnlargement: true, // Prevents upscaling - 500x500 stays 500x500
         background: { r: 255, g: 255, b: 255, alpha: 0 },
+        kernel: sharp.kernel.lanczos3, // High-quality downscaling - prevents blurriness
       })
+      .sharpen() // Add slight sharpening to compensate for downscaling blur
       .toBuffer()
 
     // Step 2: Create fixed-size transparent canvas and center the image
