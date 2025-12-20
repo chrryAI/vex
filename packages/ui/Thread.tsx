@@ -258,13 +258,16 @@ const Thread = ({
         scrollToBottom()
       }
 
-      if (isE2E)
+      if (isE2E && content.length > 500)
         console.log("🤖 onStreamingUpdate", {
-          content: content.replace(/__REASONING__.*?__\/REASONING__/gs, ""),
+          content: content
+            .slice(0, 500)
+            .replace(/__REASONING__.*?__\/REASONING__/gs, "..."),
           clientId,
           aiAgent,
           isWebSearchEnabled,
           isImageGenerationEnabled,
+          reasoning: content.indexOf("__REASONING__") !== -1,
         })
 
       // Only update if content actually changed and clientId exists
