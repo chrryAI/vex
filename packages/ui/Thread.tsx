@@ -66,7 +66,7 @@ const Thread = ({
   const styles = useThreadStyles()
 
   // Split contexts for better organization
-  const { t } = useAppContext()
+  const { t, console } = useAppContext()
 
   // Auth context
   const {
@@ -262,7 +262,7 @@ const Thread = ({
         console.log("🤖 onStreamingUpdate", {
           content: content
             .slice(0, 500)
-            .replace(/__REASONING__.*?__\/REASONING__/gs, "..."),
+            .replace(/__REASONING__.*?__\/REASONING__/gs, ""),
           clientId,
           aiAgent,
           isWebSearchEnabled,

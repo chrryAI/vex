@@ -4826,9 +4826,21 @@ export const getApp = async ({
   // Otherwise, fetch store data separately
   const storeData =
     storeDomain && app.store
-      ? await getStore({ domain: storeDomain, userId, guestId, depth })
+      ? await getStore({
+          domain: storeDomain,
+          userId,
+          guestId,
+          depth,
+          skipCache,
+        })
       : targetStoreId
-        ? await getStore({ id: targetStoreId, userId, guestId, depth })
+        ? await getStore({
+            id: targetStoreId,
+            userId,
+            guestId,
+            depth,
+            skipCache,
+          })
         : undefined
 
   // Build store with apps array for hyperlink navigation
