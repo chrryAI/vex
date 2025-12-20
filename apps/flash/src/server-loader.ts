@@ -86,7 +86,6 @@ export async function loadServerData(
   const isDev = process.env.MODE === "development"
 
   const API_URL = getEnv().VITE_API_URL
-  console.log(`🔥 HONO API_URL:`, API_URL)
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []
@@ -314,12 +313,19 @@ export async function loadServerData(
     }
   }
 
+  const accountApp = session?.userBaseApp || session?.guestBaseApp
+
   const result = {
     session,
     thread,
     threads,
     translations,
-    app,
+    app: (() => {
+      if (app?.id === accountApp?.id) {
+        return accountApp
+      }
+      return app
+    })(),
     siteConfig,
     locale,
     deviceId,
