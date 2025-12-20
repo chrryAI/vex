@@ -63,22 +63,25 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
     build: {
       rollupOptions: {
         output: {
-          // Better chunk splitting for caching
-          manualChunks: (id) => {
-            // Vendor chunks
-            if (id.includes("node_modules")) {
-              if (id.includes("react") || id.includes("react-dom")) {
-                return "react-vendor"
-              }
-              if (id.includes("framer-motion")) {
-                return "animation-vendor"
-              }
-              if (id.includes("@lobehub")) {
-                return "ui-vendor"
-              }
-              return "vendor"
-            }
-          },
+          // Better chunk splitting for caching - only for client builds
+          // Disable for SSR to avoid circular dependency issues
+          manualChunks: isSsrBuild
+            ? undefined
+            : (id) => {
+                // Vendor chunks
+                if (id.includes("node_modules")) {
+                  if (id.includes("react") || id.includes("react-dom")) {
+                    return "react-vendor"
+                  }
+                  if (id.includes("framer-motion")) {
+                    return "animation-vendor"
+                  }
+                  if (id.includes("@lobehub")) {
+                    return "ui-vendor"
+                  }
+                  return "vendor"
+                }
+              },
           format: "es", // Force ES module format
           // Only add Node.js polyfills for SSR builds, not client builds
           banner: isSsrBuild
