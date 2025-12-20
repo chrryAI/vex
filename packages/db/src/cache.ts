@@ -133,7 +133,7 @@ export async function setCachedAppBySlug(slug: string, app: any) {
 export async function invalidateApp(id: string, slug?: string) {
   await deleteCache(cacheKeys.app(id))
   if (slug) {
-    await deleteCache(cacheKeys.appBySlug(slug))
+    await deleteCachePattern(cacheKeys.appBySlug(slug))
   }
   // Invalidate all app lists
   await deleteCachePattern(cacheKeys.app(id))
