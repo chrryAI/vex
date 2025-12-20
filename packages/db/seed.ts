@@ -294,6 +294,7 @@ async function clearGuests() {
 
     // Delete batch
     const idsToDelete = inactiveGuests.map((g) => g.id)
+    console.log(`🚀 ~ clearGuests ~ idsToDelete:`, idsToDelete)
     await db.delete(guests).where(inArray(guests.id, idsToDelete))
 
     totalDeleted += inactiveGuests.length
@@ -728,10 +729,10 @@ const prod = async () => {
   let admin = await getUser({ email: "ibsukru@gmail.com" })
   if (!admin) throw new Error("Admin user not found")
 
-  await updateStoreUrls({ user: admin })
+  // await updateStoreUrls({ user: admin })
 
   // Delete inactive bot guests in batches
-  // await clearGuests()
+  await clearGuests()
   // const vex = await createStores({ user: admin, isProd: true })
   // const allInstructions = await db.select().from(instructions)
   // const seen = new Map<string, string>() // Map of unique key -> instruction ID
@@ -840,8 +841,8 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    await clearDb()
-    await create()
+    // await clearDb()
+    // await create()
     process.exit(0)
   }
 }
