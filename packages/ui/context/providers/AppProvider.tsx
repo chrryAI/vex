@@ -16,6 +16,7 @@ import {
   toast,
 } from "../../platform"
 import useCache from "../../hooks/useCache"
+import console from "../../utils/log"
 
 import { appFormData, appSchema } from "../../schemas/appSchema"
 import { useForm } from "react-hook-form"

@@ -97,7 +97,7 @@ export default function App({
     artifacts: File[]
   }) => void
 }) {
-  const { t } = useAppContext()
+  const { t, console } = useAppContext()
   const { time } = useTimerContext()
 
   const {

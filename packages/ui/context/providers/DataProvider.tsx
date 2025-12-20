@@ -16,6 +16,7 @@ import {
 } from "../../platform/PlatformProvider"
 import { getActions, ApiActions } from "../../lib"
 import { useAuth } from "./AuthProvider"
+import console from "../../utils/log"
 
 import {
   toast,
@@ -200,7 +201,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.7.59"
+  const VERSION = "1.7.60"
 
   const [weather, setWeather] = useLocalStorage<
     | {

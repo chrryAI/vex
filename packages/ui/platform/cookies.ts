@@ -9,6 +9,7 @@ import { useState, useCallback } from "react"
 import { isNative, isBrowserExtension } from "./PlatformProvider"
 import { storage } from "./storage"
 import { getExtensionUrls } from "../utils"
+import console from "../utils/log"
 
 const isBrowser = typeof window !== "undefined"
 

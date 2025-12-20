@@ -7,6 +7,7 @@
  * Cross-platform storage adapter
  * Web: Uses localStorage
  */
+import console from "../utils/log"
 export class PlatformStorage {
   private storage: Storage | null = null
 
