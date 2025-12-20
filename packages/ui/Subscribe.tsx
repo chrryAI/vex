@@ -147,9 +147,6 @@ export default function Subscribe({
         return `${FRONTEND_URL}/?${params.toString()}`
       })()
 
-      console.log("Checkout success URL:", checkoutSuccessUrl)
-      console.log("Checkout cancel URL:", checkoutCancelUrl)
-
       // return
 
       const response = await apiFetch(`${API_URL}/createSubscription`, {

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "rm -rf .vite node_modules/.vite dist && node server",
+    "dev": "rm -rf .vite node_modules/.vite dist && node server --force",
     "build": "pnpm run build:client && pnpm run build:server",
     "build:client": "NODE_ENV=production pnpm vite build --outDir dist/client",
     "build:server": "NODE_ENV=production pnpm vite build --ssr src/entry-server.tsx --outDir dist/server",
