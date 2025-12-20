@@ -15,9 +15,6 @@ export function useOnlineStatus() {
       setIsOnline(navigator.onLine)
     }
 
-    window.addEventListener("online", updateStatus)
-    window.addEventListener("offline", updateStatus)
-
     async function checkConnection() {
       try {
         // Check API health endpoint to detect server outages
@@ -34,6 +31,10 @@ export function useOnlineStatus() {
         setIsOnline(false)
       }
     }
+
+    window.addEventListener("online", updateStatus)
+    window.addEventListener("offline", updateStatus)
+    window.addEventListener("focus", checkConnection)
 
     // Initial check in case navigator.onLine is wrong
     checkConnection()

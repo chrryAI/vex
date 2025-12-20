@@ -203,13 +203,28 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [wasOffline, setWasOffline] = useState(false)
 
   useEffect(() => {
+    // 1. The "Panic" State (Lost Connection)
     if (!isOnline) {
       setWasOffline(true)
-      toast.error(t("You are offline"), {
-        duration: 6000,
+      // Change from "Error" to "Loading" or "Status" icon if possible
+      toast.loading(t("Reconnecting..."), {
+        id: "connection-status", // specific ID so we can update this exact toast
       })
     }
-  }, [isOnline])
+
+    // 2. The "Relief" State (Connection Restored)
+    else if (isOnline && wasOffline) {
+      // Update the EXISTING toast to Success
+      toast.success(t("Back online"), {
+        id: "connection-status",
+        duration: 3000,
+      })
+      setWasOffline(false)
+
+      // OPTIONAL: Trigger a silent revalidation of the current thread
+      // mutate("/api/messages")
+    }
+  }, [isOnline, wasOffline])
 
   useEffect(() => {
     if (isOnline && wasOffline) {
