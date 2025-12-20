@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4, validate } from "uuid"
 import {
   VERSION,
   getThreadId,
@@ -159,9 +159,14 @@ export async function loadServerData(
     TEST_GUEST_FINGERPRINTS,
   ).includes(fpFromQuery || "")
 
+  const apiKey =
+    authToken || fpFromQuery || cookies.token || headers["x-token"] || uuidv4()
+
   const fingerprint = isTestFP
     ? fpFromQuery
-    : fpFromQuery || headers["x-fp"] || cookies.fingerprint || undefined
+    : validate(apiKey)
+      ? apiKey
+      : headers["x-fp"] || cookies.fingerprint || uuidv4()
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
@@ -179,13 +184,6 @@ export async function loadServerData(
   // Handle OAuth callback token
   const authToken = urlObj.searchParams.get("auth_token")
 
-  const apiKey =
-    authToken ||
-    fpFromQuery ||
-    cookies.token ||
-    headers["x-token"] ||
-    fingerprint ||
-    uuidv4()
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
 
