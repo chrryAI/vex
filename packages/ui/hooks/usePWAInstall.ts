@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from "react"
+import console from "../utils/log"
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>

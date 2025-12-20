@@ -23,6 +23,7 @@ import {
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
+import useCache from "../../hooks/useCache"
 
 import {
   aiAgent,
@@ -908,6 +909,14 @@ export function AuthProvider({
     }
   }, [user, guest])
 
+  const [, setUserRole] = useLocalStorage("userRole", user?.role)
+
+  useEffect(() => {
+    if (user) {
+      setUserRole(user.role)
+    }
+  }, [user])
+
   const [characterProfilesEnabled, setCharacterProfilesEnabled] = useState(
     !!(user || guest)?.characterProfilesEnabled,
   )
@@ -1019,7 +1028,10 @@ export function AuthProvider({
     [storeApps],
   )
 
+  const { clear } = useCache()
+
   const fetchSession = async () => {
+    clear()
     setIsLoading(true)
     setShouldFetchSession(true)
     shouldFetchSession && (await refetchSession())

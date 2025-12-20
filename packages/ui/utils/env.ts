@@ -39,4 +39,7 @@ export const isDevelopment = checkIsExtension()
     )
   : !isProduction
 
+export const isE2E =
+  getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
+
 export const isTestingDevice = false && isDevelopment

@@ -195,7 +195,7 @@ export default function Chat({
   thread?: thread
   onTyping?: (isTyping: boolean) => void
 }): React.ReactElement {
-  const { t } = useAppContext()
+  const { t, console } = useAppContext()
   const { weather, actions } = useData()
 
   const styles = useChatStyles()

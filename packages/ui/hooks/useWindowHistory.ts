@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import console from "../utils/log"
 
 // Types
 export interface NavigateOptions {

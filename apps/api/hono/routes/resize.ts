@@ -131,6 +131,11 @@ resize.get("/", async (c) => {
 
     console.log(`✅ Uploaded to MinIO: ${uploadResult.url}`)
 
+    // Set aggressive cache headers since MinIO URLs are permanent
+    // The MD5 hash ensures unique URLs for different sizes/images
+    c.header("Cache-Control", "public, max-age=31536000, immutable")
+    c.header("Expires", new Date(Date.now() + 31536000000).toUTCString())
+
     // Redirect to the MinIO URL
     return c.redirect(uploadResult.url, 301)
   } catch (error: any) {

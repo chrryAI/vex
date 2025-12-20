@@ -1722,6 +1722,10 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   }
   const mode = detectSiteMode(hostname)
 
+  if (isE2E) {
+    return e2eVex
+  }
+
   if (mode === "search") {
     return search
   }
@@ -1776,10 +1780,6 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Zarathustra configuration
   if (mode === "zarathustra") {
     return zarathustra
-  }
-
-  if (isE2E) {
-    return e2eVex
   }
 
   // Search configuration
