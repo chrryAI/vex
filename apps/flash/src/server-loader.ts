@@ -161,11 +161,11 @@ export async function loadServerData(
 
   const authToken = urlObj.searchParams.get("auth_token")
 
-  const apiKey =
+  let apiKey =
     authToken ||
     (isTestFP ? fpFromQuery : cookies.token || headers["x-token"] || uuidv4())
 
-  const fingerprint = isTestFP
+  let fingerprint = isTestFP
     ? fpFromQuery
     : validate(apiKey)
       ? apiKey
@@ -213,32 +213,35 @@ export async function loadServerData(
   const appId = thread?.thread?.appId || headers["x-app-id"]
 
   try {
-    const [sessionResult, translationsResult, appResult] = await Promise.all([
-      getSession({
-        appId,
-        deviceId,
-        fingerprint,
-        token: apiKey,
-        agentName,
-        pathname,
-        routeType,
-        translate: true,
-        locale,
-        chrryUrl,
-        screenWidth: Number(viewPortWidth),
-        screenHeight: Number(viewPortHeight),
-        gift: gift || undefined,
-        source: "layout",
-        // API_URL,
-        ip: clientIp, // Pass client IP for Arcjet
-      }),
+    session = await getSession({
+      appId,
+      deviceId,
+      fingerprint,
+      token: apiKey,
+      agentName,
+      pathname,
+      routeType,
+      translate: true,
+      locale,
+      chrryUrl,
+      screenWidth: Number(viewPortWidth),
+      screenHeight: Number(viewPortHeight),
+      gift: gift || undefined,
+      source: "layout",
+      // API_URL,
+      ip: clientIp, // Pass client IP for Arcjet
+    })
 
+    apiKey = session?.user?.token || session?.guest?.fingerprint || apiKey
+    fingerprint =
+      session?.user?.fingerprint || session?.guest?.fingerprint || fingerprint
+
+    const [translationsResult, appResult] = await Promise.all([
       getTranslations({
         token: apiKey,
         locale,
         // API_URL,
       }),
-
       getApp({
         chrryUrl,
         appId,
@@ -248,7 +251,6 @@ export async function loadServerData(
       }),
     ])
 
-    session = sessionResult
     translations = translationsResult
 
     const accountApp = session?.userBaseApp || session?.guestBaseApp
