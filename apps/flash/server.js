@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.7.51"
+const VERSION = "1.7.52"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -122,7 +122,7 @@ function escapeHtml(text) {
 }
 
 // Convert metadata object to HTML meta tags
-function metadataToHtml(metadata, serverData) {
+async function metadataToHtml(metadata, serverData) {
   const tags = []
 
   if (metadata.title) {
@@ -244,13 +244,31 @@ function metadataToHtml(metadata, serverData) {
     })
   }
 
-  // Apple Touch Icons - use resize endpoint for proper sizing
-  // Get the base icon from metadata or use app slug
-  const appSlug = serverData?.app?.slug || "chrry"
-  const baseIcon =
-    metadata.openGraph?.images?.[0]?.url || `/images/apps/${appSlug}.png`
-  console.log(`🍎 Apple touch icon base:`, baseIcon, `(app: ${appSlug})`)
+  // Favicon and Apple Touch Icons - use hostname for white-label detection
+  const { getSiteConfig } = await import("@chrryai/chrry/utils/siteConfig")
+  const hostname = serverData?.hostname || "localhost"
+  const iconSiteConfig = getSiteConfig(hostname)
+  const iconSlug = iconSiteConfig.slug || serverData?.app?.slug || "chrry"
+  const baseIcon = `/images/apps/${iconSlug}.png`
   const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
+
+  // Regular favicons at different sizes using resize endpoint
+  const favicon16 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=16&h=16&fit=contain&q=100`
+  const favicon32 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=32&h=32&fit=contain&q=100`
+  const favicon48 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=48&h=48&fit=contain&q=100`
+
+  tags.push(
+    `<link rel="icon" type="image/png" sizes="16x16" href="${favicon16}" />`,
+  )
+  tags.push(
+    `<link rel="icon" type="image/png" sizes="32x32" href="${favicon32}" />`,
+  )
+  tags.push(
+    `<link rel="icon" type="image/png" sizes="48x48" href="${favicon48}" />`,
+  )
+  tags.push(`<link rel="shortcut icon" href="${favicon32}" />`)
+
+  // Apple Touch Icon - same image source, resized to 180x180
   const appleIcon180 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=180&h=180&fit=contain&q=100`
 
   tags.push(`<link rel="apple-touch-icon" href="${appleIcon180}" />`)
@@ -423,7 +441,7 @@ app.use("*all", async (req, res) => {
     let metaTags = ""
     if (serverData?.metadata) {
       try {
-        metaTags = metadataToHtml(serverData.metadata, serverData)
+        metaTags = await metadataToHtml(serverData.metadata, serverData)
       } catch (error) {
         console.error("Error converting metadata to HTML:", error)
         // Continue without metadata if conversion fails
