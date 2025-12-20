@@ -28,8 +28,8 @@ import {
   db,
   and,
   eq,
-  getPureApp,
   getAppExtends,
+  getApp as getAppDb,
   deleteApp,
 } from "@repo/db"
 import { appOrders, storeInstalls } from "@repo/db/src/schema"
@@ -257,6 +257,8 @@ app.post("/", async (c) => {
 
               return await getAppDb({
                 id: extendedAppId,
+                userId: member?.id,
+                guestId: guest?.id,
                 skipCache: true,
               })
             }),
@@ -756,9 +758,10 @@ app.patch("/:id", async (c) => {
     }
 
     // Get existing app
-    const existingApp = await getApp({
-      c,
-      appId,
+    const existingApp = await getAppDb({
+      id: appId,
+      userId: member?.id,
+      guestId: guest?.id,
       skipCache: true,
     })
 
