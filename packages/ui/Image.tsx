@@ -1,6 +1,6 @@
 "use client"
 import { app, appWithStore, store } from "./types"
-import { PROD_FRONTEND_URL, FRONTEND_URL } from "./utils"
+import { PROD_FRONTEND_URL, FRONTEND_URL, API_URL } from "./utils"
 
 import React, { useEffect } from "react"
 import Img from "./Img"
@@ -122,6 +122,30 @@ export default function ImageComponent(props: ImageProps) {
     }
   }, [isEmoji, isAgent])
 
+  const resize = ({
+    url,
+    width,
+    height,
+  }: {
+    url: string
+    width?: number | string
+    height?: number | string
+  }) => {
+    if (typeof width === "string") {
+      return url
+    }
+    if (typeof height === "string") {
+      return url
+    }
+    if (!width || !height) {
+      return url
+    }
+    if (url.indexOf(FRONTEND_URL) !== 0) {
+      return url
+    }
+    return `${API_URL}/resize?url=${encodeURIComponent(url)}&w=${width}&h=${height}&fit=contain&q=100`
+  }
+
   const color =
     COLORS[app?.themeColor as keyof typeof COLORS] || "var(--accent-6)"
 
@@ -226,7 +250,11 @@ export default function ImageComponent(props: ImageProps) {
         width={width}
         height={height}
         title={title}
-        src={src || `${BASE_URL}/images/pacman/space-invader.png`}
+        src={resize({
+          url: src || `${BASE_URL}/images/pacman/space-invader.png`,
+          width,
+          height,
+        })}
         alt={alt || app?.title || logo ? "Vex" : ""}
       />
     </>

@@ -540,10 +540,7 @@ session.get("/", async (c) => {
       const guestFingerprint = await getGuestDb({ fingerprint })
 
       let migratedFromGuest = false
-      if (
-        !member.migratedFromGuest &&
-        (source === "layout" || appType !== "web")
-      ) {
+      if (!member.migratedFromGuest) {
         const toMigrate = member.email
           ? (await getGuestDb({ email: member.email })) || guestFingerprint
           : guestFingerprint
