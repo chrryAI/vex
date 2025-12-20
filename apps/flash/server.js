@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.7.60"
+const VERSION = "1.7.61"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -72,8 +72,8 @@ const limiter = rateLimit({
         // Invalid token, fall back to IP
       }
     }
-    // Guest or no token - use IP
-    return `ip:${req.ip}`
+    // Guest or no token - use IP (req.ip is already normalized by express)
+    return req.ip
   },
   // Skip rate limiting for certain paths
   skip: (req) => {
