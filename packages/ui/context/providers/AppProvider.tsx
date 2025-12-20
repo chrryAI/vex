@@ -271,6 +271,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const saveApp = async () => {
     try {
+      clear("app")
+
       setIsSavingApp(true)
       const formValues = appForm.getValues()
 
@@ -286,7 +288,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       if (result) {
-        clear("app")
         if (canEditApp) {
           setUpdatedApp(result)
           await fetchApps()
