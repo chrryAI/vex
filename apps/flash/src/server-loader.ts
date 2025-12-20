@@ -87,6 +87,7 @@ export async function loadServerData(
   const isDev = process.env.MODE === "development"
 
   const API_URL = API_INTERNAL_URL
+  console.log(`🚀 ~ API_URL:`, API_URL)
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []
