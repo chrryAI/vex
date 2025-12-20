@@ -6,6 +6,7 @@ import { COLORS } from "./ThemeContext"
 import { useAuth, useData, useError } from "./providers"
 import { getSiteConfig } from "../utils/siteConfig"
 import { getEnv, isCI, isE2E, isDevelopment } from "../utils"
+import { createCustomConsole } from "../utils/log"
 
 export { COLORS }
 
@@ -44,43 +45,6 @@ export type affiliateStats = {
 }
 
 // Save reference to original console
-const originalConsole = {
-  log: console.log.bind(console),
-  error: console.error.bind(console),
-  warn: console.warn.bind(console),
-  info: console.info.bind(console),
-}
-
-// Create custom console factory that has access to user and error tracking
-export const createCustomConsole = (
-  user?: { role?: string },
-  captureException?: (error: Error) => void,
-) => ({
-  log: (message?: any, ...args: any[]) => {
-    if (isE2E || isDevelopment || user?.role === "admin") {
-      originalConsole.log(message, ...args)
-    }
-  },
-  error: (message?: any, ...args: any[]) => {
-    if (isE2E || isDevelopment || user?.role === "admin") {
-      // Capture error in Sentry
-      if (captureException && message instanceof Error) {
-        captureException(message)
-      }
-      originalConsole.error(message, ...args)
-    }
-  },
-  warn: (message?: any, ...args: any[]) => {
-    if (isE2E || isDevelopment || user?.role === "admin") {
-      originalConsole.warn(message, ...args)
-    }
-  },
-  info: (message?: any, ...args: any[]) => {
-    if (isE2E || isDevelopment || user?.role === "admin") {
-      originalConsole.info(message, ...args)
-    }
-  },
-})
 
 export type themeType = "dark" | "light"
 
@@ -93,7 +57,7 @@ export const AppContext = createContext<{
 }>({
   t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => key,
   captureException: () => {},
-  console: createCustomConsole(undefined, undefined),
+  console: createCustomConsole(undefined),
 })
 
 export const AppContextProvider = ({
@@ -153,7 +117,7 @@ export const AppContextProvider = ({
   const { captureException } = useError()
 
   // Create custom console with access to user role and error tracking
-  const customConsole = createCustomConsole(user, captureException)
+  const customConsole = createCustomConsole(user)
 
   return (
     <AppContext.Provider

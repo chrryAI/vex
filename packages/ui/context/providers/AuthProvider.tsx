@@ -908,6 +908,14 @@ export function AuthProvider({
     }
   }, [user, guest])
 
+  const [, setUserRole] = useLocalStorage("userRole", user?.role)
+
+  useEffect(() => {
+    if (user) {
+      setUserRole(user.role)
+    }
+  }, [user])
+
   const [characterProfilesEnabled, setCharacterProfilesEnabled] = useState(
     !!(user || guest)?.characterProfilesEnabled,
   )

@@ -14,6 +14,7 @@ import type { ReactElement, ReactNode } from "react"
 
 import { isSameDay, FRONTEND_URL, apiFetch, API_URL } from "../utils"
 import { device, mood, timer } from "../types"
+import console from "../utils/log"
 
 import useSWR from "swr"
 import { useWebSocket } from "../hooks/useWebSocket"

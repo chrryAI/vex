@@ -107,7 +107,7 @@ export default function Instructions({
     artifacts: File[]
   }) => void
 }) {
-  const { t } = useAppContext()
+  const { t, console } = useAppContext()
 
   const { API_URL } = useData()
 

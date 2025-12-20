@@ -18,6 +18,7 @@ import React, {
   useEffect,
   startTransition,
 } from "react"
+import console from "../utils/log"
 import { useCookie } from "./cookies"
 import {
   type PlatformType,

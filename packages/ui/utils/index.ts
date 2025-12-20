@@ -27,6 +27,7 @@ import { getSiteConfig } from "./siteConfig"
 import { getAppAndStoreSlugs, excludedSlugRoutes } from "./url"
 import replaceLinks from "./replaceLinks"
 export * from "./env"
+import { isE2E } from "./env"
 import {
   isDevelopment,
   isTestingDevice,
@@ -142,9 +143,6 @@ export const FRONTEND_URL =
       : CHRRY_URL)
 
 export const PROD_FRONTEND_URL = FRONTEND_URL
-
-export const isE2E =
-  getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
 
 export const API_INTERNAL_URL = getEnv().VITE_API_INTERNAL_URL
 
@@ -400,7 +398,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.7.59"
+export const VERSION = config.version || "1.7.60"
 export type instructionBase = {
   id: string
   title: string
