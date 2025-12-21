@@ -1,7 +1,7 @@
 name: PR
 on:
   pull_request:
-    branches: [main]
+    branches: [opps]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -155,7 +155,7 @@ jobs:
         run: pnpm turbo check-types
 
       - name: Build packages
-        run: pnpm run build --filter=!@chrryai/browser-core
+        run: pnpm run build --filter=!@chrryai/browser-core --filter=!@chrryai/browser
 
   # Deploy both API and Web sequentially
   deploy:
