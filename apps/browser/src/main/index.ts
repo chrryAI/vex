@@ -57,5 +57,13 @@ app.on("window-all-closed", () => {
 
 // IPC Handlers
 ipcMain.handle("ping", () => "pong")
+ipcMain.handle("window:minimize", () => mainWindow?.minimize())
+ipcMain.handle("window:maximize", () => {
+  if (mainWindow?.isMaximized()) {
+    mainWindow.unmaximize()
+  } else {
+    mainWindow?.maximize()
+  }
+})
 
 console.log("🚀 Electron browser started")
