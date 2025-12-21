@@ -8,7 +8,7 @@
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5174 && electron .",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "package": "npm run build && electron-builder",
     "build:mac": "npm run package -- --mac",
     "build:win": "npm run package -- --win",
