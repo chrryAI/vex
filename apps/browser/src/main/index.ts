@@ -94,10 +94,8 @@ function createTray() {
 
 // App lifecycle
 app.whenReady().then(() => {
-  // Hide dock icon on Mac
-  if (process.platform === "darwin") {
-    app.dock.hide()
-  }
+  // Keep dock icon visible so users can bookmark the app
+  // (Removed app.dock.hide() - users can hide it later in settings if desired)
 
   createTray()
   createWindow()
