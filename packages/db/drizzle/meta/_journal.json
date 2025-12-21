@@ -960,6 +960,13 @@
       "when": 1765413973664,
       "tag": "0136_misty_onslaught",
       "breakpoints": true
+    },
+    {
+      "idx": 137,
+      "version": "7",
+      "when": 1766352740133,
+      "tag": "0137_powerful_blade",
+      "breakpoints": true
     }
   ]
 }
