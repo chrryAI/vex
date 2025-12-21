@@ -2,9 +2,11 @@
 
 export const getEnv = () => {
   if (typeof import.meta !== "undefined") {
-    return (import.meta as any).env
+    return (import.meta as any).env || {}
   }
-  return process.env
+
+  if (typeof process === "undefined") return {}
+  return process.env || {}
 }
 
 export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"

@@ -1,0 +1,17 @@
+{
+  "extends": "../typescript-config/react-library.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@chrryai/chrry": ["../ui/index.ts"],
+      "@chrryai/chrry/*": ["../ui/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
+}

@@ -1,4 +1,5 @@
 import console from "./log"
+import { isDevelopment } from "./env"
 export type SiteMode =
   | "chrryDev"
   | "vex"
@@ -13,6 +14,8 @@ export type SiteMode =
   | "popcorn"
   | "zarathustra"
   | "search"
+  | "sushi"
+  | "e2eVex"
 
 // Function declaration is hoisted, so it's available before const declarations
 function getEnv() {
@@ -826,6 +829,56 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
+const sushi = {
+  url: "https://sushi.chrry.ai",
+  mode: "sushi" as SiteMode,
+  slug: "sushi",
+  favicon: "sushi",
+  storeSlug: "sushiStore",
+  name: "Sushi",
+  isStoreApp: true,
+  domain: "sushi.chrry.ai",
+  store: "https://sushi.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "AI-powered code editor",
+  logo: "🤖",
+  primaryColor: "#6366F1", // Indigo
+  links: {
+    github: "https://github.com/chrryAI/chrry",
+    docs: "https://sushi.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Code Editor",
+      description: "AI-powered code editor",
+      icon: "🤖",
+      link: "/code",
+      isOpenSource: false,
+    },
+    {
+      title: "AI Agents",
+      description: "Custom AI agents for any task",
+      icon: "🤖",
+      link: "/code",
+      isOpenSource: false,
+    },
+    {
+      title: "Collaboration",
+      description: "Real-time AI collaboration",
+      icon: "👥",
+      link: "/threads",
+      isOpenSource: false,
+    },
+    {
+      title: "Browser Extension",
+      description: "AI assistant in your browser",
+      icon: "🔌",
+      link: "https://chrome.google.com/webstore",
+      isOpenSource: false,
+    },
+  ],
+}
+
 export interface SiteConfig {
   mode: SiteMode
   slug: string
@@ -1289,6 +1342,19 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Amsterdam ve Hollanda için tasarlanmış kişisel yapay zeka asistanınız. Felemenkçe sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
     },
   },
+  sushi: {
+    en: {
+      title: "Sushi - AI Code Editor",
+      description:
+        "AI-powered code editor directly in your browser. Edit code, run terminals, and collaborate with AI.",
+    },
+  },
+  e2eVex: {
+    en: {
+      title: "Vex - E2E Testing",
+      description: "E2E Testing Environment for Vex.",
+    },
+  },
   tokyo: {
     en: {
       title: "Tokyo - AI Assistant for Japan",
@@ -1567,8 +1633,11 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const defaultMode =
-    (getEnv().VITE_SITE_MODE as SiteMode) || mode || ("search" as SiteMode)
+  const defaultMode = isE2E
+    ? "sushi"
+    : isDevelopment
+      ? ("sushi" as SiteMode)
+      : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -1586,7 +1655,7 @@ export function detectSiteModeDomain(
     }
   }
 
-  if (!host) {
+  if (!host || isDevelopment) {
     return defaultMode
   }
 
@@ -1662,6 +1731,10 @@ export function detectSiteModeDomain(
     return "chrryStore"
   }
 
+  if (matchesDomain(host, "sushi.chrry.ai")) {
+    return "sushi"
+  }
+
   // City subdomains
 
   // Default to defaultMode (vex.chrry.ai or localhost)
@@ -1695,7 +1768,9 @@ export function detectSiteMode(hostname?: string): SiteMode {
   }
 
   // Otherwise, detect from domain (e.g., "atlas.chrry.ai" -> "atlas")
-  return detectSiteModeDomain(hostname)
+  const result = detectSiteModeDomain(hostname)
+  console.log("🚀 ~ detectSiteMode ~ result:", result)
+  return result
 }
 
 const getClientHostname = () => {
@@ -1723,9 +1798,13 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   }
   const mode = detectSiteMode(hostname)
 
-  if (isE2E) {
-    return e2eVex
+  if (mode === "sushi") {
+    return sushi
   }
+
+  // if (isE2E) {
+  //   return e2eVex
+  // }
 
   if (mode === "search") {
     return search
@@ -1781,6 +1860,10 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Zarathustra configuration
   if (mode === "zarathustra") {
     return zarathustra
+  }
+
+  if (mode === "e2eVex") {
+    return e2eVex
   }
 
   // Search configuration
