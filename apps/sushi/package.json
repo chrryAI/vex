@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/browser",
-  "version": "1.7.68",
+  "version": "1.7.70",
   "private": true,
   "type": "module",
   "scripts": {
