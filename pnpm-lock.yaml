@@ -817,6 +817,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.6.0
         version: 4.7.0(vite@7.2.6(@types/node@25.0.2)(lightningcss@1.30.2)(sass@1.94.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
+      esbuild:
+        specifier: ^0.25.12
+        version: 0.25.12
       eslint:
         specifier: ^9.30.1
         version: 9.39.2
@@ -878,9 +881,6 @@ importers:
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
-      esbuild:
-        specifier: ^0.25.12
-        version: 0.25.12
       terser:
         specifier: ^5.44.0
         version: 5.44.1
@@ -19471,15 +19471,15 @@ snapshots:
       - supports-color
     optional: true
 
-  '@typescript-eslint/eslint-plugin@8.48.1(@typescript-eslint/parser@8.48.1(eslint@9.38.0)(typescript@5.8.3))(eslint@9.39.1)(typescript@5.8.3)':
+  '@typescript-eslint/eslint-plugin@8.48.1(@typescript-eslint/parser@8.48.1(eslint@9.38.0)(typescript@5.8.3))(eslint@9.39.2)(typescript@5.8.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
       '@typescript-eslint/parser': 8.48.1(eslint@9.38.0)(typescript@5.8.3)
       '@typescript-eslint/scope-manager': 8.48.1
-      '@typescript-eslint/type-utils': 8.48.1(eslint@9.39.1)(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.48.1(eslint@9.39.1)(typescript@5.8.3)
+      '@typescript-eslint/type-utils': 8.48.1(eslint@9.39.2)(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.48.1(eslint@9.39.2)(typescript@5.8.3)
       '@typescript-eslint/visitor-keys': 8.48.1
-      eslint: 9.39.1
+      eslint: 9.39.2
       graphemer: 1.4.0
       ignore: 7.0.5
       natural-compare: 1.4.0
@@ -19497,24 +19497,6 @@ snapshots:
       '@typescript-eslint/utils': 8.48.1(eslint@9.39.1)(typescript@5.8.3)
       '@typescript-eslint/visitor-keys': 8.48.1
       eslint: 9.39.1
-      graphemer: 1.4.0
-      ignore: 7.0.5
-      natural-compare: 1.4.0
-      ts-api-utils: 2.1.0(typescript@5.8.3)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - supports-color
-    optional: true
-
-  '@typescript-eslint/eslint-plugin@8.48.1(@typescript-eslint/parser@8.48.1(eslint@9.39.2)(typescript@5.8.3))(eslint@9.39.2)(typescript@5.8.3)':
-    dependencies:
-      '@eslint-community/regexpp': 4.12.2
-      '@typescript-eslint/parser': 8.48.1(eslint@9.39.2)(typescript@5.8.3)
-      '@typescript-eslint/scope-manager': 8.48.1
-      '@typescript-eslint/type-utils': 8.48.1(eslint@9.39.2)(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.48.1(eslint@9.39.2)(typescript@5.8.3)
-      '@typescript-eslint/visitor-keys': 8.48.1
-      eslint: 9.39.2
       graphemer: 1.4.0
       ignore: 7.0.5
       natural-compare: 1.4.0
@@ -29156,7 +29138,7 @@ snapshots:
 
   typescript-eslint@8.48.1(eslint@9.39.1)(typescript@5.8.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.48.1(@typescript-eslint/parser@8.48.1(eslint@9.38.0)(typescript@5.8.3))(eslint@9.39.1)(typescript@5.8.3)
+      '@typescript-eslint/eslint-plugin': 8.48.1(@typescript-eslint/parser@8.48.1(eslint@9.39.1)(typescript@5.8.3))(eslint@9.39.1)(typescript@5.8.3)
       '@typescript-eslint/parser': 8.48.1(eslint@9.39.1)(typescript@5.8.3)
       '@typescript-eslint/typescript-estree': 8.48.1(typescript@5.8.3)
       '@typescript-eslint/utils': 8.48.1(eslint@9.39.1)(typescript@5.8.3)
@@ -29167,7 +29149,7 @@ snapshots:
 
   typescript-eslint@8.48.1(eslint@9.39.2)(typescript@5.8.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.48.1(@typescript-eslint/parser@8.48.1(eslint@9.39.2)(typescript@5.8.3))(eslint@9.39.2)(typescript@5.8.3)
+      '@typescript-eslint/eslint-plugin': 8.48.1(@typescript-eslint/parser@8.48.1(eslint@9.38.0)(typescript@5.8.3))(eslint@9.39.2)(typescript@5.8.3)
       '@typescript-eslint/parser': 8.48.1(eslint@9.39.2)(typescript@5.8.3)
       '@typescript-eslint/typescript-estree': 8.48.1(typescript@5.8.3)
       '@typescript-eslint/utils': 8.48.1(eslint@9.39.2)(typescript@5.8.3)
