@@ -271,6 +271,7 @@ export default async ({ command, mode }) => {
         },
       },
     },
+    base: "./", // CRITICAL: Chrome extensions need relative paths, not absolute
     build: {
       rollupOptions: {
         input: {

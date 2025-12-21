@@ -1,7 +1,7 @@
 // Background script for Vex extension
 import "./types/webextension-polyfill.d.ts"
 import browser from "webextension-polyfill"
-import { initializeContextMenu } from "./contextMenu.ts"
+import { initializeContextMenu } from "./contextMenu"
 
 // Track sidebar state for toggle functionality
 const sidebarState: Record<number, boolean> = {}

@@ -15,6 +15,7 @@ const getAppSlug = ({
   const localeMatch = locales.find((loc) => {
     return pathname === `/${loc}` || pathname.startsWith(`/${loc}/`)
   })
+
   const localePrefix = localeMatch ? `/${localeMatch}` : ""
 
   let computedSlug = defaultSlug
@@ -22,12 +23,11 @@ const getAppSlug = ({
   if (targetApp) {
     if (targetApp.id === baseApp?.id) {
       computedSlug = defaultSlug
-    } else if (
-      targetApp.store?.slug === baseApp?.store?.slug ||
-      baseApp?.store?.apps.some((app) => app.id === targetApp.id)
-    ) {
+    } else if (targetApp.store?.slug === baseApp?.store?.slug) {
+      // Same store: just use the app slug
       computedSlug = `/${targetApp.slug}`
     } else {
+      // Different store: include store slug
       computedSlug = `/${targetApp.store?.slug}/${targetApp.slug}`
     }
   }

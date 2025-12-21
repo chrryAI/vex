@@ -142,6 +142,8 @@ export const FRONTEND_URL =
       ? `http://localhost:${FE_PORT}`
       : CHRRY_URL)
 
+console.log(`🚀 ~ FRONTEND_URL:`, FRONTEND_URL)
+
 export const PROD_FRONTEND_URL = FRONTEND_URL
 
 export const API_INTERNAL_URL = getEnv().VITE_API_INTERNAL_URL
@@ -398,7 +400,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.7.68"
+export const VERSION = config.version || "1.7.69"
 export type instructionBase = {
   id: string
   title: string

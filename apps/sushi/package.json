@@ -11,6 +11,7 @@
     "dev": "MODE=sushi vite build --mode development --watch",
     "dev:browser": "pnpm build:dev && node launch-browser.js",
     "dev:watch": "node dev-watch.js",
+    "restart:browser": "pnpm build:dev && node restart-browser.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "zip:chrome": "cd dist && zip -r ../dist-chrome.zip .",
