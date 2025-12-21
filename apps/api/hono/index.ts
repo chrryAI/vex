@@ -84,6 +84,10 @@ app.use("*", corsMiddleware)
 // Custom headers middleware for app/store detection and fingerprinting
 app.use("*", headersMiddleware)
 
+// Enable compression (gzip/deflate)
+import { compress } from "hono/compress"
+app.use("*", compress())
+
 // Create API group with /api basePath
 const api = new Hono()
 

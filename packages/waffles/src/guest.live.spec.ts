@@ -1,9 +1,15 @@
 import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
-import { getURL, wait, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3 } from "."
+import {
+  getURL,
+  wait,
+  VEX_TEST_EMAIL_3,
+  VEX_TEST_PASSWORD_3,
+  VEX_TEST_EMAIL_4,
+} from "."
 import { subscribe } from "./shared/subscribe"
-// import { collaboration } from "./shared/collaboration"
+import { collaboration } from "./shared/collaboration"
 import { thread } from "./shared/thread"
 import { v4 as uuidv4 } from "uuid"
 
@@ -142,11 +148,7 @@ test.only("Chat", async ({ page }) => {
   })
 })
 
-// test.only("Collaboration", async ({ page, browser }) => {
-//   await collaboration({ page, browser, isMember, isLive })
-// })
-
-test.skip("File upload", async ({ page }) => {
+test.only("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
@@ -200,4 +202,14 @@ test.skip("File upload", async ({ page }) => {
 test.only("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, isLive })
+})
+
+test.skip("Collaboration", async ({ page, browser }) => {
+  await collaboration({
+    page,
+    browser,
+    isMember,
+    isLive,
+    collaborate: isLive ? VEX_TEST_EMAIL_4 : undefined,
+  })
 })
