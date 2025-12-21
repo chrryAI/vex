@@ -57,6 +57,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@chrryai/chrry": path.resolve(__dirname, "../../packages/ui"),
     },
   },
 })
