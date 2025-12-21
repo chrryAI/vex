@@ -24,6 +24,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 // Type definitions for TypeScript
 export interface ElectronAPI {
   ping: () => Promise<string>
+  minimize: () => Promise<void>
+  maximize: () => Promise<void>
   readFile: (path: string) => Promise<string>
   writeFile: (path: string, content: string) => Promise<void>
   createTerminal: () => Promise<string>

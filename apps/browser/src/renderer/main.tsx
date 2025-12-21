@@ -15,15 +15,22 @@ function App() {
 
   return (
     <div className="app">
-      <div className="drag-handle">
-        <div className="drag-area">
-          <span className="app-title">🚀 Vex Browser</span>
-        </div>
-        <div className="window-controls">
-          <button onClick={() => window.close()} className="control-btn close">
-            ×
-          </button>
-        </div>
+      <div className="window-controls">
+        <button
+          onClick={() => window.electronAPI?.minimize?.()}
+          className="control-btn minimize"
+        >
+          −
+        </button>
+        <button
+          onClick={() => window.electronAPI?.maximize?.()}
+          className="control-btn maximize"
+        >
+          □
+        </button>
+        <button onClick={() => window.close()} className="control-btn close">
+          ×
+        </button>
       </div>
 
       <div className="content">
