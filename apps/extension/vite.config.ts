@@ -5,7 +5,6 @@ import { mkdirSync, existsSync, writeFileSync } from "fs"
 import * as esbuild from "esbuild"
 import { viteStaticCopy } from "vite-plugin-static-copy"
 import type { PluginOption } from "vite"
-import { getSiteConfig } from "../../packages/ui/utils/siteConfig"
 
 function chromeExtensionPlugin(): PluginOption {
   return {
@@ -31,11 +30,14 @@ function chromeExtensionPlugin(): PluginOption {
   }
 }
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(async ({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "")
   const isFirefox =
     env.VITE_BROWSER === "firefox" || process.env.VITE_BROWSER === "firefox"
   const isProduction = command === "build"
+
+  // Dynamically import getSiteConfig after env is loaded
+  const { getSiteConfig } = await import("../../packages/ui/utils/siteConfig")
 
   // Use MODE env var if set, otherwise use vite mode, otherwise default to vex
   const siteMode = process.env.MODE || mode || "vex"

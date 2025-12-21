@@ -85,8 +85,9 @@ app.use("*", corsMiddleware)
 app.use("*", headersMiddleware)
 
 // Enable compression (gzip/deflate)
-import { compress } from "hono/compress"
-app.use("*", compress())
+// DISABLED: CompressionStream not available in Node.js
+// import { compress } from "hono/compress"
+// app.use("*", compress())
 
 // Create API group with /api basePath
 const api = new Hono()
