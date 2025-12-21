@@ -15,7 +15,7 @@ function createWindow() {
     frame: false, // Frameless for custom drag handle
     transparent: false,
     alwaysOnTop: true, // Always on top when idle
-    show: false, // Don't show immediately (will show from tray)
+    show: true, // Show window on launch
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.cjs"),
       contextIsolation: true,
