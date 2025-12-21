@@ -27,13 +27,13 @@
   "dependencies": {
     "@chrryai/chrry": "workspace:*",
     "@monaco-editor/react": "^4.6.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.2",
     "monaco-editor": "^0.55.1"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.1",
     "@types/node": "^22.15.3",
-    "@types/react": "^19.1.12",
-    "@types/react-dom": "^19.1.2",
     "@types/webextension-polyfill": "^0.12.3",
     "tsup": "^8.0.0",
     "typescript": "~5.9.2"
