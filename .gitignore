@@ -83,3 +83,7 @@ packages/waffles/test-results/*
 apps/api/newrelic_agent.log
 .kombai
 apps/flash/newrelic_agent.log
+# Browser
+browser/
+*.dmg
+apps/sushi/dist

@@ -36,7 +36,8 @@
     "test": "npm run test:scss",
     "validate:chrry": "node scripts/validate-chrry-config.js",
     "generate:icons": "bash scripts/generate-app-icons.sh",
-    "cleanup": "turbo lint -- --fix"
+    "cleanup": "turbo lint -- --fix",
+    "browser": "bash scripts/run-browser.sh"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
