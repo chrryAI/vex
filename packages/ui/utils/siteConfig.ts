@@ -1,5 +1,4 @@
-import console from "./log"
-import { isDevelopment } from "./env"
+// Removed imports to avoid circular dependencies during Vite config loading
 export type SiteMode =
   | "chrryDev"
   | "vex"
@@ -1629,10 +1628,43 @@ export function getSiteTranslation(
   return catalog[locale] ?? catalog.en
 }
 
+const getExtensionUrl = () => {
+  if (typeof window === "undefined") return
+  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL("index.html") // Chrome
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.getURL) {
+    return (browser as any).runtime.getURL("index.html") // Firefox
+  }
+  return `${window.location.origin}/index.html` // Fallback
+}
+
+const checkIsExtension = () => {
+  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
+    return true
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
+    return true
+  }
+  return false
+}
+
+export const isProduction =
+  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+
 export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
+  // Inline isDevelopment check to avoid circular dependency
+  const isDevelopment = checkIsExtension()
+    ? [
+        "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
+      ].some((id) => getExtensionUrl()?.includes(id)) ||
+      // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
+      // Packed extensions from store have mixed case IDs
+      Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
+    : !isProduction
   const defaultMode = isE2E
     ? "sushi"
     : isDevelopment
@@ -1760,6 +1792,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "popcorn",
     "zarathustra",
     "search",
+    "sushi",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly

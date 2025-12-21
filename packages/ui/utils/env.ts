@@ -36,9 +36,12 @@ export const isProduction =
   getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
 export const isDevelopment = checkIsExtension()
-  ? ["bikahnjnakdnnccpnmcpmiojnehfooio"].some((id) =>
-      getExtensionUrl()?.includes(id),
-    )
+  ? [
+      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
+    ].some((id) => getExtensionUrl()?.includes(id)) ||
+    // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
+    // Packed extensions from store have mixed case IDs
+    Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
   : !isProduction
 
 export const isE2E =
