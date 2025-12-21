@@ -1006,7 +1006,8 @@ export function ChatProvider({
       if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
 
-      !isDebating && setMessages(serverMessages.messages)
+      messages.length !== serverMessages.messages.length &&
+        setMessages(serverMessages.messages)
 
       setNextPage(threadData.messages.nextPage)
       setThread(threadData.thread)
@@ -1044,6 +1045,7 @@ export function ChatProvider({
     isDrawerOpen,
     isChatFloating,
     threadId,
+    messages,
   ])
 
   return (
