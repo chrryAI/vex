@@ -890,6 +890,12 @@ importers:
       '@monaco-editor/react':
         specifier: ^4.6.0
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@types/react':
+        specifier: ^19.1.12
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.2.3(@types/react@19.2.7)
       monaco-editor:
         specifier: ^0.55.1
         version: 0.55.1
@@ -906,12 +912,6 @@ importers:
       '@types/node':
         specifier: ^22.15.3
         version: 22.19.1
-      '@types/react':
-        specifier: ^19.1.12
-        version: 19.2.7
-      '@types/react-dom':
-        specifier: ^19.1.2
-        version: 19.2.3(@types/react@19.2.7)
       '@types/webextension-polyfill':
         specifier: ^0.12.3
         version: 0.12.4
