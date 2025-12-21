@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npm run build:chrome",
+    "build": "pnpm run build:chrome",
     "build:chrome": "rm -rf dist && MODE=sushi vite build && cd dist && zip -r ../dist-chrome-sushi.zip .",
     "build:dev": "rm -rf dist && MODE=sushi vite build --mode development",
-    "build:firefox": "rm -rf dist && tsc && MODE=sushi VITE_BROWSER=firefox vite build && npm run zip:firefox",
+    "build:firefox": "rm -rf dist && tsc && MODE=sushi VITE_BROWSER=firefox vite build && pnpm run zip:firefox",
     "dev": "MODE=sushi vite build --mode development --watch",
     "dev:browser": "pnpm build:dev && node launch-browser.js",
     "dev:watch": "node dev-watch.js",
@@ -36,18 +36,18 @@
     "sass": "^1.90.0",
     "typescript-eslint": "^8.35.1",
     "vite-plugin-static-copy": "^3.1.1",
-    "webextension-polyfill": "^0.12.0"
+    "webextension-polyfill": "^0.12.0",
+    "vite": "^7.0.4",
+    "@vitejs/plugin-react": "^4.6.0",
+    "typescript": "~5.8.3"
   },
   "devDependencies": {
     "@types/react": "^19.1.8",
     "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^8.2.2",
     "esbuild": "^0.25.12",
-    "terser": "^5.44.0",
-    "typescript": "~5.8.3",
-    "vite": "^7.0.4"
+    "terser": "^5.44.0"
   }
 }

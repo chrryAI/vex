@@ -27,25 +27,16 @@ import {
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
-import {
-  useAuth,
-  useNavigationContext,
-  useApp,
-  useChat,
-} from "./context/providers"
+import { useAuth, useNavigationContext, useApp } from "./context/providers"
 import { Button, Div, H4, Span, usePlatform, useTheme } from "./platform"
-import { matchMedia } from "./platform/matchMedia"
-import { animate, stagger } from "motion"
 import { MotiView } from "./platform/MotiView"
 import { useHasHydrated } from "./hooks"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
 import ColorScheme from "./ColorScheme"
-import { defaultLocale } from "./locales"
 import Img from "./Image"
 import EmptyStateTips from "./EmptyStateTips"
 import ThemeSwitcher from "./ThemeSwitcher"
-import { useStyles } from "./context/StylesContext"
 import { useMenuStyles } from "./Menu.styles"
 import A from "./a/A"
 

@@ -17,7 +17,6 @@ import {
   useCookieOrLocalStorage,
   usePlatform,
   useLocalStorage,
-  getExtensionId,
   storage,
 } from "../../platform"
 import ago from "../../utils/timeAgo"

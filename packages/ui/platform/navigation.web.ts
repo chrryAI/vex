@@ -2,7 +2,7 @@
  * Web Navigation (Next.js + Extension fallback)
  */
 
-import React, { useCallback, useMemo, useEffect, useRef } from "react"
+import React, { useCallback, useMemo } from "react"
 import {
   useRouter as useClientRouter,
   usePathname as useClientPathname,

@@ -8,7 +8,6 @@ import {
   getSubscriptions,
   getThreads,
   getUser,
-  updateGuest,
   updateThread,
   TEST_MEMBER_EMAILS,
   TEST_GUEST_FINGERPRINTS,
@@ -18,10 +17,7 @@ import {
   deleteGuest,
   updateUser,
 } from "@repo/db"
-import {
-  GUEST_CREDITS_PER_MONTH,
-  MEMBER_CREDITS_PER_MONTH,
-} from "@repo/db/src/schema"
+import { MEMBER_CREDITS_PER_MONTH } from "@repo/db/src/schema"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
   TEST_MEMBER_FINGERPRINTS,

@@ -30,12 +30,7 @@ import {
   updateMood,
 } from "@repo/db"
 import { expenseCategoryType } from "@chrryai/chrry/utils"
-import {
-  searchNews,
-  getNewsBySource,
-  getNewsByCategory,
-  getLatestNews,
-} from "./newsFetcher"
+
 import { notify } from "./notify"
 
 export const getTools = ({

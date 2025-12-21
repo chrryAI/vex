@@ -9,10 +9,6 @@ import {
 } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
 import { getMember, getGuest } from "../lib/auth"
-import { getChrryUrl } from "../lib/getChrryUrl"
-import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
-import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
-import { appWithStore } from "@chrryai/chrry/types"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"
 
 import { getApp } from "../lib/auth"
@@ -28,7 +24,6 @@ import {
   db,
   and,
   eq,
-  getAppExtends,
   getApp as getAppDb,
   deleteApp,
 } from "@repo/db"

@@ -4,27 +4,18 @@ import React, { useEffect } from "react"
 import Skeleton from "../Skeleton"
 import { COLORS, useAppContext } from "../context/AppContext"
 import { BrowserInstance, checkIsExtension } from "../utils"
-import {
-  BadgeCheck,
-  CircleArrowLeft,
-  Coins,
-  Shell,
-  UserRoundPlus,
-} from "../icons"
-import { RiNextjsFill } from "react-icons/ri"
+import { BadgeCheck, CircleArrowLeft, Shell, UserRoundPlus } from "../icons"
 import { BiLogoPostgresql } from "react-icons/bi"
 
 import {
   SiCssmodules,
   SiJest,
-  SiDrizzle,
   SiTypescript,
   SiBun,
   SiHono,
   SiVite,
 } from "react-icons/si"
 import { FaChrome } from "react-icons/fa"
-import clsx from "clsx"
 import Logo from "../Logo"
 import Img from "../Image"
 import { getFeatures } from "../utils/subscription"
@@ -44,7 +35,6 @@ import {
   P,
   Section,
   Span,
-  useNavigation,
   usePlatform,
   useTheme,
   Video,

@@ -9,12 +9,7 @@ import React, {
   useMemo,
   useRef,
 } from "react"
-import {
-  useLocalStorage,
-  useNavigation,
-  usePlatform,
-  toast,
-} from "../../platform"
+import { useLocalStorage, useNavigation, toast } from "../../platform"
 import useCache from "../../hooks/useCache"
 import console from "../../utils/log"
 
@@ -23,13 +18,12 @@ import { useForm } from "react-hook-form"
 import { customZodResolver } from "../../utils/customZodResolver"
 import isOwner from "../../utils/isOwner"
 import { useAuth } from "./AuthProvider"
-import type { app, appWithStore, instruction } from "../../types"
+import type { appWithStore, instruction } from "../../types"
 import { getExampleInstructions } from "../../utils"
 import { useTranslation } from "react-i18next"
-import { COLORS, useTheme } from "../ThemeContext"
 import { useData } from "./DataProvider"
 import { instructionBase } from "../../utils/getExampleInstructions"
-import { session, Paginated, storeWithApps } from "../../types"
+import { Paginated, storeWithApps } from "../../types"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { useError } from "./ErrorProvider"
 

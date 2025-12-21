@@ -16,7 +16,6 @@ import tr from "./locales/tr.json"
 import { locales, locale, LANGUAGES } from "./locales"
 import { storage } from "./platform/storage"
 import { getCookieSync } from "./platform/cookies"
-import { BrowserInstance } from "./utils"
 
 // Cross-platform function to get locale from URL
 const getLocaleFromUrl = (): string | null => {

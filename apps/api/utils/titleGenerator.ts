@@ -2,14 +2,7 @@ import { isE2E } from "@chrryai/chrry/utils"
 import { generateText } from "ai"
 import { faker } from "@faker-js/faker"
 import captureException from "../lib/captureException"
-import {
-  getThread,
-  getPureApp,
-  getAiAgent,
-  getAiAgents,
-  app,
-  appExtend,
-} from "@repo/db"
+import { getThread, getPureApp } from "@repo/db"
 import { getModelProvider } from "../lib/getModelProvider"
 
 export const trimTitle = (str: string) =>

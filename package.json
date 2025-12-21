@@ -37,11 +37,13 @@
     "validate:chrry": "node scripts/validate-chrry-config.js",
     "generate:icons": "bash scripts/generate-app-icons.sh",
     "cleanup": "turbo lint -- --fix",
+    "cleanup:unused": "node scripts/remove-unused.js",
     "browser": "bash scripts/run-browser.sh"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "dotenv": "^16.0.0",
+    "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^9.1.7",
     "is-reference": "^3.0.3",
     "openai": "^5.19.1",

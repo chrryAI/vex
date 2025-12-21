@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react"
 export type UnifiedStylesInput = Record<string, Record<string, any>>
 export type NativeStyles = Record<string, Record<string, any>>
 export type WebClasses = Record<string, string>

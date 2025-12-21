@@ -2,11 +2,7 @@ import { Hono } from "hono"
 import { getMember, getGuest } from "../lib/auth"
 import { isE2E } from "@chrryai/chrry/utils"
 import cleanupTest from "../../lib/cleanupTest"
-import {
-  TEST_GUEST_FINGERPRINTS,
-  TEST_MEMBER_EMAILS,
-  TEST_MEMBER_FINGERPRINTS,
-} from "@repo/db"
+import { TEST_GUEST_FINGERPRINTS, TEST_MEMBER_FINGERPRINTS } from "@repo/db"
 
 export const clear = new Hono()
 

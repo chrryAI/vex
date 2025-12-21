@@ -18,7 +18,7 @@ import { useApp } from "./AppProvider"
 import { useChat } from "./ChatProvider"
 import { useAuth } from "./AuthProvider"
 
-import { thread, session } from "../../types"
+import { thread } from "../../types"
 import { t } from "i18next"
 import { defaultLocale } from "../../locales"
 import { getSiteConfig, whiteLabels } from "../../utils/siteConfig"
