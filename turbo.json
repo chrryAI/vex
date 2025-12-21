@@ -4,7 +4,15 @@
     "signature": true
   },
   "envMode": "loose",
-  "globalEnv": ["SENTRY_AUTH_TOKEN", "NEXTAUTH_SECRET"],
+  "globalEnv": [
+    "SENTRY_AUTH_TOKEN",
+    "NEXTAUTH_SECRET",
+    "NEW_RELIC_APP_NAME",
+    "NEW_RELIC_LICENSE_KEY",
+    "VITE_SENTRY",
+    "SENTRY_DSN",
+    "PORT"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
