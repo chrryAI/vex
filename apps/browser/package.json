@@ -7,10 +7,11 @@
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5174 && electron .",
-    "build": "tsc && vite build && electron-builder",
-    "build:mac": "npm run build -- --mac",
-    "build:win": "npm run build -- --win",
-    "build:linux": "npm run build -- --linux"
+    "build": "tsc && vite build",
+    "package": "npm run build && electron-builder",
+    "build:mac": "npm run package -- --mac",
+    "build:win": "npm run package -- --win",
+    "build:linux": "npm run package -- --linux"
   },
   "dependencies": {
     "electron-store": "^8.1.0",
