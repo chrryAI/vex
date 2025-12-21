@@ -3081,3 +3081,8 @@ export const taskLogs = pgTable("taskLog", {
 
 export type analyticsSession = typeof analyticsSessions.$inferSelect
 export type newAnalyticsSession = typeof analyticsSessions.$inferInsert
+
+// ============================================================================
+// INFINITE HUMAN SYSTEM: Agent XP & Leveling
+// ============================================================================
+export * from "./agent-schema"
