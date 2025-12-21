@@ -11,21 +11,25 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
+    frame: false, // Frameless for custom drag handle
+    transparent: false,
+    alwaysOnTop: true, // Always on top when idle
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.js"),
       contextIsolation: true,
       nodeIntegration: false,
       webSecurity: true,
     },
-    titleBarStyle: "hiddenInset", // Mac-style traffic lights
     backgroundColor: "#000000",
   })
 
   // Load the app
-  if (process.env.NODE_ENV === "development") {
+  if (!app.isPackaged) {
+    // Development mode - load from Vite dev server
     mainWindow.loadURL("http://localhost:5174")
     mainWindow.webContents.openDevTools()
   } else {
+    // Production mode - load from built files
     mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"))
   }
 
