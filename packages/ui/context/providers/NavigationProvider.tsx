@@ -226,15 +226,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     }
   }, [isOnline, wasOffline])
 
-  useEffect(() => {
-    if (isOnline && wasOffline) {
-      setWasOffline(false)
-      toast.success(t("You back online"), {
-        duration: 6000,
-      })
-    }
-  }, [isOnline])
-
   const [isMemoryConsentManageVisible, setIsMemoryConsentManageVisible] =
     useState(false)
 

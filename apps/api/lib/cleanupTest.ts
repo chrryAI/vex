@@ -125,13 +125,13 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   )
 
   user &&
-    updateUser({
+    (await updateUser({
       ...user,
       credits: MEMBER_CREDITS_PER_MONTH,
       subscribedOn: null,
       migratedFromGuest: false,
       fingerprint: null,
-    })
+    }))
 
-  guest && deleteGuest({ id: guest.id })
+  guest && (await deleteGuest({ id: guest.id }))
 }
