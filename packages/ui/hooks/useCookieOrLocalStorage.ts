@@ -10,6 +10,8 @@ export default function useCookieOrLocalStorage(
 ) {
   const { isExtension, isNative } = usePlatform()
 
+  const isWeb = !isExtension && !isNative
+
   const [cookie, setCookieInternal] = useCookie(key, initialValue)
   const [local, setLocalInternal] = useLocalStorage(
     key,
