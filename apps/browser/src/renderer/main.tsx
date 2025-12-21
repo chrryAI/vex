@@ -15,14 +15,27 @@ function App() {
 
   return (
     <div className="app">
-      <h1>🚀 Vex Browser</h1>
-      <p>Generic Electron Browser Foundation</p>
-      <div className="status">
-        <strong>IPC Status:</strong> {pingResult || "Testing..."}
+      <div className="drag-handle">
+        <div className="drag-area">
+          <span className="app-title">🚀 Vex Browser</span>
+        </div>
+        <div className="window-controls">
+          <button onClick={() => window.close()} className="control-btn close">
+            ×
+          </button>
+        </div>
       </div>
-      <div className="info">
-        <p>This is the white-label browser foundation.</p>
-        <p>Sushi, Vex, and Chrry browsers will use this core.</p>
+
+      <div className="content">
+        <h1>🚀 Vex Browser</h1>
+        <p>Generic Electron Browser Foundation</p>
+        <div className="status">
+          <strong>IPC Status:</strong> {pingResult || "Testing..."}
+        </div>
+        <div className="info">
+          <p>This is the white-label browser foundation.</p>
+          <p>Sushi, Vex, and Chrry browsers will use this core.</p>
+        </div>
       </div>
     </div>
   )
