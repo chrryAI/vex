@@ -23,6 +23,7 @@ import {
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
+import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
 
 import {
