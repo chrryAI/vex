@@ -21,7 +21,6 @@ import {
   P,
   Strong,
   useNavigation,
-  usePlatform,
   useTheme,
 } from "../platform"
 import { useHasHydrated } from "../hooks"

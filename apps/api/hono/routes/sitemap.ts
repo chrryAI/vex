@@ -1,5 +1,4 @@
 import { Hono } from "hono"
-import { locales } from "@chrryai/chrry/locales"
 import fs from "fs"
 import path from "path"
 import matter from "gray-matter"

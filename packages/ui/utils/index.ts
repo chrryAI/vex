@@ -1,15 +1,6 @@
 /// <reference types="chrome" />
 
-import type {
-  guest,
-  subscription,
-  user,
-  thread,
-  collaboration,
-  threadSummary,
-  appWithStore,
-  app,
-} from "../types"
+import type { guest, subscription, user, thread, threadSummary } from "../types"
 import countries from "i18n-iso-countries"
 import { getEnv } from "./env"
 

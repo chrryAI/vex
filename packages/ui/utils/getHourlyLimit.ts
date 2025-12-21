@@ -1,4 +1,4 @@
-import type { user, subscription, app, guest } from "../types"
+import type { user, app, guest } from "../types"
 import isOwner from "./isOwner"
 
 export const getHourlyLimit = ({

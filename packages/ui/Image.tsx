@@ -1,12 +1,12 @@
 "use client"
-import { app, appWithStore, store } from "./types"
+import { appWithStore, store } from "./types"
 import { PROD_FRONTEND_URL, FRONTEND_URL, API_URL } from "./utils"
 
 import React, { useEffect } from "react"
 import Img from "./Img"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { usePlatform, Text } from "./platform"
-import { useApp, useData } from "./context/providers"
+import { COLORS } from "./context/AppContext"
+import { Text } from "./platform"
+import { useApp } from "./context/providers"
 import {
   DeepSeek,
   OpenAI,
@@ -15,8 +15,6 @@ import {
   Flux,
   Perplexity,
   Clapperboard,
-  Hand,
-  Shell,
 } from "./icons"
 import { getImageSrc } from "./lib"
 

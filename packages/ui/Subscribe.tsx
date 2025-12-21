@@ -30,7 +30,7 @@ import {
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
-import { apiFetch, isE2E } from "./utils"
+import { apiFetch } from "./utils"
 import Modal from "./Modal"
 import ConfirmButton from "./ConfirmButton"
 

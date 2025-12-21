@@ -1,6 +1,5 @@
 import React from "react"
 import { FRONTEND_URL } from "./utils"
-import { Globe } from "./icons"
 import { A, Span } from "./platform"
 
 interface LinkProps {

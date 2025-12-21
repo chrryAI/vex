@@ -32,12 +32,7 @@ import { validate as validateUuid } from "uuid"
 import { UAParser } from "ua-parser-js"
 import arcjet, { detectBot } from "@arcjet/node"
 
-import {
-  FRONTEND_URL,
-  isDevelopment,
-  isE2E,
-  VERSION,
-} from "@chrryai/chrry/utils"
+import { isDevelopment, isE2E, VERSION } from "@chrryai/chrry/utils"
 import { v4 as uuidv4 } from "uuid"
 import {
   GUEST_CREDITS_PER_MONTH,

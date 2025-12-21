@@ -2,7 +2,6 @@ import { Hono } from "hono"
 import { getThread, getStore, getApp as getAppDb } from "@repo/db"
 import { locale } from "@chrryai/chrry/locales"
 import {
-  generateAppMetadata,
   generateStoreMetadata,
   generateThreadMetadata,
   getThreadId,

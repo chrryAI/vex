@@ -1,6 +1,6 @@
 "use client"
 
-import { aiAgent, instruction, session } from "../../types"
+import { aiAgent, instruction } from "../../types"
 import React, {
   createContext,
   useContext,
@@ -19,7 +19,6 @@ import { useAuth } from "./AuthProvider"
 import console from "../../utils/log"
 
 import {
-  toast,
   useCookieOrLocalStorage,
   useLocalStorage,
   useNavigation,

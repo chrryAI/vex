@@ -6,7 +6,6 @@
  */
 
 import { app } from "@repo/db"
-import { buildEnhancedRAGContext } from "../app/actions/ragService"
 import { appWithStore } from "@chrryai/chrry/types"
 
 /**

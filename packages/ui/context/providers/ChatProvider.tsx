@@ -7,18 +7,15 @@ import React, {
   useState,
   useEffect,
   useRef,
-  useMemo,
 } from "react"
 import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
 import {
   aiAgent,
   thread,
-  session,
   app,
   collaboration,
   user,
-  characterProfile,
   guest,
   message,
   messages,
@@ -28,9 +25,7 @@ import {
 
 import { pageSizes, isOwner } from "../../utils"
 import { hasThreadNotification } from "../../utils/hasThreadNotification"
-import { getThreadId } from "../../utils/url"
 import {
-  toast,
   useLocalStorage,
   useNavigation,
   usePlatform,
@@ -41,7 +36,6 @@ import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
 import { useError } from "./ErrorProvider"
-import { t } from "i18next"
 interface placeHolder {
   // TODO: Define placeHolder type
   [key: string]: any

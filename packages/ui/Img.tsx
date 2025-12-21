@@ -7,7 +7,6 @@ import Loading from "./Loading"
 import { ImageIcon } from "./icons"
 import { Div, Image as PlatformImage, MotiView, useTheme } from "./platform"
 import { useInView } from "./platform/useInView" // Auto-resolves to .web or .native
-import { apiFetch } from "./utils"
 // Simple in-memory cache
 const imageCache = new Map<string, string>()
 

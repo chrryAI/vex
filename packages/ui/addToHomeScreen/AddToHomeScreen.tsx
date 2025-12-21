@@ -1,11 +1,10 @@
 "use client"
 
-import React, { useCallback, useContext, useEffect } from "react"
+import React, { useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { useRef } from "react"
 import Img from "../Image"
 import { CircleX, EllipsisVertical, SquarePlus, Share } from "../icons"
-import clsx from "clsx"
 import { MdAddToHomeScreen } from "react-icons/md"
 import { useAppContext } from "../context/AppContext"
 import { useApp, useNavigationContext } from "../context/providers"
