@@ -155,7 +155,7 @@ jobs:
         run: pnpm turbo check-types
 
       - name: Build packages
-        run: pnpm run build
+        run: pnpm run build --filter=!@chrryai/browser-core
 
   # Deploy both API and Web sequentially
   deploy:
