@@ -12,9 +12,9 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
-    frame: false, // Frameless for custom drag handle
+    frame: true, // Use default Electron frame with standard controls
     transparent: false,
-    alwaysOnTop: true, // Always on top when idle
+    alwaysOnTop: false, // Don't force always on top
     show: true, // Show window on launch
     webPreferences: {
       preload: path.join(__dirname, "../preload/index.cjs"),

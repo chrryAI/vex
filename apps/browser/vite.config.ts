@@ -23,7 +23,7 @@ export default defineConfig({
         },
       },
       {
-        entry: "src/preload/index.ts",
+        entry: "src/preload/index.cjs",
         onstart(options) {
           options.reload()
         },
@@ -31,7 +31,7 @@ export default defineConfig({
           build: {
             outDir: "dist/preload",
             lib: {
-              entry: "src/preload/index.ts",
+              entry: "src/preload/index.cjs",
               formats: ["cjs"],
               fileName: () => "index.cjs",
             },
@@ -39,8 +39,14 @@ export default defineConfig({
               external: ["electron"],
               output: {
                 format: "cjs",
+                exports: "none", // Don't add any export statements
+                interop: "auto",
               },
             },
+            commonjsOptions: {
+              transformMixedEsModules: true,
+            },
+            minify: false, // Don't minify for easier debugging
           },
         },
       },
