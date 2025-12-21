@@ -33,9 +33,13 @@ export default defineConfig({
             lib: {
               entry: "src/preload/index.ts",
               formats: ["cjs"],
+              fileName: () => "index.cjs",
             },
             rollupOptions: {
               external: ["electron"],
+              output: {
+                format: "cjs",
+              },
             },
           },
         },
