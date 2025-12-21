@@ -10,9 +10,6 @@ export default function useCookieOrLocalStorage(
 ) {
   const { isExtension, isNative } = usePlatform()
 
-  const isWeb = !isExtension && !isNative
-  console.log(`🚀 ~ isWeb:`, isWeb)
-
   const [cookie, setCookieInternal] = useCookie(key, initialValue)
   const [local, setLocalInternal] = useLocalStorage(
     key,
@@ -43,7 +40,6 @@ export default function useCookieOrLocalStorage(
         setCookieInternal(value)
       }
       setLocalInternal(value)
-      console.log(`🚀 ~ value:`, value)
     },
     [isWeb, setCookieInternal, setLocalInternal],
   )

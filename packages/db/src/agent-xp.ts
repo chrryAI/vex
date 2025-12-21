@@ -59,7 +59,8 @@ export const XP_MULTIPLIERS = {
  */
 export function calculateLevel(xp: number): number {
   for (let i = XP_PER_LEVEL.length - 1; i >= 0; i--) {
-    if (xp >= XP_PER_LEVEL[i]) {
+    const requiredXP = XP_PER_LEVEL[i]
+    if (requiredXP !== undefined && xp >= requiredXP) {
       return i + 1
     }
   }
@@ -73,7 +74,7 @@ export function xpForNextLevel(currentLevel: number): number {
   if (currentLevel >= XP_PER_LEVEL.length) {
     return Infinity // Max level reached
   }
-  return XP_PER_LEVEL[currentLevel]
+  return XP_PER_LEVEL[currentLevel] ?? Infinity
 }
 
 /**

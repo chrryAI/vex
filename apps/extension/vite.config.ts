@@ -6,8 +6,6 @@ import * as esbuild from "esbuild"
 import { viteStaticCopy } from "vite-plugin-static-copy"
 import type { PluginOption } from "vite"
 
-console.log(`🚀 ~ closeBundle ~ __dirname:`, __dirname)
-
 function chromeExtensionPlugin(): PluginOption {
   return {
     name: "chrome-extension",
@@ -80,7 +78,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.7.72",
+    version: siteConfig.version || "1.7.73",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
