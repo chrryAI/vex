@@ -29,7 +29,7 @@ const getUserRole = (user?: { role?: string }): string | undefined => {
 // Create custom console factory that has access to user and error tracking
 export const createCustomConsole = (user?: { role?: string }) => {
   const role = getUserRole(user)
-  const shouldLog = false
+  const shouldLog = isE2E || isDevelopment || role === "admin"
 
   return {
     log: (message?: any, ...args: any[]) => {

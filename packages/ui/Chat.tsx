@@ -2194,8 +2194,8 @@ export default function Chat({
 
   // Memoize deps to prevent reconnection loop
   const webSocketDeps = useMemo(
-    () => [isSpeechActive, app?.id],
-    [isSpeechActive, app?.id],
+    () => [isSpeechActive, app?.id, deviceId],
+    [isSpeechActive, app?.id, deviceId],
   )
 
   useWebSocket<{
@@ -2224,10 +2224,10 @@ export default function Chat({
 
       if (!token) return
 
-      const clientId = data?.clientId
+      const mClientId = data?.clientId
 
       if (
-        data?.message &&
+        data?.message?.aiAgent &&
         isOwner(data.message.message, {
           userId: user?.id,
           guestId: guest?.id,
@@ -2239,7 +2239,7 @@ export default function Chat({
       }
 
       const chunk = data?.chunk
-      if (type === "stream_update" && chunk && clientId && data.message) {
+      if (type === "stream_update" && chunk && mClientId && data.message) {
         if (isSpeechActive && os !== "ios") {
           return
         }
@@ -2260,7 +2260,7 @@ export default function Chat({
           const cleanContent = stripActionText(streamContentRef.current, chunk)
           onStreamingUpdate?.({
             content: cleanContent,
-            clientId,
+            clientId: mClientId,
             aiAgent: data.message?.aiAgent,
             isWebSearchEnabled,
             isImageGenerationEnabled,

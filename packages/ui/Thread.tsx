@@ -260,9 +260,8 @@ const Thread = ({
 
       if (isE2E && content.length > 500)
         console.log("🤖 onStreamingUpdate", {
-          content: content
-            .slice(0, 500)
-            .replace(/__REASONING__.*?__\/REASONING__/gs, ""),
+          content: content.slice(0, 500),
+
           clientId,
           aiAgent,
           isWebSearchEnabled,

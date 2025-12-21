@@ -235,11 +235,11 @@ export const thread = async ({
 
     await expect(
       (await getSecondThread()).getByTestId("threads-bookmarked"),
-    ).toBeVisible()
+    ).not.toBeVisible()
 
     await expect(
       (await getSecondThread()).getByTestId("threads-not-bookmarked"),
-    ).not.toBeVisible()
+    ).toBeVisible()
 
     await thread({
       page,

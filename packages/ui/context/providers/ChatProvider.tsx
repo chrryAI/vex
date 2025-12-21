@@ -219,7 +219,7 @@ export function ChatProvider({
 
   const { isExtension, isMobile } = usePlatform()
 
-  const [shouldFetchThreads, setShouldFetchThreads] = useState(!threads)
+  const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
   let userNameByUrl: string | undefined = undefined
 
