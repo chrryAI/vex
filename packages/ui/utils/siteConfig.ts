@@ -1667,7 +1667,7 @@ export function detectSiteModeDomain(
       Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
     : !isProduction
   const defaultMode = isE2E
-    ? "sushi"
+    ? "e2eVex"
     : isDevelopment
       ? ("sushi" as SiteMode)
       : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"

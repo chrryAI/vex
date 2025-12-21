@@ -994,16 +994,6 @@ export default function Chat({
     },
   )
 
-  // const {
-  //   data: quotaData,
-  //   isLoading: isFetchingQuotaInfo,
-  //   refetch: refetchQuotaInfo,
-  // } = useSSR({
-  //   queryKey: ["quotaInfo"],
-  //   queryFn: () => fetchQuotaInfo(),
-  //   enabled: false,
-  // })
-
   const [artifacts, setArtifacts] = useState<File[]>([])
   const [instructionsIndex, setInstructionsIndex] = useState(0)
 

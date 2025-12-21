@@ -81,17 +81,17 @@ test.only("Long text", async ({ page }) => {
   const result = await chat({
     page,
     isMember,
-    isLiveTest: isLive,
-    instruction: "Long text",
+    isLive,
+    instruction: "Help me write a short story",
     // agentMessageTimeout: 12000,
     prompts: [
       {
-        text: "Give me long text",
+        text: "Write a detailed 500-word story about a time traveler who discovers they can't change the past",
         model: "sushi",
         stop: true,
       },
       {
-        text: "Give me short text",
+        text: "Now summarize that story in 2 sentences",
         model: "sushi",
       },
     ],
@@ -109,7 +109,7 @@ test.only("Chat", async ({ page }) => {
     isNewChat: false,
     page,
     isMember,
-    isLiveTest: isLive,
+    isLive,
     agentMessageTimeout: 120000,
     instruction: "Help me plan a 3-day trip to Tokyo",
     prompts: [
@@ -148,6 +148,21 @@ test.only("Chat", async ({ page }) => {
   })
 })
 
+test.only("Thread", async ({ page }) => {
+  test.slow()
+  await thread({ page, isLive })
+})
+
+// test.only("Collaboration", async ({ page, browser }) => {
+//   await collaboration({
+//     page,
+//     browser,
+//     isMember,
+//     isLive,
+//     collaborate: isLive ? VEX_TEST_EMAIL_4 : undefined,
+//   })
+// })
+
 test.only("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
@@ -161,30 +176,10 @@ test.only("File upload", async ({ page }) => {
     },
     isNewChat: false,
     page,
-    isLiveTest: isLive,
+    isLive,
     isMember,
     instruction: "Lets upload some files",
     prompts: [
-      {
-        text: "Hey Vex, Analyze this files",
-        model: "sushi",
-        mix: {
-          paste: 1,
-          pdf: 1,
-          image: 1,
-        },
-        like: true,
-      },
-      {
-        text: "Hey Vex, Analyze this pdf(s) and images",
-        model: "sushi",
-        mix: {
-          pdf: 1,
-          image: 2,
-        },
-        like: true,
-      },
-
       {
         text: "Hey Vex, Analyze this paste(s) and video",
         model: "sushi",
@@ -193,23 +188,27 @@ test.only("File upload", async ({ page }) => {
           pdf: 1,
           video: 1,
         },
-        like: true,
+        like: false,
+      },
+      {
+        text: "Hey Vex, Analyze this files",
+        model: "sushi",
+        mix: {
+          paste: 1,
+          pdf: 1,
+          image: 1,
+        },
+        like: false,
+      },
+      {
+        text: "Hey Vex, Analyze this pdf(s) and images",
+        model: "sushi",
+        mix: {
+          pdf: 1,
+          image: 2,
+        },
+        like: false,
       },
     ],
-  })
-})
-
-test.only("Thread", async ({ page }) => {
-  test.slow()
-  await thread({ page, isLive })
-})
-
-test.skip("Collaboration", async ({ page, browser }) => {
-  await collaboration({
-    page,
-    browser,
-    isMember,
-    isLive,
-    collaborate: isLive ? VEX_TEST_EMAIL_4 : undefined,
   })
 })

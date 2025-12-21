@@ -135,6 +135,20 @@ export default function ImageComponent(props: ImageProps) {
     if (typeof height === "string") {
       return url
     }
+
+    // Skip resize for blob URLs, data URLs, and external URLs
+    const isBlob = url.startsWith("blob:")
+    const isDataUrl = url.startsWith("data:")
+    const isExternal =
+      url.startsWith("http") &&
+      !url.startsWith(FRONTEND_URL) &&
+      !url.startsWith(PROD_FRONTEND_URL) &&
+      !url.includes("minio.chrry.dev") // Allow MinIO URLs
+
+    if (isBlob || isDataUrl || isExternal) {
+      return url
+    }
+
     // Request 3x size for Super Retina displays to match "original" crispness
     // e.g. If rendering at 48px, request 144px image
     // Force PNG format to avoid any WebP compression artifacts
