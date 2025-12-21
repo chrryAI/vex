@@ -15,26 +15,37 @@ if (!existsSync(distPath)) {
   process.exit(1)
 }
 
-// Determine Chrome executable path based on OS
+// Determine Chrome/Chromium executable path based on OS
 const getChromeExecutable = () => {
   const platform = process.platform
 
   if (platform === "darwin") {
-    // macOS
-    return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    // macOS - Try Chromium first, then fall back to Google Chrome
+    const chromiumPath = "/Applications/Chromium.app/Contents/MacOS/Chromium"
+    const chromePath =
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+    // Check if Chromium exists
+    if (existsSync(chromiumPath)) {
+      return chromiumPath
+    }
+    return chromePath
   } else if (platform === "win32") {
     // Windows
     return "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
   } else {
     // Linux
-    return "google-chrome"
+    return "chromium-browser"
   }
 }
 
 const chromeExecutable = getChromeExecutable()
 const userDataDir = path.join(__dirname, ".chrome-dev-profile")
 
-console.log("🚀 Launching Chrome with Sushi extension...")
+const browserName = chromeExecutable.includes("Chromium")
+  ? "Chromium"
+  : "Chrome"
+console.log(`🚀 Launching ${browserName} with Sushi extension...`)
 console.log(`📦 Extension path: ${distPath}`)
 console.log(`👤 Profile: ${userDataDir}`)
 
@@ -60,7 +71,7 @@ chrome.on("error", (err) => {
 })
 
 chrome.on("spawn", () => {
-  console.log("✅ Chrome launched with Sushi extension!")
+  console.log(`✅ ${browserName} launched with Sushi extension!`)
   console.log("🎯 Open a new tab (Cmd+T) to see Sushi instead of Google")
   console.log("")
   console.log("💡 Tips:")

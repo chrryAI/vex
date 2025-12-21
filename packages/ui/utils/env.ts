@@ -37,6 +37,7 @@ export const isProduction =
 
 export const isDevelopment = checkIsExtension()
   ? [
+      "jnngfghgbmieehkfebkogjjiepomakdh",
       "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
     ].some((id) => getExtensionUrl()?.includes(id)) ||
     // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)

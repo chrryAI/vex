@@ -1659,6 +1659,7 @@ export function detectSiteModeDomain(
   // Inline isDevelopment check to avoid circular dependency
   const isDevelopment = checkIsExtension()
     ? [
+        "jnngfghgbmieehkfebkogjjiepomakdh",
         "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
       ].some((id) => getExtensionUrl()?.includes(id)) ||
       // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
@@ -1802,7 +1803,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
 
   // Otherwise, detect from domain (e.g., "atlas.chrry.ai" -> "atlas")
   const result = detectSiteModeDomain(hostname)
-  console.log("🚀 ~ detectSiteMode ~ result:", result)
+  // console.log("🚀 ~ detectSiteMode ~ result:", result)
   return result
 }
 
@@ -1832,6 +1833,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   const mode = detectSiteMode(hostname)
 
   if (mode === "sushi") {
+    // console.log(`🚀 ~ getSiteConfig ~ sushi:`, sushi)
     return sushi
   }
 

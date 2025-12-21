@@ -519,9 +519,14 @@ export function AuthProvider({
     if (!fingerprint) {
       const fp = uuidv4()
       setFingerprint(fp)
-      // setToken(fp)
     }
-  }, [fingerprint, token])
+  }, [fingerprint])
+
+  useEffect(() => {
+    if (!token && fingerprint) {
+      setToken(fingerprint)
+    }
+  }, [token, fingerprint])
   // setFingerprint/setToken are stable from useLocalStorage/useState
   const [versions, setVersions] = useState(
     session?.versions || {
@@ -622,6 +627,18 @@ export function AuthProvider({
 
   const [isSavingApp, setIsSavingApp] = useState(false)
   const [isManagingApp, setIsManagingApp] = useState(false)
+  console.log(`🚀 ~ isManagingApp:`, {
+    isExtension,
+    isStorageReady,
+    isCookieReady,
+    deviceId,
+    fingerprint,
+    token,
+    shouldFetchSession,
+    isRemovingApp,
+    isSavingApp,
+    isManagingApp,
+  })
 
   const {
     data: sessionSwr,
@@ -1159,6 +1176,8 @@ export function AuthProvider({
     storeAppIternal,
   )
 
+  console.log(`🚀 ~ storeApps:`, storeApp)
+
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
   }
@@ -1420,6 +1439,7 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
+    if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
 
     // debugger

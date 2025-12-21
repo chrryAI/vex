@@ -77,6 +77,7 @@ export const Hey = memo(
       useAuth()
 
     const { currentStore } = useApp()
+    console.log(`🚀 ~ currentStore:`, app)
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
 
