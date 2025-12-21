@@ -303,11 +303,11 @@ function metadataToHtml(metadata, serverData) {
   const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
 
   // Regular favicons at different sizes using resize endpoint
-  // Request 2x density (e.g. 32px for 16px icon) for Retina displays
+  // Request 3x density (e.g. 48px for 16px icon) for Super Retina displays
   // Force PNG format for strict browser compatibility
-  const favicon16 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=32&h=32&fit=contain&q=100&fmt=png`
-  const favicon32 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=64&h=64&fit=contain&q=100&fmt=png`
-  const favicon48 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=96&h=96&fit=contain&q=100&fmt=png`
+  const favicon16 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=48&h=48&fit=contain&q=100&fmt=png`
+  const favicon32 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=96&h=96&fit=contain&q=100&fmt=png`
+  const favicon48 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=144&h=144&fit=contain&q=100&fmt=png`
 
   tags.push(
     `<link rel="icon" type="image/png" sizes="16x16" href="${favicon16}" />`,

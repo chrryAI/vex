@@ -137,15 +137,16 @@ export default function ImageComponent(props: ImageProps) {
     if (typeof height === "string") {
       return url
     }
-    // Request 2x size for Retina displays to prevent blurriness
-    // e.g. If rendering at 48px, request 96px image
-    const density = 2
+    // Request 3x size for Super Retina displays to match "original" crispness
+    // e.g. If rendering at 48px, request 144px image
+    // Force PNG format to avoid any WebP compression artifacts
+    const density = 3
     const targetWidth = typeof width === "number" ? width * density : width
     const targetHeight = typeof height === "number" ? height * density : height
 
     // Resize all images, not just FRONTEND_URL ones
     // MinIO images need resizing too!
-    return `${API_URL}/resize?url=${encodeURIComponent(url)}&w=${targetWidth}&h=${targetHeight}&fit=contain&q=100`
+    return `${API_URL}/resize?url=${encodeURIComponent(url)}&w=${targetWidth}&h=${targetHeight}&fit=contain&q=100&fmt=png`
   }
 
   const color =
