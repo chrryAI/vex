@@ -909,6 +909,9 @@ importers:
       '@types/react':
         specifier: ^19.1.12
         version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.2.3(@types/react@19.2.7)
       '@types/webextension-polyfill':
         specifier: ^0.12.3
         version: 0.12.4
