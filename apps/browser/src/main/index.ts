@@ -15,7 +15,7 @@ function createWindow() {
     transparent: false,
     alwaysOnTop: true, // Always on top when idle
     webPreferences: {
-      preload: path.join(__dirname, "../preload/index.js"),
+      preload: path.join(__dirname, "../preload/index.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
       webSecurity: true,
