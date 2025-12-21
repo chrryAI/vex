@@ -491,19 +491,15 @@ export function ChatProvider({
     deps: [userOrGuest, token, deviceId],
     onMessage: async ({ type, data }) => {
       if (type === "suggestions_generated") {
-        if (user) {
-          const updatedUser = await actions.getUser()
-
-          setUser(updatedUser)
-        }
-
-        if (guest) {
-          const updatedGuest = await actions.getGuest()
-
-          setGuest(updatedGuest)
-        }
-
-        await mutate()
+        // if (user) {
+        //   const updatedUser = await actions.getUser()
+        //   setUser(updatedUser)
+        // }
+        // if (guest) {
+        //   const updatedGuest = await actions.getGuest()
+        //   setGuest(updatedGuest)
+        // }
+        // await mutate()
       }
       if (
         type === "notification" &&
@@ -1005,8 +1001,7 @@ export function ChatProvider({
       // Skip if we've already processed this exact threadData
       if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
-
-      messages.length !== serverMessages.messages.length &&
+      messages?.thread?.id !== threadData.thread.id &&
         setMessages(serverMessages.messages)
 
       setNextPage(threadData.messages.nextPage)

@@ -218,6 +218,10 @@ export async function createAgent(params: {
     })
     .returning()
 
+  if (!agent) {
+    throw new Error("Failed to create agent")
+  }
+
   // Unlock Level 1 skills
   const level1Skills = getSkillsForLevel(1)
   for (const skill of level1Skills) {

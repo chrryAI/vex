@@ -626,18 +626,6 @@ export function AuthProvider({
 
   const [isSavingApp, setIsSavingApp] = useState(false)
   const [isManagingApp, setIsManagingApp] = useState(false)
-  console.log(`🚀 ~ isManagingApp:`, {
-    isExtension,
-    isStorageReady,
-    isCookieReady,
-    deviceId,
-    fingerprint,
-    token,
-    shouldFetchSession,
-    isRemovingApp,
-    isSavingApp,
-    isManagingApp,
-  })
 
   const {
     data: sessionSwr,
@@ -1174,8 +1162,6 @@ export function AuthProvider({
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppIternal,
   )
-
-  console.log(`🚀 ~ storeApps:`, storeApp)
 
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
