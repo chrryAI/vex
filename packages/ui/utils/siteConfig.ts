@@ -1,3 +1,4 @@
+import console from "./log"
 export type SiteMode =
   | "chrryDev"
   | "vex"

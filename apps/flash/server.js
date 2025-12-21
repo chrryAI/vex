@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.7.64"
+const VERSION = "1.7.65"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -303,9 +303,11 @@ function metadataToHtml(metadata, serverData) {
   const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
 
   // Regular favicons at different sizes using resize endpoint
-  const favicon16 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=16&h=16&fit=contain&q=100`
-  const favicon32 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=32&h=32&fit=contain&q=100`
-  const favicon48 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=48&h=48&fit=contain&q=100`
+  // Request 2x density (e.g. 32px for 16px icon) for Retina displays
+  // Force PNG format for strict browser compatibility
+  const favicon16 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=32&h=32&fit=contain&q=100&fmt=png`
+  const favicon32 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=64&h=64&fit=contain&q=100&fmt=png`
+  const favicon48 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=96&h=96&fit=contain&q=100&fmt=png`
 
   tags.push(
     `<link rel="icon" type="image/png" sizes="16x16" href="${favicon16}" />`,
@@ -318,8 +320,8 @@ function metadataToHtml(metadata, serverData) {
   )
   tags.push(`<link rel="shortcut icon" href="${favicon32}" />`)
 
-  // Apple Touch Icon - same image source, resized to 180x180
-  const appleIcon180 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=180&h=180&fit=contain&q=100`
+  // Apple Touch Icon - same image source, resized to 180x180 (already high density)
+  const appleIcon180 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=180&h=180&fit=contain&q=100&fmt=png`
 
   tags.push(`<link rel="apple-touch-icon" href="${appleIcon180}" />`)
   tags.push(
