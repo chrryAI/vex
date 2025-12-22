@@ -1004,7 +1004,7 @@ export function ChatProvider({
 
       if (
         !isDebating &&
-        (messages?.[0]?.threadId !== threadId ||
+        (messages?.[0]?.message?.threadId !== threadId ||
           serverMessages.messages.length !== messages.length)
       ) {
         setMessages(serverMessages.messages)
