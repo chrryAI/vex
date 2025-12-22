@@ -12,19 +12,6 @@ export async function scanFileForMalware(
     return { safe: true }
   }
 
-  // Trusted fingerprints (admins, test accounts)
-  const TRUSTED_FINGERPRINTS = (
-    process.env.TEST_MEMBER_FINGERPRINTS || ""
-  ).split(",")
-
-  if (
-    options?.fingerprint &&
-    TRUSTED_FINGERPRINTS.includes(options.fingerprint)
-  ) {
-    console.log("✅ Trusted fingerprint, skipping scan")
-    return { safe: true }
-  }
-
   try {
     const formData = new FormData()
     // Convert Buffer to Uint8Array for proper Blob compatibility
