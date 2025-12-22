@@ -25,25 +25,6 @@ export async function scanFileForMalware(
     return { safe: true }
   }
 
-  // Safe file extensions that often trigger false positives
-  const SAFE_EXTENSIONS = [
-    ".mov",
-    ".mp4",
-    ".webm",
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".gif",
-    ".pdf",
-    ".txt",
-  ]
-  const fileExt = options?.filename?.toLowerCase().split(".").pop()
-
-  if (fileExt && SAFE_EXTENSIONS.some((ext) => ext.includes(fileExt))) {
-    console.log(`✅ Safe file type (.${fileExt}), skipping scan`)
-    return { safe: true }
-  }
-
   try {
     const formData = new FormData()
     // Convert Buffer to Uint8Array for proper Blob compatibility
@@ -86,8 +67,20 @@ export async function scanFileForMalware(
       hasApiKey: !!process.env.MALWARE_SCANNER_API_KEY,
     })
     // Fail open for safe file types, fail closed for unknown types
+    const SAFE_EXTENSIONS = [
+      ".mov",
+      ".mp4",
+      ".webm",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".pdf",
+      ".txt",
+    ]
+    const fileExt = options?.filename?.toLowerCase().split(".").pop()
     const isSafeType =
-      fileExt && SAFE_EXTENSIONS.some((ext) => ext.includes(fileExt))
+      fileExt && SAFE_EXTENSIONS.some((ext: string) => ext.includes(fileExt))
     return { safe: !!isSafeType }
   }
 }
