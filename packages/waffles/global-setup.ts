@@ -1,42 +1,61 @@
 import { chromium, FullConfig } from "@playwright/test"
 
 async function globalSetup(config: FullConfig) {
-  const baseURL = config.use?.baseURL || "http://localhost:5173"
-  const apiURL = baseURL.replace("chrry.ai", "chrry.dev")
+  const baseURL = config.projects[0].use.baseURL || "http://localhost:3000"
+  const apiURL = baseURL
+    .replace("chrry.ai", "chrry.dev")
+    .replace(":3000", ":3001")
 
-  console.log(`🔥 Warming up backend at ${apiURL}...`)
+  console.log("🔧 Global Setup: Warming up backend...")
+  console.log(`   Frontend: ${baseURL}`)
+  console.log(`   API: ${apiURL}`)
 
-  // Warm up the API with retries
-  const maxRetries = 10
-  for (let i = 0; i < maxRetries; i++) {
+  const maxWait = 120000 // 2 minutes
+  const checkInterval = 5000 // 5 seconds
+  const startTime = Date.now()
+
+  // Wait for API to be ready
+  while (Date.now() - startTime < maxWait) {
     try {
-      const response = await fetch(`${apiURL}/api/health`, {
+      const response = await fetch(`${apiURL}/health`, {
         method: "GET",
+        headers: { "Content-Type": "application/json" },
       })
+
       if (response.ok) {
-        console.log(`✅ Backend ready after ${i + 1} attempts`)
+        console.log("✅ API is ready!")
         break
+      } else {
+        console.log(`⏳ API returned ${response.status}, waiting...`)
       }
     } catch (error) {
-      console.log(
-        `⏳ Attempt ${i + 1}/${maxRetries} - Backend not ready yet...`,
-      )
-      await new Promise((resolve) => setTimeout(resolve, 3000))
+      const elapsed = Math.round((Date.now() - startTime) / 1000)
+      console.log(`⏳ API not ready yet (${elapsed}s elapsed)...`)
     }
+
+    await new Promise((resolve) => setTimeout(resolve, checkInterval))
   }
 
-  // Also warm up WebSocket connection
+  if (Date.now() - startTime >= maxWait) {
+    throw new Error("❌ Backend failed to start within 2 minutes")
+  }
+
+  // Warm up frontend by loading the page
+  console.log("🌐 Warming up frontend...")
   const browser = await chromium.launch()
-  const page = await browser.newPage()
+  const context = await browser.newContext()
+  const page = await context.newPage()
 
   try {
-    await page.goto(baseURL, { waitUntil: "networkidle", timeout: 60000 })
-    console.log("✅ Frontend loaded successfully")
+    await page.goto(baseURL, { waitUntil: "networkidle", timeout: 30000 })
+    console.log("✅ Frontend is ready!")
   } catch (error) {
-    console.log("⚠️  Frontend load warning (may be okay):", error)
+    console.error("⚠️ Frontend warmup failed, but continuing:", error)
+  } finally {
+    await browser.close()
   }
 
-  await browser.close()
+  console.log("✅ Global setup complete!\n")
 }
 
 export default globalSetup
