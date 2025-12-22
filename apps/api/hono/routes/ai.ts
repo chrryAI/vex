@@ -240,7 +240,7 @@ async function getRelevantMemoryContext({
       context += `\n\nRELEVANT CONTEXT ABOUT THE USER:\n${userMemoryContext}\n\nUse this context to personalize your responses when relevant.`
     }
     if (appMemoryContext) {
-      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}\n\nThis is knowledge that this app has learned over time. Use it to provide more informed and consistent responses.`
+      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}\n\nThis is shared knowledge that this app has learned over time. Use it to provide informed responses, but DO NOT say "you previously asked" or "you asked before" when referencing this knowledge - it's app knowledge, not the user's personal question history.`
     }
     return { context, memoryIds }
   } catch (error) {
