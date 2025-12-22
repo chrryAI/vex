@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client"
 import { TabBar } from "./components/TabBar"
 import { BrowserHeader } from "./components/BrowserHeader"
 import AppProviders from "@chrryai/chrry/context/providers"
+import "@chrryai/chrry/globals.scss"
 import "./styles/browser-chrome.css"
 
 interface Tab {
