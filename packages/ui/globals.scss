@@ -239,7 +239,8 @@ body {
   }
 }
 
-body {
+body,
+html {
   color: var(--foreground);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
@@ -248,6 +249,8 @@ body {
   line-height: 1.25;
   overflow-y: scroll;
   font-size: 1rem;
+  // background-color: var(--foreground) !important;
+  border-radius: 13px;
 }
 
 a,
@@ -566,6 +569,7 @@ input[type="text"]:active {
   margin: 0;
   padding: 0;
   width: 100%;
+  background-color: var(--background);
 }
 
 // .suggestionsList,
@@ -585,12 +589,6 @@ input[type="text"]:active {
 //     opacity: 1 !important;
 //   }
 // }
-
-#root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-}
 
 @keyframes fadeInScale {
   from {

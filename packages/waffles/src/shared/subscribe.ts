@@ -24,7 +24,7 @@ export const subscribe = async ({
   log({ page })
   const inviteOrGift = invite || gift
 
-  const createChat = createChat && !inviteOrGift && !isMember
+  const newChat = createChat && !inviteOrGift && !isMember
 
   const prompts = [
     {
@@ -36,7 +36,7 @@ export const subscribe = async ({
       model: "sushi" as modelName,
     },
   ]
-  if (createChat) {
+  if (newChat) {
     await chat({
       page,
       isMember,
@@ -47,7 +47,7 @@ export const subscribe = async ({
 
   let threadUrl
 
-  if (createChat) {
+  if (newChat) {
     threadUrl = page.url()
     const threadId = threadUrl.split("/threads/")[1]?.split("?")[0]
     expect(threadId).toBeTruthy()
@@ -156,7 +156,7 @@ export const subscribe = async ({
     return getNthMenuThread(0)
   }
 
-  if (createChat && threadUrl) {
+  if (newChat && threadUrl) {
     expect(await getCreditsLeft(page)).toBe(2000 - prompts.length * 2)
 
     await signIn({
