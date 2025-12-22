@@ -44,14 +44,6 @@ class ClientRouter {
     this.supportsViewTransitions =
       typeof document !== "undefined" && "startViewTransition" in document
 
-    // Log support status for debugging
-    if (typeof window !== "undefined") {
-      console.log(
-        "🎬 View Transitions supported:",
-        this.supportsViewTransitions,
-      )
-    }
-
     // Don't set up listeners in constructor - do it in init() on client-side
   }
 
@@ -60,7 +52,6 @@ class ClientRouter {
     if (typeof window === "undefined" || this.isInitialized) return
 
     this.isInitialized = true
-    console.log("🎬 ClientRouter: Initializing event listeners")
 
     // Listen to browser navigation events (passive for better performance)
     window.addEventListener("popstate", this.handlePopState, { passive: true })
@@ -365,18 +356,12 @@ export function usePathname() {
   const [pathname, setPathname] = useState(clientRouter.getState().pathname)
 
   useEffect(() => {
-    console.log("🎬 usePathname: Setting up subscription")
     const unsubscribe = clientRouter.subscribe(() => {
       const newPathname = clientRouter.getState().pathname
-      console.log(
-        "🎬 usePathname: Router state changed, new pathname:",
-        newPathname,
-      )
       setPathname(newPathname)
     })
 
     return () => {
-      console.log("🎬 usePathname: Cleaning up subscription")
       unsubscribe()
     }
   }, [])
