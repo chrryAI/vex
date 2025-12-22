@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.chrryai.browser",
   "build": {
-    "frontendDist": "dist/renderer",
+    "frontendDist": "dist",
     "devUrl": "http://localhost:5174",
     "beforeDevCommand": "pnpm dev:vite",
     "beforeBuildCommand": "vite build"
@@ -37,5 +37,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "deep-link": {
+      "schemes": ["vex"],
+      "mobile": []
+    }
   }
 }
