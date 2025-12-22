@@ -12,16 +12,7 @@ import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "../utils"
 import SignIn from "../SignIn"
 import Subscribe from "../Subscribe"
 import { ArrowLeft } from "../icons"
-import {
-  Button,
-  Div,
-  Form,
-  H3,
-  Input,
-  Span,
-  toast,
-  useNavigation,
-} from "../platform"
+import { Button, Div, H3, Input, Span, toast, useNavigation } from "../platform"
 import { useAuth } from "../context/providers"
 import { useAddTaskStyles } from "./AddTask.styles"
 import { useStyles } from "../context/StylesContext"

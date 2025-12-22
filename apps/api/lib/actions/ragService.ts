@@ -1,4 +1,4 @@
-import { db, sql, eq, desc, cosineDistance } from "@repo/db"
+import { db, sql, eq, desc } from "@repo/db"
 import {
   documentChunks,
   documentSummaries,

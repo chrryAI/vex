@@ -1,12 +1,12 @@
 "use client"
-import { app, appWithStore, store } from "./types"
-import { PROD_FRONTEND_URL, FRONTEND_URL } from "./utils"
+import { appWithStore, store } from "./types"
+import { PROD_FRONTEND_URL, FRONTEND_URL, API_URL } from "./utils"
 
 import React, { useEffect } from "react"
 import Img from "./Img"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { usePlatform, Text } from "./platform"
-import { useApp, useData } from "./context/providers"
+import { COLORS } from "./context/AppContext"
+import { Text } from "./platform"
+import { useApp } from "./context/providers"
 import {
   DeepSeek,
   OpenAI,
@@ -15,8 +15,6 @@ import {
   Flux,
   Perplexity,
   Clapperboard,
-  Hand,
-  Shell,
 } from "./icons"
 import { getImageSrc } from "./lib"
 
@@ -93,7 +91,7 @@ export default function ImageComponent(props: ImageProps) {
 
   const { appFormWatcher, canEditApp } = useApp()
 
-  let { src, width, height, size } = getImageSrc({
+  const { src, width, height, size } = getImageSrc({
     ...props,
     canEditApp,
     image: appFormWatcher?.image,
@@ -121,6 +119,47 @@ export default function ImageComponent(props: ImageProps) {
       onLoad?.()
     }
   }, [isEmoji, isAgent])
+
+  const resize = ({
+    url,
+    width,
+    height,
+  }: {
+    url: string
+    width?: number | string
+    height?: number | string
+  }) => {
+    if (typeof width === "string") {
+      return url
+    }
+    if (typeof height === "string") {
+      return url
+    }
+
+    // Skip resize for blob URLs, data URLs, and external URLs
+    const isBlob = url.startsWith("blob:")
+    const isDataUrl = url.startsWith("data:")
+    const isExternal =
+      url.startsWith("http") &&
+      !url.startsWith(FRONTEND_URL) &&
+      !url.startsWith(PROD_FRONTEND_URL) &&
+      !url.includes("minio.chrry.dev") // Allow MinIO URLs
+
+    if (isBlob || isDataUrl || isExternal) {
+      return url
+    }
+
+    // Request 3x size for Super Retina displays to match "original" crispness
+    // e.g. If rendering at 48px, request 144px image
+    // Force PNG format to avoid any WebP compression artifacts
+    const density = 3
+    const targetWidth = typeof width === "number" ? width * density : width
+    const targetHeight = typeof height === "number" ? height * density : height
+
+    // Resize all images, not just FRONTEND_URL ones
+    // MinIO images need resizing too!
+    return `${API_URL}/resize?url=${encodeURIComponent(url)}&w=${targetWidth}&h=${targetHeight}&fit=contain&q=100&fmt=png`
+  }
 
   const color =
     COLORS[app?.themeColor as keyof typeof COLORS] || "var(--accent-6)"
@@ -226,7 +265,11 @@ export default function ImageComponent(props: ImageProps) {
         width={width}
         height={height}
         title={title}
-        src={src || `${BASE_URL}/images/pacman/space-invader.png`}
+        src={resize({
+          url: src || `${BASE_URL}/images/pacman/space-invader.png`,
+          width,
+          height,
+        })}
         alt={alt || app?.title || logo ? "Vex" : ""}
       />
     </>

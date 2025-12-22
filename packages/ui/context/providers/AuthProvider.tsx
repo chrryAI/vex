@@ -17,12 +17,14 @@ import {
   useCookieOrLocalStorage,
   usePlatform,
   useLocalStorage,
-  getExtensionId,
   storage,
 } from "../../platform"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
+import console from "../../utils/log"
+import useCache from "../../hooks/useCache"
+import { SiteConfig } from "../../utils/siteConfig"
 
 import {
   aiAgent,
@@ -73,6 +75,7 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      siteConfig: SiteConfig
       isManagingApp: boolean
       setIsManagingApp: (value: boolean) => void
       isRemovingApp: boolean
@@ -334,7 +337,7 @@ export function AuthProvider({
   const env = isDevelopment ? "development" : "production"
 
   const setEnv = (env: "development" | "production" | "staging") => {
-    fetchSession()
+    // fetchSession()
   }
 
   const [threads, setThreads] = useState<
@@ -351,7 +354,7 @@ export function AuthProvider({
 
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
-    session?.deviceId,
+    props.session?.deviceId,
   )
 
   const { isStorageReady } = usePlatform()
@@ -376,9 +379,11 @@ export function AuthProvider({
     session?.guest?.fingerprint ||
       session?.user?.fingerprint ||
       fingerprintParam,
+    isExtension,
   )
 
-  const ssrToken = session?.user?.token || session?.guest?.fingerprint || apiKey
+  const ssrToken =
+    props?.session?.user?.token || props?.session?.guest?.fingerprint || apiKey
   // Local state for token and versions (no dependency on DataProvider)
   const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
@@ -458,12 +463,12 @@ export function AuthProvider({
   }
 
   const [userBaseApp, setUserBaseApp] = useState<appWithStore | undefined>(
-    session?.userBaseApp,
+    props.session?.userBaseApp,
   )
 
   const userBaseStore = userBaseApp?.store
   const [guestBaseApp, setGuestBaseApp] = useState<appWithStore | undefined>(
-    session?.guestBaseApp,
+    props.session?.guestBaseApp,
   )
 
   const accountApp = userBaseApp || guestBaseApp
@@ -515,9 +520,14 @@ export function AuthProvider({
     if (!fingerprint) {
       const fp = uuidv4()
       setFingerprint(fp)
-      // setToken(fp)
     }
   }, [fingerprint])
+
+  useEffect(() => {
+    if (!token && fingerprint) {
+      setToken(fingerprint)
+    }
+  }, [token, fingerprint])
   // setFingerprint/setToken are stable from useLocalStorage/useState
   const [versions, setVersions] = useState(
     session?.versions || {
@@ -566,7 +576,7 @@ export function AuthProvider({
   const setSignInPart = (
     part: "login" | "register" | "credentials" | undefined,
   ) => {
-    const newPart = part && isE2E ? "credentials" : !!user ? undefined : part
+    const newPart = part && isE2E ? "credentials" : user ? undefined : part
 
     setSignInPartInternal(newPart)
 
@@ -838,7 +848,7 @@ export function AuthProvider({
 
     // Only update state if it's different from URL to avoid loops
     if (currentPart !== signInPart) {
-      setSignInPartInternal(!!user ? undefined : currentPart || undefined)
+      setSignInPartInternal(user ? undefined : currentPart || undefined)
     }
   }, [searchParams, user])
 
@@ -905,6 +915,14 @@ export function AuthProvider({
       setWasGifted(false)
     }
   }, [user, guest])
+
+  const [, setUserRole] = useLocalStorage("userRole", user?.role)
+
+  useEffect(() => {
+    if (user) {
+      setUserRole(user.role)
+    }
+  }, [user])
 
   const [characterProfilesEnabled, setCharacterProfilesEnabled] = useState(
     !!(user || guest)?.characterProfilesEnabled,
@@ -1017,7 +1035,10 @@ export function AuthProvider({
     [storeApps],
   )
 
+  const { clear } = useCache()
+
   const fetchSession = async () => {
+    clear()
     setIsLoading(true)
     setShouldFetchSession(true)
     shouldFetchSession && (await refetchSession())
@@ -1405,6 +1426,7 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
+    if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
 
     // debugger
@@ -1767,6 +1789,7 @@ export function AuthProvider({
         FRONTEND_URL,
         PROD_FRONTEND_URL,
         findAppByPathname,
+        siteConfig,
         setBaseAccountApp,
         setApp,
         aiAgents,

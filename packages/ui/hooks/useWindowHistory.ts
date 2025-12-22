@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import console from "../utils/log"
 
 // Types
 export interface NavigateOptions {
@@ -43,14 +44,6 @@ class ClientRouter {
     this.supportsViewTransitions =
       typeof document !== "undefined" && "startViewTransition" in document
 
-    // Log support status for debugging
-    if (typeof window !== "undefined") {
-      console.log(
-        "🎬 View Transitions supported:",
-        this.supportsViewTransitions,
-      )
-    }
-
     // Don't set up listeners in constructor - do it in init() on client-side
   }
 
@@ -59,7 +52,6 @@ class ClientRouter {
     if (typeof window === "undefined" || this.isInitialized) return
 
     this.isInitialized = true
-    console.log("🎬 ClientRouter: Initializing event listeners")
 
     // Listen to browser navigation events (passive for better performance)
     window.addEventListener("popstate", this.handlePopState, { passive: true })
@@ -80,7 +72,28 @@ class ClientRouter {
       }
     }
     const url = new URL(window.location.href)
-    const pathname = url.pathname === "/index.html" ? "/" : url.pathname || "/"
+
+    // For chrome-extension:// URLs, parse hash-based routing
+    const isExtension = window.location.protocol === "chrome-extension:"
+
+    if (isExtension && url.hash) {
+      // Parse hash: #/path?params
+      const hashContent = url.hash.slice(1) // Remove leading #
+      const [hashPath, hashSearch] = hashContent.split("?")
+
+      return {
+        pathname: hashPath || "/",
+        searchParams: new URLSearchParams(hashSearch || ""),
+        hash: "", // Clear hash since we're using it for routing
+      }
+    }
+
+    // For regular web URLs or extensions without hash
+    const pathname = isExtension
+      ? "/" // Default to / for extensions without hash
+      : url.pathname === "/index.html"
+        ? "/"
+        : url.pathname || "/"
 
     return {
       pathname,
@@ -188,7 +201,38 @@ class ClientRouter {
     this.lastNavigationTime = now
 
     this.isProgrammaticNavigation = true
-    const url = new URL(href, window.location.origin)
+
+    // For chrome-extension:// URLs, use hash-based routing
+    const isExtension = window.location.protocol === "chrome-extension:"
+    let url: URL
+
+    if (isExtension) {
+      // Convert pathname-based routes to hash-based routes
+      // e.g., "/coder" becomes "index.html#/coder"
+      const baseUrl = `${window.location.origin}/index.html`
+
+      // Parse the href to extract pathname and search params
+      const hrefUrl = new URL(href, baseUrl)
+      const routePath =
+        hrefUrl.pathname === "/" || hrefUrl.pathname === "/index.html"
+          ? ""
+          : hrefUrl.pathname
+      const searchString = hrefUrl.search
+
+      // Construct hash-based URL: index.html#/path?params
+      const hash = routePath + searchString
+      url = new URL(`${baseUrl}${hash ? `#${hash}` : ""}`)
+
+      console.log("🎬 Extension navigation (hash-based):", {
+        href,
+        routePath,
+        searchString,
+        hash,
+        result: url.toString(),
+      })
+    } else {
+      url = new URL(href, window.location.origin)
+    }
 
     const performNavigation = () => {
       // Support both push and replace
@@ -312,18 +356,12 @@ export function usePathname() {
   const [pathname, setPathname] = useState(clientRouter.getState().pathname)
 
   useEffect(() => {
-    console.log("🎬 usePathname: Setting up subscription")
     const unsubscribe = clientRouter.subscribe(() => {
       const newPathname = clientRouter.getState().pathname
-      console.log(
-        "🎬 usePathname: Router state changed, new pathname:",
-        newPathname,
-      )
       setPathname(newPathname)
     })
 
     return () => {
-      console.log("🎬 usePathname: Cleaning up subscription")
       unsubscribe()
     }
   }, [])

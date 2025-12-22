@@ -1,6 +1,5 @@
 import {
   S3Client,
-  PutObjectCommand,
   DeleteObjectCommand,
   CreateBucketCommand,
   HeadBucketCommand,

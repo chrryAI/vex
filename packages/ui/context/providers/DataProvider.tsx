@@ -1,6 +1,6 @@
 "use client"
 
-import { aiAgent, instruction, session } from "../../types"
+import { aiAgent, instruction } from "../../types"
 import React, {
   createContext,
   useContext,
@@ -16,9 +16,9 @@ import {
 } from "../../platform/PlatformProvider"
 import { getActions, ApiActions } from "../../lib"
 import { useAuth } from "./AuthProvider"
+import console from "../../utils/log"
 
 import {
-  toast,
   useCookieOrLocalStorage,
   useLocalStorage,
   useNavigation,
@@ -200,7 +200,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.7.47"
+  const VERSION = "1.7.77"
 
   const [weather, setWeather] = useLocalStorage<
     | {

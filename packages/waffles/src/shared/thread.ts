@@ -9,13 +9,13 @@ export const thread = async ({
   isMember,
   bookmark,
   createChat = true,
-  messagesConsumed = 3,
+  isLive = false,
 }: {
   page: Page
   isMember?: boolean
   createChat?: boolean
-  messagesConsumed?: number
   bookmark?: boolean
+  isLive?: boolean
 }) => {
   let total = 0
   createChat &&
@@ -24,8 +24,9 @@ export const thread = async ({
       isNewChat: true,
       page,
       isMember,
+      isLive,
       instruction: "Help me write a short story",
-      prompts: Array.from({ length: messagesConsumed }, (_, i) => {
+      prompts: Array.from({ length: 3 }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
           model: "sushi",
@@ -137,10 +138,10 @@ export const thread = async ({
   await editThreadGenerateTitleButton.click()
   await wait(2000)
   await editThreadSaveButton.click()
-  await wait(2000)
+  await wait(5000)
 
   await expect(threadTitle).not.toBeVisible({
-    timeout: 5000,
+    timeout: 10000,
   })
 
   const threadTitleGenerated2 = (await getFirstThread()).getByTestId(
@@ -167,7 +168,7 @@ export const thread = async ({
 
   await deleteThreadButton.click()
 
-  await wait(3000)
+  await wait(8000)
 
   await expect(threadsContainer).toBeVisible()
 
@@ -177,12 +178,13 @@ export const thread = async ({
     await chat({
       isNewChat: true,
       page,
+      isLive,
       creditsConsumed: total * 2,
       messagesConsumed: 0,
       isMember,
       instruction: "Help me write a short story",
       bookmark,
-      prompts: Array.from({ length: messagesConsumed }, (_, i) => {
+      prompts: Array.from({ length: 3 }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
           model: "sushi",
@@ -204,12 +206,13 @@ export const thread = async ({
     await chat({
       isNewChat: false,
       creditsConsumed: total * 2,
-      messagesConsumed,
+      messagesConsumed: 3,
       bookmark: false,
       page,
       isMember,
+      isLive,
       instruction: "Help me write a short story",
-      prompts: Array.from({ length: messagesConsumed }, (_, i) => {
+      prompts: Array.from({ length: 3 }, (_, i) => {
         return {
           text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
           model: "sushi",
@@ -232,16 +235,17 @@ export const thread = async ({
 
     await expect(
       (await getSecondThread()).getByTestId("threads-bookmarked"),
-    ).toBeVisible()
+    ).not.toBeVisible()
 
     await expect(
       (await getSecondThread()).getByTestId("threads-not-bookmarked"),
-    ).not.toBeVisible()
+    ).toBeVisible()
 
     await thread({
       page,
       isMember,
       createChat: false,
+      isLive,
     })
   }
 

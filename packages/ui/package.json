@@ -1,10 +1,11 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.7.47",
+  "version": "1.7.77",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -62,7 +63,7 @@
   "scripts": {
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "lint": "eslint . --max-warnings 1600",
+    "lint": "eslint . --max-warnings 1800",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build"

@@ -49,7 +49,7 @@ export const chat = async ({
   ],
   agentMessageTimeout = 50 * 1000,
   isNewChat = true,
-  isLiveTest = false,
+  isLive = false,
   threadId,
   creditsConsumed = 0,
   messagesConsumed = 0,
@@ -90,7 +90,7 @@ export const chat = async ({
   }[]
   agentMessageTimeout?: number
   isNewChat?: boolean
-  isLiveTest?: boolean
+  isLive?: boolean
   threadId?: string
   creditsConsumed?: number
   bookmark?: boolean
@@ -124,18 +124,12 @@ export const chat = async ({
 
   const MAX_FILE_SIZE = 4
 
-  if (isLiveTest) {
-    await page.goto(getURL({ isLive: true, isMember }), {
-      waitUntil: "networkidle",
-    })
-    await wait(3000)
-  } else if (isNewChat) {
-    await page.goto(getURL({ isLive: false, isMember }), {
+  if (isNewChat) {
+    await page.goto(getURL({ isLive, isMember }), {
       waitUntil: "networkidle",
     })
     await wait(3000)
   }
-
   const agentModal = page.getByTestId("agent-modal")
   await expect(agentModal).not.toBeVisible()
 

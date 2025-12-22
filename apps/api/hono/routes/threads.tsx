@@ -37,7 +37,6 @@ import {
 } from "../../utils/titleGenerator"
 import { FRONTEND_URL, isE2E, MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
-import nodemailer from "nodemailer"
 import { render } from "@react-email/render"
 import Collaboration from "../../components/emails/Collaboration"
 import { defaultLocale } from "@chrryai/chrry/locales"
@@ -103,7 +102,7 @@ threads.get("/", async (c) => {
       : undefined
 
   // Sanitize username input
-  let sanitizedUserName = userName
+  const sanitizedUserName = userName
     ? sanitizeHtml(userName, {
         allowedTags: [],
         allowedAttributes: {},
@@ -382,7 +381,7 @@ threads.patch("/:id", async (c) => {
   // Check if request contains files (multipart/form-data) or JSON
   const contentType = c.req.header("content-type") || ""
   let requestData: any
-  let files: File[] = []
+  const files: File[] = []
 
   if (contentType.includes("multipart/form-data")) {
     // Handle file uploads

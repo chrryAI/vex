@@ -5,11 +5,9 @@ import {
   collaboration,
   guest,
   message,
-  Paginated,
   store,
   thread,
   user,
-  messages,
   paginatedMessages,
 } from "../types"
 import * as utils from "../utils"
@@ -144,10 +142,10 @@ export const getImageSrc = ({
   // images array: [512px, 192px, 180px, 128px, 32px]
   const getImageBySize = (size: number) => {
     if (!app?.images?.length) return null
-    // if (size <= 32) return app.images[4]?.url // 32px
-    // if (size <= 128) return app.images[3]?.url // 128px
-    // if (size <= 180) return app.images[2]?.url // 180px
-    // if (size <= 192) return app.images[1]?.url // 192px
+    if (size <= 32) return app.images[4]?.url // 32px
+    if (size <= 128) return app.images[3]?.url // 128px
+    if (size <= 180) return app.images[2]?.url // 180px
+    if (size <= 192) return app.images[1]?.url // 192px
     return app.images[0]?.url // 512px
   }
 
@@ -261,7 +259,7 @@ export const getThread = async ({
 }: {
   pageSize?: number
   id: string
-  token: string
+  token?: string
   liked?: boolean
   onError?: (status: number) => void
 
@@ -461,7 +459,7 @@ export const updateThread = async ({
   appId?: string | null
 }) => {
   let postRequestBody: FormData | string
-  let postRequestHeaders: Record<string, string> = {
+  const postRequestHeaders: Record<string, string> = {
     Authorization: `Bearer ${token}`,
   }
 

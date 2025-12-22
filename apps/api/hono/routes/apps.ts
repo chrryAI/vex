@@ -9,10 +9,6 @@ import {
 } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
 import { getMember, getGuest } from "../lib/auth"
-import { getChrryUrl } from "../lib/getChrryUrl"
-import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
-import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
-import { appWithStore } from "@chrryai/chrry/types"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"
 
 import { getApp } from "../lib/auth"
@@ -28,8 +24,7 @@ import {
   db,
   and,
   eq,
-  getPureApp,
-  getAppExtends,
+  getApp as getAppDb,
   deleteApp,
 } from "@repo/db"
 import { appOrders, storeInstalls } from "@repo/db/src/schema"
@@ -257,6 +252,8 @@ app.post("/", async (c) => {
 
               return await getAppDb({
                 id: extendedAppId,
+                userId: member?.id,
+                guestId: guest?.id,
                 skipCache: true,
               })
             }),
@@ -359,7 +356,7 @@ app.post("/", async (c) => {
 
     if (!subjectStore) {
       // Create a new store for the user
-      let storeSlug = member
+      const storeSlug = member
         ? member.userName
           ? slugify(member.userName)
           : member.id
@@ -756,9 +753,10 @@ app.patch("/:id", async (c) => {
     }
 
     // Get existing app
-    const existingApp = await getApp({
-      c,
-      appId,
+    const existingApp = await getAppDb({
+      id: appId,
+      userId: member?.id,
+      guestId: guest?.id,
       skipCache: true,
     })
 
@@ -889,7 +887,7 @@ app.patch("/:id", async (c) => {
               console.log("🔍 Looking up extended app:", extendedAppId)
 
               // Try to look up by ID first (handles UUIDs)
-              let extendedApp = await getAppDb({
+              const extendedApp = await getAppDb({
                 id: extendedAppId,
                 skipCache: true,
               })

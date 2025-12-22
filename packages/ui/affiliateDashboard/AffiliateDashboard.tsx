@@ -22,7 +22,6 @@ import { Button, Div, H1, H2, H3, P, Span, useTheme } from "../platform"
 import { useAuth, useData, useNavigationContext } from "../context/providers"
 import Skeleton from "../Skeleton"
 import { useAffiliateDashboardStyles } from "./AffiliateDashboard.styles"
-import { useStyles } from "../context/StylesContext"
 
 export default function AffiliateDashboard() {
   const { t } = useAppContext()

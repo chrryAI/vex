@@ -10,11 +10,9 @@ import {
   Copy,
   Link2,
   LockIcon,
-  LockOpen,
   Rss,
   ShareIcon,
   Trash2,
-  UserLock,
   UsersRound,
 } from "./icons"
 import Modal from "./Modal"

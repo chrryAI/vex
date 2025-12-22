@@ -1,10 +1,11 @@
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4, validate } from "uuid"
 import {
   VERSION,
   getThreadId,
   pageSizes,
   isE2E,
   getEnv,
+  API_INTERNAL_URL,
 } from "@chrryai/chrry/utils"
 import {
   getApp,
@@ -85,8 +86,7 @@ export async function loadServerData(
 
   const isDev = process.env.MODE === "development"
 
-  const API_URL = getEnv().VITE_API_URL
-  console.log(`🔥 HONO API_URL:`, API_URL)
+  const API_URL = API_INTERNAL_URL
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []
@@ -160,9 +160,32 @@ export async function loadServerData(
     TEST_GUEST_FINGERPRINTS,
   ).includes(fpFromQuery || "")
 
-  const fingerprint = isTestFP
-    ? fpFromQuery
-    : fpFromQuery || headers["x-fp"] || cookies.fingerprint || undefined
+  const authToken = urlObj.searchParams.get("auth_token")
+
+  const apiKeyCandidate =
+    authToken ||
+    (isTestFP
+      ? fpFromQuery
+      : cookies.token ||
+        headers["x-token"] ||
+        cookies.fingerprint ||
+        headers["x-fp"])
+
+  const tokenCandidate = authToken || apiKeyCandidate
+
+  const fingerprintCandidate =
+    fpFromQuery && isTestFP
+      ? fpFromQuery
+      : validate(tokenCandidate)
+        ? tokenCandidate
+        : cookies.fingerprint || headers["x-fp"]
+
+  let apiKey =
+    tokenCandidate ||
+    (isTestFP && fpFromQuery ? fpFromQuery : fingerprintCandidate) ||
+    uuidv4()
+
+  let fingerprint = fingerprintCandidate || uuidv4()
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName
@@ -178,14 +201,7 @@ export async function loadServerData(
     "0.0.0.0"
 
   // Handle OAuth callback token
-  const authToken = urlObj.searchParams.get("auth_token")
 
-  const apiKey =
-    authToken ||
-    fpFromQuery ||
-    cookies.token ||
-    headers["x-token"] ||
-    fingerprint
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
 
@@ -213,44 +229,46 @@ export async function loadServerData(
   const appId = thread?.thread?.appId || headers["x-app-id"]
 
   try {
-    const [sessionResult, translationsResult, appResult] = await Promise.all([
-      getSession({
-        appId,
-        deviceId,
-        fingerprint,
-        token: apiKey,
-        agentName,
-        pathname,
-        routeType,
-        translate: true,
-        locale,
-        chrryUrl,
-        screenWidth: Number(viewPortWidth),
-        screenHeight: Number(viewPortHeight),
-        gift: gift || undefined,
-        source: "layout",
-        // API_URL,
-        ip: clientIp, // Pass client IP for Arcjet
-      }),
+    session = await getSession({
+      appId,
+      deviceId,
+      fingerprint,
+      token: apiKey,
+      agentName,
+      pathname,
+      routeType,
+      translate: true,
+      locale,
+      chrryUrl,
+      screenWidth: Number(viewPortWidth),
+      screenHeight: Number(viewPortHeight),
+      gift: gift || undefined,
+      source: "layout",
+      API_URL,
+      ip: clientIp, // Pass client IP for Arcjet
+    })
 
+    apiKey = session?.user?.token || session?.guest?.fingerprint || apiKey
+
+    const [translationsResult, appResult] = await Promise.all([
       getTranslations({
         token: apiKey,
         locale,
-        // API_URL,
+        API_URL,
       }),
-
       getApp({
         chrryUrl,
         appId,
         token: apiKey,
         pathname,
-        // API_URL,
+        API_URL,
       }),
     ])
 
-    session = sessionResult
     translations = translationsResult
-    app = appResult
+
+    const accountApp = session?.userBaseApp || session?.guestBaseApp
+    app = appResult.id === accountApp?.id ? accountApp : appResult
 
     if (session && app) {
       session.app = app

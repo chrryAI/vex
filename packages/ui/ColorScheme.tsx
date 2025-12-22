@@ -1,7 +1,6 @@
 import React from "react"
-import clsx from "clsx"
 import { CheckIcon, Circle } from "./icons"
-import { COLORS, useAppContext } from "./context/AppContext"
+import { COLORS } from "./context/AppContext"
 import { useHasHydrated } from "./hooks"
 import { Button, Div, useTheme } from "./platform"
 import { useColorSchemeStyles } from "./ColorScheme.styles"

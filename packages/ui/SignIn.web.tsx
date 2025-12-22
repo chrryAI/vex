@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import styles from "./SignIn.module.scss"
 import clsx from "clsx"
 import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
@@ -59,6 +59,7 @@ export default function SignIn({
     signInContext: signInContextInternal,
     signInPart: part,
     setSignInPart: setPart,
+    siteConfig,
   } = useAuth()
 
   const signInContext = async (
@@ -74,7 +75,7 @@ export default function SignIn({
     clear()
     return signInContextInternal?.(provider, options)
   }
-  const { t } = useAppContext()
+  const { t, console } = useAppContext()
 
   const {
     FRONTEND_URL,
@@ -162,8 +163,6 @@ export default function SignIn({
       }
     }
 
-    const siteConfig = getSiteConfig(CHRRY_URL)
-
     // For OAuth (Google/Apple), always use chrry.ai as callback to avoid URL limit issues
     // We'll redirect back to the original subdomain after auth
     const baseUrl = isDevelopment ? FRONTEND_URL : siteConfig.url
@@ -185,6 +184,8 @@ export default function SignIn({
     // }
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")
+
+    fingerprint && successUrl.searchParams.set("fp", fingerprint)
 
     return {
       successUrl,
@@ -515,6 +516,7 @@ export default function SignIn({
 
                       window.open(`${FRONTEND_URL}/privacy`, "_blank")
                     }}
+                    rel="noreferrer"
                   >
                     <LinkIcon size={16} /> {t("Privacy")}
                   </a>

@@ -32,12 +32,7 @@ import { validate as validateUuid } from "uuid"
 import { UAParser } from "ua-parser-js"
 import arcjet, { detectBot } from "@arcjet/node"
 
-import {
-  FRONTEND_URL,
-  isDevelopment,
-  isE2E,
-  VERSION,
-} from "@chrryai/chrry/utils"
+import { isDevelopment, isE2E, VERSION } from "@chrryai/chrry/utils"
 import { v4 as uuidv4 } from "uuid"
 import {
   GUEST_CREDITS_PER_MONTH,
@@ -328,7 +323,7 @@ session.get("/", async (c) => {
     const deviceIdCookie = getCookie(c, "deviceId")
     const deviceId = deviceIdUrl || deviceIdCookie || deviceIdHeader
 
-    let fingerPrintCookie = getCookie(c, "fingerprint")
+    const fingerPrintCookie = getCookie(c, "fingerprint")
 
     let fingerprint =
       fingerPrintUrl ||
@@ -540,10 +535,7 @@ session.get("/", async (c) => {
       const guestFingerprint = await getGuestDb({ fingerprint })
 
       let migratedFromGuest = false
-      if (
-        !member.migratedFromGuest &&
-        (source === "layout" || appType !== "web")
-      ) {
+      if (!member.migratedFromGuest) {
         const toMigrate = member.email
           ? (await getGuestDb({ email: member.email })) || guestFingerprint
           : guestFingerprint

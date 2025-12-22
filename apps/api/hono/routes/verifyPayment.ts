@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
-import { v4 as uuidv4, validate } from "uuid"
+import { v4 as uuidv4 } from "uuid"
 import { jsx } from "react/jsx-runtime"
 import { render } from "@react-email/render"
 import nodemailer from "nodemailer"
@@ -43,51 +43,29 @@ export const verifyPayment = new Hono()
 verifyPayment.post("/", async (c) => {
   const body = await c.req.json()
   const siteConfig = getSiteConfig()
-  const { session_id, userId, guestId, email, checkoutFingerPrint } = body
+  const { session_id, userId, guestId, email } = body
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   const member = await getMember(c)
 
-  const isE2EAndValidFingerprint = isE2E && validate(checkoutFingerPrint)
-
-  const newFingerprint = isE2EAndValidFingerprint
-    ? checkoutFingerPrint
-    : uuidv4()
+  const newFingerprint = uuidv4()
 
   let user = email
-    ? await getUser({ email })
+    ? await getUser({ email, skipCache: true })
     : userId
-      ? await getUser({ id: userId })
+      ? await getUser({ id: userId, skipCache: true })
       : undefined
   let guest = !user
     ? email
-      ? (await getGuest({ email })) ||
+      ? (await getGuest({ email, skipCache: true })) ||
         (await createGuest({
           email,
           fingerprint: newFingerprint,
           ip: "192.168.1.1",
         }))
-      : await getGuest({ id: guestId })
+      : await getGuest({ id: guestId, skipCache: true })
     : undefined
-
-  if (isE2EAndValidFingerprint && user) {
-    await updateUser({
-      ...user,
-      fingerprint: newFingerprint,
-    })
-
-    user = await getUser({ id: userId })
-  }
-
-  if (isE2EAndValidFingerprint && guest) {
-    await updateGuest({
-      ...guest,
-      fingerprint: newFingerprint,
-    })
-
-    guest = await getGuest({ id: guestId })
-  }
 
   if (!user && !guest) {
     return c.json({ error: "Member or guest not found" }, 404)
@@ -158,6 +136,8 @@ verifyPayment.post("/", async (c) => {
           credits: newCredits,
           subscribedOn: new Date(),
         })
+
+        user = await getUser({ id: user.id, skipCache: true })
       }
 
       if (guest) {
@@ -173,6 +153,8 @@ verifyPayment.post("/", async (c) => {
           credits: newCredits,
           subscribedOn: new Date(),
         })
+
+        guest = await getGuest({ id: guest.id, skipCache: true })
       }
 
       const apiKey = process.env.ZEPTOMAIL_API_KEY
@@ -326,11 +308,14 @@ verifyPayment.post("/", async (c) => {
                 ...user,
                 credits: newCredits + bonusCredits,
               })
+
+              user = await getUser({ id: user.id, skipCache: true })
             } else if (guest) {
               await updateGuest({
                 ...guest,
                 credits: newCredits + bonusCredits,
               })
+              guest = await getGuest({ id: guest.id, skipCache: true })
             }
 
             console.log("🎉 Affiliate bonus applied (monthly recurring):", {
@@ -357,7 +342,7 @@ verifyPayment.post("/", async (c) => {
         success: true,
         type: "subscription",
         gift: !!email,
-        fingerprint: guest?.fingerprint || user?.fingerprint,
+        fingerprint: guest?.fingerprint || user?.fingerprint || newFingerprint,
       })
     }
 
@@ -430,6 +415,8 @@ verifyPayment.post("/", async (c) => {
           credits: user.credits + totalCredits,
         })
 
+        user = await getUser({ id: user.id, skipCache: true })
+
         await createCreditTransaction({
           userId: user.id,
           guestId: null,
@@ -451,6 +438,8 @@ verifyPayment.post("/", async (c) => {
           ...guest,
           credits: guest.credits + totalCredits,
         })
+
+        guest = await getGuest({ id: guest.id, skipCache: true })
 
         await createCreditTransaction({
           userId: null,
@@ -538,7 +527,7 @@ verifyPayment.post("/", async (c) => {
         creditsAdded: creditsToAdd,
         gift: !!email,
         credits: creditsToAdd,
-        fingerprint: guest?.fingerprint || user?.fingerprint,
+        fingerprint: guest?.fingerprint || user?.fingerprint || newFingerprint,
       })
     }
 

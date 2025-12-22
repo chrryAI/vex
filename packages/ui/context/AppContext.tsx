@@ -1,11 +1,12 @@
 "use client"
-import React, { createContext, useContext, useRef } from "react"
+import React, { createContext, useContext } from "react"
 
 import { useTranslation } from "react-i18next"
 import { COLORS } from "./ThemeContext"
-import { useAuth, useData, useError } from "./providers"
+import { useAuth, useError } from "./providers"
 import { getSiteConfig } from "../utils/siteConfig"
-import { getEnv, isCI, isE2E } from "../utils"
+import { isCI, isE2E } from "../utils"
+import { createCustomConsole } from "../utils/log"
 
 export { COLORS }
 
@@ -43,6 +44,8 @@ export type affiliateStats = {
   }
 }
 
+// Save reference to original console
+
 export type themeType = "dark" | "light"
 
 export const MONTHLY_GUEST_CREDITS = 30
@@ -50,9 +53,11 @@ export const MONTHLY_GUEST_CREDITS = 30
 export const AppContext = createContext<{
   t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => string
   captureException: (error: Error) => void
+  console: ReturnType<typeof createCustomConsole>
 }>({
   t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => key,
   captureException: () => {},
+  console: createCustomConsole(undefined),
 })
 
 export const AppContextProvider = ({
@@ -111,11 +116,15 @@ export const AppContextProvider = ({
 
   const { captureException } = useError()
 
+  // Create custom console with access to user role and error tracking
+  const customConsole = createCustomConsole(user)
+
   return (
     <AppContext.Provider
       value={{
         t,
         captureException,
+        console: customConsole,
       }}
     >
       {children}

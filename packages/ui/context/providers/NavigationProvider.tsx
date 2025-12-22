@@ -18,7 +18,7 @@ import { useApp } from "./AppProvider"
 import { useChat } from "./ChatProvider"
 import { useAuth } from "./AuthProvider"
 
-import { thread, session } from "../../types"
+import { thread } from "../../types"
 import { t } from "i18next"
 import { defaultLocale } from "../../locales"
 import { getSiteConfig, whiteLabels } from "../../utils/siteConfig"
@@ -203,22 +203,28 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const [wasOffline, setWasOffline] = useState(false)
 
   useEffect(() => {
+    // 1. The "Panic" State (Lost Connection)
     if (!isOnline) {
       setWasOffline(true)
-      toast.error(t("You are offline"), {
-        duration: 6000,
+      // Change from "Error" to "Loading" or "Status" icon if possible
+      toast.loading(t("Reconnecting..."), {
+        id: "connection-status", // specific ID so we can update this exact toast
       })
     }
-  }, [isOnline])
 
-  useEffect(() => {
-    if (isOnline && wasOffline) {
-      setWasOffline(false)
-      toast.success(t("You back online"), {
-        duration: 6000,
+    // 2. The "Relief" State (Connection Restored)
+    else if (isOnline && wasOffline) {
+      // Update the EXISTING toast to Success
+      toast.success(t("Back online"), {
+        id: "connection-status",
+        duration: 3000,
       })
+      setWasOffline(false)
+
+      // OPTIONAL: Trigger a silent revalidation of the current thread
+      // mutate("/api/messages")
     }
-  }, [isOnline])
+  }, [isOnline, wasOffline])
 
   const [isMemoryConsentManageVisible, setIsMemoryConsentManageVisible] =
     useState(false)

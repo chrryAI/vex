@@ -1,6 +1,4 @@
 import { defineConfig } from "tsup"
-import { copyFileSync } from "fs"
-import { resolve } from "path"
 
 export default defineConfig({
   entry: ["index.ts"],

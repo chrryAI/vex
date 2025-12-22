@@ -4,9 +4,7 @@ import React, { useEffect, useState } from "react"
 import {
   Calendar,
   Palette,
-  Circle,
   MapPin,
-  Users,
   Type,
   Clock11,
   Clock12,
@@ -20,20 +18,10 @@ import Checkbox from "./Checkbox"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useForm, Controller, type SubmitHandler } from "react-hook-form"
 import { customZodResolver } from "./utils/customZodResolver"
-import {
-  formCalendarEventSchema,
-  type FormCalendarEventInput,
-} from "./utils/calendarValidation"
-import { z } from "zod"
-import {
-  CalendarEventFormData,
-  createCalendarEvent,
-  updateCalendarEvent,
-  deleteCalendarEvent,
-} from "./lib"
+import { formCalendarEventSchema } from "./utils/calendarValidation"
+import { CalendarEventFormData } from "./lib"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
-import TextWithLinks from "./TextWithLinks"
 import MarkdownContent from "./MarkdownContent"
 import ConfirmButton from "./ConfirmButton"
 import { useAuth, useData } from "./context/providers"

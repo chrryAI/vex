@@ -100,7 +100,7 @@ export async function collaboration({
   const collaborateInput = page1.getByTestId("chat-collaborate-input")
   expect(collaborateInput).toBeVisible()
 
-  await collaborateInput.fill(isLive ? VEX_TEST_EMAIL_4 : VEX_TEST_EMAIL)
+  await collaborateInput.fill(VEX_TEST_EMAIL)
 
   const collaborateAddButton = page1.getByTestId("chat-collaborate-add-button")
   await collaborateAddButton.click()

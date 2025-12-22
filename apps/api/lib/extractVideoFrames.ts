@@ -45,9 +45,9 @@ async function extractVideoFrames(
         "-i",
         inputPath,
         "-vf",
-        "fps=1/3,scale=512:512:force_original_aspect_ratio=decrease", // Extract 1 frame every 3 seconds, resize to 512x512
+        "fps=1/2,scale=512:512:force_original_aspect_ratio=decrease", // Extract 1 frame every 2 seconds, resize to 512x512
         "-frames:v",
-        "5",
+        "10", // Increased from 5 to 10 frames for better analysis
         "-q:v",
         "8", // Lower quality (higher number = lower quality)
         outputPattern,
@@ -72,9 +72,9 @@ async function extractVideoFrames(
           return
         }
 
-        // Read extracted frames
+        // Read extracted frames (now up to 10)
         const frames: string[] = []
-        for (let i = 1; i <= 5; i++) {
+        for (let i = 1; i <= 10; i++) {
           const framePath = outputPattern.replace("%d", i.toString())
           if (existsSync(framePath)) {
             const frameBuffer = require("fs").readFileSync(framePath)

@@ -2,9 +2,9 @@ import { useCallback } from "react"
 import type React from "react"
 import { useAppContext } from "../context/AppContext"
 import { app, appWithStore } from "../types"
-import { reorderApps } from "../lib"
 import { toast } from "react-hot-toast"
 import { useAuth, useData } from "../context/providers"
+import console from "../utils/log"
 
 interface UseAppReorderProps {
   apps: appWithStore[]

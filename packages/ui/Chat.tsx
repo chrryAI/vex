@@ -195,7 +195,7 @@ export default function Chat({
   thread?: thread
   onTyping?: (isTyping: boolean) => void
 }): React.ReactElement {
-  const { t } = useAppContext()
+  const { t, console } = useAppContext()
   const { weather, actions } = useData()
 
   const styles = useChatStyles()
@@ -994,16 +994,6 @@ export default function Chat({
     },
   )
 
-  // const {
-  //   data: quotaData,
-  //   isLoading: isFetchingQuotaInfo,
-  //   refetch: refetchQuotaInfo,
-  // } = useSSR({
-  //   queryKey: ["quotaInfo"],
-  //   queryFn: () => fetchQuotaInfo(),
-  //   enabled: false,
-  // })
-
   const [artifacts, setArtifacts] = useState<File[]>([])
   const [instructionsIndex, setInstructionsIndex] = useState(0)
 
@@ -1671,7 +1661,7 @@ export default function Chat({
 
     try {
       let postRequestBody: FormData | string
-      let postRequestHeaders: Record<string, string> = {
+      const postRequestHeaders: Record<string, string> = {
         Authorization: `Bearer ${token}`,
       }
       if (artifacts && artifacts.length > 0) {
@@ -1807,7 +1797,7 @@ export default function Chat({
 
       // Prepare request data - use FormData if files are present, JSON otherwise
       let requestBody: FormData | string
-      let requestHeaders: Record<string, string> = {
+      const requestHeaders: Record<string, string> = {
         Authorization: `Bearer ${token}`,
       }
 
@@ -2194,8 +2184,8 @@ export default function Chat({
 
   // Memoize deps to prevent reconnection loop
   const webSocketDeps = useMemo(
-    () => [isSpeechActive, app?.id],
-    [isSpeechActive, app?.id],
+    () => [isSpeechActive, app?.id, deviceId],
+    [isSpeechActive, app?.id, deviceId],
   )
 
   useWebSocket<{
@@ -2224,10 +2214,10 @@ export default function Chat({
 
       if (!token) return
 
-      const clientId = data?.clientId
+      const mClientId = data?.clientId
 
       if (
-        data?.message &&
+        data?.message?.aiAgent &&
         isOwner(data.message.message, {
           userId: user?.id,
           guestId: guest?.id,
@@ -2239,7 +2229,7 @@ export default function Chat({
       }
 
       const chunk = data?.chunk
-      if (type === "stream_update" && chunk && clientId && data.message) {
+      if (type === "stream_update" && chunk && mClientId && data.message) {
         if (isSpeechActive && os !== "ios") {
           return
         }
@@ -2260,7 +2250,7 @@ export default function Chat({
           const cleanContent = stripActionText(streamContentRef.current, chunk)
           onStreamingUpdate?.({
             content: cleanContent,
-            clientId,
+            clientId: mClientId,
             aiAgent: data.message?.aiAgent,
             isWebSearchEnabled,
             isImageGenerationEnabled,
@@ -3905,7 +3895,7 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             ...styles.debateAgentButton.style,
-                            ...(!!app?.onlyAgent
+                            ...(app?.onlyAgent
                               ? styles.debateAgentButtonDisabled
                               : {}),
                           }}
@@ -3954,7 +3944,7 @@ export default function Chat({
                             style={{
                               ...utilities.link.style,
                               ...styles.debateAgentButton.style,
-                              ...(!!app?.onlyAgent
+                              ...(app?.onlyAgent
                                 ? styles.debateAgentButtonDisabled
                                 : {}),
                             }}

@@ -1,5 +1,6 @@
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
+import console from "./utils/log"
 
 import en from "./locales/en.json"
 import ja from "./locales/ja.json"
@@ -15,7 +16,6 @@ import tr from "./locales/tr.json"
 import { locales, locale, LANGUAGES } from "./locales"
 import { storage } from "./platform/storage"
 import { getCookieSync } from "./platform/cookies"
-import { BrowserInstance } from "./utils"
 
 // Cross-platform function to get locale from URL
 const getLocaleFromUrl = (): string | null => {

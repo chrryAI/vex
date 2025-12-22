@@ -36,6 +36,7 @@ export const nextJsConfig = [
       ...pluginReact.configs.flat.recommended.languageOptions,
       globals: {
         ...globals.serviceworker,
+        ...globals.node,
       },
     },
   },

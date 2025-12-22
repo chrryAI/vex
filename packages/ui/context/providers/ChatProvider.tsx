@@ -7,18 +7,15 @@ import React, {
   useState,
   useEffect,
   useRef,
-  useMemo,
 } from "react"
 import { useAuth } from "./AuthProvider"
 import { useData } from "./DataProvider"
 import {
   aiAgent,
   thread,
-  session,
   app,
   collaboration,
   user,
-  characterProfile,
   guest,
   message,
   messages,
@@ -28,9 +25,7 @@ import {
 
 import { pageSizes, isOwner } from "../../utils"
 import { hasThreadNotification } from "../../utils/hasThreadNotification"
-import { getThreadId } from "../../utils/url"
 import {
-  toast,
   useLocalStorage,
   useNavigation,
   usePlatform,
@@ -41,7 +36,6 @@ import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
 import { useError } from "./ErrorProvider"
-import { t } from "i18next"
 interface placeHolder {
   // TODO: Define placeHolder type
   [key: string]: any
@@ -219,7 +213,7 @@ export function ChatProvider({
 
   const { isExtension, isMobile } = usePlatform()
 
-  const [shouldFetchThreads, setShouldFetchThreads] = useState(!threads)
+  const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
   let userNameByUrl: string | undefined = undefined
 
@@ -499,16 +493,12 @@ export function ChatProvider({
       if (type === "suggestions_generated") {
         if (user) {
           const updatedUser = await actions.getUser()
-
           setUser(updatedUser)
         }
-
         if (guest) {
           const updatedGuest = await actions.getGuest()
-
           setGuest(updatedGuest)
         }
-
         await mutate()
       }
       if (
@@ -1012,7 +1002,13 @@ export function ChatProvider({
       if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
 
-      !isDebating && setMessages(serverMessages.messages)
+      if (
+        !isDebating &&
+        (messages?.[0]?.message?.threadId !== threadId ||
+          serverMessages.messages.length !== messages.length)
+      ) {
+        setMessages(serverMessages.messages)
+      }
 
       setNextPage(threadData.messages.nextPage)
       setThread(threadData.thread)
@@ -1050,6 +1046,7 @@ export function ChatProvider({
     isDrawerOpen,
     isChatFloating,
     threadId,
+    messages,
   ])
 
   return (

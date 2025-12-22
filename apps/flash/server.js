@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.7.47"
+const VERSION = "1.7.77"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -72,8 +72,8 @@ const limiter = rateLimit({
         // Invalid token, fall back to IP
       }
     }
-    // Guest or no token - use IP
-    return `ip:${req.ip}`
+    // Guest or no token - use IP (req.ip is already normalized by express)
+    return req.ip
   },
   // Skip rate limiting for certain paths
   skip: (req) => {
@@ -102,8 +102,57 @@ if (!isProduction) {
 } else {
   const compression = (await import("compression")).default
   const sirv = (await import("sirv")).default
-  app.use(compression())
-  app.use(base, sirv("./dist/client", { extensions: [] }))
+
+  // Enhanced compression with better settings
+  app.use(
+    compression({
+      level: 6, // Balance between speed and compression ratio
+      threshold: 1024, // Only compress responses > 1KB
+      filter: (req, res) => {
+        // Don't compress if client doesn't support it
+        if (req.headers["x-no-compression"]) {
+          return false
+        }
+        // Compress all text-based content
+        return compression.filter(req, res)
+      },
+    }),
+  )
+
+  // Add cache headers for static assets
+  app.use((req, res, next) => {
+    // Cache static assets aggressively
+    if (
+      req.path.match(
+        /\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|avif)$/,
+      )
+    ) {
+      // 1 year cache for hashed assets
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable")
+      res.setHeader("Expires", new Date(Date.now() + 31536000000).toUTCString())
+    } else if (req.path.startsWith("/assets/")) {
+      // 1 year for anything in /assets/ (Vite adds hashes)
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable")
+      res.setHeader("Expires", new Date(Date.now() + 31536000000).toUTCString())
+    } else if (req.path === "/" || req.path.endsWith(".html")) {
+      // No cache for HTML to ensure fresh content
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate")
+      res.setHeader("Pragma", "no-cache")
+      res.setHeader("Expires", "0")
+    }
+    next()
+  })
+
+  app.use(
+    base,
+    sirv("./dist/client", {
+      extensions: [],
+      maxAge: 31536000, // 1 year in seconds
+      immutable: true,
+      gzip: true, // Serve pre-compressed .gz files if available
+      brotli: true, // Serve pre-compressed .br files if available
+    }),
+  )
 }
 
 // Build ID is set at build time (GIT_SHA) or runtime fallback
@@ -244,14 +293,35 @@ function metadataToHtml(metadata, serverData) {
     })
   }
 
-  // Apple Touch Icons - use resize endpoint for proper sizing
-  // Get the base icon from metadata or use app slug
-  const appSlug = serverData?.app?.slug || "chrry"
-  const baseIcon =
-    metadata.openGraph?.images?.[0]?.url || `/images/apps/${appSlug}.png`
-  console.log(`🍎 Apple touch icon base:`, baseIcon, `(app: ${appSlug})`)
+  // Favicon and Apple Touch Icons - use hostname for white-label detection
+  // Use serverData.siteConfig which is already available from server-loader
+  const iconSlug =
+    serverData?.siteConfig?.storeSlug === "compass"
+      ? "atlas"
+      : serverData?.siteConfig?.slug || serverData?.app?.slug || "chrry"
+  const baseIcon = `/images/apps/${iconSlug}.png`
   const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
-  const appleIcon180 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=180&h=180&fit=contain&q=100`
+
+  // Regular favicons at different sizes using resize endpoint
+  // Request 3x density (e.g. 48px for 16px icon) for Super Retina displays
+  // Force PNG format for strict browser compatibility
+  const favicon16 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=48&h=48&fit=contain&q=100&fmt=png`
+  const favicon32 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=96&h=96&fit=contain&q=100&fmt=png`
+  const favicon48 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=144&h=144&fit=contain&q=100&fmt=png`
+
+  tags.push(
+    `<link rel="icon" type="image/png" sizes="16x16" href="${favicon16}" />`,
+  )
+  tags.push(
+    `<link rel="icon" type="image/png" sizes="32x32" href="${favicon32}" />`,
+  )
+  tags.push(
+    `<link rel="icon" type="image/png" sizes="48x48" href="${favicon48}" />`,
+  )
+  tags.push(`<link rel="shortcut icon" href="${favicon32}" />`)
+
+  // Apple Touch Icon - same image source, resized to 180x180 (already high density)
+  const appleIcon180 = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=180&h=180&fit=contain&q=100&fmt=png`
 
   tags.push(`<link rel="apple-touch-icon" href="${appleIcon180}" />`)
   tags.push(

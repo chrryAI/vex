@@ -1,4 +1,5 @@
 import { FRONTEND_URL } from ".."
+import console from "../../utils/log"
 
 const registerServiceWorker =
   async (): Promise<ServiceWorkerRegistration | null> => {
@@ -81,7 +82,7 @@ export const subscribeToPushNotifications = async (
         (await registration.pushManager.getSubscription()) ||
         (await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
+          applicationServerKey: urlBase64ToUint8Array(publicVapidKey) as any,
         }))
       console.log("User is subscribed:", subscription)
       return subscription
@@ -115,7 +116,8 @@ const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i)
   }
-  return outputArray
+  // Ensure the buffer is explicitly typed as ArrayBuffer, not ArrayBufferLike
+  return new Uint8Array(outputArray.buffer as ArrayBuffer)
 }
 
 export default registerServiceWorker

@@ -13,6 +13,7 @@ import { mergeStyles } from "./styleMapper"
 import { parseClassName } from "../utils/parseClassName"
 import { extractUtilityClassNames } from "../utils/extractUtilityClassNames"
 import { sanitizeStyleForDOM } from "../utils/sanitizeStyleForDOM"
+import console from "../utils/log"
 
 // ============================================
 // TYPE DEFINITIONS

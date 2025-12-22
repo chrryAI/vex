@@ -1,5 +1,3 @@
-import { UtilsStyleDefs } from "../utils.styles"
-
 /**
  * Extract utility class names from a merged style object
  * Detects which utilities were spread by checking for their unique properties

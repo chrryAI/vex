@@ -4,19 +4,18 @@ import React, { useEffect } from "react"
 import Skeleton from "../Skeleton"
 import { COLORS, useAppContext } from "../context/AppContext"
 import { BrowserInstance, checkIsExtension } from "../utils"
-import {
-  BadgeCheck,
-  CircleArrowLeft,
-  Coins,
-  Shell,
-  UserRoundPlus,
-} from "../icons"
-import { RiNextjsFill } from "react-icons/ri"
+import { BadgeCheck, CircleArrowLeft, Shell, UserRoundPlus } from "../icons"
 import { BiLogoPostgresql } from "react-icons/bi"
 
-import { SiCssmodules, SiJest, SiDrizzle, SiTypescript } from "react-icons/si"
+import {
+  SiCssmodules,
+  SiJest,
+  SiTypescript,
+  SiBun,
+  SiHono,
+  SiVite,
+} from "react-icons/si"
 import { FaChrome } from "react-icons/fa"
-import clsx from "clsx"
 import Logo from "../Logo"
 import Img from "../Image"
 import { getFeatures } from "../utils/subscription"
@@ -36,7 +35,6 @@ import {
   P,
   Section,
   Span,
-  useNavigation,
   usePlatform,
   useTheme,
   Video,
@@ -460,7 +458,7 @@ export default function About() {
             ...styles.ossWrapper.style,
           }}
         >
-          <H2>{t("Open Source")}</H2>
+          <H2>🥰 {t("Open Source")}</H2>
           <Div
             style={{
               ...styles.ossContainer.style,
@@ -471,7 +469,10 @@ export default function About() {
             }}
           >
             <Div style={styles.oss.style}>
-              <SiTypescript style={{ width: 40, height: 40 }} />
+              <SiTypescript
+                color="var(--foreground)"
+                style={{ width: 40, height: 40 }}
+              />
               <A
                 href="https://www.typescriptlang.org"
                 target="_blank"
@@ -482,14 +483,36 @@ export default function About() {
               </A>
             </Div>
             <Div style={styles.oss.style}>
-              <RiNextjsFill style={{ width: 40, height: 40 }} />
               <A
-                href="https://nextjs.org"
+                href="https://bun.sh"
                 target="_blank"
                 rel="nofollow"
                 style={styles.ossLink.style}
               >
-                Next.js
+                <SiBun color="var(--foreground)" size={40} />
+                Bun
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
+              <A
+                href="https://hono.dev"
+                target="_blank"
+                rel="nofollow"
+                style={styles.ossLink.style}
+              >
+                <SiHono color="var(--foreground)" size={40} />
+                Hono
+              </A>
+            </Div>
+            <Div style={styles.oss.style}>
+              <A
+                href="https://vitejs.dev"
+                target="_blank"
+                rel="nofollow"
+                style={styles.ossLink.style}
+              >
+                <SiVite color="var(--foreground)" size={40} />
+                Vite
               </A>
             </Div>
             <Div style={styles.oss.style}>
@@ -503,17 +526,6 @@ export default function About() {
                 PostgreSQL
               </A>
             </Div>
-            <Div style={styles.oss.style}>
-              <DeepSeek color={COLORS.purple} size={40} />
-              <A
-                href="https://www.deepseek.com"
-                target="_blank"
-                rel="nofollow"
-                style={styles.ossLink.style}
-              >
-                DeepSeek
-              </A>
-            </Div>
           </Div>
 
           <Div
@@ -524,6 +536,17 @@ export default function About() {
                 : styles.ossContainerDesktop.style),
             }}
           >
+            <Div style={styles.oss.style}>
+              <DeepSeek color={COLORS.purple} size={40} />
+              <A
+                href="https://www.deepseek.com"
+                target="_blank"
+                rel="nofollow"
+                style={{ ...styles.ossLink.style, color: COLORS.purple }}
+              >
+                DeepSeek
+              </A>
+            </Div>
             <Div style={styles.oss.style}>
               <SiJest style={{ width: 40, height: 40 }} />
               <A
@@ -583,12 +606,12 @@ export default function About() {
             <Div style={styles.oss.style}>
               <Claude color={COLORS.orange} size={40} />
               <A
-                href="https://claude.ai"
+                href="https://claude.com/product/claude-code"
                 target="_blank"
                 rel="nofollow"
-                style={styles.ossLink.style}
+                style={{ ...styles.ossLink.style, color: COLORS.orange }}
               >
-                Claude
+                Claude Code
               </A>
             </Div>
           </Div>

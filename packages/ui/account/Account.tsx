@@ -24,16 +24,9 @@ import {
   useError,
   useData,
 } from "../context/providers"
-import {
-  Button,
-  Div,
-  FilePicker,
-  Input,
-  usePlatform,
-  useTheme,
-} from "../platform"
+import { Button, Div, FilePicker, Input, useTheme } from "../platform"
 import { uploadUserImage } from "../lib"
-import Img from "../Img"
+import Img from "../Image"
 import CharacterProfiles from "../CharacterProfiles"
 import Checkbox from "../Checkbox"
 import { useAccountStyles } from "./Account.styles"
@@ -306,7 +299,8 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                         ...styles.userImageWrapper.style,
                       }}
                     >
-                      {user?.image ? (
+                      {user?.image &&
+                      !user?.image.includes("googleusercontent") ? (
                         <Img
                           style={styles.userImage.style}
                           src={user.image}
@@ -316,8 +310,8 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
                         />
                       ) : (
                         <Img
+                          icon="spaceInvader"
                           showLoading={false}
-                          src={`${FRONTEND_URL}/images/pacman/space-invader.png`}
                           alt="Space Invader"
                           width={40}
                           height={40}

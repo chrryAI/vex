@@ -14,20 +14,12 @@ import type { ReactElement, ReactNode } from "react"
 
 import { isSameDay, FRONTEND_URL, apiFetch, API_URL } from "../utils"
 import { device, mood, timer } from "../types"
+import console from "../utils/log"
 
 import useSWR from "swr"
 import { useWebSocket } from "../hooks/useWebSocket"
 import { useAuth } from "./providers"
-import {
-  useLocalStorage,
-  usePlatform,
-  useTheme,
-  Input,
-  Text,
-  Box,
-  FilePicker,
-  Audio,
-} from "../platform"
+import { useLocalStorage, usePlatform, useTheme, Audio } from "../platform"
 
 export const STORAGE_SELECTED_TASKS_KEY = "selectedTasks"
 
@@ -466,7 +458,7 @@ export function TimerContextProvider({
     timer?.count || 0,
   )
   const timerRef = useRef<any | null>(null)
-  const isTimerEndingRef = useRef<Boolean>(false)
+  const isTimerEndingRef = useRef<boolean>(false)
   const adjustIntervalRef = useRef<number | null>(null)
   const lastVisibilityUpdateRef = useRef<number>(0)
   const hasRestoredTimerRef = useRef<boolean>(false)

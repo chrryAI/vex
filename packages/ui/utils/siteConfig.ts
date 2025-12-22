@@ -1,3 +1,4 @@
+// Removed imports to avoid circular dependencies during Vite config loading
 export type SiteMode =
   | "chrryDev"
   | "vex"
@@ -12,6 +13,8 @@ export type SiteMode =
   | "popcorn"
   | "zarathustra"
   | "search"
+  | "sushi"
+  | "e2eVex"
 
 // Function declaration is hoisted, so it's available before const declarations
 function getEnv() {
@@ -193,7 +196,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.62",
+  version: "26.10.64",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -825,6 +828,56 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
+const sushi = {
+  url: "https://sushi.chrry.ai",
+  mode: "sushi" as SiteMode,
+  slug: "sushi",
+  favicon: "sushi",
+  storeSlug: "sushiStore",
+  name: "Sushi",
+  isStoreApp: true,
+  domain: "sushi.chrry.ai",
+  store: "https://sushi.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "AI-powered code editor",
+  logo: "🤖",
+  primaryColor: "#6366F1", // Indigo
+  links: {
+    github: "https://github.com/chrryAI/chrry",
+    docs: "https://sushi.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Code Editor",
+      description: "AI-powered code editor",
+      icon: "🤖",
+      link: "/code",
+      isOpenSource: false,
+    },
+    {
+      title: "AI Agents",
+      description: "Custom AI agents for any task",
+      icon: "🤖",
+      link: "/code",
+      isOpenSource: false,
+    },
+    {
+      title: "Collaboration",
+      description: "Real-time AI collaboration",
+      icon: "👥",
+      link: "/threads",
+      isOpenSource: false,
+    },
+    {
+      title: "Browser Extension",
+      description: "AI assistant in your browser",
+      icon: "🔌",
+      link: "https://chrome.google.com/webstore",
+      isOpenSource: false,
+    },
+  ],
+}
+
 export interface SiteConfig {
   mode: SiteMode
   slug: string
@@ -1288,6 +1341,19 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Amsterdam ve Hollanda için tasarlanmış kişisel yapay zeka asistanınız. Felemenkçe sohbet edin, yerel olarak işbirliği yapın ve işleri daha hızlı halledin.",
     },
   },
+  sushi: {
+    en: {
+      title: "Sushi - AI Code Editor",
+      description:
+        "AI-powered code editor directly in your browser. Edit code, run terminals, and collaborate with AI.",
+    },
+  },
+  e2eVex: {
+    en: {
+      title: "Vex - E2E Testing",
+      description: "E2E Testing Environment for Vex.",
+    },
+  },
   tokyo: {
     en: {
       title: "Tokyo - AI Assistant for Japan",
@@ -1562,12 +1628,51 @@ export function getSiteTranslation(
   return catalog[locale] ?? catalog.en
 }
 
+const getExtensionUrl = () => {
+  if (typeof window === "undefined") return
+  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL("index.html") // Chrome
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.getURL) {
+    return (browser as any).runtime.getURL("index.html") // Firefox
+  }
+  return `${window.location.origin}/index.html` // Fallback
+}
+
+const checkIsExtension = () => {
+  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
+    return true
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
+    return true
+  }
+  return false
+}
+
+const isProduction =
+  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+
+const isDevelopment = checkIsExtension()
+  ? [
+      "jnngfghgbmieehkfebkogjjiepomakdh",
+      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
+    ].some((id) => getExtensionUrl()?.includes(id)) ||
+    // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
+    // Packed extensions from store have mixed case IDs
+    Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
+  : !isProduction
+
 export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const defaultMode =
-    (getEnv().VITE_SITE_MODE as SiteMode) || mode || ("search" as SiteMode)
+  // Inline isDevelopment check to avoid circular dependency
+
+  const defaultMode = isDevelopment
+    ? ("sushi" as SiteMode)
+    : isE2E
+      ? "e2eVex"
+      : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -1585,11 +1690,23 @@ export function detectSiteModeDomain(
     }
   }
 
-  if (!host) {
+  if (!host || isDevelopment) {
     return defaultMode
   }
 
   // Helper function to check if hostname matches or is subdomain of domain
+
+  // Check if running in a browser extension
+  if (
+    typeof window !== "undefined" &&
+    window.location?.protocol?.startsWith("chrome-extension")
+  ) {
+    console.log(
+      "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
+      defaultMode,
+    )
+    return defaultMode
+  }
 
   // Domain-based detection (use exact match or subdomain check)
   console.log(`🔍 Detecting mode for host: "${host}"`)
@@ -1623,7 +1740,7 @@ export function detectSiteModeDomain(
 
   // E2E testing environment
   if (matchesDomain(host, "e2e.chrry.ai")) {
-    return "vex" // Use vex mode for E2E
+    return "e2eVex" // Use vex mode for E2E
   }
 
   if (matchesDomain(host, "vex.chrry.ai")) {
@@ -1647,6 +1764,10 @@ export function detectSiteModeDomain(
   // Store domains
   if (matchesDomain(host, "chrry.store")) {
     return "chrryStore"
+  }
+
+  if (matchesDomain(host, "sushi.chrry.ai")) {
+    return "sushi"
   }
 
   // City subdomains
@@ -1674,6 +1795,8 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "popcorn",
     "zarathustra",
     "search",
+    "sushi",
+    "e2eVex",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -1682,7 +1805,9 @@ export function detectSiteMode(hostname?: string): SiteMode {
   }
 
   // Otherwise, detect from domain (e.g., "atlas.chrry.ai" -> "atlas")
-  return detectSiteModeDomain(hostname)
+  const result = detectSiteModeDomain(hostname)
+  // console.log("🚀 ~ detectSiteMode ~ result:", result)
+  return result
 }
 
 const getClientHostname = () => {
@@ -1710,7 +1835,11 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   }
   const mode = detectSiteMode(hostname)
 
-  if (isE2E) {
+  if (mode === "sushi") {
+    return sushi
+  }
+
+  if (!isDevelopment && isE2E) {
     return e2eVex
   }
 
@@ -1768,6 +1897,14 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Zarathustra configuration
   if (mode === "zarathustra") {
     return zarathustra
+  }
+
+  if (mode === "e2eVex") {
+    return e2eVex
+  }
+
+  if (isE2E) {
+    return e2eVex
   }
 
   // Search configuration

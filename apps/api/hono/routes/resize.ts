@@ -66,60 +66,52 @@ resize.get("/", async (c) => {
       `📐 Original image: ${metadata.width}x${metadata.height}, requested: ${width}x${height}`,
     )
 
-    // Step 1: Process the image content (resize if needed, but never upscale)
-    // withoutEnlargement prevents 500px image from stretching to 512px
-    console.log(
-      `🎯 Processing ${metadata.width}x${metadata.height} image for ${width}x${height} canvas (fit: ${fit})`,
-    )
-
+    // Standard high-quality resize
+    // Now that we request 2x density (e.g. 96px for 48px icon),
+    // standard Lanczos3 is perfect and avoids over-processing artifacts
     const processedBuffer = await sharp(buffer)
       .resize({
         width,
         height,
-        fit, // respects 'cover' vs 'contain' logic for downscaling
-        withoutEnlargement: true, // Prevents upscaling - 500x500 stays 500x500
+        fit,
+        withoutEnlargement: true,
         background: { r: 255, g: 255, b: 255, alpha: 0 },
+        kernel: sharp.kernel.lanczos3,
       })
       .toBuffer()
 
-    // Step 2: Create fixed-size transparent canvas and center the image
-    // This ensures output is always exactly width x height (e.g. 512x512)
-    console.log(`🎨 Creating ${width}x${height} canvas and centering image`)
+    // Determine output format (default to webp for best quality/size)
+    const format = c.req.query("fmt") === "png" ? "png" : "webp"
 
-    const resizedBuffer = await sharp({
-      create: {
-        width,
-        height,
-        channels: 4,
-        background: { r: 255, g: 255, b: 255, alpha: 0 }, // Transparent canvas
-      },
-    })
-      .composite([
-        {
-          input: processedBuffer,
-          gravity: "center", // Centers the image on the canvas
-        },
-      ])
-      .png({ quality, compressionLevel: 9 })
-      .toBuffer()
+    let resizedBuffer: Buffer
+    if (format === "png") {
+      resizedBuffer = await sharp(processedBuffer)
+        .png({ quality, compressionLevel: 9 })
+        .toBuffer()
+    } else {
+      resizedBuffer = await sharp(processedBuffer)
+        .webp({ quality: 95, lossless: false, nearLossless: false })
+        .toBuffer()
+    }
 
     console.log(
-      `✅ Image resized: ${buffer.length} → ${resizedBuffer.length} bytes`,
+      `✅ Image resized (${format}): ${buffer.length} → ${resizedBuffer.length} bytes`,
     )
 
     // Convert to base64 for upload
     const base64 = resizedBuffer.toString("base64")
 
     // Generate unique ID for this resized image
+    // v6: Added format support
     const hash = crypto
       .createHash("md5")
-      .update(`${url}-${width}x${height}`)
+      .update(`v6-${url}-${width}x${height}-${format}`)
       .digest("hex")
 
     // Upload to MinIO
     const uploadResult = await upload({
-      url: `data:image/png;base64,${base64}`,
-      messageId: `icon-${hash}`,
+      url: `data:image/${format};base64,${base64}`,
+      messageId: `icon-${hash}.${format}`,
       options: {
         width,
         height,
@@ -130,6 +122,11 @@ resize.get("/", async (c) => {
     })
 
     console.log(`✅ Uploaded to MinIO: ${uploadResult.url}`)
+
+    // Set aggressive cache headers since MinIO URLs are permanent
+    // The MD5 hash ensures unique URLs for different sizes/images
+    c.header("Cache-Control", "public, max-age=31536000, immutable")
+    c.header("Expires", new Date(Date.now() + 31536000000).toUTCString())
 
     // Redirect to the MinIO URL
     return c.redirect(uploadResult.url, 301)

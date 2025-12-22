@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
-import { BrowserInstance, checkIsExtension, WS_URL } from "../utils"
-import { useAppContext } from "../context/AppContext"
+import { WS_URL } from "../utils"
 import { useOnlineStatus } from "./useOnlineStatus"
+import console from "../utils/log"
 
 // websocketManager.ts
 type Handler<T> = (data: T) => void
@@ -462,6 +462,12 @@ export const useWebSocket = <T extends { type: string }>({
 
     const base = WS_URL
     const wsUrl = `${base}?token=${encodeURIComponent(token)}&deviceId=${encodeURIComponent(deviceId)}`
+
+    // Only connect if not already connected to this URL
+    // if (wsManager.isConnected() && wsManager["currentUrl"] === wsUrl) {
+    //   console.log("✅ Already connected to", wsUrl, "- skipping reconnect")
+    //   return
+    // }
 
     wsManager.connect(wsUrl, {
       onConnect: () => {

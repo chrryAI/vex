@@ -3,10 +3,8 @@ import { getMember, getGuest } from "../lib/auth"
 import {
   createCollaboration,
   getCollaboration,
-  getCollaborations,
   getThread,
   getUser,
-  updateThread,
   updateCollaboration,
   deleteCollaboration,
 } from "@repo/db"

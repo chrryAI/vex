@@ -8,19 +8,16 @@ import {
   getSubscriptions,
   getThreads,
   getUser,
-  updateGuest,
   updateThread,
   TEST_MEMBER_EMAILS,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_FINGERPRINTS,
   user,
   guest,
+  deleteGuest,
   updateUser,
 } from "@repo/db"
-import {
-  GUEST_CREDITS_PER_MONTH,
-  MEMBER_CREDITS_PER_MONTH,
-} from "@repo/db/src/schema"
+import { MEMBER_CREDITS_PER_MONTH } from "@repo/db/src/schema"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
   TEST_MEMBER_FINGERPRINTS,
@@ -124,18 +121,13 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   )
 
   user &&
-    updateUser({
+    (await updateUser({
       ...user,
       credits: MEMBER_CREDITS_PER_MONTH,
       subscribedOn: null,
       migratedFromGuest: false,
-    })
+      fingerprint: null,
+    }))
 
-  guest &&
-    updateGuest({
-      ...guest,
-      credits: GUEST_CREDITS_PER_MONTH,
-      subscribedOn: null,
-      migratedToUser: false,
-    })
+  guest && (await deleteGuest({ id: guest.id }))
 }

@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 // import styles from "./Weather.module.scss"
-import { useAppContext } from "./context/AppContext"
 import {
   Sun,
   CloudSun,
@@ -27,7 +26,6 @@ import { apiFetch } from "./utils"
 import countries from "i18n-iso-countries"
 import enLocale from "i18n-iso-countries/langs/en.json"
 import { selectStyles } from "./selectStyles"
-import { updateGuest, updateUser } from "./lib"
 import { toast } from "react-hot-toast"
 import { useAuth, useData } from "./context/providers"
 import { useWeatherStyles } from "./Weather.styles"
