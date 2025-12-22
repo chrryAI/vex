@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from "react"
-import { Modal as RNModal, StyleSheet } from "react-native"
+import { Modal as RNModal } from "react-native"
 import { CircleX } from "./icons"
 import { useAuth } from "./context/providers"
 import {

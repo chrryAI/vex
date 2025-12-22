@@ -3,7 +3,7 @@
  * Uses platform storage (localStorage on web, MMKV on native)
  */
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { storage } from "./storage"
 
 export function useLocalStorage<T>(

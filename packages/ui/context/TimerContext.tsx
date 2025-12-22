@@ -19,16 +19,7 @@ import console from "../utils/log"
 import useSWR from "swr"
 import { useWebSocket } from "../hooks/useWebSocket"
 import { useAuth } from "./providers"
-import {
-  useLocalStorage,
-  usePlatform,
-  useTheme,
-  Input,
-  Text,
-  Box,
-  FilePicker,
-  Audio,
-} from "../platform"
+import { useLocalStorage, usePlatform, useTheme, Audio } from "../platform"
 
 export const STORAGE_SELECTED_TASKS_KEY = "selectedTasks"
 

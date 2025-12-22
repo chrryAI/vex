@@ -82,7 +82,7 @@ export const subscribeToPushNotifications = async (
         (await registration.pushManager.getSubscription()) ||
         (await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
+          applicationServerKey: urlBase64ToUint8Array(publicVapidKey) as any,
         }))
       console.log("User is subscribed:", subscription)
       return subscription

@@ -1,6 +1,6 @@
 "use client"
 
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import React, { useState, useRef, useEffect } from "react"
 import { useHasHydrated } from "./hooks"
 import {
@@ -11,14 +11,10 @@ import {
   CirclePlay,
   CircleX,
   GripVertical,
-  Moon,
-  Pencil,
   SettingsIcon,
-  Sun,
   CircleCheck,
   Circle,
   Bird,
-  SmilePlus,
   Repeat,
   CloudDownload,
   Trash2,
@@ -28,7 +24,6 @@ import { FaDiscord } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"
 
 import { toast } from "react-hot-toast"
-import clsx from "clsx"
 import {
   Button,
   Div,
@@ -43,7 +38,6 @@ import {
   GUEST_TASKS_COUNT,
   PLUS_TASKS_COUNT,
   FRONTEND_URL,
-  VERSION,
   API_URL,
   apiFetch,
 } from "./utils"

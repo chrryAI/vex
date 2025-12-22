@@ -20,6 +20,8 @@ RUN NODE_ENV= pnpm install --frozen-lockfile
 
 # Build the source code
 FROM base AS builder
+# Install build dependencies for native modules
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install pnpm

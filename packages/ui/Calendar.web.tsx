@@ -41,12 +41,7 @@ import {
 import EventModal from "./EventModal"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { modalData } from "./EventModal"
-import {
-  CalendarEventFormData,
-  getCalendarEvents,
-  updateCalendarEvent,
-  syncGoogleCalendar,
-} from "./lib"
+import { CalendarEventFormData } from "./lib"
 import Loading from "./Loading"
 import toast from "react-hot-toast"
 import { useAuth, useData, useNavigationContext } from "./context/providers"

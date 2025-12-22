@@ -4,13 +4,7 @@ import slugify from "slug"
 import { upload } from "../../lib/minio"
 import { processFileForRAG } from "./ragService"
 // Note: getMember/getGuest are passed as parameters, not imported
-import {
-  getMessages,
-  thread,
-  updateMessage,
-  updateThread,
-  createMessage,
-} from "@repo/db"
+import { getMessages, thread, updateThread, createMessage } from "@repo/db"
 import { extractPDFText } from "../../lib"
 import { v4 as uuidv4 } from "uuid"
 import { isE2E } from "@chrryai/chrry/utils"

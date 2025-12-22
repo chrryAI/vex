@@ -1,5 +1,4 @@
 // packages/ui/src/hooks/useUnifiedStyles.ts
-import React from "react"
 import { useClsx } from "../platform/clsx"
 import { UnifiedStyles } from "../styles/createUnifiedStyles"
 

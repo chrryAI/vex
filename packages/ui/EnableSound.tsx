@@ -1,5 +1,4 @@
 import React from "react"
-import { useAppContext } from "./context/AppContext"
 import { Volume2, VolumeX } from "./icons"
 import { Button, useTheme } from "./platform"
 export default function EnableSound() {

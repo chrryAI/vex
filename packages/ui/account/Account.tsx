@@ -24,14 +24,7 @@ import {
   useError,
   useData,
 } from "../context/providers"
-import {
-  Button,
-  Div,
-  FilePicker,
-  Input,
-  usePlatform,
-  useTheme,
-} from "../platform"
+import { Button, Div, FilePicker, Input, useTheme } from "../platform"
 import { uploadUserImage } from "../lib"
 import Img from "../Image"
 import CharacterProfiles from "../CharacterProfiles"

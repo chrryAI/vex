@@ -1,12 +1,12 @@
 "use client"
-import { app, appWithStore, store } from "./types"
+import { appWithStore, store } from "./types"
 import { PROD_FRONTEND_URL, FRONTEND_URL, API_URL } from "./utils"
 
 import React, { useEffect } from "react"
 import Img from "./Img"
-import { COLORS, useAppContext } from "./context/AppContext"
-import { usePlatform, Text } from "./platform"
-import { useApp, useData } from "./context/providers"
+import { COLORS } from "./context/AppContext"
+import { Text } from "./platform"
+import { useApp } from "./context/providers"
 import {
   DeepSeek,
   OpenAI,
@@ -15,8 +15,6 @@ import {
   Flux,
   Perplexity,
   Clapperboard,
-  Hand,
-  Shell,
 } from "./icons"
 import { getImageSrc } from "./lib"
 
@@ -137,6 +135,20 @@ export default function ImageComponent(props: ImageProps) {
     if (typeof height === "string") {
       return url
     }
+
+    // Skip resize for blob URLs, data URLs, and external URLs
+    const isBlob = url.startsWith("blob:")
+    const isDataUrl = url.startsWith("data:")
+    const isExternal =
+      url.startsWith("http") &&
+      !url.startsWith(FRONTEND_URL) &&
+      !url.startsWith(PROD_FRONTEND_URL) &&
+      !url.includes("minio.chrry.dev") // Allow MinIO URLs
+
+    if (isBlob || isDataUrl || isExternal) {
+      return url
+    }
+
     // Request 3x size for Super Retina displays to match "original" crispness
     // e.g. If rendering at 48px, request 144px image
     // Force PNG format to avoid any WebP compression artifacts

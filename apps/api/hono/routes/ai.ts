@@ -563,9 +563,9 @@ app.post("/", async (c) => {
         ...x.payload,
         data: {
           ...x.payload.data,
-          deviceId: x.payload.data?.deviceId ?? deviceId,
-          clientId: x.payload.data?.clientId ?? clientId,
-          streamId: x.payload.data?.streamId ?? streamId,
+          deviceId,
+          clientId,
+          streamId,
         },
       },
       c,

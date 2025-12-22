@@ -5,7 +5,6 @@
 
 import { locales as localesArray } from "../locales"
 import { getThreadId as getThreadIdFromUrl } from "./index"
-import { whiteLabels } from "./siteConfig"
 
 const baseProtectedRoutes = ["threads", "about", "privacy", "terms", "why", "u"]
 

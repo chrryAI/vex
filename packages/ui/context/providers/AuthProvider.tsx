@@ -17,7 +17,6 @@ import {
   useCookieOrLocalStorage,
   usePlatform,
   useLocalStorage,
-  getExtensionId,
   storage,
 } from "../../platform"
 import ago from "../../utils/timeAgo"
@@ -25,6 +24,7 @@ import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
 import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
+import { SiteConfig } from "../../utils/siteConfig"
 
 import {
   aiAgent,
@@ -75,6 +75,7 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      siteConfig: SiteConfig
       isManagingApp: boolean
       setIsManagingApp: (value: boolean) => void
       isRemovingApp: boolean
@@ -519,9 +520,14 @@ export function AuthProvider({
     if (!fingerprint) {
       const fp = uuidv4()
       setFingerprint(fp)
-      // setToken(fp)
     }
-  }, [fingerprint, token])
+  }, [fingerprint])
+
+  useEffect(() => {
+    if (!token && fingerprint) {
+      setToken(fingerprint)
+    }
+  }, [token, fingerprint])
   // setFingerprint/setToken are stable from useLocalStorage/useState
   const [versions, setVersions] = useState(
     session?.versions || {
@@ -1420,6 +1426,7 @@ export function AuthProvider({
   // app?.id removed from deps - use prevApp inside setState instead
 
   useEffect(() => {
+    if (!baseApp) return
     if (!storeApps.length || (!thread && threadId)) return
 
     // debugger
@@ -1782,6 +1789,7 @@ export function AuthProvider({
         FRONTEND_URL,
         PROD_FRONTEND_URL,
         findAppByPathname,
+        siteConfig,
         setBaseAccountApp,
         setApp,
         aiAgents,

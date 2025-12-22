@@ -5,7 +5,6 @@ import { mkdirSync, existsSync, writeFileSync } from "fs"
 import * as esbuild from "esbuild"
 import { viteStaticCopy } from "vite-plugin-static-copy"
 import type { PluginOption } from "vite"
-import { getSiteConfig } from "../../packages/ui/utils/siteConfig"
 
 function chromeExtensionPlugin(): PluginOption {
   return {
@@ -31,11 +30,14 @@ function chromeExtensionPlugin(): PluginOption {
   }
 }
 
-export default defineConfig(({ command, mode }) => {
+export default async ({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "")
   const isFirefox =
     env.VITE_BROWSER === "firefox" || process.env.VITE_BROWSER === "firefox"
   const isProduction = command === "build"
+
+  // Dynamically import getSiteConfig after env is loaded
+  const { getSiteConfig } = await import("@chrryai/chrry/utils/siteConfig")
 
   // Use MODE env var if set, otherwise use vite mode, otherwise default to vex
   const siteMode = process.env.MODE || mode || "vex"
@@ -56,10 +58,12 @@ export default defineConfig(({ command, mode }) => {
     const permissions = [
       `https://*.chrry.ai/*`,
       `https://chrry.dev/*`,
-      mode === "development" && "http://localhost:5173/*",
-      mode === "development" && "http://localhost:3001/*",
-      // Add other dev URLs if needed
-      // "http://localhost:3001/*"
+      // For sushi mode (browser), always include localhost for local API
+      ...(siteMode === "sushi"
+        ? ["http://localhost:5173/*", "http://localhost:3001/*"]
+        : mode === "development"
+          ? ["http://localhost:5173/*", "http://localhost:3001/*"]
+          : []),
     ]
 
     return permissions.filter(Boolean)
@@ -74,7 +78,7 @@ export default defineConfig(({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.7.66",
+    version: siteConfig.version || "1.7.77",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -115,6 +119,14 @@ export default defineConfig(({ command, mode }) => {
             default_path: "index.html",
           },
         }),
+    // Sushi specific override for New Tab
+    ...(siteConfig.slug === "sushi"
+      ? {
+          chrome_url_overrides: {
+            newtab: "index.html",
+          },
+        }
+      : {}),
   }
 
   // Add browser_specific_settings for Firefox
@@ -208,6 +220,14 @@ export default defineConfig(({ command, mode }) => {
           find: "chrry",
           replacement: path.resolve(__dirname, "../../packages/ui/index.ts"),
         },
+        // Map @chrryai/code to source (not built dist)
+        {
+          find: "@chrryai/code",
+          replacement: path.resolve(
+            __dirname,
+            "../../packages/code/src/index.ts",
+          ),
+        },
         // Stub Next.js modules (extension doesn't use Next.js)
         {
           find: "next/navigation",
@@ -251,6 +271,7 @@ export default defineConfig(({ command, mode }) => {
         },
       },
     },
+    base: "./", // CRITICAL: Chrome extensions need relative paths, not absolute
     build: {
       rollupOptions: {
         input: {
@@ -273,4 +294,4 @@ export default defineConfig(({ command, mode }) => {
       emptyOutDir: true,
     },
   }
-})
+}

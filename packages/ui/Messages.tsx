@@ -11,7 +11,7 @@ import type {
   threadSummary,
 } from "./types"
 import Message from "./Message"
-import { CircleX, Loader, Sparkles, VideoIcon } from "./icons"
+import { CircleX, Loader, Sparkles } from "./icons"
 import { useAppContext } from "./context/AppContext"
 import {
   useAuth,
