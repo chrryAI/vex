@@ -1666,10 +1666,10 @@ export function detectSiteModeDomain(
       // Packed extensions from store have mixed case IDs
       Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
     : !isProduction
-  const defaultMode = isE2E
-    ? "e2eVex"
-    : isDevelopment
-      ? ("sushi" as SiteMode)
+  const defaultMode = isDevelopment
+    ? ("sushi" as SiteMode)
+    : isE2E
+      ? "e2eVex"
       : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
 
   // Get hostname from parameter or window (client-side)
