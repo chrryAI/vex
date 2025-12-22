@@ -264,11 +264,15 @@ messages.post("/", async (c) => {
 
   // Scan files for malware
   console.log("🔍 Scanning files for malware...")
+  const fingerprint = member?.fingerprint || guest?.fingerprint
   for (const file of files) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const scanResult = await scanFileForMalware(buffer)
+    const scanResult = await scanFileForMalware(buffer, {
+      filename: file.name,
+      fingerprint,
+    })
 
     if (!scanResult.safe) {
       console.error(`🚨 Malware detected in ${file.name}: ${scanResult.threat}`)
