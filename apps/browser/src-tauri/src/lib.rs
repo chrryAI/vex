@@ -22,6 +22,7 @@ pub fn run() {
 
       // Listen for deep link events (OAuth callbacks)
       let handle = app.handle().clone();
+      let handle_clone = handle.clone();
       handle.listen("deep-link://new-url", move |event| {
         // Event payload is a string
         let url = event.payload();
@@ -35,7 +36,7 @@ pub fn run() {
               if key == "token" {
                 log::info!("OAuth callback received with token");
                 // Emit event to frontend with token
-                let _ = handle.emit("oauth-callback", value.to_string());
+                let _ = handle_clone.emit("oauth-callback", value.to_string());
                 break;
               }
             }
