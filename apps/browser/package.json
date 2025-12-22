@@ -1,7 +1,7 @@
 {
-  "name": "@chrryai/browser-core",
-  "version": "1.0.0",
-  "description": "Tauri-based browser foundation for white-label browsers",
+  "name": "@chrryai/vex-desktop",
+  "version": "0.1.0",
+  "description": "AI Workspace for Mac - Your intelligent desktop companion",
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
