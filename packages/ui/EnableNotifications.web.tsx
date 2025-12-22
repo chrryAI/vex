@@ -155,13 +155,18 @@ export default function EnableNotifications({
       }
       return
     }
+
+    const isTauri =
+      typeof window !== "undefined" &&
+      ("__TAURI__" in window ||
+        "__TAURI_INTERNALS__" in window ||
+        "TAURI_EVENT_PLUGIN_INTERNALS" in window)
     const initializeServiceWorker = async () => {
       // Skip Service Worker registration in Electron/desktop environments
       // Service Workers are not needed and will fail due to origin mismatch
       if (
         typeof window !== "undefined" &&
-        (window.navigator.userAgent.includes("Electron") ||
-          window.location.protocol === "file:")
+        (isTauri || window.location.protocol === "file:")
       ) {
         console.log(
           "Skipping Service Worker registration in desktop environment",

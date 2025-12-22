@@ -19,7 +19,7 @@ export const AgentStyleDefs = {
     flexWrap: "wrap",
     display: "flex",
     justifyContent: "center",
-    gap: 7.5,
+    gap: 8,
     borderTop: "1px dashed var(--shade-2)",
     paddingTop: 10,
   },

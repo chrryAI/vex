@@ -11,6 +11,7 @@ export const subscribe = async ({
   password = process.env.VEX_TEST_PASSWORD_2!,
   gift,
   invite,
+  createChat = true,
 }: {
   page: Page
   isMember?: boolean
@@ -18,11 +19,12 @@ export const subscribe = async ({
   password?: string
   gift?: string
   invite?: string
+  createChat?: boolean
 }) => {
   log({ page })
   const inviteOrGift = invite || gift
 
-  const createChat = !inviteOrGift && !isMember
+  const createChat = createChat && !inviteOrGift && !isMember
 
   const prompts = [
     {

@@ -1,5 +1,5 @@
 import "@chrryai/chrry/globals.scss"
-import "@chrryai/chrry/globals.css"
+import "@chrryai/chrry/globals.scss"
 import "@chrryai/chrry/styles/view-transitions.css"
 import Chrry from "chrry/Chrry"
 import { ServerData } from "./server-loader"

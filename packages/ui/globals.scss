@@ -346,8 +346,8 @@ button[type="submit"] {
   font-weight: normal;
 }
 
-.button:hover,
-button:hover {
+.button:not(.ghost):hover,
+button:not(.ghost):hover {
   background-color: var(--accent-5) !important;
   color: #fff !important;
 }
@@ -394,11 +394,6 @@ select {
   flex-wrap: wrap;
 }
 
-.ghost:hover {
-  background-color: transparent !important;
-  color: var(--foreground) !important;
-}
-
 .column {
   display: flex !important;
   flex-direction: column !important;
@@ -417,7 +412,7 @@ select {
 button.link {
   text-align: left;
 
-  &:hover {
+  &:not(.ghost):hover {
     background: none !important;
     color: var(--accent-5) !important;
   }

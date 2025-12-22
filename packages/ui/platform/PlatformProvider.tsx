@@ -29,6 +29,7 @@ import {
   isAndroid as _isAndroid,
   isBrowserExtension as _isBrowserExtension,
   isStandalone as _isStandalone,
+  isTauri as _isTauri,
   getBrowser as _getBrowser,
   detectPlatform as _detectPlatform,
 } from "./detection"
@@ -44,6 +45,7 @@ export {
   isAndroid,
   isBrowserExtension,
   isStandalone,
+  isTauri,
   getBrowser,
   detectPlatform,
 } from "./detection"

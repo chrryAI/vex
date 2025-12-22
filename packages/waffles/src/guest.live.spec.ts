@@ -34,6 +34,7 @@ test.only("Invite", async ({ page }) => {
     page,
     isMember,
     invite: `${uuidv4()}@gmail.com`,
+    createChat: false,
   })
 })
 

@@ -119,6 +119,20 @@ export function isStandalone(): boolean {
 }
 
 /**
+ * Detect if running in Tauri desktop app
+ */
+export function isTauri(): boolean {
+  if (typeof window === "undefined") return false
+
+  // Check for Tauri API presence
+  return (
+    "__TAURI__" in window ||
+    "__TAURI_INTERNALS__" in window ||
+    "TAURI_EVENT_PLUGIN_INTERNALS" in window
+  )
+}
+
+/**
  * Detect browser type
  */
 export function getBrowser(): BrowserType {

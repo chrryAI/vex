@@ -17,6 +17,8 @@ import {
   UserRoundPlus,
   UsersRound,
   WannathisIcon,
+  CheckIcon,
+  Circle,
 } from "./icons"
 import {
   BrowserInstance,
@@ -26,7 +28,7 @@ import {
 } from "./utils"
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
-import { useAppContext } from "./context/AppContext"
+import { useAppContext, COLORS } from "./context/AppContext"
 import { useAuth, useNavigationContext, useApp } from "./context/providers"
 import { Button, Div, H4, Span, usePlatform, useTheme } from "./platform"
 import { MotiView } from "./platform/MotiView"
@@ -39,6 +41,7 @@ import EmptyStateTips from "./EmptyStateTips"
 import ThemeSwitcher from "./ThemeSwitcher"
 import { useMenuStyles } from "./Menu.styles"
 import A from "./a/A"
+import Controls from "./Controls"
 
 export default function Menu({
   className,
@@ -235,53 +238,57 @@ export default function Menu({
         }}
       >
         <>
-          <Div style={styles.menuHeader.style}>
-            {isDrawerOpen ? (
-              <>
-                <A
-                  data-testid="menu-home-button"
-                  className={"link"}
-                  href={FRONTEND_URL}
-                  onClick={(e) => {
-                    addHapticFeedback()
-                    track({
-                      name: "home-click",
-                    })
-                    if (e.metaKey || e.ctrlKey) {
-                      return
-                    }
-                    e.preventDefault()
+          <Div>
+            <Controls />
+            <Div style={styles.menuHeader.style}>
+              {isDrawerOpen ? (
+                <>
+                  <A
+                    data-testid="menu-home-button"
+                    className={"link"}
+                    href={FRONTEND_URL}
+                    onClick={(e) => {
+                      addHapticFeedback()
+                      track({
+                        name: "home-click",
+                      })
+                      if (e.metaKey || e.ctrlKey) {
+                        return
+                      }
+                      e.preventDefault()
 
-                    isSmallDevice ? toggleMenu() : null
-                    setIsNewChat(true)
-                    reload()
-                  }}
-                >
-                  <Img app={app} size={28} />
-                  <Span style={styles.brand.style}>{app?.name || "Vex"}</Span>
-                </A>
+                      isSmallDevice ? toggleMenu() : null
+                      setIsNewChat(true)
+                      reload()
+                    }}
+                  >
+                    <Img app={app} size={28} />
+                    <Span style={styles.brand.style}>{app?.name || "Vex"}</Span>
+                  </A>
+                  <Button
+                    className={"link"}
+                    onClick={toggleMenu}
+                    style={styles.menuButton.style}
+                  >
+                    <PanelRight
+                      strokeWidth={1.5}
+                      color="var(--accent-1)"
+                      size={20}
+                    />
+                  </Button>
+                </>
+              ) : (
                 <Button
+                  suppressHydrationWarning
                   className={"link"}
                   onClick={toggleMenu}
-                  style={styles.menuButton.style}
                 >
-                  <PanelRight
-                    strokeWidth={1.5}
-                    color="var(--accent-1)"
-                    size={20}
-                  />
+                  <Img app={app} size={28} />
                 </Button>
-              </>
-            ) : (
-              <Button
-                suppressHydrationWarning
-                className={"link"}
-                onClick={toggleMenu}
-              >
-                <Img app={app} size={28} />
-              </Button>
-            )}
+              )}
+            </Div>
           </Div>
+
           <Div
             style={{
               ...styles.menuContent.style,

@@ -25,7 +25,25 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "window-controls",
+          "description": "Window control permissions for traffic lights",
+          "windows": ["*"],
+          "permissions": [
+            "core:window:allow-close",
+            "core:window:allow-minimize",
+            "core:window:allow-maximize",
+            "core:window:allow-unmaximize",
+            "core:window:allow-toggle-maximize",
+            "core:window:allow-is-maximized",
+            "core:window:allow-set-title",
+            "core:window:allow-set-resizable",
+            "core:window:allow-set-fullscreen"
+          ]
+        }
+      ]
     },
     "macOSPrivateApi": true
   },
