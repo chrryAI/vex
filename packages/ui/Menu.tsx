@@ -30,15 +30,7 @@ import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
 import { useAppContext, COLORS } from "./context/AppContext"
 import { useAuth, useNavigationContext, useApp } from "./context/providers"
-import {
-  Button,
-  Div,
-  H4,
-  isTauri,
-  Span,
-  usePlatform,
-  useTheme,
-} from "./platform"
+import { Button, Div, H4, Span, usePlatform, useTheme } from "./platform"
 import { MotiView } from "./platform/MotiView"
 import { useHasHydrated } from "./hooks"
 import Bookmark from "./Bookmark"
@@ -97,8 +89,7 @@ export default function Menu({
   const { app } = useApp()
 
   // Platform context
-  const { viewPortHeight } = usePlatform()
-  const tauri = isTauri()
+  const { viewPortHeight, isStandalone } = usePlatform()
 
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
 
@@ -244,9 +235,6 @@ export default function Menu({
         style={{
           ...styles.menu.style,
           ...(isDrawerOpen ? styles.open.style : styles.closed.style),
-          borderRadius: tauri ? "16px" : "0",
-          borderTopRightRadius: 0,
-          borderBottomRightRadius: 0,
         }}
       >
         <>

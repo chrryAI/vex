@@ -2093,7 +2093,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
   // But we keep this comment for clarity that they're part of every message
-  const systemPrompt =
+  let systemPrompt =
     baseSystemPrompt +
     inheritanceContext +
     storeContext +
@@ -2511,7 +2511,8 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     // Create multimodal content for AI providers that support it
     // Ensure text is never empty for providers like Claude that require non-empty text content
     const textContent =
-      currentMessageContent.trim() || "Please analyze the attached file(s)."
+      currentMessageContent.trim() ||
+      "Please provide a detailed analysis of the attached file(s). Describe what you see, any notable content, patterns, or insights."
 
     userContent = {
       text: textContent,
@@ -2519,6 +2520,18 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     }
 
     console.log(`📎 Prepared multimodal content: ${fileContents.length} files`)
+
+    // Add proactive file analysis instruction to system prompt
+    const fileAnalysisInstruction = `\n\nIMPORTANT: The user has attached ${fileContents.length} file(s). You MUST proactively analyze these files in your response WITHOUT waiting for the user to explicitly ask. Provide a detailed, comprehensive analysis of the file content, including:
+- What you observe in the file(s)
+- Key patterns, insights, or notable elements
+- Relevant context or explanations
+- Practical applications or use cases
+
+Do NOT simply acknowledge the files - actively analyze and discuss their content as the primary focus of your response.`
+
+    // Append to system prompt for this request
+    systemPrompt += fileAnalysisInstruction
   }
 
   // Handle multimodal content properly for AI providers
@@ -2834,7 +2847,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     if (contentParts.length === 0) {
       contentParts.push({
         type: "text",
-        text: "Please analyze the attached file(s).",
+        text: "Please provide a detailed analysis of the attached file(s). Describe what you see, any notable content, patterns, or insights.",
       })
     }
 

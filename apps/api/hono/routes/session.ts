@@ -565,13 +565,7 @@ session.get("/", async (c) => {
 
       await updateUser({
         ...member,
-        fingerprint: protectedFPs.includes(fingerprint)
-          ? TEST_MEMBER_EMAILS.includes(member.email)
-            ? fingerprint
-            : member.fingerprint && protectedFPs.includes(member.fingerprint)
-              ? uuidv4()
-              : member.fingerprint
-          : fingerprint,
+        fingerprint,
         // ip,
         timezone: device?.timezone ?? member.timezone,
       })
@@ -730,6 +724,8 @@ session.get("/", async (c) => {
         fingerprint: gift || fingerprint,
       })
 
+      existingGuest = await getGuestDb({ id: existingGuest.id })
+
       if (!updatedGuest) {
         return c.json({ error: "Failed to update guest" })
       }
@@ -755,7 +751,7 @@ session.get("/", async (c) => {
         aiAgent,
         versions,
         guest: {
-          ...(await getGuestDb({ id: updatedGuest.id })),
+          ...existingGuest,
         },
         user: null,
         aiAgents,

@@ -7,7 +7,7 @@
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #000;
+  background: transparent; /* Keep transparent for native macOS blur */
   color: #fff;
   overflow: hidden;
 }
@@ -18,6 +18,8 @@ body {
   flex-direction: column;
   height: 100vh;
   position: relative;
+  border-radius: 12px; /* Match macOS window rounded corners */
+  overflow: hidden; /* Clip content to rounded corners */
 }
 
 /* Floating Window Controls */

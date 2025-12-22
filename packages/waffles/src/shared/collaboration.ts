@@ -143,13 +143,20 @@ export async function collaboration({
   await wait(1000)
   const chatInput1 = page1.getByTestId("chat-textarea")
 
-  const context2 = await browser.newContext()
+  // Create second context with video recording
+  const context2 = await browser.newContext({
+    recordVideo: {
+      dir: "test-results/videos",
+      size: { width: 1280, height: 720 },
+    },
+  })
   const page2 = await context2.newPage()
 
   await wait(5000)
 
   await page2.goto(getMemberUrl(), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   await signIn({
@@ -165,6 +172,7 @@ export async function collaboration({
     withShareLink ? `${getMemberUrl(`/threads/${threadId}`)}` : getMemberUrl(),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
 

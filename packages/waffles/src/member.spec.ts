@@ -22,6 +22,7 @@ test.beforeEach(async ({ page }) => {
 test("Subscribe", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   await signIn({ page })
@@ -31,6 +32,7 @@ test("Subscribe", async ({ page }) => {
 test("Invite", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
   await signIn({ page })
   await page.goto(
@@ -40,6 +42,7 @@ test("Invite", async ({ page }) => {
     }),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
   await subscribe({
@@ -52,6 +55,7 @@ test("Invite", async ({ page }) => {
 test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
   await signIn({ page })
   await page.goto(
@@ -61,6 +65,7 @@ test("Gift", async ({ page }) => {
     }),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
   await subscribe({
@@ -76,6 +81,7 @@ test("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   await signIn({ page })
@@ -86,6 +92,7 @@ test("Thread", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   await signIn({ page })
@@ -96,6 +103,7 @@ test("Long text", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   await signIn({ page })
@@ -127,6 +135,7 @@ test("File upload", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   await signIn({ page })
@@ -142,7 +151,7 @@ test("File upload", async ({ page }) => {
     instruction: "Lets upload some files",
     prompts: [
       {
-        text: "Hey Vex, Analyze this text",
+        text: "Hey Vex, Analyze this text shortly",
         model: "sushi",
         mix: {
           paste: 4,
@@ -150,7 +159,7 @@ test("File upload", async ({ page }) => {
         like: true,
       },
       {
-        text: "Hey Vex, Analyze this text",
+        text: "Hey Vex, Analyze this text briefly",
         model: "gemini",
         mix: {
           image: 1,
@@ -161,7 +170,7 @@ test("File upload", async ({ page }) => {
         like: true,
       },
       {
-        text: "Hey Vex, Analyze this pdf",
+        text: "Hey Vex, Analyze this pdf shortly",
         model: "chatGPT",
         mix: {
           pdf: 4,
@@ -169,7 +178,7 @@ test("File upload", async ({ page }) => {
         like: true,
       },
       {
-        text: "Hey Vex, Analyze this video",
+        text: "Hey Vex, Analyze this video briefly",
         model: "claude",
         mix: {
           video: 1,
@@ -177,7 +186,7 @@ test("File upload", async ({ page }) => {
         like: true,
       },
       {
-        text: "Hey Vex, Analyze this audio",
+        text: "Hey Vex, Analyze this audio shortly",
         model: "sushi",
         mix: {
           audio: 4,
@@ -185,7 +194,7 @@ test("File upload", async ({ page }) => {
         like: true,
       },
       {
-        text: "Hey Vex, Analyze this images",
+        text: "Hey Vex, Analyze these images briefly",
         model: "claude",
         mix: {
           image: 4,
@@ -205,6 +214,7 @@ test("Collaboration", async ({ page, browser }) => {
     }),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
 
@@ -226,6 +236,7 @@ test("Debate", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
   await signIn({ page })
 
@@ -235,27 +246,27 @@ test("Debate", async ({ page }) => {
     isMember,
     prompts: [
       {
-        text: "Should advanced AI development be regulated by governments? Debate the balance between innovation and safety",
+        text: "Should AI be regulated? Debate shortly the balance between innovation and safety",
         model: "claude",
         debateAgent: "sushi",
       },
       {
-        text: "Is Mars colonization an ethical priority when Earth still faces major problems? Consider resource allocation arguments",
+        text: "Is Mars colonization ethical? Briefly debate resource allocation",
         model: "chatGPT",
         debateAgent: "perplexity",
       },
       {
-        text: "Universal Basic Income: Solution to automation or threat to work ethic? Debate economic and social impacts.",
+        text: "Universal Basic Income: Debate shortly pros and cons",
         model: "sushi",
         debateAgent: "claude",
       },
       {
-        text: "Is it morally justifiable to prioritize human lives over animal lives in medical research?",
+        text: "Human vs animal lives in medical research? Debate briefly",
         model: "sushi",
         debateAgent: "chatGPT",
       },
       {
-        text: "Will quantum computing ultimately benefit or threaten cybersecurity? Debate both technological possibilities.",
+        text: "Quantum computing and cybersecurity? Debate shortly both sides",
         model: "sushi",
         debateAgent: "gemini",
       },

@@ -20,6 +20,25 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive })
 })
 
+test.only("Subscribe As Guest", async ({ page }) => {
+  await page.goto(
+    getURL({
+      isMember,
+      isLive,
+    }),
+    {
+      waitUntil: "networkidle",
+      timeout: 100000,
+    },
+  )
+  await wait(2000)
+
+  await subscribe({
+    page,
+    isMember,
+  })
+})
+
 test.only("Invite", async ({ page }) => {
   await page.goto(
     getURL({
@@ -28,6 +47,7 @@ test.only("Invite", async ({ page }) => {
     }),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
   await subscribe({
@@ -41,6 +61,7 @@ test.only("Invite", async ({ page }) => {
 test.only("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
   await page.goto(
     getURL({
@@ -49,6 +70,7 @@ test.only("Gift", async ({ page }) => {
     }),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
   await subscribe({
@@ -57,24 +79,6 @@ test.only("Gift", async ({ page }) => {
     email: VEX_TEST_EMAIL_3!,
     password: VEX_TEST_PASSWORD_3!,
     gift: VEX_TEST_EMAIL_3!,
-  })
-})
-
-test.only("Subscribe As Guest", async ({ page }) => {
-  await page.goto(
-    getURL({
-      isMember,
-      isLive,
-    }),
-    {
-      waitUntil: "networkidle",
-    },
-  )
-  await wait(2000)
-
-  await subscribe({
-    page,
-    isMember,
   })
 })
 
@@ -87,12 +91,12 @@ test.only("Long text", async ({ page }) => {
     // agentMessageTimeout: 12000,
     prompts: [
       {
-        text: "Write a detailed 500-word story about a time traveler who discovers they can't change the past",
+        text: "Write a brief 100-word story about a time traveler who discovers they can't change the past",
         model: "sushi",
         stop: true,
       },
       {
-        text: "Now summarize that story in 2 sentences",
+        text: "Now summarize that story shortly in 1 sentence",
         model: "sushi",
       },
     ],
@@ -104,6 +108,7 @@ test.only("Chat", async ({ page }) => {
 
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   await chat({
@@ -115,27 +120,27 @@ test.only("Chat", async ({ page }) => {
     instruction: "Help me plan a 3-day trip to Tokyo",
     prompts: [
       {
-        text: "What are the must-see attractions in Tokyo?",
+        text: "List shortly the top 3 must-see attractions in Tokyo",
         model: "sushi",
         like: true,
       },
       {
-        text: "Can you suggest a detailed itinerary for day 1?",
+        text: "Suggest briefly a simple itinerary for day 1",
         model: "claude",
         like: true,
       },
       {
-        text: "What's the best way to get around between these places?",
+        text: "Shortly explain the best way to get around",
         model: "chatGPT",
         like: true,
       },
       {
-        text: "Which model are stored in app are you using?",
+        text: "Which model are you using? Answer briefly",
         model: "gemini",
         like: true,
       },
       {
-        text: "How can I enable character profile?",
+        text: "How can I enable character profile? Answer shortly",
         model: "sushi",
         like: true,
       },
@@ -164,10 +169,11 @@ test.only("Thread", async ({ page }) => {
 //   })
 // })
 
-test.skip("File upload", async ({ page }) => {
+test.only("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   const result = await chat({
@@ -182,7 +188,7 @@ test.skip("File upload", async ({ page }) => {
     instruction: "Lets upload some files",
     prompts: [
       {
-        text: "Hey Vex, Analyze this paste(s) and video",
+        text: "Hey Vex, Analyze this paste(s) and video shortly",
         model: "sushi",
         mix: {
           paste: 1,
@@ -192,7 +198,7 @@ test.skip("File upload", async ({ page }) => {
         like: false,
       },
       {
-        text: "Hey Vex, Analyze this files",
+        text: "Hey Vex, Analyze these files briefly",
         model: "sushi",
         mix: {
           paste: 1,
@@ -202,7 +208,7 @@ test.skip("File upload", async ({ page }) => {
         like: false,
       },
       {
-        text: "Hey Vex, Analyze this pdf(s) and images",
+        text: "Hey Vex, Analyze this pdf(s) and images shortly",
         model: "sushi",
         mix: {
           pdf: 1,

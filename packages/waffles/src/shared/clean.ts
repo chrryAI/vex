@@ -12,6 +12,7 @@ export async function clean({
 }) {
   await page.goto(getURL({ isLive, isMember: false, fingerprint }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   const clearSessionButton = page.getByTestId("clear-session")

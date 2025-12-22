@@ -18,7 +18,6 @@ import {
   usePlatform,
   VexToast,
   Span,
-  isTauri,
 } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import {
@@ -45,8 +44,6 @@ export default function Skeleton({
   const { isMobile } = usePlatform()
 
   const hasHydrated = useHasHydrated()
-
-  const tauri = isTauri()
 
   // Split contexts for better organization
 
@@ -133,56 +130,20 @@ export default function Skeleton({
           }}
         >
           <Div
-            data-tauri-drag-region={tauri ? true : undefined}
-            onDoubleClick={async () => {
-              if (tauri) {
-                try {
-                  const { getCurrentWindow } = await import(
-                    "@tauri-apps/api/window"
-                  )
-                  const window = getCurrentWindow()
-                  const isMaximized = await window.isMaximized()
-                  if (isMaximized) {
-                    await window.unmaximize()
-                  } else {
-                    await window.maximize()
-                  }
-                } catch (e) {
-                  console.error("Failed to toggle maximize:", e)
-                }
-              }
-            }}
             style={{
               ...skeletonStyles.header.style,
               ...(isStandalone && skeletonStyles.headerStandalone.style),
               ...(isEmpty && skeletonStyles.headerEmpty.style),
-              ...(tauri &&
-                ({
-                  borderRadius: 13,
-                  backgroundColor: "var(--background)",
-                  cursor: "default",
-                  userSelect: "none",
-                  WebkitUserSelect: "none",
-                  WebkitAppRegion: "drag",
-                } as React.CSSProperties)),
             }}
             // className={clsx(hasHydrated && device && styles[device])}
           >
-            <Div
-              style={{
-                ...skeletonStyles.hamburgerMenu.style,
-                ...(tauri &&
-                  ({ WebkitAppRegion: "no-drag" } as React.CSSProperties)),
-              }}
-            >
+            <Div style={{ ...skeletonStyles.hamburgerMenu.style }}>
               {!isDrawerOpen && (
                 <Button
                   className="link"
                   style={{
                     ...skeletonStyles.hamburgerButton.style,
                     ...utilities.link,
-                    ...(tauri &&
-                      ({ WebkitAppRegion: "no-drag" } as React.CSSProperties)),
                   }}
                   onClick={toggleMenu}
                 >
@@ -205,10 +166,6 @@ export default function Skeleton({
                     style={{
                       ...utilities.link.style,
                       ...skeletonStyles.hamburgerButton.style,
-                      ...(tauri &&
-                        ({
-                          WebkitAppRegion: "no-drag",
-                        } as React.CSSProperties)),
                     }}
                     onClick={(e) => {
                       e.preventDefault()
@@ -242,13 +199,7 @@ export default function Skeleton({
                 </A>
               )}
             </Div>
-            <Div
-              style={{
-                ...skeletonStyles.right.style,
-                ...(tauri &&
-                  ({ WebkitAppRegion: "no-drag" } as React.CSSProperties)),
-              }}
-            >
+            <Div style={{ ...skeletonStyles.right.style }}>
               <CharacterProfiles />
               <Subscribe />
 

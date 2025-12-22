@@ -250,16 +250,26 @@ const Thread = ({
         scrollToBottom()
       }
 
-      if (isE2E && content.length > 500)
-        console.log("🤖 onStreamingUpdate", {
-          content: content.slice(0, 500),
+      if (isE2E && content.length > 500) {
+        const wordCount = content.split(/\s+/).length
+        const hasReasoning = content.includes("__REASONING__")
+        const preview = content.slice(0, 200).replace(/\n/g, " ")
 
-          clientId,
-          aiAgent,
-          isWebSearchEnabled,
-          isImageGenerationEnabled,
-          reasoning: content.indexOf("__REASONING__") !== -1,
+        console.log("🤖 Streaming Update", {
+          preview: `${preview}...`,
+          stats: {
+            chars: content.length,
+            words: wordCount,
+            hasReasoning,
+          },
+          agent: aiAgent?.displayName || aiAgent?.name || "unknown",
+          features: {
+            webSearch: !!isWebSearchEnabled,
+            imageGen: !!isImageGenerationEnabled,
+          },
+          clientId: clientId?.slice(0, 8),
         })
+      }
 
       // Only update if content actually changed and clientId exists
       if (!clientId) return

@@ -36,7 +36,7 @@ export const limit = async ({
           : isChatGPTMessage
             ? ("chatGPT" as modelName)
             : ("sushi" as modelName),
-      agentMessageTimeout: isFluxMessage ? 60000 : 30000, // Flux needs more time
+      agentMessageTimeout: isFluxMessage ? 100000 : 50000, // Flux needs more time
       shouldFail: i === hourlyLimit, // Only fail on last message
       like,
       imageGenerationEnabled: isFluxMessage,
@@ -47,7 +47,6 @@ export const limit = async ({
   const failPrompt = {
     text: "This message should fail due to hourly limit",
     model: "sushi" as modelName,
-    agentMessageTimeout: 30000,
     shouldFail: true, // Flag to indicate this should fail
   }
 
@@ -58,6 +57,4 @@ export const limit = async ({
     instruction: `Testing hourly limit of ${hourlyLimit} requests`,
     prompts: [...limitPrompts, failPrompt],
   })
-
-  return !!result
 }

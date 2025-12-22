@@ -13,13 +13,13 @@
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-::view-transition-old(root) {
+/* ::view-transition-old(root) {
   animation-name: slide-down;
 }
 
 ::view-transition-new(root) {
   animation-name: slide-up;
-}
+} */
 
 /* Mobile: Slide aside (left/right) for more natural mobile feel */
 @media (max-width: 600px) {

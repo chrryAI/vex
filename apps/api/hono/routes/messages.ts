@@ -336,11 +336,13 @@ messages.post("/", async (c) => {
   }
 
   if (attachmentType && !content) {
-    messageContent = "Please analyze the attached file(s)."
+    messageContent =
+      "Please provide a detailed analysis of the attached file(s). Describe what you see, any notable content, patterns, or insights.."
   }
 
   if (!messageContent || messageContent.trim() === "") {
-    messageContent = "Please analyze the attached file(s)."
+    messageContent =
+      "Please provide a detailed analysis of the attached file(s). Describe what you see, any notable content, patterns, or insights.."
   }
 
   const selectedAgent = agentId ? await getAiAgent({ id: agentId }) : undefined

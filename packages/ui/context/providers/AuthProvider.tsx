@@ -1641,11 +1641,17 @@ export function AuthProvider({
 
   const auth_token = searchParams.get("auth_token")
 
+  const fp = searchParams.get("fp")
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (auth_token) {
       // Remove auth_token from URL
       removeParams("auth_token")
+    }
+    if (fp) {
+      // Remove fp from URL
+      !isE2E && removeParams("fp")
     }
   }, [searchParams])
 

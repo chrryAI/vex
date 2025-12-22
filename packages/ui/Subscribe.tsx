@@ -137,8 +137,8 @@ export default function Subscribe({
       const checkoutSuccessUrl = (() => {
         params.set("checkout", "success")
         params.set("purchaseType", part)
-        fingerprint && params.set("fp", fingerprint)
-        // token && params.set("auth_token", token)
+        // fingerprint && params.set("fp", fingerprint)
+        user && token && params.set("auth_token", token)
 
         return `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
       })()

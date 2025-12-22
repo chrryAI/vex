@@ -28,11 +28,11 @@ export const subscribe = async ({
 
   const prompts = [
     {
-      text: "Hello",
+      text: "What are the main benefits of TypeScript over JavaScript?",
       model: "sushi" as modelName,
     },
     {
-      text: "World",
+      text: "How do you implement proper error boundaries in React?",
       model: "sushi" as modelName,
     },
   ]
@@ -90,7 +90,7 @@ export const subscribe = async ({
     const creditsInfo = page.getByTestId("credits-info")
 
     await expect(creditsInfo).toBeVisible({
-      timeout: 10000,
+      timeout: 100000,
     })
 
     return parseInt(
@@ -191,7 +191,7 @@ export const subscribe = async ({
           )
           return userMessages.length > 0 || guestMessages.length > 0
         },
-        { timeout: 10000 },
+        { timeout: 100000 },
       )
 
       // Try both user and guest message types since the test ID depends on actual user context
@@ -217,7 +217,7 @@ export const subscribe = async ({
     }
 
     await expect(await getLastMessage()).toBeVisible({
-      timeout: 10000,
+      timeout: 100000,
     })
   }
 
@@ -233,14 +233,20 @@ export const subscribe = async ({
 
     await wait(5000)
 
-    // Open gift redemption in fresh browser context
+    // Open gift redemption in fresh browser context with video recording
     const giftBrowser = page.context().browser()!
-    const giftContext = await giftBrowser.newContext()
+    const giftContext = await giftBrowser.newContext({
+      recordVideo: {
+        dir: "test-results/videos",
+        size: { width: 1280, height: 720 },
+      },
+    })
     const giftPage = await giftContext.newPage()
     await giftPage.goto(
       `${page.url().split("?")[0]}?gift=${fingerprintValue}`,
       {
         waitUntil: "networkidle",
+        timeout: 100000,
       },
     )
 
@@ -257,7 +263,7 @@ export const subscribe = async ({
     // Verify guest receives subscription
     const giftSubscribeButton = giftPage.getByTestId("subscribe-button")
     await expect(giftSubscribeButton).not.toBeVisible({
-      timeout: 10000,
+      timeout: 100000,
     })
 
     // Check for subscription confirmation

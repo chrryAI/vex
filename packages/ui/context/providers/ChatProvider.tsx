@@ -469,6 +469,20 @@ export function ChatProvider({
     }
   }, [shouldGetCredits, user, guest])
 
+  const [shouldMutate, setShouldMutate] = useState(false)
+
+  const isStreaming = messages.some((message) => message?.message?.isStreaming)
+  useEffect(() => {
+    if (isStreaming) {
+      return
+    }
+
+    if (shouldMutate) {
+      mutate()
+      setShouldMutate(false)
+    }
+  }, [shouldMutate, isStreaming])
+
   const { notifyPresence, connected } = useWebSocket<{
     type: string
     data: {
@@ -499,7 +513,7 @@ export function ChatProvider({
           const updatedGuest = await actions.getGuest()
           setGuest(updatedGuest)
         }
-        await mutate()
+        setShouldMutate(true)
       }
       if (
         type === "notification" &&
@@ -1002,11 +1016,7 @@ export function ChatProvider({
       if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
 
-      if (
-        !isDebating &&
-        (messages?.[0]?.message?.threadId !== threadId ||
-          serverMessages.messages.length !== messages.length)
-      ) {
+      if (!isDebating) {
         setMessages(serverMessages.messages)
       }
 

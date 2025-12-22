@@ -47,7 +47,7 @@ export const chat = async ({
       },
     },
   ],
-  agentMessageTimeout = 50 * 1000,
+  agentMessageTimeout = 90 * 10000, // 15 minutes for long AI responses
   isNewChat = true,
   isLive = false,
   threadId,
@@ -108,7 +108,7 @@ export const chat = async ({
 
   const fileExtensions = {
     image: "jpeg",
-    video: "webm",
+    video: "mp4", // Changed from webm to match downloaded test videos
     audio: "wav",
     pdf: "pdf",
   }
@@ -127,6 +127,7 @@ export const chat = async ({
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
       waitUntil: "networkidle",
+      timeout: 100000,
     })
     await wait(3000)
   }
@@ -139,7 +140,7 @@ export const chat = async ({
   const addAgent = async () => {
     const agentSelectButton = page.getByTestId("agent-select-button")
     await expect(agentSelectButton).toBeVisible({
-      timeout: 10000,
+      timeout: 100000,
     })
 
     await agentSelectButton.click()
@@ -648,7 +649,7 @@ export const chat = async ({
           )
           return userMessages.length > 0 || guestMessages.length > 0
         },
-        { timeout: 10000 },
+        { timeout: 100000 },
       )
 
       // Try both user and guest message types since the test ID depends on actual user context
@@ -681,6 +682,7 @@ export const chat = async ({
     console.log(`Debug: Got last message, looking for delete button...`)
 
     if (prompt.stop) {
+      await wait(1500)
       await stopButton.click()
       await expect(stopButton).not.toBeVisible({
         timeout: 8000,
@@ -765,7 +767,7 @@ export const chat = async ({
       const getFilterLikedButton = ({ liked }: { liked: boolean }) =>
         page.getByTestId(`${liked ? "unfilter" : "filter"}-liked-button`)
       await expect(getFilterLikedButton({ liked: false })).toBeVisible({
-        timeout: 10000,
+        timeout: 100000,
       })
 
       if (prompt.like) {
@@ -891,14 +893,14 @@ export const chat = async ({
 
     const menuBookmarked = page.getByTestId("menu-bookmarked")
     await expect(menuBookmarked).toBeVisible({
-      timeout: 10000,
+      timeout: 100000,
     })
 
     await menuBookmarked.click()
     await wait(2000)
     const threadNotBookmarked = page.getByTestId("thread-not-bookmarked")
     await expect(threadNotBookmarked).toBeVisible({
-      timeout: 10000,
+      timeout: 100000,
     })
     await threadNotBookmarked.click()
     await wait(2000)

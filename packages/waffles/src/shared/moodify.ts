@@ -127,7 +127,7 @@ export async function moodify({
   await expect(
     page.getByTestId("moodify-message-agent").nth(agentMessageCount),
   ).toBeVisible({
-    timeout: 10000,
+    timeout: 100000,
   })
 
   const moodifyCloseChatButton = page.getByTestId("moodify-close-chat-button")

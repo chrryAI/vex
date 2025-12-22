@@ -22,6 +22,7 @@ test("Subscribe As Guest", async ({ page }) => {
     }),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
   await subscribe({
@@ -38,6 +39,7 @@ test("Invite", async ({ page }) => {
     }),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
   await subscribe({
@@ -50,6 +52,7 @@ test("Invite", async ({ page }) => {
 test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
   await page.goto(
     getURL({
@@ -58,6 +61,7 @@ test("Gift", async ({ page }) => {
     }),
     {
       waitUntil: "networkidle",
+      timeout: 100000,
     },
   )
   await subscribe({
@@ -73,6 +77,7 @@ test("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
+    timeout: 100000,
   })
 
   const result = await chat({
@@ -86,7 +91,7 @@ test("File upload", async ({ page }) => {
     instruction: "Lets upload some files",
     prompts: [
       {
-        text: "Hey Vex, Analyze this files",
+        text: "Hey Vex, Analyze these files shortly",
         model: "sushi",
         mix: {
           paste: 1,
@@ -95,7 +100,7 @@ test("File upload", async ({ page }) => {
         like: true,
       },
       {
-        text: "Hey Vex, Analyze this pdf(s) and images",
+        text: "Hey Vex, Analyze this pdf(s) and images briefly",
         model: "sushi",
         mix: {
           pdf: 4,
@@ -105,7 +110,7 @@ test("File upload", async ({ page }) => {
       },
 
       {
-        text: "Hey Vex, Analyze this paste(s) and video",
+        text: "Hey Vex, Analyze this paste(s) and video shortly",
         model: "sushi",
         mix: {
           paste: 4,

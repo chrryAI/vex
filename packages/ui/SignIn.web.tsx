@@ -185,7 +185,7 @@ export default function SignIn({
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")
 
-    fingerprint && successUrl.searchParams.set("fp", fingerprint)
+    // fingerprint && successUrl.searchParams.set("fp", fingerprint)
 
     return {
       successUrl,
@@ -215,7 +215,8 @@ export default function SignIn({
     } else {
       const redirectUrl = signInResult?.url || successUrl.toString()
 
-      window.location.href = `${redirectUrl}?auth_token=${signInResult?.token}`
+      const separator = redirectUrl.includes("?") ? "&" : "?"
+      window.location.href = `${redirectUrl}${separator}auth_token=${signInResult?.token}`
     }
   }
 

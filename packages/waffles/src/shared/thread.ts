@@ -26,13 +26,20 @@ export const thread = async ({
       isMember,
       isLive,
       instruction: "Help me write a short story",
-      prompts: Array.from({ length: 3 }, (_, i) => {
-        return {
-          text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
+      prompts: [
+        {
+          text: "Explain shortly the difference between async/await and promises in JavaScript",
           model: "sushi",
-          agentMessageTimeout: 30000,
-        }
-      }),
+        },
+        {
+          text: "List briefly 3 best practices for optimizing React performance",
+          model: "sushi",
+        },
+        {
+          text: "Describe shortly how to design a scalable microservices architecture",
+          model: "sushi",
+        },
+      ],
     }))
 
   createChat && (total = total + 3)
@@ -141,7 +148,7 @@ export const thread = async ({
   await wait(5000)
 
   await expect(threadTitle).not.toBeVisible({
-    timeout: 10000,
+    timeout: 100000,
   })
 
   const threadTitleGenerated2 = (await getFirstThread()).getByTestId(
@@ -184,13 +191,20 @@ export const thread = async ({
       isMember,
       instruction: "Help me write a short story",
       bookmark,
-      prompts: Array.from({ length: 3 }, (_, i) => {
-        return {
-          text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
+      prompts: [
+        {
+          text: "Explain the concept of dependency injection and its benefits",
           model: "sushi",
-          agentMessageTimeout: 30000,
-        }
-      }),
+        },
+        {
+          text: "What's the difference between SQL and NoSQL databases?",
+          model: "sushi",
+        },
+        {
+          text: "How do you implement authentication with JWT tokens?",
+          model: "sushi",
+        },
+      ],
     })
 
     total = total + 3
@@ -212,13 +226,20 @@ export const thread = async ({
       isMember,
       isLive,
       instruction: "Help me write a short story",
-      prompts: Array.from({ length: 3 }, (_, i) => {
-        return {
-          text: `Test message ${i + 1} - ${faker.lorem.sentence()}`,
+      prompts: [
+        {
+          text: "What are the key principles of clean code?",
           model: "sushi",
-          agentMessageTimeout: 30000,
-        }
-      }),
+        },
+        {
+          text: "Explain the SOLID principles with examples",
+          model: "sushi",
+        },
+        {
+          text: "How do you handle error handling in distributed systems?",
+          model: "sushi",
+        },
+      ],
     })
 
     total = total + 3

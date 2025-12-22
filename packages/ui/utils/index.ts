@@ -389,7 +389,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.7.78"
+export const VERSION = config.version || "1.7.80"
 export type instructionBase = {
   id: string
   title: string

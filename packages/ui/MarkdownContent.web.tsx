@@ -76,6 +76,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 }) => {
   const [copied, setCopied] = useState(false)
   const { t } = useAppContext()
+
+  // Debug: Check if vscDarkPlus is loaded
+  console.log("🎨 Prism theme loaded:", !!vscDarkPlus, "Language:", language)
+
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(children)
@@ -131,6 +135,12 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
   const processedContent =
     webSearchResults && webSearchResults.length > 0 ? content : content
 
+  // Debug: Show markdown content
+  console.log(
+    "📝 Markdown content preview:",
+    processedContent.substring(0, 300),
+  )
+
   return (
     <Div
       style={style}
@@ -141,7 +151,9 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
         options={{
           overrides: {
             code({ node, inline, className, children, ...props }: any) {
-              const match = /language-(\w+)/.exec(className || "")
+              console.log("🔍 Code detected:", { inline, className })
+              // Match both 'language-*' and 'lang-*' formats
+              const match = /(?:language|lang)-(\w+)/.exec(className || "")
               let lang = match ? match[1] : ""
 
               // Handle 'json' as a special case

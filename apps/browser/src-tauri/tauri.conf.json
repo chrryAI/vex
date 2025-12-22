@@ -21,7 +21,12 @@
         "fullscreen": false,
         "decorations": false,
         "transparent": true,
-        "center": true
+        "center": true,
+        "windowEffects": {
+          "effects": ["underWindowBackground"],
+          "state": "active",
+          "radius": 12.0
+        }
       }
     ],
     "security": {
