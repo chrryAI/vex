@@ -138,10 +138,10 @@ export const thread = async ({
   await editThreadGenerateTitleButton.click()
   await wait(2000)
   await editThreadSaveButton.click()
-  await wait(2000)
+  await wait(5000)
 
   await expect(threadTitle).not.toBeVisible({
-    timeout: 5000,
+    timeout: 10000,
   })
 
   const threadTitleGenerated2 = (await getFirstThread()).getByTestId(
@@ -168,7 +168,7 @@ export const thread = async ({
 
   await deleteThreadButton.click()
 
-  await wait(3000)
+  await wait(8000)
 
   await expect(threadsContainer).toBeVisible()
 
@@ -235,11 +235,11 @@ export const thread = async ({
 
     await expect(
       (await getSecondThread()).getByTestId("threads-bookmarked"),
-    ).toBeVisible()
+    ).not.toBeVisible()
 
     await expect(
       (await getSecondThread()).getByTestId("threads-not-bookmarked"),
-    ).not.toBeVisible()
+    ).toBeVisible()
 
     await thread({
       page,

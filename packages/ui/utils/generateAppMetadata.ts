@@ -1,4 +1,4 @@
-import { appWithStore, storeWithApps, store } from "../types"
+import { appWithStore, storeWithApps } from "../types"
 import { t as tFunc } from "./t"
 import { locale } from "../locales"
 import getAppSlug from "./getAppSlug"

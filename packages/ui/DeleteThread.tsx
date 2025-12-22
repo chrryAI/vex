@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import clsx from "clsx"
-import { Trash2, CircleX } from "./icons"
+import { Trash2 } from "./icons"
 import toast from "react-hot-toast"
 import ConfirmButton from "./ConfirmButton"
 import Loading from "./Loading"

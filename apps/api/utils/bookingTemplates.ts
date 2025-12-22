@@ -35,8 +35,8 @@ const CORE_INSTRUCTIONS = `You are an expert web automation assistant. Analyze t
 - Include targetKeywords: ["date", "calendar", "time", etc.]
 
 **EXAMPLES:**
-- "🔍 Filling restaurant search ACTION: [{\"type\": \"fill_input\", \"params\": {\"semanticTarget\": \"restaurant_search\", \"targetKeywords\": [\"restaurant\", \"search\"], \"text\": \"Singel 101 Restaurant\", \"reason\": \"Enter restaurant name\"}}]"
-- "📅 Opening date picker ACTION: [{\"type\": \"click_element\", \"params\": {\"semanticTarget\": \"date_picker\", \"targetKeywords\": [\"date\", \"calendar\"], \"reason\": \"Open date selection\"}}]"
+- "🔍 Filling restaurant search ACTION: [{"type": "fill_input", "params": {"semanticTarget": "restaurant_search", "targetKeywords": ["restaurant", "search"], "text": "Singel 101 Restaurant", "reason": "Enter restaurant name"}}]"
+- "📅 Opening date picker ACTION: [{"type": "click_element", "params": {"semanticTarget": "date_picker", "targetKeywords": ["date", "calendar"], "reason": "Open date selection"}}]"
 
 **CRITICAL:** Current date is August 7, 2025. "Next Sunday" = August 11, 2025.`
 
@@ -136,9 +136,9 @@ const CALENDAR_TEMPLATE: BookingTemplate = {
 - If going backward, use "prev_month" with appropriate times
 
 **EXAMPLES:**
-- "📅 Opening date picker ACTION: [{\"type\": \"click_element\", \"params\": {\"semanticTarget\": \"date_picker\", \"targetKeywords\": [\"date\", \"calendar\"], \"reason\": \"Open date selection - PRIORITY 1\"}}]"
-- "⬅️ Navigate to August ACTION: [{\"type\": \"click_element\", \"params\": {\"semanticTarget\": \"next_month\", \"times\": 6, \"reason\": \"Navigate from Feb to August (6 clicks)\"}}]"
-- "📅 Select Sunday 11th ACTION: [{\"type\": \"click_element\", \"params\": {\"semanticTarget\": \"date_11\", \"targetKeywords\": [\"11\", \"sunday\"], \"reason\": \"Select August 11, 2025\"}}]"
+- "📅 Opening date picker ACTION: [{"type": "click_element", "params": {"semanticTarget": "date_picker", "targetKeywords": ["date", "calendar"], "reason": "Open date selection - PRIORITY 1"}}]"
+- "⬅️ Navigate to August ACTION: [{"type": "click_element", "params": {"semanticTarget": "next_month", "times": 6, "reason": "Navigate from Feb to August (6 clicks)"}}]"
+- "📅 Select Sunday 11th ACTION: [{"type": "click_element", "params": {"semanticTarget": "date_11", "targetKeywords": ["11", "sunday"], "reason": "Select August 11, 2025"}}]"
 
 **FORBIDDEN:** 
 - Never fill restaurant search before setting date!
@@ -363,7 +363,7 @@ Party size: [number] people
 Date: [date]
 Time: [time]
 
-Let me handle the reservation for you. ACTION: [{\"type\": \"book_reservation\", \"params\": {\"partySize\": [number], \"date\": \"[date]\", \"time\": \"[time]\", \"restaurant\": \"[restaurant name]\"}}]"
+Let me handle the reservation for you. ACTION: [{"type": "book_reservation", "params": {"partySize": [number], "date": "[date]", "time": "[time]", "restaurant": "[restaurant name]"}}]"
 
 **EXAMPLES:**
 - "Book a table for 3 people tomorrow at 3:30 PM at Singel 101" → immediately respond with booking confirmation and ACTION`,

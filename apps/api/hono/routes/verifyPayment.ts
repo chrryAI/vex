@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import Stripe from "stripe"
-import { v4 as uuidv4, validate } from "uuid"
+import { v4 as uuidv4 } from "uuid"
 import { jsx } from "react/jsx-runtime"
 import { render } from "@react-email/render"
 import nodemailer from "nodemailer"

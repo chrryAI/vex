@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { getApp } from "@repo/db"
 import { getMember, getGuest } from "../lib/auth"
-import { validate, v4 as uuidv4 } from "uuid"
+import { validate } from "uuid"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
 // Inline COLORS to avoid React Native dependencies

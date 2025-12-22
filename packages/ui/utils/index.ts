@@ -1,15 +1,6 @@
 /// <reference types="chrome" />
 
-import type {
-  guest,
-  subscription,
-  user,
-  thread,
-  collaboration,
-  threadSummary,
-  appWithStore,
-  app,
-} from "../types"
+import type { guest, subscription, user, thread, threadSummary } from "../types"
 import countries from "i18n-iso-countries"
 import { getEnv } from "./env"
 
@@ -398,7 +389,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.7.66"
+export const VERSION = config.version || "1.7.77"
 export type instructionBase = {
   id: string
   title: string

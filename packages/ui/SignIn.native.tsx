@@ -1,18 +1,4 @@
-import React, { useEffect, useState } from "react"
 import { StyleSheet } from "react-native"
-import { Button, Div, Span, Text } from "./platform/PlatformPrimitives"
-import { useAppContext } from "./context/AppContext"
-import { useTheme } from "./context/ThemeContext"
-import { jwtDecode } from "jwt-decode"
-
-import {
-  GoogleSignin,
-  statusCodes,
-} from "@react-native-google-signin/google-signin"
-
-import appleAuth from "@invertase/react-native-apple-authentication"
-import { useAuth } from "./context/providers"
-import { usePlatform } from "./platform"
 
 // Helper to safely access the ID token from Google Sign-In response
 function getIdTokenFromResponse(response: any): string | null {

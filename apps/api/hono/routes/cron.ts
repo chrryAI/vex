@@ -1,6 +1,5 @@
 import { Hono } from "hono"
 import { decayMemories } from "@repo/db"
-import { fetchAllNews } from "../../lib/newsFetcher"
 
 export const cron = new Hono()
 

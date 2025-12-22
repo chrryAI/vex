@@ -1,11 +1,9 @@
 "use client"
 
 import React, { useEffect, useRef, useState, useCallback } from "react"
-import clsx from "clsx"
 import { useThreadStyles } from "./Thread.styles"
 import {
   aiAgent,
-  collaboration,
   guest,
   message,
   thread,
@@ -21,13 +19,7 @@ import {
 } from "./context/providers"
 import { A, usePlatform, useTheme, Div, Button, Span } from "./platform"
 import Loading from "./Loading"
-import {
-  FRONTEND_URL,
-  isCollaborator,
-  isOwner,
-  pageSizes,
-  isE2E,
-} from "./utils"
+import { FRONTEND_URL, isCollaborator, isOwner, isE2E } from "./utils"
 import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
 import Chat from "./Chat"
 import Messages from "./Messages"
@@ -43,7 +35,7 @@ import CollaborationStatus from "./CollaborationStatus"
 import EnableSound from "./EnableSound"
 import MemoryConsent from "./MemoryConsent"
 import Img from "./Img"
-import { useAppMetadata, useHasHydrated, useThreadMetadata } from "./hooks"
+import { useHasHydrated, useThreadMetadata } from "./hooks"
 import { lazy, Suspense } from "react"
 import { useStyles } from "./context/StylesContext"
 import { BREAKPOINTS } from "./styles/breakpoints"
@@ -260,9 +252,8 @@ const Thread = ({
 
       if (isE2E && content.length > 500)
         console.log("🤖 onStreamingUpdate", {
-          content: content
-            .slice(0, 500)
-            .replace(/__REASONING__.*?__\/REASONING__/gs, ""),
+          content: content.slice(0, 500),
+
           clientId,
           aiAgent,
           isWebSearchEnabled,

@@ -87,7 +87,6 @@ export async function loadServerData(
   const isDev = process.env.MODE === "development"
 
   const API_URL = API_INTERNAL_URL
-  console.log(`🚀 ~ API_URL:`, API_URL)
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_MEMBER_FINGERPRINTS: string[] = []
@@ -163,16 +162,30 @@ export async function loadServerData(
 
   const authToken = urlObj.searchParams.get("auth_token")
 
-  let apiKey =
+  const apiKeyCandidate =
     authToken ||
-    (isTestFP ? fpFromQuery : cookies.token || headers["x-token"]) ||
+    (isTestFP
+      ? fpFromQuery
+      : cookies.token ||
+        headers["x-token"] ||
+        cookies.fingerprint ||
+        headers["x-fp"])
+
+  const tokenCandidate = authToken || apiKeyCandidate
+
+  const fingerprintCandidate =
+    fpFromQuery && isTestFP
+      ? fpFromQuery
+      : validate(tokenCandidate)
+        ? tokenCandidate
+        : cookies.fingerprint || headers["x-fp"]
+
+  let apiKey =
+    tokenCandidate ||
+    (isTestFP && fpFromQuery ? fpFromQuery : fingerprintCandidate) ||
     uuidv4()
 
-  let fingerprint = isTestFP
-    ? fpFromQuery
-    : validate(apiKey)
-      ? apiKey
-      : headers["x-fp"] || cookies.fingerprint || uuidv4()
+  let fingerprint = fingerprintCandidate || uuidv4()
 
   const gift = urlObj.searchParams.get("gift")
   const agentName = cookies.agentName

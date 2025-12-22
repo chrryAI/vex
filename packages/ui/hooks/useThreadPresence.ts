@@ -1,5 +1,4 @@
-import { useEffect, useState, useRef } from "react"
-import { useAppContext } from "../context/AppContext"
+import { useState, useRef } from "react"
 import { useWebSocket } from "./useWebSocket"
 import { useAuth } from "../context/providers"
 

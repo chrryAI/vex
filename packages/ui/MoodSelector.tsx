@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import clsx from "clsx"
 import { useTranslation } from "react-i18next"
 import { emojiMap, moodType } from "./types"
 import { useMoodSelectorStyles } from "./MoodSelector.styles"

@@ -1,10 +1,10 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.7.66",
+  "version": "1.7.77",
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "turbo dev --concurrency=20",
     "dev:all": "concurrently \"turbo dev --filter=api\" \"turbo dev --filter=flash\"",
     "start:all": "concurrently \"turbo start --filter=api\" \"turbo start --filter=flash\"",
     "native": "cd apps/native && npm start",
@@ -36,11 +36,14 @@
     "test": "npm run test:scss",
     "validate:chrry": "node scripts/validate-chrry-config.js",
     "generate:icons": "bash scripts/generate-app-icons.sh",
-    "cleanup": "turbo lint -- --fix"
+    "cleanup": "turbo lint -- --fix",
+    "cleanup:unused": "node scripts/remove-unused.js",
+    "browser": "bash scripts/run-browser.sh"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "dotenv": "^16.0.0",
+    "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^9.1.7",
     "is-reference": "^3.0.3",
     "openai": "^5.19.1",

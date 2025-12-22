@@ -156,6 +156,19 @@ export default function EnableNotifications({
       return
     }
     const initializeServiceWorker = async () => {
+      // Skip Service Worker registration in Electron/desktop environments
+      // Service Workers are not needed and will fail due to origin mismatch
+      if (
+        typeof window !== "undefined" &&
+        (window.navigator.userAgent.includes("Electron") ||
+          window.location.protocol === "file:")
+      ) {
+        console.log(
+          "Skipping Service Worker registration in desktop environment",
+        )
+        return
+      }
+
       // First check if notification permission is already granted
       if ("Notification" in window) {
         const permission = Notification.permission

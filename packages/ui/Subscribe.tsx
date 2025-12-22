@@ -30,7 +30,7 @@ import {
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
-import { apiFetch, isE2E } from "./utils"
+import { apiFetch } from "./utils"
 import Modal from "./Modal"
 import ConfirmButton from "./ConfirmButton"
 
@@ -137,6 +137,7 @@ export default function Subscribe({
       const checkoutSuccessUrl = (() => {
         params.set("checkout", "success")
         params.set("purchaseType", part)
+        fingerprint && params.set("fp", fingerprint)
         // token && params.set("auth_token", token)
 
         return `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`

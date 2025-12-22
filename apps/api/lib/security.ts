@@ -1,10 +1,9 @@
-import { isDevelopment } from "@chrryai/chrry/utils"
-
 /**
  * Scan file for malware using external ClamAV service
  */
 export async function scanFileForMalware(
   buffer: Buffer,
+  options?: { filename?: string; fingerprint?: string },
 ): Promise<{ safe: boolean; threat?: string }> {
   const scannerUrl = process.env.MALWARE_SCANNER_URL
 
@@ -54,8 +53,22 @@ export async function scanFileForMalware(
       scannerUrl,
       hasApiKey: !!process.env.MALWARE_SCANNER_API_KEY,
     })
-    // Fail open in development, fail closed in production
-    return { safe: false }
+    // Fail open for safe file types, fail closed for unknown types
+    const SAFE_EXTENSIONS = [
+      ".mov",
+      ".mp4",
+      ".webm",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".pdf",
+      ".txt",
+    ]
+    const fileExt = options?.filename?.toLowerCase().split(".").pop()
+    const isSafeType =
+      fileExt && SAFE_EXTENSIONS.some((ext: string) => ext.includes(fileExt))
+    return { safe: !!isSafeType }
   }
 }
 

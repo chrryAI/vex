@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react"
 import { useTheme } from "./context/ThemeContext"
 import { useTranslation } from "react-i18next"
-import { Dataset, DataPoint } from "./utils/chartTypes"
+import { Dataset } from "./utils/chartTypes"
 import { createSmoothPathPoints } from "./utils/chartUtils"
 import { Div, Text } from "./platform"
 

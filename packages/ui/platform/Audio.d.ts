@@ -1,5 +1,4 @@
 // Type definitions for Audio component
-import { ComponentProps } from "react"
 
 export interface AudioProps {
   src?: string
