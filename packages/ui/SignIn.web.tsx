@@ -185,6 +185,8 @@ export default function SignIn({
 
     isExtensionRedirect && successUrl.searchParams.set("extension", "true")
 
+    fingerprint && successUrl.searchParams.set("fp", fingerprint)
+
     return {
       successUrl,
       errorUrl,

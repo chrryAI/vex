@@ -3,11 +3,44 @@
  */
 export async function scanFileForMalware(
   buffer: Buffer,
+  options?: { filename?: string; fingerprint?: string },
 ): Promise<{ safe: boolean; threat?: string }> {
   const scannerUrl = process.env.MALWARE_SCANNER_URL
 
   if (!scannerUrl) {
     console.warn("⚠️ MALWARE_SCANNER_URL not set, skipping scan")
+    return { safe: true }
+  }
+
+  // Trusted fingerprints (admins, test accounts)
+  const TRUSTED_FINGERPRINTS = (
+    process.env.TEST_MEMBER_FINGERPRINTS || ""
+  ).split(",")
+
+  if (
+    options?.fingerprint &&
+    TRUSTED_FINGERPRINTS.includes(options.fingerprint)
+  ) {
+    console.log("✅ Trusted fingerprint, skipping scan")
+    return { safe: true }
+  }
+
+  // Safe file extensions that often trigger false positives
+  const SAFE_EXTENSIONS = [
+    ".mov",
+    ".mp4",
+    ".webm",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".pdf",
+    ".txt",
+  ]
+  const fileExt = options?.filename?.toLowerCase().split(".").pop()
+
+  if (fileExt && SAFE_EXTENSIONS.some((ext) => ext.includes(fileExt))) {
+    console.log(`✅ Safe file type (.${fileExt}), skipping scan`)
     return { safe: true }
   }
 
@@ -52,8 +85,10 @@ export async function scanFileForMalware(
       scannerUrl,
       hasApiKey: !!process.env.MALWARE_SCANNER_API_KEY,
     })
-    // Fail open in development, fail closed in production
-    return { safe: false }
+    // Fail open for safe file types, fail closed for unknown types
+    const isSafeType =
+      fileExt && SAFE_EXTENSIONS.some((ext) => ext.includes(fileExt))
+    return { safe: !!isSafeType }
   }
 }
 
