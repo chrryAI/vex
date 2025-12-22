@@ -59,6 +59,7 @@ export default function SignIn({
     signInContext: signInContextInternal,
     signInPart: part,
     setSignInPart: setPart,
+    siteConfig,
   } = useAuth()
 
   const signInContext = async (
@@ -161,8 +162,6 @@ export default function SignIn({
         isCallbackUrlURI = false
       }
     }
-
-    const siteConfig = getSiteConfig(CHRRY_URL)
 
     // For OAuth (Google/Apple), always use chrry.ai as callback to avoid URL limit issues
     // We'll redirect back to the original subdomain after auth
