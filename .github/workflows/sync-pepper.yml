@@ -1,0 +1,93 @@
+name: Sync Pepper to Separate Repo
+
+on:
+  workflow_dispatch: # Manual trigger
+  push:
+    branches:
+      - chrry # Trigger when pushing to main branch
+    paths:
+      - "packages/pepper/**" # Only when pepper changes
+
+permissions:
+  contents: read
+
+jobs:
+  sync-pepper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Vex repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history
+          token: ${{ secrets.CHRRY_SYNC_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create fresh Pepper commit
+        run: |
+          # Create temporary directory for Pepper
+          mkdir -p /tmp/pepper-fresh
+
+          # Copy only packages/pepper contents
+          cp -r packages/pepper/* /tmp/pepper-fresh/
+          cp -r packages/pepper/.* /tmp/pepper-fresh/ 2>/dev/null || true
+
+          # Initialize fresh repo
+          cd /tmp/pepper-fresh
+          git init
+
+          # Configure Git for this repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          # Create single clean commit with current state
+          COMMIT_MSG="Update Pepper Router 🌶️
+
+          Synced from Vex monorepo
+          Latest changes from packages/pepper"
+
+          git commit -m "$COMMIT_MSG"
+
+      - name: Push to Pepper repo
+        run: |
+          cd /tmp/pepper-fresh
+
+          # Add Pepper remote
+          git remote add origin https://x-access-token:${{ secrets.CHRRY_SYNC_TOKEN }}@github.com/chrryAI/pepper.git
+
+          # Create main branch and force push (clean history)
+          git branch -M main
+          git push -f origin main
+
+      - name: Create GitHub Release (if version changed)
+        run: |
+          cd /tmp/pepper-fresh
+
+          # Extract version from package.json
+          VERSION=$(node -p "require('./package.json').version")
+
+          # Check if tag exists
+          if ! git ls-remote --tags origin | grep -q "refs/tags/v$VERSION"; then
+            echo "Creating release for v$VERSION"
+            
+            # Create and push tag
+            git tag -a "v$VERSION" -m "Release v$VERSION"
+            git push origin "v$VERSION"
+            
+            # Create GitHub release using GitHub CLI
+            gh release create "v$VERSION" \
+              --repo chrryAI/pepper \
+              --title "🌶️ Pepper Router v$VERSION" \
+              --notes "Release v$VERSION - Synced from Vex monorepo" \
+              --generate-notes
+          else
+            echo "Tag v$VERSION already exists, skipping release"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.CHRRY_SYNC_TOKEN }}

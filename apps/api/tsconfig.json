@@ -1,0 +1,23 @@
+{
+  "extends": "../../packages/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@chrryai/chrry/*": ["../../packages/ui/*"],
+      "chrry/*": ["../../packages/ui/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    "next.config.js",
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts"
+  ],
+  "exclude": ["node_modules", "tests/**/*", "**/*.test.ts", "**/*.test.tsx"]
+}

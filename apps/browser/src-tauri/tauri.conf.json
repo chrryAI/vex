@@ -1,0 +1,75 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Vex",
+  "version": "0.1.0",
+  "identifier": "ai.chrry.vex",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5174",
+    "beforeDevCommand": "pnpm dev:vite",
+    "beforeBuildCommand": "vite build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Vex",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "transparent": true,
+        "center": true,
+        "windowEffects": {
+          "effects": ["underWindowBackground"],
+          "state": "active",
+          "radius": 12.0
+        }
+      }
+    ],
+    "security": {
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "window-controls",
+          "description": "Window control permissions for traffic lights",
+          "windows": ["*"],
+          "permissions": [
+            "core:window:allow-close",
+            "core:window:allow-minimize",
+            "core:window:allow-maximize",
+            "core:window:allow-unmaximize",
+            "core:window:allow-toggle-maximize",
+            "core:window:allow-is-maximized",
+            "core:window:allow-set-title",
+            "core:window:allow-set-resizable",
+            "core:window:allow-set-fullscreen"
+          ]
+        }
+      ]
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Productivity",
+    "shortDescription": "AI Workspace for Mac",
+    "longDescription": "Vex is your AI-powered workspace that helps you work smarter, not harder."
+  },
+  "plugins": {
+    "deep-link": {
+      "schemes": ["vex"],
+      "mobile": []
+    }
+  }
+}

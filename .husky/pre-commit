@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+
+# 🔒 Secret Scanning with Gitleaks
+echo "🔍 Scanning for secrets..."
+gitleaks protect --staged --redact --verbose --config=gitleaks.toml
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Gitleaks detected potential secrets in your staged files!"
+  echo ""
+  echo "🔧 To fix this:"
+  echo "  1. Review the findings above"
+  echo "  2. Remove the secret or add it to .gitignore"
+  echo "  3. If it's a false positive, update gitleaks.toml allowlist"
+  echo ""
+  echo "⚠️  EMERGENCY BYPASS (use with caution):"
+  echo "  SKIP=gitleaks git commit -m \"your message\""
+  echo ""
+  exit 1
+fi
+
+echo "✅ No secrets detected"
+
+# Run existing SCSS tests
+pnpm run test:scss

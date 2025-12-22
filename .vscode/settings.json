@@ -1,0 +1,5 @@
+{
+  "kiroAgent.configureMCP": "Enabled",
+  "codium.codeCompletion.enable": false,
+  "source.fixAll.eslint": "explicit"
+}

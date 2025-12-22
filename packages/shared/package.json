@@ -1,0 +1,29 @@
+{
+  "name": "@repo/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    "./contexts/*": "./src/contexts/*.tsx",
+    "./platform/*": "./src/platform/*.ts",
+    "./types": "./src/types/index.ts",
+    "./stores": "./src/stores/index.ts",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./ui": "./src/ui/index.ts",
+    "./theme": "./src/theme/index.ts"
+  },
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "react": "19.2.0",
+    "swr": "^2.3.6",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.12",
+    "typescript": "^5.7.3"
+  }
+}

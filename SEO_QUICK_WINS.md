@@ -1,0 +1,129 @@
+# SEO Quick Wins - Lazy Day Edition 😴
+
+You're tired, I get it. Here are the **easiest, highest-impact** SEO fixes ranked by effort vs. reward:
+
+## 🍒 Cherry-Pick These (5 min each)
+
+### 1. Fix Sitemap - Remove Non-Canonical Pages
+
+**Impact**: 🔥🔥🔥 (Fixes 51 pages)  
+**Effort**: ⚡ (One file edit)
+
+Your sitemap includes localized pages that shouldn't be there.
+
+**File**: `apps/web/app/sitemap.ts` (or wherever you generate it)
+
+**Fix**: Exclude alternate language URLs from sitemap, only include canonical versions:
+
+```typescript
+// Only include the canonical (English) version
+// Don't include /de/page, /fr/page, etc.
+const urls = pages.filter(
+  (page) =>
+    !page.startsWith("/de") &&
+    !page.startsWith("/fr") &&
+    !page.startsWith("/es"),
+)
+```
+
+### 2. Fix Multiple H1s
+
+**Impact**: 🔥🔥 (Fixes 69 pages)  
+**Effort**: ⚡⚡ (Search & replace)
+
+You have components rendering multiple `<h1>` tags.
+
+**Quick audit**:
+
+```bash
+# Find all H1 usage
+grep -r "<h1" apps/web packages/ui --include="*.tsx"
+```
+
+**Rule**: Only your main page title should be `<h1>`. Everything else should be `<h2>` or lower.
+
+Common culprits:
+
+- Modal titles
+- Section headers
+- Component headers
+
+### 3. Add Internal Links
+
+**Impact**: 🔥 (Helps 288 pages get indexed)  
+**Effort**: ⚡⚡⚡ (Requires some thought)
+
+Pages with only 1 internal link are at risk.
+
+**Easy wins**:
+
+- Add "Related Threads" section to thread pages
+- Add breadcrumbs
+- Add footer links to main pages
+- Add sitemap page
+
+## 🛠️ Medium Effort (Save for tomorrow)
+
+### 4. Fix Large HTML Files
+
+**Impact**: 🔥🔥  
+**Effort**: ⚡⚡⚡⚡
+
+7 pages are too large. Likely causes:
+
+- Inline SVGs (move to separate files)
+- Large inline scripts (code-split)
+- Embedded data (lazy-load)
+
+**Check which pages**:
+
+```bash
+# Find large HTML responses in your build
+find apps/web/.next -name "*.html" -size +500k
+```
+
+### 5. Fix Broken JavaScript
+
+**Impact**: 🔥  
+**Effort**: ⚡⚡
+
+The `share-modal.js` error is a timing issue. It's trying to access DOM before it's ready.
+
+**Fix**: Add null checks or wait for DOM ready:
+
+```javascript
+// If you have custom scripts
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.querySelector("#share-modal")
+  if (modal) {
+    modal.addEventListener("click", handler)
+  }
+})
+```
+
+## 📊 Your Current Score
+
+- **Health Score**: 78/100 (Good! 🎉)
+- **Errors**: 266
+- **Warnings**: 1,235
+- **Success Rate**: 923/939 pages (98.3%)
+
+## 🎯 Priority Order (If you only do 3 things)
+
+1. **Fix sitemap** (5 min, huge impact)
+2. **Audit H1 tags** (10 min, easy wins)
+3. **Add related links** (20 min, helps indexing)
+
+## 🚀 Automated Fix Script
+
+Want me to create a script that automatically:
+
+- Scans for multiple H1s
+- Generates a sitemap without localized pages
+- Adds null checks to event listeners
+
+Just say "automate it" and I'll build it for you! 😎
+
+---
+
+**TL;DR**: Fix the sitemap first. It's 5 minutes and fixes 51 pages. Then chill. 🏖️
