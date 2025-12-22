@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.chrryai.browser",
   "build": {
-    "frontendDist": "dist",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:5174",
     "beforeDevCommand": "pnpm dev:vite",
     "beforeBuildCommand": "vite build"
