@@ -1649,23 +1649,25 @@ const checkIsExtension = () => {
   return false
 }
 
-export const isProduction =
+const isProduction =
   getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+
+const isDevelopment = checkIsExtension()
+  ? [
+      "jnngfghgbmieehkfebkogjjiepomakdh",
+      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
+    ].some((id) => getExtensionUrl()?.includes(id)) ||
+    // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
+    // Packed extensions from store have mixed case IDs
+    Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
+  : !isProduction
 
 export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
   // Inline isDevelopment check to avoid circular dependency
-  const isDevelopment = checkIsExtension()
-    ? [
-        "jnngfghgbmieehkfebkogjjiepomakdh",
-        "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
-      ].some((id) => getExtensionUrl()?.includes(id)) ||
-      // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
-      // Packed extensions from store have mixed case IDs
-      Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
-    : !isProduction
+
   const defaultMode = isDevelopment
     ? ("sushi" as SiteMode)
     : isE2E
@@ -1738,7 +1740,7 @@ export function detectSiteModeDomain(
 
   // E2E testing environment
   if (matchesDomain(host, "e2e.chrry.ai")) {
-    return "vex" // Use vex mode for E2E
+    return "e2eVex" // Use vex mode for E2E
   }
 
   if (matchesDomain(host, "vex.chrry.ai")) {
@@ -1794,6 +1796,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "zarathustra",
     "search",
     "sushi",
+    "e2eVex",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -1833,13 +1836,12 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   const mode = detectSiteMode(hostname)
 
   if (mode === "sushi") {
-    // console.log(`🚀 ~ getSiteConfig ~ sushi:`, sushi)
     return sushi
   }
 
-  // if (isE2E) {
-  //   return e2eVex
-  // }
+  if (!isDevelopment && isE2E) {
+    return e2eVex
+  }
 
   if (mode === "search") {
     return search
@@ -1898,6 +1900,10 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   }
 
   if (mode === "e2eVex") {
+    return e2eVex
+  }
+
+  if (isE2E) {
     return e2eVex
   }
 
