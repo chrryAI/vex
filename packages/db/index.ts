@@ -3382,21 +3382,24 @@ export async function getMemories({
   scatterAcrossThreads?: boolean
 }) {
   const conditions = []
-
-  if (userId) {
-    conditions.push(eq(memories.userId, userId))
-  } else {
-    conditions.push(isNull(memories.userId))
-  }
-
-  if (guestId) {
-    conditions.push(eq(memories.guestId, guestId))
-  } else {
-    conditions.push(isNull(memories.guestId))
-  }
-
   if (appId) {
-    conditions.push(and(eq(memories.appId, appId)))
+    // App memories: must have appId, must NOT have userId/guestId
+    conditions.push(
+      and(
+        eq(memories.appId, appId),
+        isNull(memories.userId),
+        isNull(memories.guestId),
+      ),
+    )
+  } else {
+    // User memories: must have userId OR guestId, must NOT have appId
+    if (userId) {
+      conditions.push(eq(memories.userId, userId))
+    }
+    if (guestId) {
+      conditions.push(eq(memories.guestId, guestId))
+    }
+    conditions.push(isNull(memories.appId))
   }
 
   // Exclude memories from current thread
