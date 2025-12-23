@@ -4081,7 +4081,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
 
           // Monitor inactivity to detect stuck streams (Bun-compatible)
-          const INACTIVITY_TIMEOUT_MS = 10000 // 10 seconds of no activity = stuck
+          const INACTIVITY_TIMEOUT_MS = 30000 // 30 seconds of no activity = stuck (increased for reasoning models)
           let lastActivityTime = Date.now()
           let streamFinished = false
           let monitoringInterval: NodeJS.Timeout | null = null
