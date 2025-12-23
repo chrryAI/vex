@@ -460,6 +460,12 @@ export const useWebSocket = <T extends { type: string }>({
       return
     }
 
+    // Don't attempt connection if offline (API or web is down)
+    if (!isOnline) {
+      console.log("⏸️ Skipping WebSocket connection - system is offline")
+      return
+    }
+
     const base = WS_URL
     const wsUrl = `${base}?token=${encodeURIComponent(token)}&deviceId=${encodeURIComponent(deviceId)}`
 
@@ -485,7 +491,7 @@ export const useWebSocket = <T extends { type: string }>({
     })
 
     // Monitor connection state
-  }, [token, deps, wsManager, deviceId])
+  }, [token, deps, wsManager, deviceId, isOnline])
 
   // Use ref to avoid re-subscribing on every onMessage change
   const onMessageRef = useRef(onMessage)
