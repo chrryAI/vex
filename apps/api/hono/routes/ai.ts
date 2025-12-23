@@ -141,25 +141,37 @@ async function getRelevantMemoryContext({
     // Get user memories scattered across different threads (exclude current thread)
     const userMemoriesResult =
       userId || guestId
-        ? await getMemories({
-            userId,
-            guestId,
-            pageSize,
-            orderBy: "importance",
-            excludeThreadId: threadId, // Don't load memories from current thread
-            scatterAcrossThreads: true, // Get diverse memories from different conversations
-          })
+        ? (
+            await getMemories({
+              userId,
+              guestId,
+              pageSize,
+              orderBy: "importance",
+              excludeThreadId: threadId, // Don't load memories from current thread
+              scatterAcrossThreads: true, // Get diverse memories from different conversations
+            })
+          ).filter(
+            (memory) =>
+              isOwner(memory, {
+                userId,
+                guestId,
+              }) && !memory.appId,
+          )
         : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     // Get app-specific memories
     const appMemoriesResult = appId
-      ? await getMemories({
-          appId,
-          pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
-          orderBy: "importance",
-          excludeThreadId: threadId,
-          scatterAcrossThreads: true,
-        })
+      ? (
+          await getMemories({
+            appId,
+            pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
+            orderBy: "importance",
+            excludeThreadId: threadId,
+            scatterAcrossThreads: true,
+          })
+        ).filter(
+          (memory) => !memory.userId && !memory.guestId && !!memory.appId,
+        )
       : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     // Combine user and app memories
@@ -239,7 +251,7 @@ async function getRelevantMemoryContext({
       context += `\n\nRELEVANT CONTEXT ABOUT THE USER:\n${userMemoryContext}\n\nUse this context to personalize your responses when relevant.`
     }
     if (appMemoryContext) {
-      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}\n\nThis is shared knowledge that this app has learned over time. Use it to provide informed responses, but DO NOT say "you previously asked" or "you asked before" when referencing this knowledge - it's app knowledge, not the user's personal question history.`
+      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
     }
     return { context, memoryIds }
   } catch (error) {
@@ -1308,12 +1320,16 @@ These reflect the user's interests and recent conversations. If the user seems u
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
-  const calendarEvents = await getCalendarEvents({
-    userId: member?.id,
-    guestId: guest?.id,
-    startTime: sevenDaysAgo,
-    endTime: thirtyDaysFromNow,
-  })
+  const calendarEvents = (
+    await getCalendarEvents({
+      userId: member?.id,
+      guestId: guest?.id,
+      startTime: sevenDaysAgo,
+      endTime: thirtyDaysFromNow,
+    })
+  ).filter((event) =>
+    isOwner(event, { userId: member?.id, guestId: guest?.id }),
+  )
 
   // Fetch Vault data for context (expenses, budgets, shared expenses)
   const { getExpenses, getBudgets, getSharedExpenses } = await import(
@@ -1322,26 +1338,38 @@ These reflect the user's interests and recent conversations. If the user seems u
 
   const vaultExpenses =
     app?.name === "Vault"
-      ? await getExpenses({
-          userId: member?.id,
-          guestId: guest?.id,
-          pageSize: 50, // Last 50 expenses
-        })
+      ? (
+          await getExpenses({
+            userId: member?.id,
+            guestId: guest?.id,
+            pageSize: 50, // Last 50 expenses
+          })
+        ).expenses.filter((expense) =>
+          isOwner(expense, { userId: member?.id, guestId: guest?.id }),
+        )
       : null
 
   const vaultBudgets =
     app?.name === "Vault"
-      ? await getBudgets({
-          userId: member?.id,
-          guestId: guest?.id,
-        })
+      ? (
+          await getBudgets({
+            userId: member?.id,
+            guestId: guest?.id,
+          })
+        ).budgets.filter((budget) =>
+          isOwner(budget, { userId: member?.id, guestId: guest?.id }),
+        )
       : null
 
   const vaultSharedExpenses =
     app?.name === "Vault"
-      ? await getSharedExpenses({
-          threadId: message.message.threadId,
-        })
+      ? (
+          await getSharedExpenses({
+            threadId: message.message.threadId,
+          })
+        ).filter((expense) =>
+          isOwner(expense, { userId: member?.id, guestId: guest?.id }),
+        )
       : null
 
   // Build calendar context (limit to 15 most relevant events)
@@ -1398,19 +1426,27 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
     appExtends.find((extend) => extend.slug === "focus")
   // Fetch Focus data for context (tasks, moods, timer)
   const focusTasks = hasFocus
-    ? await getTasks({
-        userId: member?.id,
-        guestId: guest?.id,
-        pageSize: 30, // Last 30 tasks
-      })
+    ? (
+        await getTasks({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 30, // Last 30 tasks
+        })
+      ).tasks.filter((task) =>
+        isOwner(task, { userId: member?.id, guestId: guest?.id }),
+      )
     : null
 
   const focusMoods = hasFocus
-    ? await getMoods({
-        userId: member?.id,
-        guestId: guest?.id,
-        pageSize: 20, // Last 20 moods for trend analysis
-      })
+    ? (
+        await getMoods({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 20, // Last 20 moods for trend analysis
+        })
+      ).filter((mood) =>
+        isOwner(mood, { userId: member?.id, guestId: guest?.id }),
+      )
     : null
 
   const focusTimer = hasFocus
