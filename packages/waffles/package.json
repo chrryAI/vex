@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "1.7.90",
+  "version": "1.7.91",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
