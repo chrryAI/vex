@@ -1,8 +1,6 @@
 import { Hono } from "hono"
 import { isE2E } from "@chrryai/chrry/utils"
-import dotenv from "dotenv"
 
-dotenv.config()
 export const testConfig = new Hono()
 
 /**
