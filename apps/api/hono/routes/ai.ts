@@ -1444,7 +1444,7 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
           guestId: guest?.id,
           pageSize: 20, // Last 20 moods for trend analysis
         })
-      ).filter((mood) =>
+      ).moods.filter((mood) =>
         isOwner(mood, { userId: member?.id, guestId: guest?.id }),
       )
     : null
