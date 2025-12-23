@@ -146,6 +146,7 @@ export async function loadServerData(
       if (testConfigResponse.ok) {
         const testConfig = await testConfigResponse.json()
         TEST_FINGERPRINTS = testConfig.TEST_FINGERPRINTS || []
+        console.log(`🚀 ~ TEST_FINGERPRINTS:`, TEST_FINGERPRINTS)
       }
     } catch (error) {
       console.error("Failed to fetch test config:", error)

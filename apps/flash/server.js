@@ -27,7 +27,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.8.1"
+const VERSION = "1.8.2"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -368,6 +368,36 @@ app.get("/sitemap.xml", async (req, res) => {
   } catch (error) {
     console.error("❌ Sitemap error:", error)
     res.status(500).send("Error generating sitemap")
+  }
+})
+
+// Favicon.ico route - redirect to app-specific icon
+app.get("/favicon.ico", async (req, res) => {
+  try {
+    // Use getSiteConfig for white-label detection (same as metadataToHtml)
+    const hostname = req.hostname || "localhost"
+    const { getSiteConfig } = await import("@chrryai/chrry/utils/siteConfig")
+    const siteConfig = getSiteConfig(`https://${hostname}`)
+
+    // Match metadataToHtml logic exactly
+    const iconSlug =
+      siteConfig?.storeSlug === "compass"
+        ? "atlas"
+        : siteConfig?.slug || "chrry"
+
+    const baseIcon = `/images/apps/${iconSlug}.png`
+    const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
+
+    // Redirect to 32x32 favicon (96px at 3x density for Retina)
+    const faviconUrl = `${apiUrl}/resize?url=${encodeURIComponent(baseIcon)}&w=96&h=96&fit=contain&q=100&fmt=png`
+
+    res.redirect(faviconUrl)
+  } catch (error) {
+    console.error("❌ Favicon error:", error)
+    // Fallback to default
+    const apiUrl = process.env.VITE_API_URL || "https://chrry.dev/api"
+    const fallback = `${apiUrl}/resize?url=${encodeURIComponent("/images/apps/chrry.png")}&w=96&h=96&fit=contain&q=100&fmt=png`
+    res.redirect(fallback)
   }
 })
 
