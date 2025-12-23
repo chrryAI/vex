@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { FRONTEND_URL } from "../utils"
+import { API_URL, FRONTEND_URL } from "../utils"
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(
@@ -17,16 +17,23 @@ export function useOnlineStatus() {
 
     async function checkConnection() {
       try {
-        // Check API health endpoint to detect server outages
-        const response = await fetch(`${FRONTEND_URL}/api/health`, {
-          method: "HEAD",
-          cache: "no-store",
-        })
-        if (response.ok) {
-          setIsOnline(true)
-        } else {
-          setIsOnline(false)
-        }
+        // Check both API and frontend health
+        const [apiResponse, webResponse] = await Promise.all([
+          fetch(`${API_URL}/health`, {
+            method: "HEAD",
+            cache: "no-store",
+          }).catch(() => null),
+          fetch(`${FRONTEND_URL}/`, {
+            method: "HEAD",
+            cache: "no-store",
+          }).catch(() => null),
+        ])
+
+        // Both API and web must be online
+        const apiOnline = apiResponse?.ok ?? false
+        const webOnline = webResponse?.ok ?? false
+
+        setIsOnline(apiOnline && webOnline)
       } catch {
         setIsOnline(false)
       }
