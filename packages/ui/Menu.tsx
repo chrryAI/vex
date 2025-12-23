@@ -28,7 +28,15 @@ import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext, useApp } from "./context/providers"
-import { Button, Div, H4, Span, usePlatform, useTheme } from "./platform"
+import {
+  Button,
+  Div,
+  H4,
+  isTauri,
+  Span,
+  usePlatform,
+  useTheme,
+} from "./platform"
 import { MotiView } from "./platform/MotiView"
 import { useHasHydrated } from "./hooks"
 import Bookmark from "./Bookmark"
@@ -87,7 +95,33 @@ export default function Menu({
   const { app } = useApp()
 
   // Platform context
-  const { viewPortHeight, isStandalone, os } = usePlatform()
+  const { viewPortHeight, os } = usePlatform()
+
+  const tauri = isTauri()
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  // Detect fullscreen state in Tauri
+  useEffect(() => {
+    if (tauri && typeof window !== "undefined") {
+      const checkFullscreen = async () => {
+        try {
+          // @ts-ignore - Tauri API
+          const { getCurrentWindow } = await import("@tauri-apps/api/window")
+          const appWindow = getCurrentWindow()
+          const fullscreen = await appWindow.isFullscreen()
+          setIsFullscreen(fullscreen)
+        } catch (e) {
+          // Tauri API not available
+        }
+      }
+
+      checkFullscreen()
+
+      // Listen for fullscreen changes
+      const interval = setInterval(checkFullscreen, 500)
+      return () => clearInterval(interval)
+    }
+  }, [tauri])
 
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
 
@@ -238,8 +272,13 @@ export default function Menu({
       >
         <>
           <Div>
-            <Controls />
-            <Div style={styles.menuHeader.style}>
+            {/* <Controls /> */}
+            <Div
+              style={{
+                ...styles.menuHeader.style,
+                ...(tauri && !isFullscreen ? { marginTop: "1.5rem" } : {}),
+              }}
+            >
               {isDrawerOpen ? (
                 <>
                   <A
