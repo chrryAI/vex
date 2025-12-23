@@ -258,13 +258,13 @@ export const thread = async ({
 
     await expect(
       (await getFirstThread()).getByTestId("threads-bookmarked"),
-    ).not.toBeVisible({
+    ).toBeVisible({
       timeout: 15000,
     })
 
     await expect(
-      (await getFirstThread()).getByTestId("threads-not-bookmarked"),
-    ).toBeVisible({
+      (await getSecondThread()).getByTestId("threads-not-bookmarked"),
+    ).not.toBeVisible({
       timeout: 15000,
     })
 
