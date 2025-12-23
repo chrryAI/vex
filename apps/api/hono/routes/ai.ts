@@ -1346,38 +1346,26 @@ These reflect the user's interests and recent conversations. If the user seems u
 
   const vaultExpenses =
     app?.name === "Vault"
-      ? (
-          await getExpenses({
-            userId: member?.id,
-            guestId: guest?.id,
-            pageSize: 50, // Last 50 expenses
-          })
-        ).expenses.filter((expense) =>
-          isOwner(expense, { userId: member?.id, guestId: guest?.id }),
-        )
+      ? await getExpenses({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 50, // Last 50 expenses
+        })
       : null
 
   const vaultBudgets =
     app?.name === "Vault"
-      ? (
-          await getBudgets({
-            userId: member?.id,
-            guestId: guest?.id,
-          })
-        ).budgets.filter((budget) =>
-          isOwner(budget, { userId: member?.id, guestId: guest?.id }),
-        )
+      ? await getBudgets({
+          userId: member?.id,
+          guestId: guest?.id,
+        })
       : null
 
   const vaultSharedExpenses =
     app?.name === "Vault"
-      ? (
-          await getSharedExpenses({
-            threadId: message.message.threadId,
-          })
-        ).filter((expense) =>
-          isOwner(expense, { userId: member?.id, guestId: guest?.id }),
-        )
+      ? await getSharedExpenses({
+          threadId: message.message.threadId,
+        })
       : null
 
   // Build calendar context (limit to 15 most relevant events)
@@ -1589,7 +1577,7 @@ ${(() => {
     },
     {} as Record<string, number>,
   )
-  const latestMood = focusMoods.moods[0]
+  const latestMood = focusMoods[0]
   if (!latestMood) return "No mood data available"
 
   return `Latest: ${moodEmojis[latestMood.type as keyof typeof moodEmojis]} ${latestMood.type} (${new Date(latestMood.createdOn).toLocaleDateString()})

@@ -10,14 +10,18 @@ body {
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
     Cantarell, sans-serif;
   overflow: hidden;
+  padding: 1px; /* Padding to properly display rounded corners */
+  background: transparent; /* Keep transparent for native macOS blur */
 }
 
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - 2px); /* Account for body padding */
   background: rgba(32, 33, 36, 0.85); /* Semi-transparent to show blur */
   color: #e8eaed;
+  border-radius: 12px; /* Match Tauri window radius */
+  overflow: hidden; /* Clip content to rounded corners */
 }
 
 /* Browser Header */

@@ -86,7 +86,7 @@ function App() {
 
   return (
     <div className="app">
-      <BrowserHeader
+      {/* <BrowserHeader
         url={activeTab?.url || ""}
         canGoBack={canGoBack}
         canGoForward={canGoForward}
@@ -94,7 +94,7 @@ function App() {
         onBack={handleBack}
         onForward={handleForward}
         onReload={handleReload}
-      />
+      /> */}
       <TabBar
         tabs={tabs}
         activeTabId={activeTabId}
