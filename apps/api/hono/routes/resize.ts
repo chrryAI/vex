@@ -36,29 +36,60 @@ resize.get("/", async (c) => {
 
     // Handle relative paths (e.g., /images/apps/vex.png)
     let fullUrl = url
+    let useFilesystem = false
+    let localPath = ""
+
     if (url.startsWith("/")) {
       // For static files, use the frontend server URL
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173"
       fullUrl = `${frontendUrl}${url}`
+
+      // If localhost, prepare filesystem fallback
+      if (frontendUrl.includes("localhost")) {
+        useFilesystem = true
+        localPath = `./public${url}` // Relative to API root
+      }
+
       console.log(`🔗 Converted relative path: ${url} → ${fullUrl}`)
     }
 
     console.log(`🖼️  Resizing image: ${fullUrl} → ${width}x${height}`)
 
-    // Fetch the original image
-    const response = await fetch(fullUrl)
-    if (!response.ok) {
-      console.error(
-        `❌ Failed to fetch image: ${response.status} ${response.statusText}`,
-      )
-      return c.json(
-        { error: `Failed to fetch image: ${response.statusText}` },
-        500,
-      )
-    }
+    let buffer: Buffer
 
-    const arrayBuffer = await response.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    // Try HTTP first, fallback to filesystem for local dev
+    try {
+      const response = await fetch(fullUrl)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      const arrayBuffer = await response.arrayBuffer()
+      buffer = Buffer.from(arrayBuffer)
+    } catch (fetchError: any) {
+      // If fetch failed and we're in local mode, try filesystem
+      if (useFilesystem && localPath) {
+        console.log(`⚠️  HTTP fetch failed, trying filesystem: ${localPath}`)
+        try {
+          const fs = await import("fs/promises")
+          const path = await import("path")
+          const absolutePath = path.resolve(process.cwd(), localPath)
+          buffer = await fs.readFile(absolutePath)
+          console.log(`✅ Loaded from filesystem: ${absolutePath}`)
+        } catch (fsError: any) {
+          console.error(`❌ Filesystem read failed:`, fsError.message)
+          return c.json(
+            { error: `Failed to load image: ${fetchError.message}` },
+            500,
+          )
+        }
+      } else {
+        console.error(`❌ Failed to fetch image:`, fetchError.message)
+        return c.json(
+          { error: `Failed to fetch image: ${fetchError.message}` },
+          500,
+        )
+      }
+    }
 
     // Get original image metadata
     const metadata = await sharp(buffer).metadata()
