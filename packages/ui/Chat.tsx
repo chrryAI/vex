@@ -2054,6 +2054,7 @@ export default function Chat({
       .then((response) => response.json())
       .then((result) => {
         setShouldGetCredits(true)
+
         message &&
           onStreamingStop?.({
             ...message,

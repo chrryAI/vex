@@ -38,6 +38,9 @@ export const PROMPT_LIMITS = {
 export const users = pgTable(
   "user",
   {
+    // appId: uuid("appId").references(() => apps.id, {
+    //   onDelete: "cascade",
+    // }), // this  meants apps can create users
     id: uuid("id").defaultRandom().primaryKey(),
     name: text("name"),
     email: text("email").notNull(),

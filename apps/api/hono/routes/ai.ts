@@ -4388,7 +4388,6 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
 
         if (!streamControllers.has(streamId)) {
-          console.log("Stream was stopped, breaking loop")
           return c.json({ error: "Stream was stopped" }, { status: 400 })
         }
 

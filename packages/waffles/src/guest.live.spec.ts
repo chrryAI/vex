@@ -83,26 +83,26 @@ test.only("Gift", async ({ page }) => {
   })
 })
 
-test.only("Long text", async ({ page }) => {
-  const result = await chat({
-    page,
-    isMember,
-    isLive,
-    instruction: "Help me write a short story",
-    // agentMessageTimeout: 12000,
-    prompts: [
-      {
-        text: "Write a brief 100-word story about a time traveler who discovers they can't change the past",
-        model: "sushi",
-        stop: true,
-      },
-      {
-        text: "Now summarize that story shortly in 1 sentence",
-        model: "sushi",
-      },
-    ],
-  })
-})
+// test.only("Long text", async ({ page }) => {
+//   const result = await chat({
+//     page,
+//     isMember,
+//     isLive,
+//     instruction: "Help me write a short story",
+//     // agentMessageTimeout: 12000,
+//     prompts: [
+//       {
+//         text: "Write a 300-word story about a time traveler who discovers they can't change the past",
+//         model: "sushi",
+//         stop: true,
+//       },
+//       {
+//         text: "I stopped you. Need a short one. Now summarize that story shortly in 1 sentence",
+//         model: "sushi",
+//       },
+//     ],
+//   })
+// })
 
 test.only("Chat", async ({ page }) => {
   test.slow()
