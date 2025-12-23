@@ -3257,7 +3257,7 @@ export default function Chat({
           ...style,
           ...(isDrawerOpen && !isSmallDevice ? styles.drawerOpen.style : {}),
           // ...(isMobileDevice ? styles.mobile.style : {}),
-          ...(isStandalone && os === "ios" ? styles.standalone.style : {}),
+          ...(isStandalone && os === "ios" ? { marginBottom: 14.5 } : {}),
         }}
       >
         {isSpeechActive && (

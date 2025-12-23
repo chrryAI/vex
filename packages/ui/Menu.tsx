@@ -87,7 +87,7 @@ export default function Menu({
   const { app } = useApp()
 
   // Platform context
-  const { viewPortHeight, isStandalone } = usePlatform()
+  const { viewPortHeight, isStandalone, os } = usePlatform()
 
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
 
@@ -227,11 +227,12 @@ export default function Menu({
     <>
       <Div
         suppressHydrationWarning
-        className="menu blur"
+        className={`menu blur safeArea ${os}`}
         key={isDrawerOpen ? "open" : "closed"}
         ref={innerRef}
         style={{
           ...styles.menu.style,
+          paddingBottom: os === "ios" ? 10 : 0,
           ...(isDrawerOpen ? styles.open.style : styles.closed.style),
         }}
       >

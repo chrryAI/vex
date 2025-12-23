@@ -218,10 +218,10 @@ export function PlatformProvider({
 
   const isDesktop = _isWeb() && viewportWidth >= 960
 
-  // Detect OS - SSR-safe: use server-side UAParser detection only
+  // Detect OS - Use server-side UAParser first, then client-side fallback
   const os: "ios" | "android" | "macos" | "windows" | "linux" | "unknown" =
     (() => {
-      // Use UAParser OS detection from session
+      // Use UAParser OS detection from session (server-side)
       if (session?.os?.name) {
         const osLower = session.os.name.toLowerCase()
         if (osLower.includes("ios")) return "ios"
@@ -231,8 +231,27 @@ export function PlatformProvider({
         if (osLower.includes("linux")) return "linux"
       }
 
-      // SSR fallback - return unknown instead of trying client detection
-      // This prevents hydration mismatch
+      // Client-side fallback using navigator.userAgent
+      if (typeof window !== "undefined" && typeof navigator !== "undefined") {
+        const ua = navigator.userAgent.toLowerCase()
+
+        // iOS detection (iPhone, iPad, iPod)
+        if (/iphone|ipad|ipod/.test(ua)) return "ios"
+
+        // Android detection
+        if (/android/.test(ua)) return "android"
+
+        // macOS detection
+        if (/macintosh|mac os x/.test(ua)) return "macos"
+
+        // Windows detection
+        if (/windows|win32|win64/.test(ua)) return "windows"
+
+        // Linux detection
+        if (/linux/.test(ua) && !/android/.test(ua)) return "linux"
+      }
+
+      // SSR fallback - return unknown
       return "unknown"
     })()
 
