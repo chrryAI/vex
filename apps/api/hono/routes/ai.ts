@@ -139,7 +139,12 @@ async function getRelevantMemoryContext({
 
   try {
     // Get user memories scattered across different threads (exclude current thread)
-    const userMemoriesData =
+    const userMemoriesData: {
+      memories: memory[]
+      totalCount: number
+      hasNextPage: boolean
+      nextPage: number | null
+    } =
       userId || guestId
         ? await getMemories({
             userId,
@@ -160,7 +165,12 @@ async function getRelevantMemoryContext({
     )
 
     // Get app-specific memories
-    const appMemoriesData = appId
+    const appMemoriesData: {
+      memories: memory[]
+      totalCount: number
+      hasNextPage: boolean
+      nextPage: number | null
+    } = appId
       ? await getMemories({
           appId,
           pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
