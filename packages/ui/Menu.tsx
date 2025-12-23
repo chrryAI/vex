@@ -17,8 +17,6 @@ import {
   UserRoundPlus,
   UsersRound,
   WannathisIcon,
-  CheckIcon,
-  Circle,
 } from "./icons"
 import {
   BrowserInstance,
@@ -28,7 +26,7 @@ import {
 } from "./utils"
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
-import { useAppContext, COLORS } from "./context/AppContext"
+import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext, useApp } from "./context/providers"
 import { Button, Div, H4, Span, usePlatform, useTheme } from "./platform"
 import { MotiView } from "./platform/MotiView"

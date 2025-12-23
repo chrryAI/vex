@@ -486,7 +486,7 @@ const Thread = ({
               <Div>
                 {/* Typing indicator for collaborative threads */}
 
-                <Div>
+                <Div data-placeholder={placeHolderText}>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
                     compactMode={showFocus}

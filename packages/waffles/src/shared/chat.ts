@@ -770,6 +770,11 @@ export const chat = async ({
         timeout: 100000,
       })
 
+      const placeholder = page.locator("[data-placeholder]")
+      await expect(placeholder).toBeAttached({
+        timeout: 100000,
+      })
+
       if (prompt.like) {
         await wait(3000)
         await getFilterLikedButton({ liked: false }).click()

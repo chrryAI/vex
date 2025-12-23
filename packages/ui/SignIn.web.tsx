@@ -3,9 +3,8 @@ import React, { useEffect, useRef, useState } from "react"
 import styles from "./SignIn.module.scss"
 import clsx from "clsx"
 import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
-import { apiFetch, CHRRY_URL, isDevelopment } from "./utils"
+import { apiFetch, isDevelopment } from "./utils"
 import { FaGoogle, FaApple } from "react-icons/fa"
-import { getSiteConfig } from "./utils/siteConfig"
 export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
 }

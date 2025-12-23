@@ -20,7 +20,6 @@ import {
   createInstruction,
   message,
   calendarEvent,
-  updateThread,
   createMood,
   app,
   db,
