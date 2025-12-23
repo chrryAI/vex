@@ -1549,16 +1549,15 @@ ${vaultSharedExpenses.sharedExpenses
 
   // Build Focus context (tasks, moods, timer settings)
   const focusContext =
-    hasFocus &&
-    (focusTasks?.tasks.length || focusMoods?.moods.length || focusTimer)
+    hasFocus && (focusTasks?.length || focusMoods?.length || focusTimer)
       ? `
 
 ## 🎯 User's Focus & Wellness Overview
 
 ${
-  focusTasks?.tasks.length
-    ? `### Recent Tasks (Last ${focusTasks.tasks.length})
-${focusTasks.tasks
+  focusTasks?.length
+    ? `### Recent Tasks (Last ${focusTasks.length})
+${focusTasks
   .slice(0, 10)
   .map((task) => {
     const totalTime = task.total?.reduce((sum, t) => sum + t.count, 0) || 0
@@ -1572,10 +1571,10 @@ ${focusTasks.tasks
 }
 
 ${
-  focusMoods?.moods.length
-    ? `### Recent Mood Trends (Last ${focusMoods.moods.length} entries)
+  focusMoods?.length
+    ? `### Recent Mood Trends (Last ${focusMoods.length} entries)
 ${(() => {
-  const moodCounts = focusMoods.moods.reduce(
+  const moodCounts = focusMoods.reduce(
     (acc, m) => {
       acc[m.type] = (acc[m.type] || 0) + 1
       return acc
