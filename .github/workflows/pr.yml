@@ -78,7 +78,6 @@ env:
 
   # URLs
   CHRRY_URL: ${{ secrets.CHRRY_URL }}
-  FRONTEND_URL: https://e2e.chrry.ai
   VITE_API_URL: ${{ secrets.VITE_API_URL }}
   VITE_SITE_MODE: ${{ secrets.VITE_SITE_MODE }}
   VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
