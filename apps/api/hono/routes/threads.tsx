@@ -630,6 +630,7 @@ threads.patch("/:id", async (c) => {
       instructions,
       language,
       threadId: id,
+      fingerprint: member?.fingerprint || guest?.fingerprint,
     })
 
     if (task) {
@@ -668,6 +669,7 @@ threads.patch("/:id", async (c) => {
           currentInstructions: instructions,
           language,
           threadId: id,
+          fingerprint: member?.fingerprint || guest?.fingerprint,
         }),
       },
       titleGenerationsRemaining: rateLimitResult.remaining,

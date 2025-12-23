@@ -402,6 +402,7 @@ messages.post("/", async (c) => {
           instructions,
           language: language || "en",
           threadId: newThread.id,
+          fingerprint,
         })
         await updateThread({
           ...newThread,

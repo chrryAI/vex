@@ -12,18 +12,16 @@ export async function generateThreadTitle({
   messages,
   instructions,
   language = "en",
+  fingerprint,
   threadId,
 }: {
   messages: string[] | Array<{ threadId?: string; content: string }>
   instructions?: string | null
   language?: string
+  fingerprint?: string
   threadId?: string
 }): Promise<string> {
-  const user = messages[0].user
-  const guest = messages[0].guest
-
-  const fingerprint = user?.fingerprint || guest?.fingerprint
-  if (isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
+  if (fingerprint && isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
     return faker.lorem.sentence()
 
   const thread = await getThread({
@@ -119,17 +117,15 @@ export async function generateThreadInstructions({
   currentInstructions,
   language = "en",
   threadId,
+  fingerprint,
 }: {
   messages: string[] | Array<{ threadId?: string; content: string }>
   currentInstructions?: string | null
   language?: string
   threadId?: string
+  fingerprint?: string
 }): Promise<string> {
-  const user = messages[0].user
-  const guest = messages[0].guest
-
-  const fingerprint = user?.fingerprint || guest?.fingerprint
-  if (isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
+  if (fingerprint && isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
     return faker.lorem.sentence()
 
   const thread = await getThread({
@@ -186,13 +182,6 @@ Examples of good instructions:
 Write in ${languageName}. Return only the instruction text:`
 
     // Extract threadId from first message if not provided
-    const extractedThreadId =
-      threadId ||
-      (messages.length > 0 &&
-      typeof messages[0] === "object" &&
-      "threadId" in messages[0]
-        ? messages[0].threadId
-        : undefined)
 
     // Get the thread and app to determine which agent to use
 
