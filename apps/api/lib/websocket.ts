@@ -422,15 +422,18 @@ export const websocketHandler = {
           }
 
           // Notify thread owner
-          notifyClients(thread.user?.id || thread?.guest?.id!, {
-            type: "presence",
-            data: {
-              threadId,
-              userId: member?.id,
-              guestId: guest?.id,
-              isOnline,
-            },
-          })
+          const ownerId = thread.user?.id || thread.guest?.id
+          if (ownerId) {
+            notifyClients(ownerId, {
+              type: "presence",
+              data: {
+                threadId,
+                userId: member?.id,
+                guestId: guest?.id,
+                isOnline,
+              },
+            })
+          }
         }
       } else if (type === "ack") {
         const { messageId } = data

@@ -1329,7 +1329,7 @@ export const getTools = ({
           thinking: "🤔",
         }
 
-        notify(member?.id! || guest?.id!, {
+        notify(member?.id || guest?.id || "", {
           type: "mood",
           data: mood,
         })
@@ -1386,7 +1386,7 @@ export const getTools = ({
           preset3,
         })
 
-        const updateData: any = { userId: member?.id! }
+        const updateData: any = { userId: member?.id || undefined }
         if (isCountingDown !== undefined)
           updateData.isCountingDown = isCountingDown
         if (preset1 !== undefined) updateData.preset1 = preset1
@@ -1402,7 +1402,7 @@ export const getTools = ({
           preset3: updated?.preset3,
         })
 
-        notify(member?.id! || guest?.id!, {
+        notify(member?.id || guest?.id || "", {
           type: "timer-ai",
           data: updated,
         })
