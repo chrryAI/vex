@@ -12,6 +12,7 @@ import {
   TEST_MEMBER_EMAILS,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_FINGERPRINTS,
+  VEX_LIVE_FINGERPRINTS,
   user,
   guest,
   deleteGuest,
@@ -21,6 +22,7 @@ import { MEMBER_CREDITS_PER_MONTH } from "@repo/db/src/schema"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
   TEST_MEMBER_FINGERPRINTS,
+  VEX_LIVE_FINGERPRINTS,
 )
 
 export default async function cleanupTest() {

@@ -418,7 +418,7 @@ export function ChatProvider({
 
   const fetchThreads = async () => {
     setShouldFetchThreads(true)
-    shouldFetchThreads && (await refetchThreads())
+    await refetchThreads()
   }
 
   useEffect(() => {

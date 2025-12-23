@@ -627,14 +627,6 @@ Return only valid JSON object.`
   // Since we always have app context, use it directly
   const finalAppId = app?.id || null
 
-  if (app) {
-    console.log(`🎯 Using current app: ${app.name} (${app.id})`)
-    await updateThread({
-      ...thread,
-      appId: app.id,
-    })
-  }
-
   let homePlaceholder
   // Save placeholders to database with history
   // If user is on a specific app, use app-specific placeholder

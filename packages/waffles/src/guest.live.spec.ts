@@ -36,6 +36,7 @@ test.only("Subscribe As Guest", async ({ page }) => {
   await subscribe({
     page,
     isMember,
+    // createChat: false,
   })
 })
 

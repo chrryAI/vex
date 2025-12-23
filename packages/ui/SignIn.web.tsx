@@ -125,8 +125,8 @@ export default function SignIn({
   const E2E =
     isE2E ||
     (fingerprint &&
-      (TEST_GUEST_FINGERPRINTS.includes(fingerprint) ||
-        TEST_MEMBER_FINGERPRINTS.includes(fingerprint)))
+      (TEST_GUEST_FINGERPRINTS?.includes(fingerprint) ||
+        TEST_MEMBER_FINGERPRINTS?.includes(fingerprint)))
 
   const handleSignIn = async (part: "login" | "register" | "credentials") => {
     if (E2E) {

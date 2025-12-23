@@ -2065,6 +2065,7 @@ export default function Chat({
         setIsLoading(false)
         shouldStopRef.current = true
         streamContentRef.current = ""
+        setClientId(uuidv4())
       })
 
     if (controller) {
@@ -2208,7 +2209,6 @@ export default function Chat({
   }>({
     deps: webSocketDeps,
     onMessage: async ({ type, data }) => {
-      console.log(`🚀 ~ onMessage: ~ type:`, type)
       const threadId = threadIdRef.current
 
       data?.streamId && setStreamId(data.streamId)

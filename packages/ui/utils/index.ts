@@ -37,6 +37,11 @@ export {
   getExtensionUrl,
 }
 
+export const VEX_LIVE_FINGERPRINTS =
+  getEnv().VEX_LIVE_FINGERPRINTS?.split(",") || []
+
+export const VEX_LIVE_FINGERPRINT = VEX_LIVE_FINGERPRINTS[0] || ""
+
 export { exampleInstructions, getExampleInstructions }
 
 export const isSameDay = (date1: Date, date2: Date) => {
@@ -389,7 +394,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.7.82"
+export const VERSION = config.version || "1.7.83"
 export type instructionBase = {
   id: string
   title: string

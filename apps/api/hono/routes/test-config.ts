@@ -1,5 +1,8 @@
 import { Hono } from "hono"
 import { isE2E } from "@chrryai/chrry/utils"
+import dotenv from "dotenv"
+
+dotenv.config()
 export const testConfig = new Hono()
 
 /**
@@ -18,11 +21,14 @@ testConfig.get("/", async (c) => {
   const TEST_MEMBER_EMAILS =
     process.env.TEST_MEMBER_EMAILS?.split(",").filter(Boolean) || []
 
-  if (
-    !TEST_MEMBER_FINGERPRINTS.concat(TEST_GUEST_FINGERPRINTS).includes(
-      fpFromQuery,
-    )
-  ) {
+  const VEX_LIVE_FINGERPRINTS =
+    process.env.VEX_LIVE_FINGERPRINTS?.split(",").filter(Boolean) || []
+
+  const TEST_FINGERPRINTS = TEST_MEMBER_FINGERPRINTS.concat(
+    TEST_GUEST_FINGERPRINTS,
+  ).concat(VEX_LIVE_FINGERPRINTS)
+
+  if (!TEST_FINGERPRINTS.includes(fpFromQuery)) {
     return c.json({})
   }
 
@@ -30,5 +36,9 @@ testConfig.get("/", async (c) => {
     TEST_MEMBER_FINGERPRINTS,
     TEST_GUEST_FINGERPRINTS,
     TEST_MEMBER_EMAILS,
+    VEX_LIVE_FINGERPRINTS,
+    TEST_FINGERPRINTS: TEST_MEMBER_FINGERPRINTS.concat(
+      TEST_GUEST_FINGERPRINTS,
+    ).concat(VEX_LIVE_FINGERPRINTS),
   })
 })

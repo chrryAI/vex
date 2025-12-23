@@ -116,6 +116,9 @@ export const TEST_GUEST_FINGERPRINTS =
 export const TEST_MEMBER_FINGERPRINTS =
   process.env.TEST_MEMBER_FINGERPRINTS?.split(",") || []
 
+export const VEX_LIVE_FINGERPRINTS =
+  process.env.VEX_LIVE_FINGERPRINTS?.split(",") || []
+
 export const isDevelopment = process.env.NODE_ENV === "development"
 
 // Define locally to avoid circular dependency issues with chrry/utils
@@ -1621,32 +1624,44 @@ export async function migrateUser({
   if (guest.migratedToUser || user.migratedFromGuest) return
 
   // Migrate threads§
-  const threads = await getThreads({
-    guestId: guest.id,
-    pageSize: limit,
-    publicBookmarks: false,
-  })
+  const guestThreads = await db
+    .select()
+    .from(threads)
+    .where(eq(threads.guestId, guest.id))
+    .limit(limit)
 
   const { id: userId } = user
 
   await Promise.all(
-    threads.threads.map(async (thread) => {
-      await updateThread({
-        ...thread,
-        userId,
-        guestId: null,
-      })
+    guestThreads.map(async (thread) => {
+      if (
+        isOwner(thread, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateThread({
+          ...thread,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
   const tasks = await getTasks({ guestId: guest.id, pageSize: limit })
   await Promise.all(
     tasks.tasks.map(async (task) => {
-      await updateTask({
-        ...task,
-        userId,
-        guestId: null,
-      })
+      if (
+        isOwner(task, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateTask({
+          ...task,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
@@ -1655,21 +1670,33 @@ export async function migrateUser({
   const memberTimer = await getTimer({ userId })
 
   if (guestTimer && !memberTimer) {
-    await updateTimer({
-      ...guestTimer,
-      userId,
-      guestId: null,
-    })
+    if (
+      isOwner(guestTimer, {
+        guestId: guest.id,
+      })
+    ) {
+      await updateTimer({
+        ...guestTimer,
+        userId,
+        guestId: null,
+      })
+    }
   }
 
   const moods = await getMoods({ guestId: guest.id, pageSize: limit })
   await Promise.all(
     moods.moods.map(async (mood) => {
-      await updateMood({
-        ...mood,
-        userId,
-        guestId: null,
-      })
+      if (
+        isOwner(mood, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateMood({
+          ...mood,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
@@ -1679,22 +1706,34 @@ export async function migrateUser({
   })
   await Promise.all(
     instructions.map(async (instruction) => {
-      await updateInstruction({
-        ...instruction,
-        userId,
-        guestId: null,
-      })
+      if (
+        isOwner(instruction, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateInstruction({
+          ...instruction,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
   const calendarEvents = await getCalendarEvents({ guestId: guest.id })
   await Promise.all(
     calendarEvents.map(async (calendarEvent) => {
-      await updateCalendarEvent({
-        ...calendarEvent,
-        userId,
-        guestId: null,
-      })
+      if (
+        isOwner(calendarEvent, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateCalendarEvent({
+          ...calendarEvent,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
@@ -1705,11 +1744,17 @@ export async function migrateUser({
   })
   await Promise.all(
     guestExpenses.expenses.map(async (expense) => {
-      await updateExpense({
-        ...expense,
-        userId,
-        guestId: null,
-      })
+      if (
+        isOwner(expense, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateExpense({
+          ...expense,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
@@ -1720,22 +1765,34 @@ export async function migrateUser({
 
   await Promise.all(
     budgets.budgets.map(async (budget) => {
-      await updateBudget({
-        ...budget,
-        userId,
-        guestId: null,
-      })
+      if (
+        isOwner(budget, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateBudget({
+          ...budget,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
   const placeHolders = await getPlaceHolders({ guestId: guest.id })
   await Promise.all(
     placeHolders.map(async (placeHolder) => {
-      await updatePlaceHolder({
-        ...placeHolder,
-        userId,
-        guestId: null,
-      })
+      if (
+        isOwner(placeHolder, {
+          guestId: guest.id,
+        })
+      ) {
+        await updatePlaceHolder({
+          ...placeHolder,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
@@ -1743,75 +1800,117 @@ export async function migrateUser({
   const messages = await getMessages({ guestId: guest.id, pageSize: limit })
   await Promise.all(
     messages.messages.map(async (message) => {
-      await updateMessage({
-        ...message.message,
-        userId,
-        guestId: null,
-      })
+      if (
+        isOwner(message.message, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateMessage({
+          ...message.message,
+          userId,
+          guestId: null,
+        })
+      }
     }),
   )
 
   // Migrate subscription (required by Apple App Store guidelines)
   const guestSubscription = await getSubscription({ guestId: guest.id })
   if (guestSubscription) {
-    await updateSubscription({
-      ...guestSubscription,
-      userId,
-    })
+    if (
+      isOwner(guestSubscription, {
+        guestId: guest.id,
+      })
+    ) {
+      await updateSubscription({
+        ...guestSubscription,
+        userId,
+      })
+    }
   }
 
   const creditUsage = await getCreditUsage({ guestId: guest.id })
   await Promise.all(
     creditUsage.map(async (creditUsage) => {
-      await updateCreditUsage({
-        ...creditUsage,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(creditUsage, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateCreditUsage({
+          ...creditUsage,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
   const creditTransactions = await getCreditTransactions({ guestId: guest.id })
   await Promise.all(
     creditTransactions.map(async (creditTransaction) => {
-      await updateCreditTransaction({
-        ...creditTransaction,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(creditTransaction, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateCreditTransaction({
+          ...creditTransaction,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
   const invitations = await getInvitations({ guestId: guest.id })
   await Promise.all(
     invitations.map(async (invitation) => {
-      await updateInvitation({
-        ...invitation,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(invitation, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateInvitation({
+          ...invitation,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
   const documentChunks = await getDocumentChunks({ guestId: guest.id })
   await Promise.all(
     documentChunks.map(async (documentChunk) => {
-      await updateDocumentChunk({
-        ...documentChunk,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(documentChunk, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateDocumentChunk({
+          ...documentChunk,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
   const devices = await getDevices({ guestId: guest.id })
   await Promise.all(
     devices.devices.map(async (device) => {
-      await updateDevice({
-        ...device,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(device, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateDevice({
+          ...device,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
@@ -1837,33 +1936,51 @@ export async function migrateUser({
   })
   await Promise.all(
     threadSummaries.threadSummaries.map(async (threadSummary) => {
-      await updateThreadSummary({
-        ...threadSummary,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(threadSummary, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateThreadSummary({
+          ...threadSummary,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
   const memories = await getMemories({ guestId: guest.id, pageSize: limit })
   await Promise.all(
     memories.memories.map(async (memory) => {
-      await updateMemory({
-        ...memory,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(memory, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateMemory({
+          ...memory,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
   const characterProfiles = await getCharacterProfiles({ guestId: guest.id })
   await Promise.all(
     characterProfiles.map(async (characterProfile) => {
-      await updateCharacterProfile({
-        ...characterProfile,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(characterProfile, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateCharacterProfile({
+          ...characterProfile,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
@@ -1882,11 +1999,17 @@ export async function migrateUser({
   const messageEmbeddings = await getMessageEmbeddings({ guestId: guest.id })
   await Promise.all(
     messageEmbeddings.map(async (messageEmbedding) => {
-      await updateMessageEmbedding({
-        ...messageEmbedding,
-        guestId: null,
-        userId,
-      })
+      if (
+        isOwner(messageEmbedding, {
+          guestId: guest.id,
+        })
+      ) {
+        await updateMessageEmbedding({
+          ...messageEmbedding,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
@@ -1913,9 +2036,13 @@ export async function migrateUser({
   )
 
   // Migrate guest-created apps
-  const guestApps = await getApps({ ownerId: guest.id, pageSize: limit })
+  const guestApps = await db
+    .select()
+    .from(apps)
+    .where(eq(apps.guestId, guest.id))
+    .limit(limit)
   await Promise.all(
-    guestApps.items.map(async (app) => {
+    guestApps.map(async (app) => {
       if (isOwner(app, { guestId: guest.id })) {
         await updateApp({
           ...(app as app),
@@ -1930,21 +2057,27 @@ export async function migrateUser({
   const guestAppOrders = await getAppOrders({ guestId: guest.id })
   await Promise.all(
     guestAppOrders.map(async (appOrder) => {
-      await updateAppOrder({
-        ...appOrder.items,
-        guestId: null,
-        userId,
-      })
+      if (isOwner(appOrder, { guestId: guest.id })) {
+        await updateAppOrder({
+          ...appOrder.items,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
   // // Migrate guest stores
-  const guestStores = await getStores({ ownerId: guest.id })
+  const guestStores = await db
+    .select()
+    .from(stores)
+    .where(eq(stores.guestId, guest.id))
+    .limit(limit)
   await Promise.all(
-    guestStores.stores.map(async (store) => {
-      if (isOwner(store.store, { guestId: guest.id })) {
+    guestStores.map(async (store) => {
+      if (isOwner(store, { guestId: guest.id })) {
         await updateStore({
-          ...store.store,
+          ...store,
           guestId: null,
           userId,
           slug: user.userName,
@@ -1957,11 +2090,13 @@ export async function migrateUser({
   const guestAffiliateClicks = await getAffiliateClicks({ guestId: guest.id })
   await Promise.all(
     guestAffiliateClicks?.map(async (click) => {
-      await updateAffiliateClick({
-        ...click,
-        guestId: null,
-        userId,
-      })
+      if (isOwner(click, { guestId: guest.id })) {
+        await updateAffiliateClick({
+          ...click,
+          guestId: null,
+          userId,
+        })
+      }
     }),
   )
 
@@ -2442,6 +2577,7 @@ export const getThreads = async ({
   publicBookmarks = true,
   appId,
   appIds,
+  ownerId,
 }: {
   page?: number
   pageSize?: number
@@ -2458,6 +2594,7 @@ export const getThreads = async ({
   publicBookmarks?: boolean
   appId?: string
   appIds?: string[]
+  ownerId?: string
 }) => {
   // const user = userId ? await getUser({ id: userId }) : undefined
   // const guest = guestId ? await getGuest({ id: guestId }) : undefined
@@ -2531,6 +2668,10 @@ export const getThreads = async ({
       collaborationStatus[0] === "active")
 
   const conditionsArray = [
+    ownerId
+      ? or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId))
+      : undefined,
+
     finalAppIds && finalAppIds.length > 0
       ? or(
           inArray(threads.appId, finalAppIds),

@@ -537,8 +537,17 @@ export function AuthProvider({
     },
   )
 
-  const TEST_MEMBER_FINGERPRINTS = session?.TEST_MEMBER_FINGERPRINTS || []
-  const TEST_GUEST_FINGERPRINTS = session?.TEST_GUEST_FINGERPRINTS || []
+  const VEX_LIVE_FINGERPRINTS = session?.VEX_LIVE_FINGERPRINTS || []
+
+  const TEST_MEMBER_FINGERPRINTS =
+    session?.TEST_MEMBER_FINGERPRINTS?.concat(VEX_LIVE_FINGERPRINTS).filter(
+      (fp) => !session?.TEST_GUEST_FINGERPRINTS?.includes(fp),
+    ) || []
+
+  const TEST_GUEST_FINGERPRINTS =
+    session?.TEST_GUEST_FINGERPRINTS?.concat(VEX_LIVE_FINGERPRINTS).filter(
+      (fp) => !session?.TEST_MEMBER_FINGERPRINTS?.includes(fp),
+    ) || []
 
   const TEST_MEMBER_EMAILS = session?.TEST_MEMBER_EMAILS || []
 
@@ -561,7 +570,7 @@ export function AuthProvider({
   const [isMemberTest, setIsLiveMemberTest] = useLocalStorage<boolean>(
     "isMemberTest",
     fingerprintParam
-      ? TEST_MEMBER_FINGERPRINTS.includes(fingerprintParam)
+      ? TEST_MEMBER_FINGERPRINTS?.includes(fingerprintParam)
       : false,
   )
 
@@ -889,7 +898,7 @@ export function AuthProvider({
   useEffect(() => {
     if (!fingerprint) return
 
-    if (TEST_MEMBER_FINGERPRINTS.includes(fingerprint)) {
+    if (TEST_MEMBER_FINGERPRINTS?.includes(fingerprint)) {
       setIsLiveMemberTest(true)
     }
     if (TEST_GUEST_FINGERPRINTS?.includes(fingerprint)) {

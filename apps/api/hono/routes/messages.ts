@@ -20,7 +20,12 @@ import {
   updateMessage,
 } from "@repo/db"
 import { PROMPT_LIMITS, webSearchResultType } from "@repo/db/src/schema"
-import { isE2E, isOwner, MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
+import {
+  isE2E as isE2EInternal,
+  isOwner,
+  MAX_FILE_LIMITS,
+  VEX_LIVE_FINGERPRINTS,
+} from "@chrryai/chrry/utils"
 
 import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
 import { notifyOwnerAndCollaborations } from "../../lib/notify"
@@ -86,6 +91,9 @@ const getFileUploadQuota = async ({
   if (!user && !guest) {
     return null
   }
+
+  const fingerprint = user?.fingerprint || guest?.fingerprint
+  const isE2E = !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
 
   const limits = getUploadLimitsForUser({ user, guest })
 
@@ -181,7 +189,11 @@ messages.get("/", async (c) => {
   const quota = c.req.query("quota")
 
   if (quota === "true") {
-    const quotaInfo = await getFileUploadQuota({ user: member, guest })
+    const fingerprint = member?.fingerprint || guest?.fingerprint
+    const quotaInfo = await getFileUploadQuota({
+      user: member,
+      guest,
+    })
     return c.json({ quotaInfo })
   }
 
@@ -202,6 +214,10 @@ messages.post("/", async (c) => {
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
   }
+
+  const fingerprint = member?.fingerprint || guest?.fingerprint
+  const isE2E = !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+
   const { success } = await checkRateLimit(c.req.raw, { member, guest })
 
   if (!success) {
@@ -264,7 +280,7 @@ messages.post("/", async (c) => {
 
   // Scan files for malware
   console.log("🔍 Scanning files for malware...")
-  const fingerprint = member?.fingerprint || guest?.fingerprint
+
   for (const file of files) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)

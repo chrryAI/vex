@@ -23,7 +23,7 @@ export function useOnlineStatus() {
             method: "HEAD",
             cache: "no-store",
           }).catch(() => null),
-          fetch(`${FRONTEND_URL}/`, {
+          fetch(`${FRONTEND_URL}/api/health`, {
             method: "HEAD",
             cache: "no-store",
           }).catch(() => null),

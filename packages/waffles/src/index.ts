@@ -2,6 +2,8 @@ import * as dotenv from "dotenv"
 import { Page } from "@playwright/test"
 import { v4 as uuidv4 } from "uuid"
 
+dotenv.config()
+
 export type modelName = "chatGPT" | "claude" | "gemini" | "sushi" | "perplexity"
 
 export const TEST_GUEST_FINGERPRINTS =
@@ -27,9 +29,12 @@ export const VEX_TEST_EMAIL_4 = process.env.VEX_TEST_EMAIL_4!
 export const VEX_TEST_FINGERPRINT_3 = TEST_MEMBER_FINGERPRINTS[2]
 export const VEX_TEST_FINGERPRINT_4 = TEST_MEMBER_FINGERPRINTS[3]
 
-export const VEX_LIVE_FINGERPRINT = process.env.VEX_LIVE_FINGERPRINT!
+export const VEX_LIVE_FINGERPRINTS =
+  process.env.VEX_LIVE_FINGERPRINTS!.split(",")
 
-dotenv.config()
+export const VEX_LIVE_FINGERPRINT = VEX_LIVE_FINGERPRINTS[0]
+export const VEX_LIVE_FINGERPRINT_2 = VEX_LIVE_FINGERPRINTS[1]
+export const VEX_LIVE_FINGERPRINT_3 = VEX_LIVE_FINGERPRINTS[2]
 
 export const TEST_URL = process.env.PLAYWRIGHT_BASE_URL || process.env.TEST_URL!
 
@@ -56,7 +61,7 @@ const getURL = (
 ) => {
   const base = TEST_URL
   const url = isMember
-    ? `${base}${path}?fp=${TEST_MEMBER_FINGERPRINTS[0]}`
+    ? `${base}${path}?fp=${isLive ? VEX_LIVE_FINGERPRINT_2 : fingerprint || TEST_MEMBER_FINGERPRINTS[0]}`
     : `${base}${path}?fp=${isLive ? VEX_LIVE_FINGERPRINT : fingerprint || TEST_GUEST_FINGERPRINTS[0]}`
 
   return url

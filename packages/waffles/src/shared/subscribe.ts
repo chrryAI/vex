@@ -28,11 +28,11 @@ export const subscribe = async ({
 
   const prompts = [
     {
-      text: "What are the main benefits of TypeScript over JavaScript?",
+      text: "What are the main benefits of TypeScript over JavaScript shortly?",
       model: "sushi" as modelName,
     },
     {
-      text: "How do you implement proper error boundaries in React?",
+      text: "How do you implement proper error boundaries in React briefly?",
       model: "sushi" as modelName,
     },
   ]

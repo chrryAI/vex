@@ -1,6 +1,10 @@
 import { chromium, FullConfig } from "@playwright/test"
+import { isDevelopment } from "../db"
 
 async function globalSetup(config: FullConfig) {
+  if (isDevelopment) {
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+  }
   const baseURL = config.projects[0].use.baseURL || "http://localhost:3000"
 
   // Construct API URL properly for both local and CI

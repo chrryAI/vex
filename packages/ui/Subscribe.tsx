@@ -139,6 +139,7 @@ export default function Subscribe({
         params.set("purchaseType", part)
         // fingerprint && params.set("fp", fingerprint)
         user && token && params.set("auth_token", token)
+        // guest && fingerprint && params.set("fp", fingerprint)
 
         return `${FRONTEND_URL}/?${params.toString()}&session_id={CHECKOUT_SESSION_ID}`
       })()

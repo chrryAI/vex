@@ -1,233 +1,148 @@
-# Vex
+Vex
+A sovereign, self-sustaining AI platform powered by user-provided models.
 
-> A self-sustaining AI platform powered by user-provided models
+💝 Support The Builder
+Vex is built entirely open source by a solo developer, pioneering a new economic model for AI. If you find value in this architecture, please consider sponsoring to ensure its longevity.
 
-[![GitHub stars](https://img.shields.io/github/stars/chrryai/vex?style=social)](https://github.com/chrryai/vex/starers)
-[![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![Open Source](https://img.shields.io/badge/Open%20Source-💝-brightgreen)](SPONSORS.md)
+💎 Become a Sponsor
 
-## 💝 Support This Project
+🚀 One Codebase, Unlimited Apps
+Vex introduces a breakthrough Polymorphic PWA Architecture. It enables a single codebase to spawn infinite, independent applications on a user's device.
 
-Vex is pioneering AI app composition with architecture built entirely open source by a solo developer. If you find this project valuable, please consider [becoming a sponsor](https://github.com/sponsors/chrryAI) to help sustain development.
+📱 Dynamic Manifest Generation: The server generates unique PWA manifests on the fly (/api/manifest/[id]).
 
-[💎 Become a Sponsor](https://github.com/sponsors/chrryAI) | [⭐ Star on GitHub](https://github.com/chrryai/vex) | [🐦 Follow on Twitter](https://twitter.com/chrryai)
+🔄 Context Switching: The app detects which "personality" (Atlas, Bloom, Vault) it should adopt based on the install context.
 
----
+📲 Native-Grade Experience: Each app installs separately with its own name, icon, theme, and memory, despite running on shared infrastructure.
 
-## 🚀 One Codebase, Unlimited Apps
+The Ecosystem:
 
-Vex pioneered a breakthrough PWA architecture that enables **multiple independent apps from a single codebase**:
+Plaintext
 
-- **📱 Multi-app PWA**: Install unlimited apps on your home screen, each with unique icons and themes
-- **🏪 App Marketplace**: Users can browse and install specialized AI apps (Atlas for travel, Bloom for wellness, Vault for finance, etc.)
-- **📲 Native-like Experience**: Each app feels completely independent with its own branding and functionality
-- **🔄 Dynamic Manifests**: Intelligent manifest generation creates separate PWA identities from one codebase
+🦄 Vex Core (Infrastructure)
+├── 🌍 Atlas (Travel Agent)
+├── 🍑 Peach (Social Assistant)
+├── 🌸 Bloom (Wellness Coach)
+└── 🏦 Vault (Finance Manager)
+Coming Soon to Native: A single React Native container that allows users to "install" these apps internally, creating a localized App Store experience.
 
-**Example User Home Screen:**
+💸 The Builder Economy (70% Rev Share)
+Vex is not just a tool; it is a marketplace.
 
-```
-🌍 Atlas    - AI Travel Planner
-🍑 Peach    - Social Life Assistant
-🌸 Bloom    - Wellness Coach
-🏦 Vault    - Personal Finance Manager
-```
+70% Revenue Share: Builders keep the lion's share of subscription revenue.
 
-All powered by the same infrastructure, yet each app is a fully independent PWA installation.
+BYOK (Bring Your Own Key): We operate on a sovereign model. Users/Builders provide their own API keys (OpenAI, Anthropic, DeepSeek).
 
-**Coming to Native**: The same architecture extends to React Native, where users will browse and install apps from an in-app store, all preloaded in a single native app download.
+Benefit: We don't tax your intelligence.
 
-## Features
+Benefit: You optimize your own margins by selecting efficient models.
 
-- 🤖 Multi-model AI support (ChatGPT, Claude, DeepSeek, Gemini, and custom models)
-- 🔌 OpenAI-compatible custom model integration
-- 💾 Smart memory and context management
-- 🎨 True cross-platform (Web, PWA, Extension, iOS, Android)
-- 🔒 User-controlled API keys and data
-- 📱 Real-time collaboration
-- 🌍 Multi-language support
-- 💰 70% revenue share for app creators
+Inheritance: New apps can "extend" existing apps, inheriting their capabilities and tools.
 
-## Quick Start
+✨ Features
+🤖 Model Agnostic: First-class support for OpenAI, Claude, DeepSeek, Gemini, and Perplexity.
 
-### Prerequisites
+🔌 Custom Models: Point Vex to any OpenAI-compatible endpoint (LocalLLM, Ollama, vLLM).
 
-- Node.js 18+
-- pnpm 9+
-- PostgreSQL 14+
+🧠 Vector Memory: Smart context management that persists across sessions.
 
-### Setup Instructions
+🌍 Multi-App PWA: The only open-source implementation of dynamic manifest injection.
 
-1. **Clone the repository**
+🔒 Privacy First: User-controlled keys mean user-controlled data.
 
-   ```bash
-   git clone https://github.com/chrryai/vex.git
-   cd vex
-   ```
+⚡ Real-Time: WebSocket-powered collaboration and streaming.
 
-2. **Install dependencies**
+⚡ Quick Start
+Prerequisites
+Node.js 18+
 
-   ```bash
-   pnpm install
-   ```
+pnpm 9+
 
-3. **Set up environment variables**
+PostgreSQL 14+
 
-   Run the setup script to create the necessary `.env` files:
+Installation
+Clone the Monorepo
 
-   ```bash
-   pnpm run setup:env
-   ```
+Bash
 
-   Then, edit the new `.env` files and add:
-   - Your PostgreSQL database URL
-   - Your AI provider API keys (ChatGPT, Claude, DeepSeek, etc.) or VITE_TESTING_ENV='e2e'
-   - Other required credentials (see `.env.example` files)
+git clone https://github.com/chrryai/vex.git
+cd vex
+Install Dependencies
 
-4. **Set up the database**
+Bash
 
-   ```bash
-   # Navigate to the database package
-   cd packages/db
+pnpm install
+Environment Setup
 
-   # Generate Drizzle schema
-   pnpm run generate
+Bash
 
-   # Run migrations
-   pnpm run migrate
+# Generates necessary .env files from templates
 
-   # Seed with example data
-   pnpm run seed
+pnpm run setup:env
+Edit the .env files to add your DATABASE_URL and OPENAI_API_KEY (or set VITE_TESTING_ENV='e2e' for mock mode).
 
-   # Go back to root
-   cd ../..
-   ```
+Database Initialization
 
-### Start All Services
+Bash
 
-```bash
-# From root directory, start all services at once
+cd packages/db
+pnpm run generate # Generate Drizzle artifacts
+pnpm run migrate # Push to Postgres
+pnpm run seed # Populate default apps
+cd ../..
+Launch
+
+Bash
+
 pnpm run dev:all
-```
+Web App: http://localhost:3000
 
-This will start:
+Marketing/API: http://localhost:3001
 
-- Web app (localhost:3000)
-- Chrry.dev (localhost:3001)
-- WebSocket server (localhost:3001)
+🏗️ Architecture
+Vex is a modern monorepo built for scale and separation of concerns.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more detailed setup instructions.
+Stack:
 
-## Troubleshooting
+Frontend: Next.js 15 (App Router), React 19
 
-### Database Connection Issues
+Backend: Next.js API Routes, WebSocket Server
 
-- Verify PostgreSQL is running: `psql -h localhost -U postgres`
-- Check your `DATABASE_URL` format: `postgresql://user:password@localhost:5432/dbname`
-- Ensure the database exists: `createdb your_db_name`
+Data: PostgreSQL, Drizzle ORM, Redis (Upstash)
 
-### Build Errors
+State: React Context + Server Actions
 
-- Clear cache: `rm -rf .next node_modules && pnpm install`
-- Rebuild packages: `pnpm run build`
+Project Structure:
 
-### Missing Dependencies
+Plaintext
 
-- Install pnpm globally: `npm install -g pnpm@9.1.2`
-- Check Node version: `node -v` (should be 18+)
-
-## Architecture
-
-Vex is a monorepo built with:
-
-- **Frontend**: Next.js 15, React 19
-- **Backend**: Next.js API routes, WebSocket server
-- **Database**: PostgreSQL with Drizzle ORM
-- **AI**: Multi-provider support with custom model integration
-- **Packages**: Shared UI, routing, and testing utilities
-
-### Multi-App PWA Architecture
-
-Multi-app system works through:
-
-1. **Dynamic Manifest Generation** (`/api/manifest/[id]/route.ts`)
-   - Each app generates a unique PWA manifest with custom icon, name, and theme
-   - Manifests are served per-app, allowing multiple PWA installations
-
-2. **App Context Detection** (`NavigationProvider.tsx`)
-   - Detects which app user is installing/running
-   - Switches themes, icons, and branding dynamically
-   - Handles PWA-to-browser transitions for multi-app installs
-
-3. **Unified Codebase** (`packages/ui`)
-   - Single component library serves all apps
-   - App-specific configurations stored in database
-   - Runtime switching between app contexts
-
-4. **App Store Pattern**
-   - Users browse available apps via the marketplace
-   - Install any app as a separate PWA on home screen
-   - Each installation is independent but shares infrastructure
-
-**Coming to Native**: React Native implementation will use a similar pattern where:
-
-- One app download contains all apps preloaded
-- In-app store lets users "install" (enable) specific apps
-- Each app appears as a separate section with full branding
-- Seamless switching between installed apps
-
-### Project Structure
-
-```
 vex/
 ├── apps/
-│   ├── api/    # Api (localhost:3001)
-│   ├── web/              # Alternative frontend (localhost:3000)
-│   ├── ws/               # WebSocket server (localhost:3001)
-│   ├── extension/        # Browser extension
-│   └── native/           # React Native mobile app
+│ ├── api/ # Marketing site & Core API (Port 3001)
+│ ├── web/ # The PWA Application Shell (Port 3000)
+│ ├── ws/ # Real-time WebSocket Server
+│ └── native/ # React Native (Expo)
 ├── packages/
-│   ├── ui/               # Shared UI components (@chrryai/chrry)
-│   ├── pepper/           # Universal router (@chrryai/pepper)
-│   ├── waffles/          # Testing utilities (@chrryai/waffles)
-│   └── db/               # Database layer with Drizzle ORM
-└── scripts/              # Build and utility scripts
-```
+│ ├── ui/ # Shared Design System (@chrryai/chrry)
+│ ├── pepper/ # Universal Routing Logic
+│ └── db/ # Drizzle Schema & Migrations
+└── scripts/ # DevOps & Automation
+🏆 Sponsors
+Vex is made possible by visionaries who believe in open source.
 
-## Documentation
+Platinum Sponsors
+[ Your Name Here ]
 
-- [Contributing Guide](CONTRIBUTING.md)
-- [Security Policy](SECURITY.md)
-- [API Documentation](docs/API.md)
+Gold Sponsors
+[ Your Name Here ]
 
-## 🏆 Sponsors
+Become a Sponsor
 
-Vex is made possible by generous sponsors who believe in open source innovation:
+⚖️ License & Attribution
+License: AGPL-3.0. Use it, learn from it, but if you distribute it, share your changes.
 
-### Platinum Sponsors
+Icons: This project uses premium icons from Wannathis.
 
-_Be the first to support!_
+Note: If you fork this project for commercial use, you must purchase your own license for these assets or replace them.
 
-### Gold Sponsors
-
-_Your logo here - [Become a sponsor](SPONSORS.md)_
-
-### Silver Sponsors
-
-_Your logo here - [Become a sponsor](SPONSORS.md)_
-
-**Interested in sponsoring?** Check out our [sponsorship tiers](SPONSORS.md) and help us build the future of AI app composition.
-
----
-
-## License
-
-AGPL-3.0 - See [LICENSE](LICENSE)
-
-**Note on Icons**: The icons used in this project are from [Wannathis](https://wannathis.one/) under a commercial license. If you fork this project, you'll need to replace the icons with your own or purchase a license. See [ATTRIBUTIONS.md](ATTRIBUTIONS.md) for details.
-
-## Support
-
-- 💝 Sponsor: [SPONSORS.md](SPONSORS.md)
-- 📧 Email: iliyan@chrry.ai
-- 🐛 Issues: https://github.com/chrryai/vex/issues
-- 🐦 Twitter: [@chrryai](https://twitter.com/chrryai)
+Support: Issues • Email • Twitter

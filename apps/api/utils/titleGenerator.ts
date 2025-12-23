@@ -1,4 +1,4 @@
-import { isE2E } from "@chrryai/chrry/utils"
+import { isE2E, VEX_LIVE_FINGERPRINTS } from "@chrryai/chrry/utils"
 import { generateText } from "ai"
 import { faker } from "@faker-js/faker"
 import captureException from "../lib/captureException"
@@ -19,7 +19,12 @@ export async function generateThreadTitle({
   language?: string
   threadId?: string
 }): Promise<string> {
-  if (isE2E) return faker.lorem.sentence()
+  const user = messages[0].user
+  const guest = messages[0].guest
+
+  const fingerprint = user?.fingerprint || guest?.fingerprint
+  if (isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
+    return faker.lorem.sentence()
 
   const thread = await getThread({
     id: threadId,
@@ -120,6 +125,13 @@ export async function generateThreadInstructions({
   language?: string
   threadId?: string
 }): Promise<string> {
+  const user = messages[0].user
+  const guest = messages[0].guest
+
+  const fingerprint = user?.fingerprint || guest?.fingerprint
+  if (isE2E && !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
+    return faker.lorem.sentence()
+
   const thread = await getThread({
     id: threadId,
   })

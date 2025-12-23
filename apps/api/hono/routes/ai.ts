@@ -8,8 +8,7 @@ import {
   getGuest as getGuestDb,
 } from "@repo/db"
 
-const VEX_LIVE_FINGERPRINT = process.env.VEX_LIVE_FINGERPRINT
-const VEX_TEST_EMAIL_4 = process.env.VEX_TEST_EMAIL_4
+import { VEX_LIVE_FINGERPRINTS } from "@chrryai/chrry/utils"
 
 import {
   getMemories,
@@ -582,7 +581,7 @@ app.post("/", async (c) => {
     thread,
     clientId,
     streamId,
-    waitFor = 20,
+    waitFor = 10,
   }: {
     waitFor?: number
     chunk: string
@@ -2116,10 +2115,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
-  const isE2E =
-    member?.email !== VEX_TEST_EMAIL_4 &&
-    fingerprint !== VEX_LIVE_FINGERPRINT &&
-    isE2EInternal
+  const isE2E = !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
 
   const hourlyLimit =
     isDevelopment && !isE2E

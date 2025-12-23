@@ -24,6 +24,7 @@ import {
   getAiAgent,
   TEST_MEMBER_FINGERPRINTS,
   TEST_GUEST_FINGERPRINTS,
+  VEX_LIVE_FINGERPRINTS,
   TEST_MEMBER_EMAILS,
 } from "@repo/db"
 import * as lib from "../../lib"
@@ -588,6 +589,7 @@ session.get("/", async (c) => {
         TEST_MEMBER_FINGERPRINTS,
         TEST_GUEST_FINGERPRINTS,
         TEST_MEMBER_EMAILS,
+        VEX_LIVE_FINGERPRINTS,
         device,
         os,
         browser,
@@ -741,6 +743,7 @@ session.get("/", async (c) => {
         locale,
         TEST_MEMBER_FINGERPRINTS,
         TEST_GUEST_FINGERPRINTS,
+        VEX_LIVE_FINGERPRINTS,
         TEST_MEMBER_EMAILS,
         device,
         os,
@@ -793,6 +796,7 @@ session.get("/", async (c) => {
       locale,
       TEST_MEMBER_FINGERPRINTS,
       TEST_GUEST_FINGERPRINTS,
+      VEX_LIVE_FINGERPRINTS,
       TEST_MEMBER_EMAILS,
       device,
       os,

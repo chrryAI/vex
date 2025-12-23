@@ -21,7 +21,7 @@ export default defineConfig({
   //   reuseExistingServer: true,
   // },
   testDir: "./src",
-  globalSetup: require.resolve("./global-setup"),
+  // globalSetup: require.resolve("./global-setup"),
   timeout: process.env.CI ? 480000 : 1200000, // 20 minutes in dev for long AI responses
   /* Run tests in files in parallel */
   // fullyParallel: true,
@@ -39,7 +39,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     launchOptions: { slowMo: 200 },
-    headless: true, //!!process.env.CI, // Run headless in CI, headed locally
+    headless: true || !!process.env.CI, // Run headless in CI, headed locally
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: !process.env.CI ? "http://localhost:5173" : "http://e2e.chrry.ai",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */

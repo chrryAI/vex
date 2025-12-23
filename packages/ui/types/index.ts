@@ -284,6 +284,7 @@ export type session = {
   createdOn?: string
   locale?: string
   aiAgent?: aiAgent
+  VEX_LIVE_FINGERPRINTS?: string[]
   store: storeWithApps & {
     nextPage: string | null
     totalCount: number

@@ -89,9 +89,7 @@ export async function loadServerData(
   const API_URL = API_INTERNAL_URL
 
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
-  let TEST_MEMBER_FINGERPRINTS: string[] = []
-  let TEST_GUEST_FINGERPRINTS: string[] = []
-  let TEST_MEMBER_EMAILS: string[] = []
+  let TEST_FINGERPRINTS: string[] = []
 
   const pathname = request.pathname.startsWith("/")
     ? request.pathname
@@ -147,18 +145,14 @@ export async function loadServerData(
       const testConfigResponse = await fetch(testConfigUrl)
       if (testConfigResponse.ok) {
         const testConfig = await testConfigResponse.json()
-        TEST_MEMBER_FINGERPRINTS = testConfig.TEST_MEMBER_FINGERPRINTS || []
-        TEST_GUEST_FINGERPRINTS = testConfig.TEST_GUEST_FINGERPRINTS || []
-        TEST_MEMBER_EMAILS = testConfig.TEST_MEMBER_EMAILS || []
+        TEST_FINGERPRINTS = testConfig.TEST_FINGERPRINTS || []
       }
     } catch (error) {
       console.error("Failed to fetch test config:", error)
     }
   }
 
-  const isTestFP = TEST_MEMBER_FINGERPRINTS?.concat(
-    TEST_GUEST_FINGERPRINTS,
-  ).includes(fpFromQuery || "")
+  const isTestFP = TEST_FINGERPRINTS.includes(fpFromQuery || "")
 
   const authToken = urlObj.searchParams.get("auth_token")
 

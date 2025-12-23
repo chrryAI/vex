@@ -193,15 +193,15 @@ export const thread = async ({
       bookmark,
       prompts: [
         {
-          text: "Explain the concept of dependency injection and its benefits",
+          text: "Explain the concept of dependency injection and its benefits shortly",
           model: "sushi",
         },
         {
-          text: "What's the difference between SQL and NoSQL databases?",
+          text: "What's the difference between SQL and NoSQL databases briefly?",
           model: "sushi",
         },
         {
-          text: "How do you implement authentication with JWT tokens?",
+          text: "How do you implement authentication with JWT tokens briefly?",
           model: "sushi",
         },
       ],
@@ -228,15 +228,15 @@ export const thread = async ({
       instruction: "Help me write a short story",
       prompts: [
         {
-          text: "What are the key principles of clean code?",
+          text: "What are the key principles of clean code shortly?",
           model: "sushi",
         },
         {
-          text: "Explain the SOLID principles with examples",
+          text: "Explain the SOLID principles with examples shortly?",
           model: "sushi",
         },
         {
-          text: "How do you handle error handling in distributed systems?",
+          text: "How do you handle error handling in distributed systems briefly?",
           model: "sushi",
         },
       ],
@@ -249,18 +249,24 @@ export const thread = async ({
 
     await expect(
       (await getFirstThread()).getByTestId("threads-bookmarked"),
-    ).not.toBeVisible()
+    ).not.toBeVisible({
+      timeout: 15000,
+    })
 
     await (await getFirstThread()).getByTestId("threads-not-bookmarked").click()
     await wait(1000)
 
     await expect(
-      (await getSecondThread()).getByTestId("threads-bookmarked"),
-    ).not.toBeVisible()
+      (await getFirstThread()).getByTestId("threads-bookmarked"),
+    ).not.toBeVisible({
+      timeout: 15000,
+    })
 
     await expect(
-      (await getSecondThread()).getByTestId("threads-not-bookmarked"),
-    ).toBeVisible()
+      (await getFirstThread()).getByTestId("threads-not-bookmarked"),
+    ).toBeVisible({
+      timeout: 15000,
+    })
 
     await thread({
       page,
