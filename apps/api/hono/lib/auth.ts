@@ -157,6 +157,10 @@ export function getChrryUrl(request: Request): string | undefined {
  * Get app from request
  * Pure function - no Next.js dependencies
  */
+/**
+ * Get app from request
+ * Optimized: Request Caching + Early Returns
+ */
 export async function getApp({
   c,
   accountApp = false,
@@ -168,18 +172,29 @@ export async function getApp({
   accountApp?: boolean
   skipCache?: boolean
 }) {
+  // TELEMETRY: Track performance
+  const startTime = Date.now()
+  let resolutionPath = "unknown"
+
+  // 1. PERFORMANCE: Request-Level Cache (Memoization)
+  // If we already resolved the app in this request lifecycle (e.g. in middleware), return it.
+  const cachedApp = c.get("app")
+  if (cachedApp && !params.skipCache) {
+    // Safety check: ensure the cached app matches the ID we are asking for
+    if (!params.appId || cachedApp.id === params.appId) {
+      console.log(`[getApp] ⚡ Cache hit in ${Date.now() - startTime}ms`)
+      return cachedApp
+    }
+  }
+
   const request = c.req.raw
 
-  const member = await getMember(c, { full: true, skipCache: true })
-  const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
-
-  // Get query parameters
+  // 2. QUERY PARAMS & HEADERS
   const appIdParam = c.req.query("appId")
   const appSlugParam = c.req.query("appSlug")
   const storeSlugParam = c.req.query("storeSlug")
   const chrryUrlParam = c.req.query("chrryUrl")
   const skipCacheParam = c.req.query("skipCache") === "true"
-
   const pathnameParam = c.req.query("pathname")
 
   const skipCache =
@@ -187,15 +202,12 @@ export async function getApp({
     params.skipCache ||
     ["POST", "PUT", "DELETE", "PATCH"].includes(request.method)
 
-  // Get headers
   const appIdHeader = request.headers.get("x-app-id")
   const storeSlugHeader = request.headers.get("x-app-slug")
-
   const pathnameHeader = request.headers.get("x-pathname")
 
   const storeSlug =
     params.storeSlug || storeSlugParam || storeSlugHeader || undefined
-
   const pathname =
     (pathnameParam
       ? decodeURIComponent(pathnameParam)
@@ -203,109 +215,125 @@ export async function getApp({
     ).split("?")[0] || "/"
   const appId = params.appId || appIdParam || appIdHeader || undefined
 
-  // Get store from header if provided
-  const storeFromRequest = storeSlug
-    ? await getStore({
-        slug: storeSlug,
-        userId: member?.id,
-        guestId: guest?.id,
-        depth: 1,
-        skipCache,
-      })
-    : null
+  // 3. AUTH RESOLUTION (Sequential for DB Economy)
+  const member = await getMember(c, { full: true, skipCache: true })
+  // Lazy evaluation: Only fetch guest if member is missing
+  const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
 
-  // Get chrryUrl
+  // 4. CONTEXT RESOLUTION
   const chrryUrl = chrryUrlParam || (await getChrryUrl(request))
   const siteConfig = getSiteConfig(chrryUrl)
 
-  // Get site app
-  const siteApp = await getAppDb({
-    slug: siteConfig.slug,
-    storeSlug: siteConfig.storeSlug,
-    skipCache,
-  })
+  // 5. APP RESOLUTION LOGIC (Flattened for Readability)
+  let appInternal = null
 
-  // Get chrry store
-  const chrryStore = await getStore({
-    domain: siteConfig.store,
-    userId: member?.id,
-    guestId: guest?.id,
-    depth: 1,
-    skipCache,
-  })
-
-  // Parse app/store slugs from pathname
-  let { appSlug: appSlugGenerated, storeSlug: storeSlugGenerated } =
-    getAppAndStoreSlugs(pathname, {
-      defaultAppSlug: siteConfig.slug,
-      defaultStoreSlug: siteConfig.storeSlug,
-    })
-
-  // Override with params if provided
-  if (appSlugParam) appSlugGenerated = appSlugParam
-  if (storeSlugParam) storeSlugGenerated = storeSlugParam
-
-  // Check white label
-  const whiteLabel = whiteLabels.find(
-    (label) => label.slug === appSlugGenerated && label.isStoreApp,
-  )
-  if (whiteLabel) {
-    storeSlugGenerated = whiteLabel.storeSlug
+  // PATH A: Account App (User is the App)
+  if (accountApp) {
+    resolutionPath = "accountApp"
+    if (guest) {
+      resolutionPath = "accountApp:guest"
+      appInternal = await getAppDb({
+        storeSlug: guest.id,
+        guestId: guest.id,
+        depth: 1,
+        skipCache,
+      })
+    } else if (member) {
+      resolutionPath = "accountApp:member"
+      appInternal = await getAppDb({
+        storeSlug: member.userName,
+        userId: member.id,
+        depth: 1,
+        skipCache,
+      })
+    }
   }
-
-  // Resolve app (priority: appId > storeFromHeader > slug)
-  const appInternal = accountApp
-    ? guest
-      ? await getAppDb({
-          storeSlug: guest.id,
-          guestId: guest.id,
-          depth: 1,
-          skipCache,
-        })
-      : member
-        ? await getAppDb({
-            storeSlug: member.userName,
-            userId: member.id,
-            depth: 1,
-            skipCache,
-          })
-        : undefined
-    : appId
-      ? await getAppDb({
-          id: appId,
+  // PATH B: Explicit App ID
+  else if (appId) {
+    resolutionPath = "appId"
+    appInternal = await getAppDb({
+      id: appId,
+      userId: member?.id,
+      guestId: guest?.id,
+      depth: 1,
+      skipCache,
+    })
+  }
+  // PATH C: Store Context Resolution
+  else {
+    // Resolve store from request if explicit slug provided
+    const storeFromRequest = storeSlug
+      ? await getStore({
+          slug: storeSlug,
           userId: member?.id,
           guestId: guest?.id,
           depth: 1,
           skipCache,
         })
-      : storeFromRequest?.store?.appId
-        ? await getAppDb({
-            id: storeFromRequest.store.appId,
-            userId: member?.id,
-            guestId: guest?.id,
-            depth: 1,
-            skipCache,
-          })
-        : await getAppDb({
-            slug: appSlugGenerated,
-            storeSlug: storeSlugGenerated,
-            userId: member?.id,
-            guestId: guest?.id,
-            depth: 1,
-            skipCache,
-          })
+      : null
 
-  if (appId && !appInternal) {
-    return null
+    if (storeFromRequest?.store?.appId) {
+      resolutionPath = "storeSlug"
+      appInternal = await getAppDb({
+        id: storeFromRequest.store.appId,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1,
+        skipCache,
+      })
+    } else {
+      // Fallback to URL/Pathname resolution
+      let { appSlug: appSlugGenerated, storeSlug: storeSlugGenerated } =
+        getAppAndStoreSlugs(pathname, {
+          defaultAppSlug: siteConfig.slug,
+          defaultStoreSlug: siteConfig.storeSlug,
+        })
+
+      if (appSlugParam) appSlugGenerated = appSlugParam
+      if (storeSlugParam) storeSlugGenerated = storeSlugParam
+
+      // Check white label overrides
+      const whiteLabel = whiteLabels.find(
+        (label) => label.slug === appSlugGenerated && label.isStoreApp,
+      )
+      if (whiteLabel) {
+        storeSlugGenerated = whiteLabel.storeSlug
+      }
+
+      resolutionPath = whiteLabel ? "whiteLabel" : "pathname"
+      appInternal = await getAppDb({
+        slug: appSlugGenerated,
+        storeSlug: storeSlugGenerated,
+        userId: member?.id,
+        guestId: guest?.id,
+        depth: 1,
+        skipCache,
+      })
+    }
   }
 
-  if (!appInternal && accountApp) {
-    return null
-  }
+  // 6. VALIDATION & FALLBACK
+  if (appId && !appInternal) return null
+  if (accountApp && !appInternal) return null
+
+  // Get site app & chrry store context
+  // Note: These run in parallel as they are independent deps
+  const [siteApp, chrryStore] = await Promise.all([
+    getAppDb({
+      slug: siteConfig.slug,
+      storeSlug: siteConfig.storeSlug,
+      skipCache,
+    }),
+    getStore({
+      domain: siteConfig.store,
+      userId: member?.id,
+      guestId: guest?.id,
+      depth: 1,
+      skipCache,
+    }),
+  ])
 
   const store = appInternal?.store || chrryStore
-
-  // Find base app
   const baseApp =
     store?.apps?.find(
       (app) =>
@@ -313,7 +341,7 @@ export async function getApp({
         app.store?.slug === siteConfig.storeSlug,
     ) || store?.app
 
-  // Get final app
+  // Final App Object
   const app =
     appInternal ||
     (await getAppDb({
@@ -324,22 +352,18 @@ export async function getApp({
       skipCache,
     }))
 
-  if (!app) {
-    return null
-  }
+  if (!app) return null
 
-  // Enrich store.apps with store.app references
+  // 7. ENRICHMENT (Recursive Store Apps)
   if (app?.store?.apps?.length) {
     const currentStoreApps = app.store.apps || []
-    const storeApps = [...currentStoreApps]
-
+    // Use Promise.all here because we WANT parallel fetching for the list
     const enrichedApps = await Promise.all(
-      storeApps.map(async (storeApp) => {
+      currentStoreApps.map(async (storeApp) => {
         if (!storeApp) return null
-
         const isBaseApp = storeApp?.id === storeApp?.store?.appId
+        let storeBaseApp = null
 
-        let storeBaseApp: appWithStore | null = null
         if (isBaseApp) {
           storeBaseApp =
             (await getAppDb({
@@ -350,31 +374,26 @@ export async function getApp({
               skipCache,
             })) || null
         } else if (storeApp?.store?.appId) {
-          const baseAppData = await getAppDb({
-            id: storeApp.store.appId,
-            userId: member?.id,
-            guestId: guest?.id,
-            skipCache,
-            depth: 0,
-          })
-          storeBaseApp = baseAppData ?? null
+          storeBaseApp =
+            (await getAppDb({
+              id: storeApp.store.appId,
+              userId: member?.id,
+              guestId: guest?.id,
+              skipCache,
+              depth: 0,
+            })) || null
         }
 
         return {
           ...storeApp,
-          store: {
-            ...storeApp?.store,
-            app: storeBaseApp,
-          },
+          store: { ...storeApp?.store, app: storeBaseApp },
         } as appWithStore
       }),
     )
-
-    const validApps = enrichedApps.filter(Boolean) as appWithStore[]
-    app.store.apps = validApps
+    app.store.apps = enrichedApps.filter(Boolean) as appWithStore[]
   }
 
-  // Add site app if not already in list
+  // Ensure site app is in the list
   if (
     app &&
     siteApp &&
@@ -383,6 +402,16 @@ export async function getApp({
   ) {
     app.store.apps.push(siteApp)
   }
+
+  // 8. SET CACHE (The Win)
+  // Store the result in Hono context so subsequent calls (e.g. in route handler) get it instantly
+  c.set("app", app)
+
+  // TELEMETRY: Log resolution path and performance
+  const duration = Date.now() - startTime
+  console.log(
+    `[getApp] ✓ Resolved via "${resolutionPath}" in ${duration}ms | App: ${app.slug} | Store: ${app.store?.slug || "none"}`,
+  )
 
   return app
 }
