@@ -2,9 +2,16 @@ import { chromium, FullConfig } from "@playwright/test"
 
 async function globalSetup(config: FullConfig) {
   const baseURL = config.projects[0].use.baseURL || "http://localhost:3000"
-  const apiURL = baseURL
-    .replace("chrry.ai", "chrry.dev")
-    .replace(":3000", ":3001")
+
+  // Construct API URL properly for both local and CI
+  let apiURL: string
+  if (baseURL.includes("localhost")) {
+    // Local: http://localhost:3001/health
+    apiURL = "http://localhost:3001/health"
+  } else {
+    // CI: https://e2e.chrry.dev/api/health
+    apiURL = baseURL.replace("chrry.ai", "chrry.dev") + "/api/health"
+  }
 
   console.log("🔧 Global Setup: Warming up backend...")
   console.log(`   Frontend: ${baseURL}`)
@@ -17,7 +24,7 @@ async function globalSetup(config: FullConfig) {
   // Wait for API to be ready
   while (Date.now() - startTime < maxWait) {
     try {
-      const response = await fetch(`${apiURL}/health`, {
+      const response = await fetch(apiURL, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       })
