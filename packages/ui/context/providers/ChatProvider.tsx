@@ -472,6 +472,9 @@ export function ChatProvider({
   const [shouldMutate, setShouldMutate] = useState(false)
 
   const isStreaming = messages.some((message) => message?.message?.isStreaming)
+  const isStreamingStop = messages.some(
+    (message) => message?.message?.isStreamingStop,
+  )
   useEffect(() => {
     if (isStreaming) {
       return
@@ -1016,7 +1019,12 @@ export function ChatProvider({
       if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
 
-      if (!isDebating) {
+      if (
+        !isDebating &&
+        !isStreaming &&
+        !isStreamingStop &&
+        serverMessages.messages[0]?.thread?.id !== threadIdRef.current
+      ) {
         setMessages(serverMessages.messages)
       }
 
@@ -1046,6 +1054,8 @@ export function ChatProvider({
     threadData,
     isLoadingMore,
     aiAgents,
+    isStreaming,
+    isStreamingStop,
     user,
     setSelectedAgent,
     isNewChat,
@@ -1056,6 +1066,7 @@ export function ChatProvider({
     isDrawerOpen,
     isChatFloating,
     threadId,
+    threadIdRef,
     messages,
   ])
 
