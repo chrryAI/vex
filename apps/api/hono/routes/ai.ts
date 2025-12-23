@@ -150,14 +150,14 @@ async function getRelevantMemoryContext({
               excludeThreadId: threadId, // Don't load memories from current thread
               scatterAcrossThreads: true, // Get diverse memories from different conversations
             })
-          ).filter(
+          ).memories.filter(
             (memory) =>
               isOwner(memory, {
                 userId,
                 guestId,
               }) && !memory.appId,
           )
-        : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+        : []
 
     // Get app-specific memories
     const appMemoriesResult = appId
@@ -169,15 +169,15 @@ async function getRelevantMemoryContext({
             excludeThreadId: threadId,
             scatterAcrossThreads: true,
           })
-        ).filter(
+        ).memories.filter(
           (memory) => !memory.userId && !memory.guestId && !!memory.appId,
         )
-      : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+      : []
 
     // Combine user and app memories
     const allMemories = [
-      ...(userMemoriesResult.memories || []),
-      ...(appMemoriesResult.memories || []),
+      ...(userMemoriesResult || []),
+      ...(appMemoriesResult || []),
     ]
 
     const memoriesResult = {
