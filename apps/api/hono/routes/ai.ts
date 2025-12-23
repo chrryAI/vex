@@ -139,40 +139,40 @@ async function getRelevantMemoryContext({
 
   try {
     // Get user memories scattered across different threads (exclude current thread)
-    const userMemoriesResult =
+    const userMemoriesData =
       userId || guestId
-        ? (
-            await getMemories({
-              userId,
-              guestId,
-              pageSize,
-              orderBy: "importance",
-              excludeThreadId: threadId, // Don't load memories from current thread
-              scatterAcrossThreads: true, // Get diverse memories from different conversations
-            })
-          ).memories.filter(
-            (memory) =>
-              isOwner(memory, {
-                userId,
-                guestId,
-              }) && !memory.appId,
-          )
-        : []
+        ? await getMemories({
+            userId,
+            guestId,
+            pageSize,
+            orderBy: "importance",
+            excludeThreadId: threadId, // Don't load memories from current thread
+            scatterAcrossThreads: true, // Get diverse memories from different conversations
+          })
+        : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+
+    const userMemoriesResult = userMemoriesData.memories.filter(
+      (memory) =>
+        isOwner(memory, {
+          userId,
+          guestId,
+        }) && !memory.appId,
+    )
 
     // Get app-specific memories
-    const appMemoriesResult = appId
-      ? (
-          await getMemories({
-            appId,
-            pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
-            orderBy: "importance",
-            excludeThreadId: threadId,
-            scatterAcrossThreads: true,
-          })
-        ).memories.filter(
-          (memory) => !memory.userId && !memory.guestId && !!memory.appId,
-        )
-      : []
+    const appMemoriesData = appId
+      ? await getMemories({
+          appId,
+          pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
+          orderBy: "importance",
+          excludeThreadId: threadId,
+          scatterAcrossThreads: true,
+        })
+      : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+
+    const appMemoriesResult = appMemoriesData.memories.filter(
+      (memory) => !memory.userId && !memory.guestId && !!memory.appId,
+    )
 
     // Combine user and app memories
     const allMemories = [
@@ -183,11 +183,9 @@ async function getRelevantMemoryContext({
     const memoriesResult = {
       memories: allMemories,
       totalCount:
-        (userMemoriesResult.totalCount || 0) +
-        (appMemoriesResult.totalCount || 0),
-      hasNextPage:
-        userMemoriesResult.hasNextPage || appMemoriesResult.hasNextPage,
-      nextPage: userMemoriesResult.nextPage || appMemoriesResult.nextPage,
+        (userMemoriesData.totalCount || 0) + (appMemoriesData.totalCount || 0),
+      hasNextPage: userMemoriesData.hasNextPage || appMemoriesData.hasNextPage,
+      nextPage: userMemoriesData.nextPage || appMemoriesData.nextPage,
     }
 
     if (!memoriesResult.memories || memoriesResult.memories.length === 0) {
