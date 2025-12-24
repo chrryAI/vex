@@ -11,6 +11,7 @@ export default function Programme() {
   const { searchParams, addParams, back, removeParams } = useNavigation()
 
   const { setIsProgramme, isProgramme } = useAuth()
+  console.log(`🚀 ~ Programme ~ isProgramme:`, isProgramme)
   const [entered, setEnteredInternal] = useState(false)
 
   const setEntered = (value: boolean) => {

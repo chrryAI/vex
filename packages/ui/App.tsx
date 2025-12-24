@@ -134,6 +134,7 @@ export default function App({
     loadingApp,
     userBaseStore,
     canBurn,
+    burn,
     setBurn,
     ...auth
   } = useAuth()
@@ -953,7 +954,8 @@ export default function App({
                   title={t("🔥 Burn")}
                   onClick={() => {
                     // Toggle to Zarathustra philosophical instructions
-                    toggleInstructions()
+                    setBurn(!burn)
+                    !burn && toggleInstructions()
                   }}
                 >
                   <Span

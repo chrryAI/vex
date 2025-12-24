@@ -26,6 +26,7 @@ export default function CharacterProfiles() {
     characterProfiles,
     setGuest,
     setUser,
+    burn,
   } = useAuth()
 
   const { actions } = useData()
@@ -39,6 +40,8 @@ export default function CharacterProfiles() {
   }, [showCharacterProfiles])
 
   const styles = useCharacterProfilesStyles()
+
+  if (burn) return null
 
   return (
     <Div>

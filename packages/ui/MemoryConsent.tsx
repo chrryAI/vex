@@ -96,6 +96,7 @@ export default function MemoryConsent({
     return (
       <Div
         ref={containerRef}
+        className="slideUp"
         style={{
           // ...styles.container.style,
           background:

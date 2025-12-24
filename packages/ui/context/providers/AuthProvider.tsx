@@ -1179,9 +1179,22 @@ export function AuthProvider({
     storeAppIternal,
   )
 
-  const isZarathustra = storeApp?.slug === "zarathustra"
+  const isZarathustra = app?.slug === "zarathustra"
 
-  const [burn, setBurnInternal] = useState<boolean>(isZarathustra)
+  const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
+
+  const [burnInternal, setBurnInternal] = useLocalStorage<boolean | null>(
+    "burn",
+    isZarathustra ? true : null,
+  )
+
+  const burn = burnInternal === null ? isZarathustra : burnInternal
+
+  useEffect(() => {
+    if (!app) return
+
+    burn === null && setBurnInternal(isZarathustra)
+  }, [isZarathustra, app])
 
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
@@ -1192,11 +1205,17 @@ export function AuthProvider({
   }
 
   const canBurn = isZarathustra
+  console.log(`🚀 ~ useEffect ~ storeApps:`, isZarathustra)
 
-  const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage(
-    "isProgramme",
-    isZarathustra,
-  )
+  const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
+    boolean | null
+  >("programme", isBaseAppZarathustra ? true : null)
+
+  useEffect(() => {
+    if (!baseApp) return
+
+    isProgrammeInternal === null && setIsProgrammeInternal(isBaseAppZarathustra)
+  }, [isBaseAppZarathustra, baseApp])
 
   const setIsProgramme = (value: boolean) => {
     setIsProgrammeInternal(value)

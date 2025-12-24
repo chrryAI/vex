@@ -492,7 +492,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const contextInstructions = useMemo(
     () =>
       burn
-        ? (getExampleInstructions({ slug: "zarathustra" }) as instruction[])
+        ? ((app?.slug === "zarathustra"
+            ? getExampleInstructions({ slug: "zarathustra" })
+            : app?.highlights) as instruction[])
         : app
           ? (user?.instructions || guest?.instructions || []).filter(
               (i) => i.appId === app?.id,
@@ -593,7 +595,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const toggleInstructions = (item = app) => {
-    setBurn(!burn)
     if (!hasCustomInstructions) return // Nothing to toggle
 
     // Toggle between custom and app instructions

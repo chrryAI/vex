@@ -91,6 +91,7 @@ export default function Menu({
     refetchThreads,
     setIsAccountVisible,
     goToThreads,
+    addParams,
   } = useNavigationContext()
 
   const { app } = useApp()
@@ -500,7 +501,10 @@ export default function Menu({
                                     addHapticFeedback()
 
                                     if (guest) {
-                                      router.push("/?signIn=register")
+                                      addParams({
+                                        signIn: "register",
+                                      })
+                                      isSmallDevice ? toggleMenu() : null
                                       return
                                     }
                                     setCollaborationStatus("active")
