@@ -2218,6 +2218,7 @@ async function getOrCreateStore(params: {
     .leftJoin(users, eq(stores.userId, users.id))
     .leftJoin(guests, eq(stores.guestId, guests.id))
     .leftJoin(apps, eq(stores.appId, apps.id))
+    .where(eq(stores.slug, slug))
 
   let store = existingStoresResult.find(
     (s: any) => s.stores.slug === slug,
