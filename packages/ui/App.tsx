@@ -935,7 +935,7 @@ export default function App({
               >
                 <Settings2 size={24} color="var(--accent-1)" />
               </Button>
-            ) : app?.id === chrry?.id && focus && !burn ? (
+            ) : app?.id === chrry?.id && focus && !canBurn ? (
               <FocusButton time={time} />
             ) : (
               hasHydrated &&
