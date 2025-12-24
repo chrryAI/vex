@@ -1690,5 +1690,12 @@
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Upload hier bestanden zodat de AI ze kan onthouden en naar kan verwijzen in toekomstige gesprekken. Deze artefacten worden onderdeel van het geheugen van de thread.",
   "Disable Image Generation": "Afbeeldingsgeneratie uitschakelen",
   "Reconnecting...": "Opnieuw verbinden...",
-  "Back online": "Terug online"
+  "Back online": "Terug online",
+  "privacy.burn.title": "Verbranden (Privacy Modus)",
+  "privacy.burn.content": "Verbranden is onze tijdelijke gespreksfunctie ontworpen voor volledige digitale privacy. Wanneer geactiveerd, worden gesprekken niet opgeslagen in je geheugenbank en laten ze geen digitale voetafdruk achter.",
+  "privacy.burn.items.ephemeral": "🔥 Ephemeral Gesprekken - Berichten bestaan alleen op het moment en worden niet opgeslagen",
+  "privacy.burn.items.no_storage": "💭 Geen Geheugenopslag - Gesprekken in de verbrandingsmodus worden nooit opgeslagen in je geheugenbank",
+  "privacy.burn.items.no_memory": "🦅 Geen AI Geheugen - De AI zal geen referenties maken of herinneringen creëren uit verbrande gesprekken",
+  "privacy.burn.items.sovereignty": "⚡ Digitale Soevereiniteit - Jij bepaalt wanneer gesprekken tijdelijk versus blijvend zijn",
+  "privacy.burn.activation": "Activeer verbranden door op het vuuricoon (🔥) in het bovenste menu te klikken. Wanneer actief, zie je 'Wanneer je verbrandt, is er niets om te onthouden' om te bevestigen dat je gesprek privé is."
 }

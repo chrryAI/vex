@@ -1690,5 +1690,12 @@
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "将文件上传至此处，以便AI记住并在未来的对话中参考。这些文件将成为线程记忆的一部分。",
   "Disable Image Generation": "禁用图像生成",
   "Reconnecting...": "正在重新连接...",
-  "Back online": "已重新上线"
+  "Back online": "已重新上线",
+  "privacy.burn.title": "销毁（隐私模式）",
+  "privacy.burn.content": "销毁是我们为完全数字隐私设计的短暂对话功能。当激活时，对话不会保存到您的记忆库中，也不会留下任何数字足迹。",
+  "privacy.burn.items.ephemeral": "🔥 短暂对话 - 消息只在当下存在，不会被存储",
+  "privacy.burn.items.no_storage": "💭 无记忆存储 - 销毁模式的对话永远不会保存到您的记忆库中",
+  "privacy.burn.items.no_memory": "🦅 无AI记忆 - AI不会引用或从销毁对话中创建记忆",
+  "privacy.burn.items.sovereignty": "⚡ 数字主权 - 您可以控制对话是短暂的还是持久的",
+  "privacy.burn.activation": "通过点击顶部菜单中的火焰图标（🔥）来激活销毁功能。当激活时，您会看到'当你销毁时，没有什么可以记住的'以确认您的对话是私密的。"
 }
