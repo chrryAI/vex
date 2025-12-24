@@ -1806,7 +1806,6 @@ export function detectSiteMode(hostname?: string): SiteMode {
 
   // Otherwise, detect from domain (e.g., "atlas.chrry.ai" -> "atlas")
   const result = detectSiteModeDomain(hostname)
-  // console.log("🚀 ~ detectSiteMode ~ result:", result)
   return result
 }
 

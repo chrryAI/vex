@@ -1205,7 +1205,6 @@ export function AuthProvider({
   }
 
   const canBurn = true
-  console.log(`🚀 ~ useEffect ~ storeApps:`, isZarathustra)
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
     boolean | null
@@ -1224,7 +1223,6 @@ export function AuthProvider({
 
   const isProgramme =
     isProgrammeInternal || searchParams.get("programme") === "true"
-  console.log(`🚀 ~ isProgrammeInternal:`, isZarathustra)
 
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
@@ -1705,7 +1703,6 @@ export function AuthProvider({
   const fp = searchParams.get("fp")
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
     if (auth_token) {
       // Remove auth_token from URL
       removeParams("auth_token")

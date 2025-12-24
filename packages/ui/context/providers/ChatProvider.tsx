@@ -372,10 +372,10 @@ export function ChatProvider({
   useEffect(() => {
     if (burn) {
       setWasIncognito(true)
-      addParams({ burn: "true" })
+      // addParams({ burn: "true" })
     } else {
       setWasIncognito(false)
-      removeParams("burn")
+      // removeParams("burn")
     }
   }, [burn])
 
