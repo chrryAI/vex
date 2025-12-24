@@ -153,11 +153,12 @@ session.get("/", async (c) => {
   // Arcjet bot detection - block bots from creating guest accounts
   if (!isDevelopment && !isE2E) {
     // Extract client IP from x-forwarded-for header (sent by SSR server)
+    // Always provide a fallback to prevent Arcjet fingerprint errors
     const clientIp =
       url.searchParams.get("ip") ||
-      c.req.header("x-forwarded-for") ||
+      c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
       c.req.header("x-real-ip") ||
-      "127.0.0.1"
+      "127.0.0.1" // Fallback for local/internal requests
 
     // Convert Headers to plain object for Arcjet compatibility
     const headersObj: Record<string, string | string[] | undefined> = {}
@@ -165,10 +166,10 @@ session.get("/", async (c) => {
       headersObj[key] = value
     })
 
-    // Create Arcjet-compatible request object
+    // Create Arcjet-compatible request object with guaranteed IP
     const arcjetRequest = {
       ...request,
-      ip: clientIp,
+      ip: clientIp, // Always has a value now
       headers: headersObj,
     }
 

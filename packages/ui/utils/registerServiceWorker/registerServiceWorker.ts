@@ -3,6 +3,9 @@ import console from "../../utils/log"
 
 const registerServiceWorker =
   async (): Promise<ServiceWorkerRegistration | null> => {
+    // Temporarily disable service worker to prevent reload loop
+    return null
+
     if ("serviceWorker" in navigator) {
       try {
         const registration = await navigator.serviceWorker.register(

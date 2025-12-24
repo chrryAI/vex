@@ -614,7 +614,6 @@ threads.patch("/:id", async (c) => {
       : undefined
 
   if (regenerateTitle && messages && messages.messages.length > 0) {
-    // Check rate limit for title generation
     const rateLimitResult = await checkGenerationRateLimit(request, {
       member: member ?? undefined,
       guest: guest ?? undefined,

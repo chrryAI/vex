@@ -8,7 +8,7 @@
 export const MenuStyleDefs = {
   menu: {
     backgroundColor: "var(--shade-1-transparent)",
-    padding: "10px 13px 10px 10px",
+    padding: "10px 13px 0px 10px",
     flexDirection: "column",
     borderRight: "1px dashed var(--shade-2)",
     zIndex: 1000,

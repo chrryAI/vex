@@ -42,6 +42,7 @@ import { metadata } from "./routes/metadata"
 import { testConfig } from "./routes/test-config"
 import authRoutes from "./routes/auth"
 import notify from "./routes/notify"
+import favicon from "./routes/favicon"
 
 import * as Sentry from "@sentry/node"
 
@@ -141,5 +142,6 @@ app.route("/api", api)
 
 // Root-level routes
 app.route("/", landing) // Landing page at root
+app.route("/", favicon) // Favicon for white-label apps
 
 export default app

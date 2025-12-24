@@ -123,32 +123,27 @@ test.only("Chat", async ({ page }) => {
       {
         text: "List shortly the top 3 must-see attractions in Tokyo",
         model: "sushi",
-        like: true,
       },
       {
         text: "Suggest briefly a simple itinerary for day 1",
         model: "claude",
-        like: true,
       },
       {
         text: "Shortly explain the best way to get around",
         model: "chatGPT",
-        like: true,
       },
       {
         text: "Which model are you using? Answer briefly",
         model: "gemini",
-        like: true,
       },
       {
         text: "How can I enable character profile? Answer shortly",
         model: "sushi",
-        like: true,
       },
       {
         text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
         imageGenerationEnabled: true,
-        like: true,
+
         model: "sushi",
       },
     ],

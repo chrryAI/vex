@@ -26,6 +26,7 @@ import {
   getMoods,
   getTasks,
   getTimer,
+  isOwner,
 } from "@repo/db"
 import { and, eq, isNull } from "@repo/db"
 import { instructions } from "@repo/db/src/schema"
@@ -636,6 +637,15 @@ Return only valid JSON object.`
       appId: finalAppId || undefined, // ✅ App-specific placeholder
     })
 
+    // Verify ownership as extra safety layer
+    if (
+      homePlaceholder &&
+      !isOwner(homePlaceholder, { userId: user?.id, guestId: guest?.id })
+    ) {
+      console.warn("⚠️ Ownership mismatch for home placeholder - rejecting")
+      homePlaceholder = null
+    }
+
     if (homePlaceholder) {
       // Preserve history
       const history = homePlaceholder.metadata?.history || []
@@ -646,8 +656,7 @@ Return only valid JSON object.`
       history.push({
         text: homePlaceholder.text,
         generatedAt: homePlaceholder.updatedOn.toISOString(),
-        conversationContext: getSmartConversationContext(conversationText, 500), // Smart context
-        topicKeywords, // Lightweight alternative
+        topicKeywords, // Lightweight, privacy-safe alternative
       })
 
       homePlaceholder = await updatePlaceHolder({
@@ -691,6 +700,15 @@ Return only valid JSON object.`
         guestId: guest?.id,
       })
 
+      // Verify ownership as extra safety layer
+      if (
+        threadPlaceHolder &&
+        !isOwner(threadPlaceHolder, { userId: user?.id, guestId: guest?.id })
+      ) {
+        console.warn("⚠️ Ownership mismatch for thread placeholder - rejecting")
+        threadPlaceHolder = null
+      }
+
       if (threadPlaceHolder) {
         // Preserve history
         const history = threadPlaceHolder.metadata?.history || []
@@ -699,11 +717,7 @@ Return only valid JSON object.`
         history.push({
           text: threadPlaceHolder.text,
           generatedAt: threadPlaceHolder.updatedOn.toISOString(),
-          conversationContext: getSmartConversationContext(
-            conversationText,
-            500,
-          ), // Smart context
-          topicKeywords, // Lightweight alternative
+          topicKeywords, // Lightweight, privacy-safe alternative
         })
 
         threadPlaceHolder = await updatePlaceHolder({
@@ -1206,6 +1220,12 @@ Focus on the main discussion points, user preferences, and conversation style.`
       guestId,
       threadId,
     })
+
+    // Verify ownership as extra safety layer
+    if (existingSummary && !isOwner(existingSummary, { userId, guestId })) {
+      console.warn("⚠️ Ownership mismatch for thread summary - rejecting")
+      throw new Error("Unauthorized access to thread summary")
+    }
 
     const threadSummaryData = {
       threadId,

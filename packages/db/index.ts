@@ -3521,7 +3521,12 @@ export async function getMemories({
   orderBy?: "createdOn" | "importance"
   excludeThreadId?: string
   scatterAcrossThreads?: boolean
-}) {
+}): Promise<{
+  memories: memory[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}> {
   const conditions = []
   if (appId) {
     // App memories: must have appId, must NOT have userId/guestId
@@ -3749,7 +3754,12 @@ export const getThreadSummaries = async ({
   pageSize?: number
   page?: number
   hasMemories?: boolean
-}) => {
+}): Promise<{
+  threadSummaries: threadSummary[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}> => {
   const conditions = []
 
   if (userId) {
@@ -3919,7 +3929,7 @@ export async function getCalendarEvents({
   guestId?: string
   startTime?: Date
   endTime?: Date
-}) {
+}): Promise<calendarEvent[]> {
   const result = await db
     .select()
     .from(calendarEvents)
@@ -5522,7 +5532,12 @@ export async function getExpenses({
   endDate?: Date
   page?: number
   pageSize?: number
-}) {
+}): Promise<{
+  expenses: expense[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}> {
   const conditions = and(
     id ? eq(expenses.id, id) : undefined,
     userId ? eq(expenses.userId, userId) : undefined,
@@ -5619,7 +5634,12 @@ export async function getBudgets({
   page?: number
   pageSize?: number
   guestId?: string
-}) {
+}): Promise<{
+  budgets: budget[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}> {
   const conditions = and(
     userId ? eq(budgets.userId, userId) : undefined,
     category ? eq(budgets.category, category) : undefined,
@@ -5689,7 +5709,12 @@ export async function getSharedExpenses({
   threadId?: string
   page?: number
   pageSize?: number
-}) {
+}): Promise<{
+  sharedExpenses: sharedExpense[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}> {
   const conditions = and(
     expenseId ? eq(sharedExpenses.expenseId, expenseId) : undefined,
     threadId ? eq(sharedExpenses.threadId, threadId) : undefined,
@@ -6328,7 +6353,12 @@ export const getMoods = async ({
   createdDay?: Date
   guestId?: string
   page?: number
-} = {}) => {
+} = {}): Promise<{
+  moods: mood[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}> => {
   const pageSize = rest.pageSize || 100
 
   const whereConditions = and(
@@ -6467,7 +6497,12 @@ export const getTasks = async ({
   guestId?: string
   page?: number
   pageSize?: number
-} = {}) => {
+} = {}): Promise<{
+  tasks: task[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}> => {
   const pageSize = rest.pageSize || 100
 
   const conditionsArray = [

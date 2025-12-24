@@ -6,6 +6,25 @@ import * as esbuild from "esbuild"
 import { viteStaticCopy } from "vite-plugin-static-copy"
 import type { PluginOption } from "vite"
 
+// Plugin to stub Tauri APIs in non-Tauri environments
+function tauriStubPlugin(): PluginOption {
+  return {
+    name: "tauri-stub",
+    enforce: "pre",
+    resolveId(id) {
+      if (id.startsWith("@tauri-apps/")) {
+        return id // Mark as resolved
+      }
+    },
+    load(id) {
+      if (id.startsWith("@tauri-apps/")) {
+        // Return empty stub that will fail gracefully
+        return "export default {}; export const getCurrentWindow = () => ({});"
+      }
+    },
+  }
+}
+
 function chromeExtensionPlugin(): PluginOption {
   return {
     name: "chrome-extension",
@@ -144,6 +163,7 @@ export default async ({ command, mode }) => {
 
   return {
     plugins: [
+      tauriStubPlugin(), // Must be first to intercept Tauri imports
       react(),
       viteStaticCopy({
         targets: [

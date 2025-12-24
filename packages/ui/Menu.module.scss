@@ -5,7 +5,7 @@
 .menu {
   background-color: var(--shade-1-transparent);
   backdrop-filter: blur(toRem.toRem(20.5));
-  padding: toRem.toRem(10) toRem.toRem(12.5) toRem.toRem(10) toRem.toRem(10);
+  padding: toRem.toRem(10) toRem.toRem(12.5) toRem.toRem(0) toRem.toRem(10);
   flex-direction: column;
   border-right: toRem.toRem(1) dashed var(--shade-2);
   z-index: 1000;

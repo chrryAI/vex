@@ -143,7 +143,7 @@ export const thread = async ({
   await expect(editThreadGenerateTitleButton).toBeVisible()
 
   await editThreadGenerateTitleButton.click()
-  await wait(2000)
+  await wait(7500)
   await editThreadSaveButton.click()
   await wait(5000)
 

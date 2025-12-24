@@ -139,7 +139,12 @@ async function getRelevantMemoryContext({
 
   try {
     // Get user memories scattered across different threads (exclude current thread)
-    const userMemoriesResult =
+    const userMemoriesData: {
+      memories: memory[]
+      totalCount: number
+      hasNextPage: boolean
+      nextPage: number | null
+    } =
       userId || guestId
         ? await getMemories({
             userId,
@@ -151,8 +156,21 @@ async function getRelevantMemoryContext({
           })
         : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
+    const userMemoriesResult = userMemoriesData.memories.filter(
+      (memory) =>
+        isOwner(memory, {
+          userId,
+          guestId,
+        }) && !memory.appId,
+    )
+
     // Get app-specific memories
-    const appMemoriesResult = appId
+    const appMemoriesData: {
+      memories: memory[]
+      totalCount: number
+      hasNextPage: boolean
+      nextPage: number | null
+    } = appId
       ? await getMemories({
           appId,
           pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
@@ -162,20 +180,22 @@ async function getRelevantMemoryContext({
         })
       : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
+    const appMemoriesResult = appMemoriesData.memories.filter(
+      (memory) => !memory.userId && !memory.guestId && !!memory.appId,
+    )
+
     // Combine user and app memories
     const allMemories = [
-      ...(userMemoriesResult.memories || []),
-      ...(appMemoriesResult.memories || []),
+      ...(userMemoriesResult || []),
+      ...(appMemoriesResult || []),
     ]
 
     const memoriesResult = {
       memories: allMemories,
       totalCount:
-        (userMemoriesResult.totalCount || 0) +
-        (appMemoriesResult.totalCount || 0),
-      hasNextPage:
-        userMemoriesResult.hasNextPage || appMemoriesResult.hasNextPage,
-      nextPage: userMemoriesResult.nextPage || appMemoriesResult.nextPage,
+        (userMemoriesData.totalCount || 0) + (appMemoriesData.totalCount || 0),
+      hasNextPage: userMemoriesData.hasNextPage || appMemoriesData.hasNextPage,
+      nextPage: userMemoriesData.nextPage || appMemoriesData.nextPage,
     }
 
     if (!memoriesResult.memories || memoriesResult.memories.length === 0) {
@@ -239,7 +259,7 @@ async function getRelevantMemoryContext({
       context += `\n\nRELEVANT CONTEXT ABOUT THE USER:\n${userMemoryContext}\n\nUse this context to personalize your responses when relevant.`
     }
     if (appMemoryContext) {
-      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}\n\nThis is shared knowledge that this app has learned over time. Use it to provide informed responses, but DO NOT say "you previously asked" or "you asked before" when referencing this knowledge - it's app knowledge, not the user's personal question history.`
+      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
     }
     return { context, memoryIds }
   } catch (error) {
@@ -1308,12 +1328,16 @@ These reflect the user's interests and recent conversations. If the user seems u
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
-  const calendarEvents = await getCalendarEvents({
-    userId: member?.id,
-    guestId: guest?.id,
-    startTime: sevenDaysAgo,
-    endTime: thirtyDaysFromNow,
-  })
+  const calendarEvents = (
+    await getCalendarEvents({
+      userId: member?.id,
+      guestId: guest?.id,
+      startTime: sevenDaysAgo,
+      endTime: thirtyDaysFromNow,
+    })
+  ).filter((event) =>
+    isOwner(event, { userId: member?.id, guestId: guest?.id }),
+  )
 
   // Fetch Vault data for context (expenses, budgets, shared expenses)
   const { getExpenses, getBudgets, getSharedExpenses } = await import(
@@ -1398,19 +1422,27 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
     appExtends.find((extend) => extend.slug === "focus")
   // Fetch Focus data for context (tasks, moods, timer)
   const focusTasks = hasFocus
-    ? await getTasks({
-        userId: member?.id,
-        guestId: guest?.id,
-        pageSize: 30, // Last 30 tasks
-      })
+    ? (
+        await getTasks({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 30, // Last 30 tasks
+        })
+      ).tasks.filter((task) =>
+        isOwner(task, { userId: member?.id, guestId: guest?.id }),
+      )
     : null
 
   const focusMoods = hasFocus
-    ? await getMoods({
-        userId: member?.id,
-        guestId: guest?.id,
-        pageSize: 20, // Last 20 moods for trend analysis
-      })
+    ? (
+        await getMoods({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 20, // Last 20 moods for trend analysis
+        })
+      ).moods.filter((mood) =>
+        isOwner(mood, { userId: member?.id, guestId: guest?.id }),
+      )
     : null
 
   const focusTimer = hasFocus
@@ -1513,16 +1545,15 @@ ${vaultSharedExpenses.sharedExpenses
 
   // Build Focus context (tasks, moods, timer settings)
   const focusContext =
-    hasFocus &&
-    (focusTasks?.tasks.length || focusMoods?.moods.length || focusTimer)
+    hasFocus && (focusTasks?.length || focusMoods?.length || focusTimer)
       ? `
 
 ## 🎯 User's Focus & Wellness Overview
 
 ${
-  focusTasks?.tasks.length
-    ? `### Recent Tasks (Last ${focusTasks.tasks.length})
-${focusTasks.tasks
+  focusTasks?.length
+    ? `### Recent Tasks (Last ${focusTasks.length})
+${focusTasks
   .slice(0, 10)
   .map((task) => {
     const totalTime = task.total?.reduce((sum, t) => sum + t.count, 0) || 0
@@ -1536,17 +1567,17 @@ ${focusTasks.tasks
 }
 
 ${
-  focusMoods?.moods.length
-    ? `### Recent Mood Trends (Last ${focusMoods.moods.length} entries)
+  focusMoods?.length
+    ? `### Recent Mood Trends (Last ${focusMoods.length} entries)
 ${(() => {
-  const moodCounts = focusMoods.moods.reduce(
+  const moodCounts = focusMoods.reduce(
     (acc, m) => {
       acc[m.type] = (acc[m.type] || 0) + 1
       return acc
     },
     {} as Record<string, number>,
   )
-  const latestMood = focusMoods.moods[0]
+  const latestMood = focusMoods[0]
   if (!latestMood) return "No mood data available"
 
   return `Latest: ${moodEmojis[latestMood.type as keyof typeof moodEmojis]} ${latestMood.type} (${new Date(latestMood.createdOn).toLocaleDateString()})
@@ -3547,29 +3578,41 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         })
     }
 
-    // Then stream the answer
+    // Then stream the answer with batching
     const totalChunks = chunks.length
+    let batchBuffer = ""
+    const BATCH_SIZE = 75 // characters - balances UX smoothness with performance
 
     for (const [index, chunk] of chunks.entries()) {
-      await wait(30)
+      batchBuffer += chunk
 
-      if (abortController.signal.aborted) {
-        console.log("🛑 E2E stream was stopped, breaking response loop")
-        break
+      // Send when buffer reaches threshold or is last chunk
+      const shouldFlush =
+        batchBuffer.length >= BATCH_SIZE || index === chunks.length - 1
+
+      if (shouldFlush && batchBuffer.length > 0) {
+        await wait(30)
+
+        if (abortController.signal.aborted) {
+          console.log("🛑 E2E stream was stopped, breaking response loop")
+          break
+        }
+
+        thread &&
+          enhancedStreamChunk({
+            chunk: batchBuffer,
+            chunkNumber: currentChunk++,
+            totalChunks,
+            streamingMessage: e2eStreamingMessage,
+            member,
+            guest,
+            thread,
+            clientId,
+            streamId,
+          })
+
+        batchBuffer = ""
       }
-
-      thread &&
-        enhancedStreamChunk({
-          chunk,
-          chunkNumber: currentChunk++,
-          totalChunks,
-          streamingMessage: e2eStreamingMessage,
-          member,
-          guest,
-          thread,
-          clientId,
-          streamId,
-        })
     }
 
     console.log(
@@ -4050,6 +4093,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           const reader = stream.body?.getReader()
 
           let currentChunk = 0
+          let batchBuffer = ""
+          const BATCH_SIZE = 75 // characters
 
           if (reader) {
             while (true) {
@@ -4058,21 +4103,45 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 break
               }
               const { done, value } = await reader.read()
-              if (done) break
-              const chunk = new TextDecoder().decode(value)
-              answerText += chunk
 
-              await enhancedStreamChunk({
-                chunk,
-                chunkNumber: currentChunk++,
-                totalChunks: -1,
-                streamingMessage: sushiStreamingMessage,
-                member,
-                guest,
-                thread,
-                streamId,
-                clientId,
-              })
+              // Flush remaining buffer on stream end
+              if (done) {
+                if (batchBuffer.length > 0) {
+                  answerText += batchBuffer
+                  await enhancedStreamChunk({
+                    chunk: batchBuffer,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+                }
+                break
+              }
+
+              const chunk = new TextDecoder().decode(value)
+              batchBuffer += chunk
+
+              // Send when buffer reaches threshold
+              if (batchBuffer.length >= BATCH_SIZE) {
+                answerText += batchBuffer
+                await enhancedStreamChunk({
+                  chunk: batchBuffer,
+                  chunkNumber: currentChunk++,
+                  totalChunks: -1,
+                  streamingMessage: sushiStreamingMessage,
+                  member,
+                  guest,
+                  thread,
+                  streamId,
+                  clientId,
+                })
+                batchBuffer = ""
+              }
             }
           }
           console.log("🍣 Claude text stream completed")
@@ -4081,7 +4150,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
 
           // Monitor inactivity to detect stuck streams (Bun-compatible)
-          const INACTIVITY_TIMEOUT_MS = 10000 // 10 seconds of no activity = stuck
+          const INACTIVITY_TIMEOUT_MS = 30000 // 30 seconds of no activity = stuck (increased for reasoning models)
           let lastActivityTime = Date.now()
           let streamFinished = false
           let monitoringInterval: NodeJS.Timeout | null = null
@@ -4123,9 +4192,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 } else if (part.type === "reasoning-end") {
                   console.log("🧠 Reasoning complete")
                 } else if (part.type === "text-delta") {
-                  // Final answer text
+                  // Final answer text - batch for performance
                   answerText += part.text
                   console.log("💬 Text delta:", part.text)
+
+                  // Note: We don't batch text-delta here because the AI SDK already
+                  // provides reasonably-sized chunks. Batching would add complexity
+                  // without significant benefit for this streaming path.
                   await enhancedStreamChunk({
                     chunk: part.text,
                     chunkNumber: currentChunk++,
@@ -4363,6 +4436,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
 
         let currentChunk = 0
+        let batchBuffer = ""
+        const BATCH_SIZE = 75 // characters
 
         if (reader) {
           while (true) {
@@ -4371,19 +4446,43 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               break
             }
             const { done, value } = await reader.read()
-            if (done) break
+
+            // Flush remaining buffer on stream end
+            if (done) {
+              if (batchBuffer.length > 0) {
+                await enhancedStreamChunk({
+                  chunk: batchBuffer,
+                  chunkNumber: currentChunk++,
+                  totalChunks: -1,
+                  streamingMessage: deepSeekStreamingMessage,
+                  member,
+                  guest,
+                  thread,
+                  clientId,
+                  streamId,
+                })
+              }
+              break
+            }
+
             const chunk = new TextDecoder().decode(value)
-            await enhancedStreamChunk({
-              chunk,
-              chunkNumber: currentChunk++,
-              totalChunks: -1, // Unknown in streaming
-              streamingMessage: deepSeekStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-            })
+            batchBuffer += chunk
+
+            // Send when buffer reaches threshold
+            if (batchBuffer.length >= BATCH_SIZE) {
+              await enhancedStreamChunk({
+                chunk: batchBuffer,
+                chunkNumber: currentChunk++,
+                totalChunks: -1,
+                streamingMessage: deepSeekStreamingMessage,
+                member,
+                guest,
+                thread,
+                clientId,
+                streamId,
+              })
+              batchBuffer = ""
+            }
           }
         }
 
@@ -4440,22 +4539,33 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 thread: thread,
               }
 
-              // Split response into words and stream them
+              // Split response into words and stream them with batching
               const words = finalText.split(" ")
               let currentChunk = 0
+              let batchBuffer = ""
+              const BATCH_SIZE = 75 // characters
 
-              for (const word of words) {
-                await enhancedStreamChunk({
-                  chunk: word + " ",
-                  chunkNumber: currentChunk++,
-                  totalChunks: -1, // Unknown in streaming
-                  streamingMessage,
-                  member,
-                  guest,
-                  thread,
-                  clientId,
-                  streamId,
-                })
+              for (const [index, word] of words.entries()) {
+                batchBuffer += word + " "
+
+                // Send when buffer reaches threshold or is last word
+                const shouldFlush =
+                  batchBuffer.length >= BATCH_SIZE || index === words.length - 1
+
+                if (shouldFlush && batchBuffer.length > 0) {
+                  await enhancedStreamChunk({
+                    chunk: batchBuffer,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    clientId,
+                    streamId,
+                  })
+                  batchBuffer = ""
+                }
               }
             } catch (error) {
               console.error("❌ Failed to generate follow-up response:", error)

@@ -1,4 +1,4 @@
-import { defineConfig } from "vite"
+import { defineConfig, type PluginOption } from "vite"
 import react from "@vitejs/plugin-react"
 import path from "path"
 import type { UserConfig } from "vite"
@@ -9,10 +9,30 @@ import dotenv from "dotenv"
 // Load environment variables from .env file
 // dotenv.config({ path: path.resolve(__dirname, "../../.env") })
 
+// Plugin to stub Tauri APIs in non-Tauri environments
+function tauriStubPlugin(): PluginOption {
+  return {
+    name: "tauri-stub",
+    enforce: "pre",
+    resolveId(id) {
+      if (id.startsWith("@tauri-apps/")) {
+        return id // Mark as resolved
+      }
+    },
+    load(id) {
+      if (id.startsWith("@tauri-apps/")) {
+        // Return empty stub that will fail gracefully
+        return "export default {}; export const getCurrentWindow = () => ({});"
+      }
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command, mode, isSsrBuild }) => {
   const config: UserConfig = {
     plugins: [
+      tauriStubPlugin(), // Must be first to intercept Tauri imports
       react({
         jsxRuntime: "automatic",
         jsxImportSource: "react",
@@ -63,9 +83,23 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
     },
     optimizeDeps: {
       include: ["react", "react-dom", "react-dom/server"],
+      exclude: [
+        // Tauri APIs are only available at runtime in Tauri environment
+        "@tauri-apps/api",
+        "@tauri-apps/api/window",
+        "@tauri-apps/api/app",
+      ],
     },
     build: {
       rollupOptions: {
+        external: (id) => {
+          // Mark Tauri APIs as external - they're provided by Tauri runtime
+          // Only apply this for client builds, not SSR
+          if (!isSsrBuild && id.startsWith("@tauri-apps/")) {
+            return true
+          }
+          return false
+        },
         output: {
           // Better chunk splitting for caching - only for client builds
           // Disable for SSR to avoid circular dependency issues
