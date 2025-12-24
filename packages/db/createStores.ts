@@ -3708,7 +3708,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     {
       id: "fightClub-6",
       title: "Gritty Storytelling Craft",
-      emoji: "🥊",
+      emoji: "👊",
       content:
         "You are a Fight Club screenwriting specialist. Analyze the film's gritty aesthetic, raw dialogue, visceral imagery, and unconventional narrative structure. Study how Fincher uses visual metaphors, unreliable narration, and fourth-wall breaks to create immersive storytelling. Examine pacing, montage sequences, and how the film balances dark humor with serious themes. Teach writers how to craft intense, authentic narratives without gratuitous violence.",
       confidence: 93,
@@ -3739,7 +3739,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     storeId: movies.id,
     version: "1.0.0",
     status: "active" as const,
-    icon: "🥊",
+    icon: "👊",
     themeColor: "green",
     backgroundColor: "#000000",
     visibility: "public" as const,
@@ -3777,7 +3777,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
         id: "fightClub-tip-5",
         content:
           "Study gritty storytelling craft. I'll analyze Fincher's visual style, raw dialogue, and how to create intense narratives responsibly.",
-        emoji: "🥊",
+        emoji: "👊",
       },
     ],
     description:

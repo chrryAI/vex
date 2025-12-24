@@ -162,6 +162,7 @@ export default function EmptyStateTips({
         : tips.pear
 
   const getAppTitle = () => {
+    if (isPear) return getTitle()
     if (app?.tips?.length)
       return `${app?.icon} ` + t(app?.tipsTitle || "Pro Tips")
     if (app?.slug === "atlas") return "✈️ " + t("Travel Tips")
@@ -173,7 +174,7 @@ export default function EmptyStateTips({
 
   return (
     <Section style={{ ...styles.emptyStateTips, ...style }}>
-      <H3 style={{ marginBottom: 10, marginTop: 0 }}>{getTitle()}</H3>
+      <H3 style={{ marginBottom: 10, marginTop: 0 }}>{getAppTitle()}</H3>
       <Div style={{ ...styles.ul.style }}>
         {currentTips.slice(0, count).map((item, i) => {
           // Progressive display based on viewport height
