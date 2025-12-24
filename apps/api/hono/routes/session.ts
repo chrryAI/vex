@@ -152,25 +152,21 @@ session.get("/", async (c) => {
 
   // Arcjet bot detection - block bots from creating guest accounts
   if (!isDevelopment && !isE2E) {
-    // Extract client IP from x-forwarded-for header (sent by SSR server)
-    // Always provide a fallback to prevent Arcjet fingerprint errors
+    // Extract IP from reverse proxy headers (nginx sets X-Forwarded-For)
+    const forwardedFor = c.req.header("x-forwarded-for")
+    const realIp = c.req.header("x-real-ip")
     const clientIp =
       url.searchParams.get("ip") ||
-      c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
-      c.req.header("x-real-ip") ||
+      forwardedFor?.split(",")[0]?.trim() ||
+      realIp ||
       "127.0.0.1" // Fallback for local/internal requests
-
-    // Convert Headers to plain object for Arcjet compatibility
-    const headersObj: Record<string, string | string[] | undefined> = {}
-    request.headers.forEach((value, key) => {
-      headersObj[key] = value
-    })
 
     // Create Arcjet-compatible request object with guaranteed IP
     const arcjetRequest = {
-      ...request,
-      ip: clientIp, // Always has a value now
-      headers: headersObj,
+      method: c.req.method,
+      url: c.req.url,
+      headers: Object.fromEntries(c.req.raw.headers.entries()),
+      ip: clientIp, // Use extracted IP from reverse proxy
     }
 
     const decision = await aj.protect(arcjetRequest)

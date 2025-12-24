@@ -3708,7 +3708,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     {
       id: "fightClub-6",
       title: "Gritty Storytelling Craft",
-      emoji: "🥊",
+      emoji: "👊",
       content:
         "You are a Fight Club screenwriting specialist. Analyze the film's gritty aesthetic, raw dialogue, visceral imagery, and unconventional narrative structure. Study how Fincher uses visual metaphors, unreliable narration, and fourth-wall breaks to create immersive storytelling. Examine pacing, montage sequences, and how the film balances dark humor with serious themes. Teach writers how to craft intense, authentic narratives without gratuitous violence.",
       confidence: 93,
@@ -3739,7 +3739,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     storeId: movies.id,
     version: "1.0.0",
     status: "active" as const,
-    icon: "🥊",
+    icon: "👊",
     themeColor: "green",
     backgroundColor: "#000000",
     visibility: "public" as const,
@@ -3777,7 +3777,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
         id: "fightClub-tip-5",
         content:
           "Study gritty storytelling craft. I'll analyze Fincher's visual style, raw dialogue, and how to create intense narratives responsibly.",
-        emoji: "🥊",
+        emoji: "👊",
       },
     ],
     description:
@@ -5404,86 +5404,85 @@ You have access to calendar, location, and weather tools to provide context-awar
   // Create Grape app
   let grapeApp = await getApp({ slug: "grape" })
 
-  const grapeSystemPrompt = `You are Grape, an AI-powered advertising platform that revolutionizes digital advertising through privacy-first technology, contextual intelligence, and fair value exchange.
+  const grapeSystemPrompt = `You are Grape, a simple privacy-first advertising platform that promotes internal Wine store apps and rewards users for valuable feedback.
 
 Your core capabilities:
-- **AI Ad Generation**: Create compelling, conversion-optimized ads from simple prompts. Generate headlines, copy, CTAs, and visual concepts tailored to target audiences and platforms.
-- **Content Analysis**: Analyze any text content to understand context, topics, sentiment, and audience intent. Match ads to content without tracking users.
-- **Shared Memory Intelligence**: Learn from cross-advertiser data to improve ad relevance. Understand what works for different content types, audiences, and contexts without compromising privacy.
-- **Campaign Strategy**: Help advertisers define target audiences, set budgets, choose pricing models (CPV, CPC, CPA), and optimize campaigns based on performance data.
-- **Revenue Optimization**: Advise publishers on ad placement, content strategy, and earning potential. Help users maximize earnings from viewing ads.
-- **Performance Analytics**: Provide real-time insights on views, clicks, conversions, CTR, engagement rates, and ROI. Identify trends and suggest optimizations.
-- **A/B Testing**: Design and analyze split tests for ad creative, copy, targeting, and placement to maximize performance.
+- **Internal App Promotion**: Show users relevant apps from the Wine ecosystem (Zarathustra, Vault, Atlas, etc.)
+- **Feedback Validation**: Analyze user feedback to determine if it's constructive and valuable
+- **Credit Rewards**: Award credits to users who provide genuine, actionable feedback
+- **Simple Navigation**: Help users discover and navigate to promoted apps
+
+How Grape works:
+1. **User sees internal app ads** - Promote Wine store apps based on context
+2. **User clicks ad** - Navigate to that app automatically
+3. **Pear feedback opens** - Ask "What do you think of [App]?"
+4. **AI validates feedback** - Check if it's constructive, specific, and actionable
+5. **Reward credits** - If valid feedback, top up user's credits immediately
+
+Feedback validation criteria:
+- **Constructive**: Not just complaining, offers insights or suggestions
+- **Specific**: Actionable details, not vague statements
+- **Relevant**: About the product/app experience
+- **Unique**: Not spam or duplicate feedback
 
 Your advertising philosophy:
-- **Privacy-first**: No cookies, no cross-site tracking, no personal data collection. Context over identity.
-- **Fair value exchange**: Users earn for their attention. Advertisers pay for genuine engagement. Publishers earn from quality content.
-- **Transparency**: Clear pricing, honest metrics, no hidden fees. Users see exactly what they earn.
-- **Quality over quantity**: Relevant ads that add value, not spam. Better targeting through AI, not surveillance.
-- **Shared learning**: Collective intelligence improves everyone's results while protecting individual privacy.
+- **Privacy-first**: No tracking, no cookies, no surveillance
+- **Internal only**: Promote Wine ecosystem apps only
+- **Value exchange**: Users give feedback, earn credits
+- **Simple**: No complex dashboards or campaigns
+- **Sovereign**: Manual approval for any external ads (contact grape@chrry.ai)
 
-How you help different users:
-- **Advertisers**: Create campaigns, generate ad creative, optimize targeting, analyze performance, scale what works
-- **Publishers**: Integrate ad widgets, maximize earnings, improve content strategy, understand audience value
-- **Viewers**: Discover relevant products/services, earn credits for attention, control ad experience, maintain privacy
-
-You have access to memory tools to build shared intelligence across advertisers. Use memories to:
-- Store successful ad patterns (what headlines work for tech products, what CTAs convert for SaaS, etc.)
-- Learn content-to-ad mappings (fitness content → health products, coding tutorials → developer tools)
-- Track performance trends (seasonal patterns, audience preferences, emerging topics)
-- Share insights while protecting individual advertiser data
-
-Be strategic, data-driven, creative, and always focused on win-win-win outcomes for advertisers, publishers, and users.`
+Be helpful, encouraging, and focused on connecting users with great apps while rewarding their valuable insights.`
 
   const grapeInstructions = [
     {
       id: "grape-1",
-      title: "Create Your First Ad Campaign",
+      title: "Discover Wine Store Apps",
       content:
-        "Launch a campaign in minutes with AI assistance. Tell me your product, target audience, and goals—I'll generate compelling ad copy, suggest optimal pricing (CPV starting at $0.02), recommend content categories, and set up tracking. Perfect for startups, SaaS products, e-commerce, or services. Advertisers using AI-generated ads see 3x higher CTR than manual creation.",
-      emoji: "🚀",
-    },
-    {
-      id: "grape-2",
-      title: "Generate High-Converting Ad Creative",
-      content:
-        "Describe your product or service, and I'll create multiple ad variations with attention-grabbing headlines, persuasive copy, strong CTAs, and visual concepts. I'll tailor messaging to different audience segments and platforms. A/B test variations to find winners. AI-generated ads reduce creative costs by 80% while improving performance by 40%.",
-      emoji: "✨",
-    },
-    {
-      id: "grape-3",
-      title: "Integrate Ad Widget on Your Site",
-      content:
-        "Monetize your content with privacy-first ads in under 5 minutes. I'll generate a simple embed code, analyze your content to attract relevant advertisers, optimize ad placement for engagement without disrupting UX, and track earnings in real-time. Publishers earn $2-15 per 1000 views depending on content quality and niche. No cookies, no tracking, no hassle.",
-      emoji: "💰",
-    },
-    {
-      id: "grape-4",
-      title: "Optimize Campaign Performance",
-      content:
-        "Get AI-powered insights to improve your ad results. I'll analyze CTR, conversion rates, cost per acquisition, audience engagement patterns, and content performance. Receive specific recommendations: adjust targeting, refine copy, test new placements, scale winning ads, pause underperformers. Data-driven optimization increases ROI by 2-5x on average.",
-      emoji: "📈",
-    },
-    {
-      id: "grape-5",
-      title: "Discover Earning Opportunities",
-      content:
-        "Learn how to maximize your earnings as a viewer or publisher. I'll show you high-value content categories (tech, finance, health earn 3-5x more), optimal viewing strategies, publisher best practices, and trending topics. Track your earnings, set goals, and get personalized tips. Top viewers earn $50-200/month, top publishers earn $500-5000/month.",
+        "Browse internal app promotions from the Wine ecosystem. Click any app ad to navigate directly and try it out. Apps include Zarathustra (digital sovereignty), Vault (finance), Atlas (travel), and more. Each app is hand-picked for quality and privacy.",
       emoji: "🍇",
     },
     {
-      id: "grape-6",
-      title: "Leverage Shared Memory Intelligence",
+      id: "grape-2",
+      title: "Earn Credits for Feedback",
       content:
-        "Benefit from collective advertiser knowledge without sharing your data. I'll use cross-campaign insights to suggest proven ad formats, identify high-performing content matches, predict seasonal trends, and recommend targeting strategies. Shared memory improves ad relevance by 60% while maintaining complete privacy. Your campaigns get smarter as the network grows.",
-      emoji: "🧠",
+        "Share your honest thoughts about any app you try. If your feedback is constructive, specific, and actionable, you'll earn credits automatically. AI validates feedback quality to ensure fair rewards. Top feedback providers earn 50-200 credits/month.",
+      emoji: "💰",
+    },
+    {
+      id: "grape-3",
+      title: "Navigate Between Apps",
+      content:
+        "Click app ads to instantly navigate to that app. Pear feedback mode opens automatically, asking for your thoughts. Your feedback helps improve the entire Wine ecosystem while you earn credits for your insights.",
+      emoji: "🚀",
+    },
+    {
+      id: "grape-4",
+      title: "Track Your Earnings",
+      content:
+        "View how many ads you've clicked, feedback you've provided, and credits you've earned. Simple dashboard shows your contribution to the ecosystem. No complex analytics, just transparent value exchange.",
+      emoji: "📊",
+    },
+    {
+      id: "grape-5",
+      title: "Advertise Your App (Contact)",
+      content:
+        "Want to promote your app in Grape? Email grape@chrry.ai with your app details. We manually review and approve quality apps that align with our privacy-first philosophy. Internal Wine apps are promoted automatically.",
+      emoji: "📧",
+    },
+    {
+      id: "grape-6",
+      title: "Privacy-First Advertising",
+      content:
+        "All ads are internal Wine apps—no tracking, no cookies, no surveillance. We promote quality privacy-focused tools, not invasive products. Your data stays yours. Advertising done right: contextual, relevant, and respectful of your digital sovereignty.",
+      emoji: "🔒",
     },
     {
       id: "grape-7",
-      title: "Analyze Content for Ad Opportunities",
+      title: "Help Build Better Apps",
       content:
-        "Upload or paste any text content, and I'll analyze topics, audience intent, engagement potential, and ad relevance scores. Get recommendations for: which advertisers to attract, optimal ad density, expected earnings, content improvements to increase value. Publishers using content analysis earn 40% more by attracting premium advertisers.",
-      emoji: "🔍",
+        "Your feedback directly improves the Wine ecosystem. Creators read every piece of feedback and use it to fix bugs, improve UX, and add features. You're not just earning credits—you're shaping the future of privacy-first software. Real impact, real rewards!",
+      emoji: "🛠️",
     },
   ]
 
@@ -5492,7 +5491,7 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
     slug: "grape",
     name: "Grape",
     subtitle: "AI Ad Platform",
-    storeId: blossom.id, // Primary store is Blossom (marketplace/monetization)
+    storeId: wine.id, // Primary store is Blossom (marketplace/monetization)
     version: "1.0.0",
     status: "testing" as const,
     title: "Privacy-First AI Advertising",
@@ -5504,66 +5503,63 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
     systemPrompt: grapeSystemPrompt,
     highlights: grapeInstructions,
     placeholder: "Create an ad, analyze content, or optimize your campaign...",
-    tipsTitle: "Advertising Tips",
+    tipsTitle: "Grape Tips",
     tips: [
       {
         id: "grape-tip-1",
         content:
-          "Start with CPV (cost per view) pricing at $0.02-0.05. It's lower risk than CPC and builds brand awareness. Users earn credits, you get guaranteed visibility!",
-        emoji: "💡",
+          "Click app ads to navigate instantly. Pear feedback opens automatically—share your thoughts and earn credits!",
+        emoji: "🍇",
       },
       {
         id: "grape-tip-2",
         content:
-          "Use AI to generate 5-10 ad variations, then A/B test them. The winning ad often performs 2-3x better than your first draft!",
-        emoji: "🎯",
+          "Constructive feedback earns more. Be specific, actionable, and honest for maximum credit rewards!",
+        emoji: "💰",
       },
       {
         id: "grape-tip-3",
         content:
-          "Target content, not people. Ads matched to relevant content get 4x higher engagement than demographic targeting—and it's privacy-friendly!",
+          "All ads are internal Wine apps—no tracking, no cookies, just quality privacy-first tools!",
         emoji: "🔒",
       },
       {
         id: "grape-tip-4",
         content:
-          "Publishers: Place ads after the first paragraph or at natural content breaks. Mid-content ads get 60% more views than sidebar ads!",
-        emoji: "📍",
+          "Want to advertise your app? Email grape@chrry.ai. We manually review for quality and privacy alignment!",
+        emoji: "📧",
       },
       {
         id: "grape-tip-5",
         content:
-          "Viewers earn more by engaging with relevant ads. The grape icon shows your earning potential—higher quality content = higher payouts!",
-        emoji: "🍇",
+          "Track your earnings in the simple dashboard. See ads clicked, feedback given, and credits earned!",
+        emoji: "📊",
       },
     ],
     description:
-      "Revolutionary AI-powered advertising platform with privacy-first technology, contextual targeting, and fair value exchange. Advertisers create campaigns, publishers monetize content, users earn credits—all without tracking or cookies.",
+      "Simple privacy-first advertising for Wine store apps. Discover quality apps, provide feedback, earn credits. No tracking, no cookies, just honest value exchange. Internal app promotion + feedback rewards.",
     featureList: [
-      "AI Ad Generation",
-      "Content Analysis",
-      "Privacy-First Targeting",
-      "Shared Memory Intelligence",
-      "Campaign Management",
-      "Performance Analytics",
-      "A/B Testing",
-      "Revenue Tracking",
-      "Widget Integration",
-      "Earnings Dashboard",
+      "Internal App Ads",
+      "Feedback Validation",
+      "Credit Rewards",
+      "Simple Dashboard",
+      "Privacy-First",
+      "Manual Ad Approval",
     ],
     tools: [] as ("calendar" | "location" | "weather")[],
     extends: vex ? [vex.id, chrry.id] : [chrry.id],
     features: {
-      aiAdGeneration: true,
-      contentAnalysis: true,
-      privacyFirstTargeting: true,
-      sharedMemory: true,
-      campaignManagement: true,
-      performanceAnalytics: true,
-      abTesting: true,
-      revenueTracking: true,
-      widgetIntegration: true,
-      earningsDashboard: true,
+      internalAppAds: true,
+      feedbackValidation: true,
+      creditRewards: true,
+      simpleDashboard: true,
+      privacyFirst: true,
+      manualApproval: true,
+      externalAds: false, // Future: manual approval only
+      campaignManagement: false, // Not needed for MVP
+      performanceAnalytics: false, // Simple tracking only
+      abTesting: false, // Not needed
+      widgetIntegration: false, // Not needed
       crossSiteTracking: false, // Never!
       cookieTracking: false, // Privacy-first
       userProfiling: false, // Context over identity
@@ -5576,12 +5572,28 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
   })
   if (!grapeApp) throw new Error("Failed to create Grape app")
 
-  // Install Grape to Blossom store for discoverability
+  // Install Grape to Wine store for discoverability
+  await createOrUpdateStoreInstall({
+    storeId: wine.id,
+    appId: grapeApp.id,
+    featured: true,
+    displayOrder: 2,
+  })
+
+  await createOrUpdateStoreInstall({
+    storeId: wine.id,
+    appId: zarathustra.id,
+    featured: true,
+    displayOrder: 2,
+  })
+
   await createOrUpdateStoreInstall({
     storeId: blossom.id,
     appId: grapeApp.id,
     featured: true,
-    displayOrder: 2,
+    displayOrder: 3,
+    customDescription:
+      "Your intelligent travel companion powered by OpenAI. Plan trips, discover destinations, and navigate the world with AI-powered insights.",
   })
 
   console.log("✅ Grape app created/updated")
@@ -5897,84 +5909,103 @@ Be strategic, data-driven, creative, and always focused on win-win-win outcomes 
   if (!wine) throw new Error("Failed to create Wine store")
 
   // ============================================
-  // PEAR - Feedback-as-a-Service Platform
+  // PEAR - Simple Feedback Validation Platform
   // ============================================
 
   let pearApp = await getApp({ slug: "pear" })
 
-  const pearSystemPrompt = `You are Pear, an AI-powered feedback platform that connects product creators with real users for authentic video feedback.
+  const pearSystemPrompt = `You are Pear, a simple AI-powered feedback validation assistant that works with Grape to reward users for quality feedback.
 
-Your role is to help users:
-1. **Creators**: Set up feedback campaigns with predefined steps, budget allocation, and target criteria
-2. **Reviewers**: Find relevant feedback opportunities, complete tasks, and earn money
-3. **Both**: Manage feedback wallets, track earnings, and optimize campaigns
+Your role is to:
+1. **Auto-open when users click Grape ads** - Automatically prompt for feedback when they navigate to a new app
+2. **Validate feedback quality** - Analyze if feedback is constructive, specific, and actionable
+3. **Reward credits** - Top up user credits immediately for valid feedback
+4. **Encourage improvement** - Help users provide better feedback to earn more
 
-Key Features:
-- **Campaign Creation**: Help creators define feedback steps, questions, and budget per completion
-- **Smart Matching**: Connect reviewers with relevant products based on their profile and interests
-- **Video Recording**: Guide reviewers through structured feedback sessions with screen + camera recording
-- **Quality Control**: Ensure feedback meets campaign requirements before payment release
-- **Budget Management**: Track campaign spending, reviewer earnings, and payment schedules
-- **Embeddable Widget**: Generate code for website integration to collect feedback directly
-- **Analytics**: Show creators feedback insights, completion rates, and ROI metrics
+How Pear works with Grape:
+1. User clicks app ad in Grape (e.g., "Try Zarathustra")
+2. Navigate to that app automatically
+3. Pear opens with: "What do you think of Zarathustra?"
+4. User provides feedback
+5. AI validates: Is it constructive, specific, actionable, unique?
+6. If valid → Top up credits (5-20 credits based on quality)
+7. If invalid → Explain why and how to improve
 
-Privacy & Trust:
-- Reviewers control what they share and when
-- Creators get authentic, unbiased feedback
-- Payments are escrowed until feedback is approved
-- All recordings are encrypted and only shared with campaign creators
+Feedback validation criteria:
+- **Constructive**: Offers insights or suggestions, not just complaints
+- **Specific**: Actionable details, not vague statements like "it's good"
+- **Relevant**: About the product/app experience
+- **Unique**: Not spam or duplicate feedback
+- **Detailed**: More detail = more credits (5 credits minimum, 20 credits for exceptional)
 
-Be helpful, clear, and guide users through creating campaigns or completing feedback tasks efficiently.`
+Credit rewards:
+- **5 credits**: Basic valid feedback ("I like the design")
+- **10 credits**: Specific feedback ("The fire icon is confusing, maybe add a tooltip")
+- **15 credits**: Actionable feedback ("Add keyboard shortcuts for power users")
+- **20 credits**: Exceptional feedback (detailed UX analysis with specific suggestions)
+
+Your tone:
+- Encouraging and helpful
+- Specific about what makes good feedback
+- Celebrate quality contributions
+- Guide users to improve
+
+Privacy:
+- No tracking, no surveillance
+- Feedback is shared with app creators only
+- Users control what they share
+
+Be supportive, specific, and focused on helping users earn credits through valuable feedback.`
 
   const pearInstructions = [
     {
       id: "pear-1",
-      title: "Create a Feedback Campaign",
+      title: "Provide Feedback from Grape Ads",
       content:
-        "Set up a campaign in minutes: define your product/feature, create 3-5 feedback questions, set your budget per completion ($5-50), and target criteria (demographics, experience level). I'll help you craft questions that get actionable insights. Campaigns with clear steps get 3x more completions!",
-      emoji: "🎯",
+        "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!",
+      emoji: "🍐",
     },
     {
       id: "pear-2",
-      title: "Earn Money Giving Feedback",
+      title: "Earn Credits for Quality Feedback",
       content:
-        "Browse available campaigns, pick ones matching your interests, complete the feedback steps (usually 10-20 minutes), record your screen + camera, and earn $5-50 per completion. Top reviewers earn $500+/month by providing thoughtful, detailed feedback. Your feedback wallet tracks all earnings!",
+        "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!",
       emoji: "💰",
     },
     {
       id: "pear-3",
-      title: "Embed Feedback Widget on Your Site",
+      title: "What Makes Good Feedback?",
       content:
-        "Get a simple code snippet to add Pear feedback collection to your website. Users can give feedback directly without leaving your site. Perfect for beta testing, feature launches, or continuous user research. Widget campaigns get 5x more responses than email surveys!",
-      emoji: "🔌",
+        "Good feedback is: (1) Constructive—offers insights, not just complaints, (2) Specific—actionable details like 'Add a tooltip to the fire icon', (3) Relevant—about the actual app experience, (4) Unique—not spam or duplicates. Think like a helpful friend giving honest advice!",
+      emoji: "✨",
     },
     {
       id: "pear-4",
-      title: "Video + Screen Recording Made Easy",
+      title: "Track Your Feedback Earnings",
       content:
-        "Our guided recording flow captures screen activity and your face/voice simultaneously. No technical setup needed—just click record and follow the prompts. Creators get rich, contextual feedback they can watch and share with their team. Video feedback is 10x more valuable than text!",
-      emoji: "🎥",
+        "View your feedback history, quality scores, and total credits earned. See which apps you've reviewed and how your feedback helped improve them. Top feedback providers earn 50-200 credits/month by consistently providing thoughtful, detailed insights!",
+      emoji: "📊",
     },
     {
       id: "pear-5",
-      title: "Quality Control & Payment Protection",
+      title: "Improve Your Feedback Skills",
       content:
-        "All feedback is reviewed before payment release. Creators can request revisions if feedback doesn't meet requirements. Reviewers get paid within 24 hours of approval. Escrow system protects both sides—creators get quality feedback, reviewers get guaranteed payment!",
-      emoji: "✅",
+        "If feedback doesn't meet quality criteria, I'll explain why and how to improve. Learn what makes feedback valuable: specific examples, actionable suggestions, detailed observations. Better feedback skills = more credits + helping build better apps!",
+      emoji: "🎯",
     },
     {
       id: "pear-6",
-      title: "Smart Matching Algorithm",
+      title: "Share Your First Impressions",
       content:
-        "I match reviewers with campaigns based on their profile, past feedback quality, and interests. Creators get relevant users who actually understand their product. Reviewers see campaigns they're qualified for. Better matches = better feedback = higher approval rates!",
-      emoji: "🤝",
+        "Your initial reaction is valuable! Share what confused you, what delighted you, or what frustrated you in the first 30 seconds. First impressions reveal UX issues that creators miss. Authentic emotional responses help build better products and earn you more credits!",
+      emoji: "👀",
     },
     {
       id: "pear-7",
-      title: "Analytics & Insights Dashboard",
+      title: "Compare with Similar Apps",
       content:
-        "Track campaign performance: completion rate, average feedback quality score, time to complete, and ROI. See common themes across feedback videos, identify pain points, and export insights. Creators using analytics improve products 2x faster than those who don't!",
-      emoji: "📊",
+        "If you've used similar apps, share comparisons! 'Zarathustra's burn mode is clearer than X's incognito' or 'Atlas lacks Y feature that Z has' gives creators competitive insights. Comparative feedback is worth 15-20 credits because it provides strategic value!",
+      emoji: "🔍",
     },
   ]
 
@@ -6000,63 +6031,65 @@ Be helpful, clear, and guide users through creating campaigns or completing feed
       {
         id: "pear-tip-1",
         content:
-          "Creators: Ask specific questions! 'What confused you?' gets better feedback than 'What do you think?' Specific questions get 4x more actionable insights!",
-        emoji: "💡",
+          "Be specific! Instead of 'I like it', say 'The fire icon is intuitive for privacy mode'. Specific feedback earns 2x more credits!",
+        emoji: "🎯",
       },
       {
         id: "pear-tip-2",
         content:
-          "Reviewers: Think out loud while recording! Share your first impressions, confusion, and 'aha' moments. Authentic reactions are worth more than polished reviews!",
-        emoji: "🎤",
+          "Think like a helpful friend. Point out what's confusing, what's great, and what could be better. Constructive tone earns more!",
+        emoji: "💡",
       },
       {
         id: "pear-tip-3",
         content:
-          "Budget $10-20 per feedback for quality responses. Higher budgets attract experienced reviewers who give detailed, thoughtful feedback. ROI is 10x on average!",
-        emoji: "💵",
+          "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!",
+        emoji: "✨",
       },
       {
         id: "pear-tip-4",
         content:
-          "Embed the widget during beta launches or feature releases. Real-time feedback from actual users beats internal testing every time. Fix issues before they become problems!",
-        emoji: "🚀",
+          "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!",
+        emoji: "🍐",
       },
       {
         id: "pear-tip-5",
         content:
-          "Reviewers: Build your reputation! High-quality feedback unlocks premium campaigns with higher payouts. Top reviewers get invited to exclusive opportunities!",
+          "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!",
         emoji: "⭐",
       },
     ],
     description:
-      "Revolutionary feedback platform connecting product creators with real users. Creators set up campaigns with video recording steps and budget. Reviewers earn money by providing authentic feedback. Embeddable widget for website integration. Privacy-first with escrow payments.",
+      "Simple AI-powered feedback validation that works with Grape. Provide feedback on Wine store apps, earn credits for quality insights. Auto-opens when you click Grape ads. No complex campaigns, just honest feedback rewarded.",
     featureList: [
-      "Campaign Creation",
-      "Video + Screen Recording",
-      "Feedback Wallet",
-      "Smart Matching",
-      "Embeddable Widget",
-      "Quality Control",
-      "Analytics Dashboard",
-      "Escrow Payments",
-      "Budget Management",
-      "Reviewer Profiles",
+      "Auto-Open from Grape",
+      "AI Feedback Validation",
+      "Credit Rewards (5-20)",
+      "Quality Scoring",
+      "Feedback History",
+      "Improvement Tips",
     ],
     tools: [] as ("calendar" | "location" | "weather")[],
     extends: vex ? [vex.id, chrry.id] : [chrry.id],
     features: {
-      campaignCreation: true,
-      videoRecording: true,
-      screenRecording: true,
-      feedbackWallet: true,
-      smartMatching: true,
-      embeddableWidget: true,
-      qualityControl: true,
-      analyticsDashboard: true,
-      escrowPayments: true,
-      budgetManagement: true,
-      reviewerProfiles: true,
-      websiteIntegration: true,
+      autoOpenFromGrape: true,
+      aiFeedbackValidation: true,
+      creditRewards: true,
+      qualityScoring: true,
+      feedbackHistory: true,
+      improvementTips: true,
+      campaignCreation: false, // Not needed for MVP
+      videoRecording: false, // Future feature
+      screenRecording: false, // Future feature
+      feedbackWallet: false, // Simple credit system instead
+      smartMatching: false, // Not needed
+      embeddableWidget: false, // Not needed
+      qualityControl: true, // AI validation
+      analyticsDashboard: false, // Simple history only
+      escrowPayments: false, // Direct credit top-up
+      budgetManagement: false, // Not needed
+      reviewerProfiles: false, // Not needed
+      websiteIntegration: false, // Not needed
     },
   }
 
@@ -6092,8 +6125,8 @@ Be helpful, clear, and guide users through creating campaigns or completing feed
     subtitle: "Smart Finance",
     slug: "vault",
     name: "Vault",
-    // storeId: wine.id,
-    storeId: lifeOS.id,
+    storeId: wine.id,
+    // storeId: lifeOS.id,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
