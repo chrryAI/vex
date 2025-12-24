@@ -5,7 +5,7 @@
  * Master script to download videos, images, and PDFs for E2E testing
  */
 
-const { execSync } = require("child_process")
+const { spawnSync } = require("child_process")
 const path = require("path")
 
 const scripts = [
@@ -23,10 +23,20 @@ async function main() {
     console.log(`\n${script.emoji} Starting ${script.name}...\n`)
 
     try {
-      execSync(`node ${path.join(__dirname, script.file)}`, {
+      // Fixed: Use spawnSync with argument array to prevent shell injection
+      const result = spawnSync("node", [path.join(__dirname, script.file)], {
         stdio: "inherit",
         cwd: __dirname,
       })
+
+      if (result.error) {
+        throw result.error
+      }
+
+      if (result.status !== 0) {
+        throw new Error(`Process exited with code ${result.status}`)
+      }
+
       console.log(`\n✅ ${script.name} complete!`)
     } catch (error) {
       console.error(`\n❌ ${script.name} failed:`, error.message)

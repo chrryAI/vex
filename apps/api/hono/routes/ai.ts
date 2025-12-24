@@ -139,7 +139,12 @@ async function getRelevantMemoryContext({
 
   try {
     // Get user memories scattered across different threads (exclude current thread)
-    const userMemoriesData =
+    const userMemoriesData: {
+      memories: memory[]
+      totalCount: number
+      hasNextPage: boolean
+      nextPage: number | null
+    } =
       userId || guestId
         ? await getMemories({
             userId,
@@ -160,7 +165,12 @@ async function getRelevantMemoryContext({
     )
 
     // Get app-specific memories
-    const appMemoriesData = appId
+    const appMemoriesData: {
+      memories: memory[]
+      totalCount: number
+      hasNextPage: boolean
+      nextPage: number | null
+    } = appId
       ? await getMemories({
           appId,
           pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
@@ -1336,38 +1346,26 @@ These reflect the user's interests and recent conversations. If the user seems u
 
   const vaultExpenses =
     app?.name === "Vault"
-      ? (
-          await getExpenses({
-            userId: member?.id,
-            guestId: guest?.id,
-            pageSize: 50, // Last 50 expenses
-          })
-        ).expenses.filter((expense) =>
-          isOwner(expense, { userId: member?.id, guestId: guest?.id }),
-        )
+      ? await getExpenses({
+          userId: member?.id,
+          guestId: guest?.id,
+          pageSize: 50, // Last 50 expenses
+        })
       : null
 
   const vaultBudgets =
     app?.name === "Vault"
-      ? (
-          await getBudgets({
-            userId: member?.id,
-            guestId: guest?.id,
-          })
-        ).budgets.filter((budget) =>
-          isOwner(budget, { userId: member?.id, guestId: guest?.id }),
-        )
+      ? await getBudgets({
+          userId: member?.id,
+          guestId: guest?.id,
+        })
       : null
 
   const vaultSharedExpenses =
     app?.name === "Vault"
-      ? (
-          await getSharedExpenses({
-            threadId: message.message.threadId,
-          })
-        ).filter((expense) =>
-          isOwner(expense, { userId: member?.id, guestId: guest?.id }),
-        )
+      ? await getSharedExpenses({
+          threadId: message.message.threadId,
+        })
       : null
 
   // Build calendar context (limit to 15 most relevant events)
@@ -1579,7 +1577,7 @@ ${(() => {
     },
     {} as Record<string, number>,
   )
-  const latestMood = focusMoods.moods[0]
+  const latestMood = focusMoods[0]
   if (!latestMood) return "No mood data available"
 
   return `Latest: ${moodEmojis[latestMood.type as keyof typeof moodEmojis]} ${latestMood.type} (${new Date(latestMood.createdOn).toLocaleDateString()})
@@ -3580,29 +3578,41 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
         })
     }
 
-    // Then stream the answer
+    // Then stream the answer with batching
     const totalChunks = chunks.length
+    let batchBuffer = ""
+    const BATCH_SIZE = 75 // characters - balances UX smoothness with performance
 
     for (const [index, chunk] of chunks.entries()) {
-      await wait(30)
+      batchBuffer += chunk
 
-      if (abortController.signal.aborted) {
-        console.log("🛑 E2E stream was stopped, breaking response loop")
-        break
+      // Send when buffer reaches threshold or is last chunk
+      const shouldFlush =
+        batchBuffer.length >= BATCH_SIZE || index === chunks.length - 1
+
+      if (shouldFlush && batchBuffer.length > 0) {
+        await wait(30)
+
+        if (abortController.signal.aborted) {
+          console.log("🛑 E2E stream was stopped, breaking response loop")
+          break
+        }
+
+        thread &&
+          enhancedStreamChunk({
+            chunk: batchBuffer,
+            chunkNumber: currentChunk++,
+            totalChunks,
+            streamingMessage: e2eStreamingMessage,
+            member,
+            guest,
+            thread,
+            clientId,
+            streamId,
+          })
+
+        batchBuffer = ""
       }
-
-      thread &&
-        enhancedStreamChunk({
-          chunk,
-          chunkNumber: currentChunk++,
-          totalChunks,
-          streamingMessage: e2eStreamingMessage,
-          member,
-          guest,
-          thread,
-          clientId,
-          streamId,
-        })
     }
 
     console.log(
@@ -4083,6 +4093,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           const reader = stream.body?.getReader()
 
           let currentChunk = 0
+          let batchBuffer = ""
+          const BATCH_SIZE = 75 // characters
 
           if (reader) {
             while (true) {
@@ -4091,21 +4103,45 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 break
               }
               const { done, value } = await reader.read()
-              if (done) break
-              const chunk = new TextDecoder().decode(value)
-              answerText += chunk
 
-              await enhancedStreamChunk({
-                chunk,
-                chunkNumber: currentChunk++,
-                totalChunks: -1,
-                streamingMessage: sushiStreamingMessage,
-                member,
-                guest,
-                thread,
-                streamId,
-                clientId,
-              })
+              // Flush remaining buffer on stream end
+              if (done) {
+                if (batchBuffer.length > 0) {
+                  answerText += batchBuffer
+                  await enhancedStreamChunk({
+                    chunk: batchBuffer,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+                }
+                break
+              }
+
+              const chunk = new TextDecoder().decode(value)
+              batchBuffer += chunk
+
+              // Send when buffer reaches threshold
+              if (batchBuffer.length >= BATCH_SIZE) {
+                answerText += batchBuffer
+                await enhancedStreamChunk({
+                  chunk: batchBuffer,
+                  chunkNumber: currentChunk++,
+                  totalChunks: -1,
+                  streamingMessage: sushiStreamingMessage,
+                  member,
+                  guest,
+                  thread,
+                  streamId,
+                  clientId,
+                })
+                batchBuffer = ""
+              }
             }
           }
           console.log("🍣 Claude text stream completed")
@@ -4156,9 +4192,13 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 } else if (part.type === "reasoning-end") {
                   console.log("🧠 Reasoning complete")
                 } else if (part.type === "text-delta") {
-                  // Final answer text
+                  // Final answer text - batch for performance
                   answerText += part.text
                   console.log("💬 Text delta:", part.text)
+
+                  // Note: We don't batch text-delta here because the AI SDK already
+                  // provides reasonably-sized chunks. Batching would add complexity
+                  // without significant benefit for this streaming path.
                   await enhancedStreamChunk({
                     chunk: part.text,
                     chunkNumber: currentChunk++,
@@ -4396,6 +4436,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
 
         let currentChunk = 0
+        let batchBuffer = ""
+        const BATCH_SIZE = 75 // characters
 
         if (reader) {
           while (true) {
@@ -4404,19 +4446,43 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               break
             }
             const { done, value } = await reader.read()
-            if (done) break
+
+            // Flush remaining buffer on stream end
+            if (done) {
+              if (batchBuffer.length > 0) {
+                await enhancedStreamChunk({
+                  chunk: batchBuffer,
+                  chunkNumber: currentChunk++,
+                  totalChunks: -1,
+                  streamingMessage: deepSeekStreamingMessage,
+                  member,
+                  guest,
+                  thread,
+                  clientId,
+                  streamId,
+                })
+              }
+              break
+            }
+
             const chunk = new TextDecoder().decode(value)
-            await enhancedStreamChunk({
-              chunk,
-              chunkNumber: currentChunk++,
-              totalChunks: -1, // Unknown in streaming
-              streamingMessage: deepSeekStreamingMessage,
-              member,
-              guest,
-              thread,
-              clientId,
-              streamId,
-            })
+            batchBuffer += chunk
+
+            // Send when buffer reaches threshold
+            if (batchBuffer.length >= BATCH_SIZE) {
+              await enhancedStreamChunk({
+                chunk: batchBuffer,
+                chunkNumber: currentChunk++,
+                totalChunks: -1,
+                streamingMessage: deepSeekStreamingMessage,
+                member,
+                guest,
+                thread,
+                clientId,
+                streamId,
+              })
+              batchBuffer = ""
+            }
           }
         }
 
@@ -4473,22 +4539,33 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 thread: thread,
               }
 
-              // Split response into words and stream them
+              // Split response into words and stream them with batching
               const words = finalText.split(" ")
               let currentChunk = 0
+              let batchBuffer = ""
+              const BATCH_SIZE = 75 // characters
 
-              for (const word of words) {
-                await enhancedStreamChunk({
-                  chunk: word + " ",
-                  chunkNumber: currentChunk++,
-                  totalChunks: -1, // Unknown in streaming
-                  streamingMessage,
-                  member,
-                  guest,
-                  thread,
-                  clientId,
-                  streamId,
-                })
+              for (const [index, word] of words.entries()) {
+                batchBuffer += word + " "
+
+                // Send when buffer reaches threshold or is last word
+                const shouldFlush =
+                  batchBuffer.length >= BATCH_SIZE || index === words.length - 1
+
+                if (shouldFlush && batchBuffer.length > 0) {
+                  await enhancedStreamChunk({
+                    chunk: batchBuffer,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    clientId,
+                    streamId,
+                  })
+                  batchBuffer = ""
+                }
               }
             } catch (error) {
               console.error("❌ Failed to generate follow-up response:", error)
