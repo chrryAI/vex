@@ -1199,6 +1199,19 @@ export function AuthProvider({
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
+    // Privacy-respecting analytics: Track burn mode usage WITHOUT personal info or identifiers.
+    // This helps us understand if the feature is valuable and worth investing in,
+    // while respecting the user's choice for privacy. No user data, IDs, or content is tracked.
+    // Only the fact that burn mode was activated (boolean event).
+    if (value) {
+      track({
+        name: "burn",
+        props: {
+          value,
+        },
+      })
+    }
+
     if (value && app && zarathustra && app.id !== zarathustra.id) {
       router.push(getAppSlug(zarathustra))
     }
