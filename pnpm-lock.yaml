@@ -1165,6 +1165,9 @@ importers:
       '@react-three/fiber':
         specifier: ^9.4.2
         version: 9.4.2(uu2glkdt5kgmsuwklgrpxht5b4)
+      '@sentry/react':
+        specifier: ^10.10.0
+        version: 10.28.0(react@19.2.0)
       '@stripe/stripe-js':
         specifier: ^7.7.0
         version: 7.9.0
