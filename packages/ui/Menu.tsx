@@ -366,19 +366,12 @@ export default function Menu({
               >
                 <MessageCirclePlus size={18} /> {t("New chat")}
               </A>
-              <A
-                href={`${FRONTEND_URL}/?burn=true`}
-                onClick={(e) => {
+              <Button
+                onClick={() => {
                   track({
                     name: "private-chat-click",
                   })
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-
                   showFocus && setShowFocus(false)
-                  e.preventDefault()
-
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   setBurn(true)
                   reload()
@@ -387,7 +380,7 @@ export default function Menu({
                 className="button transparent"
               >
                 <HatGlasses size={18} /> {t("Incognito Chat")}
-              </A>
+              </Button>
               <Button
                 onClick={() => {
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
