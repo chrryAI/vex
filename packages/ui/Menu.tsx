@@ -72,6 +72,7 @@ export default function Menu({
     storeApps,
     setLoadingAppId,
     hasStoreApps,
+    setBurn,
   } = useAuth()
   // const { utilities } = useStyles()
 
@@ -90,6 +91,7 @@ export default function Menu({
     refetchThreads,
     setIsAccountVisible,
     goToThreads,
+    addParams,
   } = useNavigationContext()
 
   const { app } = useApp()
@@ -364,28 +366,21 @@ export default function Menu({
               >
                 <MessageCirclePlus size={18} /> {t("New chat")}
               </A>
-              <A
-                href={`${FRONTEND_URL}/?incognito=true`}
-                onClick={(e) => {
+              <Button
+                onClick={() => {
                   track({
                     name: "private-chat-click",
                   })
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-
                   showFocus && setShowFocus(false)
-                  e.preventDefault()
-
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
-                  router.push("/?incognito=true")
+                  setBurn(true)
                   reload()
                 }}
                 style={styles.menuItemButton.style}
                 className="button transparent"
               >
                 <HatGlasses size={18} /> {t("Incognito Chat")}
-              </A>
+              </Button>
               <Button
                 onClick={() => {
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
@@ -499,7 +494,10 @@ export default function Menu({
                                     addHapticFeedback()
 
                                     if (guest) {
-                                      router.push("/?signIn=register")
+                                      addParams({
+                                        signIn: "register",
+                                      })
+                                      isSmallDevice ? toggleMenu() : null
                                       return
                                     }
                                     setCollaborationStatus("active")

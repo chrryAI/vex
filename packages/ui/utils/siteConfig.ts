@@ -196,7 +196,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.64",
+  version: "26.10.65",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1669,7 +1669,7 @@ export function detectSiteModeDomain(
   // Inline isDevelopment check to avoid circular dependency
 
   const defaultMode = isDevelopment
-    ? ("sushi" as SiteMode)
+    ? ("zarathustra" as SiteMode)
     : isE2E
       ? "e2eVex"
       : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
@@ -1806,7 +1806,6 @@ export function detectSiteMode(hostname?: string): SiteMode {
 
   // Otherwise, detect from domain (e.g., "atlas.chrry.ai" -> "atlas")
   const result = detectSiteModeDomain(hostname)
-  // console.log("🚀 ~ detectSiteMode ~ result:", result)
   return result
 }
 

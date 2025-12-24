@@ -2,6 +2,9 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import React from "react"
 
+// Initialize Sentry for error tracking (must be first)
+import "@chrryai/chrry/sentry.client.config"
+
 import "./index.css"
 import App from "./App.tsx"
 

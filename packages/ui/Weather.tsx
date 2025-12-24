@@ -261,9 +261,12 @@ export default function Weather({
       </Button>
       {(() => {
         if (!weather) return null
-        const Icon = weatherIcons[weather.code]
+        const Icon = weatherIcons[weather.code] as React.ElementType
         if (!Icon) return null
-        return <Icon color={getWeatherColor(weather.code)} size={18} />
+        return React.createElement(Icon, {
+          color: getWeatherColor(weather.code),
+          size: 18,
+        })
       })()}
       <Span style={styles.info.style}>
         {weather && <Span>{weather.temperature}</Span>}

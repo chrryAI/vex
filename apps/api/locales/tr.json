@@ -1689,5 +1689,12 @@
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "AI'ın hatırlaması ve gelecekteki konuşmalarda referans alması için dosyaları buraya yükleyin. Bu eserler, konuşma dizisinin hafızasının bir parçası olur.",
   "Disable Image Generation": "Görüntü Oluşturmayı Devre Dışı Bırak",
   "Reconnecting...": "Yeniden bağlanıyor...",
-  "Back online": "Çevrimiçiye geri döndü"
+  "Back online": "Çevrimiçiye geri döndü",
+  "privacy.burn.title": "Yak (Gizlilik Modu)",
+  "privacy.burn.content": "Yak, tamamen dijital gizlilik için tasarlanmış geçici konuşma özelliğimizdir. Aktif olduğunda, konuşmalarınız hafıza bankanıza kaydedilmez ve hiçbir dijital iz bırakmaz.",
+  "privacy.burn.items.ephemeral": "🔥 Geçici Konuşmalar - Mesajlar sadece anlık olarak var olur ve saklanmaz",
+  "privacy.burn.items.no_storage": "💭 Hafıza Depolaması Yok - Yak modunda yapılan konuşmalar asla hafıza bankanıza kaydedilmez",
+  "privacy.burn.items.no_memory": "🦅 AI Hafızası Yok - AI, yak konuşmalarından referans almayacak veya hafıza oluşturmayacak",
+  "privacy.burn.items.sovereignty": "⚡ Dijital Egemenlik - Konuşmaların geçici mi yoksa kalıcı mı olacağını siz kontrol edersiniz",
+  "privacy.burn.activation": "Yak'ı, üst menüdeki ateş simgesine (🔥) tıklayarak aktifleştirin. Aktif olduğunda, 'Yaktığınızda hatırlanacak bir şey yok' ifadesini görerek konuşmanızın özel olduğunu teyit edersiniz."
 }

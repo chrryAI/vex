@@ -75,6 +75,11 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      setIsProgramme: (value: boolean) => void
+      burn: boolean
+      setBurn: (value: boolean) => void
+      canBurn: boolean
+      isProgramme: boolean
       siteConfig: SiteConfig
       isManagingApp: boolean
       setIsManagingApp: (value: boolean) => void
@@ -1174,6 +1179,64 @@ export function AuthProvider({
     storeAppIternal,
   )
 
+  const isZarathustra = app?.slug === "zarathustra"
+
+  const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
+
+  const [burnInternal, setBurnInternal] = useLocalStorage<boolean | null>(
+    "burn",
+    isZarathustra ? true : null,
+  )
+
+  const burn = burnInternal === null ? isZarathustra : burnInternal
+
+  useEffect(() => {
+    if (!app) return
+
+    burn === null && setBurnInternal(isZarathustra)
+  }, [isZarathustra, app])
+
+  const setBurn = (value: boolean) => {
+    setBurnInternal(value)
+
+    // Privacy-respecting analytics: Track burn usage WITHOUT personal info or identifiers.
+    // This helps us understand if the feature is valuable and worth investing in,
+    // while respecting the user's choice for privacy. No user data, IDs, or content is tracked.
+    // Only the fact that burn was activated (boolean event).
+    if (value) {
+      track({
+        name: "burn",
+        props: {
+          value,
+        },
+      })
+    }
+
+    if (value && app && zarathustra && app.id !== zarathustra.id) {
+      router.push(getAppSlug(zarathustra))
+    }
+  }
+
+  const canBurn = true
+
+  const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
+    boolean | null
+  >("programme", isBaseAppZarathustra ? true : null)
+
+  useEffect(() => {
+    if (!baseApp) return
+
+    isProgrammeInternal === null && setIsProgrammeInternal(isBaseAppZarathustra)
+  }, [isBaseAppZarathustra, baseApp])
+
+  const setIsProgramme = (value: boolean) => {
+    setIsProgrammeInternal(value)
+    removeParams("programme")
+  }
+
+  const isProgramme =
+    isProgrammeInternal || searchParams.get("programme") === "true"
+
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
   }
@@ -1653,7 +1716,6 @@ export function AuthProvider({
   const fp = searchParams.get("fp")
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
     if (auth_token) {
       // Remove auth_token from URL
       removeParams("auth_token")
@@ -1667,6 +1729,11 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        burn,
+        setBurn,
+        canBurn,
+        isProgramme,
+        setIsProgramme,
         threads,
         setThreads,
         showFocus,

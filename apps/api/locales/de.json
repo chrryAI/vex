@@ -1690,5 +1690,12 @@
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Laden Sie hier Dateien hoch, damit die KI sie sich merken und in zukünftigen Gesprächen darauf Bezug nehmen kann. Diese Artefakte werden Teil des Thread-Speichers.",
   "Disable Image Generation": "Bildgenerierung deaktivieren",
   "Reconnecting...": "Wiederverbinden...",
-  "Back online": "Wieder online"
+  "Back online": "Wieder online",
+  "privacy.burn.title": "Burn (Datenschutzmodus)",
+  "privacy.burn.content": "Burn ist unsere Funktion für flüchtige Gespräche, die für vollständige digitale Privatsphäre konzipiert ist. Wenn sie aktiviert ist, werden Gespräche nicht in Ihrer Speicherbank gespeichert und hinterlassen keinen digitalen Fußabdruck.",
+  "privacy.burn.items.ephemeral": "🔥 Flüchtige Gespräche - Nachrichten existieren nur im Moment und werden nicht gespeichert",
+  "privacy.burn.items.no_storage": "💭 Keine Speicherung - Gespräche im Burn-Modus werden nie in Ihrer Speicherbank gespeichert",
+  "privacy.burn.items.no_memory": "🦅 Keine KI-Erinnerung - Die KI wird keine Erinnerungen aus Burn-Gesprächen referenzieren oder erstellen",
+  "privacy.burn.items.sovereignty": "⚡ Digitale Souveränität - Sie kontrollieren, wann Gespräche flüchtig vs. beständig sind",
+  "privacy.burn.activation": "Aktivieren Sie Burn, indem Sie auf das Feuersymbol (🔥) im oberen Menü klicken. Wenn es aktiv ist, sehen Sie 'Wenn Sie brennen, gibt es nichts zu erinnern', um zu bestätigen, dass Ihr Gespräch privat ist."
 }

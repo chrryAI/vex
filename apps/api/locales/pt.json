@@ -1689,5 +1689,12 @@
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Faça o upload de arquivos aqui para que a IA se lembre e faça referência em conversas futuras. Esses artefatos se tornam parte da memória do tópico.",
   "Disable Image Generation": "Desativar Geração de Imagem",
   "Reconnecting...": "Reconectando...",
-  "Back online": "De volta online"
+  "Back online": "De volta online",
+  "privacy.burn.title": "Burn (Modo de Privacidade)",
+  "privacy.burn.content": "Burn é a nossa funcionalidade de conversa efêmera projetada para total privacidade digital. Quando ativada, as conversas não são salvas no seu banco de memória e não deixam rastro digital.",
+  "privacy.burn.items.ephemeral": "🔥 Conversas Efêmeras - As mensagens existem apenas no momento e não são armazenadas",
+  "privacy.burn.items.no_storage": "💭 Sem Armazenamento de Memória - As conversas no modo Burn nunca são salvas no seu banco de memória",
+  "privacy.burn.items.no_memory": "🦅 Sem Memória de IA - A IA não fará referência ou criará memórias a partir de conversas em modo Burn",
+  "privacy.burn.items.sovereignty": "⚡ Soberania Digital - Você controla quando as conversas são efêmeras vs. persistentes",
+  "privacy.burn.activation": "Ative o Burn clicando no ícone de fogo (🔥) no menu superior. Quando ativo, você verá 'Quando você usa o Burn, não há nada para lembrar' para confirmar que sua conversa é privada."
 }

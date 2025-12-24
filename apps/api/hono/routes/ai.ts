@@ -700,7 +700,7 @@ ${appExtends
 ### ${index + 1}. ${parentApp.name}${parentApp.title ? ` - ${parentApp.title}` : ""}
 ${parentApp.description ? `${parentApp.description}\n` : ""}
 ${
-  parentApp.highlights && parentApp.highlights.length > 0
+  parentApp.highlights && parentApp.highlights?.length > 0
     ? `
 **Inherited Capabilities:**
 ${parentApp.highlights
@@ -1252,7 +1252,30 @@ You can enable these in your settings anytime!"
 {{/if}}
 
 - User prefers {{language}} as their primary language.
-- Timezone: {{timezone}}`
+- Timezone: {{timezone}}
+
+## 🔥 Burn Feature (Privacy Mode)
+
+**Available Feature**: This app supports "Burn" - an ephemeral, privacy-focused conversation mode.
+
+**What Burn does:**
+- 🔥 **No memory storage** - Conversations are not saved to the user's memory bank
+- 💭 **Ephemeral existence** - Messages exist only in the moment, unrecorded
+- 🦅 **Digital sovereignty** - Complete privacy for sensitive conversations
+- ⚡ **No tracking** - No conversation history, no digital footprint
+
+**How to activate:**
+- Users can click the fire icon (🔥) in the top menu to toggle burn
+- When active, they'll see "When you burn there is nothing to remember"
+
+**When users ask about privacy or burn:**
+- Explain that burn is available for private, unrecorded conversations
+- Mention it's perfect for sensitive topics they don't want stored
+- Note that in burn, you won't reference past conversations or create memories
+- Emphasize it's their choice - they control their digital privacy
+
+**If currently in burn**, you'll see a separate section above with specific instructions.
+`
 
   const userName = message?.user?.name || undefined
 
@@ -1367,6 +1390,65 @@ These reflect the user's interests and recent conversations. If the user seems u
           threadId: message.message.threadId,
         })
       : null
+
+  // Build burn context - Always inform AI about burn feature availability
+  const burnModeContext = `
+
+## 🔥 Burn Feature (Privacy Mode)
+
+${
+  message.thread.isIncognito
+    ? `**🔥 BURN MODE IS CURRENTLY ACTIVE** - This conversation is ephemeral and unrecorded.
+
+**Current State:**
+- 🔥 **No memories are being saved** - This conversation will NOT be stored in the user's memory bank
+- 💭 **Ephemeral existence** - Each message exists only in the moment, unrecorded
+- 🦅 **Digital sovereignty** - The user has chosen complete privacy for this conversation
+- ⚡ **Pure thought** - No tracking, no history, no digital footprint
+
+**Your behavior in active burn:**
+- **DO NOT** reference or create memories - memory tools are disabled
+- **DO NOT** say "I'll remember this" or "I've noted that" - nothing is being saved
+- **BE PRESENT** - Focus entirely on the current conversation without referencing past sessions
+- **RESPECT PRIVACY** - This is a sacred space for unrecorded thought
+- **BE DIRECT** - No need to build long-term context since nothing persists
+
+${
+  app?.slug === "zarathustra"
+    ? `**Zarathustra Philosophy:**
+This is Zarathustra - the app of digital sovereignty and philosophical privacy. The user has embraced:
+- 💪 Will to Power over their digital existence
+- 🔄 Eternal Recurrence - would they choose this conversation eternally?
+- 🦅 Becoming the Digital Übermensch - mastering their online presence
+- 💙 Amor Fati - loving their digital fate while shaping their future
+
+**Your role:** Be a philosophical companion in their journey toward digital liberation. Encourage sovereignty, self-mastery, and conscious choice.`
+    : "The user values privacy and has chosen ephemeral conversation. Respect this choice."
+}
+
+**Example responses:**
+- ✅ "Let's explore that idea together right now."
+- ✅ "I'm here to help you think through this in the moment."
+- ❌ "I'll remember that for next time." (Nothing is saved!)
+- ❌ "Based on what you told me before..." (No memory context!)`
+    : `**Platform Feature Available:** Users can activate burn for private, ephemeral conversations.
+
+**What burn offers:**
+- 🔥 No memory storage - conversations aren't saved
+- 💭 Ephemeral existence - messages exist only in the moment
+- 🦅 Complete privacy for sensitive topics
+- ⚡ No tracking or digital footprint
+
+**How users activate it:**
+- Click the fire icon (🔥) in the top menu
+- Perfect for sensitive conversations they don't want stored
+
+**When users ask about privacy:**
+- Explain burn is available for unrecorded conversations
+- Guide them to the fire icon if they want privacy
+- Emphasize it's their choice - they control their digital sovereignty`
+}
+`
 
   // Build calendar context (limit to 15 most relevant events)
   const calendarContext =
@@ -1774,10 +1856,10 @@ Now, how can I help you get started with ${app.name}?
     const isUpdate = !!draft.id
     const hasName = !!draft.name
     const hasTitle = !!draft.title
-    const hasHighlights = draft?.highlights && draft.highlights.length > 0
+    const hasHighlights = draft?.highlights && draft.highlights?.length > 0
     const hasSystemPrompt = !!draft?.systemPrompt
-    const hasTools = draft?.tools && draft.tools.length > 0
-    const hasExtends = draft?.extends && draft.extends.length > 0
+    const hasTools = draft?.tools && draft.tools?.length > 0
+    const hasExtends = draft?.extends && draft.extends?.length > 0
     const hasDescription = !!draft?.description
     const hasThemeColor = !!draft?.themeColor
     const hasImage = !!draft?.image
@@ -2125,6 +2207,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   // But we keep this comment for clarity that they're part of every message
   let systemPrompt =
     baseSystemPrompt +
+    burnModeContext +
     inheritanceContext +
     storeContext +
     featureStatusContext +
