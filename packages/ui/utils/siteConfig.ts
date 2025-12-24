@@ -197,7 +197,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.65",
+  version: "26.10.66",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1828,6 +1828,10 @@ export function detectSiteModeDomain(
   // Domain-based detection (use exact match or subdomain check)
   console.log(`🔍 Detecting mode for host: "${host}"`)
 
+  if (matchesDomain(host, "grape.chrry.ai")) {
+    return "grape"
+  }
+
   if (matchesDomain(host, "books.chrry.ai")) {
     return "zarathustra"
   }
@@ -1914,6 +1918,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "search",
     "sushi",
     "e2eVex",
+    "grape",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -2017,6 +2022,10 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
   if (mode === "e2eVex") {
     return e2eVex
+  }
+
+  if (mode === "grape") {
+    return grape
   }
 
   if (isE2E) {

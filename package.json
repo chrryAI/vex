@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.8.13",
+  "version": "1.8.14",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev --concurrency=20",
