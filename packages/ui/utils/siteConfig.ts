@@ -14,6 +14,7 @@ export type SiteMode =
   | "zarathustra"
   | "search"
   | "sushi"
+  | "grape"
   | "e2eVex"
 
 // Function declaration is hoisted, so it's available before const declarations
@@ -878,6 +879,70 @@ const sushi = {
   ],
 }
 
+const grape = {
+  url: "https://grape.chrry.ai",
+  mode: "grape" as SiteMode,
+  slug: "grape",
+  favicon: "grape",
+  storeSlug: "wine",
+  name: "Grape",
+  isStoreApp: true,
+  domain: "grape.chrry.ai",
+  store: "https://grape.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "Discover apps, earn credits. Give feedback with Pear 🍐",
+  logo: "🍇",
+  primaryColor: "#9333EA", // Purple
+  links: {
+    github: "https://github.com/chrryAI/vex",
+    docs: "https://grape.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "App Discovery",
+      description: "Explore curated AI applications",
+      icon: "🔍",
+      link: "/explore",
+      isOpenSource: false,
+    },
+    {
+      title: "Pear Feedback",
+      description: "Earn credits for quality feedback",
+      icon: "🍐",
+      link: "/feedback",
+      isOpenSource: false,
+    },
+    {
+      title: "Credit System",
+      description: "Get rewarded for contributions",
+      icon: "💰",
+      link: "/credits",
+      isOpenSource: false,
+    },
+    {
+      title: "App Ratings",
+      description: "Community-driven app reviews",
+      icon: "⭐",
+      link: "/ratings",
+      isOpenSource: false,
+    },
+    {
+      title: "Try Apps",
+      description: "Test apps before installing",
+      icon: "🎯",
+      link: "/try",
+      isOpenSource: false,
+    },
+    {
+      title: "White Label",
+      description: "Customize for your brand",
+      icon: "🎨",
+      link: "/white-label",
+      isOpenSource: false,
+    },
+  ],
+}
+
 export interface SiteConfig {
   mode: SiteMode
   slug: string
@@ -1566,7 +1631,7 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
     en: {
       title: "Search - AI-Powered Web Search",
       description:
-        "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references.",
+        "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references worldwide.",
     },
     de: {
       title: "Search - KI-gestützte Websuche",
@@ -1612,6 +1677,58 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
       title: "Search - Yapay Zeka Destekli Web Arama",
       description:
         "Alıntılanan kaynaklarla yapay zeka destekli gerçek zamanlı web arama. Doğrulanabilir referanslarla anında, doğru yanıtlar alın.",
+    },
+  },
+  grape: {
+    en: {
+      title: "Grape - Discover Apps, Earn Credits",
+      description:
+        "Discover curated AI applications and earn credits for quality feedback with Pear. Community-driven app discovery marketplace.",
+    },
+    de: {
+      title: "Grape - Apps entdecken, Credits verdienen",
+      description:
+        "Entdecken Sie kuratierte KI-Anwendungen und verdienen Sie Credits für qualitatives Feedback mit Pear. Community-getriebener App-Discovery-Marktplatz.",
+    },
+    fr: {
+      title: "Grape - Découvrez des apps, gagnez des crédits",
+      description:
+        "Découvrez des applications IA sélectionnées et gagnez des crédits pour vos retours de qualité avec Pear. Marketplace de découverte d'apps communautaire.",
+    },
+    ja: {
+      title: "Grape - アプリを発見、クレジットを獲得",
+      description:
+        "厳選されたAIアプリを発見し、Pearで質の高いフィードバックを提供してクレジットを獲得。コミュニティ主導のアプリ発見マーケットプレイス。",
+    },
+    ko: {
+      title: "Grape - 앱 발견, 크레딧 획득",
+      description:
+        "엄선된 AI 애플리케이션을 발견하고 Pear로 양질의 피드백을 제공하여 크레딧을 획득하세요. 커뮤니티 주도 앱 발견 마켓플레이스.",
+    },
+    pt: {
+      title: "Grape - Descubra apps, ganhe créditos",
+      description:
+        "Descubra aplicações de IA selecionadas e ganhe créditos por feedback de qualidade com Pear. Marketplace de descoberta de apps impulsionado pela comunidade.",
+    },
+    es: {
+      title: "Grape - Descubre apps, gana créditos",
+      description:
+        "Descubre aplicaciones de IA seleccionadas y gana créditos por comentarios de calidad con Pear. Marketplace de descubrimiento de apps impulsado por la comunidad.",
+    },
+    zh: {
+      title: "Grape - 发现应用，赚取积分",
+      description:
+        "发现精选的AI应用程序，通过Pear提供高质量反馈赚取积分。社区驱动的应用发现市场。",
+    },
+    nl: {
+      title: "Grape - Ontdek apps, verdien credits",
+      description:
+        "Ontdek geselecteerde AI-applicaties en verdien credits voor kwalitatieve feedback met Pear. Community-gedreven app-ontdekkingsmarktplaats.",
+    },
+    tr: {
+      title: "Grape - Uygulamaları keşfedin, kredi kazanın",
+      description:
+        "Seçilmiş yapay zeka uygulamalarını keşfedin ve Pear ile kaliteli geri bildirim için kredi kazanın. Topluluk odaklı uygulama keşif pazarı.",
     },
   },
 }

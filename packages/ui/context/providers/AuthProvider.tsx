@@ -24,7 +24,7 @@ import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
 import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
-import { SiteConfig } from "../../utils/siteConfig"
+import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
 
 import {
   aiAgent,
@@ -75,6 +75,10 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      pear: appWithStore | undefined
+      isPear: boolean
+      setIsPear: (value: appWithStore | undefined) => void
+      grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
       burn: boolean
       setBurn: (value: boolean) => void
@@ -1196,6 +1200,8 @@ export function AuthProvider({
     burn === null && setBurnInternal(isZarathustra)
   }, [isZarathustra, app])
 
+  const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
+
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
@@ -1232,6 +1238,34 @@ export function AuthProvider({
   const setIsProgramme = (value: boolean) => {
     setIsProgrammeInternal(value)
     removeParams("programme")
+  }
+
+  const grapes =
+    app?.id === zarathustra?.id || burn
+      ? []
+      : apps.filter(
+          (app) =>
+            whiteLabels.some((w) => w.slug === app.slug) &&
+            app.store?.appId === app.id &&
+            app.id !== zarathustra?.id,
+        )
+
+  const isPearInternal = searchParams.get("pear") === "true"
+
+  const [isPear, setIsPearInternal] = useState(isPearInternal)
+
+  const pear = storeApps.find((app) => app.slug === "pear")
+
+  useEffect(() => {
+    setIsPearInternal(isPearInternal)
+  }, [isPearInternal])
+
+  const setIsPear = (value: appWithStore | undefined) => {
+    if (app?.slug === "zarathustra") return
+
+    setIsPearInternal(!!value)
+    value && router.push(`${getAppSlug(value)}?pear=true`)
+    !value && removeParams("pear")
   }
 
   const isProgramme =
@@ -1671,8 +1705,6 @@ export function AuthProvider({
   const atlas = storeApps.find((app) => app.slug === "atlas")
   const bloom = storeApps.find((app) => app.slug === "bloom")
 
-  const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
-
   const signOut = async () => {
     setShouldFetchSession(false)
     setUser(undefined)
@@ -1729,6 +1761,7 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        grapes,
         burn,
         setBurn,
         canBurn,
@@ -1802,6 +1835,8 @@ export function AuthProvider({
         wasGifted,
         lasProcessedSession,
         setWasGifted,
+        isPear,
+        setIsPear,
         showCharacterProfiles,
         setShowCharacterProfiles,
         characterProfiles,
@@ -1859,6 +1894,7 @@ export function AuthProvider({
         refetchSession: async () => {
           await fetchSession()
         },
+        pear,
         setIsManagingApp,
         isManagingApp,
         setNewApp,

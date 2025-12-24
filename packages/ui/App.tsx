@@ -22,9 +22,9 @@ import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
-import { Div, H1, Button, Label, Span, Input } from "./platform"
+import { Div, H1, H3, P, Button, Label, Span, Input } from "./platform"
 import A from "./a/A"
-import { apiFetch } from "./utils"
+import { apiFetch, BrowserInstance } from "./utils"
 import { useStyles } from "./context/StylesContext"
 import {
   useApp,
@@ -35,6 +35,8 @@ import {
 } from "./context/providers"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
+import { appWithStore } from "./types"
+import Modal from "./Modal"
 
 function FocusButton({ time }: { time: number }) {
   const { appStyles } = useStyles()
@@ -136,8 +138,11 @@ export default function App({
     canBurn,
     burn,
     setBurn,
+    setIsPear,
     ...auth
   } = useAuth()
+
+  const [showGrapes, setShowGrapes] = useState(false)
 
   const storeApp = auth.storeApp
 
@@ -170,8 +175,8 @@ export default function App({
         (item) =>
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
-          item.id !== grape?.id &&
-          item.id !== zarathustra?.id &&
+          (item.id !== grape?.id || !isBlossom) &&
+          (item.id !== zarathustra?.id || !isBlossom) &&
           (item.id === atlas?.id
             ? app?.store?.app?.id === vex?.id || baseApp?.id === vex?.id
             : true) &&
@@ -209,8 +214,10 @@ export default function App({
   // Use apps from context - sort: store base app first, Chrry second, rest keep original order
   const [appsState, setApps] = React.useState(getApps())
 
+  const appsInternal = getApps()
+
   useEffect(() => {
-    setApps(getApps())
+    setApps(appsInternal)
   }, [
     apps,
     store,
@@ -227,6 +234,8 @@ export default function App({
     zarathustra,
     vex,
   ])
+
+  const grapes = auth.grapes
 
   const [file, setFile] = React.useState<File | undefined>()
 
@@ -425,8 +434,142 @@ export default function App({
 
   const { appStyles: styles, utilities } = useStyles()
 
+  const [selectedGrapeApp, setSelectedGrapeApp] = useState<
+    appWithStore | undefined
+  >()
+
   return (
     <Div>
+      {grapes.length > 0 && (
+        <Modal
+          isModalOpen={showGrapes}
+          hasCloseButton={true}
+          onToggle={(open) => {
+            if (!open) {
+              setShowGrapes(false)
+              setSelectedGrapeApp(undefined)
+            } else {
+              setShowGrapes(true)
+            }
+          }}
+          icon={"🍇"}
+          title={<Div>Discover Apps, Earn Credits</Div>}
+        >
+          <Div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+            }}
+          >
+            {/* App List */}
+            <Div style={styles.grapeModalDescription.style}>
+              {grapes?.map((app) => (
+                <Button
+                  key={app.id}
+                  className={`card link border ${selectedGrapeApp?.id === app.id ? "selected" : ""}`}
+                  onClick={() => setSelectedGrapeApp(app)}
+                  style={{
+                    ...utilities.link.style,
+                    ...styles.grapeModalDescriptionButton.style,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                    padding: "15px",
+                    borderColor:
+                      selectedGrapeApp?.id === app.id
+                        ? COLORS[app.themeColor as keyof typeof COLORS]
+                        : "var(--shade-2)",
+                    borderStyle: "solid",
+                  }}
+                >
+                  <Img app={app} showLoading={false} size={50} />
+                  <Span
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: "0.8rem",
+                      color: "var(--shade-7)",
+                    }}
+                  >
+                    {app.name}
+                  </Span>
+                </Button>
+              ))}
+            </Div>
+
+            {/* Selected App Details */}
+            {selectedGrapeApp && (
+              <Div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
+                  padding: "20px",
+                  borderTop: "1px dashed var(--shade-2)",
+                }}
+              >
+                <Div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                >
+                  <Img app={selectedGrapeApp} showLoading={false} size={40} />
+                  <Div>
+                    <H3
+                      style={{
+                        margin: 0,
+                        fontSize: "1.2rem",
+                      }}
+                    >
+                      {selectedGrapeApp.icon} {selectedGrapeApp.name}
+                    </H3>
+                    <Span
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "var(--shade-6)",
+                      }}
+                    >
+                      {selectedGrapeApp.subtitle || selectedGrapeApp.title}
+                    </Span>
+                  </Div>
+                </Div>
+
+                <P
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "var(--shade-7)",
+                    margin: 0,
+                  }}
+                >
+                  {selectedGrapeApp.description}
+                </P>
+
+                <Div
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    marginTop: "10px",
+                  }}
+                >
+                  <Button
+                    className="button inverted"
+                    onClick={() => {
+                      setShowGrapes(false)
+                      setSelectedGrapeApp(undefined)
+                      setIsPear(selectedGrapeApp)
+                    }}
+                    style={{}}
+                  >
+                    🍐 Give Feedback with Pear
+                  </Button>
+                </Div>
+              </Div>
+            )}
+          </Div>
+        </Modal>
+      )}
       <H1 style={styles.title.style}>
         {!isManagingApp && !canEditApp && app ? (
           <Div style={styles.appTitle.style}>
@@ -902,24 +1045,56 @@ export default function App({
                 </A>
               )
             )}
-            {!isManagingApp && (
-              <A
-                href={`${FRONTEND_URL}/calendar`}
+            {!isManagingApp && grape && !burn ? (
+              <Button
+                // href={getAppSlug(grape)}
                 title={t("Organize your life")}
-                openInNewTab={isExtension && isFirefox}
+                // openInNewTab={isExtension && isFirefox}
                 className="button transparent"
                 style={{
                   ...utilities.button.style,
                   ...utilities.transparent.style,
                 }}
+                onClick={() => {
+                  if (store?.slug === "wine" && grapes.length) {
+                    setShowGrapes(true)
+                    return
+                  }
+                  addHapticFeedback()
+                  router.push(getAppSlug(grape))
+                }}
               >
-                <Img
-                  showLoading={false}
-                  icon="calendar"
-                  width={18}
-                  height={18}
-                />
-              </A>
+                <Img showLoading={false} app={grape} width={18} height={18} />
+                <Span
+                  style={{
+                    color: COLORS.purple,
+                    fontFamily: "var(--font-mono)",
+                    fontSize: ".7rem",
+                  }}
+                >
+                  {store?.slug === "wine" ? grapes.length : ""}
+                </Span>
+              </Button>
+            ) : (
+              !isManagingApp && (
+                <A
+                  href={`${FRONTEND_URL}/calendar`}
+                  title={t("Organize your life")}
+                  openInNewTab={isExtension && isFirefox}
+                  className="button transparent"
+                  style={{
+                    ...utilities.button.style,
+                    ...utilities.transparent.style,
+                  }}
+                >
+                  <Img
+                    showLoading={false}
+                    icon="calendar"
+                    width={18}
+                    height={18}
+                  />
+                </A>
+              )
             )}
             {hasHydrated && isAppOwner && !isManagingApp ? (
               <Button
@@ -953,6 +1128,12 @@ export default function App({
                   }}
                   title={t("🔥 Burn")}
                   onClick={() => {
+                    if (isExtension) {
+                      BrowserInstance?.runtime?.sendMessage({
+                        action: "openInSameTab",
+                        url: "https://chromewebstore.google.com/detail/ghostery-tracker-ad-block/mlomiejdfkolichcflejclcbmpeaniij",
+                      })
+                    }
                     // Toggle to Zarathustra philosophical instructions
                     setBurn(!burn)
                     !burn && toggleInstructions()

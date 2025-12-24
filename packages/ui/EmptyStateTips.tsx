@@ -14,6 +14,7 @@ import {
   useTheme,
 } from "./platform"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
+import { useAuth } from "./context/providers/AuthProvider"
 
 export default function EmptyStateTips({
   style,
@@ -21,6 +22,7 @@ export default function EmptyStateTips({
   style?: React.CSSProperties
 }) {
   const { isManagingApp, canEditApp, app } = useApp()
+  const { isPear, pear } = useAuth()
   const { reduceMotion: reduceMotionContext, reduceMotion } = useTheme()
 
   const styles = useEmptyStateTipsStyles()
@@ -38,6 +40,9 @@ export default function EmptyStateTips({
   const { viewPortHeight } = usePlatform()
 
   const getTitle = () => {
+    if (isPear) {
+      return `🍐 ${t("Feedback Tips")}`
+    }
     if (isManagingApp || canEditApp) {
       return `✨ ${t("App Builder Tips")}`
     }
@@ -109,116 +114,31 @@ export default function EmptyStateTips({
   }
 
   const tips = {
-    atlas: [
+    pear: [
       {
-        tip: "Ask about visa requirements for any country. I'll check the latest rules and entry requirements instantly!",
-        emoji: "🗺️",
-      },
-      {
-        tip: "Flight prices change constantly. I can compare airlines and find the best deals for your dates.",
-        emoji: "💰",
-      },
-      {
-        tip: "The best neighborhoods aren't in guidebooks. I know where locals actually eat and hang out.",
-        emoji: "🏨",
-      },
-      {
-        tip: "A smart itinerary saves hours. I'll plan your days to maximize time and minimize travel.",
-        emoji: "📅",
-      },
-      {
-        tip: "Skip the tourist traps. I can recommend authentic spots that don't make it to Instagram.",
-        emoji: "🌍",
-      },
-    ],
-    bloom: [
-      {
-        tip: "Custom workout routines that match your fitness level. No gym? No problem - I'll design home workouts!",
-        emoji: "💪",
-      },
-      {
-        tip: "Healthy meal plans with recipes you'll actually enjoy. Tell me your diet preferences and I'll plan your week.",
-        emoji: "🥗",
-      },
-      {
-        tip: "Track calories and exercise in one place. I'll help you monitor progress and stay motivated!",
-        emoji: "📊",
-      },
-      {
-        tip: "Calculate your carbon footprint and get practical tips. Small changes make a big environmental impact!",
-        emoji: "🌍",
-      },
-      {
-        tip: "Meditation and wellness routines that actually stick. Just 10 minutes daily can reduce stress by 40%!",
-        emoji: "🧘",
-      },
-    ],
-    peach: [
-      {
-        tip: "Find like-minded people nearby who share your interests. Shared hobbies create the strongest friendships!",
-        emoji: "👥",
-      },
-      {
-        tip: "Plan team building events or casual hangouts. I'll suggest creative group activities everyone will love!",
-        emoji: "🎉",
-      },
-      {
-        tip: "Get social skills advice for any situation. First impressions matter - I'll help you nail them!",
-        emoji: "💬",
-      },
-      {
-        tip: "Build genuine connections through shared activities. I can match you with people who get you!",
-        emoji: "🤝",
-      },
-      {
-        tip: "Organize meetups, brunches, or game nights. Regular gatherings reduce stress and boost happiness!",
-        emoji: "📅",
-      },
-    ],
-    vault: [
-      {
-        tip: "Track your spending and see where money goes. People who track save 20% more on average!",
-        emoji: "📊",
-      },
-      {
-        tip: "Create a budget that actually works for your lifestyle. The 50/30/20 rule helps 80% reach their goals!",
-        emoji: "💵",
-      },
-      {
-        tip: "Learn investment strategies from beginner to advanced. Starting early can grow wealth by 10x!",
-        emoji: "📈",
-      },
-      {
-        tip: "Find practical ways to save without sacrificing quality. Small changes add up to $1,200+ per year!",
-        emoji: "💳",
-      },
-      {
-        tip: "Set realistic financial goals with a step-by-step plan. Written goals are 42% more likely to happen!",
+        id: "pear-tip-1",
+        tip: "Be specific! Instead of 'I like it', say 'The fire icon is intuitive for privacy mode'. Specific feedback earns 2x more credits!",
         emoji: "🎯",
       },
-    ],
-    default: [
       {
-        tip: "AI remembers your preferences across all conversations. Tell me once, and I'll remember forever!",
-        emoji: "🧠",
+        id: "pear-tip-2",
+        tip: "Think like a helpful friend. Point out what's confusing, what's great, and what could be better. Constructive tone earns more!",
+        emoji: "💡",
       },
       {
-        tip: "Create custom instructions for any situation. Make AI behave exactly how you want it to!",
-        emoji: "⚙️",
+        id: "pear-tip-3",
+        tip: "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!",
+        emoji: "✨",
       },
       {
-        tip: "Enable web search for real-time information. Get current news, prices, and data that changes daily!",
-        emoji: "🔍",
+        id: "pear-tip-4",
+        tip: "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!",
+        emoji: "🍐",
       },
       {
-        tip: "Bookmark important threads for instant access. Never lose track of your best conversations!",
-        emoji: "⭐️",
-      },
-      {
-        tip: t(
-          "Share threads and collaborate in real-time. Work together with friends or colleagues seamlessly!",
-        ),
-        emoji: "🤝",
+        id: "pear-tip-5",
+        tip: "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!",
+        emoji: "⭐",
       },
     ],
   }
@@ -230,14 +150,16 @@ export default function EmptyStateTips({
     { height: 900, count: 5 },
   ])
 
-  const currentTips = app?.tips
-    ? app?.tips.map((tip) => ({
-        tip: tip.content,
-        emoji: tip.emoji,
-      }))
-    : app?.slug
-      ? tips[app?.slug as keyof typeof tips] || tips.default
-      : tips.default
+  const currentTips = isPear
+    ? tips.pear
+    : app?.tips
+      ? app?.tips.map((tip) => ({
+          tip: tip.content,
+          emoji: tip.emoji,
+        }))
+      : app?.slug
+        ? tips[app?.slug as keyof typeof tips] || tips.pear
+        : tips.pear
 
   const getAppTitle = () => {
     if (app?.tips?.length)
@@ -251,7 +173,7 @@ export default function EmptyStateTips({
 
   return (
     <Section style={{ ...styles.emptyStateTips, ...style }}>
-      <H3 style={{ marginBottom: 10, marginTop: 0 }}>{t(getAppTitle())}</H3>
+      <H3 style={{ marginBottom: 10, marginTop: 0 }}>{getTitle()}</H3>
       <Div style={{ ...styles.ul.style }}>
         {currentTips.slice(0, count).map((item, i) => {
           // Progressive display based on viewport height

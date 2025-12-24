@@ -6,6 +6,8 @@ import {
   getAppExtends,
   getUser as getUserDb,
   getGuest as getGuestDb,
+  checkPearQuota,
+  incrementPearQuota,
 } from "@repo/db"
 
 import { VEX_LIVE_FINGERPRINTS } from "@chrryai/chrry/utils"
@@ -120,6 +122,100 @@ const getContextWindow = async (
     tokens += msgTokens
   }
   return context
+}
+
+// Pear feedback validation helper
+async function validatePearFeedback({
+  feedbackText,
+  userId,
+  guestId,
+  appName,
+  agentId,
+}: {
+  feedbackText: string
+  userId?: string
+  guestId?: string
+  appName?: string
+  agentId: string
+}): Promise<{ isValid: boolean; credits: number; reason: string }> {
+  try {
+    // Quick validation checks
+    if (!feedbackText || feedbackText.trim().length < 10) {
+      return {
+        isValid: false,
+        credits: 0,
+        reason: "Feedback too short. Please provide more detail.",
+      }
+    }
+
+    // Use AI to evaluate feedback quality
+    const deepseek = createDeepSeek({
+      apiKey: process.env.DEEPSEEK_API_KEY,
+    })
+
+    const evaluationPrompt = `You are evaluating user feedback for the app "${appName || "this app"}". 
+
+Feedback: "${feedbackText}"
+
+Evaluate this feedback based on these criteria:
+1. **Constructive**: Offers insights or suggestions, not just complaints
+2. **Specific**: Actionable details, not vague statements
+3. **Relevant**: About the product/app experience
+4. **Unique**: Not spam or duplicate
+
+Award credits:
+- 5 credits: Basic valid feedback ("I like the design")
+- 10 credits: Specific feedback ("The fire icon is confusing, add a tooltip")
+- 15 credits: Actionable feedback ("Add keyboard shortcuts for power users")
+- 20 credits: Exceptional feedback (detailed UX analysis with specific suggestions)
+
+Respond ONLY with a JSON object in this exact format:
+{
+  "isValid": true/false,
+  "credits": 0-20,
+  "reason": "Brief explanation"
+}`
+
+    const result = await generateText({
+      model: deepseek("deepseek-chat"),
+      messages: [{ role: "user", content: evaluationPrompt }],
+      temperature: 0.3,
+    })
+
+    // Parse AI response
+    const responseText = result.text.trim()
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error("Invalid AI response format")
+    }
+
+    const evaluation = JSON.parse(jsonMatch[0])
+
+    // Award credits if valid (top-up, so negative creditCost)
+    if (evaluation.isValid && evaluation.credits > 0 && (userId || guestId)) {
+      await logCreditUsage({
+        userId,
+        guestId,
+        agentId: agentId, // No specific agent for Pear validation
+        creditCost: -evaluation.credits, // Negative = top-up
+        messageType: "ai",
+        threadId: undefined,
+      })
+    }
+
+    return {
+      isValid: evaluation.isValid,
+      credits: evaluation.credits,
+      reason: evaluation.reason,
+    }
+  } catch (error) {
+    console.error("Pear validation error:", error)
+    return {
+      isValid: false,
+      credits: 0,
+      reason: "Error validating feedback",
+    }
+  }
 }
 
 async function getRelevantMemoryContext({
@@ -524,6 +620,7 @@ app.post("/", async (c) => {
       imageGenerationEnabled: formData.get("imageGenerationEnabled") === "true",
       stopStreamId: (formData.get("stopStreamId") as string) || "",
       isSpeechActive: formData.get("isSpeechActive") === "true",
+      pear: formData.get("pear") === "true",
       weather: formData.get("weather")
         ? JSON.parse(formData.get("weather") as string)
         : null,
@@ -3073,8 +3170,73 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
     return merged
   }
 
+  // 🍐 PEAR FEEDBACK VALIDATION (Sequential - before agent response)
+  let pearValidationResult: {
+    isValid: boolean
+    credits: number
+    reason: string
+  } | null = null
+
+  if (requestData.pear && agent) {
+    // Check quota first
+    const quotaCheck = await checkPearQuota({
+      userId: member?.id,
+      guestId: guest?.id,
+    })
+
+    if (!quotaCheck.allowed) {
+      // Quota exceeded - add message to system prompt
+      pearValidationResult = {
+        isValid: false,
+        credits: 0,
+        reason: `Daily feedback limit reached (${quotaCheck.remaining}/${10} remaining). Resets ${quotaCheck.resetAt ? new Date(quotaCheck.resetAt).toLocaleString() : "in 24h"}.`,
+      }
+    } else {
+      try {
+        const userFeedback =
+          typeof userContent === "string" ? userContent : userContent.text || ""
+
+        pearValidationResult = await validatePearFeedback({
+          feedbackText: userFeedback,
+          userId: member?.id,
+          guestId: guest?.id,
+          appName: app?.name,
+          agentId: agent?.id,
+        })
+
+        // Increment quota after successful validation
+        await incrementPearQuota({
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+
+        console.log("🍐 Pear validation completed:", pearValidationResult)
+      } catch (error) {
+        console.error("❌ Pear validation error:", error)
+      }
+    }
+  }
+
+  // Add Pear validation result to system prompt if available
+  const pearPromptAddition = pearValidationResult
+    ? `
+
+---
+
+## 🍐 PEAR FEEDBACK VALIDATION RESULT
+
+The user just submitted feedback for ${app?.name || "this app"} and it has been evaluated:
+
+- **Valid:** ${pearValidationResult.isValid ? "Yes" : "No"}
+- **Credits Awarded:** ${pearValidationResult.isValid ? `+${pearValidationResult.credits}` : "0"}
+- **Evaluation:** ${pearValidationResult.reason}
+
+**IMPORTANT:** Acknowledge this validation naturally in your response. Thank them for their feedback and mention the credits they earned (if any). Be warm and encouraging!
+`
+    : ""
+
   const rawMessages: ModelMessage[] = [
-    { role: "system", content: enhancedSystemPrompt },
+    { role: "system", content: enhancedSystemPrompt + pearPromptAddition },
     ...contextMessages,
     enhancedUserMessage,
   ]
@@ -4119,10 +4281,12 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             responseMetadata = response
             toolCallsDetected = toolCalls && toolCalls.length > 0
             streamCompleted = true
+
             console.log("🍣 Sushi finished:", {
               hasToolCalls: toolCallsDetected,
               toolNames: toolCalls?.map((tc) => tc.toolName),
               textLength: text?.length,
+              pearValidation: requestData.pear,
             })
           },
         })
@@ -4387,6 +4551,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               ...newMessagePayload,
               content: finalText,
               reasoning: reasoningText || undefined, // Store reasoning separately
+              isPear: requestData.pear || false, // Track Pear feedback submissions
             })
             console.log("✅ createMessage completed successfully")
 

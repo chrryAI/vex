@@ -1696,5 +1696,7 @@
   "privacy.burn.items.no_storage": "💭 メモリストレージなし - バーンモードの会話はメモリバンクに保存されません",
   "privacy.burn.items.no_memory": "🦅 AIの記憶なし - AIはバーンの会話から記憶を参照したり作成したりしません",
   "privacy.burn.items.sovereignty": "⚡ デジタル主権 - 会話が一時的か持続的かをあなたがコントロールします",
-  "privacy.burn.activation": "上部メニューの火のアイコン（🔥）をクリックしてバーンを有効にします。有効になると、「バーンすると記憶するものは何もありません」と表示され、会話がプライベートであることが確認できます。"
+  "privacy.burn.activation": "上部メニューの火のアイコン（🔥）をクリックしてバーンを有効にします。有効になると、「バーンすると記憶するものは何もありません」と表示され、会話がプライベートであることが確認できます。",
+  "Discover Apps, Earn Credits": "アプリを探す、クレジットを獲得",
+  "Give Feedback with Pear": "Pearでフィードバックを送る"
 }

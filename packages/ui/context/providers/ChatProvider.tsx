@@ -43,6 +43,7 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      onlyAgent: boolean
       shouldFetchThread: boolean
       setShouldFetchThread: (shouldFetchThread: boolean) => void
       shouldGetCredits: boolean
@@ -188,6 +189,8 @@ export function ChatProvider({
     setBaseAccountApp,
     burn,
     setBurn,
+    isPear,
+
     ...auth
   } = useAuth()
 
@@ -389,6 +392,12 @@ export function ChatProvider({
     setIsNewChat(true, getAppSlug(item))
   }
 
+  useEffect(() => {
+    if (!threadIdRef.current) {
+      setMessages([])
+    }
+  }, [threadIdRef.current])
+
   const setIsNewChat = (
     value: boolean,
     to = app?.slug ? getAppSlug(app) : "/",
@@ -397,7 +406,6 @@ export function ChatProvider({
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
-      setMessages([])
       setStatus(null)
       burn && setWasIncognito(true)
       setCollaborationStatus(null)
@@ -703,6 +711,12 @@ export function ChatProvider({
 
     return agent
   }
+
+  useEffect(() => {
+    isPear && setSelectedAgent(sushiAgent)
+  }, [isPear])
+
+  const onlyAgent = !!(app?.onlyAgent || isPear)
 
   const [debateAgent, setDebateAgentInternal] = useLocalStorage<
     aiAgent | undefined | null
@@ -1124,6 +1138,7 @@ export function ChatProvider({
         setLiked,
         error,
         setUntil,
+        onlyAgent,
         isEmpty,
         scrollToBottom,
         isWebSearchEnabled,

@@ -1696,5 +1696,7 @@
   "privacy.burn.items.no_storage": "💭 Sin Almacenamiento de Memoria - Las conversaciones en modo Burn nunca se guardan en tu banco de memoria",
   "privacy.burn.items.no_memory": "🦅 Sin Memoria de IA - La IA no hará referencia ni creará recuerdos a partir de las conversaciones en modo Burn",
   "privacy.burn.items.sovereignty": "⚡ Soberanía Digital - Tú controlas cuándo las conversaciones son efímeras vs. persistentes",
-  "privacy.burn.activation": "Activa Burn haciendo clic en el icono de fuego (🔥) en el menú superior. Cuando esté activo, verás 'Cuando usas Burn no hay nada que recordar' para confirmar que tu conversación es privada."
+  "privacy.burn.activation": "Activa Burn haciendo clic en el icono de fuego (🔥) en el menú superior. Cuando esté activo, verás 'Cuando usas Burn no hay nada que recordar' para confirmar que tu conversación es privada.",
+  "Discover Apps, Earn Credits": "Descubre Apps, Gana Créditos",
+  "Give Feedback with Pear": "Da tu opinión con Pear"
 }

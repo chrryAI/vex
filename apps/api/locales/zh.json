@@ -1697,5 +1697,7 @@
   "privacy.burn.items.no_storage": "💭 无记忆存储 - 销毁模式的对话永远不会保存到您的记忆库中",
   "privacy.burn.items.no_memory": "🦅 无AI记忆 - AI不会引用或从销毁对话中创建记忆",
   "privacy.burn.items.sovereignty": "⚡ 数字主权 - 您可以控制对话是短暂的还是持久的",
-  "privacy.burn.activation": "通过点击顶部菜单中的火焰图标（🔥）来激活销毁功能。当激活时，您会看到'当你销毁时，没有什么可以记住的'以确认您的对话是私密的。"
+  "privacy.burn.activation": "通过点击顶部菜单中的火焰图标（🔥）来激活销毁功能。当激活时，您会看到'当你销毁时，没有什么可以记住的'以确认您的对话是私密的。",
+  "Discover Apps, Earn Credits": "发现应用，赚取积分",
+  "Give Feedback with Pear": "使用Pear提供反馈"
 }

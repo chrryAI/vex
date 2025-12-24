@@ -1697,5 +1697,7 @@
   "privacy.burn.items.no_storage": "💭 Geen Geheugenopslag - Gesprekken in de verbrandingsmodus worden nooit opgeslagen in je geheugenbank",
   "privacy.burn.items.no_memory": "🦅 Geen AI Geheugen - De AI zal geen referenties maken of herinneringen creëren uit verbrande gesprekken",
   "privacy.burn.items.sovereignty": "⚡ Digitale Soevereiniteit - Jij bepaalt wanneer gesprekken tijdelijk versus blijvend zijn",
-  "privacy.burn.activation": "Activeer verbranden door op het vuuricoon (🔥) in het bovenste menu te klikken. Wanneer actief, zie je 'Wanneer je verbrandt, is er niets om te onthouden' om te bevestigen dat je gesprek privé is."
+  "privacy.burn.activation": "Activeer verbranden door op het vuuricoon (🔥) in het bovenste menu te klikken. Wanneer actief, zie je 'Wanneer je verbrandt, is er niets om te onthouden' om te bevestigen dat je gesprek privé is.",
+  "Discover Apps, Earn Credits": "Ontdek Apps, Verdien Credits",
+  "Give Feedback with Pear": "Geef Feedback met Pear"
 }

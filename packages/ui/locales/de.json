@@ -1697,5 +1697,7 @@
   "privacy.burn.items.no_storage": "💭 Keine Speicherung - Gespräche im Burn-Modus werden nie in Ihrer Speicherbank gespeichert",
   "privacy.burn.items.no_memory": "🦅 Keine KI-Erinnerung - Die KI wird keine Erinnerungen aus Burn-Gesprächen referenzieren oder erstellen",
   "privacy.burn.items.sovereignty": "⚡ Digitale Souveränität - Sie kontrollieren, wann Gespräche flüchtig vs. beständig sind",
-  "privacy.burn.activation": "Aktivieren Sie Burn, indem Sie auf das Feuersymbol (🔥) im oberen Menü klicken. Wenn es aktiv ist, sehen Sie 'Wenn Sie brennen, gibt es nichts zu erinnern', um zu bestätigen, dass Ihr Gespräch privat ist."
+  "privacy.burn.activation": "Aktivieren Sie Burn, indem Sie auf das Feuersymbol (🔥) im oberen Menü klicken. Wenn es aktiv ist, sehen Sie 'Wenn Sie brennen, gibt es nichts zu erinnern', um zu bestätigen, dass Ihr Gespräch privat ist.",
+  "Discover Apps, Earn Credits": "Entdecken Sie Apps, verdienen Sie Credits",
+  "Give Feedback with Pear": "Geben Sie Feedback mit Pear"
 }
