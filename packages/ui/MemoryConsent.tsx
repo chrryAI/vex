@@ -17,10 +17,11 @@ import Loading from "./Loading"
 import { updateUser } from "./lib"
 import toast from "react-hot-toast"
 import { useMemoryConsentStyles } from "./MemoryConsent.styles"
-import { Button, Div } from "./platform"
+import { A, Button, Div } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import useCache from "./hooks/useCache"
+import Checkbox from "./Checkbox"
 
 export default function MemoryConsent({
   style,
@@ -41,6 +42,8 @@ export default function MemoryConsent({
     setGuest,
     API_URL,
     isLiveTest,
+    burn,
+    setBurn,
   } = useAuth()
 
   const {
@@ -87,6 +90,57 @@ export default function MemoryConsent({
 
   if (isManagingApp || canEditApp || !isHydrated) {
     return null
+  }
+
+  if (burn) {
+    return (
+      <Div
+        ref={containerRef}
+        className="slideUp"
+        style={{
+          // ...styles.container.style,
+          background:
+            "linear-gradient(135deg, rgba(255, 100, 0, 0.1), rgba(255, 50, 0, 0.05))",
+          borderColor: "rgba(255, 100, 0, 0.3)",
+          padding: ".8rem",
+          borderRadius: 20,
+          maxWidth: "40rem",
+          margin: "0 auto",
+          marginTop: "1rem",
+          position: "relative",
+          top: -15,
+        }}
+      >
+        <Div>
+          <Div
+            style={{
+              fontWeight: 600,
+              marginBottom: "0.25rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <span style={{ fontSize: "1.5rem" }}>🔥</span>
+
+            {t("When you burn there is nothing to remember")}
+            <Checkbox
+              style={{ marginLeft: "auto" }}
+              checked={burn}
+              children={""}
+              onChange={() => {
+                setBurn(!burn)
+              }}
+            />
+          </Div>
+          <Div style={{ fontSize: "0.875rem", opacity: 0.8 }}>
+            {t(
+              "In burn, no memories are stored. Each conversation is ephemeral—a pure moment of thought, unrecorded, sovereign. You are the master of your digital existence.",
+            )}
+          </Div>
+        </Div>
+      </Div>
+    )
   }
 
   return (
@@ -224,6 +278,7 @@ export default function MemoryConsent({
                     borderStyle: "dashed",
                   }}
                   onConfirm={async () => {
+                    setBurn(!burn)
                     if (!token) return
                     setIsUpdatingMemories(true)
                     try {

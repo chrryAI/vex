@@ -61,6 +61,7 @@ import {
   instructionBase,
   isOwner,
   isDeepEqual,
+  getExampleInstructions,
 } from "./utils"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -117,7 +118,10 @@ export default function Instructions({
 
   const { defaultInstructions, isAppInstructions } = useApp()
 
-  const { token, language, user, guest, app, storeApp } = useAuth()
+  const { token, language, user, guest, app, storeApp, burn } = useAuth()
+  console.log(`🚀 ~ burn:`, burn)
+
+  // Replace instructions with Zarathustra philosophy when burn is active
 
   const {
     selectedAgent,
@@ -152,7 +156,7 @@ export default function Instructions({
 
   const offset = isStandalone ? -250 : 0
 
-  const count = useResponsiveCount(
+  const countInternal = useResponsiveCount(
     [
       { height: 500, count: 0 }, // Below 500px: show none
       { height: 600, count: 1 }, // 500-599px: show 1
@@ -163,6 +167,21 @@ export default function Instructions({
     ],
     offset,
   )
+
+  const countWhenBurn = useResponsiveCount(
+    [
+      { height: 500, count: 0 }, // Below 500px: show none
+      { height: 600, count: 0 }, // 500-599px: show 1
+      { height: 625, count: 0 }, // 600-624px: show 2
+      { height: 650, count: 1 }, // 625-649px: show 3
+      { height: 750, count: 2 }, // 650-749px: show 4
+      { height: 850, count: 3 }, // 650-749px: show 4
+      { height: Infinity, count: 7 }, // 750px+: show all
+    ],
+    offset,
+  )
+
+  const count = burn ? countWhenBurn : countInternal
 
   // Theme context
   const { addHapticFeedback, isDark, isMobileDevice, reduceMotion } =

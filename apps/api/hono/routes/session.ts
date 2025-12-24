@@ -627,6 +627,7 @@ session.get("/", async (c) => {
         pageSize: 100,
         isIncognito: true,
         guestId: existingGuest.id,
+        ownerId: existingGuest.id,
       })
 
       await Promise.all(

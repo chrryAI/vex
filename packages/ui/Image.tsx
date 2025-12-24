@@ -54,6 +54,7 @@ type ImageProps = {
     | "raspberry"
     | "strawberry"
     | "sushi"
+    | "zarathustra"
 
   app?: appWithStore
   width?: number | string

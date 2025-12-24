@@ -33,7 +33,7 @@ const NavigationContext = createContext<
       pathname: ReturnType<typeof useNavigation>["pathname"]
       isLoadingThreads: boolean
       setIsLoadingThreads: (value: boolean) => void
-      isIncognito: boolean
+      burn: boolean
       addParams: ReturnType<typeof useNavigation>["addParams"]
       removeParams: ReturnType<typeof useNavigation>["removeParams"]
       threads?: {
@@ -110,7 +110,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     setThreads,
     wasIncognito,
     setWasIncognito,
-    isIncognito,
+    burn,
     pendingCollaborationThreadsCount,
     activeCollaborationThreadsCount,
     setCollaborationStatus,
@@ -246,7 +246,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         setThreads,
         wasIncognito,
         setWasIncognito,
-        isIncognito,
+        burn,
         router: navigation,
         isAccountVisible,
         setIsAccountVisible,
