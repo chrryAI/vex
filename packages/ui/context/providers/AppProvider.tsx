@@ -178,6 +178,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isManagingApp,
     isRemovingApp,
     setIsRemovingApp,
+    burn,
+    setBurn,
   } = useAuth()
   const { actions } = useData()
 
@@ -489,12 +491,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const contextInstructions = useMemo(
     () =>
-      app
-        ? (user?.instructions || guest?.instructions || []).filter(
-            (i) => i.appId === app?.id,
-          )
-        : [],
-    [app?.id, user?.instructions, guest?.instructions],
+      burn
+        ? (getExampleInstructions({ slug: "zarathustra" }) as instruction[])
+        : app
+          ? (user?.instructions || guest?.instructions || []).filter(
+              (i) => i.appId === app?.id,
+            )
+          : [],
+    [app?.id, user?.instructions, guest?.instructions, burn],
   )
 
   const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
@@ -589,6 +593,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const toggleInstructions = (item = app) => {
+    setBurn(!burn)
     if (!hasCustomInstructions) return // Nothing to toggle
 
     // Toggle between custom and app instructions

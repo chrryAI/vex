@@ -111,7 +111,7 @@ const ChatContext = createContext<
       userNameByUrl: string | undefined
       isLoadingThreads: boolean
       setIsLoadingThreads: (value: boolean) => void
-      isIncognito: boolean
+      burn: boolean
       threads?: {
         threads?: thread[]
         totalCount: number
@@ -186,6 +186,8 @@ export function ChatProvider({
     setNewApp,
     setUpdatedApp,
     setBaseAccountApp,
+    burn,
+    setBurn,
     ...auth
   } = useAuth()
 
@@ -367,24 +369,17 @@ export function ChatProvider({
 
   const [collaborationStep, setCollaborationStep] = useState(0)
 
-  const [isIncognito, setIsIncognito] = useState(
-    searchParams.get("incognito") === "true",
-  )
-
   useEffect(() => {
-    if (isIncognito) {
+    if (burn) {
       setWasIncognito(true)
-      setIsNewChat(true, "/?incognito=true")
+      addParams({ burn: "true" })
     } else {
       setWasIncognito(false)
+      removeParams("burn")
     }
-  }, [isIncognito])
+  }, [burn])
 
-  useEffect(() => {
-    setIsIncognito(searchParams.get("incognito") === "true")
-  }, [searchParams])
-
-  const [wasIncognito, setWasIncognito] = useState(isIncognito)
+  const [wasIncognito, setWasIncognito] = useState(burn)
 
   const setIsNewAppChat = (item: appWithStore | undefined) => {
     if (!item) {
@@ -404,7 +399,7 @@ export function ChatProvider({
       setProfile(undefined)
       setMessages([])
       setStatus(null)
-      isIncognito && setWasIncognito(true)
+      burn && setWasIncognito(true)
       setCollaborationStatus(null)
       setIsChatFloating(false)
       setThreadId(undefined)
@@ -428,12 +423,12 @@ export function ChatProvider({
   }, [app])
 
   useEffect(() => {
-    setWasIncognito(isIncognito)
-    if (isIncognito) {
+    setWasIncognito(burn)
+    if (burn) {
       // setThread(undefined)
       setProfile(undefined)
     }
-  }, [isIncognito])
+  }, [burn])
 
   const userOrGuest = user || guest
 
@@ -1024,7 +1019,8 @@ export function ChatProvider({
         !isStreaming &&
         !isStreamingStop &&
         (serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
-          serverMessages.messages.length !== messages.length)
+          serverMessages.messages.length !== messages.length ||
+          isExtension)
       ) {
         setMessages(serverMessages.messages)
       }
@@ -1143,7 +1139,7 @@ export function ChatProvider({
         setThreads,
         wasIncognito,
         setWasIncognito,
-        isIncognito,
+        burn,
         pendingCollaborationThreadsCount,
         activeCollaborationThreadsCount,
         setCollaborationStatus,

@@ -61,6 +61,7 @@ import {
   instructionBase,
   isOwner,
   isDeepEqual,
+  getExampleInstructions,
 } from "./utils"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -117,7 +118,10 @@ export default function Instructions({
 
   const { defaultInstructions, isAppInstructions } = useApp()
 
-  const { token, language, user, guest, app, storeApp } = useAuth()
+  const { token, language, user, guest, app, storeApp, burn } = useAuth()
+  console.log(`🚀 ~ burn:`, burn)
+
+  // Replace instructions with Zarathustra philosophy when burn mode is active
 
   const {
     selectedAgent,

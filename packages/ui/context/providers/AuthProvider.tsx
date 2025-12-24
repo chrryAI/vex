@@ -75,6 +75,11 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      setIsProgramme: (value: boolean) => void
+      burn: boolean
+      setBurn: (value: boolean) => void
+      canBurn: boolean
+      isProgramme: boolean
       siteConfig: SiteConfig
       isManagingApp: boolean
       setIsManagingApp: (value: boolean) => void
@@ -1174,6 +1179,34 @@ export function AuthProvider({
     storeAppIternal,
   )
 
+  const isZarathustra = storeApp?.slug === "zarathustra"
+
+  const [burn, setBurnInternal] = useState<boolean>(isZarathustra)
+
+  const setBurn = (value: boolean) => {
+    setBurnInternal(value)
+
+    if (value && app && zarathustra && app.id !== zarathustra.id) {
+      router.push(getAppSlug(zarathustra))
+    }
+  }
+
+  const canBurn = isZarathustra
+
+  const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage(
+    "isProgramme",
+    isZarathustra,
+  )
+
+  const setIsProgramme = (value: boolean) => {
+    setIsProgrammeInternal(value)
+    removeParams("programme")
+  }
+
+  const isProgramme =
+    isProgrammeInternal || searchParams.get("programme") === "true"
+  console.log(`🚀 ~ isProgrammeInternal:`, isZarathustra)
+
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
   }
@@ -1667,6 +1700,11 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        burn,
+        setBurn,
+        canBurn,
+        isProgramme,
+        setIsProgramme,
         threads,
         setThreads,
         showFocus,

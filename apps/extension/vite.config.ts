@@ -30,6 +30,27 @@ function chromeExtensionPlugin(): PluginOption {
   }
 }
 
+// Stub Tauri APIs for non-Tauri environments (extension doesn't use Tauri)
+function tauriStubPlugin(): PluginOption {
+  return {
+    name: "tauri-stub",
+    enforce: "pre" as const,
+    resolveId(id) {
+      if (id.startsWith("@tauri-apps/api")) {
+        return id
+      }
+      return null
+    },
+    load(id) {
+      if (id.startsWith("@tauri-apps/api")) {
+        // Return empty stub exports
+        return `export default {};`
+      }
+      return null
+    },
+  }
+}
+
 export default async ({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), "")
   const isFirefox =
@@ -78,7 +99,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.8.2",
+    version: siteConfig.version || "1.8.3",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -145,6 +166,7 @@ export default async ({ command, mode }) => {
   return {
     plugins: [
       react(),
+      tauriStubPlugin(), // Stub Tauri APIs for extension
       viteStaticCopy({
         targets: [
           {

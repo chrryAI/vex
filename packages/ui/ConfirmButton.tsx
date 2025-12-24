@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button, Span } from "./platform"
 import Loading from "./Loading"
 import { Trash2 } from "./icons"
+import { useAuth } from "./context/providers"
 
 const ConfirmButton = ({
   children = (
@@ -38,7 +39,13 @@ const ConfirmButton = ({
   processing?: boolean
   onClick?: () => void
 }): React.ReactElement => {
-  const [sure, setSure] = useState(false)
+  const { burn } = useAuth()
+  const [sure, setSure] = useState(burn)
+
+  useEffect(() => {
+    setSure(burn)
+  }, [burn])
+
   const buttonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
