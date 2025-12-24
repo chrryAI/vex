@@ -1689,5 +1689,12 @@
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "Sube archivos aquí para que Vex los recuerde y los referencie en futuras conversaciones. Estos artefactos se convierten en parte de la memoria del hilo.",
   "Disable Image Generation": "Desactivar Generación de Imágenes",
   "Reconnecting...": "Reconectando...",
-  "Back online": "De vuelta en línea"
+  "Back online": "De vuelta en línea",
+  "privacy.burn.title": "Burn (Modo de Privacidad)",
+  "privacy.burn.content": "Burn es nuestra función de conversación efímera diseñada para una completa privacidad digital. Cuando se activa, las conversaciones no se guardan en tu banco de memoria y no dejan huella digital.",
+  "privacy.burn.items.ephemeral": "🔥 Conversaciones Efímeras - Los mensajes existen solo en el momento y no se almacenan",
+  "privacy.burn.items.no_storage": "💭 Sin Almacenamiento de Memoria - Las conversaciones en modo Burn nunca se guardan en tu banco de memoria",
+  "privacy.burn.items.no_memory": "🦅 Sin Memoria de IA - La IA no hará referencia ni creará recuerdos a partir de las conversaciones en modo Burn",
+  "privacy.burn.items.sovereignty": "⚡ Soberanía Digital - Tú controlas cuándo las conversaciones son efímeras vs. persistentes",
+  "privacy.burn.activation": "Activa Burn haciendo clic en el icono de fuego (🔥) en el menú superior. Cuando esté activo, verás 'Cuando usas Burn no hay nada que recordar' para confirmar que tu conversación es privada."
 }

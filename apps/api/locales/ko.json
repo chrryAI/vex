@@ -1689,5 +1689,12 @@
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "AI가 기억하고 미래의 대화에서 참조할 수 있도록 여기에 파일을 업로드하세요. 이러한 아티팩트는 스레드의 메모리의 일부가 됩니다.",
   "Disable Image Generation": "이미지 생성 비활성화",
   "Reconnecting...": "다시 연결 중...",
-  "Back online": "온라인으로 돌아왔습니다"
+  "Back online": "온라인으로 돌아왔습니다",
+  "privacy.burn.title": "버른 (개인정보 보호 모드)",
+  "privacy.burn.content": "버른은 완전한 디지털 개인정보 보호를 위해 설계된 일시적 대화 기능입니다. 활성화되면 대화 내용이 메모리 뱅크에 저장되지 않고 디지털 발자취를 남기지 않습니다.",
+  "privacy.burn.items.ephemeral": "🔥 일시적 대화 - 메시지는 순간에만 존재하며 저장되지 않습니다",
+  "privacy.burn.items.no_storage": "💭 메모리 저장 없음 - 버른 모드 대화는 메모리 뱅크에 절대 저장되지 않습니다",
+  "privacy.burn.items.no_memory": "🦅 AI 메모리 없음 - AI는 버른 대화에서 참조하거나 메모리를 생성하지 않습니다",
+  "privacy.burn.items.sovereignty": "⚡ 디지털 주권 - 대화가 일시적인지 지속적인지를 당신이 제어합니다",
+  "privacy.burn.activation": "상단 메뉴에서 불꽃 아이콘 (🔥)을 클릭하여 버른을 활성화하세요. 활성화되면 '버른을 사용하면 기억할 것이 없습니다'라는 메시지가 나타나 대화가 비공개임을 확인할 수 있습니다."
 }
