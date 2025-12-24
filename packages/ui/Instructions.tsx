@@ -119,7 +119,6 @@ export default function Instructions({
   const { defaultInstructions, isAppInstructions } = useApp()
 
   const { token, language, user, guest, app, storeApp, burn } = useAuth()
-  console.log(`🚀 ~ burn:`, burn)
 
   // Replace instructions with Zarathustra philosophy when burn is active
 
