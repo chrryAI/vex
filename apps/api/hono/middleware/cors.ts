@@ -103,8 +103,10 @@ export const corsMiddleware = async (c: Context, next: Next) => {
     return c.text("", 200)
   }
 
-  // Get search params
-  const url = new URL(c.req.url)
+  // Get search params - handle both absolute and relative URLs
+  const url = c.req.url.startsWith("http")
+    ? new URL(c.req.url)
+    : new URL(c.req.url, "http://localhost")
   const searchParams = url.searchParams
 
   // Set fingerprint cookie if not already set
