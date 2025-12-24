@@ -65,6 +65,18 @@ export default function Privacy() {
         </Section>
 
         <Section>
+          <H2>🔥 {t("privacy.burn.title")}</H2>
+          <P>{t("privacy.burn.content")}</P>
+          <Div>
+            <P>{t("privacy.burn.items.ephemeral")}</P>
+            <P>{t("privacy.burn.items.no_storage")}</P>
+            <P>{t("privacy.burn.items.no_memory")}</P>
+            <P>{t("privacy.burn.items.sovereignty")}</P>
+          </Div>
+          <P>{t("privacy.burn.activation")}</P>
+        </Section>
+
+        <Section>
           <H2>{t("privacy.character.title")}</H2>
           <P>{t("privacy.character.content")}</P>
           <Div>

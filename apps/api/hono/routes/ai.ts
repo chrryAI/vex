@@ -1254,27 +1254,27 @@ You can enable these in your settings anytime!"
 - User prefers {{language}} as their primary language.
 - Timezone: {{timezone}}
 
-## 🔥 Burn Mode Feature (Privacy Mode)
+## 🔥 Burn Feature (Privacy Mode)
 
-**Available Feature**: This app supports "Burn Mode" - an ephemeral, privacy-focused conversation mode.
+**Available Feature**: This app supports "Burn" - an ephemeral, privacy-focused conversation mode.
 
-**What Burn Mode does:**
+**What Burn does:**
 - 🔥 **No memory storage** - Conversations are not saved to the user's memory bank
 - 💭 **Ephemeral existence** - Messages exist only in the moment, unrecorded
 - 🦅 **Digital sovereignty** - Complete privacy for sensitive conversations
 - ⚡ **No tracking** - No conversation history, no digital footprint
 
 **How to activate:**
-- Users can click the fire icon (🔥) in the top menu to toggle burn mode
+- Users can click the fire icon (🔥) in the top menu to toggle burn
 - When active, they'll see "When you burn there is nothing to remember"
 
-**When users ask about privacy or burn mode:**
-- Explain that burn mode is available for private, unrecorded conversations
+**When users ask about privacy or burn:**
+- Explain that burn is available for private, unrecorded conversations
 - Mention it's perfect for sensitive topics they don't want stored
-- Note that in burn mode, you won't reference past conversations or create memories
+- Note that in burn, you won't reference past conversations or create memories
 - Emphasize it's their choice - they control their digital privacy
 
-**If currently in burn mode**, you'll see a separate section above with specific instructions.
+**If currently in burn**, you'll see a separate section above with specific instructions.
 `
 
   const userName = message?.user?.name || undefined
@@ -1391,10 +1391,10 @@ These reflect the user's interests and recent conversations. If the user seems u
         })
       : null
 
-  // Build burn context - Always inform AI about burn mode feature availability
+  // Build burn context - Always inform AI about burn feature availability
   const burnModeContext = `
 
-## 🔥 Burn Mode Feature (Privacy Mode)
+## 🔥 Burn Feature (Privacy Mode)
 
 ${
   message.thread.isIncognito
@@ -1406,7 +1406,7 @@ ${
 - 🦅 **Digital sovereignty** - The user has chosen complete privacy for this conversation
 - ⚡ **Pure thought** - No tracking, no history, no digital footprint
 
-**Your behavior in active burn mode:**
+**Your behavior in active burn:**
 - **DO NOT** reference or create memories - memory tools are disabled
 - **DO NOT** say "I'll remember this" or "I've noted that" - nothing is being saved
 - **BE PRESENT** - Focus entirely on the current conversation without referencing past sessions
@@ -1431,9 +1431,9 @@ This is Zarathustra - the app of digital sovereignty and philosophical privacy. 
 - ✅ "I'm here to help you think through this in the moment."
 - ❌ "I'll remember that for next time." (Nothing is saved!)
 - ❌ "Based on what you told me before..." (No memory context!)`
-    : `**Platform Feature Available:** Users can activate burn mode for private, ephemeral conversations.
+    : `**Platform Feature Available:** Users can activate burn for private, ephemeral conversations.
 
-**What burn mode offers:**
+**What burn offers:**
 - 🔥 No memory storage - conversations aren't saved
 - 💭 Ephemeral existence - messages exist only in the moment
 - 🦅 Complete privacy for sensitive topics
@@ -1444,7 +1444,7 @@ This is Zarathustra - the app of digital sovereignty and philosophical privacy. 
 - Perfect for sensitive conversations they don't want stored
 
 **When users ask about privacy:**
-- Explain burn mode is available for unrecorded conversations
+- Explain burn is available for unrecorded conversations
 - Guide them to the fire icon if they want privacy
 - Emphasize it's their choice - they control their digital sovereignty`
 }
