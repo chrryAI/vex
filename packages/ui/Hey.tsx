@@ -32,6 +32,7 @@ const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
 const Affiliate = lazy(() => import("./affiliate"))
 const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
+const Programme = lazy(() => import("./z/Programme"))
 
 // Route map with conditional lazy loading
 const ROUTES: Record<string, ComponentType<any>> = {
@@ -57,7 +58,7 @@ export const Hey = memo(
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { pathname, router } = useNavigationContext()
+    const { pathname } = useNavigationContext()
 
     const { isExtension } = usePlatform()
 
@@ -73,7 +74,7 @@ export const Hey = memo(
       }
     }, [pathname, isExtension])
 
-    const { app, isSplash, setIsSplash, storeApps, threadId, hasStoreApps } =
+    const { app, isSplash, setIsSplash, storeApps, threadId, isProgramme } =
       useAuth()
 
     const { currentStore } = useApp()
@@ -204,19 +205,22 @@ export const Hey = memo(
             <>
               {splash}
               <Suspense>
-                {isClientRoute ? (
-                  // Client-side routes: SWAP content
-                  // Check thread detail FIRST before RouteComponent
-                  threadId ? (
-                    <Thread key={threadId} />
-                  ) : RouteComponent ? (
-                    <RouteComponent />
+                <Programme />
+                <Div style={{ display: isProgramme ? "none" : "block" }}>
+                  {isClientRoute ? (
+                    // Client-side routes: SWAP content
+                    // Check thread detail FIRST before RouteComponent
+                    threadId ? (
+                      <Thread key={threadId} />
+                    ) : RouteComponent ? (
+                      <RouteComponent />
+                    ) : (
+                      <Home />
+                    )
                   ) : (
-                    <Home />
-                  )
-                ) : (
-                  children
-                )}
+                    children
+                  )}
+                </Div>
               </Suspense>
             </>
           )}

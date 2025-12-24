@@ -66,6 +66,7 @@ export const getImageSrc = ({
     | "raspberry"
     | "strawberry"
     | "sushi"
+    | "zarathustra"
 
   app?: appWithStore
   width?: number | string
@@ -118,7 +119,9 @@ export const getImageSrc = ({
                   ? `${BASE_URL}/icons/calendar-128.png`
                   : icon === "sushi"
                     ? `${BASE_URL}/icons/sushi.png`
-                    : `${BASE_URL}/icons/${icon}-128.png`
+                    : icon === "zarathustra"
+                      ? `${BASE_URL}/images/apps/zarathustra.png`
+                      : `${BASE_URL}/icons/${icon}-128.png`
     : null
 
   const logoSrc =

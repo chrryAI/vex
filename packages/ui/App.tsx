@@ -39,8 +39,7 @@ import { useTimerContext } from "./context/TimerContext"
 function FocusButton({ time }: { time: number }) {
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, isWeb } = usePlatform()
-  const { focus, getAppSlug, setShowFocus, userBaseApp, guestBaseApp } =
-    useAuth()
+  const { focus, getAppSlug, setShowFocus } = useAuth()
 
   const hasHydrated = useHasHydrated()
 
@@ -134,6 +133,9 @@ export default function App({
     token,
     loadingApp,
     userBaseStore,
+    canBurn,
+    burn,
+    setBurn,
     ...auth
   } = useAuth()
 
@@ -933,19 +935,47 @@ export default function App({
               >
                 <Settings2 size={24} color="var(--accent-1)" />
               </Button>
-            ) : app?.id === chrry?.id && focus ? (
+            ) : app?.id === chrry?.id && focus && !burn ? (
               <FocusButton time={time} />
             ) : (
               hasHydrated &&
               !canEditApp &&
-              !isManagingApp && (
+              !isManagingApp &&
+              (canBurn ? (
+                <Button
+                  className="link"
+                  style={{
+                    ...utilities.link.style,
+                    ...styles.grip.style,
+                    position: "relative",
+                    top: -5,
+                    right: -5,
+                  }}
+                  title={t("🔥 Burn")}
+                  onClick={() => {
+                    // Toggle to Zarathustra philosophical instructions
+                    setBurn(!burn)
+                    !burn && toggleInstructions()
+                  }}
+                >
+                  <Span
+                    style={{
+                      fontSize: 24,
+                      filter: "drop-shadow(0 0 8px rgba(255, 100, 0, 0.6))",
+                      animation: "pulse 2s ease-in-out infinite",
+                    }}
+                  >
+                    🔥
+                  </Span>
+                </Button>
+              ) : (
                 <Span
                   style={{ ...styles.grip.style }}
                   // title={t("Drag and drop to reorder apps")}
                 >
                   <Grip size={24} color="var(--accent-1)" />
                 </Span>
-              )
+              ))
             )}
           </Div>
 

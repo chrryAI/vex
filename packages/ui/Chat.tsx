@@ -85,6 +85,8 @@ import {
 import toast from "react-hot-toast"
 import useSWR from "swr"
 
+import DeleteThread from "./DeleteThread"
+
 import {
   BrowserInstance,
   capitalizeFirstLetter,
@@ -220,6 +222,9 @@ export default function Chat({
     updateMood,
     taskId,
     fetchTasks,
+    canBurn,
+    isProgramme,
+    burn,
     ...auth
   } = useAuth()
 
@@ -257,6 +262,7 @@ export default function Chat({
     isChatFloating: isChatFloatingContext,
     messages,
     isNewChat,
+    setIsNewChat,
   } = useChat()
 
   const {
@@ -264,7 +270,6 @@ export default function Chat({
     isShowingCollaborate,
     collaborationStep,
     setCollaborationStep,
-    isIncognito,
     addParams,
   } = useNavigationContext()
 
@@ -1674,7 +1679,7 @@ export default function Chat({
         app && formData.append("appId", app?.id)
 
         formData.append("content", userMessageText)
-        formData.append("isIncognito", JSON.stringify(isIncognito))
+        formData.append("isIncognito", JSON.stringify(burn))
         selectedAgent && formData.append("agentId", selectedAgent?.id)
         debateAgent && formData.append("debateAgentId", debateAgent?.id)
         sanitizedThreadId && formData.append("threadId", sanitizedThreadId)
@@ -1702,7 +1707,7 @@ export default function Chat({
         postRequestHeaders["Content-Type"] = "application/json"
         postRequestBody = JSON.stringify({
           content: userMessageText,
-          isIncognito: isIncognito,
+          isIncognito: burn,
           agentId: selectedAgent?.id,
           debateAgentId: debateAgent?.id,
           threadId: sanitizedThreadId,
@@ -3611,7 +3616,7 @@ export default function Chat({
                     exceededInitial ||
                     threadId ? null : showGreeting && files.length === 0 ? (
                       <H2 style={styles.brandHelp.style}>
-                        {isIncognito ? <HatGlasses size={24} /> : ""}
+                        {burn ? <HatGlasses size={24} /> : ""}
                         <Span>
                           👋{" "}
                           {t(
@@ -4146,6 +4151,17 @@ export default function Chat({
                         </Button>
                       </>
                     )}
+
+                    {/* 🔥 BURN BUTTON - Phoenix Mode */}
+                    {canBurn && !isAttaching && threadId && (
+                      <DeleteThread
+                        onDelete={() => {
+                          setIsNewChat(true)
+                        }}
+                        id={threadId}
+                      />
+                    )}
+
                     {isAttaching ? (
                       <Span style={styles.attachButtons.style}>
                         <Button

@@ -95,6 +95,7 @@ export default forwardRef<
     guest,
     setShowCharacterProfiles,
     FRONTEND_URL,
+    burn,
   } = useAuth()
 
   // Chat context
@@ -234,71 +235,73 @@ export default forwardRef<
           </Button>
         </Div>
       ) : (
-        <>
-          <Div style={{ ...styles.enableCharacterProfilesContainer.style }}>
-            {!characterProfilesEnabled &&
-            !isStreaming &&
-            messages?.some((message) => !!message.message.agentId) ? (
-              <Button
-                disabled={isUpdating}
-                onClick={async () => {
-                  setShowCharacterProfiles(true)
-                }}
-                className="inverted"
-                style={{ ...utilities.inverted.style }}
-              >
-                {isUpdating ? (
-                  <CircleX size={16} color="var(--accent-6)" />
-                ) : (
-                  <Sparkles
-                    color="var(--accent-1)"
-                    fill="var(--accent-1)"
-                    size={16}
-                  />
-                )}
-                {t("Enable Character Profiles")}
-              </Button>
-            ) : null}
-          </Div>
+        !burn && (
+          <>
+            <Div style={{ ...styles.enableCharacterProfilesContainer.style }}>
+              {!characterProfilesEnabled &&
+              !isStreaming &&
+              messages?.some((message) => !!message.message.agentId) ? (
+                <Button
+                  disabled={isUpdating}
+                  onClick={async () => {
+                    setShowCharacterProfiles(true)
+                  }}
+                  className="inverted"
+                  style={{ ...utilities.inverted.style }}
+                >
+                  {isUpdating ? (
+                    <CircleX size={16} color="var(--accent-6)" />
+                  ) : (
+                    <Sparkles
+                      color="var(--accent-1)"
+                      fill="var(--accent-1)"
+                      size={16}
+                    />
+                  )}
+                  {t("Enable Character Profiles")}
+                </Button>
+              ) : null}
+            </Div>
 
-          {showLoadingCharacterProfile ? (
-            <Div
-              style={{
-                ...styles.characterProfileContainer.style,
-                flexDirection: "row",
-              }}
-            >
-              <Video
-                style={{ ...styles.video.style }}
-                src={`${FRONTEND_URL}/video/blob.mp4`}
-                autoPlay
-                loop
-                muted
-                playsInline
-              />
-              {t("Generating character tags...")}
-            </Div>
-          ) : characterProfile &&
-            characterProfilesEnabled &&
-            (isOwner(characterProfile, {
-              userId: user?.id,
-              guestId: guest?.id,
-            }) ||
-              characterProfile.visibility === "public") ? (
-            <Div style={{ ...styles.characterProfileContainer.style }}>
-              <Div style={{ ...styles.tags.style }}>
-                {characterProfile.tags?.join(", ")}
-              </Div>
-              <CharacterProfile
-                onCharacterProfileUpdate={() => {
-                  onCharacterProfileUpdate?.()
+            {showLoadingCharacterProfile ? (
+              <Div
+                style={{
+                  ...styles.characterProfileContainer.style,
+                  flexDirection: "row",
                 }}
-                characterProfile={characterProfile}
-                showActions={true}
-              />
-            </Div>
-          ) : null}
-        </>
+              >
+                <Video
+                  style={{ ...styles.video.style }}
+                  src={`${FRONTEND_URL}/video/blob.mp4`}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+                {t("Generating character tags...")}
+              </Div>
+            ) : characterProfile &&
+              characterProfilesEnabled &&
+              (isOwner(characterProfile, {
+                userId: user?.id,
+                guestId: guest?.id,
+              }) ||
+                characterProfile.visibility === "public") ? (
+              <Div style={{ ...styles.characterProfileContainer.style }}>
+                <Div style={{ ...styles.tags.style }}>
+                  {characterProfile.tags?.join(", ")}
+                </Div>
+                <CharacterProfile
+                  onCharacterProfileUpdate={() => {
+                    onCharacterProfileUpdate?.()
+                  }}
+                  characterProfile={characterProfile}
+                  showActions={true}
+                />
+              </Div>
+            ) : null}
+          </>
+        )
       )}
     </Div>
   )

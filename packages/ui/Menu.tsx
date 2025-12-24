@@ -72,6 +72,7 @@ export default function Menu({
     storeApps,
     setLoadingAppId,
     hasStoreApps,
+    setBurn,
   } = useAuth()
   // const { utilities } = useStyles()
 
@@ -90,6 +91,7 @@ export default function Menu({
     refetchThreads,
     setIsAccountVisible,
     goToThreads,
+    addParams,
   } = useNavigationContext()
 
   const { app } = useApp()
@@ -365,7 +367,7 @@ export default function Menu({
                 <MessageCirclePlus size={18} /> {t("New chat")}
               </A>
               <A
-                href={`${FRONTEND_URL}/?incognito=true`}
+                href={`${FRONTEND_URL}/?burn=true`}
                 onClick={(e) => {
                   track({
                     name: "private-chat-click",
@@ -378,7 +380,7 @@ export default function Menu({
                   e.preventDefault()
 
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
-                  router.push("/?incognito=true")
+                  setBurn(true)
                   reload()
                 }}
                 style={styles.menuItemButton.style}
@@ -499,7 +501,10 @@ export default function Menu({
                                     addHapticFeedback()
 
                                     if (guest) {
-                                      router.push("/?signIn=register")
+                                      addParams({
+                                        signIn: "register",
+                                      })
+                                      isSmallDevice ? toggleMenu() : null
                                       return
                                     }
                                     setCollaborationStatus("active")

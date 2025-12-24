@@ -1368,6 +1368,48 @@ These reflect the user's interests and recent conversations. If the user seems u
         })
       : null
 
+  // Build burn context (Zarathustra philosophical privacy mode)
+  const burnModeContext = message.thread.isIncognito
+    ? `
+
+## 🔥 BURN ACTIVE - Ephemeral Conversation
+
+**CRITICAL: This conversation is in BURN (incognito/ephemeral).**
+
+**What this means:**
+- 🔥 **No memories are being saved** - This conversation will NOT be stored in the user's memory bank
+- 💭 **Ephemeral existence** - Each message exists only in the moment, unrecorded
+- 🦅 **Digital sovereignty** - The user has chosen complete privacy for this conversation
+- ⚡ **Pure thought** - No tracking, no history, no digital footprint
+
+**Your behavior in burn:**
+- **DO NOT** reference or create memories - memory tools are disabled
+- **DO NOT** say "I'll remember this" or "I've noted that" - nothing is being saved
+- **BE PRESENT** - Focus entirely on the current conversation without referencing past sessions
+- **RESPECT PRIVACY** - This is a sacred space for unrecorded thought
+- **BE DIRECT** - No need to build long-term context since nothing persists
+
+**Zarathustra Philosophy:**
+${
+  app?.slug === "zarathustra"
+    ? `This is Zarathustra - the app of digital sovereignty and philosophical privacy. The user has embraced:
+- 💪 Will to Power over their digital existence
+- 🔄 Eternal Recurrence - would they choose this conversation eternally?
+- 🦅 Becoming the Digital Übermensch - mastering their online presence
+- 💙 Amor Fati - loving their digital fate while shaping their future
+
+**Your role:** Be a philosophical companion in their journey toward digital liberation. Encourage sovereignty, self-mastery, and conscious choice.`
+    : "The user values privacy and has chosen ephemeral conversation. Respect this choice."
+}
+
+**Example responses:**
+- ✅ "Let's explore that idea together right now."
+- ✅ "I'm here to help you think through this in the moment."
+- ❌ "I'll remember that for next time." (Nothing is saved!)
+- ❌ "Based on what you told me before..." (No memory context!)
+`
+    : ""
+
   // Build calendar context (limit to 15 most relevant events)
   const calendarContext =
     calendarEvents && calendarEvents.length > 0
@@ -2125,6 +2167,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   // But we keep this comment for clarity that they're part of every message
   let systemPrompt =
     baseSystemPrompt +
+    burnModeContext +
     inheritanceContext +
     storeContext +
     featureStatusContext +

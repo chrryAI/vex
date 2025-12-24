@@ -120,7 +120,7 @@ const Thread = ({
     refetchThreads,
     addParams,
     slug,
-    isIncognito,
+    burn,
     goToCalendar,
   } = useNavigationContext()
 
@@ -907,7 +907,7 @@ const Thread = ({
                           }),
                         )
 
-                      if (!isIncognito && !id && message?.message.threadId) {
+                      if (!burn && !id && message?.message.threadId) {
                         requestAnimationFrame(() => {
                           const navigationOptions = {
                             state: { preservedThread: thread } as {
