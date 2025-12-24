@@ -403,6 +403,8 @@ export function ChatProvider({
       setCollaborationStatus(null)
       setIsChatFloating(false)
       setThreadId(undefined)
+      setMessages([])
+      threadIdRef.current = undefined
       router.push(to)
 
       refetchThreads()

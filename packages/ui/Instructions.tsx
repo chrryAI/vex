@@ -121,7 +121,7 @@ export default function Instructions({
   const { token, language, user, guest, app, storeApp, burn } = useAuth()
   console.log(`🚀 ~ burn:`, burn)
 
-  // Replace instructions with Zarathustra philosophy when burn mode is active
+  // Replace instructions with Zarathustra philosophy when burn is active
 
   const {
     selectedAgent,

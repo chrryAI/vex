@@ -1368,13 +1368,13 @@ These reflect the user's interests and recent conversations. If the user seems u
         })
       : null
 
-  // Build burn mode context (Zarathustra philosophical privacy mode)
+  // Build burn context (Zarathustra philosophical privacy mode)
   const burnModeContext = message.thread.isIncognito
     ? `
 
-## 🔥 BURN MODE ACTIVE - Ephemeral Conversation
+## 🔥 BURN ACTIVE - Ephemeral Conversation
 
-**CRITICAL: This conversation is in BURN MODE (incognito/ephemeral).**
+**CRITICAL: This conversation is in BURN (incognito/ephemeral).**
 
 **What this means:**
 - 🔥 **No memories are being saved** - This conversation will NOT be stored in the user's memory bank
@@ -1382,7 +1382,7 @@ These reflect the user's interests and recent conversations. If the user seems u
 - 🦅 **Digital sovereignty** - The user has chosen complete privacy for this conversation
 - ⚡ **Pure thought** - No tracking, no history, no digital footprint
 
-**Your behavior in burn mode:**
+**Your behavior in burn:**
 - **DO NOT** reference or create memories - memory tools are disabled
 - **DO NOT** say "I'll remember this" or "I've noted that" - nothing is being saved
 - **BE PRESENT** - Focus entirely on the current conversation without referencing past sessions
