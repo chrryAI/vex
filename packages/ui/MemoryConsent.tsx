@@ -107,6 +107,8 @@ export default function MemoryConsent({
           maxWidth: "40rem",
           margin: "0 auto",
           marginTop: "1rem",
+          position: "relative",
+          top: -15,
         }}
       >
         <Div>
