@@ -886,7 +886,7 @@ const grape = {
   favicon: "grape",
   storeSlug: "wine",
   name: "Grape",
-  isStoreApp: true,
+  isStoreApp: false,
   domain: "grape.chrry.ai",
   store: "https://grape.chrry.ai",
   email: "iliyan@chrry.ai",
