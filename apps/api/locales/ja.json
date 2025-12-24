@@ -1689,5 +1689,12 @@
   "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.": "AIが覚えて将来の会話で参照するために、ここにファイルをアップロードしてください。これらのアーティファクトはスレッドのメモリの一部となります。",
   "Disable Image Generation": "画像生成を無効にする",
   "Reconnecting...": "再接続中...",
-  "Back online": "オンラインに戻りました"
+  "Back online": "オンラインに戻りました",
+  "privacy.burn.title": "バーン（プライバシーモード）",
+  "privacy.burn.content": "バーンは、完全なデジタルプライバシーを目指した一時的な会話機能です。この機能が有効になると、会話はメモリバンクに保存されず、デジタル足跡を残しません。",
+  "privacy.burn.items.ephemeral": "🔥 一時的な会話 - メッセージはその瞬間だけ存在し、保存されません",
+  "privacy.burn.items.no_storage": "💭 メモリストレージなし - バーンモードの会話はメモリバンクに保存されません",
+  "privacy.burn.items.no_memory": "🦅 AIの記憶なし - AIはバーンの会話から記憶を参照したり作成したりしません",
+  "privacy.burn.items.sovereignty": "⚡ デジタル主権 - 会話が一時的か持続的かをあなたがコントロールします",
+  "privacy.burn.activation": "上部メニューの火のアイコン（🔥）をクリックしてバーンを有効にします。有効になると、「バーンすると記憶するものは何もありません」と表示され、会話がプライベートであることが確認できます。"
 }
