@@ -434,7 +434,7 @@ export async function logCreditUsage({
   guestId?: string
   agentId: string
   creditCost: number
-  messageType: "user" | "ai" | "image" | "search"
+  messageType: "user" | "ai" | "image" | "search" | "pear_feedback"
   threadId?: string
   messageId?: string
   appId?: string

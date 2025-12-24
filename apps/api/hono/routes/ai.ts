@@ -149,9 +149,16 @@ async function validatePearFeedback({
     }
 
     // Use AI to evaluate feedback quality
-    const deepseek = createDeepSeek({
-      apiKey: process.env.DEEPSEEK_API_KEY,
-    })
+    const deepseekApiKey = process.env.DEEPSEEK_API_KEY
+    if (!deepseekApiKey) {
+      console.error("DEEPSEEK_API_KEY not configured for Pear validation")
+      return {
+        isValid: false,
+        credits: 0,
+        reason: "Feedback validation temporarily unavailable",
+      }
+    }
+    const deepseek = createDeepSeek({ apiKey: deepseekApiKey })
 
     const evaluationPrompt = `You are evaluating user feedback for the app "${appName || "this app"}". 
 
@@ -182,23 +189,42 @@ Respond ONLY with a JSON object in this exact format:
       temperature: 0.3,
     })
 
-    // Parse AI response
+    // Parse AI response with robust error handling
     const responseText = result.text.trim()
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error("Invalid AI response format")
-    }
+    let evaluation: { isValid: boolean; credits: number; reason: string }
 
-    const evaluation = JSON.parse(jsonMatch[0])
+    try {
+      // Remove any text before first { and after last }
+      const cleanText = responseText.replace(/^[^{]*/, "").replace(/[^}]*$/, "")
+      const parsed = JSON.parse(cleanText)
+
+      // Validate structure
+      if (
+        typeof parsed.isValid !== "boolean" ||
+        typeof parsed.credits !== "number" ||
+        typeof parsed.reason !== "string"
+      ) {
+        throw new Error("Invalid evaluation structure")
+      }
+
+      evaluation = parsed
+    } catch (error) {
+      console.error("Failed to parse Pear AI evaluation:", error)
+      return {
+        isValid: false,
+        credits: 0,
+        reason: "Validation error - please try again",
+      }
+    }
 
     // Award credits if valid (top-up, so negative creditCost)
     if (evaluation.isValid && evaluation.credits > 0 && (userId || guestId)) {
       await logCreditUsage({
         userId,
         guestId,
-        agentId: agentId, // No specific agent for Pear validation
+        agentId: "pear-feedback-system", // Dedicated Pear agent for correct attribution
         creditCost: -evaluation.credits, // Negative = top-up
-        messageType: "ai",
+        messageType: "pear_feedback",
         threadId: undefined,
       })
     }

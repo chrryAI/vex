@@ -911,7 +911,7 @@ export const creditUsage = pgTable(
       .notNull(),
     creditCost: integer("creditCost").notNull(),
     messageType: text("messageType", {
-      enum: ["user", "ai", "image", "search"],
+      enum: ["user", "ai", "image", "search", "pear_feedback"],
     }).notNull(),
     threadId: uuid("threadId").references(() => threads.id, {
       onDelete: "set null",
