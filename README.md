@@ -1,10 +1,12 @@
-Vex
+# Vex
+
 A sovereign, self-sustaining AI platform powered by user-provided models.
 
-💝 Support The Builder
-Vex is built entirely open source by a solo developer, pioneering a new economic model for AI. If you find value in this architecture, please consider sponsoring to ensure its longevity.
+## � Support The Project
 
-💎 Become a Sponsor
+Vex is built entirely open source by a solo developer, pioneering a new economic model for AI. If you find value in this platform, support it directly by **buying credits** at [vex.chrry.ai](https://vex.chrry.ai).
+
+No sponsors. No middlemen. Just users supporting the product they use.
 
 🚀 One Codebase, Unlimited Apps
 Vex introduces a breakthrough Polymorphic PWA Architecture. It enables a single codebase to spawn infinite, independent applications on a user's device.
@@ -127,18 +129,9 @@ vex/
 │ ├── pepper/ # Universal Routing Logic
 │ └── db/ # Drizzle Schema & Migrations
 └── scripts/ # DevOps & Automation
-🏆 Sponsors
-Vex is made possible by visionaries who believe in open source.
 
-Platinum Sponsors
-[ Your Name Here ]
+## ⚖️ License & Attribution
 
-Gold Sponsors
-[ Your Name Here ]
-
-Become a Sponsor
-
-⚖️ License & Attribution
 License: AGPL-3.0. Use it, learn from it, but if you distribute it, share your changes.
 
 Icons: This project uses premium icons from Wannathis.
