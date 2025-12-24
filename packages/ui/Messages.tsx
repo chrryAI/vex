@@ -235,7 +235,7 @@ export default forwardRef<
           </Button>
         </Div>
       ) : (
-        burn && (
+        !burn && (
           <>
             <Div style={{ ...styles.enableCharacterProfilesContainer.style }}>
               {!characterProfilesEnabled &&
