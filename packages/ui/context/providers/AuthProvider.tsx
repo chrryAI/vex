@@ -1204,7 +1204,7 @@ export function AuthProvider({
     }
   }
 
-  const canBurn = isZarathustra
+  const canBurn = true
   console.log(`🚀 ~ useEffect ~ storeApps:`, isZarathustra)
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
