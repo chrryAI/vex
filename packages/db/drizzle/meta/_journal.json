@@ -967,6 +967,20 @@
       "when": 1766352740133,
       "tag": "0137_powerful_blade",
       "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1766605169741,
+      "tag": "0138_white_the_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 139,
+      "version": "7",
+      "when": 1766606383852,
+      "tag": "0139_bumpy_puppet_master",
+      "breakpoints": true
     }
   ]
 }

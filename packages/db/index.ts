@@ -434,7 +434,7 @@ export async function logCreditUsage({
   guestId?: string
   agentId: string
   creditCost: number
-  messageType: "user" | "ai" | "image" | "search"
+  messageType: "user" | "ai" | "image" | "search" | "pear_feedback"
   threadId?: string
   messageId?: string
   appId?: string
@@ -558,6 +558,115 @@ export async function getHourlyUsage({
     return 0
   }
 }
+
+// 🍐 Pear feedback quota management (10 submissions per day)
+const PEAR_DAILY_LIMIT = 10
+
+export async function checkPearQuota({
+  userId,
+  guestId,
+}: {
+  userId?: string
+  guestId?: string
+}): Promise<{ allowed: boolean; remaining: number; resetAt: Date | null }> {
+  try {
+    if (!userId && !guestId) {
+      return { allowed: false, remaining: 0, resetAt: null }
+    }
+
+    const user = userId
+      ? await db!.select().from(users).where(eq(users.id, userId)).limit(1)
+      : null
+    const guest = guestId
+      ? await db!.select().from(guests).where(eq(guests.id, guestId)).limit(1)
+      : null
+
+    const record = user?.[0] || guest?.[0]
+    if (!record) {
+      return { allowed: false, remaining: 0, resetAt: null }
+    }
+
+    const now = new Date()
+    const resetAt = record.pearFeedbackResetAt
+
+    // Check if quota needs reset (24h passed)
+    if (!resetAt || now > new Date(resetAt)) {
+      // Reset quota
+      const newResetAt = new Date(now.getTime() + 24 * 60 * 60 * 1000) // 24h from now
+
+      if (userId) {
+        await db!
+          .update(users)
+          .set({
+            pearFeedbackCount: 0,
+            pearFeedbackResetAt: newResetAt,
+          })
+          .where(eq(users.id, userId))
+      } else if (guestId) {
+        await db!
+          .update(guests)
+          .set({
+            pearFeedbackCount: 0,
+            pearFeedbackResetAt: newResetAt,
+          })
+          .where(eq(guests.id, guestId))
+      }
+
+      return {
+        allowed: true,
+        remaining: PEAR_DAILY_LIMIT - 1,
+        resetAt: newResetAt,
+      }
+    }
+
+    const count = record.pearFeedbackCount || 0
+    const remaining = Math.max(0, PEAR_DAILY_LIMIT - count)
+
+    return {
+      allowed: count < PEAR_DAILY_LIMIT,
+      remaining,
+      resetAt: new Date(resetAt),
+    }
+  } catch (error) {
+    console.error("❌ Error checking Pear quota:", error)
+    return { allowed: false, remaining: 0, resetAt: null }
+  }
+}
+
+export async function incrementPearQuota({
+  userId,
+  guestId,
+}: {
+  userId?: string
+  guestId?: string
+}): Promise<void> {
+  try {
+    if (userId) {
+      await db!
+        .update(users)
+        .set({
+          pearFeedbackCount: sql`${users.pearFeedbackCount} + 1`,
+          pearFeedbackTotal: sql`${users.pearFeedbackTotal} + 1`,
+        })
+        .where(eq(users.id, userId))
+    } else if (guestId) {
+      await db!
+        .update(guests)
+        .set({
+          pearFeedbackCount: sql`${guests.pearFeedbackCount} + 1`,
+          pearFeedbackTotal: sql`${guests.pearFeedbackTotal} + 1`,
+        })
+        .where(eq(guests.id, guestId))
+    }
+
+    console.log("🍐 Pear quota incremented:", {
+      user: (userId || guestId)?.substring(0, 8),
+    })
+  } catch (error) {
+    console.error("❌ Error incrementing Pear quota:", error)
+  }
+}
+
 export const createSystemLog = async (systemLog: newSystemLog) => {
   let safeObject = systemLog.object
   if (systemLog.object instanceof Error) {

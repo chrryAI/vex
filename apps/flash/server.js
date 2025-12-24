@@ -12,7 +12,6 @@ import fs from "node:fs/promises"
 import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
-import rateLimit from "express-rate-limit"
 
 // const getEnv = () => {
 //   if (typeof import.meta !== "undefined") {
@@ -27,7 +26,7 @@ import rateLimit from "express-rate-limit"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.8.9"
+const VERSION = "1.8.13"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -49,44 +48,6 @@ const app = express()
 app.set("trust proxy", 1)
 
 app.use(cookieParser())
-
-// Rate limiting to prevent DoS attacks
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // Increased from 100 - allows normal usage
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  message: "Too many requests from this IP, please try again later.",
-  // Make it user-aware: different limits for guests vs members
-  keyGenerator: (req) => {
-    // Use user ID from cookie if available, otherwise fall back to IP
-    const token = req.cookies?.token
-    if (token) {
-      try {
-        // Extract user ID from JWT (simple decode, not verification)
-        const payload = JSON.parse(
-          Buffer.from(token.split(".")[1], "base64").toString(),
-        )
-        return `user:${payload.userId || payload.id}` // User-specific limit
-      } catch {
-        // Invalid token, fall back to IP
-      }
-    }
-    // Guest or no token - use IP (req.ip is already normalized by express)
-    return req.ip
-  },
-  // Skip rate limiting for certain paths
-  skip: (req) => {
-    // Don't rate limit health checks or static assets
-    return (
-      req.path === "/api/health" ||
-      req.path.startsWith("/assets/") ||
-      req.path.startsWith("/icons/")
-    )
-  },
-})
-
-if (!isDev && !isE2E) app.use(limiter)
 
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */

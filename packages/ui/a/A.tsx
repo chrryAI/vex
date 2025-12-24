@@ -61,7 +61,7 @@ export default function Anchor({
           // For extensions, open external URLs in new tab via background script
           if (isExtension && BrowserInstance && href) {
             e.preventDefault()
-            BrowserInstance.runtime?.sendMessage({
+            BrowserInstance?.runtime?.sendMessage({
               action: "openInSameTab",
               url: href,
             })
