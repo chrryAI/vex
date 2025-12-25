@@ -831,7 +831,7 @@ const e2eVex = {
 }
 
 const staging = {
-  ...chrryAI,
+  ...vex,
   url: "https://staging.chrry.ai",
   domain: "staging.chrry.ai",
 }
