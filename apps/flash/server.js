@@ -26,7 +26,7 @@ import { Transform } from "node:stream"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.8.17"
+const VERSION = "1.8.18"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -306,18 +306,24 @@ app.get("/api/health", (req, res) => {
 // Sitemap.xml route - proxy to API
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    // Use internal API URL to avoid Cloudflare round-trip
     const apiUrl =
       process.env.INTERNAL_API_URL ||
       process.env.API_URL ||
       "https://chrry.dev/api"
+
+    // Add timeout to prevent hanging
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
     const response = await fetch(`${apiUrl}/sitemap.xml`, {
       headers: {
         "X-Forwarded-Host": req.hostname,
         "X-Forwarded-Proto": req.protocol,
       },
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`)
@@ -328,7 +334,19 @@ app.get("/sitemap.xml", async (req, res) => {
     res.send(xml)
   } catch (error) {
     console.error("❌ Sitemap error:", error)
-    res.status(500).send("Error generating sitemap")
+
+    // Return a minimal sitemap instead of 500 error
+    const minimalSitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://${req.hostname}</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+    <priority>1.0</priority>
+  </url>
+</urlset>`
+
+    res.header("Content-Type", "application/xml")
+    res.send(minimalSitemap)
   }
 })
 
