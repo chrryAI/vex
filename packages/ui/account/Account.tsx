@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react"
 import { UserRound, LogOut, AtSign, Trash2, Pencil } from "../icons"
 import { CircleX } from "../icons"
+import { v4 as uuidv4 } from "uuid"
 
 import { FaGoogle, FaApple } from "react-icons/fa"
 import {
@@ -54,6 +55,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
     isExtensionRedirect,
     FRONTEND_URL,
     API_URL,
+    setDeviceId,
   } = useAuth()
 
   const { isAccountVisible: isModalOpen, setIsAccountVisible: setIsModalOpen } =
@@ -170,10 +172,12 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
     await signOut()
     // setIsModalOpen(false)
 
-    !isExtension &&
+    if (!isExtension) {
       signOutContext?.({
         callbackUrl: `${FRONTEND_URL}/?loggedOut=true${isExtensionRedirect ? "&extension=true" : ""}`,
       })
+      setDeviceId(uuidv4())
+    }
 
     const searchParams = new URLSearchParams(window.location.search)
     searchParams.delete("account")

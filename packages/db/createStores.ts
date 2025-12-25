@@ -2393,6 +2393,8 @@ export const createStores = async ({
   await updateStore({
     ...blossom,
     appId: chrry.id,
+    userId: admin.id,
+    guestId: null,
   })
 
   {
@@ -2525,6 +2527,8 @@ export const createStores = async ({
   await updateStore({
     ...compass,
     appId: atlas.id,
+    userId: admin.id,
+    guestId: null,
   })
 
   // Install Atlas as the main app in Compass store
@@ -3703,6 +3707,8 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   await updateStore({
     ...movies,
     appId: popcorn.id,
+    userId: admin.id,
+    guestId: null,
   })
 
   const fightClubInstructions = [
@@ -4575,6 +4581,8 @@ Every book, every idea, every question - examine it through the lens of life-aff
   await updateStore({
     ...books,
     appId: zarathustra.id,
+    userId: admin.id,
+    guestId: null,
   })
 
   // Install Zarathustra in Books store
@@ -5775,6 +5783,8 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
   await updateStore({
     ...lifeOS,
     appId: vex.id,
+    userId: admin.id,
+    guestId: null,
   })
 
   {
@@ -6299,6 +6309,8 @@ Be supportive, specific, and focused on helping users earn credits through valua
   await updateStore({
     ...wine,
     appId: vault.id,
+    userId: admin.id,
+    guestId: null,
   })
   // ============================================
   // WINE - Grape Advertising Platform Store
@@ -6408,6 +6420,8 @@ Be supportive, specific, and focused on helping users earn credits through valua
   await updateStore({
     ...claudeStore,
     appId: claudeApp.id,
+    userId: admin.id,
+    guestId: null,
   })
 
   // ============================================
@@ -6634,6 +6648,8 @@ Be supportive, specific, and focused on helping users earn credits through valua
   await updateStore({
     ...perplexityStore,
     appId: perplexityApp.id,
+    userId: admin.id,
+    guestId: null,
   })
 
   // ============================================
@@ -6892,6 +6908,8 @@ When users access you through **Grape** (privacy-first AI advertising), they fol
   await updateStore({
     ...sushiStore,
     appId: sushiApp.id,
+    userId: admin.id,
+    guestId: null,
   })
 
   // ============================================
