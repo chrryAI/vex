@@ -198,7 +198,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.66",
+  version: "26.10.67",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",

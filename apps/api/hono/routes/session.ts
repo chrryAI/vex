@@ -132,14 +132,6 @@ const isValidFingerprint = (fp: string | null): boolean => {
 
 // Initialize Arcjet with bot detection
 // Skip in development/E2E to avoid IP fingerprinting errors
-const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
-  rules: [
-    detectBot({
-      allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
-    }),
-  ],
-})
 
 export const session = new Hono()
 
@@ -171,6 +163,18 @@ session.get("/", async (c) => {
       !clientIp.startsWith("172.")
 
     if (isValidExternalIp) {
+      const aj = arcjet({
+        key: process.env.ARCJET_KEY!,
+        rules: [
+          detectBot({
+            allow: [
+              "CATEGORY:SEARCH_ENGINE",
+              "CATEGORY:PREVIEW",
+              "CATEGORY:MONITOR",
+            ],
+          }),
+        ],
+      })
       // Create Arcjet-compatible request object with guaranteed IP
       const arcjetRequest = {
         method: c.req.method,
