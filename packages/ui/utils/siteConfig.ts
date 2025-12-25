@@ -1964,6 +1964,9 @@ const getClientHostname = () => {
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // If it's a valid SiteMode, use it directly
 
+  if (hostnameOrMode && matchesDomain(hostnameOrMode, "staging.chrry.ai")) {
+    return staging
+  }
   // Extract hostname from URL if needed
   let hostname = hostnameOrMode || getClientHostname()
   if (hostnameOrMode && hostnameOrMode.includes("://")) {
@@ -1990,10 +1993,6 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Check for E2E environment first
   if (hostname && matchesDomain(hostname, "e2e.chrry.ai")) {
     return e2eVex
-  }
-
-  if (hostname && matchesDomain(hostname, "staging.chrry.ai")) {
-    return staging
   }
 
   if (mode === "chrryDev") {
