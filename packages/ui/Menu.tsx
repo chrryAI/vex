@@ -107,13 +107,12 @@ export default function Menu({
     if (tauri && typeof window !== "undefined") {
       const checkFullscreen = async () => {
         try {
-          // @ts-ignore - Tauri API
           const { getCurrentWindow } = await import("@tauri-apps/api/window")
           const appWindow = getCurrentWindow()
           const fullscreen = await appWindow.isFullscreen()
           setIsFullscreen(fullscreen)
         } catch (e) {
-          // Tauri API not available
+          console.error("Fullscreen check failed:", e)
         }
       }
 
@@ -275,10 +274,37 @@ export default function Menu({
         <>
           <Div>
             {/* <Controls /> */}
+            {!isFullscreen && tauri && (
+              <Div
+                data-tauri-drag-region
+                onDoubleClick={async () => {
+                  if (!isTauri) return
+                  try {
+                    const { getCurrentWindow } = await import(
+                      "@tauri-apps/api/window"
+                    )
+                    const appWindow = getCurrentWindow()
+                    const isMaximized = await appWindow.isMaximized()
+                    if (isMaximized) {
+                      await appWindow.unmaximize()
+                    } else {
+                      await appWindow.maximize()
+                    }
+                  } catch (e) {
+                    // Tauri API not available
+                  }
+                }}
+                style={{
+                  height: "1.5rem",
+                  width: "100%",
+                  cursor: "default",
+                  // backgroundColor: "var(--background-1)",
+                }}
+              ></Div>
+            )}
             <Div
               style={{
                 ...styles.menuHeader.style,
-                ...(tauri && !isFullscreen ? { marginTop: "1.5rem" } : {}),
               }}
             >
               {isDrawerOpen ? (
