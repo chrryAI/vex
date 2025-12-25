@@ -1045,13 +1045,12 @@ export function ChatProvider({
       lastProcessedThreadDataRef.current = threadData
 
       if (
-        !isDebating &&
-        !isStreaming &&
-        !isStreamingStop &&
-        (serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
-          serverMessages.messages.length !== messages.length ||
-          isExtension ||
-          !serverMessages.messages.length)
+        (!isDebating &&
+          !isStreaming &&
+          !isStreamingStop &&
+          (serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
+            serverMessages.messages.length !== messages.length)) ||
+        isExtension
       ) {
         setMessages(serverMessages.messages)
       }
