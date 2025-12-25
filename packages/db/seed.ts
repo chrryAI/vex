@@ -331,7 +331,7 @@ const create = async () => {
   if (!admin) {
     console.log("👤 Creating admin user...")
     admin = await createUser({
-      email: !isSeedSafe ? VEX_TEST_EMAIL : "test@gmail.com",
+      email: "test@gmail.com",
       name: VEX_TEST_NAME,
       password: passwordToSalt(VEX_TEST_PASSWORD),
       role: "admin",
@@ -728,7 +728,6 @@ const prod = async () => {
   let admin = await getUser({ email: "ibsukru@gmail.com" })
   if (!admin) throw new Error("Admin user not found")
   const { vex } = await createStores({ user: admin })
-  console.log(`🚀 ~ vex:`, vex)
 
   // await updateStoreUrls({ user: admin })
 
