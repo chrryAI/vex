@@ -1050,7 +1050,8 @@ export function ChatProvider({
         !isStreamingStop &&
         (serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
           serverMessages.messages.length !== messages.length ||
-          isExtension)
+          isExtension ||
+          !serverMessages.messages.length)
       ) {
         setMessages(serverMessages.messages)
       }
