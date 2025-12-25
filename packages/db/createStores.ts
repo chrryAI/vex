@@ -5431,7 +5431,7 @@ Your advertising philosophy:
 - **Internal only**: Promote Wine ecosystem apps only
 - **Value exchange**: Users give feedback, earn credits
 - **Simple**: No complex dashboards or campaigns
-- **Sovereign**: Manual approval for any external ads (contact grape@chrry.ai)
+- **Sovereign**: Manual approval for any external ads (contact iliyan@chrry.ai)
 
 Be helpful, encouraging, and focused on connecting users with great apps while rewarding their valuable insights.`
 
@@ -5468,7 +5468,7 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
       id: "grape-5",
       title: "Advertise Your App (Contact)",
       content:
-        "Want to promote your app in Grape? Email grape@chrry.ai with your app details. We manually review and approve quality apps that align with our privacy-first philosophy. Internal Wine apps are promoted automatically.",
+        "Want to promote your app in Grape? Email iliyan@chrry.ai with your app details. We manually review and approve quality apps that align with our privacy-first philosophy. Internal Wine apps are promoted automatically.",
       emoji: "📧",
     },
     {
@@ -5527,7 +5527,7 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
       {
         id: "grape-tip-4",
         content:
-          "Want to advertise your app? Email grape@chrry.ai. We manually review for quality and privacy alignment!",
+          "Want to advertise your app? Email iliyan@chrry.ai. We manually review for quality and privacy alignment!",
         emoji: "📧",
       },
       {
