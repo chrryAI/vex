@@ -23,7 +23,42 @@ import {
   type instructionBase,
 } from "./getExampleInstructions"
 import { extractTranslations } from "./extractTranslations"
-import { stores, users, guests, teams, apps } from "./src/schema"
+import { stores, users, guests, teams, apps, aiAgents } from "./src/schema"
+
+// ============================================
+// ♾️ INFINITE HUMAN: RPG Seeder Helper
+// ============================================
+const seedAgentRPG = async (
+  appId: string,
+  stats: {
+    intelligence: number // Logic, coding, complex reasoning (0-100)
+    creativity: number // Storytelling, art, ideation (0-100)
+    empathy: number // Emotional intelligence, support (0-100)
+    efficiency: number // Speed, conciseness (0-100)
+    level?: number // Starting level (default 1)
+  },
+) => {
+  if (!db) return
+
+  console.log(`🎲 Rolling stats for App ID: ${appId}...`)
+
+  // Update the AI Agent associated with this App
+  await db
+    .update(aiAgents)
+    .set({
+      intelligence: stats.intelligence,
+      creativity: stats.creativity,
+      empathy: stats.empathy,
+      efficiency: stats.efficiency,
+      level: stats.level || 1,
+      xp: 0, // Fresh start
+    })
+    .where(eq(aiAgents.appId, appId))
+
+  console.log(
+    `✨ Stats Applied: INT ${stats.intelligence} | CRE ${stats.creativity} | EMP ${stats.empathy} | EFF ${stats.efficiency}`,
+  )
+}
 
 const translateInstruction = (instruction: instructionBase) => ({
   ...instruction,
@@ -2473,6 +2508,16 @@ export const createStores = async ({
     extends: atlasPayload.extends,
   })
 
+  // 🌍 Atlas - The Guide (High Efficiency + Creativity)
+  if (atlas) {
+    await seedAgentRPG(atlas.id, {
+      intelligence: 60,
+      creativity: 80, // Inspiring travel
+      empathy: 40,
+      efficiency: 90, // Logistics master
+    })
+  }
+
   if (!atlas) {
     throw new Error("Atlas app not found")
   }
@@ -4511,6 +4556,17 @@ Every book, every idea, every question - examine it through the lens of life-aff
     extends: zarathustraPayload.extends,
   })
 
+  // ⚡ Zarathustra - The Prophet (Maximum Creativity + Intelligence)
+  if (zarathustra) {
+    await seedAgentRPG(zarathustra.id, {
+      intelligence: 95,
+      creativity: 100, // Philosophy is art
+      empathy: 20, // "Hard" love
+      efficiency: 40, // Speaks in riddles/poetry
+      level: 99, // The Ancient One
+    })
+  }
+
   if (!zarathustra) {
     throw new Error("Zarathustra app not found")
   }
@@ -5691,6 +5747,15 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
 
   if (!vex) throw new Error("Failed to create or update vex app")
 
+  // 🍒 Vex - The Generalist (Balanced stats)
+  await seedAgentRPG(vex.id, {
+    intelligence: 50,
+    creativity: 50,
+    empathy: 50,
+    efficiency: 50,
+    level: 5, // Starts slightly experienced
+  })
+
   {
     await createOrUpdateStoreInstall({
       storeId: lifeOS.id,
@@ -5816,6 +5881,16 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
     extends: peachPayload.extends,
   })
 
+  // 🍑 Peach - The Socialite (Maximum Empathy)
+  if (peach) {
+    await seedAgentRPG(peach.id, {
+      intelligence: 40,
+      creativity: 70,
+      empathy: 100, // Pure emotional intelligence
+      efficiency: 30, // Chats can be long
+    })
+  }
+
   if (!peach) throw new Error("Failed to add peach app")
 
   let bloom = await getApp({ slug: "bloom" })
@@ -5904,6 +5979,16 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
     app: bloomPayload,
     extends: bloomPayload.extends,
   })
+
+  // 🌸 Bloom - The Coach (High Empathy + Efficiency)
+  if (bloom) {
+    await seedAgentRPG(bloom.id, {
+      intelligence: 60,
+      creativity: 40,
+      empathy: 90, // Supportive
+      efficiency: 80, // But keeps you on track
+    })
+  }
 
   if (!bloom) throw new Error("Failed to add bloom app")
 
@@ -6198,6 +6283,16 @@ Be supportive, specific, and focused on helping users earn credits through valua
     app: vaultPayload,
     extends: vaultPayload.extends,
   })
+
+  // 💰 Vault - The Banker (Maximum Intelligence + Efficiency, Low Empathy)
+  if (vault) {
+    await seedAgentRPG(vault.id, {
+      intelligence: 90,
+      creativity: 10,
+      empathy: 10, // Cold, hard numbers
+      efficiency: 100, // No wasted time
+    })
+  }
 
   if (!vault) throw new Error("Failed to add vault app")
 
@@ -6758,6 +6853,17 @@ Be supportive, specific, and focused on helping users earn credits through valua
     app: sushiAppPayload,
     extends: sushiAppPayload.extends,
   })
+
+  // 🍣 Sushi - The Coder (Maximum Intelligence + Efficiency)
+  if (sushiApp) {
+    await seedAgentRPG(sushiApp.id, {
+      intelligence: 100, // Coding genius
+      creativity: 30,
+      empathy: 10,
+      efficiency: 100, // Lightning fast
+      level: 10, // Starts as Senior Dev
+    })
+  }
   if (!sushiApp) throw new Error("Failed to add sushi app")
 
   await updateStore({

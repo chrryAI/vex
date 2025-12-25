@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 import { v4 as uuidv4 } from "uuid"
+import type { Context } from "hono"
 import Handlebars from "handlebars"
 import {
   getApp,
@@ -9,6 +10,25 @@ import {
   checkPearQuota,
   incrementPearQuota,
 } from "@repo/db"
+import { z } from "zod"
+
+// 🍐 Pear Debug Logger - Only logs when message contains pear-related keywords
+const DEBUG_PEAR = process.env.DEBUG_PEAR === "true"
+const originalConsoleLog = console.log
+
+if (!DEBUG_PEAR) {
+  console.log = (...args: any[]) => {
+    const message = args.join(" ")
+    // Only log if message contains pear-related emojis or keywords
+    if (
+      message.includes("🍐") ||
+      message.includes("pear") ||
+      message.includes("Pear")
+    ) {
+      originalConsoleLog(...args)
+    }
+  }
+}
 
 import { VEX_LIVE_FINGERPRINTS } from "@chrryai/chrry/utils"
 
@@ -138,6 +158,14 @@ async function validatePearFeedback({
   appName?: string
   agentId: string
 }): Promise<{ isValid: boolean; credits: number; reason: string }> {
+  console.log("🍐🍐🍐 validatePearFeedback CALLED:", {
+    feedbackLength: feedbackText?.length,
+    userId: userId?.substring(0, 8),
+    guestId: guestId?.substring(0, 8),
+    appName,
+    agentId: agentId?.substring(0, 8),
+  })
+
   try {
     // Quick validation checks
     if (!feedbackText || feedbackText.trim().length < 10) {
@@ -219,14 +247,23 @@ Respond ONLY with a JSON object in this exact format:
 
     // Award credits if valid (top-up, so negative creditCost)
     if (evaluation.isValid && evaluation.credits > 0 && (userId || guestId)) {
+      console.log("🍐 Awarding Pear credits:", {
+        userId: userId?.substring(0, 8),
+        guestId: guestId?.substring(0, 8),
+        credits: evaluation.credits,
+        creditCost: -evaluation.credits,
+      })
+
       await logCreditUsage({
         userId,
         guestId,
-        agentId: "pear-feedback-system", // Dedicated Pear agent for correct attribution
+        agentId: agentId, // Use actual agent UUID, not string
         creditCost: -evaluation.credits, // Negative = top-up
         messageType: "pear_feedback",
         threadId: undefined,
       })
+
+      console.log("✅ Pear credits awarded successfully")
     }
 
     return {

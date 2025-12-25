@@ -442,6 +442,15 @@ export async function logCreditUsage({
 }) {
   let creditCost = rest.creditCost || 1
 
+  console.log("🎯 logCreditUsage called:", {
+    userId: userId?.substring(0, 8),
+    guestId: guestId?.substring(0, 8),
+    agentId: agentId?.substring(0, 8),
+    creditCost,
+    messageType,
+    isTopUp: creditCost < 0,
+  })
+
   // // Additional credit for AI-enhanced web search
   // if (isWebSearchEnabled) {
   //   creditCost += 1
@@ -463,9 +472,18 @@ export async function logCreditUsage({
       agent: agentId.substring(0, 8),
       credits: creditCost,
       type: messageType,
+      action: creditCost < 0 ? "REWARD" : "SPEND",
     })
   } catch (error) {
     console.error("❌ Error logging credit usage:", error)
+    console.error("❌ Error details:", {
+      userId,
+      guestId,
+      agentId,
+      creditCost,
+      messageType,
+      error: error instanceof Error ? error.message : String(error),
+    })
     // Don't throw - credit logging failure shouldn't block message creation
   }
 }
