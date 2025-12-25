@@ -225,6 +225,7 @@ export default function Chat({
     canBurn,
     isProgramme,
     burn,
+    isPear,
     ...auth
   } = useAuth()
 
@@ -263,6 +264,7 @@ export default function Chat({
     messages,
     isNewChat,
     setIsNewChat,
+    onlyAgent,
   } = useChat()
 
   const {
@@ -415,13 +417,15 @@ export default function Chat({
       ? false
       : isChatFloatingContext && !showChatInput
 
-  const [isChatFloating] = useSyncedState(floatingInitial, [
+  const [isChatFloatingInternal] = useSyncedState(floatingInitial, [
     empty,
     shouldUseCompactMode,
     isChatFloatingContext,
     showChatInput,
   ])
 
+  const isChatFloating =
+    isChatFloatingInternal && (!!threadIdRef.current || shouldUseCompactMode)
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -1695,6 +1699,7 @@ export default function Chat({
         formData.append("instructions", instruction)
         formData.append("language", language)
         clientId && formData.append("clientId", clientId)
+        isPear && formData.append("pear", JSON.stringify(isPear))
 
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
@@ -1721,6 +1726,7 @@ export default function Chat({
           appId: app?.id,
           moodId: mood?.id,
           taskId,
+          pear: isPear,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -1827,6 +1833,8 @@ export default function Chat({
           isImageGenerationEnabled.toString(),
         )
 
+        isPear && formData.append("pear", "true")
+
         placeholder && formData.append("placeholder", placeholder)
 
         weather && formData.append("weather", JSON.stringify(weather))
@@ -1855,6 +1863,7 @@ export default function Chat({
           webSearchEnabled: isWebSearchEnabled,
           imageGenerationEnabled: isImageGenerationEnabled,
           isSpeechActive,
+          pear: isPear,
           deviceId,
           weather,
           placeholder,
@@ -2224,7 +2233,7 @@ export default function Chat({
       const mClientId = data?.clientId
 
       if (
-        data?.message &&
+        data?.message?.aiAgent &&
         isOwner(data.message.message, {
           userId: user?.id,
           guestId: guest?.id,
@@ -3618,15 +3627,20 @@ export default function Chat({
                       <H2 style={styles.brandHelp.style}>
                         {burn ? <HatGlasses size={24} /> : ""}
                         <Span>
-                          👋{" "}
+                          {isPear ? "🍐" : "👋"}{" "}
                           {t(
-                            hitHourlyLimit
-                              ? t("You hit your hourly limit {{hourlyLimit}}", {
-                                  hourlyLimit,
-                                })
-                              : language === "fr"
-                                ? "What can I help with?"
-                                : "What's on your mind?",
+                            isPear
+                              ? "Share your feedback and earn credits!"
+                              : hitHourlyLimit
+                                ? t(
+                                    "You hit your hourly limit {{hourlyLimit}}",
+                                    {
+                                      hourlyLimit,
+                                    },
+                                  )
+                                : language === "fr"
+                                  ? "What can I help with?"
+                                  : "What's on your mind?",
                           )}
                         </Span>
                       </H2>
@@ -3879,7 +3893,7 @@ export default function Chat({
                         }}
                       >
                         <Button
-                          disabled={!!app?.onlyAgent}
+                          disabled={onlyAgent}
                           data-testid={
                             !debateAgent
                               ? "add-debate-agent-button"
@@ -3902,7 +3916,7 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             ...styles.debateAgentButton.style,
-                            ...(app?.onlyAgent
+                            ...(onlyAgent
                               ? styles.debateAgentButtonDisabled
                               : {}),
                           }}
@@ -3922,7 +3936,7 @@ export default function Chat({
                           ) : selectedAgent.name === "sushi" ? (
                             <Img icon="sushi" size={22} />
                           ) : null}
-                          {app?.onlyAgent ||
+                          {onlyAgent ||
                           selectedAgent?.name === "flux" ||
                           debateAgent ? null : (
                             <Plus
@@ -3933,7 +3947,7 @@ export default function Chat({
                             />
                           )}
                         </Button>
-                        {debateAgent && !app?.onlyAgent ? (
+                        {debateAgent && !onlyAgent ? (
                           <Button
                             data-testid="add-debate-agent-button"
                             data-agent-name={debateAgent.name}
@@ -3951,7 +3965,7 @@ export default function Chat({
                             style={{
                               ...utilities.link.style,
                               ...styles.debateAgentButton.style,
-                              ...(app?.onlyAgent
+                              ...(onlyAgent
                                 ? styles.debateAgentButtonDisabled
                                 : {}),
                             }}
@@ -3979,7 +3993,7 @@ export default function Chat({
                           </Button>
                         ) : (
                           <Button
-                            disabled={!!app?.onlyAgent}
+                            disabled={!!onlyAgent}
                             data-agent-name={selectedAgent.name}
                             data-testid="agent-select-button"
                             onClick={() => {
@@ -3996,9 +4010,7 @@ export default function Chat({
                             style={{
                               ...utilities.link.style,
                               ...styles.agentButton.style,
-                              color: app?.onlyAgent
-                                ? "var(--shade-6)"
-                                : undefined,
+                              color: onlyAgent ? "var(--shade-6)" : undefined,
                             }}
                             type="submit"
                           >
@@ -4010,13 +4022,13 @@ export default function Chat({
                             >
                               {selectedAgent?.displayName}
                             </Span>
-                            {!app?.onlyAgent && (
+                            {!onlyAgent && (
                               <ChevronDown color="var(--accent-6)" size={20} />
                             )}
                           </Button>
                         )}
                       </Span>
-                      {!appStatus?.part && !app?.onlyAgent && (
+                      {!appStatus?.part && !onlyAgent && (
                         <Button
                           data-testid={
                             debateAgent

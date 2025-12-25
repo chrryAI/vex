@@ -1,5 +1,6 @@
 "use client"
 
+import { captureException as captureExceptionSentry } from "@sentry/react"
 import React, { createContext, useContext, ReactNode } from "react"
 
 interface ErrorContextType {
@@ -20,6 +21,7 @@ export function ErrorProvider({ children }: ErrorProviderProps) {
     error: Error | unknown,
     context?: Record<string, any>,
   ) => {
+    captureExceptionSentry(error, context)
     // TODO: Move error handling logic here
     console.error("Error captured:", error, context)
   }

@@ -14,7 +14,9 @@ export type SiteMode =
   | "zarathustra"
   | "search"
   | "sushi"
+  | "grape"
   | "e2eVex"
+  | "staging"
 
 // Function declaration is hoisted, so it's available before const declarations
 function getEnv() {
@@ -196,7 +198,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.65",
+  version: "26.10.67",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -828,6 +830,12 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
+const staging = {
+  ...chrryAI,
+  // url: "https://staging.chrry.ai",
+  domain: "staging.chrry.ai",
+}
+
 const sushi = {
   url: "https://sushi.chrry.ai",
   mode: "sushi" as SiteMode,
@@ -873,6 +881,70 @@ const sushi = {
       description: "AI assistant in your browser",
       icon: "🔌",
       link: "https://chrome.google.com/webstore",
+      isOpenSource: false,
+    },
+  ],
+}
+
+const grape = {
+  url: "https://grape.chrry.ai",
+  mode: "grape" as SiteMode,
+  slug: "grape",
+  favicon: "grape",
+  storeSlug: "wine",
+  name: "Grape",
+  isStoreApp: false,
+  domain: "grape.chrry.ai",
+  store: "https://grape.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "Discover apps, earn credits. Give feedback with Pear 🍐",
+  logo: "🍇",
+  primaryColor: "#9333EA", // Purple
+  links: {
+    github: "https://github.com/chrryAI/vex",
+    docs: "https://grape.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "App Discovery",
+      description: "Explore curated AI applications",
+      icon: "🔍",
+      link: "/explore",
+      isOpenSource: false,
+    },
+    {
+      title: "Pear Feedback",
+      description: "Earn credits for quality feedback",
+      icon: "🍐",
+      link: "/feedback",
+      isOpenSource: false,
+    },
+    {
+      title: "Credit System",
+      description: "Get rewarded for contributions",
+      icon: "💰",
+      link: "/credits",
+      isOpenSource: false,
+    },
+    {
+      title: "App Ratings",
+      description: "Community-driven app reviews",
+      icon: "⭐",
+      link: "/ratings",
+      isOpenSource: false,
+    },
+    {
+      title: "Try Apps",
+      description: "Test apps before installing",
+      icon: "🎯",
+      link: "/try",
+      isOpenSource: false,
+    },
+    {
+      title: "White Label",
+      description: "Customize for your brand",
+      icon: "🎨",
+      link: "/white-label",
       isOpenSource: false,
     },
   ],
@@ -1354,6 +1426,13 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
       description: "E2E Testing Environment for Vex.",
     },
   },
+  staging: {
+    en: {
+      title: "Staging - AI Assistant for Development",
+      description:
+        "Your personal AI assistant designed for Staging and Development. Chat in English, collaborate locally, and get things done faster.",
+    },
+  },
   tokyo: {
     en: {
       title: "Tokyo - AI Assistant for Japan",
@@ -1566,7 +1645,7 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
     en: {
       title: "Search - AI-Powered Web Search",
       description:
-        "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references.",
+        "AI-powered real-time web search with cited sources. Get instant, accurate answers with verifiable references worldwide.",
     },
     de: {
       title: "Search - KI-gestützte Websuche",
@@ -1612,6 +1691,58 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
       title: "Search - Yapay Zeka Destekli Web Arama",
       description:
         "Alıntılanan kaynaklarla yapay zeka destekli gerçek zamanlı web arama. Doğrulanabilir referanslarla anında, doğru yanıtlar alın.",
+    },
+  },
+  grape: {
+    en: {
+      title: "Grape - Discover Apps, Earn Credits",
+      description:
+        "Discover curated AI applications and earn credits for quality feedback with Pear. Community-driven app discovery marketplace.",
+    },
+    de: {
+      title: "Grape - Apps entdecken, Credits verdienen",
+      description:
+        "Entdecken Sie kuratierte KI-Anwendungen und verdienen Sie Credits für qualitatives Feedback mit Pear. Community-getriebener App-Discovery-Marktplatz.",
+    },
+    fr: {
+      title: "Grape - Découvrez des apps, gagnez des crédits",
+      description:
+        "Découvrez des applications IA sélectionnées et gagnez des crédits pour vos retours de qualité avec Pear. Marketplace de découverte d'apps communautaire.",
+    },
+    ja: {
+      title: "Grape - アプリを発見、クレジットを獲得",
+      description:
+        "厳選されたAIアプリを発見し、Pearで質の高いフィードバックを提供してクレジットを獲得。コミュニティ主導のアプリ発見マーケットプレイス。",
+    },
+    ko: {
+      title: "Grape - 앱 발견, 크레딧 획득",
+      description:
+        "엄선된 AI 애플리케이션을 발견하고 Pear로 양질의 피드백을 제공하여 크레딧을 획득하세요. 커뮤니티 주도 앱 발견 마켓플레이스.",
+    },
+    pt: {
+      title: "Grape - Descubra apps, ganhe créditos",
+      description:
+        "Descubra aplicações de IA selecionadas e ganhe créditos por feedback de qualidade com Pear. Marketplace de descoberta de apps impulsionado pela comunidade.",
+    },
+    es: {
+      title: "Grape - Descubre apps, gana créditos",
+      description:
+        "Descubre aplicaciones de IA seleccionadas y gana créditos por comentarios de calidad con Pear. Marketplace de descubrimiento de apps impulsado por la comunidad.",
+    },
+    zh: {
+      title: "Grape - 发现应用，赚取积分",
+      description:
+        "发现精选的AI应用程序，通过Pear提供高质量反馈赚取积分。社区驱动的应用发现市场。",
+    },
+    nl: {
+      title: "Grape - Ontdek apps, verdien credits",
+      description:
+        "Ontdek geselecteerde AI-applicaties en verdien credits voor kwalitatieve feedback met Pear. Community-gedreven app-ontdekkingsmarktplaats.",
+    },
+    tr: {
+      title: "Grape - Uygulamaları keşfedin, kredi kazanın",
+      description:
+        "Seçilmiş yapay zeka uygulamalarını keşfedin ve Pear ile kaliteli geri bildirim için kredi kazanın. Topluluk odaklı uygulama keşif pazarı.",
     },
   },
 }
@@ -1669,7 +1800,7 @@ export function detectSiteModeDomain(
   // Inline isDevelopment check to avoid circular dependency
 
   const defaultMode = isDevelopment
-    ? ("zarathustra" as SiteMode)
+    ? ("grape" as SiteMode)
     : isE2E
       ? "e2eVex"
       : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
@@ -1711,6 +1842,10 @@ export function detectSiteModeDomain(
   // Domain-based detection (use exact match or subdomain check)
   console.log(`🔍 Detecting mode for host: "${host}"`)
 
+  if (matchesDomain(host, "grape.chrry.ai")) {
+    return "grape"
+  }
+
   if (matchesDomain(host, "books.chrry.ai")) {
     return "zarathustra"
   }
@@ -1736,6 +1871,10 @@ export function detectSiteModeDomain(
   }
   if (matchesDomain(host, "popcorn.chrry.ai")) {
     return "popcorn"
+  }
+
+  if (matchesDomain(host, "staging.chrry.ai")) {
+    return "staging"
   }
 
   // E2E testing environment
@@ -1797,6 +1936,8 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "search",
     "sushi",
     "e2eVex",
+    "grape",
+    "staging",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -1823,6 +1964,9 @@ const getClientHostname = () => {
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // If it's a valid SiteMode, use it directly
 
+  if (hostnameOrMode && matchesDomain(hostnameOrMode, "staging.chrry.ai")) {
+    return staging
+  }
   // Extract hostname from URL if needed
   let hostname = hostnameOrMode || getClientHostname()
   if (hostnameOrMode && hostnameOrMode.includes("://")) {
@@ -1900,6 +2044,14 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
   if (mode === "e2eVex") {
     return e2eVex
+  }
+
+  if (mode === "grape") {
+    return grape
+  }
+
+  if (mode === "staging") {
+    return staging
   }
 
   if (isE2E) {

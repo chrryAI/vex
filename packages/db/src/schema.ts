@@ -147,6 +147,14 @@ export const users = pgTable(
     stripeCustomerId: text("stripeCustomerId"), // For payments TO platform
     stripeConnectAccountId: text("stripeConnectAccountId"), // For payouts TO user
     stripeConnectOnboarded: boolean("stripeConnectOnboarded").default(false),
+
+    // Pear feedback quota (10 submissions per day)
+    pearFeedbackCount: integer("pearFeedbackCount").default(0).notNull(),
+    pearFeedbackResetAt: timestamp("pearFeedbackResetAt", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    pearFeedbackTotal: integer("pearFeedbackTotal").default(0).notNull(), // Lifetime count
   },
   (table) => [
     uniqueIndex("user_name_idx").on(table.userName),
@@ -328,6 +336,14 @@ export const guests = pgTable("guest", {
   // Stripe Connect for payouts (Pear feedback earnings)
   stripeConnectAccountId: text("stripeConnectAccountId"), // For payouts TO guest
   stripeConnectOnboarded: boolean("stripeConnectOnboarded").default(false),
+
+  // Pear feedback quota (10 submissions per day)
+  pearFeedbackCount: integer("pearFeedbackCount").default(0).notNull(),
+  pearFeedbackResetAt: timestamp("pearFeedbackResetAt", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  pearFeedbackTotal: integer("pearFeedbackTotal").default(0).notNull(), // Lifetime count
 })
 
 // teams/Teams for collaborative agent management
@@ -699,6 +715,14 @@ export const aiAgents = pgTable("aiAgents", {
   })
     .notNull()
     .default("all"),
+
+  // ♾️ INFINITE HUMAN: RPG Character Stats
+  intelligence: integer("intelligence").default(50).notNull(), // Logic, coding, reasoning (0-100)
+  creativity: integer("creativity").default(50).notNull(), // Storytelling, art, ideation (0-100)
+  empathy: integer("empathy").default(50).notNull(), // Emotional intelligence, support (0-100)
+  efficiency: integer("efficiency").default(50).notNull(), // Speed, conciseness (0-100)
+  level: integer("level").default(1).notNull(), // Agent level (1-99)
+  xp: integer("xp").default(0).notNull(), // Experience points
 })
 
 export type webSearchResultType = {
@@ -829,6 +853,7 @@ export const messages = pgTable(
         id: string
       }[]
     >(),
+    isPear: boolean("isPear").notNull().default(false), // Pear feedback submission
   },
 
   (table) => [
@@ -894,7 +919,7 @@ export const creditUsage = pgTable(
       .notNull(),
     creditCost: integer("creditCost").notNull(),
     messageType: text("messageType", {
-      enum: ["user", "ai", "image", "search"],
+      enum: ["user", "ai", "image", "search", "pear_feedback"],
     }).notNull(),
     threadId: uuid("threadId").references(() => threads.id, {
       onDelete: "set null",

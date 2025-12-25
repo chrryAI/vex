@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import { Hono } from "hono"
-import {
-  getApp as getAppDb,
-  getApps,
-  getStore,
-  getStoreInstalls,
-  deleteInstall,
-} from "@repo/db"
+import { getApps, getStore, getStoreInstalls, deleteInstall } from "@repo/db"
 import { apps } from "@repo/db/src/schema"
 import { getMember, getGuest } from "../lib/auth"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"

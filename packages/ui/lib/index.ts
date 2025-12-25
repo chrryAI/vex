@@ -169,6 +169,7 @@ export const getImageSrc = ({
             "grape",
             "search",
             "zarathustra",
+            "pear",
           ].includes(app.slug)
         ? `${BASE_URL}/images/apps/${app.slug}.png`
         : getImageBySize(size) ||

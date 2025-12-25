@@ -197,21 +197,21 @@ export default function Menu({
     }
   }, [isSmallDevice])
 
-  useEffect(() => {
-    // isDrawerOpen && animateThreads() // Moti handles this declaratively
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsDrawerOpen(!isDrawerOpen)
-      }
-    }
+  // useEffect(() => {
+  //   // isDrawerOpen && animateThreads() // Moti handles this declaratively
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     if (e.key === "Escape") {
+  //       setIsDrawerOpen(!isDrawerOpen)
+  //     }
+  //   }
 
-    if (typeof window !== "undefined" && window.addEventListener) {
-      window.addEventListener("keydown", handleKeyDown)
-      return () => {
-        window.removeEventListener("keydown", handleKeyDown)
-      }
-    }
-  }, [isDrawerOpen])
+  //   if (typeof window !== "undefined" && window.addEventListener) {
+  //     window.addEventListener("keydown", handleKeyDown)
+  //     return () => {
+  //       window.removeEventListener("keydown", handleKeyDown)
+  //     }
+  //   }
+  // }, [isDrawerOpen])
 
   const [lastStarredId, setLastStarredId] = useState<string | null>(null)
   const threadRefs = useRef<{ [id: string]: HTMLDivElement | null }>({})

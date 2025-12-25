@@ -331,7 +331,7 @@ const create = async () => {
   if (!admin) {
     console.log("👤 Creating admin user...")
     admin = await createUser({
-      email: !isSeedSafe ? VEX_TEST_EMAIL : "test@gmail.com",
+      email: "test@gmail.com",
       name: VEX_TEST_NAME,
       password: passwordToSalt(VEX_TEST_PASSWORD),
       role: "admin",
@@ -727,11 +727,12 @@ const prod = async () => {
   // Check if admin user already exists
   let admin = await getUser({ email: "ibsukru@gmail.com" })
   if (!admin) throw new Error("Admin user not found")
+  const { vex } = await createStores({ user: admin })
 
   // await updateStoreUrls({ user: admin })
 
   // Delete inactive bot guests in batches
-  await clearGuests()
+  // await clearGuests()
   // const vex = await createStores({ user: admin, isProd: true })
   // const allInstructions = await db.select().from(instructions)
   // const seen = new Map<string, string>() // Map of unique key -> instruction ID

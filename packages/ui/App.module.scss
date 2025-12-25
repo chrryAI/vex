@@ -34,6 +34,37 @@
   padding: 0 toRem.toRem(10);
 }
 
+.grapeModalDescription {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: toRem.toRem(15);
+  font-size: toRem.toRem(14);
+}
+
+.grapeModalDescriptionButton {
+  display: flex;
+  flex-direction: column;
+  gap: toRem.toRem(5);
+  border: toRem.toRem(1) dashed var(--shade-2);
+  border-radius: toRem.toRem(20);
+  padding: toRem.toRem(10);
+  flex: 1;
+}
+
+.grapeModalDescriptionItem {
+  display: flex;
+  gap: toRem.toRem(15);
+  padding-bottom: toRem.toRem(10);
+
+  border: toRem.toRem(1) dashed var(--shade-2);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
 .focusTime {
   position: absolute;
   top: toRem.toRem(-5);

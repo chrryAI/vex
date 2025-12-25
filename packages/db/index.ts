@@ -434,13 +434,22 @@ export async function logCreditUsage({
   guestId?: string
   agentId: string
   creditCost: number
-  messageType: "user" | "ai" | "image" | "search"
+  messageType: "user" | "ai" | "image" | "search" | "pear_feedback"
   threadId?: string
   messageId?: string
   appId?: string
   // isWebSearchEnabled?: boolean
 }) {
   let creditCost = rest.creditCost || 1
+
+  console.log("🎯 logCreditUsage called:", {
+    userId: userId?.substring(0, 8),
+    guestId: guestId?.substring(0, 8),
+    agentId: agentId?.substring(0, 8),
+    creditCost,
+    messageType,
+    isTopUp: creditCost < 0,
+  })
 
   // // Additional credit for AI-enhanced web search
   // if (isWebSearchEnabled) {
@@ -463,9 +472,18 @@ export async function logCreditUsage({
       agent: agentId.substring(0, 8),
       credits: creditCost,
       type: messageType,
+      action: creditCost < 0 ? "REWARD" : "SPEND",
     })
   } catch (error) {
     console.error("❌ Error logging credit usage:", error)
+    console.error("❌ Error details:", {
+      userId,
+      guestId,
+      agentId,
+      creditCost,
+      messageType,
+      error: error instanceof Error ? error.message : String(error),
+    })
     // Don't throw - credit logging failure shouldn't block message creation
   }
 }
@@ -558,6 +576,115 @@ export async function getHourlyUsage({
     return 0
   }
 }
+
+// 🍐 Pear feedback quota management (10 submissions per day)
+const PEAR_DAILY_LIMIT = 10
+
+export async function checkPearQuota({
+  userId,
+  guestId,
+}: {
+  userId?: string
+  guestId?: string
+}): Promise<{ allowed: boolean; remaining: number; resetAt: Date | null }> {
+  try {
+    if (!userId && !guestId) {
+      return { allowed: false, remaining: 0, resetAt: null }
+    }
+
+    const user = userId
+      ? await db!.select().from(users).where(eq(users.id, userId)).limit(1)
+      : null
+    const guest = guestId
+      ? await db!.select().from(guests).where(eq(guests.id, guestId)).limit(1)
+      : null
+
+    const record = user?.[0] || guest?.[0]
+    if (!record) {
+      return { allowed: false, remaining: 0, resetAt: null }
+    }
+
+    const now = new Date()
+    const resetAt = record.pearFeedbackResetAt
+
+    // Check if quota needs reset (24h passed)
+    if (!resetAt || now > new Date(resetAt)) {
+      // Reset quota
+      const newResetAt = new Date(now.getTime() + 24 * 60 * 60 * 1000) // 24h from now
+
+      if (userId) {
+        await db!
+          .update(users)
+          .set({
+            pearFeedbackCount: 0,
+            pearFeedbackResetAt: newResetAt,
+          })
+          .where(eq(users.id, userId))
+      } else if (guestId) {
+        await db!
+          .update(guests)
+          .set({
+            pearFeedbackCount: 0,
+            pearFeedbackResetAt: newResetAt,
+          })
+          .where(eq(guests.id, guestId))
+      }
+
+      return {
+        allowed: true,
+        remaining: PEAR_DAILY_LIMIT - 1,
+        resetAt: newResetAt,
+      }
+    }
+
+    const count = record.pearFeedbackCount || 0
+    const remaining = Math.max(0, PEAR_DAILY_LIMIT - count)
+
+    return {
+      allowed: count < PEAR_DAILY_LIMIT,
+      remaining,
+      resetAt: new Date(resetAt),
+    }
+  } catch (error) {
+    console.error("❌ Error checking Pear quota:", error)
+    return { allowed: false, remaining: 0, resetAt: null }
+  }
+}
+
+export async function incrementPearQuota({
+  userId,
+  guestId,
+}: {
+  userId?: string
+  guestId?: string
+}): Promise<void> {
+  try {
+    if (userId) {
+      await db!
+        .update(users)
+        .set({
+          pearFeedbackCount: sql`${users.pearFeedbackCount} + 1`,
+          pearFeedbackTotal: sql`${users.pearFeedbackTotal} + 1`,
+        })
+        .where(eq(users.id, userId))
+    } else if (guestId) {
+      await db!
+        .update(guests)
+        .set({
+          pearFeedbackCount: sql`${guests.pearFeedbackCount} + 1`,
+          pearFeedbackTotal: sql`${guests.pearFeedbackTotal} + 1`,
+        })
+        .where(eq(guests.id, guestId))
+    }
+
+    console.log("🍐 Pear quota incremented:", {
+      user: (userId || guestId)?.substring(0, 8),
+    })
+  } catch (error) {
+    console.error("❌ Error incrementing Pear quota:", error)
+  }
+}
+
 export const createSystemLog = async (systemLog: newSystemLog) => {
   let safeObject = systemLog.object
   if (systemLog.object instanceof Error) {
@@ -4672,6 +4799,8 @@ export const updateApp = async (app: app | appWithStore) => {
     : undefined
 }
 
+const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL!
+
 export const createOrUpdateApp = async ({
   app,
   extends: extendsList,
@@ -4679,8 +4808,17 @@ export const createOrUpdateApp = async ({
   app: newApp
   extends?: string[]
 }) => {
-  // Check if app exists
-  const existingApp = app.id ? await getPureApp({ id: app.id }) : null
+  const admin = await getUser({
+    email: VEX_TEST_EMAIL,
+  }) // Check if app exists
+
+  if (!admin || admin.role !== "admin") {
+    throw new Error("Admin not found")
+  }
+
+  const existingApp = app.id
+    ? await getPureApp({ id: app.id, userId: admin.id })
+    : null
 
   let result
 
@@ -4688,26 +4826,35 @@ export const createOrUpdateApp = async ({
     // Update existing app
     const [updated] = await db
       .update(apps)
-      .set(app)
+      .set({
+        ...app,
+        userId: admin.id,
+      })
       .where(eq(apps.id, app.id!))
       .returning()
 
     result = updated
       ? await getPureApp({
           id: updated.id,
-          userId: app.userId || undefined,
-          guestId: app.guestId || undefined,
+          userId: admin.id,
+          guestId: undefined,
           isSafe: false,
         })
       : undefined
   } else {
     // Create new app
-    const [inserted] = await db.insert(apps).values(app).returning()
+    const [inserted] = await db
+      .insert(apps)
+      .values({
+        ...app,
+        userId: admin.id,
+      })
+      .returning()
     result = inserted
       ? await getPureApp({
           id: inserted.id,
-          userId: app.userId || undefined,
-          guestId: app.guestId || undefined,
+          userId: admin.id,
+          guestId: undefined,
           isSafe: false,
         })
       : undefined

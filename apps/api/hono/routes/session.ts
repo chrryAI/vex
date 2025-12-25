@@ -132,14 +132,6 @@ const isValidFingerprint = (fp: string | null): boolean => {
 
 // Initialize Arcjet with bot detection
 // Skip in development/E2E to avoid IP fingerprinting errors
-const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
-  rules: [
-    detectBot({
-      allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
-    }),
-  ],
-})
 
 export const session = new Hono()
 
@@ -152,43 +144,62 @@ session.get("/", async (c) => {
 
   // Arcjet bot detection - block bots from creating guest accounts
   if (!isDevelopment && !isE2E) {
-    // Extract client IP from x-forwarded-for header (sent by SSR server)
-    // Always provide a fallback to prevent Arcjet fingerprint errors
+    // Extract IP from reverse proxy headers (nginx sets X-Forwarded-For)
+    const forwardedFor = c.req.header("x-forwarded-for")
+    const realIp = c.req.header("x-real-ip")
     const clientIp =
       url.searchParams.get("ip") ||
-      c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
-      c.req.header("x-real-ip") ||
+      forwardedFor?.split(",")[0]?.trim() ||
+      realIp ||
       "127.0.0.1" // Fallback for local/internal requests
 
-    // Convert Headers to plain object for Arcjet compatibility
-    const headersObj: Record<string, string | string[] | undefined> = {}
-    request.headers.forEach((value, key) => {
-      headersObj[key] = value
-    })
+    // Only call Arcjet if we have a valid external IP
+    const isValidExternalIp =
+      clientIp &&
+      clientIp !== "127.0.0.1" &&
+      clientIp !== "localhost" &&
+      !clientIp.startsWith("192.168.") &&
+      !clientIp.startsWith("10.") &&
+      !clientIp.startsWith("172.")
 
-    // Create Arcjet-compatible request object with guaranteed IP
-    const arcjetRequest = {
-      ...request,
-      ip: clientIp, // Always has a value now
-      headers: headersObj,
-    }
-
-    const decision = await aj.protect(arcjetRequest)
-
-    if (decision.isDenied()) {
-      console.log("🤖 Bot detected:", {
-        reason: decision.reason,
-        userAgent: request.headers.get("user-agent"),
-        ip: decision.ip,
+    if (isValidExternalIp) {
+      const aj = arcjet({
+        key: process.env.ARCJET_KEY!,
+        rules: [
+          detectBot({
+            allow: [
+              "CATEGORY:SEARCH_ENGINE",
+              "CATEGORY:PREVIEW",
+              "CATEGORY:MONITOR",
+            ],
+          }),
+        ],
       })
-      return c.json({ error: "Bot detected", reason: decision.reason }, 403)
-    }
+      // Create Arcjet-compatible request object with guaranteed IP
+      const arcjetRequest = {
+        method: c.req.method,
+        url: c.req.url,
+        headers: Object.fromEntries(c.req.raw.headers.entries()),
+        ip: clientIp, // Use extracted IP from reverse proxy
+      }
 
-    // Log allowed bots for debugging
-    if (decision.isAllowed() && decision.reason.isBot?.()) {
-      console.log("✅ Allowed bot:", {
-        userAgent: request.headers.get("user-agent"),
-      })
+      const decision = await aj.protect(arcjetRequest)
+
+      if (decision.isDenied()) {
+        console.log("🤖 Bot detected:", {
+          reason: decision.reason,
+          userAgent: request.headers.get("user-agent"),
+          ip: decision.ip,
+        })
+        return c.json({ error: "Bot detected", reason: decision.reason }, 403)
+      }
+
+      // Log allowed bots for debugging
+      if (decision.isAllowed() && decision.reason.isBot?.()) {
+        console.log("✅ Allowed bot:", {
+          userAgent: request.headers.get("user-agent"),
+        })
+      }
     }
   }
 

@@ -318,6 +318,7 @@ messages.post("/", async (c) => {
     deviceId,
     taskId,
     moodId,
+    pear,
     ...rest
   } = requestData
 
@@ -479,6 +480,7 @@ messages.post("/", async (c) => {
     selectedAgentId: selectedAgent?.id,
     isWebSearchEnabled: webSearchEnabled,
     isImageGenerationEnabled: imageGenerationEnabled,
+    isPear: pear || false, // Track Pear feedback submissions
     debateAgentId: selectedDebateAgent?.id,
   })
 
