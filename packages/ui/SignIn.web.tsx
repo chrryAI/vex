@@ -5,6 +5,7 @@ import clsx from "clsx"
 import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
 import { apiFetch, isDevelopment } from "./utils"
 import { FaGoogle, FaApple } from "react-icons/fa"
+import { v4 as uuidv4 } from "uuid"
 export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
 }
@@ -59,6 +60,7 @@ export default function SignIn({
     signInPart: part,
     setSignInPart: setPart,
     siteConfig,
+    setDeviceId,
   } = useAuth()
 
   const signInContext = async (
@@ -71,6 +73,7 @@ export default function SignIn({
       errorUrl: string
     },
   ) => {
+    setDeviceId(uuidv4())
     clear()
     return signInContextInternal?.(provider, options)
   }

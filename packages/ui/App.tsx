@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState, CSSProperties } from "react"
 
 import { clsx, FilePicker, usePlatform, useTheme } from "./platform"
 import EnableNotifications from "./EnableNotifications"
@@ -377,6 +377,36 @@ export default function App({
   const [inputKey, setInputKey] = React.useState(0) // Force re-render
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
+  const isSettingVisible = hasHydrated && isAppOwner && !isManagingApp
+
+  const BurnButton = ({ style }: { style?: CSSProperties } = {}) => (
+    <Button
+      className="link"
+      style={{
+        ...utilities.link.style,
+        ...styles.grip.style,
+        position: "relative",
+        // top: -5,
+        // right: -5,
+        ...style,
+      }}
+      title={t("Burn")}
+      onClick={() => {
+        setBurn(!burn)
+        !burn && toggleInstructions()
+      }}
+    >
+      <Span
+        style={{
+          fontSize: 24,
+          filter: "drop-shadow(0 0 6px rgba(255, 100, 0, 0.6))",
+          animation: "pulse 2s ease-in-out infinite",
+        }}
+      >
+        🔥
+      </Span>
+    </Button>
+  )
   useEffect(() => {
     ;(appStatus?.part === "highlights" || appStatus?.part === "title") &&
       !canAddName &&
@@ -1098,7 +1128,7 @@ export default function App({
                 </A>
               )
             )}
-            {hasHydrated && isAppOwner && !isManagingApp ? (
+            {isSettingVisible ? (
               <Button
                 className="link"
                 style={{ ...utilities.link.style, ...styles.grip.style }}
@@ -1119,36 +1149,9 @@ export default function App({
               !canEditApp &&
               !isManagingApp &&
               (canBurn ? (
-                <Button
-                  className="link"
-                  style={{
-                    ...utilities.link.style,
-                    ...styles.grip.style,
-                    position: "relative",
-                    top: -5,
-                    right: -5,
-                  }}
-                  title={t("Burn")}
-                  onClick={() => {
-                    setBurn(!burn)
-                    !burn && toggleInstructions()
-                  }}
-                >
-                  <Span
-                    style={{
-                      fontSize: 24,
-                      filter: "drop-shadow(0 0 8px rgba(255, 100, 0, 0.6))",
-                      animation: "pulse 2s ease-in-out infinite",
-                    }}
-                  >
-                    🔥
-                  </Span>
-                </Button>
+                <BurnButton style={{ top: -5, left: -5 }} />
               ) : (
-                <Span
-                  style={{ ...styles.grip.style }}
-                  // title={t("Drag and drop to reorder apps")}
-                >
+                <Span style={{ ...styles.grip.style }}>
                   <Grip size={24} color="var(--accent-1)" />
                 </Span>
               ))
@@ -1266,10 +1269,14 @@ export default function App({
                             </A>
                           )}
                         {showPacmanHere ? (
-                          popcorn &&
-                          store &&
-                          store?.appId !== popcorn?.id &&
-                          store?.apps?.some((app) => app.id === popcorn.id) ? (
+                          isSettingVisible ? (
+                            <BurnButton style={{ ...styles.popcorn.style }} />
+                          ) : popcorn &&
+                            store &&
+                            store?.appId !== popcorn?.id &&
+                            store?.apps?.some(
+                              (app) => app.id === popcorn.id,
+                            ) ? (
                             <A
                               preventDefault
                               href={getAppSlug(popcorn)}

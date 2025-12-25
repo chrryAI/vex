@@ -88,7 +88,7 @@ export default function MemoryConsent({
     return null
   }
 
-  if (isManagingApp || canEditApp || !isHydrated) {
+  if (isManagingApp || !isHydrated) {
     return null
   }
 

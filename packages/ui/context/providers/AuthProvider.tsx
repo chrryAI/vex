@@ -75,6 +75,7 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
       setIsPear: (value: appWithStore | undefined) => void
@@ -1287,8 +1288,6 @@ export function AuthProvider({
     (app && getAppSlug(app)) || undefined,
   )
 
-  console.log(`🚀 ~ setSlug ~ isExtension:`, isExtension)
-
   const setSlug = (slug: string | undefined) => {
     if (isExtension) {
       setSlugStorage(slug)
@@ -1911,6 +1910,7 @@ export function AuthProvider({
         findAppByPathname,
         siteConfig,
         setBaseAccountApp,
+        setDeviceId,
         setApp,
         aiAgents,
         timeAgo: (date: string | Date, locale = language || "en-US") =>
