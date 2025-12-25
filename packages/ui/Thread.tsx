@@ -216,9 +216,9 @@ const Thread = ({
         : appFormWatcher.title
           ? null
           : titleIsRequired
-      : !appFormWatcher.highlights?.length
+      : !appFormWatcher?.highlights?.length
         ? `${t("You can go next, updating suggestions recommended.")} 🎯`
-        : !appFormWatcher.systemPrompt
+        : !appFormWatcher?.systemPrompt
           ? `${t("Updating Description and Settings recommended.")} 🧠`
           : `${t("You can save it now!")} 🚀`
     : null

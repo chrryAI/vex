@@ -417,13 +417,15 @@ export default function Chat({
       ? false
       : isChatFloatingContext && !showChatInput
 
-  const [isChatFloating] = useSyncedState(floatingInitial, [
+  const [isChatFloatingInternal] = useSyncedState(floatingInitial, [
     empty,
     shouldUseCompactMode,
     isChatFloatingContext,
     showChatInput,
   ])
 
+  const isChatFloating =
+    isChatFloatingInternal && (!!threadIdRef.current || shouldUseCompactMode)
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -2231,7 +2233,7 @@ export default function Chat({
       const mClientId = data?.clientId
 
       if (
-        data?.message &&
+        data?.message?.aiAgent &&
         isOwner(data.message.message, {
           userId: user?.id,
           guestId: guest?.id,
