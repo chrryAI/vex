@@ -1,6 +1,7 @@
 // lib/websocket.ts - WebSocket handler for Bun
 import type { ServerWebSocket } from "bun"
 import jwt from "jsonwebtoken"
+import { validate } from "uuid"
 import {
   getUser,
   getGuest,
@@ -77,12 +78,16 @@ process.on("SIGINT", async () => {
 })
 
 async function getMemberWithToken(token: string) {
-  console.log(
-    "getMemberWithToken: called",
-    token ? `${token.substring(0, 12)}...` : "<no token>",
-  )
+  if (!token) {
+    return null
+  }
 
-  if (!token || token.split(".").length !== 3) {
+  if (validate(token)) {
+    console.log("Guest token")
+    return null
+  }
+
+  if (token.split(".").length !== 3) {
     console.warn("getMemberWithToken: token missing or malformed")
     return null
   }
