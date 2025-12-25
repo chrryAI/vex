@@ -1033,7 +1033,6 @@ export function ChatProvider({
 
   useEffect(() => {
     if (!toFetch) {
-      setMessages([])
       status && setStatus(null)
       return
     }
