@@ -59,7 +59,7 @@ export default function Skeleton({
     useTheme()
 
   // Platform context
-  const { isStandalone } = usePlatform()
+  const { isStandalone, isTauri } = usePlatform()
 
   // Data context
   const { FRONTEND_URL } = useData()
@@ -138,66 +138,78 @@ export default function Skeleton({
             // className={clsx(hasHydrated && device && styles[device])}
           >
             <Div style={{ ...skeletonStyles.hamburgerMenu.style }}>
-              {!isDrawerOpen && (
-                <Button
-                  className="link"
-                  style={{
-                    ...skeletonStyles.hamburgerButton.style,
-                    ...utilities.link,
-                  }}
-                  onClick={toggleMenu}
-                >
-                  {hasNotification && (
-                    <Span style={{ ...skeletonStyles.notification.style }} />
-                  )}
-                  <CircleEllipsis
-                    strokeWidth={1.5}
-                    color="var(--accent-1)"
-                    size={24}
-                  />
-                </Button>
-              )}
-              {!isDrawerOpen ? (
-                <Div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  <A
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  paddingTop: isTauri ? "1.4rem" : "0",
+                }}
+              >
+                {!isDrawerOpen && (
+                  <Button
                     className="link"
-                    clientOnly
-                    href={`/`}
                     style={{
-                      ...utilities.link.style,
                       ...skeletonStyles.hamburgerButton.style,
+                      ...utilities.link,
                     }}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setIsNewChat(true)
+                    onClick={toggleMenu}
+                  >
+                    {hasNotification && (
+                      <Span style={{ ...skeletonStyles.notification.style }} />
+                    )}
+                    <CircleEllipsis
+                      strokeWidth={1.5}
+                      color="var(--accent-1)"
+                      size={24}
+                    />
+                  </Button>
+                )}
+                {!isDrawerOpen ? (
+                  <Div
+                    style={{ display: "flex", alignItems: "center", gap: 5 }}
+                  >
+                    <A
+                      className="link"
+                      clientOnly
+                      href={`/`}
+                      style={{
+                        ...utilities.link.style,
+                        ...skeletonStyles.hamburgerButton.style,
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIsNewChat(true)
+                      }}
+                    >
+                      <Img key={app?.id || "vex"} app={app} size={28} />
+                      <H1
+                        key={`title-${app?.id || "vex"}`}
+                        style={{ ...skeletonStyles.brand.style }}
+                      >
+                        {app?.name || "Vex"}
+                      </H1>
+                    </A>
+                  </Div>
+                ) : null}
+
+                {isEmpty && (
+                  <A
+                    href={`/blossom`}
+                    className="button transparent"
+                    style={{
+                      ...utilities.button.style,
+                      ...utilities.transparent.style,
+                      ...utilities.small.style,
+                      ...(hasHydrated &&
+                        isMobileDevice &&
+                        skeletonStyles.blog.style),
                     }}
                   >
-                    <Img key={app?.id || "vex"} app={app} size={28} />
-                    <H1
-                      key={`title-${app?.id || "vex"}`}
-                      style={{ ...skeletonStyles.brand.style }}
-                    >
-                      {app?.name || "Vex"}
-                    </H1>
+                    <Img logo="blossom" size={22} /> {"Blossom"}
                   </A>
-                </Div>
-              ) : null}
-              {isEmpty && (
-                <A
-                  href={`/blossom`}
-                  className="button transparent"
-                  style={{
-                    ...utilities.button.style,
-                    ...utilities.transparent.style,
-                    ...utilities.small.style,
-                    ...(hasHydrated &&
-                      isMobileDevice &&
-                      skeletonStyles.blog.style),
-                  }}
-                >
-                  <Img logo="blossom" size={22} /> {"Blossom"}
-                </A>
-              )}
+                )}
+              </Div>
             </Div>
             <Div style={{ ...skeletonStyles.right.style }}>
               <CharacterProfiles />

@@ -1033,6 +1033,7 @@ export function ChatProvider({
 
   useEffect(() => {
     if (!toFetch) {
+      setMessages([])
       status && setStatus(null)
       return
     }
@@ -1048,7 +1049,7 @@ export function ChatProvider({
         !isDebating &&
         !isStreaming &&
         !isStreamingStop &&
-        (serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
+        (serverMessages.messages[0]?.thread?.id !== toFetch ||
           serverMessages.messages.length !== messages.length ||
           isExtension ||
           !serverMessages.messages.length)
@@ -1096,6 +1097,7 @@ export function ChatProvider({
     threadId,
     threadIdRef,
     messages,
+    toFetch,
   ])
 
   return (

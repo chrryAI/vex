@@ -97,9 +97,8 @@ export default function Menu({
   const { app } = useApp()
 
   // Platform context
-  const { viewPortHeight, os } = usePlatform()
+  const { isTauri: tauri, os, viewPortHeight } = usePlatform()
 
-  const tauri = isTauri()
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   // Detect fullscreen state in Tauri
@@ -267,7 +266,7 @@ export default function Menu({
         ref={innerRef}
         style={{
           ...styles.menu.style,
-          paddingBottom: os === "ios" ? 10 : 0,
+          paddingBottom: os === "ios" || tauri ? 10 : 0,
           ...(isDrawerOpen ? styles.open.style : styles.closed.style),
         }}
       >
