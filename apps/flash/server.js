@@ -1,12 +1,3 @@
-// Initialize New Relic APM (must be first!)
-if (
-  process.env.NODE_ENV === "production" &&
-  process.env.NEW_RELIC_LICENSE_KEY
-) {
-  await import("newrelic")
-  console.log("✅ New Relic APM initialized for Flash SSR")
-}
-
 import "dotenv/config"
 import fs from "node:fs/promises"
 import express from "express"
@@ -27,7 +18,7 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.8.24"
+const VERSION = "1.8.25"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173

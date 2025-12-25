@@ -191,9 +191,6 @@ importers:
       '@types/lodash':
         specifier: ^4.17.20
         version: 4.17.21
-      '@types/newrelic':
-        specifier: ^9.14.8
-        version: 9.14.8
       '@types/node':
         specifier: ^22.17.1
         version: 22.19.1
@@ -5411,9 +5408,6 @@ packages:
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
-
-  '@types/newrelic@9.14.8':
-    resolution: {integrity: sha512-rkOTEVR7Lui4TTEykDUxIxCbFkcI/yw3C8URLOWM84zjuHh9W35RAequHTEvGBbbrLCdn43FVTHMLji4uunDWQ==}
 
   '@types/node-cron@3.0.11':
     resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
@@ -18577,8 +18571,6 @@ snapshots:
   '@types/mdx@2.0.13': {}
 
   '@types/ms@2.1.0': {}
-
-  '@types/newrelic@9.14.8': {}
 
   '@types/node-cron@3.0.11': {}
 
