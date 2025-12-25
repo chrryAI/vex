@@ -1,4 +1,6 @@
 import "./index.css"
+// Import Sentry/GlitchTip client config FIRST
+import "@chrryai/chrry/sentry.client.config"
 // Import global styles to ensure they're loaded
 import "@chrryai/chrry/globals.scss"
 import "@chrryai/chrry/globals.css"

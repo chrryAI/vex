@@ -39,10 +39,7 @@ export const isDevelopment = checkIsExtension()
   ? [
       "jnngfghgbmieehkfebkogjjiepomakdh",
       "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
-    ].some((id) => getExtensionUrl()?.includes(id)) ||
-    // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
-    // Packed extensions from store have mixed case IDs
-    Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
+    ].some((id) => getExtensionUrl()?.includes(id))
   : !isProduction
 
 export const isE2E =
