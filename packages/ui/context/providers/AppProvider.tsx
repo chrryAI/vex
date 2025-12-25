@@ -491,7 +491,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const contextInstructions = useMemo(
     () =>
-      burn
+      (burn
         ? ((app?.slug === "zarathustra"
             ? getExampleInstructions({ slug: "zarathustra" })
             : app?.highlights) as instruction[])
@@ -499,8 +499,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ? (user?.instructions || guest?.instructions || []).filter(
               (i) => i.appId === app?.id,
             )
-          : [],
-    [app?.id, user?.instructions, guest?.instructions, burn],
+          : []) || [],
+    [app, user?.instructions, guest?.instructions, burn],
   )
 
   const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
@@ -556,7 +556,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     () =>
       isManagingApp && appFormWatcher?.highlights?.length
         ? (appFormWatcher.highlights as instruction[])
-        : contextInstructions.length > 0
+        : contextInstructions?.length > 0
           ? contextInstructions
           : app?.highlights?.length
             ? (app.highlights as instruction[])
@@ -580,8 +580,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setInstructions(instructionsInternal)
   }, [instructionsInternal])
 
-  const hasCustomInstructions = contextInstructions.some(
-    (i) => !app?.highlights?.some((h) => h.id === i.id),
+  const hasCustomInstructions = contextInstructions?.some(
+    (i) => app && !app?.highlights?.some((h) => h.id === i.id),
   )
 
   const [showingCustom, setShowingCustom] = useState(hasCustomInstructions)
@@ -590,7 +590,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setShowingCustom(hasCustomInstructions)
   }, [hasCustomInstructions])
 
-  const isAppInstructions = contextInstructions.every((i) =>
+  const isAppInstructions = contextInstructions?.every((i) =>
     app?.highlights?.some((h) => h.id === i.id),
   )
 

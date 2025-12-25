@@ -1,6 +1,6 @@
 {
   "name": "@repo/extension",
-  "version": "1.8.16",
+  "version": "1.8.17",
   "private": true,
   "type": "module",
   "scripts": {
@@ -18,8 +18,8 @@
     "build:dev": "rm -rf dist && vite build --mode development",
     "build:dev:watch": "vite build --mode development --watch",
     "build:firefox": "npm run zip:source && rm -rf dist && tsc && VITE_BROWSER=firefox vite build && npm run zip:firefox",
-    "dev": "MODE=zarathustra node dev-watch.js",
-    "dev:fast": "MODE=zarathustra vite build --mode development --watch",
+    "dev": "MODE=grape node dev-watch.js",
+    "dev:fast": "MODE=grape vite build --mode development --watch",
     "dev:watch": "concurrently \"npm run build:dev:watch\" \"npm run reload:watch\"",
     "lint": "eslint .",
     "preview": "vite preview",

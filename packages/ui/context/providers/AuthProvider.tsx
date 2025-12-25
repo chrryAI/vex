@@ -1287,6 +1287,8 @@ export function AuthProvider({
     (app && getAppSlug(app)) || undefined,
   )
 
+  console.log(`🚀 ~ setSlug ~ isExtension:`, isExtension)
+
   const setSlug = (slug: string | undefined) => {
     if (isExtension) {
       setSlugStorage(slug)
