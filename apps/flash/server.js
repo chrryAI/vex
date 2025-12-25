@@ -12,6 +12,7 @@ import fs from "node:fs/promises"
 import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
+import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 // const getEnv = () => {
 //   if (typeof import.meta !== "undefined") {
@@ -26,7 +27,7 @@ import { Transform } from "node:stream"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.8.22"
+const VERSION = "1.8.23"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -49,10 +50,26 @@ app.set("trust proxy", 1)
 
 app.use(cookieParser())
 
+// Initialize Arcjet for rate limiting and security
+const aj = arcjet({
+  key: process.env.ARCJET_KEY || "test-key",
+  characteristics: ["ip"],
+  rules: [
+    // Shield protects against common attacks
+    shield({ mode: "LIVE" }),
+    // Rate limit SSR requests to prevent DoS
+    fixedWindow({
+      mode: "LIVE",
+      window: "1m",
+      max: 100, // 100 requests per minute per IP
+    }),
+  ],
+})
+
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
 let vite
-if (!isProduction) {
+if (isDev || isE2E) {
   const { createServer } = await import("vite")
   vite = await createServer({
     server: { middlewareMode: true },
@@ -410,8 +427,17 @@ app.get("/manifest.json", async (req, res) => {
   }
 })
 
-// Serve HTML
+// Serve HTML with rate limiting
 app.use("*all", async (req, res) => {
+  // Apply Arcjet protection
+  const decision = await aj.protect(req)
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return res.status(429).json({ error: "Too many requests" })
+    }
+    return res.status(403).json({ error: "Forbidden" })
+  }
   try {
     const url = req.originalUrl.replace(base, "")
 

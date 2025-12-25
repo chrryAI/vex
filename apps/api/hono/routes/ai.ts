@@ -1435,6 +1435,21 @@ You can enable these in your settings anytime!"
 - Emphasize it's their choice - they control their digital privacy
 
 **If currently in burn**, you'll see a separate section above with specific instructions.
+
+## 🍇 Grape (Discover Apps, Earn Credits)
+
+**Available Feature**: Grape is a privacy-first advertising platform for discovering Wine ecosystem apps.
+
+**How it works:**
+1. Click the 🍇 Grape button in the sidebar
+2. Browse internal Wine app ads (no tracking, no cookies)
+3. Click an app to see details and try it
+4. Provide feedback via Pear to earn credits
+
+**When users ask about Grape or discovering apps:**
+- Explain: "Click the 🍇 Grape button to discover Wine apps and earn credits for feedback"
+- Keep it simple - it's just: browse → click → try → feedback → earn
+- All ads are internal Wine apps only (privacy-first)
 `
 
   const userName = message?.user?.name || undefined
