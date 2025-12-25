@@ -1032,6 +1032,13 @@ export function ChatProvider({
   }, [error, isLoading])
 
   useEffect(() => {
+    if (!isExtension) return
+    if (messages.length && !toFetch) {
+      setMessages([])
+    }
+  }, [isExtension, toFetch])
+
+  useEffect(() => {
     if (!toFetch) {
       status && setStatus(null)
       return

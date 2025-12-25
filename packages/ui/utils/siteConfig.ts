@@ -198,7 +198,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.67",
+  version: "26.10.68",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1787,10 +1787,7 @@ const isDevelopment = checkIsExtension()
   ? [
       "jnngfghgbmieehkfebkogjjiepomakdh",
       "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
-    ].some((id) => getExtensionUrl()?.includes(id)) ||
-    // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
-    // Packed extensions from store have mixed case IDs
-    Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
+    ].some((id) => getExtensionUrl()?.includes(id))
   : !isProduction
 
 export function detectSiteModeDomain(
@@ -1799,11 +1796,9 @@ export function detectSiteModeDomain(
 ): SiteMode {
   // Inline isDevelopment check to avoid circular dependency
 
-  const defaultMode = isDevelopment
-    ? ("grape" as SiteMode)
-    : isE2E
-      ? "e2eVex"
-      : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
+  const defaultMode =
+    (getEnv().VITE_SITE_MODE as SiteMode) ||
+    (isDevelopment ? "grape" : mode || "vex")
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
