@@ -453,7 +453,7 @@ export default function App({
             }
           }}
           icon={"🍇"}
-          title={<Div>Discover Apps, Earn Credits</Div>}
+          title={<Div>{t("Discover apps, earn credits")}</Div>}
         >
           <Div
             style={{
@@ -1048,7 +1048,7 @@ export default function App({
             {!isManagingApp && grape && !burn ? (
               <Button
                 // href={getAppSlug(grape)}
-                title={t("Organize your life")}
+                title={t("Discover apps, earn credits")}
                 // openInNewTab={isExtension && isFirefox}
                 className="button transparent"
                 style={{
@@ -1065,15 +1065,17 @@ export default function App({
                 }}
               >
                 <Img showLoading={false} app={grape} width={18} height={18} />
-                <Span
-                  style={{
-                    color: COLORS.purple,
-                    fontFamily: "var(--font-mono)",
-                    fontSize: ".7rem",
-                  }}
-                >
-                  {store?.slug === "wine" ? grapes.length : ""}
-                </Span>
+                {grapes.length > 0 && (
+                  <Span
+                    style={{
+                      color: COLORS.purple,
+                      fontFamily: "var(--font-mono)",
+                      fontSize: ".7rem",
+                    }}
+                  >
+                    {store?.slug === "wine" ? grapes.length : ""}
+                  </Span>
+                )}
               </Button>
             ) : (
               !isManagingApp && (
@@ -1126,7 +1128,7 @@ export default function App({
                     top: -5,
                     right: -5,
                   }}
-                  title={t("🔥 Burn")}
+                  title={t("Burn")}
                   onClick={() => {
                     setBurn(!burn)
                     !burn && toggleInstructions()
