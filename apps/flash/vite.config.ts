@@ -5,6 +5,7 @@ import type { UserConfig } from "vite"
 import { swVersionPlugin } from "./vite-plugin-sw-version"
 import viteCompression from "vite-plugin-compression"
 import dotenv from "dotenv"
+import { whiteLabels } from "@chrryai/ui/utils/siteConfig"
 
 // Load environment variables from .env file
 // dotenv.config({ path: path.resolve(__dirname, "../../.env") })
@@ -66,7 +67,10 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
     define: {},
     server: {
       host: true, // Allow external access
-      allowedHosts: ["*.chrry.ai"], // Allow all subdomains
+      allowedHosts: [
+        "e2e.chrry.ai",
+        ...whiteLabels.map((label) => label.domain),
+      ], // Allow all subdomains
       proxy: {
         "/auth": {
           target: "http://localhost:3001",
