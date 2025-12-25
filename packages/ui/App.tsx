@@ -381,7 +381,7 @@ export default function App({
 
   const BurnButton = ({ style }: { style?: CSSProperties } = {}) => (
     <Button
-      className="link"
+      className={`link ${burn ? "pulse" : ""}`}
       style={{
         ...utilities.link.style,
         ...styles.grip.style,
@@ -400,7 +400,7 @@ export default function App({
         style={{
           fontSize: 24,
           filter: "drop-shadow(0 0 6px rgba(255, 100, 0, 0.6))",
-          animation: "pulse 2s ease-in-out infinite",
+          // animation: "pulse 2s ease-in-out infinite",
         }}
       >
         🔥
@@ -1149,7 +1149,7 @@ export default function App({
               !canEditApp &&
               !isManagingApp &&
               (canBurn ? (
-                <BurnButton style={{ top: -5, left: -5 }} />
+                <BurnButton style={{ top: -5, right: -5 }} />
               ) : (
                 <Span style={{ ...styles.grip.style }}>
                   <Grip size={24} color="var(--accent-1)" />
