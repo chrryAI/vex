@@ -189,13 +189,13 @@ session.get("/", async (c) => {
         })
         return c.json({ error: "Bot detected", reason: decision.reason }, 403)
       }
-    }
 
-    // Log allowed bots for debugging
-    if (decision.isAllowed() && decision.reason.isBot?.()) {
-      console.log("✅ Allowed bot:", {
-        userAgent: request.headers.get("user-agent"),
-      })
+      // Log allowed bots for debugging
+      if (decision.isAllowed() && decision.reason.isBot?.()) {
+        console.log("✅ Allowed bot:", {
+          userAgent: request.headers.get("user-agent"),
+        })
+      }
     }
   }
 

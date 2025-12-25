@@ -1128,13 +1128,6 @@ export default function App({
                   }}
                   title={t("🔥 Burn")}
                   onClick={() => {
-                    if (isExtension) {
-                      BrowserInstance?.runtime?.sendMessage({
-                        action: "openInSameTab",
-                        url: "https://chromewebstore.google.com/detail/ghostery-tracker-ad-block/mlomiejdfkolichcflejclcbmpeaniij",
-                      })
-                    }
-                    // Toggle to Zarathustra philosophical instructions
                     setBurn(!burn)
                     !burn && toggleInstructions()
                   }}
