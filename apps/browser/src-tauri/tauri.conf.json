@@ -20,9 +20,10 @@
         "resizable": true,
         "fullscreen": false,
         "decorations": true,
-        "transparent": true,
+        "transparent": false,
         "center": true,
         "titleBarStyle": "Overlay",
+        "theme": "Dark",
         "windowEffects": {
           "effects": ["underWindowBackground"],
           "state": "active",
@@ -44,9 +45,11 @@
             "core:window:allow-unmaximize",
             "core:window:allow-toggle-maximize",
             "core:window:allow-is-maximized",
+            "core:window:allow-is-fullscreen",
             "core:window:allow-set-title",
             "core:window:allow-set-resizable",
-            "core:window:allow-set-fullscreen"
+            "core:window:allow-set-fullscreen",
+            "core:window:allow-start-dragging"
           ]
         }
       ]
