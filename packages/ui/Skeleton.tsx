@@ -143,7 +143,7 @@ export default function Skeleton({
                   display: "flex",
                   alignItems: "center",
                   gap: 5,
-                  paddingTop: isTauri ? "1.4rem" : "0",
+                  paddingTop: !isDrawerOpen && isTauri ? "1.4rem" : "0",
                 }}
               >
                 {!isDrawerOpen && (
@@ -167,7 +167,11 @@ export default function Skeleton({
                 )}
                 {!isDrawerOpen ? (
                   <Div
-                    style={{ display: "flex", alignItems: "center", gap: 5 }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                    }}
                   >
                     <A
                       className="link"
@@ -176,6 +180,7 @@ export default function Skeleton({
                       style={{
                         ...utilities.link.style,
                         ...skeletonStyles.hamburgerButton.style,
+                        marginRight: 15,
                       }}
                       onClick={(e) => {
                         e.preventDefault()

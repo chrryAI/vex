@@ -159,7 +159,7 @@ export default function Instructions({
 
   const { os, isStandalone } = usePlatform()
 
-  const offset = (isStandalone ? 250 : 0) + (burn ? 150 : 0)
+  const offset = (isStandalone ? 250 : 0) + (burn ? 120 : 0)
 
   const count = useResponsiveCount(
     [
