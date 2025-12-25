@@ -66,7 +66,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
     define: {},
     server: {
       host: true, // Allow external access
-      allowedHosts: [".chrry.ai"], // Allow all subdomains
+      allowedHosts: ["*.chrry.ai"], // Allow all subdomains
       proxy: {
         "/auth": {
           target: "http://localhost:3001",
