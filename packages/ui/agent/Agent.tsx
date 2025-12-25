@@ -170,14 +170,14 @@ export default function Agent({
     return null
   })()
 
-  const isLocationRequired = appFormWatcher.highlights?.some(
+  const isLocationRequired = appFormWatcher?.highlights?.some(
     (highlight) =>
       highlight?.content?.includes("{{city}}") ||
       highlight?.content?.includes("{{country}}") ||
       highlight?.content?.includes("{{location}}"),
   )
 
-  const isWeatherRequired = appFormWatcher.highlights?.some(
+  const isWeatherRequired = appFormWatcher?.highlights?.some(
     (highlight) =>
       highlight?.content?.includes("{{weather}}") ||
       highlight?.content?.includes("{{temp}}"),
