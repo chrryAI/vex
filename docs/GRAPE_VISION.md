@@ -1160,7 +1160,7 @@ Sign up: grape.chrry.ai/beta
 **Project Lead:** Ibrahim Velinov  
 **Organization:** chrryAI  
 **Website:** grape.chrry.ai  
-**Email:** grape@chrry.ai  
+**Email:** iliyan@chrry.ai  
 **GitHub:** github.com/chrryai/grape  
 **Discord:** discord.gg/grape  
 **Twitter:** @grapevision
