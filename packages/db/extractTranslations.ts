@@ -15,9 +15,9 @@ const __dirname = path.dirname(__filename)
 const isCI = process.env.CI
 
 export async function extractTranslations() {
-  if (isCI) {
-    return
-  }
+  // if (isCI) {
+  //   return
+  // }
 
   console.log("\n🌍 Extracting translations from database...\n")
 
