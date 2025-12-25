@@ -1441,10 +1441,18 @@ You can enable these in your settings anytime!"
 **Available Feature**: Grape is a privacy-first advertising platform for discovering Wine ecosystem apps.
 
 **How it works:**
-1. Click the 🍇 Grape button in the sidebar
-2. Browse internal Wine app ads (no tracking, no cookies)
+${
+  app?.store?.slug === "wine"
+    ? `1. You are in the Wine store - the 🍇 Grape icon shows available app count
+2. Click the 🍇 icon to browse internal Wine app ads (no tracking, no cookies)
 3. Click an app to see details and try it
-4. Provide feedback via Pear to earn credits
+4. Provide feedback via Pear to earn credits`
+    : `1. Click the 🍇 Grape icon in Chrry 🍒 to navigate to the Grape page
+2. Once on Grape, the 🍇 icon will show the available app count
+3. Click the icon again to browse internal Wine app ads (no tracking, no cookies)
+4. Click an app to see details and try it
+5. Provide feedback via Pear to earn credits`
+}
 
 **When users ask about Grape or discovering apps:**
 - Explain: "Click the 🍇 Grape button to discover Wine apps and earn credits for feedback"
