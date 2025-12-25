@@ -715,6 +715,14 @@ export const aiAgents = pgTable("aiAgents", {
   })
     .notNull()
     .default("all"),
+
+  // ♾️ INFINITE HUMAN: RPG Character Stats
+  intelligence: integer("intelligence").default(50).notNull(), // Logic, coding, reasoning (0-100)
+  creativity: integer("creativity").default(50).notNull(), // Storytelling, art, ideation (0-100)
+  empathy: integer("empathy").default(50).notNull(), // Emotional intelligence, support (0-100)
+  efficiency: integer("efficiency").default(50).notNull(), // Speed, conciseness (0-100)
+  level: integer("level").default(1).notNull(), // Agent level (1-99)
+  xp: integer("xp").default(0).notNull(), // Experience points
 })
 
 export type webSearchResultType = {

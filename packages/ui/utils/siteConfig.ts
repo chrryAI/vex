@@ -1786,7 +1786,7 @@ export function detectSiteModeDomain(
   // Inline isDevelopment check to avoid circular dependency
 
   const defaultMode = isDevelopment
-    ? ("zarathustra" as SiteMode)
+    ? ("grape" as SiteMode)
     : isE2E
       ? "e2eVex"
       : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
