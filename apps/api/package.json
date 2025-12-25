@@ -80,7 +80,6 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.534.0",
     "motion": "^12.23.12",
-    "newrelic": "^13.6.6",
     "node-cron": "^3.0.3",
     "nodemailer": "^7.0.5",
     "oauth": "^0.9.15",
