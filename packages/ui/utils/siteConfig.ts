@@ -16,6 +16,7 @@ export type SiteMode =
   | "sushi"
   | "grape"
   | "e2eVex"
+  | "staging"
 
 // Function declaration is hoisted, so it's available before const declarations
 function getEnv() {
@@ -829,6 +830,12 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
+const staging = {
+  ...chrryAI,
+  url: "https://staging.chrry.ai",
+  domain: "staging.chrry.ai",
+}
+
 const sushi = {
   url: "https://sushi.chrry.ai",
   mode: "sushi" as SiteMode,
@@ -1419,6 +1426,13 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
       description: "E2E Testing Environment for Vex.",
     },
   },
+  staging: {
+    en: {
+      title: "Staging - AI Assistant for Development",
+      description:
+        "Your personal AI assistant designed for Staging and Development. Chat in English, collaborate locally, and get things done faster.",
+    },
+  },
   tokyo: {
     en: {
       title: "Tokyo - AI Assistant for Japan",
@@ -1859,6 +1873,10 @@ export function detectSiteModeDomain(
     return "popcorn"
   }
 
+  if (matchesDomain(host, "staging.chrry.ai")) {
+    return "staging"
+  }
+
   // E2E testing environment
   if (matchesDomain(host, "e2e.chrry.ai")) {
     return "e2eVex" // Use vex mode for E2E
@@ -1919,6 +1937,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "sushi",
     "e2eVex",
     "grape",
+    "staging",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -1971,6 +1990,10 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // Check for E2E environment first
   if (hostname && matchesDomain(hostname, "e2e.chrry.ai")) {
     return e2eVex
+  }
+
+  if (hostname && matchesDomain(hostname, "staging.chrry.ai")) {
+    return staging
   }
 
   if (mode === "chrryDev") {
@@ -2026,6 +2049,10 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
   if (mode === "grape") {
     return grape
+  }
+
+  if (mode === "staging") {
+    return staging
   }
 
   if (isE2E) {
