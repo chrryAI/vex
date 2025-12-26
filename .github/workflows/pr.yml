@@ -1,7 +1,7 @@
 name: PR
 on:
   pull_request:
-    branches: [opps]
+    branches: [oops]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
