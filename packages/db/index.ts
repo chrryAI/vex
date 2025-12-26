@@ -2288,6 +2288,7 @@ export const getGuest = async ({
   app?: app | null
   skipCache?: boolean
 }) => {
+  console.log(`🚀 ~ skipCache:`, skipCache)
   // Generate cache key based on lookup method (must match invalidation keys)
   const cacheKey = id
     ? `guest:${id}`
@@ -2335,6 +2336,7 @@ export const getGuest = async ({
         guestId: result.id,
       }).then((res) => res.totalCount)
     : undefined
+  console.log(`🚀 ~ memoriesCount:`, memoriesCount)
 
   const lastMessage = result
     ? await getMessages({
