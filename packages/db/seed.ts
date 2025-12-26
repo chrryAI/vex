@@ -316,6 +316,58 @@ async function clearGuests() {
   )
 }
 
+async function clearMemories() {
+  console.log("🧠 Cleaning up inconsistent app memories...")
+
+  // Find app memories with user-specific language
+  const inconsistentMemories = await db
+    .select({
+      id: memories.id,
+      content: memories.content,
+      title: memories.title,
+    })
+    .from(memories)
+    .where(
+      and(
+        // Must be an app memory (has appId, no userId/guestId)
+        sql`${memories.appId} IS NOT NULL`,
+        sql`${memories.userId} IS NULL`,
+        sql`${memories.guestId} IS NULL`,
+        // Contains user-specific language
+        sql`(
+          LOWER(${memories.content}) LIKE '%this user%' OR
+          LOWER(${memories.content}) LIKE '%the user%' OR
+          LOWER(${memories.content}) LIKE '% user is %' OR
+          LOWER(${memories.content}) LIKE '% user has %' OR
+          LOWER(${memories.content}) LIKE '% their %' OR
+          LOWER(${memories.content}) LIKE '% they %' OR
+          LOWER(${memories.content}) LIKE '%enabled for%user%' OR
+          LOWER(${memories.content}) LIKE '%disabled for%user%'
+        )`,
+      ),
+    )
+
+  if (inconsistentMemories.length === 0) {
+    console.log("✅ No inconsistent app memories found")
+    return
+  }
+
+  console.log(`Found ${inconsistentMemories.length} inconsistent app memories:`)
+  inconsistentMemories.forEach((memory) => {
+    console.log(
+      `  ❌ "${memory.title}" - ${memory.content.substring(0, 80)}...`,
+    )
+  })
+
+  // Delete them
+  const idsToDelete = inconsistentMemories.map((m) => m.id)
+  await db.delete(memories).where(inArray(memories.id, idsToDelete))
+
+  console.log(
+    `✅ Deleted ${inconsistentMemories.length} inconsistent app memories`,
+  )
+}
+
 const create = async () => {
   if (isProd) {
     return
@@ -725,7 +777,11 @@ const updateStoreUrls = async ({ user }: { user: user }) => {
 
 const prod = async () => {
   // Check if admin user already exists
-  let admin = await getUser({ email: "ibsukru@gmail.com" })
+  await clearMemories()
+  // await clearGuests()
+  let admin = await getUser({
+    email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
+  })
   if (!admin) throw new Error("Admin user not found")
   const { vex } = await createStores({ user: admin })
 
@@ -837,12 +893,12 @@ const seedDb = async (): Promise<void> => {
     })
   }
 
-  if (isProd) {
+  if (true) {
     await prod()
     process.exit(0)
   } else {
-    await clearDb()
-    await create()
+    // await clearDb()
+    // await create()
     process.exit(0)
   }
 }

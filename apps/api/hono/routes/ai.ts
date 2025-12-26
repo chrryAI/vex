@@ -10,24 +10,6 @@ import {
   incrementPearQuota,
 } from "@repo/db"
 
-// 🍐 Pear Debug Logger - Only logs when message contains pear-related keywords
-const DEBUG_PEAR = process.env.DEBUG_PEAR === "true"
-const originalConsoleLog = console.log
-
-if (!DEBUG_PEAR) {
-  console.log = (...args: any[]) => {
-    const message = args.join(" ")
-    // Only log if message contains pear-related emojis or keywords
-    if (
-      message.includes("🍐") ||
-      message.includes("pear") ||
-      message.includes("Pear")
-    ) {
-      originalConsoleLog(...args)
-    }
-  }
-}
-
 import { VEX_LIVE_FINGERPRINTS } from "@chrryai/chrry/utils"
 
 import {
