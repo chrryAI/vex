@@ -318,7 +318,7 @@ export async function getApp({
 
   // Get site app & chrry store context
   // Note: These run in parallel as they are independent deps
-  const [siteApp, chrryStore] = await Promise.all([
+  const [siteApp, chrryStore, burnApp] = await Promise.all([
     getAppDb({
       slug: siteConfig.slug,
       storeSlug: siteConfig.storeSlug,
@@ -330,6 +330,12 @@ export async function getApp({
       guestId: guest?.id,
       depth: 1,
       skipCache,
+    }),
+    getAppDb({
+      slug: "burn",
+      // storeSlug: siteConfig.storeSlug,
+      skipCache,
+      depth: 1,
     }),
   ])
 
@@ -401,6 +407,15 @@ export async function getApp({
     !app.store.apps.some((a) => a.id === siteApp.id)
   ) {
     app.store.apps.push(siteApp)
+  }
+
+  if (
+    app &&
+    burnApp &&
+    app.store?.apps &&
+    !app.store.apps.some((a) => a.id === burnApp.id)
+  ) {
+    app.store.apps.push(burnApp)
   }
 
   // 8. SET CACHE (The Win)

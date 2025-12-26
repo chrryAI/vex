@@ -75,6 +75,7 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      burning: boolean
       burnApp?: appWithStore
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
@@ -384,12 +385,10 @@ export function AuthProvider({
    */
   const signInWithGoogle = useCallback(
     async (options?: { callbackUrl?: string; errorUrl?: string }) => {
-      console.log(`🚀 ~ options:`, options)
       try {
         // Build OAuth URL with callback parameters
         const url = new URL(`${API_URL}/auth/signin/google`)
         if (options?.callbackUrl) {
-          console.log(`🚀 ~ url:`, url)
           url.searchParams.set("callbackUrl", options.callbackUrl)
         }
         if (options?.errorUrl) {
@@ -1309,12 +1308,6 @@ export function AuthProvider({
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
-  const apps = storeApps.filter((item) => {
-    return app?.store?.app?.store?.apps?.some((app) => {
-      return app.id === item.id
-    })
-  })
-
   const storeAppIternal = storeApps?.find(
     (item) =>
       app?.store?.appId &&
@@ -1322,7 +1315,6 @@ export function AuthProvider({
       item.store?.id &&
       item.store?.id === app?.store?.id,
   )
-
   const [storeApp, setStoreAppInternal] = useState<appWithStore | undefined>(
     storeAppIternal,
   )
@@ -1337,6 +1329,13 @@ export function AuthProvider({
   )
 
   const burn = burnInternal === null ? isZarathustra : burnInternal
+
+  const burning = !!(burn || burnApp)
+  const apps = storeApps.filter((item) => {
+    return app?.store?.app?.store?.apps?.some((app) => {
+      return app.id === item.id
+    })
+  })
 
   useEffect(() => {
     if (!app) return
@@ -1362,10 +1361,13 @@ export function AuthProvider({
       })
     }
 
-    if (value && zarathustra && baseApp?.id === zarathustra.id) {
-      router.push(getAppSlug(zarathustra))
-    } else if (burnApp && value) {
+    if (burnApp && value) {
       router.push(getAppSlug(burnApp))
+      return
+    }
+
+    if (zarathustra && baseApp?.id === zarathustra.id) {
+      value && router.push(getAppSlug(zarathustra))
     }
   }
 
@@ -1387,7 +1389,7 @@ export function AuthProvider({
   }
 
   const grapes =
-    app?.id === zarathustra?.id || burn
+    app?.id === zarathustra?.id
       ? []
       : apps.filter(
           (app) =>
@@ -1860,7 +1862,6 @@ export function AuthProvider({
     },
   ) => {
     if (provider === "google") {
-      console.log(`🚀 ~ App ~ provider:`, provider)
       return signInWithGoogle({
         callbackUrl: options.callbackUrl,
         errorUrl: options.errorUrl,
@@ -2073,6 +2074,7 @@ export function AuthProvider({
         zarathustra,
         updateMood,
         setThreadId,
+        burning,
         lastAppId,
         isRemovingApp,
         storeApps, // All apps from all stores
