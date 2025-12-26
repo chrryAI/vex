@@ -95,8 +95,10 @@ export default forwardRef<
     guest,
     setShowCharacterProfiles,
     FRONTEND_URL,
-    burn,
+    burning,
   } = useAuth()
+
+  const burn = burning
 
   // Chat context
   const { threadId, scrollToBottom } = useChat()

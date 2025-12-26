@@ -62,7 +62,6 @@ export default async ({ command, mode }) => {
 
   // Use MODE env var if set, otherwise use vite mode, otherwise default to vex
   const siteMode = process.env.MODE || mode || "vex"
-  console.log(`🚀 ~ siteMode:`, siteMode)
   const siteConfig = getSiteConfig(siteMode)
 
   console.log("🔧 Build config:", {
@@ -100,7 +99,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.8.41",
+    version: siteConfig.version || "1.8.42",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
