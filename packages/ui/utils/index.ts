@@ -70,9 +70,9 @@ const getClientHostname = () => {
 
 // Priority: env var > dynamic detection > hardcoded fallback
 const hostname = getClientHostname()
-export const CHRRY_URL =
-  getEnv().VITE_CHRRY_URL ||
-  (hostname ? getSiteConfig(hostname).url : "https://vex.chrry.ai")
+export const CHRRY_URL = hostname
+  ? getSiteConfig(hostname).url
+  : getEnv().VITE_CHRRY_URL || "https://vex.chrry.ai"
 
 export const FREE_DAYS = 5
 export const PLUS_PRICE = 9.99
