@@ -24,7 +24,7 @@ import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
 import { Div, H1, H3, P, Button, Label, Span, Input } from "./platform"
 import A from "./a/A"
-import { apiFetch, BrowserInstance } from "./utils"
+import { apiFetch } from "./utils"
 import { useStyles } from "./context/StylesContext"
 import {
   useApp,

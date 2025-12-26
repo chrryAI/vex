@@ -47,7 +47,6 @@ import EmptyStateTips from "./EmptyStateTips"
 import ThemeSwitcher from "./ThemeSwitcher"
 import { useMenuStyles } from "./Menu.styles"
 import A from "./a/A"
-import Controls from "./Controls"
 
 export default function Menu({
   className,

@@ -1,6 +1,5 @@
 import { Hono } from "hono"
 import { v4 as uuidv4 } from "uuid"
-import type { Context } from "hono"
 import Handlebars from "handlebars"
 import {
   getApp,
@@ -10,7 +9,6 @@ import {
   checkPearQuota,
   incrementPearQuota,
 } from "@repo/db"
-import { z } from "zod"
 
 // 🍐 Pear Debug Logger - Only logs when message contains pear-related keywords
 const DEBUG_PEAR = process.env.DEBUG_PEAR === "true"

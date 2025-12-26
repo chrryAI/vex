@@ -61,7 +61,6 @@ import {
   instructionBase,
   isOwner,
   isDeepEqual,
-  getExampleInstructions,
 } from "./utils"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
