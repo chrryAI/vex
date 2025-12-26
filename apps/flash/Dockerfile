@@ -72,9 +72,6 @@ COPY --chown=viteuser:nodejs packages/ui/package.json packages/ui/
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
-# Ensure node_modules is writable by viteuser (must be AFTER pnpm install)
-RUN chown -R viteuser:nodejs /app/node_modules
-
 # Copy built application with proper ownership
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/dist ./apps/flash/dist
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/server.js ./apps/flash/
@@ -84,6 +81,10 @@ COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/content ./apps/flash
 
 # Copy workspace packages (needed for imports) with proper ownership
 COPY --chown=viteuser:nodejs --from=builder /app/packages ./packages
+
+# Ensure ALL directories are writable by viteuser (Vite needs to create .vite/deps_temp)
+# This must be done AFTER all COPY commands and BEFORE USER switch
+RUN chown -R viteuser:nodejs /app
 
 # Switch to non-root user
 USER viteuser
