@@ -130,6 +130,7 @@ export default function Skeleton({
           }}
         >
           <Div
+            data-tauri-drag-region
             style={{
               ...skeletonStyles.header.style,
               ...(isStandalone && skeletonStyles.headerStandalone.style),
