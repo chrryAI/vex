@@ -18,7 +18,7 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.8.34"
+const VERSION = "1.8.35"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -419,15 +419,27 @@ app.get("/manifest.json", async (req, res) => {
 })
 
 // Serve HTML with rate limiting
-app.use("*all", async (req, res) => {
-  // Apply Arcjet protection
-  const decision = await aj.protect(req)
+app.use("*", async (req, res) => {
+  // Whitelist subdomains and localhost
+  const host = req.get("host") || ""
+  const isWhitelisted =
+    host.endsWith(".chrry.ai") || // All subdomains
+    host === "chrry.ai" || // Main domain
+    host.startsWith("localhost") || // Local development
+    host.startsWith("127.0.0.1") || // Local IP
+    isDev || // Development mode
+    isE2E // E2E testing
 
-  if (decision.isDenied()) {
-    if (decision.reason.isRateLimit()) {
-      return res.status(429).json({ error: "Too many requests" })
+  // Apply Arcjet protection (skip for whitelisted hosts)
+  if (!isWhitelisted) {
+    const decision = await aj.protect(req)
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        return res.status(429).json({ error: "Too many requests" })
+      }
+      return res.status(403).json({ error: "Forbidden" })
     }
-    return res.status(403).json({ error: "Forbidden" })
   }
   try {
     const url = req.originalUrl.replace(base, "")
