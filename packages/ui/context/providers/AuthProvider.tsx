@@ -279,8 +279,6 @@ export function AuthProvider({
   apiKey,
   children,
   onSetLanguage,
-  signInContext,
-  signOutContext,
   error,
   locale,
   translations,
@@ -291,16 +289,7 @@ export function AuthProvider({
   locale?: locale
   apiKey?: string
   pathname?: string // SSR pathname for thread ID extraction
-  signInContext?: (
-    provider: "google" | "apple" | "credentials",
-    options: {
-      email?: string
-      password?: string
-      redirect?: boolean
-      callbackUrl: string
-      errorUrl: string
-    },
-  ) => Promise<any>
+
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   children: ReactNode
   fingerprint?: string
@@ -313,10 +302,6 @@ export function AuthProvider({
     totalCount: number
   }
   thread?: { thread: thread; messages: paginatedMessages }
-  signOutContext?: (options: {
-    callbackUrl: string
-    errorUrl?: string
-  }) => Promise<any>
 }) {
   const [wasGifted, setWasGifted] = useState<boolean>(false)
   const [session, setSession] = useState<session | undefined>(props.session)
@@ -327,6 +312,162 @@ export function AuthProvider({
   const hasStoreApps = (app: appWithStore | undefined) => {
     return Boolean(app?.store?.app && app?.store?.apps.length)
   }
+
+  const signUp = useCallback(
+    async (email: string, password: string, name?: string) => {
+      try {
+        const response = await fetch(`${API_URL}/auth/signup/password`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password, name }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setState({ user: data.user, loading: false })
+          return { success: true, user: data.user }
+        } else {
+          const error = await response.json()
+          return { success: false, error: error.error || "Sign up failed" }
+        }
+      } catch (error) {
+        console.error("Sign up error:", error)
+        return { success: false, error: "Sign up failed" }
+      }
+    },
+    [],
+  )
+
+  interface AuthState {
+    user: user | undefined
+    loading: boolean
+  }
+
+  /**
+   * Sign in with email/password
+   */
+  const signInWithPassword = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const response = await fetch(`${API_URL}/auth/signin/password`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setState({ user: data.user, loading: false })
+          return { success: true, user: data.user, token: data.token }
+        } else {
+          const error = await response.json()
+          return { success: false, error: error.error || "Sign in failed" }
+        }
+      } catch (error) {
+        console.error("Sign in error:", error)
+        return { success: false, error: "Sign in failed" }
+      }
+    },
+    [],
+  )
+
+  /**
+   * Sign in with Google OAuth
+   * Redirects to Google OAuth page
+   */
+  const signInWithGoogle = useCallback(
+    async (options?: { callbackUrl?: string; errorUrl?: string }) => {
+      console.log(`🚀 ~ options:`, options)
+      try {
+        // Build OAuth URL with callback parameters
+        const url = new URL(`${API_URL}/auth/signin/google`)
+        if (options?.callbackUrl) {
+          console.log(`🚀 ~ url:`, url)
+          url.searchParams.set("callbackUrl", options.callbackUrl)
+        }
+        if (options?.errorUrl) {
+          url.searchParams.set("errorUrl", options.errorUrl)
+        }
+
+        // Force account selection screen (prevents passkey prompt)
+        url.searchParams.set("prompt", "select_account")
+
+        // Redirect to Google OAuth
+        window.location.href = url.toString()
+        return { success: true }
+      } catch (error) {
+        console.error("Google sign in error:", error)
+        return { success: false, error: "Google sign in failed" }
+      }
+    },
+    [],
+  )
+
+  /**
+   * Sign in with Apple OAuth
+   * Redirects to Apple OAuth page
+   */
+  const signInWithApple = useCallback(
+    async (options?: { callbackUrl?: string; errorUrl?: string }) => {
+      try {
+        // Build OAuth URL with callback parameters
+        const url = new URL(`${API_URL}/auth/signin/apple`)
+        if (options?.callbackUrl) {
+          url.searchParams.set("callbackUrl", options.callbackUrl)
+        }
+        if (options?.errorUrl) {
+          url.searchParams.set("errorUrl", options.errorUrl)
+        }
+
+        // Force account selection screen (prevents passkey prompt)
+        url.searchParams.set("prompt", "select_account")
+
+        // Redirect to Apple OAuth
+        window.location.href = url.toString()
+        return { success: true }
+      } catch (error) {
+        console.error("Apple sign in error:", error)
+        return { success: false, error: "Apple sign in failed" }
+      }
+    },
+    [],
+  )
+
+  const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
+
+  const [state, setState] = useState<AuthState>({
+    user,
+    loading: true,
+  })
+
+  /**
+   * Sign out
+   */
+  const signOutInternal = useCallback(
+    async ({ callbackUrl }: { callbackUrl?: string }) => {
+      try {
+        await fetch(`${API_URL}/auth/signout`, {
+          method: "POST",
+          credentials: "include",
+        })
+
+        setState({ user: undefined, loading: false })
+
+        callbackUrl ? (window.location.href = `${callbackUrl}`) : undefined
+        return { success: true }
+      } catch (error) {
+        console.error("Sign out error:", error)
+        return { success: false, error: "Sign out failed" }
+      }
+    },
+    [],
+  )
 
   useEffect(() => {
     if (error) {
@@ -814,7 +955,6 @@ export function AuthProvider({
     return store.domain ? [store.domain] : []
   }
 
-  const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
   const [agentName, setAgentName] = useState(session?.aiAgent?.name)
   const trackEvent = ({
     name,
@@ -1702,6 +1842,44 @@ export function AuthProvider({
     }
   }, [sessionError])
 
+  // Create sign in wrapper to match Chrry's expected interface
+  const signInContext = async (
+    provider: "google" | "apple" | "credentials",
+    options: {
+      email?: string
+      password?: string
+      redirect?: boolean
+      callbackUrl: string
+      errorUrl?: string
+      blankTarget?: boolean
+    },
+  ) => {
+    if (provider === "google") {
+      console.log(`🚀 ~ App ~ provider:`, provider)
+      return signInWithGoogle({
+        callbackUrl: options.callbackUrl,
+        errorUrl: options.errorUrl,
+      })
+    } else if (provider === "apple") {
+      return signInWithApple({
+        callbackUrl: options.callbackUrl,
+        errorUrl: options.errorUrl,
+      })
+    } else if (
+      provider === "credentials" &&
+      options.email &&
+      options.password
+    ) {
+      return signInWithPassword(options.email, options.password)
+    }
+    return { success: false, error: "Invalid provider or missing credentials" }
+  }
+
+  // Create sign out wrapper
+  const signOutContext = async (options: { callbackUrl?: string }) => {
+    return signOutContext(options)
+  }
+
   const popcorn = storeApps.find((app) => app.slug === "popcorn")
   const atlas = storeApps.find((app) => app.slug === "atlas")
   const bloom = storeApps.find((app) => app.slug === "bloom")
@@ -1711,6 +1889,7 @@ export function AuthProvider({
     setUser(undefined)
     setGuest(undefined)
     setToken(fingerprint)
+    signOutInternal({ callbackUrl: "/" })
 
     // if (typeof window !== "undefined") {
     //   window.location.href = "/?loggedOut=true"

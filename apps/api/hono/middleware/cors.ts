@@ -5,6 +5,7 @@ import { validate } from "uuid"
 const STATIC_ALLOWED_ORIGINS = [
   /^chrome-extension:\/\//,
   /^moz-extension:\/\//,
+  /^tauri:\/\/localhost$/, // Tauri desktop app
   /^https?:\/\/(.*\.)?localhost(:\d+)?$/, // Allow localhost with optional port and subdomain
   /^https?:\/\/(.*\.)?askvex\.com$/,
   /^https?:\/\/(.*\.)?chrry\.dev$/,

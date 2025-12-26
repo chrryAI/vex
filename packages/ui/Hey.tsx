@@ -58,7 +58,7 @@ export const Hey = memo(
     children?: React.ReactNode
     useExtensionIcon?: (slug?: string) => void
   }) {
-    const { pathname } = useNavigationContext()
+    const { pathname, router } = useNavigationContext()
 
     const { isExtension } = usePlatform()
 

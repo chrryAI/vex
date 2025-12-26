@@ -82,6 +82,10 @@ COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/content ./apps/flash
 # Copy workspace packages (needed for imports) with proper ownership
 COPY --chown=viteuser:nodejs --from=builder /app/packages ./packages
 
+# Ensure ALL directories are writable by viteuser (Vite needs to create .vite/deps_temp)
+# This must be done AFTER all COPY commands and BEFORE USER switch
+RUN chown -R viteuser:nodejs /app
+
 # Switch to non-root user
 USER viteuser
 

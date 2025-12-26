@@ -47,7 +47,6 @@ import EmptyStateTips from "./EmptyStateTips"
 import ThemeSwitcher from "./ThemeSwitcher"
 import { useMenuStyles } from "./Menu.styles"
 import A from "./a/A"
-import Controls from "./Controls"
 
 export default function Menu({
   className,
@@ -97,9 +96,8 @@ export default function Menu({
   const { app } = useApp()
 
   // Platform context
-  const { viewPortHeight, os } = usePlatform()
+  const { isTauri: tauri, os, viewPortHeight } = usePlatform()
 
-  const tauri = isTauri()
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   // Detect fullscreen state in Tauri
@@ -109,10 +107,14 @@ export default function Menu({
         try {
           const { getCurrentWindow } = await import("@tauri-apps/api/window")
           const appWindow = getCurrentWindow()
-          const fullscreen = await appWindow.isFullscreen()
-          setIsFullscreen(fullscreen)
+
+          // Check if isFullscreen method exists (Tauri v2+)
+          if (typeof appWindow.isFullscreen === "function") {
+            const fullscreen = await appWindow.isFullscreen()
+            setIsFullscreen(fullscreen)
+          }
         } catch (e) {
-          console.error("Fullscreen check failed:", e)
+          // Silent fail - not critical
         }
       }
 
@@ -267,7 +269,7 @@ export default function Menu({
         ref={innerRef}
         style={{
           ...styles.menu.style,
-          paddingBottom: os === "ios" ? 10 : 0,
+          paddingBottom: os === "ios" || tauri ? 10 : 0,
           ...(isDrawerOpen ? styles.open.style : styles.closed.style),
         }}
       >

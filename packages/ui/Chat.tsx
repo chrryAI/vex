@@ -265,6 +265,7 @@ export default function Chat({
     isNewChat,
     setIsNewChat,
     onlyAgent,
+    scrollToBottom,
   } = useChat()
 
   const {
@@ -2732,11 +2733,6 @@ export default function Chat({
     }
   }, [empty])
 
-  const scrollToBottom = (timeout = 500) => {
-    setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
-    }, timeout)
-  }
   // Function to show chat input and scroll to bottom
   const showInputAndScrollToBottom = () => {
     addHapticFeedback()

@@ -24,9 +24,7 @@ export default function Chrry({
   viewPortWidth,
   viewPortHeight,
   onSetLanguage,
-  signInContext,
   apiKey,
-  signOutContext,
   locale,
   translations,
   useExtensionIcon,
@@ -50,21 +48,6 @@ export default function Chrry({
     totalCount: number
   }
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
-  signInContext?: (
-    provider: "google" | "apple" | "credentials",
-    options: {
-      email?: string
-      password?: string
-      redirect?: boolean
-      callbackUrl: string
-      errorUrl?: string
-      blankTarget?: boolean
-    },
-  ) => Promise<any>
-  signOutContext?: (options: {
-    callbackUrl: string
-    errorUrl?: string
-  }) => Promise<any>
 }) {
   return (
     <AppProviders
@@ -76,9 +59,7 @@ export default function Chrry({
       viewPortHeight={viewPortHeight}
       pathname={pathname}
       onSetLanguage={onSetLanguage}
-      signInContext={signInContext}
       apiKey={apiKey}
-      signOutContext={signOutContext}
       thread={thread}
       translations={translations}
       threads={threads}
