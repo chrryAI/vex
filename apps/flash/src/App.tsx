@@ -14,48 +14,6 @@ interface AppProps {
 }
 
 function App({ serverData }: AppProps) {
-  // Use custom auth hook
-  const auth = useAuth()
-
-  // Clean auth_token from URL after OAuth redirect
-
-  // Create sign in wrapper to match Chrry's expected interface
-  const signInContext = async (
-    provider: "google" | "apple" | "credentials",
-    options: {
-      email?: string
-      password?: string
-      redirect?: boolean
-      callbackUrl: string
-      errorUrl?: string
-      blankTarget?: boolean
-    },
-  ) => {
-    if (provider === "google") {
-      return auth.signInWithGoogle({
-        callbackUrl: options.callbackUrl,
-        errorUrl: options.errorUrl,
-      })
-    } else if (provider === "apple") {
-      return auth.signInWithApple({
-        callbackUrl: options.callbackUrl,
-        errorUrl: options.errorUrl,
-      })
-    } else if (
-      provider === "credentials" &&
-      options.email &&
-      options.password
-    ) {
-      return auth.signInWithPassword(options.email, options.password)
-    }
-    return { success: false, error: "Invalid provider or missing credentials" }
-  }
-
-  // Create sign out wrapper
-  const signOutContext = async (options: { callbackUrl?: string }) => {
-    return auth.signOut(options)
-  }
-
   // Debug: Log server data
 
   // Handle API errors
@@ -115,8 +73,6 @@ function App({ serverData }: AppProps) {
         viewPortWidth={serverData?.viewPortWidth}
         viewPortHeight={serverData?.viewPortHeight}
         pathname={serverData?.pathname}
-        signInContext={signInContext}
-        signOutContext={signOutContext}
       >
         {serverData?.isBlogRoute ? (
           <Skeleton>

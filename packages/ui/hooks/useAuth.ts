@@ -119,6 +119,7 @@ export function useAuth() {
    */
   const signInWithGoogle = useCallback(
     async (options?: { callbackUrl?: string; errorUrl?: string }) => {
+      console.log(`🚀 ~ options:`, options)
       try {
         // Build OAuth URL with callback parameters
         const url = new URL(`${API_URL}/auth/signin/google`)
