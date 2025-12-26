@@ -62,8 +62,9 @@ if (process.platform === "darwin") {
     console.log("🍎 Generating .icns for macOS...")
 
     // Create iconset directory
+    // SECURITY: Path is constructed from trusted constants, not user input
     const iconsetDir = join(tauriIconsDir, "icon.iconset")
-    execSync(`mkdir -p ${iconsetDir}`)
+    execSync(`mkdir -p "${iconsetDir}"`)
 
     // Copy icons to iconset with proper naming
     const iconsetSizes = [
@@ -82,12 +83,14 @@ if (process.platform === "darwin") {
     }
 
     // Generate .icns
+    // SECURITY: Paths are constructed from trusted constants, not user input
     execSync(
-      `iconutil -c icns ${iconsetDir} -o ${join(tauriIconsDir, "icon.icns")}`,
+      `iconutil -c icns "${iconsetDir}" -o "${join(tauriIconsDir, "icon.icns")}"`,
     )
 
     // Clean up iconset
-    execSync(`rm -rf ${iconsetDir}`)
+    // SECURITY: Path is constructed from trusted constants, not user input
+    execSync(`rm -rf "${iconsetDir}"`)
 
     console.log("✅ Generated icon.icns")
   } catch (error) {
@@ -101,10 +104,11 @@ try {
   console.log("🪟 Generating .ico for Windows...")
 
   // Try using ImageMagick convert
+  // SECURITY: Paths are constructed from trusted constants (sizes array), not user input
   const icons = sizes
-    .map((size) => join(tauriIconsDir, `${size}x${size}.png`))
+    .map((size) => `"${join(tauriIconsDir, `${size}x${size}.png`)}"`)
     .join(" ")
-  execSync(`convert ${icons} ${join(tauriIconsDir, "icon.ico")}`)
+  execSync(`convert ${icons} "${join(tauriIconsDir, "icon.ico")}"`)
 
   console.log("✅ Generated icon.ico")
 } catch (error) {
