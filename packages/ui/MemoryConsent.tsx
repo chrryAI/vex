@@ -44,6 +44,7 @@ export default function MemoryConsent({
     isLiveTest,
     burnApp,
     setBurn,
+    refetchSession,
     app,
     ...auth
   } = useAuth()
@@ -217,7 +218,7 @@ export default function MemoryConsent({
                 >
                   <LinkIcon size={16} /> {t("Privacy")}
                 </Button>
-                {!(user || guest)?.memoriesCount ? (
+                {(user || guest)?.memoriesCount ? (
                   <ConfirmButton
                     processing={isDeleting}
                     disabled={isDeleting}
@@ -234,6 +235,7 @@ export default function MemoryConsent({
                       try {
                         const result = await actions.deleteMemories()
                         if (result.success) {
+                          await refetchSession()
                           toast.success(t("Memories deleted"))
                           setIsMemoryConsentManageVisible(false)
                         } else {

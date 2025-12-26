@@ -1345,6 +1345,7 @@ export function AuthProvider({
 
   const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
+  const hasInformedRef = useRef(false)
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
@@ -1353,7 +1354,10 @@ export function AuthProvider({
     // while respecting the user's choice for privacy. No user data, IDs, or content is tracked.
     // Only the fact that burn was activated (boolean event).
     if (value) {
-      !burn && toast.error(t("When you burn there is nothing to remember"))
+      if (!hasInformedRef.current) {
+        hasInformedRef.current = true
+        toast.error(t("When you burn there is nothing to remember"))
+      }
       track({
         name: "burn",
         props: {
