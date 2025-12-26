@@ -920,13 +920,6 @@ const burn = {
       isOpenSource: true,
     },
     {
-      title: "Crypto Payments",
-      description: "Pay anonymously with cryptocurrency",
-      icon: "₿",
-      link: "/crypto",
-      isOpenSource: true,
-    },
-    {
       title: "Browser Extension",
       description: "Anonymous AI in your browser",
       icon: "🔌",

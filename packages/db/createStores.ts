@@ -5713,12 +5713,6 @@ You provide helpful AI assistance while respecting user privacy completely.`
       content: "Ephemeral sessions - all data deleted on close",
       emoji: "🔥",
     },
-    {
-      id: "burn-7",
-      title: "Crypto Payments",
-      content: "Pay anonymously with cryptocurrency via Stripe",
-      emoji: "₿",
-    },
   ]
 
   const burnAppPayload = {
@@ -5780,7 +5774,6 @@ You provide helpful AI assistance while respecting user privacy completely.`
       "Maximum Privacy",
       "Anonymous Agents",
       "Burn Mode",
-      "Crypto Payments",
       "Browser Extension",
     ],
     tools: [] as ("calendar" | "location" | "weather")[],
@@ -5792,7 +5785,6 @@ You provide helpful AI assistance while respecting user privacy completely.`
       maximumPrivacy: true,
       anonymousAgents: true,
       burnMode: true,
-      cryptoPayments: true,
       noTracking: true,
       noCookies: true,
       noDataCollection: true,
