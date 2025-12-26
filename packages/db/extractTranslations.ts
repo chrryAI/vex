@@ -7,17 +7,19 @@
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
-import { getStores } from "./index"
-import { getApps } from "./index"
+import { getStores, isSeedSafe } from "./index"
+import { isProd } from "./index"
+import { db } from "./index"
+import { apps } from "./src/schema"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const isCI = process.env.CI
 
 export async function extractTranslations() {
-  // if (isCI) {
-  //   return
-  // }
+  if (isProd || isSeedSafe) {
+    return
+  }
 
   console.log("\n🌍 Extracting translations from database...\n")
 
@@ -57,14 +59,11 @@ export async function extractTranslations() {
   }
 
   // Get all apps from database
-  const appsResult = await getApps({
-    pageSize: 1000,
-  })
-  const apps = appsResult.items
+  const appsResult = await db.select().from(apps).limit(1000)
 
-  console.log(`🎯 Processing ${apps.length} apps...`)
+  console.log(`🎯 Processing ${appsResult.length} apps...`)
 
-  for (const app of apps) {
+  for (const app of appsResult) {
     addTranslation(app.name, app.name)
     addTranslation(app.title, app.title)
 

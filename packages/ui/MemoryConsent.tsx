@@ -48,7 +48,14 @@ export default function MemoryConsent({
     ...auth
   } = useAuth()
 
-  const burn = auth.burn || (burnApp && app && burnApp?.id === app?.id)
+  const burn = !!(auth.burn || (burnApp && app && burnApp?.id === app?.id))
+  const messageRef = useRef<boolean>(false)
+  useEffect(() => {
+    if (messageRef.current) return
+    messageRef.current = burn
+
+    burn && toast.error(t("When you burn there is nothing to remember"))
+  }, [burn])
 
   const {
     router,
@@ -103,9 +110,6 @@ export default function MemoryConsent({
         className="slideUp"
         style={{
           // ...styles.container.style,
-          background:
-            "linear-gradient(135deg, rgba(255, 100, 0, 0.1), rgba(255, 50, 0, 0.05))",
-          borderColor: "rgba(255, 100, 0, 0.3)",
           padding: ".8rem",
           borderRadius: 20,
           maxWidth: "40rem",
@@ -128,7 +132,6 @@ export default function MemoryConsent({
           >
             <span style={{ fontSize: "1.5rem" }}>🔥</span>
 
-            {t("When you burn there is nothing to remember")}
             <Checkbox
               style={{ marginLeft: "auto" }}
               checked={auth.burn}
@@ -137,11 +140,6 @@ export default function MemoryConsent({
                 setBurn(!auth.burn)
               }}
             />
-          </Div>
-          <Div style={{ fontSize: "0.775rem", opacity: 0.8 }}>
-            {t(
-              "In burn, no memories are stored. Each conversation is ephemeral—a pure moment of thought, unrecorded, sovereign. You are the master of your digital existence.",
-            )}
           </Div>
         </Div>
       </Div>
