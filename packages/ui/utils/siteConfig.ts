@@ -1938,6 +1938,9 @@ const getClientHostname = () => {
  * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
+  if (isE2E) {
+    return e2eVex
+  }
   // Extract hostname from URL if needed
   let hostname = hostnameOrMode || getClientHostname()
   if (hostnameOrMode && hostnameOrMode.includes("://")) {
@@ -2019,10 +2022,6 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
   if (mode === "grape") {
     return grape
-  }
-
-  if (isE2E) {
-    return e2eVex
   }
 
   // Search configuration
