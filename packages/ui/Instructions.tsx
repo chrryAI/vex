@@ -117,7 +117,10 @@ export default function Instructions({
 
   const { defaultInstructions, isAppInstructions } = useApp()
 
-  const { token, language, user, guest, app, storeApp, burn } = useAuth()
+  const { token, language, user, guest, app, storeApp, burnApp, ...auth } =
+    useAuth()
+
+  const burn = (burnApp && burnApp?.id === app?.id) || auth.burn
 
   const [showGrapeInternal, setShowGrape] = useState(false)
 

@@ -129,6 +129,7 @@ export default function App({
     guest,
     getAppSlug,
     store,
+    burnApp,
     apps,
     guestBaseApp,
     userBaseApp,
@@ -136,11 +137,12 @@ export default function App({
     loadingApp,
     userBaseStore,
     canBurn,
-    burn,
     setBurn,
     setIsPear,
     ...auth
   } = useAuth()
+
+  const burn = burnApp?.id === app?.id || auth.burn
 
   const [showGrapes, setShowGrapes] = useState(false)
 
@@ -173,6 +175,7 @@ export default function App({
     return apps
       .filter(
         (item) =>
+          item.id !== burnApp?.id &&
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
           (item.id !== grape?.id || !isBlossom) &&
@@ -211,10 +214,10 @@ export default function App({
       })
   }
 
-  // Use apps from context - sort: store base app first, Chrry second, rest keep original order
-  const [appsState, setApps] = React.useState(getApps())
-
   const appsInternal = getApps()
+
+  // Use apps from context - sort: store base app first, Chrry second, rest keep original order
+  const [appsState, setApps] = React.useState(appsInternal)
 
   useEffect(() => {
     setApps(appsInternal)
@@ -392,8 +395,9 @@ export default function App({
       }}
       title={t("Burn")}
       onClick={() => {
-        setBurn(!burn)
-        !burn && toggleInstructions()
+        const newBurn = burnApp?.id === app?.id || !auth.burn
+        setBurn(newBurn)
+        !newBurn && toggleInstructions()
       }}
     >
       <Span

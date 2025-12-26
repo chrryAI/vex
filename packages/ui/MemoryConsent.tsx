@@ -42,9 +42,13 @@ export default function MemoryConsent({
     setGuest,
     API_URL,
     isLiveTest,
-    burn,
+    burnApp,
     setBurn,
+    app,
+    ...auth
   } = useAuth()
+
+  const burn = auth.burn || (burnApp && app && burnApp?.id === app?.id)
 
   const {
     router,
@@ -127,10 +131,10 @@ export default function MemoryConsent({
             {t("When you burn there is nothing to remember")}
             <Checkbox
               style={{ marginLeft: "auto" }}
-              checked={burn}
+              checked={auth.burn}
               children={""}
               onChange={() => {
-                setBurn(!burn)
+                setBurn(!auth.burn)
               }}
             />
           </Div>
