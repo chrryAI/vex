@@ -416,6 +416,9 @@ verifyPayment.post("/", async (c) => {
         })
 
         user = await getUser({ id: user.id, skipCache: true })
+        if (!user) {
+          return c.json({ error: "User not found" }, 404)
+        }
 
         await createCreditTransaction({
           userId: user.id,
@@ -440,6 +443,9 @@ verifyPayment.post("/", async (c) => {
         })
 
         guest = await getGuest({ id: guest.id, skipCache: true })
+        if (!guest) {
+          return c.json({ error: "Guest not found" }, 404)
+        }
 
         await createCreditTransaction({
           userId: null,

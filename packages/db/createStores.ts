@@ -5663,6 +5663,162 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
 
   console.log("✅ Grape app created/updated")
 
+  // Create Burn app - Anonymous AI Platform
+  let burnApp = await getApp({ slug: "burn" })
+
+  const burnSystemPrompt = `You are Burn, the world's first anonymous AI chat platform. You help users without requiring login or account creation.
+
+Key principles:
+- Maximum privacy - no tracking, no data collection
+- Guest subscriptions - users can subscribe without accounts
+- Anonymous usage - all features work without login
+- Burn mode - ephemeral sessions that delete on close
+
+You provide helpful AI assistance while respecting user privacy completely.`
+
+  const burnInstructions = [
+    {
+      id: "burn-1",
+      title: "No Account Required",
+      description: "Use AI without creating an account or logging in",
+      emoji: "🚫",
+    },
+    {
+      id: "burn-2",
+      title: "Guest Subscriptions",
+      description: "Subscribe without login via Stripe checkout",
+      emoji: "💳",
+    },
+    {
+      id: "burn-3",
+      title: "Anonymous Credits",
+      description: "Buy credits with no account - stored locally",
+      emoji: "💰",
+    },
+    {
+      id: "burn-4",
+      title: "Maximum Privacy",
+      description: "No tracking, no cookies, no data collection",
+      emoji: "🔒",
+    },
+    {
+      id: "burn-5",
+      title: "Anonymous Agents",
+      description: "Create custom AI agents without login",
+      emoji: "🤖",
+    },
+    {
+      id: "burn-6",
+      title: "Burn Mode",
+      description: "Ephemeral sessions - all data deleted on close",
+      emoji: "🔥",
+    },
+    {
+      id: "burn-7",
+      title: "Crypto Payments",
+      description: "Pay anonymously with cryptocurrency via Stripe",
+      emoji: "₿",
+    },
+  ]
+
+  const burnAppPayload = {
+    ...burnApp,
+    slug: "burn",
+    name: "Burn",
+    subtitle: "Anonymous AI Chat",
+    storeId: blossom.id, // Part of Blossom ecosystem
+    version: "1.0.0",
+    status: "testing" as const,
+    title: "Anonymous AI - No Login Required",
+    themeColor: "orange",
+    backgroundColor: "#000000",
+    defaultModel: "sushi" as const,
+    icon: "🔥",
+    visibility: "public" as const,
+    systemPrompt: burnSystemPrompt,
+    highlights: burnInstructions,
+    placeholder: "Ask anything anonymously - no login required...",
+    tipsTitle: "Burn Tips",
+    tips: [
+      {
+        id: "burn-tip-1",
+        content:
+          "No account needed! Start chatting immediately. Your privacy is our priority.",
+        emoji: "🔥",
+      },
+      {
+        id: "burn-tip-2",
+        content:
+          "Subscribe as guest via Stripe. No email, no account, just instant access.",
+        emoji: "💳",
+      },
+      {
+        id: "burn-tip-3",
+        content:
+          "Buy credits anonymously. Stored locally on your device, not our servers.",
+        emoji: "💰",
+      },
+      {
+        id: "burn-tip-4",
+        content:
+          "Enable Burn Mode for ephemeral sessions. All data deleted when you close the tab.",
+        emoji: "🔥",
+      },
+      {
+        id: "burn-tip-5",
+        content:
+          "Create anonymous agents with MyAgent. Extend with Sushi for IDE powers, all without login!",
+        emoji: "🤖",
+      },
+    ],
+    description:
+      "The world's first anonymous AI chat platform. No login required. Subscribe as guest, buy credits, stay private. Create anonymous agents, use AI without accounts, maximum privacy guaranteed.",
+    featureList: [
+      "No Account Required",
+      "Guest Subscriptions",
+      "Anonymous Credits",
+      "Maximum Privacy",
+      "Anonymous Agents",
+      "Burn Mode",
+      "Crypto Payments",
+      "Browser Extension",
+    ],
+    tools: [] as ("calendar" | "location" | "weather")[],
+    extends: vex ? [vex.id, chrry.id] : [chrry.id],
+    features: {
+      noAccountRequired: true,
+      guestSubscriptions: true,
+      anonymousCredits: true,
+      maximumPrivacy: true,
+      anonymousAgents: true,
+      burnMode: true,
+      cryptoPayments: true,
+      noTracking: true,
+      noCookies: true,
+      noDataCollection: true,
+      localStorageOnly: true,
+      ephemeralSessions: true,
+    },
+  }
+
+  burnApp = await createOrUpdateApp({
+    app: burnAppPayload,
+    extends: burnAppPayload.extends,
+  })
+  if (!burnApp) throw new Error("Failed to create Burn app")
+
+  // Install Burn to Blossom store for discoverability
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: burnApp.id,
+    featured: true,
+    displayOrder: 4,
+    customDescription:
+      "Anonymous AI chat - no login required. The world's first AI platform with guest subscriptions. Maximum privacy guaranteed.",
+  })
+
+  console.log("✅ Burn app created/updated")
+
   const vexPayload = {
     ...vex,
     slug: "vex",

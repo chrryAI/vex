@@ -75,6 +75,7 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      burnApp?: appWithStore
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
@@ -1221,6 +1222,8 @@ export function AuthProvider({
   const sushi = storeApps?.find((app) => app.slug === "sushi")
   const focus = storeApps?.find((app) => app.slug === "focus")
 
+  const burnApp = storeApps?.find((app) => app.slug === "burn")
+
   const accountAppId = userBaseApp?.id || guestBaseApp?.id
 
   const {
@@ -1359,8 +1362,10 @@ export function AuthProvider({
       })
     }
 
-    if (value && app && zarathustra && app.id !== zarathustra.id) {
+    if (value && zarathustra && baseApp?.id === zarathustra.id) {
       router.push(getAppSlug(zarathustra))
+    } else if (burnApp && value) {
+      router.push(getAppSlug(burnApp))
     }
   }
 
@@ -2098,6 +2103,7 @@ export function AuthProvider({
           setShouldFetchMoods(true)
           shouldFetchMood && refetchMoods()
         },
+        burnApp,
         fetchMood,
       }}
     >
