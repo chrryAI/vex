@@ -302,6 +302,8 @@ export default function SignIn({
   }, [])
 
   const handleGoogleAuth = async () => {
+    console.log(`🚀 ~ handleGoogleAuth ~ isExtension:`, isExtension)
+
     if (!isExtension) {
       const { successUrl, errorUrl } = getCallbacks()
 
@@ -320,6 +322,7 @@ export default function SignIn({
         errorUrl: errorUrl.href,
         callbackUrl: successUrl.toString(),
       })
+      return
     }
 
     try {

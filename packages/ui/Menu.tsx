@@ -108,10 +108,14 @@ export default function Menu({
         try {
           const { getCurrentWindow } = await import("@tauri-apps/api/window")
           const appWindow = getCurrentWindow()
-          const fullscreen = await appWindow.isFullscreen()
-          setIsFullscreen(fullscreen)
+
+          // Check if isFullscreen method exists (Tauri v2+)
+          if (typeof appWindow.isFullscreen === "function") {
+            const fullscreen = await appWindow.isFullscreen()
+            setIsFullscreen(fullscreen)
+          }
         } catch (e) {
-          console.error("Fullscreen check failed:", e)
+          // Silent fail - not critical
         }
       }
 

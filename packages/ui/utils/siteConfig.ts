@@ -1819,24 +1819,6 @@ export function detectSiteModeDomain(
     }
   }
 
-  if (!host || isDevelopment) {
-    return defaultMode
-  }
-
-  // Helper function to check if hostname matches or is subdomain of domain
-
-  // Check if running in a browser extension
-  if (
-    typeof window !== "undefined" &&
-    window.location?.protocol?.startsWith("chrome-extension")
-  ) {
-    console.log(
-      "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
-      defaultMode,
-    )
-    return defaultMode
-  }
-
   // Domain-based detection (use exact match or subdomain check)
   console.log(`🔍 Detecting mode for host: "${host}"`)
 
@@ -1906,6 +1888,24 @@ export function detectSiteModeDomain(
   if (matchesDomain(host, "sushi.chrry.ai")) {
     return "sushi"
   }
+
+  // if (!host || isDevelopment) {
+  //   return defaultMode
+  // }
+
+  // // Helper function to check if hostname matches or is subdomain of domain
+
+  // // Check if running in a browser extension
+  // if (
+  //   typeof window !== "undefined" &&
+  //   window.location?.protocol?.startsWith("chrome-extension")
+  // ) {
+  //   console.log(
+  //     "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
+  //     defaultMode,
+  //   )
+  //   return defaultMode
+  // }
 
   // City subdomains
 
