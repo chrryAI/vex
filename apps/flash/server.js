@@ -419,7 +419,7 @@ app.get("/manifest.json", async (req, res) => {
 })
 
 // Serve HTML with rate limiting
-app.use("*", async (req, res) => {
+app.use("/*", async (req, res) => {
   // Whitelist subdomains and localhost
   const host = req.get("host") || ""
   const isWhitelisted =
