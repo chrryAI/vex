@@ -131,6 +131,23 @@ export default function Skeleton({
         >
           <Div
             data-tauri-drag-region
+            onDoubleClick={async () => {
+              if (!isTauri) return
+              try {
+                const { getCurrentWindow } = await import(
+                  "@tauri-apps/api/window"
+                )
+                const appWindow = getCurrentWindow()
+                const isMaximized = await appWindow.isMaximized()
+                if (isMaximized) {
+                  await appWindow.unmaximize()
+                } else {
+                  await appWindow.maximize()
+                }
+              } catch (e) {
+                // Tauri API not available
+              }
+            }}
             style={{
               ...skeletonStyles.header.style,
               ...(isStandalone && skeletonStyles.headerStandalone.style),
