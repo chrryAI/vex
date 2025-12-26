@@ -61,7 +61,6 @@ import {
   instructionBase,
   isOwner,
   isDeepEqual,
-  getExampleInstructions,
 } from "./utils"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -118,7 +117,16 @@ export default function Instructions({
 
   const { defaultInstructions, isAppInstructions } = useApp()
 
-  const { token, language, user, guest, app, storeApp, burn } = useAuth()
+  const { token, language, user, guest, app, storeApp, burnApp, ...auth } =
+    useAuth()
+
+  const burn = (burnApp && burnApp?.id === app?.id) || auth.burn
+
+  const [showGrapeInternal, setShowGrape] = useState(false)
+
+  const canGrape = !burn
+
+  const showGrape = canGrape && showGrapeInternal
 
   // Replace instructions with Zarathustra philosophy when burn is active
 
@@ -153,9 +161,9 @@ export default function Instructions({
 
   const { os, isStandalone } = usePlatform()
 
-  const offset = isStandalone ? -250 : 0
+  const offset = isStandalone ? 250 : 0
 
-  const countInternal = useResponsiveCount(
+  const count = useResponsiveCount(
     [
       { height: 500, count: 0 }, // Below 500px: show none
       { height: 600, count: 1 }, // 500-599px: show 1
@@ -166,21 +174,6 @@ export default function Instructions({
     ],
     offset,
   )
-
-  const countWhenBurn = useResponsiveCount(
-    [
-      { height: 500, count: 0 }, // Below 500px: show none
-      { height: 600, count: 0 }, // 500-599px: show 1
-      { height: 625, count: 0 }, // 600-624px: show 2
-      { height: 650, count: 1 }, // 625-649px: show 3
-      { height: 750, count: 2 }, // 650-749px: show 4
-      { height: 850, count: 3 }, // 650-749px: show 4
-      { height: Infinity, count: 7 }, // 750px+: show all
-    ],
-    offset,
-  )
-
-  const count = burn ? countWhenBurn : countInternal
 
   // Theme context
   const { addHapticFeedback, isDark, isMobileDevice, reduceMotion } =
@@ -210,6 +203,24 @@ export default function Instructions({
     setSelectedInstructionInternal(instruction)
     instruction && setIsOpen(true)
   }
+
+  const grapeButtonRef = useRef<HTMLAnchorElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        grapeButtonRef.current &&
+        !grapeButtonRef.current.contains(event.target as Node)
+      ) {
+        setShowGrape(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   const [files, setFilesInternal] = useState<File[]>([])
   useEffect(() => {
@@ -1472,15 +1483,22 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         )}
         {!thread && !icon && showInstructions && (
           <Div data-testid={`${dataTestId}-about`} style={styles.bottom.style}>
-            <A href={"/about"}>
-              <MousePointerClick color="var(--accent-1)" size={26} />
+            {!showGrape && (
+              <A href={"/about"}>
+                <MousePointerClick color="var(--accent-1)" size={26} />
 
-              {t(appStatus?.part ? "Description" : "About")}
-            </A>
+                {t(appStatus?.part ? "Description" : "About")}
+              </A>
+            )}
             {appStatus?.part ? (
               <Agent />
             ) : extensionId && extensionUrl.includes(extensionId) ? null : (
-              <>
+              <Div
+                style={{
+                  display: "flex",
+                  gap: toRem(5),
+                }}
+              >
                 {os && ["ios", "android"].includes(os) ? (
                   <Button
                     style={{
@@ -1506,21 +1524,52 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     {t("Install")}
                   </Button>
                 ) : productionExtensions.includes("chrome") ? (
+                  !showGrape && (
+                    <A
+                      openInNewTab
+                      href={extensionUrl}
+                      className="button"
+                      style={{
+                        ...utilities.button.style,
+                        ...utilities.small.style,
+                        ...styles.installButton.style,
+                      }}
+                    >
+                      <FaChrome size={18} />
+                      {t("Extension")}
+                    </A>
+                  )
+                ) : null}
+                {canGrape && (
                   <A
-                    openInNewTab
-                    href={extensionUrl}
-                    className="button"
+                    ref={grapeButtonRef}
+                    href="mailto:iliyan@chrry.ai"
+                    className="link"
                     style={{
-                      ...utilities.button.style,
-                      ...utilities.small.style,
-                      ...styles.installButton.style,
+                      ...utilities.link.style,
+                      marginLeft: showGrape ? 0 : 5,
+                      padding: "6.25px 0",
+                    }}
+                    onClick={(e) => {
+                      setShowGrape(!showGrape)
+                      if (!showGrape) {
+                        e.preventDefault()
+                        // Open email client for advertising inquiries
+                      }
                     }}
                   >
-                    <FaChrome size={18} />
-                    {t("Extension")}
+                    {showGrape ? t("Get your brand here") : ""}{" "}
+                    <Span
+                      style={{
+                        marginLeft: 3,
+                        lineHeight: 0.7,
+                      }}
+                    >
+                      🍇
+                    </Span>
                   </A>
-                ) : null}
-              </>
+                )}
+              </Div>
             )}
           </Div>
         )}

@@ -5,7 +5,12 @@ import {
   deleteMemory,
   getThreadSummaries,
   updateThreadSummary,
+  getInstructions,
+  deleteInstruction,
+  getPlaceHolders,
+  deletePlaceHolder,
 } from "@repo/db"
+import { isOwner } from "@repo/db"
 
 export const memories = new Hono()
 
@@ -28,7 +33,12 @@ memories.get("/", async (c) => {
   return c.json({
     exportedAt: new Date().toISOString(),
     userId: member?.id || guest?.id,
-    memories: memoriesData.memories,
+    memories: memoriesData.memories.filter((memory) =>
+      isOwner(memory, {
+        userId: member?.id,
+        guestId: guest?.id,
+      }),
+    ),
   })
 })
 
@@ -46,6 +56,29 @@ memories.delete("/", async (c) => {
     guestId: guest?.id,
     pageSize: 100000,
   })
+
+  const instructionsData = await getInstructions({
+    userId: member?.id,
+    guestId: guest?.id,
+    pageSize: 100000,
+  })
+
+  await Promise.all(
+    instructionsData.map((instruction) =>
+      deleteInstruction({ id: instruction.id }),
+    ),
+  )
+
+  const paceholderData = await getPlaceHolders({
+    userId: member?.id,
+    guestId: guest?.id,
+  })
+
+  await Promise.all(
+    paceholderData.map((placeholder) =>
+      deletePlaceHolder({ id: placeholder.id }),
+    ),
+  )
 
   const threadSummaries = await getThreadSummaries({
     userId: member?.id,

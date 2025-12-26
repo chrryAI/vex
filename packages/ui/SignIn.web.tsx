@@ -22,7 +22,7 @@ import {
   useError,
   useNavigationContext,
 } from "./context/providers"
-import { Button } from "./platform"
+import { Button, usePlatform } from "./platform"
 import useCache from "./hooks/useCache"
 
 export default function SignIn({
@@ -44,7 +44,7 @@ export default function SignIn({
   style?: React.CSSProperties
   desktopAuthHandler?: DesktopAuthHandler
 }) {
-  const isExtension = checkIsExtension()
+  const { isExtension, isTauri } = usePlatform()
 
   const isAppleSignInAvailable = true
 
@@ -320,6 +320,7 @@ export default function SignIn({
         errorUrl: errorUrl.href,
         callbackUrl: successUrl.toString(),
       })
+      return
     }
 
     try {

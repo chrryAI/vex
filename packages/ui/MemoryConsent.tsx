@@ -17,7 +17,7 @@ import Loading from "./Loading"
 import { updateUser } from "./lib"
 import toast from "react-hot-toast"
 import { useMemoryConsentStyles } from "./MemoryConsent.styles"
-import { A, Button, Div } from "./platform"
+import { Button, Div } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import useCache from "./hooks/useCache"
@@ -42,9 +42,15 @@ export default function MemoryConsent({
     setGuest,
     API_URL,
     isLiveTest,
-    burn,
+    burnApp,
     setBurn,
+    refetchSession,
+    app,
+    ...auth
   } = useAuth()
+
+  const burn = !!(auth.burn || (burnApp && app && burnApp?.id === app?.id))
+  const messageRef = useRef<boolean>(false)
 
   const {
     router,
@@ -99,16 +105,13 @@ export default function MemoryConsent({
         className="slideUp"
         style={{
           // ...styles.container.style,
-          background:
-            "linear-gradient(135deg, rgba(255, 100, 0, 0.1), rgba(255, 50, 0, 0.05))",
-          borderColor: "rgba(255, 100, 0, 0.3)",
           padding: ".8rem",
           borderRadius: 20,
           maxWidth: "40rem",
           margin: "0 auto",
           marginTop: "1rem",
           position: "relative",
-          top: -15,
+          top: -12.5,
         }}
       >
         <Div>
@@ -119,24 +122,19 @@ export default function MemoryConsent({
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
+              fontSize: ".9rem",
             }}
           >
             <span style={{ fontSize: "1.5rem" }}>🔥</span>
 
-            {t("When you burn there is nothing to remember")}
             <Checkbox
               style={{ marginLeft: "auto" }}
-              checked={burn}
+              checked={auth.burn}
               children={""}
               onChange={() => {
-                setBurn(!burn)
+                setBurn(!auth.burn)
               }}
             />
-          </Div>
-          <Div style={{ fontSize: "0.875rem", opacity: 0.8 }}>
-            {t(
-              "In burn, no memories are stored. Each conversation is ephemeral—a pure moment of thought, unrecorded, sovereign. You are the master of your digital existence.",
-            )}
           </Div>
         </Div>
       </Div>
@@ -220,7 +218,7 @@ export default function MemoryConsent({
                 >
                   <LinkIcon size={16} /> {t("Privacy")}
                 </Button>
-                {!(user || guest)?.memoriesCount ? (
+                {(user || guest)?.memoriesCount ? (
                   <ConfirmButton
                     processing={isDeleting}
                     disabled={isDeleting}
@@ -237,6 +235,7 @@ export default function MemoryConsent({
                       try {
                         const result = await actions.deleteMemories()
                         if (result.success) {
+                          await refetchSession()
                           toast.success(t("Memories deleted"))
                           setIsMemoryConsentManageVisible(false)
                         } else {

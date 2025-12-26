@@ -1,293 +1,131 @@
-# Deployment Guide for Hetzner/Coolify
+# White-Label Deployment Guide
 
-## Overview
+## Quick Deploy Script
 
-You have **2 applications** to deploy:
+Automatically deploy any white-label subdomain with Nginx + SSL.
 
-1. **Web App (focus.chrry.ai)** - Port 3000
-2. **API (api)** - Port 3001
-
----
-
-## 🌐 Service 1: Web App (focus.chrry.ai)
-
-### Coolify Configuration
-
-**General:**
-
-- **Name:** `focus-chrry-ai`
-- **Repository:** `chrryAI/vex`
-- **Branch:** `main`
-- **Base Directory:** `/` (root)
-- **Build Pack:** `nixpacks`
-- **Port:** `3000`
-
-**Environment Variables:**
+### Usage
 
 ```bash
-NODE_ENV=production
-VITE_SITE_MODE=focus
-NEXTAUTH_URL=https://focus.chrry.ai
-NEXTAUTH_SECRET=<generate-secret>
-PORT=3000
-
-# Database
-DB_URL=postgresql://user:password@host:5432/dbname
-
-# API Keys
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_API_KEY=...
-DEEPSEEK_API_KEY=...
-
-# UploadThing
-UPLOADTHING_SECRET=...
-UPLOADTHING_APP_ID=...
-
-# Redis/Upstash
-UPSTASH_REDIS_REST_URL=...
-UPSTASH_REDIS_REST_TOKEN=...
-
-# Stripe
-STRIPE_SECRET_KEY=...
-STRIPE_WEBHOOK_SECRET=...
-
-# Sentry (optional)
-SENTRY_DSN=...
-SENTRY_AUTH_TOKEN=...
+sudo ./.hetzner/scripts/deploy-whitelabel.sh <subdomain> <port>
 ```
 
-**Domain:**
+### Examples
 
-- Add domain: `focus.chrry.ai`
-- Enable SSL (Let's Encrypt)
-
-**Build Config:**
-
-- Uses root `nixpacks.toml`
-- Builds with: `pnpm --filter web build`
-- Starts with: `pnpm --filter web start`
-
----
-
-## 🔌 Service 2: API (api)
-
-### Coolify Configuration
-
-**General:**
-
-- **Name:** `api-api`
-- **Repository:** `chrryAI/vex`
-- **Branch:** `main`
-- **Base Directory:** `apps/api`
-- **Build Pack:** `nixpacks`
-- **Port:** `3001`
-
-**Environment Variables:**
+**Deploy Burn:**
 
 ```bash
-NODE_ENV=production
-NEXTAUTH_URL=https://api.chrry.ai
-NEXTAUTH_SECRET=<same-as-web>
-PORT=3001
-
-# Database (same as web)
-DB_URL=postgresql://user:password@host:5432/dbname
-
-# API Keys (same as web)
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_API_KEY=...
-DEEPSEEK_API_KEY=...
-
-# UploadThing (same as web)
-UPLOADTHING_SECRET=...
-UPLOADTHING_APP_ID=...
-
-# Redis/Upstash (same as web)
-UPSTASH_REDIS_REST_URL=...
-UPSTASH_REDIS_REST_TOKEN=...
-
-# Stripe (same as web)
-STRIPE_SECRET_KEY=...
-STRIPE_WEBHOOK_SECRET=...
+sudo ./.hetzner/scripts/deploy-whitelabel.sh burn 3009
 ```
 
-**Domain:**
-
-- Add domain: `api.chrry.ai` (or use subdomain)
-- Enable SSL (Let's Encrypt)
-
-**Build Config:**
-
-- Uses `apps/api/.nixpacks.toml`
-- Builds with: `pnpm --filter api build`
-- Starts with: `pnpm --filter api start`
-
----
-
-## 📝 Current Nixpacks Configs
-
-### Root `nixpacks.toml` (for Web)
-
-```toml
-[phases.setup]
-nixPkgs = ["nodejs_22", "ffmpeg"]
-nixLibs = []
-
-[phases.install]
-cmds = ["corepack enable", "corepack prepare pnpm@9.1.2 --activate", "pnpm install --frozen-lockfile"]
-
-[phases.build]
-cmds = ["pnpm --filter web build"]
-
-[start]
-cmd = "pnpm --filter web start"
-```
-
-### `apps/api/.nixpacks.toml` (for API)
-
-```toml
-[phases.setup]
-nixPkgs = ["nodejs_22"]
-nixLibs = []
-
-[phases.install]
-cmds = ["corepack enable", "corepack prepare pnpm@9.1.2 --activate", "pnpm install --frozen-lockfile"]
-
-[phases.build]
-cmds = ["pnpm --filter api build"]
-
-[start]
-cmd = "pnpm --filter api start"
-```
-
-### `apps/web/.nixpacks.toml` (alternative for Web)
-
-```toml
-[phases.setup]
-nixPkgs = ["nodejs_22"]
-nixLibs = []
-
-[phases.install]
-cmds = ["corepack enable", "corepack prepare pnpm@9.1.2 --activate", "pnpm install --frozen-lockfile"]
-
-[phases.build]
-cmds = ["pnpm --filter web build"]
-
-[start]
-cmd = "pnpm --filter web start"
-```
-
----
-
-## 🚀 Deployment Steps
-
-### 1. Push Changes
+**Deploy Focus:**
 
 ```bash
-git add .
-git commit -m "🔧 Fix Coolify deployment configs"
-git push
+sudo ./.hetzner/scripts/deploy-whitelabel.sh focus 3010
 ```
 
-### 2. In Coolify Dashboard
+**Deploy Grape:**
 
-#### Create Web Service:
-
-1. **+ New Resource** → **Application**
-2. Select GitHub repo `chrryAI/vex`
-3. Branch: `main`
-4. Base Directory: `/` (root)
-5. Port: `3000`
-6. Add environment variables
-7. Add domain: `focus.chrry.ai`
-8. **Deploy**
-
-#### Create API Service:
-
-1. **+ New Resource** → **Application**
-2. Select GitHub repo `chrryAI/vex`
-3. Branch: `main`
-4. Base Directory: `apps/api`
-5. Port: `3001`
-6. Add environment variables
-7. Add domain: `api.chrry.ai`
-8. **Deploy**
-
-### 3. DNS Configuration
-
-Point these domains to your Hetzner server IP:
-
-```
-A    focus.chrry.ai    →  YOUR_SERVER_IP
-A    api.chrry.ai      →  YOUR_SERVER_IP
+```bash
+sudo ./.hetzner/scripts/deploy-whitelabel.sh grape 3008
 ```
 
-### 4. Enable SSL
+### What the Script Does
 
-Coolify will automatically provision Let's Encrypt SSL certificates once DNS is configured.
+1. ✅ Creates Nginx configuration file
+2. ✅ Enables the site
+3. ✅ Tests Nginx configuration
+4. ✅ Reloads Nginx
+5. ✅ Obtains SSL certificate (Let's Encrypt)
+6. ✅ Configures HTTPS redirect
+7. ✅ Verifies deployment
 
----
+### Prerequisites
 
-## 🔍 Troubleshooting
+- Root access (use `sudo`)
+- Nginx installed
+- Certbot installed
+- DNS A record pointing to your server
 
-### "Missing script start or file server.js"
+### Port Assignments
 
-**Cause:** Coolify is running from wrong directory or using wrong config
+| Subdomain      | Port | Status    |
+| -------------- | ---- | --------- |
+| vex.chrry.ai   | 3000 | ✅ Active |
+| grape.chrry.ai | 3008 | ✅ Active |
+| burn.chrry.ai  | 3009 | 🔜 Ready  |
+| focus.chrry.ai | 3010 | 🔜 Ready  |
 
-**Fix:**
+### After Deployment
 
-- Check **Base Directory** setting in Coolify
-- For Web: Use root `/` or leave empty
-- For API: Use `apps/api`
-- Verify nixpacks.toml has correct `--filter` commands
+1. **Start your app on the assigned port:**
 
-### Build Fails
+   ```bash
+   VITE_SITE_MODE=burn PORT=3009 pnpm start
+   ```
 
-**Check:**
+2. **Set environment variables in Coolify:**
 
-1. Environment variables are set
-2. Database connection string is correct
-3. All API keys are valid
-4. Build logs in Coolify for specific errors
+   ```
+   VITE_SITE_MODE=burn
+   PORT=3009
+   ```
 
-### Port Conflicts
+3. **Test the deployment:**
+   ```bash
+   curl https://burn.chrry.ai
+   ```
 
-- Web runs on port 3000
-- API runs on port 3001
-- Make sure no other services use these ports
+### Troubleshooting
 
----
+**Site not responding:**
 
-## 📊 Monitoring
+- Check if app is running: `pm2 list` or `docker ps`
+- Check Nginx logs: `sudo tail -f /var/log/nginx/error.log`
+- Verify port: `sudo netstat -tlnp | grep 3009`
 
-After deployment, check:
+**SSL certificate issues:**
 
-1. **Web:** https://focus.chrry.ai
-2. **API:** https://api.chrry.ai/health
-3. **Logs:** Coolify dashboard → Service → Logs
+- Check Certbot logs: `sudo certbot certificates`
+- Renew manually: `sudo certbot renew`
 
----
+**Nginx errors:**
 
-## 🔐 Security Checklist
+- Test config: `sudo nginx -t`
+- Check syntax: `sudo nginx -T`
+- Reload: `sudo systemctl reload nginx`
 
-- [ ] SSL certificates enabled
-- [ ] Environment variables secured
-- [ ] Database credentials rotated
-- [ ] API keys restricted
-- [ ] CORS configured properly
-- [ ] Rate limiting enabled
-- [ ] Firewall rules set
-- [ ] Backups configured
+### Manual Deployment (Alternative)
 
----
+If you prefer manual deployment:
 
-## 📞 Support
+1. Create Nginx config:
 
-If issues persist:
+   ```bash
+   sudo nano /etc/nginx/sites-available/burn.chrry.ai.conf
+   ```
 
-1. Check Coolify build logs
-2. Check application logs
-3. Verify DNS propagation
-4. Test locally with same env vars
+2. Enable site:
+
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/burn.chrry.ai.conf /etc/nginx/sites-enabled/
+   ```
+
+3. Test and reload:
+
+   ```bash
+   sudo nginx -t
+   sudo systemctl reload nginx
+   ```
+
+4. Get SSL:
+   ```bash
+   sudo certbot --nginx -d burn.chrry.ai
+   ```
+
+### Security Notes
+
+- SSL certificates auto-renew via Certbot
+- HTTPS redirect is automatic
+- Client max body size: 100M
+- Timeouts configured for long AI responses (5 minutes)

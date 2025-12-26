@@ -9,21 +9,9 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    rollupOptions: {
-      external: (id) => {
-        // Mark Tauri APIs as external - they're provided by Tauri runtime
-        return id.startsWith("@tauri-apps/")
-      },
-    },
+    // Tauri handles bundling - no need to mark as external
   },
-  optimizeDeps: {
-    exclude: [
-      // Tauri APIs are only available at runtime in Tauri environment
-      "@tauri-apps/api",
-      "@tauri-apps/api/window",
-      "@tauri-apps/api/app",
-    ],
-  },
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

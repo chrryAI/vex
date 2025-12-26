@@ -2,9 +2,8 @@ import { useState, useEffect } from "react"
 import { API_URL, FRONTEND_URL } from "../utils"
 
 export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== "undefined" ? navigator.onLine : true, // default to true on server
-  )
+  const [isOnline, setIsOnline] = useState(true)
+
   useEffect(() => {
     // Skip if window or addEventListener is not available (React Native)
     if (typeof window === "undefined" || !window.addEventListener) {

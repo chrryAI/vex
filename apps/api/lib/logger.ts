@@ -1,31 +1,13 @@
-import pino from "pino"
-import { send } from "@axiomhq/pino"
+// Temporarily disabled pino logging - using native console
+// TODO: Re-enable pino-pretty and axiom once logger initialization issues are resolved
 
-const isDevelopment = process.env.NODE_ENV === "development"
+// Simple pass-through to native console
+export const logger = console
 
-// Create Pino logger with Axiom transport
-export const logger = pino(
-  {
-    level: isDevelopment ? "debug" : "info",
-    formatters: {
-      level: (label) => {
-        return { level: label }
-      },
-    },
-  },
-  send({
-    dataset: process.env.AXIOM_DATASET || "chrry-api",
-    token: process.env.AXIOM_TOKEN || "",
-  }),
-)
+// No-op promise for compatibility
+export const loggerPromise = Promise.resolve(console)
 
-// Console polyfill for easy migration
-export const console = {
-  log: (...args: any[]) => logger.info(args.join(" ")),
-  info: (...args: any[]) => logger.info(args.join(" ")),
-  warn: (...args: any[]) => logger.warn(args.join(" ")),
-  error: (...args: any[]) => logger.error(args.join(" ")),
-  debug: (...args: any[]) => logger.debug(args.join(" ")),
-}
+// Re-export console as-is
+export { console }
 
 export default logger

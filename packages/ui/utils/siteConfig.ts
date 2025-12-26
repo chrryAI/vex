@@ -15,20 +15,55 @@ export type SiteMode =
   | "search"
   | "sushi"
   | "grape"
+  | "burn"
   | "e2eVex"
   | "staging"
 
-// Function declaration is hoisted, so it's available before const declarations
-function getEnv() {
-  let result = undefined
+/// <reference types="chrome" />
+
+export const getEnv = () => {
   if (typeof import.meta !== "undefined") {
-    result = (import.meta as any).env
+    return (import.meta as any).env || {}
   }
-  if (typeof process !== "undefined") {
-    result = process.env
-  }
-  return result || {}
+
+  if (typeof process === "undefined") return {}
+  return process.env || {}
 }
+
+export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"
+
+export const checkIsExtension = () => {
+  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
+    return true
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
+    return true
+  }
+  return false
+}
+
+export const getExtensionUrl = () => {
+  if (typeof window === "undefined") return
+  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL("index.html") // Chrome
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.getURL) {
+    return (browser as any).runtime.getURL("index.html") // Firefox
+  }
+  return `${window.location.origin}/index.html` // Fallback
+}
+
+export const isProduction =
+  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+
+export const isDevelopment = checkIsExtension()
+  ? [
+      "jnngfghgbmieehkfebkogjjiepomakdh",
+      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
+    ].some((id) => getExtensionUrl()?.includes(id))
+  : !isProduction
+
+export const isTestingDevice = false && isDevelopment
 
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
@@ -139,56 +174,56 @@ const chrryAI = {
       description: "Discover and install AI apps",
       icon: "🏪",
       link: "/explore",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Create Stores",
       description: "Build your own AI app marketplace",
       icon: "🏗️",
       link: "/stores/new",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Publish Apps",
       description: "Monetize your AI applications",
       icon: "📱",
       link: "/apps/new",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Revenue Sharing",
       description: "Earn 70% on every sale",
       icon: "💰",
       link: "/affiliate",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Custom Domains",
       description: "White-label your store",
       icon: "🌐",
       link: "/settings/domain",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Analytics",
       description: "Track your app performance",
       icon: "📊",
       link: "/analytics",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Multi-Agent Support",
       description: "Build for any AI platform",
       icon: "🤖",
       link: "/docs/agents",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Developer Tools",
       description: "APIs and SDKs for developers",
       icon: "🛠️",
       link: "/docs/api",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -198,7 +233,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.67",
+  version: "26.10.69",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -219,56 +254,56 @@ const focus = {
       description: "Pomodoro and custom focus sessions",
       icon: "⏱️",
       link: "/timer",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Task Management",
       description: "Organize and track your tasks",
       icon: "✅",
       link: "/tasks",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "AI Task Breakdown",
       description: "Break complex projects into steps",
       icon: "🤖",
       link: "/ai",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Time Tracking",
       description: "Track time across all your tasks",
       icon: "📊",
       link: "/analytics",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Progress Analytics",
       description: "Visualize your productivity patterns",
       icon: "📈",
       link: "/progress",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Goal Setting",
       description: "Set and achieve your goals",
       icon: "🎯",
       link: "/goals",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Productivity Insights",
       description: "AI-powered productivity tips",
       icon: "💡",
       link: "/insights",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Deep Work Mode",
       description: "Eliminate distractions and focus",
       icon: "🧠",
       link: "/deep-work",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -298,35 +333,35 @@ const atlas = {
       description: "Save locations with AI context",
       icon: "📍",
       link: "/memory",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Travel Planning",
       description: "Smart itineraries and local insights",
       icon: "✈️",
       link: "/travel",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Local Discovery",
       description: "Find authentic spots locals love",
       icon: "🗺️",
       link: "/discover",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Weather Integration",
       description: "Real-time weather for your locations",
       icon: "🌤️",
       link: "/weather",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Browser Extension",
       description: "Access Atlas from anywhere",
       icon: "🔌",
       link: "https://chrome.google.com/webstore",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -356,28 +391,28 @@ const istanbul = {
       description: "Native Turkish AI assistance",
       icon: "🗣️",
       link: "/language",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Local Insights",
       description: "Istanbul-specific recommendations",
       icon: "🕌",
       link: "/local",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Turkish Lira Pricing",
       description: "Local currency and payment methods",
       icon: "💰",
       link: "/pricing",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Local Collaboration",
       description: "Connect with Turkish users",
       icon: "👥",
       link: "/community",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -407,28 +442,28 @@ const amsterdam = {
       description: "Native Dutch AI assistance",
       icon: "🗣️",
       link: "/language",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Local Insights",
       description: "Amsterdam-specific recommendations",
       icon: "🚲",
       link: "/local",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Euro Pricing",
       description: "Local currency and payment methods",
       icon: "💰",
       link: "/pricing",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Local Collaboration",
       description: "Connect with Dutch users",
       icon: "👥",
       link: "/community",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -458,28 +493,28 @@ const tokyo = {
       description: "Native Japanese AI assistance",
       icon: "🗣️",
       link: "/language",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Local Insights",
       description: "Tokyo-specific recommendations",
       icon: "🗼",
       link: "/local",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Yen Pricing",
       description: "Local currency and payment methods",
       icon: "💰",
       link: "/pricing",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Local Collaboration",
       description: "Connect with Japanese users",
       icon: "👥",
       link: "/community",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -509,28 +544,28 @@ const newYork = {
       description: "New York-specific recommendations",
       icon: "🏙️",
       link: "/local",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "USD Pricing",
       description: "US currency and payment methods",
       icon: "💰",
       link: "/pricing",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Local Collaboration",
       description: "Connect with NYC users",
       icon: "👥",
       link: "/community",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "24/7 Support",
       description: "Always available in the city that never sleeps",
       icon: "🌃",
       link: "/support",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -560,56 +595,56 @@ const popcorn = {
       description: "Decode any film scene with precision",
       icon: "🎬",
       link: "/scene-analysis",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Character Arc Explorer",
       description: "Trace protagonist transformations",
       icon: "🧭",
       link: "/character-arcs",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Cinematic Techniques",
       description: "Visual storytelling breakdown",
       icon: "🎥",
       link: "/techniques",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Soundtrack Insights",
       description: "Audio storytelling analysis",
       icon: "🎵",
       link: "/soundtrack",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Genre Remix",
       description: "Reimagine films in new genres",
       icon: "🔄",
       link: "/remix",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Dialogue Deep Dive",
       description: "Unpack memorable quotes",
       icon: "💬",
       link: "/dialogue",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Double Features",
       description: "Curated film pairings",
       icon: "🎟️",
       link: "/double-features",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Movie Database",
       description: "Explore iconic films",
       icon: "📚",
       link: "/films",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -639,56 +674,56 @@ const zarathustra = {
       description: "Navigate schools of thought",
       icon: "🏛️",
       link: "/philosophy",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Book Analysis",
       description: "Deep dive into philosophical texts",
       icon: "📖",
       link: "/books",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Concept Breakdown",
       description: "Understand complex ideas simply",
       icon: "💡",
       link: "/concepts",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Philosopher Profiles",
       description: "Learn about great thinkers",
       icon: "🧠",
       link: "/philosophers",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Eternal Recurrence",
       description: "Explore Nietzsche's key ideas",
       icon: "♾️",
       link: "/nietzsche",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Existential Toolkit",
       description: "Apply philosophy to life",
       icon: "🛠️",
       link: "/toolkit",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Reading Lists",
       description: "Curated philosophical journeys",
       icon: "📚",
       link: "/reading-lists",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Daily Wisdom",
       description: "Philosophical insights daily",
       icon: "✨",
       link: "/daily",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -718,56 +753,56 @@ const search = {
       description: "Live web search with instant results",
       icon: "⚡",
       link: "/search",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Source Citations",
       description: "Verifiable sources for every answer",
       icon: "📚",
       link: "/sources",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Multi-Source Aggregation",
       description: "Combine information from multiple sources",
       icon: "🌐",
       link: "/aggregation",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Fact-Checking",
       description: "Cross-reference for accuracy",
       icon: "✓",
       link: "/fact-check",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Follow-Up Questions",
       description: "Suggested questions to explore deeper",
       icon: "💡",
       link: "/explore",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Visual Results",
       description: "Rich media including images and videos",
       icon: "🖼️",
       link: "/visual",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Context Awareness",
       description: "Understands search intent and context",
       icon: "🧠",
       link: "/context",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Global Knowledge",
       description: "Access information worldwide",
       icon: "🌍",
       link: "/global",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -796,28 +831,100 @@ const vex = {
       description: "AI-powered life management system",
       icon: "🧠",
       link: "/lifeOS",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "AI Agents",
       description: "Custom AI agents for any task",
       icon: "🤖",
       link: "/lifeOS",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Collaboration",
       description: "Real-time AI collaboration",
       icon: "👥",
       link: "/threads",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Browser Extension",
       description: "AI assistant in your browser",
       icon: "🔌",
       link: "https://chrome.google.com/webstore",
-      isOpenSource: false,
+      isOpenSource: true,
+    },
+  ],
+}
+
+const burn = {
+  url: "https://burn.chrry.ai",
+  mode: "burn" as SiteMode,
+  slug: "burn",
+  favicon: "burn",
+  storeSlug: "blossom",
+  name: "Burn",
+  isStoreApp: false,
+  domain: "burn.chrry.ai",
+  store: "https://chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "Anonymous AI chat. No login required. Guest subscriptions, private credits, anonymous agents. Maximum privacy guaranteed.",
+  logo: "🔥",
+  primaryColor: "#F97316", // Orange/fire color
+  links: {
+    github: "https://github.com/chrryAI/vex",
+    docs: "https://burn.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "No Account Required",
+      description: "Use AI without creating an account",
+      icon: "🚫",
+      link: "/",
+      isOpenSource: true,
+    },
+    {
+      title: "Guest Subscriptions",
+      description: "Subscribe without login via Stripe",
+      icon: "💳",
+      link: "/subscribe",
+      isOpenSource: true,
+    },
+    {
+      title: "Anonymous Credits",
+      description: "Buy credits with no account",
+      icon: "💰",
+      link: "/credits",
+      isOpenSource: true,
+    },
+    {
+      title: "Maximum Privacy",
+      description: "No tracking, no data collection",
+      icon: "🔒",
+      link: "/privacy",
+      isOpenSource: true,
+    },
+    {
+      title: "Anonymous Agents",
+      description: "Create AI agents without login",
+      icon: "🤖",
+      link: "/agents",
+      isOpenSource: true,
+    },
+    {
+      title: "Burn Mode",
+      description: "Ephemeral sessions - data deleted on close",
+      icon: "🔥",
+      link: "/burn",
+      isOpenSource: true,
+    },
+    {
+      title: "Browser Extension",
+      description: "Anonymous AI in your browser",
+      icon: "🔌",
+      link: "https://chrome.google.com/webstore",
+      isOpenSource: true,
     },
   ],
 }
@@ -832,7 +939,7 @@ const e2eVex = {
 
 const staging = {
   ...chrryAI,
-  // url: "https://staging.chrry.ai",
+  url: "https://staging.chrry.ai",
   domain: "staging.chrry.ai",
 }
 
@@ -860,28 +967,28 @@ const sushi = {
       description: "AI-powered code editor",
       icon: "🤖",
       link: "/code",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "AI Agents",
       description: "Custom AI agents for any task",
       icon: "🤖",
       link: "/code",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Collaboration",
       description: "Real-time AI collaboration",
       icon: "👥",
       link: "/threads",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Browser Extension",
       description: "AI assistant in your browser",
       icon: "🔌",
       link: "https://chrome.google.com/webstore",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -910,42 +1017,42 @@ const grape = {
       description: "Explore curated AI applications",
       icon: "🔍",
       link: "/explore",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Pear Feedback",
       description: "Earn credits for quality feedback",
       icon: "🍐",
       link: "/feedback",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Credit System",
       description: "Get rewarded for contributions",
       icon: "💰",
       link: "/credits",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "App Ratings",
       description: "Community-driven app reviews",
       icon: "⭐",
       link: "/ratings",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "Try Apps",
       description: "Test apps before installing",
       icon: "🎯",
       link: "/try",
-      isOpenSource: false,
+      isOpenSource: true,
     },
     {
       title: "White Label",
       description: "Customize for your brand",
       icon: "🎨",
       link: "/white-label",
-      isOpenSource: false,
+      isOpenSource: true,
     },
   ],
 }
@@ -1745,10 +1852,73 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Seçilmiş yapay zeka uygulamalarını keşfedin ve Pear ile kaliteli geri bildirim için kredi kazanın. Topluluk odaklı uygulama keşif pazarı.",
     },
   },
+  burn: {
+    en: {
+      title: "Burn - Anonymous AI Chat",
+      description:
+        "No login required. Subscribe as guest, buy credits, stay private. The world's first AI platform with guest subscriptions.",
+    },
+    de: {
+      title: "Burn - Anonymer AI-Chat",
+      description:
+        "Keine Anmeldung erforderlich. Als Gast abonnieren, Credits kaufen, privat bleiben. Die weltweit erste KI-Plattform mit Gast-Abonnements.",
+    },
+    fr: {
+      title: "Burn - Chat IA anonyme",
+      description:
+        "Aucune connexion requise. Abonnez-vous en tant qu'invité, achetez des crédits, restez privé. La première plateforme IA au monde avec abonnements invités.",
+    },
+    ja: {
+      title: "Burn - 匿名AIチャット",
+      description:
+        "ログイン不要。ゲストとして購読、クレジット購入、プライバシー保護。世界初のゲスト購読対応AIプラットフォーム。",
+    },
+    ko: {
+      title: "Burn - 익명 AI 채팅",
+      description:
+        "로그인 불필요. 게스트로 구독, 크레딧 구매, 개인정보 보호. 세계 최초 게스트 구독 지원 AI 플랫폼.",
+    },
+    pt: {
+      title: "Burn - Chat IA anônimo",
+      description:
+        "Sem necessidade de login. Assine como convidado, compre créditos, mantenha-se privado. A primeira plataforma de IA do mundo com assinaturas para convidados.",
+    },
+    es: {
+      title: "Burn - Chat IA anónimo",
+      description:
+        "No requiere inicio de sesión. Suscríbete como invitado, compra créditos, mantén tu privacidad. La primera plataforma de IA del mundo con suscripciones para invitados.",
+    },
+    zh: {
+      title: "Burn - 匿名AI聊天",
+      description:
+        "无需登录。以访客身份订阅，购买积分，保持隐私。全球首个支持访客订阅的AI平台。",
+    },
+    nl: {
+      title: "Burn - Anonieme AI-chat",
+      description:
+        "Geen login vereist. Abonneer als gast, koop credits, blijf privé. 's Werelds eerste AI-platform met gastabonnementen.",
+    },
+    tr: {
+      title: "Burn - Anonim AI Sohbet",
+      description:
+        "Giriş gerekmez. Misafir olarak abone olun, kredi satın alın, gizli kalın. Misafir abonelikleri olan dünyanın ilk yapay zeka platformu.",
+    },
+  },
 }
 
 const matchesDomain = (host: string, domain: string): boolean => {
   return host === domain || host.endsWith(`.${domain}`)
+}
+
+export function isTauri(): boolean {
+  if (typeof window === "undefined") return false
+
+  // Check for Tauri API presence
+  return (
+    "__TAURI__" in window ||
+    "__TAURI_INTERNALS__" in window ||
+    "TAURI_EVENT_PLUGIN_INTERNALS" in window
+  )
 }
 
 export function getSiteTranslation(
@@ -1759,51 +1929,13 @@ export function getSiteTranslation(
   return catalog[locale] ?? catalog.en
 }
 
-const getExtensionUrl = () => {
-  if (typeof window === "undefined") return
-  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
-    return chrome.runtime.getURL("index.html") // Chrome
-  }
-  if (typeof browser !== "undefined" && (browser as any).runtime?.getURL) {
-    return (browser as any).runtime.getURL("index.html") // Firefox
-  }
-  return `${window.location.origin}/index.html` // Fallback
-}
-
-const checkIsExtension = () => {
-  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
-    return true
-  }
-  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
-    return true
-  }
-  return false
-}
-
-const isProduction =
-  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
-
-const isDevelopment = checkIsExtension()
-  ? [
-      "jnngfghgbmieehkfebkogjjiepomakdh",
-      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
-    ].some((id) => getExtensionUrl()?.includes(id)) ||
-    // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
-    // Packed extensions from store have mixed case IDs
-    Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
-  : !isProduction
-
 export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
   // Inline isDevelopment check to avoid circular dependency
 
-  const defaultMode = isDevelopment
-    ? ("grape" as SiteMode)
-    : isE2E
-      ? "e2eVex"
-      : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
+  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || "burn"
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -1844,6 +1976,10 @@ export function detectSiteModeDomain(
 
   if (matchesDomain(host, "grape.chrry.ai")) {
     return "grape"
+  }
+
+  if (matchesDomain(host, "burn.chrry.ai")) {
+    return "burn"
   }
 
   if (matchesDomain(host, "books.chrry.ai")) {
@@ -1909,6 +2045,24 @@ export function detectSiteModeDomain(
     return "sushi"
   }
 
+  // if (!host || isDevelopment) {
+  //   return defaultMode
+  // }
+
+  // // Helper function to check if hostname matches or is subdomain of domain
+
+  // // Check if running in a browser extension
+  // if (
+  //   typeof window !== "undefined" &&
+  //   window.location?.protocol?.startsWith("chrome-extension")
+  // ) {
+  //   console.log(
+  //     "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
+  //     defaultMode,
+  //   )
+  //   return defaultMode
+  // }
+
   // City subdomains
 
   // Default to defaultMode (vex.chrry.ai or localhost)
@@ -1938,6 +2092,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "e2eVex",
     "grape",
     "staging",
+    "burn",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -2048,6 +2203,10 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
   if (mode === "grape") {
     return grape
+  }
+
+  if (mode === "burn") {
+    return burn
   }
 
   if (mode === "staging") {

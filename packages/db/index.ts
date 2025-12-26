@@ -2335,6 +2335,7 @@ export const getGuest = async ({
         guestId: result.id,
       }).then((res) => res.totalCount)
     : undefined
+  console.log(`🚀 ~ memoriesCount:`, memoriesCount)
 
   const lastMessage = result
     ? await getMessages({
@@ -4799,8 +4800,6 @@ export const updateApp = async (app: app | appWithStore) => {
     : undefined
 }
 
-const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL!
-
 export const createOrUpdateApp = async ({
   app,
   extends: extendsList,
@@ -4808,17 +4807,7 @@ export const createOrUpdateApp = async ({
   app: newApp
   extends?: string[]
 }) => {
-  const admin = await getUser({
-    email: VEX_TEST_EMAIL,
-  }) // Check if app exists
-
-  if (!admin || admin.role !== "admin") {
-    throw new Error("Admin not found")
-  }
-
-  const existingApp = app.id
-    ? await getPureApp({ id: app.id, userId: admin.id })
-    : null
+  const existingApp = app.id ? await getPureApp({ id: app.id }) : null
 
   let result
 
@@ -4828,7 +4817,6 @@ export const createOrUpdateApp = async ({
       .update(apps)
       .set({
         ...app,
-        userId: admin.id,
       })
       .where(eq(apps.id, app.id!))
       .returning()
@@ -4836,8 +4824,6 @@ export const createOrUpdateApp = async ({
     result = updated
       ? await getPureApp({
           id: updated.id,
-          userId: admin.id,
-          guestId: undefined,
           isSafe: false,
         })
       : undefined
@@ -4847,14 +4833,11 @@ export const createOrUpdateApp = async ({
       .insert(apps)
       .values({
         ...app,
-        userId: admin.id,
       })
       .returning()
     result = inserted
       ? await getPureApp({
           id: inserted.id,
-          userId: admin.id,
-          guestId: undefined,
           isSafe: false,
         })
       : undefined

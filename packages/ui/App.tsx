@@ -24,7 +24,7 @@ import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
 import { Div, H1, H3, P, Button, Label, Span, Input } from "./platform"
 import A from "./a/A"
-import { apiFetch, BrowserInstance } from "./utils"
+import { apiFetch } from "./utils"
 import { useStyles } from "./context/StylesContext"
 import {
   useApp,
@@ -129,6 +129,7 @@ export default function App({
     guest,
     getAppSlug,
     store,
+    burnApp,
     apps,
     guestBaseApp,
     userBaseApp,
@@ -136,11 +137,12 @@ export default function App({
     loadingApp,
     userBaseStore,
     canBurn,
-    burn,
     setBurn,
     setIsPear,
     ...auth
   } = useAuth()
+
+  const burn = burnApp?.id === app?.id || auth.burn
 
   const [showGrapes, setShowGrapes] = useState(false)
 
@@ -173,6 +175,7 @@ export default function App({
     return apps
       .filter(
         (item) =>
+          item.id !== burnApp?.id &&
           item.id !== store?.appId &&
           item.id !== chrry?.id &&
           (item.id !== grape?.id || !isBlossom) &&
@@ -211,10 +214,10 @@ export default function App({
       })
   }
 
-  // Use apps from context - sort: store base app first, Chrry second, rest keep original order
-  const [appsState, setApps] = React.useState(getApps())
-
   const appsInternal = getApps()
+
+  // Use apps from context - sort: store base app first, Chrry second, rest keep original order
+  const [appsState, setApps] = React.useState(appsInternal)
 
   useEffect(() => {
     setApps(appsInternal)
@@ -381,7 +384,7 @@ export default function App({
 
   const BurnButton = ({ style }: { style?: CSSProperties } = {}) => (
     <Button
-      className="link"
+      className={`link ${burn ? "pulse" : ""}`}
       style={{
         ...utilities.link.style,
         ...styles.grip.style,
@@ -392,15 +395,16 @@ export default function App({
       }}
       title={t("Burn")}
       onClick={() => {
-        setBurn(!burn)
-        !burn && toggleInstructions()
+        const newBurn = burnApp?.id === app?.id || !auth.burn
+        setBurn(newBurn)
+        !newBurn && toggleInstructions()
       }}
     >
       <Span
         style={{
           fontSize: 24,
           filter: "drop-shadow(0 0 6px rgba(255, 100, 0, 0.6))",
-          animation: "pulse 2s ease-in-out infinite",
+          // animation: "pulse 2s ease-in-out infinite",
         }}
       >
         🔥
@@ -1075,7 +1079,7 @@ export default function App({
                 </A>
               )
             )}
-            {!isManagingApp && grape && !burn ? (
+            {!isManagingApp && grape ? (
               <Button
                 // href={getAppSlug(grape)}
                 title={t("Discover apps, earn credits")}
@@ -1149,7 +1153,7 @@ export default function App({
               !canEditApp &&
               !isManagingApp &&
               (canBurn ? (
-                <BurnButton style={{ top: -5, left: -5 }} />
+                <BurnButton style={{ top: -5, right: -5 }} />
               ) : (
                 <Span style={{ ...styles.grip.style }}>
                   <Grip size={24} color="var(--accent-1)" />

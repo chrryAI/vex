@@ -47,7 +47,6 @@ import EmptyStateTips from "./EmptyStateTips"
 import ThemeSwitcher from "./ThemeSwitcher"
 import { useMenuStyles } from "./Menu.styles"
 import A from "./a/A"
-import Controls from "./Controls"
 
 export default function Menu({
   className,
@@ -97,9 +96,8 @@ export default function Menu({
   const { app } = useApp()
 
   // Platform context
-  const { viewPortHeight, os } = usePlatform()
+  const { isTauri: tauri, os, viewPortHeight } = usePlatform()
 
-  const tauri = isTauri()
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   // Detect fullscreen state in Tauri
@@ -107,13 +105,16 @@ export default function Menu({
     if (tauri && typeof window !== "undefined") {
       const checkFullscreen = async () => {
         try {
-          // @ts-ignore - Tauri API
           const { getCurrentWindow } = await import("@tauri-apps/api/window")
           const appWindow = getCurrentWindow()
-          const fullscreen = await appWindow.isFullscreen()
-          setIsFullscreen(fullscreen)
+
+          // Check if isFullscreen method exists (Tauri v2+)
+          if (typeof appWindow.isFullscreen === "function") {
+            const fullscreen = await appWindow.isFullscreen()
+            setIsFullscreen(fullscreen)
+          }
         } catch (e) {
-          // Tauri API not available
+          // Silent fail - not critical
         }
       }
 
@@ -268,17 +269,44 @@ export default function Menu({
         ref={innerRef}
         style={{
           ...styles.menu.style,
-          paddingBottom: os === "ios" ? 10 : 0,
+          paddingBottom: os === "ios" || tauri ? 10 : 0,
           ...(isDrawerOpen ? styles.open.style : styles.closed.style),
         }}
       >
         <>
           <Div>
             {/* <Controls /> */}
+            {!isFullscreen && tauri && (
+              <Div
+                data-tauri-drag-region
+                onDoubleClick={async () => {
+                  if (!isTauri) return
+                  try {
+                    const { getCurrentWindow } = await import(
+                      "@tauri-apps/api/window"
+                    )
+                    const appWindow = getCurrentWindow()
+                    const isMaximized = await appWindow.isMaximized()
+                    if (isMaximized) {
+                      await appWindow.unmaximize()
+                    } else {
+                      await appWindow.maximize()
+                    }
+                  } catch (e) {
+                    // Tauri API not available
+                  }
+                }}
+                style={{
+                  height: "1.5rem",
+                  width: "100%",
+                  cursor: "default",
+                  // backgroundColor: "var(--background-1)",
+                }}
+              ></Div>
+            )}
             <Div
               style={{
                 ...styles.menuHeader.style,
-                ...(tauri && !isFullscreen ? { marginTop: "1.5rem" } : {}),
               }}
             >
               {isDrawerOpen ? (

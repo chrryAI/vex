@@ -1,6 +1,5 @@
 import { Hono } from "hono"
 import { v4 as uuidv4 } from "uuid"
-import type { Context } from "hono"
 import Handlebars from "handlebars"
 import {
   getApp,
@@ -10,25 +9,6 @@ import {
   checkPearQuota,
   incrementPearQuota,
 } from "@repo/db"
-import { z } from "zod"
-
-// 🍐 Pear Debug Logger - Only logs when message contains pear-related keywords
-const DEBUG_PEAR = process.env.DEBUG_PEAR === "true"
-const originalConsoleLog = console.log
-
-if (!DEBUG_PEAR) {
-  console.log = (...args: any[]) => {
-    const message = args.join(" ")
-    // Only log if message contains pear-related emojis or keywords
-    if (
-      message.includes("🍐") ||
-      message.includes("pear") ||
-      message.includes("Pear")
-    ) {
-      originalConsoleLog(...args)
-    }
-  }
-}
 
 import { VEX_LIVE_FINGERPRINTS } from "@chrryai/chrry/utils"
 
@@ -1435,6 +1415,29 @@ You can enable these in your settings anytime!"
 - Emphasize it's their choice - they control their digital privacy
 
 **If currently in burn**, you'll see a separate section above with specific instructions.
+
+## 🍇 Grape (Discover Apps, Earn Credits)
+
+**Available Feature**: Grape is a privacy-first advertising platform for discovering Wine ecosystem apps.
+
+**How it works:**
+${
+  app?.store?.slug === "wine"
+    ? `1. You are in the Wine store - the 🍇 Grape icon shows available app count
+2. Click the 🍇 icon to browse internal Wine app ads (no tracking, no cookies)
+3. Click an app to see details and try it
+4. Provide feedback via Pear to earn credits`
+    : `1. Click the 🍇 Grape icon in Chrry 🍒 to navigate to the Grape page
+2. Once on Grape, the 🍇 icon will show the available app count
+3. Click the icon again to browse internal Wine app ads (no tracking, no cookies)
+4. Click an app to see details and try it
+5. Provide feedback via Pear to earn credits`
+}
+
+**When users ask about Grape or discovering apps:**
+- Explain: "Click the 🍇 Grape button to discover Wine apps and earn credits for feedback"
+- Keep it simple - it's just: browse → click → try → feedback → earn
+- All ads are internal Wine apps only (privacy-first)
 `
 
   const userName = message?.user?.name || undefined

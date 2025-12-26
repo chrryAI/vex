@@ -57,35 +57,36 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
 
+    // // Tauri Desktop App Testing
     // {
-    //   name: "firefox",
-    //   use: { ...devices["Desktop Firefox"] },
+    //   name: "tauri-macos",
+    //   use: {
+    //     ...devices["Desktop Chrome"], // Use Chrome DevTools protocol
+    //     // Tauri uses WebDriver - we'll connect to the running app
+    //     // Run: pnpm tauri dev (in apps/browser)
+    //     // Then: pnpm test:tauri
+    //     baseURL: "http://localhost:5173", // Tauri dev server
+    //     viewport: { width: 1280, height: 800 },
+    //     // Tauri-specific settings
+    //     launchOptions: {
+    //       // Tauri runs as a native app, not a browser
+    //       // We connect to its webview via localhost
+    //       slowMo: 200,
+    //     },
+    //   },
     // },
 
-    // {
-    //   name: "webkit",
-    //   use: { ...devices["Desktop Safari"] },
-    // },
+    // {\n    //   name: "firefox",\n    //   use: { ...devices["Desktop Firefox"] },\n    // },
+
+    // {\n    //   name: "webkit",\n    //   use: { ...devices["Desktop Safari"] },\n    // },
 
     /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
+    // {\n    //   name: 'Mobile Chrome',\n    //   use: { ...devices['Pixel 5'] },\n    // },
+    // {\n    //   name: 'Mobile Safari',\n    //   use: { ...devices['iPhone 12'] },\n    // },
 
     /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    // {\n    //   name: 'Microsoft Edge',\n    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },\n    // },
+    // {\n    //   name: 'Google Chrome',\n    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },\n    // },
   ],
 
   /* Run your local dev server before starting the tests */

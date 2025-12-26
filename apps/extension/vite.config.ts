@@ -99,7 +99,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.8.22",
+    version: siteConfig.version || "1.8.45",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -220,6 +220,7 @@ export default async ({ command, mode }) => {
     define: {
       // Vite requires string literals for replacement
       __DEV__: !isProduction,
+
       "import.meta.env.VITE_NODE_ENV": JSON.stringify(
         isProduction ? "production" : "development",
       ),

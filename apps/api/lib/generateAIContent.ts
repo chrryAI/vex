@@ -72,16 +72,29 @@ CONVERSATION:
 ${conversationText}
 
 Extract TWO types of memories:
-1. USER MEMORIES: Personal information about this specific user (preferences, relationships, personal facts, goals)
-2. APP/GENERAL MEMORIES: Universal knowledge useful for ALL users (facts, instructions, context, patterns)
+1. USER MEMORIES: Personal information about this specific user (preferences, relationships, personal facts, goals, settings)
+2. APP/GENERAL MEMORIES: Universal knowledge useful for ALL users (facts, instructions)
 
 Category guide:
 - "preference" = User's personal preferences (USER memory)
 - "relationship" = User's connections with others (USER memory)
 - "goal" = User's personal goals (USER memory)
-- "fact" = Universal/general knowledge (APP memory)
-- "instruction" = How to do something (APP memory)
-- "context" = General patterns or insights (APP memory)
+- "context" = User-specific patterns, settings, or behavioral insights (USER memory)
+- "fact" = Universal/general knowledge useful for ALL users (APP memory)
+- "instruction" = How to do something, general how-to knowledge (APP memory)
+
+USER MEMORY EXAMPLES:
+- "Cross-conversation memory is ENABLED for this user" (category: context)
+- "User prefers detailed technical explanations" (category: preference)
+- "User is a React developer working on e-commerce" (category: context)
+- "User's goal is to learn TypeScript" (category: goal)
+
+APP MEMORY EXAMPLES:
+- "This app supports file uploads up to 50MB" (category: fact)
+- "To create a task, use the /task command" (category: instruction)
+- "React hooks were introduced in version 16.8" (category: fact)
+
+⚠️ CRITICAL: User settings, personal patterns, and behavioral insights are USER memories (category: context), NOT app memories.
 
 Generate ONLY a valid JSON array with no additional text (max 5 memories):
 [
@@ -140,13 +153,41 @@ async function extractAndSaveMemories(
   for (const memory of memories.slice(0, 5)) {
     try {
       // Check if this should be an app memory or user memory
-      // App memories: facts, instructions, general knowledge
-      // User memories: preferences, personal facts, relationships
-      const isAppMemory =
+      // App memories: ONLY facts and instructions (universal knowledge)
+      // User memories: preferences, context, relationships, goals (personal info)
+      let isAppMemory =
         appId &&
-        (memory.category === "fact" ||
-          memory.category === "instruction" ||
-          memory.category === "context")
+        (memory.category === "fact" || memory.category === "instruction")
+      // Note: "context" is now treated as USER memory by default
+
+      // Safety check: Never store user-specific content as app memory
+      if (isAppMemory) {
+        const userSpecificKeywords = [
+          "user is",
+          "user has",
+          "user prefers",
+          "user wants",
+          "their",
+          "they",
+          "personal",
+          "settings",
+          "enabled",
+          "disabled",
+          "this user",
+          "the user",
+        ]
+        const contentLower = memory.content.toLowerCase()
+        const hasUserSpecificContent = userSpecificKeywords.some((keyword) =>
+          contentLower.includes(keyword),
+        )
+
+        if (hasUserSpecificContent) {
+          console.log(
+            `⚠️ Reclassifying as user memory (user-specific content detected): ${memory.title}`,
+          )
+          isAppMemory = false
+        }
+      }
 
       // Skip user memories if user has disabled them (privacy)
       // But ALWAYS save app memories (institutional knowledge, no privacy concern)

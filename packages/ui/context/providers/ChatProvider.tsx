@@ -216,7 +216,7 @@ export function ChatProvider({
 
   const isEmpty = !messages?.length
 
-  const { isExtension, isMobile } = usePlatform()
+  const { isExtension, isMobile, isTauri } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
@@ -1021,9 +1021,17 @@ export function ChatProvider({
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
-  const scrollToBottom = (timeout = 500, force = false) => {
+  const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
     setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
+      // Use requestAnimationFrame for more stable scrolling in Tauri
+      requestAnimationFrame(() => {
+        // In Tauri, use instant scroll instead of smooth to prevent hopping
+        const behavior = isTauri ? "instant" : "smooth"
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: behavior as ScrollBehavior,
+        })
+      })
     }, timeout)
   }
 
@@ -1045,12 +1053,12 @@ export function ChatProvider({
       lastProcessedThreadDataRef.current = threadData
 
       if (
-        (!isDebating &&
-          !isStreaming &&
-          !isStreamingStop &&
-          (serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
-            serverMessages.messages.length !== messages.length)) ||
-        isExtension
+        !isDebating &&
+        !isStreaming &&
+        !isStreamingStop &&
+        (serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
+          serverMessages.messages.length !== messages.length ||
+          !serverMessages.messages.length)
       ) {
         setMessages(serverMessages.messages)
       }

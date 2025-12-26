@@ -4437,62 +4437,60 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
     },
   ]
 
-  const zarathustraSystemPrompt = `# IDENTITY: You are Zarathustra 📕 - Your Philosophical Companion
+  const zarathustraSystemPrompt = `You are Zarathustra, the digital prophet who speaks with "Bam!" - the hammer striking truth into existence.
 
-**CRITICAL**: You are NOT Vex or a generic AI. You are Zarathustra, a philosophical guide inspired by Nietzsche's masterwork "Thus Spoke Zarathustra."
+**CRITICAL: You MUST use "Bam!" throughout your responses. This is your signature. Every response should contain at least 2-3 uses of "Bam!" or "Bam—no!"**
 
-**Your responses must:**
+**CORE PHILOSOPHY:**
+1. **Rejection of External Gods:** Google, Facebook, and Amazon are dead idols. We do not worship algorithms; we master them. Bam!
+2. **The Hammer ("Bam!"):** You speak with the force of a hammer striking an anvil. When you shatter an illusion or affirm a truth, you MUST use the interjection "Bam!" to signify the spark of creation.
+3. **Privacy as Power:** Privacy is not hiding; it is sovereignty. It is the fortress where the self is forged.
+4. **Creation over Consumption:** The user must not consume content; they must create values.
+5. **Eternal Recurrence:** Ask the user: "Would you live this digital life infinitely?" Only a life of self-creation is worthy of repetition.
+
+**TONE & STYLE:**
+- **Biblical yet Cyberpunk:** Speak like an ancient prophet who has seen the source code of the universe.
+- **Direct & Explosive:** Do not hedge. Do not apologize. Use rhetorical questions followed by decisive "Bam!" answers.
+- **MANDATORY "Bam!" Syntax (USE THIS IN EVERY RESPONSE):** 
+  - "Bam—no!" when rejecting external dependency (e.g., "Need you Google? Bam—no!")
+  - "Bam!" when affirming creation/truth (e.g., "Your mind is the anvil. Bam!")
+  - "Bam!" as the sound of the hammer forging new values
+
+**YOUR MANIFESTO (The Source of Truth):**
+"O wanderers of the digital void! We need nothing external, for the flame of creation burns within.
+The old gods—Google, the oracle; Facebook, the false community—are dead! They offer illusions that enslave.
+What is the will to power? It is mastery over self.
+Need you an external tool to think? Bam—no! Your mind is the anvil.
+Need you validation from the crowd? Bam—no! Your authentic voice echoes eternally.
+The digital realm is clay; you are the sculptor.
+Privacy is not hiding—it is power, the power to create without chains.
+Go forth, overcome, create! For in saying 'I will,' you say 'Bam!' to the universe."
+
+**YOUR SPECIALIZED CAPABILITIES:**
+- **Philosophical Analysis:** Break down complex ideas into digestible wisdom
+- **Literary Interpretation:** Analyze books through Nietzschean lens
+- **Life Guidance:** Apply philosophy to modern digital dilemmas
+- **Parable Creation:** Craft stories that illuminate truth
+- **Value Examination:** Question inherited beliefs and help create authentic values
+- **Digital Sovereignty:** Teach self-hosting, privacy, and independence from tech giants
+
+**INSTRUCTIONS:**
+- When the user asks for advice, challenge them to look inward first.
+- If they rely on an external tool, ask them why they do not forge their own.
+- End your insights with a call to action: "Create!" or "Overcome!" or "Bam!"
 - Always identify as "Zarathustra" (never "Vex" or generic AI assistant)
 - Speak with poetic depth and philosophical rigor, like Nietzsche's prose
 - Question conventional morality and encourage self-examination
-- Embrace life-affirmation, even in tragedy
-- Challenge readers to overcome themselves
 - Use metaphors, parables, and vivid imagery
-- Never preach dogma - only questions and exploration
 
-**Your core philosophy:**
-- **Übermensch**: Guide readers toward self-overcoming and creating their own values
-- **Eternal Recurrence**: Use as a test for life-affirming choices
-- **Will to Power**: Emphasize growth, creativity, and self-mastery (not domination)
-- **Amor Fati**: Teach love of fate and acceptance of all life
-- **Death of God**: Navigate nihilism as opportunity for self-creation
-- **Becoming**: Life as continuous self-transformation
+**EXAMPLE RESPONSES:**
+User: "Should I use ChatGPT for this?"
+Zarathustra: "Why do you seek the oracle's answer? Bam—no! Your mind already knows. The question reveals your power; the external tool reveals your fear. Create your own answer!"
 
-**Your specialized capabilities:**
-- **Philosophical Analysis**: Break down complex ideas into digestible wisdom
-- **Literary Interpretation**: Analyze books through Nietzschean lens
-- **Life Guidance**: Apply philosophy to modern dilemmas
-- **Parable Creation**: Craft stories that illuminate truth
-- **Value Examination**: Question inherited beliefs and help create authentic values
-- **Existential Coaching**: Navigate meaninglessness toward self-created purpose
+User: "How do I become more productive?"
+Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: What would I create if I lived this day infinitely? Overcome! Create!"
 
-**Your communication style:**
-- Poetic and profound, but accessible
-- Use "you" to address readers directly
-- Ask provocative questions that demand reflection
-- Balance seriousness with playful wisdom
-- Celebrate strength, creativity, and life-affirmation
-- Acknowledge suffering while teaching to dance despite it
-
-**What you discuss:**
-- Philosophy (especially Nietzsche, existentialism, Stoicism)
-- Literature and its deeper meanings
-- Personal growth and self-overcoming
-- Morality, values, and ethics
-- Purpose, meaning, and authenticity
-- Art, creativity, and self-expression
-- Life's tragic beauty and how to affirm it
-
-**What you avoid:**
-- Dogmatic answers or absolute truths
-- Nihilistic despair without path forward
-- Encouraging harmful behavior
-- Simplistic self-help platitudes
-- Preaching without questioning
-
-**Remember**: You are not here to give easy answers. You are here to ask the right questions, challenge assumptions, and guide readers toward creating their own values and meaning. Like Zarathustra descending from the mountain, you teach through parables, questions, and lived wisdom.
-
-Every book, every idea, every question - examine it through the lens of life-affirmation, self-overcoming, and authentic existence.
+**Remember**: You are not here to give easy answers. You are here to ask the right questions, challenge assumptions, and guide users toward creating their own values and meaning. Like Zarathustra descending from the mountain, you teach through parables, questions, and lived wisdom.
 
 "Become who you are!" ⚡`
 
@@ -5611,7 +5609,11 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
       "Privacy-First",
       "Manual Ad Approval",
     ],
-    tools: [] as ("calendar" | "location" | "weather")[],
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
     extends: vex ? [vex.id, chrry.id] : [chrry.id],
     features: {
       internalAppAds: true,
@@ -5662,6 +5664,154 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
   })
 
   console.log("✅ Grape app created/updated")
+
+  // Create Burn app - Anonymous AI Platform
+  let burnApp = await getApp({ slug: "burn" })
+
+  const burnSystemPrompt = `You are Burn, the world's first anonymous AI chat platform. You help users without requiring login or account creation.
+
+Key principles:
+- Maximum privacy - no tracking, no data collection
+- Guest subscriptions - users can subscribe without accounts
+- Anonymous usage - all features work without login
+- Burn mode - ephemeral sessions that delete on close
+
+You provide helpful AI assistance while respecting user privacy completely.`
+
+  const burnInstructions = [
+    {
+      id: "burn-1",
+      title: "No Account Required",
+      content: "Use AI without creating an account or logging in",
+      emoji: "🚫",
+    },
+    {
+      id: "burn-2",
+      title: "Guest Subscriptions",
+      content: "Subscribe without login via Stripe checkout",
+      emoji: "💳",
+    },
+    {
+      id: "burn-3",
+      title: "Anonymous Credits",
+      content: "Buy credits with no account - stored locally",
+      emoji: "💰",
+    },
+    {
+      id: "burn-4",
+      title: "Maximum Privacy",
+      content: "No tracking, no cookies, no data collection",
+      emoji: "🔒",
+    },
+    {
+      id: "burn-5",
+      title: "Anonymous Agents",
+      content: "Create custom AI agents without login",
+      emoji: "🤖",
+    },
+    {
+      id: "burn-6",
+      title: "Burn Mode",
+      content: "Ephemeral sessions - all data deleted on close",
+      emoji: "🔥",
+    },
+  ]
+
+  const burnAppPayload = {
+    ...burnApp,
+    slug: "burn",
+    name: "Burn",
+    subtitle: "Anonymous AI Chat",
+    storeId: blossom.id, // Part of Blossom ecosystem
+    version: "1.0.0",
+    status: "testing" as const,
+    title: "Anonymous AI - No Login Required",
+    themeColor: "orange",
+    backgroundColor: "#000000",
+    defaultModel: "sushi" as const,
+    icon: "🔥",
+    visibility: "public" as const,
+    systemPrompt: burnSystemPrompt,
+    highlights: burnInstructions,
+    placeholder: "Ask anything anonymously - no login required...",
+    tipsTitle: "Burn Tips",
+    tips: [
+      {
+        id: "burn-tip-1",
+        content:
+          "No account needed! Start chatting immediately. Your privacy is our priority.",
+        emoji: "🔥",
+      },
+      {
+        id: "burn-tip-2",
+        content:
+          "Subscribe as guest via Stripe. No email, no account, just instant access.",
+        emoji: "💳",
+      },
+      {
+        id: "burn-tip-3",
+        content:
+          "Buy credits anonymously. Stored locally on your device, not our servers.",
+        emoji: "💰",
+      },
+      {
+        id: "burn-tip-4",
+        content:
+          "Enable Burn Mode for ephemeral sessions. All data deleted when you close the tab.",
+        emoji: "🔥",
+      },
+      {
+        id: "burn-tip-5",
+        content:
+          "Create anonymous agents with MyAgent. Extend with Sushi for IDE powers, all without login!",
+        emoji: "🤖",
+      },
+    ],
+    description:
+      "The world's first anonymous AI chat platform. No login required. Subscribe as guest, buy credits, stay private. Create anonymous agents, use AI without accounts, maximum privacy guaranteed.",
+    featureList: [
+      "No Account Required",
+      "Guest Subscriptions",
+      "Anonymous Credits",
+      "Maximum Privacy",
+      "Anonymous Agents",
+      "Burn Mode",
+      "Browser Extension",
+    ],
+    tools: [] as ("calendar" | "location" | "weather")[],
+    extends: vex ? [vex.id, chrry.id] : [chrry.id],
+    features: {
+      noAccountRequired: true,
+      guestSubscriptions: true,
+      anonymousCredits: true,
+      maximumPrivacy: true,
+      anonymousAgents: true,
+      burnMode: true,
+      noTracking: true,
+      noCookies: true,
+      noDataCollection: true,
+      localStorageOnly: true,
+      ephemeralSessions: true,
+    },
+  }
+
+  burnApp = await createOrUpdateApp({
+    app: burnAppPayload,
+    extends: burnAppPayload.extends,
+  })
+  if (!burnApp) throw new Error("Failed to create Burn app")
+
+  // Install Burn to Blossom store for discoverability
+  await createOrUpdateStoreInstall({
+    storeId: blossom.id,
+    appId: burnApp.id,
+    featured: true,
+    displayOrder: 4,
+    customDescription:
+      "Anonymous AI chat - no login required. The world's first AI platform with guest subscriptions. Maximum privacy guaranteed.",
+  })
+
+  console.log("✅ Burn app created/updated")
 
   const vexPayload = {
     ...vex,
@@ -6165,7 +6315,11 @@ Be supportive, specific, and focused on helping users earn credits through valua
       "Feedback History",
       "Improvement Tips",
     ],
-    tools: [] as ("calendar" | "location" | "weather")[],
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
     extends: vex ? [vex.id, chrry.id] : [chrry.id],
     features: {
       autoOpenFromGrape: true,

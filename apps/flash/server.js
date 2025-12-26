@@ -1,17 +1,9 @@
-// Initialize New Relic APM (must be first!)
-if (
-  process.env.NODE_ENV === "production" &&
-  process.env.NEW_RELIC_LICENSE_KEY
-) {
-  await import("newrelic")
-  console.log("✅ New Relic APM initialized for Flash SSR")
-}
-
 import "dotenv/config"
 import fs from "node:fs/promises"
 import express from "express"
 import cookieParser from "cookie-parser"
 import { Transform } from "node:stream"
+import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 // const getEnv = () => {
 //   if (typeof import.meta !== "undefined") {
@@ -26,7 +18,7 @@ import { Transform } from "node:stream"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.8.22"
+const VERSION = "1.8.45"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -49,10 +41,26 @@ app.set("trust proxy", 1)
 
 app.use(cookieParser())
 
+// Initialize Arcjet for rate limiting and security
+const aj = arcjet({
+  key: process.env.ARCJET_KEY || "test-key",
+  characteristics: ["ip"],
+  rules: [
+    // Shield protects against common attacks
+    shield({ mode: "LIVE" }),
+    // Rate limit SSR requests to prevent DoS
+    fixedWindow({
+      mode: "LIVE",
+      window: "1m",
+      max: 100, // 100 requests per minute per IP
+    }),
+  ],
+})
+
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
 let vite
-if (!isProduction) {
+if (isDev) {
   const { createServer } = await import("vite")
   vite = await createServer({
     server: { middlewareMode: true },
@@ -410,8 +418,43 @@ app.get("/manifest.json", async (req, res) => {
   }
 })
 
-// Serve HTML
-app.use("*all", async (req, res) => {
+// Serve HTML with rate limiting (catch-all route)
+app.use(async (req, res) => {
+  // Whitelist subdomains and localhost
+  const host = req.get("host") || ""
+  const hostname = host.split(":")[0] // Remove port if present
+
+  const isWhitelisted =
+    hostname.endsWith(".chrry.ai") || // All subdomains
+    hostname === "chrry.ai" || // Main domain
+    hostname.startsWith("localhost") || // Local development
+    hostname.startsWith("127.0.0.1") || // Local IP
+    isDev || // Development mode
+    isE2E // E2E testing
+
+  // Debug logging
+  if (hostname.includes("e2e") || hostname.includes("staging")) {
+    console.log("🔍 Host check:", {
+      host,
+      hostname,
+      isWhitelisted,
+      isDev,
+      isE2E,
+      endsWithChrryAi: hostname.endsWith(".chrry.ai"),
+    })
+  }
+
+  // Apply Arcjet protection (skip for whitelisted hosts)
+  if (!isWhitelisted) {
+    const decision = await aj.protect(req)
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        return res.status(429).json({ error: "Too many requests" })
+      }
+      return res.status(403).json({ error: "Forbidden" })
+    }
+  }
   try {
     const url = req.originalUrl.replace(base, "")
 
