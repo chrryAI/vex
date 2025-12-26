@@ -18,40 +18,17 @@ export type SiteMode =
   | "e2eVex"
   | "staging"
 
-/// <reference types="chrome" />
-
-export const getEnv = () => {
+// Function declaration is hoisted, so it's available before const declarations
+function getEnv() {
+  let result = undefined
   if (typeof import.meta !== "undefined") {
-    return (import.meta as any).env || {}
+    result = (import.meta as any).env
   }
-
-  if (typeof process === "undefined") return {}
-  return process.env || {}
+  if (typeof process !== "undefined") {
+    result = process.env
+  }
+  return result || {}
 }
-
-export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"
-
-export const checkIsExtension = () => {
-  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
-    return true
-  }
-  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
-    return true
-  }
-  return false
-}
-
-export const isProduction =
-  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
-
-export const isDevelopment = checkIsExtension()
-  ? [
-      "jnngfghgbmieehkfebkogjjiepomakdh",
-      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
-    ].some((id) => getExtensionUrl()?.includes(id))
-  : !isProduction
-
-export const isTestingDevice = false && isDevelopment
 
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
@@ -1782,7 +1759,7 @@ export function getSiteTranslation(
   return catalog[locale] ?? catalog.en
 }
 
-export const getExtensionUrl = () => {
+const getExtensionUrl = () => {
   if (typeof window === "undefined") return
   if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
     return chrome.runtime.getURL("index.html") // Chrome
@@ -1793,15 +1770,40 @@ export const getExtensionUrl = () => {
   return `${window.location.origin}/index.html` // Fallback
 }
 
+const checkIsExtension = () => {
+  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
+    return true
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
+    return true
+  }
+  return false
+}
+
+const isProduction =
+  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+
+const isDevelopment = checkIsExtension()
+  ? [
+      "jnngfghgbmieehkfebkogjjiepomakdh",
+      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
+    ].some((id) => getExtensionUrl()?.includes(id)) ||
+    // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
+    // Packed extensions from store have mixed case IDs
+    Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
+  : !isProduction
+
 export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
   // Inline isDevelopment check to avoid circular dependency
 
-  const defaultMode = isE2E
-    ? "e2eVex"
-    : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
+  const defaultMode = isDevelopment
+    ? ("grape" as SiteMode)
+    : isE2E
+      ? "e2eVex"
+      : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -1817,6 +1819,24 @@ export function detectSiteModeDomain(
     } catch (e) {
       console.log("Error parsing URL:", e)
     }
+  }
+
+  if (!host || isDevelopment) {
+    return defaultMode
+  }
+
+  // Helper function to check if hostname matches or is subdomain of domain
+
+  // Check if running in a browser extension
+  if (
+    typeof window !== "undefined" &&
+    window.location?.protocol?.startsWith("chrome-extension")
+  ) {
+    console.log(
+      "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
+      defaultMode,
+    )
+    return defaultMode
   }
 
   // Domain-based detection (use exact match or subdomain check)
@@ -1888,24 +1908,6 @@ export function detectSiteModeDomain(
   if (matchesDomain(host, "sushi.chrry.ai")) {
     return "sushi"
   }
-
-  // if (!host || isDevelopment) {
-  //   return defaultMode
-  // }
-
-  // // Helper function to check if hostname matches or is subdomain of domain
-
-  // // Check if running in a browser extension
-  // if (
-  //   typeof window !== "undefined" &&
-  //   window.location?.protocol?.startsWith("chrome-extension")
-  // ) {
-  //   console.log(
-  //     "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
-  //     defaultMode,
-  //   )
-  //   return defaultMode
-  // }
 
   // City subdomains
 
