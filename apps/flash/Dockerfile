@@ -84,7 +84,7 @@ COPY --chown=viteuser:nodejs --from=builder /app/packages ./packages
 
 # Ensure ALL directories are writable by viteuser (Vite needs to create .vite/deps_temp)
 # This must be done AFTER all COPY commands and BEFORE USER switch
-RUN chown -R viteuser:nodejs /app
+# RUN chown -R viteuser:nodejs /app
 
 # Switch to non-root user
 USER viteuser
