@@ -233,7 +233,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.68",
+  version: "26.10.69",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -869,7 +869,7 @@ const burn = {
   store: "https://chrry.ai",
   email: "iliyan@chrry.ai",
   description:
-    "Anonymous AI chat - No login required. Subscribe as guest, buy credits, stay private. The world's first AI platform with guest subscriptions.",
+    "Anonymous AI chat. No login required. Guest subscriptions, private credits, anonymous agents. Maximum privacy guaranteed.",
   logo: "🔥",
   primaryColor: "#F97316", // Orange/fire color
   links: {

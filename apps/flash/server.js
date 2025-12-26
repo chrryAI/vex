@@ -424,6 +424,8 @@ app.use(async (req, res) => {
   const host = req.get("host") || ""
   const hostname = host.split(":")[0] // Remove port if present
 
+  // SECURITY: Rate limiting via Arcjet (aj.protect)
+  // Whitelisted domains (.chrry.ai, localhost) are trusted and skip rate limiting
   const isWhitelisted =
     hostname.endsWith(".chrry.ai") || // All subdomains
     hostname === "chrry.ai" || // Main domain
