@@ -179,6 +179,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isRemovingApp,
     setIsRemovingApp,
     burn,
+    burnApp,
+    burning,
     setBurn,
   } = useAuth()
   const { actions } = useData()
@@ -489,19 +491,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }),
   )
 
-  const contextInstructions = useMemo(
-    () =>
-      (burn
-        ? ((app?.slug === "zarathustra"
-            ? getExampleInstructions({ slug: "zarathustra" })
-            : app?.highlights) as instruction[])
-        : app
-          ? (user?.instructions || guest?.instructions || []).filter(
-              (i) => i.appId === app?.id,
-            )
-          : []) || [],
-    [app, user?.instructions, guest?.instructions, burn],
-  )
+  const contextInstructions = useMemo(() => {
+    if (burning) {
+      if (app?.slug === "zarathustra" && !burnApp) {
+        return getExampleInstructions({ slug: "zarathustra" }) as instruction[]
+      }
+      // return burnApp?.highlights as instruction[]
+    }
+
+    return app
+      ? (user?.instructions || guest?.instructions || []).filter(
+          (i) => i.appId === app?.id,
+        )
+      : []
+  }, [burn, burnApp, app, user?.instructions, guest?.instructions, burning])
 
   const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
 

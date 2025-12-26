@@ -1079,7 +1079,7 @@ export default function App({
                 </A>
               )
             )}
-            {!isManagingApp && grape && !burn ? (
+            {!isManagingApp && grape ? (
               <Button
                 // href={getAppSlug(grape)}
                 title={t("Discover apps, earn credits")}

@@ -301,8 +301,6 @@ export default function SignIn({
     }
   }, [])
 
-  console.log(`🚀 ~ handleGoogleAuth ~ isExtension:`, isExtension)
-
   const handleGoogleAuth = async () => {
     if (!isExtension) {
       const { successUrl, errorUrl } = getCallbacks()

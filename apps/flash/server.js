@@ -17,9 +17,8 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 // }
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
-console.log(`🚀 ~ isE2E:`, isE2E)
 
-const VERSION = "1.8.38"
+const VERSION = "1.8.41"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Array of app names
-apps=("atlas" "bloom" "blossom" "chrry" "focus" "peach" "popcorn" "sushi" "vault" "vex" "zarathustra" "search", "pear", "grape")
+apps=("atlas" "bloom" "blossom" "chrry" "focus" "peach" "popcorn" "sushi" "vault" "vex" "zarathustra" "search" "burn" "pear" "grape")
 
 # Icon sizes
 sizes=(16 32 48 128)
