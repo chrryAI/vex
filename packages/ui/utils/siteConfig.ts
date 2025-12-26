@@ -16,21 +16,9 @@ export type SiteMode =
   | "sushi"
   | "grape"
   | "e2eVex"
+  | "staging"
 
-// Function declaration is hoisted, so it's available before const declarations
-function getEnv() {
-  let result = undefined
-  if (typeof import.meta !== "undefined") {
-    result = (import.meta as any).env
-  }
-  if (typeof process !== "undefined") {
-    result = process.env
-  }
-  return result || {}
-}
-
-export const isE2E =
-  getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
+import { isDevelopment, isE2E, getEnv } from "./env"
 
 const chrryDev = {
   mode: "chrryDev" as SiteMode,
@@ -197,7 +185,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.68",
+  version: "26.10.67",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -829,6 +817,12 @@ const e2eVex = {
   // store: "https://e2e.chrry.ai",
 }
 
+const staging = {
+  ...chrryAI,
+  // url: "https://staging.chrry.ai",
+  domain: "staging.chrry.ai",
+}
+
 const sushi = {
   url: "https://sushi.chrry.ai",
   mode: "sushi" as SiteMode,
@@ -1419,6 +1413,13 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
       description: "E2E Testing Environment for Vex.",
     },
   },
+  staging: {
+    en: {
+      title: "Staging - AI Assistant for Development",
+      description:
+        "Your personal AI assistant designed for Staging and Development. Chat in English, collaborate locally, and get things done faster.",
+    },
+  },
   tokyo: {
     en: {
       title: "Tokyo - AI Assistant for Japan",
@@ -1756,35 +1757,15 @@ const getExtensionUrl = () => {
   return `${window.location.origin}/index.html` // Fallback
 }
 
-const checkIsExtension = () => {
-  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
-    return true
-  }
-  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
-    return true
-  }
-  return false
-}
-
-const isProduction =
-  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
-
-const isDevelopment = checkIsExtension()
-  ? [
-      "jnngfghgbmieehkfebkogjjiepomakdh",
-      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
-    ].some((id) => getExtensionUrl()?.includes(id))
-  : !isProduction
-
 export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
   // Inline isDevelopment check to avoid circular dependency
 
-  const defaultMode =
-    (getEnv().VITE_SITE_MODE as SiteMode) ||
-    (isDevelopment ? "grape" : mode || "vex")
+  const defaultMode = isE2E
+    ? "e2eVex"
+    : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -1854,6 +1835,10 @@ export function detectSiteModeDomain(
     return "popcorn"
   }
 
+  if (matchesDomain(host, "staging.chrry.ai")) {
+    return "staging"
+  }
+
   // E2E testing environment
   if (matchesDomain(host, "e2e.chrry.ai")) {
     return "e2eVex" // Use vex mode for E2E
@@ -1914,6 +1899,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "sushi",
     "e2eVex",
     "grape",
+    "staging",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -1938,8 +1924,10 @@ const getClientHostname = () => {
  * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
-  if (isE2E) {
-    return e2eVex
+  // If it's a valid SiteMode, use it directly
+
+  if (hostnameOrMode && matchesDomain(hostnameOrMode, "staging.chrry.ai")) {
+    return staging
   }
   // Extract hostname from URL if needed
   let hostname = hostnameOrMode || getClientHostname()
@@ -2022,6 +2010,14 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
   if (mode === "grape") {
     return grape
+  }
+
+  if (mode === "staging") {
+    return staging
+  }
+
+  if (isE2E) {
+    return e2eVex
   }
 
   // Search configuration
