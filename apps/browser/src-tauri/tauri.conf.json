@@ -51,6 +51,21 @@
             "core:window:allow-set-fullscreen",
             "core:window:allow-start-dragging"
           ]
+        },
+        {
+          "identifier": "http-requests",
+          "description": "Allow HTTP requests to chrry.ai and chrry.dev API",
+          "windows": ["*"],
+          "permissions": ["core:default"],
+          "remote": {
+            "urls": [
+              "https://*.chrry.ai/*",
+              "https://chrry.ai/*",
+              "https://*.chrry.dev/*",
+              "https://chrry.dev/*",
+              "http://localhost:*/*"
+            ]
+          }
         }
       ]
     },

@@ -4,12 +4,22 @@
   "description": "AI Workspace for Mac - Your intelligent desktop companion",
   "type": "module",
   "scripts": {
-    "dev": "tauri dev",
+    "dev": "MODE=vex tauri dev",
     "dev:vite": "vite",
     "build": "vite build",
-    "icon:generate": "node ../scripts/generate-icons.js",
+    "icon:generate": "node ../../apps/scripts/generate-icons.js",
     "build:desktop": "pnpm icon:generate && vite build && tauri build",
-    "build:vite": "vite build"
+    "build:vite": "vite build",
+    "build:atlas": "MODE=atlas pnpm icon:generate && MODE=atlas vite build && MODE=atlas tauri build",
+    "build:focus": "MODE=focus pnpm icon:generate && MODE=focus vite build && MODE=focus tauri build",
+    "build:vex": "MODE=vex pnpm icon:generate && MODE=vex vite build && MODE=vex tauri build",
+    "build:popcorn": "MODE=popcorn pnpm icon:generate && MODE=popcorn vite build && MODE=popcorn tauri build",
+    "build:chrry": "MODE=chrryAI pnpm icon:generate && MODE=chrryAI vite build && MODE=chrryAI tauri build",
+    "build:zarathustra": "MODE=zarathustra pnpm icon:generate && MODE=zarathustra vite build && MODE=zarathustra tauri build",
+    "build:search": "MODE=search pnpm icon:generate && MODE=search vite build && MODE=search tauri build",
+    "build:grape": "MODE=grape pnpm icon:generate && MODE=grape vite build && MODE=grape tauri build",
+    "build:burn": "MODE=burn pnpm icon:generate && MODE=burn vite build && MODE=burn tauri build",
+    "build:all": "pnpm build:atlas && pnpm build:focus && pnpm build:vex && pnpm build:popcorn && pnpm build:chrry && pnpm build:zarathustra && pnpm build:search && pnpm build:grape && pnpm build:burn"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
