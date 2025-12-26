@@ -57,24 +57,24 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
 
-    // Tauri Desktop App Testing
-    {
-      name: "tauri-macos",
-      use: {
-        ...devices["Desktop Chrome"], // Use Chrome DevTools protocol
-        // Tauri uses WebDriver - we'll connect to the running app
-        // Run: pnpm tauri dev (in apps/browser)
-        // Then: pnpm test:tauri
-        baseURL: "http://localhost:5173", // Tauri dev server
-        viewport: { width: 1280, height: 800 },
-        // Tauri-specific settings
-        launchOptions: {
-          // Tauri runs as a native app, not a browser
-          // We connect to its webview via localhost
-          slowMo: 200,
-        },
-      },
-    },
+    // // Tauri Desktop App Testing
+    // {
+    //   name: "tauri-macos",
+    //   use: {
+    //     ...devices["Desktop Chrome"], // Use Chrome DevTools protocol
+    //     // Tauri uses WebDriver - we'll connect to the running app
+    //     // Run: pnpm tauri dev (in apps/browser)
+    //     // Then: pnpm test:tauri
+    //     baseURL: "http://localhost:5173", // Tauri dev server
+    //     viewport: { width: 1280, height: 800 },
+    //     // Tauri-specific settings
+    //     launchOptions: {
+    //       // Tauri runs as a native app, not a browser
+    //       // We connect to its webview via localhost
+    //       slowMo: 200,
+    //     },
+    //   },
+    // },
 
     // {\n    //   name: "firefox",\n    //   use: { ...devices["Desktop Firefox"] },\n    // },
 
