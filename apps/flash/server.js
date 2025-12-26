@@ -17,8 +17,9 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 // }
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
+console.log(`🚀 ~ isE2E:`, isE2E)
 
-const VERSION = "1.8.36"
+const VERSION = "1.8.37"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -60,7 +61,7 @@ const aj = arcjet({
 // Add Vite or respective production middlewares
 /** @type {import('vite').ViteDevServer | undefined} */
 let vite
-if (isDev || isE2E) {
+if (isDev) {
   const { createServer } = await import("vite")
   vite = await createServer({
     server: { middlewareMode: true },
@@ -422,13 +423,27 @@ app.get("/manifest.json", async (req, res) => {
 app.use(async (req, res) => {
   // Whitelist subdomains and localhost
   const host = req.get("host") || ""
+  const hostname = host.split(":")[0] // Remove port if present
+
   const isWhitelisted =
-    host.endsWith(".chrry.ai") || // All subdomains
-    host === "chrry.ai" || // Main domain
-    host.startsWith("localhost") || // Local development
-    host.startsWith("127.0.0.1") || // Local IP
+    hostname.endsWith(".chrry.ai") || // All subdomains
+    hostname === "chrry.ai" || // Main domain
+    hostname.startsWith("localhost") || // Local development
+    hostname.startsWith("127.0.0.1") || // Local IP
     isDev || // Development mode
     isE2E // E2E testing
+
+  // Debug logging
+  if (hostname.includes("e2e") || hostname.includes("staging")) {
+    console.log("🔍 Host check:", {
+      host,
+      hostname,
+      isWhitelisted,
+      isDev,
+      isE2E,
+      endsWithChrryAi: hostname.endsWith(".chrry.ai"),
+    })
+  }
 
   // Apply Arcjet protection (skip for whitelisted hosts)
   if (!isWhitelisted) {

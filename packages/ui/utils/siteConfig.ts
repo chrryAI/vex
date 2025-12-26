@@ -18,17 +18,40 @@ export type SiteMode =
   | "e2eVex"
   | "staging"
 
-// Function declaration is hoisted, so it's available before const declarations
-function getEnv() {
-  let result = undefined
+/// <reference types="chrome" />
+
+export const getEnv = () => {
   if (typeof import.meta !== "undefined") {
-    result = (import.meta as any).env
+    return (import.meta as any).env || {}
   }
-  if (typeof process !== "undefined") {
-    result = process.env
-  }
-  return result || {}
+
+  if (typeof process === "undefined") return {}
+  return process.env || {}
 }
+
+export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"
+
+export const checkIsExtension = () => {
+  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
+    return true
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
+    return true
+  }
+  return false
+}
+
+export const isProduction =
+  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+
+export const isDevelopment = checkIsExtension()
+  ? [
+      "jnngfghgbmieehkfebkogjjiepomakdh",
+      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
+    ].some((id) => getExtensionUrl()?.includes(id))
+  : !isProduction
+
+export const isTestingDevice = false && isDevelopment
 
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"
@@ -1751,6 +1774,17 @@ const matchesDomain = (host: string, domain: string): boolean => {
   return host === domain || host.endsWith(`.${domain}`)
 }
 
+export function isTauri(): boolean {
+  if (typeof window === "undefined") return false
+
+  // Check for Tauri API presence
+  return (
+    "__TAURI__" in window ||
+    "__TAURI_INTERNALS__" in window ||
+    "TAURI_EVENT_PLUGIN_INTERNALS" in window
+  )
+}
+
 export function getSiteTranslation(
   mode: SiteMode,
   locale: string,
@@ -1759,7 +1793,7 @@ export function getSiteTranslation(
   return catalog[locale] ?? catalog.en
 }
 
-const getExtensionUrl = () => {
+export const getExtensionUrl = () => {
   if (typeof window === "undefined") return
   if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
     return chrome.runtime.getURL("index.html") // Chrome
@@ -1769,29 +1803,6 @@ const getExtensionUrl = () => {
   }
   return `${window.location.origin}/index.html` // Fallback
 }
-
-const checkIsExtension = () => {
-  if (typeof chrome !== "undefined" && chrome.runtime?.id) {
-    return true
-  }
-  if (typeof browser !== "undefined" && (browser as any).runtime?.id) {
-    return true
-  }
-  return false
-}
-
-const isProduction =
-  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
-
-const isDevelopment = checkIsExtension()
-  ? [
-      "jnngfghgbmieehkfebkogjjiepomakdh",
-      "bikahnjnakdnnccpnmcpmiojnehfooio", // Known dev extension ID
-    ].some((id) => getExtensionUrl()?.includes(id)) ||
-    // Detect unpacked extensions: they have random 32-char IDs (all lowercase letters a-p)
-    // Packed extensions from store have mixed case IDs
-    Boolean(getExtensionUrl()?.match(/chrome-extension:\/\/[a-p]{32}\//))
-  : !isProduction
 
 export function detectSiteModeDomain(
   hostname?: string,
@@ -1908,6 +1919,24 @@ export function detectSiteModeDomain(
   if (matchesDomain(host, "sushi.chrry.ai")) {
     return "sushi"
   }
+
+  // if (!host || isDevelopment) {
+  //   return defaultMode
+  // }
+
+  // // Helper function to check if hostname matches or is subdomain of domain
+
+  // // Check if running in a browser extension
+  // if (
+  //   typeof window !== "undefined" &&
+  //   window.location?.protocol?.startsWith("chrome-extension")
+  // ) {
+  //   console.log(
+  //     "🔍 Running in Chrome extension, using VITE_SITE_MODE:",
+  //     defaultMode,
+  //   )
+  //   return defaultMode
+  // }
 
   // City subdomains
 
