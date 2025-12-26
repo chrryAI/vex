@@ -18,7 +18,7 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.8.35"
+const VERSION = "1.8.36"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -418,8 +418,8 @@ app.get("/manifest.json", async (req, res) => {
   }
 })
 
-// Serve HTML with rate limiting
-app.use("/*", async (req, res) => {
+// Serve HTML with rate limiting (catch-all route)
+app.use(async (req, res) => {
   // Whitelist subdomains and localhost
   const host = req.get("host") || ""
   const isWhitelisted =
