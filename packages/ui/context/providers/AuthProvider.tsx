@@ -503,6 +503,8 @@ export function AuthProvider({
 
   const chrryUrl = CHRRY_URL
 
+  console.log(`🚀 ~ chrryUrl:`, chrryUrl)
+
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
     props.session?.deviceId,
@@ -761,6 +763,8 @@ export function AuthProvider({
   )
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
+  console.log(`🚀 ~ baseAppInternal ~ siteConfig:`, siteConfig)
+
   const getAppSlug = (
     targetApp: appWithStore,
     defaultSlug: string = "/",
@@ -779,6 +783,7 @@ export function AuthProvider({
   const [baseApp, setBaseApp] = useState<appWithStore | undefined>(
     baseAppInternal,
   )
+  console.log(`🚀 ~ session?.app:`, session?.app, baseApp)
 
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
@@ -1185,6 +1190,7 @@ export function AuthProvider({
   )
 
   // Get isStorageReady from platform context
+  console.log(`🚀 ~ storeApps:`, storeApps)
 
   // Centralized function to merge apps without duplicates
   const mergeApps = useCallback(

@@ -42,6 +42,17 @@ export const checkIsExtension = () => {
   return false
 }
 
+export const getExtensionUrl = () => {
+  if (typeof window === "undefined") return
+  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL("index.html") // Chrome
+  }
+  if (typeof browser !== "undefined" && (browser as any).runtime?.getURL) {
+    return (browser as any).runtime.getURL("index.html") // Firefox
+  }
+  return `${window.location.origin}/index.html` // Fallback
+}
+
 export const isProduction =
   getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
@@ -222,7 +233,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.67",
+  version: "26.10.68",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -1925,28 +1936,13 @@ export function getSiteTranslation(
   return catalog[locale] ?? catalog.en
 }
 
-export const getExtensionUrl = () => {
-  if (typeof window === "undefined") return
-  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
-    return chrome.runtime.getURL("index.html") // Chrome
-  }
-  if (typeof browser !== "undefined" && (browser as any).runtime?.getURL) {
-    return (browser as any).runtime.getURL("index.html") // Firefox
-  }
-  return `${window.location.origin}/index.html` // Fallback
-}
-
 export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
   // Inline isDevelopment check to avoid circular dependency
 
-  const defaultMode = isDevelopment
-    ? ("grape" as SiteMode)
-    : isE2E
-      ? "e2eVex"
-      : (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
+  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || "burn"
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -2103,6 +2099,7 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "e2eVex",
     "grape",
     "staging",
+    "burn",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
