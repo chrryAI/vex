@@ -7,7 +7,8 @@
     "dev": "tauri dev",
     "dev:vite": "vite",
     "build": "vite build",
-    "build:desktop": "vite build && tauri build",
+    "icon:generate": "node ../scripts/generate-icons.js",
+    "build:desktop": "pnpm icon:generate && vite build && tauri build",
     "build:vite": "vite build"
   },
   "dependencies": {

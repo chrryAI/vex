@@ -78,8 +78,6 @@ export default function AppProviders({
   pathname,
   onSetLanguage,
   apiKey,
-  signInContext,
-  signOutContext,
   viewPortWidth,
   viewPortHeight,
   thread,
@@ -150,8 +148,6 @@ export default function AppProviders({
               pathname={pathname}
               threads={threads}
               onSetLanguage={onSetLanguage}
-              signInContext={signInContext}
-              signOutContext={signOutContext}
               session={session}
             >
               <DataProvider>

@@ -1,6 +1,5 @@
 import React from "react"
-import clsx from "clsx"
-import { Button, Div, Span, useLocalStorage, useNavigation } from "./platform"
+import { Button, Span, useLocalStorage, useNavigation } from "./platform"
 import { Coins } from "./icons"
 import { COLORS } from "./context/ThemeContext"
 import { useState, useEffect } from "react"

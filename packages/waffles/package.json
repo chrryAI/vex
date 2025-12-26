@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "1.8.22",
+  "version": "1.8.37",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -20,6 +20,7 @@
   "scripts": {
     "e2e": "TEST_URL=http://e2e.chrry.ai playwright test --project chromium",
     "e": "TEST_URL=http://localhost:5173 playwright test --project chromium",
+    "test:tauri": "TEST_URL=http://localhost:5173 playwright test --project tauri-macos",
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
     "lint": "eslint src"

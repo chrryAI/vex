@@ -17,7 +17,7 @@ import Loading from "./Loading"
 import { updateUser } from "./lib"
 import toast from "react-hot-toast"
 import { useMemoryConsentStyles } from "./MemoryConsent.styles"
-import { A, Button, Div } from "./platform"
+import { Button, Div } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import useCache from "./hooks/useCache"
@@ -108,7 +108,7 @@ export default function MemoryConsent({
           margin: "0 auto",
           marginTop: "1rem",
           position: "relative",
-          top: -15,
+          top: -12.5,
         }}
       >
         <Div>
@@ -119,6 +119,7 @@ export default function MemoryConsent({
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
+              fontSize: ".9rem",
             }}
           >
             <span style={{ fontSize: "1.5rem" }}>🔥</span>
@@ -133,7 +134,7 @@ export default function MemoryConsent({
               }}
             />
           </Div>
-          <Div style={{ fontSize: "0.875rem", opacity: 0.8 }}>
+          <Div style={{ fontSize: "0.775rem", opacity: 0.8 }}>
             {t(
               "In burn, no memories are stored. Each conversation is ephemeral—a pure moment of thought, unrecorded, sovereign. You are the master of your digital existence.",
             )}

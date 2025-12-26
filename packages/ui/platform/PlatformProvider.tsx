@@ -100,6 +100,7 @@ export interface PlatformContextValue {
   isAndroid: boolean
   isExtension: boolean
   isStandalone: boolean
+  isTauri: boolean
   isChrome: boolean
   isFirefox: boolean
   isSafari: boolean
@@ -217,6 +218,8 @@ export function PlatformProvider({
   const isTablet = viewportWidth >= 600 && viewportWidth < 960
 
   const isDesktop = _isWeb() && viewportWidth >= 960
+
+  const isTauri = _isTauri()
 
   // Detect OS - Use server-side UAParser first, then client-side fallback
   const os: "ios" | "android" | "macos" | "windows" | "linux" | "unknown" =
@@ -473,6 +476,7 @@ export function PlatformProvider({
     supportsNotifications,
     isMobile,
     isTablet,
+    isTauri,
     isDesktop,
     isStorageReady,
     styleRegistry,
