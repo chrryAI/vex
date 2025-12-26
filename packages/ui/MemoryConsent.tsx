@@ -50,12 +50,6 @@ export default function MemoryConsent({
 
   const burn = !!(auth.burn || (burnApp && app && burnApp?.id === app?.id))
   const messageRef = useRef<boolean>(false)
-  useEffect(() => {
-    if (messageRef.current) return
-    messageRef.current = burn
-
-    burn && toast.error(t("When you burn there is nothing to remember"))
-  }, [burn])
 
   const {
     router,
