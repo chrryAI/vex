@@ -10,6 +10,7 @@ import {
   getPlaceHolders,
   deletePlaceHolder,
 } from "@repo/db"
+import { isOwner } from "@repo/db"
 
 export const memories = new Hono()
 
@@ -32,7 +33,12 @@ memories.get("/", async (c) => {
   return c.json({
     exportedAt: new Date().toISOString(),
     userId: member?.id || guest?.id,
-    memories: memoriesData.memories,
+    memories: memoriesData.memories.filter((memory) =>
+      isOwner(memory, {
+        userId: member?.id,
+        guestId: guest?.id,
+      }),
+    ),
   })
 })
 

@@ -5611,7 +5611,11 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
       "Privacy-First",
       "Manual Ad Approval",
     ],
-    tools: [] as ("calendar" | "location" | "weather")[],
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
     extends: vex ? [vex.id, chrry.id] : [chrry.id],
     features: {
       internalAppAds: true,
@@ -6313,7 +6317,11 @@ Be supportive, specific, and focused on helping users earn credits through valua
       "Feedback History",
       "Improvement Tips",
     ],
-    tools: [] as ("calendar" | "location" | "weather")[],
+    tools: ["calendar", "location", "weather"] as (
+      | "calendar"
+      | "location"
+      | "weather"
+    )[],
     extends: vex ? [vex.id, chrry.id] : [chrry.id],
     features: {
       autoOpenFromGrape: true,
