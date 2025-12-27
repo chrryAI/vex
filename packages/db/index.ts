@@ -121,6 +121,7 @@ export const VEX_LIVE_FINGERPRINTS =
 
 export const isDevelopment = process.env.NODE_ENV === "development"
 
+export const isE2E = process.env.TESTING_ENV === "e2e"
 // Define locally to avoid circular dependency issues with chrry/utils
 export const OWNER_CREDITS = 999999
 
@@ -2335,7 +2336,6 @@ export const getGuest = async ({
         guestId: result.id,
       }).then((res) => res.totalCount)
     : undefined
-  console.log(`🚀 ~ memoriesCount:`, memoriesCount)
 
   const lastMessage = result
     ? await getMessages({

@@ -69,7 +69,7 @@ const config = {
       ),
       'copy-anything': path.resolve(
         workspaceRoot,
-        'node_modules/.pnpm/copy-anything@3.0.5/node_modules/copy-anything/dist/index.js',
+        'node_modules/.pnpm/superjson@2.2.6/node_modules/copy-anything/dist/index.js',
       ),
     },
     // Block problematic modules that use dynamic imports

@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useRef,
 } from "react"
 import {
   toast,
@@ -157,7 +158,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     searchParams.get("account") === "true",
   )
 
-  const { os, isStandalone } = usePlatform()
+  const { isStandalone, os } = usePlatform()
 
   const [isShowingCollaborate, setIsShowingCollaborate] = useState(false)
 
@@ -169,6 +170,17 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const siteApp = getSiteConfig()
 
+  const copiedRef = useRef(false)
+
+  const copyToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success(t("Copied"))
+      setTimeout(() => (copiedRef.current = false), 2000)
+    } catch (err) {
+      toast.error("Failed to copy code")
+    }
+  }
   const setShowAddToHomeScreen = (value: boolean) => {
     if (typeof window === "undefined") return
 
@@ -181,15 +193,21 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       value &&
       app &&
       app.slug &&
-      app.slug !== siteApp.slug
+      app.slug !== siteApp.slug &&
+      ["ios", "android"].includes(os)
     ) {
       const newUrl = new URL(whiteLabel?.url || window.location.href)
       newUrl.searchParams.set("showInstall", "true")
 
       window.location.href = newUrl.toString()
-    } else {
-      setShowAddToHomeScreenInternal(value)
+    } else if (value) {
+      if (!copiedRef.current) {
+        copiedRef.current = true
+
+        copyToClipboard(window.location.href)
+      }
     }
+    setShowAddToHomeScreenInternal(value)
   }
 
   useEffect(() => {
@@ -199,6 +217,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   }, [showAddToHomeScreen])
 
   const isOnline = useOnlineStatus()
+
+  // toast.success(API_URL)
+  // toast.success(FRONTEND_URL)
 
   const [wasOffline, setWasOffline] = useState(false)
 

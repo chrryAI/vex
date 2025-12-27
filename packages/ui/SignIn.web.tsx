@@ -46,7 +46,7 @@ export default function SignIn({
 }) {
   const { isExtension, isTauri } = usePlatform()
 
-  const isAppleSignInAvailable = true
+  const isAppleSignInAvailable = !isTauri
 
   const { clear } = useCache()
 

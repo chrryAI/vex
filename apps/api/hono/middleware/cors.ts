@@ -50,6 +50,10 @@ function setCorsHeaders(c: Context) {
     c.header("Access-Control-Allow-Origin", origin)
     c.header("Access-Control-Allow-Credentials", "true")
     c.header("Vary", "Origin")
+  } else if (!origin) {
+    // No origin header (Tauri desktop apps, native apps, etc.)
+    // Allow these requests - they're not browser-based CORS requests
+    c.header("Access-Control-Allow-Origin", "*")
   } else {
     // Production: only allow chrry.ai for unmatched origins
     c.header("Access-Control-Allow-Origin", "https://chrry.ai")

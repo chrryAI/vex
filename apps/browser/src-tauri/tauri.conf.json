@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Vex",
+  "productName": "Focus 🍒",
   "version": "0.1.0",
   "identifier": "ai.chrry.vex",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Vex",
+        "title": "Focus 🍒",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -27,7 +27,7 @@
         "windowEffects": {
           "effects": ["underWindowBackground"],
           "state": "active",
-          "radius": 12.0
+          "radius": 12
         }
       }
     ],
@@ -51,6 +51,21 @@
             "core:window:allow-set-fullscreen",
             "core:window:allow-start-dragging"
           ]
+        },
+        {
+          "identifier": "http-requests",
+          "description": "Allow HTTP requests to chrry.ai and chrry.dev API",
+          "windows": ["*"],
+          "permissions": ["core:default"],
+          "remote": {
+            "urls": [
+              "https://*.chrry.ai/*",
+              "https://chrry.ai/*",
+              "https://*.chrry.dev/*",
+              "https://chrry.dev/*",
+              "http://localhost:*/*"
+            ]
+          }
         }
       ]
     },
@@ -67,8 +82,28 @@
       "icons/icon.ico"
     ],
     "category": "Productivity",
-    "shortDescription": "AI Workspace for Mac",
-    "longDescription": "Vex is your AI-powered workspace that helps you work smarter, not harder."
+    "shortDescription": "AI-powered Pomodoro timer with task management and mood tracking. Stay focused, ",
+    "longDescription": "AI-powered Pomodoro timer with task management and mood tracking. Stay focused, productive, and mindful while you work.",
+    "macOS": {
+      "entitlements": "entitlements.plist",
+      "minimumSystemVersion": "10.13",
+      "dmg": {
+        "appPosition": {
+          "x": 180,
+          "y": 170
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 170
+        },
+        "windowSize": {
+          "width": 660,
+          "height": 400
+        }
+      },
+      "frameworks": [],
+      "exceptionDomain": ""
+    }
   },
   "plugins": {
     "deep-link": {

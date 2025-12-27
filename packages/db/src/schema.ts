@@ -1020,6 +1020,17 @@ export const documentChunks = pgTable(
   ],
 )
 
+// const config = pgTable("config", {
+//   id: uuid("id").defaultRandom().notNull().primaryKey(),
+//    metadata: jsonb("metadata").$type<{
+//       TEST_MEMBER_FINGERPRINTS: string[]
+//       TEST_GUEST_FINGERPRINTS: string[]
+//       TEST_MEMBER_EMAILS: string[]
+//       TEST_LIVE_FINGERPRINTS: string[]
+//       lastUpdated: string
+//     }>(),
+// })
+
 // Document summaries for quick context
 export const documentSummaries = pgTable("document_summaries", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
