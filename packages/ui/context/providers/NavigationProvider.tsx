@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useRef,
 } from "react"
 import {
   toast,
@@ -169,6 +170,17 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const siteApp = getSiteConfig()
 
+  const copiedRef = useRef(false)
+
+  const copyToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success(t("Copied"))
+      setTimeout(() => (copiedRef.current = false), 2000)
+    } catch (err) {
+      toast.error("Failed to copy code")
+    }
+  }
   const setShowAddToHomeScreen = (value: boolean) => {
     if (typeof window === "undefined") return
 
@@ -188,9 +200,14 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       newUrl.searchParams.set("showInstall", "true")
 
       window.location.href = newUrl.toString()
-    } else {
-      setShowAddToHomeScreenInternal(value)
+    } else if (value) {
+      if (!copiedRef.current) {
+        copiedRef.current = true
+
+        copyToClipboard(window.location.href)
+      }
     }
+    setShowAddToHomeScreenInternal(value)
   }
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Burn 🍒",
+  "productName": "Focus 🍒",
   "version": "0.1.0",
   "identifier": "ai.chrry.vex",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Burn 🍒",
+        "title": "Focus 🍒",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -25,9 +25,7 @@
         "titleBarStyle": "Overlay",
         "theme": "Dark",
         "windowEffects": {
-          "effects": [
-            "underWindowBackground"
-          ],
+          "effects": ["underWindowBackground"],
           "state": "active",
           "radius": 12
         }
@@ -39,9 +37,7 @@
         {
           "identifier": "window-controls",
           "description": "Window control permissions for traffic lights",
-          "windows": [
-            "*"
-          ],
+          "windows": ["*"],
           "permissions": [
             "core:window:allow-close",
             "core:window:allow-minimize",
@@ -59,12 +55,8 @@
         {
           "identifier": "http-requests",
           "description": "Allow HTTP requests to chrry.ai and chrry.dev API",
-          "windows": [
-            "*"
-          ],
-          "permissions": [
-            "core:default"
-          ],
+          "windows": ["*"],
+          "permissions": ["core:default"],
           "remote": {
             "urls": [
               "https://*.chrry.ai/*",
@@ -90,14 +82,32 @@
       "icons/icon.ico"
     ],
     "category": "Productivity",
-    "shortDescription": "Anonymous AI chat. No login required. Guest subscriptions, private credits, anon",
-    "longDescription": "Anonymous AI chat. No login required. Guest subscriptions, private credits, anonymous agents. Maximum privacy guaranteed."
+    "shortDescription": "AI-powered Pomodoro timer with task management and mood tracking. Stay focused, ",
+    "longDescription": "AI-powered Pomodoro timer with task management and mood tracking. Stay focused, productive, and mindful while you work.",
+    "macOS": {
+      "entitlements": "entitlements.plist",
+      "minimumSystemVersion": "10.13",
+      "dmg": {
+        "appPosition": {
+          "x": 180,
+          "y": 170
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 170
+        },
+        "windowSize": {
+          "width": 660,
+          "height": 400
+        }
+      },
+      "frameworks": [],
+      "exceptionDomain": ""
+    }
   },
   "plugins": {
     "deep-link": {
-      "schemes": [
-        "vex"
-      ],
+      "schemes": ["vex"],
       "mobile": []
     }
   }

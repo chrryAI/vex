@@ -10,7 +10,7 @@ import {
   incrementPearQuota,
 } from "@repo/db"
 
-import { VEX_LIVE_FINGERPRINTS } from "@chrryai/chrry/utils"
+import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
 
 import {
   getMemories,
@@ -4114,6 +4114,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             guestId: guest?.id,
             content: "",
             isStreaming: true,
+            aiAgent: agent,
           },
           aiAgent: agent,
           user: member,
