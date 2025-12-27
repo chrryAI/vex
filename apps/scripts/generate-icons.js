@@ -23,6 +23,29 @@ if (mode === "chrryAI") {
   mode = "chrry"
 }
 
+// Check for ImageMagick dependency
+try {
+  execSync("magick --version", { stdio: "pipe" })
+} catch (error) {
+  console.error("❌ ImageMagick is required but not found!")
+  console.error("")
+  console.error("📦 Installation instructions:")
+  console.error("")
+  if (process.platform === "darwin") {
+    console.error("  macOS:   brew install imagemagick")
+  } else if (process.platform === "linux") {
+    console.error("  Ubuntu:  sudo apt-get install imagemagick")
+    console.error("  Fedora:  sudo dnf install imagemagick")
+  } else if (process.platform === "win32") {
+    console.error(
+      "  Windows: Download from https://imagemagick.org/script/download.php",
+    )
+  }
+  console.error("")
+  console.error("After installation, run this script again.")
+  process.exit(1)
+}
+
 console.log(`🎨 Generating Tauri icons for mode: ${mode}`)
 
 // Paths

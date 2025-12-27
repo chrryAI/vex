@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Generate Tauri config with mode-specific names
+// Generate Tauri config with mode-specific names from template
 import { readFileSync, writeFileSync } from "fs"
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
@@ -15,17 +15,28 @@ const mode = process.env.MODE || "vex"
 const { getSiteConfig } = await import("../../packages/ui/utils/siteConfig.ts")
 const siteConfig = getSiteConfig(mode)
 
-// Read base config
-const configPath = join(__dirname, "../browser/src-tauri/tauri.conf.json")
-const baseConfig = JSON.parse(readFileSync(configPath, "utf-8"))
+// Read template config
+const templatePath = join(
+  __dirname,
+  "../browser/src-tauri/tauri.conf.template.json",
+)
+const outputPath = join(__dirname, "../browser/src-tauri/tauri.conf.json")
 
-// Update with mode-specific values
-baseConfig.productName = `${siteConfig.name} 🍒`
-baseConfig.app.windows[0].title = `${siteConfig.name} 🍒`
-baseConfig.bundle.shortDescription = siteConfig.description.substring(0, 80)
-baseConfig.bundle.longDescription = siteConfig.description
+let configContent = readFileSync(templatePath, "utf-8")
+
+// Replace placeholders with mode-specific values
+const productName = `${siteConfig.name} 🍒`
+const windowTitle = `${siteConfig.name} 🍒`
+const shortDescription = siteConfig.description.substring(0, 80)
+const longDescription = siteConfig.description
+
+configContent = configContent
+  .replace(/{{PRODUCT_NAME}}/g, productName)
+  .replace(/{{WINDOW_TITLE}}/g, windowTitle)
+  .replace(/{{SHORT_DESCRIPTION}}/g, shortDescription)
+  .replace(/{{LONG_DESCRIPTION}}/g, longDescription)
 
 console.log(`🔧 Generated Tauri config for ${siteConfig.name} 🍒`)
 
-// Write updated config
-writeFileSync(configPath, JSON.stringify(baseConfig, null, 2), "utf-8")
+// Write generated config
+writeFileSync(outputPath, configContent, "utf-8")

@@ -87,3 +87,9 @@ apps/flash/newrelic_agent.log
 /browser/
 *.dmg
 apps/sushi/dist
+
+# Generated Tauri config (template is the source of truth)
+apps/browser/src-tauri/tauri.conf.json
+
+# Binary installer files (should be uploaded to GitHub Releases)
+apps/flash/public/install/
