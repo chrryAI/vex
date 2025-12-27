@@ -295,20 +295,22 @@ session.get("/", async (c) => {
   //     : undefined
 
   try {
-    if (member?.id) {
-      const threads = await getThreads({
-        pageSize: 100,
-        isIncognito: true,
-        userId: member.id,
-        publicBookmarks: true,
-      })
+    // Skip auto-deletion of incognito threads - let users delete manually
+    // This prevents RAG foreign key errors when threads are deleted while processing files
+    // if (member?.id) {
+    //   const threads = await getThreads({
+    //     pageSize: 100,
+    //     isIncognito: true,
+    //     userId: member.id,
+    //     publicBookmarks: true,
+    //   })
 
-      await Promise.all(
-        threads.threads.map((thread) => {
-          deleteThread({ id: thread.id })
-        }),
-      )
-    }
+    //   await Promise.all(
+    //     threads.threads.map((thread) => {
+    //       deleteThread({ id: thread.id })
+    //     }),
+    //   )
+    // }
 
     const agentNameParam = url.searchParams.get("agent")
 
@@ -633,20 +635,22 @@ session.get("/", async (c) => {
       existingGuest = await getGuestDb({ fingerprint })
     }
 
-    if (existingGuest?.id) {
-      const threads = await getThreads({
-        pageSize: 100,
-        isIncognito: true,
-        guestId: existingGuest.id,
-        ownerId: existingGuest.id,
-      })
+    // Skip auto-deletion of incognito threads - let users delete manually
+    // This prevents RAG foreign key errors when threads are deleted while processing files
+    // if (existingGuest?.id) {
+    //   const threads = await getThreads({
+    //     pageSize: 100,
+    //     isIncognito: true,
+    //     guestId: existingGuest.id,
+    //     ownerId: existingGuest.id,
+    //   })
 
-      await Promise.all(
-        threads.threads.map((thread) => {
-          deleteThread({ id: thread.id })
-        }),
-      )
-    }
+    //   await Promise.all(
+    //     threads.threads.map((thread) => {
+    //       deleteThread({ id: thread.id })
+    //     }),
+    //   )
+    // }
 
     if (existingGuest) {
       const needsRenewal =
