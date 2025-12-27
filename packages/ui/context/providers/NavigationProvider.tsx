@@ -157,7 +157,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     searchParams.get("account") === "true",
   )
 
-  const { os, isStandalone } = usePlatform()
+  const { isStandalone } = usePlatform()
 
   const [isShowingCollaborate, setIsShowingCollaborate] = useState(false)
 
@@ -199,6 +199,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   }, [showAddToHomeScreen])
 
   const isOnline = useOnlineStatus()
+
+  // toast.success(API_URL)
+  // toast.success(FRONTEND_URL)
 
   const [wasOffline, setWasOffline] = useState(false)
 

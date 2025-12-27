@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { API_URL, FRONTEND_URL } from "../utils"
+import { isTauri } from "../platform/detection"
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(true)
@@ -11,28 +12,43 @@ export function useOnlineStatus() {
     }
 
     function updateStatus() {
-      setIsOnline(navigator.onLine)
+      // Skip navigator.onLine in Tauri - it's unreliable
+      // We use API health checks instead
+      if (!isTauri()) {
+        setIsOnline(navigator.onLine)
+      }
     }
 
     async function checkConnection() {
       try {
-        // Check both API and frontend health
-        const [apiResponse, webResponse] = await Promise.all([
-          fetch(`${API_URL}/health`, {
+        // In Tauri, only check API health (no frontend server)
+        if (isTauri()) {
+          // Tauri: only check API
+          const apiResponse = await fetch(`${API_URL}/health`, {
             method: "HEAD",
             cache: "no-store",
-          }).catch(() => null),
-          fetch(`${FRONTEND_URL}/api/health`, {
-            method: "HEAD",
-            cache: "no-store",
-          }).catch(() => null),
-        ])
+          }).catch(() => null)
 
-        // Both API and web must be online
-        const apiOnline = apiResponse?.ok ?? false
-        const webOnline = webResponse?.ok ?? false
+          setIsOnline(apiResponse?.ok ?? false)
+        } else {
+          // Web/Extension: check both API and frontend health
+          const [apiResponse, webResponse] = await Promise.all([
+            fetch(`${API_URL}/health`, {
+              method: "HEAD",
+              cache: "no-store",
+            }).catch(() => null),
+            fetch(`${FRONTEND_URL}/api/health`, {
+              method: "HEAD",
+              cache: "no-store",
+            }).catch(() => null),
+          ])
 
-        setIsOnline(apiOnline && webOnline)
+          // Both API and web must be online
+          const apiOnline = apiResponse?.ok ?? false
+          const webOnline = webResponse?.ok ?? false
+
+          setIsOnline(apiOnline && webOnline)
+        }
       } catch {
         setIsOnline(false)
       }

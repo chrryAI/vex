@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+
+// Generate Tauri config with mode-specific names from template
+import { readFileSync, writeFileSync } from "fs"
+import { fileURLToPath } from "url"
+import { dirname, join } from "path"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Get MODE from environment
+const mode = process.env.MODE || "vex"
+
+// Dynamically import site config
+const { getSiteConfig } = await import("../../packages/ui/utils/siteConfig.ts")
+const siteConfig = getSiteConfig(mode)
+
+// Read template config
+const templatePath = join(
+  __dirname,
+  "../browser/src-tauri/tauri.conf.template.json",
+)
+const outputPath = join(__dirname, "../browser/src-tauri/tauri.conf.json")
+
+let configContent = readFileSync(templatePath, "utf-8")
+
+// Replace placeholders with mode-specific values
+const productName = `${siteConfig.name} 🍒`
+const windowTitle = `${siteConfig.name} 🍒`
+const shortDescription = siteConfig.description.substring(0, 80)
+const longDescription = siteConfig.description
+
+configContent = configContent
+  .replace(/{{PRODUCT_NAME}}/g, productName)
+  .replace(/{{WINDOW_TITLE}}/g, windowTitle)
+  .replace(/{{SHORT_DESCRIPTION}}/g, shortDescription)
+  .replace(/{{LONG_DESCRIPTION}}/g, longDescription)
+
+console.log(`🔧 Generated Tauri config for ${siteConfig.name} 🍒`)
+
+// Write generated config
+writeFileSync(outputPath, configContent, "utf-8")
