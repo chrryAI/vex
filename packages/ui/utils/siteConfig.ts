@@ -22,12 +22,19 @@ export type SiteMode =
 /// <reference types="chrome" />
 
 export const getEnv = () => {
+  let processEnv
+  if (typeof process !== "undefined" && "env" in process)
+    processEnv = process.env || {}
+
+  let importMetaEnv
   if (typeof import.meta !== "undefined") {
-    return (import.meta as any).env || {}
+    importMetaEnv = (import.meta as any).env || {}
   }
 
-  if (typeof process === "undefined") return {}
-  return process.env || {}
+  return {
+    ...processEnv,
+    ...importMetaEnv,
+  }
 }
 
 export const isCI = getEnv().VITE_CI === "true" || getEnv().CI === "true"
@@ -1935,7 +1942,7 @@ export function detectSiteModeDomain(
 ): SiteMode {
   // Inline isDevelopment check to avoid circular dependency
 
-  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || "burn"
+  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || "vex"
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
