@@ -157,7 +157,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     searchParams.get("account") === "true",
   )
 
-  const { isStandalone } = usePlatform()
+  const { isStandalone, os } = usePlatform()
 
   const [isShowingCollaborate, setIsShowingCollaborate] = useState(false)
 
@@ -181,7 +181,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       value &&
       app &&
       app.slug &&
-      app.slug !== siteApp.slug
+      app.slug !== siteApp.slug &&
+      ["ios", "android"].includes(os)
     ) {
       const newUrl = new URL(whiteLabel?.url || window.location.href)
       newUrl.searchParams.set("showInstall", "true")
