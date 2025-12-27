@@ -182,17 +182,27 @@ export const websocketHandler = {
           // Update timer (non-blocking) using upsert pattern
           ;(async () => {
             try {
-              // Try to update first (most common case)
-              const updated = await updateTimer({
+              // Build update object with only defined fields
+              const timerUpdate: any = {
                 userId: member?.id,
                 guestId: guest?.id,
-                count: timerData.count,
-                preset1: timerData.preset1,
-                preset2: timerData.preset2,
-                preset3: timerData.preset3,
-                isCountingDown: timerData.isCountingDown,
                 updatedOn: new Date(),
-              })
+              }
+
+              // Only include fields that are actually provided
+              if (timerData.count !== undefined)
+                timerUpdate.count = timerData.count
+              if (timerData.preset1 !== undefined)
+                timerUpdate.preset1 = timerData.preset1
+              if (timerData.preset2 !== undefined)
+                timerUpdate.preset2 = timerData.preset2
+              if (timerData.preset3 !== undefined)
+                timerUpdate.preset3 = timerData.preset3
+              if (timerData.isCountingDown !== undefined)
+                timerUpdate.isCountingDown = timerData.isCountingDown
+
+              // Try to update first (most common case)
+              const updated = await updateTimer(timerUpdate)
 
               // If no timer exists, create one
               if (!updated) {
