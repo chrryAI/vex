@@ -16,16 +16,12 @@ import Modal from "../Modal"
 
 export default function AddToHomeScreen(): React.ReactElement | null {
   const { t } = useAppContext()
-  const { app } = useApp()
+  const { app, storeApp } = useApp()
   const { ...platform } = usePlatform()
 
   const os = platform.os === "macos" ? "ios" : "android"
 
   const { setShowAddToHomeScreen, showAddToHomeScreen } = useNavigationContext()
-  console.log(
-    `🚀 ~ AddToHomeScreen ~ setShowAddToHomeScreen:`,
-    setShowAddToHomeScreen,
-  )
 
   const styles = useAddToHomeScreenStyles()
   const { utilities } = useStyles()
@@ -53,7 +49,7 @@ export default function AddToHomeScreen(): React.ReactElement | null {
             <CircleX />
           </Button>
           <Div style={styles.logoContainer.style}>
-            <Img app={app} size={80} />
+            <Img app={app?.chromeWebStoreUrl ? app : storeApp} size={80} />
           </Div>
           <Div
             style={{

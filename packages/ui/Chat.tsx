@@ -2234,7 +2234,7 @@ export default function Chat({
       const mClientId = data?.clientId
 
       if (
-        data?.message?.aiAgent &&
+        data?.message?.message?.agentId &&
         isOwner(data.message.message, {
           userId: user?.id,
           guestId: guest?.id,

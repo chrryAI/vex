@@ -23,9 +23,10 @@ import { PROMPT_LIMITS, webSearchResultType } from "@repo/db/src/schema"
 import {
   isE2E as isE2EInternal,
   isOwner,
-  MAX_FILE_LIMITS,
   VEX_LIVE_FINGERPRINTS,
-} from "@chrryai/chrry/utils"
+} from "@repo/db"
+
+import { MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
 
 import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
 import { notifyOwnerAndCollaborations } from "../../lib/notify"

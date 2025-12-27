@@ -29,14 +29,17 @@ const productName = `${siteConfig.name} 🍒`
 const windowTitle = `${siteConfig.name} 🍒`
 const shortDescription = siteConfig.description.substring(0, 80)
 const longDescription = siteConfig.description
+const bundleId = `dev.chrry.${mode.toLowerCase()}`
 
 configContent = configContent
   .replace(/{{PRODUCT_NAME}}/g, productName)
   .replace(/{{WINDOW_TITLE}}/g, windowTitle)
   .replace(/{{SHORT_DESCRIPTION}}/g, shortDescription)
   .replace(/{{LONG_DESCRIPTION}}/g, longDescription)
+  .replace(/{{BUNDLE_ID}}/g, bundleId)
 
 console.log(`🔧 Generated Tauri config for ${siteConfig.name} 🍒`)
+console.log(`📦 Bundle ID: ${bundleId}`)
 
 // Write generated config
 writeFileSync(outputPath, configContent, "utf-8")
