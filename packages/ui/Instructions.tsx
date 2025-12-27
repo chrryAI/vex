@@ -163,7 +163,7 @@ export default function Instructions({
 
   const { os, isStandalone, isTauri } = usePlatform()
 
-  const offset = isStandalone ? 250 : 0
+  const offset = isStandalone ? -250 : 0
 
   const count = useResponsiveCount(
     [
