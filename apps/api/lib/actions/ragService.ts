@@ -239,6 +239,18 @@ export async function processFileForRAG({
 
     // 4. Store in database
     await db.transaction(async (tx) => {
+      // Verify message exists before creating summary
+      const messageExists = await tx.execute(sql`
+        SELECT id FROM messages WHERE id = ${messageId} LIMIT 1
+      `)
+
+      if (!messageExists || messageExists.length === 0) {
+        console.warn(
+          `⚠️ Message ${messageId} not found, skipping document summary creation`,
+        )
+        return
+      }
+
       // Store document summary
       await tx.insert(documentSummaries).values({
         messageId,

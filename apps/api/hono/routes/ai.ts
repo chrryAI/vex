@@ -2975,7 +2975,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               ? Buffer.from(file.data, "base64").toString("utf8")
               : undefined
 
-          // Process text file for RAG instead of appending entire content
+          // Process text file for RAG so AI can analyze it
           if (textContent) {
             await processFileForRAG({
               content: textContent,
@@ -3031,7 +3031,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               name: file.filename,
               type: "pdf",
             })
-            // Process PDF for RAG instead of appending entire content
+            // Process PDF for RAG so AI can analyze it
             await processFileForRAG({
               content: extractedText,
               filename: file.filename,
