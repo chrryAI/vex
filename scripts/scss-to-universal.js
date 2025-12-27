@@ -5,8 +5,13 @@
  * Converts SCSS module files to work on both web and native
  */
 
-const fs = require("fs")
-const path = require("path")
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
+import { dirname } from "path"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const propertyMap = {
   "background-color": "backgroundColor",
@@ -883,7 +888,7 @@ const convertFile = async (inputFile, outputFile) => {
 
   // Format with Prettier if available
   try {
-    const prettier = require("prettier")
+    const prettier = await import("prettier")
 
     // Try to load project's Prettier config
     const prettierConfig = (await prettier.resolveConfig(outputFile)) || {
@@ -899,6 +904,7 @@ const convertFile = async (inputFile, outputFile) => {
   } catch (error) {
     // Prettier not available or failed, use unformatted code
     console.log(`ℹ️  Prettier not available, skipping formatting`)
+    console.log(`   Error: ${error.message}`)
   }
 
   fs.writeFileSync(outputFile, code)
