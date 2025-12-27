@@ -515,7 +515,7 @@ export function AuthProvider({
   useEffect(() => {
     if (!deviceId && isStorageReady) {
       console.log("📝 Updating deviceId from session:", session?.deviceId)
-      if (isExtension && isStorageReady) {
+      if (isExtension) {
         setDeviceId(uuidv4())
 
         return
