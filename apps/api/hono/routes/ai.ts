@@ -4114,6 +4114,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             guestId: guest?.id,
             content: "",
             isStreaming: true,
+            aiAgent: agent,
           },
           aiAgent: agent,
           user: member,

@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "{{PRODUCT_NAME}}",
   "version": "0.1.0",
-  "identifier": "ai.chrry.vex",
+  "identifier": "{{BUNDLE_ID}}",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5174",
