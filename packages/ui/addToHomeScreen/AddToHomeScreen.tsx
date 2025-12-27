@@ -12,12 +12,20 @@ import { Button, Div, H2, P, Span, usePlatform } from "../platform"
 import { useHasHydrated } from "../hooks"
 import { useAddToHomeScreenStyles } from "./AddToHomeScreen.styles"
 import { useStyles } from "../context/StylesContext"
+import Modal from "../Modal"
 
-export default function AddToHomeScreen(): React.ReactPortal | null {
+export default function AddToHomeScreen(): React.ReactElement | null {
   const { t } = useAppContext()
   const { app } = useApp()
-  const { os } = usePlatform()
+  const { ...platform } = usePlatform()
+
+  const os = platform.os === "macos" ? "ios" : "android"
+
   const { setShowAddToHomeScreen, showAddToHomeScreen } = useNavigationContext()
+  console.log(
+    `🚀 ~ AddToHomeScreen ~ setShowAddToHomeScreen:`,
+    setShowAddToHomeScreen,
+  )
 
   const styles = useAddToHomeScreenStyles()
   const { utilities } = useStyles()
@@ -26,26 +34,17 @@ export default function AddToHomeScreen(): React.ReactPortal | null {
 
   const innerRef = useRef<HTMLDivElement>(null)
 
-  const handleKeyDown = useCallback((event: { key: string }) => {
-    if (event.key === "Escape") {
-      setShowAddToHomeScreen(false)
-    }
-  }, [])
+  if (!is) return null
 
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown, false)
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown, false)
-    }
-  }, [handleKeyDown])
-
-  if (!is || !showAddToHomeScreen) return null
-
-  return createPortal(
-    <Div style={styles.addToHomeScreen.style} role="dialog" aria-modal="true">
-      <Div style={styles.main.style}>
-        <Div style={styles.inner.style} ref={innerRef}>
+  return (
+    <Modal
+      params="?showInstall"
+      isModalOpen={showAddToHomeScreen}
+      onToggle={() => setShowAddToHomeScreen(false)}
+      title={t("Add to Home Screen")}
+    >
+      <Div>
+        <Div ref={innerRef}>
           <Button
             className="link"
             style={{ ...styles.close.style, ...utilities.link.style }}
@@ -57,9 +56,13 @@ export default function AddToHomeScreen(): React.ReactPortal | null {
             <Img app={app} size={80} />
           </Div>
           <Div
-            style={{ ...styles.innerContent.style, alignItems: "flex-start" }}
+            style={{
+              ...styles.innerContent.style,
+              alignItems: "flex-start",
+              fontSize: ".8rem",
+            }}
           >
-            <H2 style={styles.title.style}>{t("For a better experience")}</H2>
+            {/* <H2 style={styles.title.style}>{t("For a better experience")}</H2> */}
             {os === "android" ? (
               <>
                 <P style={styles.share.style}>
@@ -118,7 +121,6 @@ export default function AddToHomeScreen(): React.ReactPortal | null {
           </Div>
         </Div>
       </Div>
-    </Div>,
-    document.getElementById("skeleton") || document.body,
+    </Modal>
   )
 }

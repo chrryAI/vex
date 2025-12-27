@@ -5,13 +5,12 @@ pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_deep_link::init())
     .setup(|app| {
-      if cfg!(debug_assertions) {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
-      }
+      // Enable logging in both debug and production builds
+      app.handle().plugin(
+        tauri_plugin_log::Builder::default()
+          .level(log::LevelFilter::Info)
+          .build(),
+      )?;
 
       // Register deep link handler for OAuth callbacks
       #[cfg(any(windows, target_os = "linux"))]

@@ -1,8 +1,13 @@
-const fs = require("fs")
-const path = require("path")
-const dotenv = require("dotenv")
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
+import { dirname } from "path"
+import dotenv from "dotenv"
 dotenv.config()
-const OpenAI = require("openai")
+import OpenAI from "openai"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const openai = new OpenAI({
   apiKey: process.env.CHATGPT_API_TRANSLATE_KEY,

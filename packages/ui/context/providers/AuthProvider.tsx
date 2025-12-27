@@ -508,16 +508,22 @@ export function AuthProvider({
     props.session?.deviceId,
   )
 
-  const { isStorageReady } = usePlatform()
+  const { isStorageReady, isTauri } = usePlatform()
 
   const fingerprintParam = searchParams.get("fp") || ""
 
   useEffect(() => {
     if (!deviceId && isStorageReady) {
       console.log("📝 Updating deviceId from session:", session?.deviceId)
-      setDeviceId(uuidv4())
+      if (isExtension && isStorageReady) {
+        setDeviceId(uuidv4())
+
+        return
+      } else if (isTauri) {
+        setDeviceId(uuidv4())
+      }
     }
-  }, [deviceId, setDeviceId, isStorageReady])
+  }, [deviceId, setDeviceId, isStorageReady, isTauri])
 
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
@@ -544,14 +550,15 @@ export function AuthProvider({
 
   const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
 
-  const token = isExtension ? tokenExtension : tokenWeb
+  const token = isExtension || isTauri ? tokenExtension : tokenWeb
 
-  const setToken = isExtension
-    ? setTokenExtension
-    : (token: string | undefined) => {
-        setTokenWeb(token)
-        setTokenExtension(token)
-      }
+  const setToken =
+    isExtension || isTauri
+      ? setTokenExtension
+      : (token: string | undefined) => {
+          setTokenWeb(token)
+          setTokenExtension(token)
+        }
 
   useEffect(() => {
     if (ssrToken) {

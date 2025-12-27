@@ -66,6 +66,8 @@ import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { FaApple, FaAndroid, FaChrome } from "react-icons/fa"
+import { SiMacos } from "react-icons/si"
+
 import Agent from "./agent"
 import { useLocalStorage } from "./hooks"
 import A from "./a/A"
@@ -159,7 +161,7 @@ export default function Instructions({
   const { captureException } = useError()
   const { weather } = useData()
 
-  const { os, isStandalone } = usePlatform()
+  const { os, isStandalone, isTauri } = usePlatform()
 
   const offset = isStandalone ? 250 : 0
 
@@ -334,10 +336,19 @@ export default function Instructions({
     })
   }
 
+  function capitalizeFirstLetter(val: string) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+  }
   const extensionUrl =
     app?.chromeWebStoreUrl ||
     storeApp?.chromeWebStoreUrl ||
     "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
+
+  const downloadUrl = app?.chromeWebStoreUrl
+    ? `/install/${capitalizeFirstLetter(app.slug)}🍒.app`
+    : storeApp?.chromeWebStoreUrl
+      ? `/install/${capitalizeFirstLetter(storeApp.slug)}🍒.app`
+      : null
 
   const extensionId = getExtensionId()
 
@@ -1499,47 +1510,77 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   gap: toRem(5),
                 }}
               >
-                {os && ["ios", "android"].includes(os) ? (
+                <Button
+                  className="transparent"
+                  style={{
+                    ...utilities.small.style,
+                    ...styles.installAppButton.style,
+                  }}
+                  onClick={() => {
+                    addHapticFeedback()
+                    setShowAddToHomeScreen(true)
+                  }}
+                >
+                  {os === "ios" || os === "macos" ? (
+                    <FaApple
+                      style={{
+                        position: "relative",
+                        bottom: 1,
+                      }}
+                      size={18}
+                    />
+                  ) : (
+                    <FaAndroid size={18} />
+                  )}
+                  {/* {t("Install")} */}
+                </Button>
+
+                {os === "macos" && !isTauri && downloadUrl ? (
                   <Button
+                    className="inverted"
                     style={{
                       ...utilities.small.style,
+
                       ...styles.installAppButton.style,
+                      paddingTop: "0",
+                      paddingBottom: "0",
                     }}
                     onClick={() => {
-                      addHapticFeedback()
-                      setShowAddToHomeScreen(true)
+                      const a = document.createElement("a")
+                      a.href = downloadUrl
+                      a.download = ""
+                      document.body.appendChild(a)
+                      a.click()
+                      document.body.removeChild(a)
                     }}
                   >
-                    {os === "ios" ? (
-                      <FaApple
-                        style={{
-                          position: "relative",
-                          bottom: 1,
-                        }}
-                        size={18}
-                      />
-                    ) : (
-                      <FaAndroid size={18} />
-                    )}
-                    {t("Install")}
-                  </Button>
-                ) : productionExtensions.includes("chrome") ? (
-                  !showGrape && (
-                    <A
-                      openInNewTab
-                      href={extensionUrl}
-                      className="button"
+                    <SiMacos
                       style={{
-                        ...utilities.button.style,
-                        ...utilities.small.style,
-                        ...styles.installButton.style,
+                        position: "relative",
+                        bottom: 1,
                       }}
-                    >
-                      <FaChrome size={18} />
-                      {t("Extension")}
-                    </A>
-                  )
+                      size={32}
+                    />
+                    {/* {t("Install")} */}
+                  </Button>
                 ) : null}
+                {productionExtensions.includes("chrome")
+                  ? !showGrape && (
+                      <A
+                        openInNewTab
+                        href={extensionUrl}
+                        className="button"
+                        style={{
+                          ...utilities.button.style,
+                          ...utilities.small.style,
+                          ...styles.installButton.style,
+                        }}
+                      >
+                        <FaChrome size={18} />
+                        {/* {t("Extension")} */}
+                      </A>
+                    )
+                  : null}
                 {canGrape && (
                   <A
                     ref={grapeButtonRef}

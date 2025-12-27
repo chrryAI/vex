@@ -17,7 +17,11 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 // Get mode from environment or default to 'vex'
-const mode = process.env.MODE || "vex"
+let mode = process.env.MODE || "vex"
+
+if (mode === "chrryAI") {
+  mode = "chrry"
+}
 
 console.log(`🎨 Generating Tauri icons for mode: ${mode}`)
 
