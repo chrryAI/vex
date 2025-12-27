@@ -34,7 +34,6 @@ import {
   FRONTEND_URL,
   isE2E,
 } from "@chrryai/chrry/utils"
-import { trackPurchase } from "../../lib/ads"
 import Gift from "../../components/emails/Gift"
 
 export const verifyPayment = new Hono()
@@ -334,9 +333,6 @@ verifyPayment.post("/", async (c) => {
       // Track Google Ads conversion
       const purchaseAmount = plan === "plus" ? 9.99 : 19.99
       const purchaseUserId = user?.id || guest?.id || "unknown"
-      await trackPurchase(purchaseUserId, purchaseAmount, session.id).catch(
-        (err) => console.error("Failed to track purchase:", err),
-      )
 
       return c.json({
         success: true,
@@ -521,11 +517,6 @@ verifyPayment.post("/", async (c) => {
       // Track Google Ads conversion
       const creditPurchaseAmount = (session.amount_total || 0) / 100
       const creditPurchaseUserId = user?.id || guest?.id || "unknown"
-      await trackPurchase(
-        creditPurchaseUserId,
-        creditPurchaseAmount,
-        session.id,
-      ).catch((err) => console.error("Failed to track purchase:", err))
 
       return c.json({
         success: true,
