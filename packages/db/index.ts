@@ -1113,7 +1113,7 @@ export const createVerificationToken = async (token: newVerificationToken) => {
   return inserted
 }
 
-export const updateUser = async (user: user) => {
+export const updateUser = async (user: Partial<user> & { id: string }) => {
   const [updated] = await db
     .update(users)
     .set({
@@ -2415,7 +2415,7 @@ export const getGuest = async ({
   return guestData
 }
 
-export const updateGuest = async (guest: guest) => {
+export const updateGuest = async (guest: Partial<guest> & { id: string }) => {
   const [updated] = await db
     .update(guests)
     .set(guest)
@@ -6601,7 +6601,7 @@ export const getTask = async ({
   return result
 }
 
-export const updateTask = async (task: task) => {
+export const updateTask = async (task: Partial<task> & { id: string }) => {
   const [updated] = await db
     .update(tasks)
     .set(task)
@@ -6703,11 +6703,17 @@ export const createTimer = async (timer: newTimer) => {
   return inserted
 }
 
-export const updateTimer = async (timer: timer) => {
+export const updateTimer = async (
+  timer: Partial<timer> & { userId?: string | null; guestId?: string | null },
+) => {
   const [updated] = await db
     .update(timers)
     .set(timer)
-    .where(eq(timers.id, timer.id))
+    .where(
+      timer.userId
+        ? eq(timers.userId, timer.userId)
+        : eq(timers.guestId, timer.guestId!),
+    )
     .returning()
 
   return getTimer({

@@ -1828,7 +1828,6 @@
   "Burn Tips": "Yanma İpuçları",
   "No account needed! Start chatting immediately. Your privacy is our priority.": "Hesaba gerek yok! Hemen sohbete başlayın. Gizliliğiniz bizim önceliğimizdir.",
   "Subscribe as guest via Stripe. No email, no account, just instant access.": "Stripe üzerinden misafir olarak abone olun. E-posta yok, hesap yok, sadece anında erişim.",
-  "Buy credits anonymously. Stored locally on your device, not our servers.": "Anonim olarak kredi satın alın. Yerel olarak cihazınızda saklanır, sunucularımızda değil.",
   "Enable Burn Mode for ephemeral sessions. All data deleted when you close the tab.": "Geçici oturumlar için Burn Modunu etkinleştirin. Sekmeyi kapattığınızda tüm veriler silinir.",
   "Create anonymous agents with MyAgent. Extend with Sushi for IDE powers, all without login!": "MyAgent ile anonim ajanlar oluşturun. Giriş yapmadan IDE güçleri için Sushi ile genişletin!",
   "No Account Required": "Hesap Gerekli Değil",
@@ -1884,5 +1883,6 @@
   "Quality Scoring": "Kalite Skorlama",
   "Feedback History": "Geri Bildirim Geçmişi",
   "Improvement Tips": "İyileştirme İpuçları",
-  "Epic Sci-Fi Guide": "Epik Bilim Kurgu Rehberi"
+  "Epic Sci-Fi Guide": "Epik Bilim Kurgu Rehberi",
+  "Buy credits anonymously. Stored securly on your device.": "Kredileri anonim olarak satın alın. Güvenli bir şekilde cihazınızda saklanır."
 }

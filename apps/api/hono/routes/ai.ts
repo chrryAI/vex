@@ -4610,6 +4610,100 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         streamControllers.delete(streamId)
 
+        // Fallback: If reasoning completed but no answer text, generate response
+        if (reasoningText && !finalText) {
+          console.log(
+            "⚠️ Reasoning completed but no answer text - generating fallback response",
+          )
+          try {
+            const fallbackResult = await generateText({
+              model,
+              messages: [
+                ...messages,
+                {
+                  role: "assistant",
+                  content: `Based on my analysis: ${reasoningText.substring(0, 500)}... Now let me provide a clear response.`,
+                },
+              ],
+            })
+
+            finalText = fallbackResult.text
+            console.log(
+              "✅ Generated fallback response:",
+              finalText.substring(0, 100),
+            )
+
+            // Stream the fallback response
+            if (sushiStreamingMessage) {
+              await enhancedStreamChunk({
+                chunk: finalText,
+                chunkNumber: 1,
+                totalChunks: 1,
+                streamingMessage: sushiStreamingMessage,
+                member,
+                guest,
+                thread,
+                streamId,
+                clientId,
+              })
+            }
+          } catch (fallbackError) {
+            console.error(
+              "❌ Fallback response generation failed:",
+              fallbackError,
+            )
+            finalText =
+              "I've completed my analysis. How can I help you further?"
+          }
+        }
+
+        // Fallback: If tool was called but no answer text, generate response
+        if (toolCallsDetected && !finalText) {
+          console.log(
+            "⚠️ Tool called but no answer text - generating fallback response",
+          )
+          try {
+            const fallbackResult = await generateText({
+              model,
+              messages: [
+                ...messages,
+                {
+                  role: "assistant",
+                  content:
+                    "I've completed the requested action. Let me confirm what I did.",
+                },
+              ],
+            })
+
+            finalText = fallbackResult.text
+            console.log(
+              "✅ Generated tool-call fallback response:",
+              finalText.substring(0, 100),
+            )
+
+            // Stream the fallback response
+            if (sushiStreamingMessage) {
+              await enhancedStreamChunk({
+                chunk: finalText,
+                chunkNumber: 1,
+                totalChunks: 1,
+                streamingMessage: sushiStreamingMessage,
+                member,
+                guest,
+                thread,
+                streamId,
+                clientId,
+              })
+            }
+          } catch (fallbackError) {
+            console.error(
+              "❌ Tool-call fallback generation failed:",
+              fallbackError,
+            )
+            finalText = "I've completed your request. How else can I help?"
+          }
+        }
+
         // // Save final message to database
         if (finalText) {
           console.log("💾 Saving Sushi message to DB...")

@@ -390,10 +390,10 @@ export function TimerContextProvider({
   )
 
   useEffect(() => {
-    if (!isCountingDown || !timer) return
+    if (!timer) return
 
     updateTimer(timer)
-  }, [isCountingDown, timer])
+  }, [timer])
 
   const setPresetMin1 = useCallback(
     (value: number) => {

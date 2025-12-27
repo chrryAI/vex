@@ -4161,8 +4161,13 @@ export default function Chat({
                     )}
 
                     {/* 🔥 BURN BUTTON - Phoenix Mode */}
-                    {canBurn && !isAttaching && threadId && (
+                    {burn && threadId && (
                       <DeleteThread
+                        style={{
+                          margin: "0",
+                          padding: "0",
+                          background: "transparent",
+                        }}
                         onDelete={() => {
                           setIsNewChat(true)
                         }}

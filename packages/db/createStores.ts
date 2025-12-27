@@ -5750,8 +5750,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
       },
       {
         id: "burn-tip-3",
-        content:
-          "Buy credits anonymously. Stored locally on your device, not our servers.",
+        content: "Buy credits anonymously. Stored securly on your device.",
         emoji: "💰",
       },
       {
