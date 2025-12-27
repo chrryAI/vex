@@ -1829,7 +1829,6 @@
   "Burn Tips": "燃烧提示",
   "No account needed! Start chatting immediately. Your privacy is our priority.": "无需账户！立即开始聊天。您的隐私是我们的优先考虑。",
   "Subscribe as guest via Stripe. No email, no account, just instant access.": "通过Stripe以游客身份订阅。无需电子邮件，无需账户，即刻访问。",
-  "Buy credits anonymously. Stored locally on your device, not our servers.": "匿名购买积分。积分存储在您的设备上，而非我们的服务器。",
   "Enable Burn Mode for ephemeral sessions. All data deleted when you close the tab.": "启用燃烧模式进行临时会话。关闭标签页时，所有数据将被删除。",
   "Create anonymous agents with MyAgent. Extend with Sushi for IDE powers, all without login!": "使用MyAgent创建匿名代理。使用Sushi扩展IDE功能，无需登录！",
   "No Account Required": "无需账户",
@@ -1885,5 +1884,6 @@
   "Quality Scoring": "质量评分",
   "Feedback History": "反馈历史",
   "Improvement Tips": "改进提示",
-  "Epic Sci-Fi Guide": "史诗科幻指南"
+  "Epic Sci-Fi Guide": "史诗科幻指南",
+  "Buy credits anonymously. Stored securly on your device.": "匿名购买积分。安全地存储在您的设备上。"
 }

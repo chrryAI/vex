@@ -36,7 +36,6 @@ import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { checkRateLimit } from "../../lib/rateLimiting"
 import captureException from "../../lib/captureException"
 import { scanFileForMalware } from "../../lib/security"
-import { trackSignup } from "../../lib/ads"
 import { getGuest, getMember } from "../lib/auth"
 import { deleteFile } from "../../lib/minio"
 import { streamControllers } from "../../lib/streamControllers"
@@ -413,13 +412,6 @@ messages.post("/", async (c) => {
       } catch (error) {
         captureException(error)
       }
-    }
-
-    if (member?.id || guest?.id) {
-      const trackingId = member?.id || guest?.id || "unknown"
-      await trackSignup(trackingId).catch((err) =>
-        console.error("Failed to track thread creation:", err),
-      )
     }
   }
 

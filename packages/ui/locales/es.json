@@ -1828,7 +1828,6 @@
   "Burn Tips": "Consejos de Quema",
   "No account needed! Start chatting immediately. Your privacy is our priority.": "¡No se necesita cuenta! Comienza a chatear inmediatamente. Tu privacidad es nuestra prioridad.",
   "Subscribe as guest via Stripe. No email, no account, just instant access.": "Suscríbete como invitado a través de Stripe. Sin correo electrónico, sin cuenta, solo acceso instantáneo.",
-  "Buy credits anonymously. Stored locally on your device, not our servers.": "Compra créditos de forma anónima. Almacenados localmente en tu dispositivo, no en nuestros servidores.",
   "Enable Burn Mode for ephemeral sessions. All data deleted when you close the tab.": "Habilita el Modo Quemar para sesiones efímeras. Todos los datos se eliminan cuando cierras la pestaña.",
   "Create anonymous agents with MyAgent. Extend with Sushi for IDE powers, all without login!": "Crea agentes anónimos con MyAgent. Amplía con Sushi para obtener poderes de IDE, ¡todo sin iniciar sesión!",
   "No Account Required": "No se requiere cuenta",
@@ -1884,5 +1883,6 @@
   "Quality Scoring": "Puntuación de Calidad",
   "Feedback History": "Historial de Retroalimentación",
   "Improvement Tips": "Consejos de Mejora",
-  "Epic Sci-Fi Guide": "Guía Épica de Ciencia Ficción"
+  "Epic Sci-Fi Guide": "Guía Épica de Ciencia Ficción",
+  "Buy credits anonymously. Stored securly on your device.": "Compra créditos de forma anónima. Almacenados de forma segura en tu dispositivo."
 }
