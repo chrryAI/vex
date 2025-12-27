@@ -10,7 +10,7 @@ import {
   incrementPearQuota,
 } from "@repo/db"
 
-import { VEX_LIVE_FINGERPRINTS } from "@chrryai/chrry/utils"
+import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
 
 import {
   getMemories,

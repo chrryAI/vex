@@ -25,7 +25,7 @@ import {
   isOwner,
   MAX_FILE_LIMITS,
   VEX_LIVE_FINGERPRINTS,
-} from "@chrryai/chrry/utils"
+} from "@repo/db"
 
 import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
 import { notifyOwnerAndCollaborations } from "../../lib/notify"

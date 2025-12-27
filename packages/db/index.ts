@@ -2335,7 +2335,6 @@ export const getGuest = async ({
         guestId: result.id,
       }).then((res) => res.totalCount)
     : undefined
-  console.log(`🚀 ~ memoriesCount:`, memoriesCount)
 
   const lastMessage = result
     ? await getMessages({
