@@ -155,6 +155,12 @@ export const users = pgTable(
       withTimezone: true,
     }),
     pearFeedbackTotal: integer("pearFeedbackTotal").default(0).notNull(), // Lifetime count
+
+    // Credit reward for liking messages (once per day)
+    lastCreditRewardOn: timestamp("lastCreditRewardOn", {
+      mode: "date",
+      withTimezone: true,
+    }),
   },
   (table) => [
     uniqueIndex("user_name_idx").on(table.userName),
@@ -344,6 +350,12 @@ export const guests = pgTable("guest", {
     withTimezone: true,
   }),
   pearFeedbackTotal: integer("pearFeedbackTotal").default(0).notNull(), // Lifetime count
+
+  // Credit reward for liking messages (once per day)
+  lastCreditRewardOn: timestamp("lastCreditRewardOn", {
+    mode: "date",
+    withTimezone: true,
+  }),
 })
 
 // teams/Teams for collaborative agent management

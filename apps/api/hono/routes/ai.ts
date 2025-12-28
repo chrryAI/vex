@@ -3335,6 +3335,71 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
         : JSON.stringify(userContent).length,
   })
 
+  // Check if user liked the last assistant message and reward with credits
+  const lastAssistantMessage = contextMessages
+    .filter((msg) => msg.role === "assistant")
+    .pop()
+
+  let creditRewardMessage = ""
+
+  if (lastAssistantMessage) {
+    // Check if the last assistant message was liked by current user
+    const wasLiked = threadMessages.messages
+      .find((msg) => msg.message.content === lastAssistantMessage.content)
+      ?.message.reactions?.some(
+        (r) =>
+          r.like &&
+          ((member?.id && r.userId === member.id) ||
+            (guest?.id && r.userId === guest.id)),
+      )
+
+    if (wasLiked && (member || guest)) {
+      // Check if user already received credit reward today (rate limiting)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      const currentUser = member || guest
+      const lastRewardDate = currentUser?.lastCreditRewardOn
+        ? new Date(currentUser.lastCreditRewardOn)
+        : null
+
+      const alreadyRewardedToday = lastRewardDate && lastRewardDate >= today
+
+      if (!alreadyRewardedToday) {
+        // Award 3 credits for liking the message (once per day)
+        try {
+          if (member) {
+            await updateUser({
+              id: member.id,
+              credits: (member.credits || 0) + 3,
+              lastCreditRewardOn: new Date(),
+            })
+            creditRewardMessage =
+              "\n\n💜 Thank you for the like! You've earned +3 credits as a token of appreciation!"
+            console.log(
+              `✨ Awarded 3 credits to user ${member.id} for liking message`,
+            )
+          } else if (guest) {
+            await updateGuest({
+              id: guest.id,
+              credits: (guest.credits || 0) + 3,
+              lastCreditRewardOn: new Date(),
+            })
+            creditRewardMessage =
+              "\n\n💜 Thank you for the like! You've earned +3 credits as a token of appreciation!"
+            console.log(
+              `✨ Awarded 3 credits to guest ${guest.id} for liking message`,
+            )
+          }
+        } catch (error) {
+          console.error("Failed to award credits for like:", error)
+        }
+      } else {
+        console.log(`⏰ User already received credit reward today, skipping`)
+      }
+    }
+  }
+
   // Define token limits per model (conservative estimates to prevent errors)
   // Note: Images/videos are handled separately by providers and don't count toward text token limits
   const TOKEN_LIMITS: Record<string, number> = {
@@ -4710,7 +4775,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           try {
             const aiMessage = await createMessage({
               ...newMessagePayload,
-              content: finalText,
+              content: finalText + creditRewardMessage, // Add credit reward thank you
               reasoning: reasoningText || undefined, // Store reasoning separately
               isPear: requestData.pear || false, // Track Pear feedback submissions
             })
@@ -4999,7 +5064,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // Save AI response to database (no Perplexity processing for DeepSeek)
         const aiMessage = await createMessage({
           ...newMessagePayload,
-          content: finalText.trim(),
+          content: (finalText + creditRewardMessage).trim(), // Add credit reward thank you
           originalContent: finalText.trim(),
           searchContext,
         })
