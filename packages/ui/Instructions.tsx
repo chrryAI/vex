@@ -344,13 +344,23 @@ export default function Instructions({
     storeApp?.chromeWebStoreUrl ||
     "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
 
-  const downloadUrl = ""
-
-  // const downloadUrl = app?.chromeWebStoreUrl
-  //   ? `/install/${capitalizeFirstLetter(app.slug)}🍒.app`
-  //   : storeApp?.chromeWebStoreUrl
-  //     ? `/install/${capitalizeFirstLetter(storeApp.slug)}🍒.app`
-  //     : null
+  const installs = [
+    "atlas",
+    "focus",
+    "vex",
+    "popcorn",
+    "chrry",
+    "zarathustra",
+    "search",
+    "grape",
+    "burn",
+  ]
+  const downloadUrl =
+    app && installs.includes(app?.slug || "")
+      ? `/installs/${capitalizeFirstLetter(app.slug || "")}.dmg`
+      : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
+        ? `/installs/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
+        : ""
   const extensionId = getExtensionId()
 
   const handleFileSelect = async (selectedFiles: FileList | null) => {
