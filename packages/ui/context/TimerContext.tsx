@@ -490,6 +490,13 @@ export function TimerContextProvider({
     },
   )
 
+  // useEffect(() => {
+  //   if (isCountingDown) return
+  //   if (!timerData?.isCountingDown) return
+  //   if (timerData.count === 0) return
+  //   handleResume()
+  // }, [timerData, isCountingDown])
+
   const fetchTimer = async () => {
     setShouldFetchTimer(true)
     shouldFetchTimer && refetchTimer()
@@ -507,6 +514,7 @@ export function TimerContextProvider({
       if (timerData.isCountingDown && timerData.count > 0) {
         setTime(timerData.count)
         setIsCountingDown(true)
+
         setIsPaused(false)
         setIsFinished(false)
         setStartTime(Date.now())

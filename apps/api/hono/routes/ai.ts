@@ -2391,8 +2391,10 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   }
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
+  console.log(`🚀 ~ app.post ~ fingerprint:`, fingerprint)
 
   const isE2E = !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+  console.log(`🚀 ~ app.post ~ isE2E:`, isE2E)
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -4686,8 +4688,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               messages: [
                 ...messages,
                 {
-                  role: "assistant",
-                  content: `Based on my analysis: ${reasoningText.substring(0, 500)}... Now let me provide a clear response.`,
+                  role: "user",
+                  content:
+                    "Please provide your response based on the reasoning above.",
                 },
               ],
             })
@@ -4718,7 +4721,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               fallbackError,
             )
             finalText =
-              "I've completed my analysis. How can I help you further?"
+              "I've completed my analysis. Let me know if you need more details!"
           }
         }
 
@@ -4733,9 +4736,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               messages: [
                 ...messages,
                 {
-                  role: "assistant",
+                  role: "user",
                   content:
-                    "I've completed the requested action. Let me confirm what I did.",
+                    "Please explain what you did and provide the results.",
                 },
               ],
             })
