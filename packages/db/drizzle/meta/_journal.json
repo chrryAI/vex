@@ -988,6 +988,13 @@
       "when": 1766644211324,
       "tag": "0140_late_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 141,
+      "version": "7",
+      "when": 1766878354321,
+      "tag": "0141_parched_expediter",
+      "breakpoints": true
     }
   ]
 }
