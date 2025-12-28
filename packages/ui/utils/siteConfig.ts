@@ -240,7 +240,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.69",
+  version: "26.10.70",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -2144,9 +2144,9 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return sushi
   }
 
-  if (!isDevelopment && isE2E) {
-    return e2eVex
-  }
+  // if (!isDevelopment && isE2E) {
+  //   return e2eVex
+  // }
 
   if (mode === "search") {
     return search
