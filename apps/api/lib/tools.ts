@@ -1386,7 +1386,14 @@ export const getTools = ({
           preset3,
         })
 
-        const updateData: any = { userId: member?.id || undefined }
+        // Support both members and guests
+        const updateData: any = {}
+        if (member?.id) {
+          updateData.userId = member.id
+        } else if (guest?.id) {
+          updateData.guestId = guest.id
+        }
+
         if (isCountingDown !== undefined)
           updateData.isCountingDown = isCountingDown
         if (preset1 !== undefined) updateData.preset1 = preset1
