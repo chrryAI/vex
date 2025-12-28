@@ -158,14 +158,15 @@ export const websocketHandler = {
       const data = JSON.parse(message.toString())
       const { type } = data
       const {
-        member: memberData,
-        guest: guestData,
+        // member: memberData,
+        // guest: guestData,
         deviceId,
         clientId,
+        token,
       } = ws.data as any
 
-      const member = await getUser({ id: memberData?.id, skipCache: true })
-      const guest = await getGuest({ id: guestData?.id, skipCache: true })
+      const member = await getMemberWithToken(token)
+      const guest = await getGuestWithToken(token)
 
       // Handle ping/pong
       if (type === "ping") {

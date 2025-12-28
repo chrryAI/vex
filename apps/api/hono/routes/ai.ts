@@ -868,6 +868,36 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 `
       : ""
 
+  // Check if Focus is in the inheritance chain
+  const hasFocusInheritance = appExtends.some(
+    (a) => a.slug === "focus" || a.name?.toLowerCase().includes("focus"),
+  )
+
+  // Add timer tool forcing instructions if Focus is inherited
+  const timerToolInstructions = hasFocusInheritance
+    ? `
+
+## ⏱️ TIMER CONTROL (Inherited from Focus)
+
+CRITICAL: You have DIRECT CONTROL over the user's timer via the updateTimer tool.
+
+When user mentions timer control:
+- "stop the timer" → IMMEDIATELY call updateTimer({ isCountingDown: false })
+- "start the timer" → IMMEDIATELY call updateTimer({ isCountingDown: true })
+- "pause the timer" → IMMEDIATELY call updateTimer({ isCountingDown: false })
+- "resume the timer" → IMMEDIATELY call updateTimer({ isCountingDown: true })
+- "start from X minutes" → IMMEDIATELY call updateTimer({ isCountingDown: true, preset1: X })
+
+DO NOT:
+❌ Tell user to do it manually
+❌ Ask for confirmation
+❌ Explain how to use the UI
+❌ Say "you'll need to stop it in the app"
+
+JUST DO IT. You have the power. Use the updateTimer tool immediately.
+`
+    : ""
+
   // Build store context - information about the store and its apps
   let storeContext = ""
   if (app?.store) {
@@ -2372,6 +2402,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     baseSystemPrompt +
     burnModeContext +
     inheritanceContext +
+    timerToolInstructions +
     storeContext +
     featureStatusContext +
     memoryContext +
