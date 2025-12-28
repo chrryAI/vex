@@ -93,3 +93,8 @@ apps/browser/src-tauri/tauri.conf.json
 
 # Binary installer files (should be uploaded to GitHub Releases)
 apps/flash/public/install/
+# Tauri installers (build artifacts)
+public/installs/
+apps/flash/public/installs/
+*.app
+*.p8
