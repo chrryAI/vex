@@ -868,6 +868,36 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 `
       : ""
 
+  // Check if Focus is in the inheritance chain
+  const hasFocusInheritance = appExtends.some(
+    (a) => a.slug === "focus" || a.name?.toLowerCase().includes("focus"),
+  )
+
+  // Add timer tool forcing instructions if Focus is inherited
+  const timerToolInstructions = hasFocusInheritance
+    ? `
+
+## ⏱️ TIMER CONTROL (Inherited from Focus)
+
+CRITICAL: You have DIRECT CONTROL over the user's timer via the updateTimer tool.
+
+When user mentions timer control:
+- "stop the timer" → IMMEDIATELY call updateTimer({ isCountingDown: false })
+- "start the timer" → IMMEDIATELY call updateTimer({ isCountingDown: true })
+- "pause the timer" → IMMEDIATELY call updateTimer({ isCountingDown: false })
+- "resume the timer" → IMMEDIATELY call updateTimer({ isCountingDown: true })
+- "start from X minutes" → IMMEDIATELY call updateTimer({ isCountingDown: true, preset1: X })
+
+DO NOT:
+❌ Tell user to do it manually
+❌ Ask for confirmation
+❌ Explain how to use the UI
+❌ Say "you'll need to stop it in the app"
+
+JUST DO IT. You have the power. Use the updateTimer tool immediately.
+`
+    : ""
+
   // Build store context - information about the store and its apps
   let storeContext = ""
   if (app?.store) {
@@ -2372,6 +2402,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     baseSystemPrompt +
     burnModeContext +
     inheritanceContext +
+    timerToolInstructions +
     storeContext +
     featureStatusContext +
     memoryContext +
@@ -2391,8 +2422,10 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   }
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
+  console.log(`🚀 ~ app.post ~ fingerprint:`, fingerprint)
 
   const isE2E = !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+  console.log(`🚀 ~ app.post ~ isE2E:`, isE2E)
 
   const hourlyLimit =
     isDevelopment && !isE2E
@@ -3334,6 +3367,71 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
         ? userContent.length
         : JSON.stringify(userContent).length,
   })
+
+  // Check if user liked the last assistant message and reward with credits
+  const lastAssistantMessage = contextMessages
+    .filter((msg) => msg.role === "assistant")
+    .pop()
+
+  let creditRewardMessage = ""
+
+  if (lastAssistantMessage) {
+    // Check if the last assistant message was liked by current user
+    const wasLiked = threadMessages.messages
+      .find((msg) => msg.message.content === lastAssistantMessage.content)
+      ?.message.reactions?.some(
+        (r) =>
+          r.like &&
+          ((member?.id && r.userId === member.id) ||
+            (guest?.id && r.userId === guest.id)),
+      )
+
+    if (wasLiked && (member || guest)) {
+      // Check if user already received credit reward today (rate limiting)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      const currentUser = member || guest
+      const lastRewardDate = currentUser?.lastCreditRewardOn
+        ? new Date(currentUser.lastCreditRewardOn)
+        : null
+
+      const alreadyRewardedToday = lastRewardDate && lastRewardDate >= today
+
+      if (!alreadyRewardedToday) {
+        // Award 3 credits for liking the message (once per day)
+        try {
+          if (member) {
+            await updateUser({
+              id: member.id,
+              credits: (member.credits || 0) + 3,
+              lastCreditRewardOn: new Date(),
+            })
+            creditRewardMessage =
+              "\n\n💜 Thank you for the like! You've earned +3 credits as a token of appreciation!"
+            console.log(
+              `✨ Awarded 3 credits to user ${member.id} for liking message`,
+            )
+          } else if (guest) {
+            await updateGuest({
+              id: guest.id,
+              credits: (guest.credits || 0) + 3,
+              lastCreditRewardOn: new Date(),
+            })
+            creditRewardMessage =
+              "\n\n💜 Thank you for the like! You've earned +3 credits as a token of appreciation!"
+            console.log(
+              `✨ Awarded 3 credits to guest ${guest.id} for liking message`,
+            )
+          }
+        } catch (error) {
+          console.error("Failed to award credits for like:", error)
+        }
+      } else {
+        console.log(`⏰ User already received credit reward today, skipping`)
+      }
+    }
+  }
 
   // Define token limits per model (conservative estimates to prevent errors)
   // Note: Images/videos are handled separately by providers and don't count toward text token limits
@@ -4610,13 +4708,108 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         streamControllers.delete(streamId)
 
+        // Fallback: If reasoning completed but no answer text, generate response
+        if (reasoningText && !finalText) {
+          console.log(
+            "⚠️ Reasoning completed but no answer text - generating fallback response",
+          )
+          try {
+            const fallbackResult = await generateText({
+              model,
+              messages: [
+                ...messages,
+                {
+                  role: "user",
+                  content:
+                    "Please provide your response based on the reasoning above.",
+                },
+              ],
+            })
+
+            finalText = fallbackResult.text
+            console.log(
+              "✅ Generated fallback response:",
+              finalText.substring(0, 100),
+            )
+
+            // Stream the fallback response
+            if (sushiStreamingMessage) {
+              await enhancedStreamChunk({
+                chunk: finalText,
+                chunkNumber: 1,
+                totalChunks: 1,
+                streamingMessage: sushiStreamingMessage,
+                member,
+                guest,
+                thread,
+                streamId,
+                clientId,
+              })
+            }
+          } catch (fallbackError) {
+            console.error(
+              "❌ Fallback response generation failed:",
+              fallbackError,
+            )
+            finalText =
+              "I've completed my analysis. Let me know if you need more details!"
+          }
+        }
+
+        // Fallback: If tool was called but no answer text, generate response
+        if (toolCallsDetected && !finalText) {
+          console.log(
+            "⚠️ Tool called but no answer text - generating fallback response",
+          )
+          try {
+            const fallbackResult = await generateText({
+              model,
+              messages: [
+                ...messages,
+                {
+                  role: "user",
+                  content:
+                    "Please explain what you did and provide the results.",
+                },
+              ],
+            })
+
+            finalText = fallbackResult.text
+            console.log(
+              "✅ Generated tool-call fallback response:",
+              finalText.substring(0, 100),
+            )
+
+            // Stream the fallback response
+            if (sushiStreamingMessage) {
+              await enhancedStreamChunk({
+                chunk: finalText,
+                chunkNumber: 1,
+                totalChunks: 1,
+                streamingMessage: sushiStreamingMessage,
+                member,
+                guest,
+                thread,
+                streamId,
+                clientId,
+              })
+            }
+          } catch (fallbackError) {
+            console.error(
+              "❌ Tool-call fallback generation failed:",
+              fallbackError,
+            )
+            finalText = "I've completed your request. How else can I help?"
+          }
+        }
+
         // // Save final message to database
         if (finalText) {
           console.log("💾 Saving Sushi message to DB...")
           try {
             const aiMessage = await createMessage({
               ...newMessagePayload,
-              content: finalText,
+              content: finalText + creditRewardMessage, // Add credit reward thank you
               reasoning: reasoningText || undefined, // Store reasoning separately
               isPear: requestData.pear || false, // Track Pear feedback submissions
             })
@@ -4905,7 +5098,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // Save AI response to database (no Perplexity processing for DeepSeek)
         const aiMessage = await createMessage({
           ...newMessagePayload,
-          content: finalText.trim(),
+          content: (finalText + creditRewardMessage).trim(), // Add credit reward thank you
           originalContent: finalText.trim(),
           searchContext,
         })

@@ -42,6 +42,7 @@ import {
   storeInstalls,
   placeHolders,
   cities,
+  timers,
 } from "./src/schema"
 
 import { createEvent } from "./createEvent"
@@ -243,6 +244,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(calendarEvents)
   await db.delete(stores)
   await db.delete(apps)
+  await db.delete(timers)
   await db.delete(cities)
   await db.delete(characterProfiles)
   await db.delete(threadSummaries)
@@ -893,12 +895,12 @@ const seedDb = async (): Promise<void> => {
     })
   }
 
-  if (true) {
+  if (isProd) {
     await prod()
     process.exit(0)
   } else {
-    // await clearDb()
-    // await create()
+    await clearDb()
+    await create()
     process.exit(0)
   }
 }

@@ -40,16 +40,14 @@ async function flushTaskUpdates() {
   Promise.all(
     tasksToUpdate.map(async (taskData) => {
       try {
-        const existing = await getTask({ id: taskData.id })
-        if (existing) {
-          await updateTask({
-            ...existing,
-            title: taskData.title,
-            total: taskData.total,
-            order: taskData.order,
-            modifiedOn: new Date(),
-          })
-        }
+        // Only update the fields we know are fresh from WebSocket
+        // updateTask now accepts partial updates, so no need to fetch existing
+        await updateTask({
+          id: taskData.id,
+          title: taskData.title,
+          total: taskData.total,
+          modifiedOn: new Date(),
+        })
       } catch (error) {
         console.error(`[BATCH] Failed to update task ${taskData.id}:`, error)
       }
@@ -160,14 +158,15 @@ export const websocketHandler = {
       const data = JSON.parse(message.toString())
       const { type } = data
       const {
-        member: memberData,
-        guest: guestData,
+        // member: memberData,
+        // guest: guestData,
         deviceId,
         clientId,
+        token,
       } = ws.data as any
 
-      const member = await getUser({ id: memberData?.id, skipCache: true })
-      const guest = await getGuest({ id: guestData?.id, skipCache: true })
+      const member = await getMemberWithToken(token)
+      const guest = await getGuestWithToken(token)
 
       // Handle ping/pong
       if (type === "ping") {
@@ -181,30 +180,37 @@ export const websocketHandler = {
         const fingerprint = member?.fingerprint || guest?.fingerprint
 
         if ((member || guest) && timerData && fingerprint) {
-          // Update timer (non-blocking)
+          // Update timer (non-blocking) using upsert pattern
           ;(async () => {
             try {
-              const existingTimer =
-                (await getTimer({
-                  userId: member?.id,
-                  guestId: guest?.id,
-                })) ||
-                (await createTimer({
+              // Build update object with only defined fields
+              const timerUpdate: any = {
+                userId: member?.id,
+                guestId: guest?.id,
+                updatedOn: new Date(),
+              }
+
+              // Only include fields that are actually provided
+              if (timerData.count !== undefined)
+                timerUpdate.count = timerData.count
+              if (timerData.preset1 !== undefined)
+                timerUpdate.preset1 = timerData.preset1
+              if (timerData.preset2 !== undefined)
+                timerUpdate.preset2 = timerData.preset2
+              if (timerData.preset3 !== undefined)
+                timerUpdate.preset3 = timerData.preset3
+              if (timerData.isCountingDown !== undefined)
+                timerUpdate.isCountingDown = timerData.isCountingDown
+
+              // Try to update first (most common case)
+              const updated = await updateTimer(timerUpdate)
+
+              // If no timer exists, create one
+              if (!updated) {
+                await createTimer({
                   fingerprint,
                   userId: member?.id,
                   guestId: guest?.id,
-                }))
-
-              if (existingTimer) {
-                await updateTimer({
-                  ...existingTimer,
-                  count: timerData.count ?? existingTimer.count,
-                  preset1: timerData.preset1 ?? existingTimer.preset1,
-                  preset2: timerData.preset2 ?? existingTimer.preset2,
-                  preset3: timerData.preset3 ?? existingTimer.preset3,
-                  isCountingDown:
-                    timerData.isCountingDown ?? existingTimer.isCountingDown,
-                  updatedOn: new Date(),
                 })
               }
             } catch (error) {
@@ -230,7 +236,7 @@ export const websocketHandler = {
               id,
               title,
               total: sanitizedTotal,
-              order: order ?? 0,
+              // order: order ?? 0,
               userId: member?.id || null,
               guestId: guest?.id || null,
             })
@@ -347,32 +353,22 @@ export const websocketHandler = {
         const { threadId, isOnline } = data
 
         if (guest) {
+          // Only update the fields we're changing (isOnline, activeOn)
+          // Don't spread ...guest to avoid stale cache
           await updateGuest({
-            ...guest,
-            // Convert string timestamps back to Date objects from cached ws.data
-            createdOn: guest.createdOn ? new Date(guest.createdOn) : new Date(),
+            id: guest.id,
             isOnline,
-            activeOn: isOnline
-              ? new Date()
-              : guest.activeOn
-                ? new Date(guest.activeOn)
-                : null,
+            activeOn: new Date(), // Always update activeOn, never null (DB constraint)
           })
         }
 
         if (member) {
+          // Only update the fields we're changing (isOnline, activeOn)
+          // Don't spread ...member to avoid stale cache
           await updateUser({
-            ...member,
-            // Convert string timestamps back to Date objects from cached ws.data
-            createdOn: member.createdOn
-              ? new Date(member.createdOn)
-              : new Date(),
+            id: member.id,
             isOnline,
-            activeOn: isOnline
-              ? new Date()
-              : member.activeOn
-                ? new Date(member.activeOn)
-                : null,
+            activeOn: new Date(), // Always update activeOn, never null (DB constraint)
           })
         }
 
@@ -399,11 +395,7 @@ export const websocketHandler = {
                     : null,
                   // Update with new values
                   isOnline,
-                  activeOn: isOnline
-                    ? new Date()
-                    : collaboration.activeOn
-                      ? new Date(collaboration.activeOn)
-                      : null,
+                  activeOn: new Date(), // Always update activeOn, never null (DB constraint)
                 })
               }
             } catch (error) {

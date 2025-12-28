@@ -390,10 +390,10 @@ export function TimerContextProvider({
   )
 
   useEffect(() => {
-    if (!isCountingDown || !timer) return
+    if (!timer) return
 
     updateTimer(timer)
-  }, [isCountingDown, timer])
+  }, [timer])
 
   const setPresetMin1 = useCallback(
     (value: number) => {
@@ -490,13 +490,26 @@ export function TimerContextProvider({
     },
   )
 
+  const hasAutoResumedRef = useRef(false)
+
+  useEffect(() => {
+    if (isCountingDown) return // Already counting
+    if (!timerData?.isCountingDown) return // DB says not counting
+    if (timerData.count === 0) return // Timer finished
+    if (hasAutoResumedRef.current) return // Already auto-resumed
+
+    hasAutoResumedRef.current = true
+    handleResume()
+  }, [timerData?.isCountingDown, timerData?.count])
+  console.log(`🚀 ~ useEffect ~ timerData:`, timerData)
+
   const fetchTimer = async () => {
     setShouldFetchTimer(true)
     shouldFetchTimer && refetchTimer()
   }
 
   useEffect(() => {
-    if (timerData && !hasRestoredTimerRef.current) {
+    if (timerData) {
       // Mark as restored to prevent multiple initializations
       hasRestoredTimerRef.current = true
 
@@ -507,6 +520,8 @@ export function TimerContextProvider({
       if (timerData.isCountingDown && timerData.count > 0) {
         setTime(timerData.count)
         setIsCountingDown(true)
+        console.log(`🚀 ~ useEsssffect ~ timerData.count:`, timerData.count)
+
         setIsPaused(false)
         setIsFinished(false)
         setStartTime(Date.now())
