@@ -357,7 +357,7 @@ export const websocketHandler = {
           await updateGuest({
             id: guest.id,
             isOnline,
-            activeOn: isOnline ? new Date() : null,
+            activeOn: new Date(), // Always update activeOn, never null (DB constraint)
           })
         }
 
@@ -367,7 +367,7 @@ export const websocketHandler = {
           await updateUser({
             id: member.id,
             isOnline,
-            activeOn: isOnline ? new Date() : null,
+            activeOn: new Date(), // Always update activeOn, never null (DB constraint)
           })
         }
 
@@ -394,11 +394,7 @@ export const websocketHandler = {
                     : null,
                   // Update with new values
                   isOnline,
-                  activeOn: isOnline
-                    ? new Date()
-                    : collaboration.activeOn
-                      ? new Date(collaboration.activeOn)
-                      : null,
+                  activeOn: new Date(), // Always update activeOn, never null (DB constraint)
                 })
               }
             } catch (error) {
