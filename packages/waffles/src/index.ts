@@ -140,6 +140,8 @@ export const log = ({ page }: { page: Page }) => {
     if (lastSeen && now - lastSeen < 5000) return
 
     msg.type() !== "warning" &&
+      !msg.text().includes("token") &&
+      !msg.text().includes("fp") &&
       console.log(`[browser][${msg.type()}] ${msg.text()}`)
     logs.set(msg.text(), now)
   })
