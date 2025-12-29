@@ -3533,11 +3533,25 @@ export async function deleteCharacterTag({ id }: { id: string }) {
   return deleted
 }
 
-export async function getCharacterTags({ agentId }: { agentId: string }) {
+export async function getCharacterTags({
+  agentId,
+  userId,
+  guestId,
+}: {
+  agentId?: string
+  userId?: string
+  guestId?: string
+}) {
   const result = await db
     .select()
     .from(characterProfiles)
-    .where(eq(characterProfiles.agentId, agentId))
+    .where(
+      and(
+        agentId ? eq(characterProfiles.agentId, agentId) : undefined,
+        userId ? eq(characterProfiles.userId, userId) : undefined,
+        guestId ? eq(characterProfiles.guestId, guestId) : undefined,
+      ),
+    )
   return result
 }
 
