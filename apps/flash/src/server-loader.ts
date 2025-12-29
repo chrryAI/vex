@@ -281,7 +281,7 @@ export async function loadServerData(
 
   try {
     threads = await getThreads({
-      appId: (session as session)?.app?.id,
+      // appId: (session as session)?.app?.id,
       pageSize: pageSizes.menuThreads,
       sort: "bookmark",
       token: apiKey,
