@@ -962,7 +962,7 @@ const sushi = {
   store: "https://sushi.chrry.ai",
   email: "iliyan@chrry.ai",
   description:
-    "Code-First AI Platform. Generate production-ready code, debug with precision, and architect scalable systems. Built for developers who demand technical excellence.",
+    "AI coding assistant for generation, debugging & architecture. Production-ready code in seconds. Built for developers.",
   logo: "🍣",
   primaryColor: "#10B981", // Emerald green (coding/terminal theme)
   links: {
@@ -2043,6 +2043,10 @@ export function detectSiteModeDomain(
 
   if (matchesDomain(host, "grape.chrry.ai")) {
     return "grape"
+  }
+
+  if (matchesDomain(host, "sushi.chrry.ai")) {
+    return "sushi"
   }
 
   if (matchesDomain(host, "burn.chrry.ai")) {

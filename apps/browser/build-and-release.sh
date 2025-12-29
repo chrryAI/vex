@@ -45,6 +45,7 @@ mkdir -p ../../public/installs
 mkdir -p ../../apps/flash/public/installs
 
 # Build apps sequentially
+build_and_deploy "Sushi" "sushi"
 build_and_deploy "Atlas" "atlas"
 build_and_deploy "Focus" "focus"
 # Vex is already built and working? Let's rebuild to be consistent or skip if user wants
