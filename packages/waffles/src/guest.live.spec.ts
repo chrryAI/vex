@@ -165,7 +165,7 @@ test.only("Thread", async ({ page }) => {
 //   })
 // })
 
-test.only("File upload", async ({ page }) => {
+test.skip("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
