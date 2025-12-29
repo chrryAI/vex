@@ -28,7 +28,7 @@ import {
   FileText,
 } from "./icons"
 import Modal from "./Modal"
-import { apiFetch } from "./utils"
+import { apiFetch, FRONTEND_URL } from "./utils"
 import { formatFileSize } from "./utils/fileValidation"
 import { useAppContext } from "./context/AppContext"
 import {
@@ -354,9 +354,10 @@ export default function Instructions({
     "search",
     "grape",
     "burn",
+    "sushi",
   ]
   // Ensure absolute URL for extension/external contexts
-  const domain = "https://chrry.ai"
+  const domain = FRONTEND_URL || "https://chrry.ai"
   const downloadUrl =
     app && installs.includes(app?.slug || "")
       ? `${domain}/installs/${capitalizeFirstLetter(app.slug || "")}.dmg?v=${Date.now()}`
