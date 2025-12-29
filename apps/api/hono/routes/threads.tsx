@@ -213,7 +213,7 @@ threads.get("/", async (c) => {
   // Fetch threads based on context
   const threadsResult = await getThreads({
     ...payload,
-    appId: collaborationStatusFinal ? undefined : app?.id,
+    // appId: collaborationStatusFinal ? undefined : app?.id,
     collaborationStatus: collaborationStatusFinal,
     ...(!sanitizedUserName
       ? {
