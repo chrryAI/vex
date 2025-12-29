@@ -2,7 +2,7 @@
 
 # Auto-deploy white-label Nginx configuration with SSL
 # Usage: ./deploy-whitelabel.sh <subdomain> <port>
-# Example: ./deploy-whitelabel.sh burn 3009
+# Example: ./deploy-whitelabel.sh burn 3008
 
 set -e
 
