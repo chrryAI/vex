@@ -1527,13 +1527,13 @@ ${
   })
 
   const instructionsContext =
-    userInstructions.instructions.length > 0
+    userInstructions?.length > 0
       ? `
 
 ## 🎯 USER'S CUSTOM INSTRUCTIONS:
 These are personalized instructions the user has created to guide your behavior. Follow them when relevant.
 
-${userInstructions.instructions.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("\n")}
+${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("\n")}
 `
       : ""
 
@@ -1542,10 +1542,11 @@ ${userInstructions.instructions.map((i) => `${i.emoji} **${i.title}**: ${i.conte
   let characterContext = ""
   let moodContext = ""
 
-  if (characterProfilesEnabled) {
+  if (characterProfilesEnabled && agent) {
     // Get character profile
     const characterTags = await getCharacterTags({
-      agentId: agent.id,
+      userId: member?.id,
+      guestId: guest?.id,
     })
     const characterProfile = characterTags.find(
       (profile) =>

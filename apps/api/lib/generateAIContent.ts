@@ -1325,7 +1325,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
     // Memories already created by extractAndSaveMemories() above
 
     // Create or update character profile
-    const existingCharacterTags = await getCharacterTags({ agentId })
+    const existingCharacterTags = await getCharacterTags({ userId, guestId })
     const existingProfile = existingCharacterTags.find(
       (profile) =>
         (profile.userId === userId || profile.guestId === guestId) &&
