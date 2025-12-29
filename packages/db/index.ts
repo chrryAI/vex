@@ -2907,13 +2907,7 @@ export const getThreads = async ({
               ),
               desc(threads.createdOn),
             ]
-          : [
-              // Main thread first for app owners
-              appId || (finalAppIds && finalAppIds.length > 0)
-                ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
-                : sql`1`,
-              desc(threads.createdOn),
-            ]),
+          : [desc(threads.createdOn)]),
       )
       .limit(pageSize)
       .offset((page - 1) * pageSize)
@@ -3003,13 +2997,7 @@ export const getThreads = async ({
               ),
               desc(threads.createdOn),
             ]
-          : [
-              // Main thread first for app owners
-              appId || (finalAppIds && finalAppIds.length > 0)
-                ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
-                : sql`1`,
-              desc(threads.createdOn),
-            ]),
+          : [desc(threads.createdOn)]),
       )
       .limit(pageSize)
       .offset((page - 1) * pageSize)
