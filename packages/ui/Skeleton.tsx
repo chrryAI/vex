@@ -25,6 +25,7 @@ import {
   useNavigationContext,
   useData,
   useApp,
+  useAuth,
 } from "./context/providers"
 import { useTheme } from "./platform"
 import A from "./a/A"
@@ -41,7 +42,7 @@ export default function Skeleton({
   children?: React.ReactNode
   showThreads?: boolean
 }): React.ReactElement {
-  const { isMobile } = usePlatform()
+  const { isCapacitor, os } = usePlatform()
 
   const hasHydrated = useHasHydrated()
 
@@ -63,6 +64,10 @@ export default function Skeleton({
 
   // Data context
   const { FRONTEND_URL } = useData()
+
+  const { threadIdRef, ...auth } = useAuth()
+
+  const threadId = threadIdRef.current || auth.threadId
 
   // App context
   const { app, isRemovingApp, isSavingApp } = useApp()
@@ -93,7 +98,7 @@ export default function Skeleton({
     }
   }, [])
 
-  // Call ALL hooks before any conditional returns
+  // Call ALL hooks sssbefore any conditional returns
   const { skeletonStyles, utilities } = useStyles()
 
   return (
@@ -103,6 +108,7 @@ export default function Skeleton({
       style={{
         ...skeletonStyles.page.style,
         paddingLeft: !isSmallDevice && isDrawerOpen ? 255 : 0,
+        // paddingTop: isCapacitor && os === "ios" ? 40 : undefined,
       }}
     >
       <Div
@@ -126,6 +132,7 @@ export default function Skeleton({
               }),
             ...{
               display: "flex",
+              // paddingTop: isCapacitor && os === "ios" ? 40 : undefined,
             },
           }}
         >
@@ -152,6 +159,10 @@ export default function Skeleton({
               ...skeletonStyles.header.style,
               ...(isStandalone && skeletonStyles.headerStandalone.style),
               ...(isEmpty && skeletonStyles.headerEmpty.style),
+              ...(isCapacitor && os === "ios" ? { paddingTop: 55 } : {}),
+              ...(isCapacitor && os === "ios" && threadId
+                ? { position: "fixed", top: 0 }
+                : {}),
             }}
             // className={clsx(hasHydrated && device && styles[device])}
           >

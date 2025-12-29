@@ -30,6 +30,7 @@ import {
   isBrowserExtension as _isBrowserExtension,
   isStandalone as _isStandalone,
   isTauri as _isTauri,
+  isCapacitor as _isCapacitor,
   getBrowser as _getBrowser,
   detectPlatform as _detectPlatform,
 } from "./detection"
@@ -46,6 +47,7 @@ export {
   isBrowserExtension,
   isStandalone,
   isTauri,
+  isCapacitor,
   getBrowser,
   detectPlatform,
 } from "./detection"
@@ -101,6 +103,7 @@ export interface PlatformContextValue {
   isExtension: boolean
   isStandalone: boolean
   isTauri: boolean
+  isCapacitor: boolean
   isChrome: boolean
   isFirefox: boolean
   isSafari: boolean
@@ -477,6 +480,7 @@ export function PlatformProvider({
     isMobile,
     isTablet,
     isTauri,
+    isCapacitor: _isCapacitor(),
     isDesktop,
     isStorageReady,
     styleRegistry,
