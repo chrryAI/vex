@@ -1,0 +1,33 @@
+{
+  "name": "@chrryai/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:ios": "CAPACITOR_SERVER_URL=http://localhost:5175 pnpm exec cap run ios",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cap:sync": "cap sync",
+    "cap:open:ios": "cap open ios",
+    "cap:open:android": "cap open android",
+    "ios": "cap run ios",
+    "android": "cap run android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "@chrryai/chrry": "workspace:*",
+    "@chrryai/pepper": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "sass": "^1.97.1",
+    "typescript": "^5.3.3",
+    "vite": "^7.2.6"
+  }
+}
