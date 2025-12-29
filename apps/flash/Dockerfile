@@ -76,9 +76,6 @@ COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/content ./apps/flash
 # Copy workspace packages
 COPY --chown=viteuser:nodejs --from=builder /app/packages ./packages
 
-# Ensure proper permissions
-RUN chown -R viteuser:nodejs /app
-
 # Switch to non-root user
 USER viteuser
 
