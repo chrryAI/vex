@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "build:all": "pnpm build:atlas && pnpm build:focus && pnpm build:vex && pnpm build:popcorn && pnpm build:chrry && pnpm build:zarathustra && pnpm build:search && pnpm build:grape && pnpm build:burn",
+    "build:all": "pnpm build:sushi && pnpm build:atlas && pnpm build:focus && pnpm build:vex && pnpm build:popcorn && pnpm build:chrry && pnpm build:zarathustra && pnpm build:search && pnpm build:grape && pnpm build:burn",
     "build:atlas": "MODE=atlas pnpm icon:generate && MODE=atlas pnpm config:generate && MODE=atlas vite build && MODE=atlas tauri build",
     "build:burn": "MODE=burn pnpm icon:generate && MODE=burn pnpm config:generate && MODE=burn vite build && MODE=burn tauri build",
     "build:chrry": "MODE=chrryAI pnpm icon:generate && MODE=chrryAI pnpm config:generate && MODE=chrryAI vite build && MODE=chrryAI tauri build",
@@ -14,6 +14,7 @@
     "build:grape": "MODE=grape pnpm icon:generate && MODE=grape pnpm config:generate && MODE=grape vite build && MODE=grape tauri build",
     "build:popcorn": "MODE=popcorn pnpm icon:generate && MODE=popcorn pnpm config:generate && MODE=popcorn vite build && MODE=popcorn tauri build",
     "build:search": "MODE=search pnpm icon:generate && MODE=search pnpm config:generate && MODE=search vite build && MODE=search tauri build",
+    "build:sushi": "MODE=sushi pnpm icon:generate && MODE=sushi pnpm config:generate && MODE=sushi vite build && MODE=sushi tauri build",
     "build:vex": "MODE=vex pnpm icon:generate && MODE=vex pnpm config:generate && MODE=vex vite build && MODE=vex tauri build",
     "build:vite": "vite build",
     "build:zarathustra": "MODE=zarathustra pnpm icon:generate && MODE=zarathustra pnpm config:generate && MODE=zarathustra vite build && MODE=zarathustra tauri build",

@@ -1177,9 +1177,14 @@ export default function Agent({
                     style={{ color: "var(--accent-6)" }}
                     className={clsx(styles.label, "row", "link")}
                   >
-                    <Logo
-                      isVivid={appFormWatcher.tier === "pro"}
-                      isMagenta={appFormWatcher.tier === "plus"}
+                    <Img
+                      icon={
+                        appFormWatcher.tier === "pro"
+                          ? "strawberry"
+                          : appFormWatcher.tier === "free"
+                            ? "chrry"
+                            : "raspberry"
+                      }
                       size={28}
                     />
                     {t(capitalizeFirstLetter(appFormWatcher.tier || "Free"))}
