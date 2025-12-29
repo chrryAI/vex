@@ -1575,8 +1575,11 @@ Adapt your tone and approach to match the user's communication style.
     })
     const recentMood = moods.moods[0]
 
+    // Only inject moods that require empathy adjustment
+    // Filter out 'thinking' (neutral) - only use emotional states
     if (
       recentMood &&
+      recentMood.type !== "thinking" && // Filter out neutral mood
       recentMood.metadata?.confidence &&
       recentMood.metadata.confidence >= 0.6
     ) {
