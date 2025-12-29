@@ -77,6 +77,8 @@ export const Hey = memo(
     const { app, isSplash, setIsSplash, storeApps, threadId, isProgramme } =
       useAuth()
 
+    console.log(`🚀 ~ app:`, app)
+
     const { currentStore } = useApp()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]
@@ -168,10 +170,10 @@ export const Hey = memo(
               onLoad={(src) => {
                 setIsImageLoaded(true)
               }}
-              app={isChrry ? undefined : app}
-              logo={isChrry ? "blossom" : undefined}
+              app={app}
+              // logo={isChrry ? "blossom" : undefined}
               showLoading={false}
-              size={isChrry ? 72 : 64}
+              size={64}
             />
           </Div>
         )
@@ -183,11 +185,11 @@ export const Hey = memo(
 
     useEffect(() => {
       isSplash &&
-        isImageLoaded &&
+        (app?.slug === "chrry" || isImageLoaded) &&
         isHydrated &&
         minSplashTimeElapsed &&
         setIsSplash(!app?.store?.apps?.length)
-    }, [isImageLoaded, isHydrated, isSplash, minSplashTimeElapsed])
+    }, [isImageLoaded, isHydrated, isSplash, minSplashTimeElapsed, app])
 
     // useEffect(() => {
     //   app?.slug && useExtensionIcon?.(app?.slug)
