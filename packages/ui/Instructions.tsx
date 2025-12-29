@@ -357,9 +357,9 @@ export default function Instructions({
   ]
   const downloadUrl =
     app && installs.includes(app?.slug || "")
-      ? `/installs/${capitalizeFirstLetter(app.slug || "")}.dmg`
+      ? `/installs/${capitalizeFirstLetter(app.slug || "")}.dmg?v=${Date.now()}`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
-        ? `/installs/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
+        ? `/installs/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg?v=${Date.now()}`
         : ""
   const extensionId = getExtensionId()
 
