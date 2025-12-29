@@ -86,6 +86,7 @@
     "longDescription": "{{LONG_DESCRIPTION}}",
     "macOS": {
       "entitlements": "entitlements.plist",
+      "signingIdentity": "Developer ID Application: iliyan velinov (F5MTBDR7VX)",
       "minimumSystemVersion": "10.13",
       "dmg": {
         "appPosition": {

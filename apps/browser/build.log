@@ -1,0 +1,1228 @@
+🚀 Building and releasing all Tauri apps...
+⏱️  This will take approximately 30-40 minutes
+
+📦 Building all apps with notarization...
+
+> @chrryai/vex-desktop@0.1.0 build:all /Users/ibrahimvelinov/Documents/vex/apps/browser
+> pnpm build:atlas && pnpm build:focus && pnpm build:vex && pnpm build:popcorn && pnpm build:chrry && pnpm build:zarathustra && pnpm build:search && pnpm build:grape && pnpm build:burn
+
+
+> @chrryai/vex-desktop@0.1.0 build:atlas /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=atlas pnpm icon:generate && MODE=atlas pnpm config:generate && MODE=atlas vite build && MODE=atlas tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: atlas
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for atlas!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Atlas 🍒
+📦 Bundle ID: dev.chrry.atlas
+🔧 Tauri Build Config: { mode: 'atlas', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-dea44V_l.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-DDsxwm5n.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-C2ZaZMKk.js               0.26 kB │ gzip:     0.20 kB
+dist/assets/Calendar-pNvAppiw.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-D1cH9N7m.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-CVKgewcV.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-brpdIDxl.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-CBB3QYtB.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-CrEEA0o5.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-DrkhmkwG.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-CPbOp9ma.js                  6.96 kB │ gzip:     2.93 kB
+dist/assets/index-C9eCNvWy.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-D3YYOs1U.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-OpBQA8Vf.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-CobIA4hn.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-BN55bs2T.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-knOCfQRw.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-MbcszN3h.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 20.02s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'atlas', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-dea44V_l.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-DDsxwm5n.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-C2ZaZMKk.js               0.26 kB │ gzip:     0.20 kB
+dist/assets/Calendar-pNvAppiw.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-D1cH9N7m.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-CVKgewcV.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-brpdIDxl.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-CBB3QYtB.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-CrEEA0o5.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-DrkhmkwG.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-CPbOp9ma.js                  6.96 kB │ gzip:     2.93 kB
+dist/assets/index-C9eCNvWy.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-D3YYOs1U.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-OpBQA8Vf.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-CobIA4hn.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-BN55bs2T.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-knOCfQRw.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-MbcszN3h.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 16.51s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 26.77s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Atlas 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Atlas 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Atlas 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Atlas 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Atlas 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Atlas 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmps9Izbh/Atlas 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Atlas 🍒.app
+Notarizing Finished with status Accepted for id 1c3ec603-a724-40f9-a0bf-08bd2301c402 (Processing complete)
+Stapling app...
+    Bundling Atlas 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Atlas 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Atlas 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Atlas 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Atlas 🍒_0.1.0_aarch64.dmg
+
+
+> @chrryai/vex-desktop@0.1.0 build:focus /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=focus pnpm icon:generate && MODE=focus pnpm config:generate && MODE=focus vite build && MODE=focus tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: focus
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for focus!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Focus 🍒
+📦 Bundle ID: dev.chrry.focus
+🔧 Tauri Build Config: { mode: 'focus', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-DO5P5VO5.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-dVP1sn53.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-B4GBVw17.js               0.26 kB │ gzip:     0.20 kB
+dist/assets/Calendar-DojbR7Fz.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-MTDGLIJT.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-KzeoFViZ.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-CXYQSoGD.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-BoQnwc3I.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-B7VQBemZ.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-DHUFUl3o.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-GIgOxghP.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-5GcOveWa.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-D8SERMph.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-BaPkmtEp.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-BZ1Sbajq.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-w487rOcN.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-DbfFMGhB.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BLoexhUL.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 22.52s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'focus', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-DO5P5VO5.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-dVP1sn53.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-B4GBVw17.js               0.26 kB │ gzip:     0.20 kB
+dist/assets/Calendar-DojbR7Fz.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-MTDGLIJT.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-KzeoFViZ.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-CXYQSoGD.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-BoQnwc3I.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-B7VQBemZ.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-DHUFUl3o.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-GIgOxghP.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-5GcOveWa.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-D8SERMph.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-BaPkmtEp.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-BZ1Sbajq.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-w487rOcN.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-DbfFMGhB.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BLoexhUL.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 17.02s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 25.71s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Focus 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Focus 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Focus 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Focus 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Focus 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Focus 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmpNTkFD7/Focus 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Focus 🍒.app
+Notarizing Finished with status Accepted for id 35882fe0-c704-4c76-9a0b-2d820efa0abd (Processing complete)
+Stapling app...
+    Bundling Focus 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Focus 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Focus 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Focus 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Focus 🍒_0.1.0_aarch64.dmg
+
+
+> @chrryai/vex-desktop@0.1.0 build:vex /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=vex pnpm icon:generate && MODE=vex pnpm config:generate && MODE=vex vite build && MODE=vex tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: vex
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for vex!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Vex 🍒
+📦 Bundle ID: dev.chrry.vex
+🔧 Tauri Build Config: { mode: 'vex', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.27 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-BumZJrMj.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-BBy5bsvK.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-CYlKpSd7.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-BGHjPj1p.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-BPV5zFXH.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-CvO2AxW4.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-D8jdfOEg.js                 2.90 kB │ gzip:     1.38 kB
+dist/assets/Privacy-DUfQQs4z.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-CxruZJYP.js                    4.56 kB │ gzip:     1.44 kB
+dist/assets/Threads-BBtQHO-x.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-BP2pjikD.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-Wbcm8iPE.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-BYyBVyAf.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-CZcDA9AE.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-aJfRXUti.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-D8CbNN8e.js         311.73 kB │ gzip:    94.24 kB
+dist/assets/Programme-UqnhvavE.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-CFDsNOXd.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 15.93s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'vex', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.27 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-BumZJrMj.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-BBy5bsvK.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-CYlKpSd7.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-BGHjPj1p.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-BPV5zFXH.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-CvO2AxW4.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-D8jdfOEg.js                 2.90 kB │ gzip:     1.38 kB
+dist/assets/Privacy-DUfQQs4z.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-CxruZJYP.js                    4.56 kB │ gzip:     1.44 kB
+dist/assets/Threads-BBtQHO-x.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-BP2pjikD.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-Wbcm8iPE.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-BYyBVyAf.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-CZcDA9AE.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-aJfRXUti.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-D8CbNN8e.js         311.73 kB │ gzip:    94.24 kB
+dist/assets/Programme-UqnhvavE.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-CFDsNOXd.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 15.76s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 26.65s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Vex 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Vex 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Vex 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Vex 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Vex 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Vex 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmp8e9DtS/Vex 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Vex 🍒.app
+Notarizing Finished with status Accepted for id bfecabe2-18fb-4ec8-9675-6d1f263d3b0e (Processing complete)
+Stapling app...
+    Bundling Vex 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Vex 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Vex 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Vex 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Vex 🍒_0.1.0_aarch64.dmg
+
+
+> @chrryai/vex-desktop@0.1.0 build:popcorn /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=popcorn pnpm icon:generate && MODE=popcorn pnpm config:generate && MODE=popcorn vite build && MODE=popcorn tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: popcorn
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for popcorn!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Popcorn 🍒
+📦 Bundle ID: dev.chrry.popcorn
+🔧 Tauri Build Config: { mode: 'popcorn', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.27 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-UYeUQ8vD.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-D4QRGTj9.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-CyGLZD5S.js               0.26 kB │ gzip:     0.20 kB
+dist/assets/Calendar-DiPqbGA_.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-C19UrPY5.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-10eqdtsL.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-B6YAjHY3.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-CbMJ1SXF.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-WEZ3vLxk.js                    4.56 kB │ gzip:     1.44 kB
+dist/assets/Threads-BDSLev64.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-DRx18acn.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-CmWd_vY4.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-a2Ft89jg.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-8Lpk1y2H.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-BFZpJk28.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-CJELc6ne.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-By4hBLot.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-CwcSw7ia.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 18.85s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'popcorn', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.27 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-UYeUQ8vD.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-D4QRGTj9.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-CyGLZD5S.js               0.26 kB │ gzip:     0.20 kB
+dist/assets/Calendar-DiPqbGA_.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-C19UrPY5.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-10eqdtsL.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-B6YAjHY3.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-CbMJ1SXF.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-WEZ3vLxk.js                    4.56 kB │ gzip:     1.44 kB
+dist/assets/Threads-BDSLev64.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-DRx18acn.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-CmWd_vY4.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-a2Ft89jg.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-8Lpk1y2H.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-BFZpJk28.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-CJELc6ne.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-By4hBLot.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-CwcSw7ia.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 17.77s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 28.14s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Popcorn 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Popcorn 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Popcorn 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Popcorn 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Popcorn 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Popcorn 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmpOdLTGL/Popcorn 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Popcorn 🍒.app
+Notarizing Finished with status Accepted for id 70b1e72a-588b-4738-b203-777b28bef919 (Processing complete)
+Stapling app...
+    Bundling Popcorn 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Popcorn 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Popcorn 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Popcorn 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Popcorn 🍒_0.1.0_aarch64.dmg
+
+
+> @chrryai/vex-desktop@0.1.0 build:chrry /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=chrryAI pnpm icon:generate && MODE=chrryAI pnpm config:generate && MODE=chrryAI vite build && MODE=chrryAI tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: chrry
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for chrry!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Chrry 🍒
+📦 Bundle ID: dev.chrry.chrryai
+🔧 Tauri Build Config: { mode: 'chrryAI', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-7z9PE1Rh.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-BI8TSa5e.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-B4WUZyrs.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-Caqj7dEI.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-BORiWWAE.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-08TMuWHD.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-CbzsFLlp.js                 2.90 kB │ gzip:     1.38 kB
+dist/assets/Privacy-CauxGxPP.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-DrzHGeMl.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-e92Vulmw.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-B_9rxZ2F.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-CR02-wXP.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-CwqTHjuh.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-9VCeCmff.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-BXLyy1ZK.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-mC0jfveC.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-Bmvya2IO.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BLkWSwQv.js              5,034.08 kB │ gzip: 1,687.25 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 21.25s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'chrryAI', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-7z9PE1Rh.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-BI8TSa5e.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-B4WUZyrs.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-Caqj7dEI.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-BORiWWAE.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-08TMuWHD.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-CbzsFLlp.js                 2.90 kB │ gzip:     1.38 kB
+dist/assets/Privacy-CauxGxPP.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-DrzHGeMl.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-e92Vulmw.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-B_9rxZ2F.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-CR02-wXP.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-CwqTHjuh.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-9VCeCmff.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-BXLyy1ZK.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-mC0jfveC.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-Bmvya2IO.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BLkWSwQv.js              5,034.08 kB │ gzip: 1,687.25 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 17.78s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 29.91s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Chrry 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Chrry 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Chrry 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Chrry 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Chrry 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Chrry 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmpJEjCRw/Chrry 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Chrry 🍒.app
+Notarizing Finished with status Accepted for id 21cb8889-e8b6-44f1-b1ac-a817d0b83c57 (Processing complete)
+Stapling app...
+    Bundling Chrry 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Chrry 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Chrry 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Chrry 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Chrry 🍒_0.1.0_aarch64.dmg
+
+
+> @chrryai/vex-desktop@0.1.0 build:zarathustra /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=zarathustra pnpm icon:generate && MODE=zarathustra pnpm config:generate && MODE=zarathustra vite build && MODE=zarathustra tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: zarathustra
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for zarathustra!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Zarathustra 🍒
+📦 Bundle ID: dev.chrry.zarathustra
+🔧 Tauri Build Config: { mode: 'zarathustra', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-Dgd2xMCO.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-Jhl6I07P.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-BR6lM-kB.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-C5cKRb_E.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-fNRbbCJT.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-C_noBdHG.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-ku6khCdp.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-B1ymsyjd.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-DZWArsHR.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-Ftca8Fd4.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-BN-8K1Yd.js                  6.96 kB │ gzip:     2.93 kB
+dist/assets/index-313NrQGl.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-BLbMjeOX.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-BLx8WUCw.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-B9HjN5mP.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-DdPqF_Ij.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-D7Iyhc72.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BFGBcuLl.js              5,034.09 kB │ gzip: 1,687.25 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 18.57s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'zarathustra', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-Dgd2xMCO.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-Jhl6I07P.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-BR6lM-kB.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-C5cKRb_E.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-fNRbbCJT.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-C_noBdHG.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-ku6khCdp.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-B1ymsyjd.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-DZWArsHR.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-Ftca8Fd4.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-BN-8K1Yd.js                  6.96 kB │ gzip:     2.93 kB
+dist/assets/index-313NrQGl.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-BLbMjeOX.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-BLx8WUCw.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-B9HjN5mP.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-DdPqF_Ij.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-D7Iyhc72.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BFGBcuLl.js              5,034.09 kB │ gzip: 1,687.25 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 19.45s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 28.06s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Zarathustra 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Zarathustra 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Zarathustra 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Zarathustra 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Zarathustra 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Zarathustra 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmpdeKycm/Zarathustra 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Zarathustra 🍒.app
+Notarizing Finished with status Accepted for id de865586-f681-4240-be42-dec50ccd35e1 (Processing complete)
+Stapling app...
+    Bundling Zarathustra 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Zarathustra 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Zarathustra 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Zarathustra 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Zarathustra 🍒_0.1.0_aarch64.dmg
+
+
+> @chrryai/vex-desktop@0.1.0 build:search /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=search pnpm icon:generate && MODE=search pnpm config:generate && MODE=search vite build && MODE=search tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: search
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for search!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Search 🍒
+📦 Bundle ID: dev.chrry.search
+🔧 Tauri Build Config: { mode: 'search', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-CKUjifpI.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-6SPs8EyA.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-B7m3sRvB.js               0.26 kB │ gzip:     0.20 kB
+dist/assets/Calendar-A-i-a9AN.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-C2v_I3DB.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-CGwrNrwf.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-DmcJ5TOr.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-CfBOmQpu.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-B0uNuZ8N.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-DWChCXg_.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-BvDj60UX.js                  6.96 kB │ gzip:     2.93 kB
+dist/assets/index-Dos_baTw.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-bxVylhEd.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-CJNsE6Ll.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-f-Qwbfo_.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-DRM5e4Or.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-DH8O5Au-.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BOMllgNN.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 18.41s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'search', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-CKUjifpI.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-6SPs8EyA.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-B7m3sRvB.js               0.26 kB │ gzip:     0.20 kB
+dist/assets/Calendar-A-i-a9AN.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-C2v_I3DB.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-CGwrNrwf.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-DmcJ5TOr.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-CfBOmQpu.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-B0uNuZ8N.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-DWChCXg_.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-BvDj60UX.js                  6.96 kB │ gzip:     2.93 kB
+dist/assets/index-Dos_baTw.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-bxVylhEd.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-CJNsE6Ll.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-f-Qwbfo_.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-DRM5e4Or.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-DH8O5Au-.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BOMllgNN.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 16.15s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 28.51s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Search 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Search 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Search 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Search 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Search 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Search 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmpjIa69h/Search 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Search 🍒.app
+Notarizing Finished with status Accepted for id 6a8386e3-16ea-4473-9bc0-57773f11ee53 (Processing complete)
+Stapling app...
+    Bundling Search 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Search 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Search 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Search 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Search 🍒_0.1.0_aarch64.dmg
+
+
+> @chrryai/vex-desktop@0.1.0 build:grape /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=grape pnpm icon:generate && MODE=grape pnpm config:generate && MODE=grape vite build && MODE=grape tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: grape
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for grape!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Grape 🍒
+📦 Bundle ID: dev.chrry.grape
+🔧 Tauri Build Config: { mode: 'grape', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-CE_0mqY9.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-BZ_SQPVK.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-Bz9heBpN.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-CUZVfq5u.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-BwMxfXsD.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-BMpdMepz.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-X27gXdtu.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-C1jRqot0.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-BOoqBU1a.js                    4.56 kB │ gzip:     1.44 kB
+dist/assets/Threads-B6ST-N0L.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-D2rYhAGR.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-BLGGo67j.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-Bnh2u7H0.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-DKpFaWYj.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-D0yt5CeU.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-mSWferuw.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-BnqGRU-G.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-HRhmH5fV.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 16.82s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'grape', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-CE_0mqY9.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-BZ_SQPVK.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-Bz9heBpN.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-CUZVfq5u.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-BwMxfXsD.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-BMpdMepz.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-X27gXdtu.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-C1jRqot0.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-BOoqBU1a.js                    4.56 kB │ gzip:     1.44 kB
+dist/assets/Threads-B6ST-N0L.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-D2rYhAGR.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-BLGGo67j.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-Bnh2u7H0.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-DKpFaWYj.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-D0yt5CeU.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-mSWferuw.js         311.73 kB │ gzip:    94.25 kB
+dist/assets/Programme-BnqGRU-G.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-HRhmH5fV.js              5,034.08 kB │ gzip: 1,687.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 17.75s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 26.84s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Grape 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Grape 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Grape 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Grape 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Grape 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Grape 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmpZtdAeJ/Grape 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Grape 🍒.app
+Notarizing Finished with status Accepted for id 953781b8-ef21-4eff-908d-8a7e7fbbed19 (Processing complete)
+Stapling app...
+    Bundling Grape 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Grape 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Grape 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Grape 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Grape 🍒_0.1.0_aarch64.dmg
+
+
+> @chrryai/vex-desktop@0.1.0 build:burn /Users/ibrahimvelinov/Documents/vex/apps/browser
+> MODE=burn pnpm icon:generate && MODE=burn pnpm config:generate && MODE=burn vite build && MODE=burn tauri build
+
+
+> @chrryai/vex-desktop@0.1.0 icon:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-icons.js
+
+🎨 Generating Tauri icons for mode: burn
+🖼️  Generating PNG icons at all sizes...
+✅ Generated 16x16.png
+✅ Generated 32x32.png
+✅ Generated 48x48.png
+✅ Generated 128x128.png
+✅ Copied 128x128@2x.png
+✅ Generated 256x256.png
+✅ Generated 512x512.png
+✅ Generated 1024x1024.png
+✅ Copied icon.png
+🍎 Generating .icns for macOS...
+✅ Generated icon.icns
+🪟 Generating .ico for Windows...
+✅ Generated icon.ico
+
+✨ Icon generation complete for burn!
+   Icons saved to: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/icons
+
+> @chrryai/vex-desktop@0.1.0 config:generate /Users/ibrahimvelinov/Documents/vex/apps/browser
+> node ../../apps/scripts/generate-tauri-config.js
+
+🔧 Generated Tauri config for Burn 🍒
+📦 Bundle ID: dev.chrry.burn
+🔧 Tauri Build Config: { mode: 'burn', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-tqW3Zwe3.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-DWpUyV-y.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-WFr3oRgp.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-BbEHo-nf.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-0DGb2CXh.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-my4rv-rY.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-CK4RqGTL.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-D1Vfd7XN.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-BOflO3r-.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-C4BV9gJ6.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-BWbeG0Gj.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-CD_kX4Yf.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-5za4YyNM.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-CfUrwEif.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-DsYc8zGj.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-CsIqgvmz.js         311.73 kB │ gzip:    94.24 kB
+dist/assets/Programme-CaiqtcmK.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BUaSa5E1.js              5,034.08 kB │ gzip: 1,687.25 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 16.64s
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `vite build`
+🔧 Tauri Build Config: { mode: 'burn', isProduction: true, NODE_ENV: 'production' }
+vite v7.2.6 building client environment for production...
+transforming...
+✓ 15413 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) /Users/ibrahimvelinov/Documents/vex/packages/ui/Store.tsx is dynamically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/Hey.tsx but also statically imported by /Users/ibrahimvelinov/Documents/vex/packages/ui/MarkdownContent.web.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                0.39 kB │ gzip:     0.28 kB
+dist/assets/Programme-BM-DDI_0.css             2.38 kB │ gzip:     0.80 kB
+dist/assets/index-COLfy0GA.css                21.33 kB │ gzip:     5.44 kB
+dist/assets/Calendar-DqH7SkbN.css             29.45 kB │ gzip:     4.85 kB
+dist/assets/trending-up-tqW3Zwe3.js            0.18 kB │ gzip:     0.17 kB
+dist/assets/circle-arrow-left-DWpUyV-y.js      0.22 kB │ gzip:     0.19 kB
+dist/assets/calendar-WFr3oRgp.js               0.26 kB │ gzip:     0.21 kB
+dist/assets/Calendar-BbEHo-nf.js               0.49 kB │ gzip:     0.32 kB
+dist/assets/About.styles-0DGb2CXh.js           1.43 kB │ gzip:     0.69 kB
+dist/assets/Terms-my4rv-rY.js                  1.57 kB │ gzip:     0.66 kB
+dist/assets/Search-CK4RqGTL.js                 2.90 kB │ gzip:     1.37 kB
+dist/assets/Privacy-D1Vfd7XN.js                3.06 kB │ gzip:     0.88 kB
+dist/assets/Why-BOflO3r-.js                    4.56 kB │ gzip:     1.43 kB
+dist/assets/Threads-C4BV9gJ6.js                5.74 kB │ gzip:     2.34 kB
+dist/assets/Users-BWbeG0Gj.js                  6.96 kB │ gzip:     2.94 kB
+dist/assets/index-CD_kX4Yf.js                  7.30 kB │ gzip:     2.41 kB
+dist/assets/index-5za4YyNM.js                  9.79 kB │ gzip:     3.00 kB
+dist/assets/index-CfUrwEif.js                 13.54 kB │ gzip:     4.61 kB
+dist/assets/window-DBaKB4Hm.js                14.92 kB │ gzip:     3.83 kB
+dist/assets/Focus-DsYc8zGj.js                 48.38 kB │ gzip:    15.56 kB
+dist/assets/Calendar.web-CsIqgvmz.js         311.73 kB │ gzip:    94.24 kB
+dist/assets/Programme-CaiqtcmK.js            992.63 kB │ gzip:   276.34 kB
+dist/assets/index-BUaSa5E1.js              5,034.08 kB │ gzip: 1,687.25 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 16.84s
+   Compiling app v0.1.0 (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri)
+    Finished `release` profile [optimized] target(s) in 26.20s
+       Built application at: /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/app
+    Bundling Burn 🍒.app (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Burn 🍒.app)
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Burn 🍒.app/Contents/MacOS/app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Burn 🍒.app/Contents/MacOS/app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Burn 🍒.app
+/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Burn 🍒.app: replacing existing signature
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /var/folders/kh/nfnqm7xd4nvb33fvm7dgfh3r0000gn/T/.tmp31LKLc/Burn 🍒.zip
+Notarizing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Burn 🍒.app
+Notarizing Finished with status Accepted for id b0270b7d-19d0-4c3d-aef2-02612a499fc7 (Processing complete)
+Stapling app...
+    Bundling Burn 🍒_0.1.0_aarch64.dmg (/Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Burn 🍒_0.1.0_aarch64.dmg)
+     Running bundle_dmg.sh
+     Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing with identity "Developer ID Application: iliyan velinov (F5MTBDR7VX)"
+Signing /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Burn 🍒_0.1.0_aarch64.dmg
+    Finished 2 bundles at:
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/macos/Burn 🍒.app
+        /Users/ibrahimvelinov/Documents/vex/apps/browser/src-tauri/target/release/bundle/dmg/Burn 🍒_0.1.0_aarch64.dmg
+
+
+✅ Build complete! Now copying Tauri-built DMGs...
+
+📦 Copying notarized DMGs to public/installs/...
+cp: apps/browser/src-tauri/target/release/bundle/dmg/Atlas 🍒_0.1.0_aarch64.dmg: No such file or directory
