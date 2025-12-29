@@ -2144,9 +2144,9 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return sushi
   }
 
-  // if (!isDevelopment && isE2E) {
-  //   return e2eVex
-  // }
+  if (!isTauri() && !isDevelopment && isE2E) {
+    return e2eVex
+  }
 
   if (mode === "search") {
     return search
