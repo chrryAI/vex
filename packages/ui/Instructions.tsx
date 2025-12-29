@@ -355,11 +355,13 @@ export default function Instructions({
     "grape",
     "burn",
   ]
+  // Ensure absolute URL for extension/external contexts
+  const domain = "https://chrry.ai"
   const downloadUrl =
     app && installs.includes(app?.slug || "")
-      ? `/installs/${capitalizeFirstLetter(app.slug || "")}.dmg?v=${Date.now()}`
+      ? `${domain}/installs/${capitalizeFirstLetter(app.slug || "")}.dmg?v=${Date.now()}`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
-        ? `/installs/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg?v=${Date.now()}`
+        ? `${domain}/installs/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg?v=${Date.now()}`
         : ""
   const extensionId = getExtensionId()
 
