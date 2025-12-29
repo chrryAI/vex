@@ -6955,7 +6955,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
     slug: "sushiStore",
     name: "Sushi",
     title: "Sushi AI",
-    domain: "https://sushi.chrry.com",
+    domain: "https://sushi.chrry.ai",
     userId: admin.id,
     parentStoreId: blossom.id,
     visibility: "public" as const,
