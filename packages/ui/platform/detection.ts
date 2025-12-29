@@ -133,6 +133,16 @@ export function isTauri(): boolean {
 }
 
 /**
+ * Detect if running in Capacitor mobile app
+ */
+export function isCapacitor(): boolean {
+  if (typeof window === "undefined") return false
+
+  // Check for Capacitor API presence
+  return "Capacitor" in window || "CapacitorCustomPlatform" in window
+}
+
+/**
  * Detect browser type
  */
 export function getBrowser(): BrowserType {

@@ -414,10 +414,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // Guard: Only run if formDraft has extends
+    if (!formDraft?.extends || formDraft.extends.length === 0) return
+
     // Filter out stale app IDs that no longer exist in storeApps
     const validAppIds = new Set(storeApps.map((app) => app.id))
-    const validExtends =
-      formDraft?.extends?.filter((id) => validAppIds.has(id)) || []
+    const validExtends = formDraft.extends.filter((id) => validAppIds.has(id))
+
+    // Guard: Only update if something actually changed
+    const hasStaleExtends = validExtends.length !== formDraft.extends.length
+    if (!hasStaleExtends) return
 
     // If all extends were stale, reset to defaults
     if (validExtends.length === 0) {
@@ -426,19 +432,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...formDraft,
         extends: defaultExtends,
       })
+      return
     }
+
     // If some were stale, keep only valid ones
-    if (validExtends.length !== formDraft?.extends?.length) {
-      console.log("✅ Filtering out stale extends:", {
-        before: formDraft?.extends?.length,
-        after: validExtends.length,
-      })
-      setFormDraft({
-        ...formDraft,
-        extends: validExtends,
-      })
-    }
-  }, [formDraft, storeApps, baseApp])
+    console.log("✅ Filtering out stale extends:", {
+      before: formDraft.extends.length,
+      after: validExtends.length,
+    })
+    setFormDraft({
+      ...formDraft,
+      extends: validExtends,
+    })
+  }, [storeApps, defaultExtends]) // Removed formDraft from deps
 
   const getInitialFormValues = (): Partial<appFormData> => {
     if (app && isOwner(app, { userId: user?.id, guestId: guest?.id })) {
