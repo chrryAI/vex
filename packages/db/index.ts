@@ -3537,16 +3537,19 @@ export async function getCharacterTags({
   agentId,
   userId,
   guestId,
+  threadId,
 }: {
   agentId?: string
   userId?: string
   guestId?: string
+  threadId?: string
 }) {
   const result = await db
     .select()
     .from(characterProfiles)
     .where(
       and(
+        threadId ? eq(characterProfiles.threadId, threadId) : undefined,
         agentId ? eq(characterProfiles.agentId, agentId) : undefined,
         userId ? eq(characterProfiles.userId, userId) : undefined,
         guestId ? eq(characterProfiles.guestId, guestId) : undefined,
