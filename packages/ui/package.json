@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.8.69",
+  "version": "1.8.78",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -12,6 +12,8 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./Chrry": "./Chrry.tsx",
+    "./globals.scss": "./globals.scss",
     "./utils": "./utils/index.ts",
     "./utils/*": "./utils/*.ts",
     "./types": "./types/index.ts",

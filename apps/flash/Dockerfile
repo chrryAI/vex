@@ -6,48 +6,41 @@ RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.15.0
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/flash/package.json apps/flash/
 COPY packages/db/package.json packages/db/
 COPY packages/ui/package.json packages/ui/
+COPY packages/pepper/package.json packages/pepper/
 
 # Install ALL dependencies (including devDependencies needed for build)
-# Explicitly unset NODE_ENV to prevent production setting from skipping devDependencies
-RUN NODE_ENV= pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Build the source code
 FROM base AS builder
-# Install build dependencies for native modules
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.15.0
 
-# Copy workspace configuration first
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/flash/package.json apps/flash/
-COPY packages/db/package.json packages/db/
-COPY packages/ui/package.json packages/ui/
-
-# Copy node_modules from deps stage BEFORE source code
+# Copy node_modules from deps stage (REUSE, don't reinstall!)
+# Copy root node_modules
 COPY --from=deps /app/node_modules ./node_modules
+# Copy workspace node_modules
+COPY --from=deps /app/apps/flash/node_modules ./apps/flash/node_modules
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
+COPY --from=deps /app/packages/pepper/node_modules ./packages/pepper/node_modules
+COPY --from=deps /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 
-# Copy source code (this includes workspace packages)
+# Copy source code
 COPY . .
 
-# Remove node_modules to prevent pnpm from prompting for confirmation
-RUN rm -rf node_modules
-
-# Restore pnpm workspace links (install ALL dependencies including devDependencies for build)
-RUN NODE_ENV= pnpm install --frozen-lockfile
-
-# Build the Vite application (client + server)
+# Build the Vite application
 ENV NODE_OPTIONS='--max-old-space-size=8192'
-
 RUN pnpm --filter flash run build
 
 # Production image
@@ -60,31 +53,28 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 viteuser
 
-# Install pnpm for production dependencies
-RUN npm install -g pnpm
+# Install pnpm
+RUN npm install -g pnpm@9.15.0
 
-# Copy package files for production install with proper ownership
+# Copy package files
 COPY --chown=viteuser:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --chown=viteuser:nodejs apps/flash/package.json apps/flash/
 COPY --chown=viteuser:nodejs packages/db/package.json packages/db/
 COPY --chown=viteuser:nodejs packages/ui/package.json packages/ui/
+COPY --chown=viteuser:nodejs packages/pepper/package.json packages/pepper/
 
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy built application with proper ownership
+# Copy built application
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/dist ./apps/flash/dist
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/server.js ./apps/flash/
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/public ./apps/flash/public
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/index.html ./apps/flash/
 COPY --chown=viteuser:nodejs --from=builder /app/apps/flash/content ./apps/flash/content
 
-# Copy workspace packages (needed for imports) with proper ownership
+# Copy workspace packages
 COPY --chown=viteuser:nodejs --from=builder /app/packages ./packages
-
-# Ensure ALL directories are writable by viteuser (Vite needs to create .vite/deps_temp)
-# This must be done AFTER all COPY commands and BEFORE USER switch
-RUN chown -R viteuser:nodejs /app
 
 # Switch to non-root user
 USER viteuser

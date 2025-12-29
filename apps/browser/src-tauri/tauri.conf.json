@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Chrry 🍒",
+  "productName": "Burn 🍒",
   "version": "0.1.0",
-  "identifier": "dev.chrry.chrryai",
+  "identifier": "dev.chrry.burn",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5174",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Chrry 🍒",
+        "title": "Burn 🍒",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -82,8 +82,8 @@
       "icons/icon.ico"
     ],
     "category": "Productivity",
-    "shortDescription": "AI App Marketplace - Discover, create, and monetize AI apps",
-    "longDescription": "AI App Marketplace - Discover, create, and monetize AI apps",
+    "shortDescription": "Anonymous AI chat. No login required. Guest subscriptions, private credits, anon",
+    "longDescription": "Anonymous AI chat. No login required. Guest subscriptions, private credits, anonymous agents. Maximum privacy guaranteed.",
     "macOS": {
       "entitlements": "entitlements.plist",
       "signingIdentity": "Developer ID Application: iliyan velinov (F5MTBDR7VX)",

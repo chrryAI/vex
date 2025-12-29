@@ -8,6 +8,8 @@ import {
   getGuest as getGuestDb,
   checkPearQuota,
   incrementPearQuota,
+  updateUser,
+  updateGuest,
 } from "@repo/db"
 
 import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
@@ -2424,7 +2426,8 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   const fingerprint = member?.fingerprint || guest?.fingerprint
   console.log(`🚀 ~ app.post ~ fingerprint:`, fingerprint)
 
-  const isE2E = !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+  const isE2E =
+    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
   console.log(`🚀 ~ app.post ~ isE2E:`, isE2E)
 
   const hourlyLimit =
@@ -3370,7 +3373,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
 
   // Check if user liked the last assistant message and reward with credits
   const lastAssistantMessage = contextMessages
-    .filter((msg) => msg.role === "assistant")
+    .filter((msg) => msg?.role === "assistant")
     .pop()
 
   let creditRewardMessage = ""
@@ -4732,19 +4735,35 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               finalText.substring(0, 100),
             )
 
-            // Stream the fallback response
+            // Stream the fallback response word-by-word
             if (sushiStreamingMessage) {
-              await enhancedStreamChunk({
-                chunk: finalText,
-                chunkNumber: 1,
-                totalChunks: 1,
-                streamingMessage: sushiStreamingMessage,
-                member,
-                guest,
-                thread,
-                streamId,
-                clientId,
-              })
+              const words = finalText.split(" ")
+              let currentChunk = 0
+              let batchBuffer = ""
+              const BATCH_SIZE = 75 // characters
+
+              for (const [index, word] of words.entries()) {
+                batchBuffer += word + " "
+
+                // Send when buffer reaches threshold or is last word
+                const shouldFlush =
+                  batchBuffer.length >= BATCH_SIZE || index === words.length - 1
+
+                if (shouldFlush && batchBuffer.length > 0) {
+                  await enhancedStreamChunk({
+                    chunk: batchBuffer,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+                  batchBuffer = ""
+                }
+              }
             }
           } catch (fallbackError) {
             console.error(
@@ -4780,19 +4799,35 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               finalText.substring(0, 100),
             )
 
-            // Stream the fallback response
+            // Stream the fallback response word-by-word
             if (sushiStreamingMessage) {
-              await enhancedStreamChunk({
-                chunk: finalText,
-                chunkNumber: 1,
-                totalChunks: 1,
-                streamingMessage: sushiStreamingMessage,
-                member,
-                guest,
-                thread,
-                streamId,
-                clientId,
-              })
+              const words = finalText.split(" ")
+              let currentChunk = 0
+              let batchBuffer = ""
+              const BATCH_SIZE = 75 // characters
+
+              for (const [index, word] of words.entries()) {
+                batchBuffer += word + " "
+
+                // Send when buffer reaches threshold or is last word
+                const shouldFlush =
+                  batchBuffer.length >= BATCH_SIZE || index === words.length - 1
+
+                if (shouldFlush && batchBuffer.length > 0) {
+                  await enhancedStreamChunk({
+                    chunk: batchBuffer,
+                    chunkNumber: currentChunk++,
+                    totalChunks: -1,
+                    streamingMessage: sushiStreamingMessage,
+                    member,
+                    guest,
+                    thread,
+                    streamId,
+                    clientId,
+                  })
+                  batchBuffer = ""
+                }
+              }
             }
           } catch (fallbackError) {
             console.error(

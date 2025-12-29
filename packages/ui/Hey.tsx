@@ -185,7 +185,7 @@ export const Hey = memo(
 
     useEffect(() => {
       isSplash &&
-        (app?.slug === "chrry" || isImageLoaded) &&
+        isImageLoaded &&
         isHydrated &&
         minSplashTimeElapsed &&
         setIsSplash(!app?.store?.apps?.length)

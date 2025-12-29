@@ -482,7 +482,7 @@ export function AuthProvider({
     device,
     os,
     browser,
-    isNative,
+    isCapacitor,
   } = usePlatform()
 
   const env = isDevelopment ? "development" : "production"
@@ -515,7 +515,7 @@ export function AuthProvider({
   useEffect(() => {
     if (!deviceId && isStorageReady) {
       console.log("📝 Updating deviceId from session:", session?.deviceId)
-      if (isExtension) {
+      if (isExtension || isCapacitor) {
         setDeviceId(uuidv4())
 
         return
@@ -529,14 +529,14 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [shouldFetchSession, setShouldFetchSession] = useState(!session)
+  const [shouldFetchSession, setShouldFetchSession] = useState(!props.session)
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
     session?.guest?.fingerprint ||
       session?.user?.fingerprint ||
       fingerprintParam,
-    isExtension,
+    isExtension || isCapacitor,
   )
 
   const ssrToken =
@@ -545,15 +545,16 @@ export function AuthProvider({
   const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
     ssrToken,
-    isExtension,
+    isExtension || isCapacitor,
   )
 
   const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
 
-  const token = isExtension || isTauri ? tokenExtension : tokenWeb
+  const token =
+    isExtension || isTauri || isCapacitor ? tokenExtension : tokenWeb
 
   const setToken =
-    isExtension || isTauri
+    isExtension || isTauri || isCapacitor
       ? setTokenExtension
       : (token: string | undefined) => {
           setTokenWeb(token)
@@ -573,7 +574,7 @@ export function AuthProvider({
     // For extensions, check if cookies have been loaded from chrome.cookies API
     // The getCookie function sets "_cookiesReady" flag after first token check
     // For web, cookies are immediately available
-    if (isExtension) {
+    if (isExtension || isCapacitor) {
       const checkCookiesReady = async () => {
         const ready = await storage.getItem("_cookiesReady")
         if (ready === "true") {
@@ -596,7 +597,7 @@ export function AuthProvider({
     } else {
       setIsCookieReady(true)
     }
-  }, [isExtension])
+  }, [isExtension, isCapacitor])
 
   const merge = (prevApps: appWithStore[], newApps: appWithStore[]) => {
     // Create a map of existing apps by ID
@@ -802,7 +803,7 @@ export function AuthProvider({
     isLoading: isSessionLoading,
     error: sessionError,
   } = useSWR(
-    (isExtension ? isStorageReady && isCookieReady : true) &&
+    (isExtension || isCapacitor ? isStorageReady && isCookieReady : true) &&
       fingerprint &&
       token &&
       deviceId &&
@@ -928,11 +929,15 @@ export function AuthProvider({
     const u =
       url || isExtension
         ? `/extension/${isFirefox ? "firefox" : "chrome"}${window.location.pathname}`
-        : typeof window !== "undefined"
-          ? canAdd
-            ? `${isPWA ? `${os}/${browser}` : ""}${window?.location?.pathname || ""}`
-            : window?.location?.pathname || ""
-          : "/"
+        : isTauri
+          ? `/tauri/${os || "desktop"}${window?.location?.pathname || ""}`
+          : isCapacitor
+            ? `/capacitor/${os || "mobile"}${window?.location?.pathname || ""}`
+            : typeof window !== "undefined"
+              ? canAdd
+                ? `${isPWA ? `${os}/${browser}` : ""}${window?.location?.pathname || ""}`
+                : window?.location?.pathname || ""
+              : "/"
 
     fetch("https://a.chrry.dev/api/data", {
       method: "POST",
@@ -1107,7 +1112,7 @@ export function AuthProvider({
   const [language, setLanguageInternal] = useCookieOrLocalStorage(
     "locale",
     locale || (session?.locale as locale) || i18n.language || "en",
-    isExtension,
+    isExtension || isCapacitor,
   )
 
   useEffect(() => {
@@ -1448,14 +1453,14 @@ export function AuthProvider({
   )
 
   const setSlug = (slug: string | undefined) => {
-    if (isExtension) {
+    if (isExtension || isCapacitor) {
       setSlugStorage(slug)
     } else {
       setSlugState(slug)
     }
   }
 
-  const slug = isExtension ? slugStorage : slugState
+  const slug = isExtension || isCapacitor ? slugStorage : slugState
 
   const [stores, setStores] = useState<Paginated<storeWithApps> | undefined>(
     session?.stores,
