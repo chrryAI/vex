@@ -2045,6 +2045,10 @@ export function detectSiteModeDomain(
     return "grape"
   }
 
+  if (matchesDomain(host, "sushi.chrry.ai")) {
+    return "sushi"
+  }
+
   if (matchesDomain(host, "burn.chrry.ai")) {
     return "burn"
   }
