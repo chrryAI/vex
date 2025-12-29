@@ -27,7 +27,13 @@ WORKDIR /app
 RUN npm install -g pnpm@9.15.0
 
 # Copy node_modules from deps stage (REUSE, don't reinstall!)
+# Copy root node_modules
 COPY --from=deps /app/node_modules ./node_modules
+# Copy workspace node_modules
+COPY --from=deps /app/apps/flash/node_modules ./apps/flash/node_modules
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
+COPY --from=deps /app/packages/pepper/node_modules ./packages/pepper/node_modules
 COPY --from=deps /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 
 # Copy source code

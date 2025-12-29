@@ -961,40 +961,55 @@ const sushi = {
   domain: "sushi.chrry.ai",
   store: "https://sushi.chrry.ai",
   email: "iliyan@chrry.ai",
-  description: "AI-powered code editor",
-  logo: "🤖",
-  primaryColor: "#6366F1", // Indigo
+  description:
+    "Code-First AI Platform. Generate production-ready code, debug with precision, and architect scalable systems. Built for developers who demand technical excellence.",
+  logo: "🍣",
+  primaryColor: "#10B981", // Emerald green (coding/terminal theme)
   links: {
     github: "https://github.com/chrryAI/chrry",
     docs: "https://sushi.chrry.ai/docs",
   },
   features: [
     {
-      title: "Code Editor",
-      description: "AI-powered code editor",
-      icon: "🤖",
-      link: "/code",
+      title: "Sushi Coder",
+      description: "Generate production-ready code in seconds",
+      icon: "⚡",
+      link: "/coder",
       isOpenSource: true,
     },
     {
-      title: "AI Agents",
-      description: "Custom AI agents for any task",
-      icon: "🤖",
-      link: "/code",
+      title: "Sushi Debugger",
+      description: "Find and fix bugs with AI precision",
+      icon: "🐛",
+      link: "/debugger",
       isOpenSource: true,
     },
     {
-      title: "Collaboration",
-      description: "Real-time AI collaboration",
-      icon: "👥",
-      link: "/threads",
+      title: "Sushi Architect",
+      description: "Design scalable system architectures",
+      icon: "🏗️",
+      link: "/architect",
       isOpenSource: true,
     },
     {
-      title: "Browser Extension",
-      description: "AI assistant in your browser",
-      icon: "🔌",
-      link: "https://chrome.google.com/webstore",
+      title: "Multi-Language Support",
+      description: "Python, JavaScript, Rust, Go, and more",
+      icon: "🌍",
+      link: "/languages",
+      isOpenSource: true,
+    },
+    {
+      title: "Framework Expertise",
+      description: "React, Next.js, Django, FastAPI mastery",
+      icon: "�",
+      link: "/frameworks",
+      isOpenSource: true,
+    },
+    {
+      title: "Code Review",
+      description: "AI-powered code analysis and suggestions",
+      icon: "�",
+      link: "/review",
       isOpenSource: true,
     },
   ],
@@ -1529,9 +1544,54 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
   },
   sushi: {
     en: {
-      title: "Sushi - AI Code Editor",
+      title: "Sushi - Code-First AI Platform",
       description:
-        "AI-powered code editor directly in your browser. Edit code, run terminals, and collaborate with AI.",
+        "AI-powered coding platform for developers. Generate production-ready code, debug with precision, and architect scalable systems.",
+    },
+    de: {
+      title: "Sushi - Code-First KI-Plattform",
+      description:
+        "KI-gestützte Coding-Plattform für Entwickler. Generiere produktionsreifen Code, debugge präzise und entwerfe skalierbare Systeme.",
+    },
+    fr: {
+      title: "Sushi - Plateforme IA Code-First",
+      description:
+        "Plateforme de codage alimentée par l'IA pour les développeurs. Générez du code prêt pour la production, déboguez avec précision et concevez des systèmes évolutifs.",
+    },
+    ja: {
+      title: "Sushi - コードファーストAIプラットフォーム",
+      description:
+        "開発者向けAI駆動コーディングプラットフォーム。本番環境対応コードを生成し、精密にデバッグし、スケーラブルなシステムを設計。",
+    },
+    ko: {
+      title: "Sushi - 코드 우선 AI 플랫폼",
+      description:
+        "개발자를 위한 AI 기반 코딩 플랫폼. 프로덕션 준비 코드를 생성하고, 정밀하게 디버그하며, 확장 가능한 시스템을 설계하세요.",
+    },
+    pt: {
+      title: "Sushi - Plataforma de IA Code-First",
+      description:
+        "Plataforma de codificação com IA para desenvolvedores. Gere código pronto para produção, depure com precisão e projete sistemas escaláveis.",
+    },
+    es: {
+      title: "Sushi - Plataforma de IA Code-First",
+      description:
+        "Plataforma de codificación con IA para desarrolladores. Genera código listo para producción, depura con precisión y diseña sistemas escalables.",
+    },
+    zh: {
+      title: "Sushi - 代码优先AI平台",
+      description:
+        "面向开发者的AI驱动编码平台。生成生产就绪代码，精确调试，设计可扩展系统。",
+    },
+    nl: {
+      title: "Sushi - Code-First AI-platform",
+      description:
+        "AI-aangedreven codeerplatform voor ontwikkelaars. Genereer productie-klare code, debug met precisie en ontwerp schaalbare systemen.",
+    },
+    tr: {
+      title: "Sushi - Kod Öncelikli Yapay Zeka Platformu",
+      description:
+        "Geliştiriciler için yapay zeka destekli kodlama platformu. Üretime hazır kod oluşturun, hassas hata ayıklama yapın ve ölçeklenebilir sistemler tasarlayın.",
     },
   },
   e2eVex: {
@@ -2242,6 +2302,7 @@ export const whiteLabels = [
   popcorn,
   zarathustra,
   search,
+  sushi,
   vex,
 ]
 
