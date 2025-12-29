@@ -1538,9 +1538,7 @@ ${userInstructions.instructions.map((i) => `${i.emoji} **${i.title}**: ${i.conte
       : ""
 
   // Fetch character profile and mood (only if enabled)
-  const characterProfilesEnabled =
-    member?.characterProfilesEnabled || guest?.characterProfilesEnabled
-
+  // Note: characterProfilesEnabled already declared at line 1269
   let characterContext = ""
   let moodContext = ""
 
