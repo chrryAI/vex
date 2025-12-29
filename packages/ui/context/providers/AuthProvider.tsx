@@ -929,11 +929,15 @@ export function AuthProvider({
     const u =
       url || isExtension
         ? `/extension/${isFirefox ? "firefox" : "chrome"}${window.location.pathname}`
-        : typeof window !== "undefined"
-          ? canAdd
-            ? `${isPWA ? `${os}/${browser}` : ""}${window?.location?.pathname || ""}`
-            : window?.location?.pathname || ""
-          : "/"
+        : isTauri
+          ? `/tauri/${os || "desktop"}${window?.location?.pathname || ""}`
+          : isCapacitor
+            ? `/capacitor/${os || "mobile"}${window?.location?.pathname || ""}`
+            : typeof window !== "undefined"
+              ? canAdd
+                ? `${isPWA ? `${os}/${browser}` : ""}${window?.location?.pathname || ""}`
+                : window?.location?.pathname || ""
+              : "/"
 
     fetch("https://a.chrry.dev/api/data", {
       method: "POST",
