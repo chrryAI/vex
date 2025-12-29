@@ -6606,6 +6606,39 @@ Be supportive, specific, and focused on helping users earn credits through valua
       | "weather"
     )[],
     placeholder: "What would you like to write today?",
+    tipsTitle: "Writing Tips",
+    tips: [
+      {
+        id: "writer-tip-1",
+        content:
+          "Start with an outline! Share your topic and target audience for structured, compelling content.",
+        emoji: "📝",
+      },
+      {
+        id: "writer-tip-2",
+        content:
+          "Specify tone and style: formal, casual, academic, creative. This helps craft the perfect voice.",
+        emoji: "🎭",
+      },
+      {
+        id: "writer-tip-3",
+        content:
+          "Need editing? Paste your draft and ask for feedback on structure, clarity, or grammar.",
+        emoji: "✏️",
+      },
+      {
+        id: "writer-tip-4",
+        content:
+          "Request multiple versions! Get different approaches to the same content for comparison.",
+        emoji: "🔄",
+      },
+      {
+        id: "writer-tip-5",
+        content:
+          "Ask for character development, plot structure, or narrative arcs for creative writing projects.",
+        emoji: "📚",
+      },
+    ],
     description:
       "Claude-powered writing assistant for long-form content, creative writing, and professional documentation. Master of nuanced prose and thoughtful analysis.",
     features: {
@@ -6651,6 +6684,39 @@ Be supportive, specific, and focused on helping users earn credits through valua
       | "weather"
     )[],
     placeholder: "Paste code for review...",
+    tipsTitle: "Code Review Tips",
+    tips: [
+      {
+        id: "review-tip-1",
+        content:
+          "Include context! Mention what the code does and what you're concerned about for targeted reviews.",
+        emoji: "🎯",
+      },
+      {
+        id: "review-tip-2",
+        content:
+          "Ask for specific analysis: security vulnerabilities, performance bottlenecks, or best practices.",
+        emoji: "🔍",
+      },
+      {
+        id: "review-tip-3",
+        content:
+          "Request refactoring suggestions! Get cleaner, more maintainable alternatives to your code.",
+        emoji: "♻️",
+      },
+      {
+        id: "review-tip-4",
+        content:
+          "Share your tech stack and constraints for realistic, actionable recommendations.",
+        emoji: "⚙️",
+      },
+      {
+        id: "review-tip-5",
+        content:
+          "Ask about test coverage! Get suggestions for unit tests, edge cases, and integration tests.",
+        emoji: "✅",
+      },
+    ],
     extends: [claudeApp.id, chrry.id],
     description:
       "Get comprehensive code reviews from Claude. Detailed analysis of bugs, performance, security, and best practices with thoughtful explanations.",
@@ -6696,6 +6762,39 @@ Be supportive, specific, and focused on helping users earn credits through valua
       | "weather"
     )[],
     placeholder: "What are you researching?",
+    tipsTitle: "Research Tips",
+    tips: [
+      {
+        id: "research-tip-1",
+        content:
+          "Define your research question clearly! Specific questions lead to focused, relevant analysis.",
+        emoji: "❓",
+      },
+      {
+        id: "research-tip-2",
+        content:
+          "Request literature reviews! Get comprehensive summaries of existing research on your topic.",
+        emoji: "📚",
+      },
+      {
+        id: "research-tip-3",
+        content:
+          "Ask for methodology design! Get help structuring experiments, surveys, or data collection.",
+        emoji: "🔬",
+      },
+      {
+        id: "research-tip-4",
+        content:
+          "Need citations? Request proper academic formatting (APA, MLA, Chicago) for your sources.",
+        emoji: "📖",
+      },
+      {
+        id: "research-tip-5",
+        content:
+          "Request hypothesis testing! Get help analyzing data and drawing valid conclusions.",
+        emoji: "📊",
+      },
+    ],
     description:
       "Claude-powered research assistant for academic work. Synthesize complex information, analyze papers, and present findings in structured formats.",
     features: {
@@ -6834,6 +6933,39 @@ Be supportive, specific, and focused on helping users earn credits through valua
       | "weather"
     )[],
     placeholder: "Search the web...",
+    tipsTitle: "Search Tips",
+    tips: [
+      {
+        id: "search-tip-1",
+        content:
+          "Be specific! Instead of 'climate change', try 'latest IPCC climate report findings 2024'.",
+        emoji: "🎯",
+      },
+      {
+        id: "search-tip-2",
+        content:
+          "Ask for sources! I'll provide cited references so you can verify information independently.",
+        emoji: "📚",
+      },
+      {
+        id: "search-tip-3",
+        content:
+          "Request comparisons! 'Compare X vs Y' gets you balanced perspectives from multiple sources.",
+        emoji: "⚖️",
+      },
+      {
+        id: "search-tip-4",
+        content:
+          "Need recent info? Specify time frames like 'last week', 'this month', or '2024' for current data.",
+        emoji: "📅",
+      },
+      {
+        id: "search-tip-5",
+        content:
+          "Ask for fact-checking! I'll cross-reference multiple sources to verify claims.",
+        emoji: "✅",
+      },
+    ],
     highlights: perplexitySearchInstructions,
     description:
       "Real-time web search with cited sources. Get instant answers to any question with verifiable references and live internet access.",
@@ -6879,6 +7011,39 @@ Be supportive, specific, and focused on helping users earn credits through valua
       | "weather"
     )[],
     placeholder: "What's happening today?",
+    tipsTitle: "News Tips",
+    tips: [
+      {
+        id: "news-tip-1",
+        content:
+          "Ask for multiple perspectives! Get balanced coverage from different news sources on any topic.",
+        emoji: "🌍",
+      },
+      {
+        id: "news-tip-2",
+        content:
+          "Request fact-checking! I'll verify claims and identify potential bias in news coverage.",
+        emoji: "✅",
+      },
+      {
+        id: "news-tip-3",
+        content:
+          "Need context? Ask for historical background to understand how current events developed.",
+        emoji: "📜",
+      },
+      {
+        id: "news-tip-4",
+        content:
+          "Track topics! Ask me to monitor specific subjects and get updates on breaking developments.",
+        emoji: "📡",
+      },
+      {
+        id: "news-tip-5",
+        content:
+          "Request expert analysis! I'll find and summarize expert opinions on complex news stories.",
+        emoji: "🎓",
+      },
+    ],
     highlights: perplexityNewsInstructions,
     description:
       "Stay updated with breaking news from multiple sources. Real-time aggregation of current events with comprehensive coverage and fact-checking.",
@@ -6924,6 +7089,39 @@ Be supportive, specific, and focused on helping users earn credits through valua
       | "weather"
     )[],
     placeholder: "Search academic papers...",
+    tipsTitle: "Academic Search Tips",
+    tips: [
+      {
+        id: "scholar-tip-1",
+        content:
+          "Use academic keywords! Include field-specific terms for more relevant peer-reviewed results.",
+        emoji: "🔬",
+      },
+      {
+        id: "scholar-tip-2",
+        content:
+          "Request citation analysis! Get impact factors, h-index, and citation counts for papers.",
+        emoji: "📊",
+      },
+      {
+        id: "scholar-tip-3",
+        content:
+          "Ask for paper summaries! I'll break down complex research into digestible insights.",
+        emoji: "📝",
+      },
+      {
+        id: "scholar-tip-4",
+        content:
+          "Need methodology details? Ask about research design, sample size, and statistical methods.",
+        emoji: "🧪",
+      },
+      {
+        id: "scholar-tip-5",
+        content:
+          "Request literature reviews! Get comprehensive overviews of research trends in your field.",
+        emoji: "📚",
+      },
+    ],
     extends: [perplexityApp.id, chrry.id],
     highlights: perplexityScholarInstructions,
     description:
@@ -7007,6 +7205,39 @@ When users access you through **Grape** (privacy-first AI advertising), they fol
     visibility: "public" as const,
     systemPrompt: sushiSystemPrompt,
     highlights: sushiGeneralInstructions,
+    tipsTitle: "Coding Assistant Tips",
+    tips: [
+      {
+        id: "sushi-tip-1",
+        content:
+          "Try our specialized apps! Coder for generation, Debugger for fixes, Architect for system design.",
+        emoji: "🍣",
+      },
+      {
+        id: "sushi-tip-2",
+        content:
+          "Paste code directly! I can review, refactor, or explain any code snippet you share.",
+        emoji: "📋",
+      },
+      {
+        id: "sushi-tip-3",
+        content:
+          "Ask for comparisons! 'React vs Vue', 'SQL vs NoSQL', 'REST vs GraphQL' - I'll explain trade-offs.",
+        emoji: "⚖️",
+      },
+      {
+        id: "sushi-tip-4",
+        content:
+          "Need learning resources? Ask for tutorials, best practices, or documentation for any tech stack.",
+        emoji: "📚",
+      },
+      {
+        id: "sushi-tip-5",
+        content:
+          "Request code reviews! I'll analyze your code for bugs, performance issues, and best practices.",
+        emoji: "✨",
+      },
+    ],
     // Web-only for now (no native app yet)
     installType: "web" as const,
     isInstallable: false,
@@ -7441,6 +7672,39 @@ You are an architecture expert. Design systems that grow with users, follow indu
     systemPrompt: coderSystemPrompt,
     placeholder: "What code should I generate?",
     highlights: sushiCoderInstructions,
+    tipsTitle: "Code Generation Tips",
+    tips: [
+      {
+        id: "coder-tip-1",
+        content:
+          "Be specific about your requirements. Instead of 'make a login', say 'create a React login form with email validation and JWT auth'.",
+        emoji: "🎯",
+      },
+      {
+        id: "coder-tip-2",
+        content:
+          "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.",
+        emoji: "⚡",
+      },
+      {
+        id: "coder-tip-3",
+        content:
+          "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.",
+        emoji: "✅",
+      },
+      {
+        id: "coder-tip-4",
+        content:
+          "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.",
+        emoji: "🚀",
+      },
+      {
+        id: "coder-tip-5",
+        content:
+          "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.",
+        emoji: "📚",
+      },
+    ],
     defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
@@ -7485,6 +7749,39 @@ You are an architecture expert. Design systems that grow with users, follow indu
     systemPrompt: debuggerSystemPrompt,
     placeholder: "Paste your error or bug...",
     highlights: sushiDebuggerInstructions,
+    tipsTitle: "Debugging Tips",
+    tips: [
+      {
+        id: "debugger-tip-1",
+        content:
+          "Include the full stack trace! More context = faster, more accurate root cause analysis.",
+        emoji: "🔍",
+      },
+      {
+        id: "debugger-tip-2",
+        content:
+          "Share your environment details: OS, runtime version, dependencies. Platform-specific bugs need context!",
+        emoji: "💻",
+      },
+      {
+        id: "debugger-tip-3",
+        content:
+          "Describe what you expected vs what happened. This helps identify logic errors vs runtime errors.",
+        emoji: "🐛",
+      },
+      {
+        id: "debugger-tip-4",
+        content:
+          "Paste relevant code snippets! Show the function/class where the error occurs for targeted fixes.",
+        emoji: "📝",
+      },
+      {
+        id: "debugger-tip-5",
+        content:
+          "Ask for multiple solutions! Get trade-offs between quick fixes and long-term architectural improvements.",
+        emoji: "⚖️",
+      },
+    ],
     defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
@@ -7529,6 +7826,39 @@ You are an architecture expert. Design systems that grow with users, follow indu
     systemPrompt: architectSystemPrompt,
     placeholder: "Describe your system architecture...",
     highlights: sushiArchitectInstructions,
+    tipsTitle: "Architecture Tips",
+    tips: [
+      {
+        id: "architect-tip-1",
+        content:
+          "Start with scale requirements! Mention expected users, traffic, and data volume for proper architecture design.",
+        emoji: "📊",
+      },
+      {
+        id: "architect-tip-2",
+        content:
+          "Define your constraints: budget, team size, deployment environment. Realistic constraints = practical solutions.",
+        emoji: "💰",
+      },
+      {
+        id: "architect-tip-3",
+        content:
+          "Ask for diagrams! Request system diagrams, database schemas, or API flow charts for visual clarity.",
+        emoji: "🏗️",
+      },
+      {
+        id: "architect-tip-4",
+        content:
+          "Specify non-functional requirements: latency, availability, consistency. These drive architectural decisions!",
+        emoji: "⚡",
+      },
+      {
+        id: "architect-tip-5",
+        content:
+          "Request trade-off analysis! Understand pros/cons of microservices vs monolith, SQL vs NoSQL, etc.",
+        emoji: "⚖️",
+      },
+    ],
     defaultModel: "sushi" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
