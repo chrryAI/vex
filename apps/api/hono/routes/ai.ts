@@ -42,6 +42,7 @@ import {
   getAiAgents,
   getInstructions,
   getCharacterTags,
+  getCharacterProfiles,
 } from "@repo/db"
 
 import { perplexity } from "@ai-sdk/perplexity"
@@ -1543,16 +1544,24 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
   let moodContext = ""
 
   if (characterProfilesEnabled && agent) {
-    // Get character profile
-    const characterTags = await getCharacterTags({
+    // Get character profiles (from any thread - use most recent/pinned)
+    const characterProfilesList = await getCharacterProfiles({
       userId: member?.id,
       guestId: guest?.id,
     })
-    const characterProfile = characterTags.find(
-      (profile) =>
-        (profile.userId === member?.id || profile.guestId === guest?.id) &&
-        profile.threadId === message.message.threadId,
-    )
+    // Prioritize: 1) Pinned profiles, 2) Most used profiles
+    const characterProfile = characterProfilesList
+      .filter(
+        (profile) =>
+          profile.userId === member?.id || profile.guestId === guest?.id,
+      )
+      .sort((a, b) => {
+        // Pinned profiles first
+        if (a.pinned && !b.pinned) return -1
+        if (!a.pinned && b.pinned) return 1
+        // Then by usage count
+        return b.usageCount - a.usageCount
+      })[0] // Most relevant profile
 
     if (characterProfile) {
       characterContext = `
@@ -2476,25 +2485,27 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
   // But we keep this comment for clarity that they're part of every message
-  let systemPrompt =
-    baseSystemPrompt +
-    burnModeContext +
-    inheritanceContext +
-    timerToolInstructions +
-    storeContext +
-    featureStatusContext +
-    instructionsContext + // User-created instructions (explicit behavior) - HIGH PRIORITY
-    characterContext + // User's personality & communication style (tone guidance)
-    moodContext + // User's emotional state (empathy)
-    memoryContext + // Background knowledge (context) - AFTER instructions
-    placeholderContext +
-    calendarContext +
-    vaultContext +
-    focusContext +
-    taskContext +
-    newsContext +
-    // brandKnowledge +
-    aiCoachContext
+  // Using array join for better performance with long context strings
+  let systemPrompt = [
+    baseSystemPrompt,
+    burnModeContext,
+    inheritanceContext,
+    timerToolInstructions,
+    storeContext,
+    featureStatusContext,
+    instructionsContext, // User-created instructions (explicit behavior) - HIGH PRIORITY
+    characterContext, // User's personality & communication style (tone guidance)
+    moodContext, // User's emotional state (empathy)
+    memoryContext, // Background knowledge (context) - AFTER instructions
+    placeholderContext,
+    calendarContext,
+    vaultContext,
+    focusContext,
+    taskContext,
+    newsContext,
+    // brandKnowledge,
+    aiCoachContext,
+  ].join("")
 
   const creditsLeft = member?.creditsLeft || guest?.creditsLeft
 
