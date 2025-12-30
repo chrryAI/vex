@@ -1322,7 +1322,7 @@ export function AuthProvider({
   const [showFocus, setShowFocus] = useState(canShowFocus)
 
   useEffect(() => {
-    setShowFocus(canShowFocus)
+    canShowFocus && setShowFocus(canShowFocus)
   }, [canShowFocus])
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
