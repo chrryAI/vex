@@ -40,9 +40,10 @@ import {
   thread,
   paginatedMessages,
   moodType,
+  instruction,
 } from "../../types"
 import toast from "react-hot-toast"
-import { getApp, getSession } from "../../lib"
+import { getApp, getSession, getUser, getGuest } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { defaultLocale, locale, locales } from "../../locales"
@@ -75,6 +76,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      instructions?: instruction[]
+      setInstructions: (value?: instruction[]) => void
       burning: boolean
       burnApp?: appWithStore
       setDeviceId: (value: string) => void
@@ -534,8 +537,8 @@ export function AuthProvider({
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
-    session?.guest?.fingerprint ||
-      session?.user?.fingerprint ||
+    props.session?.guest?.fingerprint ||
+      props.session?.user?.fingerprint ||
       fingerprintParam,
     isExtension,
   )
@@ -1629,12 +1632,40 @@ export function AuthProvider({
     [setTheme],
   )
 
+  const [instructions, setInstructions] = useState<instruction[] | undefined>(
+    undefined,
+  )
+
+  const refetchInstructions = async ({ appId }: { appId?: string }) => {
+    if (user) {
+      const item = await getUser({
+        token,
+        appId,
+      })
+      if (item) {
+        setInstructions(item.instructions)
+      }
+    }
+
+    if (guest) {
+      const item = await getGuest({
+        token,
+        appId,
+      })
+      if (item) {
+        setInstructions(item.instructions)
+      }
+    }
+  }
+
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
       if (!hasStoreApps(item)) {
         setLoadingApp(item)
         return
       }
+
+      refetchInstructions({ appId: item?.id })
 
       setLastAppId(item?.id)
       setAppInternal((prevApp) => {
@@ -1657,7 +1688,7 @@ export function AuthProvider({
         return newApp
       })
     },
-    [setColorScheme, setAppTheme, baseApp, mergeApps],
+    [setColorScheme, setAppTheme, baseApp, mergeApps, user, guest],
   )
 
   const [thread, setThreadInternal] = useState<thread | undefined>(
@@ -2076,6 +2107,8 @@ export function AuthProvider({
         isLoading,
         setIsLoading,
         signOut,
+        instructions,
+        setInstructions,
         thread,
         isSplash,
         setIsSplash,
