@@ -501,7 +501,6 @@ export function TimerContextProvider({
     hasAutoResumedRef.current = true
     handleResume()
   }, [timerData?.isCountingDown, timerData?.count])
-  console.log(`🚀 ~ useEffect ~ timerData:`, timerData)
 
   const fetchTimer = async () => {
     setShouldFetchTimer(true)
@@ -520,7 +519,6 @@ export function TimerContextProvider({
       if (timerData.isCountingDown && timerData.count > 0) {
         setTime(timerData.count)
         setIsCountingDown(true)
-        console.log(`🚀 ~ useEsssffect ~ timerData.count:`, timerData.count)
 
         setIsPaused(false)
         setIsFinished(false)
