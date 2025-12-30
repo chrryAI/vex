@@ -656,30 +656,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   ) => {
     setAppStatusInternal(payload)
 
-    // if (payload) {
-    //   // Add query params to current URL
-    //   const params: Record<string, string> = {}
-    //   if (payload.step) params.step = payload.step || appStatus?.step
-    //   if (payload.part) params.part = payload.part || appStatus?.part
+    const { step, part } = payload || {}
 
-    //   const newSearchParams = new URLSearchParams(searchParams?.toString())
-
-    //   Object.entries(payload).forEach(([key, value]) => {
-    //     newSearchParams.set(key, String(value))
-    //   })
-
-    //   const slug = baseApp?.store?.slug
-    //   // const newUrl = `/${slug === chrry?.slug ? "" : (slug ?? chrry?.slug)}/${app?.slug}?${newSearchParams.toString()}`
-    //   // push(newUrl)
-    // } else {
-    //   // push("/")
-    // }
-  }
-
-  const stepRef = useRef(step)
-  const partRef = useRef(part)
-
-  useEffect(() => {
     if (step || part) {
       ;(appStatus?.step !== step || appStatus?.part !== part) &&
         setAppStatusInternal({
@@ -687,7 +665,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           part: part,
         })
 
-      if (step === "add" && stepRef.current !== "add") {
+      if (step === "add") {
         // Clear localStorage draft first
         setFormDraft(undefined)
         // Then reset form to default values (clears id and all fields)
@@ -697,7 +675,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           id: undefined, // Explicitly clear id to prevent conflicts
         }
         appForm.reset(freshDefaults)
-      } else if (step === "restore" && stepRef.current !== "restore") {
+      } else if (step === "restore") {
         // Restore app data from current app into form for editing
         if (app && isAppOwner) {
           const appValues = getInitialFormValues()
@@ -705,10 +683,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setFormDraft(appValues)
         }
       }
-      stepRef.current = step
-      partRef.current = part
     }
-  }, [step, part]) // Run once on mount
+  }
 
   useEffect(() => {
     const subscription = appForm.watch((data) => {
