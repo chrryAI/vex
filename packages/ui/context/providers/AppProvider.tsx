@@ -499,7 +499,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const contextInstructions = useMemo(() => {
     if (burning) {
-      if (app?.slug === "zarathustra" && !burnApp) {
+      if (app?.slug === "zarathustra") {
         return getExampleInstructions({ slug: "zarathustra" }) as instruction[]
       }
       // return burnApp?.highlights as instruction[]

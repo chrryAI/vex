@@ -530,7 +530,7 @@ export function AuthProvider({
     boolean | undefined
   >("enableNotifications", true)
 
-  const [shouldFetchSession, setShouldFetchSession] = useState(!props.session)
+  const [shouldFetchSession, setShouldFetchSession] = useState(true)
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
