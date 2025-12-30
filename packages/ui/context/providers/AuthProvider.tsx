@@ -1164,6 +1164,7 @@ export function AuthProvider({
     path: string,
     apps: appWithStore[],
   ): appWithStore | undefined => {
+    if (focus && showFocus) return focus
     if (path === "/") return undefined
 
     const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
@@ -1317,13 +1318,7 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp])
 
-  const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
-
-  const [showFocus, setShowFocus] = useState(canShowFocus)
-
-  useEffect(() => {
-    setShowFocus(canShowFocus)
-  }, [canShowFocus])
+  const [showFocus, setShowFocus] = useState(false)
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 

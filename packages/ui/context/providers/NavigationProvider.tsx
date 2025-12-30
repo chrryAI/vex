@@ -133,6 +133,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const { slug, setSlug, getAppSlug, language, setShowFocus } = useAuth()
 
   const goToThreads = (params?: Record<string, string>) => {
+    setShowFocus(false)
     const url = new URLSearchParams(params)
     router.push(`/threads${params ? "?" + url : ""}`)
   }
@@ -146,6 +147,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   }
 
   const goToThread = (threadId: string) => {
+    setShowFocus(false)
     router.push(`/threads/${threadId}`)
   }
 

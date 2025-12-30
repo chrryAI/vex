@@ -69,6 +69,9 @@ const Threads = ({
     baseApp,
     getAppSlug,
     timeAgo,
+    loadingAppId,
+    setLoadingAppId,
+    hasStoreApps,
   } = useAuth()
 
   const styles = useThreadsStyles()
@@ -104,6 +107,15 @@ const Threads = ({
       router.push(pn)
     }
   }
+
+  const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!loadingAppId) {
+      setLoadingThreadId(null)
+      loadingThreadId && router.push(`/threads/${loadingThreadId}`)
+    }
+  }, [loadingAppId])
 
   const [lastStarredId, setLastStarredId] = useState<string | null>(null)
 
@@ -335,14 +347,23 @@ const Threads = ({
                     className={"threadsItem"}
                   >
                     <Div style={{ ...styles.threadItemTitle.style }}>
-                      {!isVisitor && (
-                        <EditThread
-                          refetch={async () => {
-                            await refetch()
+                      {loadingThreadId === thread.id ? (
+                        <Loading
+                          style={{
+                            width: 14,
+                            height: 14,
                           }}
-                          isIcon
-                          thread={thread}
                         />
+                      ) : (
+                        !isVisitor && (
+                          <EditThread
+                            refetch={async () => {
+                              await refetch()
+                            }}
+                            isIcon
+                            thread={thread}
+                          />
+                        )
                       )}
                       {(() => {
                         const url = `/threads/${thread.id}`
@@ -353,6 +374,19 @@ const Threads = ({
                               if (e.metaKey || e.ctrlKey) {
                                 return
                               }
+
+                              const threadApp = storeApps.find(
+                                (app) => app.id === thread.appId,
+                              )
+                              if (
+                                thread.appId &&
+                                (!threadApp || !hasStoreApps(threadApp))
+                              ) {
+                                setLoadingThreadId(thread.id)
+                                setLoadingAppId(thread.appId)
+                                return
+                              }
+
                               e.preventDefault()
                               router.push(url)
                             }}

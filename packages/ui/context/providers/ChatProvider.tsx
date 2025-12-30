@@ -191,6 +191,8 @@ export function ChatProvider({
     setBurn,
     isPear,
 
+    setShowFocus,
+    showFocus,
     ...auth
   } = useAuth()
 
@@ -403,6 +405,7 @@ export function ChatProvider({
     to = app?.slug ? getAppSlug(app) : "/",
   ) => {
     if (value) {
+      setShowFocus(false)
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
