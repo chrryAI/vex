@@ -356,13 +356,13 @@ export default function Instructions({
     "burn",
     "sushi",
   ]
-  // Ensure absolute URL for extension/external contexts
-  const domain = FRONTEND_URL || "https://chrry.ai"
+  // MinIO download URLs (production bucket)
+  const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
   const downloadUrl =
     app && installs.includes(app?.slug || "")
-      ? `${domain}/installs/${capitalizeFirstLetter(app.slug || "")}.dmg?v=${Date.now()}`
+      ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
-        ? `${domain}/installs/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg?v=${Date.now()}`
+        ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
         : ""
   const extensionId = getExtensionId()
 

@@ -2514,11 +2514,9 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   }
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
-  console.log(`🚀 ~ app.post ~ fingerprint:`, fingerprint)
 
   const isE2E =
     fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
-  console.log(`🚀 ~ app.post ~ isE2E:`, isE2E)
 
   const hourlyLimit =
     isDevelopment && !isE2E

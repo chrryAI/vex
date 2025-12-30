@@ -207,6 +207,7 @@ export default function Chat({
   const {
     user,
     token,
+    fingerprint,
     language,
     setUser,
     setGuest,
@@ -4159,7 +4160,6 @@ export default function Chat({
                         </Button>
                       </>
                     )}
-
                     {/* 🔥 BURN BUTTON - Phoenix Mode */}
                     {burn && threadId && (
                       <DeleteThread
@@ -4167,6 +4167,7 @@ export default function Chat({
                           margin: "0",
                           padding: "0",
                           background: "transparent",
+                          border: "none",
                         }}
                         onDelete={() => {
                           setIsNewChat(true)
