@@ -46,16 +46,6 @@ import captureException from "../../lib/captureException"
 import { whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { checkRateLimit } from "../../lib/rateLimiting"
 
-const getGuestDb = ({
-  email,
-  fingerprint,
-  id,
-}: {
-  email?: string
-  fingerprint?: string
-  id?: string
-}) => getGuest({ skipCache: true, email, fingerprint, id })
-
 const isNewBillingPeriod = (subscribedOn: Date) => {
   const subscriptionDate = new Date(subscribedOn)
   const currentDate = new Date()
@@ -284,7 +274,23 @@ session.get("/", async (c) => {
   const isExtension = appType === "extension"
   const headers = request.headers
 
-  const appId = url.searchParams.get("appId") || undefined
+  const appIdHeader = request.headers.get("x-app-id")
+  const appIdParam = c.req.query("appId")
+
+  const appId = appIdParam || appIdHeader || undefined
+
+  const getGuestDb = ({
+    email,
+    fingerprint,
+    id,
+  }: {
+    email?: string
+    fingerprint?: string
+    id?: string
+  }) => {
+    return getGuest({ skipCache: true, email, fingerprint, id, appId })
+  }
+
   // If no slug param, use store's default app directly
   // Otherwise fetch by slug
   // const app =

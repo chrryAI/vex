@@ -182,6 +182,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burnApp,
     burning,
     setBurn,
+    ...auth
   } = useAuth()
   const { actions } = useData()
 
@@ -499,18 +500,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const contextInstructions = useMemo(() => {
     if (burning) {
-      if (app?.slug === "zarathustra" && !burnApp) {
+      if (app?.slug === "zarathustra") {
         return getExampleInstructions({ slug: "zarathustra" }) as instruction[]
       }
       // return burnApp?.highlights as instruction[]
     }
 
     return app
-      ? (user?.instructions || guest?.instructions || []).filter(
-          (i) => i.appId === app?.id,
-        )
+      ? (
+          auth?.instructions ||
+          user?.instructions ||
+          guest?.instructions ||
+          []
+        ).filter((i) => i.appId === app?.id)
       : []
-  }, [burn, burnApp, app, user?.instructions, guest?.instructions, burning])
+  }, [
+    burn,
+    burnApp,
+    app,
+    auth?.instructions,
+    user?.instructions,
+    guest?.instructions,
+    burning,
+  ])
 
   const [storeSlug, setStoreSlug] = useState(pathname.replace("/", ""))
 
@@ -586,7 +598,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     useState<instruction[]>(instructionsInternal)
 
   useEffect(() => {
-    setInstructions(instructionsInternal)
+    instructionsInternal.length && setInstructions(instructionsInternal)
   }, [instructionsInternal])
 
   const hasCustomInstructions = contextInstructions?.some(

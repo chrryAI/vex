@@ -724,7 +724,7 @@ export const getUser = async ({
   fingerprint,
   userName,
   apiKey,
-  app,
+  appId,
   skipCache = false,
 }: {
   email?: string
@@ -737,7 +737,7 @@ export const getUser = async ({
   fingerprint?: string
   userName?: string
   apiKey?: string
-  app?: app | null
+  appId?: string
   skipCache?: boolean
 }) => {
   // Generate cache key based on lookup method (must match invalidation keys)
@@ -762,6 +762,9 @@ export const getUser = async ({
       return cached
     }
   }
+
+  const app = appId ? await getApp({ id: appId }) : undefined
+
   const result = (
     await db
       .select()
@@ -2278,7 +2281,7 @@ export const getGuest = async ({
   fingerprint,
   isBot,
   email,
-  app,
+  appId,
   skipCache = false,
 }: {
   id?: string
@@ -2286,7 +2289,7 @@ export const getGuest = async ({
   fingerprint?: string
   isBot?: boolean
   email?: string
-  app?: app | null
+  appId?: string
   skipCache?: boolean
 }) => {
   // Generate cache key based on lookup method (must match invalidation keys)
@@ -2343,6 +2346,8 @@ export const getGuest = async ({
         pageSize: 1,
       })
     : undefined
+
+  const app = appId ? await getApp({ id: appId }) : undefined
 
   const isAppOwner =
     result &&

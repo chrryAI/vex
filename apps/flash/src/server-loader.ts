@@ -223,8 +223,28 @@ export async function loadServerData(
   const appId = thread?.thread?.appId || headers["x-app-id"]
 
   try {
-    session = await getSession({
+    const appResult = await getApp({
+      chrryUrl,
       appId,
+      token: apiKey,
+      pathname,
+      API_URL,
+    })
+
+    apiKey = session?.user?.token || session?.guest?.fingerprint || apiKey
+
+    const [translationsResult] = await Promise.all([
+      getTranslations({
+        token: apiKey,
+        locale,
+        API_URL,
+      }),
+    ])
+
+    translations = translationsResult
+
+    session = await getSession({
+      appId: appResult.id,
       deviceId,
       fingerprint,
       token: apiKey,
@@ -241,25 +261,6 @@ export async function loadServerData(
       API_URL,
       ip: clientIp, // Pass client IP for Arcjet
     })
-
-    apiKey = session?.user?.token || session?.guest?.fingerprint || apiKey
-
-    const [translationsResult, appResult] = await Promise.all([
-      getTranslations({
-        token: apiKey,
-        locale,
-        API_URL,
-      }),
-      getApp({
-        chrryUrl,
-        appId,
-        token: apiKey,
-        pathname,
-        API_URL,
-      }),
-    ])
-
-    translations = translationsResult
 
     const accountApp = session?.userBaseApp || session?.guestBaseApp
     app = appResult.id === accountApp?.id ? accountApp : appResult
