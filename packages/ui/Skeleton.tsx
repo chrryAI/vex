@@ -46,7 +46,9 @@ function FocusButton({
 }) {
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
-  const { focus, getAppSlug, setShowFocus } = useAuth()
+  const { app, getAppSlug, setShowFocus } = useAuth()
+
+  const focus = app?.store?.apps?.find((app) => app.slug === "focus")
 
   const hasHydrated = useHasHydrated()
   const { isMobileDevice } = useTheme()
@@ -107,7 +109,7 @@ function FocusButton({
       style={{
         ...utilities.link.style,
         marginTop: !isDrawerOpen ? 1 : -7.5,
-        marginLeft: !isDrawerOpen ? 0 : 2.5,
+        marginLeft: isDrawerOpen ? 0 : -5,
       }}
     >
       {hasHydrated && (
