@@ -294,17 +294,22 @@ export const getThread = async ({
 export const getUser = async ({
   token,
   API_URL = utils.API_URL,
+  appId,
 }: {
   token: string
   API_URL?: string
+  appId?: string
 }) => {
-  const response = await fetch(`${API_URL}/user`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+  const response = await fetch(
+    `${API_URL}/user${appId ? `?appId=${appId}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     },
-  })
+  )
 
   if (!response.ok) {
     return
@@ -349,17 +354,22 @@ export const getUsers = async ({
 export const getGuest = async ({
   token,
   API_URL = utils.API_URL,
+  appId,
 }: {
   token: string
   API_URL?: string
+  appId?: string
 }) => {
-  const response = await fetch(`${API_URL}/guest`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+  const response = await fetch(
+    `${API_URL}/guest${appId ? `?appId=${appId}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     },
-  })
+  )
 
   if (!response.ok) {
     return null
