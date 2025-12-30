@@ -35,7 +35,15 @@ import AddToHomeScreen from "./addToHomeScreen"
 import { useHasHydrated } from "./hooks"
 import { useTimerContext } from "./context/TimerContext"
 
-function FocusButton({ time }: { time: number }) {
+function FocusButton({
+  time,
+  isCountingDown,
+  isDrawerOpen,
+}: {
+  time: number
+  isCountingDown?: boolean
+  isDrawerOpen?: boolean
+}) {
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, viewPortWidth } = usePlatform()
   const { focus, getAppSlug, setShowFocus } = useAuth()
@@ -90,19 +98,38 @@ function FocusButton({ time }: { time: number }) {
 
   return (
     <A
-      onClick={() => setShowFocus(true)}
       href={`${getAppSlug(focus)}`}
-      openInNewTab={isExtension && isFirefox}
+      className="link"
+      onClick={(e) => {
+        e.preventDefault()
+        setShowFocus(true)
+      }}
       style={{
-        ...appStyles.focus.style,
-        marginTop: 0,
-        marginLeft: -7.5,
+        ...utilities.link.style,
+        marginTop: !isDrawerOpen ? 1 : -7.5,
+        marginLeft: !isDrawerOpen ? 0 : 2.5,
       }}
     >
       {hasHydrated && (
-        <Span style={appStyles.focusTime.style}>{formatTime()}</Span>
+        <Span
+          style={{
+            padding: "3px 6px",
+            backgroundColor: isCountingDown
+              ? "var(--accent-4)"
+              : "var(--accent-1)",
+            color: "#fff",
+            borderRadius: 20,
+            fontSize: 10,
+            fontWeight: 600,
+            fontFamily: "var(--font-mono)",
+            whiteSpace: "nowrap",
+            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+            zIndex: 1,
+          }}
+        >
+          {formatTime()}
+        </Span>
       )}
-      <Img logo="focus" showLoading={false} width={26} height={24} />
     </A>
   )
 }
@@ -116,7 +143,7 @@ export default function Skeleton({
   showThreads?: boolean
 }): React.ReactElement {
   const { isCapacitor, os } = usePlatform()
-  const { time } = useTimerContext()
+  const { time, isCountingDown } = useTimerContext()
 
   const hasHydrated = useHasHydrated()
 
@@ -301,7 +328,11 @@ export default function Skeleton({
                   </Div>
                 ) : null}
 
-                <FocusButton time={time} />
+                <FocusButton
+                  isDrawerOpen={isDrawerOpen}
+                  time={time}
+                  isCountingDown={isCountingDown}
+                />
               </Div>
             </Div>
             <Div style={{ ...skeletonStyles.right.style }}>
