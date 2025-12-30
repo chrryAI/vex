@@ -191,6 +191,8 @@ export function ChatProvider({
     setBurn,
     isPear,
 
+    setShowFocus,
+    showFocus,
     ...auth
   } = useAuth()
 
@@ -403,6 +405,7 @@ export function ChatProvider({
     to = app?.slug ? getAppSlug(app) : "/",
   ) => {
     if (value) {
+      setShowFocus(false)
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
@@ -1056,7 +1059,7 @@ export function ChatProvider({
         !isDebating &&
         !isStreaming &&
         !isStreamingStop &&
-        (serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
+        (serverMessages.messages[0]?.thread?.id !== toFetch ||
           serverMessages.messages.length !== messages.length)
       ) {
         setMessages(serverMessages.messages)
@@ -1085,6 +1088,7 @@ export function ChatProvider({
       // }
     }
   }, [
+    toFetch,
     threadData,
     isLoadingMore,
     aiAgents,

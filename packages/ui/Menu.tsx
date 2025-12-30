@@ -131,6 +131,7 @@ export default function Menu({
   useEffect(() => {
     if (!loadingAppId) {
       setLoadingThreadId(null)
+      loadingThreadId && router.push(`/threads/${loadingThreadId}`)
     }
   }, [loadingAppId])
 

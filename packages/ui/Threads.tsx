@@ -69,6 +69,9 @@ const Threads = ({
     baseApp,
     getAppSlug,
     timeAgo,
+    loadingAppId,
+    setLoadingAppId,
+    hasStoreApps,
   } = useAuth()
 
   const styles = useThreadsStyles()
@@ -104,6 +107,15 @@ const Threads = ({
       router.push(pn)
     }
   }
+
+  const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!loadingAppId) {
+      setLoadingThreadId(null)
+      loadingThreadId && router.push(`/threads/${loadingThreadId}`)
+    }
+  }, [loadingAppId])
 
   const [lastStarredId, setLastStarredId] = useState<string | null>(null)
 
@@ -353,6 +365,19 @@ const Threads = ({
                               if (e.metaKey || e.ctrlKey) {
                                 return
                               }
+
+                              const threadApp = storeApps.find(
+                                (app) => app.id === thread.appId,
+                              )
+                              if (
+                                thread.appId &&
+                                (!threadApp || !hasStoreApps(threadApp))
+                              ) {
+                                setLoadingThreadId(thread.id)
+                                setLoadingAppId(thread.appId)
+                                return
+                              }
+
                               e.preventDefault()
                               router.push(url)
                             }}
