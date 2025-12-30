@@ -513,7 +513,8 @@ export function AuthProvider({
   const fingerprintParam = searchParams.get("fp") || ""
 
   useEffect(() => {
-    if (!deviceId && isStorageReady) {
+    if (!isStorageReady && !(isTauri || isCapacitor || isExtension)) return
+    if (!deviceId) {
       console.log("📝 Updating deviceId from session:", session?.deviceId)
       if (isExtension || isCapacitor) {
         setDeviceId(uuidv4())
@@ -536,7 +537,7 @@ export function AuthProvider({
     session?.guest?.fingerprint ||
       session?.user?.fingerprint ||
       fingerprintParam,
-    isExtension || isCapacitor,
+    isExtension,
   )
 
   const ssrToken =
@@ -545,7 +546,7 @@ export function AuthProvider({
   const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
     ssrToken,
-    isExtension || isCapacitor,
+    isExtension,
   )
 
   const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
@@ -676,17 +677,23 @@ export function AuthProvider({
 
   // Generate fingerprint if missing (for guests)
   useEffect(() => {
+    if (isTauri && !isStorageReady) {
+      return
+    }
     if (!fingerprint) {
       const fp = uuidv4()
       setFingerprint(fp)
     }
-  }, [fingerprint])
+  }, [fingerprint, isStorageReady])
 
   useEffect(() => {
+    if (isTauri && !isStorageReady) {
+      return
+    }
     if (!token && fingerprint) {
       setToken(fingerprint)
     }
-  }, [token, fingerprint])
+  }, [token, fingerprint, isTauri, isStorageReady])
   // setFingerprint/setToken are stable from useLocalStorage/useState
   const [versions, setVersions] = useState(
     session?.versions || {

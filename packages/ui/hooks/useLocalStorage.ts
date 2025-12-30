@@ -7,6 +7,25 @@ export default function useLocalStorage<T>(
   initialValue: T | (() => T),
 ) {
   const [storedValue, setStoredValue] = useState<T>(() => {
+    // For Tauri/web, try to read synchronously from localStorage first
+    if (typeof window !== "undefined" && window.localStorage) {
+      try {
+        const item = window.localStorage.getItem(key)
+        if (item !== null && item !== "undefined") {
+          try {
+            const parsedItem = JSON.parse(item)
+            if (parsedItem !== null) {
+              return parsedItem as T
+            }
+          } catch {
+            // If not JSON, return as-is
+            return item as T
+          }
+        }
+      } catch (error) {
+        console.error("Error reading initial localStorage:", error)
+      }
+    }
     return initialValue instanceof Function ? initialValue() : initialValue
   })
 
