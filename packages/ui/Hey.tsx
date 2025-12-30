@@ -77,8 +77,6 @@ export const Hey = memo(
     const { app, isSplash, setIsSplash, storeApps, threadId, isProgramme } =
       useAuth()
 
-    console.log(`🚀 ~ app:`, app)
-
     const { currentStore } = useApp()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]

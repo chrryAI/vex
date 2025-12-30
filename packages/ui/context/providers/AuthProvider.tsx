@@ -40,9 +40,10 @@ import {
   thread,
   paginatedMessages,
   moodType,
+  instruction,
 } from "../../types"
 import toast from "react-hot-toast"
-import { getApp, getSession } from "../../lib"
+import { getApp, getSession, getUser, getGuest } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { defaultLocale, locale, locales } from "../../locales"
@@ -75,6 +76,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      instructions?: instruction[]
+      setInstructions: (value?: instruction[]) => void
       burning: boolean
       burnApp?: appWithStore
       setDeviceId: (value: string) => void
@@ -513,7 +516,8 @@ export function AuthProvider({
   const fingerprintParam = searchParams.get("fp") || ""
 
   useEffect(() => {
-    if (!deviceId && isStorageReady) {
+    if (!isStorageReady && !(isTauri || isCapacitor || isExtension)) return
+    if (!deviceId) {
       console.log("📝 Updating deviceId from session:", session?.deviceId)
       if (isExtension || isCapacitor) {
         setDeviceId(uuidv4())
@@ -533,10 +537,10 @@ export function AuthProvider({
 
   const [fingerprint, setFingerprint] = useCookieOrLocalStorage(
     "fingerprint",
-    session?.guest?.fingerprint ||
-      session?.user?.fingerprint ||
+    props.session?.guest?.fingerprint ||
+      props.session?.user?.fingerprint ||
       fingerprintParam,
-    isExtension || isCapacitor,
+    isExtension,
   )
 
   const ssrToken =
@@ -545,7 +549,7 @@ export function AuthProvider({
   const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
     ssrToken,
-    isExtension || isCapacitor,
+    isExtension,
   )
 
   const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
@@ -676,17 +680,23 @@ export function AuthProvider({
 
   // Generate fingerprint if missing (for guests)
   useEffect(() => {
+    if (isTauri && !isStorageReady) {
+      return
+    }
     if (!fingerprint) {
       const fp = uuidv4()
       setFingerprint(fp)
     }
-  }, [fingerprint])
+  }, [fingerprint, isStorageReady])
 
   useEffect(() => {
+    if (isTauri && !isStorageReady) {
+      return
+    }
     if (!token && fingerprint) {
       setToken(fingerprint)
     }
-  }, [token, fingerprint])
+  }, [token, fingerprint, isTauri, isStorageReady])
   // setFingerprint/setToken are stable from useLocalStorage/useState
   const [versions, setVersions] = useState(
     session?.versions || {
@@ -1157,6 +1167,7 @@ export function AuthProvider({
     path: string,
     apps: appWithStore[],
   ): appWithStore | undefined => {
+    if (focus && showFocus) return focus
     if (path === "/") return undefined
 
     const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
@@ -1310,13 +1321,7 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp])
 
-  const canShowFocus = !!(focus && app && app?.id === focus.id && !threadId)
-
-  const [showFocus, setShowFocus] = useState(canShowFocus)
-
-  useEffect(() => {
-    setShowFocus(canShowFocus)
-  }, [canShowFocus])
+  const [showFocus, setShowFocus] = useState(false)
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
@@ -1627,12 +1632,40 @@ export function AuthProvider({
     [setTheme],
   )
 
+  const [instructions, setInstructions] = useState<instruction[] | undefined>(
+    undefined,
+  )
+
+  const refetchInstructions = async ({ appId }: { appId?: string }) => {
+    if (user) {
+      const item = await getUser({
+        token,
+        appId,
+      })
+      if (item) {
+        setInstructions(item.instructions)
+      }
+    }
+
+    if (guest) {
+      const item = await getGuest({
+        token,
+        appId,
+      })
+      if (item) {
+        setInstructions(item.instructions)
+      }
+    }
+  }
+
   const setApp = useCallback(
     (item: appWithStore | undefined) => {
       if (!hasStoreApps(item)) {
         setLoadingApp(item)
         return
       }
+
+      refetchInstructions({ appId: item?.id })
 
       setLastAppId(item?.id)
       setAppInternal((prevApp) => {
@@ -1655,7 +1688,7 @@ export function AuthProvider({
         return newApp
       })
     },
-    [setColorScheme, setAppTheme, baseApp, mergeApps],
+    [setColorScheme, setAppTheme, baseApp, mergeApps, user, guest],
   )
 
   const [thread, setThreadInternal] = useState<thread | undefined>(
@@ -2074,6 +2107,8 @@ export function AuthProvider({
         isLoading,
         setIsLoading,
         signOut,
+        instructions,
+        setInstructions,
         thread,
         isSplash,
         setIsSplash,

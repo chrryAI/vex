@@ -131,6 +131,7 @@ export default function Menu({
   useEffect(() => {
     if (!loadingAppId) {
       setLoadingThreadId(null)
+      loadingThreadId && router.push(`/threads/${loadingThreadId}`)
     }
   }, [loadingAppId])
 
@@ -325,6 +326,7 @@ export default function Menu({
                         return
                       }
                       e.preventDefault()
+                      setShowFocus(false)
 
                       isSmallDevice ? toggleMenu() : null
                       setIsNewChat(true)
@@ -384,7 +386,7 @@ export default function Menu({
                   }
                   e.preventDefault()
 
-                  showFocus && setShowFocus(false)
+                  setShowFocus(false)
 
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   setIsNewChat(true)
@@ -400,7 +402,7 @@ export default function Menu({
                   track({
                     name: "private-chat-click",
                   })
-                  showFocus && setShowFocus(false)
+                  setShowFocus(false)
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
                   setBurn(true)
                   reload()

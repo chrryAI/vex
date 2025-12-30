@@ -724,7 +724,7 @@ export const getUser = async ({
   fingerprint,
   userName,
   apiKey,
-  app,
+  appId,
   skipCache = false,
 }: {
   email?: string
@@ -737,7 +737,7 @@ export const getUser = async ({
   fingerprint?: string
   userName?: string
   apiKey?: string
-  app?: app | null
+  appId?: string
   skipCache?: boolean
 }) => {
   // Generate cache key based on lookup method (must match invalidation keys)
@@ -762,6 +762,9 @@ export const getUser = async ({
       return cached
     }
   }
+
+  const app = appId ? await getApp({ id: appId }) : undefined
+
   const result = (
     await db
       .select()
@@ -2278,7 +2281,7 @@ export const getGuest = async ({
   fingerprint,
   isBot,
   email,
-  app,
+  appId,
   skipCache = false,
 }: {
   id?: string
@@ -2286,7 +2289,7 @@ export const getGuest = async ({
   fingerprint?: string
   isBot?: boolean
   email?: string
-  app?: app | null
+  appId?: string
   skipCache?: boolean
 }) => {
   // Generate cache key based on lookup method (must match invalidation keys)
@@ -2343,6 +2346,8 @@ export const getGuest = async ({
         pageSize: 1,
       })
     : undefined
+
+  const app = appId ? await getApp({ id: appId }) : undefined
 
   const isAppOwner =
     result &&
@@ -3533,11 +3538,28 @@ export async function deleteCharacterTag({ id }: { id: string }) {
   return deleted
 }
 
-export async function getCharacterTags({ agentId }: { agentId: string }) {
+export async function getCharacterTags({
+  agentId,
+  userId,
+  guestId,
+  threadId,
+}: {
+  agentId?: string
+  userId?: string
+  guestId?: string
+  threadId?: string
+}) {
   const result = await db
     .select()
     .from(characterProfiles)
-    .where(eq(characterProfiles.agentId, agentId))
+    .where(
+      and(
+        threadId ? eq(characterProfiles.threadId, threadId) : undefined,
+        agentId ? eq(characterProfiles.agentId, agentId) : undefined,
+        userId ? eq(characterProfiles.userId, userId) : undefined,
+        guestId ? eq(characterProfiles.guestId, guestId) : undefined,
+      ),
+    )
   return result
 }
 

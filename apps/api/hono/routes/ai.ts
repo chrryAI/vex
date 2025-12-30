@@ -40,6 +40,9 @@ import {
   getMoods,
   getTimer,
   getAiAgents,
+  getInstructions,
+  getCharacterTags,
+  getCharacterProfiles,
 } from "@repo/db"
 
 import { perplexity } from "@ai-sdk/perplexity"
@@ -1516,6 +1519,88 @@ ${
     threadId: message.message.threadId, // Pass current thread to exclude
   })
 
+  // Fetch user-created instructions (max 7)
+  const userInstructions = await getInstructions({
+    userId: member?.id,
+    guestId: guest?.id,
+    appId: app?.id,
+    pageSize: 7,
+  })
+
+  const instructionsContext =
+    userInstructions?.length > 0
+      ? `
+
+## 🎯 USER'S CUSTOM INSTRUCTIONS:
+These are personalized instructions the user has created to guide your behavior. Follow them when relevant.
+
+${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("\n")}
+`
+      : ""
+
+  // Fetch character profile and mood (only if enabled)
+  // Note: characterProfilesEnabled already declared at line 1269
+  let characterContext = ""
+  let moodContext = ""
+
+  if (characterProfilesEnabled && agent) {
+    // Get character profiles (from any thread - use most recent/pinned)
+    const characterProfilesList = await getCharacterProfiles({
+      userId: member?.id,
+      guestId: guest?.id,
+    })
+    // Prioritize: 1) Pinned profiles, 2) Most used profiles
+    const characterProfile = characterProfilesList
+      .filter(
+        (profile) =>
+          profile.userId === member?.id || profile.guestId === guest?.id,
+      )
+      .sort((a, b) => {
+        // Pinned profiles first
+        if (a.pinned && !b.pinned) return -1
+        if (!a.pinned && b.pinned) return 1
+        // Then by usage count
+        return b.usageCount - a.usageCount
+      })[0] // Most relevant profile
+
+    if (characterProfile) {
+      characterContext = `
+
+## 👤 USER PROFILE:
+- **Personality**: ${characterProfile.personality}
+- **Communication Style**: ${characterProfile.conversationStyle}
+- **Preferences**: ${characterProfile.traits.preferences?.join(", ") || "None specified"}
+
+Adapt your tone and approach to match the user's communication style.
+`
+    }
+
+    // Get recent mood
+    const moods = await getMoods({
+      userId: member?.id,
+      guestId: guest?.id,
+      pageSize: 1,
+    })
+    const recentMood = moods.moods[0]
+
+    // Only inject moods that require empathy adjustment
+    // Filter out 'thinking' (neutral) - only use emotional states
+    if (
+      recentMood &&
+      recentMood.type !== "thinking" && // Filter out neutral mood
+      recentMood.metadata?.confidence &&
+      recentMood.metadata.confidence >= 0.6
+    ) {
+      moodContext = `
+
+## 🎭 USER'S RECENT MOOD: ${recentMood.type}
+${recentMood.metadata.reason ? `Reason: ${recentMood.metadata.reason}` : ""}
+
+Be mindful of the user's emotional state and adjust your tone accordingly.
+`
+    }
+  }
+
   // Add placeholder context for AI awareness
   const placeholderContext =
     placeholder || appPlaceholder || threadPlaceholder
@@ -2400,22 +2485,27 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
   // But we keep this comment for clarity that they're part of every message
-  let systemPrompt =
-    baseSystemPrompt +
-    burnModeContext +
-    inheritanceContext +
-    timerToolInstructions +
-    storeContext +
-    featureStatusContext +
-    memoryContext +
-    placeholderContext +
-    calendarContext +
-    vaultContext +
-    focusContext +
-    taskContext +
-    newsContext +
-    // brandKnowledge +
-    aiCoachContext
+  // Using array join for better performance with long context strings
+  let systemPrompt = [
+    baseSystemPrompt,
+    burnModeContext,
+    inheritanceContext,
+    timerToolInstructions,
+    storeContext,
+    featureStatusContext,
+    instructionsContext, // User-created instructions (explicit behavior) - HIGH PRIORITY
+    characterContext, // User's personality & communication style (tone guidance)
+    moodContext, // User's emotional state (empathy)
+    memoryContext, // Background knowledge (context) - AFTER instructions
+    placeholderContext,
+    calendarContext,
+    vaultContext,
+    focusContext,
+    taskContext,
+    newsContext,
+    // brandKnowledge,
+    aiCoachContext,
+  ].join("")
 
   const creditsLeft = member?.creditsLeft || guest?.creditsLeft
 
@@ -2424,11 +2514,9 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   }
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
-  console.log(`🚀 ~ app.post ~ fingerprint:`, fingerprint)
 
   const isE2E =
     fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
-  console.log(`🚀 ~ app.post ~ isE2E:`, isE2E)
 
   const hourlyLimit =
     isDevelopment && !isE2E

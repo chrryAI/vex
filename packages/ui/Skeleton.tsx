@@ -8,6 +8,7 @@ import { CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { useEffect } from "react"
 import Img from "./Image"
+import { useState } from "react"
 import CharacterProfiles from "./CharacterProfiles"
 import {
   Button,
@@ -32,7 +33,79 @@ import A from "./a/A"
 import Version from "./Version"
 import AddToHomeScreen from "./addToHomeScreen"
 import { useHasHydrated } from "./hooks"
+import { useTimerContext } from "./context/TimerContext"
 
+function FocusButton({ time }: { time: number }) {
+  const { appStyles } = useStyles()
+  const { isExtension, isFirefox, viewPortWidth } = usePlatform()
+  const { focus, getAppSlug, setShowFocus } = useAuth()
+
+  const hasHydrated = useHasHydrated()
+  const { isMobileDevice } = useTheme()
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const { skeletonStyles, utilities } = useStyles()
+
+  useEffect(() => {
+    if (time === 0) {
+      const interval = setInterval(() => {
+        setCurrentTime(new Date())
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [time])
+
+  const formatTime = () => {
+    if (time > 0) {
+      return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
+    } else {
+      const hours = currentTime.getHours()
+      const minutes = currentTime.getMinutes()
+      return `${hours}:${String(minutes).padStart(2, "0")}`
+    }
+  }
+  const { isEmpty } = useChat()
+
+  if (!isEmpty) {
+    return null
+  }
+
+  if (!focus || viewPortWidth < 375) {
+    return (
+      <>
+        <A
+          href={`/blossom`}
+          className="button transparent"
+          style={{
+            ...utilities.button.style,
+            ...utilities.transparent.style,
+            ...utilities.small.style,
+            ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
+          }}
+        >
+          <Img logo="blossom" size={22} /> {"Blossom"}
+        </A>
+      </>
+    )
+  }
+
+  return (
+    <A
+      onClick={() => setShowFocus(true)}
+      href={`${getAppSlug(focus)}`}
+      openInNewTab={isExtension && isFirefox}
+      style={{
+        ...appStyles.focus.style,
+        marginTop: 0,
+        marginLeft: -7.5,
+      }}
+    >
+      {hasHydrated && (
+        <Span style={appStyles.focusTime.style}>{formatTime()}</Span>
+      )}
+      <Img logo="focus" showLoading={false} width={26} height={24} />
+    </A>
+  )
+}
 export default function Skeleton({
   className,
   children,
@@ -43,6 +116,7 @@ export default function Skeleton({
   showThreads?: boolean
 }): React.ReactElement {
   const { isCapacitor, os } = usePlatform()
+  const { time } = useTimerContext()
 
   const hasHydrated = useHasHydrated()
 
@@ -227,22 +301,7 @@ export default function Skeleton({
                   </Div>
                 ) : null}
 
-                {isEmpty && (
-                  <A
-                    href={`/blossom`}
-                    className="button transparent"
-                    style={{
-                      ...utilities.button.style,
-                      ...utilities.transparent.style,
-                      ...utilities.small.style,
-                      ...(hasHydrated &&
-                        isMobileDevice &&
-                        skeletonStyles.blog.style),
-                    }}
-                  >
-                    <Img logo="blossom" size={22} /> {"Blossom"}
-                  </A>
-                )}
+                <FocusButton time={time} />
               </Div>
             </Div>
             <Div style={{ ...skeletonStyles.right.style }}>

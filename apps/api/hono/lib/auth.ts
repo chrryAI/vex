@@ -22,12 +22,19 @@ export async function getMember(
 ) {
   const { byEmail } = options
 
+  const request = c.req.raw
+
+  const appIdHeader = request.headers.get("x-app-id")
+  const appIdParam = c.req.query("appId")
+
+  const appId = appIdParam || appIdHeader || undefined
+
   const skipCache = options.skipCache || c.req.method !== "GET"
   const full = options.full || skipCache
 
   if (byEmail) {
     const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
-    const user = await getUser({ email: byEmail, skipCache })
+    const user = await getUser({ email: byEmail, skipCache, appId })
 
     if (user) {
       return {
@@ -51,7 +58,11 @@ export async function getMember(
       if (token.split(".").length !== 3) {
         const fp = authHeader.replace("Bearer ", "")
 
-        const result = await getUser({ apiKey: fp, skipCache: skipCache })
+        const result = await getUser({
+          apiKey: fp,
+          skipCache: skipCache,
+          appId,
+        })
         if (result) {
           return {
             ...result,
@@ -69,6 +80,7 @@ export async function getMember(
         const user = await getUser({
           email: decoded.email,
           skipCache: skipCache,
+          appId,
         })
 
         if (user) {
@@ -95,6 +107,12 @@ export async function getGuest(
   { skipCache }: { skipCache?: boolean } = {},
   debug = false,
 ) {
+  const request = c?.req.raw
+  const appIdHeader = request?.headers.get("x-app-id")
+  const appIdParam = c?.req.query("appId")
+
+  const appId = appIdParam || appIdHeader || undefined
+
   try {
     // If no context provided, return undefined (for backward compatibility)
     if (!c) {
@@ -110,7 +128,7 @@ export async function getGuest(
         return
       }
 
-      const result = await getGuestDb({ fingerprint: fp, skipCache })
+      const result = await getGuestDb({ fingerprint: fp, skipCache, appId })
 
       if (!result) {
         const cookieFingerprint = c.req
@@ -124,7 +142,7 @@ export async function getGuest(
         const fingerprint = cookieFingerprint || headerFingerprint
 
         if (fingerprint) {
-          const result = await getGuestDb({ fingerprint, skipCache })
+          const result = await getGuestDb({ fingerprint, skipCache, appId })
 
           return result || undefined
         }
@@ -190,7 +208,6 @@ export async function getApp({
   const request = c.req.raw
 
   // 2. QUERY PARAMS & HEADERS
-  const appIdParam = c.req.query("appId")
   const appSlugParam = c.req.query("appSlug")
   const storeSlugParam = c.req.query("storeSlug")
   const chrryUrlParam = c.req.query("chrryUrl")
@@ -202,7 +219,6 @@ export async function getApp({
     params.skipCache ||
     ["POST", "PUT", "DELETE", "PATCH"].includes(request.method)
 
-  const appIdHeader = request.headers.get("x-app-id")
   const storeSlugHeader = request.headers.get("x-app-slug")
   const pathnameHeader = request.headers.get("x-pathname")
 
@@ -213,6 +229,10 @@ export async function getApp({
       ? decodeURIComponent(pathnameParam)
       : pathnameHeader || "/"
     ).split("?")[0] || "/"
+
+  const appIdHeader = request.headers.get("x-app-id")
+  const appIdParam = c.req.query("appId")
+
   const appId = params.appId || appIdParam || appIdHeader || undefined
 
   // 3. AUTH RESOLUTION (Sequential for DB Economy)

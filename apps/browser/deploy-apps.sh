@@ -10,7 +10,7 @@ echo "======================================"
 echo ""
 
 # Configuration
-SERVER="your-server.com"
+SERVER="162.55.97.114"
 SERVER_PATH="/var/www/vex.chrry.ai/public/installs"
 LOCAL_PATH="../../public/installs"
 
@@ -45,29 +45,57 @@ fi
 
 # Upload DMGs
 echo ""
-echo "📤 Uploading DMGs to server..."
+echo "📤 Uploading DMGs to MinIO..."
 
-# Option 1: Using rsync (recommended)
-rsync -avz --progress "$LOCAL_PATH/*.dmg" "$SERVER:$SERVER_PATH/"
+# MinIO configuration
+MINIO_ALIAS="production"  # Your MinIO alias (configure with: mc alias set production https://minio.example.com ACCESS_KEY SECRET_KEY)
+MINIO_BUCKET="vex"        # Your bucket name
+MINIO_PATH="installs"     # Path within bucket
 
-# Option 2: Using scp (uncomment if you prefer)
-# scp "$LOCAL_PATH"/*.dmg "$SERVER:$SERVER_PATH/"
+# Check if mc (MinIO Client) is installed
+if ! command -v mc &> /dev/null; then
+    echo "❌ Error: MinIO Client (mc) is not installed"
+    echo "Install it with: brew install minio/stable/mc"
+    echo "Or visit: https://min.io/docs/minio/linux/reference/minio-mc.html"
+    exit 1
+fi
 
-# Option 3: Using your cloud storage (uncomment and configure)
-# aws s3 sync "$LOCAL_PATH" s3://your-bucket/installs/ --exclude "*" --include "*.dmg"
+# Check if MinIO alias is configured
+if ! mc alias list | grep -q "^$MINIO_ALIAS"; then
+    echo "❌ Error: MinIO alias '$MINIO_ALIAS' not configured"
+    echo "Configure it with:"
+    echo "  mc alias set $MINIO_ALIAS https://your-minio-url.com ACCESS_KEY SECRET_KEY"
+    exit 1
+fi
+
+# Upload each DMG file
+echo "Uploading to: $MINIO_ALIAS/$MINIO_BUCKET/$MINIO_PATH/"
+for dmg in "$LOCAL_PATH"/*.dmg; do
+    if [ -f "$dmg" ]; then
+        filename=$(basename "$dmg")
+        echo "  📦 Uploading $filename..."
+        mc cp "$dmg" "$MINIO_ALIAS/$MINIO_BUCKET/$MINIO_PATH/$filename" --attr "Content-Type=application/x-apple-diskimage"
+    fi
+done
+
+# Set public read policy for the installs folder
+echo ""
+echo "🔓 Setting public read access..."
+mc anonymous set download "$MINIO_ALIAS/$MINIO_BUCKET/$MINIO_PATH"
 
 echo ""
 echo "✅ Deployment complete!"
 echo ""
 echo "📍 Apps available at:"
-echo "   https://vex.chrry.ai/installs/Atlas.dmg"
-echo "   https://vex.chrry.ai/installs/Focus.dmg"
-echo "   https://vex.chrry.ai/installs/Vex.dmg"
-echo "   https://vex.chrry.ai/installs/Popcorn.dmg"
-echo "   https://vex.chrry.ai/installs/Chrry.dmg"
-echo "   https://vex.chrry.ai/installs/Zarathustra.dmg"
-echo "   https://vex.chrry.ai/installs/Search.dmg"
-echo "   https://vex.chrry.ai/installs/Grape.dmg"
-echo "   https://vex.chrry.ai/installs/Burn.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Sushi.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Atlas.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Focus.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Vex.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Popcorn.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Chrry.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Zarathustra.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Search.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Grape.dmg"
+echo "   https://your-minio-url.com/$MINIO_BUCKET/$MINIO_PATH/Burn.dmg"
 echo ""
 echo "🎉 Ready to announce!"
