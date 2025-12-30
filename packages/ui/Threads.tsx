@@ -347,14 +347,23 @@ const Threads = ({
                     className={"threadsItem"}
                   >
                     <Div style={{ ...styles.threadItemTitle.style }}>
-                      {!isVisitor && (
-                        <EditThread
-                          refetch={async () => {
-                            await refetch()
+                      {loadingThreadId === thread.id ? (
+                        <Loading
+                          style={{
+                            width: 14,
+                            height: 14,
                           }}
-                          isIcon
-                          thread={thread}
                         />
+                      ) : (
+                        !isVisitor && (
+                          <EditThread
+                            refetch={async () => {
+                              await refetch()
+                            }}
+                            isIcon
+                            thread={thread}
+                          />
+                        )
                       )}
                       {(() => {
                         const url = `/threads/${thread.id}`
