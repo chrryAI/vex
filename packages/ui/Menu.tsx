@@ -276,7 +276,6 @@ export default function Menu({
         }}
       >
         <>
-          {app?.id}
           <Div>
             {/* <Controls /> */}
             {!isFullscreen && tauri && (
