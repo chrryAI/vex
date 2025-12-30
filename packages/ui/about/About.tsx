@@ -177,7 +177,7 @@ export default function About() {
               {t("Privacy Policy")}
             </a>
             {", "}
-            <a href="https://x.com/askvexai">@askvexAI</a>
+            <a href="https://x.com/chrryAI">@chrryAI</a>
             {", "}
             <a href="mailto:iliyan@chrry.ai">iliyan@chrry.ai</a>
           </P>
