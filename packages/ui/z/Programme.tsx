@@ -42,7 +42,7 @@ export default function Programme() {
   return (
     <main className={styles.main}>
       {/* The 3D Background */}
-      <ParticleWaveCanvas entered={entered} />
+      {/* <ParticleWaveCanvas entered={entered} /> */}
 
       <AnimatePresence mode="wait">
         {!entered ? (

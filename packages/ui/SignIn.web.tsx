@@ -44,7 +44,7 @@ export default function SignIn({
   style?: React.CSSProperties
   desktopAuthHandler?: DesktopAuthHandler
 }) {
-  const { isExtension, isTauri } = usePlatform()
+  const { isExtension, isTauri, isCapacitor } = usePlatform()
 
   const isAppleSignInAvailable = !isTauri
 
@@ -226,29 +226,44 @@ export default function SignIn({
   const [password, setPassword] = React.useState("")
 
   const handleAppleSignIn = async () => {
-    if (isExtension) {
-      // Extension context
-      // You may need to use chrome.identity.launchWebAuthFlow or open a new tab and handle the callback
+    // Capacitor: Use Firebase Authentication
+    if (isCapacitor) {
       try {
-        // Example: open a new tab for Apple sign-in
-        // const authUrl = `${API_URL}/signIn/apple?extension=1` // Adjust endpoint as needed
+        const { appleSignIn } = await import("./auth/capacitorAuth")
+        const result = await appleSignIn()
 
-        // Open the sign-in page in a new tab
+        // Exchange the Firebase ID token for our app token
+        const response = await apiFetch(`${API_URL}/auth/apple/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken: result.idToken }),
+        })
 
-        // Optionally, poll for auth result or use extension messaging
-        // (Implementation depends on your extension's background/content scripts)
-        // For example, you could listen for a storage event or message
+        if (!response.ok) {
+          toast.error("Failed to sign in")
+          return
+        }
 
-        // Notify user to complete sign-in in the new tab
-        toast.success("Please complete Apple sign-in in the opened tab.")
+        const { token } = await response.json()
+        setToken(token)
+        setPart(undefined)
+        toast.success("Signed in successfully!")
       } catch (error) {
-        captureException(error)
-        console.error("Apple sign in error (extension):", error)
-        toast.error("An error occurred during sign in")
+        console.error("Apple auth error:", error)
+        toast.error(
+          error instanceof Error ? error.message : "Failed to sign in",
+        )
       }
       return
     }
 
+    // Extension: Not supported yet
+    if (isExtension) {
+      toast.success("Please complete Apple sign-in in the opened tab.")
+      return
+    }
+
+    // Web/PWA: Use standard OAuth redirect
     const { successUrl, errorUrl } = getCallbacks()
 
     successUrl.searchParams.set("welcome", "true")
@@ -302,18 +317,44 @@ export default function SignIn({
   }, [])
 
   const handleGoogleAuth = async () => {
+    // Capacitor: Use Firebase Authentication
+    if (isCapacitor) {
+      try {
+        const { googleSignIn } = await import("./auth/capacitorAuth")
+        const result = await googleSignIn()
+
+        // Exchange the Firebase ID token for our app token
+        const response = await apiFetch(`${API_URL}/auth/google/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken: result.idToken }),
+        })
+
+        if (!response.ok) {
+          toast.error("Failed to sign in")
+          return
+        }
+
+        const { token } = await response.json()
+        setToken(token)
+        setPart(undefined)
+        toast.success("Signed in successfully!")
+      } catch (error) {
+        console.error("Google auth error:", error)
+        toast.error(
+          error instanceof Error ? error.message : "Failed to sign in",
+        )
+      }
+      return
+    }
+
+    // Web/PWA: Use standard OAuth redirect
     if (!isExtension) {
       const { successUrl, errorUrl } = getCallbacks()
 
       const urlParams = new URLSearchParams(window.location.search)
       if (urlParams.get("isApp") === "true")
         successUrl.searchParams.set("isApp", "true")
-
-      // For PWA, force redirect to close any lingering webviews
-      // if (isStandalone) {
-      //   window.location.href = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(successUrl.toString())}`
-      //   return
-      // }
 
       await signInContext?.("google", {
         redirect: true,
@@ -323,6 +364,7 @@ export default function SignIn({
       return
     }
 
+    // Extension: Use chrome.identity API
     try {
       const query = new URLSearchParams()
       query.append("redirect_uri", getRedirectURL())

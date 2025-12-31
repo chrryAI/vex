@@ -7,10 +7,9 @@
 import React, { useEffect, useState } from "react"
 import { Div, H1, Button, P, usePlatform } from "./platform"
 import { useAuth } from "./context/providers/AuthProvider"
-import { CodeXml, FolderOpen, File, Save } from "./icons"
+import { CodeXml, FolderOpen, File } from "./icons"
 import Home from "./Home"
 import { useTheme } from "./context/ThemeContext"
-import { useStyles } from "./context/StylesContext"
 
 export interface IDEProps {
   rootPath?: string
@@ -22,21 +21,25 @@ export function IDE({ rootPath = ".", initialFile }: IDEProps) {
     "// Welcome to Sushi IDE!\n// Click Code button to toggle back to chat\n\nconsole.log('Hello, World!');",
   )
   const { user, toggleIDE } = useAuth()
-
-  const { viewPortWidth } = usePlatform()
-
   const { isSmallDevice } = useTheme()
 
-  const [isChatOpen, setIsChatOpen] = useState(false)
+  const { isCapacitor } = usePlatform()
+
+  const [isChatOpen, setIsChatOpen] = useState(true)
 
   useEffect(() => {
-    document.body.style.overflow = "hidden"
-    document.body.style.paddingBottom = "50px"
-    return () => {
-      document.body.style.overflow = "auto"
-      document.body.style.paddingBottom = "0px"
+    // Don't disable scroll on mobile/Capacitor
+    if (!isCapacitor) {
+      document.body.style.overflow = "hidden"
+      document.body.style.paddingBottom = "50px"
     }
-  }, [])
+    return () => {
+      if (!isCapacitor) {
+        document.body.style.overflow = "auto"
+        document.body.style.paddingBottom = "0px"
+      }
+    }
+  }, [isCapacitor])
 
   return (
     <Div
@@ -80,8 +83,12 @@ export function IDE({ rootPath = ".", initialFile }: IDEProps) {
           <P style={{ fontSize: "13px", color: "#888", margin: 0 }}>
             {user?.email || "Guest"}
           </P>
-          <Button className="transparent" onClick={toggleIDE} style={{}}>
-            Back to Chat
+          <Button
+            className="transparent"
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            style={{}}
+          >
+            Chat
           </Button>
         </Div>
       </Div>
@@ -176,7 +183,7 @@ export function IDE({ rootPath = ".", initialFile }: IDEProps) {
             />
           </Div>
         </Div>
-        {true && (
+        {isChatOpen && (
           <Div style={{ padding: "0 0" }}>
             <Home
               style={{

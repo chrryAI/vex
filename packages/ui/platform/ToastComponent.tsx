@@ -7,6 +7,7 @@ import React from "react"
 import { Toaster as WebToaster, ToasterProps } from "react-hot-toast"
 import { usePlatform } from "./PlatformProvider"
 import { useData } from "../context/providers/DataProvider"
+import { Div } from "./PlatformPrimitives"
 
 // Use the actual types from react-hot-toast
 type ToastProps = ToasterProps
@@ -29,10 +30,12 @@ export function Toast({ containerStyle, toastOptions }: ToastProps) {
 // Convenience component with default Vex styling
 export function VexToast() {
   const { FRONTEND_URL } = useData()
+  const { isCapacitor, os } = usePlatform()
 
   const toastConfig: ToastProps = {
     containerStyle: {
       zIndex: 10000,
+      ...(isCapacitor && os === "ios" ? { top: 60 } : {}),
     },
     toastOptions: {
       style: {

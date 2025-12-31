@@ -4,6 +4,7 @@ repos:
     hooks:
       - id: gitleaks
         name: Detect secrets with Gitleaks
-        entry: gitleaks protect --staged --redact --verbose
+        entry: gitleaks protect --staged --redact --verbose --config .gitleaks.toml
         language: system
         pass_filenames: false
+        exclude: '.*Podfile\.lock$'

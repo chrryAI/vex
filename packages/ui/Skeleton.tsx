@@ -34,6 +34,7 @@ import Version from "./Version"
 import AddToHomeScreen from "./addToHomeScreen"
 import { useHasHydrated } from "./hooks"
 import { useTimerContext } from "./context/TimerContext"
+import { ParticleBackground } from "./ParticleBackground"
 
 function FocusButton({
   time,
@@ -45,7 +46,7 @@ function FocusButton({
   isDrawerOpen?: boolean
 }) {
   const { appStyles } = useStyles()
-  const { isExtension, isFirefox, viewPortWidth, isTauri } = usePlatform()
+  const { viewPortWidth, isTauri } = usePlatform()
   const { app, getAppSlug, setShowFocus, isIDE, toggleIDE } = useAuth()
 
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
@@ -212,7 +213,7 @@ export default function Skeleton({
 
   const { threadIdRef, isIDE, ...auth } = useAuth()
 
-  const threadId = threadIdRef.current || auth.threadId
+  const threadId = threadIdRef.current
 
   // App context
   const { app, isRemovingApp, isSavingApp } = useApp()
@@ -241,7 +242,13 @@ export default function Skeleton({
         img.src = src
       })
     }
-  }, [])
+
+    // Enable body scroll on Capacitor
+    if (isCapacitor && os === "ios") {
+      document.body.style.overflow = "auto"
+      ;(document.body.style as any).WebkitOverflowScrolling = "touch"
+    }
+  }, [FRONTEND_URL, isCapacitor, os])
 
   // Call ALL hooks sssbefore any conditional returns
   const { skeletonStyles, utilities } = useStyles()
@@ -253,6 +260,7 @@ export default function Skeleton({
       style={{
         ...skeletonStyles.page.style,
         paddingLeft: !isSmallDevice && isDrawerOpen ? 255 : 0,
+        background: "transparent",
         // paddingTop: isCapacitor && os === "ios" ? 40 : undefined,
       }}
     >
@@ -303,10 +311,15 @@ export default function Skeleton({
             style={{
               ...skeletonStyles.header.style,
               ...(isStandalone && skeletonStyles.headerStandalone.style),
-              ...(isEmpty && skeletonStyles.headerEmpty.style),
+              ...(!threadId && skeletonStyles.headerEmpty.style),
               ...(isCapacitor && os === "ios" ? { paddingTop: 55 } : {}),
               ...(isCapacitor && os === "ios" && threadId
-                ? { position: "fixed", top: 0 }
+                ? {
+                    position: "fixed",
+                    top: 0,
+                    paddingTop: 50,
+                    backgroundColor: "var(--background)",
+                  }
                 : {}),
             }}
             // className={clsx(hasHydrated && device && styles[device])}

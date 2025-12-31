@@ -29,7 +29,10 @@ const getUserRole = (user?: { role?: string }): string | undefined => {
 // Create custom console factory that has access to user and error tracking
 export const createCustomConsole = (user?: { role?: string }) => {
   const role = getUserRole(user)
-  const shouldLog = isE2E || isDevelopment || role === "admin"
+  const isCapacitor =
+    typeof window !== "undefined" && !!(window as any).Capacitor
+  const shouldLog = isE2E || isDevelopment || role === "admin" || isCapacitor
+  console.log(`🚀 ~ createCustomConsole ~ isDevelopment:`, isDevelopment)
 
   return {
     log: (message?: any, ...args: any[]) => {
