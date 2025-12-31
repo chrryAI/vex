@@ -212,7 +212,7 @@ export default function Skeleton({
 
   const { threadIdRef, isIDE, ...auth } = useAuth()
 
-  const threadId = threadIdRef.current || auth.threadId
+  const threadId = threadIdRef.current
 
   // App context
   const { app, isRemovingApp, isSavingApp } = useApp()
@@ -241,7 +241,13 @@ export default function Skeleton({
         img.src = src
       })
     }
-  }, [])
+
+    // Enable body scroll on Capacitor
+    if (isCapacitor && os === "ios") {
+      document.body.style.overflow = "auto"
+      ;(document.body.style as any).WebkitOverflowScrolling = "touch"
+    }
+  }, [FRONTEND_URL, isCapacitor, os])
 
   // Call ALL hooks sssbefore any conditional returns
   const { skeletonStyles, utilities } = useStyles()
@@ -303,10 +309,15 @@ export default function Skeleton({
             style={{
               ...skeletonStyles.header.style,
               ...(isStandalone && skeletonStyles.headerStandalone.style),
-              ...(isEmpty && skeletonStyles.headerEmpty.style),
+              ...(!threadId && skeletonStyles.headerEmpty.style),
               ...(isCapacitor && os === "ios" ? { paddingTop: 55 } : {}),
               ...(isCapacitor && os === "ios" && threadId
-                ? { position: "fixed", top: 0 }
+                ? {
+                    position: "fixed",
+                    top: 0,
+                    paddingTop: 50,
+                    backgroundColor: "var(--background)",
+                  }
                 : {}),
             }}
             // className={clsx(hasHydrated && device && styles[device])}

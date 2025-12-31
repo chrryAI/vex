@@ -1,7 +1,8 @@
 import "@chrryai/chrry/globals.scss"
 import Chrry from "@chrryai/chrry/Chrry"
 import { HistoryRouterProvider } from "@chrryai/pepper"
-import { Component, ReactNode } from "react"
+import { Component, ReactNode, useEffect } from "react"
+import VConsole from "vconsole"
 
 // Error Boundary to catch crashes
 class ErrorBoundary extends Component<
@@ -43,6 +44,17 @@ class ErrorBoundary extends Component<
 
 function App() {
   console.log("🍒 App mounting...")
+
+  useEffect(() => {
+    // Enable vConsole debug tool on mobile
+    if (typeof window !== "undefined" && (window as any).Capacitor) {
+      const vConsole = new VConsole()
+      console.log("✅ vConsole initialized")
+      return () => {
+        vConsole.destroy()
+      }
+    }
+  }, [])
 
   return (
     <ErrorBoundary>

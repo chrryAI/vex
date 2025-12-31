@@ -300,8 +300,15 @@ export default function Chat({
 
   const { captureException } = useError()
 
-  const { device, os, isStandalone, isExtension, viewPortWidth, isWeb } =
-    usePlatform()
+  const {
+    device,
+    os,
+    isStandalone,
+    isExtension,
+    viewPortWidth,
+    isWeb,
+    isCapacitor,
+  } = usePlatform()
   const inputRef = useRef(text || "")
 
   const {
@@ -3283,6 +3290,7 @@ export default function Chat({
                 right: 0,
               }
             : {}),
+          ...(isCapacitor && os === "ios" ? { paddingBottom: 17.5 } : {}),
         }}
       >
         {isSpeechActive && (
@@ -3798,7 +3806,6 @@ export default function Chat({
                   multiline={true}
                   returnKeyType="send"
                 />
-
                 {/* Quota Info Display */}
                 {showQuotaInfo && quotaInfo && (
                   <Div style={styles.quotaDisplay.style}>
@@ -3884,9 +3891,7 @@ export default function Chat({
                     </Div>
                   </Div>
                 )}
-
                 {/* Credit Estimate Display */}
-
                 <Div style={styles.chatFooter.style}>
                   {!isAttaching && selectedAgent ? (
                     <Div

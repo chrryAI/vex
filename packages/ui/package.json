@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -71,6 +71,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@capgo/capacitor-social-login": "^8.2.9",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

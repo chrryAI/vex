@@ -158,7 +158,13 @@ export default function Menu({
         isSmallDevice,
       },
     })
-    setIsDrawerOpen(!isDrawerOpen)
+
+    setTimeout(
+      () => {
+        setIsDrawerOpen(!isDrawerOpen)
+      },
+      isCapacitor ? 300 : 0,
+    )
   }
 
   const hasHydrated = useHasHydrated()

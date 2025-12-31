@@ -9,6 +9,13 @@ const config: CapacitorConfig = {
     url: process.env.CAPACITOR_SERVER_URL || undefined,
     cleartext: true,
   },
+  plugins: {
+    GoogleAuth: {
+      scopes: ["profile", "email"],
+      serverClientId: process.env.GOOGLE_CLIENT_ID || "",
+      forceCodeForRefreshToken: true,
+    },
+  },
 }
 
 export default config

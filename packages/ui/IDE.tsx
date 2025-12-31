@@ -21,17 +21,25 @@ export function IDE({ rootPath = ".", initialFile }: IDEProps) {
     "// Welcome to Sushi IDE!\n// Click Code button to toggle back to chat\n\nconsole.log('Hello, World!');",
   )
   const { user, toggleIDE } = useAuth()
+  const { isSmallDevice } = useTheme()
+
+  const { isCapacitor } = usePlatform()
 
   const [isChatOpen, setIsChatOpen] = useState(true)
 
   useEffect(() => {
-    document.body.style.overflow = "hidden"
-    document.body.style.paddingBottom = "50px"
-    return () => {
-      document.body.style.overflow = "auto"
-      document.body.style.paddingBottom = "0px"
+    // Don't disable scroll on mobile/Capacitor
+    if (!isCapacitor) {
+      document.body.style.overflow = "hidden"
+      document.body.style.paddingBottom = "50px"
     }
-  }, [])
+    return () => {
+      if (!isCapacitor) {
+        document.body.style.overflow = "auto"
+        document.body.style.paddingBottom = "0px"
+      }
+    }
+  }, [isCapacitor])
 
   return (
     <Div
