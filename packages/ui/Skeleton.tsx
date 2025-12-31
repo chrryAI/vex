@@ -34,6 +34,7 @@ import Version from "./Version"
 import AddToHomeScreen from "./addToHomeScreen"
 import { useHasHydrated } from "./hooks"
 import { useTimerContext } from "./context/TimerContext"
+import { ParticleBackground } from "./ParticleBackground"
 
 function FocusButton({
   time,
@@ -259,6 +260,7 @@ export default function Skeleton({
       style={{
         ...skeletonStyles.page.style,
         paddingLeft: !isSmallDevice && isDrawerOpen ? 255 : 0,
+        background: "transparent",
         // paddingTop: isCapacitor && os === "ios" ? 40 : undefined,
       }}
     >

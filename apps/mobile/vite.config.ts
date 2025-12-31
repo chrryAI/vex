@@ -13,4 +13,18 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  resolve: {
+    dedupe: [
+      "react",
+      "react-dom",
+      "@capacitor-firebase/authentication",
+      "firebase",
+    ],
+    alias: {
+      stream: "stream-browserify",
+    },
+  },
+  optimizeDeps: {
+    include: ["@capacitor-firebase/authentication", "firebase"],
+  },
 })

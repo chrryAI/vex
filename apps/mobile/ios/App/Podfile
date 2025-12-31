@@ -11,10 +11,7 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../../../node_modules/.pnpm/@capacitor+ios@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../../../node_modules/.pnpm/@capacitor+ios@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/ios'
-  pod 'CapgoCapacitorSocialLogin', :path => '../../../../node_modules/.pnpm/@capgo+capacitor-social-login@8.2.9_@capacitor+core@7.4.4/node_modules/@capgo/capacitor-social-login'
-  # Capacitor plugins for OAuth
-  pod 'CapacitorBrowser', :path => '../../../../node_modules/.pnpm/@capacitor+browser@7.0.3_@capacitor+core@8.0.0/node_modules/@capacitor/browser'
-  pod 'CapacitorApp', :path => '../../../../node_modules/.pnpm/@capacitor+app@7.1.1_@capacitor+core@8.0.0/node_modules/@capacitor/app'
+
 end
 
 target 'App' do

@@ -1,94 +1,97 @@
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication"
+
+export interface AuthSignInResult {
+  idToken: string
+  user: {
+    uid: string
+    email: string | null
+    displayName: string | null
+    photoURL: string | null
+  }
+}
+
 /**
- * Capacitor Social Login - Simple Google Auth
- * Using @capgo/capacitor-social-login
+ * Sign in with Google using Firebase Authentication
+ * Returns Firebase ID token that should be exchanged with your backend
  */
-
-import { SocialLogin } from "@capgo/capacitor-social-login"
-import { toast } from "react-hot-toast"
-
-let initialized = false
-
-export async function initializeAuth(googleClientId: string) {
-  if (initialized) return
-
+export async function googleSignIn(): Promise<AuthSignInResult> {
   try {
-    // Try initializing all providers
-    await SocialLogin.initialize({
-      google: {
-        webClientId: googleClientId,
-        iOSClientId: googleClientId,
-      },
-      apple: {
-        clientId: "dev.chrry.vex",
-      },
-    })
-    initialized = true
-    console.log("✅ Social Auth initialized")
-  } catch (error) {
-    console.error("❌ Failed to initialize Social Auth:", error)
+    const result = await FirebaseAuthentication.signInWithGoogle()
 
-    // Fallback: Try initializing ONLY Apple if Google failed (likely due to missing plist)
-    try {
-      console.log("⚠️ Retrying with Apple only...")
-      await SocialLogin.initialize({
-        apple: {
-          clientId: "dev.chrry.vex",
-        },
-      })
-      initialized = true // Partially initialized
-      console.log("✅ Apple Auth initialized (Google failed)")
-      toast.error("Google Auth failed (missing plist?), but Apple is ready.")
-    } catch (appleError) {
-      console.error("❌ Failed to initialize Apple Auth too:", appleError)
-      toast.error(
-        `Auth Init Failed: ${error instanceof Error ? error.message : String(error)}`,
-      )
+    if (!result.user) {
+      throw new Error("No user data received from Google Sign-In")
     }
+
+    // Get the Firebase ID token
+    const idTokenResult = await FirebaseAuthentication.getIdToken()
+
+    if (!idTokenResult.token) {
+      throw new Error("Failed to get Firebase ID token")
+    }
+
+    return {
+      idToken: idTokenResult.token,
+      user: {
+        uid: result.user.uid,
+        email: result.user.email || null,
+        displayName: result.user.displayName || null,
+        photoURL: result.user.photoUrl || null,
+      },
+    }
+  } catch (error) {
+    console.error("Google Sign-In error:", error)
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to sign in with Google",
+    )
   }
 }
 
-export async function googleSignIn() {
-  if (!initialized) throw new Error("Auth not initialized")
+/**
+ * Sign in with Apple using Firebase Authentication
+ * Returns Firebase ID token that should be exchanged with your backend
+ */
+export async function appleSignIn(): Promise<AuthSignInResult> {
+  try {
+    const result = await FirebaseAuthentication.signInWithApple()
 
-  const result = await SocialLogin.login({
-    provider: "google",
-    options: {
-      scopes: ["profile", "email"],
-    },
-  })
+    if (!result.user) {
+      throw new Error("No user data received from Apple Sign-In")
+    }
 
-  // Cast to any for response handling
-  const res = result.result as any
+    // Get the Firebase ID token
+    const idTokenResult = await FirebaseAuthentication.getIdToken()
 
-  return {
-    token: res.accessToken?.token || res.idToken || "",
-    email: res.profile?.email || "",
-    name: res.profile?.name || "",
-    imageUrl: res.profile?.imageUrl || "",
+    if (!idTokenResult.token) {
+      throw new Error("Failed to get Firebase ID token")
+    }
+
+    return {
+      idToken: idTokenResult.token,
+      user: {
+        uid: result.user.uid,
+        email: result.user.email || null,
+        displayName: result.user.displayName || null,
+        photoURL: result.user.photoUrl || null,
+      },
+    }
+  } catch (error) {
+    console.error("Apple Sign-In error:", error)
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to sign in with Apple",
+    )
   }
 }
 
-export async function appleSignIn() {
-  if (!initialized) throw new Error("Auth not initialized")
-
-  const result = await SocialLogin.login({
-    provider: "apple",
-    options: {
-      scopes: ["email", "name"],
-    },
-  })
-
-  return {
-    token: result.result.idToken || "",
-    email: result.result.profile?.email || "",
-    name: (result.result.profile?.givenName
-      ? `${result.result.profile.givenName} ${result.result.profile.familyName || ""}`
-      : ""
-    ).trim(),
+/**
+ * Sign out from Firebase Authentication
+ */
+export async function signOut(): Promise<void> {
+  try {
+    await FirebaseAuthentication.signOut()
+  } catch (error) {
+    console.error("Sign-Out error:", error)
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to sign out",
+    )
   }
-}
-
-export async function signOut() {
-  await SocialLogin.logout({ provider: "google" })
-  await SocialLogin.logout({ provider: "apple" })
 }

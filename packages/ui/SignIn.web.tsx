@@ -225,44 +225,22 @@ export default function SignIn({
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
 
-  // Initialize Capacitor Auth
-  useEffect(() => {
-    if (isCapacitor) {
-      import("./auth/capacitorAuth")
-        .then(({ initializeAuth }) => {
-          // Use a placeholder if ENV is missing - user needs to configure this!
-          initializeAuth(
-            process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
-              "822363567705-8p8l6500000000000000000000000000.apps.googleusercontent.com",
-          )
-        })
-        .catch((err) => {
-          console.error("Failed to load Capacitor Auth:", err)
-          toast.error("Failed to load Auth Module: " + err.message)
-        })
-    }
-  }, [isCapacitor])
-
   const handleAppleSignIn = async () => {
-    // Capacitor: Native Apple Sign-In
+    // Capacitor: Use Firebase Authentication
     if (isCapacitor) {
       try {
         const { appleSignIn } = await import("./auth/capacitorAuth")
         const result = await appleSignIn()
 
-        // Send token to backend
+        // Exchange the Firebase ID token for our app token
         const response = await apiFetch(`${API_URL}/auth/apple/token`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            idToken: result.token,
-            email: result.email,
-            name: result.name,
-          }),
+          body: JSON.stringify({ idToken: result.idToken }),
         })
 
         if (!response.ok) {
-          toast.error("Failed to sign in with Apple")
+          toast.error("Failed to sign in")
           return
         }
 
@@ -270,10 +248,11 @@ export default function SignIn({
         setToken(token)
         setPart(undefined)
         toast.success("Signed in successfully!")
-        localStorage.setItem("authChanged", Date.now().toString())
       } catch (error) {
         console.error("Apple auth error:", error)
-        toast.error("Cancelled or failed")
+        toast.error(
+          error instanceof Error ? error.message : "Failed to sign in",
+        )
       }
       return
     }
@@ -338,17 +317,17 @@ export default function SignIn({
   }, [])
 
   const handleGoogleAuth = async () => {
-    // Capacitor: Use @capgo/capacitor-social-login
+    // Capacitor: Use Firebase Authentication
     if (isCapacitor) {
       try {
         const { googleSignIn } = await import("./auth/capacitorAuth")
         const result = await googleSignIn()
 
-        // Exchange the Google token for our app token
+        // Exchange the Firebase ID token for our app token
         const response = await apiFetch(`${API_URL}/auth/google/token`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accessToken: result.token }),
+          body: JSON.stringify({ idToken: result.idToken }),
         })
 
         if (!response.ok) {
