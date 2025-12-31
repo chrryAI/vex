@@ -1,4 +1,14 @@
-import { FirebaseAuthentication } from "@capacitor-firebase/authentication"
+// Dynamic import to avoid bundling in web builds
+// This file is only imported when running on Capacitor (mobile)
+let FirebaseAuthentication: any
+
+async function getFirebaseAuth() {
+  if (!FirebaseAuthentication) {
+    const module = await import("@capacitor-firebase/authentication")
+    FirebaseAuthentication = module.FirebaseAuthentication
+  }
+  return FirebaseAuthentication
+}
 
 export interface AuthSignInResult {
   idToken: string
@@ -16,14 +26,15 @@ export interface AuthSignInResult {
  */
 export async function googleSignIn(): Promise<AuthSignInResult> {
   try {
-    const result = await FirebaseAuthentication.signInWithGoogle()
+    const auth = await getFirebaseAuth()
+    const result = await auth.signInWithGoogle()
 
     if (!result.user) {
       throw new Error("No user data received from Google Sign-In")
     }
 
     // Get the Firebase ID token
-    const idTokenResult = await FirebaseAuthentication.getIdToken()
+    const idTokenResult = await auth.getIdToken()
 
     if (!idTokenResult.token) {
       throw new Error("Failed to get Firebase ID token")
@@ -52,14 +63,15 @@ export async function googleSignIn(): Promise<AuthSignInResult> {
  */
 export async function appleSignIn(): Promise<AuthSignInResult> {
   try {
-    const result = await FirebaseAuthentication.signInWithApple()
+    const auth = await getFirebaseAuth()
+    const result = await auth.signInWithApple()
 
     if (!result.user) {
       throw new Error("No user data received from Apple Sign-In")
     }
 
     // Get the Firebase ID token
-    const idTokenResult = await FirebaseAuthentication.getIdToken()
+    const idTokenResult = await auth.getIdToken()
 
     if (!idTokenResult.token) {
       throw new Error("Failed to get Firebase ID token")
@@ -87,7 +99,8 @@ export async function appleSignIn(): Promise<AuthSignInResult> {
  */
 export async function signOut(): Promise<void> {
   try {
-    await FirebaseAuthentication.signOut()
+    const auth = await getFirebaseAuth()
+    await auth.signOut()
   } catch (error) {
     console.error("Sign-Out error:", error)
     throw new Error(
