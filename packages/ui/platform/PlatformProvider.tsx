@@ -122,6 +122,12 @@ export interface PlatformContextValue {
   viewPortHeight: number
   isStorageReady: boolean
 
+  // IDE state
+  isIDE: boolean
+  toggleIDE: () => void
+  idePanelWidth: number
+  setIdePanelWidth: (width: number) => void
+
   styleRegistry: Map<string, Record<string, any>>
   updateStyleRegistry: (newRegistry: Map<string, Record<string, any>>) => void
   BrowserInstance: typeof chrome | null
@@ -323,6 +329,14 @@ export function PlatformProvider({
     setViewPortHeightInternal(String(height))
   }
 
+  // IDE state - MUST be defined before viewport effects that use it
+  const [isIDE, setIsIDE] = useState(false)
+  const [idePanelWidth, setIdePanelWidth] = useState(400) // Default 400px for chat panel
+
+  const toggleIDE = () => {
+    setIsIDE((prev) => !prev)
+  }
+
   useEffect(() => {
     console.log("🔍 Platform detection:", {
       isWeb: _isWeb(),
@@ -400,6 +414,23 @@ export function PlatformProvider({
       }
     }
   }, [setViewPortWidth, setViewPortHeight])
+
+  // Update viewport width when IDE state changes
+  useEffect(() => {
+    if (_isWeb() || _isBrowserExtension()) {
+      if (typeof window === "undefined") return
+
+      startTransition(() => {
+        // When IDE is active, set viewport to panel width
+        // Otherwise use actual window width
+        if (isIDE) {
+          setViewPortWidth(idePanelWidth)
+        } else {
+          setViewPortWidth(window.innerWidth)
+        }
+      })
+    }
+  }, [isIDE, idePanelWidth, setViewPortWidth])
 
   // Platform-specific value selector
   const select = <T,>(options: {
@@ -483,6 +514,11 @@ export function PlatformProvider({
     isCapacitor: _isCapacitor(),
     isDesktop,
     isStorageReady,
+    // IDE state
+    isIDE,
+    toggleIDE,
+    idePanelWidth,
+    setIdePanelWidth,
     styleRegistry,
     updateStyleRegistry,
     BrowserInstance,

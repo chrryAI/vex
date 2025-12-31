@@ -11,8 +11,10 @@ import { Div } from "./platform"
 export default function Home({
   className,
   slug,
+  style,
 }: {
   className?: string
+  style?: React.CSSProperties
   app?: app
   slug?: string
 }): React.ReactElement {
@@ -22,7 +24,11 @@ export default function Home({
   useAppMetadata()
 
   return (
-    <Div data-url={language === defaultLocale ? "/" : `/${language}`}>
+    <Div
+      className={className}
+      style={style}
+      data-url={language === defaultLocale ? "/" : `/${language}`}
+    >
       <Thread isHome={!threadId && !threadIdRef.current} />
     </Div>
   )
