@@ -139,7 +139,16 @@ export function isCapacitor(): boolean {
   if (typeof window === "undefined") return false
 
   // Check for Capacitor API presence
-  return "Capacitor" in window || "CapacitorCustomPlatform" in window
+  const capacitor = (window as any).Capacitor
+  if (!capacitor) return false
+
+  // Check strict native platform
+  if (typeof capacitor.isNativePlatform === "function") {
+    return capacitor.isNativePlatform()
+  }
+
+  // Fallback: check platform property
+  return capacitor.platform !== "web"
 }
 
 /**
