@@ -106,7 +106,7 @@ const Thread = ({
 
   const showFocus = auth.showFocus && isEmpty
 
-  const { os, isIDE } = usePlatform()
+  const { isIDE } = usePlatform()
 
   // Navigation context
   const {

@@ -45,7 +45,7 @@ function FocusButton({
   isDrawerOpen?: boolean
 }) {
   const { appStyles } = useStyles()
-  const { isExtension, isFirefox, viewPortWidth, isTauri } = usePlatform()
+  const { viewPortWidth, isTauri } = usePlatform()
   const { app, getAppSlug, setShowFocus, isIDE, toggleIDE } = useAuth()
 
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")

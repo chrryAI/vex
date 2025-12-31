@@ -50,7 +50,7 @@ export default function Store({
     hasStoreApps,
   } = useAuth()
 
-  const { currentStore, setAppStatus } = useApp()
+  const { currentStore } = useApp()
 
   const store = rest.store
     ? rest.store
