@@ -161,7 +161,7 @@ export default function Instructions({
   const { captureException } = useError()
   const { weather } = useData()
 
-  const { os, isStandalone, isTauri } = usePlatform()
+  const { os, isStandalone, isTauri, isCapacitor } = usePlatform()
 
   const offset = isStandalone ? -250 : 0
 
@@ -1524,30 +1524,32 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   gap: toRem(5),
                 }}
               >
-                <Button
-                  className="transparent"
-                  style={{
-                    ...utilities.small.style,
-                    ...styles.installAppButton.style,
-                  }}
-                  onClick={() => {
-                    addHapticFeedback()
-                    setShowAddToHomeScreen(true)
-                  }}
-                >
-                  {os === "ios" || os === "macos" ? (
-                    <FaApple
-                      style={{
-                        position: "relative",
-                        bottom: 1,
-                      }}
-                      size={18}
-                    />
-                  ) : (
-                    <FaAndroid size={18} />
-                  )}
-                  {/* {t("Install")} */}
-                </Button>
+                {!isCapacitor && (
+                  <Button
+                    className="transparent"
+                    style={{
+                      ...utilities.small.style,
+                      ...styles.installAppButton.style,
+                    }}
+                    onClick={() => {
+                      addHapticFeedback()
+                      setShowAddToHomeScreen(true)
+                    }}
+                  >
+                    {os === "ios" || os === "macos" ? (
+                      <FaApple
+                        style={{
+                          position: "relative",
+                          bottom: 1,
+                        }}
+                        size={18}
+                      />
+                    ) : (
+                      <FaAndroid size={18} />
+                    )}
+                    {/* {t("Install")} */}
+                  </Button>
+                )}
 
                 {os === "macos" && !isTauri && downloadUrl ? (
                   <Button

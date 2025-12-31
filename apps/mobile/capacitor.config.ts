@@ -9,6 +9,8 @@ const config: CapacitorConfig = {
     url: process.env.CAPACITOR_SERVER_URL || undefined,
     cleartext: true,
   },
+  // Firebase Authentication plugin handles Google/Apple Sign-In configuration
+  // No additional plugin config needed here
 }
 
 export default config

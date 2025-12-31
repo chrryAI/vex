@@ -21,6 +21,8 @@ export default defineConfig({
     "swr",
     "motion",
     "react-big-calendar",
+    "@capacitor-firebase/authentication",
+    "firebase",
   ],
   // Don't bundle CSS/SCSS - let consumers handle it
   loader: {
