@@ -95,10 +95,12 @@ export default forwardRef<
     guest,
     setShowCharacterProfiles,
     FRONTEND_URL,
-    burning,
+    burn,
+    app,
+    chrry,
   } = useAuth()
 
-  const burn = burning
+  const isChrry = app?.id === chrry?.id
 
   // Chat context
   const { threadId, scrollToBottom } = useChat()
@@ -246,7 +248,8 @@ export default forwardRef<
                 <Button
                   disabled={isUpdating}
                   onClick={async () => {
-                    setShowCharacterProfiles(true)
+                    router.push("/?part=highlights")
+                    !isChrry && setShowCharacterProfiles(true)
                   }}
                   className="inverted"
                   style={{ ...utilities.inverted.style }}
@@ -260,7 +263,9 @@ export default forwardRef<
                       size={16}
                     />
                   )}
-                  {t("Enable Character Profiles")}
+                  {t(
+                    isChrry ? "Create Your Agent" : "Enable Character Profiles",
+                  )}
                 </Button>
               ) : null}
             </Div>

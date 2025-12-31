@@ -76,6 +76,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      isIDE: boolean
+      toggleIDE: () => void
       instructions?: instruction[]
       setInstructions: (value?: instruction[]) => void
       burning: boolean
@@ -486,6 +488,11 @@ export function AuthProvider({
     os,
     browser,
     isCapacitor,
+    // IDE state from platform
+    isIDE,
+    toggleIDE,
+    idePanelWidth,
+    setIdePanelWidth,
   } = usePlatform()
 
   const env = isDevelopment ? "development" : "production"
@@ -1047,9 +1054,29 @@ export function AuthProvider({
     if (!user && !guest) return
     if (!isE2E && user?.role === "admin") return
 
+    // Normalize URL for different platforms
+    let normalizedUrl = url
+    if (url) {
+      // Extension: chrome-extension://id/index.html#/threads -> /threads
+      if (isExtension) {
+        const hashIndex = url.indexOf("#")
+        if (hashIndex !== -1) {
+          normalizedUrl = url.substring(hashIndex + 1)
+        }
+      }
+      // Tauri: tauri://localhost/threads -> /threads
+      else if (isTauri && url.startsWith("tauri://")) {
+        normalizedUrl = url.replace("tauri://localhost", "")
+      }
+      // Capacitor: capacitor://localhost/threads -> /threads
+      else if (isCapacitor && url.startsWith("capacitor://")) {
+        normalizedUrl = url.replace("capacitor://localhost", "")
+      }
+    }
+
     trackEvent({
       name,
-      url,
+      url: normalizedUrl,
       domain,
       device,
       os,
@@ -2145,6 +2172,8 @@ export function AuthProvider({
         WS_URL,
         FRONTEND_URL,
         PROD_FRONTEND_URL,
+        isIDE,
+        toggleIDE,
         findAppByPathname,
         siteConfig,
         setBaseAccountApp,

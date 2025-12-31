@@ -139,6 +139,7 @@ export default function App({
     canBurn,
     setBurn,
     setIsPear,
+    isIDE,
     ...auth
   } = useAuth()
 
@@ -606,7 +607,12 @@ export default function App({
       )}
       <H1 style={styles.title.style}>
         {!isManagingApp && !canEditApp && app ? (
-          <Div style={styles.appTitle.style}>
+          <Div
+            style={{
+              ...styles.appTitle.style,
+              ...(isIDE && { fontSize: "18px" }),
+            }}
+          >
             <Logo
               app={app}
               logo={app?.slug === "vex" ? "isVivid" : undefined}

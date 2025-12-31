@@ -702,46 +702,6 @@ importers:
         specifier: ^19.0.0
         version: 19.2.0(react@19.2.0)
 
-  packages/code:
-    dependencies:
-      '@chrryai/chrry':
-        specifier: workspace:*
-        version: link:../ui
-      '@monaco-editor/react':
-        specifier: ^4.6.0
-        version: 4.7.0(monaco-editor@0.55.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@types/react':
-        specifier: ^19.1.12
-        version: 19.2.7
-      '@types/react-dom':
-        specifier: ^19.1.2
-        version: 19.2.3(@types/react@19.2.7)
-      monaco-editor:
-        specifier: ^0.55.1
-        version: 0.55.1
-      react:
-        specifier: ^19.0.0
-        version: 19.2.0
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.2.0(react@19.2.0)
-    devDependencies:
-      '@types/chrome':
-        specifier: ^0.1.1
-        version: 0.1.32
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.19.1
-      '@types/webextension-polyfill':
-        specifier: ^0.12.3
-        version: 0.12.4
-      tsup:
-        specifier: ^8.0.0
-        version: 8.5.0(@swc/core@1.15.3)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.2)
-      typescript:
-        specifier: ~5.9.2
-        version: 5.9.3
-
   packages/db:
     dependencies:
       '@auth/drizzle-adapter':
@@ -3341,16 +3301,6 @@ packages:
 
   '@mermaid-js/parser@0.6.3':
     resolution: {integrity: sha512-lnjOhe7zyHjc+If7yT4zoedx2vo4sHaTmtkl1+or8BRTnCtDmcTpAjpzDSfCZrshM5bCoz0GyidzadJAH1xobA==}
-
-  '@monaco-editor/loader@1.7.0':
-    resolution: {integrity: sha512-gIwR1HrJrrx+vfyOhYmCZ0/JcWqG5kbfG7+d3f/C1LXk2EvzAbHSg3MQ5lO2sMlo9izoAZ04shohfKLVT6crVA==}
-
-  '@monaco-editor/react@4.7.0':
-    resolution: {integrity: sha512-cyzXQCtO47ydzxpQtCGSQGOC8Gk3ZUeBXFAxD+CWXYFo5OqZyZUonFl0DwUlTyAfRHntBfw2p3w4s9R6oe1eCA==}
-    peerDependencies:
-      monaco-editor: '>= 0.25.0 < 1'
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@monogrid/gainmap-js@3.4.0':
     resolution: {integrity: sha512-2Z0FATFHaoYJ8b+Y4y4Hgfn3FRFwuU5zRrk+9dFWp4uGAdHGqVEdP7HP+gLA3X469KXHmfupJaUbKo1b/aDKIg==}
@@ -6740,9 +6690,6 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.2.7:
-    resolution: {integrity: sha512-WhL/YuveyGXJaerVlMYGWhvQswa7myDG17P7Vu65EWC05o8vfeNbvNf4d/BOvH99+ZW+LlQsc1GDKMa1vNK6dw==}
-
   dompurify@3.3.0:
     resolution: {integrity: sha512-r+f6MYR1gGN1eJv0TVQbhA7if/U7P87cdPl3HN5rikqaBSBxLiCb/b9O+2eG0cxz0ghyU+mU1QkbsOwERMYlWQ==}
 
@@ -8784,11 +8731,6 @@ packages:
       react:
         optional: true
 
-  marked@14.0.0:
-    resolution: {integrity: sha512-uIj4+faQ+MgHgwUW1l2PsPglZLOLOT1uErt06dAPtx2kjteLAkbsd/0FiYg/MGS+i7ZKLb7w2WClxHkzOOuryQ==}
-    engines: {node: '>= 18'}
-    hasBin: true
-
   marked@15.0.12:
     resolution: {integrity: sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==}
     engines: {node: '>= 18'}
@@ -9257,9 +9199,6 @@ packages:
 
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
-
-  monaco-editor@0.55.1:
-    resolution: {integrity: sha512-jz4x+TJNFHwHtwuV9vA9rMujcZRb0CEilTEwG2rRSpe/A7Jdkuj8xPKttCgOh+v/lkHy7HsZ64oj+q3xoAFl9A==}
 
   moti@0.30.0:
     resolution: {integrity: sha512-YN78mcefo8kvJaL+TZNyusq6YA2aMFvBPl8WiLPy4eb4wqgOFggJOjP9bUr2YO8PrAt0uusmRG8K4RPL4OhCsA==}
@@ -9805,6 +9744,7 @@ packages:
     resolution: {integrity: sha512-DgtH8GId1/+oj8n9yYEmhTq1QkxOZZzqHJhHEa1bmtV3t3/u2YsE3LSvRUNpVRWVXRcCdn+3Tu6+mD2YXKL7lA==}
     engines: {node: '>=20.18.0'}
     hasBin: true
+    bundledDependencies: []
 
   peberminta@0.9.0:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
@@ -11307,9 +11247,6 @@ packages:
 
   standard-as-callback@2.1.0:
     resolution: {integrity: sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A==}
-
-  state-local@1.0.7:
-    resolution: {integrity: sha512-HTEHMNieakEnoe33shBYcZ7NX83ACUjCu8c40iOGEZsngj9zRnkqS9j1pqQPXwobB0ZcVTk27REb7COQ0UR59w==}
 
   stats-gl@2.4.2:
     resolution: {integrity: sha512-g5O9B0hm9CvnM36+v7SFl39T7hmAlv541tU81ME8YeSb3i1CIP5/QdDeSB3A0la0bKNHpxpwxOVRo2wFTYEosQ==}
@@ -15421,17 +15358,6 @@ snapshots:
     dependencies:
       langium: 3.3.1
 
-  '@monaco-editor/loader@1.7.0':
-    dependencies:
-      state-local: 1.0.7
-
-  '@monaco-editor/react@4.7.0(monaco-editor@0.55.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@monaco-editor/loader': 1.7.0
-      monaco-editor: 0.55.1
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
   '@monogrid/gainmap-js@3.4.0(three@0.182.0)':
     dependencies:
       promise-worker-transferable: 1.0.4
@@ -19496,10 +19422,6 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.2.7:
-    optionalDependencies:
-      '@types/trusted-types': 2.0.7
-
   dompurify@3.3.0:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
@@ -21937,8 +21859,6 @@ snapshots:
     optionalDependencies:
       react: 19.2.0
 
-  marked@14.0.0: {}
-
   marked@15.0.12: {}
 
   marked@16.4.2: {}
@@ -22912,11 +22832,6 @@ snapshots:
       moment: 2.30.1
 
   moment@2.30.1: {}
-
-  monaco-editor@0.55.1:
-    dependencies:
-      dompurify: 3.2.7
-      marked: 14.0.0
 
   moti@0.30.0(react-dom@19.2.0(react@19.2.0))(react-native-reanimated@3.16.1(@babel/core@7.28.5)(react-native@0.78.3(@babel/core@7.28.5)(@babel/preset-env@7.28.5(@babel/core@7.28.5))(@react-native-community/cli@20.0.2(typescript@5.8.2))(@types/react@19.1.12)(react@19.2.0))(react@19.2.0))(react@19.2.0):
     dependencies:
@@ -25356,8 +25271,6 @@ snapshots:
 
   standard-as-callback@2.1.0: {}
 
-  state-local@1.0.7: {}
-
   stats-gl@2.4.2(@types/three@0.182.0)(three@0.182.0):
     dependencies:
       '@types/three': 0.182.0
@@ -25844,35 +25757,6 @@ snapshots:
       '@swc/core': 1.15.3
       postcss: 8.5.6
       typescript: 5.8.3
-    transitivePeerDependencies:
-      - jiti
-      - supports-color
-      - tsx
-      - yaml
-
-  tsup@8.5.0(@swc/core@1.15.3)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.2):
-    dependencies:
-      bundle-require: 5.1.0(esbuild@0.25.12)
-      cac: 6.7.14
-      chokidar: 4.0.3
-      consola: 3.4.2
-      debug: 4.4.3
-      esbuild: 0.25.12
-      fix-dts-default-cjs-exports: 1.0.1
-      joycon: 3.1.1
-      picocolors: 1.1.1
-      postcss-load-config: 6.0.1(postcss@8.5.6)(tsx@4.20.6)(yaml@2.8.2)
-      resolve-from: 5.0.0
-      rollup: 4.52.5
-      source-map: 0.8.0-beta.0
-      sucrase: 3.35.1
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.15
-      tree-kill: 1.2.2
-    optionalDependencies:
-      '@swc/core': 1.15.3
-      postcss: 8.5.6
-      typescript: 5.9.3
     transitivePeerDependencies:
       - jiti
       - supports-color

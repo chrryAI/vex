@@ -33,6 +33,7 @@ const Users = lazy(() => import("./Users"))
 const Affiliate = lazy(() => import("./affiliate"))
 const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
 const Programme = lazy(() => import("./z/Programme"))
+const IDE = lazy(() => import("./IDE"))
 
 // Route map with conditional lazy loading
 const ROUTES: Record<string, ComponentType<any>> = {
@@ -74,8 +75,15 @@ export const Hey = memo(
       }
     }, [pathname, isExtension])
 
-    const { app, isSplash, setIsSplash, storeApps, threadId, isProgramme } =
-      useAuth()
+    const {
+      app,
+      isSplash,
+      setIsSplash,
+      storeApps,
+      threadId,
+      isProgramme,
+      isIDE,
+    } = useAuth()
 
     const { currentStore } = useApp()
 
@@ -207,7 +215,10 @@ export const Hey = memo(
               <Suspense>
                 <Programme />
                 <Div style={{ display: isProgramme ? "none" : "block" }}>
-                  {isClientRoute ? (
+                  {isIDE ? (
+                    // IDE mode - show code editor
+                    <IDE />
+                  ) : isClientRoute ? (
                     // Client-side routes: SWAP content
                     // Check thread detail FIRST before RouteComponent
                     threadId ? (
