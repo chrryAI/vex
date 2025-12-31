@@ -4,7 +4,7 @@ import clsx from "clsx"
 import Menu from "./Menu"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
-import { CircleEllipsis } from "./icons"
+import { CircleEllipsis, CodeXml } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { useEffect } from "react"
 import Img from "./Image"
@@ -45,10 +45,12 @@ function FocusButton({
   isDrawerOpen?: boolean
 }) {
   const { appStyles } = useStyles()
-  const { isExtension, isFirefox, viewPortWidth } = usePlatform()
-  const { app, getAppSlug, setShowFocus } = useAuth()
+  const { isExtension, isFirefox, viewPortWidth, isTauri } = usePlatform()
+  const { app, getAppSlug, setShowFocus, isIDE, toggleIDE } = useAuth()
 
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
+
+  const codeEditor = isTauri && app?.store?.app?.slug === "sushi"
 
   const hasHydrated = useHasHydrated()
   const { isMobileDevice } = useTheme()
@@ -77,6 +79,46 @@ function FocusButton({
 
   if (!isEmpty) {
     return null
+  }
+
+  if (codeEditor && !isIDE) {
+    return (
+      <>
+        <Button
+          className="button transparent xSmall"
+          onClick={() => {
+            toggleIDE()
+          }}
+          style={{
+            ...utilities.button.style,
+            ...utilities.transparent.style,
+            ...utilities.xSmall.style,
+            ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
+          }}
+        >
+          <CodeXml size={20} /> {"Code"}
+        </Button>
+      </>
+    )
+  }
+
+  if (!focus || viewPortWidth < 375) {
+    return (
+      <>
+        <A
+          href={`/blossom`}
+          className="button transparent"
+          style={{
+            ...utilities.button.style,
+            ...utilities.transparent.style,
+            ...utilities.small.style,
+            ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
+          }}
+        >
+          <Img logo="blossom" size={22} /> {"Blossom"}
+        </A>
+      </>
+    )
   }
 
   if (!focus || viewPortWidth < 375) {
@@ -168,7 +210,7 @@ export default function Skeleton({
   // Data context
   const { FRONTEND_URL } = useData()
 
-  const { threadIdRef, ...auth } = useAuth()
+  const { threadIdRef, isIDE, ...auth } = useAuth()
 
   const threadId = threadIdRef.current || auth.threadId
 
@@ -269,82 +311,90 @@ export default function Skeleton({
             }}
             // className={clsx(hasHydrated && device && styles[device])}
           >
-            <Div style={{ ...skeletonStyles.hamburgerMenu.style }}>
-              <Div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 5,
-                  paddingTop: !isDrawerOpen && isTauri ? "1.4rem" : "0",
-                }}
-              >
-                {!isDrawerOpen && (
-                  <Button
-                    className="link"
-                    style={{
-                      ...skeletonStyles.hamburgerButton.style,
-                      ...utilities.link,
-                    }}
-                    onClick={toggleMenu}
-                  >
-                    {hasNotification && (
-                      <Span style={{ ...skeletonStyles.notification.style }} />
-                    )}
-                    <CircleEllipsis
-                      strokeWidth={1.5}
-                      color="var(--accent-1)"
-                      size={24}
-                    />
-                  </Button>
-                )}
-                {!isDrawerOpen ? (
+            {isIDE ? (
+              <></>
+            ) : (
+              <>
+                <Div style={{ ...skeletonStyles.hamburgerMenu.style }}>
                   <Div
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 5,
+                      paddingTop: !isDrawerOpen && isTauri ? "1.4rem" : "0",
                     }}
                   >
-                    <A
-                      className="link"
-                      clientOnly
-                      href={`/`}
-                      style={{
-                        ...utilities.link.style,
-                        ...skeletonStyles.hamburgerButton.style,
-                        marginRight: 15,
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsNewChat(true)
-                      }}
-                    >
-                      <Img key={app?.id || "vex"} app={app} size={28} />
-                      <H1
-                        key={`title-${app?.id || "vex"}`}
-                        style={{ ...skeletonStyles.brand.style }}
+                    {!isDrawerOpen && (
+                      <Button
+                        className="link"
+                        style={{
+                          ...skeletonStyles.hamburgerButton.style,
+                          ...utilities.link,
+                        }}
+                        onClick={toggleMenu}
                       >
-                        {app?.name || "Vex"}
-                      </H1>
-                    </A>
+                        {hasNotification && (
+                          <Span
+                            style={{ ...skeletonStyles.notification.style }}
+                          />
+                        )}
+                        <CircleEllipsis
+                          strokeWidth={1.5}
+                          color="var(--accent-1)"
+                          size={24}
+                        />
+                      </Button>
+                    )}
+                    {!isDrawerOpen ? (
+                      <Div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
+                        <A
+                          className="link"
+                          clientOnly
+                          href={`/`}
+                          style={{
+                            ...utilities.link.style,
+                            ...skeletonStyles.hamburgerButton.style,
+                            marginRight: 15,
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setIsNewChat(true)
+                          }}
+                        >
+                          <Img key={app?.id || "vex"} app={app} size={28} />
+                          <H1
+                            key={`title-${app?.id || "vex"}`}
+                            style={{ ...skeletonStyles.brand.style }}
+                          >
+                            {app?.name || "Vex"}
+                          </H1>
+                        </A>
+                      </Div>
+                    ) : null}
+
+                    <FocusButton
+                      isDrawerOpen={isDrawerOpen}
+                      time={time}
+                      isCountingDown={isCountingDown}
+                    />
                   </Div>
-                ) : null}
+                </Div>
+                <Div style={{ ...skeletonStyles.right.style }}>
+                  {<CharacterProfiles />}
+                  {<Subscribe />}
 
-                <FocusButton
-                  isDrawerOpen={isDrawerOpen}
-                  time={time}
-                  isCountingDown={isCountingDown}
-                />
-              </Div>
-            </Div>
-            <Div style={{ ...skeletonStyles.right.style }}>
-              <CharacterProfiles />
-              <Subscribe />
+                  <SignIn showSignIn={false} />
 
-              <SignIn showSignIn={false} />
-
-              <LanguageSwitcher />
-            </Div>
+                  <LanguageSwitcher />
+                </Div>
+              </>
+            )}
           </Div>
           <Div style={{ ...skeletonStyles.contentContainer.style }}>
             <>{children}</>
