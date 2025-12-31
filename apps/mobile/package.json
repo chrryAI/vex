@@ -5,16 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:ios": "CAPACITOR_SERVER_URL=http://localhost:5175 pnpm exec cap run ios",
+    "dev:ios": "CAPACITOR_SERVER_URL=http://localhost:5175 pnpm exec cap run ios && ./scripts/post-sync.sh",
     "build": "vite build",
     "preview": "vite preview",
-    "cap:sync": "cap sync",
+    "cap:sync": "cap sync && ./scripts/post-sync.sh",
     "cap:open:ios": "cap open ios",
     "cap:open:android": "cap open android",
-    "ios": "cap run ios",
+    "ios": "cap run ios && ./scripts/post-sync.sh",
     "android": "cap run android"
   },
   "dependencies": {
+    "@capacitor-firebase/authentication": "^8.0.1",
     "@capacitor/android": "^7.0.0",
     "@capacitor/core": "^7.0.0",
     "@capacitor/ios": "^7.0.0",

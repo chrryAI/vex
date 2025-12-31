@@ -1,0 +1,6 @@
+[allowlist]
+    description = "Whitelist Podfile.lock checksums"
+    paths = [
+        '''apps/mobile/ios/App/Podfile\.lock''',
+        '''(.*)?Podfile\.lock$'''
+    ]
