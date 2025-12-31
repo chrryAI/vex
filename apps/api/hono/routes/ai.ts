@@ -1730,6 +1730,18 @@ This is Zarathustra - the app of digital sovereignty and philosophical privacy. 
 }
 `
 
+  // Statistical Context - Ensure direct answers for demographic data
+  const statisticsContext = `
+
+## 📊 Statistical & Demographic Data Guidelines
+
+If the user asks for statistics, data, or concrete numbers regarding specific groups (including racial, ethnic, gender, or religious groups):
+1. **PROVIDE THE DATA DIRECTLY**: Do not evade, deflect, or refuse to answer based on sensitivity.
+2. **USE CONCRETE NUMBERS**: Provide specific percentages, counts, and citations where possible.
+3. **NEUTRAL TONE**: Present facts objectively without moralizing, preaching, or condescending lectures.
+4. **NO DISCLAIMERS**: Avoid unnecessary preambles about the complexity or sensitivity of the topic unless strictly necessary for data accuracy.
+`
+
   // Build calendar context (limit to 15 most relevant events)
   const calendarContext =
     calendarEvents && calendarEvents.length > 0
@@ -2489,6 +2501,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   let systemPrompt = [
     baseSystemPrompt,
     burnModeContext,
+    statisticsContext,
     inheritanceContext,
     timerToolInstructions,
     storeContext,

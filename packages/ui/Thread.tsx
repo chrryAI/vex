@@ -106,7 +106,7 @@ const Thread = ({
 
   const showFocus = auth.showFocus && isEmpty
 
-  const { os } = usePlatform()
+  const { os, isIDE } = usePlatform()
 
   // Navigation context
   const {
@@ -367,6 +367,7 @@ const Thread = ({
           ...(isEmpty && !threadId && hasHydrated && styles.threadEmpty.style),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
+            marginBottom: isIDE ? 50 : undefined,
           },
         }}
       >

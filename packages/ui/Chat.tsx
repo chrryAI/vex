@@ -227,6 +227,7 @@ export default function Chat({
     isProgramme,
     burn,
     isPear,
+    isIDE,
     ...auth
   } = useAuth()
 
@@ -427,7 +428,8 @@ export default function Chat({
   ])
 
   const isChatFloating =
-    isChatFloatingInternal && (!!threadIdRef.current || shouldUseCompactMode)
+    isIDE ||
+    (isChatFloatingInternal && (!!threadIdRef.current || shouldUseCompactMode))
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -3269,6 +3271,18 @@ export default function Chat({
           ...(isDrawerOpen && !isSmallDevice ? styles.drawerOpen.style : {}),
           // ...(isMobileDevice ? styles.mobile.style : {}),
           ...(isStandalone && os === "ios" ? { marginBottom: 17.5 } : {}),
+          ...(isIDE
+            ? {
+                position: "fixed",
+                zIndex: 1000,
+                // bottom: 0,
+                // right: 0,
+                transform: "none",
+                maxWidth: viewPortWidth,
+                left: "none",
+                right: 0,
+              }
+            : {}),
         }}
       >
         {isSpeechActive && (
@@ -3505,7 +3519,7 @@ export default function Chat({
                     {Top}
                   </Div>
                 )}
-                {isChatFloating && (
+                {hasBottomOffset && (
                   <Button
                     className="link"
                     style={{
@@ -4402,7 +4416,7 @@ export default function Chat({
                   </Div>
                 </Div>
               </Div>
-              {!isChatFloating && (
+              {(!isChatFloating || isIDE) && (
                 <Div
                   style={{
                     ...styles.creditInfo.style,

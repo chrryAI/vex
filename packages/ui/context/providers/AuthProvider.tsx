@@ -76,6 +76,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      isIDE: boolean
+      toggleIDE: () => void
       instructions?: instruction[]
       setInstructions: (value?: instruction[]) => void
       burning: boolean
@@ -486,6 +488,11 @@ export function AuthProvider({
     os,
     browser,
     isCapacitor,
+    // IDE state from platform
+    isIDE,
+    toggleIDE,
+    idePanelWidth,
+    setIdePanelWidth,
   } = usePlatform()
 
   const env = isDevelopment ? "development" : "production"
@@ -2165,6 +2172,8 @@ export function AuthProvider({
         WS_URL,
         FRONTEND_URL,
         PROD_FRONTEND_URL,
+        isIDE,
+        toggleIDE,
         findAppByPathname,
         siteConfig,
         setBaseAccountApp,
