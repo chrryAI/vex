@@ -1,3 +1,7 @@
+# False positives - Pod checksums in Podfile.lock
+apps/mobile/ios/App/Podfile.lock:generic-api-key:83
+apps/mobile/ios/App/Podfile.lock:generic-api-key:85
+apps/mobile/ios/App/Podfile.lock:generic-api-key:86
 apps/mobile/ios/App/Podfile.lock:generic-api-key:95
 apps/mobile/ios/App/Podfile.lock:generic-api-key:97
 apps/mobile/ios/App/Podfile.lock:generic-api-key:98
