@@ -60,6 +60,10 @@ android/gradle/
 android/.gradle/
 android/local.properties
 android/app/google-services.json
+
+# Firebase iOS configuration (contains API keys)
+**/GoogleService-Info.plist
+GoogleService-Info.plist
 android/app/src/debug/
 android/app/src/release/
 android/*.keystore
