@@ -1320,7 +1320,7 @@ export default function Agent({
                   {/* OpenAI Key */}
                   <Div style={{ ...utilities.column.style }}>
                     <Label>
-                      <OpenAI /> OpenAI (ChatGPT)ss
+                      <OpenAI /> OpenAI (ChatGPT)
                     </Label>
                     <Controller
                       name="apiKeys.openai"
