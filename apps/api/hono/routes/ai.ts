@@ -9,6 +9,7 @@ import {
   checkPearQuota,
   incrementPearQuota,
   updateUser,
+  getAnalyticsSite,
   updateGuest,
 } from "@repo/db"
 
@@ -44,6 +45,8 @@ import {
   getCharacterTags,
   getCharacterProfiles,
 } from "@repo/db"
+
+import { eq } from "drizzle-orm"
 
 import { perplexity } from "@ai-sdk/perplexity"
 
@@ -457,6 +460,160 @@ async function getNewsContext(slug?: string | null): Promise<string> {
     return `\n\n## Recent News Context (Last 7 Days):\nToday's date: ${today}\n\n${newsContext}\n\nIMPORTANT: These are RECENT news articles (published within the last 7 days). When referencing them, use present tense or recent past tense (e.g., "According to recent reports..." or "Today, CNN reports..."). Always cite the source and check the published date.`
   } catch (error) {
     console.error("Error fetching news context:", error)
+    return ""
+  }
+}
+
+async function getAnalyticsContext(): Promise<string> {
+  console.log("🍇 getAnalyticsContext called for Grape!")
+
+  try {
+    // Read from DB (synced by cron)
+    const site = await getAnalyticsSite({ domain: "chrry.ai" })
+    console.log("🍇 Analytics site from DB:", site)
+
+    if (!site?.stats) {
+      console.log("🍇 No analytics stats found in DB")
+      return "" // No data yet, cron hasn't run
+    }
+
+    const stats = site.stats
+
+    console.log("🍇 Analytics stats:", stats)
+
+    // Build comprehensive analytics context
+    let context = `\n\n## 📊 Platform Analytics (Last 7 Days):
+
+### Overview
+- **Visitors**: ${stats.visitors.toLocaleString()}
+- **Pageviews**: ${stats.pageviews.toLocaleString()}
+- **Visits**: ${stats.visits.toLocaleString()}
+- **Views per Visit**: ${stats.views_per_visit.toFixed(1)}
+- **Bounce Rate**: ${Math.round(stats.bounce_rate)}%
+- **Avg Duration**: ${Math.round(stats.visit_duration)}s
+- **Last Updated**: ${new Date(stats.lastSynced).toLocaleString()}
+`
+
+    // Add top pages if available
+    if (stats.topPages && stats.topPages.length > 0) {
+      context += `\n### 📄 Top Pages (by visitors):\n`
+      stats.topPages.slice(0, 5).forEach((page, i) => {
+        context += `${i + 1}. ${page.page} - ${page.visitors.toLocaleString()} visitors (${page.pageviews.toLocaleString()} views, ${Math.round(page.bounce_rate)}% bounce)\n`
+      })
+    }
+
+    // Add traffic sources
+    if (stats.sources && stats.sources.length > 0) {
+      context += `\n### 🌐 Traffic Sources:\n`
+      stats.sources.slice(0, 5).forEach((source, i) => {
+        context += `${i + 1}. ${source.source} - ${source.visitors.toLocaleString()} visitors (${Math.round(source.bounce_rate)}% bounce)\n`
+      })
+    }
+
+    // Add geographic data
+    if (stats.countries && stats.countries.length > 0) {
+      context += `\n### 🌍 Top Countries:\n`
+      stats.countries.slice(0, 5).forEach((country, i) => {
+        context += `${i + 1}. ${country.country} - ${country.visitors.toLocaleString()} visitors\n`
+      })
+    }
+
+    // Add device breakdown
+    if (stats.devices && stats.devices.length > 0) {
+      context += `\n### 📱 Devices:\n`
+      stats.devices.forEach((device) => {
+        context += `- ${device.device}: ${device.visitors.toLocaleString()} visitors (${device.percentage}%)\n`
+      })
+    }
+
+    // Add browser breakdown
+    if (stats.browsers && stats.browsers.length > 0) {
+      context += `\n### 🌐 Browsers:\n`
+      stats.browsers.slice(0, 5).forEach((browser) => {
+        context += `- ${browser.browser}: ${browser.visitors.toLocaleString()} visitors (${browser.percentage}%)\n`
+      })
+    }
+
+    // Add goal conversions (most important!)
+    if (stats.goals && stats.goals.length > 0) {
+      context += `\n### 🎯 Goal Conversions (Top Events):\n`
+      stats.goals.slice(0, 10).forEach((goal, i) => {
+        context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events (${goal.visitors.toLocaleString()} unique visitors)\n`
+      })
+    }
+
+    context += `\n**IMPORTANT**: When the user asks "what did you learn today?" or similar questions:
+1. Analyze if there are significant changes worth remembering
+2. If yes, create a memory with category "fact" and importance 5
+3. Report insights in a conversational way
+4. Focus on trends, user behavior patterns, and actionable insights
+5. Highlight interesting goal conversions or user journeys
+
+You decide what's important enough to remember.`
+
+    return context
+  } catch (error) {
+    console.error("Error fetching analytics context:", error)
+    return ""
+  }
+}
+
+/**
+ * Get DNA Thread context (app owner's foundational knowledge)
+ * Uses mainThreadId to fetch app memories and share with all users
+ */
+async function getAppDNAContext(app: appWithStore): Promise<string> {
+  if (!app?.mainThreadId) return ""
+
+  try {
+    // Get app memories from main thread (owner's first conversation)
+    const memories = await getMemories({
+      threadId: app.mainThreadId,
+      appId: app.id,
+      pageSize: 50,
+    })
+
+    const appMemories = memories.memories
+
+    if (!appMemories.length) return ""
+
+    const userId = app.userId
+
+    const user = userId
+      ? await getUserDb({
+          id: userId,
+        })
+      : null
+
+    const guest = app.guestId
+      ? await getGuestDb({
+          id: app.guestId,
+        })
+      : null
+
+    if (!user && !guest) return ""
+
+    // Get creator attribution
+    let creatorName = "App Creator"
+    if (user?.name) {
+      creatorName = user.name
+    } else if (guest) {
+      // Show partial GUID for guest creators
+      const guestId = guest.id.split("-")[0]
+      creatorName = `Guest ${guestId}`
+    }
+
+    // Build DNA context
+    return `\n\n## 🧬 App DNA (from ${creatorName})
+
+**Foundational Knowledge:**
+${appMemories.map((m) => `- ${m.content}`).join("\n")}
+
+This is the core knowledge about this app, shared by its creator.
+Use this to understand the app's purpose and guide users effectively.
+`
+  } catch (error) {
+    console.error("Error fetching DNA context:", error)
     return ""
   }
 }
@@ -1006,9 +1163,20 @@ ${
 
     if (isFirstThreadAfterAppCreation && currentApp) {
       try {
+        const bookmarks = [
+          ...(thread.bookmarks?.filter(
+            (b) => b.userId !== member?.id && b.guestId !== guest?.id,
+          ) || []),
+          {
+            userId: member?.id,
+            guestId: guest?.id,
+            createdOn: new Date().toISOString(),
+          },
+        ]
         await updateThread({
           ...thread,
           isMainThread: true,
+          bookmarks,
         })
         await updateApp({
           ...currentApp,
@@ -2101,12 +2269,24 @@ ${(() => {
       : ""
 
   // Get news context based on app
-  const newsContext = await getNewsContext(slug)
+  const newsContext = await getNewsContext(app?.slug)
+
+  // Get live analytics context for Grape
+  const analyticsContext =
+    app?.slug === "grape" &&
+    isOwner(app, {
+      userId: member?.id,
+    })
+      ? await getAnalyticsContext()
+      : ""
+
+  // Get DNA Thread context (app owner's foundational knowledge)
+  const dnaContext = app?.mainThreadId ? await getAppDNAContext(app) : ""
 
   // Get brand-specific knowledge base (dynamic RAG or hardcoded fallback)
   const brandKnowledge = await getAppKnowledge(
     app || null,
-    slug,
+    app?.slug || null,
     "", // Query will be used for semantic search if RAG is enabled
   )
 
@@ -2516,6 +2696,8 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     focusContext,
     taskContext,
     newsContext,
+    analyticsContext, // Live analytics for Grape
+    dnaContext, // App owner's foundational knowledge
     // brandKnowledge,
     aiCoachContext,
   ].join("")
