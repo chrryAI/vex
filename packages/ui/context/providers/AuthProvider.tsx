@@ -19,6 +19,7 @@ import {
   useLocalStorage,
   storage,
 } from "../../platform"
+import { isOwner } from "../../utils"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
@@ -76,6 +77,9 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      isRetro: boolean
+      setIsRetro: (value: boolean) => void
+      accountApps: appWithStore[]
       isIDE: boolean
       toggleIDE: () => void
       instructions?: instruction[]
@@ -1375,11 +1379,6 @@ export function AuthProvider({
   const burn = burnInternal === null ? isZarathustra : burnInternal
 
   const burning = !!(burn || burnApp)
-  const apps = storeApps.filter((item) => {
-    return app?.store?.app?.store?.apps?.some((app) => {
-      return app.id === item.id
-    })
-  })
 
   useEffect(() => {
     if (!app) return
@@ -1432,6 +1431,19 @@ export function AuthProvider({
     isProgrammeInternal === null && setIsProgrammeInternal(isBaseAppZarathustra)
   }, [isBaseAppZarathustra, baseApp])
 
+  const apps = storeApps.filter((item) => {
+    return app?.store?.app?.store?.apps?.some((app) => {
+      return app.id === item.id
+    })
+  })
+
+  const [isRetro, setIsRetro] = useLocalStorage<boolean>("retro", false)
+  const accountApps = apps?.filter((app) =>
+    isOwner(app, {
+      userId: user?.id,
+      guestId: guest?.id,
+    }),
+  )
   const setIsProgramme = (value: boolean) => {
     setIsProgrammeInternal(value)
     removeParams("programme")
@@ -2071,6 +2083,7 @@ export function AuthProvider({
         guestBaseApp,
         hasStoreApps,
         storeAppsSwr,
+        accountApps,
         threadIdRef,
         vex,
         fetchApps: async () => {
@@ -2109,6 +2122,8 @@ export function AuthProvider({
         setFingerprint,
         deviceId,
         isGuestTest,
+        setIsRetro,
+        isRetro,
         isMemberTest,
         user,
         setUser,

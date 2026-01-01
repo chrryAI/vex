@@ -228,6 +228,9 @@ export default function Chat({
     burn,
     isPear,
     isIDE,
+    accountApps,
+    isRetro,
+    setIsRetro,
     ...auth
   } = useAuth()
 
@@ -497,6 +500,7 @@ export default function Chat({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [retroAppIndex, setRetroAppIndex] = useState(0)
   const controller = new AbortController()
 
   const [files, setFilesInternal] = useState<File[]>([])
@@ -2211,8 +2215,8 @@ export default function Chat({
 
   // Memoize deps to prevent reconnection loop
   const webSocketDeps = useMemo(
-    () => [isSpeechActive, app?.id, deviceId],
-    [isSpeechActive, app?.id, deviceId],
+    () => [isSpeechActive, app?.id, deviceId, accountApps],
+    [isSpeechActive, app?.id, deviceId, accountApps],
   )
 
   useWebSocket<{
@@ -2342,6 +2346,70 @@ export default function Chat({
             })
           }
         }
+
+        // if (
+        //   isRetro &&
+        //   accountApps?.length &&
+        //   retroAppIndex < accountApps.length
+        // ) {
+        //   // Get next app to process
+        //   const retroApp = accountApps[retroAppIndex]
+
+        //   onMessage?.({
+        //     content: "",
+        //     isUser: false,
+        //     message: {
+        //       ...data.message,
+        //       message: {
+        //         ...data.message?.message,
+        //         id: data.message.message.clientId,
+        //       },
+        //       aiAgent: aiAgents?.find((agent) => agent.id === retroApp.id),
+        //     },
+        //     isStreaming: true,
+        //     isImageGenerationEnabled: data?.isImageGenerationEnabled,
+        //     isWebSearchEnabled: data?.isWebSearchEnabled,
+        //   })
+        //   setIsStreaming(true)
+
+        //   const requestHeaders = {
+        //     "Content-Type": "application/json",
+        //     Authorization: `Bearer ${token}`,
+        //   }
+        //   const requestBody = JSON.stringify({
+        //     messageId: data.message.message.id,
+        //     agentId: retroApp.id,
+        //     retroAppId: accountApps[retroAppIndex + 1]?.id, // Pass next app ID
+        //     language,
+        //     isSpeechActive,
+        //     deviceId,
+        //     appId: retroApp.id,
+        //     isRetro: true,
+        //   })
+
+        //   try {
+        //     const retroResponse = await apiFetch(`${API_URL}/ai`, {
+        //       method: "POST",
+        //       headers: requestHeaders,
+        //       body: requestBody,
+        //       signal: controller.signal,
+        //     })
+
+        //     if (!retroResponse.ok) {
+        //       toast.error(`Error getting insights from ${retroApp.name}`)
+        //       // Move to next app even on error
+        //       setRetroAppIndex(retroAppIndex + 1)
+        //     }
+        //   } catch (error) {
+        //     console.error(`Retro error for ${retroApp.name}:`, error)
+        //     // Move to next app even on error
+        //     setRetroAppIndex(retroAppIndex + 1)
+        //   }
+        // } else if (isRetro && retroAppIndex >= accountApps.length) {
+        //   // All apps processed, turn off retro mode
+        //   setIsRetro(false)
+        //   setRetroAppIndex(0)
+        // }
 
         if (
           data.message.message.debateAgentId &&
@@ -3527,7 +3595,7 @@ export default function Chat({
                     {Top}
                   </Div>
                 )}
-                {hasBottomOffset && (
+                {hasBottomOffset ? (
                   <Button
                     className="link"
                     style={{
@@ -3539,10 +3607,34 @@ export default function Chat({
                   >
                     <CircleArrowDown size={25} />
                   </Button>
+                ) : (
+                  empty &&
+                  isOwner(app, {
+                    userId: user?.id,
+                    guestId: guest?.id,
+                  }) && (
+                    <Button
+                      className="link"
+                      style={{
+                        position: "relative",
+
+                        top: 30,
+                        zIndex: 50,
+
+                        ...utilities.link.style,
+                      }}
+                      onClick={() => {
+                        setIsRetro(!isRetro)
+                        setInput("Hey guys, what you learned today?")
+                      }}
+                    >
+                      <Img icon={"spaceInvader"} />
+                      Check-in
+                    </Button>
+                  )
                 )}
               </Div>
             )}
-
             <>
               {collaborationStep === 2 ? (
                 <Div style={styles.collaborationTooltip.style}>
