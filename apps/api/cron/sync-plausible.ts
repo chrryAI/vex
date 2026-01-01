@@ -89,7 +89,9 @@ export async function syncPlausibleAnalytics() {
       })
 
       if (!res.ok) return null
-      return res.json()
+      const result = await res.json()
+      console.log(`🚀 ~ fetchBreakdown ~ result:`, result)
+      return result
     }
 
     // 1. Fetch aggregate stats
@@ -179,7 +181,7 @@ export async function syncPlausibleAnalytics() {
     }
 
     // Upsert into DB
-    await db
+    const result = await db
       .insert(schema.analyticsSites)
       .values({
         domain: PLAUSIBLE_SITE_ID,
@@ -196,6 +198,9 @@ export async function syncPlausibleAnalytics() {
           updatedOn: new Date(),
         },
       })
+      .returning()
+
+    console.log(`🚀 ~ syncPlausibleAnalytics ~ result:`, result)
 
     console.log("✅ Comprehensive analytics synced to DB:")
     console.log(`   Visitors: ${stats.visitors.toLocaleString()}`)

@@ -6796,16 +6796,14 @@ export const getAnalyticsSite = async ({
   id?: string
   domain?: string
 }) => {
-  const sites = await db
-    .select()
-    .from(analyticsSites)
-    .where(
-      and(
-        id ? eq(analyticsSites.id, id) : undefined,
-        domain ? eq(analyticsSites.domain, domain) : undefined,
-      ),
-    )
-    .limit(1)
+  let query = db.select().from(analyticsSites)
 
+  if (id) {
+    query = query.where(eq(analyticsSites.id, id)) as any
+  } else if (domain) {
+    query = query.where(eq(analyticsSites.domain, domain)) as any
+  }
+
+  const sites = await query.limit(1)
   return sites[0]
 }

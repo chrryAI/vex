@@ -266,68 +266,68 @@ jobs:
           retention-days: 30
 
   # Auto-merge to dev branch after all tests pass
-  # auto-merge-to-dev:
-  #   runs-on: ubuntu-latest
-  #   needs: [e2e-guest-live]
-  #   if: success()
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #         token: ${{ secrets.GITHUB_TOKEN }}
+  auto-merge-to-dev:
+    runs-on: ubuntu-latest
+    needs: [e2e-guest-live]
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Configure Git
-  #       run: |
-  #         git config user.name "github-actions[bot]"
-  #         git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-  #     - name: Merge to dev
-  #       run: |
-  #         echo "🔀 Auto-merging PR #${{ github.event.pull_request.number }} to dev branch..."
+      - name: Merge to dev
+        run: |
+          echo "🔀 Auto-merging PR #${{ github.event.pull_request.number }} to dev branch..."
 
-  #         # Fetch latest dev
-  #         git fetch origin dev
+          # Fetch latest dev
+          git fetch origin dev
 
-  #         # Checkout dev
-  #         git checkout dev
+          # Checkout dev
+          git checkout dev
 
-  #         # Merge the PR branch
-  #         git merge --no-ff origin/${{ github.head_ref }} -m "Auto-merge PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          # Merge the PR branch
+          git merge --no-ff origin/${{ github.head_ref }} -m "Auto-merge PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
 
-  #         # Push to dev
-  #         git push origin dev
+          # Push to dev
+          git push origin dev
 
-  #         echo "✅ Successfully merged to dev!"
-  # # Auto-merge to web branch after all tests pass
-  # auto-merge-to-web:
-  #   runs-on: ubuntu-latest
-  #   needs: [e2e-guest-live]
-  #   if: success()
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #         token: ${{ secrets.GITHUB_TOKEN }}
+          echo "✅ Successfully merged to dev!"
+  # Auto-merge to web branch after all tests pass
+  auto-merge-to-web:
+    runs-on: ubuntu-latest
+    needs: [e2e-guest-live]
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Configure Git
-  #       run: |
-  #         git config user.name "github-actions[bot]"
-  #         git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-  #     - name: Merge to web
-  #       run: |
-  #         echo "🔀 Auto-merging PR #${{ github.event.pull_request.number }} to web branch..."
+      - name: Merge to web
+        run: |
+          echo "🔀 Auto-merging PR #${{ github.event.pull_request.number }} to web branch..."
 
-  #         # Fetch latest web
-  #         git fetch origin web
+          # Fetch latest web
+          git fetch origin web
 
-  #         # Checkout web
-  #         git checkout web
+          # Checkout web
+          git checkout web
 
-  #         # Merge the PR branch
-  #         git merge --no-ff origin/${{ github.head_ref }} -m "Auto-merge PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          # Merge the PR branch
+          git merge --no-ff origin/${{ github.head_ref }} -m "Auto-merge PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
 
-  #         # Push to web
-  #         git push origin web
+          # Push to web
+          git push origin web
 
-  #         echo "✅ Successfully merged to web!"
+          echo "✅ Successfully merged to web!"
