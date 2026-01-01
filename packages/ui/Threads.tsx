@@ -375,9 +375,12 @@ const Threads = ({
                                 return
                               }
 
+                              e.preventDefault()
+
                               const threadApp = storeApps.find(
                                 (app) => app.id === thread.appId,
                               )
+
                               if (
                                 thread.appId &&
                                 (!threadApp || !hasStoreApps(threadApp))
@@ -387,7 +390,6 @@ const Threads = ({
                                 return
                               }
 
-                              e.preventDefault()
                               router.push(url)
                             }}
                             href={url}
