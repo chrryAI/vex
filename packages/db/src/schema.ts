@@ -2872,7 +2872,7 @@ export const analyticsSites = pgTable(
     }),
 
     // Site details
-    domain: text("domain").notNull(), // e.g., "chrry.dev"
+    domain: text("domain").notNull().unique(), // e.g., "chrry.dev"
     name: text("name").notNull(), // Display name
     timezone: text("timezone").notNull().default("UTC"),
 
@@ -2883,6 +2883,63 @@ export const analyticsSites = pgTable(
     // Settings
     excludeIps: jsonb("excludeIps").$type<string[]>().default([]),
     excludePaths: jsonb("excludePaths").$type<string[]>().default([]),
+
+    // Aggregated stats from Plausible (synced by cron)
+    stats: jsonb("stats").$type<{
+      // Aggregate metrics
+      visitors: number
+      pageviews: number
+      bounce_rate: number
+      visit_duration: number
+      visits: number
+      views_per_visit: number
+
+      // Top pages
+      topPages?: Array<{
+        page: string
+        visitors: number
+        pageviews: number
+        bounce_rate: number
+      }>
+
+      // Traffic sources
+      sources?: Array<{
+        source: string
+        visitors: number
+        bounce_rate: number
+      }>
+
+      // Geographic data
+      countries?: Array<{
+        country: string
+        visitors: number
+      }>
+
+      // Device breakdown
+      devices?: Array<{
+        device: string
+        visitors: number
+        percentage: number
+      }>
+
+      // Browser breakdown
+      browsers?: Array<{
+        browser: string
+        visitors: number
+        percentage: number
+      }>
+
+      // Goal conversions
+      goals?: Array<{
+        goal: string
+        visitors: number
+        events: number
+        conversion_rate: number
+      }>
+
+      period: string // e.g., "7d"
+      lastSynced: string // ISO timestamp
+    }>(),
 
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
       .defaultNow()

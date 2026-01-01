@@ -5562,6 +5562,7 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
     ...grapeApp,
     slug: "grape",
     name: "Grape",
+    userId: admin.id,
     subtitle: "AI Ad Platform",
     storeId: wine.id, // Primary store is Blossom (marketplace/monetization)
     version: "1.0.0",
