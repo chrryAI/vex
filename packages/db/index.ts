@@ -6810,3 +6810,8 @@ export const getAnalyticsSite = async ({
   const sites = await query.limit(1)
   return sites[0]
 }
+
+export const getAnalyticsSites = async () => {
+  const sites = await db.select().from(analyticsSites)
+  return sites
+}

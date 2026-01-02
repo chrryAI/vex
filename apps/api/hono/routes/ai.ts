@@ -10,6 +10,7 @@ import {
   incrementPearQuota,
   updateUser,
   getAnalyticsSite,
+  getAnalyticsSites,
   updateGuest,
 } from "@repo/db"
 
@@ -481,95 +482,91 @@ async function getAnalyticsContext(): Promise<string> {
   console.log("🍇 getAnalyticsContext called for Grape!")
 
   try {
-    // Read from DB (synced by cron)
-    const site = await getAnalyticsSite({ domain: "chrry.ai" })
-    console.log("🍇 Analytics site from DB:", site)
+    // Fetch all analytics sites from DB (synced by cron)
+    const sites = await getAnalyticsSites()
+    console.log(`🍇 Found ${sites.length} analytics sites in DB`)
 
-    if (!site?.stats) {
-      console.log("🍇 No analytics stats found in DB")
+    if (!sites || sites.length === 0) {
+      console.log("🍇 No analytics sites found in DB")
       return "" // No data yet, cron hasn't run
     }
 
-    const stats = site.stats
+    let context = `\n\n## 📊 Platform Analytics (Last 7 Days):\n\n`
 
-    console.log("🍇 Analytics stats:", stats)
+    // Loop through all sites
+    sites.forEach((site, index) => {
+      if (!site.stats) {
+        console.log(`🍇 No stats for ${site.domain}`)
+        return
+      }
 
-    // Build comprehensive analytics context
-    let context = `\n\n## 📊 Platform Analytics (Last 7 Days):
+      const stats = site.stats
 
-### Overview
-- **Visitors**: ${stats.visitors.toLocaleString()}
-- **Pageviews**: ${stats.pageviews.toLocaleString()}
-- **Visits**: ${stats.visits.toLocaleString()}
-- **Views per Visit**: ${stats.views_per_visit.toFixed(1)}
-- **Bounce Rate**: ${Math.round(stats.bounce_rate)}%
-- **Avg Duration**: ${Math.round(stats.visit_duration)}s
-- **Last Updated**: ${new Date(stats.lastSynced).toLocaleString()}
-`
+      // Add site header
+      context += `### ${index + 1}. ${site.domain}\n\n`
 
-    // Add top pages if available
-    if (stats.topPages && stats.topPages.length > 0) {
-      context += `\n### 📄 Top Pages (by visitors):\n`
-      stats.topPages.slice(0, 5).forEach((page, i) => {
-        context += `${i + 1}. ${page.page} - ${page.visitors.toLocaleString()} visitors (${page.pageviews.toLocaleString()} views, ${Math.round(page.bounce_rate)}% bounce)\n`
-      })
-    }
+      // Overview
+      context += `**Overview:**\n`
+      context += `- **Visitors**: ${stats.visitors.toLocaleString()}\n`
+      context += `- **Pageviews**: ${stats.pageviews.toLocaleString()}\n`
+      context += `- **Visits**: ${stats.visits.toLocaleString()}\n`
+      context += `- **Views per Visit**: ${stats.views_per_visit.toFixed(1)}\n`
+      context += `- **Bounce Rate**: ${Math.round(stats.bounce_rate)}%\n`
+      context += `- **Avg Duration**: ${Math.round(stats.visit_duration)}s\n`
+      context += `- **Last Updated**: ${new Date(stats.lastSynced).toLocaleString()}\n\n`
 
-    // Add traffic sources
-    if (stats.sources && stats.sources.length > 0) {
-      context += `\n### 🌐 Traffic Sources:\n`
-      stats.sources.slice(0, 5).forEach((source, i) => {
-        context += `${i + 1}. ${source.source} - ${source.visitors.toLocaleString()} visitors (${Math.round(source.bounce_rate)}% bounce)\n`
-      })
-    }
+      // Top pages (top 3 per site)
+      if (stats.topPages && stats.topPages.length > 0) {
+        context += `**Top Pages:**\n`
+        stats.topPages.slice(0, 3).forEach((page, i) => {
+          context += `${i + 1}. ${page.page} - ${page.visitors.toLocaleString()} visitors\n`
+        })
+        context += `\n`
+      }
 
-    // Add geographic data
-    if (stats.countries && stats.countries.length > 0) {
-      context += `\n### 🌍 Top Countries:\n`
-      stats.countries.slice(0, 5).forEach((country, i) => {
-        context += `${i + 1}. ${country.country} - ${country.visitors.toLocaleString()} visitors\n`
-      })
-    }
+      // Traffic sources (top 3 per site)
+      if (stats.sources && stats.sources.length > 0) {
+        context += `**Traffic Sources:**\n`
+        stats.sources.slice(0, 3).forEach((source, i) => {
+          context += `${i + 1}. ${source.source} - ${source.visitors.toLocaleString()} visitors\n`
+        })
+        context += `\n`
+      }
 
-    // Add device breakdown
-    if (stats.devices && stats.devices.length > 0) {
-      context += `\n### 📱 Devices:\n`
-      stats.devices.forEach((device) => {
-        context += `- ${device.device}: ${device.visitors.toLocaleString()} visitors (${device.percentage}%)\n`
-      })
-    }
+      // Top countries (top 3 per site)
+      if (stats.countries && stats.countries.length > 0) {
+        context += `**Top Countries:**\n`
+        stats.countries.slice(0, 3).forEach((country, i) => {
+          context += `${i + 1}. ${country.country} - ${country.visitors.toLocaleString()} visitors\n`
+        })
+        context += `\n`
+      }
 
-    // Add browser breakdown
-    if (stats.browsers && stats.browsers.length > 0) {
-      context += `\n### 🌐 Browsers:\n`
-      stats.browsers.slice(0, 5).forEach((browser) => {
-        context += `- ${browser.browser}: ${browser.visitors.toLocaleString()} visitors (${browser.percentage}%)\n`
-      })
-    }
+      // Goal conversions (top 5 per site)
+      if (stats.goals && stats.goals.length > 0) {
+        context += `**Top Goals:**\n`
+        stats.goals.slice(0, 5).forEach((goal, i) => {
+          context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events\n`
+        })
+        context += `\n`
+      }
 
-    // Add goal conversions (most important!)
-    if (stats.goals && stats.goals.length > 0) {
-      context += `\n### 🎯 Goal Conversions (Top Events):\n`
-      stats.goals.slice(0, 10).forEach((goal, i) => {
-        context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events (${goal.visitors.toLocaleString()} unique visitors)\n`
-      })
-    } else {
-      console.log("🍇 No goals data in analytics stats")
-    }
+      context += `---\n\n`
+    })
+
+    context += `**IMPORTANT**: When the user asks "what did you learn today?" or similar questions:\n`
+    context += `1. Analyze if there are significant changes worth remembering\n`
+    context += `2. If yes, create a memory with category "fact" and importance 5\n`
+    context += `3. Report insights in a conversational way\n`
+    context += `4. Focus on trends, user behavior patterns, and actionable insights\n`
+    context += `5. Highlight interesting goal conversions or user journeys\n`
+    context += `6. Compare performance across different domains\n\n`
+    context += `You decide what's important enough to remember.`
 
     console.log(
       "🍇 Full analytics context being injected:",
       context.substring(0, 500),
     )
-
-    context += `\n**IMPORTANT**: When the user asks "what did you learn today?" or similar questions:
-1. Analyze if there are significant changes worth remembering
-2. If yes, create a memory with category "fact" and importance 5
-3. Report insights in a conversational way
-4. Focus on trends, user behavior patterns, and actionable insights
-5. Highlight interesting goal conversions or user journeys
-
-You decide what's important enough to remember.`
 
     return context
   } catch (error) {
@@ -1271,36 +1268,6 @@ ${
       : undefined
 
     // Auto-set main thread if owner and not set
-    const hasMainThread = isAppOwner && !!currentApp.mainThreadId
-
-    // Detect if this is the first message after app creation (just saved)
-    const isFirstThreadAfterAppCreation = isAppOwner && !hasMainThread && thread
-
-    if (isFirstThreadAfterAppCreation && currentApp) {
-      try {
-        const bookmarks = [
-          ...(thread.bookmarks?.filter(
-            (b) => b.userId !== member?.id && b.guestId !== guest?.id,
-          ) || []),
-          {
-            userId: member?.id,
-            guestId: guest?.id,
-            createdOn: new Date().toISOString(),
-          },
-        ]
-        await updateThread({
-          ...thread,
-          isMainThread: true,
-          bookmarks,
-        })
-        await updateApp({
-          ...currentApp,
-          mainThreadId: thread.id,
-        })
-      } catch (error) {
-        captureException(error)
-      }
-    }
 
     // Get thread data
     const messagesData = thread
@@ -2413,24 +2380,48 @@ ${(() => {
   const dnaContext = app?.mainThreadId ? await getAppDNAContext(app) : ""
 
   // Get brand-specific knowledge base (dynamic RAG or hardcoded fallback)
-  const brandKnowledge = await getAppKnowledge(
-    app || null,
-    app?.slug || null,
-    "", // Query will be used for semantic search if RAG is enabled
-  )
 
   // Check if this is the first message in the app's main thread (user just started using their new app)
   const hasMainThread = isAppOwner && !!app?.mainThreadId
-  const isFirstAppMessage =
-    app &&
-    isAppOwner &&
-    !hasMainThread &&
-    appKnowledge?.messages.totalCount === 0
+  const isFirstAppMessage = app && isAppOwner && !hasMainThread
 
   // AI Coach Context - Guide users through app creation OR first-time app usage
   let aiCoachContext = ""
 
-  if (isFirstAppMessage) {
+  if (isFirstAppMessage && app && thread) {
+    // Detect if this is the first message after app creation (just saved)
+
+    try {
+      const bookmarks = [
+        ...(thread.bookmarks?.filter(
+          (b) => b.userId !== member?.id && b.guestId !== guest?.id,
+        ) || []),
+        {
+          userId: member?.id,
+          guestId: guest?.id,
+          createdOn: new Date().toISOString(),
+        },
+      ]
+      await updateThread({
+        ...thread,
+        isMainThread: true,
+        bookmarks,
+      })
+      await updateApp({
+        ...app,
+        mainThreadId: thread.id,
+      })
+
+      app.mainThreadId = thread.id
+      thread.isMainThread = true
+      thread.bookmarks = bookmarks
+      // thread.mainThreadId = thread.id
+
+      // app = await getApp({ id: app.id, skipCache: true })
+    } catch (error) {
+      captureException(error)
+    }
+
     aiCoachContext = `
 ## 🎉 First Time Using Your App!
 

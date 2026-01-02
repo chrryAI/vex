@@ -240,7 +240,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.79",
+  version: "26.10.80",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -2295,7 +2295,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 }
 
 export const whiteLabels = [
-  chrryDev,
+  // chrryDev,
   chrryAI,
   focus,
   atlas,

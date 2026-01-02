@@ -3596,53 +3596,58 @@ export default function Chat({
                     {Top}
                   </Div>
                 )}
-                {hasBottomOffset ? (
-                  <Button
-                    className="link"
-                    style={{
-                      ...styles.scrollDownButton.style,
-                      ...utilities.link.style,
-                    }}
-                    onClick={showInputAndScrollToBottom}
-                    title={t("Scroll to bottom")}
-                  >
-                    <CircleArrowDown size={25} />
-                  </Button>
-                ) : empty && !threadIdRef.current ? (
-                  isOwner(app, {
-                    userId: user?.id,
-                    guestId: guest?.id,
-                  }) ? (
+                <Div style={{ display: "flex", gap: 7.5 }}>
+                  {hasBottomOffset ? (
                     <Button
                       className="link"
                       style={{
-                        position: "relative",
-
-                        top: 30,
-                        zIndex: 50,
-
+                        ...styles.scrollDownButton.style,
                         ...utilities.link.style,
                       }}
-                      onClick={() => {
-                        setIsRetro(!isRetro)
-                        setInput("Hey guys, what you learned today?")
-                      }}
+                      onClick={showInputAndScrollToBottom}
+                      title={t("Scroll to bottom")}
                     >
-                      <Img icon={"spaceInvader"} />
-                      {isMobileDevice ? null : "Check-in"}
+                      <CircleArrowDown size={25} />
                     </Button>
-                  ) : (
+                  ) : empty && !threadIdRef.current ? (
+                    isOwner(app, {
+                      userId: user?.id,
+                      guestId: guest?.id,
+                    }) ? (
+                      <Button
+                        className="link"
+                        style={{
+                          position: "relative",
+
+                          top: 30,
+                          zIndex: 50,
+
+                          ...utilities.link.style,
+                        }}
+                        onClick={() => {
+                          setIsRetro(!isRetro)
+                          setInput("Hey guys, what you learned today?")
+                        }}
+                      >
+                        <Img size={22} icon={"spaceInvader"} />
+                        {isSmallDevice ? null : "Check-in"}
+                      </Button>
+                    ) : null
+                  ) : null}
+
+                  {empty && !threadIdRef.current && !isPear && (
                     <>
                       <Grapes
                         style={{
                           position: "relative",
                           top: 30,
                           zIndex: 50,
+                          ...utilities.xSmall.style,
                         }}
                       />
                     </>
-                  )
-                ) : null}
+                  )}
+                </Div>
               </Div>
             )}
             <>

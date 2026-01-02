@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.9.13",
+  "version": "1.9.23",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -28,6 +28,7 @@
     "c": "bash scripts/commit-with-ai.sh",
     "p": "npm run lint && git push",
     "test-ai": "bash scripts/test-commit-message.sh",
+    "sp": "cd apps/api && npx tsx cron/sync-plausible.ts",
     "s": "node scripts/scss-to-universal.js",
     "s:all": "node scripts/scss-to-universal.js --all",
     "s:changed": "node scripts/convert-changed-scss.js",
