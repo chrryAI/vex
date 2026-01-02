@@ -951,8 +951,8 @@ export default function App({
                 </A>
               )
             )}
-            {!isManagingApp && grape ? (
-              <Grappes />
+            {!isManagingApp && grape && app?.store?.slug !== "wine" ? (
+              <Grappes goToGrape />
             ) : (
               !isManagingApp && (
                 <A

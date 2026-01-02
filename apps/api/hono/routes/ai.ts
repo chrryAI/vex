@@ -578,6 +578,101 @@ You decide what's important enough to remember.`
   }
 }
 
+const getPearContext = async (): Promise<string> => {
+  console.log("🍐 getPearContext called for Pear!")
+
+  try {
+    // Fetch recent Pear feedback messages
+    const feedbacks = await getMessages({
+      isPear: true,
+      pageSize: 50,
+      isAsc: false, // Most recent first
+    })
+
+    if (!feedbacks || feedbacks.messages.length === 0) {
+      console.log("🍐 No Pear feedback found")
+      return ""
+    }
+
+    console.log(`🍐 Found ${feedbacks.messages.length} Pear feedback messages`)
+
+    // Fetch unique app IDs from threads
+    const appIds = [
+      ...new Set(
+        feedbacks.messages
+          .map((msg) => msg.thread?.appId)
+          .filter((id): id is string => !!id),
+      ),
+    ]
+
+    // Fetch app data for all unique app IDs
+    const apps = await Promise.all(
+      appIds.map((appId) =>
+        getApp({
+          id: appId,
+        }),
+      ),
+    )
+
+    // Create app ID to name mapping
+    const appIdToName = apps.reduce(
+      (acc, app) => {
+        if (app) {
+          acc[app.id] = app.name
+        }
+        return acc
+      },
+      {} as Record<string, string>,
+    )
+
+    // Group feedbacks by app
+    const feedbacksByApp = feedbacks.messages.reduce(
+      (acc, msg) => {
+        const appName =
+          (msg.thread?.appId && appIdToName[msg.thread.appId]) || "Unknown App"
+        if (!acc[appName]) {
+          acc[appName] = []
+        }
+        acc[appName].push(msg)
+        return acc
+      },
+      {} as Record<string, typeof feedbacks.messages>,
+    )
+
+    // Build context
+    let context = `\n\n## 🍐 Recent Pear Feedback (Last 50):\n\n`
+    context += `**Total Feedback**: ${feedbacks.messages.length} messages across ${Object.keys(feedbacksByApp).length} apps\n\n`
+
+    // Add feedback by app
+    Object.entries(feedbacksByApp)
+      .sort(([, a], [, b]) => b.length - a.length) // Sort by most feedback
+      .slice(0, 10) // Top 10 apps
+      .forEach(([appName, messages]) => {
+        context += `### ${appName} (${messages.length} feedback${messages.length > 1 ? "s" : ""})\n`
+        messages.slice(0, 5).forEach((msg, i) => {
+          const date = new Date(msg.message.createdOn).toLocaleDateString()
+          const preview = msg.message.content.substring(0, 100)
+          context += `${i + 1}. ${date}: "${preview}${msg.message.content.length > 100 ? "..." : ""}"\n`
+        })
+        context += `\n`
+      })
+
+    context += `\n**IMPORTANT**: When analyzing feedback:\n`
+    context += `1. Look for patterns across multiple users\n`
+    context += `2. Identify common pain points or feature requests\n`
+    context += `3. Highlight positive feedback and what's working well\n`
+    context += `4. Suggest actionable improvements for app creators\n`
+    context += `5. Track sentiment trends (positive, negative, neutral)\n`
+
+    console.log("🍐 Pear context being injected:", context.substring(0, 500))
+
+    return context
+  } catch (error) {
+    console.error("🍐 Error fetching Pear context:", error)
+    return ""
+  }
+}
+
 /**
  * Get DNA Thread context (app owner's foundational knowledge)
  * Uses mainThreadId to fetch app memories and share with all users
@@ -2305,6 +2400,15 @@ ${(() => {
       ? await getAnalyticsContext()
       : ""
 
+  // Get recent feedback context for Pear
+  const pearContext =
+    app?.slug === "pear" &&
+    isOwner(app, {
+      userId: member?.id,
+    })
+      ? await getPearContext()
+      : ""
+
   // Get DNA Thread context (app owner's foundational knowledge)
   const dnaContext = app?.mainThreadId ? await getAppDNAContext(app) : ""
 
@@ -2722,6 +2826,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     taskContext,
     newsContext,
     analyticsContext, // Live analytics for Grape
+    pearContext, // Recent feedback for Pear
     dnaContext, // App owner's foundational knowledge
     // brandKnowledge,
     aiCoachContext,

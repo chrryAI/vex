@@ -1302,6 +1302,7 @@ export const getMessages = async ({
   likedBy,
   createdAfter,
   hasAttachments,
+  isPear,
   isAsc,
   ...rest
 }: {
@@ -1319,10 +1320,12 @@ export const getMessages = async ({
   month?: number // 1-12 representing January-December
   createdAfter?: Date
   isAsc?: boolean
+  isPear?: boolean
 } = {}) => {
   const pageSize = rest.pageSize || 100
 
   const conditionsArray = [
+    isPear ? eq(messages.isPear, true) : undefined,
     userId ? eq(messages.userId, userId) : undefined,
     guestId ? eq(messages.guestId, guestId) : undefined,
     agentId
