@@ -27,6 +27,8 @@ const Grappes = ({
 
   const { t } = useAppContext()
 
+  if (!grapes.length && !goToGrape) return null
+
   return (
     <Div>
       {grapes.length > 0 && (
@@ -229,7 +231,7 @@ const Grappes = ({
           })
         }}
       >
-        <Img showLoading={false} app={grape} width={18} height={18} />
+        <Img showLoading={false} logo={"grape"} width={18} height={18} />
         {!goToGrape && grapes.length > 0 && (
           <Span
             style={{
