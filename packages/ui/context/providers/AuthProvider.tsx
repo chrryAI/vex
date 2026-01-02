@@ -78,6 +78,7 @@ const VERSION = "1.1.63"
 const AuthContext = createContext<
   | {
       isRetro: boolean
+      grape: appWithStore | undefined
       setIsRetro: (value: boolean) => void
       accountApps: appWithStore[]
       isIDE: boolean
@@ -1099,6 +1100,19 @@ export function AuthProvider({
   }
 
   useEffect(() => {
+    app &&
+      track({
+        name: "app",
+        url: `${FRONTEND_URL}${getAppSlug(app)}`,
+        props: {
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
+        },
+      })
+  }, [app])
+
+  useEffect(() => {
     if (!fingerprint) return
 
     if (TEST_MEMBER_FINGERPRINTS?.includes(fingerprint)) {
@@ -1405,6 +1419,9 @@ export function AuthProvider({
         name: "burn",
         props: {
           value,
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
         },
       })
     }
@@ -1452,12 +1469,14 @@ export function AuthProvider({
   const grapes =
     app?.id === zarathustra?.id
       ? []
-      : apps.filter(
+      : storeApps.filter(
           (app) =>
             whiteLabels.some((w) => w.slug === app.slug) &&
             app.store?.appId === app.id &&
             app.id !== zarathustra?.id,
         )
+
+  const grape = storeApps.find((app) => app.slug === "grape")
 
   const isPearInternal = searchParams.get("pear") === "true"
 
@@ -1467,14 +1486,29 @@ export function AuthProvider({
 
   useEffect(() => {
     setIsPearInternal(isPearInternal)
+    if (isPearInternal)
+      track({
+        name: "pear",
+        props: {
+          value: true,
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
+        },
+      })
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
-    if (app?.slug === "zarathustra") return
-
     setIsPearInternal(!!value)
-    value && router.push(`${getAppSlug(value)}?pear=true`)
-    !value && removeParams("pear")
+    if (value && app) {
+      if (app.id === value.id) {
+        addParams({
+          pear: "true",
+        })
+      } else {
+        value && router.push(`${getAppSlug(value)}?pear=true`)
+      }
+    }
   }
 
   const isProgramme =
@@ -2159,6 +2193,7 @@ export function AuthProvider({
         signInContext,
         signOutContext,
         characterProfilesEnabled,
+        grape,
         apps,
         setApps: setAllApps,
         setHasNotification,
