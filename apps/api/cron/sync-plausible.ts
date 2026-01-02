@@ -29,7 +29,7 @@ interface PlausibleBreakdownResult {
 }
 
 export async function syncPlausibleAnalytics() {
-  for (const label of whitelabes) {
+  for (const label of whiteLabels) {
     const PLAUSIBLE_SITE_ID = label.domain
     const PLAUSIBLE_API_KEY = process.env.PLAUSIBLE_API_KEY
 
@@ -47,16 +47,6 @@ export async function syncPlausibleAnalytics() {
     try {
       // Helper function to fetch from Plausible API
       const fetchPlausible = async (body: any) => {
-        const response = await fetch(
-          `${PLAUSIBLE_HOST}/api/v1/stats/breakdown`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${PLAUSIBLE_API_KEY}`,
-            },
-          },
-        )
-
         // For v1 API, use query params
         const url = new URL(`${PLAUSIBLE_HOST}/api/v1/stats/aggregate`)
         url.searchParams.append("site_id", PLAUSIBLE_SITE_ID)
