@@ -1,4 +1,4 @@
-import { useAuth } from "./context/providers"
+import { useApp, useAuth, useChat } from "./context/providers"
 import Modal from "./Modal"
 import { Button, Div, H3, P, Span } from "./platform"
 import { useState } from "react"
@@ -8,8 +8,16 @@ import { useStarStyles } from "./Star.styles"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 
-const Grappes = ({ style }: { style?: React.CSSProperties }) => {
+const Grappes = ({
+  style,
+  goToGrape,
+}: {
+  style?: React.CSSProperties
+  goToGrape?: boolean
+}) => {
   const { grapes, setIsPear, grape, track } = useAuth()
+
+  const { setIsNewAppChat } = useChat()
   const [showGrapes, setShowGrapes] = useState(false)
   const [selectedGrapeApp, setSelectedGrapeApp] = useState<
     appWithStore | undefined
@@ -208,6 +216,10 @@ const Grappes = ({ style }: { style?: React.CSSProperties }) => {
           ...style,
         }}
         onClick={() => {
+          if (goToGrape) {
+            setIsNewAppChat(grape)
+            return
+          }
           setShowGrapes(true)
           track({
             name: "grape_icon_click",
@@ -218,7 +230,7 @@ const Grappes = ({ style }: { style?: React.CSSProperties }) => {
         }}
       >
         <Img showLoading={false} app={grape} width={18} height={18} />
-        {grapes.length > 0 && (
+        {!goToGrape && grapes.length > 0 && (
           <Span
             style={{
               color: COLORS.purple,
