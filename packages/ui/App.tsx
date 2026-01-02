@@ -140,6 +140,7 @@ export default function App({
     canBurn,
     setBurn,
     setIsPear,
+    isPear,
     isIDE,
     ...auth
   } = useAuth()
@@ -951,8 +952,9 @@ export default function App({
                 </A>
               )
             )}
-            {!isManagingApp && grape && app?.store?.slug !== "wine" ? (
-              <Grappes goToGrape />
+            {(!isManagingApp && grape && app?.store?.slug !== "wine") ||
+            isPear ? (
+              <Grappes goToGrape={!isPear} />
             ) : (
               !isManagingApp && (
                 <A
