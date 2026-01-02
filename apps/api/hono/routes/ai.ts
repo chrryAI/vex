@@ -275,16 +275,21 @@ async function getRelevantMemoryContext({
   appId,
   pageSize = 15,
   threadId,
+  app,
 }: {
   userId?: string
   guestId?: string
   appId?: string
   pageSize?: number
   threadId?: string
-}): Promise<{ context: string; memoryIds: string[] }> {
+  app?: any // App object to check ownership
+}): Promise<{ context: string; memoryIds: string[]; isAppCreator?: boolean }> {
   if (!userId && !guestId && !appId) return { context: "", memoryIds: [] }
 
   try {
+    // Check if user is the app creator
+    const isAppCreator = app && isOwner(app, { userId, guestId })
+
     // Get user memories scattered across different threads (exclude current thread)
     const userMemoriesData: {
       memories: memory[]
@@ -312,6 +317,11 @@ async function getRelevantMemoryContext({
     )
 
     // Get app-specific memories
+    // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
+    const appMemoryPageSize = isAppCreator
+      ? pageSize * 10 // Creators get 150 app memories (10x boost)
+      : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
+
     const appMemoriesData: {
       memories: memory[]
       totalCount: number
@@ -320,7 +330,7 @@ async function getRelevantMemoryContext({
     } = appId
       ? await getMemories({
           appId,
-          pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
+          pageSize: appMemoryPageSize,
           orderBy: "importance",
           excludeThreadId: threadId,
           scatterAcrossThreads: true,
@@ -406,9 +416,12 @@ async function getRelevantMemoryContext({
       context += `\n\nRELEVANT CONTEXT ABOUT THE USER:\n${userMemoryContext}\n\nUse this context to personalize your responses when relevant.`
     }
     if (appMemoryContext) {
-      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
+      const appCreatorNote = isAppCreator
+        ? `\n\n🎯 APP CREATOR ACCESS: You are the creator of this app. You have enhanced access to ${appMemories.length} app memories (10x boost) to see comprehensive DNA Thread knowledge and understand what your app has learned across all user interactions. This is your app's "startup summary" - use it to understand the collective intelligence your app has gained.`
+        : ""
+      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}${appCreatorNote}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
     }
-    return { context, memoryIds }
+    return { context, memoryIds, isAppCreator }
   } catch (error) {
     console.error("❌ Error retrieving memory context:", error)
     return { context: "", memoryIds: [] }
@@ -540,7 +553,14 @@ async function getAnalyticsContext(): Promise<string> {
       stats.goals.slice(0, 10).forEach((goal, i) => {
         context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events (${goal.visitors.toLocaleString()} unique visitors)\n`
       })
+    } else {
+      console.log("🍇 No goals data in analytics stats")
     }
+
+    console.log(
+      "🍇 Full analytics context being injected:",
+      context.substring(0, 500),
+    )
 
     context += `\n**IMPORTANT**: When the user asks "what did you learn today?" or similar questions:
 1. Analyze if there are significant changes worth remembering
@@ -1679,12 +1699,17 @@ ${
     return 5 // Extremely long - just essentials
   })()
 
-  let { context: memoryContext, memoryIds } = await getRelevantMemoryContext({
+  let {
+    context: memoryContext,
+    memoryIds,
+    isAppCreator,
+  } = await getRelevantMemoryContext({
     userId: member?.id,
     guestId: guest?.id,
     appId: app?.id,
     pageSize: memoryPageSize,
     threadId: message.message.threadId, // Pass current thread to exclude
+    app, // Pass app object to check ownership
   })
 
   // Fetch user-created instructions (max 7)
