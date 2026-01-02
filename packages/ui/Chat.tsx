@@ -3629,7 +3629,7 @@ export default function Chat({
                       }}
                     >
                       <Img icon={"spaceInvader"} />
-                      Check-in
+                      {isMobileDevice ? null : "Check-in"}
                     </Button>
                   )
                 )}
@@ -4011,11 +4011,6 @@ export default function Chat({
                           title={t("Add debate agent")}
                           onClick={() => {
                             addHapticFeedback()
-                            if (appStatus?.part) {
-                              toast.error(t("Agent locked during app creation"))
-                              return
-                            }
-
                             if (debateAgent || selectedAgent?.name === "flux") {
                               setIsAgentModalOpen(true)
                             } else setIsDebateAgentModalOpen(true)
@@ -4060,12 +4055,6 @@ export default function Chat({
                             data-testid="add-debate-agent-button"
                             data-agent-name={debateAgent.name}
                             onClick={() => {
-                              if (appStatus?.part) {
-                                toast.error(
-                                  t("Agent locked during app creation"),
-                                )
-                                return
-                              }
                               addHapticFeedback()
                               setIsDebateAgentModalOpen(true)
                             }}
@@ -4105,12 +4094,6 @@ export default function Chat({
                             data-agent-name={selectedAgent.name}
                             data-testid="agent-select-button"
                             onClick={() => {
-                              if (appStatus?.part) {
-                                toast.error(
-                                  t("Agent locked during app creation"),
-                                )
-                                return
-                              }
                               addHapticFeedback()
                               setIsAgentModalOpen(true)
                             }}

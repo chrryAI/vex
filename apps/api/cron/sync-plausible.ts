@@ -90,7 +90,6 @@ export async function syncPlausibleAnalytics() {
 
       if (!res.ok) return null
       const result = await res.json()
-      console.log(`🚀 ~ fetchBreakdown ~ result:`, result)
       return result
     }
 
@@ -150,13 +149,32 @@ export async function syncPlausibleAnalytics() {
     }))
 
     // 7. Fetch goal conversions (top 10 goals)
-    const goalsData = await fetchBreakdown("event:goal")
+    // Goals need special handling - use event:goal property with events metric
+    const goalsUrl = new URL(`${PLAUSIBLE_HOST}/api/v1/stats/breakdown`)
+    goalsUrl.searchParams.append("site_id", PLAUSIBLE_SITE_ID)
+    goalsUrl.searchParams.append("period", "7d")
+    goalsUrl.searchParams.append("property", "event:goal")
+    goalsUrl.searchParams.append("metrics", "visitors,events") // conversion_rate not supported in v1
+    goalsUrl.searchParams.append("limit", "10")
+
+    const goalsRes = await fetch(goalsUrl.toString(), {
+      headers: { Authorization: `Bearer ${PLAUSIBLE_API_KEY}` },
+    })
+
+    const goalsData = goalsRes.ok ? await goalsRes.json() : null
+    console.log(
+      "🎯 Goals data from Plausible:",
+      JSON.stringify(goalsData, null, 2),
+    )
+
     const goals = goalsData?.results?.map((r: any) => ({
       goal: r.goal,
       visitors: r.visitors,
       events: r.events || r.visitors,
       conversion_rate: r.conversion_rate || 0,
     }))
+
+    console.log("🎯 Processed goals:", JSON.stringify(goals, null, 2))
 
     // Compile all stats
     const stats = {
