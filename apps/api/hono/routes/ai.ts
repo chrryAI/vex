@@ -2383,11 +2383,7 @@ ${(() => {
 
   // Check if this is the first message in the app's main thread (user just started using their new app)
   const hasMainThread = isAppOwner && !!app?.mainThreadId
-  const isFirstAppMessage =
-    app &&
-    isAppOwner &&
-    !hasMainThread &&
-    appKnowledge?.messages.totalCount === 0
+  const isFirstAppMessage = app && isAppOwner && !hasMainThread
 
   // AI Coach Context - Guide users through app creation OR first-time app usage
   let aiCoachContext = ""
