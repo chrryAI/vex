@@ -3629,7 +3629,7 @@ export default function Chat({
                       }}
                     >
                       <Img icon={"spaceInvader"} />
-                      Check-in
+                      {isMobileDevice ? null : "Check-in"}
                     </Button>
                   )
                 )}
