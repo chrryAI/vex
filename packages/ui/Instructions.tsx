@@ -1551,7 +1551,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   </Button>
                 )}
 
-                {os === "macos" && !isTauri && downloadUrl ? (
+                {os !== "android" && os !== "ios" && !isTauri && downloadUrl ? (
                   <Button
                     className="inverted"
                     style={{
