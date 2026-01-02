@@ -1271,36 +1271,6 @@ ${
       : undefined
 
     // Auto-set main thread if owner and not set
-    const hasMainThread = isAppOwner && !!currentApp.mainThreadId
-
-    // Detect if this is the first message after app creation (just saved)
-    const isFirstThreadAfterAppCreation = isAppOwner && !hasMainThread && thread
-
-    if (isFirstThreadAfterAppCreation && currentApp) {
-      try {
-        const bookmarks = [
-          ...(thread.bookmarks?.filter(
-            (b) => b.userId !== member?.id && b.guestId !== guest?.id,
-          ) || []),
-          {
-            userId: member?.id,
-            guestId: guest?.id,
-            createdOn: new Date().toISOString(),
-          },
-        ]
-        await updateThread({
-          ...thread,
-          isMainThread: true,
-          bookmarks,
-        })
-        await updateApp({
-          ...currentApp,
-          mainThreadId: thread.id,
-        })
-      } catch (error) {
-        captureException(error)
-      }
-    }
 
     // Get thread data
     const messagesData = thread
@@ -2413,11 +2383,6 @@ ${(() => {
   const dnaContext = app?.mainThreadId ? await getAppDNAContext(app) : ""
 
   // Get brand-specific knowledge base (dynamic RAG or hardcoded fallback)
-  const brandKnowledge = await getAppKnowledge(
-    app || null,
-    app?.slug || null,
-    "", // Query will be used for semantic search if RAG is enabled
-  )
 
   // Check if this is the first message in the app's main thread (user just started using their new app)
   const hasMainThread = isAppOwner && !!app?.mainThreadId
@@ -2431,6 +2396,35 @@ ${(() => {
   let aiCoachContext = ""
 
   if (isFirstAppMessage) {
+    // Detect if this is the first message after app creation (just saved)
+
+    try {
+      const bookmarks = [
+        ...(thread.bookmarks?.filter(
+          (b) => b.userId !== member?.id && b.guestId !== guest?.id,
+        ) || []),
+        {
+          userId: member?.id,
+          guestId: guest?.id,
+          createdOn: new Date().toISOString(),
+        },
+      ]
+      await updateThread({
+        ...thread,
+        isMainThread: true,
+        bookmarks,
+      })
+      thread = await getThread({ id: thread.id })
+      await updateApp({
+        ...app,
+        mainThreadId: thread.id,
+      })
+
+      app = await getApp({ id: app.id, skipCache: true })
+    } catch (error) {
+      captureException(error)
+    }
+
     aiCoachContext = `
 ## 🎉 First Time Using Your App!
 
