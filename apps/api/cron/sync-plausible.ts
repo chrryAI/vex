@@ -218,8 +218,7 @@ export async function syncPlausibleAnalytics() {
       })
       .returning()
 
-    console.log(`🚀 ~ syncPlausibleAnalytics ~ result:`, result)
-
+    console.log(`🔥 ~ syncPlausibleAnalytics ~ result:`, result)
     console.log("✅ Comprehensive analytics synced to DB:")
     console.log(`   Visitors: ${stats.visitors.toLocaleString()}`)
     console.log(`   Pageviews: ${stats.pageviews.toLocaleString()}`)

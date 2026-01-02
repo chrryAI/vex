@@ -17,6 +17,7 @@ import {
   useNavigationContext,
   useApp,
 } from "./context/providers"
+import Grapes from "./Grapes"
 import { A, usePlatform, useTheme, Div, Button, Span } from "./platform"
 import Loading from "./Loading"
 import { FRONTEND_URL, isCollaborator, isOwner, isE2E } from "./utils"
@@ -68,6 +69,8 @@ const Thread = ({
     threadIdRef,
     memoriesEnabled,
     setShowFocus,
+    grapes,
+    app,
     ...auth
   } = useAuth()
 
@@ -556,6 +559,14 @@ const Thread = ({
                                 height={16}
                               />
                             </A>
+                          ) : grapes.filter((g) => g.id === app?.id).length ? (
+                            <Grapes
+                              style={{
+                                ...utilities.button.style,
+                                ...utilities.transparent.style,
+                                ...utilities.xSmall.style,
+                              }}
+                            />
                           ) : (
                             <A
                               href={`${FRONTEND_URL}/calendar${threadId ? `?threadId=${threadId}` : ""}`}

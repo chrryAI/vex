@@ -71,6 +71,7 @@ import {
   type collaboration,
   emojiMap,
 } from "./types"
+import Grapes from "./Grapes"
 import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "./icons"
 import Modal from "./Modal"
 import Loading from "./Loading"
@@ -3607,12 +3608,11 @@ export default function Chat({
                   >
                     <CircleArrowDown size={25} />
                   </Button>
-                ) : (
-                  empty &&
+                ) : empty && !threadIdRef.current ? (
                   isOwner(app, {
                     userId: user?.id,
                     guestId: guest?.id,
-                  }) && (
+                  }) ? (
                     <Button
                       className="link"
                       style={{
@@ -3631,8 +3631,18 @@ export default function Chat({
                       <Img icon={"spaceInvader"} />
                       {isMobileDevice ? null : "Check-in"}
                     </Button>
+                  ) : (
+                    <>
+                      <Grapes
+                        style={{
+                          position: "relative",
+                          top: 30,
+                          zIndex: 50,
+                        }}
+                      />
+                    </>
                   )
-                )}
+                ) : null}
               </Div>
             )}
             <>
