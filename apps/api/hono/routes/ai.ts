@@ -1379,7 +1379,7 @@ ${
   const content = message.message.content
   const threadId = message.message.threadId
 
-  const thread = await getThread({ id: message.message.threadId })
+  let thread = await getThread({ id: message.message.threadId })
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
