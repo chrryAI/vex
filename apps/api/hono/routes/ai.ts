@@ -1376,7 +1376,7 @@ ${
   const content = message.message.content
   const threadId = message.message.threadId
 
-  let thread = await getThread({ id: message.message.threadId })
+  const thread = await getThread({ id: message.message.threadId })
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
@@ -2392,7 +2392,7 @@ ${(() => {
   // AI Coach Context - Guide users through app creation OR first-time app usage
   let aiCoachContext = ""
 
-  if (isFirstAppMessage) {
+  if (isFirstAppMessage && app && thread) {
     // Detect if this is the first message after app creation (just saved)
 
     try {
@@ -2411,13 +2411,17 @@ ${(() => {
         isMainThread: true,
         bookmarks,
       })
-      thread = await getThread({ id: thread.id })
       await updateApp({
         ...app,
         mainThreadId: thread.id,
       })
 
-      app = await getApp({ id: app.id, skipCache: true })
+      app.mainThreadId = thread.id
+      thread.isMainThread = true
+      thread.bookmarks = bookmarks
+      // thread.mainThreadId = thread.id
+
+      // app = await getApp({ id: app.id, skipCache: true })
     } catch (error) {
       captureException(error)
     }

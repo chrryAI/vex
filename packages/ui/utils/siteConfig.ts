@@ -2295,7 +2295,7 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 }
 
 export const whiteLabels = [
-  chrryDev,
+  // chrryDev,
   chrryAI,
   focus,
   atlas,

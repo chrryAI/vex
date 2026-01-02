@@ -29,6 +29,10 @@ interface PlausibleBreakdownResult {
 }
 
 export async function syncPlausibleAnalytics() {
+  console.log(
+    `🍇 Starting sync for ${whiteLabels.length} white-label domains...`,
+  )
+
   for (const label of whiteLabels) {
     const PLAUSIBLE_SITE_ID = label.domain
     const PLAUSIBLE_API_KEY = process.env.PLAUSIBLE_API_KEY
@@ -37,7 +41,7 @@ export async function syncPlausibleAnalytics() {
 
     if (!PLAUSIBLE_API_KEY) {
       console.log("⚠️ PLAUSIBLE_API_KEY not set - skipping analytics sync")
-      return
+      continue // Skip to next domain
     }
 
     console.log("📊 Fetching comprehensive Plausible analytics...")
@@ -224,11 +228,11 @@ export async function syncPlausibleAnalytics() {
       console.log(`   Sources: ${sources?.length || 0}`)
       console.log(`   Countries: ${countries?.length || 0}`)
       console.log(`   Goals: ${goals?.length || 0}`)
-
-      return stats
+      console.log(`---\n`) // Separator between domains
     } catch (error) {
-      console.error("❌ Plausible sync failed:", error)
-      throw error
+      console.error(`❌ Plausible sync failed for ${label.domain}:`, error)
+      // Continue to next domain instead of throwing
+      continue
     }
   }
 }
