@@ -3632,15 +3632,17 @@ export default function Chat({
                       {isMobileDevice ? null : "Check-in"}
                     </Button>
                   ) : (
-                    <>
-                      <Grapes
-                        style={{
-                          position: "relative",
-                          top: 30,
-                          zIndex: 50,
-                        }}
-                      />
-                    </>
+                    !isPear && (
+                      <>
+                        <Grapes
+                          style={{
+                            position: "relative",
+                            top: 30,
+                            zIndex: 50,
+                          }}
+                        />
+                      </>
+                    )
                   )
                 ) : null}
               </Div>
