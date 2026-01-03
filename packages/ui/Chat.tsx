@@ -3619,7 +3619,7 @@ export default function Chat({
                         style={{
                           position: "relative",
 
-                          top: 30,
+                          top: !isChatFloating ? 30 : 0,
                           zIndex: 50,
 
                           ...utilities.link.style,
@@ -3640,7 +3640,7 @@ export default function Chat({
                       <Grapes
                         style={{
                           position: "relative",
-                          top: 30,
+                          top: !isChatFloating ? 30 : 0,
                           zIndex: 50,
                           ...utilities.xSmall.style,
                         }}
