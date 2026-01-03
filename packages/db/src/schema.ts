@@ -915,6 +915,22 @@ export const placeHolders = pgTable("placeHolders", {
   }>(),
 })
 
+export const realtimeAnalytics = pgTable("realtime_analytics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("userId").references(() => users.id, {
+    onDelete: "cascade",
+  }),
+  guestId: uuid("guestId").references(() => guests.id, {
+    onDelete: "cascade",
+  }),
+  eventName: text("eventName").notNull(),
+  eventUrl: text("eventUrl"),
+  eventProps: jsonb("eventProps"),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
 export const creditUsage = pgTable(
   "creditUsage",
   {

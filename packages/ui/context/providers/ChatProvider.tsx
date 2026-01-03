@@ -31,6 +31,7 @@ import {
   usePlatform,
   useTheme,
 } from "../../platform"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
@@ -147,6 +148,7 @@ export function ChatProvider({
   const {
     setGuest,
     setUser,
+    setInstructions,
     setApp,
     storeApps,
     storeAppsSwr,
@@ -386,8 +388,24 @@ export function ChatProvider({
 
   const [wasIncognito, setWasIncognito] = useState(burn)
 
+  const loadingAppRef = useRef<appWithStore | undefined>(undefined)
+
+  useEffect(() => {
+    const a = storeApps.find((app) => app.id === loadingAppRef?.current?.id)
+    if (hasStoreApps(a) && a) {
+      loadingAppRef.current = undefined
+
+      router.push(getAppSlug(a))
+    }
+  }, [loadingApp, storeApps])
+
   const setIsNewAppChat = (item: appWithStore | undefined) => {
     if (!item) {
+      return
+    }
+    if (!hasStoreApps(item)) {
+      loadingAppRef.current = item
+      setLoadingApp(item)
       return
     }
 
@@ -405,6 +423,7 @@ export function ChatProvider({
     to = app?.slug ? getAppSlug(app) : "/",
   ) => {
     if (value) {
+      setLiked(undefined)
       setShowFocus(false)
       setCollaborationStep(0)
       setThread(undefined)
@@ -519,10 +538,12 @@ export function ChatProvider({
         if (user) {
           const updatedUser = await actions.getUser()
           setUser(updatedUser)
+          updatedUser && setInstructions(updatedUser.instructions)
         }
         if (guest) {
           const updatedGuest = await actions.getGuest()
           setGuest(updatedGuest)
+          updatedGuest && setInstructions(updatedGuest.instructions)
         }
         setShouldMutate(true)
       }
@@ -728,7 +749,7 @@ export function ChatProvider({
   useEffect(() => {
     if (debateAgent) {
       track({
-        name: "debate_agent_selected",
+        name: ANALYTICS_EVENTS.DEBATE_AGENT_SELECTED,
         props: { agent: debateAgent.displayName },
       })
     }
@@ -929,7 +950,7 @@ export function ChatProvider({
     }
     open &&
       track({
-        name: "agent-modal",
+        name: ANALYTICS_EVENTS.AGENT_MODAL,
         props: {},
       })
   }
@@ -939,7 +960,7 @@ export function ChatProvider({
     setIsAgentModalOpenInternal(open)
     open &&
       track({
-        name: "debate-agent-modal",
+        name: ANALYTICS_EVENTS.DEBATE_AGENT_MODAL,
         props: {},
       })
   }

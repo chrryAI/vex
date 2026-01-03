@@ -98,9 +98,10 @@ export default forwardRef<
     burn,
     app,
     chrry,
+    accountApp,
   } = useAuth()
 
-  const isChrry = app?.id === chrry?.id
+  const canCreateAgent = !accountApp && app && chrry && app?.id === chrry?.id
 
   // Chat context
   const { threadId, scrollToBottom } = useChat()
@@ -109,7 +110,7 @@ export default forwardRef<
   const { router } = useNavigationContext()
 
   // App context
-  const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
+  const { appStatus, setAppStatus, suggestSaveApp } = useApp()
 
   // Theme context
   const { addHapticFeedback } = useTheme()
@@ -248,8 +249,15 @@ export default forwardRef<
                 <Button
                   disabled={isUpdating}
                   onClick={async () => {
-                    router.push("/?part=highlights")
-                    !isChrry && setShowCharacterProfiles(true)
+                    if (canCreateAgent) {
+                      setAppStatus({
+                        part: "highlights",
+                        step: "add",
+                      })
+                      return
+                    }
+
+                    setShowCharacterProfiles(true)
                   }}
                   className="inverted"
                   style={{ ...utilities.inverted.style }}
@@ -264,7 +272,9 @@ export default forwardRef<
                     />
                   )}
                   {t(
-                    isChrry ? "Create Your Agent" : "Enable Character Profiles",
+                    canCreateAgent
+                      ? "Create Your Agent"
+                      : "Enable Character Profiles",
                   )}
                 </Button>
               ) : null}

@@ -1948,5 +1948,6 @@
   "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.": "提及你的技术栈！指定框架，库和版本，以便生成准确的，可生产的代码。",
   "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.": "要求进行测试！要求进行单元测试、集成测试或E2E测试，以提高您的代码质量。",
   "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.": "需要优化吗？要求进行时间/空间复杂性分析或对现有代码进行性能改进。",
-  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "要求提供文档！要求提供行内注释、JSDoc或README文件，以使您的代码可维护。"
+  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "要求提供文档！要求提供行内注释、JSDoc或README文件，以使您的代码可维护。",
+  "Let's Pear": "让我们配对"
 }

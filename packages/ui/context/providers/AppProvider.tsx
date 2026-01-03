@@ -12,6 +12,7 @@ import React, {
 import { useLocalStorage, useNavigation, toast } from "../../platform"
 import useCache from "../../hooks/useCache"
 import console from "../../utils/log"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 
 import { appFormData, appSchema } from "../../schemas/appSchema"
 import { useForm } from "react-hook-form"
@@ -26,6 +27,7 @@ import { instructionBase } from "../../utils/getExampleInstructions"
 import { Paginated, storeWithApps } from "../../types"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { useError } from "./ErrorProvider"
+import { threadId } from "worker_threads"
 
 export { COLORS } from "../ThemeContext"
 
@@ -158,6 +160,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setApp: setAppInternal,
     storeApp,
     chrry,
+    threadId,
     vex,
     baseApp,
     userBaseApp,
@@ -182,6 +185,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burnApp,
     burning,
     setBurn,
+    track,
     ...auth
   } = useAuth()
   const { actions } = useData()
@@ -284,6 +288,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (result?.error) {
         toast.error(result.error)
         setIsSavingApp(false)
+        track({
+          name: ANALYTICS_EVENTS.APP_SAVE_ERROR,
+          props: {
+            success: false,
+            error: result.error,
+          },
+        })
         return false
       }
 
@@ -295,6 +306,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setNewApp(result)
           await fetchApps()
         }
+        track({
+          name: ANALYTICS_EVENTS.APP_SAVE_SUCCESS,
+          props: {
+            success: true,
+          },
+        })
         clearFormDraft()
         setAppStatus(undefined)
         return true
@@ -302,6 +319,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       toast.error(t("Something went wrong"))
       captureException(error)
+      track({
+        name: ANALYTICS_EVENTS.APP_SAVE_ERROR,
+        props: {
+          success: false,
+          error: error,
+        },
+      })
       return false
     } finally {
       canEditApp && setIsSavingApp(false)
@@ -344,6 +368,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAppStatus(undefined)
 
         toast.success(`${t("Deleted")} 😭`)
+        track({
+          name: ANALYTICS_EVENTS.APP_DELETE_SUCCESS,
+          props: {
+            success: true,
+          },
+        })
 
         push("/")
 
@@ -656,6 +686,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   ) => {
     setAppStatusInternal(payload)
 
+    track({
+      name: ANALYTICS_EVENTS.APP_STATUS,
+      props: payload,
+    })
+
     const { step, part } = payload || {}
 
     if (step || part) {
@@ -675,6 +710,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           id: undefined, // Explicitly clear id to prevent conflicts
         }
         appForm.reset(freshDefaults)
+        if ((threadId || currentStore) && chrry) {
+          push(auth.getAppSlug(chrry))
+        }
       } else if (step === "restore") {
         // Restore app data from current app into form for editing
         if (app && isAppOwner) {

@@ -65,12 +65,6 @@ export default function About() {
 
   const { captureException } = useError()
 
-  useEffect(() => {
-    track({
-      name: "about",
-    })
-  }, [])
-
   const {
     ADDITIONAL_CREDITS,
     CREDITS_PRICE,

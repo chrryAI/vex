@@ -32,11 +32,6 @@ export default function About() {
   const { utilities } = useStyles()
 
   const { track } = useAuth()
-  useEffect(() => {
-    track({
-      name: "about",
-    })
-  }, [])
 
   return (
     <Skeleton>

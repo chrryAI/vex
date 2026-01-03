@@ -5,12 +5,14 @@ export async function clean({
   page,
   fingerprint,
   isLive,
+  isMember,
 }: {
   page: Page
   fingerprint?: string
   isLive?: boolean
+  isMember?: boolean
 }) {
-  await page.goto(getURL({ isLive, isMember: false, fingerprint }), {
+  await page.goto(getURL({ isLive, isMember, fingerprint }), {
     waitUntil: "networkidle",
     timeout: 100000,
   })

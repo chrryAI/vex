@@ -1947,5 +1947,6 @@
   "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.": "Mencione sua pilha de tecnologia! Especifique frameworks, bibliotecas e versões para um código preciso e pronto para produção.",
   "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.": "Peça testes! Solicite testes unitários, testes de integração ou testes E2E junto com seu código para melhor qualidade.",
   "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.": "Precisa de otimização? Peça uma análise de complexidade de tempo/espaço ou melhorias de desempenho para o código existente.",
-  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Solicite documentação! Peça comentários inline, JSDoc ou arquivos README para tornar seu código sustentável."
+  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Solicite documentação! Peça comentários inline, JSDoc ou arquivos README para tornar seu código sustentável.",
+  "Let's Pear": "Vamos Emparelhar"
 }

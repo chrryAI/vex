@@ -25,6 +25,7 @@ import { session } from "./providers/AuthProvider"
 import { useTranslation } from "react-i18next"
 import { FRONTEND_URL } from "../utils"
 import console from "../utils/log"
+import { ANALYTICS_EVENTS } from "../utils/analyticsEvents"
 
 export const COLORS = {
   red: "#ef4444", // red-500
@@ -228,11 +229,6 @@ export function ThemeProvider({
   const setTheme = (newTheme: themeType) => {
     setThemeMode(newTheme)
     // Track theme change (if analytics available)
-    if (typeof window !== "undefined" && (window as any).track) {
-      ;(window as any).track({
-        name: newTheme === "dark" ? "dark_mode" : "light_mode",
-      })
-    }
   }
 
   const [enableSound, setEnableSound] = useLocalStorage<boolean>(

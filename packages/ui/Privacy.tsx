@@ -19,12 +19,6 @@ export default function Privacy() {
   const { router } = useNavigationContext()
   const { isDrawerOpen } = useTheme()
 
-  useEffect(() => {
-    track({
-      name: "privacy",
-    })
-  }, [])
-
   return (
     <Skeleton>
       <Div

@@ -6,6 +6,7 @@ import {
   capitalizeFirstLetter,
   simulatePaste,
   log,
+  getModelCredits,
   modelName,
 } from ".."
 import path from "path"
@@ -114,13 +115,6 @@ export const chat = async ({
   }
 
   const hourlyLimit = isSubscriber ? 100 : isMember ? 30 : 10 // guests: 10, members: 30, subscribers: 100
-
-  const getModelCredits = (model: string) =>
-    model === "chatGPT" || model === "gemini"
-      ? 4
-      : model === "claude" || model === "perplexity"
-        ? 3
-        : 2
 
   const MAX_FILE_SIZE = 4
 
