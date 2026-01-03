@@ -1235,7 +1235,7 @@ export function AuthProvider({
     path: string,
     apps: appWithStore[],
   ): appWithStore | undefined => {
-    if (focus && showFocus) return focus
+    // if (focus && showFocus) return focus
     if (path === "/") return undefined
 
     const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
@@ -1522,7 +1522,6 @@ export function AuthProvider({
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
-    value && setShowFocus(false)
     setIsPearInternal(!!value)
     if (value && app) {
       if (app.id === value.id) {
@@ -1535,6 +1534,11 @@ export function AuthProvider({
       toast.success(t("Let's Pear") + " 🍐")
     }
   }
+
+  useEffect(() => {
+    setIsPearInternal(isPearInternal)
+    if (isPearInternal) setShowFocus(false)
+  }, [isPearInternal])
 
   const isProgramme =
     isProgrammeInternal || searchParams.get("programme") === "true"
