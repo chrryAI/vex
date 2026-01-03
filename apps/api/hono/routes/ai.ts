@@ -2374,9 +2374,12 @@ ${(() => {
   // Get news context based on app
   const newsContext = await getNewsContext(app?.slug)
 
+  const beasts = ["grape", "pear", "chrry", "vex"]
+
   // Get live analytics context for Grape
   const analyticsContext =
-    (app?.slug === "grape" || app?.slug === "pear") &&
+    app?.slug &&
+    beasts.includes(app?.slug) &&
     isOwner(app, {
       userId: member?.id,
     })
@@ -2385,7 +2388,8 @@ ${(() => {
 
   // Get recent feedback context for Pear
   const pearContext =
-    (app?.slug === "pear" || app?.slug === "grape") &&
+    app?.slug &&
+    beasts.includes(app?.slug) &&
     isOwner(app, {
       userId: member?.id,
     })
