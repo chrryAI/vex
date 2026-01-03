@@ -885,12 +885,12 @@ export default function FocusButton({
                             }}
                             // href={getAppSlug(refApp)}
                           >
-                            {loadingApp?.id !== focus?.id ? (
-                              <Img size={20} app={focus} />
+                            {loadingApp?.id !== app?.id ? (
+                              <Img size={20} app={app} />
                             ) : (
                               <Loading size={20} />
                             )}
-                            {focus.name}
+                            {app?.name}
                           </A>
                         </Span>
                       )}

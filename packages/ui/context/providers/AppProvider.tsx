@@ -26,6 +26,7 @@ import { instructionBase } from "../../utils/getExampleInstructions"
 import { Paginated, storeWithApps } from "../../types"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { useError } from "./ErrorProvider"
+import { threadId } from "worker_threads"
 
 export { COLORS } from "../ThemeContext"
 
@@ -158,6 +159,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setApp: setAppInternal,
     storeApp,
     chrry,
+    threadId,
     vex,
     baseApp,
     userBaseApp,
@@ -675,6 +677,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           id: undefined, // Explicitly clear id to prevent conflicts
         }
         appForm.reset(freshDefaults)
+        if (threadId && chrry) {
+          push(auth.getAppSlug(chrry))
+        }
       } else if (step === "restore") {
         // Restore app data from current app into form for editing
         if (app && isAppOwner) {
