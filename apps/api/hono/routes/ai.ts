@@ -2396,6 +2396,34 @@ ${(() => {
       ? await getPearContext()
       : ""
 
+  // E2E Analytics Context (for beasts only)
+  // Helps analyze system integrity, test coverage, and missing event tracking
+  const e2eContext =
+    app?.slug &&
+    beasts.includes(app?.slug) &&
+    isOwner(app, {
+      userId: member?.id,
+    })
+      ? `\n\n## 🧪 E2E Testing Analytics
+
+**Purpose:** Analyze system integrity and test coverage across the ecosystem.
+
+**E2E Domain:** e2e.chrry.dev is included in analytics sync to track:
+- Test execution patterns
+- Missing event tracking
+- Coverage gaps in user flows
+- Integration test completeness
+
+**Your Role:** When asked about E2E analytics, help identify:
+1. Which user flows are being tested
+2. Which events/goals are missing trackers
+3. Coverage gaps that need attention
+4. Test quality and completeness
+
+This data helps maintain system integrity and ensure comprehensive test coverage.
+`
+      : ""
+
   // Get DNA Thread context (app owner's foundational knowledge)
   const dnaContext = app?.mainThreadId ? await getAppDNAContext(app) : ""
 
@@ -2838,6 +2866,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     newsContext,
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
+    e2eContext, // E2E testing analytics for system integrity
     dnaContext, // App owner's foundational knowledge
     // brandKnowledge,
     aiCoachContext,
