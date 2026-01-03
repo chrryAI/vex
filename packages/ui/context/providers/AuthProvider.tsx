@@ -1150,6 +1150,28 @@ export function AuthProvider({
     }
   }, [user])
 
+  // Track UTM parameters for ad attribution (EthicalAds, etc.)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const params = new URLSearchParams(window.location.search)
+    const utmSource = params.get("utm_source")
+    const utmMedium = params.get("utm_medium")
+    const utmCampaign = params.get("utm_campaign")
+
+    if (utmSource) {
+      track({
+        name: "ad_visit",
+        props: {
+          source: utmSource,
+          medium: utmMedium || "unknown",
+          campaign: utmCampaign || "unknown",
+          app: app?.name || "unknown",
+        },
+      })
+    }
+  }, []) // Run once on mount
+
   const [characterProfilesEnabled, setCharacterProfilesEnabled] = useState(
     !!(user || guest)?.characterProfilesEnabled,
   )
