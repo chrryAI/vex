@@ -678,6 +678,10 @@ async function getAppDNAContext(app: appWithStore): Promise<string> {
   if (!app?.mainThreadId) return ""
 
   try {
+    // Get DNA Thread artifacts (uploaded files)
+    const { getDNAThreadArtifacts } = await import("../../lib/appRAG")
+    const artifactsContext = await getDNAThreadArtifacts(app)
+
     // Get app memories from main thread (owner's first conversation)
     const memories = await getMemories({
       threadId: app.mainThreadId,
@@ -687,7 +691,7 @@ async function getAppDNAContext(app: appWithStore): Promise<string> {
 
     const appMemories = memories.memories
 
-    if (!appMemories.length) return ""
+    if (!appMemories.length && !artifactsContext) return ""
 
     const userId = app.userId
 
@@ -716,7 +720,16 @@ async function getAppDNAContext(app: appWithStore): Promise<string> {
     }
 
     // Build DNA context
-    return `\n\n## 🧬 App DNA (from ${creatorName})
+    let context = ""
+
+    // Add artifacts first (uploaded files)
+    if (artifactsContext) {
+      context += artifactsContext
+    }
+
+    // Add memories second
+    if (appMemories.length) {
+      context += `\n\n## 🧬 App DNA (from ${creatorName})
 
 **Foundational Knowledge:**
 ${appMemories.map((m) => `- ${m.content}`).join("\n")}
@@ -724,6 +737,9 @@ ${appMemories.map((m) => `- ${m.content}`).join("\n")}
 This is the core knowledge about this app, shared by its creator.
 Use this to understand the app's purpose and guide users effectively.
 `
+    }
+
+    return context
   } catch (error) {
     console.error("Error fetching DNA context:", error)
     return ""

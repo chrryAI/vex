@@ -1025,8 +1025,23 @@ export default function Instructions({
         {isArtifactsOpen ? (
           <Div>
             <Div>
-              {t(
-                "Upload files here for the AI to remember and reference in future conversations. These artifacts become part of the thread's memory.",
+              {thread?.isMainThread && canUpdate ? (
+                <>
+                  <Div>
+                    {t(
+                      "⚠️ This is the DNA Thread. Files uploaded here become public RAG content accessible to all users of this app.",
+                    )}
+                  </Div>
+                  <Div style={{ marginTop: "0.5rem" }}>
+                    {t("For private data, use a regular thread instead.")}
+                  </Div>
+                </>
+              ) : (
+                <Div>
+                  {t(
+                    "Upload files here for the AI to remember and reference in future conversations. These artifacts remain private to this thread.",
+                  )}
+                </Div>
               )}
             </Div>
             {(files.length || threadArtifacts.length) > 0 && (
@@ -1551,7 +1566,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   </Button>
                 )}
 
-                {os === "macos" && !isTauri && downloadUrl ? (
+                {os !== "android" && os !== "ios" && !isTauri && downloadUrl ? (
                   <Button
                     className="inverted"
                     style={{
