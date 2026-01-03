@@ -5,7 +5,7 @@
  * knowledge base that gets injected into the AI context.
  */
 
-import { app } from "@repo/db"
+import { app, getThread } from "@repo/db"
 import { appWithStore } from "@chrryai/chrry/types"
 
 /**
@@ -203,6 +203,54 @@ export function getBrandKnowledgeBase(appName?: string | null): string {
 }
 
 /**
+ * Get DNA Thread artifacts (public RAG content)
+ *
+ * Extracts uploaded files from the app's main thread.
+ * These become public knowledge accessible to all users.
+ */
+export async function getDNAThreadArtifacts(
+  app: app | appWithStore | null,
+): Promise<string> {
+  if (!app || !app.mainThreadId) {
+    return ""
+  }
+
+  try {
+    const mainThread = await getThread({ id: app.mainThreadId })
+
+    if (
+      !mainThread ||
+      !mainThread.artifacts ||
+      mainThread.artifacts.length === 0
+    ) {
+      return ""
+    }
+
+    // Format artifacts as RAG context
+    let context = `\n\n## ${app.name} DNA Thread Knowledge:\n\n`
+    context += `The following files have been uploaded to the DNA Thread and are part of this app's public knowledge base:\n\n`
+
+    for (const artifact of mainThread.artifacts) {
+      context += `### ${artifact.name}\n`
+      if (artifact.data) {
+        // If we have the content, include it
+        context += `${artifact.data}\n\n`
+      } else if (artifact.url) {
+        // If we only have a URL, mention it
+        context += `File available at: ${artifact.url}\n\n`
+      }
+    }
+
+    context += `\nIMPORTANT: Use this DNA Thread knowledge to inform your responses. This is verified, public knowledge for this app.\n`
+
+    return context
+  } catch (error) {
+    console.error("Error fetching DNA Thread artifacts:", error)
+    return ""
+  }
+}
+
+/**
  * Get complete app knowledge (dynamic RAG + hardcoded fallback)
  */
 export async function getAppKnowledge(
@@ -210,7 +258,14 @@ export async function getAppKnowledge(
   appName: string | null,
   userMessage: string,
 ): Promise<string> {
-  // Try dynamic RAG first
+  // Try DNA Thread artifacts first (public RAG content)
+  const dnaArtifacts = await getDNAThreadArtifacts(app)
+
+  if (dnaArtifacts) {
+    return dnaArtifacts
+  }
+
+  // Try dynamic RAG second
   const dynamicRAG = await getAppRAGContext(app, userMessage)
 
   if (dynamicRAG) {

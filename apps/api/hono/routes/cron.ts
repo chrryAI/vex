@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 import { decayMemories } from "@repo/db"
+import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
 
 export const cron = new Hono()
 
@@ -23,6 +24,36 @@ cron.get("/decayMemories", async (c) => {
     })
   } catch (error) {
     console.error("❌ Memory decay failed:", error)
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500,
+    )
+  }
+})
+
+// GET /cron/syncPlausible - Sync Plausible analytics (Vercel Cron)
+cron.get("/syncPlausible", async (c) => {
+  // Verify the request is from Vercel Cron
+  const authHeader = c.req.header("authorization")
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  try {
+    console.log("🍇 Starting Plausible analytics sync cron job...")
+    await syncPlausibleAnalytics()
+    console.log("✅ Plausible sync completed successfully")
+
+    return c.json({
+      success: true,
+      message: "Plausible analytics synced",
+      timestamp: new Date().toISOString(),
+    })
+  } catch (error) {
+    console.error("❌ Plausible sync failed:", error)
     return c.json(
       {
         success: false,
