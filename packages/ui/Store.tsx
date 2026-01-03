@@ -50,7 +50,7 @@ export default function Store({
     hasStoreApps,
   } = useAuth()
 
-  const { currentStore } = useApp()
+  const { currentStore, setAppStatus } = useApp()
 
   const store = rest.store
     ? rest.store
@@ -217,7 +217,10 @@ export default function Store({
         <Div style={styles.createAgent.style}>
           <Button
             onClick={() => {
-              router.push("/?part=highlights")
+              setAppStatus({
+                part: "highlights",
+                step: "add",
+              })
             }}
             className="inverted"
             style={{ ...utilities.inverted.style }}

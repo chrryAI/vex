@@ -677,7 +677,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           id: undefined, // Explicitly clear id to prevent conflicts
         }
         appForm.reset(freshDefaults)
-        if (threadId && chrry) {
+        if ((threadId || currentStore) && chrry) {
           push(auth.getAppSlug(chrry))
         }
       } else if (step === "restore") {
