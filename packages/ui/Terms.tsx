@@ -21,12 +21,6 @@ export default function Terms() {
 
   const { track } = useAuth()
 
-  useEffect(() => {
-    track({
-      name: "terms",
-    })
-  }, [])
-
   return (
     <Skeleton>
       <Div

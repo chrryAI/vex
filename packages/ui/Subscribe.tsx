@@ -27,6 +27,7 @@ import {
   CircleArrowDown,
   CircleArrowUp,
 } from "./icons"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
@@ -124,7 +125,7 @@ export default function Subscribe({
   const handleCheckout = async (part: "subscription" | "gift") => {
     setPurchaseType(part)
     setPart(part)
-    track({ name: "subscribe_checkout" })
+    track({ name: ANALYTICS_EVENTS.SUBSCRIBE_CHECKOUT })
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -260,7 +261,7 @@ export default function Subscribe({
   }, [user, loggedIn])
 
   const verifyPayment = async (sessionId: string) => {
-    track({ name: "subscribe_verify_payment" })
+    track({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
     const params = new URLSearchParams(window.location.search)
     const isExtensionRedirect = params.get("extension") === "true"
     const userId = params.get("userId")
@@ -287,7 +288,7 @@ export default function Subscribe({
 
     const data = await response.json()
     if (data.success) {
-      track({ name: "subscribe_payment_verified" })
+      track({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
       if (isExtensionRedirect) {
         toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
       } else {
@@ -310,11 +311,11 @@ export default function Subscribe({
       if (data.error) {
         toast.error(data.error)
         track({
-          name: "subscribe_payment_verification_failed",
+          name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED,
           props: { error: data.error },
         })
       } else {
-        track({ name: "subscribe_payment_verification_failed" })
+        track({ name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED })
         toast.error(t("Payment verification failed"))
       }
     }

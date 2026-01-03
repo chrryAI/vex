@@ -431,6 +431,7 @@ export default function App({
     ({ icon }: { icon?: boolean }) =>
       storeApp && (
         <A
+          data-testid={`store-app-${storeApp.slug}`}
           className={`${icon ? "link" : "button transparent"}`}
           style={{
             ...(icon
@@ -1044,6 +1045,8 @@ export default function App({
                       <>
                         {showChrryHere && (
                           <A
+                            data-testid="app-chrry"
+                            title="Chrry"
                             preventDefault
                             href={getAppSlug(chrry)}
                             onClick={(e) => {
@@ -1085,6 +1088,7 @@ export default function App({
                           ) && (
                             <A
                               preventDefault
+                              data-testid={`app-${zarathustra.slug}`}
                               href={getAppSlug(zarathustra)}
                               onClick={(e) => {
                                 if (isManagingApp) {
@@ -1128,6 +1132,7 @@ export default function App({
                             <A
                               preventDefault
                               href={getAppSlug(popcorn)}
+                              data-testid={`app-${popcorn.slug}`}
                               onClick={(e) => {
                                 if (isManagingApp) {
                                   e.preventDefault()
@@ -1193,6 +1198,7 @@ export default function App({
                               }}
                             >
                               <A
+                                data-testid={`app-${item.slug}`}
                                 preventDefault
                                 key={item.slug}
                                 title={t(item.title)}
@@ -1258,6 +1264,7 @@ export default function App({
                         )}
                         {showAtlasHere && atlas && (
                           <A
+                            data-testid={`app-${atlas.slug}`}
                             href={getAppSlug(atlas)}
                             preventDefault
                             onClick={(e) => {

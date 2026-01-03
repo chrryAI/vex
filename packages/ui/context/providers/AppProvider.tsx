@@ -12,6 +12,7 @@ import React, {
 import { useLocalStorage, useNavigation, toast } from "../../platform"
 import useCache from "../../hooks/useCache"
 import console from "../../utils/log"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 
 import { appFormData, appSchema } from "../../schemas/appSchema"
 import { useForm } from "react-hook-form"
@@ -288,7 +289,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         toast.error(result.error)
         setIsSavingApp(false)
         track({
-          name: "app_save_error",
+          name: ANALYTICS_EVENTS.APP_SAVE_ERROR,
           props: {
             success: false,
             error: result.error,
@@ -306,7 +307,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           await fetchApps()
         }
         track({
-          name: "app_save_success",
+          name: ANALYTICS_EVENTS.APP_SAVE_SUCCESS,
           props: {
             success: true,
           },
@@ -319,7 +320,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error(t("Something went wrong"))
       captureException(error)
       track({
-        name: "app_save_error",
+        name: ANALYTICS_EVENTS.APP_SAVE_ERROR,
         props: {
           success: false,
           error: error,
@@ -368,7 +369,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         toast.success(`${t("Deleted")} 😭`)
         track({
-          name: "app_delete_success",
+          name: ANALYTICS_EVENTS.APP_DELETE_SUCCESS,
           props: {
             success: true,
           },
@@ -686,7 +687,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setAppStatusInternal(payload)
 
     track({
-      name: "app_status",
+      name: ANALYTICS_EVENTS.APP_STATUS,
       props: payload,
     })
 

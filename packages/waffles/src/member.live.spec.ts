@@ -13,15 +13,16 @@ import { collaboration } from "./shared/collaboration"
 import { thread } from "./shared/thread"
 import { v4 as uuidv4 } from "uuid"
 import app from "./shared/app"
+import { signIn } from "./shared/signIn"
 
-const isMember = false
+const isMember = true
 
 const isLive = true
 test.beforeEach(async ({ page }) => {
-  await clean({ page, isLive })
+  await clean({ page, isLive, isMember })
 })
 
-test.skip("Subscribe As Guest", async ({ page }) => {
+test.skip("Subscribe As Member", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
@@ -38,6 +39,74 @@ test.skip("Subscribe As Guest", async ({ page }) => {
     page,
     isMember,
     // createChat: false,
+  })
+})
+
+test.only("App", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+
+  await signIn({ page })
+  await app({
+    page,
+    isMember,
+    isLive,
+    slug: "vex",
+    nav: [
+      {
+        name: "peach",
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What feedback do you have?" },
+            { model: "sushi", text: "Show me recent insights" },
+            { model: "sushi", text: "How can I improve my apps?" },
+          ],
+        },
+      },
+      {
+        name: "bloom",
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What can you help me with?" },
+            { model: "sushi", text: "Show me focus features" },
+            { model: "sushi", text: "How do I track my tasks?" },
+          ],
+        },
+      },
+      {
+        name: "vault",
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Show my expenses" },
+            { model: "sushi", text: "What's my budget status?" },
+            { model: "sushi", text: "Track a new expense" },
+          ],
+        },
+      },
+      {
+        name: "atlas",
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Find places in Amsterdam" },
+            { model: "sushi", text: "Show me travel routes" },
+            { model: "sushi", text: "What's nearby?" },
+          ],
+        },
+      },
+      {
+        name: "chrry",
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Show me apps in the store" },
+            { model: "sushi", text: "What's trending?" },
+            { model: "sushi", text: "How do I create an app?" },
+          ],
+        },
+      },
+    ],
+    isNewChat: true,
   })
 })
 

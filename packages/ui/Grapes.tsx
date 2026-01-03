@@ -8,6 +8,8 @@ import { useStarStyles } from "./Star.styles"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+
 const Grappes = ({
   style,
   goToGrape,
@@ -40,7 +42,7 @@ const Grappes = ({
               setShowGrapes(false)
               setSelectedGrapeApp(undefined)
               track({
-                name: "grape_modal_close",
+                name: ANALYTICS_EVENTS.GRAPE_MODAL_CLOSE,
                 props: {
                   apps_shown: grapes.length,
                 },
@@ -48,7 +50,7 @@ const Grappes = ({
             } else {
               setShowGrapes(true)
               track({
-                name: "grape_modal_open",
+                name: ANALYTICS_EVENTS.GRAPE_MODAL_OPEN,
                 props: {
                   apps_available: grapes.length,
                 },
@@ -82,7 +84,7 @@ const Grappes = ({
                   onClick={() => {
                     setSelectedGrapeApp(app)
                     track({
-                      name: "grape_app_select",
+                      name: ANALYTICS_EVENTS.GRAPE_APP_SELECT,
                       props: {
                         app: app.name,
                         slug: app.slug,
@@ -186,7 +188,7 @@ const Grappes = ({
                     className="button inverted"
                     onClick={() => {
                       track({
-                        name: "grape_pear_feedback",
+                        name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
                         props: {
                           app: selectedGrapeApp.name,
                           slug: selectedGrapeApp.slug,
@@ -224,7 +226,7 @@ const Grappes = ({
           }
           setShowGrapes(true)
           track({
-            name: "grape_icon_click",
+            name: ANALYTICS_EVENTS.GRAPE_ICON_CLICK,
             props: {
               apps_available: grapes.length,
             },

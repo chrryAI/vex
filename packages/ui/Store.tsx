@@ -19,6 +19,7 @@ import A from "./a/A"
 import { useStoreMetadata } from "./hooks/useMetadata"
 import { useStyles } from "./context/StylesContext"
 import Loading from "./Loading"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function Store({
   compact,
@@ -118,7 +119,7 @@ export default function Store({
   useEffect(() => {
     if (store) {
       track({
-        name: "Store View",
+        name: ANALYTICS_EVENTS.STORE_VIEW,
         props: {
           storeId: store.id,
           storeName: store.name,
@@ -132,7 +133,7 @@ export default function Store({
   useEffect(() => {
     if (selectedApp) {
       track({
-        name: "Store App Selected",
+        name: ANALYTICS_EVENTS.STORE_APP_SELECTED,
         props: {
           appId: selectedApp.id,
           appName: selectedApp.name,

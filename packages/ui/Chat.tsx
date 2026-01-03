@@ -112,6 +112,7 @@ import { useChatStyles } from "./Chat.styles"
 import { useStyles } from "./context/StylesContext"
 
 import A from "./a/A"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 const MAX_FILES = MAX_FILE_LIMITS.chat
 
@@ -327,7 +328,7 @@ export default function Chat({
     setSelectedAgentInternal(agent)
     setShouldFocus(true)
     track({
-      name: "agent-selected",
+      name: ANALYTICS_EVENTS.AGENT_SELECTED,
       props: {
         agentId: agent?.id,
         agentName: agent?.name,
@@ -600,7 +601,7 @@ export default function Chat({
     setShowQuotaInfoInternal(show)
     show &&
       track({
-        name: "quota-info",
+        name: ANALYTICS_EVENTS.QUOTA_INFO,
         props: {
           show,
         },
@@ -900,7 +901,7 @@ export default function Chat({
     setIsAttachingInternal(attaching)
     attaching &&
       track({
-        name: "is-attaching",
+        name: ANALYTICS_EVENTS.IS_ATTACHING,
         props: {
           attaching,
         },
@@ -1105,7 +1106,7 @@ export default function Chat({
   // Voice conversation functionality
   const startVoiceConversation = async () => {
     track({
-      name: "voice_conversation",
+      name: ANALYTICS_EVENTS.VOICE_CONVERSATION,
       props: {
         started: true,
       },
@@ -1343,7 +1344,7 @@ export default function Chat({
 
   const stopVoiceInput = () => {
     track({
-      name: "voice-input",
+      name: ANALYTICS_EVENTS.VOICE_INPUT,
       props: {
         stopped: true,
       },
@@ -1358,7 +1359,7 @@ export default function Chat({
   const stopSpeechConversation = () => {
     addHapticFeedback()
     track({
-      name: "voice_conversation",
+      name: ANALYTICS_EVENTS.VOICE_CONVERSATION,
       props: {
         stopped: true,
       },
@@ -1459,7 +1460,7 @@ export default function Chat({
   const triggerFileInput = (accept: string) => {
     addHapticFeedback()
     track({
-      name: "file-input",
+      name: ANALYTICS_EVENTS.FILE_INPUT,
       props: {
         accept,
       },
@@ -2201,7 +2202,7 @@ export default function Chat({
   const setIsGame = (value: boolean) => {
     setIsGameInternal(value)
     track({
-      name: "game-toggle",
+      name: ANALYTICS_EVENTS.GAME_TOGGLE,
       props: {
         isGame: value,
       },
@@ -2691,7 +2692,7 @@ export default function Chat({
   useEffect(() => {
     hitHourlyLimit &&
       track({
-        name: "hit-hourly-limit",
+        name: ANALYTICS_EVENTS.HIT_HOURLY_LIMIT,
         props: {
           hourlyUsageLeft,
         },
@@ -2701,7 +2702,7 @@ export default function Chat({
   useEffect(() => {
     files.length > 0 &&
       track({
-        name: "file-upload",
+        name: ANALYTICS_EVENTS.FILE_UPLOAD,
         props: {
           filesLength: files.length,
         },

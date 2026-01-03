@@ -10,6 +10,7 @@ import { apiFetch } from "./utils"
 import { useLanguageSwitcherStyles } from "./LanguageSwitcher.styles"
 import { Button, Div } from "./platform"
 import { useStyles } from "./context/StylesContext"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 const LanguageSwitcher = ({
   style,
@@ -27,7 +28,7 @@ const LanguageSwitcher = ({
 
   const changeLanguage = (newLocale: locale) => {
     track({
-      name: "language_switcher",
+      name: ANALYTICS_EVENTS.LANGUAGE_SWITCHER,
       props: {
         language: newLocale,
       },

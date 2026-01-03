@@ -45,9 +45,10 @@ import {
   getInstructions,
   getCharacterTags,
   getCharacterProfiles,
+  realtimeAnalytics,
 } from "@repo/db"
 
-import { eq } from "drizzle-orm"
+import { eq, desc, gte } from "drizzle-orm"
 
 import { perplexity } from "@ai-sdk/perplexity"
 
@@ -284,7 +285,12 @@ async function getRelevantMemoryContext({
   pageSize?: number
   threadId?: string
   app?: any // App object to check ownership
-}): Promise<{ context: string; memoryIds: string[]; isAppCreator?: boolean }> {
+}): Promise<{
+  context: string
+  memoryIds: string[]
+  isAppCreator?: boolean
+  recentAnalytics?: any[]
+}> {
   if (!userId && !guestId && !appId) return { context: "", memoryIds: [] }
 
   try {
@@ -356,8 +362,23 @@ async function getRelevantMemoryContext({
       nextPage: userMemoriesData.nextPage || appMemoriesData.nextPage,
     }
 
+    // Get recent real-time analytics for AI context (last 50 events)
+    const recentAnalytics =
+      userId || guestId
+        ? await db
+            .select()
+            .from(realtimeAnalytics)
+            .where(
+              userId
+                ? eq(realtimeAnalytics.userId, userId)
+                : eq(realtimeAnalytics.guestId, guestId!),
+            )
+            .orderBy(desc(realtimeAnalytics.createdOn))
+            .limit(50)
+        : []
+
     if (!memoriesResult.memories || memoriesResult.memories.length === 0) {
-      return { context: "", memoryIds: [] }
+      return { context: "", memoryIds: [], recentAnalytics }
     }
 
     // Sort by importance (highest first) and take top 5
@@ -422,7 +443,7 @@ async function getRelevantMemoryContext({
         : ""
       context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}${appCreatorNote}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
     }
-    return { context, memoryIds, isAppCreator }
+    return { context, memoryIds, isAppCreator, recentAnalytics }
   } catch (error) {
     console.error("❌ Error retrieving memory context:", error)
     return { context: "", memoryIds: [] }
@@ -553,6 +574,60 @@ async function getAnalyticsContext(): Promise<string> {
 
       context += `---\n\n`
     })
+
+    // Add real-time user behavior analytics (last 24 hours, limit 200 events)
+    try {
+      const realtimeEvents = await db
+        .select()
+        .from(realtimeAnalytics)
+        .where(
+          // Last 24 hours
+          gte(
+            realtimeAnalytics.createdOn,
+            new Date(Date.now() - 24 * 60 * 60 * 1000),
+          ),
+        )
+        .orderBy(desc(realtimeAnalytics.createdOn))
+        .limit(200)
+
+      if (realtimeEvents.length > 0) {
+        context += `## 🔥 Real-Time User Behavior (Last 24 Hours):\n\n`
+
+        // Analyze event patterns
+        const eventCounts = realtimeEvents.reduce(
+          (acc: Record<string, number>, event) => {
+            acc[event.eventName] = (acc[event.eventName] || 0) + 1
+            return acc
+          },
+          {},
+        )
+
+        const topEvents = Object.entries(eventCounts)
+          .sort(([, a], [, b]) => (b as number) - (a as number))
+          .slice(0, 15)
+
+        context += `**Top User Actions** (${realtimeEvents.length} total events):\n`
+        topEvents.forEach(([name, count], i) => {
+          context += `${i + 1}. ${name}: ${count}x\n`
+        })
+        context += `\n`
+
+        // Unique users
+        const uniqueUsers = new Set(
+          realtimeEvents.map((e) => e.userId || e.guestId).filter(Boolean),
+        ).size
+
+        context += `**Active Users**: ${uniqueUsers} unique users/guests\n\n`
+
+        context += `💡 **Use this to**:\n`
+        context += `- Identify most popular features and workflows\n`
+        context += `- Spot usage patterns and trends\n`
+        context += `- Understand what users are doing right now\n`
+        context += `- Suggest improvements based on actual behavior\n\n`
+      }
+    } catch (error) {
+      console.error("Error fetching real-time analytics:", error)
+    }
 
     context += `**IMPORTANT**: When the user asks "what did you learn today?" or similar questions:\n`
     context += `1. Analyze if there are significant changes worth remembering\n`
@@ -1781,6 +1856,7 @@ ${
     context: memoryContext,
     memoryIds,
     isAppCreator,
+    recentAnalytics,
   } = await getRelevantMemoryContext({
     userId: member?.id,
     guestId: guest?.id,
@@ -1789,6 +1865,55 @@ ${
     threadId: message.message.threadId, // Pass current thread to exclude
     app, // Pass app object to check ownership
   })
+
+  // Build analytics context from recent user behavior
+  let userBehaviorContext = ""
+  if (
+    recentAnalytics &&
+    recentAnalytics.length > 0 &&
+    (member?.memoriesEnabled || guest?.memoriesEnabled)
+  ) {
+    // Analyze patterns
+    const eventCounts = recentAnalytics.reduce(
+      (acc: Record<string, number>, event: any) => {
+        acc[event.eventName] = (acc[event.eventName] || 0) + 1
+        return acc
+      },
+      {},
+    )
+
+    const topEvents = Object.entries(eventCounts)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .slice(0, 10)
+      .map(([name, count]) => `${name} (${count}x)`)
+
+    const recentEventsList = recentAnalytics
+      .slice(0, 15)
+      .map((e: any) => {
+        const props = e.eventProps ? ` - ${JSON.stringify(e.eventProps)}` : ""
+        return `• ${e.eventName}${props}`
+      })
+      .join("\n")
+
+    userBehaviorContext = `
+
+## 📊 USER BEHAVIOR INSIGHTS:
+Based on recent activity, the user has been:
+
+**Top Actions**: ${topEvents.join(", ")}
+
+**Recent Events**:
+${recentEventsList}
+
+💡 **Use this to**:
+- Understand user's current workflow and context
+- Suggest relevant features they haven't tried
+- Identify patterns and optimize their experience
+- Provide proactive help based on their behavior
+
+⚠️ **Important**: This is REAL-TIME user behavior data. Use it to provide contextual, timely assistance.
+`
+  }
 
   // Fetch user-created instructions (max 7)
   const userInstructions = await getInstructions({
@@ -2858,6 +2983,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     characterContext, // User's personality & communication style (tone guidance)
     moodContext, // User's emotional state (empathy)
     memoryContext, // Background knowledge (context) - AFTER instructions
+    userBehaviorContext, // Real-time user behavior patterns and workflow insights
     placeholderContext,
     calendarContext,
     vaultContext,

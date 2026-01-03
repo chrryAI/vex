@@ -26,6 +26,7 @@ import { cleanSlug } from "../../utils/clearLocale"
 import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
 import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 
 import {
   aiAgent,
@@ -48,6 +49,7 @@ import { getApp, getSession, getUser, getGuest } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { defaultLocale, locale, locales } from "../../locales"
+import { MEANINGFUL_EVENTS } from "../../utils/analyticsEvents"
 import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { getAppAndStoreSlugs } from "../../utils/url"
@@ -1046,6 +1048,10 @@ export function AuthProvider({
     }
   }, [searchParams, user])
 
+  // Throttle map to prevent duplicate rapid-fire events
+  const trackThrottleMap = useRef<Map<string, number>>(new Map())
+  const TRACK_THROTTLE_MS = 3000 // 3 seconds
+
   const track = ({
     name,
     url,
@@ -1058,7 +1064,14 @@ export function AuthProvider({
     props?: Record<string, any>
   }) => {
     if (!user && !guest) return
-    if (!isE2E && user?.role === "admin") return
+
+    // Throttle: Skip if same event was tracked recently
+    const now = Date.now()
+    const lastTracked = trackThrottleMap.current.get(name)
+    if (lastTracked && now - lastTracked < TRACK_THROTTLE_MS) {
+      return // Skip this event
+    }
+    trackThrottleMap.current.set(name, now)
 
     // Normalize URL for different platforms
     let normalizedUrl = url
@@ -1080,6 +1093,34 @@ export function AuthProvider({
       }
     }
 
+    // Only send meaningful events to API for AI context
+    if (memoriesEnabled && token && MEANINGFUL_EVENTS.includes(name as any)) {
+      fetch(`${API_URL}/analytics/grape`, {
+        method: "POST",
+        credentials: "include", // Send cookies for auth
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          url: normalizedUrl,
+          props: {
+            ...props,
+            appName: app?.name,
+            appSlug: app?.slug,
+            baseAppName: baseApp?.name,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch((error) => {
+        captureException(error)
+        console.error("❌ Analytics track error:", error)
+      }) // Fire and forget
+    }
+
+    if (!isE2E && user?.role === "admin") return
+
     trackEvent({
       name,
       url: normalizedUrl,
@@ -1095,7 +1136,14 @@ export function AuthProvider({
         device,
         isMember: !!user,
         isGuest: !!guest,
+        appName: app?.name,
+        appSlug: app?.slug,
+        baseAppName: baseApp?.name,
         isSubscriber: !!(user || guest)?.subscription,
+        isOwner: isOwner(app, {
+          userId: user?.id,
+          guestId: guest?.id,
+        }),
       },
     })
   }
@@ -1103,15 +1151,9 @@ export function AuthProvider({
   useEffect(() => {
     app &&
       track({
-        name: "app",
-        url: `${FRONTEND_URL}${getAppSlug(app)}`,
-        props: {
-          app: app?.name,
-          slug: app?.slug,
-          id: app?.id,
-        },
+        name: ANALYTICS_EVENTS.APP,
       })
-  }, [app])
+  }, [app, pathname])
 
   useEffect(() => {
     if (!fingerprint) return
@@ -1162,7 +1204,7 @@ export function AuthProvider({
 
     if (utmSource) {
       track({
-        name: "ad_visit",
+        name: ANALYTICS_EVENTS.AD_VISIT,
         props: {
           source: utmSource,
           medium: utmMedium || "unknown",
@@ -1439,7 +1481,7 @@ export function AuthProvider({
         toast.error(t("When you burn there is nothing to remember"))
       }
       track({
-        name: "burn",
+        name: ANALYTICS_EVENTS.BURN,
         props: {
           value,
           app: app?.name,
@@ -1511,7 +1553,7 @@ export function AuthProvider({
     setIsPearInternal(isPearInternal)
     if (isPearInternal)
       track({
-        name: "pear",
+        name: ANALYTICS_EVENTS.PEAR,
         props: {
           value: true,
           app: app?.name,
@@ -1691,7 +1733,18 @@ export function AuthProvider({
     }
   }, [user, guest, isSessionLoading])
 
-  const { setColorScheme, setTheme } = useTheme()
+  const { setColorScheme, setTheme, theme, colorScheme, isDark } = useTheme()
+
+  useEffect(() => {
+    track({
+      name: ANALYTICS_EVENTS.THEME_CHANGE,
+      props: {
+        // theme,
+        colorScheme,
+        isDark,
+      },
+    })
+  }, [theme, colorScheme, isDark])
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -1903,7 +1956,7 @@ export function AuthProvider({
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
           track({
-            name: "performance",
+            name: ANALYTICS_EVENTS.PERFORMANCE,
             props: {
               name: entry.name,
               entryType: entry.entryType,

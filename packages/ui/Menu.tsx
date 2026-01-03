@@ -24,6 +24,7 @@ import {
   FRONTEND_URL,
   VERSION,
 } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
 import { useAppContext } from "./context/AppContext"
@@ -152,7 +153,7 @@ export default function Menu({
   const toggleMenu = () => {
     addHapticFeedback()
     track({
-      name: "menu-toggle",
+      name: ANALYTICS_EVENTS.MENU_TOGGLE,
       props: {
         isDrawerOpen,
         isSmallDevice,
@@ -326,7 +327,7 @@ export default function Menu({
                     onClick={(e) => {
                       addHapticFeedback()
                       track({
-                        name: "home-click",
+                        name: ANALYTICS_EVENTS.HOME_CLICK,
                       })
                       if (e.metaKey || e.ctrlKey) {
                         return
@@ -385,7 +386,7 @@ export default function Menu({
                 href={FRONTEND_URL}
                 onClick={(e) => {
                   track({
-                    name: "new-chat-click",
+                    name: ANALYTICS_EVENTS.NEW_CHAT_CLICK,
                   })
                   if (e.metaKey || e.ctrlKey) {
                     return
@@ -406,7 +407,7 @@ export default function Menu({
               <Button
                 onClick={() => {
                   track({
-                    name: "private-chat-click",
+                    name: ANALYTICS_EVENTS.PRIVATE_CHAT_CLICK,
                   })
                   setShowFocus(false)
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
@@ -676,7 +677,7 @@ export default function Menu({
                                       return
                                     }
                                     track({
-                                      name: "thread-click-menu",
+                                      name: ANALYTICS_EVENTS.THREAD_CLICK_MENU,
                                       props: {
                                         threadId: thread.id,
                                       },
@@ -753,11 +754,9 @@ export default function Menu({
                                   data-testid="load-more-threads-menu"
                                   onClick={() => {
                                     addHapticFeedback()
-
                                     track({
-                                      name: "load-more-threads-menu",
+                                      name: ANALYTICS_EVENTS.LOAD_MORE_THREADS_MENU,
                                     })
-
                                     isSmallDevice ? toggleMenu() : null
                                     collaborationStatus
                                       ? goToThreads({

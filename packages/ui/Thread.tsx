@@ -40,6 +40,7 @@ import { useHasHydrated, useThreadMetadata } from "./hooks"
 import { lazy, Suspense } from "react"
 import { useStyles } from "./context/StylesContext"
 import { BREAKPOINTS } from "./styles/breakpoints"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
@@ -880,7 +881,7 @@ const Thread = ({
                       }
 
                       track({
-                        name: "thread-message-agent",
+                        name: ANALYTICS_EVENTS.THREAD_MESSAGE_AGENT,
                         props: {
                           isStreaming: false,
                           agentId: selectedAgent?.id,
