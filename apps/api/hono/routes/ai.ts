@@ -2376,7 +2376,7 @@ ${(() => {
 
   // Get live analytics context for Grape
   const analyticsContext =
-    app?.slug === "grape" &&
+    (app?.slug === "grape" || app?.slug === "pear") &&
     isOwner(app, {
       userId: member?.id,
     })
@@ -2385,7 +2385,7 @@ ${(() => {
 
   // Get recent feedback context for Pear
   const pearContext =
-    app?.slug === "pear" &&
+    (app?.slug === "pear" || app?.slug === "grape") &&
     isOwner(app, {
       userId: member?.id,
     })
