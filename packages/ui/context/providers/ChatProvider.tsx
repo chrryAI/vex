@@ -386,8 +386,24 @@ export function ChatProvider({
 
   const [wasIncognito, setWasIncognito] = useState(burn)
 
+  const loadingAppRef = useRef<appWithStore | undefined>(undefined)
+
+  useEffect(() => {
+    const a = storeApps.find((app) => app.id === loadingAppRef?.current?.id)
+    if (hasStoreApps(a) && a) {
+      loadingAppRef.current = undefined
+
+      router.push(getAppSlug(a))
+    }
+  }, [loadingApp, storeApps])
+
   const setIsNewAppChat = (item: appWithStore | undefined) => {
     if (!item) {
+      return
+    }
+    if (!hasStoreApps(item)) {
+      loadingAppRef.current = item
+      setLoadingApp(item)
       return
     }
 

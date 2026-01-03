@@ -1226,14 +1226,21 @@ export default function App({
                                 }}
                               >
                                 {loadingApp?.id === item.id ? (
-                                  <Loading
-                                    color={
-                                      COLORS[
-                                        item.themeColor as keyof typeof COLORS
-                                      ]
-                                    }
-                                    size={24}
-                                  />
+                                  <Span
+                                    style={{
+                                      width: "24px",
+                                      height: "24px",
+                                    }}
+                                  >
+                                    <Loading
+                                      color={
+                                        COLORS[
+                                          item.themeColor as keyof typeof COLORS
+                                        ]
+                                      }
+                                      size={24}
+                                    />
+                                  </Span>
                                 ) : (
                                   <>
                                     <Img

@@ -196,7 +196,7 @@ export default function Img({
       style={{ ...imgStyles.container.style, width, height }}
     >
       {isLoading && showLoading && (
-        <Div style={imgStyles.loadingPlaceholder.style}>
+        <Div style={{ ...imgStyles.loadingPlaceholder.style, width, height }}>
           <Loading />
         </Div>
       )}
