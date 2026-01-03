@@ -1947,5 +1947,6 @@
   "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.": "기술 스택을 언급하세요! 정확하고, 실제 운영에 적합한 코드를 위해 프레임워크, 라이브러리, 버전을 명시하세요.",
   "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.": "테스트를 요청하세요! 코드의 품질을 높이기 위해 유닛 테스트, 통합 테스트, 또는 E2E 테스트를 요청하세요.",
   "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.": "최적화가 필요하신가요? 기존 코드의 시간/공간 복잡도 분석 또는 성능 개선을 요청하세요.",
-  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "문서화를 요청하세요! 코드를 유지보수하기 쉽게 만들기 위해 인라인 주석, JSDoc, 또는 README 파일을 요청하세요."
+  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "문서화를 요청하세요! 코드를 유지보수하기 쉽게 만들기 위해 인라인 주석, JSDoc, 또는 README 파일을 요청하세요.",
+  "Let's Pear": "Let's Pear"
 }

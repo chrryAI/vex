@@ -1947,5 +1947,6 @@
   "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.": "テックスタックについて言及してください！正確で、本番環境に適したコードのために、フレームワーク、ライブラリ、バージョンを指定してください。",
   "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.": "テストをリクエストしましょう！コードの品質を向上させるために、ユニットテスト、統合テスト、またはE2Eテストを一緒にリクエストしてください。",
   "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.": "最適化が必要ですか？既存のコードの時間/空間複雑性分析またはパフォーマンスの改善をリクエストしてください。",
-  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "ドキュメンテーションをリクエストしましょう！コードを保守可能にするために、インラインコメント、JSDoc、またはREADMEファイルをリクエストしてください。"
+  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "ドキュメンテーションをリクエストしましょう！コードを保守可能にするために、インラインコメント、JSDoc、またはREADMEファイルをリクエストしてください。",
+  "Let's Pear": "Let's Pear"
 }

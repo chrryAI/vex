@@ -1528,8 +1528,9 @@ export function AuthProvider({
           pear: "true",
         })
       } else {
-        value && router.push(`${getAppSlug(value)}?pear=true`)
+        router.push(`${getAppSlug(value)}?pear=true`)
       }
+      toast.success(t("Let's Pear") + " 🍐")
     }
   }
 
