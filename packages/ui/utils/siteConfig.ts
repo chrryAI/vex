@@ -2310,6 +2310,8 @@ export const whiteLabels = [
   vex,
 ]
 
+export const analyticsDomains = whiteLabels.concat(e2eVex)
+
 /**
  * Check if current site is Chrry
  */
