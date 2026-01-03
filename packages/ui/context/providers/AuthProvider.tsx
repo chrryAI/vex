@@ -785,6 +785,7 @@ export function AuthProvider({
   const [loadingAppId, setLoadingAppId] = useState<string | undefined>(
     undefined,
   )
+
   const allApps = merge(
     session?.app?.store?.apps || [],
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
@@ -1337,8 +1338,8 @@ export function AuthProvider({
 
   useEffect(() => {
     if (storeAppsSwr) {
-      storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId) &&
-        setLoadingApp(undefined)
+      const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
+      if (hasStoreApps(a)) setLoadingApp(undefined)
       mergeApps(storeAppsSwr.store?.apps || [])
 
       const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
@@ -1386,7 +1387,7 @@ export function AuthProvider({
         return
       }
     }
-  }, [storeAppsSwr, newApp, updatedApp])
+  }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
   const [showFocus, setShowFocus] = useState(false)
 
@@ -1521,6 +1522,7 @@ export function AuthProvider({
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
+    value && setShowFocus(false)
     setIsPearInternal(!!value)
     if (value && app) {
       if (app.id === value.id) {
