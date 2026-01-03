@@ -19,6 +19,7 @@ import {
   useLocalStorage,
   storage,
 } from "../../platform"
+import { isOwner } from "../../utils"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
@@ -76,6 +77,10 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      isRetro: boolean
+      grape: appWithStore | undefined
+      setIsRetro: (value: boolean) => void
+      accountApps: appWithStore[]
       isIDE: boolean
       toggleIDE: () => void
       instructions?: instruction[]
@@ -1095,6 +1100,19 @@ export function AuthProvider({
   }
 
   useEffect(() => {
+    app &&
+      track({
+        name: "app",
+        url: `${FRONTEND_URL}${getAppSlug(app)}`,
+        props: {
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
+        },
+      })
+  }, [app])
+
+  useEffect(() => {
     if (!fingerprint) return
 
     if (TEST_MEMBER_FINGERPRINTS?.includes(fingerprint)) {
@@ -1131,6 +1149,28 @@ export function AuthProvider({
       setUserRole(user.role)
     }
   }, [user])
+
+  // Track UTM parameters for ad attribution (EthicalAds, etc.)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const params = new URLSearchParams(window.location.search)
+    const utmSource = params.get("utm_source")
+    const utmMedium = params.get("utm_medium")
+    const utmCampaign = params.get("utm_campaign")
+
+    if (utmSource) {
+      track({
+        name: "ad_visit",
+        props: {
+          source: utmSource,
+          medium: utmMedium || "unknown",
+          campaign: utmCampaign || "unknown",
+          app: app?.name || "unknown",
+        },
+      })
+    }
+  }, []) // Run once on mount
 
   const [characterProfilesEnabled, setCharacterProfilesEnabled] = useState(
     !!(user || guest)?.characterProfilesEnabled,
@@ -1375,11 +1415,6 @@ export function AuthProvider({
   const burn = burnInternal === null ? isZarathustra : burnInternal
 
   const burning = !!(burn || burnApp)
-  const apps = storeApps.filter((item) => {
-    return app?.store?.app?.store?.apps?.some((app) => {
-      return app.id === item.id
-    })
-  })
 
   useEffect(() => {
     if (!app) return
@@ -1406,6 +1441,9 @@ export function AuthProvider({
         name: "burn",
         props: {
           value,
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
         },
       })
     }
@@ -1432,6 +1470,19 @@ export function AuthProvider({
     isProgrammeInternal === null && setIsProgrammeInternal(isBaseAppZarathustra)
   }, [isBaseAppZarathustra, baseApp])
 
+  const apps = storeApps.filter((item) => {
+    return app?.store?.app?.store?.apps?.some((app) => {
+      return app.id === item.id
+    })
+  })
+
+  const [isRetro, setIsRetro] = useLocalStorage<boolean>("retro", false)
+  const accountApps = apps?.filter((app) =>
+    isOwner(app, {
+      userId: user?.id,
+      guestId: guest?.id,
+    }),
+  )
   const setIsProgramme = (value: boolean) => {
     setIsProgrammeInternal(value)
     removeParams("programme")
@@ -1440,12 +1491,14 @@ export function AuthProvider({
   const grapes =
     app?.id === zarathustra?.id
       ? []
-      : apps.filter(
+      : storeApps.filter(
           (app) =>
             whiteLabels.some((w) => w.slug === app.slug) &&
             app.store?.appId === app.id &&
             app.id !== zarathustra?.id,
         )
+
+  const grape = storeApps.find((app) => app.slug === "grape")
 
   const isPearInternal = searchParams.get("pear") === "true"
 
@@ -1455,14 +1508,29 @@ export function AuthProvider({
 
   useEffect(() => {
     setIsPearInternal(isPearInternal)
+    if (isPearInternal)
+      track({
+        name: "pear",
+        props: {
+          value: true,
+          app: app?.name,
+          slug: app?.slug,
+          id: app?.id,
+        },
+      })
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
-    if (app?.slug === "zarathustra") return
-
     setIsPearInternal(!!value)
-    value && router.push(`${getAppSlug(value)}?pear=true`)
-    !value && removeParams("pear")
+    if (value && app) {
+      if (app.id === value.id) {
+        addParams({
+          pear: "true",
+        })
+      } else {
+        value && router.push(`${getAppSlug(value)}?pear=true`)
+      }
+    }
   }
 
   const isProgramme =
@@ -2071,6 +2139,7 @@ export function AuthProvider({
         guestBaseApp,
         hasStoreApps,
         storeAppsSwr,
+        accountApps,
         threadIdRef,
         vex,
         fetchApps: async () => {
@@ -2109,6 +2178,8 @@ export function AuthProvider({
         setFingerprint,
         deviceId,
         isGuestTest,
+        setIsRetro,
+        isRetro,
         isMemberTest,
         user,
         setUser,
@@ -2144,6 +2215,7 @@ export function AuthProvider({
         signInContext,
         signOutContext,
         characterProfilesEnabled,
+        grape,
         apps,
         setApps: setAllApps,
         setHasNotification,

@@ -71,6 +71,7 @@ import {
   type collaboration,
   emojiMap,
 } from "./types"
+import Grapes from "./Grapes"
 import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "./icons"
 import Modal from "./Modal"
 import Loading from "./Loading"
@@ -228,6 +229,9 @@ export default function Chat({
     burn,
     isPear,
     isIDE,
+    accountApps,
+    isRetro,
+    setIsRetro,
     ...auth
   } = useAuth()
 
@@ -497,6 +501,7 @@ export default function Chat({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [retroAppIndex, setRetroAppIndex] = useState(0)
   const controller = new AbortController()
 
   const [files, setFilesInternal] = useState<File[]>([])
@@ -2211,8 +2216,8 @@ export default function Chat({
 
   // Memoize deps to prevent reconnection loop
   const webSocketDeps = useMemo(
-    () => [isSpeechActive, app?.id, deviceId],
-    [isSpeechActive, app?.id, deviceId],
+    () => [isSpeechActive, app?.id, deviceId, accountApps],
+    [isSpeechActive, app?.id, deviceId, accountApps],
   )
 
   useWebSocket<{
@@ -2342,6 +2347,70 @@ export default function Chat({
             })
           }
         }
+
+        // if (
+        //   isRetro &&
+        //   accountApps?.length &&
+        //   retroAppIndex < accountApps.length
+        // ) {
+        //   // Get next app to process
+        //   const retroApp = accountApps[retroAppIndex]
+
+        //   onMessage?.({
+        //     content: "",
+        //     isUser: false,
+        //     message: {
+        //       ...data.message,
+        //       message: {
+        //         ...data.message?.message,
+        //         id: data.message.message.clientId,
+        //       },
+        //       aiAgent: aiAgents?.find((agent) => agent.id === retroApp.id),
+        //     },
+        //     isStreaming: true,
+        //     isImageGenerationEnabled: data?.isImageGenerationEnabled,
+        //     isWebSearchEnabled: data?.isWebSearchEnabled,
+        //   })
+        //   setIsStreaming(true)
+
+        //   const requestHeaders = {
+        //     "Content-Type": "application/json",
+        //     Authorization: `Bearer ${token}`,
+        //   }
+        //   const requestBody = JSON.stringify({
+        //     messageId: data.message.message.id,
+        //     agentId: retroApp.id,
+        //     retroAppId: accountApps[retroAppIndex + 1]?.id, // Pass next app ID
+        //     language,
+        //     isSpeechActive,
+        //     deviceId,
+        //     appId: retroApp.id,
+        //     isRetro: true,
+        //   })
+
+        //   try {
+        //     const retroResponse = await apiFetch(`${API_URL}/ai`, {
+        //       method: "POST",
+        //       headers: requestHeaders,
+        //       body: requestBody,
+        //       signal: controller.signal,
+        //     })
+
+        //     if (!retroResponse.ok) {
+        //       toast.error(`Error getting insights from ${retroApp.name}`)
+        //       // Move to next app even on error
+        //       setRetroAppIndex(retroAppIndex + 1)
+        //     }
+        //   } catch (error) {
+        //     console.error(`Retro error for ${retroApp.name}:`, error)
+        //     // Move to next app even on error
+        //     setRetroAppIndex(retroAppIndex + 1)
+        //   }
+        // } else if (isRetro && retroAppIndex >= accountApps.length) {
+        //   // All apps processed, turn off retro mode
+        //   setIsRetro(false)
+        //   setRetroAppIndex(0)
+        // }
 
         if (
           data.message.message.debateAgentId &&
@@ -3527,22 +3596,60 @@ export default function Chat({
                     {Top}
                   </Div>
                 )}
-                {hasBottomOffset && (
-                  <Button
-                    className="link"
-                    style={{
-                      ...styles.scrollDownButton.style,
-                      ...utilities.link.style,
-                    }}
-                    onClick={showInputAndScrollToBottom}
-                    title={t("Scroll to bottom")}
-                  >
-                    <CircleArrowDown size={25} />
-                  </Button>
-                )}
+                <Div style={{ display: "flex", gap: 7.5 }}>
+                  {hasBottomOffset ? (
+                    <Button
+                      className="link"
+                      style={{
+                        ...styles.scrollDownButton.style,
+                        ...utilities.link.style,
+                      }}
+                      onClick={showInputAndScrollToBottom}
+                      title={t("Scroll to bottom")}
+                    >
+                      <CircleArrowDown size={25} />
+                    </Button>
+                  ) : empty && !threadIdRef.current ? (
+                    isOwner(app, {
+                      userId: user?.id,
+                      guestId: guest?.id,
+                    }) ? (
+                      <Button
+                        className="link"
+                        style={{
+                          position: "relative",
+
+                          top: 30,
+                          zIndex: 50,
+
+                          ...utilities.link.style,
+                        }}
+                        onClick={() => {
+                          setIsRetro(!isRetro)
+                          setInput("Hey guys, what you learned today?")
+                        }}
+                      >
+                        <Img size={22} icon={"spaceInvader"} />
+                        {isSmallDevice ? null : "Check-in"}
+                      </Button>
+                    ) : null
+                  ) : null}
+
+                  {empty && !threadIdRef.current && !isPear && (
+                    <>
+                      <Grapes
+                        style={{
+                          position: "relative",
+                          top: 30,
+                          zIndex: 50,
+                          ...utilities.xSmall.style,
+                        }}
+                      />
+                    </>
+                  )}
+                </Div>
               </Div>
             )}
-
             <>
               {collaborationStep === 2 ? (
                 <Div style={styles.collaborationTooltip.style}>
@@ -3919,11 +4026,6 @@ export default function Chat({
                           title={t("Add debate agent")}
                           onClick={() => {
                             addHapticFeedback()
-                            if (appStatus?.part) {
-                              toast.error(t("Agent locked during app creation"))
-                              return
-                            }
-
                             if (debateAgent || selectedAgent?.name === "flux") {
                               setIsAgentModalOpen(true)
                             } else setIsDebateAgentModalOpen(true)
@@ -3968,12 +4070,6 @@ export default function Chat({
                             data-testid="add-debate-agent-button"
                             data-agent-name={debateAgent.name}
                             onClick={() => {
-                              if (appStatus?.part) {
-                                toast.error(
-                                  t("Agent locked during app creation"),
-                                )
-                                return
-                              }
                               addHapticFeedback()
                               setIsDebateAgentModalOpen(true)
                             }}
@@ -4013,12 +4109,6 @@ export default function Chat({
                             data-agent-name={selectedAgent.name}
                             data-testid="agent-select-button"
                             onClick={() => {
-                              if (appStatus?.part) {
-                                toast.error(
-                                  t("Agent locked during app creation"),
-                                )
-                                return
-                              }
                               addHapticFeedback()
                               setIsAgentModalOpen(true)
                             }}

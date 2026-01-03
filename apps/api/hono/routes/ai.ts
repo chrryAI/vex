@@ -9,6 +9,8 @@ import {
   checkPearQuota,
   incrementPearQuota,
   updateUser,
+  getAnalyticsSite,
+  getAnalyticsSites,
   updateGuest,
 } from "@repo/db"
 
@@ -44,6 +46,8 @@ import {
   getCharacterTags,
   getCharacterProfiles,
 } from "@repo/db"
+
+import { eq } from "drizzle-orm"
 
 import { perplexity } from "@ai-sdk/perplexity"
 
@@ -272,16 +276,21 @@ async function getRelevantMemoryContext({
   appId,
   pageSize = 15,
   threadId,
+  app,
 }: {
   userId?: string
   guestId?: string
   appId?: string
   pageSize?: number
   threadId?: string
-}): Promise<{ context: string; memoryIds: string[] }> {
+  app?: any // App object to check ownership
+}): Promise<{ context: string; memoryIds: string[]; isAppCreator?: boolean }> {
   if (!userId && !guestId && !appId) return { context: "", memoryIds: [] }
 
   try {
+    // Check if user is the app creator
+    const isAppCreator = app && isOwner(app, { userId, guestId })
+
     // Get user memories scattered across different threads (exclude current thread)
     const userMemoriesData: {
       memories: memory[]
@@ -309,6 +318,11 @@ async function getRelevantMemoryContext({
     )
 
     // Get app-specific memories
+    // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
+    const appMemoryPageSize = isAppCreator
+      ? pageSize * 10 // Creators get 150 app memories (10x boost)
+      : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
+
     const appMemoriesData: {
       memories: memory[]
       totalCount: number
@@ -317,7 +331,7 @@ async function getRelevantMemoryContext({
     } = appId
       ? await getMemories({
           appId,
-          pageSize: Math.ceil(pageSize / 2), // Allocate half the space for app memories
+          pageSize: appMemoryPageSize,
           orderBy: "importance",
           excludeThreadId: threadId,
           scatterAcrossThreads: true,
@@ -403,9 +417,12 @@ async function getRelevantMemoryContext({
       context += `\n\nRELEVANT CONTEXT ABOUT THE USER:\n${userMemoryContext}\n\nUse this context to personalize your responses when relevant.`
     }
     if (appMemoryContext) {
-      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
+      const appCreatorNote = isAppCreator
+        ? `\n\n🎯 APP CREATOR ACCESS: You are the creator of this app. You have enhanced access to ${appMemories.length} app memories (10x boost) to see comprehensive DNA Thread knowledge and understand what your app has learned across all user interactions. This is your app's "startup summary" - use it to understand the collective intelligence your app has gained.`
+        : ""
+      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}${appCreatorNote}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
     }
-    return { context, memoryIds }
+    return { context, memoryIds, isAppCreator }
   } catch (error) {
     console.error("❌ Error retrieving memory context:", error)
     return { context: "", memoryIds: [] }
@@ -457,6 +474,274 @@ async function getNewsContext(slug?: string | null): Promise<string> {
     return `\n\n## Recent News Context (Last 7 Days):\nToday's date: ${today}\n\n${newsContext}\n\nIMPORTANT: These are RECENT news articles (published within the last 7 days). When referencing them, use present tense or recent past tense (e.g., "According to recent reports..." or "Today, CNN reports..."). Always cite the source and check the published date.`
   } catch (error) {
     console.error("Error fetching news context:", error)
+    return ""
+  }
+}
+
+async function getAnalyticsContext(): Promise<string> {
+  console.log("🍇 getAnalyticsContext called for Grape!")
+
+  try {
+    // Fetch all analytics sites from DB (synced by cron)
+    const sites = await getAnalyticsSites()
+    console.log(`🍇 Found ${sites.length} analytics sites in DB`)
+
+    if (!sites || sites.length === 0) {
+      console.log("🍇 No analytics sites found in DB")
+      return "" // No data yet, cron hasn't run
+    }
+
+    let context = `\n\n## 📊 Platform Analytics (Last 7 Days):\n\n`
+
+    // Loop through all sites
+    sites.forEach((site, index) => {
+      if (!site.stats) {
+        console.log(`🍇 No stats for ${site.domain}`)
+        return
+      }
+
+      const stats = site.stats
+
+      // Add site header
+      context += `### ${index + 1}. ${site.domain}\n\n`
+
+      // Overview
+      context += `**Overview:**\n`
+      context += `- **Visitors**: ${stats.visitors.toLocaleString()}\n`
+      context += `- **Pageviews**: ${stats.pageviews.toLocaleString()}\n`
+      context += `- **Visits**: ${stats.visits.toLocaleString()}\n`
+      context += `- **Views per Visit**: ${stats.views_per_visit.toFixed(1)}\n`
+      context += `- **Bounce Rate**: ${Math.round(stats.bounce_rate)}%\n`
+      context += `- **Avg Duration**: ${Math.round(stats.visit_duration)}s\n`
+      context += `- **Last Updated**: ${new Date(stats.lastSynced).toLocaleString()}\n\n`
+
+      // Top pages (top 3 per site)
+      if (stats.topPages && stats.topPages.length > 0) {
+        context += `**Top Pages:**\n`
+        stats.topPages.slice(0, 3).forEach((page, i) => {
+          context += `${i + 1}. ${page.page} - ${page.visitors.toLocaleString()} visitors\n`
+        })
+        context += `\n`
+      }
+
+      // Traffic sources (top 3 per site)
+      if (stats.sources && stats.sources.length > 0) {
+        context += `**Traffic Sources:**\n`
+        stats.sources.slice(0, 3).forEach((source, i) => {
+          context += `${i + 1}. ${source.source} - ${source.visitors.toLocaleString()} visitors\n`
+        })
+        context += `\n`
+      }
+
+      // Top countries (top 3 per site)
+      if (stats.countries && stats.countries.length > 0) {
+        context += `**Top Countries:**\n`
+        stats.countries.slice(0, 3).forEach((country, i) => {
+          context += `${i + 1}. ${country.country} - ${country.visitors.toLocaleString()} visitors\n`
+        })
+        context += `\n`
+      }
+
+      // Goal conversions (top 5 per site)
+      if (stats.goals && stats.goals.length > 0) {
+        context += `**Top Goals:**\n`
+        stats.goals.slice(0, 5).forEach((goal, i) => {
+          context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events\n`
+        })
+        context += `\n`
+      }
+
+      context += `---\n\n`
+    })
+
+    context += `**IMPORTANT**: When the user asks "what did you learn today?" or similar questions:\n`
+    context += `1. Analyze if there are significant changes worth remembering\n`
+    context += `2. If yes, create a memory with category "fact" and importance 5\n`
+    context += `3. Report insights in a conversational way\n`
+    context += `4. Focus on trends, user behavior patterns, and actionable insights\n`
+    context += `5. Highlight interesting goal conversions or user journeys\n`
+    context += `6. Compare performance across different domains\n\n`
+    context += `You decide what's important enough to remember.`
+
+    console.log(
+      "🍇 Full analytics context being injected:",
+      context.substring(0, 500),
+    )
+
+    return context
+  } catch (error) {
+    console.error("Error fetching analytics context:", error)
+    return ""
+  }
+}
+
+const getPearContext = async (): Promise<string> => {
+  console.log("🍐 getPearContext called for Pear!")
+
+  try {
+    // Fetch recent Pear feedback messages
+    const feedbacks = await getMessages({
+      isPear: true,
+      pageSize: 50,
+      isAsc: false, // Most recent first
+    })
+
+    if (!feedbacks || feedbacks.messages.length === 0) {
+      console.log("🍐 No Pear feedback found")
+      return ""
+    }
+
+    console.log(`🍐 Found ${feedbacks.messages.length} Pear feedback messages`)
+
+    // Fetch unique app IDs from threads
+    const appIds = [
+      ...new Set(
+        feedbacks.messages
+          .map((msg) => msg.thread?.appId)
+          .filter((id): id is string => !!id),
+      ),
+    ]
+
+    // Fetch app data for all unique app IDs
+    const apps = await Promise.all(
+      appIds.map((appId) =>
+        getApp({
+          id: appId,
+        }),
+      ),
+    )
+
+    // Create app ID to name mapping
+    const appIdToName = apps.reduce(
+      (acc, app) => {
+        if (app) {
+          acc[app.id] = app.name
+        }
+        return acc
+      },
+      {} as Record<string, string>,
+    )
+
+    // Group feedbacks by app
+    const feedbacksByApp = feedbacks.messages.reduce(
+      (acc, msg) => {
+        const appName =
+          (msg.thread?.appId && appIdToName[msg.thread.appId]) || "Unknown App"
+        if (!acc[appName]) {
+          acc[appName] = []
+        }
+        acc[appName].push(msg)
+        return acc
+      },
+      {} as Record<string, typeof feedbacks.messages>,
+    )
+
+    // Build context
+    let context = `\n\n## 🍐 Recent Pear Feedback (Last 50):\n\n`
+    context += `**Total Feedback**: ${feedbacks.messages.length} messages across ${Object.keys(feedbacksByApp).length} apps\n\n`
+
+    // Add feedback by app
+    Object.entries(feedbacksByApp)
+      .sort(([, a], [, b]) => b.length - a.length) // Sort by most feedback
+      .slice(0, 10) // Top 10 apps
+      .forEach(([appName, messages]) => {
+        context += `### ${appName} (${messages.length} feedback${messages.length > 1 ? "s" : ""})\n`
+        messages.slice(0, 5).forEach((msg, i) => {
+          const date = new Date(msg.message.createdOn).toLocaleDateString()
+          const preview = msg.message.content.substring(0, 100)
+          context += `${i + 1}. ${date}: "${preview}${msg.message.content.length > 100 ? "..." : ""}"\n`
+        })
+        context += `\n`
+      })
+
+    context += `\n**IMPORTANT**: When analyzing feedback:\n`
+    context += `1. Look for patterns across multiple users\n`
+    context += `2. Identify common pain points or feature requests\n`
+    context += `3. Highlight positive feedback and what's working well\n`
+    context += `4. Suggest actionable improvements for app creators\n`
+    context += `5. Track sentiment trends (positive, negative, neutral)\n`
+
+    console.log("🍐 Pear context being injected:", context.substring(0, 500))
+
+    return context
+  } catch (error) {
+    console.error("🍐 Error fetching Pear context:", error)
+    return ""
+  }
+}
+
+/**
+ * Get DNA Thread context (app owner's foundational knowledge)
+ * Uses mainThreadId to fetch app memories and share with all users
+ */
+async function getAppDNAContext(app: appWithStore): Promise<string> {
+  if (!app?.mainThreadId) return ""
+
+  try {
+    // Get DNA Thread artifacts (uploaded files)
+    const { getDNAThreadArtifacts } = await import("../../lib/appRAG")
+    const artifactsContext = await getDNAThreadArtifacts(app)
+
+    // Get app memories from main thread (owner's first conversation)
+    const memories = await getMemories({
+      threadId: app.mainThreadId,
+      appId: app.id,
+      pageSize: 50,
+    })
+
+    const appMemories = memories.memories
+
+    if (!appMemories.length && !artifactsContext) return ""
+
+    const userId = app.userId
+
+    const user = userId
+      ? await getUserDb({
+          id: userId,
+        })
+      : null
+
+    const guest = app.guestId
+      ? await getGuestDb({
+          id: app.guestId,
+        })
+      : null
+
+    if (!user && !guest) return ""
+
+    // Get creator attribution
+    let creatorName = "App Creator"
+    if (user?.name) {
+      creatorName = user.name
+    } else if (guest) {
+      // Show partial GUID for guest creators
+      const guestId = guest.id.split("-")[0]
+      creatorName = `Guest ${guestId}`
+    }
+
+    // Build DNA context
+    let context = ""
+
+    // Add artifacts first (uploaded files)
+    if (artifactsContext) {
+      context += artifactsContext
+    }
+
+    // Add memories second
+    if (appMemories.length) {
+      context += `\n\n## 🧬 App DNA (from ${creatorName})
+
+**Foundational Knowledge:**
+${appMemories.map((m) => `- ${m.content}`).join("\n")}
+
+This is the core knowledge about this app, shared by its creator.
+Use this to understand the app's purpose and guide users effectively.
+`
+    }
+
+    return context
+  } catch (error) {
+    console.error("Error fetching DNA context:", error)
     return ""
   }
 }
@@ -999,25 +1284,6 @@ ${
       : undefined
 
     // Auto-set main thread if owner and not set
-    const hasMainThread = isAppOwner && !!currentApp.mainThreadId
-
-    // Detect if this is the first message after app creation (just saved)
-    const isFirstThreadAfterAppCreation = isAppOwner && !hasMainThread && thread
-
-    if (isFirstThreadAfterAppCreation && currentApp) {
-      try {
-        await updateThread({
-          ...thread,
-          isMainThread: true,
-        })
-        await updateApp({
-          ...currentApp,
-          mainThreadId: thread.id,
-        })
-      } catch (error) {
-        captureException(error)
-      }
-    }
 
     // Get thread data
     const messagesData = thread
@@ -1511,12 +1777,17 @@ ${
     return 5 // Extremely long - just essentials
   })()
 
-  let { context: memoryContext, memoryIds } = await getRelevantMemoryContext({
+  let {
+    context: memoryContext,
+    memoryIds,
+    isAppCreator,
+  } = await getRelevantMemoryContext({
     userId: member?.id,
     guestId: guest?.id,
     appId: app?.id,
     pageSize: memoryPageSize,
     threadId: message.message.threadId, // Pass current thread to exclude
+    app, // Pass app object to check ownership
   })
 
   // Fetch user-created instructions (max 7)
@@ -2101,27 +2372,72 @@ ${(() => {
       : ""
 
   // Get news context based on app
-  const newsContext = await getNewsContext(slug)
+  const newsContext = await getNewsContext(app?.slug)
+
+  // Get live analytics context for Grape
+  const analyticsContext =
+    (app?.slug === "grape" || app?.slug === "pear") &&
+    isOwner(app, {
+      userId: member?.id,
+    })
+      ? await getAnalyticsContext()
+      : ""
+
+  // Get recent feedback context for Pear
+  const pearContext =
+    (app?.slug === "pear" || app?.slug === "grape") &&
+    isOwner(app, {
+      userId: member?.id,
+    })
+      ? await getPearContext()
+      : ""
+
+  // Get DNA Thread context (app owner's foundational knowledge)
+  const dnaContext = app?.mainThreadId ? await getAppDNAContext(app) : ""
 
   // Get brand-specific knowledge base (dynamic RAG or hardcoded fallback)
-  const brandKnowledge = await getAppKnowledge(
-    app || null,
-    slug,
-    "", // Query will be used for semantic search if RAG is enabled
-  )
 
   // Check if this is the first message in the app's main thread (user just started using their new app)
   const hasMainThread = isAppOwner && !!app?.mainThreadId
-  const isFirstAppMessage =
-    app &&
-    isAppOwner &&
-    !hasMainThread &&
-    appKnowledge?.messages.totalCount === 0
+  const isFirstAppMessage = app && isAppOwner && !hasMainThread
 
   // AI Coach Context - Guide users through app creation OR first-time app usage
   let aiCoachContext = ""
 
-  if (isFirstAppMessage) {
+  if (isFirstAppMessage && app && thread) {
+    // Detect if this is the first message after app creation (just saved)
+
+    try {
+      const bookmarks = [
+        ...(thread.bookmarks?.filter(
+          (b) => b.userId !== member?.id && b.guestId !== guest?.id,
+        ) || []),
+        {
+          userId: member?.id,
+          guestId: guest?.id,
+          createdOn: new Date().toISOString(),
+        },
+      ]
+      await updateThread({
+        ...thread,
+        isMainThread: true,
+        bookmarks,
+      })
+      await updateApp({
+        ...app,
+        mainThreadId: thread.id,
+      })
+
+      app.mainThreadId = thread.id
+      thread.isMainThread = true
+      thread.bookmarks = bookmarks
+      // thread.mainThreadId = thread.id
+
+      // app = await getApp({ id: app.id, skipCache: true })
+    } catch (error) {
+      captureException(error)
+    }
+
     aiCoachContext = `
 ## 🎉 First Time Using Your App!
 
@@ -2516,6 +2832,9 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     focusContext,
     taskContext,
     newsContext,
+    analyticsContext, // Live analytics for Grape
+    pearContext, // Recent feedback for Pear
+    dnaContext, // App owner's foundational knowledge
     // brandKnowledge,
     aiCoachContext,
   ].join("")

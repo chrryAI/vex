@@ -2315,6 +2315,7 @@ export const createStores = async ({
     backgroundColor: "#000000",
     icon: "🍒",
     visibility: "public" as const,
+    userId: admin.id,
     systemPrompt: chrrySystemPrompt,
     highlights: chrryInstructions,
     tipsTitle: "Marketplace Tips",
@@ -2445,6 +2446,7 @@ export const createStores = async ({
       | "location"
       | "weather"
     )[],
+    userId: admin.id,
     themeColor: "green",
     defaultModel: "sushi" as const,
     backgroundColor: "#000000",
@@ -2685,6 +2687,7 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
     ...amsterdam,
     slug: "amsterdam",
     name: "Amsterdam",
+    userId: admin.id,
     domain: "https://amsterdam.chrry.ai",
     subtitle: "Your Local AI Guide",
     storeId: compass.id,
@@ -2928,6 +2931,7 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
     subtitle: "Your Local AI Guide",
     storeId: compass.id,
     version: "1.0.0",
+    userId: admin.id,
     status: "active" as const,
     title: "Tokyo — Local AI Guide",
     themeColor: "red",
@@ -3170,6 +3174,7 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
   const istanbulPayload = {
     ...istanbul,
     slug: "istanbul",
+    userId: admin.id,
     domain: "https://istanbul.chrry.ai",
     name: "Istanbul",
     subtitle: "Your Local AI Guide",
@@ -3425,6 +3430,7 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
   let newYork = await getApp({ slug: "newYork" })
   const newYorkPayload = {
     ...newYork,
+    userId: admin.id,
     domain: "https://newyork.chrry.ai",
     slug: "newYork",
     name: "NewYork",
@@ -3608,6 +3614,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
   const moviesPayload = {
     ...popcorn,
     slug: "popcorn",
+    userId: admin.id,
     name: "Popcorn",
     title: "Popcorn — Movies Spotlight",
     subtitle: "Your cinematic concierge",
@@ -3783,6 +3790,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
 
   const fightClubPayload = {
     ...fightClub,
+    userId: admin.id,
     slug: "fightClub",
     name: "FightClub",
     title: "Fight Club — Underground Insights",
@@ -3943,6 +3951,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
 
   const inceptionPayload = {
     ...inception,
+    userId: admin.id,
     slug: "inception",
     name: "Inception",
     title: "Inception — Dream Architecture",
@@ -5553,6 +5562,7 @@ Be helpful, encouraging, and focused on connecting users with great apps while r
     ...grapeApp,
     slug: "grape",
     name: "Grape",
+    userId: admin.id,
     subtitle: "AI Ad Platform",
     storeId: wine.id, // Primary store is Blossom (marketplace/monetization)
     version: "1.0.0",

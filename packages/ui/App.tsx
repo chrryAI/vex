@@ -37,6 +37,7 @@ import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
 import { appWithStore } from "./types"
 import Modal from "./Modal"
+import Grappes from "./Grapes"
 
 function FocusButton({ time }: { time: number }) {
   const { appStyles } = useStyles()
@@ -139,13 +140,12 @@ export default function App({
     canBurn,
     setBurn,
     setIsPear,
+    isPear,
     isIDE,
     ...auth
   } = useAuth()
 
   const burn = burnApp?.id === app?.id || auth.burn
-
-  const [showGrapes, setShowGrapes] = useState(false)
 
   const storeApp = auth.storeApp
 
@@ -168,9 +168,6 @@ export default function App({
   const zarathustra = apps.find((app) => app.slug === "zarathustra")
 
   const isBlossom = app?.store?.id === chrry?.store?.id
-
-  const totalApps =
-    guestBaseApp?.store?.apps.length || userBaseApp?.store?.apps.length || 0
 
   const getApps = () => {
     return apps
@@ -475,136 +472,6 @@ export default function App({
 
   return (
     <Div>
-      {grapes.length > 0 && (
-        <Modal
-          isModalOpen={showGrapes}
-          hasCloseButton={true}
-          onToggle={(open) => {
-            if (!open) {
-              setShowGrapes(false)
-              setSelectedGrapeApp(undefined)
-            } else {
-              setShowGrapes(true)
-            }
-          }}
-          icon={"🍇"}
-          title={<Div>{t("Discover apps, earn credits")}</Div>}
-        >
-          <Div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
-          >
-            {/* App List */}
-            <Div style={styles.grapeModalDescription.style}>
-              {grapes?.map((app) => (
-                <Button
-                  key={app.id}
-                  className={`card link border ${selectedGrapeApp?.id === app.id ? "selected" : ""}`}
-                  onClick={() => setSelectedGrapeApp(app)}
-                  style={{
-                    ...utilities.link.style,
-                    ...styles.grapeModalDescriptionButton.style,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
-                    padding: "15px",
-                    borderColor:
-                      selectedGrapeApp?.id === app.id
-                        ? COLORS[app.themeColor as keyof typeof COLORS]
-                        : "var(--shade-2)",
-                    borderStyle: "solid",
-                  }}
-                >
-                  <Img app={app} showLoading={false} size={50} />
-                  <Span
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: "0.8rem",
-                      color: "var(--shade-7)",
-                    }}
-                  >
-                    {app.name}
-                  </Span>
-                </Button>
-              ))}
-            </Div>
-
-            {/* Selected App Details */}
-            {selectedGrapeApp && (
-              <Div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "15px",
-                  padding: "20px",
-                  borderTop: "1px dashed var(--shade-2)",
-                }}
-              >
-                <Div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                  }}
-                >
-                  <Img app={selectedGrapeApp} showLoading={false} size={40} />
-                  <Div>
-                    <H3
-                      style={{
-                        margin: 0,
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      {selectedGrapeApp.icon} {selectedGrapeApp.name}
-                    </H3>
-                    <Span
-                      style={{
-                        fontSize: "0.85rem",
-                        color: "var(--shade-6)",
-                      }}
-                    >
-                      {selectedGrapeApp.subtitle || selectedGrapeApp.title}
-                    </Span>
-                  </Div>
-                </Div>
-
-                <P
-                  style={{
-                    fontSize: "0.9rem",
-                    color: "var(--shade-7)",
-                    margin: 0,
-                  }}
-                >
-                  {selectedGrapeApp.description}
-                </P>
-
-                <Div
-                  style={{
-                    display: "flex",
-                    gap: "10px",
-                    marginTop: "10px",
-                  }}
-                >
-                  <Button
-                    className="button inverted"
-                    onClick={() => {
-                      setShowGrapes(false)
-                      setSelectedGrapeApp(undefined)
-                      setIsPear(selectedGrapeApp)
-                    }}
-                    style={{}}
-                  >
-                    🍐 Give Feedback with Pear
-                  </Button>
-                </Div>
-              </Div>
-            )}
-          </Div>
-        </Modal>
-      )}
       <H1 style={styles.title.style}>
         {!isManagingApp && !canEditApp && app ? (
           <Div
@@ -1085,38 +952,9 @@ export default function App({
                 </A>
               )
             )}
-            {!isManagingApp && grape ? (
-              <Button
-                // href={getAppSlug(grape)}
-                title={t("Discover apps, earn credits")}
-                // openInNewTab={isExtension && isFirefox}
-                className="button transparent"
-                style={{
-                  ...utilities.button.style,
-                  ...utilities.transparent.style,
-                }}
-                onClick={() => {
-                  if (store?.slug === "wine" && grapes.length) {
-                    setShowGrapes(true)
-                    return
-                  }
-                  addHapticFeedback()
-                  router.push(getAppSlug(grape))
-                }}
-              >
-                <Img showLoading={false} app={grape} width={18} height={18} />
-                {grapes.length > 0 && (
-                  <Span
-                    style={{
-                      color: COLORS.purple,
-                      fontFamily: "var(--font-mono)",
-                      fontSize: ".7rem",
-                    }}
-                  >
-                    {store?.slug === "wine" ? grapes.length : ""}
-                  </Span>
-                )}
-              </Button>
+            {(!isManagingApp && grape && app?.store?.slug !== "wine") ||
+            isPear ? (
+              <Grappes goToGrape={!isPear} />
             ) : (
               !isManagingApp && (
                 <A

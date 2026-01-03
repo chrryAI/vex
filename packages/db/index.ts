@@ -17,6 +17,7 @@ import {
   guests,
   invitations,
   memories,
+  analyticsSites,
   messageEmbeddings,
   messages,
   stores,
@@ -188,6 +189,9 @@ export type userWithRelations = user & {
   messageCount: number | undefined
   subscription: subscription | undefined
 }
+
+export type analyticsSite = typeof analyticsSites.$inferSelect
+export type newAnalyticsSite = typeof analyticsSites.$inferInsert
 
 export type appOrder = typeof appOrders.$inferSelect
 export type newAppOrder = typeof appOrders.$inferInsert
@@ -1298,6 +1302,7 @@ export const getMessages = async ({
   likedBy,
   createdAfter,
   hasAttachments,
+  isPear,
   isAsc,
   ...rest
 }: {
@@ -1315,10 +1320,12 @@ export const getMessages = async ({
   month?: number // 1-12 representing January-December
   createdAfter?: Date
   isAsc?: boolean
+  isPear?: boolean
 } = {}) => {
   const pageSize = rest.pageSize || 100
 
   const conditionsArray = [
+    isPear ? eq(messages.isPear, true) : undefined,
     userId ? eq(messages.userId, userId) : undefined,
     guestId ? eq(messages.guestId, guestId) : undefined,
     agentId
@@ -3650,6 +3657,7 @@ export async function getMemories({
   orderBy = "createdOn",
   excludeThreadId,
   scatterAcrossThreads = false,
+  threadId,
 }: {
   userId?: string
   guestId?: string
@@ -3659,6 +3667,7 @@ export async function getMemories({
   orderBy?: "createdOn" | "importance"
   excludeThreadId?: string
   scatterAcrossThreads?: boolean
+  threadId?: string
 }): Promise<{
   memories: memory[]
   totalCount: number
@@ -3684,6 +3693,10 @@ export async function getMemories({
       conditions.push(eq(memories.guestId, guestId))
     }
     conditions.push(isNull(memories.appId))
+  }
+
+  if (threadId) {
+    conditions.push(eq(memories.sourceThreadId, threadId))
   }
 
   // Exclude memories from current thread
@@ -6778,3 +6791,27 @@ export const deleteInstall = async ({
 
 // Export API key utilities
 export { generateApiKey, isValidApiKey, getApiKeyEnv } from "./src/utils/apiKey"
+
+export const getAnalyticsSite = async ({
+  id,
+  domain,
+}: {
+  id?: string
+  domain?: string
+}) => {
+  let query = db.select().from(analyticsSites)
+
+  if (id) {
+    query = query.where(eq(analyticsSites.id, id)) as any
+  } else if (domain) {
+    query = query.where(eq(analyticsSites.domain, domain)) as any
+  }
+
+  const sites = await query.limit(1)
+  return sites[0]
+}
+
+export const getAnalyticsSites = async () => {
+  const sites = await db.select().from(analyticsSites)
+  return sites
+}
