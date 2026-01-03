@@ -405,6 +405,7 @@ export function ChatProvider({
     to = app?.slug ? getAppSlug(app) : "/",
   ) => {
     if (value) {
+      setLiked(undefined)
       setShowFocus(false)
       setCollaborationStep(0)
       setThread(undefined)
