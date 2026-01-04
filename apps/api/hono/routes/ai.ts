@@ -3963,7 +3963,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
       guestId: guest?.id,
     })
 
-    if (!quotaCheck.allowed) {
+    if (!quotaCheck.allowed && !isE2E) {
       // Quota exceeded - add message to system prompt
       pearValidationResult = {
         isValid: false,
