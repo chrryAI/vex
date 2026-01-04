@@ -7,11 +7,11 @@ import React, {
   useState,
   useEffect,
   useMemo,
-  useRef,
 } from "react"
 import { useLocalStorage, useNavigation, toast } from "../../platform"
 import useCache from "../../hooks/useCache"
 import console from "../../utils/log"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 
 import { appFormData, appSchema } from "../../schemas/appSchema"
 import { useForm } from "react-hook-form"
@@ -26,7 +26,6 @@ import { instructionBase } from "../../utils/getExampleInstructions"
 import { Paginated, storeWithApps } from "../../types"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { useError } from "./ErrorProvider"
-import { threadId } from "worker_threads"
 
 export { COLORS } from "../ThemeContext"
 
@@ -184,7 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burnApp,
     burning,
     setBurn,
-    track,
+    plausible,
     ...auth
   } = useAuth()
   const { actions } = useData()
@@ -287,8 +286,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (result?.error) {
         toast.error(result.error)
         setIsSavingApp(false)
-        track({
-          name: "app_save_error",
+        plausible({
+          name: ANALYTICS_EVENTS.APP_SAVE_ERROR,
           props: {
             success: false,
             error: result.error,
@@ -305,8 +304,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setNewApp(result)
           await fetchApps()
         }
-        track({
-          name: "app_save_success",
+        plausible({
+          name: ANALYTICS_EVENTS.APP_SAVE_SUCCESS,
           props: {
             success: true,
           },
@@ -318,8 +317,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       toast.error(t("Something went wrong"))
       captureException(error)
-      track({
-        name: "app_save_error",
+      plausible({
+        name: ANALYTICS_EVENTS.APP_SAVE_ERROR,
         props: {
           success: false,
           error: error,
@@ -367,8 +366,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAppStatus(undefined)
 
         toast.success(`${t("Deleted")} 😭`)
-        track({
-          name: "app_delete_success",
+        plausible({
+          name: ANALYTICS_EVENTS.APP_DELETE_SUCCESS,
           props: {
             success: true,
           },
@@ -685,8 +684,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   ) => {
     setAppStatusInternal(payload)
 
-    track({
-      name: "app_status",
+    plausible({
+      name: ANALYTICS_EVENTS.APP_STATUS,
       props: payload,
     })
 

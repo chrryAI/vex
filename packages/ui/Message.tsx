@@ -33,7 +33,11 @@ import type {
 } from "./types"
 import MarkdownContent from "./MarkdownContent"
 
-import { isOwner, apiFetch } from "./utils"
+import { isOwner, apiFetch, getInstructionConfig } from "./utils"
+import {
+  formatMessageTemplates,
+  getCurrentTemplateContext,
+} from "./utils/formatTemplates"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 
@@ -92,6 +96,8 @@ export default function Message({
 
   const styles = useMessageStyles()
 
+  const isStreaming = message.message.isStreaming
+
   const { setIsAccountVisible } = useNavigationContext()
   const { refetchThread, scrollToBottom } = useChat()
   const { addParams } = useNavigationContext()
@@ -99,6 +105,37 @@ export default function Message({
   const { slug, apps, app } = useApp()
 
   const { captureException } = useError()
+
+  // Get weather and location context from existing utility
+  const weatherContext = useMemo(() => {
+    return getInstructionConfig({
+      city: user?.city || guest?.city || undefined,
+      country: user?.country || guest?.country || undefined,
+      weather: user?.weather || guest?.weather,
+    })
+  }, [
+    user?.city,
+    user?.country,
+    user?.weather,
+    guest?.city,
+    guest?.country,
+    guest?.weather,
+  ])
+
+  // Get template context for variable replacement
+  const templateContext = useMemo(() => {
+    const timeContext = getCurrentTemplateContext(
+      user?.city || guest?.city || undefined,
+      weatherContext.weather,
+      language,
+    )
+
+    // Merge weather context with time context
+    return {
+      ...weatherContext,
+      ...timeContext,
+    }
+  }, [weatherContext, user?.city, guest?.city, language])
 
   const { addHapticFeedback, isMobileDevice } = useTheme()
 
@@ -109,6 +146,8 @@ export default function Message({
   const { typingUsers, onlineUsers } = useThreadPresence({
     threadId,
   })
+
+  const isStreamingStop = message.message.isStreamingStop
 
   const isTyping = typingUsers.some(
     (u) =>
@@ -153,10 +192,10 @@ export default function Message({
       )
 
       // Check if reasoning is still streaming (no closing tag yet or message is streaming)
-      const isStreaming =
-        message.message.isStreaming && messageContent.includes("__REASONING__")
+      const isReasoningActive =
+        isStreaming && messageContent.includes("__REASONING__")
 
-      setIsReasoningStreaming(!!isStreaming)
+      setIsReasoningStreaming(!!isReasoningActive)
 
       return { content: cleanedContent, reasoning: extractedReasoning }
     }
@@ -166,11 +205,11 @@ export default function Message({
       content: messageContent,
       reasoning: message.message.reasoning || null,
     }
-  }, [
-    message.message.content,
-    message.message.reasoning,
-    message.message.isStreaming,
-  ])
+  }, [message.message.content, message.message.reasoning, isStreaming])
+
+  useEffect(() => {
+    if (isReasoningStreaming) setIsReasoningStreaming(!!isStreaming)
+  }, [isStreaming, isReasoningStreaming])
 
   // Auto-scroll reasoning to bottom while streaming
   useEffect(() => {
@@ -332,10 +371,9 @@ export default function Message({
   const [isSearchStart, setIsSearchStart] = useState(false)
   useEffect(() => {
     setIsSearchStart(
-      !!message.parentMessage?.isWebSearchEnabled &&
-        !!message.message.isStreaming,
+      !!message.parentMessage?.isWebSearchEnabled && !!isStreaming,
     )
-  }, [message.parentMessage?.isWebSearchEnabled, message.message.isStreaming])
+  }, [message.parentMessage?.isWebSearchEnabled, isStreaming])
 
   const [webSearchResult, setWebSearchResult] = useState<webSearchResult[]>(
     message.parentMessage?.webSearchResult || [],
@@ -528,8 +566,7 @@ export default function Message({
   }
 
   const getLikeButtons = () => {
-    if (message.message.isStreamingStop || message.message.isStreaming)
-      return null
+    if (isStreamingStop || isStreaming) return null
 
     return (
       <Div style={styles.likeButtons.style}>
@@ -596,18 +633,13 @@ export default function Message({
   const [evenChance] = useState(Math.random() >= 0.5)
 
   const getDeleteMessage = () => {
-    if (
-      !canDelete ||
-      remoteDeleted ||
-      message.message.isStreamingStop ||
-      !threadId
-    ) {
+    if (!canDelete || remoteDeleted || isStreamingStop || !threadId) {
       return null
     }
 
     const messageId = message.message.id
 
-    if (message.message.isStreamingStop || !token) return null
+    if (isStreamingStop || !token) return null
 
     return (
       <ConfirmButton
@@ -618,7 +650,7 @@ export default function Message({
         onConfirm={async function () {
           setIsDeleting(true)
 
-          if (message.message.isStreamingStop) {
+          if (isStreamingStop) {
             await onDelete?.({ id: message.message.id })
             return
           }
@@ -936,7 +968,10 @@ export default function Message({
                 <MarkdownContent
                   data-testid="user-message-content"
                   style={styles.userMessageContent.style}
-                  content={message.message.content}
+                  content={formatMessageTemplates(
+                    message.message.content,
+                    templateContext,
+                  )}
                   webSearchResults={
                     message.message.webSearchResult || undefined
                   }
@@ -1083,7 +1118,7 @@ export default function Message({
               slug,
             })}
             onClick={() => {
-              // if (message.message.isStreaming) {
+              // if (isStreaming) {
               //   return
               // }
 
@@ -1121,8 +1156,7 @@ export default function Message({
             )}
           </Button>
         )}
-        {message.message.isStreaming &&
-        message.message.content.trim() === "" ? (
+        {isStreaming && message.message.content.trim() === "" ? (
           <Div style={styles.thinking.style}>
             <Img
               src={`${FRONTEND_URL}/${evenChance ? "frog" : "hamster"}.png`}
@@ -1171,7 +1205,21 @@ export default function Message({
                     }}
                   >
                     {t("Reasoning")}
-                    {isReasoningExpanded && !isReasoningStreaming ? "." : "..."}
+                    {isReasoningStreaming ? (
+                      <Div
+                        className="typing"
+                        data-testid="typing-indicator"
+                        style={styles.dots.style}
+                      >
+                        <Span style={styles.dotsSpan.style}></Span>
+                        <Span style={styles.dotsSpan.style}></Span>
+                        <Span style={styles.dotsSpan.style}></Span>
+                      </Div>
+                    ) : isReasoningExpanded ? (
+                      "."
+                    ) : (
+                      "..."
+                    )}
                   </Button>
                   {isReasoningExpanded && (
                     <Div
@@ -1191,11 +1239,10 @@ export default function Message({
                 </Div>
               )}
               <MarkdownContent
-                content={cleanContent}
+                content={formatMessageTemplates(cleanContent, templateContext)}
                 webSearchResults={message.message.webSearchResult || undefined}
               />
-              {message.message.isStreaming &&
-              message.message.isImageGenerationEnabled ? (
+              {isStreaming && message.message.isImageGenerationEnabled ? (
                 agentImageLoader()
               ) : message.message.images &&
                 message.message.images?.length > 0 ? (
@@ -1229,8 +1276,7 @@ export default function Message({
               ) : null}
             </Div>
             {isSearchStart ||
-            (message.message.isStreaming &&
-              message.message.isWebSearchEnabled) ? (
+            (isStreaming && message.message.isWebSearchEnabled) ? (
               <Div style={styles.agentWebStreaming.style}>
                 <Loading width={16} height={16} />{" "}
                 <GlobeIcon color="var(--accent-1)" size={16} />{" "}
@@ -1319,7 +1365,7 @@ export default function Message({
                     addParams({ subscribe: "true", plan: "member" })
                   } else if (requiresSubscription) {
                     addParams({ subscribe: "true", plan: "plus" })
-                  } else if (message.message.isStreaming) {
+                  } else if (isStreaming) {
                   } else {
                     playAIResponseWithTTS(
                       stripMarkdown(message.message.content),
@@ -1337,7 +1383,7 @@ export default function Message({
                     <Coins size={18} />
                     <>{t("Subscribe")}</>
                   </>
-                ) : message.message.isStreaming ? null : isSpeechLoading ? (
+                ) : isStreaming ? null : isSpeechLoading ? (
                   <Loading width={18} height={18} />
                 ) : isSpeechActive ? (
                   <VolumeX size={18} />

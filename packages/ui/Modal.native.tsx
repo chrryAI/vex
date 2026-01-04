@@ -54,7 +54,7 @@ export default function Modal({
 
   const hasHydrated = useHasHydrated()
 
-  const { track } = useAuth()
+  const { plausible } = useAuth()
 
   const [isModalOpen, setIsModalOpen] = useState(
     props.isModalOpen !== undefined ? props.isModalOpen : false,
@@ -72,7 +72,7 @@ export default function Modal({
     onToggle?.(newState)
 
     if (event && newState) {
-      track(event)
+      plausible(event)
     }
   }
 

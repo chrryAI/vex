@@ -5,6 +5,8 @@ import clsx from "clsx"
 import { Moon, Sun } from "./icons"
 import { Button, Div, useTheme } from "./platform"
 import { useStyles } from "./context/StylesContext"
+import { useAuth } from "./context/providers/AuthProvider"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function ThemeSwitcher({
   onThemeChange,
@@ -16,8 +18,23 @@ export default function ThemeSwitcher({
   style?: React.CSSProperties
 }) {
   const hasHydrated = useHasHydrated()
-  const { isDark, setTheme } = useTheme()
+  const { isDark, setTheme: setThemeInternal, colorScheme } = useTheme()
+
   const { t } = useAppContext()
+
+  const { plausible } = useAuth()
+
+  const setTheme = (item: "light" | "dark") => {
+    setThemeInternal(item)
+    plausible({
+      name: ANALYTICS_EVENTS.THEME_CHANGE,
+      props: {
+        // theme,
+        colorScheme,
+        isDark,
+      },
+    })
+  }
 
   const { utilities } = useStyles()
 

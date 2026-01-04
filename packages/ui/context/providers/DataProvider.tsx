@@ -200,7 +200,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.9.37"
+  const VERSION = "1.9.43"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -359,7 +359,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
         },
         body: JSON.stringify({ code: ref }),
       }).catch((error) => {
-        console.error("Failed to track affiliate click:", error)
+        console.error("Failed to plausible affiliate click:", error)
       })
 
       // Check if user is trying to use their own affiliate code

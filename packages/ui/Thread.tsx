@@ -40,6 +40,7 @@ import { useHasHydrated, useThreadMetadata } from "./hooks"
 import { lazy, Suspense } from "react"
 import { useStyles } from "./context/StylesContext"
 import { BREAKPOINTS } from "./styles/breakpoints"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 // Lazy load Focus only on web (not extension) to reduce bundle size
 // This component includes timer, tasks, moods, and analytics - heavy dependencies
@@ -65,7 +66,7 @@ const Thread = ({
   const {
     user,
     guest,
-    track,
+    plausible,
     threadIdRef,
     memoriesEnabled,
     setShowFocus,
@@ -147,10 +148,10 @@ const Thread = ({
 
   const id = threadId
 
-  // Track if we've already auto-selected an agent for this thread
+  // plausible if we've already auto-selected an agent for this thread
   const shouldStopAutoScrollRef = useRef(false)
 
-  // Track last processed threadData to prevent re-processing
+  // plausible last processed threadData to prevent re-processing
   // const lastProcessedThreadDataRef = useRef<any>(null)
 
   // Smart auto-scroll: only scroll for short responses
@@ -879,8 +880,8 @@ const Thread = ({
                         setShouldGetCredits(true)
                       }
 
-                      track({
-                        name: "thread-message-agent",
+                      plausible({
+                        name: ANALYTICS_EVENTS.THREAD_MESSAGE_AGENT,
                         props: {
                           isStreaming: false,
                           agentId: selectedAgent?.id,

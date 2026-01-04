@@ -1,5 +1,5 @@
 // Type declarations for React Three Fiber JSX elements
-import { Object3DNode, extend } from "@react-three/fiber"
+import { Object3DNode } from "@react-three/fiber"
 import * as THREE from "three"
 
 declare global {

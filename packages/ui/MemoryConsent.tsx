@@ -12,6 +12,7 @@ import {
   useData,
 } from "./context/providers"
 import { apiFetch, isE2E } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import ConfirmButton from "./ConfirmButton"
 import Loading from "./Loading"
 import { updateUser } from "./lib"
@@ -46,6 +47,7 @@ export default function MemoryConsent({
     setBurn,
     refetchSession,
     app,
+    plausible,
     ...auth
   } = useAuth()
 
@@ -241,6 +243,12 @@ export default function MemoryConsent({
                         } else {
                           toast.error(t("Something went wrong"))
                         }
+                        plausible({
+                          name: ANALYTICS_EVENTS.MEMORY_DELETE,
+                          props: {
+                            success: result.success,
+                          },
+                        })
                       } catch (error) {
                         toast.error(t("Something went wrong"))
                         captureException(error)

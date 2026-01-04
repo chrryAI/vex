@@ -34,34 +34,22 @@ cron.get("/decayMemories", async (c) => {
   }
 })
 
-// GET /cron/syncPlausible - Sync Plausible analytics (Vercel Cron)
 cron.get("/syncPlausible", async (c) => {
-  // Verify the request is from Vercel Cron
+  // Verify auth
   const authHeader = c.req.header("authorization")
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return c.json({ error: "Unauthorized" }, 401)
   }
-
-  try {
-    console.log("🍇 Starting Plausible analytics sync cron job...")
-    await syncPlausibleAnalytics()
-    console.log("✅ Plausible sync completed successfully")
-
-    return c.json({
-      success: true,
-      message: "Plausible analytics synced",
-      timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    console.error("❌ Plausible sync failed:", error)
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500,
-    )
-  }
+  // Start sync in background (don't await!)
+  syncPlausibleAnalytics()
+    .then(() => console.log("✅ Sync complete"))
+    .catch((error) => console.error("❌ Sync failed:", error))
+  // Return immediately
+  return c.json({
+    success: true,
+    message: "Plausible analytics sync started",
+    timestamp: new Date().toISOString(),
+  })
 })
 
 // Shared handler for fetchNews
