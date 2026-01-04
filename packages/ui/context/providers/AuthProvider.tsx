@@ -1430,7 +1430,6 @@ export function AuthProvider({
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
-  console.log("isZarathustra", baseApp, isZarathustra, isBaseAppZarathustra)
   const [burnInternal, setBurnInternal] = useLocalStorage<boolean | null>(
     "burn",
     null,

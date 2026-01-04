@@ -528,6 +528,18 @@ async function getAnalyticsContext({
             guestId: guest?.id,
           }) && member?.role === "admin"
         : false
+
+    // Log analytics access
+    const userType = member ? "member" : "guest"
+    const userId = member?.id || guest?.id
+    const accessLevel = isAdmin ? "admin-full" : "public-only"
+    const isPro = member?.subscription?.tier === "pro"
+    const isAppOwner = isOwner(app, { userId: member?.id, guestId: guest?.id })
+
+    console.log(
+      `📊 Analytics Access | User: ${userType}:${userId} | Level: ${accessLevel} | App: ${app?.slug} | Owner: ${isAppOwner} | Pro: ${isPro}`,
+    )
+
     // Loop through all sites
     sites
       .filter((site) => (isAdmin ? true : site.domain === "e2e.chrry.ai"))
@@ -592,8 +604,15 @@ async function getAnalyticsContext({
       })
 
     if (!isAdmin) {
+      console.log(
+        `📊 Returning public analytics only (${sites.filter((s) => s.domain === "e2e.chrry.ai").length} sites)`,
+      )
       return context
     }
+
+    console.log(
+      `📊 Admin access granted - including real-time events for all ${sites.length} sites`,
+    )
 
     // Add real-time user behavior analytics (last 24 hours, limit 200 events)
     try {
@@ -628,6 +647,10 @@ async function getAnalyticsContext({
               .orderBy(desc(realtimeAnalytics.createdOn))
               .limit(200)
           : [] // Free users: No real-time events
+
+      console.log(
+        `🔥 Real-time events query | Found: ${realtimeEvents.length} events | Access: ${isAdmin ? "admin-all" : isPro && isAppOwner ? `pro-${app?.slug}` : "none"}`,
+      )
 
       if (realtimeEvents.length > 0) {
         context += `## 🔥 Real-Time User Behavior (Last 24 Hours):\n\n`
@@ -1023,6 +1046,7 @@ const app = new Hono()
 
 app.post("/", async (c) => {
   const request = c.req.raw
+  const startTime = Date.now()
   console.log("🚀 POST /api/ai - Request received")
   console.time("messageProcessing")
 
@@ -1033,6 +1057,13 @@ app.post("/", async (c) => {
     console.log("❌ No valid credentials")
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
+
+  // Log user type and tier for analytics
+  const userType = member ? "member" : "guest"
+  const tier = member?.tier || guest?.tier || "free"
+  console.log(
+    `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
+  )
 
   const { success } = await checkRateLimit(request, { member, guest })
 
@@ -1611,6 +1642,20 @@ ${
   const selectedAgent = message.message.selectedAgentId
     ? await getAiAgent({ id: message.message.selectedAgentId })
     : undefined
+
+  // Log model and features for analytics
+  const modelName =
+    selectedAgent?.displayName || debateAgent?.displayName || "default"
+  const features = []
+  if (message.message.isWebSearchEnabled) features.push("web-search")
+  if (imageGenerationEnabled) features.push("image-gen")
+  if (files.length > 0) features.push(`${files.length}-files`)
+  if (debateAgent) features.push("debate")
+  if (requestData.pear) features.push("pear-feedback")
+
+  console.log(
+    `🤖 Model: ${modelName} | Features: ${features.join(", ") || "none"}`,
+  )
 
   const clientId = message.message.clientId
   const currentThreadId = threadId
