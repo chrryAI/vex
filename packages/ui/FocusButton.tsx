@@ -90,7 +90,7 @@ export default function FocusButton({
   const { utilities } = useStyles()
   const {
     token,
-    track: trackEvent,
+    plausible: plausibleEvent,
     enableNotifications,
     setEnableNotifications,
     user,
@@ -210,15 +210,15 @@ export default function FocusButton({
 
   useEffect(() => {
     if (showSettings) {
-      trackEvent({ name: "settings" })
+      plausibleEvent({ name: "settings" })
     }
   }, [showSettings])
 
   const setTheme = (theme: themeType) => {
     setThemeInContext(theme)
     theme === "dark"
-      ? trackEvent({ name: "dark_mode" })
-      : trackEvent({ name: "light_mode" })
+      ? plausibleEvent({ name: "dark_mode" })
+      : plausibleEvent({ name: "light_mode" })
   }
 
   useEffect(() => {
@@ -885,12 +885,12 @@ export default function FocusButton({
                             }}
                             // href={getAppSlug(refApp)}
                           >
-                            {loadingApp?.id !== focus?.id ? (
-                              <Img size={20} app={focus} />
+                            {loadingApp?.id !== app?.id ? (
+                              <Img size={20} app={app} />
                             ) : (
                               <Loading size={20} />
                             )}
-                            {focus.name}
+                            {app?.name}
                           </A>
                         </Span>
                       )}

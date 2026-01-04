@@ -67,6 +67,25 @@ const getURL = (
   return url
 }
 
+export const getModelCredits = (model: string) =>
+  model === "chatGPT" || model === "gemini"
+    ? 4
+    : model === "claude" || model === "perplexity"
+      ? 3
+      : 2
+
+export const storeApps = [
+  "vex",
+  "chrry",
+  "atlas",
+  "vault",
+  "claude",
+  "search",
+  "sushi",
+  "zarathustra",
+  "popcorn",
+]
+
 const simulateInputPaste = async (page: Page, text: string) => {
   await page.evaluate((content) => {
     const textarea = document.querySelector(

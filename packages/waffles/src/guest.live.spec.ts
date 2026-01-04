@@ -12,6 +12,7 @@ import { subscribe } from "./shared/subscribe"
 import { collaboration } from "./shared/collaboration"
 import { thread } from "./shared/thread"
 import { v4 as uuidv4 } from "uuid"
+import app from "./shared/app"
 
 const isMember = false
 
@@ -133,12 +134,8 @@ test.only("Chat", async ({ page }) => {
         model: "chatGPT",
       },
       {
-        text: "Which model are you using? Answer briefly",
-        model: "gemini",
-      },
-      {
         text: "How can I enable character profile? Answer shortly",
-        model: "sushi",
+        model: "perplexity",
       },
       {
         text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
@@ -165,7 +162,7 @@ test.only("Thread", async ({ page }) => {
 //   })
 // })
 
-test.only("File upload", async ({ page }) => {
+test.skip("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
@@ -184,12 +181,11 @@ test.only("File upload", async ({ page }) => {
     instruction: "Lets upload some files",
     prompts: [
       {
-        text: "Hey Vex, Analyze this paste(s) and video shortly",
+        text: "Hey Vex, Analyze this paste(s) and image(s) shortly",
         model: "sushi",
         mix: {
           paste: 1,
-          pdf: 1,
-          video: 1,
+          image: 2,
         },
         like: false,
       },

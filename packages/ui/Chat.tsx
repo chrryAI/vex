@@ -112,6 +112,7 @@ import { useChatStyles } from "./Chat.styles"
 import { useStyles } from "./context/StylesContext"
 
 import A from "./a/A"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 const MAX_FILES = MAX_FILE_LIMITS.chat
 
@@ -213,7 +214,7 @@ export default function Chat({
     setUser,
     setGuest,
     guest,
-    track,
+    plausible,
     deviceId,
     API_URL,
     FRONTEND_URL,
@@ -326,8 +327,8 @@ export default function Chat({
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setSelectedAgentInternal(agent)
     setShouldFocus(true)
-    track({
-      name: "agent-selected",
+    plausible({
+      name: ANALYTICS_EVENTS.AGENT_SELECTED,
       props: {
         agentId: agent?.id,
         agentName: agent?.name,
@@ -599,8 +600,8 @@ export default function Chat({
   const setShowQuotaInfo = (show: boolean) => {
     setShowQuotaInfoInternal(show)
     show &&
-      track({
-        name: "quota-info",
+      plausible({
+        name: ANALYTICS_EVENTS.QUOTA_INFO,
         props: {
           show,
         },
@@ -899,8 +900,8 @@ export default function Chat({
 
     setIsAttachingInternal(attaching)
     attaching &&
-      track({
-        name: "is-attaching",
+      plausible({
+        name: ANALYTICS_EVENTS.IS_ATTACHING,
         props: {
           attaching,
         },
@@ -1104,8 +1105,8 @@ export default function Chat({
 
   // Voice conversation functionality
   const startVoiceConversation = async () => {
-    track({
-      name: "voice_conversation",
+    plausible({
+      name: ANALYTICS_EVENTS.VOICE_CONVERSATION,
       props: {
         started: true,
       },
@@ -1342,8 +1343,8 @@ export default function Chat({
   }
 
   const stopVoiceInput = () => {
-    track({
-      name: "voice-input",
+    plausible({
+      name: ANALYTICS_EVENTS.VOICE_INPUT,
       props: {
         stopped: true,
       },
@@ -1357,8 +1358,8 @@ export default function Chat({
 
   const stopSpeechConversation = () => {
     addHapticFeedback()
-    track({
-      name: "voice_conversation",
+    plausible({
+      name: ANALYTICS_EVENTS.VOICE_CONVERSATION,
       props: {
         stopped: true,
       },
@@ -1458,8 +1459,8 @@ export default function Chat({
   // File input handlers for different media types
   const triggerFileInput = (accept: string) => {
     addHapticFeedback()
-    track({
-      name: "file-input",
+    plausible({
+      name: ANALYTICS_EVENTS.FILE_INPUT,
       props: {
         accept,
       },
@@ -2200,8 +2201,8 @@ export default function Chat({
   const [isGame, setIsGameInternal] = useState(false)
   const setIsGame = (value: boolean) => {
     setIsGameInternal(value)
-    track({
-      name: "game-toggle",
+    plausible({
+      name: ANALYTICS_EVENTS.GAME_TOGGLE,
       props: {
         isGame: value,
       },
@@ -2690,8 +2691,8 @@ export default function Chat({
 
   useEffect(() => {
     hitHourlyLimit &&
-      track({
-        name: "hit-hourly-limit",
+      plausible({
+        name: ANALYTICS_EVENTS.HIT_HOURLY_LIMIT,
         props: {
           hourlyUsageLeft,
         },
@@ -2700,8 +2701,8 @@ export default function Chat({
 
   useEffect(() => {
     files.length > 0 &&
-      track({
-        name: "file-upload",
+      plausible({
+        name: ANALYTICS_EVENTS.FILE_UPLOAD,
         props: {
           filesLength: files.length,
         },
@@ -3596,7 +3597,7 @@ export default function Chat({
                     {Top}
                   </Div>
                 )}
-                <Div style={{ display: "flex", gap: 7.5 }}>
+                <Div style={{ display: "flex", gap: 7.5, marginLeft: "auto" }}>
                   {hasBottomOffset ? (
                     <Button
                       className="link"
@@ -3619,7 +3620,7 @@ export default function Chat({
                         style={{
                           position: "relative",
 
-                          top: 30,
+                          top: !isChatFloating ? 30 : 0,
                           zIndex: 50,
 
                           ...utilities.link.style,
@@ -3638,9 +3639,10 @@ export default function Chat({
                   {empty && !threadIdRef.current && !isPear && (
                     <>
                       <Grapes
+                        dataTestId="grapes-button"
                         style={{
                           position: "relative",
-                          top: 30,
+                          top: !isChatFloating ? 30 : 0,
                           zIndex: 50,
                           ...utilities.xSmall.style,
                         }}
@@ -3752,7 +3754,9 @@ export default function Chat({
                     threadId ? null : showGreeting && files.length === 0 ? (
                       <H2 style={styles.brandHelp.style}>
                         {burn ? <HatGlasses size={24} /> : ""}
-                        <Span>
+                        <Span
+                          data-testid={`brand-help-${isPear ? "pear" : "chat"}`}
+                        >
                           {isPear ? "🍐" : "👋"}{" "}
                           {t(
                             isPear
@@ -4193,7 +4197,7 @@ export default function Chat({
                           position: "relative",
                         }}
                       >
-                        {app?.features?.moodTracking && (
+                        {app?.features?.moodplausibleing && (
                           <MoodSelector
                             showEdit={false}
                             style={{
@@ -4240,7 +4244,7 @@ export default function Chat({
                             setIsWebSearchEnabled(!isWebSearchEnabled)
                           }}
                         >
-                          {app?.features?.moodTracking ? null : (
+                          {app?.features?.moodplausibleing ? null : (
                             <Span
                               style={{
                                 fontSize: 12,
@@ -4626,7 +4630,7 @@ export default function Chat({
                     <Button
                       data-testid="subscribe-from-chat-button"
                       onClick={() => {
-                        track({
+                        plausible({
                           name: "subscribe-from-chat-click",
                           props: {
                             threadId: threadId,

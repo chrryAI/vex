@@ -25,6 +25,7 @@ import { useWebSocket } from "./hooks/useWebSocket"
 import { isOwner } from "./utils"
 import { useMessagesStyles } from "./Messages.styles"
 import { useStyles } from "./context/StylesContext"
+import { useUserScroll } from "./hooks/useUserScroll"
 
 export default forwardRef<
   HTMLDivElement,
@@ -98,9 +99,10 @@ export default forwardRef<
     burn,
     app,
     chrry,
+    accountApp,
   } = useAuth()
 
-  const isChrry = app?.id === chrry?.id
+  const canCreateAgent = !accountApp && app && chrry && app?.id === chrry?.id
 
   // Chat context
   const { threadId, scrollToBottom } = useChat()
@@ -109,7 +111,7 @@ export default forwardRef<
   const { router } = useNavigationContext()
 
   // App context
-  const { appStatus, appFormWatcher, suggestSaveApp } = useApp()
+  const { appStatus, setAppStatus, suggestSaveApp } = useApp()
 
   // Theme context
   const { addHapticFeedback } = useTheme()
@@ -149,6 +151,9 @@ export default forwardRef<
     deps: webSocketDeps,
   })
 
+  const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
+    useUserScroll()
+
   useEffect(() => {
     setCharacterProfile(thread?.characterProfile)
   }, [thread?.characterProfile])
@@ -164,8 +169,14 @@ export default forwardRef<
     loadingCharacterProfile?.threadId === threadId
 
   useEffect(() => {
-    showLoadingCharacterProfile && scrollToBottom()
-  }, [showLoadingCharacterProfile])
+    if (
+      showLoadingCharacterProfile &&
+      !isUserScrolling &&
+      !hasStoppedScrolling
+    ) {
+      scrollToBottom()
+    }
+  }, [showLoadingCharacterProfile, isUserScrolling, hasStoppedScrolling])
 
   if (!showEmptyState && messages?.length === 0) return null
   return (
@@ -248,8 +259,15 @@ export default forwardRef<
                 <Button
                   disabled={isUpdating}
                   onClick={async () => {
-                    router.push("/?part=highlights")
-                    !isChrry && setShowCharacterProfiles(true)
+                    if (canCreateAgent) {
+                      setAppStatus({
+                        part: "highlights",
+                        step: "add",
+                      })
+                      return
+                    }
+
+                    setShowCharacterProfiles(true)
                   }}
                   className="inverted"
                   style={{ ...utilities.inverted.style }}
@@ -264,7 +282,9 @@ export default forwardRef<
                     />
                   )}
                   {t(
-                    isChrry ? "Create Your Agent" : "Enable Character Profiles",
+                    canCreateAgent
+                      ? "Create Your Agent"
+                      : "Enable Character Profiles",
                   )}
                 </Button>
               ) : null}

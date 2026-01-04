@@ -26,6 +26,7 @@ import { cleanSlug } from "../../utils/clearLocale"
 import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
 import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 
 import {
   aiAgent,
@@ -48,6 +49,7 @@ import { getApp, getSession, getUser, getGuest } from "../../lib"
 import i18n from "../../i18n"
 import { useHasHydrated } from "../../hooks"
 import { defaultLocale, locale, locales } from "../../locales"
+import { MEANINGFUL_EVENTS } from "../../utils/analyticsEvents"
 import { t } from "i18next"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { getAppAndStoreSlugs } from "../../utils/url"
@@ -248,7 +250,7 @@ const AuthContext = createContext<
       setUser: (user?: sessionUser) => void
       setGuest: (guest?: sessionGuest) => void
       slug?: string
-      track: (e: {
+      plausible: (e: {
         name: string
         url?: string
         domain?: string
@@ -583,7 +585,7 @@ export function AuthProvider({
     }
   }, [ssrToken])
 
-  // Track if cookies/storage are ready (important for extensions)
+  // plausible if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)
 
   useEffect(() => {
@@ -658,7 +660,7 @@ export function AuthProvider({
   function processSession(sessionData?: session) {
     if (sessionData) {
       setSession(sessionData)
-      // Track guest migration
+      // plausible guest migration
       if (sessionData.migratedFromGuest) {
         migratedFromGuestRef.current = sessionData.migratedFromGuest
       }
@@ -785,6 +787,7 @@ export function AuthProvider({
   const [loadingAppId, setLoadingAppId] = useState<string | undefined>(
     undefined,
   )
+
   const allApps = merge(
     session?.app?.store?.apps || [],
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
@@ -926,25 +929,44 @@ export function AuthProvider({
   )
   const sessionData = sessionSwr || session
 
-  function trackPlausibleEvent({
+  const [guest, setGuest] = React.useState<sessionGuest | undefined>(
+    session?.guest,
+  )
+
+  const getAlterNativeDomains = (store: storeWithApps) => {
+    // Map askvex.com and vex.chrry.ai as equivalent domains
+    if (
+      store?.domain === "https://vex.chrry.ai" ||
+      store?.domain === "https://askvex.com"
+    ) {
+      return ["https://vex.chrry.ai"]
+    }
+
+    return store.domain ? [store.domain] : []
+  }
+
+  const [agentName, setAgentName] = useState(session?.aiAgent?.name)
+  const plausibleEvent = ({
     name,
     url,
-    domain = chrryUrl.replace("https://", ""),
-    browser,
+    domain,
+    props = {},
     device,
     os,
-    props = {},
+    browser,
     isPWA,
   }: {
     name: string
     url?: string
     domain?: string
-    browser?: string
+    props?: Record<string, any>
     device?: string
     os?: string
+    browser?: string
     isPWA?: boolean
-    props?: Record<string, any>
-  }) {
+  }) => {
+    if (isDevelopment) return
+
     const canAdd =
       isPWA !== undefined && os !== undefined && browser !== undefined
 
@@ -973,56 +995,6 @@ export function AuthProvider({
     }).catch(() => {})
   }
 
-  const [guest, setGuest] = React.useState<sessionGuest | undefined>(
-    session?.guest,
-  )
-
-  const getAlterNativeDomains = (store: storeWithApps) => {
-    // Map askvex.com and vex.chrry.ai as equivalent domains
-    if (
-      store?.domain === "https://vex.chrry.ai" ||
-      store?.domain === "https://askvex.com"
-    ) {
-      return ["https://vex.chrry.ai"]
-    }
-
-    return store.domain ? [store.domain] : []
-  }
-
-  const [agentName, setAgentName] = useState(session?.aiAgent?.name)
-  const trackEvent = ({
-    name,
-    url,
-    domain,
-    props = {},
-    device,
-    os,
-    browser,
-    isPWA,
-  }: {
-    name: string
-    url?: string
-    domain?: string
-    props?: Record<string, any>
-    device?: string
-    os?: string
-    browser?: string
-    isPWA?: boolean
-  }) => {
-    if (isDevelopment) return
-
-    trackPlausibleEvent({
-      url,
-      name,
-      props,
-      domain,
-      device,
-      os,
-      browser,
-      isPWA,
-    })
-  }
-
   useEffect(() => {
     hasStoreApps(baseAppInternal) && setBaseApp(baseAppInternal)
   }, [baseAppInternal])
@@ -1045,7 +1017,11 @@ export function AuthProvider({
     }
   }, [searchParams, user])
 
-  const track = ({
+  // Throttle map to prevent duplicate rapid-fire events
+  const plausibleThrottleMap = useRef<Map<string, number>>(new Map())
+  const plausible_THROTTLE_MS = 3000 // 3 seconds
+
+  const plausible = ({
     name,
     url,
     domain = siteConfig.domain,
@@ -1056,8 +1032,17 @@ export function AuthProvider({
     domain?: string
     props?: Record<string, any>
   }) => {
+    if (burn) return
+    if (!memoriesEnabled) return
     if (!user && !guest) return
-    if (!isE2E && user?.role === "admin") return
+
+    // Throttle: Skip if same event was plausibleed recently
+    const now = Date.now()
+    const lastplausibleed = plausibleThrottleMap.current.get(name)
+    if (lastplausibleed && now - lastplausibleed < plausible_THROTTLE_MS) {
+      return // Skip this event
+    }
+    plausibleThrottleMap.current.set(name, now)
 
     // Normalize URL for different platforms
     let normalizedUrl = url
@@ -1079,7 +1064,35 @@ export function AuthProvider({
       }
     }
 
-    trackEvent({
+    // Only send meaningful events to API for AI context
+    if (token && MEANINGFUL_EVENTS.includes(name as any)) {
+      fetch(`${API_URL}/analytics/grape`, {
+        method: "POST",
+        credentials: "include", // Send cookies for auth
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          url: normalizedUrl,
+          props: {
+            ...props,
+            appName: app?.name,
+            appSlug: app?.slug,
+            baseAppName: baseApp?.name,
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch((error) => {
+        captureException(error)
+        console.error("❌ Analytics plausible error:", error)
+      }) // Fire and forget
+    }
+
+    if (!isE2E && user?.role === "admin") return
+
+    plausibleEvent({
       name,
       url: normalizedUrl,
       domain,
@@ -1094,23 +1107,24 @@ export function AuthProvider({
         device,
         isMember: !!user,
         isGuest: !!guest,
+        appName: app?.name,
+        appSlug: app?.slug,
+        baseAppName: baseApp?.name,
         isSubscriber: !!(user || guest)?.subscription,
+        isOwner: isOwner(app, {
+          userId: user?.id,
+          guestId: guest?.id,
+        }),
       },
     })
   }
 
   useEffect(() => {
     app &&
-      track({
-        name: "app",
-        url: `${FRONTEND_URL}${getAppSlug(app)}`,
-        props: {
-          app: app?.name,
-          slug: app?.slug,
-          id: app?.id,
-        },
+      plausible({
+        name: ANALYTICS_EVENTS.APP,
       })
-  }, [app])
+  }, [app, pathname])
 
   useEffect(() => {
     if (!fingerprint) return
@@ -1150,7 +1164,7 @@ export function AuthProvider({
     }
   }, [user])
 
-  // Track UTM parameters for ad attribution (EthicalAds, etc.)
+  // plausible UTM parameters for ad attribution (EthicalAds, etc.)
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -1160,8 +1174,8 @@ export function AuthProvider({
     const utmCampaign = params.get("utm_campaign")
 
     if (utmSource) {
-      track({
-        name: "ad_visit",
+      plausible({
+        name: ANALYTICS_EVENTS.AD_VISIT,
         props: {
           source: utmSource,
           medium: utmMedium || "unknown",
@@ -1234,7 +1248,7 @@ export function AuthProvider({
     path: string,
     apps: appWithStore[],
   ): appWithStore | undefined => {
-    if (focus && showFocus) return focus
+    // if (focus && showFocus) return focus
     if (path === "/") return undefined
 
     const { appSlug, storeSlug } = getAppAndStoreSlugs(path, {
@@ -1337,8 +1351,8 @@ export function AuthProvider({
 
   useEffect(() => {
     if (storeAppsSwr) {
-      storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId) &&
-        setLoadingApp(undefined)
+      const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
+      if (hasStoreApps(a)) setLoadingApp(undefined)
       mergeApps(storeAppsSwr.store?.apps || [])
 
       const n = storeAppsSwr.store?.apps.find((app) => app.id === newApp?.id)
@@ -1386,9 +1400,18 @@ export function AuthProvider({
         return
       }
     }
-  }, [storeAppsSwr, newApp, updatedApp])
+  }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
-  const [showFocus, setShowFocus] = useState(false)
+  const [showFocus, setShowFocusInternal] = useState(false)
+
+  const setShowFocus = (showFocus: boolean) => {
+    setShowFocusInternal(showFocus)
+
+    if (showFocus) {
+      setThread(undefined)
+      setThreadId(undefined)
+    }
+  }
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
@@ -1409,7 +1432,7 @@ export function AuthProvider({
 
   const [burnInternal, setBurnInternal] = useLocalStorage<boolean | null>(
     "burn",
-    isZarathustra ? true : null,
+    null,
   )
 
   const burn = burnInternal === null ? isZarathustra : burnInternal
@@ -1428,17 +1451,17 @@ export function AuthProvider({
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
-    // Privacy-respecting analytics: Track burn usage WITHOUT personal info or identifiers.
+    // Privacy-respecting analytics: plausible burn usage WITHOUT personal info or identifiers.
     // This helps us understand if the feature is valuable and worth investing in,
-    // while respecting the user's choice for privacy. No user data, IDs, or content is tracked.
+    // while respecting the user's choice for privacy. No user data, IDs, or content is plausibleed.
     // Only the fact that burn was activated (boolean event).
     if (value) {
       if (!hasInformedRef.current) {
         hasInformedRef.current = true
         toast.error(t("When you burn there is nothing to remember"))
       }
-      track({
-        name: "burn",
+      plausible({
+        name: ANALYTICS_EVENTS.BURN,
         props: {
           value,
           app: app?.name,
@@ -1462,13 +1485,7 @@ export function AuthProvider({
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
     boolean | null
-  >("programme", isBaseAppZarathustra ? true : null)
-
-  useEffect(() => {
-    if (!baseApp) return
-
-    isProgrammeInternal === null && setIsProgrammeInternal(isBaseAppZarathustra)
-  }, [isBaseAppZarathustra, baseApp])
+  >("isProgramme", isBaseAppZarathustra)
 
   const apps = storeApps.filter((item) => {
     return app?.store?.app?.store?.apps?.some((app) => {
@@ -1509,8 +1526,8 @@ export function AuthProvider({
   useEffect(() => {
     setIsPearInternal(isPearInternal)
     if (isPearInternal)
-      track({
-        name: "pear",
+      plausible({
+        name: ANALYTICS_EVENTS.PEAR,
         props: {
           value: true,
           app: app?.name,
@@ -1528,10 +1545,16 @@ export function AuthProvider({
           pear: "true",
         })
       } else {
-        value && router.push(`${getAppSlug(value)}?pear=true`)
+        router.push(`${getAppSlug(value)}?pear=true`)
       }
+      toast.success(t("Let's Pear") + " 🍐")
     }
   }
+
+  useEffect(() => {
+    setIsPearInternal(isPearInternal)
+    if (isPearInternal) setShowFocus(false)
+  }, [isPearInternal])
 
   const isProgramme =
     isProgrammeInternal || searchParams.get("programme") === "true"
@@ -1684,7 +1707,7 @@ export function AuthProvider({
     }
   }, [user, guest, isSessionLoading])
 
-  const { setColorScheme, setTheme } = useTheme()
+  const { setColorScheme, setTheme, theme, colorScheme, isDark } = useTheme()
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -1895,8 +1918,8 @@ export function AuthProvider({
     try {
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
-          track({
-            name: "performance",
+          plausible({
+            name: ANALYTICS_EVENTS.PERFORMANCE,
             props: {
               name: entry.name,
               entryType: entry.entryType,
@@ -1917,7 +1940,7 @@ export function AuthProvider({
     } catch (error) {
       console.warn("PerformanceObserver not supported:", error)
     }
-  }, [track])
+  }, [plausible])
 
   const [shouldFetchTasks, setShouldFetchTasks] = useState(false)
   const [isLoadingTasks, setIsLoadingTasks] = useState(false)
@@ -2195,7 +2218,7 @@ export function AuthProvider({
         setSignInPart,
         setSlug,
         slug,
-        track,
+        plausible,
         setToken,
         shouldFetchSession,
         profile,

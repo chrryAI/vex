@@ -116,7 +116,7 @@ title: {
 ## How It Works
 
 1. **Style Definition** - Define styles with responsive breakpoint objects
-2. **Hook Creation** - `createStyleHook` creates a hook that tracks window dimensions
+2. **Hook Creation** - `createStyleHook` creates a hook that plausibles window dimensions
 3. **Resolution** - `createStyleProxy` resolves responsive values based on current width
 4. **Caching** - Resolved styles are cached per breakpoint for performance
 5. **Updates** - Debounced resize listener updates styles when breakpoints change

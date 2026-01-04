@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React from "react"
 import Skeleton from "./Skeleton"
 import { useAppContext } from "./context/AppContext"
 import { CircleArrowLeft } from "./icons"
@@ -31,12 +31,7 @@ export default function About() {
   const styles = useWhyStyles()
   const { utilities } = useStyles()
 
-  const { track } = useAuth()
-  useEffect(() => {
-    track({
-      name: "about",
-    })
-  }, [])
+  const { plausible } = useAuth()
 
   return (
     <Skeleton>

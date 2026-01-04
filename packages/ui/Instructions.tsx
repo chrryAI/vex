@@ -28,7 +28,7 @@ import {
   FileText,
 } from "./icons"
 import Modal from "./Modal"
-import { apiFetch, FRONTEND_URL } from "./utils"
+import { apiFetch } from "./utils"
 import { formatFileSize } from "./utils/fileValidation"
 import { useAppContext } from "./context/AppContext"
 import {
@@ -42,7 +42,6 @@ import {
 import {
   useTheme as usePlatformTheme,
   usePlatform,
-  getExtensionId,
   Div,
   Button,
   Span,
@@ -364,7 +363,6 @@ export default function Instructions({
       : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
         ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
         : ""
-  const extensionId = getExtensionId()
 
   const handleFileSelect = async (selectedFiles: FileList | null) => {
     if (!selectedFiles) return
@@ -1532,7 +1530,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
             )}
             {appStatus?.part ? (
               <Agent />
-            ) : extensionId && extensionUrl.includes(extensionId) ? null : (
+            ) : (
               <Div
                 style={{
                   display: "flex",

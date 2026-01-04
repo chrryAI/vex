@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React from "react"
 import Skeleton from "./Skeleton"
 import { useAppContext } from "./context/AppContext"
 import { CircleArrowLeft } from "./icons"
@@ -19,13 +19,7 @@ export default function Terms() {
   const styles = useAboutStyles()
   const { utilities } = useStyles()
 
-  const { track } = useAuth()
-
-  useEffect(() => {
-    track({
-      name: "terms",
-    })
-  }, [])
+  const { plausible } = useAuth()
 
   return (
     <Skeleton>
@@ -53,8 +47,8 @@ export default function Terms() {
         </Section>
 
         <Section>
-          <H2>{t("terms.tracking.title")}</H2>
-          <P>{t("terms.tracking.content2")}</P>
+          <H2>{t("terms.plausibleing.title")}</H2>
+          <P>{t("terms.plausibleing.content2")}</P>
         </Section>
 
         <Section>

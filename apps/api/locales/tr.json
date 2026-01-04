@@ -1947,5 +1947,6 @@
   "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.": "Teknoloji yığınınızdan bahsedin! Doğru, üretime hazır kod için çerçeveleri, kütüphaneleri ve sürümleri belirtin.",
   "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.": "Testler için talepte bulunun! Kodunuzla birlikte daha iyi kalite için birim testleri, entegrasyon testleri veya E2E testleri talep edin.",
   "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.": "Optimizasyona mı ihtiyacınız var? Mevcut kod için zaman/alan karmaşıklığı analizi veya performans iyileştirmeleri talep edin.",
-  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Dokümantasyon talep edin! Kodunuzu sürdürülebilir hale getirmek için satır içi yorumlar, JSDoc veya README dosyaları talep edin."
+  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Dokümantasyon talep edin! Kodunuzu sürdürülebilir hale getirmek için satır içi yorumlar, JSDoc veya README dosyaları talep edin.",
+  "Let's Pear": "Hadi Birleşelim"
 }

@@ -267,10 +267,6 @@ threads.get("/:id", async (c) => {
     ? await getGuestAction(c, { skipCache: true })
     : undefined
 
-  if (!member && !guest) {
-    return c.json({ error: "Unauthorized", status: 401 }, 401)
-  }
-
   const pageSize = Number(c.req.query("pageSize") || "100")
 
   const thread = await getThread({ id })
@@ -279,14 +275,21 @@ threads.get("/:id", async (c) => {
     return c.json({ error: "Thread not found", status: 404 }, 404)
   }
 
-  if (
-    !canCollaborate({
-      thread,
-      userId: member?.id,
-      guestId: guest?.id,
-    })
-  ) {
-    return c.json({ error: "Unauthorized", status: 401 }, 401)
+  // Allow access if thread is public
+  if (thread.visibility !== "public") {
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized", status: 401 }, 401)
+    }
+
+    if (
+      !canCollaborate({
+        thread,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
+    ) {
+      return c.json({ error: "Unauthorized", status: 401 }, 401)
+    }
   }
 
   const messages = await getMessages({

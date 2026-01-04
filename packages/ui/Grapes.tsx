@@ -1,21 +1,24 @@
-import { useApp, useAuth, useChat } from "./context/providers"
+import { useAuth, useChat } from "./context/providers"
 import Modal from "./Modal"
 import { Button, Div, H3, P, Span } from "./platform"
 import { useState } from "react"
 import { appWithStore } from "./types"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useStarStyles } from "./Star.styles"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
+
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 const Grappes = ({
   style,
   goToGrape,
+  dataTestId,
 }: {
   style?: React.CSSProperties
   goToGrape?: boolean
+  dataTestId?: string
 }) => {
-  const { grapes, setIsPear, grape, track } = useAuth()
+  const { grapes, setIsPear, grape, plausible } = useAuth()
 
   const { setIsNewAppChat } = useChat()
   const [showGrapes, setShowGrapes] = useState(false)
@@ -39,16 +42,16 @@ const Grappes = ({
             if (!open) {
               setShowGrapes(false)
               setSelectedGrapeApp(undefined)
-              track({
-                name: "grape_modal_close",
+              plausible({
+                name: ANALYTICS_EVENTS.GRAPE_MODAL_CLOSE,
                 props: {
                   apps_shown: grapes.length,
                 },
               })
             } else {
               setShowGrapes(true)
-              track({
-                name: "grape_modal_open",
+              plausible({
+                name: ANALYTICS_EVENTS.GRAPE_MODAL_OPEN,
                 props: {
                   apps_available: grapes.length,
                 },
@@ -77,12 +80,13 @@ const Grappes = ({
             >
               {grapes?.map((app) => (
                 <Button
+                  data-testid="grapes-app-button"
                   key={app.id}
                   className={`card link border ${selectedGrapeApp?.id === app.id ? "selected" : ""}`}
                   onClick={() => {
                     setSelectedGrapeApp(app)
-                    track({
-                      name: "grape_app_select",
+                    plausible({
+                      name: ANALYTICS_EVENTS.GRAPE_APP_SELECT,
                       props: {
                         app: app.name,
                         slug: app.slug,
@@ -183,10 +187,11 @@ const Grappes = ({
                   }}
                 >
                   <Button
+                    data-testid="grapes-feedback-button"
                     className="button inverted"
                     onClick={() => {
-                      track({
-                        name: "grape_pear_feedback",
+                      plausible({
+                        name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
                         props: {
                           app: selectedGrapeApp.name,
                           slug: selectedGrapeApp.slug,
@@ -208,6 +213,7 @@ const Grappes = ({
         </Modal>
       )}
       <Button
+        data-testid={dataTestId}
         // href={getAppSlug(grape)}
         title={t("Discover apps, earn credits")}
         // openInNewTab={isExtension && isFirefox}
@@ -223,8 +229,8 @@ const Grappes = ({
             return
           }
           setShowGrapes(true)
-          track({
-            name: "grape_icon_click",
+          plausible({
+            name: ANALYTICS_EVENTS.GRAPE_ICON_CLICK,
             props: {
               apps_available: grapes.length,
             },

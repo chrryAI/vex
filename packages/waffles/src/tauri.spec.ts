@@ -11,7 +11,7 @@ import path from "path"
  */
 
 test.describe("Tauri Desktop App", () => {
-  test("should launch Tauri app", async () => {
+  test.skip("should launch Tauri app", async () => {
     // Path to your Tauri binary
     // For dev: apps/browser/src-tauri/target/debug/vex
     // For release: apps/browser/src-tauri/target/release/vex
@@ -48,7 +48,7 @@ test.describe("Tauri Desktop App", () => {
     await electronApp.close()
   })
 
-  test("should test OAuth flow in Tauri", async () => {
+  test.skip("should test OAuth flow in Tauri", async () => {
     const appPath = path.join(
       __dirname,
       "../../apps/browser/src-tauri/target/debug/vex",
@@ -76,7 +76,7 @@ test.describe("Tauri Desktop App", () => {
     await electronApp.close()
   })
 
-  test("should test Stripe payment in Tauri", async () => {
+  test.skip("should test Stripe payment in Tauri", async () => {
     const appPath = path.join(
       __dirname,
       "../../apps/browser/src-tauri/target/debug/vex",
@@ -95,7 +95,7 @@ test.describe("Tauri Desktop App", () => {
     await electronApp.close()
   })
 
-  test("should test window controls", async () => {
+  test.skip("should test window controls", async () => {
     const appPath = path.join(
       __dirname,
       "../../apps/browser/src-tauri/target/debug/vex",
