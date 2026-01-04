@@ -19,6 +19,25 @@ test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
 
+// test.only("Sync Plausible", async ({ page }) => {
+//   await page.goto("https://a.chrry.dev", {
+//     waitUntil: "networkidle",
+//     timeout: 100000,
+//   })
+
+//   const items = document.querySelectorAll(".relative")
+
+//   items.forEach((item) => {
+//     item.click()
+
+//     const input = document.querySelector("focus:border-blue-300")
+//     input?.click()
+
+//   const button = document.querySelector("button")
+//   button?.click()
+//   })
+// })
+
 test("Subscribe", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",

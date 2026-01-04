@@ -18,6 +18,7 @@ import { useOnlineStatus } from "../../hooks/useOnlineStatus"
 import { useApp } from "./AppProvider"
 import { useChat } from "./ChatProvider"
 import { useAuth } from "./AuthProvider"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 
 import { thread } from "../../types"
 import { t } from "i18next"
@@ -130,7 +131,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     router.push(url)
   }
 
-  const { slug, setSlug, getAppSlug, language, setShowFocus } = useAuth()
+  const { slug, setSlug, getAppSlug, language, setShowFocus, plausible } =
+    useAuth()
 
   const goToThreads = (params?: Record<string, string>) => {
     setShowFocus(false)
@@ -249,8 +251,20 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     }
   }, [isOnline, wasOffline])
 
-  const [isMemoryConsentManageVisible, setIsMemoryConsentManageVisible] =
-    useState(false)
+  const [
+    isMemoryConsentManageVisible,
+    setIsMemoryConsentManageVisibleInternal,
+  ] = useState(false)
+
+  const setIsMemoryConsentManageVisible = (value: boolean) => {
+    setIsMemoryConsentManageVisibleInternal(value)
+    plausible({
+      name: ANALYTICS_EVENTS.MEMORY_TOGGLE,
+      props: {
+        value,
+      },
+    })
+  }
 
   const [isHome, setIsHome] = useState(pathname === "/")
 

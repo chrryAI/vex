@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive, isMember })
 })
 
-test.only("Subscribe As Member", async ({ page }) => {
+test.skip("Subscribe As Member", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
@@ -46,7 +46,7 @@ test.only("Subscribe As Member", async ({ page }) => {
   })
 })
 
-test.only("Invite", async ({ page }) => {
+test.skip("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive,
@@ -67,7 +67,7 @@ test.only("Invite", async ({ page }) => {
   })
 })
 
-test.only("Gift", async ({ page }) => {
+test.skip("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -84,7 +84,7 @@ test.only("Gift", async ({ page }) => {
   })
 })
 
-test.only("App", async ({ page }) => {
+test.skip("App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,

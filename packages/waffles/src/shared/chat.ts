@@ -26,6 +26,9 @@ const getTestFilePath = (...pathSegments: string[]) => {
 
 const MAX_FILES = 5
 
+// Too fast too furious - models that respond so quickly the stop button doesn't appear
+const TOO_FAST_MODELS = ["perplexity", "gemini"]
+
 export const chat = async ({
   artifacts,
   page,
@@ -628,9 +631,13 @@ export const chat = async ({
     }
 
     const stopButton = page.getByTestId("chat-stop-streaming-button")
-    await expect(stopButton).toBeVisible({
-      timeout: prompt.agentMessageTimeout || agentMessageTimeout,
-    })
+
+    // Skip stop button check for models that are too fast
+    if (!TOO_FAST_MODELS.includes(prompt.model || "")) {
+      await expect(stopButton).toBeVisible({
+        timeout: prompt.agentMessageTimeout || agentMessageTimeout,
+      })
+    }
 
     await wait(1500)
 
