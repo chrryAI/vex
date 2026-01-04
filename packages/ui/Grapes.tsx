@@ -1,10 +1,9 @@
-import { useApp, useAuth, useChat } from "./context/providers"
+import { useAuth, useChat } from "./context/providers"
 import Modal from "./Modal"
 import { Button, Div, H3, P, Span } from "./platform"
 import { useState } from "react"
 import { appWithStore } from "./types"
 import { COLORS, useAppContext } from "./context/AppContext"
-import { useStarStyles } from "./Star.styles"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
 
@@ -79,6 +78,7 @@ const Grappes = ({
             >
               {grapes?.map((app) => (
                 <Button
+                  data-testid="grapes-app-button"
                   key={app.id}
                   className={`card link border ${selectedGrapeApp?.id === app.id ? "selected" : ""}`}
                   onClick={() => {
@@ -185,6 +185,7 @@ const Grappes = ({
                   }}
                 >
                   <Button
+                    data-testid="grapes-feedback-button"
                     className="button inverted"
                     onClick={() => {
                       track({
@@ -210,6 +211,7 @@ const Grappes = ({
         </Modal>
       )}
       <Button
+        data-testid="grapes-button"
         // href={getAppSlug(grape)}
         title={t("Discover apps, earn credits")}
         // openInNewTab={isExtension && isFirefox}

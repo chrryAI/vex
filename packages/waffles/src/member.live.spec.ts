@@ -22,7 +22,8 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive, isMember })
 })
 
-test.skip("Subscribe As Member", async ({ page }) => {
+test.only("Subscribe As Member", async ({ page }) => {
+  await signIn({ page })
   await page.goto(
     getURL({
       isMember,
@@ -38,79 +39,13 @@ test.skip("Subscribe As Member", async ({ page }) => {
   await subscribe({
     page,
     isMember,
+    isLive,
     // createChat: false,
   })
 })
 
-test.only("App", async ({ page }) => {
-  await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
-    timeout: 100000,
-  })
-
+test.only("Invite", async ({ page }) => {
   await signIn({ page })
-  await app({
-    page,
-    isMember,
-    isLive,
-    slug: "vex",
-    nav: [
-      {
-        name: "peach",
-        chat: {
-          prompts: [
-            { model: "sushi", text: "What feedback do you have?" },
-            { model: "sushi", text: "Show me recent insights" },
-            { model: "sushi", text: "How can I improve my apps?" },
-          ],
-        },
-      },
-      {
-        name: "bloom",
-        chat: {
-          prompts: [
-            { model: "sushi", text: "What can you help me with?" },
-            { model: "sushi", text: "Show me focus features" },
-            { model: "sushi", text: "How do I track my tasks?" },
-          ],
-        },
-      },
-      {
-        name: "vault",
-        chat: {
-          prompts: [
-            { model: "sushi", text: "Show my expenses" },
-            { model: "sushi", text: "What's my budget status?" },
-            { model: "sushi", text: "Track a new expense" },
-          ],
-        },
-      },
-      {
-        name: "atlas",
-        chat: {
-          prompts: [
-            { model: "sushi", text: "Find places in Amsterdam" },
-            { model: "sushi", text: "Show me travel routes" },
-            { model: "sushi", text: "What's nearby?" },
-          ],
-        },
-      },
-      {
-        name: "chrry",
-        chat: {
-          prompts: [
-            { model: "sushi", text: "Show me apps in the store" },
-            { model: "sushi", text: "What's trending?" },
-            { model: "sushi", text: "How do I create an app?" },
-          ],
-        },
-      },
-    ],
-    isNewChat: true,
-  })
-})
-
-test.skip("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive,
@@ -129,7 +64,7 @@ test.skip("Invite", async ({ page }) => {
   })
 })
 
-test.skip("Gift", async ({ page }) => {
+test.only("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -153,135 +88,76 @@ test.skip("Gift", async ({ page }) => {
   })
 })
 
-test.skip("Long text", async ({ page }) => {
-  const result = await chat({
-    page,
-    isMember,
-    isLive,
-    instruction: "Help me write a short story",
-    // agentMessageTimeout: 12000,
-    prompts: [
-      {
-        text: "Write a 300-word story about a time traveler who discovers they can't change the past",
-        model: "sushi",
-        stop: true,
-      },
-      {
-        text: "I stopped you. Need a short one. Now summarize that story shortly in 1 sentence",
-        model: "sushi",
-      },
-    ],
-  })
-})
-
-test.skip("Chat", async ({ page }) => {
-  test.slow()
-
-  await page.goto(getURL({ isMember, isLive }), {
+test.only("App", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
   })
 
-  await chat({
-    isNewChat: false,
+  await signIn({ page })
+  await app({
     page,
     isMember,
     isLive,
-    agentMessageTimeout: 120000,
-    instruction: "Help me plan a 3-day trip to Tokyo",
-    prompts: [
+    slug: "vex",
+    nav: [
       {
-        text: "List shortly the top 3 must-see attractions in Tokyo",
-        model: "sushi",
+        name: "peach", // Feedback & Insights
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What feedback patterns are emerging?" },
+            {
+              model: "sushi",
+              text: "Which features are users requesting most?",
+            },
+            {
+              model: "sushi",
+              text: "Show me sentiment analysis from recent feedback",
+            },
+          ],
+        },
       },
       {
-        text: "Suggest briefly a simple itinerary for day 1",
-        model: "claude",
+        name: "bloom", // Productivity & Focus
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What's my most productive time of day?" },
+            { model: "sushi", text: "Show my focus session statistics" },
+            { model: "sushi", text: "Help me plan a deep work session" },
+          ],
+        },
       },
       {
-        text: "Shortly explain the best way to get around",
-        model: "chatGPT",
+        name: "vault", // Finance & Budgeting
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Where am I overspending this month?" },
+            { model: "sushi", text: "Compare my spending to last month" },
+            { model: "sushi", text: "What's my biggest expense category?" },
+          ],
+        },
       },
       {
-        text: "Which model are you using? Answer briefly",
-        model: "gemini",
+        name: "atlas", // Travel & Navigation
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Plan a day trip in Amsterdam" },
+            { model: "sushi", text: "Find the best coffee shops nearby" },
+            { model: "sushi", text: "What's the fastest route to Centraal?" },
+          ],
+        },
       },
       {
-        text: "How can I enable character profile? Answer shortly",
-        model: "sushi",
-      },
-      {
-        text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
-        imageGenerationEnabled: true,
-
-        model: "sushi",
+        name: "chrry", // App Marketplace
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What are the top-rated apps this week?" },
+            { model: "sushi", text: "Show me apps for productivity" },
+            { model: "sushi", text: "How do I monetize my app idea?" },
+          ],
+        },
       },
     ],
-  })
-})
-
-test.skip("Thread", async ({ page }) => {
-  test.slow()
-  await thread({ page, isLive })
-})
-
-// test.skip("Collaboration", async ({ page, browser }) => {
-//   await collaboration({
-//     page,
-//     browser,
-//     isMember,
-//     isLive,
-//     collaborate: isLive ? VEX_TEST_EMAIL_4 : undefined,
-//   })
-// })
-
-test.skip("File upload", async ({ page }) => {
-  // test.slow()
-  await page.goto(getURL({ isMember, isLive }), {
-    waitUntil: "networkidle",
-    timeout: 100000,
-  })
-
-  const result = await chat({
-    artifacts: {
-      paste: 2,
-      pdf: 1,
-    },
-    isNewChat: false,
-    page,
-    isLive,
-    isMember,
-    instruction: "Lets upload some files",
-    prompts: [
-      {
-        text: "Hey Vex, Analyze this paste(s) and video shortly",
-        model: "sushi",
-        mix: {
-          paste: 1,
-          pdf: 1,
-          video: 1,
-        },
-        like: false,
-      },
-      {
-        text: "Hey Vex, Analyze these files briefly",
-        model: "sushi",
-        mix: {
-          paste: 1,
-          pdf: 1,
-          image: 1,
-        },
-        like: false,
-      },
-      {
-        text: "Hey Vex, Analyze this pdf(s) and images shortly",
-        model: "sushi",
-        mix: {
-          pdf: 1,
-          image: 2,
-        },
-        like: false,
-      },
-    ],
+    isNewChat: true,
   })
 })

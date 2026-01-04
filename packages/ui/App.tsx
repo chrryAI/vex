@@ -22,7 +22,7 @@ import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
-import { Div, H1, H3, P, Button, Label, Span, Input } from "./platform"
+import { Div, H1, Button, Label, Span, Input } from "./platform"
 import A from "./a/A"
 import { apiFetch } from "./utils"
 import { useStyles } from "./context/StylesContext"
@@ -36,7 +36,6 @@ import {
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
 import { appWithStore } from "./types"
-import Modal from "./Modal"
 import Grappes from "./Grapes"
 
 function FocusButton({ time }: { time: number }) {

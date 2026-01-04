@@ -34,7 +34,6 @@ import Version from "./Version"
 import AddToHomeScreen from "./addToHomeScreen"
 import { useHasHydrated } from "./hooks"
 import { useTimerContext } from "./context/TimerContext"
-import { ParticleBackground } from "./ParticleBackground"
 
 function FocusButton({
   time,
@@ -47,7 +46,8 @@ function FocusButton({
 }) {
   const { appStyles } = useStyles()
   const { viewPortWidth, isTauri } = usePlatform()
-  const { app, getAppSlug, setShowFocus, isIDE, toggleIDE } = useAuth()
+  const { app, getAppSlug, setShowFocus, isIDE, toggleIDE, threadId } =
+    useAuth()
 
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
 
@@ -78,10 +78,6 @@ function FocusButton({
   }
   const { isEmpty } = useChat()
 
-  if (!isEmpty) {
-    return null
-  }
-
   if (codeEditor && !isIDE) {
     return (
       <>
@@ -99,25 +95,6 @@ function FocusButton({
         >
           <CodeXml size={20} /> {"Code"}
         </Button>
-      </>
-    )
-  }
-
-  if (!focus || viewPortWidth < 375) {
-    return (
-      <>
-        <A
-          href={`/blossom`}
-          className="button transparent"
-          style={{
-            ...utilities.button.style,
-            ...utilities.transparent.style,
-            ...utilities.small.style,
-            ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
-          }}
-        >
-          <Img logo="blossom" size={22} /> {"Blossom"}
-        </A>
       </>
     )
   }
@@ -391,15 +368,27 @@ export default function Skeleton({
                       </Div>
                     ) : null}
 
-                    <FocusButton
-                      isDrawerOpen={isDrawerOpen}
-                      time={time}
-                      isCountingDown={isCountingDown}
-                    />
+                    {!isEmpty || threadId ? null : (
+                      <FocusButton
+                        isDrawerOpen={isDrawerOpen}
+                        time={time}
+                        isCountingDown={isCountingDown}
+                      />
+                    )}
                   </Div>
                 </Div>
                 <Div style={{ ...skeletonStyles.right.style }}>
-                  {<CharacterProfiles />}
+                  {time && !isEmpty ? (
+                    <>
+                      <FocusButton
+                        isDrawerOpen={isDrawerOpen}
+                        time={time}
+                        isCountingDown={isCountingDown}
+                      />
+                    </>
+                  ) : (
+                    <CharacterProfiles />
+                  )}
                   {<Subscribe />}
 
                   <SignIn showSignIn={false} />

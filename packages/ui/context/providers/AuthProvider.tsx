@@ -1431,7 +1431,16 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
-  const [showFocus, setShowFocus] = useState(false)
+  const [showFocus, setShowFocusInternal] = useState(false)
+
+  const setShowFocus = (showFocus: boolean) => {
+    setShowFocusInternal(showFocus)
+
+    if (showFocus) {
+      setThread(undefined)
+      setThreadId(undefined)
+    }
+  }
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
@@ -1450,9 +1459,10 @@ export function AuthProvider({
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
 
+  console.log("isZarathustra", baseApp, isZarathustra, isBaseAppZarathustra)
   const [burnInternal, setBurnInternal] = useLocalStorage<boolean | null>(
     "burn",
-    isZarathustra ? true : null,
+    null,
   )
 
   const burn = burnInternal === null ? isZarathustra : burnInternal
@@ -1505,13 +1515,7 @@ export function AuthProvider({
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
     boolean | null
-  >("programme", isBaseAppZarathustra ? true : null)
-
-  useEffect(() => {
-    if (!baseApp) return
-
-    isProgrammeInternal === null && setIsProgrammeInternal(isBaseAppZarathustra)
-  }, [isBaseAppZarathustra, baseApp])
+  >("isProgramme", isBaseAppZarathustra)
 
   const apps = storeApps.filter((item) => {
     return app?.store?.app?.store?.apps?.some((app) => {

@@ -7,7 +7,6 @@ import React, {
   useState,
   useEffect,
   useMemo,
-  useRef,
 } from "react"
 import { useLocalStorage, useNavigation, toast } from "../../platform"
 import useCache from "../../hooks/useCache"
@@ -27,7 +26,6 @@ import { instructionBase } from "../../utils/getExampleInstructions"
 import { Paginated, storeWithApps } from "../../types"
 import { getSiteConfig } from "../../utils/siteConfig"
 import { useError } from "./ErrorProvider"
-import { threadId } from "worker_threads"
 
 export { COLORS } from "../ThemeContext"
 

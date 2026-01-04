@@ -13,7 +13,7 @@ import {
 import type { ReactElement, ReactNode } from "react"
 
 import { isSameDay, FRONTEND_URL, apiFetch, API_URL } from "../utils"
-import { device, mood, timer } from "../types"
+import { device, timer } from "../types"
 import console from "../utils/log"
 
 import useSWR from "swr"
@@ -184,32 +184,31 @@ export function TimerContextProvider({
   const { enableSound } = useTheme()
 
   const { send } = useWebSocket<{
-    timer: timer & { deviceId?: string }
+    // timer: timer & { deviceId?: string }
     type: string
-    mood: mood
-    selectedTasks: Task[]
+    // mood: mood
+    // selectedTasks: Task[]
     deviceId: string
+    data: timer
   }>({
-    onMessage: async (data) => {
-      if (data?.type === "timer" && data.timer.deviceId !== deviceId) {
-        setRemoteTimer(data.timer)
+    onMessage: async ({ type, data }) => {
+      if (type === "timer") {
+        await fetchTimer()
+        setRemoteTimer(data)
       }
 
-      if (data?.type === "timer-ai" || data?.type === "tasks") {
+      if (type === "tasks") {
         await fetchTimer()
       }
 
-      if (data?.type === "mood") {
+      if (type === "mood") {
         await fetchMood()
       }
 
-      if (data?.type === "selected_tasks") {
-        // Only update if fingerprint is different to prevent loops
-        if (data.deviceId !== deviceId) {
-          setTimerTasks(data.selectedTasks)
-          setSelectedTasksFingerprint(data.deviceId)
-        }
-      }
+      // if (data && type === "selected_tasks") {
+      //   // Only update if fingerprint is different to prevent loops
+      //   setTimerTasks(data)
+      // }
     },
     token,
     deviceId,
@@ -231,6 +230,8 @@ export function TimerContextProvider({
     setTimerInternal((prevTimer) => {
       if (
         prevTimer?.id === timer?.id &&
+        prevTimer?.isCountingDown === timer?.isCountingDown &&
+        prevTimer?.count === timer?.count &&
         prevTimer?.preset1 === timer?.preset1 &&
         prevTimer?.preset2 === timer?.preset2 &&
         prevTimer?.preset3 === timer?.preset3
@@ -246,29 +247,27 @@ export function TimerContextProvider({
     (timer & { device?: device }) | null
   >(null)
 
+  useEffect(() => {
+    if (!remoteTimer || remoteTimer.count !== timer?.count) return
+    if (!remoteTimer?.isCountingDown) {
+      handlePause(false)
+    } else {
+      handleResume()
+    }
+
+    setRemoteTimer(null)
+  }, [remoteTimer, timer])
+
   const [isPaused, setIsPaused] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const [isCancelled, setIsCancelled] = useState(false)
-
-  const [selectedTasksFingerprint, setSelectedTasksFingerprint] = useState<
-    string | undefined
-  >()
 
   const [timerTasks, setTimerTasks] = useState<Task[]>([])
   const lastProcessedFingerprintRef = useRef<string | undefined>(undefined)
   const lastFilteredTasksRef = useRef<string>("")
 
   useEffect(() => {
-    if (!selectedTasksFingerprint || selectedTasksFingerprint === deviceId)
-      return
-
-    // Prevent processing the same fingerprint twice
-    if (lastProcessedFingerprintRef.current === selectedTasksFingerprint) return
-
     if (!timerTasks?.length) return
-
-    lastProcessedFingerprintRef.current = selectedTasksFingerprint
-
     // Use functional update to avoid tasks dependency
     setTasks((prevTasks) => {
       // Safety check: ensure prevTasks and prevTasks.tasks exist
@@ -310,8 +309,7 @@ export function TimerContextProvider({
     })
 
     // Clear the fingerprint after processing to prevent re-running
-    setSelectedTasksFingerprint(undefined)
-  }, [timerTasks, selectedTasksFingerprint, fingerprint])
+  }, [timerTasks, fingerprint])
 
   const [presetMin1, setPresetMin1Internal] = useLocalStorage(
     "presetMin1",
@@ -392,8 +390,16 @@ export function TimerContextProvider({
   useEffect(() => {
     if (!timer) return
 
-    updateTimer(timer)
-  }, [timer])
+    if (timer.isCountingDown === isCountingDown) return
+
+    if (isCountingDown) {
+      handleResume()
+    } else {
+      handlePause()
+    }
+
+    // updateTimer(timer)
+  }, [timer, isCountingDown])
 
   const setPresetMin1 = useCallback(
     (value: number) => {
@@ -652,7 +658,7 @@ export function TimerContextProvider({
     setTimer(updatedTimer)
 
     // Sync to WebSocket
-    updateTimer(updatedTimer)
+    // updateTimer(updatedTimer)
 
     // Persist to localStorage via hook
     setTimerState({
@@ -848,33 +854,36 @@ export function TimerContextProvider({
     }, 500)
   }, [isExtension, timer, fingerprint])
 
-  const handlePause = useCallback(() => {
-    setIsPaused(true)
-    setIsCountingDown(false)
-    setIsCancelled(false)
+  const handlePause = useCallback(
+    (update: boolean = true) => {
+      setIsPaused(true)
+      setIsCountingDown(false)
+      setIsCancelled(false)
 
-    if (timer) {
-      updateTimer({ ...timer, isCountingDown: false })
-    }
+      // Clear interval if running locally
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
 
-    // Clear interval if running locally
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
+      // Update local storage for web version
+      setTimerState({
+        time,
+        isCountingDown: false,
+        isPaused: true,
+        timestamp: Date.now(),
+        startTime,
+        isFinished: false,
+      })
 
-    // Update local storage for web version
-    setTimerState({
-      time,
-      isCountingDown: false,
-      isPaused: true,
-      timestamp: Date.now(),
-      startTime,
-      isFinished: false,
-    })
+      if (timer && update) {
+        updateTimer({ ...timer, isCountingDown: false })
+      }
 
-    trackEvent({ name: "timer_pause", props: { timeLeft: time } })
-  }, [timer, updateTimer, time, startTime, trackEvent])
+      trackEvent({ name: "timer_pause", props: { timeLeft: time } })
+    },
+    [timer, updateTimer, time, startTime, trackEvent],
+  )
 
   const handleResume = useCallback(() => {
     setIsPaused(false)

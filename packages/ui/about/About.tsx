@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React from "react"
 import Skeleton from "../Skeleton"
 import { COLORS, useAppContext } from "../context/AppContext"
 import { BrowserInstance, checkIsExtension } from "../utils"

@@ -25,6 +25,7 @@ import { useWebSocket } from "./hooks/useWebSocket"
 import { isOwner } from "./utils"
 import { useMessagesStyles } from "./Messages.styles"
 import { useStyles } from "./context/StylesContext"
+import { useUserScroll } from "./hooks/useUserScroll"
 
 export default forwardRef<
   HTMLDivElement,
@@ -150,6 +151,9 @@ export default forwardRef<
     deps: webSocketDeps,
   })
 
+  const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
+    useUserScroll()
+
   useEffect(() => {
     setCharacterProfile(thread?.characterProfile)
   }, [thread?.characterProfile])
@@ -165,8 +169,14 @@ export default forwardRef<
     loadingCharacterProfile?.threadId === threadId
 
   useEffect(() => {
-    showLoadingCharacterProfile && scrollToBottom()
-  }, [showLoadingCharacterProfile])
+    if (
+      showLoadingCharacterProfile &&
+      !isUserScrolling &&
+      !hasStoppedScrolling
+    ) {
+      scrollToBottom()
+    }
+  }, [showLoadingCharacterProfile, isUserScrolling, hasStoppedScrolling])
 
   if (!showEmptyState && messages?.length === 0) return null
   return (

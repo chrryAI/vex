@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React from "react"
 import { useAppContext } from "./context/AppContext"
 import Skeleton from "./Skeleton"
 import { CircleArrowLeft } from "./icons"

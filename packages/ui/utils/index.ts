@@ -394,7 +394,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.9.38"
+export const VERSION = config.version || "1.9.39"
 export type instructionBase = {
   id: string
   title: string
@@ -475,8 +475,8 @@ export const getInstructionConfig = ({
     weatherEmoji,
     timeOfDay,
     hour,
-    city,
-    country,
+    city: city || undefined,
+    country: country || undefined,
     weather: weatherDescription, // Add combined weather for {{weather}} placeholder
   }
 }

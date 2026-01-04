@@ -8,11 +8,9 @@ import {
 } from "../lib/auth"
 import {
   createGuest,
-  deleteThread,
   getCreditTransactions,
   getCreditUsage,
   getGuest,
-  getThreads,
   hasThreadNotifications,
   migrateUser,
   updateGuest,

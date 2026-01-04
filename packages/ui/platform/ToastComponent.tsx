@@ -7,7 +7,6 @@ import React from "react"
 import { Toaster as WebToaster, ToasterProps } from "react-hot-toast"
 import { usePlatform } from "./PlatformProvider"
 import { useData } from "../context/providers/DataProvider"
-import { Div } from "./PlatformPrimitives"
 
 // Use the actual types from react-hot-toast
 type ToastProps = ToasterProps

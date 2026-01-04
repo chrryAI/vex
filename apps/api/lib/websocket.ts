@@ -10,10 +10,8 @@ import {
   updateCollaboration,
   updateGuest,
   updateUser,
-  getTask,
   updateTask,
   createTimer,
-  getTimer,
   updateTimer,
   type task,
 } from "@repo/db"
@@ -190,15 +188,14 @@ export const websocketHandler = {
               }
 
               // Only include fields that are actually provided
-              if (timerData.count !== undefined)
-                timerUpdate.count = timerData.count
+              if (timerData.count) timerUpdate.count = timerData.count
               if (timerData.preset1 !== undefined)
                 timerUpdate.preset1 = timerData.preset1
               if (timerData.preset2 !== undefined)
                 timerUpdate.preset2 = timerData.preset2
               if (timerData.preset3 !== undefined)
                 timerUpdate.preset3 = timerData.preset3
-              if (timerData.isCountingDown !== undefined)
+              if (timerData.isCountingDown === false)
                 timerUpdate.isCountingDown = timerData.isCountingDown
 
               // Try to update first (most common case)

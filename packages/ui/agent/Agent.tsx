@@ -38,7 +38,6 @@ import {
   type CreateCustomAiAgent,
 } from "../schemas/agentSchema"
 import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "../icons"
-import Logo from "../Logo"
 import {
   Button,
   Div,

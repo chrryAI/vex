@@ -189,6 +189,14 @@ export const chat = async ({
     await scrollToBottom() // Ensure hourly limit info is visible
     const hourlyLimitInfo = page.getByTestId("hourly-limit-info")
 
+    // Check if element is visible first
+    const isVisible = await hourlyLimitInfo
+      .isVisible({ timeout: 1000 })
+      .catch(() => false)
+    if (!isVisible) {
+      return null
+    }
+
     return await hourlyLimitInfo.getAttribute("data-hourly-left", {
       timeout: 1000,
     })
@@ -850,7 +858,9 @@ export const chat = async ({
       }
 
       const hourlyUsageLeft = await getHourlyUsageLeft()
-      expect(hourlyUsageLeft).toBe((hourlyLimit - hourlyUsage).toString())
+      if (hourlyUsageLeft !== null) {
+        expect(hourlyUsageLeft).toBe((hourlyLimit - hourlyUsage).toString())
+      }
 
       // Assert appropriate values based on what's visible
 

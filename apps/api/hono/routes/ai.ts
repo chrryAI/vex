@@ -9,7 +9,6 @@ import {
   checkPearQuota,
   incrementPearQuota,
   updateUser,
-  getAnalyticsSite,
   getAnalyticsSites,
   updateGuest,
 } from "@repo/db"
@@ -43,7 +42,6 @@ import {
   getTimer,
   getAiAgents,
   getInstructions,
-  getCharacterTags,
   getCharacterProfiles,
   realtimeAnalytics,
 } from "@repo/db"
@@ -58,7 +56,6 @@ import {
   processMessageForRAG,
 } from "../../lib/actions/ragService"
 import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
-import { getAppKnowledge } from "../../lib/appRAG"
 import { streamText, generateText, ModelMessage } from "ai"
 
 import { createDeepSeek } from "@ai-sdk/deepseek"
@@ -2218,6 +2215,7 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
   const focusTimer = hasFocus
     ? await getTimer({
         userId: member?.id,
+        guestId: guest?.id,
       })
     : null
 
@@ -2968,6 +2966,22 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 `
   }
 
+  const spatialNavigationContext = `
+  ## 🧭 SPATIAL NAVIGATION ARCHITECTURE
+  Focus uses an N-dimensional spatial navigation system based on Store (Universe) > App (Tool) hierarchy.
+  
+  **Three Navigation States**:
+  1. **Store Home**: Base app active. Buttons = Other Stores.
+  2. **In-Store**: Deep link app active. **Store Home button appears** (Back path).
+  3. **Cross-Store**: Jump to new store. **Old Store button appears** (Back path).
+  
+  **Core Rules**:
+  - **Same Store Click**: Switches view (Context maintained). Button morphs to Store Base.
+  - **Different Store Click**: Teleports (Context switched). Current Store becomes visible as Back button.
+  - **Chrry**: Always the universal anchor/reset.
+  - **UI Logic**: "What's visible = Where you can go". "What's missing = Where you are".
+  `
+
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
   // But we keep this comment for clarity that they're part of every message
   // Using array join for better performance with long context strings
@@ -2989,7 +3003,9 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     vaultContext,
     focusContext,
     taskContext,
+
     newsContext,
+    storeContext ? spatialNavigationContext : "", // Only add spatial nav context if store context is present
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
     e2eContext, // E2E testing analytics for system integrity
@@ -5794,10 +5810,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           tools: allTools,
           providerOptions: {
             google: {
-              thinkingConfig: {
-                thinkingLevel: "high", // Enable deep reasoning for Gemini 3
-                includeThoughts: true, // Stream reasoning tokens
-              },
+              // thinkingConfig: {
+              //   thinkingLevel: "high", // Enable deep reasoning for Gemini 3
+              //   includeThoughts: true, // Stream reasoning tokens
+              // },
             },
           },
           async onFinish({ text, usage, response }) {

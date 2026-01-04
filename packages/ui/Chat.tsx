@@ -3753,7 +3753,9 @@ export default function Chat({
                     threadId ? null : showGreeting && files.length === 0 ? (
                       <H2 style={styles.brandHelp.style}>
                         {burn ? <HatGlasses size={24} /> : ""}
-                        <Span>
+                        <Span
+                          data-testid={`brand-help-${isPear ? "pear" : "chat"}`}
+                        >
                           {isPear ? "🍐" : "👋"}{" "}
                           {t(
                             isPear

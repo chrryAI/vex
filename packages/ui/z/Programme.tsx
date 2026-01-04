@@ -34,6 +34,7 @@ export default function Programme() {
     setEntered(false)
     back()
   }
+  console.log(`🚀 ~ Programme ~ isProgramme:`, isProgramme)
 
   if (!isProgramme) {
     return null
@@ -42,7 +43,7 @@ export default function Programme() {
   return (
     <main className={styles.main}>
       {/* The 3D Background */}
-      {/* <ParticleWaveCanvas entered={entered} /> */}
+      <ParticleWaveCanvas entered={entered} />
 
       <AnimatePresence mode="wait">
         {!entered ? (

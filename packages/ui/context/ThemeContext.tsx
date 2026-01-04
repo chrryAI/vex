@@ -25,7 +25,6 @@ import { session } from "./providers/AuthProvider"
 import { useTranslation } from "react-i18next"
 import { FRONTEND_URL } from "../utils"
 import console from "../utils/log"
-import { ANALYTICS_EVENTS } from "../utils/analyticsEvents"
 
 export const COLORS = {
   red: "#ef4444", // red-500

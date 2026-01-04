@@ -10,6 +10,8 @@ const app = async ({
   isMember,
   nav,
   isNewChat,
+  creditsConsumed,
+  messagesConsumed,
 }: {
   slug: string
   page: Page
@@ -44,6 +46,8 @@ const app = async ({
     }
   }[]
   isNewChat: boolean
+  creditsConsumed?: number
+  messagesConsumed?: number
 }) => {
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
@@ -55,16 +59,17 @@ const app = async ({
 
   if (slug !== "chrry") {
     const chrry = page.getByTestId(`app-chrry`)
-    expect(chrry).toBeVisible()
+    await expect(chrry).toBeVisible()
   }
 
   const storeAppButton = page.getByTestId(`store-app-${slug}`)
 
-  expect(storeAppButton).not.toBeVisible()
+  await expect(storeAppButton).not.toBeVisible()
 
   // Track cumulative credits and messages consumed across all apps
-  let totalCreditsConsumed = 0
-  let totalMessagesConsumed = 0
+  // Track cumulative credits and messages consumed across all apps
+  let totalCreditsConsumed = creditsConsumed || 0
+  let totalMessagesConsumed = messagesConsumed || 0
 
   for (const item of nav) {
     const appButton = page.getByTestId(`app-${item.name}`)
@@ -128,10 +133,56 @@ const app = async ({
     const menuHomeButton = page.getByTestId("menu-home-button")
     await expect(menuHomeButton).toBeVisible()
     await menuHomeButton.click()
-    await expect(storeAppButton).toBeVisible({
-      visible: !isStoreApp,
-      timeout: 5000,
-    })
+
+    // Check store app button visibility based on whether we're in a store app
+    if (isStoreApp) {
+      await expect(storeAppButton).not.toBeVisible({ timeout: 5000 })
+    } else {
+      await expect(storeAppButton).toBeVisible({ timeout: 5000 })
+    }
+
+    if (isStoreApp) {
+      const index = nav.indexOf(item)
+      const remainingNav = nav.slice(index + 1)
+
+      // Only recurse if there are more items to process
+      if (remainingNav.length > 0) {
+        await app({
+          page,
+          isMember,
+          isLive,
+          nav: remainingNav,
+          slug,
+          isNewChat: true,
+          creditsConsumed: totalCreditsConsumed,
+          messagesConsumed: totalMessagesConsumed,
+        })
+      }
+
+      break
+    } else {
+      const { grape } = await import("./grape")
+      const totalEarnedCredits = await grape({ page, isMember, isLive })
+
+      const index = nav.indexOf(item)
+      const remainingNav = nav.slice(index + 1)
+
+      // Only recurse if there are more items to process
+      if (remainingNav.length > 0) {
+        await app({
+          page,
+          isMember,
+          isLive,
+          nav: remainingNav,
+          slug,
+          isNewChat: true,
+          creditsConsumed: totalCreditsConsumed - totalEarnedCredits,
+          messagesConsumed: totalMessagesConsumed,
+        })
+      }
+
+      break
+    }
   }
 }
 
