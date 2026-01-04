@@ -82,7 +82,7 @@ export function ThemeProvider({
 
   const setColorScheme = (scheme?: string) => {
     if (scheme && Object.keys(COLORS).includes(scheme)) {
-      scheme !== colorScheme && setColorSchemeInternal(scheme)
+      scheme && scheme !== colorScheme && setColorSchemeInternal(scheme)
     }
   }
 
@@ -228,11 +228,6 @@ export function ThemeProvider({
   const setTheme = (newTheme: themeType) => {
     setThemeMode(newTheme)
     // Track theme change (if analytics available)
-    if (typeof window !== "undefined" && (window as any).track) {
-      ;(window as any).track({
-        name: newTheme === "dark" ? "dark_mode" : "light_mode",
-      })
-    }
   }
 
   const [enableSound, setEnableSound] = useLocalStorage<boolean>(

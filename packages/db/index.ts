@@ -43,6 +43,7 @@ import {
   tasks,
   timers,
   moods,
+  realtimeAnalytics,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -90,6 +91,8 @@ import {
   setCache,
 } from "./src/cache"
 
+export { realtimeAnalytics }
+
 dotenv.config()
 
 export const isCI = process.env.CI
@@ -109,6 +112,8 @@ export { sql, eq, desc, and, isNull, cosineDistance, notInArray }
 
 // Export Better Auth tables
 export { baSessions, baAccounts, baVerifications }
+
+// Export analytics tables
 
 export const TEST_MEMBER_EMAILS =
   process.env.TEST_MEMBER_EMAILS?.split(",") || []

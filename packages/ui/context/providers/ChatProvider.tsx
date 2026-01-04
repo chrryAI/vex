@@ -31,6 +31,7 @@ import {
   usePlatform,
   useTheme,
 } from "../../platform"
+import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
@@ -147,12 +148,13 @@ export function ChatProvider({
   const {
     setGuest,
     setUser,
+    setInstructions,
     setApp,
     storeApps,
     storeAppsSwr,
     app,
     chrry,
-    track,
+    plausible,
     aiAgents,
     token,
     setProfile,
@@ -218,7 +220,7 @@ export function ChatProvider({
 
   const isEmpty = !messages?.length
 
-  const { isExtension, isMobile, isTauri } = usePlatform()
+  const { isExtension, isMobile, isTauri, isCapacitor } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
@@ -536,10 +538,12 @@ export function ChatProvider({
         if (user) {
           const updatedUser = await actions.getUser()
           setUser(updatedUser)
+          updatedUser && setInstructions(updatedUser.instructions)
         }
         if (guest) {
           const updatedGuest = await actions.getGuest()
           setGuest(updatedGuest)
+          updatedGuest && setInstructions(updatedGuest.instructions)
         }
         setShouldMutate(true)
       }
@@ -709,7 +713,7 @@ export function ChatProvider({
     }
   }, [user, guest, threadId, connected])
 
-  // Credits tracking
+  // Credits plausibleing
   const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
 
   useEffect(() => {
@@ -744,8 +748,8 @@ export function ChatProvider({
 
   useEffect(() => {
     if (debateAgent) {
-      track({
-        name: "debate_agent_selected",
+      plausible({
+        name: ANALYTICS_EVENTS.DEBATE_AGENT_SELECTED,
         props: { agent: debateAgent.displayName },
       })
     }
@@ -945,8 +949,8 @@ export function ChatProvider({
       setIsDebateAgentModalOpenInternal(false)
     }
     open &&
-      track({
-        name: "agent-modal",
+      plausible({
+        name: ANALYTICS_EVENTS.AGENT_MODAL,
         props: {},
       })
   }
@@ -955,8 +959,8 @@ export function ChatProvider({
     setIsDebateAgentModalOpenInternal(open)
     setIsAgentModalOpenInternal(open)
     open &&
-      track({
-        name: "debate-agent-modal",
+      plausible({
+        name: ANALYTICS_EVENTS.DEBATE_AGENT_MODAL,
         props: {},
       })
   }
@@ -1042,6 +1046,7 @@ export function ChatProvider({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
+    if (showFocus) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri
       requestAnimationFrame(() => {
@@ -1058,6 +1063,17 @@ export function ChatProvider({
   useEffect(() => {
     isLoading && error && setIsLoading(false)
   }, [error, isLoading])
+
+  useEffect(() => {
+    // if (toFetch) {
+    //   setShowFocus(false)
+    //   return
+    // }
+    if (showFocus) {
+      setThread(undefined)
+      setMessages([])
+    }
+  }, [showFocus, toFetch])
 
   useEffect(() => {
     if (!toFetch) {
@@ -1080,7 +1096,8 @@ export function ChatProvider({
         !isStreamingStop &&
         (!threadIdRef.current ||
           serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
-          serverMessages.messages.length !== messages.length)
+          ((isExtension || isCapacitor || isTauri) &&
+            serverMessages.messages.length !== messages.length))
       ) {
         setMessages(serverMessages.messages)
       }

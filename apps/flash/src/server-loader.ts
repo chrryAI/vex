@@ -156,14 +156,16 @@ export async function loadServerData(
 
   const authToken = urlObj.searchParams.get("auth_token")
 
-  const apiKeyCandidate =
-    authToken ||
-    (isTestFP
-      ? fpFromQuery
-      : cookies.token ||
-        headers["x-token"] ||
-        cookies.fingerprint ||
-        headers["x-fp"])
+  const apiKeyCandidate = authToken
+    ? authToken
+    : cookies.token && !validate(cookies.token) // member token
+      ? cookies.token
+      : isTestFP
+        ? fpFromQuery
+        : cookies.token ||
+          headers["x-token"] ||
+          cookies.fingerprint ||
+          headers["x-fp"]
 
   const tokenCandidate = authToken || apiKeyCandidate
 

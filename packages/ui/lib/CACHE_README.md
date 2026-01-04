@@ -117,13 +117,13 @@ const { data } = useSWR(["threads", appId], async () => {
 
 ### ❌ Not Recommended
 
-| Data Type                 | Reason             |
-| ------------------------- | ------------------ |
-| Chat messages (streaming) | Too transient      |
-| Real-time notifications   | Time-sensitive     |
-| Search results            | Query-specific     |
-| Moods                     | Real-time tracking |
-| Large media files         | Use blob storage   |
+| Data Type                 | Reason                 |
+| ------------------------- | ---------------------- |
+| Chat messages (streaming) | Too transient          |
+| Real-time notifications   | Time-sensitive         |
+| Search results            | Query-specific         |
+| Moods                     | Real-time plausibleing |
+| Large media files         | Use blob storage       |
 
 ## Cache Keys Convention
 
@@ -177,7 +177,7 @@ await cacheData("profile", data, 1000 * 60 * 60 * 24)
 3. **Use descriptive keys** - Makes debugging easier
 4. **Cache selectively** - Don't cache everything
 5. **Test offline** - Use DevTools to simulate offline mode
-6. **Monitor size** - Use `getCacheSize()` to track usage
+6. **Monitor size** - Use `getCacheSize()` to plausible usage
 
 ## Testing Offline Mode
 

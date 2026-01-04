@@ -28,6 +28,8 @@ import {
   updateTimer,
   getLastMood,
   updateMood,
+  getTimer,
+  timer,
 } from "@repo/db"
 import { expenseCategoryType } from "@chrryai/chrry/utils"
 
@@ -1169,7 +1171,11 @@ export const getTools = ({
       description:
         "Create a new focus task for the user. Use this when the user wants to add a task, create a to-do, or track work on something.",
       inputSchema: z.object({
-        title: z.string().describe("The title/name of the task"),
+        title: z
+          .string()
+          .describe(
+            "The title/name of the task. Keep it SHORT and concise (max 50 characters). Use plain text only - NO markdown, NO formatting, NO special characters like &amp;. Example: 'Scout filming locations' not 'Scout YTÜ & Beşiktaş filming locations for Vex AI demo videos'",
+          ),
         description: z
           .string()
           .optional()
@@ -1349,27 +1355,40 @@ export const getTools = ({
     },
     updateTimer: {
       description:
-        "Update the user's focus timer preferences or control timer state. Use this to start/stop the timer or change presets.",
+        "Control the focus timer. To START a timer with a custom duration, use 'count' (in SECONDS). Only modify preset1/preset2/preset3 if the user explicitly asks to change their saved preset preferences.",
       inputSchema: z.object({
         isCountingDown: z
           .boolean()
           .optional()
           .describe("Set to true to START the timer, false to STOP/PAUSE it"),
+        count: z
+          .number()
+          .optional()
+          .describe(
+            "Timer duration in SECONDS (not minutes!). Use this to start a timer with a specific duration. Example: 15 minutes = 900 seconds.",
+          ),
         preset1: z
           .number()
           .optional()
-          .describe("First timer preset in minutes (default: 25)"),
+          .describe(
+            "ONLY use if user explicitly asks to change their saved preset1. This is a saved preference in minutes (default: 25).",
+          ),
         preset2: z
           .number()
           .optional()
-          .describe("Second timer preset in minutes (default: 15)"),
+          .describe(
+            "ONLY use if user explicitly asks to change their saved preset2. This is a saved preference in minutes (default: 15).",
+          ),
         preset3: z
           .number()
           .optional()
-          .describe("Third timer preset in minutes (default: 5)"),
+          .describe(
+            "ONLY use if user explicitly asks to change their saved preset3. This is a saved preference in minutes (default: 5).",
+          ),
       }),
       execute: async ({
         isCountingDown,
+        count: providedCount,
         preset1,
         preset2,
         preset3,
@@ -1387,7 +1406,7 @@ export const getTools = ({
         })
 
         // Support both members and guests
-        const updateData: any = {}
+        const updateData: timer = {}
         if (member?.id) {
           updateData.userId = member.id
         } else if (guest?.id) {
@@ -1400,7 +1419,42 @@ export const getTools = ({
         if (preset2 !== undefined) updateData.preset2 = preset2
         if (preset3 !== undefined) updateData.preset3 = preset3
 
-        const updated = await updateTimer(updateData)
+        // Check existing timer state to handle "Resume" vs "Restart" logic
+        const existingTimer = await getTimer({
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+
+        // Logic:
+        // 1. If starting (isCountingDown: true) and no explicit count provided...
+        // 2. Check if the timer is currently finished (count <= 0) or doesn't exist.
+        // 3. If finished/new, RESET to the preset duration.
+        // 4. If paused mid-way (count > 0), KEEP the current count (Resume).
+
+        let newCount = providedCount ?? updateData.count
+
+        // Priority 1: Use explicitly provided count (in seconds)
+        if (newCount !== undefined) {
+          // Count provided directly, use it as-is
+        }
+        // Priority 2: If user explicitly changed a preset, calculate count from that preset
+        else if (preset1 !== undefined) {
+          newCount = preset1 * 60
+        } else if (preset2 !== undefined) {
+          newCount = preset2 * 60
+        } else if (preset3 !== undefined) {
+          newCount = preset3 * 60
+        }
+        // Priority 3: If starting timer without count or preset, use stored preset
+        else if (updateData.isCountingDown) {
+          const duration = existingTimer?.preset1 || 25
+          newCount = duration * 60
+        }
+
+        const updated = await updateTimer({
+          ...updateData,
+          count: newCount,
+        })
 
         console.log("✅ Timer updated:", {
           isCountingDown: updated?.isCountingDown,
@@ -1410,7 +1464,7 @@ export const getTools = ({
         })
 
         notify(member?.id || guest?.id || "", {
-          type: "timer-ai",
+          type: "timer",
           data: updated,
         })
 
@@ -1427,6 +1481,7 @@ export const getTools = ({
         return {
           success: true,
           timer: updated,
+          count: updated?.count,
           message,
         }
       },

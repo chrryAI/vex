@@ -2002,7 +2002,7 @@ export function detectSiteModeDomain(
 ): SiteMode {
   // Inline isDevelopment check to avoid circular dependency
 
-  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || "chrryAI"
+  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || "e2eVex"
 
   // Get hostname from parameter or window (client-side)
   const rawHost =

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React from "react"
 import { useAppContext } from "./context/AppContext"
 import Skeleton from "./Skeleton"
 import { CircleArrowLeft } from "./icons"
@@ -12,18 +12,12 @@ import { useAboutStyles } from "./about/About.styles"
 
 export default function Privacy() {
   const { t } = useAppContext()
-  const { track } = useAuth()
+  const { plausible } = useAuth()
 
   const styles = useAboutStyles()
 
   const { router } = useNavigationContext()
   const { isDrawerOpen } = useTheme()
-
-  useEffect(() => {
-    track({
-      name: "privacy",
-    })
-  }, [])
 
   return (
     <Skeleton>

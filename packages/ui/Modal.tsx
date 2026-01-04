@@ -56,7 +56,7 @@ export default function Modal({
   const styles = useModalStyles()
   const { utilities } = useStyles()
   // Split contexts
-  const { track } = useAuth()
+  const { plausible } = useAuth()
   const { addParams, removeParams, searchParams } = useNavigation()
   const { isDrawerOpen } = useTheme()
   const innerRef = React.useRef<HTMLDivElement>(null)
@@ -101,7 +101,7 @@ export default function Modal({
           addParams({ [paramKey]: paramValue || "true" })
         }
       }
-      event && track({ ...event, name: event.name + "_open" })
+      event && plausible({ ...event, name: event.name + "_open" })
     } else {
       if (params) {
         const urlParams = new URLSearchParams(params.split("?")[1] || "")

@@ -9,7 +9,6 @@ import {
   checkPearQuota,
   incrementPearQuota,
   updateUser,
-  getAnalyticsSite,
   getAnalyticsSites,
   updateGuest,
 } from "@repo/db"
@@ -43,11 +42,11 @@ import {
   getTimer,
   getAiAgents,
   getInstructions,
-  getCharacterTags,
   getCharacterProfiles,
+  realtimeAnalytics,
 } from "@repo/db"
 
-import { eq } from "drizzle-orm"
+import { eq, desc, gte } from "drizzle-orm"
 
 import { perplexity } from "@ai-sdk/perplexity"
 
@@ -57,7 +56,6 @@ import {
   processMessageForRAG,
 } from "../../lib/actions/ragService"
 import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
-import { getAppKnowledge } from "../../lib/appRAG"
 import { streamText, generateText, ModelMessage } from "ai"
 
 import { createDeepSeek } from "@ai-sdk/deepseek"
@@ -284,7 +282,12 @@ async function getRelevantMemoryContext({
   pageSize?: number
   threadId?: string
   app?: any // App object to check ownership
-}): Promise<{ context: string; memoryIds: string[]; isAppCreator?: boolean }> {
+}): Promise<{
+  context: string
+  memoryIds: string[]
+  isAppCreator?: boolean
+  recentAnalytics?: any[]
+}> {
   if (!userId && !guestId && !appId) return { context: "", memoryIds: [] }
 
   try {
@@ -356,8 +359,23 @@ async function getRelevantMemoryContext({
       nextPage: userMemoriesData.nextPage || appMemoriesData.nextPage,
     }
 
+    // Get recent real-time analytics for AI context (last 50 events)
+    const recentAnalytics =
+      userId || guestId
+        ? await db
+            .select()
+            .from(realtimeAnalytics)
+            .where(
+              userId
+                ? eq(realtimeAnalytics.userId, userId)
+                : eq(realtimeAnalytics.guestId, guestId!),
+            )
+            .orderBy(desc(realtimeAnalytics.createdOn))
+            .limit(50)
+        : []
+
     if (!memoriesResult.memories || memoriesResult.memories.length === 0) {
-      return { context: "", memoryIds: [] }
+      return { context: "", memoryIds: [], recentAnalytics }
     }
 
     // Sort by importance (highest first) and take top 5
@@ -422,7 +440,7 @@ async function getRelevantMemoryContext({
         : ""
       context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}${appCreatorNote}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
     }
-    return { context, memoryIds, isAppCreator }
+    return { context, memoryIds, isAppCreator, recentAnalytics }
   } catch (error) {
     console.error("❌ Error retrieving memory context:", error)
     return { context: "", memoryIds: [] }
@@ -478,7 +496,17 @@ async function getNewsContext(slug?: string | null): Promise<string> {
   }
 }
 
-async function getAnalyticsContext(): Promise<string> {
+const beasts = ["grape", "pear", "chrry", "vex"]
+
+async function getAnalyticsContext({
+  app,
+  member,
+  guest,
+}: {
+  app: App
+  member?: User
+  guest?: Guest
+}): Promise<string> {
   console.log("🍇 getAnalyticsContext called for Grape!")
 
   try {
@@ -493,66 +521,175 @@ async function getAnalyticsContext(): Promise<string> {
 
     let context = `\n\n## 📊 Platform Analytics (Last 7 Days):\n\n`
 
+    const isAdmin =
+      app?.slug && beasts.includes(app?.slug)
+        ? isOwner(app, {
+            userId: member?.id,
+            guestId: guest?.id,
+          }) && member?.role === "admin"
+        : false
+
+    // Log analytics access
+    const userType = member ? "member" : "guest"
+    const userId = member?.id || guest?.id
+    const accessLevel = isAdmin ? "admin-full" : "public-only"
+    const isPro = member?.subscription?.tier === "pro"
+    const isAppOwner = isOwner(app, { userId: member?.id, guestId: guest?.id })
+
+    console.log(
+      `📊 Analytics Access | User: ${userType}:${userId} | Level: ${accessLevel} | App: ${app?.slug} | Owner: ${isAppOwner} | Pro: ${isPro}`,
+    )
+
     // Loop through all sites
-    sites.forEach((site, index) => {
-      if (!site.stats) {
-        console.log(`🍇 No stats for ${site.domain}`)
-        return
-      }
+    sites
+      .filter((site) => (isAdmin ? true : site.domain === "e2e.chrry.ai"))
+      .forEach((site, index) => {
+        if (!site.stats) {
+          console.log(`🍇 No stats for ${site.domain}`)
+          return
+        }
 
-      const stats = site.stats
+        const stats = site.stats
 
-      // Add site header
-      context += `### ${index + 1}. ${site.domain}\n\n`
+        // Add site header
+        context += `### ${index + 1}. ${site.domain}\n\n`
 
-      // Overview
-      context += `**Overview:**\n`
-      context += `- **Visitors**: ${stats.visitors.toLocaleString()}\n`
-      context += `- **Pageviews**: ${stats.pageviews.toLocaleString()}\n`
-      context += `- **Visits**: ${stats.visits.toLocaleString()}\n`
-      context += `- **Views per Visit**: ${stats.views_per_visit.toFixed(1)}\n`
-      context += `- **Bounce Rate**: ${Math.round(stats.bounce_rate)}%\n`
-      context += `- **Avg Duration**: ${Math.round(stats.visit_duration)}s\n`
-      context += `- **Last Updated**: ${new Date(stats.lastSynced).toLocaleString()}\n\n`
+        // Overview
+        context += `**Overview:**\n`
+        context += `- **Visitors**: ${stats.visitors.toLocaleString()}\n`
+        context += `- **Pageviews**: ${stats.pageviews.toLocaleString()}\n`
+        context += `- **Visits**: ${stats.visits.toLocaleString()}\n`
+        context += `- **Views per Visit**: ${stats.views_per_visit.toFixed(1)}\n`
+        context += `- **Bounce Rate**: ${Math.round(stats.bounce_rate)}%\n`
+        context += `- **Avg Duration**: ${Math.round(stats.visit_duration)}s\n`
+        context += `- **Last Updated**: ${new Date(stats.lastSynced).toLocaleString()}\n\n`
 
-      // Top pages (top 3 per site)
-      if (stats.topPages && stats.topPages.length > 0) {
-        context += `**Top Pages:**\n`
-        stats.topPages.slice(0, 3).forEach((page, i) => {
-          context += `${i + 1}. ${page.page} - ${page.visitors.toLocaleString()} visitors\n`
+        // Top pages (top 3 per site)
+        if (stats.topPages && stats.topPages.length > 0) {
+          context += `**Top Pages:**\n`
+          stats.topPages.slice(0, 3).forEach((page, i) => {
+            context += `${i + 1}. ${page.page} - ${page.visitors.toLocaleString()} visitors\n`
+          })
+          context += `\n`
+        }
+
+        // Traffic sources (top 3 per site)
+        if (stats.sources && stats.sources.length > 0) {
+          context += `**Traffic Sources:**\n`
+          stats.sources.slice(0, 3).forEach((source, i) => {
+            context += `${i + 1}. ${source.source} - ${source.visitors.toLocaleString()} visitors\n`
+          })
+          context += `\n`
+        }
+
+        // Top countries (top 3 per site)
+        if (stats.countries && stats.countries.length > 0) {
+          context += `**Top Countries:**\n`
+          stats.countries.slice(0, 3).forEach((country, i) => {
+            context += `${i + 1}. ${country.country} - ${country.visitors.toLocaleString()} visitors\n`
+          })
+          context += `\n`
+        }
+
+        // Goal conversions (top 5 per site)
+        if (stats.goals && stats.goals.length > 0) {
+          context += `**Top Goals:**\n`
+          stats.goals.slice(0, 5).forEach((goal, i) => {
+            context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events\n`
+          })
+          context += `\n`
+        }
+
+        context += `---\n\n`
+      })
+
+    if (!isAdmin) {
+      console.log(
+        `📊 Returning public analytics only (${sites.filter((s) => s.domain === "e2e.chrry.ai").length} sites)`,
+      )
+      return context
+    }
+
+    console.log(
+      `📊 Admin access granted - including real-time events for all ${sites.length} sites`,
+    )
+
+    // Add real-time user behavior analytics (last 24 hours, limit 200 events)
+    try {
+      const realtimeEvents = isAdmin
+        ? // Admin: See all platform events
+          await db
+            .select()
+            .from(realtimeAnalytics)
+            .where(
+              gte(
+                realtimeAnalytics.createdOn,
+                new Date(Date.now() - 24 * 60 * 60 * 1000),
+              ),
+            )
+            .orderBy(desc(realtimeAnalytics.createdOn))
+            .limit(200)
+        : isOwner(app, { userId: member?.id, guestId: guest?.id }) &&
+            member?.subscription?.tier === "pro" // Premium feature
+          ? // App owner (Pro): See only their app's events
+            await db
+              .select()
+              .from(realtimeAnalytics)
+              .where(
+                and(
+                  gte(
+                    realtimeAnalytics.createdOn,
+                    new Date(Date.now() - 24 * 60 * 60 * 1000),
+                  ),
+                  sql`${realtimeAnalytics.eventData}->>'appSlug' = ${app?.slug}`,
+                ),
+              )
+              .orderBy(desc(realtimeAnalytics.createdOn))
+              .limit(200)
+          : [] // Free users: No real-time events
+
+      console.log(
+        `🔥 Real-time events query | Found: ${realtimeEvents.length} events | Access: ${isAdmin ? "admin-all" : isPro && isAppOwner ? `pro-${app?.slug}` : "none"}`,
+      )
+
+      if (realtimeEvents.length > 0) {
+        context += `## 🔥 Real-Time User Behavior (Last 24 Hours):\n\n`
+
+        // Analyze event patterns
+        const eventCounts = realtimeEvents.reduce(
+          (acc: Record<string, number>, event) => {
+            acc[event.eventName] = (acc[event.eventName] || 0) + 1
+            return acc
+          },
+          {},
+        )
+
+        const topEvents = Object.entries(eventCounts)
+          .sort(([, a], [, b]) => (b as number) - (a as number))
+          .slice(0, 15)
+
+        context += `**Top User Actions** (${realtimeEvents.length} total events):\n`
+        topEvents.forEach(([name, count], i) => {
+          context += `${i + 1}. ${name}: ${count}x\n`
         })
         context += `\n`
-      }
 
-      // Traffic sources (top 3 per site)
-      if (stats.sources && stats.sources.length > 0) {
-        context += `**Traffic Sources:**\n`
-        stats.sources.slice(0, 3).forEach((source, i) => {
-          context += `${i + 1}. ${source.source} - ${source.visitors.toLocaleString()} visitors\n`
-        })
-        context += `\n`
-      }
+        // Unique users
+        const uniqueUsers = new Set(
+          realtimeEvents.map((e) => e.userId || e.guestId).filter(Boolean),
+        ).size
 
-      // Top countries (top 3 per site)
-      if (stats.countries && stats.countries.length > 0) {
-        context += `**Top Countries:**\n`
-        stats.countries.slice(0, 3).forEach((country, i) => {
-          context += `${i + 1}. ${country.country} - ${country.visitors.toLocaleString()} visitors\n`
-        })
-        context += `\n`
-      }
+        context += `**Active Users**: ${uniqueUsers} unique users/guests\n\n`
 
-      // Goal conversions (top 5 per site)
-      if (stats.goals && stats.goals.length > 0) {
-        context += `**Top Goals:**\n`
-        stats.goals.slice(0, 5).forEach((goal, i) => {
-          context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events\n`
-        })
-        context += `\n`
+        context += `💡 **Use this to**:\n`
+        context += `- Identify most popular features and workflows\n`
+        context += `- Spot usage patterns and trends\n`
+        context += `- Understand what users are doing right now\n`
+        context += `- Suggest improvements based on actual behavior\n\n`
       }
-
-      context += `---\n\n`
-    })
+    } catch (error) {
+      console.error("Error fetching real-time analytics:", error)
+    }
 
     context += `**IMPORTANT**: When the user asks "what did you learn today?" or similar questions:\n`
     context += `1. Analyze if there are significant changes worth remembering\n`
@@ -909,6 +1046,7 @@ const app = new Hono()
 
 app.post("/", async (c) => {
   const request = c.req.raw
+  const startTime = Date.now()
   console.log("🚀 POST /api/ai - Request received")
   console.time("messageProcessing")
 
@@ -919,6 +1057,13 @@ app.post("/", async (c) => {
     console.log("❌ No valid credentials")
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
+
+  // Log user type and tier for analytics
+  const userType = member ? "member" : "guest"
+  const tier = member?.tier || guest?.tier || "free"
+  console.log(
+    `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
+  )
 
   const { success } = await checkRateLimit(request, { member, guest })
 
@@ -1498,6 +1643,20 @@ ${
     ? await getAiAgent({ id: message.message.selectedAgentId })
     : undefined
 
+  // Log model and features for analytics
+  const modelName =
+    selectedAgent?.displayName || debateAgent?.displayName || "default"
+  const features = []
+  if (message.message.isWebSearchEnabled) features.push("web-search")
+  if (imageGenerationEnabled) features.push("image-gen")
+  if (files.length > 0) features.push(`${files.length}-files`)
+  if (debateAgent) features.push("debate")
+  if (requestData.pear) features.push("pear-feedback")
+
+  console.log(
+    `🤖 Model: ${modelName} | Features: ${features.join(", ") || "none"}`,
+  )
+
   const clientId = message.message.clientId
   const currentThreadId = threadId
 
@@ -1781,6 +1940,7 @@ ${
     context: memoryContext,
     memoryIds,
     isAppCreator,
+    recentAnalytics,
   } = await getRelevantMemoryContext({
     userId: member?.id,
     guestId: guest?.id,
@@ -1789,6 +1949,55 @@ ${
     threadId: message.message.threadId, // Pass current thread to exclude
     app, // Pass app object to check ownership
   })
+
+  // Build analytics context from recent user behavior
+  let userBehaviorContext = ""
+  if (
+    recentAnalytics &&
+    recentAnalytics.length > 0 &&
+    (member?.memoriesEnabled || guest?.memoriesEnabled)
+  ) {
+    // Analyze patterns
+    const eventCounts = recentAnalytics.reduce(
+      (acc: Record<string, number>, event: any) => {
+        acc[event.eventName] = (acc[event.eventName] || 0) + 1
+        return acc
+      },
+      {},
+    )
+
+    const topEvents = Object.entries(eventCounts)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .slice(0, 10)
+      .map(([name, count]) => `${name} (${count}x)`)
+
+    const recentEventsList = recentAnalytics
+      .slice(0, 15)
+      .map((e: any) => {
+        const props = e.eventProps ? ` - ${JSON.stringify(e.eventProps)}` : ""
+        return `• ${e.eventName}${props}`
+      })
+      .join("\n")
+
+    userBehaviorContext = `
+
+## 📊 USER BEHAVIOR INSIGHTS:
+Based on recent activity, the user has been:
+
+**Top Actions**: ${topEvents.join(", ")}
+
+**Recent Events**:
+${recentEventsList}
+
+💡 **Use this to**:
+- Understand user's current workflow and context
+- Suggest relevant features they haven't tried
+- Identify patterns and optimize their experience
+- Provide proactive help based on their behavior
+
+⚠️ **Important**: This is REAL-TIME user behavior data. Use it to provide contextual, timely assistance.
+`
+  }
 
   // Fetch user-created instructions (max 7)
   const userInstructions = await getInstructions({
@@ -2093,6 +2302,7 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
   const focusTimer = hasFocus
     ? await getTimer({
         userId: member?.id,
+        guestId: guest?.id,
       })
     : null
 
@@ -2374,17 +2584,12 @@ ${(() => {
   // Get news context based on app
   const newsContext = await getNewsContext(app?.slug)
 
-  const beasts = ["grape", "pear", "chrry", "vex"]
-
   // Get live analytics context for Grape
-  const analyticsContext =
-    app?.slug &&
-    beasts.includes(app?.slug) &&
-    isOwner(app, {
-      userId: member?.id,
-    })
-      ? await getAnalyticsContext()
-      : ""
+  const analyticsContext = await getAnalyticsContext({
+    app,
+    member,
+    guest,
+  })
 
   // Get recent feedback context for Pear
   const pearContext =
@@ -2843,6 +3048,22 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 `
   }
 
+  const spatialNavigationContext = `
+  ## 🧭 SPATIAL NAVIGATION ARCHITECTURE
+  Focus uses an N-dimensional spatial navigation system based on Store (Universe) > App (Tool) hierarchy.
+  
+  **Three Navigation States**:
+  1. **Store Home**: Base app active. Buttons = Other Stores.
+  2. **In-Store**: Deep link app active. **Store Home button appears** (Back path).
+  3. **Cross-Store**: Jump to new store. **Old Store button appears** (Back path).
+  
+  **Core Rules**:
+  - **Same Store Click**: Switches view (Context maintained). Button morphs to Store Base.
+  - **Different Store Click**: Teleports (Context switched). Current Store becomes visible as Back button.
+  - **Chrry**: Always the universal anchor/reset.
+  - **UI Logic**: "What's visible = Where you can go". "What's missing = Where you are".
+  `
+
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
   // But we keep this comment for clarity that they're part of every message
   // Using array join for better performance with long context strings
@@ -2858,12 +3079,15 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     characterContext, // User's personality & communication style (tone guidance)
     moodContext, // User's emotional state (empathy)
     memoryContext, // Background knowledge (context) - AFTER instructions
+    userBehaviorContext, // Real-time user behavior patterns and workflow insights
     placeholderContext,
     calendarContext,
     vaultContext,
     focusContext,
     taskContext,
+
     newsContext,
+    storeContext ? spatialNavigationContext : "", // Only add spatial nav context if store context is present
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
     e2eContext, // E2E testing analytics for system integrity
@@ -3739,7 +3963,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
       guestId: guest?.id,
     })
 
-    if (!quotaCheck.allowed) {
+    if (!quotaCheck.allowed && !isE2E) {
       // Quota exceeded - add message to system prompt
       pearValidationResult = {
         isValid: false,
@@ -5668,10 +5892,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           tools: allTools,
           providerOptions: {
             google: {
-              thinkingConfig: {
-                thinkingLevel: "high", // Enable deep reasoning for Gemini 3
-                includeThoughts: true, // Stream reasoning tokens
-              },
+              // thinkingConfig: {
+              //   thinkingLevel: "high", // Enable deep reasoning for Gemini 3
+              //   includeThoughts: true, // Stream reasoning tokens
+              // },
             },
           },
           async onFinish({ text, usage, response }) {

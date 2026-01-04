@@ -416,12 +416,12 @@ const transferSubscriptions = async (guestId: string, userId: string) => {
 ```typescript
 // Track subscription funnel
 const trackSubscriptionFunnel = {
-  guestCreated: () => trackEvent("guest_created"),
-  subscribeClicked: () => trackEvent("subscribe_clicked"),
-  checkoutStarted: () => trackEvent("checkout_started"),
-  paymentCompleted: () => trackEvent("payment_completed"),
-  giftSent: () => trackEvent("gift_sent"),
-  giftRedeemed: () => trackEvent("gift_redeemed"),
+  guestCreated: () => plausible("guest_created"),
+  subscribeClicked: () => plausible("subscribe_clicked"),
+  checkoutStarted: () => plausible("checkout_started"),
+  paymentCompleted: () => plausible("payment_completed"),
+  giftSent: () => plausible("gift_sent"),
+  giftRedeemed: () => plausible("gift_redeemed"),
 }
 ```
 

@@ -48,7 +48,7 @@ const AddTask = ({
     },
   })
 
-  const { token, guest, user, language, track: trackEvent } = useAuth()
+  const { token, guest, user, language, plausible } = useAuth()
   const [isAddingTask, setIsAddingTask] = React.useState(false)
 
   useEffect(() => {
@@ -94,7 +94,7 @@ const AddTask = ({
         console.error("Error adding task:", error)
       })
 
-      trackEvent({ name: "task_add" })
+      plausible({ name: "task_add" })
       toast.success("Task added")
       await onAdd(newTask)
     } catch (error) {

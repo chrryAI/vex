@@ -28,7 +28,7 @@ import {
   FileText,
 } from "./icons"
 import Modal from "./Modal"
-import { apiFetch, FRONTEND_URL } from "./utils"
+import { apiFetch } from "./utils"
 import { formatFileSize } from "./utils/fileValidation"
 import { useAppContext } from "./context/AppContext"
 import {
@@ -42,7 +42,6 @@ import {
 import {
   useTheme as usePlatformTheme,
   usePlatform,
-  getExtensionId,
   Div,
   Button,
   Span,

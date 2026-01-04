@@ -22,7 +22,7 @@ import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
-import { Div, H1, H3, P, Button, Label, Span, Input } from "./platform"
+import { Div, H1, Button, Label, Span, Input } from "./platform"
 import A from "./a/A"
 import { apiFetch } from "./utils"
 import { useStyles } from "./context/StylesContext"
@@ -36,7 +36,6 @@ import {
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
 import { appWithStore } from "./types"
-import Modal from "./Modal"
 import Grappes from "./Grapes"
 
 function FocusButton({ time }: { time: number }) {
@@ -431,6 +430,7 @@ export default function App({
     ({ icon }: { icon?: boolean }) =>
       storeApp && (
         <A
+          data-testid={`store-app-${storeApp.slug}`}
           className={`${icon ? "link" : "button transparent"}`}
           style={{
             ...(icon
@@ -1044,6 +1044,8 @@ export default function App({
                       <>
                         {showChrryHere && (
                           <A
+                            data-testid="app-chrry"
+                            title="Chrry"
                             preventDefault
                             href={getAppSlug(chrry)}
                             onClick={(e) => {
@@ -1085,6 +1087,7 @@ export default function App({
                           ) && (
                             <A
                               preventDefault
+                              data-testid={`app-${zarathustra.slug}`}
                               href={getAppSlug(zarathustra)}
                               onClick={(e) => {
                                 if (isManagingApp) {
@@ -1128,6 +1131,7 @@ export default function App({
                             <A
                               preventDefault
                               href={getAppSlug(popcorn)}
+                              data-testid={`app-${popcorn.slug}`}
                               onClick={(e) => {
                                 if (isManagingApp) {
                                   e.preventDefault()
@@ -1193,6 +1197,7 @@ export default function App({
                               }}
                             >
                               <A
+                                data-testid={`app-${item.slug}`}
                                 preventDefault
                                 key={item.slug}
                                 title={t(item.title)}
@@ -1258,6 +1263,7 @@ export default function App({
                         )}
                         {showAtlasHere && atlas && (
                           <A
+                            data-testid={`app-${atlas.slug}`}
                             href={getAppSlug(atlas)}
                             preventDefault
                             onClick={(e) => {

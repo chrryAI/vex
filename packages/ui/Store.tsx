@@ -19,6 +19,7 @@ import A from "./a/A"
 import { useStoreMetadata } from "./hooks/useMetadata"
 import { useStyles } from "./context/StylesContext"
 import Loading from "./Loading"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function Store({
   compact,
@@ -40,7 +41,7 @@ export default function Store({
   const { setIsNewAppChat } = useChat()
 
   const {
-    track,
+    plausible,
     storeApps: storeAppsContext,
     getAppSlug,
     loadingApp,
@@ -117,8 +118,8 @@ export default function Store({
 
   useEffect(() => {
     if (store) {
-      track({
-        name: "Store View",
+      plausible({
+        name: ANALYTICS_EVENTS.STORE_VIEW,
         props: {
           storeId: store.id,
           storeName: store.name,
@@ -127,12 +128,12 @@ export default function Store({
         },
       })
     }
-  }, [store?.id, track])
+  }, [store?.id, plausible])
 
   useEffect(() => {
     if (selectedApp) {
-      track({
-        name: "Store App Selected",
+      plausible({
+        name: ANALYTICS_EVENTS.STORE_APP_SELECTED,
         props: {
           appId: selectedApp.id,
           appName: selectedApp.name,
@@ -142,7 +143,7 @@ export default function Store({
         },
       })
     }
-  }, [selectedApp?.id, store?.id, track])
+  }, [selectedApp?.id, store?.id, plausible])
 
   // Dynamically update page metadata for client-side navigation
   useStoreMetadata(store)

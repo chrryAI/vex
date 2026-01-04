@@ -272,7 +272,7 @@
 //           <div className={styles.info}>
 //             <h3>{t("Advertising Features")}</h3>
 //             <ul>
-//               <li>{t("Context-aware targeting (no tracking)")}</li>
+//               <li>{t("Context-aware targeting (no plausibleing)")}</li>
 //               <li>{t("Performance-based pricing (CPC/CPM)")}</li>
 //               <li>{t("Real-time analytics and reporting")}</li>
 //               <li>
