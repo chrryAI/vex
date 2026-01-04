@@ -165,6 +165,8 @@ const chrryAI = {
   name: "Chrry",
   domain: "chrry.ai",
   email: "iliyan@chrry.ai",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/chrry-🍒/odgdgbbddopmblglebfngmaebmnhegfc",
   url: "https://chrry.ai",
   store: "https://chrry.ai",
   description: "AI App Marketplace - Discover, create, and monetize AI apps",
@@ -244,6 +246,8 @@ const focus = {
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/focus-🍒/nkomoiomfaeodakglkihapminhpgnibl",
   store: "https://chrry.ai",
   email: "iliyan@chrry.ai",
   url: "https://focus.chrry.ai",
@@ -321,6 +325,8 @@ const atlas = {
   slug: "atlas",
   isStoreApp: true,
   storeSlug: "compass",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/atlas-🍒/adopnldifkjlgholfcijjgocgnolknpb",
   name: "Atlas",
   domain: "atlas.chrry.ai",
   url: "https://atlas.chrry.ai",
@@ -582,6 +588,8 @@ const popcorn = {
   mode: "popcorn" as SiteMode,
   slug: "popcorn",
   storeSlug: "movies",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/popcorn-🍒/lfokfhplbjckmfmbakfgpkhaanfencah",
   name: "Popcorn",
   isStoreApp: true,
   domain: "popcorn.chrry.ai",
@@ -661,6 +669,8 @@ const zarathustra = {
   mode: "zarathustra" as SiteMode,
   slug: "zarathustra",
   storeSlug: "books",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/zarathustra-🍒/jijgmcofljfalongocihccblcboppnad",
   name: "Zarathustra",
   domain: "books.chrry.ai",
   url: "https://books.chrry.ai",
@@ -743,6 +753,8 @@ const search = {
   name: "Search",
   domain: "search.chrry.ai",
   url: "https://search.chrry.ai",
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/search-🍒/cloblmampohoemdaojenlkjbnkpmkiop",
   isStoreApp: false,
   store: "https://search.chrry.ai",
   email: "iliyan@chrry.ai",
@@ -862,6 +874,8 @@ const vex = {
       isOpenSource: true,
     },
   ],
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/vex-🍒/enpllenkofnbmnflnlkbomkcilamjgac",
 }
 
 const burn = {
@@ -872,6 +886,8 @@ const burn = {
   storeSlug: "blossom",
   name: "Burn",
   isStoreApp: false,
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/burn-🍒/lfokfhplbjckmfmbakfgpkhaanfencah",
   domain: "burn.chrry.ai",
   store: "https://chrry.ai",
   email: "iliyan@chrry.ai",
@@ -956,6 +972,8 @@ const sushi = {
   slug: "sushi",
   favicon: "sushi",
   storeSlug: "sushiStore",
+  chromeWebStoreUrl:
+    "https://chrome.google.com/webstore/detail/sushi-🍒/fkblifhgfkmdccjkailndfokadjinabn",
   name: "Sushi",
   isStoreApp: true,
   domain: "sushi.chrry.ai",
@@ -1018,6 +1036,8 @@ const sushi = {
 const grape = {
   url: "https://grape.chrry.ai",
   mode: "grape" as SiteMode,
+  chromeWebStoreUrl:
+    "https://chromewebstore.google.com/detail/grape-🍒/kiplpljdjejcnmlfnkocbjbbcoiegjob",
   slug: "grape",
   favicon: "grape",
   storeSlug: "wine",
@@ -1082,6 +1102,7 @@ const grape = {
 export interface SiteConfig {
   mode: SiteMode
   slug: string
+  chromeWebStoreUrl?: string
   storeSlug: string
   favicon?: string
   name: string

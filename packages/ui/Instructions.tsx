@@ -118,8 +118,18 @@ export default function Instructions({
 
   const { defaultInstructions, isAppInstructions } = useApp()
 
-  const { token, language, user, guest, app, storeApp, burnApp, ...auth } =
-    useAuth()
+  const {
+    token,
+    language,
+    user,
+    guest,
+    app,
+    storeApp,
+    burnApp,
+    downloadUrl,
+    chromeWebStoreUrl,
+    ...auth
+  } = useAuth()
 
   const burn = (burnApp && burnApp?.id === app?.id) || auth.burn
 
@@ -338,32 +348,6 @@ export default function Instructions({
   function capitalizeFirstLetter(val: string) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1)
   }
-  const extensionUrl =
-    app?.chromeWebStoreUrl ||
-    storeApp?.chromeWebStoreUrl ||
-    "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
-
-  const installs = [
-    "atlas",
-    "focus",
-    "vex",
-    "popcorn",
-    "chrry",
-    "zarathustra",
-    "search",
-    "grape",
-    "burn",
-    "sushi",
-  ]
-  // MinIO download URLs (production bucket)
-  const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
-  const downloadUrl =
-    app && installs.includes(app?.slug || "")
-      ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
-      : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
-        ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
-        : ""
-
   const handleFileSelect = async (selectedFiles: FileList | null) => {
     if (!selectedFiles) return
 
@@ -1597,7 +1581,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   ? !showGrape && (
                       <A
                         openInNewTab
-                        href={extensionUrl}
+                        href={chromeWebStoreUrl}
                         className="button"
                         style={{
                           ...utilities.button.style,

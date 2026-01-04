@@ -1,7 +1,14 @@
 import React from "react"
-import { useData, useNavigationContext } from "./context/providers"
+import { useData, useNavigationContext, useAuth } from "./context/providers"
 import Modal from "./Modal"
-import { FaApple, FaAndroid, FaChrome, FaFirefox } from "react-icons/fa"
+import {
+  FaApple,
+  FaAndroid,
+  FaChrome,
+  FaFirefox,
+  FaWindows,
+  FaLinux,
+} from "react-icons/fa"
 import Img from "./Img"
 import { useTranslation } from "react-i18next"
 import { Button, Div, Span, usePlatform, Video } from "./platform"
@@ -19,6 +26,8 @@ export default function Version() {
 
   const { showAddToHomeScreen, setShowAddToHomeScreen } = useNavigationContext()
   const { t } = useTranslation()
+
+  const { chromeWebStoreUrl, downloadUrl } = useAuth()
 
   const { os, isStandalone, isFirefox, isExtension, BrowserInstance } =
     usePlatform()
@@ -88,18 +97,9 @@ export default function Version() {
               </Button>
             ) : !isFirefox ? (
               <A
-                onClick={(e) => {
-                  if (isExtension) {
-                    BrowserInstance?.runtime?.sendMessage({
-                      action: "openInSameTab",
-                      url: "https://chromewebstore.google.com/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc",
-                    })
-
-                    return
-                  }
-                }}
+                openInNewTab
                 className="button"
-                href="https://chromewebstore.google.com/detail/vex/odgdgbbddopmblglebfngmaebmnhegfc"
+                href={chromeWebStoreUrl}
                 style={{
                   ...utilities.button.style,
                   ...utilities.small.style,
@@ -122,6 +122,29 @@ export default function Version() {
                 {t("Install")}
               </A>
             ) : null}
+
+            {/* Desktop app download button */}
+            {downloadUrl && (
+              <A
+                className="button"
+                openInNewTab
+                href={downloadUrl}
+                style={{
+                  ...utilities.button.style,
+                  ...utilities.small.style,
+                  marginLeft: "0.5rem",
+                }}
+              >
+                {os === "macos" ? (
+                  <FaApple size={18} />
+                ) : os === "windows" ? (
+                  <FaWindows size={18} />
+                ) : (
+                  <FaLinux size={18} />
+                )}
+                {t("Download Desktop")}
+              </A>
+            )}
           </Div>
         </Modal>
       )}

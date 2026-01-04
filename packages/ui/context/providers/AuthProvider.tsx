@@ -8,6 +8,7 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
 } from "react"
 import useSWR from "swr"
 import { v4 as uuidv4 } from "uuid"
@@ -19,7 +20,7 @@ import {
   useLocalStorage,
   storage,
 } from "../../platform"
-import { isOwner } from "../../utils"
+import { isOwner, capitalizeFirstLetter } from "../../utils"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
@@ -79,6 +80,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      chromeWebStoreUrl: string
+      downloadUrl: string
       isRetro: boolean
       grape: appWithStore | undefined
       setIsRetro: (value: boolean) => void
@@ -518,16 +521,14 @@ export function AuthProvider({
 
   const siteConfig = getSiteConfig(CHRRY_URL)
 
-  const chrryUrl = CHRRY_URL
+  const { isStorageReady, isTauri } = usePlatform()
+
+  const fingerprintParam = searchParams.get("fp") || ""
 
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
     props.session?.deviceId,
   )
-
-  const { isStorageReady, isTauri } = usePlatform()
-
-  const fingerprintParam = searchParams.get("fp") || ""
 
   useEffect(() => {
     if (!isStorageReady && !(isTauri || isCapacitor || isExtension)) return
@@ -816,6 +817,17 @@ export function AuthProvider({
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
   >(props.app || session?.app || baseApp)
+
+  const siteConfigApp = useMemo(
+    () =>
+      whiteLabels.find(
+        (label) =>
+          label.slug === app?.slug || app?.store?.app?.slug === label.slug,
+      ),
+    [app],
+  )
+
+  const chrryUrl = CHRRY_URL
 
   const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
 
@@ -1426,6 +1438,33 @@ export function AuthProvider({
     storeAppIternal,
   )
 
+  const installs = [
+    "atlas",
+    "focus",
+    "vex",
+    "popcorn",
+    "chrry",
+    "zarathustra",
+    "search",
+    "grape",
+    "burn",
+    "sushi",
+  ]
+
+  const chromeWebStoreUrl =
+    (siteConfigApp as any)?.chromeWebStoreUrl ||
+    app?.chromeWebStoreUrl ||
+    storeApp?.chromeWebStoreUrl ||
+    "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
+
+  const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
+  const downloadUrl =
+    app && installs.includes(app?.slug || "")
+      ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
+      : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
+        ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
+        : ""
+
   const isZarathustra = app?.slug === "zarathustra"
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
@@ -1434,6 +1473,8 @@ export function AuthProvider({
     "burn",
     null,
   )
+
+  // MinIO download URLs (production bucket)
 
   const burn = burnInternal === null ? isZarathustra : burnInternal
 
@@ -2270,6 +2311,7 @@ export function AuthProvider({
         isIDE,
         toggleIDE,
         findAppByPathname,
+        chromeWebStoreUrl,
         siteConfig,
         setBaseAccountApp,
         setDeviceId,
@@ -2282,6 +2324,7 @@ export function AuthProvider({
           shouldFetchMood && refetchMoods()
         },
         burnApp,
+        downloadUrl,
         fetchMood,
       }}
     >
