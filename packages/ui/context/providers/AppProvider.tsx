@@ -183,7 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burnApp,
     burning,
     setBurn,
-    track,
+    plausible,
     ...auth
   } = useAuth()
   const { actions } = useData()
@@ -286,7 +286,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (result?.error) {
         toast.error(result.error)
         setIsSavingApp(false)
-        track({
+        plausible({
           name: ANALYTICS_EVENTS.APP_SAVE_ERROR,
           props: {
             success: false,
@@ -304,7 +304,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setNewApp(result)
           await fetchApps()
         }
-        track({
+        plausible({
           name: ANALYTICS_EVENTS.APP_SAVE_SUCCESS,
           props: {
             success: true,
@@ -317,7 +317,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       toast.error(t("Something went wrong"))
       captureException(error)
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.APP_SAVE_ERROR,
         props: {
           success: false,
@@ -366,7 +366,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAppStatus(undefined)
 
         toast.success(`${t("Deleted")} 😭`)
-        track({
+        plausible({
           name: ANALYTICS_EVENTS.APP_DELETE_SUCCESS,
           props: {
             success: true,
@@ -684,7 +684,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   ) => {
     setAppStatusInternal(payload)
 
-    track({
+    plausible({
       name: ANALYTICS_EVENTS.APP_STATUS,
       props: payload,
     })

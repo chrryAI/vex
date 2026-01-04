@@ -45,7 +45,7 @@ import A from "../a/A"
 import { useAboutStyles } from "./About.styles"
 import { useStyles } from "../context/StylesContext"
 export default function About() {
-  const { chrry, track, baseApp, setApp, user } = useAuth()
+  const { chrry, plausible, baseApp, setApp, user } = useAuth()
 
   const config = getSiteConfig()
 

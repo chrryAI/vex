@@ -19,7 +19,7 @@ export default function Terms() {
   const styles = useAboutStyles()
   const { utilities } = useStyles()
 
-  const { track } = useAuth()
+  const { plausible } = useAuth()
 
   return (
     <Skeleton>
@@ -47,8 +47,8 @@ export default function Terms() {
         </Section>
 
         <Section>
-          <H2>{t("terms.tracking.title")}</H2>
-          <P>{t("terms.tracking.content2")}</P>
+          <H2>{t("terms.plausibleing.title")}</H2>
+          <P>{t("terms.plausibleing.content2")}</P>
         </Section>
 
         <Section>

@@ -154,7 +154,7 @@ export function ChatProvider({
     storeAppsSwr,
     app,
     chrry,
-    track,
+    plausible,
     aiAgents,
     token,
     setProfile,
@@ -220,7 +220,7 @@ export function ChatProvider({
 
   const isEmpty = !messages?.length
 
-  const { isExtension, isMobile, isTauri } = usePlatform()
+  const { isExtension, isMobile, isTauri, isCapacitor } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
@@ -713,7 +713,7 @@ export function ChatProvider({
     }
   }, [user, guest, threadId, connected])
 
-  // Credits tracking
+  // Credits plausibleing
   const [creditsLeft, setCreditsLeft] = useState<number | undefined>(undefined)
 
   useEffect(() => {
@@ -748,7 +748,7 @@ export function ChatProvider({
 
   useEffect(() => {
     if (debateAgent) {
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.DEBATE_AGENT_SELECTED,
         props: { agent: debateAgent.displayName },
       })
@@ -949,7 +949,7 @@ export function ChatProvider({
       setIsDebateAgentModalOpenInternal(false)
     }
     open &&
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.AGENT_MODAL,
         props: {},
       })
@@ -959,7 +959,7 @@ export function ChatProvider({
     setIsDebateAgentModalOpenInternal(open)
     setIsAgentModalOpenInternal(open)
     open &&
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.DEBATE_AGENT_MODAL,
         props: {},
       })
@@ -1046,6 +1046,7 @@ export function ChatProvider({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
+    if (showFocus) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri
       requestAnimationFrame(() => {
@@ -1062,6 +1063,17 @@ export function ChatProvider({
   useEffect(() => {
     isLoading && error && setIsLoading(false)
   }, [error, isLoading])
+
+  useEffect(() => {
+    // if (toFetch) {
+    //   setShowFocus(false)
+    //   return
+    // }
+    if (showFocus) {
+      setThread(undefined)
+      setMessages([])
+    }
+  }, [showFocus, toFetch])
 
   useEffect(() => {
     if (!toFetch) {
@@ -1084,7 +1096,8 @@ export function ChatProvider({
         !isStreamingStop &&
         (!threadIdRef.current ||
           serverMessages.messages[0]?.thread?.id !== threadIdRef.current ||
-          serverMessages.messages.length !== messages.length)
+          ((isExtension || isCapacitor || isTauri) &&
+            serverMessages.messages.length !== messages.length))
       ) {
         setMessages(serverMessages.messages)
       }

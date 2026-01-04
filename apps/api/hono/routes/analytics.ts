@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { db } from "@repo/db"
-import { realtimeAnalytics } from "@repo/db"
+import { realtimeAnalytics, isE2E } from "@repo/db"
 import { getGuest, getMember } from "../lib/auth"
 
 type Variables = {
@@ -46,7 +46,7 @@ analytics.post("/grape", async (c) => {
     const now = Date.now()
     const lastTracked = throttleMap.get(throttleKey)
 
-    if (lastTracked && now - lastTracked < THROTTLE_MS) {
+    if (!isE2E && lastTracked && now - lastTracked < THROTTLE_MS) {
       // Silently ignore duplicate event (return success to avoid frontend errors)
       return c.json({ success: true, throttled: true })
     }

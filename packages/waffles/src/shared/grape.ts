@@ -31,14 +31,14 @@ The fire icon in the top right is a bit confusing - I wasn't sure if it meant no
     `15 Credits - Actionable Feedback:
 The chat interface could benefit from keyboard shortcuts for power users. For example, Cmd+K to focus the search, Cmd+N for new thread, and Cmd+Enter to send messages would significantly improve the workflow.`,
     `20 Credits - Exceptional Feedback:
-The onboarding flow has a few UX issues I noticed:
+    The onboarding flow has a few UX issues I noticed:
 
-1. The "Get Started" button on the landing page doesn't clearly indicate what happens next - consider changing it to "Create Your First Agent" to set expectations.
-2. When uploading files, there's no progress indicator, which made me think the app froze during a large upload. Adding a progress bar with file size/upload speed would reduce anxiety.`,
+    1. The "Get Started" button on the landing page doesn't clearly indicate what happens next - consider changing it to "Create Your First Agent" to set expectations.
+    2. When uploading files, there's no progress indicator, which made me think the app froze during a large upload. Adding a progress bar with file size/upload speed would reduce anxiety.`,
     `20 Credits - Exceptional Feedback:
-3. The empty state in the chat could be more engaging - instead of just showing tips, consider adding quick-start templates like "Plan a trip", "Analyze data", etc. that users can click to see example interactions.
-4. The credit system isn't explained anywhere visible. New users might not understand why their messages stop working. A small "?" icon next to the credit counter with a tooltip explaining the system would help.
-   These changes would significantly reduce friction for new users and improve retention.`,
+    3. The empty state in the chat could be more engaging - instead of just showing tips, consider adding quick-start templates like "Plan a trip", "Analyze data", etc. that users can click to see example interactions.
+    4. The credit system isn't explained anywhere visible. New users might not understand why their messages stop working. A small "?" icon next to the credit counter with a tooltip explaining the system would help.
+       These changes would significantly reduce friction for new users and improve retention.`,
   ]
 
   // Re-query elements inside loop to avoid staleness
@@ -68,6 +68,7 @@ The onboarding flow has a few UX issues I noticed:
     isMember,
     isLive,
     isNewChat: false,
+    bookmark: false,
     prompts: [
       {
         text: prompt,

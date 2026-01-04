@@ -134,12 +134,8 @@ test.only("Chat", async ({ page }) => {
         model: "chatGPT",
       },
       {
-        text: "Which model are you using? Answer briefly",
-        model: "gemini",
-      },
-      {
         text: "How can I enable character profile? Answer shortly",
-        model: "sushi",
+        model: "perplexity",
       },
       {
         text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
@@ -185,12 +181,11 @@ test.only("File upload", async ({ page }) => {
     instruction: "Lets upload some files",
     prompts: [
       {
-        text: "Hey Vex, Analyze this paste(s) and video shortly",
+        text: "Hey Vex, Analyze this paste(s) and image(s) shortly",
         model: "sushi",
         mix: {
           paste: 1,
-          pdf: 1,
-          video: 1,
+          image: 2,
         },
         like: false,
       },

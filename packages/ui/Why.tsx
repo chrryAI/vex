@@ -31,7 +31,7 @@ export default function About() {
   const styles = useWhyStyles()
   const { utilities } = useStyles()
 
-  const { track } = useAuth()
+  const { plausible } = useAuth()
 
   return (
     <Skeleton>

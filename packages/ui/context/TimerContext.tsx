@@ -174,7 +174,7 @@ export function TimerContextProvider({
     deviceId,
     fingerprint,
     fetchMood,
-    track: trackEvent,
+    plausible,
     tasks,
     setTasks,
     isLoadingTasks,
@@ -629,7 +629,7 @@ export function TimerContextProvider({
     }
   }, [time, isCountingDown, isPaused, token])
 
-  // Use ref to track timer sync - only sync on state changes, not every second
+  // Use ref to plausible timer sync - only sync on state changes, not every second
   const timerSyncRef = useRef<number>(0)
 
   useEffect(() => {
@@ -804,7 +804,7 @@ export function TimerContextProvider({
         isFinished: false,
       })
 
-      trackEvent({ name: "timer_start", props: { duration: duration || time } })
+      plausible({ name: "timer_start", props: { duration: duration || time } })
     },
     [time, isExtension, updateTimer, timer, fingerprint],
   )
@@ -846,7 +846,7 @@ export function TimerContextProvider({
     // Clear timer state
     setTimerState(null)
 
-    trackEvent({ name: "timer_cancel" })
+    plausible({ name: "timer_cancel" })
 
     // Reset the flag after a short delay
     setTimeout(() => {
@@ -880,9 +880,9 @@ export function TimerContextProvider({
         updateTimer({ ...timer, isCountingDown: false })
       }
 
-      trackEvent({ name: "timer_pause", props: { timeLeft: time } })
+      plausible({ name: "timer_pause", props: { timeLeft: time } })
     },
-    [timer, updateTimer, time, startTime, trackEvent],
+    [timer, updateTimer, time, startTime, plausible],
   )
 
   const handleResume = useCallback(() => {
@@ -901,8 +901,8 @@ export function TimerContextProvider({
     // Start countdown with current display time
     startCountdown(time)
 
-    trackEvent({ name: "timer_resume", props: { timeLeft: time } })
-  }, [time, startCountdown, trackEvent])
+    plausible({ name: "timer_resume", props: { timeLeft: time } })
+  }, [time, startCountdown, plausible])
 
   const handlePresetTime = useCallback(
     (minutes: number) => {
@@ -935,9 +935,9 @@ export function TimerContextProvider({
       setActivePomodoro(minutes)
 
       // Track event
-      trackEvent({ name: "timer_preset", props: { minutes, timeSet: newTime } })
+      plausible({ name: "timer_preset", props: { minutes, timeSet: newTime } })
     },
-    [isCountingDown, trackEvent],
+    [isCountingDown, plausible],
   )
 
   // Active pomodoro is now loaded automatically via useLocalStorage hook
@@ -990,7 +990,7 @@ export function TimerContextProvider({
   const kitasakuRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    playBirds && trackEvent({ name: "play_bird_sound" })
+    playBirds && plausible({ name: "play_bird_sound" })
 
     // Only use Audio API on web (check for global Audio constructor)
     if (typeof window !== "undefined" && "Audio" in window) {
@@ -1238,7 +1238,7 @@ export function TimerContextProvider({
 
   useEffect(() => {
     if (playKitasaku) {
-      trackEvent({ name: "video_clicked" })
+      plausible({ name: "video_clicked" })
       kitasakuRef.current?.play()
     } else {
       kitasakuRef.current?.pause()

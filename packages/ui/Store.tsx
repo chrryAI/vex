@@ -41,7 +41,7 @@ export default function Store({
   const { setIsNewAppChat } = useChat()
 
   const {
-    track,
+    plausible,
     storeApps: storeAppsContext,
     getAppSlug,
     loadingApp,
@@ -118,7 +118,7 @@ export default function Store({
 
   useEffect(() => {
     if (store) {
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.STORE_VIEW,
         props: {
           storeId: store.id,
@@ -128,11 +128,11 @@ export default function Store({
         },
       })
     }
-  }, [store?.id, track])
+  }, [store?.id, plausible])
 
   useEffect(() => {
     if (selectedApp) {
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.STORE_APP_SELECTED,
         props: {
           appId: selectedApp.id,
@@ -143,7 +143,7 @@ export default function Store({
         },
       })
     }
-  }, [selectedApp?.id, store?.id, track])
+  }, [selectedApp?.id, store?.id, plausible])
 
   // Dynamically update page metadata for client-side navigation
   useStoreMetadata(store)

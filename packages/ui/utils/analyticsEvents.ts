@@ -69,6 +69,7 @@ export const ANALYTICS_EVENTS = {
   BURN: "burn",
   PEAR: "pear",
   THEME_CHANGE: "theme_change",
+  COLOR_SCHEME_CHANGE: "color_scheme_change",
 
   // Authentication
   LOGIN: "login",

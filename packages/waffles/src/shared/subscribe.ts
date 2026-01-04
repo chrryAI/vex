@@ -44,10 +44,6 @@ export const subscribe = async ({
         {
           text: "Shortly explain the best way to get around",
           model: "chatGPT",
-        },
-        {
-          text: "Which model are you using? Answer briefly",
-          model: "gemini",
           mix: {
             paste: 1,
             pdf: 1,

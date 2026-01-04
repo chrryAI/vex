@@ -214,7 +214,7 @@ export default function Chat({
     setUser,
     setGuest,
     guest,
-    track,
+    plausible,
     deviceId,
     API_URL,
     FRONTEND_URL,
@@ -327,7 +327,7 @@ export default function Chat({
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setSelectedAgentInternal(agent)
     setShouldFocus(true)
-    track({
+    plausible({
       name: ANALYTICS_EVENTS.AGENT_SELECTED,
       props: {
         agentId: agent?.id,
@@ -600,7 +600,7 @@ export default function Chat({
   const setShowQuotaInfo = (show: boolean) => {
     setShowQuotaInfoInternal(show)
     show &&
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.QUOTA_INFO,
         props: {
           show,
@@ -900,7 +900,7 @@ export default function Chat({
 
     setIsAttachingInternal(attaching)
     attaching &&
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.IS_ATTACHING,
         props: {
           attaching,
@@ -1105,7 +1105,7 @@ export default function Chat({
 
   // Voice conversation functionality
   const startVoiceConversation = async () => {
-    track({
+    plausible({
       name: ANALYTICS_EVENTS.VOICE_CONVERSATION,
       props: {
         started: true,
@@ -1343,7 +1343,7 @@ export default function Chat({
   }
 
   const stopVoiceInput = () => {
-    track({
+    plausible({
       name: ANALYTICS_EVENTS.VOICE_INPUT,
       props: {
         stopped: true,
@@ -1358,7 +1358,7 @@ export default function Chat({
 
   const stopSpeechConversation = () => {
     addHapticFeedback()
-    track({
+    plausible({
       name: ANALYTICS_EVENTS.VOICE_CONVERSATION,
       props: {
         stopped: true,
@@ -1459,7 +1459,7 @@ export default function Chat({
   // File input handlers for different media types
   const triggerFileInput = (accept: string) => {
     addHapticFeedback()
-    track({
+    plausible({
       name: ANALYTICS_EVENTS.FILE_INPUT,
       props: {
         accept,
@@ -2201,7 +2201,7 @@ export default function Chat({
   const [isGame, setIsGameInternal] = useState(false)
   const setIsGame = (value: boolean) => {
     setIsGameInternal(value)
-    track({
+    plausible({
       name: ANALYTICS_EVENTS.GAME_TOGGLE,
       props: {
         isGame: value,
@@ -2691,7 +2691,7 @@ export default function Chat({
 
   useEffect(() => {
     hitHourlyLimit &&
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.HIT_HOURLY_LIMIT,
         props: {
           hourlyUsageLeft,
@@ -2701,7 +2701,7 @@ export default function Chat({
 
   useEffect(() => {
     files.length > 0 &&
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.FILE_UPLOAD,
         props: {
           filesLength: files.length,
@@ -3597,7 +3597,7 @@ export default function Chat({
                     {Top}
                   </Div>
                 )}
-                <Div style={{ display: "flex", gap: 7.5 }}>
+                <Div style={{ display: "flex", gap: 7.5, marginLeft: "auto" }}>
                   {hasBottomOffset ? (
                     <Button
                       className="link"
@@ -3639,6 +3639,7 @@ export default function Chat({
                   {empty && !threadIdRef.current && !isPear && (
                     <>
                       <Grapes
+                        dataTestId="grapes-button"
                         style={{
                           position: "relative",
                           top: !isChatFloating ? 30 : 0,
@@ -4196,7 +4197,7 @@ export default function Chat({
                           position: "relative",
                         }}
                       >
-                        {app?.features?.moodTracking && (
+                        {app?.features?.moodplausibleing && (
                           <MoodSelector
                             showEdit={false}
                             style={{
@@ -4243,7 +4244,7 @@ export default function Chat({
                             setIsWebSearchEnabled(!isWebSearchEnabled)
                           }}
                         >
-                          {app?.features?.moodTracking ? null : (
+                          {app?.features?.moodplausibleing ? null : (
                             <Span
                               style={{
                                 fontSize: 12,
@@ -4629,7 +4630,7 @@ export default function Chat({
                     <Button
                       data-testid="subscribe-from-chat-button"
                       onClick={() => {
-                        track({
+                        plausible({
                           name: "subscribe-from-chat-click",
                           props: {
                             threadId: threadId,

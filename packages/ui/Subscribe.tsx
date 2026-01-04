@@ -68,7 +68,7 @@ export default function Subscribe({
     token,
     isExtensionRedirect,
     guest,
-    track,
+    plausible,
     fingerprint,
     setSignInPart,
   } = useAuth()
@@ -125,7 +125,7 @@ export default function Subscribe({
   const handleCheckout = async (part: "subscription" | "gift") => {
     setPurchaseType(part)
     setPart(part)
-    track({ name: ANALYTICS_EVENTS.SUBSCRIBE_CHECKOUT })
+    plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_CHECKOUT })
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -261,7 +261,7 @@ export default function Subscribe({
   }, [user, loggedIn])
 
   const verifyPayment = async (sessionId: string) => {
-    track({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
+    plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
     const params = new URLSearchParams(window.location.search)
     const isExtensionRedirect = params.get("extension") === "true"
     const userId = params.get("userId")
@@ -288,7 +288,7 @@ export default function Subscribe({
 
     const data = await response.json()
     if (data.success) {
-      track({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
+      plausible({ name: ANALYTICS_EVENTS.SUBSCRIBE_VERIFY_PAYMENT })
       if (isExtensionRedirect) {
         toast.success(t(`${t("Subscribed")}. ${t("Reload your extension")} 🧩`))
       } else {
@@ -310,12 +310,14 @@ export default function Subscribe({
     } else {
       if (data.error) {
         toast.error(data.error)
-        track({
+        plausible({
           name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED,
           props: { error: data.error },
         })
       } else {
-        track({ name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED })
+        plausible({
+          name: ANALYTICS_EVENTS.SUBSCRIBE_PAYMENT_VERIFICATION_FAILED,
+        })
         toast.error(t("Payment verification failed"))
       }
     }
@@ -670,7 +672,7 @@ export default function Subscribe({
                 <Div className={clsx(styles.feature, "feature")}>
                   <A openInNewTab href={"https://chrry.dev"} className={"link"}>
                     <Img logo="chrry" width={16} height={16} />
-                    {t("0 trackers")}. {t("Open Source")}
+                    {t("0 plausibleers")}. {t("Open Source")}
                   </A>
                 </Div>
               </MotiView>

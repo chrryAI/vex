@@ -34,7 +34,6 @@ export default function Programme() {
     setEntered(false)
     back()
   }
-  console.log(`🚀 ~ Programme ~ isProgramme:`, isProgramme)
 
   if (!isProgramme) {
     return null

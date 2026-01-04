@@ -496,7 +496,17 @@ async function getNewsContext(slug?: string | null): Promise<string> {
   }
 }
 
-async function getAnalyticsContext(): Promise<string> {
+const beasts = ["grape", "pear", "chrry", "vex"]
+
+async function getAnalyticsContext({
+  app,
+  member,
+  guest,
+}: {
+  app: App
+  member?: User
+  guest?: Guest
+}): Promise<string> {
   console.log("🍇 getAnalyticsContext called for Grape!")
 
   try {
@@ -511,81 +521,113 @@ async function getAnalyticsContext(): Promise<string> {
 
     let context = `\n\n## 📊 Platform Analytics (Last 7 Days):\n\n`
 
+    const isAdmin =
+      app?.slug && beasts.includes(app?.slug)
+        ? isOwner(app, {
+            userId: member?.id,
+            guestId: guest?.id,
+          }) && member?.role === "admin"
+        : false
     // Loop through all sites
-    sites.forEach((site, index) => {
-      if (!site.stats) {
-        console.log(`🍇 No stats for ${site.domain}`)
-        return
-      }
+    sites
+      .filter((site) => (isAdmin ? true : site.domain === "e2e.chrry.ai"))
+      .forEach((site, index) => {
+        if (!site.stats) {
+          console.log(`🍇 No stats for ${site.domain}`)
+          return
+        }
 
-      const stats = site.stats
+        const stats = site.stats
 
-      // Add site header
-      context += `### ${index + 1}. ${site.domain}\n\n`
+        // Add site header
+        context += `### ${index + 1}. ${site.domain}\n\n`
 
-      // Overview
-      context += `**Overview:**\n`
-      context += `- **Visitors**: ${stats.visitors.toLocaleString()}\n`
-      context += `- **Pageviews**: ${stats.pageviews.toLocaleString()}\n`
-      context += `- **Visits**: ${stats.visits.toLocaleString()}\n`
-      context += `- **Views per Visit**: ${stats.views_per_visit.toFixed(1)}\n`
-      context += `- **Bounce Rate**: ${Math.round(stats.bounce_rate)}%\n`
-      context += `- **Avg Duration**: ${Math.round(stats.visit_duration)}s\n`
-      context += `- **Last Updated**: ${new Date(stats.lastSynced).toLocaleString()}\n\n`
+        // Overview
+        context += `**Overview:**\n`
+        context += `- **Visitors**: ${stats.visitors.toLocaleString()}\n`
+        context += `- **Pageviews**: ${stats.pageviews.toLocaleString()}\n`
+        context += `- **Visits**: ${stats.visits.toLocaleString()}\n`
+        context += `- **Views per Visit**: ${stats.views_per_visit.toFixed(1)}\n`
+        context += `- **Bounce Rate**: ${Math.round(stats.bounce_rate)}%\n`
+        context += `- **Avg Duration**: ${Math.round(stats.visit_duration)}s\n`
+        context += `- **Last Updated**: ${new Date(stats.lastSynced).toLocaleString()}\n\n`
 
-      // Top pages (top 3 per site)
-      if (stats.topPages && stats.topPages.length > 0) {
-        context += `**Top Pages:**\n`
-        stats.topPages.slice(0, 3).forEach((page, i) => {
-          context += `${i + 1}. ${page.page} - ${page.visitors.toLocaleString()} visitors\n`
-        })
-        context += `\n`
-      }
+        // Top pages (top 3 per site)
+        if (stats.topPages && stats.topPages.length > 0) {
+          context += `**Top Pages:**\n`
+          stats.topPages.slice(0, 3).forEach((page, i) => {
+            context += `${i + 1}. ${page.page} - ${page.visitors.toLocaleString()} visitors\n`
+          })
+          context += `\n`
+        }
 
-      // Traffic sources (top 3 per site)
-      if (stats.sources && stats.sources.length > 0) {
-        context += `**Traffic Sources:**\n`
-        stats.sources.slice(0, 3).forEach((source, i) => {
-          context += `${i + 1}. ${source.source} - ${source.visitors.toLocaleString()} visitors\n`
-        })
-        context += `\n`
-      }
+        // Traffic sources (top 3 per site)
+        if (stats.sources && stats.sources.length > 0) {
+          context += `**Traffic Sources:**\n`
+          stats.sources.slice(0, 3).forEach((source, i) => {
+            context += `${i + 1}. ${source.source} - ${source.visitors.toLocaleString()} visitors\n`
+          })
+          context += `\n`
+        }
 
-      // Top countries (top 3 per site)
-      if (stats.countries && stats.countries.length > 0) {
-        context += `**Top Countries:**\n`
-        stats.countries.slice(0, 3).forEach((country, i) => {
-          context += `${i + 1}. ${country.country} - ${country.visitors.toLocaleString()} visitors\n`
-        })
-        context += `\n`
-      }
+        // Top countries (top 3 per site)
+        if (stats.countries && stats.countries.length > 0) {
+          context += `**Top Countries:**\n`
+          stats.countries.slice(0, 3).forEach((country, i) => {
+            context += `${i + 1}. ${country.country} - ${country.visitors.toLocaleString()} visitors\n`
+          })
+          context += `\n`
+        }
 
-      // Goal conversions (top 5 per site)
-      if (stats.goals && stats.goals.length > 0) {
-        context += `**Top Goals:**\n`
-        stats.goals.slice(0, 5).forEach((goal, i) => {
-          context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events\n`
-        })
-        context += `\n`
-      }
+        // Goal conversions (top 5 per site)
+        if (stats.goals && stats.goals.length > 0) {
+          context += `**Top Goals:**\n`
+          stats.goals.slice(0, 5).forEach((goal, i) => {
+            context += `${i + 1}. ${goal.goal} - ${goal.events.toLocaleString()} events\n`
+          })
+          context += `\n`
+        }
 
-      context += `---\n\n`
-    })
+        context += `---\n\n`
+      })
+
+    if (!isAdmin) {
+      return context
+    }
 
     // Add real-time user behavior analytics (last 24 hours, limit 200 events)
     try {
-      const realtimeEvents = await db
-        .select()
-        .from(realtimeAnalytics)
-        .where(
-          // Last 24 hours
-          gte(
-            realtimeAnalytics.createdOn,
-            new Date(Date.now() - 24 * 60 * 60 * 1000),
-          ),
-        )
-        .orderBy(desc(realtimeAnalytics.createdOn))
-        .limit(200)
+      const realtimeEvents = isAdmin
+        ? // Admin: See all platform events
+          await db
+            .select()
+            .from(realtimeAnalytics)
+            .where(
+              gte(
+                realtimeAnalytics.createdOn,
+                new Date(Date.now() - 24 * 60 * 60 * 1000),
+              ),
+            )
+            .orderBy(desc(realtimeAnalytics.createdOn))
+            .limit(200)
+        : isOwner(app, { userId: member?.id, guestId: guest?.id }) &&
+            member?.subscription?.tier === "pro" // Premium feature
+          ? // App owner (Pro): See only their app's events
+            await db
+              .select()
+              .from(realtimeAnalytics)
+              .where(
+                and(
+                  gte(
+                    realtimeAnalytics.createdOn,
+                    new Date(Date.now() - 24 * 60 * 60 * 1000),
+                  ),
+                  sql`${realtimeAnalytics.eventData}->>'appSlug' = ${app?.slug}`,
+                ),
+              )
+              .orderBy(desc(realtimeAnalytics.createdOn))
+              .limit(200)
+          : [] // Free users: No real-time events
 
       if (realtimeEvents.length > 0) {
         context += `## 🔥 Real-Time User Behavior (Last 24 Hours):\n\n`
@@ -2497,17 +2539,12 @@ ${(() => {
   // Get news context based on app
   const newsContext = await getNewsContext(app?.slug)
 
-  const beasts = ["grape", "pear", "chrry", "vex"]
-
   // Get live analytics context for Grape
-  const analyticsContext =
-    app?.slug &&
-    beasts.includes(app?.slug) &&
-    isOwner(app, {
-      userId: member?.id,
-    })
-      ? await getAnalyticsContext()
-      : ""
+  const analyticsContext = await getAnalyticsContext({
+    app,
+    member,
+    guest,
+  })
 
   // Get recent feedback context for Pear
   const pearContext =

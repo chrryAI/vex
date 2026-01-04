@@ -4,6 +4,8 @@ import { COLORS } from "./context/AppContext"
 import { useHasHydrated } from "./hooks"
 import { Button, Div, useTheme } from "./platform"
 import { useColorSchemeStyles } from "./ColorScheme.styles"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import { useAuth } from "./context/providers/AuthProvider"
 
 export default function ColorScheme({
   style,
@@ -15,8 +17,27 @@ export default function ColorScheme({
   colorScheme?: string
 }) {
   const styles = useColorSchemeStyles()
-  const { colorScheme: colorSchemeInternal, setColorScheme } = useTheme()
+  const { plausible } = useAuth()
+  const {
+    colorScheme: colorSchemeInternal,
+    setColorScheme: setColorSchemeInternal,
+    isDark,
+  } = useTheme()
   const colorScheme = props.colorScheme || colorSchemeInternal
+
+  const setColorScheme = (scheme?: string) => {
+    if (!scheme) return
+
+    setColorSchemeInternal(scheme)
+
+    plausible({
+      name: ANALYTICS_EVENTS.COLOR_SCHEME_CHANGE,
+      props: {
+        colorScheme,
+        isDark,
+      },
+    })
+  }
 
   const hasHydrated = useHasHydrated()
 

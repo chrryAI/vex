@@ -66,7 +66,7 @@ const Thread = ({
   const {
     user,
     guest,
-    track,
+    plausible,
     threadIdRef,
     memoriesEnabled,
     setShowFocus,
@@ -148,10 +148,10 @@ const Thread = ({
 
   const id = threadId
 
-  // Track if we've already auto-selected an agent for this thread
+  // plausible if we've already auto-selected an agent for this thread
   const shouldStopAutoScrollRef = useRef(false)
 
-  // Track last processed threadData to prevent re-processing
+  // plausible last processed threadData to prevent re-processing
   // const lastProcessedThreadDataRef = useRef<any>(null)
 
   // Smart auto-scroll: only scroll for short responses
@@ -880,7 +880,7 @@ const Thread = ({
                         setShouldGetCredits(true)
                       }
 
-                      track({
+                      plausible({
                         name: ANALYTICS_EVENTS.THREAD_MESSAGE_AGENT,
                         props: {
                           isStreaming: false,

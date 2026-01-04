@@ -2,6 +2,7 @@ import { Page, expect } from "@playwright/test"
 import { getURL, modelName, wait, storeApps, getModelCredits } from ".."
 import { chat } from "./chat"
 import { clean } from "./clean"
+import { grape } from "./grape"
 
 const app = async ({
   slug,
@@ -72,6 +73,32 @@ const app = async ({
   let totalMessagesConsumed = messagesConsumed || 0
 
   for (const item of nav) {
+    const index = nav.indexOf(item)
+    const remainingNav = nav.slice(index + 1)
+
+    if (!remainingNav.length) {
+      const totalEarnedCredits = await grape({ page, isMember, isLive })
+
+      const index = nav.indexOf(item)
+      const remainingNav = nav.slice(index + 1)
+
+      // Only recurse if there are more items to process
+      if (remainingNav.length > 0) {
+        await app({
+          page,
+          isMember,
+          isLive,
+          nav: remainingNav,
+          slug,
+          isNewChat: true,
+          creditsConsumed: totalCreditsConsumed - totalEarnedCredits,
+          messagesConsumed: totalMessagesConsumed,
+        })
+      }
+
+      break
+    }
+
     const appButton = page.getByTestId(`app-${item.name}`)
     await expect(appButton).toBeVisible()
 
@@ -130,9 +157,13 @@ const app = async ({
     totalCreditsConsumed += creditsForThisApp
     totalMessagesConsumed += messagesForThisApp
 
+    await wait(4000)
+
     const menuHomeButton = page.getByTestId("menu-home-button")
     await expect(menuHomeButton).toBeVisible()
     await menuHomeButton.click()
+
+    await wait(2000)
 
     // Check store app button visibility based on whether we're in a store app
     if (isStoreApp) {
@@ -142,9 +173,6 @@ const app = async ({
     }
 
     if (isStoreApp) {
-      const index = nav.indexOf(item)
-      const remainingNav = nav.slice(index + 1)
-
       // Only recurse if there are more items to process
       if (remainingNav.length > 0) {
         await app({
@@ -158,30 +186,6 @@ const app = async ({
           messagesConsumed: totalMessagesConsumed,
         })
       }
-
-      break
-    } else {
-      const { grape } = await import("./grape")
-      const totalEarnedCredits = await grape({ page, isMember, isLive })
-
-      const index = nav.indexOf(item)
-      const remainingNav = nav.slice(index + 1)
-
-      // Only recurse if there are more items to process
-      if (remainingNav.length > 0) {
-        await app({
-          page,
-          isMember,
-          isLive,
-          nav: remainingNav,
-          slug,
-          isNewChat: true,
-          creditsConsumed: totalCreditsConsumed - totalEarnedCredits,
-          messagesConsumed: totalMessagesConsumed,
-        })
-      }
-
-      break
     }
   }
 }

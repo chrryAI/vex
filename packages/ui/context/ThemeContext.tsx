@@ -82,7 +82,7 @@ export function ThemeProvider({
 
   const setColorScheme = (scheme?: string) => {
     if (scheme && Object.keys(COLORS).includes(scheme)) {
-      scheme !== colorScheme && setColorSchemeInternal(scheme)
+      scheme && scheme !== colorScheme && setColorSchemeInternal(scheme)
     }
   }
 

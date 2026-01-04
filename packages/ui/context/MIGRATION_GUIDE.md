@@ -13,7 +13,7 @@ This guide helps you migrate logic from the monolithic `AppContext` to the new m
 **What to move:**
 
 - [ ] `captureException` implementation from AppContext
-- [ ] Any error tracking/logging logic (Sentry, etc.)
+- [ ] Any error plausibleing/logging logic (Sentry, etc.)
 
 **Find in AppContext:**
 

@@ -64,7 +64,7 @@ export default function Menu({
     user,
     guest,
     profile,
-    track,
+    plausible,
     showFocus,
     setShowFocus,
     getAppSlug,
@@ -152,7 +152,7 @@ export default function Menu({
 
   const toggleMenu = () => {
     addHapticFeedback()
-    track({
+    plausible({
       name: ANALYTICS_EVENTS.MENU_TOGGLE,
       props: {
         isDrawerOpen,
@@ -326,7 +326,7 @@ export default function Menu({
                     href={FRONTEND_URL}
                     onClick={(e) => {
                       addHapticFeedback()
-                      track({
+                      plausible({
                         name: ANALYTICS_EVENTS.HOME_CLICK,
                       })
                       if (e.metaKey || e.ctrlKey) {
@@ -385,7 +385,7 @@ export default function Menu({
                 data-testid="new-chat-button"
                 href={FRONTEND_URL}
                 onClick={(e) => {
-                  track({
+                  plausible({
                     name: ANALYTICS_EVENTS.NEW_CHAT_CLICK,
                   })
                   if (e.metaKey || e.ctrlKey) {
@@ -406,7 +406,7 @@ export default function Menu({
               </A>
               <Button
                 onClick={() => {
-                  track({
+                  plausible({
                     name: ANALYTICS_EVENTS.PRIVATE_CHAT_CLICK,
                   })
                   setShowFocus(false)
@@ -676,7 +676,7 @@ export default function Menu({
                                       setLoadingAppId(thread.appId)
                                       return
                                     }
-                                    track({
+                                    plausible({
                                       name: ANALYTICS_EVENTS.THREAD_CLICK_MENU,
                                       props: {
                                         threadId: thread.id,
@@ -754,7 +754,7 @@ export default function Menu({
                                   data-testid="load-more-threads-menu"
                                   onClick={() => {
                                     addHapticFeedback()
-                                    track({
+                                    plausible({
                                       name: ANALYTICS_EVENTS.LOAD_MORE_THREADS_MENU,
                                     })
                                     isSmallDevice ? toggleMenu() : null

@@ -12,11 +12,13 @@ import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 const Grappes = ({
   style,
   goToGrape,
+  dataTestId,
 }: {
   style?: React.CSSProperties
   goToGrape?: boolean
+  dataTestId?: string
 }) => {
-  const { grapes, setIsPear, grape, track } = useAuth()
+  const { grapes, setIsPear, grape, plausible } = useAuth()
 
   const { setIsNewAppChat } = useChat()
   const [showGrapes, setShowGrapes] = useState(false)
@@ -40,7 +42,7 @@ const Grappes = ({
             if (!open) {
               setShowGrapes(false)
               setSelectedGrapeApp(undefined)
-              track({
+              plausible({
                 name: ANALYTICS_EVENTS.GRAPE_MODAL_CLOSE,
                 props: {
                   apps_shown: grapes.length,
@@ -48,7 +50,7 @@ const Grappes = ({
               })
             } else {
               setShowGrapes(true)
-              track({
+              plausible({
                 name: ANALYTICS_EVENTS.GRAPE_MODAL_OPEN,
                 props: {
                   apps_available: grapes.length,
@@ -83,7 +85,7 @@ const Grappes = ({
                   className={`card link border ${selectedGrapeApp?.id === app.id ? "selected" : ""}`}
                   onClick={() => {
                     setSelectedGrapeApp(app)
-                    track({
+                    plausible({
                       name: ANALYTICS_EVENTS.GRAPE_APP_SELECT,
                       props: {
                         app: app.name,
@@ -188,7 +190,7 @@ const Grappes = ({
                     data-testid="grapes-feedback-button"
                     className="button inverted"
                     onClick={() => {
-                      track({
+                      plausible({
                         name: ANALYTICS_EVENTS.GRAPE_PEAR_FEEDBACK,
                         props: {
                           app: selectedGrapeApp.name,
@@ -211,7 +213,7 @@ const Grappes = ({
         </Modal>
       )}
       <Button
-        data-testid="grapes-button"
+        data-testid={dataTestId}
         // href={getAppSlug(grape)}
         title={t("Discover apps, earn credits")}
         // openInNewTab={isExtension && isFirefox}
@@ -227,7 +229,7 @@ const Grappes = ({
             return
           }
           setShowGrapes(true)
-          track({
+          plausible({
             name: ANALYTICS_EVENTS.GRAPE_ICON_CLICK,
             props: {
               apps_available: grapes.length,

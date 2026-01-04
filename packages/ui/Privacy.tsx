@@ -12,7 +12,7 @@ import { useAboutStyles } from "./about/About.styles"
 
 export default function Privacy() {
   const { t } = useAppContext()
-  const { track } = useAuth()
+  const { plausible } = useAuth()
 
   const styles = useAboutStyles()
 

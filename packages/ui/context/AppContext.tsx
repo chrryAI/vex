@@ -116,7 +116,7 @@ export const AppContextProvider = ({
 
   const { captureException } = useError()
 
-  // Create custom console with access to user role and error tracking
+  // Create custom console with access to user role and error plausibleing
   const customConsole = createCustomConsole(user)
 
   return (

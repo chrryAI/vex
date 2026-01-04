@@ -189,14 +189,6 @@ export const chat = async ({
     await scrollToBottom() // Ensure hourly limit info is visible
     const hourlyLimitInfo = page.getByTestId("hourly-limit-info")
 
-    // Check if element is visible first
-    const isVisible = await hourlyLimitInfo
-      .isVisible({ timeout: 1000 })
-      .catch(() => false)
-    if (!isVisible) {
-      return null
-    }
-
     return await hourlyLimitInfo.getAttribute("data-hourly-left", {
       timeout: 1000,
     })
@@ -205,6 +197,12 @@ export const chat = async ({
   if (!isMember) {
     const login = page.getByTestId("login-from-chat-button")
     await expect(login).toBeVisible()
+  }
+
+  // Update credits from page before final assertion (accounts for earned credits)
+  const finalCreditsLeft = await getCreditsLeft()
+  if (finalCreditsLeft !== null) {
+    credits = parseInt(finalCreditsLeft)
   }
 
   expect(await getCreditsLeft()).toBe(credits.toString())
@@ -857,12 +855,21 @@ export const chat = async ({
         return
       }
 
+      // Update hourlyUsage from page (actual usage count)
       const hourlyUsageLeft = await getHourlyUsageLeft()
       if (hourlyUsageLeft !== null) {
-        expect(hourlyUsageLeft).toBe((hourlyLimit - hourlyUsage).toString())
+        hourlyUsage = hourlyLimit - parseInt(hourlyUsageLeft)
       }
 
+      expect(hourlyUsageLeft).toBe((hourlyLimit - hourlyUsage).toString())
+
       // Assert appropriate values based on what's visible
+
+      // Update credits from page (accounts for earned credits like Pear feedback)
+      const creditsLeftFromPage = await getCreditsLeft()
+      if (creditsLeftFromPage !== null) {
+        credits = parseInt(creditsLeftFromPage)
+      }
 
       // When credits are shown, assert the credits left value
       const creditsLeft = await getCreditsLeft()

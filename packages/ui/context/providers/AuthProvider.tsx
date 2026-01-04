@@ -250,7 +250,7 @@ const AuthContext = createContext<
       setUser: (user?: sessionUser) => void
       setGuest: (guest?: sessionGuest) => void
       slug?: string
-      track: (e: {
+      plausible: (e: {
         name: string
         url?: string
         domain?: string
@@ -585,7 +585,7 @@ export function AuthProvider({
     }
   }, [ssrToken])
 
-  // Track if cookies/storage are ready (important for extensions)
+  // plausible if cookies/storage are ready (important for extensions)
   const [isCookieReady, setIsCookieReady] = useState(false)
 
   useEffect(() => {
@@ -660,7 +660,7 @@ export function AuthProvider({
   function processSession(sessionData?: session) {
     if (sessionData) {
       setSession(sessionData)
-      // Track guest migration
+      // plausible guest migration
       if (sessionData.migratedFromGuest) {
         migratedFromGuestRef.current = sessionData.migratedFromGuest
       }
@@ -929,25 +929,44 @@ export function AuthProvider({
   )
   const sessionData = sessionSwr || session
 
-  function trackPlausibleEvent({
+  const [guest, setGuest] = React.useState<sessionGuest | undefined>(
+    session?.guest,
+  )
+
+  const getAlterNativeDomains = (store: storeWithApps) => {
+    // Map askvex.com and vex.chrry.ai as equivalent domains
+    if (
+      store?.domain === "https://vex.chrry.ai" ||
+      store?.domain === "https://askvex.com"
+    ) {
+      return ["https://vex.chrry.ai"]
+    }
+
+    return store.domain ? [store.domain] : []
+  }
+
+  const [agentName, setAgentName] = useState(session?.aiAgent?.name)
+  const plausibleEvent = ({
     name,
     url,
-    domain = chrryUrl.replace("https://", ""),
-    browser,
+    domain,
+    props = {},
     device,
     os,
-    props = {},
+    browser,
     isPWA,
   }: {
     name: string
     url?: string
     domain?: string
-    browser?: string
+    props?: Record<string, any>
     device?: string
     os?: string
+    browser?: string
     isPWA?: boolean
-    props?: Record<string, any>
-  }) {
+  }) => {
+    if (isDevelopment) return
+
     const canAdd =
       isPWA !== undefined && os !== undefined && browser !== undefined
 
@@ -976,56 +995,6 @@ export function AuthProvider({
     }).catch(() => {})
   }
 
-  const [guest, setGuest] = React.useState<sessionGuest | undefined>(
-    session?.guest,
-  )
-
-  const getAlterNativeDomains = (store: storeWithApps) => {
-    // Map askvex.com and vex.chrry.ai as equivalent domains
-    if (
-      store?.domain === "https://vex.chrry.ai" ||
-      store?.domain === "https://askvex.com"
-    ) {
-      return ["https://vex.chrry.ai"]
-    }
-
-    return store.domain ? [store.domain] : []
-  }
-
-  const [agentName, setAgentName] = useState(session?.aiAgent?.name)
-  const trackEvent = ({
-    name,
-    url,
-    domain,
-    props = {},
-    device,
-    os,
-    browser,
-    isPWA,
-  }: {
-    name: string
-    url?: string
-    domain?: string
-    props?: Record<string, any>
-    device?: string
-    os?: string
-    browser?: string
-    isPWA?: boolean
-  }) => {
-    if (isDevelopment) return
-
-    trackPlausibleEvent({
-      url,
-      name,
-      props,
-      domain,
-      device,
-      os,
-      browser,
-      isPWA,
-    })
-  }
-
   useEffect(() => {
     hasStoreApps(baseAppInternal) && setBaseApp(baseAppInternal)
   }, [baseAppInternal])
@@ -1049,10 +1018,10 @@ export function AuthProvider({
   }, [searchParams, user])
 
   // Throttle map to prevent duplicate rapid-fire events
-  const trackThrottleMap = useRef<Map<string, number>>(new Map())
-  const TRACK_THROTTLE_MS = 3000 // 3 seconds
+  const plausibleThrottleMap = useRef<Map<string, number>>(new Map())
+  const plausible_THROTTLE_MS = 3000 // 3 seconds
 
-  const track = ({
+  const plausible = ({
     name,
     url,
     domain = siteConfig.domain,
@@ -1063,15 +1032,17 @@ export function AuthProvider({
     domain?: string
     props?: Record<string, any>
   }) => {
+    if (burn) return
+    if (!memoriesEnabled) return
     if (!user && !guest) return
 
-    // Throttle: Skip if same event was tracked recently
+    // Throttle: Skip if same event was plausibleed recently
     const now = Date.now()
-    const lastTracked = trackThrottleMap.current.get(name)
-    if (lastTracked && now - lastTracked < TRACK_THROTTLE_MS) {
+    const lastplausibleed = plausibleThrottleMap.current.get(name)
+    if (lastplausibleed && now - lastplausibleed < plausible_THROTTLE_MS) {
       return // Skip this event
     }
-    trackThrottleMap.current.set(name, now)
+    plausibleThrottleMap.current.set(name, now)
 
     // Normalize URL for different platforms
     let normalizedUrl = url
@@ -1094,7 +1065,7 @@ export function AuthProvider({
     }
 
     // Only send meaningful events to API for AI context
-    if (memoriesEnabled && token && MEANINGFUL_EVENTS.includes(name as any)) {
+    if (token && MEANINGFUL_EVENTS.includes(name as any)) {
       fetch(`${API_URL}/analytics/grape`, {
         method: "POST",
         credentials: "include", // Send cookies for auth
@@ -1115,13 +1086,13 @@ export function AuthProvider({
         }),
       }).catch((error) => {
         captureException(error)
-        console.error("❌ Analytics track error:", error)
+        console.error("❌ Analytics plausible error:", error)
       }) // Fire and forget
     }
 
     if (!isE2E && user?.role === "admin") return
 
-    trackEvent({
+    plausibleEvent({
       name,
       url: normalizedUrl,
       domain,
@@ -1150,7 +1121,7 @@ export function AuthProvider({
 
   useEffect(() => {
     app &&
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.APP,
       })
   }, [app, pathname])
@@ -1193,7 +1164,7 @@ export function AuthProvider({
     }
   }, [user])
 
-  // Track UTM parameters for ad attribution (EthicalAds, etc.)
+  // plausible UTM parameters for ad attribution (EthicalAds, etc.)
   useEffect(() => {
     if (typeof window === "undefined") return
 
@@ -1203,7 +1174,7 @@ export function AuthProvider({
     const utmCampaign = params.get("utm_campaign")
 
     if (utmSource) {
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.AD_VISIT,
         props: {
           source: utmSource,
@@ -1481,16 +1452,16 @@ export function AuthProvider({
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
-    // Privacy-respecting analytics: Track burn usage WITHOUT personal info or identifiers.
+    // Privacy-respecting analytics: plausible burn usage WITHOUT personal info or identifiers.
     // This helps us understand if the feature is valuable and worth investing in,
-    // while respecting the user's choice for privacy. No user data, IDs, or content is tracked.
+    // while respecting the user's choice for privacy. No user data, IDs, or content is plausibleed.
     // Only the fact that burn was activated (boolean event).
     if (value) {
       if (!hasInformedRef.current) {
         hasInformedRef.current = true
         toast.error(t("When you burn there is nothing to remember"))
       }
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.BURN,
         props: {
           value,
@@ -1556,7 +1527,7 @@ export function AuthProvider({
   useEffect(() => {
     setIsPearInternal(isPearInternal)
     if (isPearInternal)
-      track({
+      plausible({
         name: ANALYTICS_EVENTS.PEAR,
         props: {
           value: true,
@@ -1738,17 +1709,6 @@ export function AuthProvider({
   }, [user, guest, isSessionLoading])
 
   const { setColorScheme, setTheme, theme, colorScheme, isDark } = useTheme()
-
-  useEffect(() => {
-    track({
-      name: ANALYTICS_EVENTS.THEME_CHANGE,
-      props: {
-        // theme,
-        colorScheme,
-        isDark,
-      },
-    })
-  }, [theme, colorScheme, isDark])
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -1959,7 +1919,7 @@ export function AuthProvider({
     try {
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
-          track({
+          plausible({
             name: ANALYTICS_EVENTS.PERFORMANCE,
             props: {
               name: entry.name,
@@ -1981,7 +1941,7 @@ export function AuthProvider({
     } catch (error) {
       console.warn("PerformanceObserver not supported:", error)
     }
-  }, [track])
+  }, [plausible])
 
   const [shouldFetchTasks, setShouldFetchTasks] = useState(false)
   const [isLoadingTasks, setIsLoadingTasks] = useState(false)
@@ -2259,7 +2219,7 @@ export function AuthProvider({
         setSignInPart,
         setSlug,
         slug,
-        track,
+        plausible,
         setToken,
         shouldFetchSession,
         profile,
