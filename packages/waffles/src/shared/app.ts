@@ -155,7 +155,7 @@ const app = async ({
       if (isStoreApp) {
         // Only recurse if there are more items to process
         if (remainingNav.length > 0) {
-          await app({
+          return await app({
             page,
             isMember,
             isLive,
