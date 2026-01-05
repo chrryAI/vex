@@ -375,64 +375,6 @@ export default function Chat({
   // const currentIndexRef = useRef(0) // Moved to context
 
   useEffect(() => {
-    // Enable for all users when isRetro (Check-in) is active
-    if (!isRetro || !dailyQuestionData) return
-
-    const { questions, currentQuestion } = dailyQuestionData
-
-    // Sync input with current question
-    if (questions.includes(currentQuestion)) {
-      setInput(currentQuestion)
-    }
-
-    const handleKeyUp = (event: KeyboardEvent) => {
-      // Only handle arrows if input is empty or matches a question
-      // if (inputRef.current && !questions.includes(inputRef.current)) return
-
-      if (event.key === "ArrowUp") {
-        event.preventDefault()
-        // Use questions array to find current index of displayed question
-        // If input is empty, start from end or beginning?
-        // Let's assume input matches one of the questions.
-        let currentIndex = questions.indexOf(inputRef.current)
-        if (currentIndex === -1) currentIndex = 0
-
-        const nextIndex = (currentIndex + 1) % questions.length
-
-        setDailyQuestionIndex(nextIndex) // Sync state
-        // setInput(questions[nextIndex] || "") // Handled by sync effect above
-      }
-      if (event.key === "ArrowDown") {
-        event.preventDefault()
-
-        let currentIndex = questions.indexOf(inputRef.current)
-        if (currentIndex === -1) currentIndex = 0
-
-        // If we are at the last question, advance properly
-        if (currentIndex === questions.length - 1) {
-          advanceDailySection()
-          return
-        }
-
-        const nextIndex =
-          (currentIndex - 1 + questions.length) % questions.length
-        setDailyQuestionIndex(nextIndex) // Sync state
-        // setInput(questions[nextIndex] || "") // Handled by sync effect above
-      }
-    }
-
-    if (typeof document !== "undefined") {
-      document.addEventListener("keyup", handleKeyUp)
-    }
-
-    return () => {
-      if (typeof document !== "undefined") {
-        document.removeEventListener("keyup", handleKeyUp)
-      }
-    }
-  }, [user, isRetro, app?.slug, dailyQuestionData])
-
-  useEffect(() => {
     if (isNewChat) {
       setShowChatInput(true)
     }
@@ -1743,6 +1685,8 @@ export default function Chat({
         clientId && formData.append("clientId", clientId)
         isPear && formData.append("pear", JSON.stringify(isPear))
 
+        isRetro && formData.append("retro", JSON.stringify(isRetro))
+
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
         })
@@ -1769,6 +1713,7 @@ export default function Chat({
           moodId: mood?.id,
           taskId,
           pear: isPear,
+          retro: isRetro,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -1875,6 +1820,8 @@ export default function Chat({
           isImageGenerationEnabled.toString(),
         )
 
+        isRetro && formData.append("retro", "true")
+
         isPear && formData.append("pear", "true")
 
         placeholder && formData.append("placeholder", placeholder)
@@ -1909,6 +1856,7 @@ export default function Chat({
           deviceId,
           weather,
           placeholder,
+          retro: isRetro,
           appId: app?.id,
           draft:
             app?.id === chrry?.id && suggestSaveApp && appStatus?.part
@@ -2374,70 +2322,6 @@ export default function Chat({
           }
         }
 
-        // if (
-        //   isRetro &&
-        //   accountApps?.length &&
-        //   retroAppIndex < accountApps.length
-        // ) {
-        //   // Get next app to process
-        //   const retroApp = accountApps[retroAppIndex]
-
-        //   onMessage?.({
-        //     content: "",
-        //     isUser: false,
-        //     message: {
-        //       ...data.message,
-        //       message: {
-        //         ...data.message?.message,
-        //         id: data.message.message.clientId,
-        //       },
-        //       aiAgent: aiAgents?.find((agent) => agent.id === retroApp.id),
-        //     },
-        //     isStreaming: true,
-        //     isImageGenerationEnabled: data?.isImageGenerationEnabled,
-        //     isWebSearchEnabled: data?.isWebSearchEnabled,
-        //   })
-        //   setIsStreaming(true)
-
-        //   const requestHeaders = {
-        //     "Content-Type": "application/json",
-        //     Authorization: `Bearer ${token}`,
-        //   }
-        //   const requestBody = JSON.stringify({
-        //     messageId: data.message.message.id,
-        //     agentId: retroApp.id,
-        //     retroAppId: accountApps[retroAppIndex + 1]?.id, // Pass next app ID
-        //     language,
-        //     isSpeechActive,
-        //     deviceId,
-        //     appId: retroApp.id,
-        //     isRetro: true,
-        //   })
-
-        //   try {
-        //     const retroResponse = await apiFetch(`${API_URL}/ai`, {
-        //       method: "POST",
-        //       headers: requestHeaders,
-        //       body: requestBody,
-        //       signal: controller.signal,
-        //     })
-
-        //     if (!retroResponse.ok) {
-        //       toast.error(`Error getting insights from ${retroApp.name}`)
-        //       // Move to next app even on error
-        //       setRetroAppIndex(retroAppIndex + 1)
-        //     }
-        //   } catch (error) {
-        //     console.error(`Retro error for ${retroApp.name}:`, error)
-        //     // Move to next app even on error
-        //     setRetroAppIndex(retroAppIndex + 1)
-        //   }
-        // } else if (isRetro && retroAppIndex >= accountApps.length) {
-        //   // All apps processed, turn off retro mode
-        //   setIsRetro(false)
-        //   setRetroAppIndex(0)
-        // }
-
         if (
           data.message.message.debateAgentId &&
           !data.message.message.pauseDebate
@@ -2473,6 +2357,7 @@ export default function Chat({
             isSpeechActive,
             deviceId,
             appId: app?.id,
+            retro: isRetro,
           })
 
           try {
@@ -3635,7 +3520,7 @@ export default function Chat({
                     >
                       <CircleArrowDown size={25} />
                     </Button>
-                  ) : empty && !threadIdRef.current ? (
+                  ) : empty && !threadIdRef.current && !burn ? (
                     <Div
                       style={{
                         display: "flex",

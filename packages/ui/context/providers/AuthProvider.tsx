@@ -96,6 +96,8 @@ const AuthContext = createContext<
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
+      input: string
+      setInput: (value: string) => void
       setIsPear: (value: appWithStore | undefined) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
@@ -480,16 +482,10 @@ export function AuthProvider({
   const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
 
-  // Reset daily questions when entering Retro mode
-  const setIsRetro = (value: boolean) => {
-    setIsRetroInternal(value)
-    isRetroRef.current = value
+  const [input, setInput] = useState<string>("")
+  console.log(`🚀 ~ input:`, input)
 
-    if (value) {
-      setDailyQuestionSectionIndex(0)
-      setDailyQuestionIndex(0)
-    }
-  }
+  // Reset daily questions when entering Retro mode
 
   // Derive current daily question data
 
@@ -913,6 +909,32 @@ export function AuthProvider({
       ),
     [app],
   )
+
+  const setIsRetro = (value: boolean) => {
+    setIsRetroInternal(value)
+    isRetroRef.current = value
+
+    // Clear input when exiting retro mode
+    if (!value && input) {
+      setInput("")
+    }
+
+    if (value) {
+      setDailyQuestionSectionIndex(0)
+      setDailyQuestionIndex(0)
+    }
+  }
+
+  // Sync input with current question when dailyQuestionData changes
+  useEffect(() => {
+    if (isRetro && dailyQuestionData?.currentQuestion) {
+      console.log(
+        "🔄 Syncing input with question:",
+        dailyQuestionData.currentQuestion,
+      )
+      setInput(dailyQuestionData.currentQuestion)
+    }
+  }, [isRetro, dailyQuestionData?.currentQuestion])
 
   const chrryUrl = CHRRY_URL
 
@@ -2392,6 +2414,8 @@ export function AuthProvider({
         updateMood,
         setThreadId,
         burning,
+        input,
+        setInput,
         lastAppId,
         isRemovingApp,
         storeApps, // All apps from all stores

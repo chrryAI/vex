@@ -1030,6 +1030,27 @@
       "when": 1767619411849,
       "tag": "0146_sticky_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 147,
+      "version": "7",
+      "when": 1767637693832,
+      "tag": "0147_sparkling_moira_mactaggert",
+      "breakpoints": true
+    },
+    {
+      "idx": 148,
+      "version": "7",
+      "when": 1767640806064,
+      "tag": "0148_lucky_vargas",
+      "breakpoints": true
+    },
+    {
+      "idx": 149,
+      "version": "7",
+      "when": 1767643960338,
+      "tag": "0149_flowery_garia",
+      "breakpoints": true
     }
   ]
 }
