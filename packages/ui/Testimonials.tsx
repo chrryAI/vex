@@ -17,7 +17,7 @@ const Testimonials = ({ style }: { style?: React.CSSProperties }) => {
         {[
           {
             quote:
-              "Focus helped me finally build a daily focus habit. The mood plausibleer is a bonus!",
+              "Focus helped me finally build a daily focus habit. The mood tracker is a bonus!",
             author: "— Alex P.",
             emoji: "☺️",
           },

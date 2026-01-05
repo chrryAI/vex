@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive, isMember })
 })
 
-test.only("Subscribe As Member", async ({ page }) => {
+test("Subscribe As Member", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
@@ -41,12 +41,11 @@ test.only("Subscribe As Member", async ({ page }) => {
   await subscribe({
     page,
     isMember,
-    isLive,
     createChat: false,
   })
 })
 
-test.only("Invite", async ({ page }) => {
+test("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive,
@@ -67,7 +66,7 @@ test.only("Invite", async ({ page }) => {
   })
 })
 
-test.only("Gift", async ({ page }) => {
+test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -84,7 +83,7 @@ test.only("Gift", async ({ page }) => {
   })
 })
 
-test.only("App", async ({ page }) => {
+test("App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -97,6 +96,16 @@ test.only("App", async ({ page }) => {
     isLive,
     slug: "vex",
     nav: [
+      {
+        name: "vault", // Finance & Budgeting
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Where am I overspending this month?" },
+            { model: "sushi", text: "Compare my spending to last month" },
+            { model: "sushi", text: "What's my biggest expense category?" },
+          ],
+        },
+      },
       {
         name: "peach", // Feedback & Insights
         chat: {
@@ -123,16 +132,7 @@ test.only("App", async ({ page }) => {
           ],
         },
       },
-      {
-        name: "vault", // Finance & Budgeting
-        chat: {
-          prompts: [
-            { model: "sushi", text: "Where am I overspending this month?" },
-            { model: "sushi", text: "Compare my spending to last month" },
-            { model: "sushi", text: "What's my biggest expense category?" },
-          ],
-        },
-      },
+
       {
         name: "atlas", // Travel & Navigation
         chat: {
@@ -154,6 +154,25 @@ test.only("App", async ({ page }) => {
         },
       },
     ],
+    isNewChat: true,
+  })
+})
+
+test("Grape", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+
+  await signIn({ page })
+
+  await app({
+    page,
+    isMember,
+    isLive,
+    slug: "vex",
+    nav: undefined,
+    isGrape: true,
     isNewChat: true,
   })
 })

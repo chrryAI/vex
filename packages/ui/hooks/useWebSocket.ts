@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { WS_URL } from "../utils"
 import { useOnlineStatus } from "./useOnlineStatus"
 import console from "../utils/log"
+import { useAuth } from "../context/providers/AuthProvider"
 
 // websocketManager.ts
 type Handler<T> = (data: T) => void
@@ -415,6 +416,7 @@ export const useWebSocket = <T extends { type: string }>({
 }) => {
   const isOnline = useOnlineStatus()
   const wsManager = WebSocketManager.getInstance()
+  const { session } = useAuth()
 
   const connectionStateRef = useRef<ConnectionState>("disconnected")
   const [connected, setConnected] = useState<boolean>(false)
@@ -430,6 +432,7 @@ export const useWebSocket = <T extends { type: string }>({
   }, [wsManager, isOnline])
 
   useEffect(() => {
+    if (!session) return
     if (!wsManager) return
 
     const checkConnection = setInterval(() => {

@@ -8,6 +8,7 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
 } from "react"
 import useSWR from "swr"
 import { v4 as uuidv4 } from "uuid"
@@ -19,10 +20,11 @@ import {
   useLocalStorage,
   storage,
 } from "../../platform"
-import { isOwner } from "../../utils"
+import { isOwner, capitalizeFirstLetter } from "../../utils"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
+import { dailyQuestions } from "../../utils/dailyQuestions"
 import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
 import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
@@ -79,6 +81,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      chromeWebStoreUrl: string
+      downloadUrl: string
       isRetro: boolean
       grape: appWithStore | undefined
       setIsRetro: (value: boolean) => void
@@ -92,9 +96,23 @@ const AuthContext = createContext<
       setDeviceId: (value: string) => void
       pear: appWithStore | undefined
       isPear: boolean
+      input: string
+      setInput: (value: string) => void
       setIsPear: (value: appWithStore | undefined) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
+
+      // Daily Questions State
+      dailyQuestionData: {
+        currentQuestion: string
+        sectionTitle: string
+        appTitle: string
+        isLastQuestionOfSection: boolean
+        questions: string[]
+      } | null
+      advanceDailySection: () => void
+      setDailyQuestionIndex: (index: number) => void
+      dailyQuestionIndex: number
       burn: boolean
       setBurn: (value: boolean) => void
       canBurn: boolean
@@ -458,6 +476,19 @@ export function AuthProvider({
     loading: true,
   })
 
+  const [isRetro, setIsRetroInternal] = useState(false)
+  const isRetroRef = useRef(isRetro)
+
+  const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
+  const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
+
+  const [input, setInput] = useState<string>("")
+  console.log(`🚀 ~ input:`, input)
+
+  // Reset daily questions when entering Retro mode
+
+  // Derive current daily question data
+
   /**
    * Sign out
    */
@@ -518,16 +549,14 @@ export function AuthProvider({
 
   const siteConfig = getSiteConfig(CHRRY_URL)
 
-  const chrryUrl = CHRRY_URL
+  const { isStorageReady, isTauri } = usePlatform()
+
+  const fingerprintParam = searchParams.get("fp") || ""
 
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
     props.session?.deviceId,
   )
-
-  const { isStorageReady, isTauri } = usePlatform()
-
-  const fingerprintParam = searchParams.get("fp") || ""
 
   useEffect(() => {
     if (!isStorageReady && !(isTauri || isCapacitor || isExtension)) return
@@ -816,6 +845,98 @@ export function AuthProvider({
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
   >(props.app || session?.app || baseApp)
+
+  const advanceDailySection = useCallback(() => {
+    // Determine context based on current app
+    const contextKey = (
+      app && dailyQuestions[app.slug as keyof typeof dailyQuestions]
+        ? app.slug
+        : "default"
+    ) as keyof typeof dailyQuestions
+    const context = dailyQuestions[contextKey]
+
+    // Calculate next section index
+    const nextSectionIndex =
+      (dailyQuestionSectionIndex + 1) % context.sections.length
+
+    // Check if we looped back to start (wrapped around)
+    // If wrapping around, we might want to disable retro, BUT logic says "loop to beginning"
+
+    setDailyQuestionSectionIndex(nextSectionIndex)
+    setDailyQuestionIndex(0)
+  }, [dailyQuestionSectionIndex, app])
+
+  const dailyQuestionData = useMemo(() => {
+    if (!isRetro) return null
+
+    const contextKey = (
+      app && dailyQuestions[app.slug as keyof typeof dailyQuestions]
+        ? app.slug
+        : "default"
+    ) as keyof typeof dailyQuestions
+    const context = dailyQuestions[contextKey]
+
+    if (!context) return null
+
+    const currentSection = context.sections[dailyQuestionSectionIndex]
+
+    // If somehow index is out of bounds (shouldn't happen with correct logic), fallback
+    if (!currentSection) return null
+
+    const questions = currentSection.questions
+    const currentQuestion = questions[dailyQuestionIndex] || questions[0] || ""
+
+    // Title Logic:
+    // If sectionIndex == 0 -> Show Main Title (e.g. "Daily Questions for Grape")
+    // If sectionIndex > 0 -> Show Section Title (e.g. "Analytics & Discovery")
+    const displayTitle =
+      dailyQuestionSectionIndex === 0 ? context.title : currentSection.title
+
+    return {
+      currentQuestion,
+      sectionTitle: currentSection.title,
+      appTitle: displayTitle,
+      isLastQuestionOfSection: dailyQuestionIndex === questions.length - 1,
+      questions,
+    }
+  }, [isRetro, app, dailyQuestionSectionIndex, dailyQuestionIndex])
+
+  const siteConfigApp = useMemo(
+    () =>
+      whiteLabels.find(
+        (label) =>
+          label.slug === app?.slug || app?.store?.app?.slug === label.slug,
+      ),
+    [app],
+  )
+
+  const setIsRetro = (value: boolean) => {
+    setIsRetroInternal(value)
+    isRetroRef.current = value
+
+    // Clear input when exiting retro mode
+    if (!value && input) {
+      setInput("")
+    }
+
+    if (value) {
+      setDailyQuestionSectionIndex(0)
+      setDailyQuestionIndex(0)
+    }
+  }
+
+  // Sync input with current question when dailyQuestionData changes
+  useEffect(() => {
+    if (isRetro && dailyQuestionData?.currentQuestion) {
+      console.log(
+        "🔄 Syncing input with question:",
+        dailyQuestionData.currentQuestion,
+      )
+      setInput(dailyQuestionData.currentQuestion)
+    }
+  }, [isRetro, dailyQuestionData?.currentQuestion])
+
+  const chrryUrl = CHRRY_URL
 
   const appId = newApp?.id || updatedApp?.id || loadingAppId || app?.id
 
@@ -1426,6 +1547,33 @@ export function AuthProvider({
     storeAppIternal,
   )
 
+  const installs = [
+    "atlas",
+    "focus",
+    "vex",
+    "popcorn",
+    "chrry",
+    "zarathustra",
+    "search",
+    "grape",
+    "burn",
+    "sushi",
+  ]
+
+  const chromeWebStoreUrl =
+    (siteConfigApp as any)?.chromeWebStoreUrl ||
+    app?.chromeWebStoreUrl ||
+    storeApp?.chromeWebStoreUrl ||
+    "https://chromewebstore.google.com/detail/chrry-%F0%9F%8D%92/odgdgbbddopmblglebfngmaebmnhegfc"
+
+  const minioUrl = "https://minio.chrry.dev/chrry-installs/installs"
+  const downloadUrl =
+    app && installs.includes(app?.slug || "")
+      ? `${minioUrl}/${capitalizeFirstLetter(app.slug || "")}.dmg`
+      : app?.store?.app && installs.includes(app?.store?.app?.slug || "")
+        ? `${minioUrl}/${capitalizeFirstLetter(app?.store?.app?.slug || "")}.dmg`
+        : ""
+
   const isZarathustra = app?.slug === "zarathustra"
 
   const isBaseAppZarathustra = baseApp?.slug === "zarathustra"
@@ -1434,6 +1582,8 @@ export function AuthProvider({
     "burn",
     null,
   )
+
+  // MinIO download URLs (production bucket)
 
   const burn = burnInternal === null ? isZarathustra : burnInternal
 
@@ -1493,7 +1643,6 @@ export function AuthProvider({
     })
   })
 
-  const [isRetro, setIsRetro] = useLocalStorage<boolean>("retro", false)
   const accountApps = apps?.filter((app) =>
     isOwner(app, {
       userId: user?.id,
@@ -1918,10 +2067,26 @@ export function AuthProvider({
     try {
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
+          // Sanitize URL to remove sensitive query params (fingerprint, tokens, etc.)
+          const sanitizeName = (name: string) => {
+            try {
+              const url = new URL(name)
+              // Remove sensitive query parameters
+              url.searchParams.delete("fp") // fingerprint
+              url.searchParams.delete("auth_token") // auth tokens
+              url.searchParams.delete("token") // auth tokens
+              url.searchParams.delete("api_key") // API keys
+              return url.toString()
+            } catch {
+              // If not a valid URL, return as-is (could be a resource name)
+              return name
+            }
+          }
+
           plausible({
             name: ANALYTICS_EVENTS.PERFORMANCE,
             props: {
-              name: entry.name,
+              name: sanitizeName(entry.name),
               entryType: entry.entryType,
               startTime: entry.startTime,
               duration: entry.duration,
@@ -2249,6 +2414,8 @@ export function AuthProvider({
         updateMood,
         setThreadId,
         burning,
+        input,
+        setInput,
         lastAppId,
         isRemovingApp,
         storeApps, // All apps from all stores
@@ -2270,6 +2437,7 @@ export function AuthProvider({
         isIDE,
         toggleIDE,
         findAppByPathname,
+        chromeWebStoreUrl,
         siteConfig,
         setBaseAccountApp,
         setDeviceId,
@@ -2282,7 +2450,12 @@ export function AuthProvider({
           shouldFetchMood && refetchMoods()
         },
         burnApp,
+        downloadUrl,
         fetchMood,
+        dailyQuestionData,
+        advanceDailySection,
+        setDailyQuestionIndex,
+        dailyQuestionIndex,
       }}
     >
       {children}

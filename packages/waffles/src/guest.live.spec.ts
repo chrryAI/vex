@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive })
 })
 
-test.only("Subscribe As Guest", async ({ page }) => {
+test("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
@@ -41,7 +41,7 @@ test.only("Subscribe As Guest", async ({ page }) => {
   })
 })
 
-test.only("Invite", async ({ page }) => {
+test("Invite", async ({ page }) => {
   await page.goto(
     getURL({
       isLive,
@@ -60,7 +60,7 @@ test.only("Invite", async ({ page }) => {
   })
 })
 
-test.only("Gift", async ({ page }) => {
+test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -84,7 +84,7 @@ test.only("Gift", async ({ page }) => {
   })
 })
 
-test.only("Long text", async ({ page }) => {
+test("Long text", async ({ page }) => {
   const result = await chat({
     page,
     isMember,
@@ -105,7 +105,7 @@ test.only("Long text", async ({ page }) => {
   })
 })
 
-test.only("Chat", async ({ page }) => {
+test("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {
@@ -147,12 +147,12 @@ test.only("Chat", async ({ page }) => {
   })
 })
 
-test.only("Thread", async ({ page }) => {
+test("Thread", async ({ page }) => {
   test.slow()
   await thread({ page, isLive })
 })
 
-// test.only("Collaboration", async ({ page, browser }) => {
+// test("Collaboration", async ({ page, browser }) => {
 //   await collaboration({
 //     page,
 //     browser,
@@ -162,7 +162,7 @@ test.only("Thread", async ({ page }) => {
 //   })
 // })
 
-test.skip("File upload", async ({ page }) => {
+test("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
@@ -181,11 +181,12 @@ test.skip("File upload", async ({ page }) => {
     instruction: "Lets upload some files",
     prompts: [
       {
-        text: "Hey Vex, Analyze this paste(s) and image(s) shortly",
+        text: "Hey Vex, Analyze this paste(s) and image and video shortly",
         model: "sushi",
         mix: {
           paste: 1,
-          image: 2,
+          image: 1,
+          video: 1,
         },
         like: false,
       },
@@ -196,15 +197,6 @@ test.skip("File upload", async ({ page }) => {
           paste: 1,
           pdf: 1,
           image: 1,
-        },
-        like: false,
-      },
-      {
-        text: "Hey Vex, Analyze this pdf(s) and images shortly",
-        model: "sushi",
-        mix: {
-          pdf: 1,
-          image: 2,
         },
         like: false,
       },

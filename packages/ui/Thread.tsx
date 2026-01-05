@@ -35,7 +35,7 @@ import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
 import EnableSound from "./EnableSound"
 import MemoryConsent from "./MemoryConsent"
-import Img from "./Img"
+import Img from "./Image"
 import { useHasHydrated, useThreadMetadata } from "./hooks"
 import { lazy, Suspense } from "react"
 import { useStyles } from "./context/StylesContext"
@@ -72,6 +72,8 @@ const Thread = ({
     setShowFocus,
     grapes,
     app,
+    setIsRetro,
+    advanceDailySection,
     ...auth
   } = useAuth()
 
@@ -560,6 +562,26 @@ const Thread = ({
                                 height={16}
                               />
                             </A>
+                          ) : auth.isRetro ? (
+                            <>
+                              <Button
+                                onClick={() => setIsRetro(false)}
+                                className="link"
+                              >
+                                <CircleX size={11} />
+                              </Button>
+                              <Button
+                                className="link"
+                                style={{
+                                  ...utilities.link.style,
+                                }}
+                                onClick={() => {
+                                  advanceDailySection()
+                                }}
+                              >
+                                <Img size={16} icon={"spaceInvader"} />
+                              </Button>
+                            </>
                           ) : grapes.filter((g) => g.id === app?.id).length ? (
                             <Grapes
                               style={{

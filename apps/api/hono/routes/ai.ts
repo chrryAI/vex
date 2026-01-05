@@ -11,6 +11,9 @@ import {
   updateUser,
   getAnalyticsSites,
   updateGuest,
+  subscription,
+  sql,
+  and,
 } from "@repo/db"
 
 import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
@@ -362,7 +365,8 @@ async function getRelevantMemoryContext({
     // Get recent real-time analytics for AI context (last 50 events)
     const recentAnalytics =
       userId || guestId
-        ? await db
+        ? db &&
+          (await db
             .select()
             .from(realtimeAnalytics)
             .where(
@@ -371,7 +375,7 @@ async function getRelevantMemoryContext({
                 : eq(realtimeAnalytics.guestId, guestId!),
             )
             .orderBy(desc(realtimeAnalytics.createdOn))
-            .limit(50)
+            .limit(50))
         : []
 
     if (!memoriesResult.memories || memoriesResult.memories.length === 0) {
@@ -503,9 +507,9 @@ async function getAnalyticsContext({
   member,
   guest,
 }: {
-  app: App
-  member?: User
-  guest?: Guest
+  app: appWithStore
+  member?: user & { subscription?: subscription }
+  guest?: guest & { subscription?: subscription }
 }): Promise<string> {
   console.log("🍇 getAnalyticsContext called for Grape!")
 
@@ -533,7 +537,7 @@ async function getAnalyticsContext({
     const userType = member ? "member" : "guest"
     const userId = member?.id || guest?.id
     const accessLevel = isAdmin ? "admin-full" : "public-only"
-    const isPro = member?.subscription?.tier === "pro"
+    const isPro = member?.subscription?.plan === "pro"
     const isAppOwner = isOwner(app, { userId: member?.id, guestId: guest?.id })
 
     console.log(
@@ -614,6 +618,13 @@ async function getAnalyticsContext({
       `📊 Admin access granted - including real-time events for all ${sites.length} sites`,
     )
 
+    if (!db) {
+      console.log(
+        `📊 No subscription found for member or guest - returning public analytics only`,
+      )
+      return ""
+    }
+
     // Add real-time user behavior analytics (last 24 hours, limit 200 events)
     try {
       const realtimeEvents = isAdmin
@@ -630,7 +641,7 @@ async function getAnalyticsContext({
             .orderBy(desc(realtimeAnalytics.createdOn))
             .limit(200)
         : isOwner(app, { userId: member?.id, guestId: guest?.id }) &&
-            member?.subscription?.tier === "pro" // Premium feature
+            member?.subscription?.plan === "pro" // Premium feature
           ? // App owner (Pro): See only their app's events
             await db
               .select()
@@ -641,7 +652,7 @@ async function getAnalyticsContext({
                     realtimeAnalytics.createdOn,
                     new Date(Date.now() - 24 * 60 * 60 * 1000),
                   ),
-                  sql`${realtimeAnalytics.eventData}->>'appSlug' = ${app?.slug}`,
+                  sql`${realtimeAnalytics.appSlug} = ${app?.slug}`,
                 ),
               )
               .orderBy(desc(realtimeAnalytics.createdOn))
@@ -1060,7 +1071,7 @@ app.post("/", async (c) => {
 
   // Log user type and tier for analytics
   const userType = member ? "member" : "guest"
-  const tier = member?.tier || guest?.tier || "free"
+  const tier = member?.subscription?.plan || guest?.subscription?.plan || "free"
   console.log(
     `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
   )
@@ -2585,21 +2596,17 @@ ${(() => {
   const newsContext = await getNewsContext(app?.slug)
 
   // Get live analytics context for Grape
-  const analyticsContext = await getAnalyticsContext({
-    app,
-    member,
-    guest,
-  })
+  const analyticsContext = app
+    ? await getAnalyticsContext({
+        app,
+        member,
+        guest,
+      })
+    : ""
 
   // Get recent feedback context for Pear
   const pearContext =
-    app?.slug &&
-    beasts.includes(app?.slug) &&
-    isOwner(app, {
-      userId: member?.id,
-    })
-      ? await getPearContext()
-      : ""
+    app?.slug && beasts.includes(app?.slug) ? await getPearContext() : ""
 
   // E2E Analytics Context (for beasts only)
   // Helps analyze system integrity, test coverage, and missing event tracking
@@ -3305,7 +3312,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
     if (!rateLimitCheck.allowed) {
       console.log(`❌ File upload rate limit exceeded:`, rateLimitCheck.error)
-      if (!isDevelopment && !isE2E) {
+      if (!isDevelopment && !isE2EInternal) {
         return c.json(
           {
             error: rateLimitCheck.error,
@@ -3899,9 +3906,56 @@ ${lastMessageContent}
 Execute tools immediately and report what you DID (past tense), not what you WILL do (future tense).`
       : ""
 
+  // Pricing tiers context for organic marketing
+  const pricingContext = `
+
+📊 PRICING TIERS & FEATURE AVAILABILITY (Vision - Coming Q1 2026):
+
+Currently, all features are FREE during beta. However, when users ask about analytics, feedback, or debugging capabilities, you can mention our upcoming premium tiers:
+
+1. **Grape Analytics** (€50/month public, €500/month private)
+   - Real-time user behavior tracking
+   - Conversion funnel analysis  
+   - Performance benchmarks vs competitors
+   - Hour-by-hour usage patterns
+   - Advanced AI-powered insights during daily retro
+
+2. **Pear Feedback** (€50/month public, €500/month private)
+   - AI-categorized feedback themes
+   - Sentiment analysis & trends
+   - Feature request voting & prioritization
+   - Bug severity rankings
+   - Quality scoring system
+
+3. **Debugger** (€50/month shared, €500/month private)
+   - Error tracking with Glitchtip
+   - Session replay with user actions
+   - AI-powered root cause analysis
+   - Performance monitoring
+   - AI-suggested fixes during retro
+
+4. **White Label** (€1,000/month)
+   - Full Plausible Analytics integration
+   - Custom branding & domain
+   - All features included
+   - CI/CD pipeline addon available
+
+🔥 IMPORTANT GUIDELINES:
+- In **Burn Mode** (privacy mode): Explain that detailed analytics aren't available due to privacy settings
+- In **Daily Retro** sessions: Naturally mention what deeper insights premium tiers would unlock
+- Be helpful, not pushy - mention features when relevant to user's question
+- Always say "Coming Q1 2026" and offer early access waitlist
+- Focus on VALUE, not price - explain what they'd get, not what they're missing
+
+Example responses:
+- "I can see basic engagement patterns. With Grape Analytics (coming soon), I could show you exactly where users drop off and conversion rates by traffic source."
+- "In Burn mode, I don't have access to detailed analytics to protect your privacy. Switch to regular mode or wait for Grape Analytics to unlock deeper insights."
+- "Based on public feedback, your app is well-received. With Pear Feedback (€50/month, launching Q1), I could show you AI-categorized themes and sentiment trends."
+`
+
   const enhancedSystemPrompt = debatePrompt
-    ? `${ragSystemPrompt}${calendarInstructions}\n\n${debatePrompt}` // Combine all
-    : `${ragSystemPrompt}${calendarInstructions}`
+    ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}\n\n${debatePrompt}` // Combine all
+    : `${ragSystemPrompt}${calendarInstructions}${pricingContext}`
 
   // User message remains unchanged - RAG context now in system prompt
   const enhancedUserMessage = userMessage
@@ -3963,7 +4017,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
       guestId: guest?.id,
     })
 
-    if (!quotaCheck.allowed && !isE2E) {
+    if (!quotaCheck.allowed && !isE2EInternal) {
       // Quota exceeded - add message to system prompt
       pearValidationResult = {
         isValid: false,
