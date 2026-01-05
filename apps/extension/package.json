@@ -1,6 +1,6 @@
 {
   "name": "@repo/extension",
-  "version": "1.9.50",
+  "version": "1.9.56",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,7 +16,9 @@
     "build:chrome:search": "rm -rf dist && MODE=search vite build && cd dist && zip -r ../dist-chrome-search.zip .",
     "build:chrome:grape": "rm -rf dist && MODE=grape vite build && cd dist && zip -r ../dist-chrome-grape.zip .",
     "build:chrome:burn": "rm -rf dist && MODE=burn vite build && node scripts/validate-manifest-v3.js && cd dist && zip -r ../dist-chrome-burn.zip .",
-    "build:chrome": "npm run build:chrome:sushi && npm run build:chrome:atlas && npm run build:chrome:focus && npm run build:chrome:vex && npm run build:chrome:popcorn && npm run build:chrome:chrry && npm run build:chrome:zarathustra && npm run build:chrome:search && npm run build:chrome:grape && npm run build:chrome:burn",
+    "build:chrome:vault": "rm -rf dist && MODE=vault vite build && cd dist && zip -r ../dist-chrome-vault.zip .",
+    "build:chrome:pear": "rm -rf dist && MODE=pear vite build && cd dist && zip -r ../dist-chrome-pear.zip .",
+    "build:chrome": "npm run build:chrome:sushi && npm run build:chrome:atlas && npm run build:chrome:focus && npm run build:chrome:vex && npm run build:chrome:popcorn && npm run build:chrome:chrry && npm run build:chrome:zarathustra && npm run build:chrome:search && npm run build:chrome:grape && npm run build:chrome:burn && npm run build:chrome:vault && npm run build:chrome:pear",
     "build:chrome:dev": "rm -rf dist && tsc && vite build --mode development && npm run zip:chrome",
     "build:dev": "rm -rf dist && vite build --mode development",
     "build:dev:watch": "vite build --mode development --watch",
