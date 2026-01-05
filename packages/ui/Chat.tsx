@@ -3636,28 +3636,42 @@ export default function Chat({
                       <CircleArrowDown size={25} />
                     </Button>
                   ) : empty && !threadIdRef.current ? (
-                    <Button
-                      className="link"
+                    <Div
                       style={{
+                        display: "flex",
+                        gap: 5,
                         position: "relative",
 
                         top: !isChatFloating ? 30 : 0,
                         zIndex: 50,
-
-                        ...utilities.link.style,
-                      }}
-                      onClick={() => {
-                        if (isRetro) {
-                          advanceDailySection()
-                        } else {
-                          setIsRetro(true)
-                        }
-                        // setInput("Hey guys, what you learned today?")
                       }}
                     >
-                      <Img size={22} icon={"spaceInvader"} />
-                      {isSmallDevice ? null : "Check-in"}
-                    </Button>
+                      {isRetro && (
+                        <Button
+                          onClick={() => setIsRetro(false)}
+                          className="link"
+                        >
+                          <CircleX size={13} />
+                        </Button>
+                      )}
+                      <Button
+                        className="link"
+                        style={{
+                          ...utilities.link.style,
+                        }}
+                        onClick={() => {
+                          if (isRetro) {
+                            advanceDailySection()
+                          } else {
+                            setIsRetro(true)
+                          }
+                          // setInput("Hey guys, what you learned today?")
+                        }}
+                      >
+                        <Img size={22} icon={"spaceInvader"} />
+                        {isSmallDevice ? null : "Check-in"}
+                      </Button>
+                    </Div>
                   ) : null}
 
                   {empty && !threadIdRef.current && !isPear && (

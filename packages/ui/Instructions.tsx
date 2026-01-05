@@ -128,6 +128,8 @@ export default function Instructions({
     burnApp,
     downloadUrl,
     chromeWebStoreUrl,
+    isRetro,
+    dailyQuestionData,
     ...auth
   } = useAuth()
 
@@ -137,7 +139,7 @@ export default function Instructions({
 
   const canGrape = !burn
 
-  const showGrape = canGrape && showGrapeInternal
+  const showGrape = (canGrape && showGrapeInternal) || isRetro
 
   // Replace instructions with Zarathustra philosophy when burn is active
 
