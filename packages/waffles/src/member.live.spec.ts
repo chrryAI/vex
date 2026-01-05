@@ -97,6 +97,16 @@ test("App", async ({ page }) => {
     slug: "vex",
     nav: [
       {
+        name: "vault", // Finance & Budgeting
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Where am I overspending this month?" },
+            { model: "sushi", text: "Compare my spending to last month" },
+            { model: "sushi", text: "What's my biggest expense category?" },
+          ],
+        },
+      },
+      {
         name: "peach", // Feedback & Insights
         chat: {
           prompts: [
@@ -122,16 +132,7 @@ test("App", async ({ page }) => {
           ],
         },
       },
-      {
-        name: "vault", // Finance & Budgeting
-        chat: {
-          prompts: [
-            { model: "sushi", text: "Where am I overspending this month?" },
-            { model: "sushi", text: "Compare my spending to last month" },
-            { model: "sushi", text: "What's my biggest expense category?" },
-          ],
-        },
-      },
+
       {
         name: "atlas", // Travel & Navigation
         chat: {

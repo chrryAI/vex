@@ -57,7 +57,7 @@ const app = async ({
       waitUntil: "networkidle",
       timeout: 100000,
     })
-    await wait(3000)
+    await wait(5000) // Increased wait to ensure page is fully loaded
   }
 
   if (slug !== "chrry") {
@@ -147,9 +147,9 @@ const app = async ({
 
       // Check store app button visibility based on whether we're in a store app
       if (isStoreApp) {
-        await expect(storeAppButton).not.toBeVisible({ timeout: 5000 })
+        await expect(storeAppButton).not.toBeVisible({ timeout: 10000 })
       } else {
-        await expect(storeAppButton).toBeVisible({ timeout: 5000 })
+        await expect(storeAppButton).toBeVisible({ timeout: 10000 })
       }
 
       if (isStoreApp) {

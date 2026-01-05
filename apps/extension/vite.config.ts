@@ -30,19 +30,27 @@ function chromeExtensionPlugin(): PluginOption {
   }
 }
 
-// Stub Tauri APIs for non-Tauri environments (extension doesn't use Tauri)
-function tauriStubPlugin(): PluginOption {
+// Stub Tauri, Capacitor, and Firebase APIs for extension (doesn't use mobile/desktop features)
+function platformStubPlugin(): PluginOption {
   return {
-    name: "tauri-stub",
+    name: "platform-stub",
     enforce: "pre" as const,
     resolveId(id) {
-      if (id.startsWith("@tauri-apps/api")) {
+      if (
+        id.startsWith("@tauri-apps/api") ||
+        id.startsWith("@capacitor") ||
+        id.startsWith("firebase/")
+      ) {
         return id
       }
       return null
     },
     load(id) {
-      if (id.startsWith("@tauri-apps/api")) {
+      if (
+        id.startsWith("@tauri-apps/api") ||
+        id.startsWith("@capacitor") ||
+        id.startsWith("firebase/")
+      ) {
         // Return empty stub exports
         return `export default {};`
       }
@@ -99,7 +107,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.9.49",
+    version: siteConfig.version || "1.9.50",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -166,7 +174,7 @@ export default async ({ command, mode }) => {
   return {
     plugins: [
       react(),
-      tauriStubPlugin(), // Stub Tauri APIs for extension
+      platformStubPlugin(), // Stub Tauri, Capacitor, and Firebase APIs for extension
       viteStaticCopy({
         targets: [
           {
@@ -254,6 +262,27 @@ export default async ({ command, mode }) => {
             "../../packages/code/src/index.ts",
           ),
         },
+        // Stub Capacitor packages (extension doesn't use mobile features)
+        {
+          find: "@capacitor-firebase/authentication",
+          replacement: path.resolve(
+            __dirname,
+            "./src/stubs/capacitor-firebase.ts",
+          ),
+        },
+        {
+          find: "@capacitor/core",
+          replacement: path.resolve(__dirname, "./src/stubs/capacitor-core.ts"),
+        },
+        {
+          find: /^@capacitor\//,
+          replacement: path.resolve(__dirname, "./src/stubs/capacitor-core.ts"),
+        },
+        // Stub Firebase (extension uses Better Auth, not Firebase)
+        {
+          find: /^firebase\//,
+          replacement: path.resolve(__dirname, "./src/stubs/firebase.ts"),
+        },
         // Stub Next.js modules (extension doesn't use Next.js)
         {
           find: "next/navigation",
@@ -303,11 +332,14 @@ export default async ({ command, mode }) => {
         input: {
           index: resolve(__dirname, "index.html"),
         },
-        // Exclude Tauri packages - they're only for desktop apps
+        // Exclude Tauri, Capacitor, and Firebase packages - they're only for desktop/mobile apps
         external: [
           "@tauri-apps/api",
           "@tauri-apps/plugin-shell",
           "@capacitor-firebase/authentication",
+          "@capacitor/core",
+          /^@capacitor\//,
+          /^firebase\//,
         ],
         output: {
           entryFileNames: "assets/[name].js",
@@ -326,7 +358,33 @@ export default async ({ command, mode }) => {
         },
       },
       sourcemap: false, // Disabled for extensions - sourcemaps use eval() which violates CSP
-      minify: isProduction ? "esbuild" : false,
+      minify: isProduction ? "terser" : false, // Use terser for CSP-safe minification
+      terserOptions: isProduction
+        ? {
+            compress: {
+              drop_console: false,
+              drop_debugger: true,
+              pure_funcs: ["console.debug"], // Remove console.debug only
+              // CRITICAL: Prevent eval() and Function() constructor
+              unsafe: false,
+              unsafe_comps: false,
+              unsafe_Function: false,
+              unsafe_math: false,
+              unsafe_proto: false,
+              unsafe_regexp: false,
+              unsafe_undefined: false,
+            },
+            mangle: {
+              safari10: true,
+            },
+            format: {
+              comments: false,
+              // CRITICAL: Ensure no eval() or Function() in output
+              safari10: true,
+              webkit: true,
+            },
+          }
+        : undefined,
       outDir: "dist",
       emptyOutDir: true,
       // CRITICAL for Manifest V3: Prevent dynamic imports entirely
