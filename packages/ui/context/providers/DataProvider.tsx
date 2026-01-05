@@ -97,11 +97,13 @@ const DataContext = createContext<
         webVersion: string
         firefoxVersion: string
         chromeVersion: string
+        macosVersion: string
       }
       setVersions: (versions: {
         webVersion: string
         firefoxVersion: string
         chromeVersion: string
+        macosVersion: string
       }) => void
       // Data
       instructions: instruction[]
@@ -200,7 +202,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.9.43"
+  const VERSION = "1.9.50"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -237,7 +239,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     error,
     mutate: refetchWeather,
   } = useSWR(
-    token && deviceId ? ["weather"] : null,
+    token && deviceId && auth?.session ? ["weather"] : null,
     async () => {
       // return
       if (!token) return null
@@ -279,9 +281,16 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
         webVersion: string
         firefoxVersion: string
         chromeVersion: string
+        macosVersion: string
       }
     | undefined
   >(session?.versions)
+
+  useEffect(() => {
+    if (session?.versions) {
+      setVersions(session.versions)
+    }
+  }, [session?.versions])
 
   const pageSizes = {
     threads: 20,
@@ -311,7 +320,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     [API_URL, token],
   )
 
-  const { isStandalone, isExtension, isFirefox } = usePlatform()
+  const { isStandalone, isExtension, isFirefox, isTauri } = usePlatform()
   const { searchParams, pathname } = useNavigation()
 
   const { data: affiliateData, mutate: refetchAffiliateData } = useSWR(
@@ -485,17 +494,21 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   useEffect(() => {
     const update = !versions
       ? false
-      : isExtension
-        ? isFirefox
-          ? toVersionNumber(versions.firefoxVersion) > toVersionNumber(VERSION)
-          : toVersionNumber(versions.chromeVersion) > toVersionNumber(VERSION)
-        : isStandalone && createdOn
-          ? new Date(createdOn).getTime() <
-            new Date(RELEASE_TIMESTAMP).getTime()
-          : false
+      : isTauri
+        ? toVersionNumber(versions?.macosVersion) > toVersionNumber(VERSION)
+        : isExtension
+          ? isFirefox
+            ? toVersionNumber(versions?.firefoxVersion) >
+              toVersionNumber(VERSION)
+            : toVersionNumber(versions?.chromeVersion) >
+              toVersionNumber(VERSION)
+          : isStandalone && createdOn
+            ? new Date(createdOn).getTime() <
+              new Date(RELEASE_TIMESTAMP).getTime()
+            : false
     setNeedsUpdate(update)
     setNeedsUpdateModalOpen(update)
-  }, [versions, createdOn, isStandalone, isExtension, isFirefox])
+  }, [versions, createdOn, isStandalone, isExtension, isFirefox, isTauri])
 
   const FREE_DAYS = 5
   const PLUS_PRICE = 9.99

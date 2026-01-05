@@ -1,7 +1,7 @@
 name: PR
 on:
   pull_request:
-    branches: [main]
+    branches: [prod]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -304,7 +304,7 @@ jobs:
   # Auto-merge to dev branch after all tests pass
   auto-merge-to-dev:
     runs-on: ubuntu-latest
-    needs: [e2e-guest-live]
+    needs: [e2e-member-live]
     if: success()
     steps:
       - uses: actions/checkout@v4
@@ -337,7 +337,7 @@ jobs:
   #Auto-merge to web branch after all tests pass
   auto-merge-to-web:
     runs-on: ubuntu-latest
-    needs: [e2e-guest-live]
+    needs: [e2e-member-live]
     if: success()
     steps:
       - uses: actions/checkout@v4

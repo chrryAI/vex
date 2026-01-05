@@ -65,6 +65,7 @@ analytics.post("/grape", async (c) => {
     await db.insert(realtimeAnalytics).values({
       userId: member?.id,
       guestId: guest?.id,
+      appSlug: props?.appSlug || null, // Extract appSlug from event props
       eventName: name,
       eventUrl: url || null,
       eventProps: props || {},
