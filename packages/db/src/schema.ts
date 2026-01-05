@@ -3451,6 +3451,294 @@ export type RetroResponse = typeof retroResponses.$inferSelect
 export type NewRetroResponse = typeof retroResponses.$inferInsert
 
 // ============================================================================
+// TALENT MARKETPLACE: Sovereign Hiring System
+// ============================================================================
+
+export const talentProfiles = pgTable(
+  "talentProfiles",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+    userId: uuid("userId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Public identity
+    displayName: text("displayName").notNull(),
+    tagline: text("tagline"),
+    bio: text("bio"),
+    githubUrl: text("githubUrl"),
+
+    // AI Validation Scores
+    validationScore: real("validationScore").default(0), // 0-1
+    actionabilityScore: real("actionabilityScore").default(0), // 0-1
+    velocityScore: real("velocityScore").default(0), // Tasks/week
+
+    // Reputation
+    pearCreditsEarned: integer("pearCreditsEarned").default(0),
+    feedbackScore: real("feedbackScore").default(0),
+
+    // Availability
+    isHireable: boolean("isHireable").default(true),
+    hourlyRate: integer("hourlyRate"),
+    availability: text("availability", {
+      enum: ["full-time", "part-time", "contract", "not-available"],
+    }),
+
+    // Pre-chat barrier
+    preChatCredits: integer("preChatCredits").default(300),
+
+    // Skills
+    skills: jsonb("skills").$type<string[]>(),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      timezone?: string
+      languages?: string[]
+      preferredStack?: string[]
+    }>(),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("talentProfiles_userId_idx").on(table.userId),
+    isHireableIdx: index("talentProfiles_isHireable_idx").on(table.isHireable),
+    validationScoreIdx: index("talentProfiles_validationScore_idx").on(
+      table.validationScore,
+    ),
+  }),
+)
+
+export const talentThreads = pgTable(
+  "talentThreads",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+    talentProfileId: uuid("talentProfileId")
+      .references(() => talentProfiles.id, { onDelete: "cascade" })
+      .notNull(),
+    threadId: uuid("threadId")
+      .references(() => threads.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Visibility
+    visibility: text("visibility", {
+      enum: ["public", "unlisted", "private"],
+    }).default("public"),
+
+    // Showcase metadata
+    title: text("title").notNull(),
+    description: text("description"),
+    tags: jsonb("tags").$type<string[]>(),
+
+    // AI analysis
+    complexity: real("complexity"),
+    impactScore: real("impactScore"),
+    innovationScore: real("innovationScore"),
+
+    // Engagement
+    views: integer("views").default(0),
+    likes: integer("likes").default(0),
+
+    // Featured
+    isFeatured: boolean("isFeatured").default(false),
+    featuredOrder: integer("featuredOrder"),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    talentProfileIdIdx: index("talentThreads_talentProfileId_idx").on(
+      table.talentProfileId,
+    ),
+    threadIdIdx: index("talentThreads_threadId_idx").on(table.threadId),
+    visibilityIdx: index("talentThreads_visibility_idx").on(table.visibility),
+    isFeaturedIdx: index("talentThreads_isFeatured_idx").on(table.isFeatured),
+  }),
+)
+
+export const recruitmentFlows = pgTable(
+  "recruitmentFlows",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    // Parties
+    talentProfileId: uuid("talentProfileId")
+      .references(() => talentProfiles.id, { onDelete: "cascade" })
+      .notNull(),
+    companyUserId: uuid("companyUserId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Pre-chat payment
+    preChatPaid: boolean("preChatPaid").default(false),
+    preChatCredits: integer("preChatCredits").default(300),
+    paidAt: timestamp("paidAt", { mode: "date", withTimezone: true }),
+
+    // Conversation
+    threadId: uuid("threadId").references(() => threads.id, {
+      onDelete: "set null",
+    }),
+
+    // Status
+    status: text("status", {
+      enum: [
+        "pending",
+        "chatting",
+        "interviewing",
+        "offer",
+        "hired",
+        "rejected",
+        "withdrawn",
+      ],
+    }).default("pending"),
+
+    // Offer details
+    offerAmount: integer("offerAmount"),
+    offerType: text("offerType", {
+      enum: ["full-time", "part-time", "contract"],
+    }),
+    offerDetails: jsonb("offerDetails").$type<{
+      startDate?: string
+      duration?: string
+      benefits?: string[]
+    }>(),
+
+    // Metadata
+    companyName: text("companyName"),
+    companySize: text("companySize"),
+    notes: text("notes"),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    talentProfileIdIdx: index("recruitmentFlows_talentProfileId_idx").on(
+      table.talentProfileId,
+    ),
+    companyUserIdIdx: index("recruitmentFlows_companyUserId_idx").on(
+      table.companyUserId,
+    ),
+    statusIdx: index("recruitmentFlows_status_idx").on(table.status),
+    preChatPaidIdx: index("recruitmentFlows_preChatPaid_idx").on(
+      table.preChatPaid,
+    ),
+  }),
+)
+
+export const talentEarnings = pgTable(
+  "talentEarnings",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    talentProfileId: uuid("talentProfileId")
+      .references(() => talentProfiles.id, { onDelete: "cascade" })
+      .notNull(),
+    recruitmentFlowId: uuid("recruitmentFlowId").references(
+      () => recruitmentFlows.id,
+      { onDelete: "cascade" },
+    ),
+
+    // Transaction
+    type: text("type", {
+      enum: ["pre-chat", "contract", "referral", "pear-feedback"],
+    }).notNull(),
+
+    // Amounts
+    grossAmount: integer("grossAmount").notNull(),
+    platformFee: integer("platformFee").notNull(), // 30%
+    netAmount: integer("netAmount").notNull(), // 70%
+
+    // Status
+    status: text("status", {
+      enum: ["pending", "completed", "withdrawn", "refunded"],
+    }).default("pending"),
+
+    // Payout
+    withdrawnAt: timestamp("withdrawnAt", { mode: "date", withTimezone: true }),
+    withdrawnTo: text("withdrawnTo"),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    talentProfileIdIdx: index("talentEarnings_talentProfileId_idx").on(
+      table.talentProfileId,
+    ),
+    typeIdx: index("talentEarnings_type_idx").on(table.type),
+    statusIdx: index("talentEarnings_status_idx").on(table.status),
+  }),
+)
+
+export const talentInvitations = pgTable(
+  "talentInvitations",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    talentProfileId: uuid("talentProfileId")
+      .references(() => talentProfiles.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Invited company
+    invitedEmail: text("invitedEmail").notNull(),
+    invitedCompany: text("invitedCompany"),
+
+    // Access
+    accessLevel: text("accessLevel", {
+      enum: ["unlisted-threads", "full-profile", "pre-chat-waived"],
+    }).default("unlisted-threads"),
+
+    // Status
+    status: text("status", {
+      enum: ["pending", "accepted", "expired"],
+    }).default("pending"),
+
+    expiresAt: timestamp("expiresAt", { mode: "date", withTimezone: true }),
+    acceptedAt: timestamp("acceptedAt", { mode: "date", withTimezone: true }),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    talentProfileIdIdx: index("talentInvitations_talentProfileId_idx").on(
+      table.talentProfileId,
+    ),
+    invitedEmailIdx: index("talentInvitations_invitedEmail_idx").on(
+      table.invitedEmail,
+    ),
+    statusIdx: index("talentInvitations_status_idx").on(table.status),
+  }),
+)
+
+export type TalentProfile = typeof talentProfiles.$inferSelect
+export type NewTalentProfile = typeof talentProfiles.$inferInsert
+
+export type TalentThread = typeof talentThreads.$inferSelect
+export type NewTalentThread = typeof talentThreads.$inferInsert
+
+export type RecruitmentFlow = typeof recruitmentFlows.$inferSelect
+export type NewRecruitmentFlow = typeof recruitmentFlows.$inferInsert
+
+export type TalentEarning = typeof talentEarnings.$inferSelect
+export type NewTalentEarning = typeof talentEarnings.$inferInsert
+
+export type TalentInvitation = typeof talentInvitations.$inferSelect
+export type NewTalentInvitation = typeof talentInvitations.$inferInsert
+
+// ============================================================================
 // INFINITE HUMAN SYSTEM: Agent XP & Leveling
 // ============================================================================
 export * from "./agent-schema"
