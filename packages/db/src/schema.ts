@@ -3209,6 +3209,102 @@ export type analyticsSession = typeof analyticsSessions.$inferSelect
 export type newAnalyticsSession = typeof analyticsSessions.$inferInsert
 
 // ============================================================================
+// PEAR FEEDBACK ANALYTICS SYSTEM
+// ============================================================================
+
+export const pearFeedback = pgTable(
+  "pearFeedback",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    // Relations
+    messageId: uuid("messageId").references(() => messages.id, {
+      onDelete: "cascade",
+    }),
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+
+    // Feedback content
+    content: text("content").notNull(),
+
+    // Categorization
+    feedbackType: text("feedbackType", {
+      enum: ["complaint", "suggestion", "praise", "bug", "feature_request"],
+    }).notNull(),
+
+    category: text("category", {
+      enum: [
+        "ux",
+        "performance",
+        "feature",
+        "bug",
+        "keyboard_shortcuts",
+        "ui_design",
+        "analytics",
+        "other",
+      ],
+    }).notNull(),
+
+    // Advanced analytics fields (AI-suggested for deeper insights)
+    categoryTags: jsonb("categoryTags").$type<string[]>(), // Multiple categories: ["ux", "performance"]
+    comparativeMention: text("comparativeMention"), // Track competitor comparisons: "better_than_notion"
+    firstImpression: boolean("firstImpression").default(false), // Flag feedback from first 30 seconds
+    emotionalTags: jsonb("emotionalTags").$type<string[]>(), // Emotional responses: ["delighted", "frustrated"]
+
+    // AI-powered scoring (0-1 scale)
+    sentimentScore: real("sentimentScore").notNull(), // -1 (negative) to +1 (positive)
+    specificityScore: real("specificityScore").notNull(), // 0 (vague) to 1 (specific)
+    actionabilityScore: real("actionabilityScore").notNull(), // 0 (not actionable) to 1 (actionable)
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      positivityFactors?: string[]
+      praiseCategories?: string[]
+      suggestedActions?: string[]
+      relatedFeatures?: string[]
+    }>(),
+
+    // Status tracking
+    status: text("status", {
+      enum: ["pending", "reviewed", "in_progress", "resolved", "wont_fix"],
+    })
+      .notNull()
+      .default("pending"),
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    resolvedOn: timestamp("resolvedOn", { mode: "date", withTimezone: true }),
+  },
+  (table) => ({
+    appIdIdx: index("pearFeedback_appId_idx").on(table.appId),
+    userIdIdx: index("pearFeedback_userId_idx").on(table.userId),
+    feedbackTypeIdx: index("pearFeedback_feedbackType_idx").on(
+      table.feedbackType,
+    ),
+    categoryIdx: index("pearFeedback_category_idx").on(table.category),
+    sentimentScoreIdx: index("pearFeedback_sentimentScore_idx").on(
+      table.sentimentScore,
+    ),
+    createdOnIdx: index("pearFeedback_createdOn_idx").on(table.createdOn),
+  }),
+)
+
+export type PearFeedback = typeof pearFeedback.$inferSelect
+export type NewPearFeedback = typeof pearFeedback.$inferInsert
+
+// ============================================================================
 // INFINITE HUMAN SYSTEM: Agent XP & Leveling
 // ============================================================================
 export * from "./agent-schema"

@@ -47,6 +47,8 @@ import {
   getInstructions,
   getCharacterProfiles,
   realtimeAnalytics,
+  pearFeedback,
+  db,
 } from "@repo/db"
 
 import { eq, desc, gte } from "drizzle-orm"
@@ -141,12 +143,16 @@ async function validatePearFeedback({
   guestId,
   appName,
   agentId,
+  appId,
+  messageId,
 }: {
   feedbackText: string
   userId?: string
   guestId?: string
   appName?: string
   agentId: string
+  appId?: string
+  messageId?: string
 }): Promise<{ isValid: boolean; credits: number; reason: string }> {
   console.log("🍐🍐🍐 validatePearFeedback CALLED:", {
     feedbackLength: feedbackText?.length,
@@ -254,6 +260,49 @@ Respond ONLY with a JSON object in this exact format:
       })
 
       console.log("✅ Pear credits awarded successfully")
+
+      // 🍐 Store feedback in database for Grape analytics
+      try {
+        // Map credit score to sentiment/specificity/actionability (0-1 scale)
+        const sentimentScore =
+          evaluation.credits >= 15 ? 0.8 : evaluation.credits >= 10 ? 0.5 : 0.2
+        const specificityScore =
+          evaluation.credits >= 15 ? 0.9 : evaluation.credits >= 10 ? 0.7 : 0.5
+        const actionabilityScore =
+          evaluation.credits >= 15 ? 0.9 : evaluation.credits >= 10 ? 0.7 : 0.4
+
+        // Determine feedback type and category based on content and score
+        const feedbackType =
+          evaluation.credits >= 15
+            ? "suggestion"
+            : evaluation.credits >= 10
+              ? "praise"
+              : "complaint"
+        const category = "ux" // Default category, can be enhanced with AI classification later
+
+        await db.insert(pearFeedback).values({
+          content: feedbackText,
+          userId,
+          guestId,
+          appId,
+          messageId,
+          feedbackType,
+          category,
+          sentimentScore,
+          specificityScore,
+          actionabilityScore,
+          status: "approved", // Auto-approve since AI validated it
+        })
+
+        console.log("🍐 Feedback stored in database for analytics:", {
+          appId: appId?.substring(0, 8),
+          credits: evaluation.credits,
+          sentiment: sentimentScore,
+        })
+      } catch (dbError) {
+        console.error("❌ Error storing Pear feedback in database:", dbError)
+        // Don't fail the validation if database insert fails
+      }
     }
 
     return {
@@ -4035,6 +4084,8 @@ Example responses:
           guestId: guest?.id,
           appName: app?.name,
           agentId: agent?.id,
+          appId: app?.id,
+          messageId: message.id,
         })
 
         // Increment quota after successful validation

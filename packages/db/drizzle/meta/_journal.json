@@ -1030,6 +1030,13 @@
       "when": 1767619411849,
       "tag": "0146_sticky_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 147,
+      "version": "7",
+      "when": 1767637693832,
+      "tag": "0147_sparkling_moira_mactaggert",
+      "breakpoints": true
     }
   ]
 }
