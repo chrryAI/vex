@@ -320,6 +320,110 @@ Respond ONLY with a JSON object in this exact format:
   }
 }
 
+// Helper function to get Pear feedback context for AI
+async function getPearFeedbackContext({
+  appId,
+  limit = 50,
+}: {
+  appId?: string
+  limit?: number
+}): Promise<string> {
+  try {
+    // Query recent feedback
+    const feedbackQuery = appId
+      ? db
+          .select()
+          .from(pearFeedback)
+          .where(eq(pearFeedback.appId, appId))
+          .orderBy(desc(pearFeedback.createdOn))
+          .limit(limit)
+      : db
+          .select()
+          .from(pearFeedback)
+          .orderBy(desc(pearFeedback.createdOn))
+          .limit(limit)
+
+    const recentFeedback = await feedbackQuery
+
+    if (recentFeedback.length === 0) {
+      return ""
+    }
+
+    // Calculate analytics
+    const totalFeedback = recentFeedback.length
+    const avgSentiment =
+      recentFeedback.reduce((sum, f) => sum + f.sentimentScore, 0) /
+      totalFeedback
+    const avgSpecificity =
+      recentFeedback.reduce((sum, f) => sum + f.specificityScore, 0) /
+      totalFeedback
+    const avgActionability =
+      recentFeedback.reduce((sum, f) => sum + f.actionabilityScore, 0) /
+      totalFeedback
+
+    // Count by type
+    const feedbackByType = recentFeedback.reduce(
+      (acc, f) => {
+        acc[f.feedbackType] = (acc[f.feedbackType] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+    // Count by category
+    const feedbackByCategory = recentFeedback.reduce(
+      (acc, f) => {
+        acc[f.category] = (acc[f.category] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+    // Get top complaints (negative sentiment)
+    const complaints = recentFeedback
+      .filter((f) => f.sentimentScore < 0)
+      .sort((a, b) => a.sentimentScore - b.sentimentScore)
+      .slice(0, 5)
+
+    // Get top praise (positive sentiment)
+    const praise = recentFeedback
+      .filter((f) => f.sentimentScore > 0.5)
+      .sort((a, b) => b.sentimentScore - a.sentimentScore)
+      .slice(0, 5)
+
+    // Format context for AI
+    return `
+🍐 PEAR FEEDBACK ANALYTICS (Last ${totalFeedback} submissions):
+
+**Overall Metrics:**
+- Average Sentiment: ${avgSentiment.toFixed(2)} (-1 to +1 scale)
+- Average Specificity: ${avgSpecificity.toFixed(2)} (0-1 scale)
+- Average Actionability: ${avgActionability.toFixed(2)} (0-1 scale)
+
+**Feedback by Type:**
+${Object.entries(feedbackByType)
+  .map(([type, count]) => `- ${type}: ${count}`)
+  .join("\n")}
+
+**Feedback by Category:**
+${Object.entries(feedbackByCategory)
+  .map(([category, count]) => `- ${category}: ${count}`)
+  .join("\n")}
+
+**Top Complaints (${complaints.length}):**
+${complaints.map((f, i) => `${i + 1}. [Sentiment: ${f.sentimentScore.toFixed(2)}] ${f.content.substring(0, 100)}...`).join("\n")}
+
+**Top Praise (${praise.length}):**
+${praise.map((f, i) => `${i + 1}. [Sentiment: ${f.sentimentScore.toFixed(2)}] ${f.content.substring(0, 100)}...`).join("\n")}
+
+Use this data to answer questions about feedback trends, common complaints, and user sentiment.
+`
+  } catch (error) {
+    console.error("Error fetching Pear feedback context:", error)
+    return ""
+  }
+}
+
 async function getRelevantMemoryContext({
   userId,
   guestId,
@@ -4002,9 +4106,15 @@ Example responses:
 - "Based on public feedback, your app is well-received. With Pear Feedback (€50/month, launching Q1), I could show you AI-categorized themes and sentiment trends."
 `
 
+  // 🍐 Pear feedback context for analytics queries
+  const pearFeedbackContext = await getPearFeedbackContext({
+    appId: app?.id,
+    limit: 50,
+  })
+
   const enhancedSystemPrompt = debatePrompt
-    ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}\n\n${debatePrompt}` // Combine all
-    : `${ragSystemPrompt}${calendarInstructions}${pricingContext}`
+    ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}\n\n${debatePrompt}` // Combine all
+    : `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}`
 
   // User message remains unchanged - RAG context now in system prompt
   const enhancedUserMessage = userMessage
