@@ -44,6 +44,7 @@ import {
   timers,
   moods,
   realtimeAnalytics,
+  pearFeedback,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -92,7 +93,7 @@ import {
   setCache,
 } from "./src/cache"
 
-export { realtimeAnalytics }
+export { realtimeAnalytics, pearFeedback }
 
 dotenv.config()
 
