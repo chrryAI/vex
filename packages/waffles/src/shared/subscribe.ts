@@ -30,7 +30,7 @@ export const subscribe = async ({
     ? [
         {
           text: "List shortly the top 3 must-see attractions in Tokyo",
-          model: "sushi",
+          model: "sushi" as modelName,
         },
         {
           mix: {
@@ -39,11 +39,11 @@ export const subscribe = async ({
             image: 1,
           },
           text: "Suggest briefly a simple itinerary for day 1",
-          model: "claude",
+          model: "claude" as modelName,
         },
         {
           text: "Shortly explain the best way to get around",
-          model: "chatGPT",
+          model: "chatGPT" as modelName,
           mix: {
             paste: 1,
             pdf: 1,
@@ -52,7 +52,7 @@ export const subscribe = async ({
         },
         {
           text: "How can I enable character profile? Answer shortly",
-          model: "perplexity",
+          model: "perplexity" as modelName,
         },
       ]
     : [

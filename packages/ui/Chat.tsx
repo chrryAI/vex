@@ -108,6 +108,7 @@ import Logo from "./Logo"
 import App from "./App"
 import Img from "./Image"
 import MoodSelector from "./MoodSelector"
+
 import { useChatStyles } from "./Chat.styles"
 import { useStyles } from "./context/StylesContext"
 
@@ -233,6 +234,10 @@ export default function Chat({
     accountApps,
     isRetro,
     setIsRetro,
+    dailyQuestionData,
+    advanceDailySection,
+    setDailyQuestionIndex,
+    dailyQuestionIndex,
     ...auth
   } = useAuth()
 
@@ -367,42 +372,52 @@ export default function Chat({
     inputRef.current = input
   }, [input])
 
-  const demo1: string[] = [
-    "🤔",
-    "🥰 WOW!",
-    "🗺️ I'm planning a 5-day trip to Tokyo next month. Can you create a detailed itinerary with must-see spots, local food recommendations, and the best times to visit?",
-    "✈️ What's the weather like in Barcelona in April? Should I pack a jacket or will it be warm enough for just t-shirts?",
-    "🏨 Find me a cozy boutique hotel in Paris near the Eiffel Tower, budget around €150/night, with good breakfast included",
-    "🍜 I'm in Bangkok right now. What are the top 5 authentic street food spots locals actually go to? No tourist traps please!",
-    "📅 Schedule a team standup meeting tomorrow at 10 AM for 30 minutes with the title 'Daily Sync' and invite emma.brown@google.com",
-    "⚠️ Do I have any meetings between 2 PM and 5 PM today? If yes, can you reschedule my 3 PM call to tomorrow same time?",
-    "📊 What's my schedule for this week? Highlight any back-to-back meetings and suggest breaks I should add.",
-    "🎯 Block my calendar every Friday afternoon from 2-5 PM for the next month as 'Focus Time - No Meetings' and mark it as busy",
-  ]
-
-  const currentIndexRef = useRef(0)
+  // const currentIndexRef = useRef(0) // Moved to context
 
   useEffect(() => {
-    if (!user || user.role !== "admin") return
+    // Enable for all users when isRetro (Check-in) is active
+    if (!isRetro || !dailyQuestionData) return
+
+    const { questions, currentQuestion } = dailyQuestionData
+
+    // Sync input with current question
+    if (questions.includes(currentQuestion)) {
+      setInput(currentQuestion)
+    }
+
     const handleKeyUp = (event: KeyboardEvent) => {
+      // Only handle arrows if input is empty or matches a question
+      // if (inputRef.current && !questions.includes(inputRef.current)) return
+
       if (event.key === "ArrowUp") {
         event.preventDefault()
+        // Use questions array to find current index of displayed question
+        // If input is empty, start from end or beginning?
+        // Let's assume input matches one of the questions.
+        let currentIndex = questions.indexOf(inputRef.current)
+        if (currentIndex === -1) currentIndex = 0
 
-        const messageToType = demo1[currentIndexRef.current]
-        setInput(messageToType || "")
+        const nextIndex = (currentIndex + 1) % questions.length
 
-        // Update index for next time
-        currentIndexRef.current = (currentIndexRef.current + 1) % demo1.length
+        setDailyQuestionIndex(nextIndex) // Sync state
+        // setInput(questions[nextIndex] || "") // Handled by sync effect above
       }
       if (event.key === "ArrowDown") {
         event.preventDefault()
 
-        const messageToType = demo1[currentIndexRef.current]
-        setInput(messageToType || "")
+        let currentIndex = questions.indexOf(inputRef.current)
+        if (currentIndex === -1) currentIndex = 0
 
-        // Update index for next time
-        currentIndexRef.current =
-          (currentIndexRef.current - 1 + demo1.length) % demo1.length
+        // If we are at the last question, advance properly
+        if (currentIndex === questions.length - 1) {
+          advanceDailySection()
+          return
+        }
+
+        const nextIndex =
+          (currentIndex - 1 + questions.length) % questions.length
+        setDailyQuestionIndex(nextIndex) // Sync state
+        // setInput(questions[nextIndex] || "") // Handled by sync effect above
       }
     }
 
@@ -415,7 +430,7 @@ export default function Chat({
         document.removeEventListener("keyup", handleKeyUp)
       }
     }
-  }, [user]) // Empty dependency array - no re-creation of listener
+  }, [user, isRetro, app?.slug, dailyQuestionData])
 
   useEffect(() => {
     if (isNewChat) {
@@ -1657,6 +1672,16 @@ export default function Chat({
       const saved = await saveApp()
       if (!saved) {
         return
+      }
+    }
+
+    // Auto-advance daily questions
+    if (isRetro && dailyQuestionData) {
+      const { questions, isLastQuestionOfSection } = dailyQuestionData
+      if (isLastQuestionOfSection) {
+        advanceDailySection()
+      } else {
+        setDailyQuestionIndex(dailyQuestionIndex + 1)
       }
     }
 
@@ -3611,29 +3636,42 @@ export default function Chat({
                       <CircleArrowDown size={25} />
                     </Button>
                   ) : empty && !threadIdRef.current ? (
-                    isOwner(app, {
-                      userId: user?.id,
-                      guestId: guest?.id,
-                    }) ? (
+                    <Div
+                      style={{
+                        display: "flex",
+                        gap: 5,
+                        position: "relative",
+
+                        top: !isChatFloating ? 30 : 0,
+                        zIndex: 50,
+                      }}
+                    >
+                      {isRetro && (
+                        <Button
+                          onClick={() => setIsRetro(false)}
+                          className="link"
+                        >
+                          <CircleX size={13} />
+                        </Button>
+                      )}
                       <Button
                         className="link"
                         style={{
-                          position: "relative",
-
-                          top: !isChatFloating ? 30 : 0,
-                          zIndex: 50,
-
                           ...utilities.link.style,
                         }}
                         onClick={() => {
-                          setIsRetro(!isRetro)
-                          setInput("Hey guys, what you learned today?")
+                          if (isRetro) {
+                            advanceDailySection()
+                          } else {
+                            setIsRetro(true)
+                          }
+                          // setInput("Hey guys, what you learned today?")
                         }}
                       >
                         <Img size={22} icon={"spaceInvader"} />
                         {isSmallDevice ? null : "Check-in"}
                       </Button>
-                    ) : null
+                    </Div>
                   ) : null}
 
                   {empty && !threadIdRef.current && !isPear && (
@@ -3755,23 +3793,39 @@ export default function Chat({
                       <H2 style={styles.brandHelp.style}>
                         {burn ? <HatGlasses size={24} /> : ""}
                         <Span
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 7.5,
+                          }}
                           data-testid={`brand-help-${isPear ? "pear" : "chat"}`}
                         >
-                          {isPear ? "🍐" : "👋"}{" "}
-                          {t(
-                            isPear
-                              ? "Share your feedback and earn credits!"
-                              : hitHourlyLimit
-                                ? t(
-                                    "You hit your hourly limit {{hourlyLimit}}",
-                                    {
-                                      hourlyLimit,
-                                    },
-                                  )
-                                : language === "fr"
-                                  ? "What can I help with?"
-                                  : "What's on your mind?",
+                          {isPear ? (
+                            "🍐"
+                          ) : isRetro && dailyQuestionData ? (
+                            <Span style={{}}>⌨️</Span>
+                          ) : (
+                            "👋"
                           )}
+                          <Span>
+                            {t(
+                              isPear
+                                ? "Share your feedback and earn credits!"
+                                : hitHourlyLimit
+                                  ? t(
+                                      "You hit your hourly limit {{hourlyLimit}}",
+                                      {
+                                        hourlyLimit,
+                                      },
+                                    )
+                                  : language === "fr"
+                                    ? "What can I help with?"
+                                    : (isRetro &&
+                                        dailyQuestionData &&
+                                        dailyQuestionData.appTitle) ||
+                                      "What's on your mind?",
+                            )}
+                          </Span>
                         </Span>
                       </H2>
                     ) : null}
@@ -3875,6 +3929,7 @@ export default function Chat({
                     })}
                   </Div>
                 )}
+
                 <TextArea
                   className="chatTextArea"
                   rows={isHydrated && isChatFloating ? 1 : 2}

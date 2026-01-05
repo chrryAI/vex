@@ -469,6 +469,7 @@ const create = async () => {
       )
       await db.insert(realtimeAnalytics).values({
         userId: feedback.id,
+        appSlug: event.props.appSlug || null,
         eventName: event.name,
         eventProps: event.props,
         createdOn: eventTime,
