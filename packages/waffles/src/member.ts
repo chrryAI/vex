@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
 
-// test.skip("Sync Plausible", async ({ page }) => {
+// test("Sync Plausible", async ({ page }) => {
 //   await page.goto("https://a.chrry.dev", {
 //     waitUntil: "networkidle",
 //     timeout: 100000,
@@ -38,7 +38,7 @@ test.beforeEach(async ({ page }) => {
 //   })
 // })
 
-test.skip("Subscribe", async ({ page }) => {
+test("Subscribe", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -48,7 +48,7 @@ test.skip("Subscribe", async ({ page }) => {
   await subscribe({ page, isMember })
 })
 
-test.skip("Invite", async ({ page }) => {
+test("Invite", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -71,7 +71,7 @@ test.skip("Invite", async ({ page }) => {
   })
 })
 
-test.skip("Gift", async ({ page }) => {
+test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -96,7 +96,7 @@ test.skip("Gift", async ({ page }) => {
   })
 })
 
-test.skip("Chat - Hourly Limit Test", async ({ page }) => {
+test("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -107,7 +107,7 @@ test.skip("Chat - Hourly Limit Test", async ({ page }) => {
   await limit({ page, isMember })
 })
 
-test.skip("Thread", async ({ page }) => {
+test("Thread", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -118,7 +118,7 @@ test.skip("Thread", async ({ page }) => {
   await thread({ page, bookmark: true, isMember })
 })
 
-test.skip("Long text", async ({ page }) => {
+test("Long text", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -150,7 +150,7 @@ test.skip("Long text", async ({ page }) => {
   })
 })
 
-test.skip("File upload", async ({ page }) => {
+test("File upload", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",
@@ -224,7 +224,7 @@ test.skip("File upload", async ({ page }) => {
   })
 })
 
-test.skip("Collaboration", async ({ page, browser }) => {
+test("Collaboration", async ({ page, browser }) => {
   await page.goto(
     getURL({
       isLive: false,
@@ -251,7 +251,7 @@ test.skip("Collaboration", async ({ page, browser }) => {
   })
 })
 
-test.skip("Debate", async ({ page }) => {
+test("Debate", async ({ page }) => {
   test.slow()
   await page.goto(getURL({ isLive: false, isMember }), {
     waitUntil: "networkidle",

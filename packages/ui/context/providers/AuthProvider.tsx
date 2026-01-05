@@ -24,6 +24,7 @@ import { isOwner, capitalizeFirstLetter } from "../../utils"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
+import { dailyQuestions } from "../../utils/dailyQuestions"
 import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
 import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
@@ -98,6 +99,18 @@ const AuthContext = createContext<
       setIsPear: (value: appWithStore | undefined) => void
       grapes: appWithStore[]
       setIsProgramme: (value: boolean) => void
+
+      // Daily Questions State
+      dailyQuestionData: {
+        currentQuestion: string
+        sectionTitle: string
+        appTitle: string
+        isLastQuestionOfSection: boolean
+        questions: string[]
+      } | null
+      advanceDailySection: () => void
+      setDailyQuestionIndex: (index: number) => void
+      dailyQuestionIndex: number
       burn: boolean
       setBurn: (value: boolean) => void
       canBurn: boolean
@@ -461,6 +474,25 @@ export function AuthProvider({
     loading: true,
   })
 
+  const [isRetro, setIsRetroInternal] = useState(false)
+  const isRetroRef = useRef(isRetro)
+
+  const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
+  const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
+
+  // Reset daily questions when entering Retro mode
+  const setIsRetro = (value: boolean) => {
+    setIsRetroInternal(value)
+    isRetroRef.current = value
+
+    if (value) {
+      setDailyQuestionSectionIndex(0)
+      setDailyQuestionIndex(0)
+    }
+  }
+
+  // Derive current daily question data
+
   /**
    * Sign out
    */
@@ -817,6 +849,61 @@ export function AuthProvider({
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
   >(props.app || session?.app || baseApp)
+
+  const advanceDailySection = useCallback(() => {
+    // Determine context based on current app
+    const contextKey = (
+      app && dailyQuestions[app.slug as keyof typeof dailyQuestions]
+        ? app.slug
+        : "default"
+    ) as keyof typeof dailyQuestions
+    const context = dailyQuestions[contextKey]
+
+    // Calculate next section index
+    const nextSectionIndex =
+      (dailyQuestionSectionIndex + 1) % context.sections.length
+
+    // Check if we looped back to start (wrapped around)
+    // If wrapping around, we might want to disable retro, BUT logic says "loop to beginning"
+
+    setDailyQuestionSectionIndex(nextSectionIndex)
+    setDailyQuestionIndex(0)
+  }, [dailyQuestionSectionIndex, app])
+
+  const dailyQuestionData = useMemo(() => {
+    if (!isRetro) return null
+
+    const contextKey = (
+      app && dailyQuestions[app.slug as keyof typeof dailyQuestions]
+        ? app.slug
+        : "default"
+    ) as keyof typeof dailyQuestions
+    const context = dailyQuestions[contextKey]
+
+    if (!context) return null
+
+    const currentSection = context.sections[dailyQuestionSectionIndex]
+
+    // If somehow index is out of bounds (shouldn't happen with correct logic), fallback
+    if (!currentSection) return null
+
+    const questions = currentSection.questions
+    const currentQuestion = questions[dailyQuestionIndex] || questions[0] || ""
+
+    // Title Logic:
+    // If sectionIndex == 0 -> Show Main Title (e.g. "Daily Questions for Grape")
+    // If sectionIndex > 0 -> Show Section Title (e.g. "Analytics & Discovery")
+    const displayTitle =
+      dailyQuestionSectionIndex === 0 ? context.title : currentSection.title
+
+    return {
+      currentQuestion,
+      sectionTitle: currentSection.title,
+      appTitle: displayTitle,
+      isLastQuestionOfSection: dailyQuestionIndex === questions.length - 1,
+      questions,
+    }
+  }, [isRetro, app, dailyQuestionSectionIndex, dailyQuestionIndex])
 
   const siteConfigApp = useMemo(
     () =>
@@ -1534,7 +1621,6 @@ export function AuthProvider({
     })
   })
 
-  const [isRetro, setIsRetro] = useLocalStorage<boolean>("retro", false)
   const accountApps = apps?.filter((app) =>
     isOwner(app, {
       userId: user?.id,
@@ -2342,6 +2428,10 @@ export function AuthProvider({
         burnApp,
         downloadUrl,
         fetchMood,
+        dailyQuestionData,
+        advanceDailySection,
+        setDailyQuestionIndex,
+        dailyQuestionIndex,
       }}
     >
       {children}

@@ -923,6 +923,8 @@ export const realtimeAnalytics = pgTable("realtime_analytics", {
   guestId: uuid("guestId").references(() => guests.id, {
     onDelete: "cascade",
   }),
+  storeSlug: text("storeSlug"), // App slug for filtering analytics by app
+  appSlug: text("appSlug"), // App slug for filtering analytics by app
   eventName: text("eventName").notNull(),
   eventUrl: text("eventUrl"),
   eventProps: jsonb("eventProps"),

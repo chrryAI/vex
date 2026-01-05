@@ -99,7 +99,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.9.47",
+    version: siteConfig.version || "1.9.48",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -304,7 +304,11 @@ export default async ({ command, mode }) => {
           index: resolve(__dirname, "index.html"),
         },
         // Exclude Tauri packages - they're only for desktop apps
-        external: ["@tauri-apps/api", "@tauri-apps/plugin-shell"],
+        external: [
+          "@tauri-apps/api",
+          "@tauri-apps/plugin-shell",
+          "@capacitor-firebase/authentication",
+        ],
         output: {
           entryFileNames: "assets/[name].js",
           chunkFileNames: "assets/[name].js",

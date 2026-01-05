@@ -41,7 +41,6 @@ test("Subscribe As Member", async ({ page }) => {
   await subscribe({
     page,
     isMember,
-    isLive,
     createChat: false,
   })
 })
@@ -84,7 +83,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test.only("App", async ({ page }) => {
+test("App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -154,6 +153,25 @@ test.only("App", async ({ page }) => {
         },
       },
     ],
+    isNewChat: true,
+  })
+})
+
+test("Grape", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+
+  await signIn({ page })
+
+  await app({
+    page,
+    isMember,
+    isLive,
+    slug: "vex",
+    nav: undefined,
+    isGrape: true,
     isNewChat: true,
   })
 })

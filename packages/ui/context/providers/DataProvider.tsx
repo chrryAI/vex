@@ -202,7 +202,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.9.47"
+  const VERSION = "1.9.48"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -492,11 +492,6 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   }, [aiAgentsData])
 
   useEffect(() => {
-    console.log(
-      "versionssssssss",
-      toVersionNumber(versions?.macosVersion),
-      toVersionNumber(VERSION),
-    )
     const update = !versions
       ? false
       : isTauri
