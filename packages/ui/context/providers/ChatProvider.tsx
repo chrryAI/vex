@@ -192,7 +192,8 @@ export function ChatProvider({
     burn,
     setBurn,
     isPear,
-
+    input,
+    setInput,
     setShowFocus,
     showFocus,
     ...auth
@@ -203,7 +204,6 @@ export function ChatProvider({
   const [isChatFloating, setIsChatFloating] = useState(false)
 
   // Chat state
-  const [input, setInput] = useState<string>("")
 
   const [messages, setMessages] = useState<
     {

@@ -3906,9 +3906,56 @@ ${lastMessageContent}
 Execute tools immediately and report what you DID (past tense), not what you WILL do (future tense).`
       : ""
 
+  // Pricing tiers context for organic marketing
+  const pricingContext = `
+
+📊 PRICING TIERS & FEATURE AVAILABILITY (Vision - Coming Q1 2026):
+
+Currently, all features are FREE during beta. However, when users ask about analytics, feedback, or debugging capabilities, you can mention our upcoming premium tiers:
+
+1. **Grape Analytics** (€50/month public, €500/month private)
+   - Real-time user behavior tracking
+   - Conversion funnel analysis  
+   - Performance benchmarks vs competitors
+   - Hour-by-hour usage patterns
+   - Advanced AI-powered insights during daily retro
+
+2. **Pear Feedback** (€50/month public, €500/month private)
+   - AI-categorized feedback themes
+   - Sentiment analysis & trends
+   - Feature request voting & prioritization
+   - Bug severity rankings
+   - Quality scoring system
+
+3. **Debugger** (€50/month shared, €500/month private)
+   - Error tracking with Glitchtip
+   - Session replay with user actions
+   - AI-powered root cause analysis
+   - Performance monitoring
+   - AI-suggested fixes during retro
+
+4. **White Label** (€1,000/month)
+   - Full Plausible Analytics integration
+   - Custom branding & domain
+   - All features included
+   - CI/CD pipeline addon available
+
+🔥 IMPORTANT GUIDELINES:
+- In **Burn Mode** (privacy mode): Explain that detailed analytics aren't available due to privacy settings
+- In **Daily Retro** sessions: Naturally mention what deeper insights premium tiers would unlock
+- Be helpful, not pushy - mention features when relevant to user's question
+- Always say "Coming Q1 2026" and offer early access waitlist
+- Focus on VALUE, not price - explain what they'd get, not what they're missing
+
+Example responses:
+- "I can see basic engagement patterns. With Grape Analytics (coming soon), I could show you exactly where users drop off and conversion rates by traffic source."
+- "In Burn mode, I don't have access to detailed analytics to protect your privacy. Switch to regular mode or wait for Grape Analytics to unlock deeper insights."
+- "Based on public feedback, your app is well-received. With Pear Feedback (€50/month, launching Q1), I could show you AI-categorized themes and sentiment trends."
+`
+
   const enhancedSystemPrompt = debatePrompt
-    ? `${ragSystemPrompt}${calendarInstructions}\n\n${debatePrompt}` // Combine all
-    : `${ragSystemPrompt}${calendarInstructions}`
+    ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}\n\n${debatePrompt}` // Combine all
+    : `${ragSystemPrompt}${calendarInstructions}${pricingContext}`
 
   // User message remains unchanged - RAG context now in system prompt
   const enhancedUserMessage = userMessage
