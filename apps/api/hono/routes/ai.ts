@@ -14,6 +14,7 @@ import {
   subscription,
   sql,
   and,
+  isNull,
 } from "@repo/db"
 
 import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
@@ -48,6 +49,8 @@ import {
   getCharacterProfiles,
   realtimeAnalytics,
   pearFeedback,
+  retroSessions,
+  retroResponses,
   db,
 } from "@repo/db"
 
@@ -420,6 +423,135 @@ Use this data to answer questions about feedback trends, common complaints, and 
 `
   } catch (error) {
     console.error("Error fetching Pear feedback context:", error)
+    return ""
+  }
+}
+
+// Helper function to get Retro (Daily Check-in) analytics context for AI
+async function getRetroAnalyticsContext({
+  appId,
+  userId,
+  guestId,
+  limit = 50,
+}: {
+  appId?: string
+  userId?: string
+  guestId?: string
+  limit?: number
+}): Promise<string> {
+  try {
+    // Query recent retro sessions
+    const sessionsQuery = appId
+      ? db
+          .select()
+          .from(retroSessions)
+          .where(
+            and(
+              eq(retroSessions.appId, appId),
+              userId ? eq(retroSessions.userId, userId) : undefined,
+              guestId ? eq(retroSessions.guestId, guestId) : undefined,
+            ),
+          )
+          .orderBy(desc(retroSessions.startedAt))
+          .limit(limit)
+      : db
+          .select()
+          .from(retroSessions)
+          .where(
+            and(
+              userId ? eq(retroSessions.userId, userId) : undefined,
+              guestId ? eq(retroSessions.guestId, guestId) : undefined,
+            ),
+          )
+          .orderBy(desc(retroSessions.startedAt))
+          .limit(limit)
+
+    const sessions = await sessionsQuery
+
+    if (sessions.length === 0) {
+      return ""
+    }
+
+    // Calculate session analytics
+    const totalSessions = sessions.length
+    const completedSessions = sessions.filter((s) => s.completedAt).length
+    const completionRate = (completedSessions / totalSessions) * 100
+
+    const avgQuestionsAnswered =
+      sessions.reduce((sum, s) => sum + s.questionsAnswered, 0) / totalSessions
+
+    const avgDuration =
+      sessions
+        .filter((s) => s.duration)
+        .reduce((sum, s) => sum + (s.duration || 0), 0) /
+      sessions.filter((s) => s.duration).length
+
+    // Get recent responses for question analysis
+    const sessionIds = sessions.map((s) => s.id)
+    const responses = await db
+      .select()
+      .from(retroResponses)
+      .where(
+        and(
+          sql`${retroResponses.sessionId} = ANY(${sessionIds})`,
+          userId ? eq(retroResponses.userId, userId) : undefined,
+          guestId ? eq(retroResponses.guestId, guestId) : undefined,
+        ),
+      )
+      .orderBy(desc(retroResponses.askedAt))
+      .limit(100)
+
+    // Analyze response patterns
+    const totalResponses = responses.length
+    const skippedCount = responses.filter((r) => r.skipped).length
+    const avgResponseLength =
+      responses
+        .filter((r) => r.responseLength)
+        .reduce((sum, r) => sum + (r.responseLength || 0), 0) /
+      responses.filter((r) => r.responseLength).length
+
+    // Most answered questions
+    const questionCounts = responses.reduce(
+      (acc, r) => {
+        if (!r.skipped) {
+          acc[r.questionText] = (acc[r.questionText] || 0) + 1
+        }
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+
+    const topQuestions = Object.entries(questionCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+
+    // Format context for AI
+    return `
+📊 RETRO (DAILY CHECK-IN) ANALYTICS (Last ${totalSessions} sessions):
+
+**Session Metrics:**
+- Total Sessions: ${totalSessions}
+- Completed Sessions: ${completedSessions} (${completionRate.toFixed(1)}% completion rate)
+- Avg Questions Answered: ${avgQuestionsAnswered.toFixed(1)} per session
+- Avg Session Duration: ${avgDuration ? `${Math.round(avgDuration / 60)} minutes` : "N/A"}
+
+**Response Metrics:**
+- Total Responses: ${totalResponses}
+- Skipped Questions: ${skippedCount} (${((skippedCount / totalResponses) * 100).toFixed(1)}%)
+- Avg Response Length: ${Math.round(avgResponseLength)} characters
+
+**Most Answered Questions:**
+${topQuestions.map(([q, count]) => `- "${q.substring(0, 60)}..." (${count} responses)`).join("\n")}
+
+**Engagement Insights:**
+- Completion Rate: ${completionRate > 70 ? "🟢 High" : completionRate > 40 ? "🟡 Medium" : "🔴 Low"}
+- Response Quality: ${avgResponseLength > 100 ? "🟢 Detailed" : avgResponseLength > 50 ? "🟡 Moderate" : "🔴 Brief"}
+- Skip Rate: ${(skippedCount / totalResponses) * 100 < 20 ? "🟢 Low" : (skippedCount / totalResponses) * 100 < 40 ? "🟡 Medium" : "🔴 High"}
+
+Use this data to answer questions about daily check-in engagement, completion rates, and question effectiveness.
+`
+  } catch (error) {
+    console.error("Error fetching retro analytics context:", error)
     return ""
   }
 }
@@ -4112,9 +4244,23 @@ Example responses:
     limit: 50,
   })
 
+  // 📊 Retro analytics context (only for Grape, Pear, or owner)
+  const isGrapeOrPear = app?.slug === "grape" || app?.slug === "pear"
+  const isRetroSession = requestData.retro === true
+  const canAccessRetroAnalytics = isGrapeOrPear && !isRetroSession // Don't show during retro
+
+  const retroAnalyticsContext = canAccessRetroAnalytics
+    ? await getRetroAnalyticsContext({
+        appId: undefined, // Show all apps
+        userId: undefined, // Show all users
+        guestId: undefined,
+        limit: 50,
+      })
+    : ""
+
   const enhancedSystemPrompt = debatePrompt
-    ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}\n\n${debatePrompt}` // Combine all
-    : `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}`
+    ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${debatePrompt}` // Combine all
+    : `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}`
 
   // User message remains unchanged - RAG context now in system prompt
   const enhancedUserMessage = userMessage
@@ -4208,6 +4354,86 @@ Example responses:
       } catch (error) {
         console.error("❌ Pear validation error:", error)
       }
+    }
+  }
+
+  // 📊 Retro (Daily Check-in) Session Tracking
+  if (requestData.retro && thread) {
+    try {
+      const userResponse =
+        typeof userContent === "string" ? userContent : userContent.text || ""
+
+      // Get or create retro session for this thread
+      const existingSession = await db
+        .select()
+        .from(retroSessions)
+        .where(
+          and(
+            eq(retroSessions.threadId, thread.id),
+            isNull(retroSessions.completedAt), // Only get active sessions
+          ),
+        )
+        .limit(1)
+
+      let sessionId: string
+
+      if (existingSession.length > 0) {
+        // Update existing session
+        sessionId = existingSession[0].id
+
+        await db
+          .update(retroSessions)
+          .set({
+            questionsAnswered: sql`${retroSessions.questionsAnswered} + 1`,
+            updatedOn: new Date(),
+          })
+          .where(eq(retroSessions.id, sessionId))
+
+        console.log("📊 Updated retro session:", sessionId.substring(0, 8))
+      } else {
+        // Create new session
+        const [newSession] = await db
+          .insert(retroSessions)
+          .values({
+            userId: member?.id,
+            guestId: guest?.id,
+            appId: app?.id,
+            threadId: thread.id,
+            totalQuestions: 7, // Default, can be dynamic based on app
+            questionsAnswered: 1,
+            sectionsCompleted: 0,
+            dailyQuestionSectionIndex: 0, // Will be updated from frontend
+            dailyQuestionIndex: 0, // Will be updated from frontend
+          })
+          .returning()
+
+        sessionId = newSession.id
+        console.log("📊 Created new retro session:", sessionId.substring(0, 8))
+      }
+
+      // Record the individual response
+      await db.insert(retroResponses).values({
+        sessionId,
+        userId: member?.id,
+        guestId: guest?.id,
+        appId: app?.id,
+        messageId: message.id,
+        questionText: "Daily check-in question", // Will be updated from frontend
+        sectionTitle: "Daily Reflection", // Will be updated from frontend
+        questionIndex: 0, // Will be updated from frontend
+        sectionIndex: 0, // Will be updated from frontend
+        responseText: userResponse,
+        responseLength: userResponse.length,
+        skipped: false,
+        askedAt: new Date(),
+        answeredAt: new Date(),
+        timeToAnswer: 0, // Will be calculated from frontend
+      })
+
+      console.log("✅ Retro response recorded")
+    } catch (error) {
+      console.error("❌ Error tracking retro session:", error)
+      // Don't fail the request if tracking fails
     }
   }
 

@@ -234,6 +234,8 @@ messages.post("/", async (c) => {
       moodId: body["moodId"] as string,
       appId: body["appId"] as string,
       content: body["content"] as string,
+      retro: body["retro"] === "true",
+      pear: body["pear"] === "true",
       agentId: body["agentId"] as string,
       debateAgentId: body["debateAgentId"] as string,
       threadId: body["threadId"] as string,
@@ -319,6 +321,7 @@ messages.post("/", async (c) => {
     taskId,
     moodId,
     pear,
+    retro,
     ...rest
   } = requestData
 

@@ -1685,6 +1685,8 @@ export default function Chat({
         clientId && formData.append("clientId", clientId)
         isPear && formData.append("pear", JSON.stringify(isPear))
 
+        isRetro && formData.append("retro", JSON.stringify(isRetro))
+
         artifacts.forEach((artifact, index) => {
           formData.append(`artifact_${index}`, artifact)
         })
@@ -1711,6 +1713,7 @@ export default function Chat({
           moodId: mood?.id,
           taskId,
           pear: isPear,
+          retro: isRetro,
         })
       }
       const userResponse = await apiFetch(`${API_URL}/messages`, {
@@ -1817,6 +1820,8 @@ export default function Chat({
           isImageGenerationEnabled.toString(),
         )
 
+        isRetro && formData.append("retro", "true")
+
         isPear && formData.append("pear", "true")
 
         placeholder && formData.append("placeholder", placeholder)
@@ -1851,6 +1856,7 @@ export default function Chat({
           deviceId,
           weather,
           placeholder,
+          retro: isRetro,
           appId: app?.id,
           draft:
             app?.id === chrry?.id && suggestSaveApp && appStatus?.part
@@ -2351,6 +2357,7 @@ export default function Chat({
             isSpeechActive,
             deviceId,
             appId: app?.id,
+            retro: isRetro,
           })
 
           try {

@@ -45,6 +45,8 @@ import {
   moods,
   realtimeAnalytics,
   pearFeedback,
+  retroSessions,
+  retroResponses,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -93,7 +95,7 @@ import {
   setCache,
 } from "./src/cache"
 
-export { realtimeAnalytics, pearFeedback }
+export { realtimeAnalytics, pearFeedback, retroSessions, retroResponses }
 
 dotenv.config()
 

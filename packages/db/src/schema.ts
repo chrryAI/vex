@@ -3305,6 +3305,152 @@ export type PearFeedback = typeof pearFeedback.$inferSelect
 export type NewPearFeedback = typeof pearFeedback.$inferInsert
 
 // ============================================================================
+// RETRO (DAILY CHECK-IN) TRACKING SYSTEM
+// ============================================================================
+
+export const retroSessions = pgTable(
+  "retroSessions",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    // Relations
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+
+    threadId: uuid("threadId").references(() => threads.id, {
+      onDelete: "cascade",
+    }),
+
+    // Session tracking
+    startedAt: timestamp("startedAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    completedAt: timestamp("completedAt", { mode: "date", withTimezone: true }),
+    duration: integer("duration"), // seconds
+
+    // Progress tracking
+    totalQuestions: integer("totalQuestions").notNull(),
+    questionsAnswered: integer("questionsAnswered").default(0).notNull(),
+    sectionsCompleted: integer("sectionsCompleted").default(0).notNull(),
+
+    // Engagement metrics
+    averageResponseLength: integer("averageResponseLength"),
+    skippedQuestions: integer("skippedQuestions").default(0).notNull(),
+
+    // Context
+    dailyQuestionSectionIndex: integer("dailyQuestionSectionIndex").notNull(),
+    dailyQuestionIndex: integer("dailyQuestionIndex").notNull(),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      completionRate?: number
+      engagementScore?: number
+      insights?: string[]
+    }>(),
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("retroSessions_userId_idx").on(table.userId),
+    appIdIdx: index("retroSessions_appId_idx").on(table.appId),
+    startedAtIdx: index("retroSessions_startedAt_idx").on(table.startedAt),
+    completedAtIdx: index("retroSessions_completedAt_idx").on(
+      table.completedAt,
+    ),
+  }),
+)
+
+export const retroResponses = pgTable(
+  "retroResponses",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    // Relations
+    sessionId: uuid("sessionId")
+      .references(() => retroSessions.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+    messageId: uuid("messageId").references(() => messages.id, {
+      onDelete: "set null",
+    }),
+
+    // Question context
+    questionText: text("questionText").notNull(),
+    sectionTitle: text("sectionTitle").notNull(),
+    questionIndex: integer("questionIndex").notNull(),
+    sectionIndex: integer("sectionIndex").notNull(),
+
+    // Response
+    responseText: text("responseText"),
+    responseLength: integer("responseLength"),
+    skipped: boolean("skipped").default(false).notNull(),
+
+    // Timing
+    askedAt: timestamp("askedAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    answeredAt: timestamp("answeredAt", { mode: "date", withTimezone: true }),
+    timeToAnswer: integer("timeToAnswer"), // seconds
+
+    // AI analysis
+    sentimentScore: real("sentimentScore"), // -1 to +1
+    insightQuality: real("insightQuality"), // 0-1 scale
+    actionableItems: jsonb("actionableItems").$type<string[]>(),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      emotionalTone?: string
+      keyThemes?: string[]
+      followUpSuggestions?: string[]
+    }>(),
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    sessionIdIdx: index("retroResponses_sessionId_idx").on(table.sessionId),
+    userIdIdx: index("retroResponses_userId_idx").on(table.userId),
+    appIdIdx: index("retroResponses_appId_idx").on(table.appId),
+    askedAtIdx: index("retroResponses_askedAt_idx").on(table.askedAt),
+    skippedIdx: index("retroResponses_skipped_idx").on(table.skipped),
+  }),
+)
+
+export type RetroSession = typeof retroSessions.$inferSelect
+export type NewRetroSession = typeof retroSessions.$inferInsert
+
+export type RetroResponse = typeof retroResponses.$inferSelect
+export type NewRetroResponse = typeof retroResponses.$inferInsert
+
+// ============================================================================
 // INFINITE HUMAN SYSTEM: Agent XP & Leveling
 // ============================================================================
 export * from "./agent-schema"
