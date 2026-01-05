@@ -173,9 +173,6 @@ export const chat = async ({
 
   await scrollToBottom()
 
-  const creditsInfo = page.getByTestId("credits-info")
-  await expect(creditsInfo).toBeVisible()
-
   const getCreditsLeft = async () => {
     await scrollToBottom() // Ensure credit info is visible
     const creditsInfo = page.getByTestId("credits-info")

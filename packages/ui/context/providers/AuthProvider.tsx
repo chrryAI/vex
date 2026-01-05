@@ -1959,10 +1959,26 @@ export function AuthProvider({
     try {
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
+          // Sanitize URL to remove sensitive query params (fingerprint, tokens, etc.)
+          const sanitizeName = (name: string) => {
+            try {
+              const url = new URL(name)
+              // Remove sensitive query parameters
+              url.searchParams.delete("fp") // fingerprint
+              url.searchParams.delete("auth_token") // auth tokens
+              url.searchParams.delete("token") // auth tokens
+              url.searchParams.delete("api_key") // API keys
+              return url.toString()
+            } catch {
+              // If not a valid URL, return as-is (could be a resource name)
+              return name
+            }
+          }
+
           plausible({
             name: ANALYTICS_EVENTS.PERFORMANCE,
             props: {
-              name: entry.name,
+              name: sanitizeName(entry.name),
               entryType: entry.entryType,
               startTime: entry.startTime,
               duration: entry.duration,

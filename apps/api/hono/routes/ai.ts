@@ -3305,7 +3305,7 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
 
     if (!rateLimitCheck.allowed) {
       console.log(`❌ File upload rate limit exceeded:`, rateLimitCheck.error)
-      if (!isDevelopment && !isE2E) {
+      if (!isDevelopment && !isE2EInternal) {
         return c.json(
           {
             error: rateLimitCheck.error,
@@ -3963,7 +3963,7 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
       guestId: guest?.id,
     })
 
-    if (!quotaCheck.allowed && !isE2E) {
+    if (!quotaCheck.allowed && !isE2EInternal) {
       // Quota exceeded - add message to system prompt
       pearValidationResult = {
         isValid: false,

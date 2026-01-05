@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page })
 })
 
-// test.only("Sync Plausible", async ({ page }) => {
+// test.skip("Sync Plausible", async ({ page }) => {
 //   await page.goto("https://a.chrry.dev", {
 //     waitUntil: "networkidle",
 //     timeout: 100000,
