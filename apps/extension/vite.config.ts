@@ -99,7 +99,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.9.45",
+    version: siteConfig.version || "1.9.47",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -303,6 +303,8 @@ export default async ({ command, mode }) => {
         input: {
           index: resolve(__dirname, "index.html"),
         },
+        // Exclude Tauri packages - they're only for desktop apps
+        external: ["@tauri-apps/api", "@tauri-apps/plugin-shell"],
         output: {
           entryFileNames: "assets/[name].js",
           chunkFileNames: "assets/[name].js",
@@ -312,12 +314,24 @@ export default async ({ command, mode }) => {
           // Disable code-splitting for extensions - bundle everything together
           manualChunks: undefined,
           inlineDynamicImports: true,
+          // CRITICAL for Manifest V3: Prevent dynamic script loaders
+          generatedCode: {
+            constBindings: true,
+            objectShorthand: true,
+          },
         },
       },
       sourcemap: false, // Disabled for extensions - sourcemaps use eval() which violates CSP
       minify: isProduction ? "esbuild" : false,
       outDir: "dist",
       emptyOutDir: true,
+      // CRITICAL for Manifest V3: Prevent dynamic imports entirely
+      dynamicImportVarsOptions: {
+        exclude: ["**/*"],
+      },
+      // Ensure CSP-safe code generation
+      target: "es2020",
+      cssCodeSplit: false, // Bundle all CSS together
     },
   }
 }

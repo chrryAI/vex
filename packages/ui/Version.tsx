@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { useData, useNavigationContext, useAuth } from "./context/providers"
 import Modal from "./Modal"
 import {
@@ -9,12 +9,14 @@ import {
   FaWindows,
   FaLinux,
 } from "react-icons/fa"
+import { FiCheck } from "react-icons/fi"
 import Img from "./Img"
 import { useTranslation } from "react-i18next"
 import { Button, Div, Span, usePlatform, Video } from "./platform"
 import A from "./a/A"
 import { useVersionStyles } from "./Version.styles"
 import { useStyles } from "./context/StylesContext"
+import { SiMacos } from "react-icons/si"
 
 export default function Version() {
   const {
@@ -29,13 +31,15 @@ export default function Version() {
 
   const { chromeWebStoreUrl, downloadUrl } = useAuth()
 
-  const { os, isStandalone, isFirefox, isExtension, BrowserInstance } =
+  const { os, isStandalone, isTauri, isFirefox, isExtension, BrowserInstance } =
     usePlatform()
 
   const { FRONTEND_URL } = useData()
 
   const styles = useVersionStyles()
   const { utilities } = useStyles()
+
+  const [urlCopied, setUrlCopied] = useState(false)
 
   return (
     <Div>
@@ -62,8 +66,17 @@ export default function Version() {
         >
           <Div style={styles.updateModalDescription.style}>
             <Img src={`${FRONTEND_URL}/hamster.png`} width={24} height={24} />
-            <Span>
-              {t("Let's update your app to the latest version")}{" "}
+            <Span
+              style={{
+                lineHeight: "1.5",
+              }}
+            >
+              {t(
+                urlCopied
+                  ? `Link copied! Open your favorite browser to download: ${downloadUrl.split("/").pop()} 📋`
+                  : "Let's update your app to the latest version",
+              )}
+
               {isStandalone
                 ? null
                 : isFirefox
@@ -95,7 +108,7 @@ export default function Version() {
                 )}{" "}
                 {t("Install")}
               </Button>
-            ) : !isFirefox ? (
+            ) : !isFirefox && !isTauri ? (
               <A
                 openInNewTab
                 className="button"
@@ -124,26 +137,44 @@ export default function Version() {
             ) : null}
 
             {/* Desktop app download button */}
+            {/* Desktop app download button */}
             {downloadUrl && (
-              <A
-                className="button"
-                openInNewTab
-                href={downloadUrl}
-                style={{
-                  ...utilities.button.style,
-                  ...utilities.small.style,
-                  marginLeft: "0.5rem",
-                }}
-              >
-                {os === "macos" ? (
-                  <FaApple size={18} />
-                ) : os === "windows" ? (
-                  <FaWindows size={18} />
-                ) : (
-                  <FaLinux size={18} />
-                )}
-                {t("Download Desktop")}
-              </A>
+              <>
+                <Button
+                  className="button inverted"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(downloadUrl)
+                      setUrlCopied(true)
+                      setTimeout(() => setUrlCopied(false), 5000)
+                    } catch (err) {
+                      console.error("Failed to copy: ", err)
+                      window.open(downloadUrl, "_blank")
+                    }
+                  }}
+                  style={{
+                    ...utilities.button.style,
+                    ...utilities.xSmall.style,
+                    ...utilities.inverted.style,
+                  }}
+                >
+                  {urlCopied ? (
+                    <>
+                      <FiCheck size={24} />
+                    </>
+                  ) : (
+                    <>
+                      {os === "macos" ? (
+                        <SiMacos size={24} />
+                      ) : os === "windows" ? (
+                        <FaWindows size={18} />
+                      ) : (
+                        <FaLinux size={18} />
+                      )}
+                    </>
+                  )}
+                </Button>
+              </>
             )}
           </Div>
         </Modal>

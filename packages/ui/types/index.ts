@@ -294,6 +294,7 @@ export type session = {
     webVersion: string
     firefoxVersion: string
     chromeVersion: string
+    macosVersion: string
   }
   deviceId?: string
   app: appWithStore

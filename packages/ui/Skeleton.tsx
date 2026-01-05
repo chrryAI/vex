@@ -78,27 +78,6 @@ function FocusButton({
   }
   const { isEmpty } = useChat()
 
-  if (codeEditor && !isIDE) {
-    return (
-      <>
-        <Button
-          className="button transparent xSmall"
-          onClick={() => {
-            toggleIDE()
-          }}
-          style={{
-            ...utilities.button.style,
-            ...utilities.transparent.style,
-            ...utilities.xSmall.style,
-            ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
-          }}
-        >
-          <CodeXml size={20} /> {"Code"}
-        </Button>
-      </>
-    )
-  }
-
   if (!focus || viewPortWidth < 375) {
     return (
       <>
