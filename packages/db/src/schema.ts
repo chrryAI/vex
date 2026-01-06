@@ -3739,6 +3739,79 @@ export type TalentInvitation = typeof talentInvitations.$inferSelect
 export type NewTalentInvitation = typeof talentInvitations.$inferInsert
 
 // ============================================================================
+// PREMIUM SUBSCRIPTIONS: Stripe Integration
+// ============================================================================
+
+export const premiumSubscriptions = pgTable(
+  "premiumSubscriptions",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+    userId: uuid("userId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Stripe data
+    stripeSubscriptionId: text("stripeSubscriptionId").notNull().unique(),
+    stripePriceId: text("stripePriceId").notNull(),
+    stripeProductId: text("stripeProductId").notNull(),
+    stripeCustomerId: text("stripeCustomerId"),
+
+    // Product info
+    productType: text("productType", {
+      enum: ["grape_analytics", "pear_feedback", "debugger", "white_label"],
+    }).notNull(),
+    tier: text("tier", {
+      enum: ["public", "private", "shared", "standard"],
+    }).notNull(),
+
+    // Status
+    status: text("status", {
+      enum: ["active", "canceled", "past_due", "trialing", "incomplete"],
+    }).notNull(),
+
+    // Billing
+    currentPeriodStart: timestamp("currentPeriodStart", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    currentPeriodEnd: timestamp("currentPeriodEnd", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
+    canceledAt: timestamp("canceledAt", { mode: "date", withTimezone: true }),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      appId?: string
+      storeId?: string
+      customDomain?: string
+      features?: string[]
+    }>(),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("premiumSubscriptions_userId_idx").on(table.userId),
+    productTypeIdx: index("premiumSubscriptions_productType_idx").on(
+      table.productType,
+    ),
+    statusIdx: index("premiumSubscriptions_status_idx").on(table.status),
+    stripeSubscriptionIdIdx: index(
+      "premiumSubscriptions_stripeSubscriptionId_idx",
+    ).on(table.stripeSubscriptionId),
+  }),
+)
+
+export type PremiumSubscription = typeof premiumSubscriptions.$inferSelect
+export type NewPremiumSubscription = typeof premiumSubscriptions.$inferInsert
+
+// ============================================================================
 // INFINITE HUMAN SYSTEM: Agent XP & Leveling
 // ============================================================================
 export * from "./agent-schema"

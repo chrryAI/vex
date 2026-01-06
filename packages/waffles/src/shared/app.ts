@@ -5,7 +5,7 @@ import { clean } from "./clean"
 import { grape } from "./grape"
 
 const app = async ({
-  app,
+  app: appName,
   isRetro,
   slug,
   page,
