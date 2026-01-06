@@ -5839,6 +5839,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
     highlights: defaultInstructions,
     systemPrompt: vexSystemPrompt,
     defaultModel: "sushi" as const,
+    userId: admin.id,
     tipsTitle: "Pro Tips",
     tips: [
       {

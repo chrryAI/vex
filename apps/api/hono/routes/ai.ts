@@ -2978,7 +2978,11 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         bookmarks,
       })
 
-      thread = await getThread({ id: thread.id })
+      thread = await getThread({
+        id: thread.id,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
 
       if (!thread) {
         return c.json({ error: "Thread not found" }, { status: 404 })
@@ -2989,7 +2993,14 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         mainThreadId: thread.id,
       })
 
-      app = await getApp({ id: app.id, skipCache: true })
+      app = await getApp({
+        id: app.id,
+        ownerId: member?.id || guest?.id,
+        userId: member?.id,
+        guestId: guest?.id,
+        skipCache: true,
+      })
+      console.log(`🚀 ~ app.post ~ app:`, app?.name)
     } catch (error) {
       captureException(error)
     }
@@ -2998,7 +3009,11 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       return c.json({ error: "App not found" }, { status: 404 })
     }
 
-    aiCoachContext = `
+    // Only show this message if we're actually in the main thread
+    const isActuallyMainThread = thread?.id === app.mainThreadId
+
+    aiCoachContext = isActuallyMainThread
+      ? `
 ## 🎉 First Time Using Your App!
 
 This is the **first message** in your newly created app "${app.name}"!
@@ -3019,6 +3034,7 @@ This is the **first message** in your newly created app "${app.name}"!
 
 Now, how can I help you get started with ${app.name}?
 `
+      : "" // Not the main thread, don't show the special message
   } else if (draft) {
     const isNewApp = !draft.id
     const isUpdate = !!draft.id

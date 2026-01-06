@@ -4667,6 +4667,7 @@ export const getApp = async ({
   storeSlug,
   storeDomain,
   skipCache = false,
+  ownerId,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
   id?: string
@@ -4679,6 +4680,7 @@ export const getApp = async ({
   storeSlug?: string
   storeDomain?: string
   skipCache?: boolean
+  ownerId?: string
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -4691,6 +4693,10 @@ export const getApp = async ({
 
   if (slug) {
     appConditions.push(eq(apps.slug, slug))
+  }
+
+  if (ownerId) {
+    appConditions.push(or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId)))
   }
 
   if (id) {
@@ -4710,16 +4716,17 @@ export const getApp = async ({
   }
 
   // Build access conditions (can user/guest access this app?)
-  // Skip access check when searching by ID (direct lookup)
-  const accessConditions = id
-    ? undefined
-    : or(
-        // User's own apps
-        userId ? eq(apps.userId, userId) : undefined,
-        // Guest's own apps
-        guestId ? eq(apps.guestId, guestId) : undefined,
-        eq(apps.visibility, "public"),
-      )
+  // Skip access check when searching by ID or ownerId (direct lookup)
+  const accessConditions =
+    id || ownerId
+      ? undefined
+      : or(
+          // User's own apps
+          userId ? eq(apps.userId, userId) : undefined,
+          // Guest's own apps
+          guestId ? eq(apps.guestId, guestId) : undefined,
+          eq(apps.visibility, "public"),
+        )
 
   // Check if user owns any apps to determine cache strategy
 
@@ -4966,6 +4973,7 @@ export function toSafeApp({ app }: { app?: app | appWithStore }) {
     pricing: app.pricing,
     tier: app.tier,
     placeholder: app.placeholder,
+    mainThreadId: app.mainThreadId,
   }
 
   return result
