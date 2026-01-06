@@ -1624,16 +1624,6 @@ export default function Chat({
       }
     }
 
-    // Auto-advance daily questions
-    if (isRetro && dailyQuestionData) {
-      const { questions, isLastQuestionOfSection } = dailyQuestionData
-      if (isLastQuestionOfSection) {
-        advanceDailySection()
-      } else {
-        setDailyQuestionIndex(dailyQuestionIndex + 1)
-      }
-    }
-
     onMessage?.({
       content: userMessageText,
       isUser: true,
@@ -1786,6 +1776,16 @@ export default function Chat({
           isUser: true,
           message: userMessage,
         })
+
+        // Auto-advance daily questions AFTER message is sent
+        // if (isRetro && dailyQuestionData) {
+        //   const { questions, isLastQuestionOfSection } = dailyQuestionData
+        //   if (isLastQuestionOfSection) {
+        //     advanceDailySection()
+        //   } else {
+        //     setDailyQuestionIndex(dailyQuestionIndex + 1)
+        //   }
+        // }
       } else {
         toast.error("Failed to send message")
         return

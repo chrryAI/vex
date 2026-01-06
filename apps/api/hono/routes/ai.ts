@@ -3018,7 +3018,6 @@ This data helps maintain system integrity and ensure comprehensive test coverage
 
       app = await getApp({
         id: app.id,
-        ownerId: member?.id || guest?.id,
         userId: member?.id,
         guestId: guest?.id,
         skipCache: true,

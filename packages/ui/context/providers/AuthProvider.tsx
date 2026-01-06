@@ -491,7 +491,7 @@ export function AuthProvider({
                 questions: [
                   "Sato mudur hocam?",
                   "Hocam mermi gibi mi massahllah?",
-                  "Ne yapalim hocam?",
+                  "Ne yapalim hocam? Güncellemeler geliyor merak etme.",
                 ],
               },
             ],
@@ -1581,6 +1581,8 @@ export function AuthProvider({
     "grape",
     "burn",
     "sushi",
+    "pear",
+    "vault",
   ]
 
   const chromeWebStoreUrl =
