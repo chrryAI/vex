@@ -27,6 +27,7 @@ import {
   getTasks,
   getTimer,
   isOwner,
+  retroSessions,
 } from "@repo/db"
 import { and, eq, isNull } from "@repo/db"
 import { instructions } from "@repo/db/src/schema"
@@ -374,6 +375,7 @@ async function generateSuggestionsAndPlaceholders({
   model,
   modelName,
   c,
+  isRetro = false, // ✅ Retro mode flag
   ...rest
 }: {
   c: Context
@@ -396,6 +398,7 @@ async function generateSuggestionsAndPlaceholders({
   skipClassification?: boolean
   model: any
   modelName: string
+  isRetro?: boolean // ✅ Retro mode flag
 }) {
   const app = rest.app
   // Get all apps for classification
@@ -471,6 +474,9 @@ async function generateSuggestionsAndPlaceholders({
     `🎯 Current app: ${currentApp?.name || "none"} with ${appHighlights.length} highlights${appTipsTitle ? ` and tips: "${appTipsTitle}"` : ""}`,
   )
 
+  // Check if user is admin for SATO MODE
+  const isAdmin = user?.role === "admin"
+
   const suggestionsPrompt = `Based on this conversation, user memories, and calendar, generate personalized AI instruction templates AND classify the app relevance:
 
 CONVERSATION:
@@ -478,6 +484,52 @@ ${conversationText.slice(-2000)} // Last 2000 chars
 
 MEMORIES:
 ${memories.map((m) => `- ${m.content}`).join("\n")}${calendarContext}${bloomContext}
+
+${
+  isAdmin
+    ? `
+🔥 SATO MODE ACTIVE (Admin User):
+⚠️ CRITICAL: This is an ADMIN user. Generate placeholders and instructions with "SATO" vibes:
+- System health checks ("Sato mu?", "E2E sato mu?", "API sato mu?")
+- Performance monitoring ("Hocam mermi gibi mi?", "Gıcır gıcır çalışıyor mu?")
+- Technical deep-dives and debugging
+- Architecture decisions and optimizations
+- Turkish-English mix with technical slang
+- Confident, efficient, "bam" energy
+
+PLACEHOLDER REQUIREMENTS FOR SATO MODE:
+- "home": System status check (e.g., "Sato mu hocam? 🔥", "Ne yapalım hocam? 💪")
+- "thread": Technical follow-up (e.g., "Bam gibi mi? ⚡", "Mermi gibi massallah 🚀")
+
+INSTRUCTION REQUIREMENTS FOR SATO MODE:
+- Focus on system checks, performance, debugging
+- Use Turkish-English technical mix
+- Include: "Check E2E tests", "Analyze API performance", "Review system health"
+- Tone: Confident, efficient, technical, "Sato" energy
+- Examples: "Sato mu raporu ver", "E2E testleri kontrol et", "Performance metrics göster"
+`
+    : isRetro
+      ? `
+🍐 RETRO MODE ACTIVE (Daily Check-In Session):
+⚠️ CRITICAL: This is a daily reflection/check-in session. Generate placeholders and instructions specifically for:
+- Reflecting on today's accomplishments
+- Planning tomorrow's priorities
+- Mood tracking and emotional check-in
+- Goal progress review
+- Gratitude and mindfulness prompts
+
+PLACEHOLDER REQUIREMENTS FOR RETRO MODE:
+- "home": Welcoming message for daily check-in (e.g., "How was your day today? 🌟")
+- "thread": Follow-up reflection prompt (e.g., "What went well today? 💭")
+
+INSTRUCTION REQUIREMENTS FOR RETRO MODE:
+- Focus on reflection, planning, and self-awareness
+- Include mood tracking, gratitude, goal review
+- Keep tone warm, supportive, and encouraging
+- Examples: "Reflect on today's wins", "Plan tomorrow's top 3 priorities", "Track your mood and energy"
+`
+      : ""
+}
 
 AVAILABLE LIFEOS APPS (only classify if conversation is SPECIFICALLY about these domains):
 ${appDescriptions}
@@ -933,6 +985,15 @@ async function generateAIContent({
 
   if (thread.isIncognito) return
 
+  const retroSession = await db
+    .select()
+    .from(retroSessions)
+    .where(eq(retroSessions.threadId, thread.id))
+    .limit(1)
+    .then((rows) => rows[0] || null)
+
+  const isRetro = !!retroSession
+
   const characterProfilesEnabled =
     user?.characterProfilesEnabled || guest?.characterProfilesEnabled
 
@@ -995,6 +1056,7 @@ async function generateAIContent({
       skipClassification,
       model,
       modelName,
+      isRetro, // ✅ Pass retro mode flag
     }).catch((error) => {
       captureException(error)
       console.error("❌ Background placeholder generation failed:", error)
