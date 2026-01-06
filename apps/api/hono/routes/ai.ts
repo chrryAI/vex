@@ -1561,7 +1561,7 @@ app.post("/", async (c) => {
     canSubmit?: boolean
   }
 
-  const app = rest.appId
+  let app = rest.appId
     ? await getApp({
         id: rest.appId,
         depth: 1,
@@ -1858,7 +1858,7 @@ ${
   const content = message.message.content
   const threadId = message.message.threadId
 
-  const thread = await getThread({ id: message.message.threadId })
+  let thread = await getThread({ id: message.message.threadId })
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
@@ -2977,19 +2977,25 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         isMainThread: true,
         bookmarks,
       })
+
+      thread = await getThread({ id: thread.id })
+
+      if (!thread) {
+        return c.json({ error: "Thread not found" }, { status: 404 })
+      }
+
       await updateApp({
         ...app,
         mainThreadId: thread.id,
       })
 
-      app.mainThreadId = thread.id
-      thread.isMainThread = true
-      thread.bookmarks = bookmarks
-      // thread.mainThreadId = thread.id
-
-      // app = await getApp({ id: app.id, skipCache: true })
+      app = await getApp({ id: app.id, skipCache: true })
     } catch (error) {
       captureException(error)
+    }
+
+    if (!app) {
+      return c.json({ error: "App not found" }, { status: 404 })
     }
 
     aiCoachContext = `
@@ -3412,6 +3418,14 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     // brandKnowledge,
     aiCoachContext,
   ].join("")
+
+  if (!thread) {
+    return c.json({ error: "Thread not found" }, { status: 404 })
+  }
+
+  if (!app) {
+    return c.json({ error: "App not found" }, { status: 404 })
+  }
 
   const creditsLeft = member?.creditsLeft || guest?.creditsLeft
 

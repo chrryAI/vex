@@ -56,6 +56,10 @@ The chat interface could benefit from keyboard shortcuts for power users. For ex
   // Distribute feedback prompts cyclically
   const prompt = feedbackPrompts[index % feedbackPrompts.length]
 
+  if (!prompt) {
+    return earnedCredits
+  }
+
   // Estimate credits based on prompt content (simple heuristic)
   let currentStepCredits = 0
   if (prompt.includes("10 Credits")) currentStepCredits += 10
