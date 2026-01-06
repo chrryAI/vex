@@ -73,7 +73,11 @@ const Thread = ({
     grapes,
     app,
     setIsRetro,
+    isRetro,
     advanceDailySection,
+    dailyQuestionData,
+    dailyQuestionIndex,
+    setDailyQuestionIndex,
     ...auth
   } = useAuth()
 
@@ -562,7 +566,7 @@ const Thread = ({
                                 height={16}
                               />
                             </A>
-                          ) : auth.isRetro ? (
+                          ) : isRetro || user?.role === "admin" ? (
                             <>
                               <Button
                                 onClick={() => setIsRetro(false)}
@@ -577,7 +581,20 @@ const Thread = ({
                                   ...utilities.link.style,
                                 }}
                                 onClick={() => {
-                                  advanceDailySection()
+                                  if (isRetro) {
+                                    // Advance to next question
+                                    if (
+                                      dailyQuestionData?.isLastQuestionOfSection
+                                    ) {
+                                      advanceDailySection()
+                                    } else {
+                                      setDailyQuestionIndex(
+                                        dailyQuestionIndex + 1,
+                                      )
+                                    }
+                                  } else {
+                                    setIsRetro(true)
+                                  }
                                 }}
                               >
                                 <Img size={16} icon={"spaceInvader"} />

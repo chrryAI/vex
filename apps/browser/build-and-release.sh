@@ -56,6 +56,8 @@ build_and_deploy "Zarathustra" "zarathustra"
 build_and_deploy "Search" "search"
 build_and_deploy "Grape" "grape"
 build_and_deploy "Burn" "burn"
+build_and_deploy "Vault" "vault"
+build_and_deploy "Pear" "pear"
 
 echo ""
 echo "✅ Done! All installers ready for download."
