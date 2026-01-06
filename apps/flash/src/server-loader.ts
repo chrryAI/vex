@@ -226,46 +226,6 @@ export async function loadServerData(
   const appId = thread?.thread?.appId || headers["x-app-id"]
 
   try {
-    const existingGuest = session?.guest
-
-    if (existingGuest?.id) {
-      const threads = await getThreads({
-        pageSize: 100,
-        isIncognito: true,
-        guestId: existingGuest.id,
-        ownerId: existingGuest.id,
-      })
-
-      Promise.all(
-        threads.threads.map((thread) => {
-          deleteThread({ id: thread.id })
-        }),
-      ).catch((error) => {
-        console.error("Error deleting threads:", error)
-        captureException(error)
-      })
-    }
-
-    const existingMember = session?.user
-
-    if (existingMember?.id) {
-      const threads = await getThreads({
-        pageSize: 100,
-        isIncognito: true,
-        userId: existingMember.id,
-        ownerId: existingMember.id,
-      })
-
-      Promise.all(
-        threads.threads.map((thread) => {
-          deleteThread({ id: thread.id })
-        }),
-      ).catch((error) => {
-        console.error("Error deleting threads:", error)
-        captureException(error)
-      })
-    }
-
     const appResult = await getApp({
       chrryUrl,
       appId,
