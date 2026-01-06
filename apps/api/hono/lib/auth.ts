@@ -243,6 +243,7 @@ export async function getApp({
   // 4. CONTEXT RESOLUTION
   const chrryUrl = chrryUrlParam || (await getChrryUrl(request))
   const siteConfig = getSiteConfig(chrryUrl)
+  console.log(`🚀 ~ siteConfig:`, chrryUrl)
 
   // 5. APP RESOLUTION LOGIC (Flattened for Readability)
   let appInternal = null
