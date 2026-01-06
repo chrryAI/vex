@@ -294,7 +294,7 @@ Respond ONLY with a JSON object in this exact format:
           sentimentScore,
           specificityScore,
           actionabilityScore,
-          status: "approved", // Auto-approve since AI validated it
+          status: "reviewed", // Auto-mark as reviewed since AI validated it
         })
 
         console.log("🍐 Feedback stored in database for analytics:", {
@@ -4341,7 +4341,7 @@ Example responses:
           appName: app?.name,
           agentId: agent?.id,
           appId: app?.id,
-          messageId: message.id,
+          messageId: message.message.id,
         })
 
         // Increment quota after successful validation
@@ -4377,7 +4377,7 @@ Example responses:
 
       let sessionId: string
 
-      if (existingSession.length > 0) {
+      if (existingSession[0] && existingSession.length > 0) {
         // Update existing session
         sessionId = existingSession[0].id
 
@@ -4407,6 +4407,10 @@ Example responses:
           })
           .returning()
 
+        if (!newSession) {
+          return c.json({ error: "Failed to create new retro session" })
+        }
+
         sessionId = newSession.id
         console.log("📊 Created new retro session:", sessionId.substring(0, 8))
       }
@@ -4417,7 +4421,7 @@ Example responses:
         userId: member?.id,
         guestId: guest?.id,
         appId: app?.id,
-        messageId: message.id,
+        messageId: message.message.id,
         questionText: "Daily check-in question", // Will be updated from frontend
         sectionTitle: "Daily Reflection", // Will be updated from frontend
         questionIndex: 0, // Will be updated from frontend
