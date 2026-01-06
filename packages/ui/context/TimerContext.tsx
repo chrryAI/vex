@@ -179,6 +179,7 @@ export function TimerContextProvider({
     setTasks,
     isLoadingTasks,
     fetchTasks,
+    session,
   } = useAuth()
 
   const { enableSound } = useTheme()
@@ -485,7 +486,7 @@ export function TimerContextProvider({
     mutate: refetchTimer,
     isLoading: isLoadingTimer,
   } = useSWR(
-    deviceId && token && shouldFetchTimer ? ["timer"] : null, // Disabled by default, fetch manually with refetchTimer()
+    deviceId && token && session && shouldFetchTimer ? ["timer"] : null, // Disabled by default, fetch manually with refetchTimer()
     async () => {
       const response = await apiFetch(`${API_URL}/timers/${deviceId}`, {
         headers: {
