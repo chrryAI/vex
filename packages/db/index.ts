@@ -5333,6 +5333,80 @@ export async function createExpense(expense: newExpense) {
   return inserted
 }
 
+/**
+ * 🍷 Log Stripe premium subscription revenue to Vault
+ * Automatically calculates Stripe fees and net revenue
+ *
+ * @param userId - User ID who made the purchase
+ * @param grossAmount - Total amount paid by customer (in cents)
+ * @param currency - Currency code (e.g., "EUR", "USD")
+ * @param productType - Premium product type
+ * @param tier - Product tier (e.g., "public", "private", "standard")
+ * @param stripeInvoiceId - Stripe invoice ID for reference
+ * @param metadata - Additional metadata (e.g., appId, storeId, customDomain)
+ */
+export async function logStripeRevenue({
+  userId,
+  grossAmount,
+  currency,
+  productType,
+  tier,
+  stripeInvoiceId,
+  metadata = {},
+}: {
+  userId: string
+  grossAmount: number // in cents
+  currency: string
+  productType: "grape_analytics" | "pear_feedback" | "debugger" | "white_label"
+  tier: string
+  stripeInvoiceId: string
+  metadata?: Record<string, any>
+}) {
+  try {
+    // 🍷 Calculate Stripe fees: 1.4% + €0.25 (or $0.25)
+    const percentageFee = Math.round(grossAmount * 0.014) // 1.4%
+    const fixedFee = 25 // €0.25 or $0.25 in cents
+    const stripeFee = percentageFee + fixedFee
+    const netRevenue = grossAmount - stripeFee
+
+    console.log(`🍷 Logging Stripe revenue:`, {
+      userId: userId.substring(0, 8),
+      grossAmount: `${(grossAmount / 100).toFixed(2)} ${currency}`,
+      stripeFee: `${(stripeFee / 100).toFixed(2)} ${currency}`,
+      netRevenue: `${(netRevenue / 100).toFixed(2)} ${currency}`,
+      productType,
+      tier,
+    })
+
+    // Create revenue entry in expenses table
+    const revenueEntry = await createExpense({
+      userId,
+      amount: grossAmount, // Store gross amount as positive value
+      currency,
+      category: "revenue",
+      description: `${productType} (${tier}) subscription revenue`,
+      tags: [productType, tier, "stripe", "premium"],
+      receipt: stripeInvoiceId, // Store invoice ID in receipt field for reference
+    })
+
+    console.log(`✅ Revenue logged successfully:`, {
+      id: revenueEntry?.id?.substring(0, 8),
+      gross: `${(grossAmount / 100).toFixed(2)} ${currency}`,
+      net: `${(netRevenue / 100).toFixed(2)} ${currency}`,
+    })
+
+    return {
+      revenueEntry,
+      grossAmount,
+      stripeFee,
+      netRevenue,
+    }
+  } catch (error) {
+    console.error("❌ Error logging Stripe revenue:", error)
+    throw error
+  }
+}
+
 export type budgetCategory =
   | "food"
   | "transport"
@@ -5342,6 +5416,7 @@ export type budgetCategory =
   | "health"
   | "education"
   | "travel"
+  | "revenue"
   | "other"
 
 export async function getExpenses({

@@ -6,8 +6,10 @@ import {
   createPremiumSubscription,
   updatePremiumSubscription,
   cancelPremiumSubscription,
+  logStripeRevenue,
 } from "@repo/db"
 import { getGuest, getMember } from "../lib/auth"
+import { sendWebPush } from "../../lib/sendWebPush"
 
 // Type helper for Stripe webhook subscription data
 interface StripeSubscriptionWebhook extends Stripe.Subscription {
@@ -74,17 +76,23 @@ app.post("/subscribe", async (c) => {
     }
 
     // Create Stripe checkout session
+    const sessionMetadata = {
+      userId,
+      productType,
+      tier,
+      ...metadata,
+    }
+
     const checkoutSession = await stripe.checkout.sessions.create({
       customer_email: userEmail,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${FRONTEND_URL}/premium/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/premium/cancel`,
-      metadata: {
-        userId,
-        productType,
-        tier,
-        ...metadata,
+      metadata: sessionMetadata,
+      // 🍷 Propagate metadata to subscription and invoices (performance optimization)
+      subscription_data: {
+        metadata: sessionMetadata,
       },
     })
 
@@ -283,6 +291,107 @@ app.post("/webhooks/stripe", async (c) => {
         await cancelPremiumSubscription(subscription.id)
 
         console.log(`✅ Premium subscription canceled: ${subscription.id}`)
+        break
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object as StripeInvoiceWebhook
+        const subscriptionId =
+          typeof invoice.subscription === "string"
+            ? invoice.subscription
+            : invoice.subscription?.id
+
+        if (
+          subscriptionId &&
+          invoice.amount_paid &&
+          invoice.customer &&
+          invoice.id
+        ) {
+          try {
+            // 🍷 Performance optimization: Try to get metadata from subscription object first
+            // (metadata propagates from checkout session via subscription_data)
+            let metadata =
+              typeof invoice.subscription !== "string"
+                ? invoice.subscription?.metadata
+                : undefined
+
+            // Fallback: Retrieve subscription if metadata not available
+            if (
+              !metadata?.userId ||
+              !metadata?.productType ||
+              !metadata?.tier
+            ) {
+              console.log(
+                "⚠️ Metadata not found on invoice, retrieving subscription...",
+              )
+              const subscription =
+                await stripe.subscriptions.retrieve(subscriptionId)
+              metadata = subscription.metadata
+            }
+
+            if (metadata?.userId && metadata?.productType && metadata?.tier) {
+              // 🍷 Log revenue to Vault
+              const revenueResult = await logStripeRevenue({
+                userId: metadata.userId,
+                grossAmount: invoice.amount_paid, // Already in cents
+                currency: invoice.currency.toUpperCase(),
+                productType: metadata.productType as any,
+                tier: metadata.tier,
+                stripeInvoiceId: invoice.id,
+                metadata: {
+                  appId: metadata.appId || undefined,
+                  storeId: metadata.storeId || undefined,
+                  customDomain: metadata.customDomain || undefined,
+                },
+              })
+
+              console.log(
+                `🍷 Revenue logged: ${(invoice.amount_paid / 100).toFixed(2)} ${invoice.currency.toUpperCase()} for ${metadata.productType} (${metadata.tier})`,
+              )
+
+              // 🔔 Send "Kasa Doldu!" notification for significant revenue (€50+)
+              if (invoice.amount_paid >= 5000) {
+                try {
+                  const productNames: Record<string, string> = {
+                    grape_analytics: "Grape Analytics",
+                    pear_feedback: "Pear Feedback",
+                    debugger: "Debugger",
+                    white_label: "White Label",
+                  }
+
+                  const productName =
+                    productNames[metadata.productType] || metadata.productType
+
+                  await sendWebPush({
+                    c,
+                    userId: metadata.userId,
+                    payload: {
+                      title: "💰 Kasa Doldu!",
+                      body: `${productName} (${metadata.tier}): €${(invoice.amount_paid / 100).toFixed(2)} | Net: €${(revenueResult.netRevenue / 100).toFixed(2)}`,
+                      icon: "/icon-128.png",
+                      data: {
+                        url: `${FRONTEND_URL}/vault`,
+                      },
+                    },
+                  })
+
+                  console.log(
+                    `🔔 "Kasa Doldu!" notification sent for €${(invoice.amount_paid / 100).toFixed(2)}`,
+                  )
+                } catch (notifError) {
+                  console.error(
+                    "❌ Error sending revenue notification:",
+                    notifError,
+                  )
+                  // Don't fail webhook if notification fails
+                }
+              }
+            }
+          } catch (error) {
+            console.error("❌ Error logging revenue:", error)
+            // Don't fail the webhook if revenue logging fails
+          }
+        }
         break
       }
 

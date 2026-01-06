@@ -2746,6 +2746,7 @@ export const expenseCategory = [
   "health",
   "education",
   "travel",
+  "revenue", // 🍷 Premium subscription income
   "other",
 ] as const
 
