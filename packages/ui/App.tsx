@@ -211,29 +211,34 @@ export default function App({
       })
   }
 
-  const appsInternal = getApps()
+  const appsInternal = React.useMemo(
+    () => getApps(),
+    [
+      apps,
+      burnApp,
+      store,
+      chrry,
+      grape,
+      zarathustra,
+      atlas,
+      popcorn,
+      vex,
+      currentStoreId,
+      app,
+      baseApp,
+      userBaseApp,
+      guestBaseApp,
+      isBlossom,
+      focus,
+    ],
+  )
 
   // Use apps from context - sort: store base app first, Chrry second, rest keep original order
   const [appsState, setApps] = React.useState(appsInternal)
 
   useEffect(() => {
     setApps(appsInternal)
-  }, [
-    apps,
-    store,
-    currentStoreId,
-    baseApp,
-    app,
-    userBaseApp,
-    guestBaseApp,
-    atlas,
-    chrry,
-    grape,
-    focus,
-    popcorn,
-    zarathustra,
-    vex,
-  ])
+  }, [appsInternal])
 
   const grapes = auth.grapes
 

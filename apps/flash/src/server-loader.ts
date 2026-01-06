@@ -1,4 +1,5 @@
 import { v4 as uuidv4, validate } from "uuid"
+import { captureException } from "@sentry/node"
 import {
   VERSION,
   getThreadId,

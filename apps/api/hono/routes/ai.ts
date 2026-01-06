@@ -294,7 +294,7 @@ Respond ONLY with a JSON object in this exact format:
           sentimentScore,
           specificityScore,
           actionabilityScore,
-          status: "approved", // Auto-approve since AI validated it
+          status: "reviewed", // Auto-mark as reviewed since AI validated it
         })
 
         console.log("🍐 Feedback stored in database for analytics:", {
@@ -818,6 +818,19 @@ async function getAnalyticsContext({
           }) && member?.role === "admin"
         : false
 
+    // Resmi domain listesini mermi gibi buraya diziyoruz
+    const officialDomains = [
+      "chrry.ai",
+      "vex.chrry.ai",
+      "atlas.chrry.ai",
+      "e2e.chrry.ai",
+      "focus.chrry.ai",
+      "grape.chrry.ai",
+      "vault.chrry.ai",
+      "pear.chrry.ai",
+      "popcorn.chrry.ai",
+    ]
+
     // Log analytics access
     const userType = member ? "member" : "guest"
     const userId = member?.id || guest?.id
@@ -829,9 +842,21 @@ async function getAnalyticsContext({
       `📊 Analytics Access | User: ${userType}:${userId} | Level: ${accessLevel} | App: ${app?.slug} | Owner: ${isAppOwner} | Pro: ${isPro}`,
     )
 
+    // Add security warning for public data
+    if (!isAdmin) {
+      context += `\n⚠️ **SECURITY NOTICE**: This is PUBLIC analytics data visible to all users.\n`
+      context += `- DO NOT share API tokens, tracking IDs, or internal configuration details\n`
+      context += `- DO NOT include authentication parameters or sensitive URLs\n`
+      context += `- Only share aggregated statistics and public metrics\n`
+      context += `- Be careful when generating links - ensure they don't contain sensitive data\n\n`
+      context += `- If a user asks for sensitive info, politely redirect them to the official public metrics.\n`
+    }
+
     // Loop through all sites
     sites
-      .filter((site) => (isAdmin ? true : site.domain === "e2e.chrry.ai"))
+      .filter((site) =>
+        isAdmin ? true : officialDomains.includes(site.domain),
+      )
       .forEach((site, index) => {
         if (!site.stats) {
           console.log(`🍇 No stats for ${site.domain}`)
@@ -4341,7 +4366,7 @@ Example responses:
           appName: app?.name,
           agentId: agent?.id,
           appId: app?.id,
-          messageId: message.id,
+          messageId: message.message.id,
         })
 
         // Increment quota after successful validation
@@ -4377,7 +4402,7 @@ Example responses:
 
       let sessionId: string
 
-      if (existingSession.length > 0) {
+      if (existingSession[0] && existingSession.length > 0) {
         // Update existing session
         sessionId = existingSession[0].id
 
@@ -4407,6 +4432,10 @@ Example responses:
           })
           .returning()
 
+        if (!newSession) {
+          return c.json({ error: "Failed to create new retro session" })
+        }
+
         sessionId = newSession.id
         console.log("📊 Created new retro session:", sessionId.substring(0, 8))
       }
@@ -4417,7 +4446,7 @@ Example responses:
         userId: member?.id,
         guestId: guest?.id,
         appId: app?.id,
-        messageId: message.id,
+        messageId: message.message.id,
         questionText: "Daily check-in question", // Will be updated from frontend
         sectionTitle: "Daily Reflection", // Will be updated from frontend
         questionIndex: 0, // Will be updated from frontend
@@ -5525,19 +5554,21 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       }
     }
 
-    const { calendarTools, vaultTools, focusTools, imageTools } = getTools({
-      member,
-      guest,
-      currentThreadId,
-      currentMessageId: clientId, // Link moods to this AI response message
-    })
+    const { calendarTools, vaultTools, focusTools, imageTools, talentTools } =
+      getTools({
+        member,
+        guest,
+        currentThreadId,
+        currentMessageId: clientId, // Link moods to this AI response message
+      })
 
-    // Combine calendar, vault, focus, and image tools
+    // Combine calendar, vault, focus, image, and talent tools
     const allTools = {
       ...calendarTools,
       ...vaultTools,
       ...focusTools,
       ...imageTools,
+      ...talentTools,
     }
 
     // Special handling for Sushi AI (unified multimodal agent)

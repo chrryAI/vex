@@ -571,6 +571,7 @@ const Thread = ({
                                 <CircleX size={11} />
                               </Button>
                               <Button
+                                data-testid="retro-button"
                                 className="link"
                                 style={{
                                   ...utilities.link.style,
