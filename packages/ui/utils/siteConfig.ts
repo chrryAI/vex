@@ -2202,7 +2202,7 @@ export function detectSiteModeDomain(
 ): SiteMode {
   const devMode = "vault"
 
-  if (isDevelopment) {
+  if (isDevelopment && !checkIsExtension()) {
     return devMode
   }
 

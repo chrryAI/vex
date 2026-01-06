@@ -490,7 +490,7 @@ export function AuthProvider({
                 title: "Sato Vibes",
                 questions: [
                   "Sato mudur hocam?",
-                  "Hocam mermi gibi massahllah.",
+                  "Hocam mermi gibi mi massahllah?",
                   "Ne yapalim hocam?",
                 ],
               },
@@ -879,12 +879,11 @@ export function AuthProvider({
     const nextSectionIndex =
       (dailyQuestionSectionIndex + 1) % context.sections.length
 
-    // Check if we looped back to start (wrapped around)
-    // If wrapping around, we might want to disable retro, BUT logic says "loop to beginning"
-
+    // Update state - dailyQuestionData will update automatically
+    // and Chat.tsx will handle setting the input
     setDailyQuestionSectionIndex(nextSectionIndex)
     setDailyQuestionIndex(0)
-  }, [dailyQuestionSectionIndex, app])
+  }, [dailyQuestionSectionIndex, app, dailyQuestions])
 
   const dailyQuestionData = useMemo(() => {
     if (!isRetro) return null
