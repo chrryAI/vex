@@ -24,7 +24,7 @@ import { isOwner, capitalizeFirstLetter } from "../../utils"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
-import { dailyQuestions } from "../../utils/dailyQuestions"
+import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
 import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
 import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
@@ -479,6 +479,26 @@ export function AuthProvider({
   const [isRetro, setIsRetroInternal] = useState(false)
   const isRetroRef = useRef(isRetro)
 
+  const dailyQuestions =
+    user?.role === "admin"
+      ? {
+          ...dailyQuestionsUtil,
+          default: {
+            title: "Sato MODE",
+            sections: [
+              {
+                title: "Sato Vibes",
+                questions: [
+                  "Sato mudur hocam?",
+                  "Hocam mermi gibi mi massahllah?",
+                  "Ne yapalim hocam?",
+                ],
+              },
+            ],
+          },
+        }
+      : dailyQuestionsUtil
+
   const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
 
@@ -859,12 +879,11 @@ export function AuthProvider({
     const nextSectionIndex =
       (dailyQuestionSectionIndex + 1) % context.sections.length
 
-    // Check if we looped back to start (wrapped around)
-    // If wrapping around, we might want to disable retro, BUT logic says "loop to beginning"
-
+    // Update state - dailyQuestionData will update automatically
+    // and Chat.tsx will handle setting the input
     setDailyQuestionSectionIndex(nextSectionIndex)
     setDailyQuestionIndex(0)
-  }, [dailyQuestionSectionIndex, app])
+  }, [dailyQuestionSectionIndex, app, dailyQuestions])
 
   const dailyQuestionData = useMemo(() => {
     if (!isRetro) return null

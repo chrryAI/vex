@@ -317,7 +317,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.88",
+  version: "26.10.89",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -2202,7 +2202,7 @@ export function detectSiteModeDomain(
 ): SiteMode {
   const devMode = "vault"
 
-  if (isDevelopment) {
+  if (isDevelopment && !checkIsExtension()) {
     return devMode
   }
 
