@@ -24,7 +24,7 @@ import { isOwner, capitalizeFirstLetter } from "../../utils"
 import ago from "../../utils/timeAgo"
 import { useTheme } from "../ThemeContext"
 import { cleanSlug } from "../../utils/clearLocale"
-import { dailyQuestions } from "../../utils/dailyQuestions"
+import { dailyQuestions as dailyQuestionsUtil } from "../../utils/dailyQuestions"
 import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
 import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
@@ -478,6 +478,26 @@ export function AuthProvider({
 
   const [isRetro, setIsRetroInternal] = useState(false)
   const isRetroRef = useRef(isRetro)
+
+  const dailyQuestions =
+    user?.role === "admin"
+      ? {
+          ...dailyQuestionsUtil,
+          default: {
+            title: "Sato MODE",
+            sections: [
+              {
+                title: "Sato Vibes",
+                questions: [
+                  "Sato mudur hocam?",
+                  "Hocam mermi gibi massahllah.",
+                  "Ne yapalim hocam?",
+                ],
+              },
+            ],
+          },
+        }
+      : dailyQuestionsUtil
 
   const [dailyQuestionSectionIndex, setDailyQuestionSectionIndex] = useState(0)
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)

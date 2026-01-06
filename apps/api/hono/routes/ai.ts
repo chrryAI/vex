@@ -86,6 +86,7 @@ import {
   extractPDFText,
   GEMINI_API_KEY,
   REPLICATE_API_KEY,
+  OPENROUTER_API_KEY,
   wait,
   isCollaborator,
   getHourlyLimit,
@@ -4855,6 +4856,22 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
         model = deepseekProvider(agent.modelId)
         break
       case "sushi":
+        // console.log("🍣 Using OpenRouter model")
+        // const openrouterKey = appApiKeys.openrouter || OPENROUTER_API_KEY
+        // if (appApiKeys.openrouter) {
+        //   console.log("✅ Using app-specific OpenRouter API key")
+        // }
+        // const provider = createOpenAI({
+        //   apiKey: openrouterKey,
+        //   baseURL: "https://openrouter.ai/api/v1",
+        //   headers: {
+        //     "HTTP-Referer": "https://chrry.ai",
+        //     "X-Title": "Chrry AI Ecosystem",
+        //   },
+        // })
+
+        // model = provider("xiaomi/mimo-v2-flash:free")
+        // model = openrouterProvider(agent.modelId)
         const sushiKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
         if (appApiKeys.deepseek) {
           console.log("✅ Using app-specific DeepSeek API key for Sushi")
@@ -5744,7 +5761,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
 
           // Monitor inactivity to detect stuck streams (Bun-compatible)
-          const INACTIVITY_TIMEOUT_MS = 30000 // 30 seconds of no activity = stuck (increased for reasoning models)
+          const INACTIVITY_TIMEOUT_MS = 60000 // 60 seconds of no activity = stuck (increased for reasoning models)
           let lastActivityTime = Date.now()
           let streamFinished = false
           let monitoringInterval: NodeJS.Timeout | null = null

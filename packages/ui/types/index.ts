@@ -870,6 +870,7 @@ export type app = {
     deepseek?: string
     perplexity?: string
     replicate?: string
+    openrouter?: string
   } | null
   limits: {
     promptInput?: number

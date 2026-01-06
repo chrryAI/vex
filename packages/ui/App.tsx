@@ -138,7 +138,6 @@ export default function App({
     userBaseStore,
     canBurn,
     setBurn,
-    setIsPear,
     isPear,
     isIDE,
     ...auth
@@ -214,6 +213,7 @@ export default function App({
   const appsInternal = React.useMemo(
     () => getApps(),
     [
+      getApps, // 🎯 Linter'ın istediği o kritik eksik!
       apps,
       burnApp,
       store,
@@ -230,6 +230,7 @@ export default function App({
       guestBaseApp,
       isBlossom,
       focus,
+      isPear,
     ],
   )
 
