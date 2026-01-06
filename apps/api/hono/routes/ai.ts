@@ -117,7 +117,28 @@ interface StreamController {
   error: (e?: any) => void
 }
 
-const streamControllers = new Map<string, StreamController>()
+const streamControllers = new Map<
+  string,
+  StreamController & { createdAt: number }
+>()
+
+// Sato optimization #6: Auto-cleanup stale stream controllers to prevent memory leaks
+const AUTO_CLEANUP_TIMEOUT = 5 * 60 * 1000 // 5 minutes
+setInterval(() => {
+  const now = Date.now()
+  streamControllers.forEach((controller, id) => {
+    // Remove controllers older than 5 minutes (likely abandoned streams)
+    if (now - controller.createdAt > AUTO_CLEANUP_TIMEOUT) {
+      console.log(`🧹 Cleaning up stale stream controller: ${id}`)
+      streamControllers.delete(id)
+    }
+  })
+}, AUTO_CLEANUP_TIMEOUT)
+
+// Helper to register stream controller with timestamp
+const registerStreamController = (id: string, controller: StreamController) => {
+  streamControllers.set(id, { ...controller, createdAt: Date.now() })
+}
 
 const estimateTokens = (content?: string): number => {
   if (!content) return 0
@@ -2254,8 +2275,9 @@ ${
     if (messageCount <= 15) return 20 // Growing thread - moderate context
     if (messageCount <= 30) return 15 // Established thread - balanced
     if (messageCount <= 50) return 12 // Long thread - some context
-    if (messageCount <= 75) return 8 // Very long - minimal context
-    return 5 // Extremely long - just essentials
+    if (messageCount <= 75) return 5 // Very long - reduced from 8 (Sato optimization)
+    if (messageCount <= 100) return 3 // Extremely long - critical only (Sato optimization)
+    return 1 // Ultra long threads - absolute essentials only (Sato optimization)
   })()
 
   let {
@@ -5153,7 +5175,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       enqueue: () => {},
       error: () => {},
     }
-    streamControllers.set(streamId, controller)
+    registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
     const testResponse = faker.lorem.sentence({
       min: content.includes("long") ? 550 : 80,
@@ -5422,7 +5444,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           enqueue: () => {},
           error: () => {},
         }
-        streamControllers.set(streamId, controller)
+        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
         // Create AI message structure for streaming
         const fluxStreamingMessage = {
@@ -5693,7 +5715,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           enqueue: () => {},
           error: () => {},
         }
-        streamControllers.set(streamId, controller)
+        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
         console.log("🍣 Step 4: Controller set")
 
         // Create AI message structure for Sushi streaming chunks
@@ -6180,7 +6202,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           enqueue: () => {},
           error: () => {},
         }
-        streamControllers.set(streamId, controller)
+        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
         // Create AI message structure for DeepSeek streaming chunks
         const deepSeekStreamingMessage = {
@@ -6462,7 +6484,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           enqueue: () => {},
           error: () => {},
         }
-        streamControllers.set(streamId, controller)
+        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
         // Create AI message structure for Gemini streaming
         const geminiStreamingMessage = {
@@ -6662,7 +6684,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         enqueue: () => {},
         error: () => {},
       }
-      streamControllers.set(streamId, controller)
+      registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
       // Create AI message structure for streaming chunks
       const streamingMessage = {
