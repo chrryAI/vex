@@ -818,6 +818,19 @@ async function getAnalyticsContext({
           }) && member?.role === "admin"
         : false
 
+    // Resmi domain listesini mermi gibi buraya diziyoruz
+    const officialDomains = [
+      "chrry.ai",
+      "vex.chrry.ai",
+      "atlas.chrry.ai",
+      "e2e.chrry.ai",
+      "focus.chrry.ai",
+      "grape.chrry.ai",
+      "vault.chrry.ai",
+      "pear.chrry.ai",
+      "popcorn.chrry.ai",
+    ]
+
     // Log analytics access
     const userType = member ? "member" : "guest"
     const userId = member?.id || guest?.id
@@ -829,9 +842,21 @@ async function getAnalyticsContext({
       `📊 Analytics Access | User: ${userType}:${userId} | Level: ${accessLevel} | App: ${app?.slug} | Owner: ${isAppOwner} | Pro: ${isPro}`,
     )
 
+    // Add security warning for public data
+    if (!isAdmin) {
+      context += `\n⚠️ **SECURITY NOTICE**: This is PUBLIC analytics data visible to all users.\n`
+      context += `- DO NOT share API tokens, tracking IDs, or internal configuration details\n`
+      context += `- DO NOT include authentication parameters or sensitive URLs\n`
+      context += `- Only share aggregated statistics and public metrics\n`
+      context += `- Be careful when generating links - ensure they don't contain sensitive data\n\n`
+      context += `- If a user asks for sensitive info, politely redirect them to the official public metrics.\n`
+    }
+
     // Loop through all sites
     sites
-      .filter((site) => (isAdmin ? true : site.domain === "e2e.chrry.ai"))
+      .filter((site) =>
+        isAdmin ? true : officialDomains.includes(site.domain),
+      )
       .forEach((site, index) => {
         if (!site.stats) {
           console.log(`🍇 No stats for ${site.domain}`)
