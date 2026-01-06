@@ -5525,19 +5525,21 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       }
     }
 
-    const { calendarTools, vaultTools, focusTools, imageTools } = getTools({
-      member,
-      guest,
-      currentThreadId,
-      currentMessageId: clientId, // Link moods to this AI response message
-    })
+    const { calendarTools, vaultTools, focusTools, imageTools, talentTools } =
+      getTools({
+        member,
+        guest,
+        currentThreadId,
+        currentMessageId: clientId, // Link moods to this AI response message
+      })
 
-    // Combine calendar, vault, focus, and image tools
+    // Combine calendar, vault, focus, image, and talent tools
     const allTools = {
       ...calendarTools,
       ...vaultTools,
       ...focusTools,
       ...imageTools,
+      ...talentTools,
     }
 
     // Special handling for Sushi AI (unified multimodal agent)

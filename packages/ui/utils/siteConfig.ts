@@ -2245,6 +2245,14 @@ export function detectSiteModeDomain(
     return "grape"
   }
 
+  if (matchesDomain(host, "pear.chrry.ai")) {
+    return "pear"
+  }
+
+  if (matchesDomain(host, "vault.chrry.ai")) {
+    return "vault"
+  }
+
   if (matchesDomain(host, "sushi.chrry.ai")) {
     return "sushi"
   }
@@ -2364,6 +2372,8 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "grape",
     "staging",
     "burn",
+    "pear",
+    "vault",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -2482,6 +2492,14 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
 
   if (mode === "staging") {
     return staging
+  }
+
+  if (mode === "pear") {
+    return pear
+  }
+
+  if (mode === "vault") {
+    return vault
   }
 
   if (isE2E) {

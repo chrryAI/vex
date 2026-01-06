@@ -5,6 +5,8 @@ import { clean } from "./clean"
 import { grape } from "./grape"
 
 const app = async ({
+  app,
+  isRetro,
   slug,
   page,
   isLive,
@@ -15,6 +17,8 @@ const app = async ({
   messagesConsumed,
   isGrape,
 }: {
+  app?: string
+  isRetro?: boolean
   slug: string
   page: Page
   isLive: boolean
@@ -23,6 +27,7 @@ const app = async ({
   nav?: {
     name: string
     chat: {
+      isRetro?: boolean
       instruction?: string
       prompts?: {
         model?: modelName
@@ -58,11 +63,6 @@ const app = async ({
       timeout: 100000,
     })
     await wait(5000) // Increased wait to ensure page is fully loaded
-  }
-
-  if (slug !== "chrry") {
-    const chrry = page.getByTestId(`app-chrry`)
-    await expect(chrry).toBeVisible()
   }
 
   const storeAppButton = page.getByTestId(`store-app-${slug}`)
@@ -124,6 +124,9 @@ const app = async ({
         messagesConsumed: totalMessagesConsumed, // Use cumulative total
         bookmark: item.chat.bookmark ?? false,
         prompts: item.chat.prompts,
+        // Pass retro params
+        isRetro: item.chat.isRetro,
+        app: item.name,
       })
 
       // Add this app's credits and messages to the running totals

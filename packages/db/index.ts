@@ -6839,3 +6839,19 @@ export const getAnalyticsSites = async () => {
   const sites = await db.select().from(analyticsSites)
   return sites
 }
+
+// Talent Marketplace Helpers
+export const createTalentProfile = async (
+  talentProfile: typeof talentProfiles.$inferInsert,
+) => {
+  try {
+    const [created] = await db
+      .insert(talentProfiles)
+      .values(talentProfile)
+      .returning()
+    return created
+  } catch (error) {
+    console.error("Error creating talent profile:", error)
+    return null
+  }
+}
