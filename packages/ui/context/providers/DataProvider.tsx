@@ -202,7 +202,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.9.66"
+  const VERSION = "1.9.69"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -469,7 +469,9 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const { data: aiAgentsData } = useSWR<aiAgent[]>(
     siteConfig.mode !== "chrryDev" && aiAgents?.length > 0
       ? null
-      : token && ["aiAgents", token, app?.id],
+      : token && session
+        ? ["aiAgents", token, app?.id]
+        : null,
     async () => {
       const url = new URL(`${API_URL}/aiAgents`)
       if (app?.id) {

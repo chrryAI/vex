@@ -1561,7 +1561,7 @@ app.post("/", async (c) => {
     canSubmit?: boolean
   }
 
-  const app = rest.appId
+  let app = rest.appId
     ? await getApp({
         id: rest.appId,
         depth: 1,
@@ -1858,7 +1858,7 @@ ${
   const content = message.message.content
   const threadId = message.message.threadId
 
-  const thread = await getThread({ id: message.message.threadId })
+  let thread = await getThread({ id: message.message.threadId })
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
@@ -2977,22 +2977,43 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         isMainThread: true,
         bookmarks,
       })
+
+      thread = await getThread({
+        id: thread.id,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
+
+      if (!thread) {
+        return c.json({ error: "Thread not found" }, { status: 404 })
+      }
+
       await updateApp({
         ...app,
         mainThreadId: thread.id,
       })
 
-      app.mainThreadId = thread.id
-      thread.isMainThread = true
-      thread.bookmarks = bookmarks
-      // thread.mainThreadId = thread.id
-
-      // app = await getApp({ id: app.id, skipCache: true })
+      app = await getApp({
+        id: app.id,
+        ownerId: member?.id || guest?.id,
+        userId: member?.id,
+        guestId: guest?.id,
+        skipCache: true,
+      })
+      console.log(`🚀 ~ app.post ~ app:`, app?.name)
     } catch (error) {
       captureException(error)
     }
 
-    aiCoachContext = `
+    if (!app) {
+      return c.json({ error: "App not found" }, { status: 404 })
+    }
+
+    // Only show this message if we're actually in the main thread
+    const isActuallyMainThread = thread?.id === app.mainThreadId
+
+    aiCoachContext = isActuallyMainThread
+      ? `
 ## 🎉 First Time Using Your App!
 
 This is the **first message** in your newly created app "${app.name}"!
@@ -3013,6 +3034,7 @@ This is the **first message** in your newly created app "${app.name}"!
 
 Now, how can I help you get started with ${app.name}?
 `
+      : "" // Not the main thread, don't show the special message
   } else if (draft) {
     const isNewApp = !draft.id
     const isUpdate = !!draft.id
@@ -3412,6 +3434,14 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     // brandKnowledge,
     aiCoachContext,
   ].join("")
+
+  if (!thread) {
+    return c.json({ error: "Thread not found" }, { status: 404 })
+  }
+
+  if (!app) {
+    return c.json({ error: "App not found" }, { status: 404 })
+  }
 
   const creditsLeft = member?.creditsLeft || guest?.creditsLeft
 
