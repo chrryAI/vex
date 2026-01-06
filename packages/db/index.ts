@@ -44,6 +44,15 @@ import {
   timers,
   moods,
   realtimeAnalytics,
+  pearFeedback,
+  retroSessions,
+  retroResponses,
+  talentProfiles,
+  talentThreads,
+  recruitmentFlows,
+  talentEarnings,
+  talentInvitations,
+  premiumSubscriptions,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -92,7 +101,18 @@ import {
   setCache,
 } from "./src/cache"
 
-export { realtimeAnalytics }
+export {
+  realtimeAnalytics,
+  pearFeedback,
+  retroSessions,
+  retroResponses,
+  talentProfiles,
+  talentThreads,
+  recruitmentFlows,
+  talentEarnings,
+  talentInvitations,
+  premiumSubscriptions,
+}
 
 dotenv.config()
 
@@ -1760,511 +1780,164 @@ export async function migrateUser({
   user,
   guest,
 }: {
-  user: user
-  guest: guest
+  user: any // Tip tanımların varsa 'user' tipini kullan
+  guest: any
 }) {
-  const limit = 100000
-  if (!guest || !user) return
-  if (guest.migratedToUser || user.migratedFromGuest) return
+  if (!guest || !user) return { success: false, error: "Missing records" }
 
-  // Migrate threads§
-  const guestThreads = await db
-    .select()
-    .from(threads)
-    .where(eq(threads.guestId, guest.id))
-    .limit(limit)
+  // Çift migration'ı önle
+  if (guest.migratedToUser || user.migratedFromGuest) {
+    return { success: false, error: "Already migrated" }
+  }
 
-  const { id: userId } = user
+  const userId = user.id
+  const guestId = guest.id
 
-  await Promise.all(
-    guestThreads.map(async (thread) => {
-      if (
-        isOwner(thread, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateThread({
-          ...thread,
-          userId,
-          guestId: null,
-        })
+  return await db.transaction(async (tx) => {
+    console.log(
+      `🚀 Starting high-speed migration: Guest(${guestId}) -> User(${userId})`,
+    )
+
+    try {
+      const now = new Date()
+
+      // --- BULK UPDATES (High Performance) ---
+      // Tek bir SQL sorgusu ile tüm tabloyu güncelliyoruz, döngü yok!
+
+      const [tCount, mCount, memCount] = await Promise.all([
+        tx
+          .update(threads)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(threads.guestId, guestId))
+          .returning({ id: threads.id }),
+        tx
+          .update(messages)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(messages.guestId, guestId))
+          .returning({ id: messages.id }),
+        tx
+          .update(memories)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(memories.guestId, guestId))
+          .returning({ id: memories.id }),
+        tx
+          .update(creditUsage)
+          .set({ userId, guestId: null })
+          .where(eq(creditUsage.guestId, guestId)),
+        tx
+          .update(instructions)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(instructions.guestId, guestId)),
+        tx
+          .update(characterProfiles)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(characterProfiles.guestId, guestId)),
+        tx
+          .update(calendarEvents)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(calendarEvents.guestId, guestId)),
+        tx
+          .update(expenses)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(expenses.guestId, guestId)),
+        tx
+          .update(budgets)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(budgets.guestId, guestId)),
+        tx
+          .update(tasks)
+          .set({ userId, guestId: null })
+          .where(eq(tasks.guestId, guestId)),
+        tx
+          .update(moods)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(moods.guestId, guestId)),
+        tx
+          .update(stores)
+          .set({ userId, guestId: null, updatedOn: now, slug: user.userName })
+          .where(eq(stores.guestId, guestId)),
+        tx
+          .update(apps)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(apps.guestId, guestId)),
+      ])
+
+      // --- ÖZEL MANTIK: TIMERS ---
+      // Kullanıcının hali hazırda bir sayacı yoksa misafirinkini al
+      const existingUserTimer = await tx
+        .select()
+        .from(timers)
+        .where(eq(timers.userId, userId))
+        .limit(1)
+      if (existingUserTimer.length === 0) {
+        await tx
+          .update(timers)
+          .set({ userId, guestId: null, updatedOn: now })
+          .where(eq(timers.guestId, guestId))
       }
-    }),
-  )
 
-  const tasks = await getTasks({ guestId: guest.id, pageSize: limit })
-  await Promise.all(
-    tasks.tasks.map(async (task) => {
-      if (
-        isOwner(task, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateTask({
-          ...task,
-          userId,
-          guestId: null,
-        })
+      // --- ÖZEL MANTIK: CREDITS & SUGGESTIONS ---
+      const guestCredits =
+        guest.credits > GUEST_CREDITS_PER_MONTH
+          ? guest.credits
+          : GUEST_CREDITS_PER_MONTH
+      const finalCredits =
+        guestCredits > user.credits ? guestCredits : user.credits
+
+      const userUpdateData: any = {
+        credits: finalCredits,
+        migratedFromGuest: true,
+        updatedOn: now,
       }
-    }),
-  )
 
-  const guestTimer = await getTimer({ guestId: guest.id })
+      // Eğer kullanıcıda instruction suggestion yoksa guest'ten taşı
+      if (
+        !user?.suggestions?.instructions?.length &&
+        guest?.suggestions?.instructions?.length
+      ) {
+        userUpdateData.suggestions = {
+          instructions: guest.suggestions.instructions,
+        }
+      }
 
-  const memberTimer = await getTimer({ userId })
+      await tx.update(users).set(userUpdateData).where(eq(users.id, userId))
 
-  if (guestTimer && !memberTimer) {
-    if (
-      isOwner(guestTimer, {
-        guestId: guest.id,
-      })
-    ) {
-      await updateTimer({
-        ...guestTimer,
-        userId,
-        guestId: null,
-      })
+      // --- FINAL: GUEST CLEANUP ---
+      // Soft-delete mantığı: Kaydı tamamen silmek yerine 'migrated' işaretliyoruz
+      // Eğer 'cascade delete' kullanıyorsan tx.delete(guests) diyebilirsin
+      await tx
+        .update(guests)
+        .set({
+          credits: 0,
+          migratedToUser: true,
+          fingerprint: uuidv4(), // Fingerprint'i boşa çıkarıyoruz
+          updatedOn: now,
+        })
+        .where(eq(guests.id, guestId))
+
+      console.log(
+        `✅ Migration successful! Threads: ${tCount.length}, Messages: ${mCount.length}, Memories: ${memCount.length}`,
+      )
+
+      // Transaction bittiği için cache'leri güvenle temizleyebiliriz
+      await Promise.all([invalidateUser(userId), invalidateGuest(guestId)])
+
+      return {
+        success: true,
+        stats: {
+          threads: tCount.length,
+          messages: mCount.length,
+          memories: memCount.length,
+        },
+      }
+    } catch (error) {
+      console.error(
+        "❌ CRITICAL: Migration failed, database rolled back.",
+        error,
+      )
+      throw error // Transaction'ı iptal eder
     }
-  }
-
-  const moods = await getMoods({ guestId: guest.id, pageSize: limit })
-  await Promise.all(
-    moods.moods.map(async (mood) => {
-      if (
-        isOwner(mood, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateMood({
-          ...mood,
-          userId,
-          guestId: null,
-        })
-      }
-    }),
-  )
-
-  const instructions = await getInstructions({
-    guestId: guest.id,
-    pageSize: limit,
   })
-  await Promise.all(
-    instructions.map(async (instruction) => {
-      if (
-        isOwner(instruction, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateInstruction({
-          ...instruction,
-          userId,
-          guestId: null,
-        })
-      }
-    }),
-  )
-
-  const calendarEvents = await getCalendarEvents({ guestId: guest.id })
-  await Promise.all(
-    calendarEvents.map(async (calendarEvent) => {
-      if (
-        isOwner(calendarEvent, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateCalendarEvent({
-          ...calendarEvent,
-          userId,
-          guestId: null,
-        })
-      }
-    }),
-  )
-
-  // Migrate expenses (Vault)
-  const guestExpenses = await getExpenses({
-    guestId: guest.id,
-    pageSize: limit,
-  })
-  await Promise.all(
-    guestExpenses.expenses.map(async (expense) => {
-      if (
-        isOwner(expense, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateExpense({
-          ...expense,
-          userId,
-          guestId: null,
-        })
-      }
-    }),
-  )
-
-  const budgets = await getBudgets({
-    guestId: guest.id,
-    pageSize: limit,
-  })
-
-  await Promise.all(
-    budgets.budgets.map(async (budget) => {
-      if (
-        isOwner(budget, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateBudget({
-          ...budget,
-          userId,
-          guestId: null,
-        })
-      }
-    }),
-  )
-
-  const placeHolders = await getPlaceHolders({ guestId: guest.id })
-  await Promise.all(
-    placeHolders.map(async (placeHolder) => {
-      if (
-        isOwner(placeHolder, {
-          guestId: guest.id,
-        })
-      ) {
-        await updatePlaceHolder({
-          ...placeHolder,
-          userId,
-          guestId: null,
-        })
-      }
-    }),
-  )
-
-  // Migrate messages
-  const messages = await getMessages({ guestId: guest.id, pageSize: limit })
-  await Promise.all(
-    messages.messages.map(async (message) => {
-      if (
-        isOwner(message.message, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateMessage({
-          ...message.message,
-          userId,
-          guestId: null,
-        })
-      }
-    }),
-  )
-
-  // Migrate subscription (required by Apple App Store guidelines)
-  const guestSubscription = await getSubscription({ guestId: guest.id })
-  if (guestSubscription) {
-    if (
-      isOwner(guestSubscription, {
-        guestId: guest.id,
-      })
-    ) {
-      await updateSubscription({
-        ...guestSubscription,
-        userId,
-      })
-    }
-  }
-
-  const creditUsage = await getCreditUsage({ guestId: guest.id })
-  await Promise.all(
-    creditUsage.map(async (creditUsage) => {
-      if (
-        isOwner(creditUsage, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateCreditUsage({
-          ...creditUsage,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const creditTransactions = await getCreditTransactions({ guestId: guest.id })
-  await Promise.all(
-    creditTransactions.map(async (creditTransaction) => {
-      if (
-        isOwner(creditTransaction, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateCreditTransaction({
-          ...creditTransaction,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const invitations = await getInvitations({ guestId: guest.id })
-  await Promise.all(
-    invitations.map(async (invitation) => {
-      if (
-        isOwner(invitation, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateInvitation({
-          ...invitation,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const documentChunks = await getDocumentChunks({ guestId: guest.id })
-  await Promise.all(
-    documentChunks.map(async (documentChunk) => {
-      if (
-        isOwner(documentChunk, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateDocumentChunk({
-          ...documentChunk,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const devices = await getDevices({ guestId: guest.id })
-  await Promise.all(
-    devices.devices.map(async (device) => {
-      if (
-        isOwner(device, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateDevice({
-          ...device,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const pushSubscriptions = await getPushSubscriptions({ guestId: guest.id })
-  await Promise.all(
-    pushSubscriptions.map(async (pushSubscription) => {
-      await updatePushSubscription({
-        id: pushSubscription.id,
-        userId,
-        guestId: null,
-        endpoint: pushSubscription.endpoint,
-        p256dh: pushSubscription.keys.p256dh,
-        auth: pushSubscription.keys.auth,
-        createdOn: pushSubscription.createdOn,
-        updatedOn: pushSubscription.updatedOn,
-      })
-    }),
-  )
-
-  const threadSummaries = await getThreadSummaries({
-    guestId: guest.id,
-    pageSize: limit,
-  })
-  await Promise.all(
-    threadSummaries.threadSummaries.map(async (threadSummary) => {
-      if (
-        isOwner(threadSummary, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateThreadSummary({
-          ...threadSummary,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const memories = await getMemories({ guestId: guest.id, pageSize: limit })
-  await Promise.all(
-    memories.memories.map(async (memory) => {
-      if (
-        isOwner(memory, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateMemory({
-          ...memory,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const characterProfiles = await getCharacterProfiles({ guestId: guest.id })
-  await Promise.all(
-    characterProfiles.map(async (characterProfile) => {
-      if (
-        isOwner(characterProfile, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateCharacterProfile({
-          ...characterProfile,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  if (
-    !user?.suggestions?.instructions?.length &&
-    guest?.suggestions?.instructions?.length
-  ) {
-    await updateUser({
-      ...user,
-      suggestions: {
-        instructions: guest?.suggestions?.instructions,
-      },
-    })
-  }
-
-  const messageEmbeddings = await getMessageEmbeddings({ guestId: guest.id })
-  await Promise.all(
-    messageEmbeddings.map(async (messageEmbedding) => {
-      if (
-        isOwner(messageEmbedding, {
-          guestId: guest.id,
-        })
-      ) {
-        await updateMessageEmbedding({
-          ...messageEmbedding,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const reactions = await getReactions({ guestId: guest.id })
-  await Promise.all(
-    reactions.map(async (reaction) => {
-      await updateReactions({
-        guestId: guest.id,
-        userId,
-        messageId: reaction.id,
-      })
-    }),
-  )
-
-  const bookmarks = await getBookmarks({ guestId: guest.id })
-  await Promise.all(
-    bookmarks.map(async (bookmark) => {
-      await updateBookmarks({
-        guestId: guest.id,
-        userId,
-        threadId: bookmark.id,
-      })
-    }),
-  )
-
-  // Migrate guest-created apps
-  const guestApps = await db
-    .select()
-    .from(apps)
-    .where(eq(apps.guestId, guest.id))
-    .limit(limit)
-  await Promise.all(
-    guestApps.map(async (app) => {
-      if (isOwner(app, { guestId: guest.id })) {
-        await updateApp({
-          ...(app as app),
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  // Migrate app orders
-  const guestAppOrders = await getAppOrders({ guestId: guest.id })
-  await Promise.all(
-    guestAppOrders.map(async (appOrder) => {
-      if (isOwner(appOrder, { guestId: guest.id })) {
-        await updateAppOrder({
-          ...appOrder.items,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  // // Migrate guest stores
-  const guestStores = await db
-    .select()
-    .from(stores)
-    .where(eq(stores.guestId, guest.id))
-    .limit(limit)
-  await Promise.all(
-    guestStores.map(async (store) => {
-      if (isOwner(store, { guestId: guest.id })) {
-        await updateStore({
-          ...store,
-          guestId: null,
-          userId,
-          slug: user.userName,
-        })
-      }
-    }),
-  )
-
-  // Migrate affiliate clicks
-  const guestAffiliateClicks = await getAffiliateClicks({ guestId: guest.id })
-  await Promise.all(
-    guestAffiliateClicks?.map(async (click) => {
-      if (isOwner(click, { guestId: guest.id })) {
-        await updateAffiliateClick({
-          ...click,
-          guestId: null,
-          userId,
-        })
-      }
-    }),
-  )
-
-  const guestCredits =
-    guest.credits > GUEST_CREDITS_PER_MONTH
-      ? guest.credits
-      : GUEST_CREDITS_PER_MONTH
-
-  const finalCredits = guestCredits > user.credits ? guestCredits : user.credits
-
-  const updatedUser = await updateUser({
-    ...user,
-    credits: finalCredits,
-    migratedFromGuest: true,
-  })
-
-  const updatedGuest = await updateGuest({
-    ...guest,
-    credits: 0,
-    migratedToUser: true,
-    fingerprint: uuidv4(),
-  })
-
-  return { user: updatedUser, guest: updatedGuest }
 }
 
 export const createAccount = async (account: newAccount) => {
@@ -5660,6 +5333,80 @@ export async function createExpense(expense: newExpense) {
   return inserted
 }
 
+/**
+ * 🍷 Log Stripe premium subscription revenue to Vault
+ * Automatically calculates Stripe fees and net revenue
+ *
+ * @param userId - User ID who made the purchase
+ * @param grossAmount - Total amount paid by customer (in cents)
+ * @param currency - Currency code (e.g., "EUR", "USD")
+ * @param productType - Premium product type
+ * @param tier - Product tier (e.g., "public", "private", "standard")
+ * @param stripeInvoiceId - Stripe invoice ID for reference
+ * @param metadata - Additional metadata (e.g., appId, storeId, customDomain)
+ */
+export async function logStripeRevenue({
+  userId,
+  grossAmount,
+  currency,
+  productType,
+  tier,
+  stripeInvoiceId,
+  metadata = {},
+}: {
+  userId: string
+  grossAmount: number // in cents
+  currency: string
+  productType: "grape_analytics" | "pear_feedback" | "debugger" | "white_label"
+  tier: string
+  stripeInvoiceId: string
+  metadata?: Record<string, any>
+}) {
+  try {
+    // 🍷 Calculate Stripe fees: 1.4% + €0.25 (or $0.25)
+    const percentageFee = Math.round(grossAmount * 0.014) // 1.4%
+    const fixedFee = 25 // €0.25 or $0.25 in cents
+    const stripeFee = percentageFee + fixedFee
+    const netRevenue = grossAmount - stripeFee
+
+    console.log(`🍷 Logging Stripe revenue:`, {
+      userId: userId.substring(0, 8),
+      grossAmount: `${(grossAmount / 100).toFixed(2)} ${currency}`,
+      stripeFee: `${(stripeFee / 100).toFixed(2)} ${currency}`,
+      netRevenue: `${(netRevenue / 100).toFixed(2)} ${currency}`,
+      productType,
+      tier,
+    })
+
+    // Create revenue entry in expenses table
+    const revenueEntry = await createExpense({
+      userId,
+      amount: grossAmount, // Store gross amount as positive value
+      currency,
+      category: "revenue",
+      description: `${productType} (${tier}) subscription revenue`,
+      tags: [productType, tier, "stripe", "premium"],
+      receipt: stripeInvoiceId, // Store invoice ID in receipt field for reference
+    })
+
+    console.log(`✅ Revenue logged successfully:`, {
+      id: revenueEntry?.id?.substring(0, 8),
+      gross: `${(grossAmount / 100).toFixed(2)} ${currency}`,
+      net: `${(netRevenue / 100).toFixed(2)} ${currency}`,
+    })
+
+    return {
+      revenueEntry,
+      grossAmount,
+      stripeFee,
+      netRevenue,
+    }
+  } catch (error) {
+    console.error("❌ Error logging Stripe revenue:", error)
+    throw error
+  }
+}
+
 export type budgetCategory =
   | "food"
   | "transport"
@@ -5669,6 +5416,7 @@ export type budgetCategory =
   | "health"
   | "education"
   | "travel"
+  | "revenue"
   | "other"
 
 export async function getExpenses({
@@ -6820,4 +6568,151 @@ export const getAnalyticsSite = async ({
 export const getAnalyticsSites = async () => {
   const sites = await db.select().from(analyticsSites)
   return sites
+}
+
+// Talent Marketplace Helpers
+export const createTalentProfile = async (
+  talentProfile: typeof talentProfiles.$inferInsert,
+) => {
+  try {
+    const [created] = await db
+      .insert(talentProfiles)
+      .values(talentProfile)
+      .returning()
+    return created
+  } catch (error) {
+    console.error("Error creating talent profile:", error)
+    return null
+  }
+}
+
+// ============================================================================
+// PREMIUM SUBSCRIPTIONS: Feature Gating & Management
+// ============================================================================
+
+export const hasPremiumAccess = async (
+  userId: string,
+  productType: "grape_analytics" | "pear_feedback" | "debugger" | "white_label",
+): Promise<boolean> => {
+  try {
+    // 🍷 God Mode: White Label subscribers get access to ALL premium features
+    const whiteLabelSub = await db
+      .select()
+      .from(premiumSubscriptions)
+      .where(
+        and(
+          eq(premiumSubscriptions.userId, userId),
+          eq(premiumSubscriptions.productType, "white_label"),
+          eq(premiumSubscriptions.status, "active"),
+        ),
+      )
+      .limit(1)
+
+    if (whiteLabelSub.length > 0) {
+      console.log(
+        `🍷 God Mode activated for user ${userId.substring(0, 8)} - White Label grants access to ${productType}`,
+      )
+      return true
+    }
+
+    // Check for specific product subscription
+    const subscription = await db
+      .select()
+      .from(premiumSubscriptions)
+      .where(
+        and(
+          eq(premiumSubscriptions.userId, userId),
+          eq(premiumSubscriptions.productType, productType),
+          eq(premiumSubscriptions.status, "active"),
+        ),
+      )
+      .limit(1)
+
+    return subscription.length > 0
+  } catch (error) {
+    console.error("Error checking premium access:", error)
+    return false
+  }
+}
+
+export const getPremiumSubscription = async (
+  userId: string,
+  productType?: string,
+) => {
+  try {
+    const query = db
+      .select()
+      .from(premiumSubscriptions)
+      .where(
+        and(
+          eq(premiumSubscriptions.userId, userId),
+          eq(premiumSubscriptions.status, "active"),
+          productType
+            ? eq(premiumSubscriptions.productType, productType as any)
+            : undefined,
+        ),
+      )
+
+    const subscriptions = await query
+    return productType ? subscriptions[0] : subscriptions
+  } catch (error) {
+    console.error("Error getting premium subscription:", error)
+    return null
+  }
+}
+
+export const createPremiumSubscription = async (
+  data: typeof premiumSubscriptions.$inferInsert,
+) => {
+  try {
+    const [created] = await db
+      .insert(premiumSubscriptions)
+      .values(data)
+      .returning()
+    return created
+  } catch (error) {
+    console.error("Error creating premium subscription:", error)
+    return null
+  }
+}
+
+export const updatePremiumSubscription = async (
+  stripeSubscriptionId: string,
+  data: Partial<typeof premiumSubscriptions.$inferInsert>,
+) => {
+  try {
+    const [updated] = await db
+      .update(premiumSubscriptions)
+      .set({ ...data, updatedOn: new Date() })
+      .where(
+        eq(premiumSubscriptions.stripeSubscriptionId, stripeSubscriptionId),
+      )
+      .returning()
+    return updated
+  } catch (error) {
+    console.error("Error updating premium subscription:", error)
+    return null
+  }
+}
+
+export const cancelPremiumSubscription = async (
+  stripeSubscriptionId: string,
+) => {
+  try {
+    const [canceled] = await db
+      .update(premiumSubscriptions)
+      .set({
+        status: "canceled",
+        canceledAt: new Date(),
+        updatedOn: new Date(),
+      })
+      .where(
+        eq(premiumSubscriptions.stripeSubscriptionId, stripeSubscriptionId),
+      )
+      .returning()
+    return canceled
+  } catch (error) {
+    console.error("Error canceling premium subscription:", error)
+    return null
+  }
 }

@@ -1153,8 +1153,6 @@ export function AuthProvider({
     domain?: string
     props?: Record<string, any>
   }) => {
-    if (burn) return
-    if (!memoriesEnabled) return
     if (!user && !guest) return
 
     // Throttle: Skip if same event was plausibleed recently
@@ -1221,22 +1219,28 @@ export function AuthProvider({
       os,
       browser,
       isPWA: isStandalone,
-      props: {
-        ...props,
-        isStandalone,
-        os,
-        device,
-        isMember: !!user,
-        isGuest: !!guest,
-        appName: app?.name,
-        appSlug: app?.slug,
-        baseAppName: baseApp?.name,
-        isSubscriber: !!(user || guest)?.subscription,
-        isOwner: isOwner(app, {
-          userId: user?.id,
-          guestId: guest?.id,
-        }),
-      },
+      props:
+        burn || !memoriesEnabled
+          ? {
+              burn,
+              memoriesEnabled,
+            }
+          : {
+              ...props,
+              isStandalone,
+              os,
+              device,
+              isMember: !!user,
+              isGuest: !!guest,
+              appName: app?.name,
+              appSlug: app?.slug,
+              baseAppName: baseApp?.name,
+              isSubscriber: !!(user || guest)?.subscription,
+              isOwner: isOwner(app, {
+                userId: user?.id,
+                guestId: guest?.id,
+              }),
+            },
     })
   }
 

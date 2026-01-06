@@ -58,6 +58,8 @@ export const chat = async ({
   creditsConsumed = 0,
   messagesConsumed = 0,
   bookmark = true,
+  isRetro = false,
+  app,
 }: {
   messagesConsumed?: number
   isSubscriber?: boolean
@@ -98,6 +100,8 @@ export const chat = async ({
   threadId?: string
   creditsConsumed?: number
   bookmark?: boolean
+  isRetro?: boolean
+  app?: string
 }) => {
   log({ page })
   let credits = isSubscriber ? 2000 : isMember ? 150 : 30
@@ -197,6 +201,51 @@ export const chat = async ({
   if (!isMember) {
     const login = page.getByTestId("login-from-chat-button")
     await expect(login).toBeVisible()
+  }
+
+  // Retro flow handling
+  if (isRetro) {
+    let questionCount = 3
+    // Check if app is Grape or Pear (which have 5 questions)
+    if (app && ["grape", "pear"].includes(app)) {
+      questionCount = 5
+    }
+
+    const retroButton = page.getByTestId("retro-button")
+    // Assuming the send button is the same one used for normal chat
+    const sendButton = page.getByTestId("chat-send-button")
+
+    for (let i = 0; i < questionCount; i++) {
+      // Wait for the agent's question stream to complete (indicated by delete button visibility)
+      const getAgentMessages = page.getByTestId("agent-message")
+      // Wait for at least one agent message to be present
+      await expect(async () => {
+        const count = await getAgentMessages.count()
+        expect(count).toBeGreaterThan(0)
+      }).toPass()
+
+      const lastAgentMsg = getAgentMessages.last()
+      const deleteBtn = lastAgentMsg.getByTestId("delete-message")
+
+      // Wait for stream to complete
+      await expect(deleteBtn).toBeVisible({ timeout: 30000 })
+
+      // Now answer the question
+      await expect(retroButton).toBeVisible()
+      await retroButton.click()
+      await wait(500)
+
+      // Then send
+      await expect(sendButton).toBeVisible()
+      await sendButton.click()
+
+      // Wait a bit for the next question to appear
+      await wait(2000)
+    }
+
+    // Wait for the retro to finish
+    await wait(2000)
+    return // Exit chat function after retro flow
   }
 
   // Update credits from page before final assertion (accounts for earned credits)

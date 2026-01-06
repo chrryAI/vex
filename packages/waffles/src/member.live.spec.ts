@@ -176,3 +176,43 @@ test("Grape", async ({ page }) => {
     isNewChat: true,
   })
 })
+
+test.skip("Retro", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+
+  await signIn({ page })
+
+  await app({
+    page,
+    isMember,
+    isLive,
+    slug: "vex",
+    nav: [
+      {
+        name: "vault", // Finance & Budgeting
+        chat: {
+          isRetro: true,
+        },
+      },
+
+      {
+        name: "grape", // Productivity & Focus
+        chat: {
+          isRetro: true,
+        },
+      },
+
+      {
+        name: "pear", // Travel & Navigation
+        chat: {
+          isRetro: true,
+        },
+      },
+    ],
+    isGrape: true,
+    isNewChat: true,
+  })
+})

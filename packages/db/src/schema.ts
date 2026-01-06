@@ -2746,6 +2746,7 @@ export const expenseCategory = [
   "health",
   "education",
   "travel",
+  "revenue", // 🍷 Premium subscription income
   "other",
 ] as const
 
@@ -3207,6 +3208,609 @@ export const taskLogs = pgTable("taskLog", {
 
 export type analyticsSession = typeof analyticsSessions.$inferSelect
 export type newAnalyticsSession = typeof analyticsSessions.$inferInsert
+
+// ============================================================================
+// PEAR FEEDBACK ANALYTICS SYSTEM
+// ============================================================================
+
+export const pearFeedback = pgTable(
+  "pearFeedback",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    // Relations
+    messageId: uuid("messageId").references(() => messages.id, {
+      onDelete: "cascade",
+    }),
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+
+    // Feedback content
+    content: text("content").notNull(),
+
+    // Categorization
+    feedbackType: text("feedbackType", {
+      enum: ["complaint", "suggestion", "praise", "bug", "feature_request"],
+    }).notNull(),
+
+    category: text("category", {
+      enum: [
+        "ux",
+        "performance",
+        "feature",
+        "bug",
+        "keyboard_shortcuts",
+        "ui_design",
+        "analytics",
+        "other",
+      ],
+    }).notNull(),
+
+    // Advanced analytics fields (AI-suggested for deeper insights)
+    categoryTags: jsonb("categoryTags").$type<string[]>(), // Multiple categories: ["ux", "performance"]
+    comparativeMention: text("comparativeMention"), // Track competitor comparisons: "better_than_notion"
+    firstImpression: boolean("firstImpression").default(false), // Flag feedback from first 30 seconds
+    emotionalTags: jsonb("emotionalTags").$type<string[]>(), // Emotional responses: ["delighted", "frustrated"]
+
+    // AI-powered scoring (0-1 scale)
+    sentimentScore: real("sentimentScore").notNull(), // -1 (negative) to +1 (positive)
+    specificityScore: real("specificityScore").notNull(), // 0 (vague) to 1 (specific)
+    actionabilityScore: real("actionabilityScore").notNull(), // 0 (not actionable) to 1 (actionable)
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      positivityFactors?: string[]
+      praiseCategories?: string[]
+      suggestedActions?: string[]
+      relatedFeatures?: string[]
+    }>(),
+
+    // Status tracking
+    status: text("status", {
+      enum: ["pending", "reviewed", "in_progress", "resolved", "wont_fix"],
+    })
+      .notNull()
+      .default("pending"),
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    resolvedOn: timestamp("resolvedOn", { mode: "date", withTimezone: true }),
+  },
+  (table) => ({
+    appIdIdx: index("pearFeedback_appId_idx").on(table.appId),
+    userIdIdx: index("pearFeedback_userId_idx").on(table.userId),
+    feedbackTypeIdx: index("pearFeedback_feedbackType_idx").on(
+      table.feedbackType,
+    ),
+    categoryIdx: index("pearFeedback_category_idx").on(table.category),
+    sentimentScoreIdx: index("pearFeedback_sentimentScore_idx").on(
+      table.sentimentScore,
+    ),
+    createdOnIdx: index("pearFeedback_createdOn_idx").on(table.createdOn),
+  }),
+)
+
+export type PearFeedback = typeof pearFeedback.$inferSelect
+export type NewPearFeedback = typeof pearFeedback.$inferInsert
+
+// ============================================================================
+// RETRO (DAILY CHECK-IN) TRACKING SYSTEM
+// ============================================================================
+
+export const retroSessions = pgTable(
+  "retroSessions",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    // Relations
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+
+    threadId: uuid("threadId").references(() => threads.id, {
+      onDelete: "cascade",
+    }),
+
+    // Session tracking
+    startedAt: timestamp("startedAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    completedAt: timestamp("completedAt", { mode: "date", withTimezone: true }),
+    duration: integer("duration"), // seconds
+
+    // Progress tracking
+    totalQuestions: integer("totalQuestions").notNull(),
+    questionsAnswered: integer("questionsAnswered").default(0).notNull(),
+    sectionsCompleted: integer("sectionsCompleted").default(0).notNull(),
+
+    // Engagement metrics
+    averageResponseLength: integer("averageResponseLength"),
+    skippedQuestions: integer("skippedQuestions").default(0).notNull(),
+
+    // Context
+    dailyQuestionSectionIndex: integer("dailyQuestionSectionIndex").notNull(),
+    dailyQuestionIndex: integer("dailyQuestionIndex").notNull(),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      completionRate?: number
+      engagementScore?: number
+      insights?: string[]
+    }>(),
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("retroSessions_userId_idx").on(table.userId),
+    appIdIdx: index("retroSessions_appId_idx").on(table.appId),
+    startedAtIdx: index("retroSessions_startedAt_idx").on(table.startedAt),
+    completedAtIdx: index("retroSessions_completedAt_idx").on(
+      table.completedAt,
+    ),
+  }),
+)
+
+export const retroResponses = pgTable(
+  "retroResponses",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    // Relations
+    sessionId: uuid("sessionId")
+      .references(() => retroSessions.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+    messageId: uuid("messageId").references(() => messages.id, {
+      onDelete: "set null",
+    }),
+
+    // Question context
+    questionText: text("questionText").notNull(),
+    sectionTitle: text("sectionTitle").notNull(),
+    questionIndex: integer("questionIndex").notNull(),
+    sectionIndex: integer("sectionIndex").notNull(),
+
+    // Response
+    responseText: text("responseText"),
+    responseLength: integer("responseLength"),
+    skipped: boolean("skipped").default(false).notNull(),
+
+    // Timing
+    askedAt: timestamp("askedAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    answeredAt: timestamp("answeredAt", { mode: "date", withTimezone: true }),
+    timeToAnswer: integer("timeToAnswer"), // seconds
+
+    // AI analysis
+    sentimentScore: real("sentimentScore"), // -1 to +1
+    insightQuality: real("insightQuality"), // 0-1 scale
+    actionableItems: jsonb("actionableItems").$type<string[]>(),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      emotionalTone?: string
+      keyThemes?: string[]
+      followUpSuggestions?: string[]
+    }>(),
+
+    // Timestamps
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    sessionIdIdx: index("retroResponses_sessionId_idx").on(table.sessionId),
+    userIdIdx: index("retroResponses_userId_idx").on(table.userId),
+    appIdIdx: index("retroResponses_appId_idx").on(table.appId),
+    askedAtIdx: index("retroResponses_askedAt_idx").on(table.askedAt),
+    skippedIdx: index("retroResponses_skipped_idx").on(table.skipped),
+  }),
+)
+
+export type RetroSession = typeof retroSessions.$inferSelect
+export type NewRetroSession = typeof retroSessions.$inferInsert
+
+export type RetroResponse = typeof retroResponses.$inferSelect
+export type NewRetroResponse = typeof retroResponses.$inferInsert
+
+// ============================================================================
+// TALENT MARKETPLACE: Sovereign Hiring System
+// ============================================================================
+
+export const talentProfiles = pgTable(
+  "talentProfiles",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+    userId: uuid("userId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Public identity
+    displayName: text("displayName").notNull(),
+    tagline: text("tagline"),
+    bio: text("bio"),
+    githubUrl: text("githubUrl"),
+
+    // AI Validation Scores
+    validationScore: real("validationScore").default(0), // 0-1
+    actionabilityScore: real("actionabilityScore").default(0), // 0-1
+    velocityScore: real("velocityScore").default(0), // Tasks/week
+
+    // Reputation
+    pearCreditsEarned: integer("pearCreditsEarned").default(0),
+    feedbackScore: real("feedbackScore").default(0),
+
+    // Availability
+    isHireable: boolean("isHireable").default(true),
+    hourlyRate: integer("hourlyRate"),
+    availability: text("availability", {
+      enum: ["full-time", "part-time", "contract", "not-available"],
+    }),
+
+    // Pre-chat barrier
+    preChatCredits: integer("preChatCredits").default(300),
+
+    // Skills
+    skills: jsonb("skills").$type<string[]>(),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      timezone?: string
+      languages?: string[]
+      preferredStack?: string[]
+    }>(),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("talentProfiles_userId_idx").on(table.userId),
+    isHireableIdx: index("talentProfiles_isHireable_idx").on(table.isHireable),
+    validationScoreIdx: index("talentProfiles_validationScore_idx").on(
+      table.validationScore,
+    ),
+  }),
+)
+
+export const talentThreads = pgTable(
+  "talentThreads",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+    talentProfileId: uuid("talentProfileId")
+      .references(() => talentProfiles.id, { onDelete: "cascade" })
+      .notNull(),
+    threadId: uuid("threadId")
+      .references(() => threads.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Visibility
+    visibility: text("visibility", {
+      enum: ["public", "unlisted", "private"],
+    }).default("public"),
+
+    // Showcase metadata
+    title: text("title").notNull(),
+    description: text("description"),
+    tags: jsonb("tags").$type<string[]>(),
+
+    // AI analysis
+    complexity: real("complexity"),
+    impactScore: real("impactScore"),
+    innovationScore: real("innovationScore"),
+
+    // Engagement
+    views: integer("views").default(0),
+    likes: integer("likes").default(0),
+
+    // Featured
+    isFeatured: boolean("isFeatured").default(false),
+    featuredOrder: integer("featuredOrder"),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    talentProfileIdIdx: index("talentThreads_talentProfileId_idx").on(
+      table.talentProfileId,
+    ),
+    threadIdIdx: index("talentThreads_threadId_idx").on(table.threadId),
+    visibilityIdx: index("talentThreads_visibility_idx").on(table.visibility),
+    isFeaturedIdx: index("talentThreads_isFeatured_idx").on(table.isFeatured),
+  }),
+)
+
+export const recruitmentFlows = pgTable(
+  "recruitmentFlows",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    // Parties
+    talentProfileId: uuid("talentProfileId")
+      .references(() => talentProfiles.id, { onDelete: "cascade" })
+      .notNull(),
+    companyUserId: uuid("companyUserId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Pre-chat payment
+    preChatPaid: boolean("preChatPaid").default(false),
+    preChatCredits: integer("preChatCredits").default(300),
+    paidAt: timestamp("paidAt", { mode: "date", withTimezone: true }),
+
+    // Conversation
+    threadId: uuid("threadId").references(() => threads.id, {
+      onDelete: "set null",
+    }),
+
+    // Status
+    status: text("status", {
+      enum: [
+        "pending",
+        "chatting",
+        "interviewing",
+        "offer",
+        "hired",
+        "rejected",
+        "withdrawn",
+      ],
+    }).default("pending"),
+
+    // Offer details
+    offerAmount: integer("offerAmount"),
+    offerType: text("offerType", {
+      enum: ["full-time", "part-time", "contract"],
+    }),
+    offerDetails: jsonb("offerDetails").$type<{
+      startDate?: string
+      duration?: string
+      benefits?: string[]
+    }>(),
+
+    // Metadata
+    companyName: text("companyName"),
+    companySize: text("companySize"),
+    notes: text("notes"),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    talentProfileIdIdx: index("recruitmentFlows_talentProfileId_idx").on(
+      table.talentProfileId,
+    ),
+    companyUserIdIdx: index("recruitmentFlows_companyUserId_idx").on(
+      table.companyUserId,
+    ),
+    statusIdx: index("recruitmentFlows_status_idx").on(table.status),
+    preChatPaidIdx: index("recruitmentFlows_preChatPaid_idx").on(
+      table.preChatPaid,
+    ),
+  }),
+)
+
+export const talentEarnings = pgTable(
+  "talentEarnings",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    talentProfileId: uuid("talentProfileId")
+      .references(() => talentProfiles.id, { onDelete: "cascade" })
+      .notNull(),
+    recruitmentFlowId: uuid("recruitmentFlowId").references(
+      () => recruitmentFlows.id,
+      { onDelete: "cascade" },
+    ),
+
+    // Transaction
+    type: text("type", {
+      enum: ["pre-chat", "contract", "referral", "pear-feedback"],
+    }).notNull(),
+
+    // Amounts
+    grossAmount: integer("grossAmount").notNull(),
+    platformFee: integer("platformFee").notNull(), // 30%
+    netAmount: integer("netAmount").notNull(), // 70%
+
+    // Status
+    status: text("status", {
+      enum: ["pending", "completed", "withdrawn", "refunded"],
+    }).default("pending"),
+
+    // Payout
+    withdrawnAt: timestamp("withdrawnAt", { mode: "date", withTimezone: true }),
+    withdrawnTo: text("withdrawnTo"),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    talentProfileIdIdx: index("talentEarnings_talentProfileId_idx").on(
+      table.talentProfileId,
+    ),
+    typeIdx: index("talentEarnings_type_idx").on(table.type),
+    statusIdx: index("talentEarnings_status_idx").on(table.status),
+  }),
+)
+
+export const talentInvitations = pgTable(
+  "talentInvitations",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+
+    talentProfileId: uuid("talentProfileId")
+      .references(() => talentProfiles.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Invited company
+    invitedEmail: text("invitedEmail").notNull(),
+    invitedCompany: text("invitedCompany"),
+
+    // Access
+    accessLevel: text("accessLevel", {
+      enum: ["unlisted-threads", "full-profile", "pre-chat-waived"],
+    }).default("unlisted-threads"),
+
+    // Status
+    status: text("status", {
+      enum: ["pending", "accepted", "expired"],
+    }).default("pending"),
+
+    expiresAt: timestamp("expiresAt", { mode: "date", withTimezone: true }),
+    acceptedAt: timestamp("acceptedAt", { mode: "date", withTimezone: true }),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    talentProfileIdIdx: index("talentInvitations_talentProfileId_idx").on(
+      table.talentProfileId,
+    ),
+    invitedEmailIdx: index("talentInvitations_invitedEmail_idx").on(
+      table.invitedEmail,
+    ),
+    statusIdx: index("talentInvitations_status_idx").on(table.status),
+  }),
+)
+
+export type TalentProfile = typeof talentProfiles.$inferSelect
+export type NewTalentProfile = typeof talentProfiles.$inferInsert
+
+export type TalentThread = typeof talentThreads.$inferSelect
+export type NewTalentThread = typeof talentThreads.$inferInsert
+
+export type RecruitmentFlow = typeof recruitmentFlows.$inferSelect
+export type NewRecruitmentFlow = typeof recruitmentFlows.$inferInsert
+
+export type TalentEarning = typeof talentEarnings.$inferSelect
+export type NewTalentEarning = typeof talentEarnings.$inferInsert
+
+export type TalentInvitation = typeof talentInvitations.$inferSelect
+export type NewTalentInvitation = typeof talentInvitations.$inferInsert
+
+// ============================================================================
+// PREMIUM SUBSCRIPTIONS: Stripe Integration
+// ============================================================================
+
+export const premiumSubscriptions = pgTable(
+  "premiumSubscriptions",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+    userId: uuid("userId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+
+    // Stripe data
+    stripeSubscriptionId: text("stripeSubscriptionId").notNull().unique(),
+    stripePriceId: text("stripePriceId").notNull(),
+    stripeProductId: text("stripeProductId").notNull(),
+    stripeCustomerId: text("stripeCustomerId"),
+
+    // Product info
+    productType: text("productType", {
+      enum: ["grape_analytics", "pear_feedback", "debugger", "white_label"],
+    }).notNull(),
+    tier: text("tier", {
+      enum: ["public", "private", "shared", "standard"],
+    }).notNull(),
+
+    // Status
+    status: text("status", {
+      enum: ["active", "canceled", "past_due", "trialing", "incomplete"],
+    }).notNull(),
+
+    // Billing
+    currentPeriodStart: timestamp("currentPeriodStart", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    currentPeriodEnd: timestamp("currentPeriodEnd", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
+    canceledAt: timestamp("canceledAt", { mode: "date", withTimezone: true }),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      appId?: string
+      storeId?: string
+      customDomain?: string
+      features?: string[]
+    }>(),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("premiumSubscriptions_userId_idx").on(table.userId),
+    productTypeIdx: index("premiumSubscriptions_productType_idx").on(
+      table.productType,
+    ),
+    statusIdx: index("premiumSubscriptions_status_idx").on(table.status),
+    stripeSubscriptionIdIdx: index(
+      "premiumSubscriptions_stripeSubscriptionId_idx",
+    ).on(table.stripeSubscriptionId),
+  }),
+)
+
+export type PremiumSubscription = typeof premiumSubscriptions.$inferSelect
+export type NewPremiumSubscription = typeof premiumSubscriptions.$inferInsert
 
 // ============================================================================
 // INFINITE HUMAN SYSTEM: Agent XP & Leveling

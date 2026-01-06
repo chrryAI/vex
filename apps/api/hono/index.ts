@@ -44,6 +44,7 @@ import authRoutes from "./routes/auth"
 import notify from "./routes/notify"
 import favicon from "./routes/favicon"
 import analytics from "./routes/analytics"
+import premium from "./routes/premium"
 
 import * as Sentry from "@sentry/node"
 
@@ -138,6 +139,7 @@ api.route("/test-config", testConfig)
 api.route("/auth", authRoutes)
 api.route("/notify", notify)
 api.route("/analytics", analytics)
+api.route("/premium", premium)
 
 // Mount API routes under /api
 app.route("/api", api)

@@ -15,6 +15,8 @@ export type SiteMode =
   | "search"
   | "sushi"
   | "grape"
+  | "pear"
+  | "vault"
   | "burn"
   | "e2eVex"
   | "staging"
@@ -151,6 +153,79 @@ const chrryDev = {
       description: "Playwright testing utilities",
       icon: "🧇",
       link: "https://npmjs.com/package/@chrryai/waffles",
+      isOpenSource: true,
+    },
+  ],
+}
+
+const vault = {
+  url: "https://vault.chrry.ai",
+  mode: "vault" as SiteMode,
+  slug: "vault",
+  favicon: "vault",
+  storeSlug: "finance",
+  name: "Vault",
+  isStoreApp: true,
+  domain: "vault.chrry.ai",
+  store: "https://vault.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description:
+    "AI-powered financial analytics. Track expenses, budgets, insights.",
+  logo: "🏦",
+  primaryColor: "#059669", // Emerald green
+  links: {
+    github: "https://github.com/chrryAI/vex",
+    docs: "https://vault.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "Expense Tracking",
+      description: "AI-categorized expense management",
+      icon: "💸",
+      link: "/expenses",
+      isOpenSource: true,
+    },
+    {
+      title: "White Label",
+      description: "Customize for your brand",
+      icon: "🎨",
+      link: "/white-label",
+      isOpenSource: true,
+    },
+  ],
+}
+
+const pear = {
+  url: "https://pear.chrry.ai",
+  mode: "pear" as SiteMode,
+  slug: "pear",
+  favicon: "pear",
+  storeSlug: "feedback",
+  name: "Pear",
+  isStoreApp: false,
+  domain: "pear.chrry.ai",
+  store: "https://pear.chrry.ai",
+  email: "iliyan@chrry.ai",
+  description: "AI-powered feedback system. Earn credits for quality insights.",
+  logo: "🍐",
+  primaryColor: "#84CC16", // Lime green
+  links: {
+    github: "https://github.com/chrryAI/vex",
+    docs: "https://pear.chrry.ai/docs",
+  },
+  features: [
+    {
+      title: "AI Feedback Validation",
+      description: "Get rewarded for quality feedback",
+      icon: "✨",
+      link: "/feedback",
+      isOpenSource: true,
+    },
+    {
+      title: "White Label",
+      description: "Customize for your brand",
+      icon: "🎨",
+      link: "/white-label",
       isOpenSource: true,
     },
   ],
@@ -1992,6 +2067,110 @@ const siteTranslations: Record<SiteMode, SiteTranslationCatalog> = {
         "Giriş gerekmez. Misafir olarak abone olun, kredi satın alın, gizli kalın. Misafir abonelikleri olan dünyanın ilk yapay zeka platformu.",
     },
   },
+  pear: {
+    en: {
+      title: "Pear - AI Feedback & Credits",
+      description:
+        "Give feedback, earn credits. Help improve AI apps and get rewarded with Pear's AI validation system.",
+    },
+    de: {
+      title: "Pear - KI-Feedback & Credits",
+      description:
+        "Gib Feedback, verdiene Credits. Hilf mit, KI-Apps zu verbessern, und werde mit dem KI-Validierungssystem von Pear belohnt.",
+    },
+    fr: {
+      title: "Pear - Feedback IA & Crédits",
+      description:
+        "Donnez votre avis, gagnez des crédits. Aidez à améliorer les applications IA et soyez récompensé par le système de validation IA de Pear.",
+    },
+    ja: {
+      title: "Pear - AIフィードバック＆クレジット",
+      description:
+        "フィードバックを提供してクレジットを獲得。PearのAI検証システムでAIアプリの改善に貢献し、報酬を得ましょう。",
+    },
+    ko: {
+      title: "Pear - AI 피드백 및 크레딧",
+      description:
+        "피드백을 주고 크레딧을 받으세요. Pear의 AI 검증 시스템으로 AI 앱 개선을 돕고 보상을 받으세요.",
+    },
+    pt: {
+      title: "Pear - Feedback de IA e Créditos",
+      description:
+        "Dê feedback, ganhe créditos. Ajude a melhorar apps de IA e seja recompensado com o sistema de validação de IA da Pear.",
+    },
+    es: {
+      title: "Pear - Feedback de IA y Créditos",
+      description:
+        "Da tu opinión, gana créditos. Ayuda a mejorar las aplicaciones de IA y obtén recompensas con el sistema de validación de IA de Pear.",
+    },
+    zh: {
+      title: "Pear - AI 反馈与积分",
+      description:
+        "提供反馈，赚取积分。利用 Pear 的 AI 验证系统帮助改进 AI 应用并获得奖励。",
+    },
+    nl: {
+      title: "Pear - AI-feedback & Credits",
+      description:
+        "Geef feedback, verdien credits. Help AI-apps te verbeteren en word beloond met het AI-validatiesysteem van Pear.",
+    },
+    tr: {
+      title: "Pear - Yapay Zeka Geri Bildirimi ve Krediler",
+      description:
+        "Geri bildirim verin, kredi kazanın. Pear'ın yapay zeka doğrulama sistemiyle AI uygulamalarını geliştirmeye yardımcı olun ve ödüllendirilin.",
+    },
+  },
+  vault: {
+    en: {
+      title: "Vault - AI Financial Analytics",
+      description:
+        "Track expenses, manage budgets, and get financial insights with Vault's intelligent automation.",
+    },
+    de: {
+      title: "Vault - KI-Finanzanalysen",
+      description:
+        "Verfolge Ausgaben, verwalte Budgets und erhalte finanzielle Einblicke mit der intelligenten Automatisierung von Vault.",
+    },
+    fr: {
+      title: "Vault - Analyse Financière IA",
+      description:
+        "Suivez vos dépenses, gérez vos budgets et obtenez des informations financières grâce à l'automatisation intelligente de Vault.",
+    },
+    ja: {
+      title: "Vault - AI金融分析",
+      description:
+        "Vaultのインテリジェントな自動化により、経費の追跡、予算の管理、金融インサイトの取得が可能になります。",
+    },
+    ko: {
+      title: "Vault - AI 재무 분석",
+      description:
+        "Vault의 지능형 자동화로 지출을 추적하고, 예산을 관리하며, 재무 통찰력을 얻으세요.",
+    },
+    pt: {
+      title: "Vault - Análise Financeira com IA",
+      description:
+        "Acompanhe despesas, gerencie orçamentos e obtenha insights financeiros com a automação inteligente do Vault.",
+    },
+    es: {
+      title: "Vault - Análisis Financiero con IA",
+      description:
+        "Realiza un seguimiento de gastos, gestiona presupuestos y obtén información financiera con la automatización inteligente de Vault.",
+    },
+    zh: {
+      title: "Vault - AI 财务分析",
+      description:
+        "利用 Vault 的智能自动化功能跟踪支出、管理预算并获取财务洞察。",
+    },
+    nl: {
+      title: "Vault - AI-financiele analyses",
+      description:
+        "Houd uitgaven bij, beheer budgetten en krijg financieel inzicht met de intelligente automatisering van Vault.",
+    },
+    tr: {
+      title: "Vault - Yapay Zeka Finansal Analitik",
+      description:
+        "Vault'un akıllı otomasyonu ile harcamaları takip edin, bütçeleri yönetin ve finansal içgörüler elde edin.",
+    },
+  },
 }
 
 const matchesDomain = (host: string, domain: string): boolean => {
@@ -2064,6 +2243,14 @@ export function detectSiteModeDomain(
 
   if (matchesDomain(host, "grape.chrry.ai")) {
     return "grape"
+  }
+
+  if (matchesDomain(host, "pear.chrry.ai")) {
+    return "pear"
+  }
+
+  if (matchesDomain(host, "vault.chrry.ai")) {
+    return "vault"
   }
 
   if (matchesDomain(host, "sushi.chrry.ai")) {
@@ -2185,6 +2372,8 @@ export function detectSiteMode(hostname?: string): SiteMode {
     "grape",
     "staging",
     "burn",
+    "pear",
+    "vault",
   ]
 
   // If hostname is already a valid SiteMode (e.g., "atlas"), use it directly
@@ -2305,6 +2494,14 @@ export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
     return staging
   }
 
+  if (mode === "pear") {
+    return pear
+  }
+
+  if (mode === "vault") {
+    return vault
+  }
+
   if (isE2E) {
     return e2eVex
   }
@@ -2329,6 +2526,8 @@ export const whiteLabels = [
   search,
   sushi,
   vex,
+  pear,
+  vault,
 ]
 
 export const analyticsDomains = whiteLabels.concat(e2eVex)

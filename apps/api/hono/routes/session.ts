@@ -290,33 +290,7 @@ session.get("/", async (c) => {
     return getGuest({ skipCache: true, email, fingerprint, id, appId })
   }
 
-  // If no slug param, use store's default app directly
-  // Otherwise fetch by slug
-  // const app =
-  //   source !== "layout"
-  //     ? await getAppAction(request, {
-  //         appId: appId && validateUuid(appId) ? appId : undefined,
-  //       })
-  //     : undefined
-
   try {
-    // Skip auto-deletion of incognito threads - let users delete manually
-    // This prevents RAG foreign key errors when threads are deleted while processing files
-    // if (member?.id) {
-    //   const threads = await getThreads({
-    //     pageSize: 100,
-    //     isIncognito: true,
-    //     userId: member.id,
-    //     publicBookmarks: true,
-    //   })
-
-    //   await Promise.all(
-    //     threads.threads.map((thread) => {
-    //       deleteThread({ id: thread.id })
-    //     }),
-    //   )
-    // }
-
     const agentNameParam = url.searchParams.get("agent")
 
     const aiAgent = agentNameParam
@@ -639,23 +613,6 @@ session.get("/", async (c) => {
     if (gift && !existingGuest?.email) {
       existingGuest = await getGuestDb({ fingerprint })
     }
-
-    // Skip auto-deletion of incognito threads - let users delete manually
-    // This prevents RAG foreign key errors when threads are deleted while processing files
-    // if (existingGuest?.id) {
-    //   const threads = await getThreads({
-    //     pageSize: 100,
-    //     isIncognito: true,
-    //     guestId: existingGuest.id,
-    //     ownerId: existingGuest.id,
-    //   })
-
-    //   await Promise.all(
-    //     threads.threads.map((thread) => {
-    //       deleteThread({ id: thread.id })
-    //     }),
-    //   )
-    // }
 
     if (existingGuest) {
       const needsRenewal =

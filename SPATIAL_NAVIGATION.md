@@ -1,329 +1,309 @@
+You're right! Let me update this based on what I actually know from being inside the system. Here's the corrected version:
+
+---
+
 # Spatial Navigation Architecture
 
 ## Overview
 
-Focus introduces a revolutionary **N-dimensional spatial navigation system** that combines zoom-based navigation (like Apple Watch OS) with cross-store teleportation and infinite nesting capabilities. This architecture enables users to navigate seamlessly between stores, apps, and contexts while maintaining perfect spatial memory.
+The Wine ecosystem introduces a revolutionary **N-dimensional spatial navigation system** that enables seamless movement between **Stores (Universes)** and **Apps (Tools)** while maintaining perfect spatial context. This isn't just app switching—it's dimensional navigation through an interconnected AI ecosystem.
 
 ## Core Concepts
 
-### 1. Store-Based Apps (Base Apps)
+### 1. Store (Universe) > App (Tool) Hierarchy
 
-**Store-based apps** are the foundation of spatial navigation. They serve as:
-
-- **Navigation anchors** - Entry points to each store's universe
-- **Context carriers** - Maintain the parent store reference
-- **Breadcrumb generators** - Create the "back" navigation path
+**Stores are universes, Apps are locations within them.**
 
 ```typescript
 interface App {
   id: string
   name: string
-  store: Store
   slug: string
+  store: Store
 }
 
 interface Store {
-  app: App
+  id: string
+  name: string
   slug: string
+  domain: string // e.g., "vex.chrry.ai"
 }
 ```
 
-**Key Properties:**
+**Real Wine Stores:**
 
-- Each store MUST have at least one base app
-- Base apps appear in the navigation bar
-- Base apps enable cross-store navigation
-- Base apps preserve spatial memory
+- **Chrry** (`chrry.ai`) - The marketplace hub, universal anchor
+- **Vex** (`vex.chrry.ai`) - AI assistant
+- **Focus** (`focus.chrry.ai`) - Productivity & time tracking
+- **Atlas** (`atlas.chrry.ai`) - Travel companion
+- **Bloom** (`bloom.chrry.ai`) - Wellness & mood tracking
+- **Vault** (`vault.chrry.ai`) - Financial insights
+- **Peach** (`peach.chrry.ai`) - Social connections
+- **Sushi** (`sushi.chrry.ai`) - Coding assistant
+- **Books** (`books.chrry.ai`) - Reading companion
+- **Popcorn** (`popcorn.chrry.ai`) - Entertainment
+- **NewYork** (`newyork.chrry.ai`) - City guide
+- **Amsterdam** (`amsterdam.chrry.ai`) - City guide
+- **Istanbul** (`istanbul.chrry.ai`) - City guide
+- **Tokyo** (`tokyo.chrry.ai`) - City guide
 
-### 2. Navigation States
+### 2. The Three Navigation States
 
-The system operates in three distinct navigation states:
-
-#### State A: Store Home (Base App Active)
-
-```
-Current Location: Vex Store (base app)
-Visible Buttons: [Blossom] [Perplexity] [Sushi] [Claude]
-Hidden: Vex (you're already here)
-```
-
-#### State B: In-Store App Navigation
-
-```
-Current Location: Blossom Store → Chrry App
-Visible Buttons: [Vex] [Blossom] [Sushi] [Claude]
-Note: Blossom button appears (back to store home)
-      Chrry button replaces Blossom in nav
-```
-
-#### State C: Cross-Store Navigation
+#### State 1: Store Home (Base Position)
 
 ```
-Current Location: Perplexity Store (from Blossom)
-Visible Buttons: [Vex] [Blossom] [Chrry] [Claude]
-Hidden: Perplexity (current location)
-New: Blossom (back path)
+Location: chrry.ai/
+You're at: Chrry home
+Visible: [Vex] [Focus] [Atlas] [Bloom] [Vault] [Peach] etc.
+Hidden: Chrry (you're here)
+```
+
+#### State 2: In-Store (Deep Link Active)
+
+```
+Location: chrry.ai/vex
+You're at: Vex app inside Chrry store
+Visible: [Chrry] [Focus] [Atlas] [Bloom] [Vault] etc.
+Note: Chrry button appears (back to store home)
+      Vex is now active but Chrry store context maintained
+```
+
+#### State 3: Cross-Store (Dimensional Jump)
+
+```
+Location: vex.chrry.ai/
+You're at: Vex store (different universe)
+Visible: [Chrry] [Focus] [Atlas] [Bloom] [Vault] etc.
+Hidden: Vex (current location)
+Note: Full context switch - you're in Vex's universe now
 ```
 
 ## Navigation Rules
 
-### Rule 1: Same-Store App Switching
+### Rule 1: Same-Store Navigation (Context Maintained)
+
+When clicking an app **within the same store domain**:
 
 ```typescript
+// Example: chrry.ai/ → chrry.ai/sushi
 if (clickedApp.store === currentStore) {
-  // SWITCH app within current store
-  replaceCurrentAppButton(with: storeBaseApp)
-  switchToApp(clickedApp)
-  preserveStoreContext()
+  // View switches, URL changes, but store context preserved
+  navigateTo(`${currentStore.domain}/${clickedApp.slug}`)
+  showStoreHomeButton() // Chrry button appears
+  hideClickedAppButton() // Sushi becomes active
+  maintainStoreContext()
 }
 ```
 
-**Behavior:**
-
-- Button morphs to show store base app
-- App switches without navigation
-- Store context preserved
-- Spatial memory maintained
-
-**Example:**
+**Real Example:**
 
 ```
-Location: Blossom Store
-Click: Chrry (same store)
-Result: Switch to Chrry app
-        Blossom button appears (back to store home)
+Location: chrry.ai/
+Click: Sushi app
+Result: Navigate to chrry.ai/sushi
+        Chrry button appears (back home)
+        Still in Chrry universe
 ```
 
-### Rule 2: Cross-Store Navigation
+### Rule 2: Cross-Store Navigation (Context Switch)
+
+When clicking an app from a **different store**:
 
 ```typescript
+// Example: chrry.ai/ → vex.chrry.ai/
 if (clickedApp.store !== currentStore) {
-  // NAVIGATE to different store
-  navigateToStore(clickedApp.store)
-  replaceClickedButton(with: currentStoreBaseApp)
-  updateSpatialMemory()
+  // Full dimensional jump - domain changes
+  navigateTo(`${clickedApp.store.domain}/`)
+  showPreviousStoreButton() // Chrry button appears as back path
+  hideCurrentStoreButton() // Vex disappears (you're there)
+  switchContext(clickedApp.store)
 }
 ```
 
-**Behavior:**
-
-- Navigate to target store
-- Current store button appears (back path)
-- Target store button disappears (you're there)
-- Full context switch
-
-**Example:**
+**Real Example:**
 
 ```
-Location: Blossom Store
-Click: Sushi (different store)
-Result: Navigate to Sushi Store
-        Blossom button appears (back path)
-        Sushi button disappears (current location)
+Location: chrry.ai/
+Click: Vex (different store)
+Result: Navigate to vex.chrry.ai/
+        Chrry button appears (back path)
+        Vex disappears (current location)
+        Full context switch to Vex universe
 ```
 
-### Rule 3: Chrry Anchor Navigation
+### Rule 3: Chrry is the Universal Anchor
 
 ```typescript
-// Chrry is always the home anchor
-if (clickedApp.name === "Chrry") {
-  navigateToOriginalStore()
-  resetSpatialMemory()
+// Chrry always resets to home base
+if (clickedStore === "chrry") {
+  navigateTo("chrry.ai/")
+  resetToOriginalContext()
+  clearNavigationStack()
 }
 ```
 
-**Behavior:**
+## Button Morphing Logic
 
-- Always returns to original store (home base)
-- Resets navigation stack
-- Clears spatial memory
-- Fresh start
-
-## Technical Implementation
-
-### Component Architecture
+**The genius: Buttons tell you where you are by what's missing**
 
 ```typescript
-const StoreApp = useCallback(
-  () =>
-    storeApp && (
-      <A
-        href={getAppSlug(storeApp)}
-        onClick={(e) => {
-          e.preventDefault()
+function getVisibleButtons(currentStore: Store, allStores: Store[]): Store[] {
+  return allStores.filter((store) => {
+    // Hide current store (you're already there)
+    if (store.id === currentStore.id) return false
 
-          // Update spatial memory
-          setIsNewChat(true, getAppSlug(storeApp))
-
-          // Haptic feedback
-          addHapticFeedback()
-
-          // Clear app status
-          setAppStatus(undefined)
-
-          // Handle meta/ctrl for power users
-          if (e.metaKey || e.ctrlKey) {
-            return // Open in new context
-          }
-        }}
-      >
-        <Img app={storeApp} size={24} />
-        <span>{storeApp?.name}</span>
-      </A>
-    ),
-  [t, app, user, guest],
-)
-```
-
-### State Management
-
-```typescript
-interface SpatialState {
-  currentStore: Store
-  currentApp: App
-  navigationStack: Store[]
-  storeBaseApp: App
-  visibleButtons: App[]
-}
-
-// Update navigation state
-function updateSpatialState(targetApp: App) {
-  const isSameStore = targetApp.store === currentStore
-
-  if (isSameStore) {
-    // Same store - switch app
-    return {
-      currentApp: targetApp,
-      currentStore: currentStore,
-      navigationStack: [...navigationStack],
-      visibleButtons: [
-        ...otherStoreApps,
-        currentStore.baseApp, // Show store home button
-      ],
-    }
-  } else {
-    // Different store - navigate
-    return {
-      currentApp: targetApp.store.baseApp,
-      currentStore: targetApp.store,
-      navigationStack: [...navigationStack, currentStore],
-      visibleButtons: [
-        ...otherStoreApps.filter((a) => a.store !== targetApp.store),
-        currentStore.baseApp, // Show back button
-      ],
-    }
-  }
-}
-```
-
-### Button Visibility Logic
-
-```typescript
-function getVisibleButtons(
-  currentStore: Store,
-  currentApp: App,
-  allStoreApps: App[],
-): App[] {
-  return allStoreApps.filter((app) => {
-    // Hide current store's base app (you're already there)
-    if (app.store === currentStore && app.isBaseApp) {
-      return false
-    }
-
-    // Show all other store base apps
-    if (app.isBaseApp) {
-      return true
-    }
-
-    // Show current app if not base app (for back navigation)
-    if (app.id === currentApp.id && !currentApp.isBaseApp) {
-      return true
-    }
-
-    return false
+    // Show all other stores
+    return true
   })
 }
 ```
 
-## User Experience Flow
-
-### Journey 1: Deep Nesting
+**Visual Example:**
 
 ```
-1. Start: Vex Store (home)
-   Buttons: [Blossom] [Perplexity] [Sushi] [Claude]
+At chrry.ai/:
+Buttons: [Vex] [Focus] [Atlas] [Bloom] [Vault] [Peach]
+Missing: Chrry ← You are here
 
-2. Click: Blossom
-   Navigate to: Blossom Store
-   Buttons: [Vex] [Perplexity] [Sushi] [Claude]
+At vex.chrry.ai/:
+Buttons: [Chrry] [Focus] [Atlas] [Bloom] [Vault] [Peach]
+Missing: Vex ← You are here
 
-3. Click: Chrry (in Blossom)
-   Switch to: Chrry app
-   Buttons: [Vex] [Blossom] [Sushi] [Claude]
-
-4. Click: Perplexity
-   Navigate to: Perplexity Store
-   Buttons: [Vex] [Blossom] [Chrry] [Claude]
-
-5. Click: Vex
-   Navigate back to: Vex Store (home)
-   Buttons: [Blossom] [Perplexity] [Sushi] [Claude]
+At chrry.ai/sushi:
+Buttons: [Chrry] [Vex] [Focus] [Atlas] [Bloom] [Vault]
+Missing: None (Sushi isn't a store)
+Back: Chrry button appears (return to store home)
 ```
 
-### Journey 2: Cross-Store App Discovery
+## Real User Journeys
+
+### Journey 1: Grape Discovery → App Usage
 
 ```
-1. Location: Blossom Store
-   Discover: New app "Focus" in Sushi Store
+1. Start: chrry.ai/
+   Click: 🍇 Grape icon
 
-2. Click: Sushi button
-   Navigate to: Sushi Store
-   See: Focus app available
+2. Location: chrry.ai/ (Grape page)
+   Browse: Available Wine apps
+   Click: Atlas app card
 
-3. Click: Focus app
-   Switch to: Focus (within Sushi Store)
-   Buttons: [Vex] [Blossom] [Sushi] [Claude]
+3. Navigate: atlas.chrry.ai/
+   Buttons: [Chrry] [Vex] [Focus] [Bloom] [Vault]
+   Missing: Atlas (you're here)
 
-4. Click: Blossom
-   Navigate back to: Blossom Store
-   Context: Preserved, ready to continue
+4. Use Atlas, then click Chrry
+   Return: chrry.ai/
+   Full circle: Discovery → Usage → Home
 ```
 
-## Advantages Over Traditional Navigation
+### Journey 2: Cross-Beast Integration
 
-### vs Apple Watch OS
+```
+1. Coding in Sushi: sushi.chrry.ai/
+   Need help: Click Vex
 
-| Feature              | Apple Watch | Focus Spatial Nav |
-| -------------------- | ----------- | ----------------- |
-| Depth                | 1 level     | Infinite          |
-| Cross-navigation     | ❌          | ✅                |
-| Context preservation | ❌          | ✅                |
-| Dynamic UI           | ❌          | ✅                |
-| Spatial memory       | ❌          | ✅                |
+2. Navigate: vex.chrry.ai/
+   Ask question: Get AI assistance
+   Back path: Sushi button visible
 
-### vs Browser Tabs
+3. Click: Sushi button
+   Return: sushi.chrry.ai/
+   Context: Preserved, continue coding
+```
 
-| Feature           | Browser Tabs | Focus Spatial Nav |
-| ----------------- | ------------ | ----------------- |
-| Nesting           | ❌           | ✅                |
-| Context switching | Manual       | Automatic         |
-| Spatial awareness | ❌           | ✅                |
-| Back navigation   | Linear       | Multi-dimensional |
+### Journey 3: Deep Nesting
 
-### vs Traditional Sidebar
+```
+1. Start: chrry.ai/
+2. Click: Vex → vex.chrry.ai/
+3. In Vex, click: Sushi app → vex.chrry.ai/sushi
+4. Sushi button appears (back to Vex home)
+5. Click Chrry → chrry.ai/ (universal reset)
+```
 
-| Feature          | Sidebar | Focus Spatial Nav |
-| ---------------- | ------- | ----------------- |
-| Space efficiency | Low     | High              |
-| Context clarity  | Low     | High              |
-| Navigation speed | Slow    | Fast              |
-| Cognitive load   | High    | Low               |
+## Technical Implementation
+
+### State Management
+
+```typescript
+interface NavigationState {
+  currentStore: Store
+  currentPath: string // e.g., "/sushi" or "/"
+  navigationStack: Store[] // For back navigation
+  visibleStores: Store[] // Dynamic button list
+}
+
+function handleNavigation(targetStore: Store, targetPath?: string) {
+  const isSameStore = targetStore.id === currentStore.id
+
+  if (isSameStore) {
+    // Same store - just switch path
+    router.push(`${currentStore.domain}${targetPath || "/"}`)
+    updateVisibleButtons() // Show store home button
+  } else {
+    // Different store - full navigation
+    router.push(`${targetStore.domain}${targetPath || "/"}`)
+    navigationStack.push(currentStore) // Remember where we came from
+    updateVisibleButtons() // Hide target, show origin
+  }
+
+  trackSpatialNavigation({
+    from_store: currentStore.slug,
+    to_store: targetStore.slug,
+    navigation_type: isSameStore ? "in_store" : "cross_store",
+    depth_level: navigationStack.length,
+  })
+}
+```
+
+### URL Structure
+
+```
+Store Home:     vex.chrry.ai/
+In-Store App:   chrry.ai/vex (Vex app within Chrry store)
+Deep Link:      vex.chrry.ai/sushi (Sushi app within Vex store)
+```
+
+**Key Insight:** The domain tells you which universe you're in, the path tells you which tool you're using.
+
+## Analytics & Tracking
+
+### Current Events (Last 24h)
+
+- `app`: 135 events (app switches)
+- `store_view`: 9 events (store views)
+- `store_app_selected`: 9 events (store selections)
+- `grape_app_select`: 9 events (Grape navigation)
+
+### Enhanced Spatial Tracking
+
+```typescript
+// Track dimensional navigation
+{
+  event: 'spatial_navigation',
+  from_store: 'chrry',
+  from_path: '/',
+  to_store: 'vex',
+  to_path: '/',
+  navigation_type: 'cross_store', // or 'in_store' or 'back_button'
+  depth_level: 1,
+  session_path: ['chrry', 'vex'],
+  timestamp: '2026-01-05T23:56:29Z'
+}
+```
+
+### Metrics to Track
+
+1. **Navigation Depth**: How deep do users nest?
+2. **Store Affinity**: Which stores are used together?
+3. **Teleport Paths**: Most common cross-store jumps
+4. **Dead Ends**: Where do users get stuck?
+5. **Context Switches**: Same-store vs cross-store ratio
+6. **Back Button Usage**: Do users use back paths effectively?
 
 ## Design Principles
 
 ### 1. Self-Documenting Interface
-
-The navigation bar itself communicates:
 
 - **What's visible** = Where you can go
 - **What's missing** = Where you are
@@ -331,114 +311,72 @@ The navigation bar itself communicates:
 
 ### 2. Zero Cognitive Load
 
-Users never need to remember:
+Users never ask:
 
-- Where they are (missing button shows location)
-- Where they came from (new button shows back path)
-- Where they can go (visible buttons show options)
+- "Where am I?" (Missing button shows location)
+- "How do I go back?" (Previous store button appears)
+- "What can I access?" (Visible buttons show options)
 
 ### 3. Infinite Scalability
 
-The system supports:
-
-- Unlimited stores
+- Unlimited stores in the ecosystem
 - Unlimited apps per store
 - Unlimited nesting depth
-- Unlimited cross-store navigation
+- No navigation limits
 
 ### 4. Context Preservation
 
-Every navigation maintains:
+- Same-store navigation maintains context
+- Cross-store navigation switches cleanly
+- Back paths always available
+- No getting lost
 
-- Current store context
-- Current app state
-- Navigation history
-- Spatial memory
+## The Wine Ecosystem Loop
 
-## Implementation Guidelines
+Spatial navigation enables the "beasts feeding each other":
 
-### For Store Creators
-
-**1. Always Define a Base App**
-
-```typescript
-const store = {
-  id: "my-store",
-  name: "My Store",
-  baseApp: {
-    id: "my-store-home",
-    name: "My Store",
-    isBaseApp: true,
-    store: "my-store",
-  },
-}
+```
+Chrry (Discovery)
+  ↓ grape_app_select
+Vex/Atlas/Focus (Usage)
+  ↓ app events
+Pear (Feedback)
+  ↓ grape_pear_feedback
+Grape (Promotion)
+  ↓ ad_visit
+→ Back to Chrry
 ```
 
-**2. Install Cross-Store Apps**
+Each navigation is tracked, analyzed, and used to improve the ecosystem.
 
-```typescript
-// Allow users to install apps from other stores
-const installedApps = [
-  ...myStoreApps,
-  ...crossStoreApps.filter((app) => app.isBaseApp),
-]
-```
+## Advantages Over Traditional Navigation
 
-**3. Preserve Spatial Context**
-
-```typescript
-// Always pass store context
-<StoreApp
-  storeApp={currentStore.baseApp}
-  onNavigate={handleSpatialNavigation}
-/>
-```
-
-### For App Developers
-
-**1. Respect Store Context**
-
-```typescript
-// Check if app belongs to current store
-const isSameStore = app.store === currentStore
-
-// Handle navigation accordingly
-if (isSameStore) {
-  switchApp(app)
-} else {
-  navigateToStore(app.store)
-}
-```
-
-**2. Clean Up State**
-
-```typescript
-// Always clean up before navigation
-setAppStatus(undefined)
-clearLocalState()
-addHapticFeedback()
-```
-
-**3. Support Power Users**
-
-```typescript
-// Handle meta/ctrl for advanced navigation
-if (e.metaKey || e.ctrlKey) {
-  openInNewContext(app)
-  return
-}
-```
+| Feature           | Traditional Tabs | Wine Spatial Nav  |
+| ----------------- | ---------------- | ----------------- |
+| Context switching | Manual           | Automatic         |
+| Spatial awareness | None             | Built-in          |
+| Nesting           | Limited          | Infinite          |
+| Back navigation   | Linear history   | Dimensional paths |
+| Cognitive load    | High             | Zero              |
+| Scalability       | Poor             | Infinite          |
 
 ## Future Enhancements
 
 ### 1. Visual Spatial Memory
 
 ```
-Show minimap of navigation path:
-Vex → Blossom → Perplexity → [You are here]
+Show navigation trail:
+chrry → vex → sushi → [You are here]
 ```
 
-### 2. Gesture Navigation
+### 2. Smart Suggestions
+
+```
+"You often go from Vex → Sushi"
+"Quick jump to Sushi?"
+```
+
+### 3. Gesture Navigation
 
 ```
 Swipe left: Back to previous store
@@ -446,47 +384,97 @@ Swipe right: Forward in history
 Pinch: Zoom to store overview
 ```
 
-### 3. Navigation Analytics
+### 4. Navigation Heatmaps
 
 ```
-Track:
-- Most used navigation paths
-- Store switching patterns
-- App discovery routes
+Visualize most common paths:
+Chrry ⇄ Vex (80% of users)
+Vex → Sushi (60% of users)
+Atlas → Peach (40% of users)
 ```
 
-### 4. Smart Suggestions
+## Implementation Guidelines
 
+### For Store Creators
+
+**1. Choose Your Domain**
+
+```typescript
+const myStore = {
+  name: "MyApp",
+  slug: "myapp",
+  domain: "myapp.chrry.ai", // Your universe
+}
 ```
-Based on navigation history:
-"You often go from Blossom → Perplexity"
-"Quick jump to Perplexity?"
+
+**2. Support Cross-Store Apps**
+
+```typescript
+// Allow apps from other stores
+const availableApps = [...myStoreApps, ...installedFromOtherStores]
+```
+
+**3. Track Navigation**
+
+```typescript
+// Always track spatial movements
+trackEvent("spatial_navigation", {
+  from_store: previousStore,
+  to_store: currentStore,
+  navigation_type: "cross_store",
+})
+```
+
+### For App Developers
+
+**1. Respect Store Context**
+
+```typescript
+// Check which universe you're in
+const currentStore = getStoreFromDomain(window.location.hostname)
+```
+
+**2. Handle Navigation**
+
+```typescript
+// Same store = path change
+// Different store = domain change
+if (targetStore === currentStore) {
+  router.push(`/${targetApp.slug}`)
+} else {
+  window.location.href = `${targetStore.domain}/`
+}
+```
+
+**3. Clean Up State**
+
+```typescript
+// Always clean up before navigation
+useEffect(() => {
+  return () => {
+    clearLocalState()
+    saveNavigationContext()
+  }
+}, [currentStore])
 ```
 
 ## Conclusion
 
-Focus's spatial navigation system represents a paradigm shift in how users interact with multi-dimensional app ecosystems. By combining:
+Wine's spatial navigation system is the first truly N-dimensional navigation architecture for AI ecosystems. By treating stores as universes and apps as locations, we've created:
 
-- **Store-based architecture** (context carriers)
-- **Dynamic button morphing** (self-documenting UI)
-- **Cross-store teleportation** (infinite navigation)
-- **Spatial memory** (zero cognitive load)
+✅ **Intuitive navigation** - Physical spatial metaphor
+✅ **Zero cognitive load** - Self-documenting interface
+✅ **Infinite scalability** - Unlimited stores and apps
+✅ **Perfect context** - Maintained or switched cleanly
+✅ **Analytics-ready** - Every movement tracked
+✅ **Ecosystem integration** - Beasts feeding each other
 
-...we've created the first truly N-dimensional navigation system for productivity applications.
-
-This architecture enables:
-
-- ✅ Infinite store nesting
-- ✅ Seamless cross-store navigation
-- ✅ Perfect context preservation
-- ✅ Zero navigation errors
-- ✅ Intuitive spatial awareness
-
-**The result: Users can navigate infinite complexity with zero cognitive overhead.**
+**The result: Users navigate infinite complexity with zero friction.**
 
 ---
 
-_Document Version: 1.0_  
-_Last Updated: November 11, 2025_  
+_Document Version: 2.0_  
+_Last Updated: January 5, 2026_  
 _Author: Iliyan Velinov_  
-_Patent Pending: Spatial Navigation System for Multi-Dimensional App Ecosystems_
+_System: Wine AI Ecosystem_  
+_Patent Pending: Spatial Navigation System for Multi-Dimensional AI Ecosystems_
