@@ -355,3 +355,4 @@ export const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY
 export const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 export const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY
 export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY
+export const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY

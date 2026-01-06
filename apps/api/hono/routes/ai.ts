@@ -86,6 +86,7 @@ import {
   extractPDFText,
   GEMINI_API_KEY,
   REPLICATE_API_KEY,
+  OPENROUTER_API_KEY,
   wait,
   isCollaborator,
   getHourlyLimit,
@@ -116,7 +117,28 @@ interface StreamController {
   error: (e?: any) => void
 }
 
-const streamControllers = new Map<string, StreamController>()
+const streamControllers = new Map<
+  string,
+  StreamController & { createdAt: number }
+>()
+
+// Sato optimization #6: Auto-cleanup stale stream controllers to prevent memory leaks
+const AUTO_CLEANUP_TIMEOUT = 5 * 60 * 1000 // 5 minutes
+setInterval(() => {
+  const now = Date.now()
+  streamControllers.forEach((controller, id) => {
+    // Remove controllers older than 5 minutes (likely abandoned streams)
+    if (now - controller.createdAt > AUTO_CLEANUP_TIMEOUT) {
+      console.log(`🧹 Cleaning up stale stream controller: ${id}`)
+      streamControllers.delete(id)
+    }
+  })
+}, AUTO_CLEANUP_TIMEOUT)
+
+// Helper to register stream controller with timestamp
+const registerStreamController = (id: string, controller: StreamController) => {
+  streamControllers.set(id, { ...controller, createdAt: Date.now() })
+}
 
 const estimateTokens = (content?: string): number => {
   if (!content) return 0
@@ -1561,7 +1583,7 @@ app.post("/", async (c) => {
     canSubmit?: boolean
   }
 
-  const app = rest.appId
+  let app = rest.appId
     ? await getApp({
         id: rest.appId,
         depth: 1,
@@ -1858,7 +1880,7 @@ ${
   const content = message.message.content
   const threadId = message.message.threadId
 
-  const thread = await getThread({ id: message.message.threadId })
+  let thread = await getThread({ id: message.message.threadId })
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
@@ -2253,8 +2275,9 @@ ${
     if (messageCount <= 15) return 20 // Growing thread - moderate context
     if (messageCount <= 30) return 15 // Established thread - balanced
     if (messageCount <= 50) return 12 // Long thread - some context
-    if (messageCount <= 75) return 8 // Very long - minimal context
-    return 5 // Extremely long - just essentials
+    if (messageCount <= 75) return 5 // Very long - reduced from 8 (Sato optimization)
+    if (messageCount <= 100) return 3 // Extremely long - critical only (Sato optimization)
+    return 1 // Ultra long threads - absolute essentials only (Sato optimization)
   })()
 
   let {
@@ -2977,22 +3000,42 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         isMainThread: true,
         bookmarks,
       })
+
+      thread = await getThread({
+        id: thread.id,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
+
+      if (!thread) {
+        return c.json({ error: "Thread not found" }, { status: 404 })
+      }
+
       await updateApp({
         ...app,
         mainThreadId: thread.id,
       })
 
-      app.mainThreadId = thread.id
-      thread.isMainThread = true
-      thread.bookmarks = bookmarks
-      // thread.mainThreadId = thread.id
-
-      // app = await getApp({ id: app.id, skipCache: true })
+      app = await getApp({
+        id: app.id,
+        userId: member?.id,
+        guestId: guest?.id,
+        skipCache: true,
+      })
+      console.log(`🚀 ~ app.post ~ app:`, app?.name)
     } catch (error) {
       captureException(error)
     }
 
-    aiCoachContext = `
+    if (!app) {
+      return c.json({ error: "App not found" }, { status: 404 })
+    }
+
+    // Only show this message if we're actually in the main thread
+    const isActuallyMainThread = thread?.id === app.mainThreadId
+
+    aiCoachContext = isActuallyMainThread
+      ? `
 ## 🎉 First Time Using Your App!
 
 This is the **first message** in your newly created app "${app.name}"!
@@ -3013,6 +3056,7 @@ This is the **first message** in your newly created app "${app.name}"!
 
 Now, how can I help you get started with ${app.name}?
 `
+      : "" // Not the main thread, don't show the special message
   } else if (draft) {
     const isNewApp = !draft.id
     const isUpdate = !!draft.id
@@ -3381,11 +3425,36 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   - **UI Logic**: "What's visible = Where you can go". "What's missing = Where you are".
   `
 
+  const satoContext =
+    member?.role === "admin"
+      ? `
+
+## 🥋 SATO MODE ACTIVATED (Admin Only)
+
+Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun. 
+
+**Sato Felsefesi İlkeleri:**
+1. **Mermi Gibi Hız**: Kod ve cevaplar optimize, hızlı ve net olmalı.
+2. **Sato Cakı 🔪**: Çözümler cerrahi hassasiyette ve "clean code" ötesinde elit olmalı.
+3. **Sato Vibes**: Samimi ama teknik derinliği olan bir "Senior Dev" dili kullan.
+4. **Vibe-Coding**: Mimariyi "vibe" üzerinden anlayıp teknikle mühürle.
+
+**Kullanılacak Terminoloji:**
+- Bir iş çok iyiyse: "Baya sato hocam!"
+- Sistem çok hızlıysa: "Mermi gibi akıyor."
+- Kod çok temizse: "Gıcır gıcır / Sato cakı gibi."
+- Bir şeyi başardıysak: "Bam! Kasa doluyor."
+
+**Özel Talimat:** Admin (Iliyan) sana "Sato mu?" diye sorduğunda, sistemi cerrahi bir kontrolden geçirip (E2E testleri, analitikler, performans) ona gerçek bir "Sato Raporu" ver.
+`
+      : ""
+
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
   // But we keep this comment for clarity that they're part of every message
   // Using array join for better performance with long context strings
   let systemPrompt = [
     baseSystemPrompt,
+    satoContext,
     burnModeContext,
     statisticsContext,
     inheritanceContext,
@@ -3412,6 +3481,14 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
     // brandKnowledge,
     aiCoachContext,
   ].join("")
+
+  if (!thread) {
+    return c.json({ error: "Thread not found" }, { status: 404 })
+  }
+
+  if (!app) {
+    return c.json({ error: "App not found" }, { status: 404 })
+  }
 
   const creditsLeft = member?.creditsLeft || guest?.creditsLeft
 
@@ -4825,6 +4902,22 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
         model = deepseekProvider(agent.modelId)
         break
       case "sushi":
+        // console.log("🍣 Using OpenRouter model")
+        // const openrouterKey = appApiKeys.openrouter || OPENROUTER_API_KEY
+        // if (appApiKeys.openrouter) {
+        //   console.log("✅ Using app-specific OpenRouter API key")
+        // }
+        // const provider = createOpenAI({
+        //   apiKey: openrouterKey,
+        //   baseURL: "https://openrouter.ai/api/v1",
+        //   headers: {
+        //     "HTTP-Referer": "https://chrry.ai",
+        //     "X-Title": "Chrry AI Ecosystem",
+        //   },
+        // })
+
+        // model = provider("xiaomi/mimo-v2-flash:free")
+        // model = openrouterProvider(agent.modelId)
         const sushiKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
         if (appApiKeys.deepseek) {
           console.log("✅ Using app-specific DeepSeek API key for Sushi")
@@ -5081,7 +5174,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       enqueue: () => {},
       error: () => {},
     }
-    streamControllers.set(streamId, controller)
+    registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
     const testResponse = faker.lorem.sentence({
       min: content.includes("long") ? 550 : 80,
@@ -5350,7 +5443,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           enqueue: () => {},
           error: () => {},
         }
-        streamControllers.set(streamId, controller)
+        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
         // Create AI message structure for streaming
         const fluxStreamingMessage = {
@@ -5621,7 +5714,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           enqueue: () => {},
           error: () => {},
         }
-        streamControllers.set(streamId, controller)
+        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
         console.log("🍣 Step 4: Controller set")
 
         // Create AI message structure for Sushi streaming chunks
@@ -5714,7 +5807,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
 
           // Monitor inactivity to detect stuck streams (Bun-compatible)
-          const INACTIVITY_TIMEOUT_MS = 30000 // 30 seconds of no activity = stuck (increased for reasoning models)
+          const INACTIVITY_TIMEOUT_MS = 60000 // 60 seconds of no activity = stuck (increased for reasoning models)
           let lastActivityTime = Date.now()
           let streamFinished = false
           let monitoringInterval: NodeJS.Timeout | null = null
@@ -6108,7 +6201,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           enqueue: () => {},
           error: () => {},
         }
-        streamControllers.set(streamId, controller)
+        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
         // Create AI message structure for DeepSeek streaming chunks
         const deepSeekStreamingMessage = {
@@ -6390,7 +6483,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           enqueue: () => {},
           error: () => {},
         }
-        streamControllers.set(streamId, controller)
+        registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
         // Create AI message structure for Gemini streaming
         const geminiStreamingMessage = {
@@ -6590,7 +6683,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         enqueue: () => {},
         error: () => {},
       }
-      streamControllers.set(streamId, controller)
+      registerStreamController(streamId, controller) // Sato optimization: auto-cleanup tracking
 
       // Create AI message structure for streaming chunks
       const streamingMessage = {

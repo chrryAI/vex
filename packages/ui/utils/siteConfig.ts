@@ -163,7 +163,7 @@ const vault = {
   mode: "vault" as SiteMode,
   slug: "vault",
   favicon: "vault",
-  storeSlug: "finance",
+  storeSlug: "wine",
   name: "Vault",
   isStoreApp: true,
   domain: "vault.chrry.ai",
@@ -200,11 +200,11 @@ const pear = {
   mode: "pear" as SiteMode,
   slug: "pear",
   favicon: "pear",
-  storeSlug: "feedback",
+  storeSlug: "wine",
   name: "Pear",
   isStoreApp: false,
   domain: "pear.chrry.ai",
-  store: "https://pear.chrry.ai",
+  store: "https://wine.chrry.ai",
   email: "iliyan@chrry.ai",
   description: "AI-powered feedback system. Earn credits for quality insights.",
   logo: "🍐",
@@ -317,7 +317,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.10.87",
+  version: "26.10.89",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -2200,9 +2200,13 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  // Inline isDevelopment check to avoid circular dependency
+  const devMode = "vault"
 
-  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || "e2eVex"
+  if (isDevelopment && !checkIsExtension()) {
+    return devMode
+  }
+
+  const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 
   // Get hostname from parameter or window (client-side)
   const rawHost =
@@ -2218,10 +2222,6 @@ export function detectSiteModeDomain(
     } catch (e) {
       console.log("Error parsing URL:", e)
     }
-  }
-
-  if (!host || isDevelopment) {
-    return defaultMode
   }
 
   // Helper function to check if hostname matches or is subdomain of domain
@@ -2400,9 +2400,9 @@ const getClientHostname = () => {
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
   // If it's a valid SiteMode, use it directly
 
-  if (hostnameOrMode && matchesDomain(hostnameOrMode, "staging.chrry.ai")) {
-    return staging
-  }
+  // if (hostnameOrMode && matchesDomain(hostnameOrMode, "staging.chrry.ai")) {
+  //   return staging
+  // }
   // Extract hostname from URL if needed
   let hostname = hostnameOrMode || getClientHostname()
   if (hostnameOrMode && hostnameOrMode.includes("://")) {

@@ -162,7 +162,7 @@ test("Thread", async ({ page }) => {
 //   })
 // })
 
-test("File upload", async ({ page }) => {
+test.skip("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",

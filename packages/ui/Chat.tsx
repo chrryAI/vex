@@ -308,6 +308,13 @@ export default function Chat({
     }
   }, [isNewChat])
 
+  // Sync input with daily question data when it changes
+  useEffect(() => {
+    if (isRetro && dailyQuestionData?.currentQuestion) {
+      setInputInternal(dailyQuestionData.currentQuestion)
+    }
+  }, [isRetro, dailyQuestionData?.currentQuestion])
+
   const { captureException } = useError()
 
   const {
@@ -1617,16 +1624,6 @@ export default function Chat({
       }
     }
 
-    // Auto-advance daily questions
-    if (isRetro && dailyQuestionData) {
-      const { questions, isLastQuestionOfSection } = dailyQuestionData
-      if (isLastQuestionOfSection) {
-        advanceDailySection()
-      } else {
-        setDailyQuestionIndex(dailyQuestionIndex + 1)
-      }
-    }
-
     onMessage?.({
       content: userMessageText,
       isUser: true,
@@ -1779,6 +1776,16 @@ export default function Chat({
           isUser: true,
           message: userMessage,
         })
+
+        // Auto-advance daily questions AFTER message is sent
+        // if (isRetro && dailyQuestionData) {
+        //   const { questions, isLastQuestionOfSection } = dailyQuestionData
+        //   if (isLastQuestionOfSection) {
+        //     advanceDailySection()
+        //   } else {
+        //     setDailyQuestionIndex(dailyQuestionIndex + 1)
+        //   }
+        // }
       } else {
         toast.error("Failed to send message")
         return
@@ -3547,7 +3554,12 @@ export default function Chat({
                         }}
                         onClick={() => {
                           if (isRetro) {
-                            advanceDailySection()
+                            // Advance to next question
+                            if (dailyQuestionData?.isLastQuestionOfSection) {
+                              advanceDailySection()
+                            } else {
+                              setDailyQuestionIndex(dailyQuestionIndex + 1)
+                            }
                           } else {
                             setIsRetro(true)
                           }
@@ -3555,7 +3567,7 @@ export default function Chat({
                         }}
                       >
                         <Img size={22} icon={"spaceInvader"} />
-                        {isSmallDevice ? null : "Check-in"}
+                        {isSmallDevice ? null : "Sato"}
                       </Button>
                     </Div>
                   ) : null}
