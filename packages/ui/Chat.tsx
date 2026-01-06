@@ -3540,6 +3540,7 @@ export default function Chat({
                         </Button>
                       )}
                       <Button
+                        data-testid="retro-button"
                         className="link"
                         style={{
                           ...utilities.link.style,

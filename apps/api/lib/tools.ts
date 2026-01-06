@@ -30,6 +30,7 @@ import {
   updateMood,
   getTimer,
   timer,
+  createTalentProfile,
 } from "@repo/db"
 import { expenseCategoryType } from "@chrryai/chrry/utils"
 
@@ -1577,10 +1578,83 @@ export const getTools = ({
     },
   }
 
+  // Define Talent Marketplace tools
+  const talentTools = {
+    createTalentProfile: {
+      description:
+        "Create a new Talent Profile for the user. Use this when the user wants to join the Talent Marketplace or create their professional profile. Requires user to be logged in (member).",
+      inputSchema: z.object({
+        displayName: z
+          .string()
+          .describe("The user's professional display name"),
+        tagline: z
+          .string()
+          .optional()
+          .describe("A short professional headline or tagline"),
+        bio: z
+          .string()
+          .optional()
+          .describe("A longer biography or description of the user"),
+        skills: z.array(z.string()).describe("List of skills (strings)"),
+        hourlyRate: z
+          .number()
+          .optional()
+          .describe("Hourly rate in USD (integer)"),
+        availability: z
+          .enum(["full-time", "part-time", "contract", "not-available"])
+          .optional()
+          .describe("Availability status"),
+        githubUrl: z.string().optional().describe("GitHub profile URL"),
+      }),
+      execute: async (input: {
+        displayName: string
+        tagline?: string
+        bio?: string
+        skills: string[]
+        hourlyRate?: number
+        availability?: "full-time" | "part-time" | "contract" | "not-available"
+        githubUrl?: string
+      }) => {
+        if (!member?.id) {
+          return {
+            success: false,
+            message: "You must be logged in to create a Talent Profile.",
+          }
+        }
+
+        console.log("👤 Creating talent profile for:", member.id)
+
+        const profile = await createTalentProfile({
+          userId: member.id,
+          displayName: input.displayName,
+          tagline: input.tagline,
+          bio: input.bio,
+          skills: input.skills,
+          hourlyRate: input.hourlyRate,
+          availability: input.availability,
+          githubUrl: input.githubUrl,
+        })
+
+        if (!profile) {
+          return { success: false, message: "Failed to create profile." }
+        }
+
+        return {
+          success: true,
+          profile,
+          message:
+            "Talent Profile created successfully! You can now view your profile on the marketplace.",
+        }
+      },
+    },
+  }
+
   return {
     calendarTools,
     vaultTools,
     focusTools,
+    focusTools,
     imageTools,
+    talentTools,
   }
 }
