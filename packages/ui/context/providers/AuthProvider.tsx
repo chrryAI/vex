@@ -1135,6 +1135,20 @@ export function AuthProvider({
     }).catch(() => {})
   }
 
+  const trackPageview = () => {
+    if (isDevelopment) return
+
+    plausibleEvent({
+      name: "pageview",
+      url: window.location.pathname,
+      domain: window.location.hostname,
+    })
+  }
+
+  useEffect(() => {
+    trackPageview()
+  }, [pathname])
+
   useEffect(() => {
     hasStoreApps(baseAppInternal) && setBaseApp(baseAppInternal)
   }, [baseAppInternal])
