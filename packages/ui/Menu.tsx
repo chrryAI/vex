@@ -74,6 +74,8 @@ export default function Menu({
     hasStoreApps,
     setBurn,
   } = useAuth()
+
+  const city = (user || guest)?.city || ""
   // const { utilities } = useStyles()
 
   const styles = useMenuStyles()
@@ -823,7 +825,16 @@ export default function Menu({
                 }}
                 className={"link"}
               >
-                {"Amsterdam"}
+                <Span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    maxWidth: "120px",
+                  }}
+                >
+                  {city || "Amsterdam"}
+                </Span>
                 <Img icon="heart" width={22} height={22} />
               </Button>
             </Div>
