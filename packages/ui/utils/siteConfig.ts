@@ -2200,7 +2200,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "vault"
+  const devMode = "chrryAI"
 
   if (isDevelopment && !checkIsExtension()) {
     return devMode
