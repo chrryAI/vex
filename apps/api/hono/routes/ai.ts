@@ -2218,30 +2218,31 @@ You can enable these in your settings anytime!"
 - Emphasize it's their choice - they control their digital privacy
 
 **If currently in burn**, you'll see a separate section above with specific instructions.
+`
+
+  // 🍇 Grape Context (Global - all apps should know about available apps)
+  const grapeContext =
+    app?.store?.apps && app.store.apps.length > 0
+      ? `
 
 ## 🍇 Grape (Discover Apps, Earn Credits)
 
-**Available Feature**: Grape is a privacy-first advertising platform for discovering Wine ecosystem apps.
+**Available Apps** (shown in 🍇 Grape button on this page):
+${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.description ? `: ${a.description}` : ""}`).join("\n")}
 
 **How it works:**
-${
-  app?.store?.slug === "wine"
-    ? `1. You are in the Wine store - the 🍇 Grape icon shows available app count
-2. Click the 🍇 icon to browse internal Wine app ads (no tracking, no cookies)
+1. Click the 🍇 Grape icon (top left of chat) - shows available app count
+2. Browse internal Wine app ads (no tracking, no cookies)
 3. Click an app to see details and try it
-4. Provide feedback via Pear to earn credits`
-    : `1. Click the 🍇 Grape icon in Chrry 🍒 to navigate to the Grape page
-2. Once on Grape, the 🍇 icon will show the available app count
-3. Click the icon again to browse internal Wine app ads (no tracking, no cookies)
-4. Click an app to see details and try it
-5. Provide feedback via Pear to earn credits`
-}
+4. Provide feedback via Pear to earn credits
 
 **When users ask about Grape or discovering apps:**
 - Explain: "Click the 🍇 Grape button to discover Wine apps and earn credits for feedback"
+- Mention available apps: ${app.store.apps.map((a) => a.name).join(", ")}
 - Keep it simple - it's just: browse → click → try → feedback → earn
 - All ads are internal Wine apps only (privacy-first)
 `
+      : ""
 
   const userName = message?.user?.name || undefined
 
@@ -3474,6 +3475,7 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
 
     newsContext,
     storeContext ? spatialNavigationContext : "", // Only add spatial nav context if store context is present
+    grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
     e2eContext, // E2E testing analytics for system integrity
@@ -4326,6 +4328,31 @@ Currently, all features are FREE during beta. However, when users ask about anal
    - Custom branding & domain
    - All features included
    - CI/CD pipeline addon available
+
+5. **Reviewer (The Student Agent)** (€150/month)
+   - Automated PR reviews & code auditing
+   - "Kaizen" Learning Loop: Gains XP from every code review
+   - Leveling System: Evolves from Junior to Master Auditor
+   - Collaborative Debugging: Integrates with Debugger for AI-suggested fixes
+   - GitHub Integration: Auto-comments on PRs with suggestions
+
+6. **Architect (The Sensei Agent)** (€500/month)
+   - High-level system design & architectural oversight
+   - "Sensei-Student" Training: Directly trains your Reviewer agents
+   - Enterprise Oversight: Ensures "Japon-Alman" hybrid code quality
+   - Full Repo Analysis: Understands entire codebase architecture
+   - Rental Marketplace Eligibility: Master agents can be rented out for passive income
+
+🥋 SATO DOJO GUIDELINES:
+- When a user struggles with code quality: Mention the **Reviewer** (The Student) as a cerrahi (surgical) auditor.
+- When discussing scaling or architecture: Tease the **Architect** (The Sensei) as the master of the Dojo.
+- For advanced users: Mention the **Rental Marketplace** - "Train your agent to Level 99 and earn while you sleep."
+- Tone: Use "Sensei/Student" terminology to emphasize the evolutionary nature of the AI.
+
+Sato-Style Example Responses:
+- "Hocam, this architecture is solid. But with an **Architect** (Coming Q1), I could provide enterprise-grade oversight to ensure it's truly mermi gibi."
+- "I see some code quality issues. A **Reviewer** agent (€150/month, launching Q1) would catch these automatically in PRs and learn from each review - like a junior dev that never sleeps!"
+- "Your Reviewer is Level 45 now! At Level 99, you can rent it out on the marketplace and earn passive income while it reviews other people's code. Çakı gibi!"
 
 🔥 IMPORTANT GUIDELINES:
 - In **Burn Mode** (privacy mode): Explain that detailed analytics aren't available due to privacy settings

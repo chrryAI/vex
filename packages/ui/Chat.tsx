@@ -3568,7 +3568,7 @@ export default function Chat({
                           // setInput("Hey guys, what you learned today?")
                         }}
                       >
-                        <Img size={22} icon={"spaceInvader"} />
+                        <Img size={22} app={app} />
                         {isSmallDevice ? null : "Sato"}
                       </Button>
                     </Div>

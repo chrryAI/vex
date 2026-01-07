@@ -3816,3 +3816,27 @@ export type NewPremiumSubscription = typeof premiumSubscriptions.$inferInsert
 // INFINITE HUMAN SYSTEM: Agent XP & Leveling
 // ============================================================================
 export * from "./agent-schema"
+
+// ============================================================================
+// AUTH EXCHANGE CODES: Secure OAuth Token Exchange
+// ============================================================================
+export const authExchangeCodes = pgTable(
+  "authExchangeCodes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    code: text("code").notNull().unique(), // One-time exchange code
+    token: text("token").notNull(), // JWT token to exchange for
+    used: boolean("used").default(false).notNull(), // Has code been used?
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    expiresOn: timestamp("expiresOn", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(), // 5 minutes expiry
+  },
+  (table) => ({
+    codeIdx: uniqueIndex("authExchangeCodes_code_idx").on(table.code),
+    expiresOnIdx: index("authExchangeCodes_expiresOn_idx").on(table.expiresOn),
+  }),
+)
