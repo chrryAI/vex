@@ -1,6 +1,12 @@
 "use client"
 
-import React, { useCallback, useEffect, useState, CSSProperties } from "react"
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  CSSProperties,
+  useMemo,
+} from "react"
 
 import { clsx, FilePicker, usePlatform, useTheme } from "./platform"
 import EnableNotifications from "./EnableNotifications"
@@ -385,34 +391,38 @@ export default function App({
 
   const isSettingVisible = hasHydrated && isAppOwner && !isManagingApp
 
-  const BurnButton = ({ style }: { style?: CSSProperties } = {}) => (
-    <Button
-      className={`link ${burn ? "pulse" : ""}`}
-      style={{
-        ...utilities.link.style,
-        ...styles.grip.style,
-        position: "relative",
-        // top: -5,
-        // right: -5,
-        ...style,
-      }}
-      title={t("Burn")}
-      onClick={() => {
-        const newBurn = burnApp?.id === app?.id || !auth.burn
-        setBurn(newBurn)
-        !newBurn && toggleInstructions()
-      }}
-    >
-      <Span
-        style={{
-          fontSize: 24,
-          filter: "drop-shadow(0 0 6px rgba(255, 100, 0, 0.6))",
-          // animation: "pulse 2s ease-in-out infinite",
-        }}
-      >
-        🔥
-      </Span>
-    </Button>
+  const BurnButton = useMemo(
+    () =>
+      ({ style }: { style?: CSSProperties } = {}) => (
+        <Button
+          className={`link ${burn ? "pulse" : ""}`}
+          style={{
+            ...utilities.link.style,
+            ...styles.grip.style,
+            position: "relative",
+            // top: -5,
+            // right: -5,
+            ...style,
+          }}
+          title={t("Burn")}
+          onClick={() => {
+            const newBurn = burnApp?.id === app?.id || !auth.burn
+            setBurn(newBurn)
+            !newBurn && toggleInstructions()
+          }}
+        >
+          <Span
+            style={{
+              fontSize: 21.5,
+              filter: "drop-shadow(0 0 6px rgba(255, 100, 0, 0.6))",
+              // animation: "pulse 2s ease-in-out infinite",
+            }}
+          >
+            🔥
+          </Span>
+        </Button>
+      ),
+    [burn, toggleInstructions, burnApp?.id, app?.id, auth.burn, setBurn],
   )
   useEffect(() => {
     ;(appStatus?.part === "highlights" || appStatus?.part === "title") &&

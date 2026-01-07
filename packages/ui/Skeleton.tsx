@@ -365,9 +365,11 @@ export default function Skeleton({
                         isCountingDown={isCountingDown}
                       />
                     </>
-                  ) : (
-                    <CharacterProfiles />
-                  )}
+                  ) : null}
+                  <CharacterProfiles
+                    style={{ display: time && !isEmpty ? "none" : "block" }}
+                  />
+
                   {<Subscribe />}
 
                   <SignIn showSignIn={false} />

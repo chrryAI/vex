@@ -1190,7 +1190,11 @@ export const deleteUser = async (id: string) => {
 }
 
 export const createMessage = async (message: newMessage) => {
-  const [inserted] = await db.insert(messages).values(message).returning()
+  const [inserted] = await db
+    .insert(messages)
+    .values(message)
+    .onConflictDoNothing({ target: messages.id }) // Handle duplicate IDs (race conditions)
+    .returning()
 
   const thread = inserted?.threadId
     ? await getThread({ id: inserted.threadId })
@@ -4717,16 +4721,15 @@ export const getApp = async ({
 
   // Build access conditions (can user/guest access this app?)
   // Skip access check when searching by ID or ownerId (direct lookup)
-  const accessConditions =
-    id || ownerId
-      ? undefined
-      : or(
-          // User's own apps
-          userId ? eq(apps.userId, userId) : undefined,
-          // Guest's own apps
-          guestId ? eq(apps.guestId, guestId) : undefined,
-          eq(apps.visibility, "public"),
-        )
+  const accessConditions = id
+    ? undefined
+    : or(
+        // User's own apps
+        userId ? eq(apps.userId, userId) : undefined,
+        // Guest's own apps
+        guestId ? eq(apps.guestId, guestId) : undefined,
+        eq(apps.visibility, "public"),
+      )
 
   // Check if user owns any apps to determine cache strategy
 
