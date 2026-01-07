@@ -2585,8 +2585,10 @@ export default function Chat({
     }
   }, [input])
 
+  const inputText = inputRef.current?.trim() || input?.trim() || ""
+
   const getIsSendDisabled = () =>
-    (inputRef.current.trim() === "" && files.length === 0) ||
+    (inputText === "" && files.length === 0) ||
     isLoading ||
     creditsLeft === 0 ||
     disabled
@@ -2632,7 +2634,7 @@ export default function Chat({
     warning?: string
   } | null>(null)
 
-  const needSearch = needsWebSearch(inputRef.current)
+  const needSearch = needsWebSearch(inputText)
 
   // Scroll detection for auto-hide chat input
   useEffect(() => {
@@ -2769,7 +2771,7 @@ export default function Chat({
               </Button>
             ) : isLoading && !isStreaming ? (
               <Loading width={28} height={28} />
-            ) : inputRef.current.trim() || files.length > 0 ? (
+            ) : inputText || files.length > 0 ? (
               <Button
                 data-testid="chat-send-button"
                 title={
