@@ -296,7 +296,7 @@ authRoutes.post("/signin/password", async (c) => {
         name: user.name,
         image: user.image,
       },
-      token,
+      token: authCode,
       // If callbackUrl provided, include it with token param (like Google OAuth)
       ...(callbackUrl && {
         callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${authCode}`,
