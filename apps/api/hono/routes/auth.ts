@@ -287,6 +287,8 @@ authRoutes.post("/signin/password", async (c) => {
 
     c.header("Set-Cookie", cookieValue)
 
+    const authCode = await generateExchangeCode(token)
+
     const response = {
       user: {
         id: user.id,
@@ -297,7 +299,7 @@ authRoutes.post("/signin/password", async (c) => {
       token,
       // If callbackUrl provided, include it with token param (like Google OAuth)
       ...(callbackUrl && {
-        callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${token}`,
+        callbackUrl: `${callbackUrl}${callbackUrl.includes("?") ? "&" : "?"}auth_token=${authCode}`,
       }),
     }
 
@@ -787,7 +789,7 @@ authRoutes.post("/callback/apple", async (c) => {
     // Redirect back to app with auth_token in URL
     const forwardedHost = c.req.header("X-Forwarded-Host")
     const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-    return c.redirect(`${siteconfig.url}/?auth_token=${token}`)
+    return c.redirect(`${siteconfig.url}/?auth_token=${authCode}`)
   } catch (error) {
     console.error("Apple OAuth callback error:", error)
     const forwardedHost = c.req.header("X-Forwarded-Host")
