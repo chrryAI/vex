@@ -13,7 +13,11 @@ import Loading from "./Loading"
 import { useCharacterProfilesStyles } from "./CharacterProfiles.styles"
 import A from "./a/A"
 
-export default function CharacterProfiles() {
+export default function CharacterProfiles({
+  style,
+}: {
+  style?: React.CSSProperties
+}) {
   const { t } = useAppContext()
 
   const {
@@ -44,7 +48,7 @@ export default function CharacterProfiles() {
   if (burn) return null
 
   return (
-    <Div>
+    <Div style={style}>
       <Button
         title={t("Character Profile")}
         className={"link pulse"}

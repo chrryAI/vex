@@ -490,8 +490,8 @@ export function AuthProvider({
                 title: "Sato Vibes",
                 questions: [
                   "Sato mudur hocam?",
-                  "Hocam mermi gibi mi massahllah?",
-                  "Ne yapalim hocam? Güncellemeler geliyor merak etme.",
+                  "Hocam mermi gibi mi 🚅?",
+                  "Ne yapalim hocam? Çaki yapalim mi 🔪 sistemi",
                 ],
               },
             ],
