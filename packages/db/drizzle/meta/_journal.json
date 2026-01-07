@@ -1058,6 +1058,13 @@
       "when": 1767667264490,
       "tag": "0150_windy_agent_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 151,
+      "version": "7",
+      "when": 1767776695346,
+      "tag": "0151_slippery_mojo",
+      "breakpoints": true
     }
   ]
 }

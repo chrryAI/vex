@@ -5,6 +5,9 @@ import { getUser, createUser, getStore } from "@repo/db"
 import { v4 as uuidv4 } from "uuid"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
+import { randomBytes } from "crypto"
+import { db, authExchangeCodes } from "@repo/db"
+import { eq, and, gt } from "drizzle-orm"
 
 const authRoutes = new Hono()
 
@@ -32,6 +35,58 @@ function verifyToken(token: string) {
   } catch {
     return null
   }
+}
+
+/**
+ * Helper: Generate one-time exchange code
+ * Returns a secure random code that expires in 5 minutes
+ */
+async function generateExchangeCode(token: string): Promise<string> {
+  // Generate cryptographically secure random code
+  const code = randomBytes(32).toString("base64url")
+
+  // Store in database with 5-minute expiry
+  const expiresOn = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+
+  await db.insert(authExchangeCodes).values({
+    code,
+    token,
+    expiresOn,
+  })
+
+  return code
+}
+
+/**
+ * Helper: Exchange code for token (one-time use)
+ */
+async function exchangeCodeForToken(code: string): Promise<string | null> {
+  const now = new Date()
+
+  // Find unused, non-expired code
+  const [result] = await db
+    .select()
+    .from(authExchangeCodes)
+    .where(
+      and(
+        eq(authExchangeCodes.code, code),
+        eq(authExchangeCodes.used, false),
+        gt(authExchangeCodes.expiresOn, now),
+      ),
+    )
+    .limit(1)
+
+  if (!result) {
+    return null // Code not found, already used, or expired
+  }
+
+  // Mark as used (one-time use)
+  await db
+    .update(authExchangeCodes)
+    .set({ used: true })
+    .where(eq(authExchangeCodes.id, result.id))
+
+  return result.token
 }
 
 async function generateUniqueUsername(
@@ -560,9 +615,12 @@ authRoutes.get("/callback/google", async (c) => {
       `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax${cookieDomain}${secureFlag}`,
     )
 
-    // Redirect back to the original site with token in URL
+    // Generate one-time exchange code (more secure than token in URL)
+    const authCode = await generateExchangeCode(token)
+
+    // Redirect back to the original site with auth_code in URL
     const redirectUrl = new URL(storedCallbackUrl)
-    redirectUrl.searchParams.set("auth_token", token)
+    redirectUrl.searchParams.set("auth_token", authCode)
     return c.redirect(redirectUrl.toString())
   } catch (error) {
     console.error("Google OAuth callback error:", error)
@@ -723,7 +781,10 @@ authRoutes.post("/callback/apple", async (c) => {
     // Clear oauth_state cookie
     c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
 
-    // Redirect back to app with token in URL
+    // Generate one-time exchange code (more secure than token in URL)
+    const authCode = await generateExchangeCode(token)
+
+    // Redirect back to app with auth_token in URL
     const forwardedHost = c.req.header("X-Forwarded-Host")
     const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
     return c.redirect(`${siteconfig.url}/?auth_token=${token}`)
@@ -732,6 +793,32 @@ authRoutes.post("/callback/apple", async (c) => {
     const forwardedHost = c.req.header("X-Forwarded-Host")
     const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
     return c.redirect(`${siteconfig.url}/?error=oauth_callback_failed`)
+  }
+})
+
+/**
+ * POST /api/auth/exchange-code
+ * Exchange one-time code for JWT token (secure OAuth flow)
+ */
+authRoutes.post("/exchange-code", async (c) => {
+  try {
+    const { code } = await c.req.json()
+
+    if (!code) {
+      return c.json({ error: "Code required" }, 400)
+    }
+
+    // Exchange code for token (one-time use, 5-minute expiry)
+    const token = await exchangeCodeForToken(code)
+
+    if (!token) {
+      return c.json({ error: "Invalid or expired code" }, 401)
+    }
+
+    return c.json({ token })
+  } catch (error) {
+    console.error("Code exchange error:", error)
+    return c.json({ error: "Code exchange failed" }, 500)
   }
 })
 
