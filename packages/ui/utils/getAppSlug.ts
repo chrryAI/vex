@@ -23,7 +23,10 @@ const getAppSlug = ({
   if (targetApp) {
     if (targetApp.id === baseApp?.id) {
       computedSlug = defaultSlug
-    } else if (targetApp.store?.slug === baseApp?.store?.slug) {
+    } else if (
+      targetApp.store?.slug === baseApp?.store?.slug ||
+      baseApp?.store?.apps?.some((app) => app.slug === targetApp.slug)
+    ) {
       // Same store: just use the app slug
       computedSlug = `/${targetApp.slug}`
     } else {
