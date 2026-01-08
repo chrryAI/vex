@@ -1560,7 +1560,17 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
-  const [showFocus, setShowFocusInternal] = useState(baseApp?.slug === "focus")
+  const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
+    baseApp?.slug
+      ? baseApp?.slug === "focus" && app?.slug === "focus"
+      : undefined,
+  )
+
+  useEffect(() => {
+    if (showFocus === undefined && baseApp?.slug) {
+      setShowFocusInternal(baseApp?.slug === "focus" && app?.slug === "focus")
+    }
+  }, [baseApp?.slug, app?.slug]) // Only depend on slugs, not showFocus
 
   const setShowFocus = (showFocus: boolean) => {
     setShowFocusInternal(showFocus)
@@ -1624,7 +1634,7 @@ export function AuthProvider({
 
   // MinIO download URLs (production bucket)
 
-  const burn = burnInternal === null ? isZarathustra : burnInternal
+  const burn = burnInternal === null ? false : burnInternal
 
   const burning = !!(burn || burnApp)
 
@@ -1674,7 +1684,19 @@ export function AuthProvider({
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
     boolean | null
-  >("isProgramme", isBaseAppZarathustra)
+  >(
+    "prog",
+    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : null,
+  )
+
+  useEffect(() => {
+    if (!baseApp || !app) return
+    if (isProgrammeInternal === null) {
+      setIsProgrammeInternal(
+        baseApp?.slug === "zarathustra" && app?.slug === "zarathustra",
+      )
+    }
+  }, [baseApp, app, isProgrammeInternal]) // Only depend on slugs
 
   const apps = storeApps.filter((item) => {
     return app?.store?.app?.store?.apps?.some((app) => {

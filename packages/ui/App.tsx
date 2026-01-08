@@ -44,10 +44,12 @@ import { useTimerContext } from "./context/TimerContext"
 import { appWithStore } from "./types"
 import Grappes from "./Grapes"
 
-function FocusButton({ time }: { time: number }) {
+function FocusButton() {
+  const { time, presetMin1 } = useTimerContext()
+
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, isWeb } = usePlatform()
-  const { focus, getAppSlug, setShowFocus } = useAuth()
+  const { focus, getAppSlug, setShowFocus, app } = useAuth()
 
   const hasHydrated = useHasHydrated()
 
@@ -65,6 +67,8 @@ function FocusButton({ time }: { time: number }) {
   const formatTime = () => {
     if (time > 0) {
       return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
+    } else if (app.id === focus.id) {
+      return `${presetMin1}"`
     } else {
       const hours = currentTime.getHours()
       const minutes = currentTime.getMinutes()
@@ -241,11 +245,8 @@ export default function App({
   )
 
   // Use apps from context - sort: store base app first, Chrry second, rest keep original order
-  const [appsState, setApps] = React.useState(appsInternal)
-
-  useEffect(() => {
-    setApps(appsInternal)
-  }, [appsInternal])
+  // No need for separate state + useEffect, useMemo already handles updates
+  const appsState = appsInternal
 
   const grapes = auth.grapes
 
@@ -1007,7 +1008,7 @@ export default function App({
                 <Settings2 size={24} color="var(--accent-1)" />
               </Button>
             ) : app?.id === chrry?.id && focus && !canBurn ? (
-              <FocusButton time={time} />
+              <FocusButton />
             ) : (
               hasHydrated &&
               !canEditApp &&
@@ -1031,7 +1032,8 @@ export default function App({
             >
               <Div style={{ ...styles.apps.style }}>
                 {appsState.slice(0, 5)?.map((item, index) => {
-                  const showAtlasHere = index === 1 && isBlossom
+                  const showAtlasHere =
+                    index === 1 && isBlossom && app?.id !== focus?.id
 
                   const showFocusHere = focus && !showAtlasHere && index === 1
 
@@ -1306,7 +1308,7 @@ export default function App({
                             )}
                           </A>
                         )}
-                        {showFocusHere && <FocusButton time={time} />}
+                        {showFocusHere && <FocusButton />}
                         {showSpaceInvaderHere && (
                           <Button
                             className="link float"
