@@ -18,7 +18,7 @@ A unified system combining **spatial navigation** with **autonomous AI developme
 
 Navigation between apps (`appId`) triggers automatic workspace preparation, while AI agents (Architect, Coder) operate within spatial coordinates to inject mutations, validate visually via Playwright, and level up based on test results. The system maintains perfect context isolation per `appId`, enabling "same-tab" workflow with zero context switching.
 
-**Live Demo:** https://chrry.ai/public/video/live.mp4
+**Live System:** Production deployment at https://chrry.ai
 
 ---
 
@@ -413,7 +413,7 @@ I, **Iliyan Velinov**, declare that I am the sole inventor of the "Sato Spatial 
 
 All components are live and demonstrated at: https://chrry.ai/public/video/live.mp4
 
-**Signature:** ****\*\*\*\*****\_****\*\*\*\*****  
+**Signature:** \***\*\*\*\*\*\*\***\_\***\*\*\*\*\*\*\***  
 **Date:** January 8, 2026
 
 ---
