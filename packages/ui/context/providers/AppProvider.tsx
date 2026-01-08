@@ -60,6 +60,8 @@ interface AppStatus {
 }
 
 interface AppFormContextType {
+  minimize: boolean
+  setMinimize: React.Dispatch<React.SetStateAction<boolean>>
   defaultExtends: string[]
   setStoreSlug: (storeSlug: string) => void
   currentStore: storeWithApps | undefined
@@ -528,6 +530,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }),
   )
 
+  const [minimize, setMinimizeInternal] = useLocalStorage<boolean>(
+    "minimize",
+    false,
+  )
+
+  const [minimizeStartTime, setMinimizeStartTime] = useLocalStorage<
+    number | null
+  >("minimizeStartTime", null)
+
+  const setMinimize = (value: boolean | ((prev: boolean) => boolean)) => {
+    const newValue = typeof value === "function" ? value(minimize) : value
+    const now = Date.now()
+
+    // Calculate duration if we have a start time
+    if (minimizeStartTime) {
+      const durationMs = now - minimizeStartTime
+      const durationMin = Math.round(durationMs / 60000) // Convert to minutes
+
+      // Track time spent in previous state
+      plausible({ name: newValue ? "maximize_duration" : "minimize_duration" })
+    }
+
+    // Update state
+    setMinimizeInternal(newValue)
+    setMinimizeStartTime(now)
+
+    // Track state change
+    plausible({ name: newValue ? "minimize" : "maximize" })
+  }
+
   const contextInstructions = useMemo(() => {
     if (!app) return []
 
@@ -859,6 +891,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hasCustomInstructions,
         setStoreSlug,
         setIsManagingApp,
+        minimize,
+        setMinimize,
       }}
     >
       {children}

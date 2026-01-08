@@ -107,7 +107,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.9.91",
+    version: siteConfig.version || "1.9.93",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
