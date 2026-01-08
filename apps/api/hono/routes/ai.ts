@@ -17,6 +17,8 @@ import {
   isNull,
 } from "@repo/db"
 
+import { getDNAThreadArtifacts } from "../../lib/appRAG"
+
 import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
 
 import {
@@ -1159,7 +1161,6 @@ async function getAppDNAContext(app: appWithStore): Promise<string> {
 
   try {
     // Get DNA Thread artifacts (uploaded files)
-    const { getDNAThreadArtifacts } = await import("../../lib/appRAG")
     const artifactsContext = await getDNAThreadArtifacts(app)
 
     // Get app memories from main thread (owner's first conversation)
@@ -4329,7 +4330,7 @@ Currently, all features are FREE during beta. However, when users ask about anal
    - All features included
    - CI/CD pipeline addon available
 
-5. **Reviewer (The Student Agent)** (€150/month)
+5. **Coder (The Student Agent)** (€150/month)
    - Automated PR reviews & code auditing
    - "Kaizen" Learning Loop: Gains XP from every code review
    - Leveling System: Evolves from Junior to Master Auditor

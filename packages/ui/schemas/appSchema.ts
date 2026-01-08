@@ -113,6 +113,13 @@ export const appSchema = z.object({
   // Monetization (Tab 6)
   pricing: z.enum(["free", "one-time", "subscription"]).optional(),
   tier: z.enum(["free", "plus", "pro"]).optional(),
+
+  // Sato Dojo Roles
+  roles: z.array(z.enum(["coder", "architect"])).optional(),
+
+  // Growth Add-ons
+  addons: z.array(z.enum(["grape", "pear"])).optional(),
+
   price: z.number().min(0, "Price must be positive").optional(),
   currency: z.string().optional(),
   subscriptionInterval: z.enum(["monthly", "yearly"]).optional(),
