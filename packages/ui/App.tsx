@@ -25,15 +25,20 @@ import {
   Trash2,
   Minimize,
   Maximize,
+  CirclePlay,
+  CirclePause,
 } from "./icons"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
-import { Div, H1, Button, Label, Span, Input } from "./platform"
+import { Div, H1, Button, Label, Span, Input, Video } from "./platform"
 import A from "./a/A"
 import { apiFetch } from "./utils"
 import { useStyles } from "./context/StylesContext"
+
+import { useFocusButtonStyles } from "./FocusButton.styles"
+
 import {
   useApp,
   useAuth,
@@ -111,7 +116,7 @@ export default function App({
   }) => void
 }) {
   const { t } = useAppContext()
-  const { time } = useTimerContext()
+  const { time, playKitasaku, setPlayKitasaku } = useTimerContext()
 
   const {
     slug,
@@ -280,7 +285,7 @@ export default function App({
     }
   }, [app, app?.image])
 
-  const { isExtension, isFirefox, isWeb } = usePlatform()
+  const { isExtension, isFirefox, isWeb, os } = usePlatform()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement
@@ -387,6 +392,11 @@ export default function App({
 
     img.src = objectUrl
   }
+
+  const fbStyles = useFocusButtonStyles()
+
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+
   const [isUploading, setIsUploading] = useState(false)
 
   const hasErrors = Object.keys(appForm?.formState.errors || {}).length > 0
@@ -762,6 +772,62 @@ export default function App({
               }}
             />
           </Div>
+          {minimize && (
+            <Span style={fbStyles.greeting.style}>
+              <>
+                <Span>{t("Let’s focus")}</Span>
+                <Div
+                  className="letsFocusContainer"
+                  style={fbStyles.letsFocusContainer.style}
+                  onClick={() => {
+                    if (videoRef.current && os === "ios") {
+                      !playKitasaku
+                        ? videoRef.current.play().catch((error: any) => {
+                            console.error(error)
+                          })
+                        : videoRef.current.pause()
+                    }
+                    setPlayKitasaku(!playKitasaku)
+                  }}
+                >
+                  {user?.name ? (
+                    <Span style={fbStyles.userName.style}>
+                      {user.name.split(" ")[0]}
+                    </Span>
+                  ) : (
+                    ""
+                  )}
+                  <Div style={fbStyles.videoContainer.style} title="Kitasaku">
+                    {!playKitasaku ? (
+                      <CirclePlay
+                        className="videoPlay"
+                        style={fbStyles.videoPlay.style}
+                        color="var(--shade-5)"
+                        size={16}
+                      />
+                    ) : (
+                      <CirclePause
+                        className="videoPause"
+                        style={fbStyles.videoPause.style}
+                        color="var(--shade-5)"
+                        size={16}
+                      />
+                    )}
+
+                    <Video
+                      // ref={videoRef}
+                      style={fbStyles.video.style}
+                      src={`${FRONTEND_URL}/video/blob.mp4`}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                  </Div>
+                </Div>
+              </>
+            </Span>
+          )}
 
           <Div
             style={{
