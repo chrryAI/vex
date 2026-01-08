@@ -4312,7 +4312,7 @@ All features are FREE during beta. Transitioning to organic marketing, emphasize
    - Custom branding, domain, and full Plausible Analytics integration.
    - All standard features included for agency-level deployment.
 
-3. 🧪 "Plus" Add-ons (€500/month each - Private Tiers)
+3. 🧪 "Plus" Add-ons (€500/month each - Private Tiers) (€50/month each - Public Tiers)
    - **Grape Plus**: Private analytics infra for hour-by-hour behavior patterns.
    - **Pear Plus**: Private feedback loop with sentiment analysis and bug severity rankings.
    - **Coder Plus**: Private Student agent for internal-only PR auditing.
