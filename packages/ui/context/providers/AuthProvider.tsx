@@ -146,7 +146,7 @@ const AuthContext = createContext<
         apps: appWithStore[],
       ) => appWithStore | undefined
       setShowFocus: (showFocus: boolean) => void
-      showFocus: boolean
+      showFocus: boolean | undefined
       isLoadingTasks: boolean
       fetchTasks: () => Promise<void>
       tasks?: {
@@ -728,7 +728,7 @@ export function AuthProvider({
         sessionData.guestBaseApp && setGuestBaseApp(sessionData.guestBaseApp)
       }
 
-      setHasNotification(!!sessionData.hasNotification)
+      setHasNotification(!!session?.hasNotification)
 
       // Update versions and apps
       setVersions(sessionData.versions)

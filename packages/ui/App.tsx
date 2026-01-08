@@ -67,7 +67,7 @@ function FocusButton() {
   const formatTime = () => {
     if (time > 0) {
       return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
-    } else if (app.id === focus.id) {
+    } else if (app?.id === focus?.id) {
       return `${presetMin1}"`
     } else {
       const hours = currentTime.getHours()
