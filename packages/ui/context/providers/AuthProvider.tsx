@@ -1560,7 +1560,7 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
-  const [showFocus, setShowFocusInternal] = useState(false)
+  const [showFocus, setShowFocusInternal] = useState(baseApp?.slug === "focus")
 
   const setShowFocus = (showFocus: boolean) => {
     setShowFocusInternal(showFocus)

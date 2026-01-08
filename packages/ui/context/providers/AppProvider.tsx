@@ -102,6 +102,8 @@ interface AppFormContextType {
     id?: string
     name?: string
     description?: string
+    roles?: ("coder" | "architect")[]
+    addons?: ("grape" | "pear")[]
     image?: string
     systemPrompt?: string
     defaultModel?: string
