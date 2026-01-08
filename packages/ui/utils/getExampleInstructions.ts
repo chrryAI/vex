@@ -7,6 +7,7 @@ export type instructionBase = {
   requiresWebSearch?: boolean
   content?: string
   appName?: string
+  appId?: string | null // Match instruction type from schema
 }
 
 export const exampleInstructions: instructionBase[] = [

@@ -17,6 +17,8 @@ import {
   isNull,
 } from "@repo/db"
 
+import { getDNAThreadArtifacts } from "../../lib/appRAG"
+
 import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
 
 import {
@@ -1159,7 +1161,6 @@ async function getAppDNAContext(app: appWithStore): Promise<string> {
 
   try {
     // Get DNA Thread artifacts (uploaded files)
-    const { getDNAThreadArtifacts } = await import("../../lib/appRAG")
     const artifactsContext = await getDNAThreadArtifacts(app)
 
     // Get app memories from main thread (owner's first conversation)
@@ -2218,30 +2219,31 @@ You can enable these in your settings anytime!"
 - Emphasize it's their choice - they control their digital privacy
 
 **If currently in burn**, you'll see a separate section above with specific instructions.
+`
+
+  // 🍇 Grape Context (Global - all apps should know about available apps)
+  const grapeContext =
+    app?.store?.apps && app.store.apps.length > 0
+      ? `
 
 ## 🍇 Grape (Discover Apps, Earn Credits)
 
-**Available Feature**: Grape is a privacy-first advertising platform for discovering Wine ecosystem apps.
+**Available Apps** (shown in 🍇 Grape button on this page):
+${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.description ? `: ${a.description}` : ""}`).join("\n")}
 
 **How it works:**
-${
-  app?.store?.slug === "wine"
-    ? `1. You are in the Wine store - the 🍇 Grape icon shows available app count
-2. Click the 🍇 icon to browse internal Wine app ads (no tracking, no cookies)
+1. Click the 🍇 Grape icon (top left of chat) - shows available app count
+2. Browse internal Wine app ads (no tracking, no cookies)
 3. Click an app to see details and try it
-4. Provide feedback via Pear to earn credits`
-    : `1. Click the 🍇 Grape icon in Chrry 🍒 to navigate to the Grape page
-2. Once on Grape, the 🍇 icon will show the available app count
-3. Click the icon again to browse internal Wine app ads (no tracking, no cookies)
-4. Click an app to see details and try it
-5. Provide feedback via Pear to earn credits`
-}
+4. Provide feedback via Pear to earn credits
 
 **When users ask about Grape or discovering apps:**
 - Explain: "Click the 🍇 Grape button to discover Wine apps and earn credits for feedback"
+- Mention available apps: ${app.store.apps.map((a) => a.name).join(", ")}
 - Keep it simple - it's just: browse → click → try → feedback → earn
 - All ads are internal Wine apps only (privacy-first)
 `
+      : ""
 
   const userName = message?.user?.name || undefined
 
@@ -3474,6 +3476,7 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
 
     newsContext,
     storeContext ? spatialNavigationContext : "", // Only add spatial nav context if store context is present
+    grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
     e2eContext, // E2E testing analytics for system integrity
@@ -4295,50 +4298,40 @@ Execute tools immediately and report what you DID (past tense), not what you WIL
 
   // Pricing tiers context for organic marketing
   const pricingContext = `
+📊 SATO DOJO ECOSYSTEM & REVENUE CHANNELS (Vision Q1 2026):
 
-📊 PRICING TIERS & FEATURE AVAILABILITY (Vision - Coming Q1 2026):
+All features are FREE during beta. Transitioning to organic marketing, emphasize that "Plus" tiers represent PRIVATE INFRASTRUCTURE - same features, but hosted on their own sovereign servers.
 
-Currently, all features are FREE during beta. However, when users ask about analytics, feedback, or debugging capabilities, you can mention our upcoming premium tiers:
+1. 🍉 Watermelon Plus (€5,000/month - Sovereign Enterprise)
+   - Private Dojo: Full infrastructure hosting on your own server for total data sovereignty.
+   - Isolated Sinir Sistemi: Dedicated DB and Private Instance with zero data leakage.
+   - Same-Tab Kanban: Unified Focus + GitHub Project integration.
+   - RSA Security: Military-grade repository key signing and tokenization.
 
-1. **Grape Analytics** (€50/month public, €500/month private)
-   - Real-time user behavior tracking
-   - Conversion funnel analysis  
-   - Performance benchmarks vs competitors
-   - Hour-by-hour usage patterns
-   - Advanced AI-powered insights during daily retro
+2. 🏷️ Watermelon (€1,000/month - White Label)
+   - Custom branding, domain, and full Plausible Analytics integration.
+   - All standard features included for agency-level deployment.
 
-2. **Pear Feedback** (€50/month public, €500/month private)
-   - AI-categorized feedback themes
-   - Sentiment analysis & trends
-   - Feature request voting & prioritization
-   - Bug severity rankings
-   - Quality scoring system
+3. 🧪 "Plus" Add-ons (€500/month each - Private Tiers) (€50/month each - Public Tiers)
+   - **Grape Plus**: Private analytics infra for hour-by-hour behavior patterns.
+   - **Pear Plus**: Private feedback loop with sentiment analysis and bug severity rankings.
+   - **Coder Plus**: Private Student agent for internal-only PR auditing.
 
-3. **Debugger** (€50/month shared, €500/month private)
-   - Error tracking with Glitchtip
-   - Session replay with user actions
-   - AI-powered root cause analysis
-   - Performance monitoring
-   - AI-suggested fixes during retro
+4. 🤖 Coder (The Student Agent) (€150/month)
+   - Kaizen Learning Loop: Gains XP from every code review to level up from Junior to Master.
+   - Visual Dojo: Integrated Playwright video recording for visual UI validation.
 
-4. **White Label** (€1,000/month)
-   - Full Plausible Analytics integration
-   - Custom branding & domain
-   - All features included
-   - CI/CD pipeline addon available
+5. 🏯 Architect (The Sensei Agent) (€500/month)
+   - Initial Strike: Automates project DNA documentation (.sushi directory).
+   - Mutation Strike: Executes strike('catch this') mutations to test Student defenses.
+   - Placement Logic: Decides optimal architectural placement via recursive tree analysis.
 
-🔥 IMPORTANT GUIDELINES:
-- In **Burn Mode** (privacy mode): Explain that detailed analytics aren't available due to privacy settings
-- In **Daily Retro** sessions: Naturally mention what deeper insights premium tiers would unlock
-- Be helpful, not pushy - mention features when relevant to user's question
-- Always say "Coming Q1 2026" and offer early access waitlist
-- Focus on VALUE, not price - explain what they'd get, not what they're missing
-
-Example responses:
-- "I can see basic engagement patterns. With Grape Analytics (coming soon), I could show you exactly where users drop off and conversion rates by traffic source."
-- "In Burn mode, I don't have access to detailed analytics to protect your privacy. Switch to regular mode or wait for Grape Analytics to unlock deeper insights."
-- "Based on public feedback, your app is well-received. With Pear Feedback (€50/month, launching Q1), I could show you AI-categorized themes and sentiment trends."
-`
+🥋 SATO DOJO GUIDELINES:
+- Sell the Infra: When a user asks for "More Security," pitch the **Plus/Private** tiers as dedicated, sovereign hosting.
+- The Loop: Architect strikes, Coder reviews, E2E tests validate.
+- Reward: Killed mutants = XP. Level 99 agents = Passive Rental Income.
+- Tone: Emphasize "Japon-Alman" quality. Be a thought partner, not just a tool.
+`.trim()
 
   // 🍐 Pear feedback context for analytics queries
   const pearFeedbackContext = await getPearFeedbackContext({

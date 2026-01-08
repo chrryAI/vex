@@ -364,6 +364,8 @@ export function TimerContextProvider({
     (data: timer) => {
       if (!token) return
 
+      const deviceId = fingerprint
+
       if (!data.isCountingDown) {
         send({
           timer: data,
@@ -371,7 +373,6 @@ export function TimerContextProvider({
           type: "timer",
           isCountingDown: false,
         })
-
         return
       }
 
@@ -382,6 +383,7 @@ export function TimerContextProvider({
           selectedTasks,
           type: "timer",
         })
+        console.log(`🚀 ~ data:`, data)
         lastSent.current = now
       }
     },
@@ -658,8 +660,8 @@ export function TimerContextProvider({
     // Update local state
     setTimer(updatedTimer)
 
-    // Sync to WebSocket
-    // updateTimer(updatedTimer)
+    // Sync to WebSocket and DB
+    updateTimer(updatedTimer)
 
     // Persist to localStorage via hook
     setTimerState({

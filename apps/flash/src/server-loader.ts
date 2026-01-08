@@ -155,7 +155,31 @@ export async function loadServerData(
 
   const isTestFP = TEST_FINGERPRINTS.includes(fpFromQuery || "")
 
-  const authToken = urlObj.searchParams.get("auth_token")
+  // Handle OAuth callback - exchange auth_code for token (more secure than token in URL)
+  const authCode = urlObj.searchParams.get("auth_token")
+  let authToken: string | null = null
+
+  if (authCode) {
+    try {
+      // Exchange one-time code for JWT token
+      const exchangeResponse = await fetch(`${API_URL}/auth/exchange-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: authCode }),
+      })
+
+      if (exchangeResponse.ok) {
+        const { token } = await exchangeResponse.json()
+        authToken = token
+        console.log("✅ Auth code exchanged for token")
+      } else {
+        console.error("❌ Auth code exchange failed")
+      }
+    } catch (error) {
+      authToken = null
+      console.error("❌ Auth code exchange error:", error)
+    }
+  }
 
   const apiKeyCandidate = authToken
     ? authToken

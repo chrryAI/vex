@@ -1,6 +1,12 @@
 "use client"
 
-import React, { useCallback, useEffect, useState, CSSProperties } from "react"
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  CSSProperties,
+  useMemo,
+} from "react"
 
 import { clsx, FilePicker, usePlatform, useTheme } from "./platform"
 import EnableNotifications from "./EnableNotifications"
@@ -17,15 +23,22 @@ import {
   RefreshCw,
   Settings2,
   Trash2,
+  Minimize,
+  Maximize,
+  CirclePlay,
+  CirclePause,
 } from "./icons"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
-import { Div, H1, Button, Label, Span, Input } from "./platform"
+import { Div, H1, Button, Label, Span, Input, Video } from "./platform"
 import A from "./a/A"
 import { apiFetch } from "./utils"
 import { useStyles } from "./context/StylesContext"
+
+import { useFocusButtonStyles } from "./FocusButton.styles"
+
 import {
   useApp,
   useAuth,
@@ -38,10 +51,12 @@ import { useTimerContext } from "./context/TimerContext"
 import { appWithStore } from "./types"
 import Grappes from "./Grapes"
 
-function FocusButton({ time }: { time: number }) {
+function FocusButton() {
+  const { time, presetMin1 } = useTimerContext()
+
   const { appStyles } = useStyles()
   const { isExtension, isFirefox, isWeb } = usePlatform()
-  const { focus, getAppSlug, setShowFocus } = useAuth()
+  const { focus, getAppSlug, setShowFocus, app } = useAuth()
 
   const hasHydrated = useHasHydrated()
 
@@ -59,6 +74,8 @@ function FocusButton({ time }: { time: number }) {
   const formatTime = () => {
     if (time > 0) {
       return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
+    } else if (app?.id === focus?.id) {
+      return `${presetMin1}"`
     } else {
       const hours = currentTime.getHours()
       const minutes = currentTime.getMinutes()
@@ -99,7 +116,7 @@ export default function App({
   }) => void
 }) {
   const { t } = useAppContext()
-  const { time } = useTimerContext()
+  const { time, playKitasaku, setPlayKitasaku } = useTimerContext()
 
   const {
     slug,
@@ -122,6 +139,8 @@ export default function App({
     hasCustomInstructions,
     showingCustom,
     toggleInstructions,
+    minimize,
+    setMinimize,
   } = useApp()
 
   const {
@@ -235,11 +254,8 @@ export default function App({
   )
 
   // Use apps from context - sort: store base app first, Chrry second, rest keep original order
-  const [appsState, setApps] = React.useState(appsInternal)
-
-  useEffect(() => {
-    setApps(appsInternal)
-  }, [appsInternal])
+  // No need for separate state + useEffect, useMemo already handles updates
+  const appsState = appsInternal
 
   const grapes = auth.grapes
 
@@ -269,7 +285,7 @@ export default function App({
     }
   }, [app, app?.image])
 
-  const { isExtension, isFirefox, isWeb } = usePlatform()
+  const { isExtension, isFirefox, isWeb, os } = usePlatform()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement
@@ -376,6 +392,11 @@ export default function App({
 
     img.src = objectUrl
   }
+
+  const fbStyles = useFocusButtonStyles()
+
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+
   const [isUploading, setIsUploading] = useState(false)
 
   const hasErrors = Object.keys(appForm?.formState.errors || {}).length > 0
@@ -385,34 +406,38 @@ export default function App({
 
   const isSettingVisible = hasHydrated && isAppOwner && !isManagingApp
 
-  const BurnButton = ({ style }: { style?: CSSProperties } = {}) => (
-    <Button
-      className={`link ${burn ? "pulse" : ""}`}
-      style={{
-        ...utilities.link.style,
-        ...styles.grip.style,
-        position: "relative",
-        // top: -5,
-        // right: -5,
-        ...style,
-      }}
-      title={t("Burn")}
-      onClick={() => {
-        const newBurn = burnApp?.id === app?.id || !auth.burn
-        setBurn(newBurn)
-        !newBurn && toggleInstructions()
-      }}
-    >
-      <Span
-        style={{
-          fontSize: 24,
-          filter: "drop-shadow(0 0 6px rgba(255, 100, 0, 0.6))",
-          // animation: "pulse 2s ease-in-out infinite",
-        }}
-      >
-        🔥
-      </Span>
-    </Button>
+  const BurnButton = useMemo(
+    () =>
+      ({ style }: { style?: CSSProperties } = {}) => (
+        <Button
+          className={`link ${burn ? "pulse" : ""}`}
+          style={{
+            ...utilities.link.style,
+            ...styles.grip.style,
+            position: "relative",
+            // top: -5,
+            // right: -5,
+            ...style,
+          }}
+          title={t("Burn")}
+          onClick={() => {
+            const newBurn = burnApp?.id === app?.id || !auth.burn
+            setBurn(newBurn)
+            !newBurn && toggleInstructions()
+          }}
+        >
+          <Span
+            style={{
+              fontSize: 21.5,
+              filter: "drop-shadow(0 0 6px rgba(255, 100, 0, 0.6))",
+              // animation: "pulse 2s ease-in-out infinite",
+            }}
+          >
+            🔥
+          </Span>
+        </Button>
+      ),
+    [burn, toggleInstructions, burnApp?.id, app?.id, auth.burn, setBurn],
   )
   useEffect(() => {
     ;(appStatus?.part === "highlights" || appStatus?.part === "title") &&
@@ -478,6 +503,32 @@ export default function App({
 
   return (
     <Div>
+      <Div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          marginBottom: "0.5rem",
+          position: "relative",
+        }}
+      >
+        <Button
+          title={t("Minimize")}
+          className="transparent"
+          style={{
+            ...utilities.small.style,
+            gap: "0.4rem",
+          }}
+          onClick={() => {
+            addHapticFeedback()
+            setMinimize(!minimize)
+          }}
+        >
+          {minimize ? <Maximize size={17} /> : <Minimize size={17} />}{" "}
+          {minimize ? t("Maximize") : t("Minimize")}
+        </Button>
+      </Div>
       <H1 style={styles.title.style}>
         {!isManagingApp && !canEditApp && app ? (
           <Div
@@ -721,380 +772,407 @@ export default function App({
               }}
             />
           </Div>
-
-          <Div style={{ ...styles.section.style }}>
-            {appStatus?.part || userBaseApp || guestBaseApp ? null : (
-              <Button
-                className="link"
-                style={{
-                  ...utilities.link,
-                  gap: "0.5rem",
-                  fontSize: "0.675rem",
-                  position: "relative",
-                }}
-                key={suggestSaveApp ? "highlights" : "settings"}
-                onClick={() => {
-                  if (user?.role !== "admin") {
-                    if (user && owningApps.length >= 3) {
-                      toast.error(
-                        t("Users can have 3 agents, contact for more"),
-                      )
-                      return
-                    }
-                    if (guest && owningApps.length >= 2) {
-                      toast.error(t("Guests can have 2 agent, login for more"))
-                      return
-                    }
-                  }
-
-                  setAppStatus({
-                    part: "settings",
-                    step: canEditApp ? "update" : "add",
-                  })
-                }}
-                title={t(isManagingApp ? "Cancel" : "Add agent")}
-              >
-                <Span
-                  style={{
-                    position: "absolute",
-                    bottom: "0.15rem",
-                    right: "-0.50rem",
-                  }}
-                >
-                  🤯
-                </Span>
-                {t("Add agent")}
-                <Img
-                  showLoading={false}
-                  alt="Plus"
-                  width={24}
-                  height={24}
-                  icon="plus"
-                />
-              </Button>
-            )}
-            {appStatus?.part === "name" ? (
-              <Div style={styles.agentNameForm.style}>
+          {minimize && (
+            <Span style={fbStyles.greeting.style}>
+              <>
+                <Span>{t("Let’s focus")}</Span>
                 <Div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    marginTop: appStatus?.part === "name" ? "1.25rem" : "0",
+                  className="letsFocusContainer"
+                  style={fbStyles.letsFocusContainer.style}
+                  onClick={() => {
+                    if (videoRef.current && os === "ios") {
+                      !playKitasaku
+                        ? videoRef.current.play().catch((error: any) => {
+                            console.error(error)
+                          })
+                        : videoRef.current.pause()
+                    }
+                    setPlayKitasaku(!playKitasaku)
                   }}
                 >
-                  <Label
-                    htmlFor="agentName"
+                  {user?.name ? (
+                    <Span style={fbStyles.userName.style}>
+                      {user.name.split(" ")[0]}
+                    </Span>
+                  ) : (
+                    ""
+                  )}
+                  <Div style={fbStyles.videoContainer.style} title="Kitasaku">
+                    {!playKitasaku ? (
+                      <CirclePlay
+                        className="videoPlay"
+                        style={fbStyles.videoPlay.style}
+                        color="var(--shade-5)"
+                        size={16}
+                      />
+                    ) : (
+                      <CirclePause
+                        className="videoPause"
+                        style={fbStyles.videoPause.style}
+                        color="var(--shade-5)"
+                        size={16}
+                      />
+                    )}
+
+                    <Video
+                      // ref={videoRef}
+                      style={fbStyles.video.style}
+                      src={`${FRONTEND_URL}/video/blob.mp4`}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                  </Div>
+                </Div>
+              </>
+            </Span>
+          )}
+
+          <Div
+            style={{
+              opacity: minimize ? 0 : 1,
+              pointerEvents: minimize ? "none" : "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+            }}
+          >
+            <Div style={{ ...styles.section.style }}>
+              {appStatus?.part || userBaseApp || guestBaseApp ? null : (
+                <Button
+                  className="link"
+                  style={{
+                    ...utilities.link,
+                    gap: "0.5rem",
+                    fontSize: "0.675rem",
+                    position: "relative",
+                  }}
+                  key={suggestSaveApp ? "highlights" : "settings"}
+                  onClick={() => {
+                    if (user?.role !== "admin") {
+                      if (user && owningApps.length >= 3) {
+                        toast.error(
+                          t("Users can have 3 agents, contact for more"),
+                        )
+                        return
+                      }
+                      if (guest && owningApps.length >= 2) {
+                        toast.error(
+                          t("Guests can have 2 agent, login for more"),
+                        )
+                        return
+                      }
+                    }
+
+                    setAppStatus({
+                      part: "settings",
+                      step: canEditApp ? "update" : "add",
+                    })
+                  }}
+                  title={t(isManagingApp ? "Cancel" : "Add agent")}
+                >
+                  <Span
                     style={{
-                      ...styles.nameField.style,
-                      paddingInline: "0.5rem",
-                      ...(appForm?.formState.errors.name?.message
-                        ? styles.formInfoError.style
-                        : {}),
+                      position: "absolute",
+                      bottom: "0.15rem",
+                      right: "-0.50rem",
+                    }}
+                  >
+                    🤯
+                  </Span>
+                  {t("Add agent")}
+                  <Img
+                    showLoading={false}
+                    alt="Plus"
+                    width={24}
+                    height={24}
+                    icon="plus"
+                  />
+                </Button>
+              )}
+              {appStatus?.part === "name" ? (
+                <Div style={styles.agentNameForm.style}>
+                  <Div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      marginTop: appStatus?.part === "name" ? "1.25rem" : "0",
+                    }}
+                  >
+                    <Label
+                      htmlFor="agentName"
+                      style={{
+                        ...styles.nameField.style,
+                        paddingInline: "0.5rem",
+                        ...(appForm?.formState.errors.name?.message
+                          ? styles.formInfoError.style
+                          : {}),
+                      }}
+                    >
+                      <Img
+                        style={{
+                          marginLeft: "auto",
+                        }}
+                        showLoading={false}
+                        icon="spaceInvader"
+                        alt="Space Invader"
+                        title={t("Space Invader")}
+                        width={24}
+                        height={24}
+                      />
+                      <Div style={{ position: "relative" }}>
+                        <Div
+                          style={{
+                            ...styles.formInfo.style,
+                            ...(appForm?.formState.errors.name?.message &&
+                              styles.formInfoError.style),
+                          }}
+                        >
+                          {appForm?.formState.errors.name?.message ? (
+                            <Span style={styles.field.style}>
+                              {t(appForm?.formState.errors.name.message)}
+                            </Span>
+                          ) : (
+                            <Span
+                              style={{
+                                ...styles.field.style,
+                                display: "flex",
+                                textAlign: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {t("Keep it short!")}
+                            </Span>
+                          )}
+                        </Div>
+                        <Input
+                          {...appForm?.register("name")}
+                          title={t("Name")}
+                          id="agentName"
+                          style={styles.nameInput.style}
+                          type="text"
+                          placeholder={t("Name")}
+                        />
+                      </Div>
+                      <Span
+                        title={t(
+                          "This will the name your app, keep it short around 5-10 characters",
+                        )}
+                        style={styles.infoIcon.style}
+                      >
+                        <Info color="var(--background)" size={24} />
+                      </Span>
+                    </Label>
+
+                    <Button
+                      className="link"
+                      disabled={!canAddName}
+                      onClick={() => {
+                        if (canAddName) {
+                          setAppStatus({
+                            step: canEditApp ? "update" : "add",
+                            part: "highlights",
+                          })
+                        }
+                      }}
+                      style={{
+                        ...utilities.link,
+                        ...utilities.small,
+                        ...(canAddName ? {} : utilities.transparent),
+                      }}
+                      title={t("Continue")}
+                    >
+                      <ArrowRight />
+                    </Button>
+                  </Div>
+                </Div>
+              ) : isManagingApp ? (
+                <Div style={styles.nameImage.style}>
+                  <Button
+                    className="link"
+                    title={t("Edit")}
+                    onClick={() => {
+                      setAppStatus({
+                        step: canEditApp ? "update" : "add",
+                        part: "name",
+                      })
+                    }}
+                    style={utilities.link.style}
+                  >
+                    <Settings2 />
+                  </Button>
+                  <Button
+                    className="inverted"
+                    title={t("Your AI-Powered Life")}
+                    style={{
+                      ...utilities.small.style,
+                      ...utilities.inverted.style,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                    }}
+                    onClick={() => {
+                      setAppStatus({
+                        step: canEditApp ? "update" : "add",
+                        part: "name",
+                      })
                     }}
                   >
                     <Img
-                      style={{
-                        marginLeft: "auto",
-                      }}
                       showLoading={false}
                       icon="spaceInvader"
-                      alt="Space Invader"
-                      title={t("Space Invader")}
-                      width={24}
-                      height={24}
+                      app={app}
+                      size={24}
                     />
-                    <Div style={{ position: "relative" }}>
-                      <Div
-                        style={{
-                          ...styles.formInfo.style,
-                          ...(appForm?.formState.errors.name?.message &&
-                            styles.formInfoError.style),
-                        }}
-                      >
-                        {appForm?.formState.errors.name?.message ? (
-                          <Span style={styles.field.style}>
-                            {t(appForm?.formState.errors.name.message)}
-                          </Span>
-                        ) : (
-                          <Span
-                            style={{
-                              ...styles.field.style,
-                              display: "flex",
-                              textAlign: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {t("Keep it short!")}
-                          </Span>
-                        )}
-                      </Div>
-                      <Input
-                        {...appForm?.register("name")}
-                        title={t("Name")}
-                        id="agentName"
-                        style={styles.nameInput.style}
-                        type="text"
-                        placeholder={t("Name")}
-                      />
-                    </Div>
-                    <Span
-                      title={t(
-                        "This will the name your app, keep it short around 5-10 characters",
-                      )}
-                      style={styles.infoIcon.style}
-                    >
-                      <Info color="var(--background)" size={24} />
-                    </Span>
-                  </Label>
-
-                  <Button
-                    className="link"
-                    disabled={!canAddName}
-                    onClick={() => {
-                      if (canAddName) {
-                        setAppStatus({
-                          step: canEditApp ? "update" : "add",
-                          part: "highlights",
-                        })
-                      }
-                    }}
-                    style={{
-                      ...utilities.link,
-                      ...utilities.small,
-                      ...(canAddName ? {} : utilities.transparent),
-                    }}
-                    title={t("Continue")}
-                  >
-                    <ArrowRight />
+                    <Span>{appFormWatcher.name}</Span>
                   </Button>
+                  {isManagingApp && (
+                    <Button
+                      className="link"
+                      onClick={() => {
+                        setAppStatus(undefined)
+                      }}
+                      style={utilities.link.style}
+                      title={t(isManagingApp ? "Cancel" : "Add agent")}
+                    >
+                      <CircleMinus color="var(--accent-1)" size={24} />
+                    </Button>
+                  )}
                 </Div>
-              </Div>
-            ) : isManagingApp ? (
-              <Div style={styles.nameImage.style}>
+              ) : (
+                store && (
+                  <A
+                    title={t(store?.title || "Your AI-Powered Life")}
+                    href={getStoreSlug(store?.slug)}
+                    className="button inverted"
+                    style={{
+                      ...utilities.button.style,
+                      ...utilities.small.style,
+                      ...utilities.inverted.style,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                    }}
+                    onClick={(e) => {
+                      addHapticFeedback()
+
+                      if (e.metaKey || e.ctrlKey) {
+                        return
+                      }
+                      e.preventDefault()
+
+                      router.push(getStoreSlug(store?.slug))
+                    }}
+                  >
+                    <Img
+                      showLoading={false}
+                      logo={app?.id === chrry?.id ? "blossom" : "lifeOS"}
+                      store={store}
+                      size={24}
+                    />
+                    <Span>{store?.name}</Span>
+                  </A>
+                )
+              )}
+              {(!isManagingApp && grape && app?.store?.slug !== "wine") ||
+              isPear ? (
+                <Grappes goToGrape={!isPear} />
+              ) : (
+                !isManagingApp && (
+                  <A
+                    href={`${FRONTEND_URL}/calendar`}
+                    title={t("Organize your life")}
+                    openInNewTab={isExtension && isFirefox}
+                    className="button transparent"
+                    style={{
+                      ...utilities.button.style,
+                      ...utilities.transparent.style,
+                    }}
+                  >
+                    <Img
+                      showLoading={false}
+                      icon="calendar"
+                      width={18}
+                      height={18}
+                    />
+                  </A>
+                )
+              )}
+              {isSettingVisible ? (
                 <Button
                   className="link"
+                  style={{ ...utilities.link.style, ...styles.grip.style }}
                   title={t("Edit")}
                   onClick={() => {
                     setAppStatus({
-                      step: canEditApp ? "update" : "add",
-                      part: "name",
-                    })
-                  }}
-                  style={utilities.link.style}
-                >
-                  <Settings2 />
-                </Button>
-                <Button
-                  className="inverted"
-                  title={t("Your AI-Powered Life")}
-                  style={{
-                    ...utilities.small.style,
-                    ...utilities.inverted.style,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.4rem",
-                  }}
-                  onClick={() => {
-                    setAppStatus({
-                      step: canEditApp ? "update" : "add",
+                      step: "restore",
                       part: "name",
                     })
                   }}
                 >
-                  <Img
-                    showLoading={false}
-                    icon="spaceInvader"
-                    app={app}
-                    size={24}
-                  />
-                  <Span>{appFormWatcher.name}</Span>
+                  <Settings2 size={24} color="var(--accent-1)" />
                 </Button>
-                {isManagingApp && (
-                  <Button
-                    className="link"
-                    onClick={() => {
-                      setAppStatus(undefined)
-                    }}
-                    style={utilities.link.style}
-                    title={t(isManagingApp ? "Cancel" : "Add agent")}
-                  >
-                    <CircleMinus color="var(--accent-1)" size={24} />
-                  </Button>
-                )}
-              </Div>
-            ) : (
-              store && (
-                <A
-                  title={t(store?.title || "Your AI-Powered Life")}
-                  href={getStoreSlug(store?.slug)}
-                  className="button inverted"
-                  style={{
-                    ...utilities.button.style,
-                    ...utilities.small.style,
-                    ...utilities.inverted.style,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.4rem",
-                  }}
-                  onClick={(e) => {
-                    addHapticFeedback()
+              ) : app?.id === chrry?.id && focus && !canBurn ? (
+                <FocusButton />
+              ) : (
+                hasHydrated &&
+                !canEditApp &&
+                !isManagingApp &&
+                (canBurn ? (
+                  <BurnButton style={{ top: -5, right: -5 }} />
+                ) : (
+                  <Span style={{ ...styles.grip.style }}>
+                    <Grip size={24} color="var(--accent-1)" />
+                  </Span>
+                ))
+              )}
+            </Div>
 
-                    if (e.metaKey || e.ctrlKey) {
-                      return
-                    }
-                    e.preventDefault()
-
-                    router.push(getStoreSlug(store?.slug))
-                  }}
-                >
-                  <Img
-                    showLoading={false}
-                    logo={app?.id === chrry?.id ? "blossom" : "lifeOS"}
-                    store={store}
-                    size={24}
-                  />
-                  <Span>{store?.name}</Span>
-                </A>
-              )
-            )}
-            {(!isManagingApp && grape && app?.store?.slug !== "wine") ||
-            isPear ? (
-              <Grappes goToGrape={!isPear} />
-            ) : (
-              !isManagingApp && (
-                <A
-                  href={`${FRONTEND_URL}/calendar`}
-                  title={t("Organize your life")}
-                  openInNewTab={isExtension && isFirefox}
-                  className="button transparent"
-                  style={{
-                    ...utilities.button.style,
-                    ...utilities.transparent.style,
-                  }}
-                >
-                  <Img
-                    showLoading={false}
-                    icon="calendar"
-                    width={18}
-                    height={18}
-                  />
-                </A>
-              )
-            )}
-            {isSettingVisible ? (
-              <Button
-                className="link"
-                style={{ ...utilities.link.style, ...styles.grip.style }}
-                title={t("Edit")}
-                onClick={() => {
-                  setAppStatus({
-                    step: "restore",
-                    part: "name",
-                  })
+            {!isManagingApp && (
+              <Div
+                style={{
+                  ...styles.section.style,
+                  ...styles.appsGrid.style,
                 }}
               >
-                <Settings2 size={24} color="var(--accent-1)" />
-              </Button>
-            ) : app?.id === chrry?.id && focus && !canBurn ? (
-              <FocusButton time={time} />
-            ) : (
-              hasHydrated &&
-              !canEditApp &&
-              !isManagingApp &&
-              (canBurn ? (
-                <BurnButton style={{ top: -5, right: -5 }} />
-              ) : (
-                <Span style={{ ...styles.grip.style }}>
-                  <Grip size={24} color="var(--accent-1)" />
-                </Span>
-              ))
-            )}
-          </Div>
+                <Div style={{ ...styles.apps.style }}>
+                  {appsState.slice(0, 5)?.map((item, index) => {
+                    const showAtlasHere =
+                      index === 1 && isBlossom && app?.id !== focus?.id
 
-          {!isManagingApp && (
-            <Div
-              style={{
-                ...styles.section.style,
-                ...styles.appsGrid.style,
-              }}
-            >
-              <Div style={{ ...styles.apps.style }}>
-                {appsState.slice(0, 5)?.map((item, index) => {
-                  const showAtlasHere = index === 1 && isBlossom
+                    const showFocusHere = focus && !showAtlasHere && index === 1
 
-                  const showFocusHere = focus && !showAtlasHere && index === 1
+                    const showPacmanHere =
+                      // !showAtlasThere &&
+                      app?.store?.id !== popcorn?.store?.id && index === 2
 
-                  const showPacmanHere =
-                    // !showAtlasThere &&
-                    app?.store?.id !== popcorn?.store?.id && index === 2
+                    const showSpaceInvaderHere = index === 3
 
-                  const showSpaceInvaderHere = index === 3
+                    const showChrryHere =
+                      index === 0 && chrry && app?.id !== chrry.id
+                    const showZarathustraHere =
+                      !showChrryHere &&
+                      index === 0 &&
+                      store?.appId !== zarathustra?.id
 
-                  const showChrryHere =
-                    index === 0 && chrry && app?.id !== chrry.id
-                  const showZarathustraHere =
-                    !showChrryHere &&
-                    index === 0 &&
-                    store?.appId !== zarathustra?.id
-
-                  return (
-                    <Div
-                      key={item.id}
-                      id={item.id}
-                      style={{
-                        ...styles.appItem.style,
-                        marginLeft: index === 2 ? "auto" : undefined,
-                      }}
-                    >
-                      <>
-                        {showChrryHere && (
-                          <A
-                            data-testid="app-chrry"
-                            title="Chrry"
-                            preventDefault
-                            href={getAppSlug(chrry)}
-                            onClick={(e) => {
-                              if (isManagingApp) {
-                                e.preventDefault()
-                                return
-                              }
-
-                              if (e.metaKey || e.ctrlKey) {
-                                return
-                              }
-                              e.preventDefault()
-
-                              setIsNewAppChat(chrry)
-                            }}
-                            style={{
-                              ...styles.chrry.style,
-                            }}
-                          >
-                            {loadingApp?.id !== chrry?.id ? (
-                              <Img
-                                logo="chrry"
-                                alt="Chrry"
-                                title={"Chrry"}
-                                width={28}
-                                height={28}
-                              />
-                            ) : (
-                              <Loading size={28} />
-                            )}
-                          </A>
-                        )}
-
-                        {showZarathustraHere &&
-                          zarathustra &&
-                          store &&
-                          store?.apps?.some(
-                            (app) => app.id === zarathustra.id,
-                          ) && (
+                    return (
+                      <Div
+                        key={item.id}
+                        id={item.id}
+                        style={{
+                          ...styles.appItem.style,
+                          marginLeft: index === 2 ? "auto" : undefined,
+                        }}
+                      >
+                        <>
+                          {showChrryHere && (
                             <A
+                              data-testid="app-chrry"
+                              title="Chrry"
                               preventDefault
-                              data-testid={`app-${zarathustra.slug}`}
-                              href={getAppSlug(zarathustra)}
+                              href={getAppSlug(chrry)}
                               onClick={(e) => {
                                 if (isManagingApp) {
                                   e.preventDefault()
@@ -1106,38 +1184,213 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewAppChat(zarathustra)
+                                setIsNewAppChat(chrry)
                               }}
                               style={{
-                                ...styles.zarathustra.style,
+                                ...styles.chrry.style,
                               }}
                             >
-                              {loadingApp?.id !== zarathustra?.id ? (
+                              {loadingApp?.id !== chrry?.id ? (
                                 <Img
-                                  style={{
-                                    ...styles.zarathustra.style,
-                                  }}
-                                  app={zarathustra}
-                                  size={24}
+                                  logo="chrry"
+                                  alt="Chrry"
+                                  title={"Chrry"}
+                                  width={28}
+                                  height={28}
                                 />
                               ) : (
-                                <Loading size={24} />
+                                <Loading size={28} />
                               )}
                             </A>
                           )}
-                        {showPacmanHere ? (
-                          isSettingVisible ? (
-                            <BurnButton style={{ ...styles.popcorn.style }} />
-                          ) : popcorn &&
+
+                          {showZarathustraHere &&
+                            zarathustra &&
                             store &&
-                            store?.appId !== popcorn?.id &&
                             store?.apps?.some(
-                              (app) => app.id === popcorn.id,
-                            ) ? (
+                              (app) => app.id === zarathustra.id,
+                            ) && (
+                              <A
+                                preventDefault
+                                data-testid={`app-${zarathustra.slug}`}
+                                href={getAppSlug(zarathustra)}
+                                onClick={(e) => {
+                                  if (isManagingApp) {
+                                    e.preventDefault()
+                                    return
+                                  }
+
+                                  if (e.metaKey || e.ctrlKey) {
+                                    return
+                                  }
+                                  e.preventDefault()
+
+                                  setIsNewAppChat(zarathustra)
+                                }}
+                                style={{
+                                  ...styles.zarathustra.style,
+                                }}
+                              >
+                                {loadingApp?.id !== zarathustra?.id ? (
+                                  <Img
+                                    style={{
+                                      ...styles.zarathustra.style,
+                                    }}
+                                    app={zarathustra}
+                                    size={24}
+                                  />
+                                ) : (
+                                  <Loading size={24} />
+                                )}
+                              </A>
+                            )}
+                          {showPacmanHere ? (
+                            isSettingVisible ? (
+                              <BurnButton style={{ ...styles.popcorn.style }} />
+                            ) : popcorn &&
+                              store &&
+                              store?.appId !== popcorn?.id &&
+                              store?.apps?.some(
+                                (app) => app.id === popcorn.id,
+                              ) ? (
+                              <A
+                                preventDefault
+                                href={getAppSlug(popcorn)}
+                                data-testid={`app-${popcorn.slug}`}
+                                onClick={(e) => {
+                                  if (isManagingApp) {
+                                    e.preventDefault()
+                                    return
+                                  }
+
+                                  if (e.metaKey || e.ctrlKey) {
+                                    return
+                                  }
+                                  e.preventDefault()
+
+                                  setIsNewAppChat(popcorn)
+                                }}
+                                style={{
+                                  ...styles.popcorn.style,
+                                }}
+                              >
+                                {loadingApp?.id !== popcorn?.id ? (
+                                  <Img app={popcorn} size={24} />
+                                ) : (
+                                  <Loading size={24} />
+                                )}
+                              </A>
+                            ) : (
+                              showPacmanHere && (
+                                <Button
+                                  className="link slideInFromLeft"
+                                  onClick={() =>
+                                    setAppStatus({
+                                      step: canEditApp ? "update" : "add",
+                                      part: "highlights",
+                                    })
+                                  }
+                                  style={{
+                                    ...styles.pacMan.style,
+                                  }}
+                                >
+                                  <Img
+                                    icon="pacman"
+                                    alt="Pacman"
+                                    title={"Pacman"}
+                                    width={26}
+                                    height={26}
+                                  />
+                                </Button>
+                              )
+                            )
+                          ) : null}
+
+                          {slug && getAppSlug(item) === slug ? (
+                            <>
+                              <StoreApp key={"vex"} />
+                            </>
+                          ) : (
+                            item.id !== app?.id && (
+                              <Div
+                                style={{
+                                  marginLeft: index === 0 ? "auto" : "",
+                                  "--glow-color":
+                                    COLORS[
+                                      item.themeColor as keyof typeof COLORS
+                                    ],
+                                }}
+                              >
+                                <A
+                                  data-testid={`app-${item.slug}`}
+                                  preventDefault
+                                  key={item.slug}
+                                  title={t(item.title)}
+                                  className={clsx(`button`, {
+                                    ["transparent"]: isManagingApp,
+                                    ["inverted"]: !isManagingApp,
+                                    glow: loadingApp?.id === item.id,
+                                  })}
+                                  style={{
+                                    ...utilities.button.style,
+                                    ...utilities.small.style,
+                                    ...(isManagingApp
+                                      ? utilities.transparent.style
+                                      : utilities.inverted.style),
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "0.35rem",
+                                  }}
+                                  href={getAppSlug(item)}
+                                  onClick={(e) => {
+                                    if (isManagingApp) {
+                                      return
+                                    }
+                                    if (e.metaKey || e.ctrlKey) {
+                                      return
+                                    }
+
+                                    setIsNewAppChat(item)
+
+                                    e.preventDefault()
+                                  }}
+                                >
+                                  {loadingApp?.id === item.id ? (
+                                    <Span
+                                      style={{
+                                        width: "24px",
+                                        height: "24px",
+                                      }}
+                                    >
+                                      <Loading
+                                        color={
+                                          COLORS[
+                                            item.themeColor as keyof typeof COLORS
+                                          ]
+                                        }
+                                        size={24}
+                                      />
+                                    </Span>
+                                  ) : (
+                                    <>
+                                      <Img
+                                        showLoading={false}
+                                        app={item}
+                                        alt={item.title}
+                                        size={24}
+                                      />
+                                    </>
+                                  )}
+                                  <Span>{item.name}</Span>
+                                </A>
+                              </Div>
+                            )
+                          )}
+                          {showAtlasHere && atlas && (
                             <A
+                              data-testid={`app-${atlas.slug}`}
+                              href={getAppSlug(atlas)}
                               preventDefault
-                              href={getAppSlug(popcorn)}
-                              data-testid={`app-${popcorn.slug}`}
                               onClick={(e) => {
                                 if (isManagingApp) {
                                   e.preventDefault()
@@ -1149,199 +1402,72 @@ export default function App({
                                 }
                                 e.preventDefault()
 
-                                setIsNewAppChat(popcorn)
+                                setIsNewAppChat(atlas)
                               }}
                               style={{
-                                ...styles.popcorn.style,
+                                ...styles.atlas.style,
                               }}
                             >
-                              {loadingApp?.id !== popcorn?.id ? (
-                                <Img app={popcorn} size={24} />
+                              {loadingApp?.id === atlas?.id ? (
+                                <Loading size={22} />
                               ) : (
-                                <Loading size={24} />
+                                <Img app={atlas} width={22} height={22} />
                               )}
                             </A>
-                          ) : (
-                            showPacmanHere && (
-                              <Button
-                                className="link slideInFromLeft"
-                                onClick={() =>
-                                  setAppStatus({
-                                    step: canEditApp ? "update" : "add",
-                                    part: "highlights",
-                                  })
-                                }
-                                style={{
-                                  ...styles.pacMan.style,
-                                }}
-                              >
-                                <Img
-                                  icon="pacman"
-                                  alt="Pacman"
-                                  title={"Pacman"}
-                                  width={26}
-                                  height={26}
-                                />
-                              </Button>
-                            )
-                          )
-                        ) : null}
-
-                        {slug && getAppSlug(item) === slug ? (
-                          <>
-                            <StoreApp key={"vex"} />
-                          </>
-                        ) : (
-                          item.id !== app?.id && (
-                            <Div
+                          )}
+                          {showFocusHere && <FocusButton />}
+                          {showSpaceInvaderHere && (
+                            <Button
+                              className="link float"
+                              key={
+                                showingCustom
+                                  ? "customInstructions"
+                                  : "appInstructions"
+                              }
                               style={{
-                                marginLeft: index === 0 ? "auto" : "",
-                                "--glow-color":
-                                  COLORS[
-                                    item.themeColor as keyof typeof COLORS
-                                  ],
+                                ...styles.spaceInvader.style,
+                              }}
+                              onClick={() => {
+                                toggleInstructions()
                               }}
                             >
-                              <A
-                                data-testid={`app-${item.slug}`}
-                                preventDefault
-                                key={item.slug}
-                                title={t(item.title)}
-                                className={clsx(`button`, {
-                                  ["transparent"]: isManagingApp,
-                                  ["inverted"]: !isManagingApp,
-                                  glow: loadingApp?.id === item.id,
-                                })}
-                                style={{
-                                  ...utilities.button.style,
-                                  ...utilities.small.style,
-                                  ...(isManagingApp
-                                    ? utilities.transparent.style
-                                    : utilities.inverted.style),
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "0.35rem",
-                                }}
-                                href={getAppSlug(item)}
-                                onClick={(e) => {
-                                  if (isManagingApp) {
-                                    return
-                                  }
-                                  if (e.metaKey || e.ctrlKey) {
-                                    return
-                                  }
-
-                                  setIsNewAppChat(item)
-
-                                  e.preventDefault()
-                                }}
-                              >
-                                {loadingApp?.id === item.id ? (
-                                  <Span
-                                    style={{
-                                      width: "24px",
-                                      height: "24px",
-                                    }}
-                                  >
-                                    <Loading
-                                      color={
-                                        COLORS[
-                                          item.themeColor as keyof typeof COLORS
-                                        ]
-                                      }
-                                      size={24}
-                                    />
-                                  </Span>
-                                ) : (
-                                  <>
-                                    <Img
-                                      showLoading={false}
-                                      app={item}
-                                      alt={item.title}
-                                      size={24}
-                                    />
-                                  </>
-                                )}
-                                <Span>{item.name}</Span>
-                              </A>
-                            </Div>
-                          )
-                        )}
-                        {showAtlasHere && atlas && (
-                          <A
-                            data-testid={`app-${atlas.slug}`}
-                            href={getAppSlug(atlas)}
-                            preventDefault
-                            onClick={(e) => {
-                              if (isManagingApp) {
-                                e.preventDefault()
-                                return
-                              }
-
-                              if (e.metaKey || e.ctrlKey) {
-                                return
-                              }
-                              e.preventDefault()
-
-                              setIsNewAppChat(atlas)
-                            }}
-                            style={{
-                              ...styles.atlas.style,
-                            }}
-                          >
-                            {loadingApp?.id === atlas?.id ? (
-                              <Loading size={22} />
-                            ) : (
-                              <Img app={atlas} width={22} height={22} />
-                            )}
-                          </A>
-                        )}
-                        {showFocusHere && <FocusButton time={time} />}
-                        {showSpaceInvaderHere && (
-                          <Button
-                            className="link float"
-                            key={
-                              showingCustom
-                                ? "customInstructions"
-                                : "appInstructions"
-                            }
-                            style={{
-                              ...styles.spaceInvader.style,
-                            }}
-                            onClick={() => {
-                              toggleInstructions()
-                            }}
-                          >
-                            <Img
-                              icon="spaceInvader"
-                              alt="Space Invader"
-                              title={t("Space Invader")}
-                              width={26}
-                              height={26}
-                            />
-                            {hasCustomInstructions && (
-                              <RefreshCw
-                                size={10}
-                                strokeWidth={3}
-                                style={{
-                                  position: "absolute",
-                                  bottom: 1,
-                                  right: -5,
-                                  color: "#f87171",
-                                }}
+                              <Img
+                                icon="spaceInvader"
+                                alt="Space Invader"
+                                title={t("Space Invader")}
+                                width={26}
+                                height={26}
                               />
-                            )}
-                          </Button>
-                        )}
-                      </>
-                    </Div>
-                  )
-                })}
+                              {hasCustomInstructions && (
+                                <RefreshCw
+                                  size={10}
+                                  strokeWidth={3}
+                                  style={{
+                                    position: "absolute",
+                                    bottom: 1,
+                                    right: -5,
+                                    color: "#f87171",
+                                  }}
+                                />
+                              )}
+                            </Button>
+                          )}
+                        </>
+                      </Div>
+                    )
+                  })}
+                </Div>
               </Div>
-            </Div>
-          )}
+            )}
+          </Div>
         </>
-        <Div style={{ ...styles.instructions.style }}>
+        <Div
+          style={{
+            ...styles.instructions.style,
+            opacity: minimize ? 0 : 1,
+            pointerEvents: minimize ? "none" : "auto",
+          }}
+        >
           {isManagingApp && (
             <Instructions
               showButton={true}

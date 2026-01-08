@@ -146,7 +146,7 @@ const AuthContext = createContext<
         apps: appWithStore[],
       ) => appWithStore | undefined
       setShowFocus: (showFocus: boolean) => void
-      showFocus: boolean
+      showFocus: boolean | undefined
       isLoadingTasks: boolean
       fetchTasks: () => Promise<void>
       tasks?: {
@@ -490,8 +490,8 @@ export function AuthProvider({
                 title: "Sato Vibes",
                 questions: [
                   "Sato mudur hocam?",
-                  "Hocam mermi gibi mi massahllah?",
-                  "Ne yapalim hocam? Güncellemeler geliyor merak etme.",
+                  "Hocam mermi gibi mi 🚅?",
+                  "Ne yapalim hocam? Çaki yapalim mi 🔪 sistemi",
                 ],
               },
             ],
@@ -728,7 +728,7 @@ export function AuthProvider({
         sessionData.guestBaseApp && setGuestBaseApp(sessionData.guestBaseApp)
       }
 
-      setHasNotification(!!sessionData.hasNotification)
+      setHasNotification(!!session?.hasNotification)
 
       // Update versions and apps
       setVersions(sessionData.versions)
@@ -1134,6 +1134,20 @@ export function AuthProvider({
       }),
     }).catch(() => {})
   }
+
+  const trackPageview = () => {
+    if (isDevelopment) return
+
+    plausibleEvent({
+      name: "pageview",
+      url: window.location.pathname,
+      domain: window.location.hostname,
+    })
+  }
+
+  useEffect(() => {
+    trackPageview()
+  }, [pathname])
 
   useEffect(() => {
     hasStoreApps(baseAppInternal) && setBaseApp(baseAppInternal)
@@ -1546,7 +1560,17 @@ export function AuthProvider({
     }
   }, [storeAppsSwr, newApp, updatedApp, loadingAppId])
 
-  const [showFocus, setShowFocusInternal] = useState(false)
+  const [showFocus, setShowFocusInternal] = useState<boolean | undefined>(
+    baseApp?.slug
+      ? baseApp?.slug === "focus" && app?.slug === "focus"
+      : undefined,
+  )
+
+  useEffect(() => {
+    if (showFocus === undefined && baseApp?.slug) {
+      setShowFocusInternal(baseApp?.slug === "focus" && app?.slug === "focus")
+    }
+  }, [baseApp?.slug, app?.slug]) // Only depend on slugs, not showFocus
 
   const setShowFocus = (showFocus: boolean) => {
     setShowFocusInternal(showFocus)
@@ -1610,7 +1634,7 @@ export function AuthProvider({
 
   // MinIO download URLs (production bucket)
 
-  const burn = burnInternal === null ? isZarathustra : burnInternal
+  const burn = burnInternal === null ? false : burnInternal
 
   const burning = !!(burn || burnApp)
 
@@ -1660,7 +1684,19 @@ export function AuthProvider({
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
     boolean | null
-  >("isProgramme", isBaseAppZarathustra)
+  >(
+    "prog",
+    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : null,
+  )
+
+  useEffect(() => {
+    if (!baseApp || !app) return
+    if (isProgrammeInternal === null) {
+      setIsProgrammeInternal(
+        baseApp?.slug === "zarathustra" && app?.slug === "zarathustra",
+      )
+    }
+  }, [baseApp, app, isProgrammeInternal]) // Only depend on slugs
 
   const apps = storeApps.filter((item) => {
     return app?.store?.app?.store?.apps?.some((app) => {

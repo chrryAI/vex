@@ -420,19 +420,18 @@ async function generateSuggestionsAndPlaceholders({
       ? `\n\nUPCOMING CALENDAR EVENTS:\n${calendarEvents.map((e) => `- ${e.title} (${new Date(e.startTime).toLocaleDateString()})${e.location ? ` at ${e.location}` : ""}`).join("\n")}`
       : ""
 
+  const characterProfilesEnabled =
+    user?.characterProfilesEnabled || guest?.characterProfilesEnabled
   // Bloom-specific: Add focus & productivity context
   let bloomContext = ""
-  if (
-    app &&
-    "store" in app &&
-    (app.store?.apps.some((a) => a.slug === "focus") ||
-      app.extends?.some((a) => a.slug === "focus"))
-  ) {
+  if (app && "store" in app) {
     try {
       const subjectId = user?.id || guest?.id
       if (subjectId) {
         const [moodsData, tasksData, timer] = await Promise.all([
-          getMoods({ userId: user?.id, guestId: guest?.id, pageSize: 15 }), // ~2 weeks
+          characterProfilesEnabled
+            ? getMoods({ userId: user?.id, guestId: guest?.id, pageSize: 15 })
+            : null, // ~2 weeks
           getTasks({ userId: user?.id, guestId: guest?.id, pageSize: 20 }), // Recent tasks
           getTimer({ userId: user?.id, guestId: guest?.id }),
         ])
@@ -530,6 +529,13 @@ INSTRUCTION REQUIREMENTS FOR RETRO MODE:
 `
       : ""
 }
+
+⚠️ IMPORTANT: The BLOOM CONTEXT above is for generating relevant suggestions only. DO NOT:
+- Analyze or interpret the mood/focus data directly
+- Make assumptions about user's mental state
+- Suggest therapy or medical advice  
+- Create instructions that explicitly reference mood scores
+Use this data ONLY to understand user's productivity patterns for better suggestion relevance.
 
 AVAILABLE LIFEOS APPS (only classify if conversation is SPECIFICALLY about these domains):
 ${appDescriptions}

@@ -288,8 +288,15 @@ export default function Chat({
     addParams,
   } = useNavigationContext()
 
-  const { slug, suggestSaveApp, saveApp, apps, appStatus, appFormWatcher } =
-    useApp()
+  const {
+    slug,
+    suggestSaveApp,
+    saveApp,
+    apps,
+    appStatus,
+    appFormWatcher,
+    minimize,
+  } = useApp()
 
   const threadIdRef = useRef(threadId)
 
@@ -390,11 +397,12 @@ export default function Chat({
   const [hasBottomOffset, setHasBottomOffset] = useState(false)
   const shouldUseCompactMode = compactMode || hasBottomOffset
 
-  const floatingInitial = shouldUseCompactMode
-    ? true
-    : empty
-      ? false
-      : isChatFloatingContext && !showChatInput
+  const floatingInitial =
+    shouldUseCompactMode || minimize
+      ? true
+      : empty
+        ? false
+        : isChatFloatingContext && !showChatInput
 
   const [isChatFloatingInternal] = useSyncedState(floatingInitial, [
     empty,
@@ -404,8 +412,10 @@ export default function Chat({
   ])
 
   const isChatFloating =
+    minimize ||
     isIDE ||
-    (isChatFloatingInternal && (!!threadIdRef.current || shouldUseCompactMode))
+    (isChatFloatingInternal &&
+      (!!threadIdRef.current || shouldUseCompactMode || minimize))
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -2585,8 +2595,10 @@ export default function Chat({
     }
   }, [input])
 
+  const inputText = inputRef.current?.trim() || input?.trim() || ""
+
   const getIsSendDisabled = () =>
-    (inputRef.current.trim() === "" && files.length === 0) ||
+    (inputText === "" && files.length === 0) ||
     isLoading ||
     creditsLeft === 0 ||
     disabled
@@ -2632,7 +2644,7 @@ export default function Chat({
     warning?: string
   } | null>(null)
 
-  const needSearch = needsWebSearch(inputRef.current)
+  const needSearch = needsWebSearch(inputText)
 
   // Scroll detection for auto-hide chat input
   useEffect(() => {
@@ -2769,7 +2781,7 @@ export default function Chat({
               </Button>
             ) : isLoading && !isStreaming ? (
               <Loading width={28} height={28} />
-            ) : inputRef.current.trim() || files.length > 0 ? (
+            ) : inputText || files.length > 0 ? (
               <Button
                 data-testid="chat-send-button"
                 title={
@@ -3534,7 +3546,7 @@ export default function Chat({
                         gap: 5,
                         position: "relative",
 
-                        top: !isChatFloating ? 30 : 0,
+                        top: !isChatFloating ? (showQuotaInfo ? 0 : 30) : 0,
                         zIndex: 50,
                       }}
                     >
@@ -3566,7 +3578,7 @@ export default function Chat({
                           // setInput("Hey guys, what you learned today?")
                         }}
                       >
-                        <Img size={22} icon={"spaceInvader"} />
+                        <Img size={22} app={app} />
                         {isSmallDevice ? null : "Sato"}
                       </Button>
                     </Div>
@@ -3578,7 +3590,7 @@ export default function Chat({
                         dataTestId="grapes-button"
                         style={{
                           position: "relative",
-                          top: !isChatFloating ? 30 : 0,
+                          top: !isChatFloating ? (showQuotaInfo ? 0 : 30) : 0,
                           zIndex: 50,
                           ...utilities.xSmall.style,
                         }}
@@ -4148,27 +4160,26 @@ export default function Chat({
                         style={{
                           top: "0.15rem",
                           position: "relative",
+                          left: "0.4rem",
                         }}
                       >
-                        {app?.features?.moodplausibleing && (
-                          <MoodSelector
-                            showEdit={false}
-                            style={{
-                              fontSize: "1.40rem",
-                            }}
-                            key={mood?.type}
-                            mood={mood?.type}
-                            onSelectingMood={(v) => {
-                              setIsSelectingMood(v)
-                            }}
-                            onMoodChange={async (newMood) => {
-                              if (mood?.type !== newMood) {
-                                await updateMood({ type: newMood })
-                                toast.success(emojiMap[newMood])
-                              }
-                            }}
-                          />
-                        )}
+                        <MoodSelector
+                          showEdit={false}
+                          style={{
+                            fontSize: "1.40rem",
+                          }}
+                          key={mood?.type}
+                          mood={mood?.type}
+                          onSelectingMood={(v) => {
+                            setIsSelectingMood(v)
+                          }}
+                          onMoodChange={async (newMood) => {
+                            if (mood?.type !== newMood) {
+                              await updateMood({ type: newMood })
+                              toast.success(emojiMap[newMood])
+                            }
+                          }}
+                        />
                       </Div>
                     )}
                     {!isSelectingMood && !needsReview && isHydrated && (
@@ -4207,7 +4218,7 @@ export default function Chat({
                                     : "var(--shade-3)",
                               }}
                             >
-                              {t("Web")}
+                              {/* {t("Web")} */}
                             </Span>
                           )}
 

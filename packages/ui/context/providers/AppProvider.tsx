@@ -60,6 +60,8 @@ interface AppStatus {
 }
 
 interface AppFormContextType {
+  minimize: boolean
+  setMinimize: React.Dispatch<React.SetStateAction<boolean>>
   defaultExtends: string[]
   setStoreSlug: (storeSlug: string) => void
   currentStore: storeWithApps | undefined
@@ -102,6 +104,8 @@ interface AppFormContextType {
     id?: string
     name?: string
     description?: string
+    roles?: ("coder" | "architect")[]
+    addons?: ("grape" | "pear")[]
     image?: string
     systemPrompt?: string
     defaultModel?: string
@@ -526,22 +530,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }),
   )
 
-  const contextInstructions = useMemo(() => {
-    if (burning) {
-      if (app?.slug === "zarathustra") {
-        return getExampleInstructions({ slug: "zarathustra" }) as instruction[]
-      }
-      // return burnApp?.highlights as instruction[]
+  const [minimize, setMinimizeInternal] = useLocalStorage<boolean>(
+    "minimize",
+    false,
+  )
+
+  const [minimizeStartTime, setMinimizeStartTime] = useLocalStorage<
+    number | null
+  >("minimizeStartTime", null)
+
+  const setMinimize = (value: boolean | ((prev: boolean) => boolean)) => {
+    const newValue = typeof value === "function" ? value(minimize) : value
+    const now = Date.now()
+
+    // Calculate duration if we have a start time
+    if (minimizeStartTime) {
+      const durationMs = now - minimizeStartTime
+      const durationMin = Math.round(durationMs / 60000) // Convert to minutes
+
+      // Track time spent in previous state
+      plausible({ name: newValue ? "maximize_duration" : "minimize_duration" })
     }
 
-    return app
-      ? (
-          auth?.instructions ||
-          user?.instructions ||
-          guest?.instructions ||
-          []
-        ).filter((i) => i.appId === app?.id)
-      : []
+    // Update state
+    setMinimizeInternal(newValue)
+    setMinimizeStartTime(now)
+
+    // Track state change
+    plausible({ name: newValue ? "minimize" : "maximize" })
+  }
+
+  const contextInstructions = useMemo(() => {
+    if (!app) return []
+
+    // Special case: Zarathustra in burning mode gets custom instructions
+    if (app?.slug === "zarathustra" && burning) {
+      return getExampleInstructions({ slug: "zarathustra" }) as instruction[]
+    }
+
+    // Normal case: use user/guest/auth instructions
+    const instructions =
+      auth?.instructions || user?.instructions || guest?.instructions || []
+
+    // Filter by appId
+    return instructions.filter((i) => i.appId === app?.id) as instruction[]
   }, [
     burn,
     burnApp,
@@ -859,6 +891,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hasCustomInstructions,
         setStoreSlug,
         setIsManagingApp,
+        minimize,
+        setMinimize,
       }}
     >
       {children}

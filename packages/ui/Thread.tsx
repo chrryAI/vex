@@ -597,7 +597,7 @@ const Thread = ({
                                   }
                                 }}
                               >
-                                <Img size={16} icon={"spaceInvader"} />
+                                <Img size={16} app={app} />
                               </Button>
                             </>
                           ) : grapes.filter((g) => g.id === app?.id).length ? (

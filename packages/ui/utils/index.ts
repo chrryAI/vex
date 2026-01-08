@@ -394,7 +394,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.9.75"
+export const VERSION = config.version || "1.9.95"
 export type instructionBase = {
   id: string
   title: string
@@ -402,6 +402,7 @@ export type instructionBase = {
   requiresWebSearch?: boolean
   content?: string
   appName?: string
+  appId?: string | null // Match instruction type from schema
 }
 
 /**
