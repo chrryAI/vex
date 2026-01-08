@@ -529,15 +529,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const contextInstructions = useMemo(() => {
-    return app
-      ? ((auth?.instructions ||
-        user?.instructions ||
-        guest?.instructions ||
-        (app?.slug === "zarathustra" && burning)
-          ? getExampleInstructions({ slug: "zarathustra" })
-          : []
-        ).filter((i) => i.appId === app?.id) as instruction[])
-      : []
+    if (!app) return []
+
+    // Special case: Zarathustra in burning mode gets custom instructions
+    if (app?.slug === "zarathustra" && burning) {
+      return getExampleInstructions({ slug: "zarathustra" }) as instruction[]
+    }
+
+    // Normal case: use user/guest/auth instructions
+    const instructions =
+      auth?.instructions || user?.instructions || guest?.instructions || []
+
+    // Filter by appId
+    return instructions.filter((i) => i.appId === app?.id) as instruction[]
   }, [
     burn,
     burnApp,
