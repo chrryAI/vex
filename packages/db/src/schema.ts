@@ -3131,12 +3131,25 @@ export const kanbanBoards = pgTable("kanbanBoard", {
   description: text("description"),
   userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
   guestId: uuid("guestId").references(() => guests.id, { onDelete: "cascade" }),
+
+  // Cross-Platform Integration Fields
+  integrationType: text("integrationType"), // "github" | "asana" | "linear" | "jira" | "custom"
+  integrationProjectId: text("integrationProjectId"), // External project/board ID
+  integrationRepoOwner: text("integrationRepoOwner"), // GitHub: owner, Asana: workspace
+  integrationRepoName: text("integrationRepoName"), // GitHub: repo, Asana: project name
+  integrationAccessToken: text("integrationAccessToken"), // Encrypted OAuth token
+  integrationWebhookUrl: text("integrationWebhookUrl"), // For real-time sync
+  syncEnabled: boolean("syncEnabled").default(false), // Auto-sync enabled
+  lastSyncedAt: timestamp("lastSyncedAt", { mode: "date", withTimezone: true }),
+  syncDirection: text("syncDirection").default("bidirectional"), // "import" | "export" | "bidirectional"
+
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  appId: uuid("appId").references(() => apps.id, { onDelete: "cascade" }),
 })
 
 export const taskStates = pgTable("taskState", {
@@ -3178,6 +3191,7 @@ export const tasks = pgTable("task", {
   total: jsonb("total").$type<{ date: string; count: number }[]>().default([]),
   order: integer("order").default(0), // Order within the column
   selected: boolean("selected").default(false),
+  appId: uuid("appId").references(() => apps.id, { onDelete: "cascade" }), // Per-app Kanban board
   threadId: uuid("threadId").references((): AnyPgColumn => threads.id, {
     onDelete: "cascade",
   }),

@@ -2200,9 +2200,9 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "focus"
+  const devMode = "zarathustra"
 
-  if (isDevelopment) {
+  if (isDevelopment && !checkIsExtension()) {
     return devMode
   }
 
