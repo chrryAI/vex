@@ -1949,5 +1949,7 @@
   "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.": "Fragen Sie nach Tests! Fordern Sie Unit-Tests, Integrationstests oder E2E-Tests neben Ihrem Code für eine bessere Qualität an.",
   "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.": "Brauchen Sie eine Optimierung? Fragen Sie nach einer Analyse der Zeit-/Raumkomplexität oder nach Leistungsverbesserungen für bestehenden Code.",
   "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Fordern Sie Dokumentation an! Bitten Sie um Inline-Kommentare, JSDoc oder README-Dateien, um Ihren Code wartbar zu machen.",
-  "Let's Pear": "Lass uns Pear"
+  "Let's Pear": "Lass uns Pear",
+  "Minimize": "Minimieren",
+  "Maximize": "Maximieren"
 }

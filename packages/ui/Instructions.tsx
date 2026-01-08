@@ -182,7 +182,7 @@ export default function Instructions({
       { height: 600, count: 1 }, // 500-599px: show 1
       { height: 625, count: 2 }, // 600-624px: show 2
       { height: 650, count: 3 }, // 625-649px: show 3
-      { height: 750, count: 4 }, // 650-749px: show 4
+      { height: 750, count: 3 }, // 650-749px: show 4
       { height: Infinity, count: 7 }, // 750px+: show all
     ],
     offset,

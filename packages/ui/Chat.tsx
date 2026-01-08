@@ -288,8 +288,15 @@ export default function Chat({
     addParams,
   } = useNavigationContext()
 
-  const { slug, suggestSaveApp, saveApp, apps, appStatus, appFormWatcher } =
-    useApp()
+  const {
+    slug,
+    suggestSaveApp,
+    saveApp,
+    apps,
+    appStatus,
+    appFormWatcher,
+    minimize,
+  } = useApp()
 
   const threadIdRef = useRef(threadId)
 
@@ -390,11 +397,12 @@ export default function Chat({
   const [hasBottomOffset, setHasBottomOffset] = useState(false)
   const shouldUseCompactMode = compactMode || hasBottomOffset
 
-  const floatingInitial = shouldUseCompactMode
-    ? true
-    : empty
-      ? false
-      : isChatFloatingContext && !showChatInput
+  const floatingInitial =
+    shouldUseCompactMode || minimize
+      ? true
+      : empty
+        ? false
+        : isChatFloatingContext && !showChatInput
 
   const [isChatFloatingInternal] = useSyncedState(floatingInitial, [
     empty,
@@ -404,8 +412,10 @@ export default function Chat({
   ])
 
   const isChatFloating =
+    minimize ||
     isIDE ||
-    (isChatFloatingInternal && (!!threadIdRef.current || shouldUseCompactMode))
+    (isChatFloatingInternal &&
+      (!!threadIdRef.current || shouldUseCompactMode || minimize))
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])

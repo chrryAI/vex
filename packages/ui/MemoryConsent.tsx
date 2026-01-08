@@ -61,7 +61,7 @@ export default function MemoryConsent({
   } = useNavigationContext()
 
   const { clear } = useCache()
-  const { isManagingApp, canEditApp } = useApp()
+  const { isManagingApp, canEditApp, minimize } = useApp()
   const { actions } = useData()
 
   const { captureException } = useError()
@@ -151,7 +151,7 @@ export default function MemoryConsent({
     >
       <Div style={styles.buttons.style}>
         <>
-          {memoriesEnabled && !isMemoryConsentManageVisible ? (
+          {memoriesEnabled && !isMemoryConsentManageVisible && !minimize ? (
             <Button
               className="link"
               style={{ ...utilities.link.style }}
@@ -159,7 +159,7 @@ export default function MemoryConsent({
             >
               <Settings2 size={22} />
             </Button>
-          ) : !isMemoryConsentManageVisible ? (
+          ) : !minimize && !isMemoryConsentManageVisible ? (
             <Button
               className="transparent"
               style={{ ...utilities.transparent.style }}
@@ -263,88 +263,49 @@ export default function MemoryConsent({
                 ) : null}
               </>
             ) : (
-              <>
-                <ConfirmButton
-                  confirm={
-                    <>
-                      {isUpdatingMemories ? (
-                        <Loading width={18} height={18} />
-                      ) : (
-                        <Brain color="#ef5350" size={18} />
-                      )}
-                      {t("Are you sure?")}
-                    </>
-                  }
-                  disabled={isUpdatingMemories}
-                  title={t(
-                    "💭 We use conversation memory to improve responses.",
-                  )}
-                  className="transparent"
-                  style={{
-                    ...utilities.transparent.style,
-                    borderStyle: "dashed",
-                  }}
-                  onConfirm={async () => {
-                    setBurn(!burn)
-                    if (!token) return
-                    setIsUpdatingMemories(true)
-                    try {
-                      if (user) {
-                        const updatedUser = await updateUser({
-                          token,
-                          memoriesEnabled: !memoriesEnabled,
-                        })
-
-                        setUser(updatedUser)
-                      }
-
-                      if (guest) {
-                        const updatedGuest = await actions.updateGuest({
-                          memoriesEnabled: !memoriesEnabled,
-                        })
-
-                        setGuest(updatedGuest)
-                      }
-                    } catch (error) {
-                      console.error("Error updating guest:", error)
-                    } finally {
-                      setIsUpdatingMemories(false)
-                    }
-                  }}
-                >
-                  {isUpdatingMemories ? (
-                    <Loading width={18} height={18} />
-                  ) : (
-                    <Brain color="var(--shade-5)" size={18} />
-                  )}
-                  {t("Disable Memories")}
-                </ConfirmButton>
-
-                {isE2E && isLiveTest && (
+              !minimize && (
+                <>
                   <ConfirmButton
+                    confirm={
+                      <>
+                        {isUpdatingMemories ? (
+                          <Loading width={18} height={18} />
+                        ) : (
+                          <Brain color="#ef5350" size={18} />
+                        )}
+                        {t("Are you sure?")}
+                      </>
+                    }
+                    disabled={isUpdatingMemories}
+                    title={t(
+                      "💭 We use conversation memory to improve responses.",
+                    )}
                     className="transparent"
-                    processing={isDeletingSession}
-                    data-testid="clear-session"
-                    key={String(isDeletingSession)}
+                    style={{
+                      ...utilities.transparent.style,
+                      borderStyle: "dashed",
+                    }}
                     onConfirm={async () => {
+                      setBurn(!burn)
                       if (!token) return
+                      setIsUpdatingMemories(true)
                       try {
-                        const result = await apiFetch(`${API_URL}/clear`, {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                          },
-                        })
-                        const data = await result.json()
+                        if (user) {
+                          const updatedUser = await updateUser({
+                            token,
+                            memoriesEnabled: !memoriesEnabled,
+                          })
 
-                        if (data.error) {
-                          toast.error(data.error)
-                          return
+                          setUser(updatedUser)
                         }
 
-                        data.success && toast.success(t("Session cleared"))
-                        clear()
+                        if (guest) {
+                          const updatedGuest = await actions.updateGuest({
+                            memoriesEnabled: !memoriesEnabled,
+                          })
+
+                          setGuest(updatedGuest)
+                        }
                       } catch (error) {
                         console.error("Error updating guest:", error)
                       } finally {
@@ -352,10 +313,51 @@ export default function MemoryConsent({
                       }
                     }}
                   >
-                    <Trash2 color="red" size={13} />
+                    {isUpdatingMemories ? (
+                      <Loading width={18} height={18} />
+                    ) : (
+                      <Brain color="var(--shade-5)" size={18} />
+                    )}
+                    {t("Disable Memories")}
                   </ConfirmButton>
-                )}
-              </>
+
+                  {isE2E && isLiveTest && (
+                    <ConfirmButton
+                      className="transparent"
+                      processing={isDeletingSession}
+                      data-testid="clear-session"
+                      key={String(isDeletingSession)}
+                      onConfirm={async () => {
+                        if (!token) return
+                        try {
+                          const result = await apiFetch(`${API_URL}/clear`, {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                          })
+                          const data = await result.json()
+
+                          if (data.error) {
+                            toast.error(data.error)
+                            return
+                          }
+
+                          data.success && toast.success(t("Session cleared"))
+                          clear()
+                        } catch (error) {
+                          console.error("Error updating guest:", error)
+                        } finally {
+                          setIsUpdatingMemories(false)
+                        }
+                      }}
+                    >
+                      <Trash2 color="red" size={13} />
+                    </ConfirmButton>
+                  )}
+                </>
+              )
             )
           ) : (
             <Button
