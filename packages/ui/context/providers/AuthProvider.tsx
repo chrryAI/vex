@@ -1712,15 +1712,15 @@ export function AuthProvider({
   const canBurn = true
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
-    boolean | null
+    boolean | undefined
   >(
     "prog",
-    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : null,
+    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : undefined,
   )
 
   useEffect(() => {
     if (!baseApp || !app) return
-    if (isProgrammeInternal === null) {
+    if (isProgrammeInternal === undefined) {
       setIsProgrammeInternal(
         baseApp?.slug === "zarathustra" && app?.slug === "zarathustra",
       )
@@ -1795,8 +1795,9 @@ export function AuthProvider({
     if (isPearInternal) setShowFocus(false)
   }, [isPearInternal])
 
-  const isProgramme =
+  const isProgramme = !!(
     isProgrammeInternal || searchParams.get("programme") === "true"
+  )
 
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
