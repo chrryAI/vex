@@ -40,6 +40,8 @@ import {
   ClockPlus,
   Star,
   Link,
+  ArrowLeft,
+  RefreshCw,
 } from "./icons"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { validateFile, formatFileSize } from "./utils/fileValidation"
@@ -238,6 +240,9 @@ export default function Chat({
     advanceDailySection,
     setDailyQuestionIndex,
     dailyQuestionIndex,
+    back,
+    lastApp,
+    getAppSlug,
     ...auth
   } = useAuth()
 
@@ -278,6 +283,7 @@ export default function Chat({
     setIsNewChat,
     onlyAgent,
     scrollToBottom,
+    setIsNewAppChat,
   } = useChat()
 
   const {
@@ -296,6 +302,7 @@ export default function Chat({
     appStatus,
     appFormWatcher,
     minimize,
+    setAppStatus,
   } = useApp()
 
   const threadIdRef = useRef(threadId)
@@ -3539,7 +3546,8 @@ export default function Chat({
                     >
                       <CircleArrowDown size={25} />
                     </Button>
-                  ) : empty && !threadIdRef.current && !burn ? (
+                  ) : null}
+                  {empty && !threadIdRef.current && !burn ? (
                     <Div
                       style={{
                         display: "flex",
@@ -3583,7 +3591,6 @@ export default function Chat({
                       </Button>
                     </Div>
                   ) : null}
-
                   {empty && !threadIdRef.current && !isPear && (
                     <>
                       <Grapes
@@ -3696,11 +3703,53 @@ export default function Chat({
               ) : (
                 !showQuotaInfo &&
                 selectedAgent !== null && (
-                  <Div style={styles.content.style}>
+                  <Div
+                    style={{
+                      ...styles.content.style,
+                      display: "flex",
+                      flexDirection: "row",
+                    }}
+                  >
+                    {back && !hasBottomOffset && isChatFloating ? (
+                      <A
+                        style={{
+                          marginRight: "auto",
+                          left: 5,
+                          top: -15,
+                          gap: 7.5,
+                          position: "relative",
+                          zIndex: 300,
+                        }}
+                        href={getAppSlug(back)}
+                        onClick={(e) => {
+                          e.preventDefault()
+
+                          setIsNewAppChat(back)
+                          addHapticFeedback()
+                          setAppStatus(undefined)
+                          if (e.metaKey || e.ctrlKey) {
+                            return
+                          }
+                        }}
+                      >
+                        <RefreshCw size={13} />
+                        <Img app={back} showLoading={false} size={18} />
+                      </A>
+                    ) : (
+                      <></>
+                    )}
                     {isChatFloating ||
                     exceededInitial ||
                     threadId ? null : showGreeting && files.length === 0 ? (
-                      <H2 style={styles.brandHelp.style}>
+                      <H2
+                        style={{
+                          ...styles.brandHelp.style,
+                          alignSelf: "center",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flex: 1,
+                        }}
+                      >
                         {burn ? <HatGlasses size={24} /> : ""}
                         <Span
                           style={{
@@ -3717,7 +3766,7 @@ export default function Chat({
                           ) : (
                             "👋"
                           )}
-                          <Span>
+                          <Span style={{ flex: 1 }}>
                             {t(
                               isPear
                                 ? "Share your feedback and earn credits!"
@@ -3739,6 +3788,32 @@ export default function Chat({
                         </Span>
                       </H2>
                     ) : null}
+                    {back && !hasBottomOffset && !isChatFloating ? (
+                      <A
+                        style={{
+                          marginLeft: "auto",
+                          marginRight: "5px",
+                          marginBottom: "5px",
+                          gap: 5,
+                        }}
+                        href={getAppSlug(back)}
+                        onClick={(e) => {
+                          e.preventDefault()
+
+                          setIsNewAppChat(back)
+                          addHapticFeedback()
+                          setAppStatus(undefined)
+                          if (e.metaKey || e.ctrlKey) {
+                            return
+                          }
+                        }}
+                      >
+                        <RefreshCw size={13} />
+                        <Img app={back} showLoading={false} size={18} />
+                      </A>
+                    ) : (
+                      <></>
+                    )}
                   </Div>
                 )
               )}
@@ -4595,7 +4670,7 @@ export default function Chat({
                       data-testid="subscribe-from-chat-button"
                       onClick={() => {
                         plausible({
-                          name: "subscribe-from-chat-click",
+                          name: ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
                           props: {
                             threadId: threadId,
                           },

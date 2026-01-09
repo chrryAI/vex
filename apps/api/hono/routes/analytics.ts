@@ -14,7 +14,7 @@ const analytics = new Hono<{ Variables: Variables }>()
 
 // Server-side throttle map to prevent spam
 const throttleMap = new Map<string, number>()
-const THROTTLE_MS = 5000 // 5 seconds
+const THROTTLE_MS = 500 // 500ms
 
 // POST /analytics/track - Store real-time analytics for AI context
 analytics.post("/grape", async (c) => {
