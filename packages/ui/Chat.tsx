@@ -3710,7 +3710,7 @@ export default function Chat({
                       flexDirection: "row",
                     }}
                   >
-                    {back && !hasBottomOffset && isChatFloating ? (
+                    {back && !hasBottomOffset && isChatFloating && empty ? (
                       <A
                         style={{
                           marginRight: "auto",
@@ -3788,7 +3788,7 @@ export default function Chat({
                         </Span>
                       </H2>
                     ) : null}
-                    {back && !hasBottomOffset && !isChatFloating ? (
+                    {back && !hasBottomOffset && !isChatFloating && empty ? (
                       <A
                         style={{
                           marginLeft: "auto",
