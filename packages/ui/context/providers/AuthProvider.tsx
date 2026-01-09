@@ -81,6 +81,14 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      displayedApps: appWithStore[]
+      setDisplayedApps: (value: appWithStore[]) => void
+      lastAnchorApp: {
+        appId: string
+        appName: string
+        timestamp: number
+        duration?: number
+      } | null
       chromeWebStoreUrl: string
       downloadUrl: string
       isRetro: boolean
@@ -130,6 +138,7 @@ const AuthContext = createContext<
         threads?: thread[]
         totalCount: number
       }
+      lastApp: appWithStore | undefined
       setBaseAccountApp: (value: appWithStore | undefined) => void
       setThreadId: (value: string | undefined) => void
       threadIdRef: React.RefObject<string | undefined>
@@ -183,6 +192,7 @@ const AuthContext = createContext<
       bloom: appWithStore | undefined
       isLoadingMoods: boolean
       mood: mood | null
+      back: appWithStore | undefined
       setMood: (mood: mood | null) => void
       moods: {
         moods: mood[]
@@ -438,6 +448,22 @@ export function AuthProvider({
     },
     [],
   )
+
+  // Spatial Navigation History
+  interface SpatialNavigationEntry {
+    appId: string
+    appName: string
+    timestamp: number
+    duration?: number
+    from?: string
+  }
+
+  const [navigationHistory, setNavigationHistory] = useLocalStorage<
+    SpatialNavigationEntry[]
+  >("navigationHistory", [])
+
+  const lastNavigationTime = useRef<number>(0)
+  const NAVIGATION_THROTTLE_MS = 100 // 100ms minimum between transitions
 
   /**
    * Sign in with Apple OAuth
@@ -1647,6 +1673,9 @@ export function AuthProvider({
   const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
   const hasInformedRef = useRef(false)
+  const hasShownThemeLockToastRef = useRef(false)
+  const [hasSeenThemeLockNotification, setHasSeenThemeLockNotification] =
+    useLocalStorage<boolean>("hasSeenThemeLockNotification", false)
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
@@ -1683,15 +1712,15 @@ export function AuthProvider({
   const canBurn = true
 
   const [isProgrammeInternal, setIsProgrammeInternal] = useLocalStorage<
-    boolean | null
+    boolean | undefined
   >(
     "prog",
-    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : null,
+    baseApp ? isBaseAppZarathustra && app?.slug === "zarathustra" : undefined,
   )
 
   useEffect(() => {
     if (!baseApp || !app) return
-    if (isProgrammeInternal === null) {
+    if (isProgrammeInternal === undefined) {
       setIsProgrammeInternal(
         baseApp?.slug === "zarathustra" && app?.slug === "zarathustra",
       )
@@ -1766,8 +1795,9 @@ export function AuthProvider({
     if (isPearInternal) setShowFocus(false)
   }, [isPearInternal])
 
-  const isProgramme =
+  const isProgramme = !!(
     isProgrammeInternal || searchParams.get("programme") === "true"
+  )
 
   const setStoreApp = (appWithStore?: appWithStore) => {
     appWithStore?.id !== storeApp?.id && setStoreAppInternal(appWithStore)
@@ -1917,7 +1947,14 @@ export function AuthProvider({
     }
   }, [user, guest, isSessionLoading])
 
-  const { setColorScheme, setTheme, theme, colorScheme, isDark } = useTheme()
+  const {
+    setColorScheme,
+    setTheme,
+    isThemeLocked,
+    colorScheme,
+    theme,
+    themeMode,
+  } = useTheme()
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -2007,8 +2044,50 @@ export function AuthProvider({
         // Only update theme if app actually changed
         // Defer theme updates to avoid "setState during render" error
         setTimeout(() => {
-          newApp?.themeColor && setColorScheme(newApp.themeColor)
-          newApp?.backgroundColor && setAppTheme(newApp.backgroundColor)
+          if (!isThemeLocked) {
+            // Detect if dark/light mode will change
+            const isDarkColor = (color: string) => {
+              // Simple heuristic: if hex color is dark (low luminance)
+              const hex = color.replace("#", "")
+              const r = parseInt(hex.substr(0, 2), 16)
+              const g = parseInt(hex.substr(2, 2), 16)
+              const b = parseInt(hex.substr(4, 2), 16)
+              const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+              return luminance < 0.5
+            }
+
+            // Compare previous and new app's background colors to detect actual mode change
+            const prevMode =
+              prevApp?.backgroundColor && isDarkColor(prevApp.backgroundColor)
+                ? "dark"
+                : "light"
+            const newMode =
+              newApp?.backgroundColor && isDarkColor(newApp.backgroundColor)
+                ? "dark"
+                : "light"
+            const modeChanged = prevApp && newMode !== prevMode
+
+            if (newApp?.themeColor) {
+              setColorScheme(newApp.themeColor)
+            }
+            if (newApp?.backgroundColor) {
+              setAppTheme(newApp.backgroundColor)
+            }
+
+            // Only show toast once ever if dark/light mode changed between apps
+            // Use both ref (for immediate duplicate prevention) and localStorage (for persistence)
+            if (
+              modeChanged &&
+              !hasSeenThemeLockNotification &&
+              !hasShownThemeLockToastRef.current
+            ) {
+              hasShownThemeLockToastRef.current = true
+              setHasSeenThemeLockNotification(true)
+              toast.success("You can lock the theme from the side menu", {
+                duration: 3000,
+              })
+            }
+          }
         }, 0)
 
         // Merge apps from the new app's store
@@ -2016,7 +2095,18 @@ export function AuthProvider({
         return newApp
       })
     },
-    [setColorScheme, setAppTheme, baseApp, mergeApps, user, guest],
+    [
+      setColorScheme,
+      setAppTheme,
+      baseApp,
+      mergeApps,
+      user,
+      guest,
+      isThemeLocked,
+      colorScheme,
+      theme,
+      themeMode,
+    ],
   )
 
   const [thread, setThreadInternal] = useState<thread | undefined>(
@@ -2327,6 +2417,44 @@ export function AuthProvider({
 
   const fp = searchParams.get("fp")
 
+  const [displayedApps, setDisplayedApps] = useState<appWithStore[]>([])
+
+  // Find last navigated app that's not in displayedApps (anchor app)
+  const lastAnchorApp = useMemo(() => {
+    if (!navigationHistory.length || !displayedApps.length) return null
+
+    // Get current app from latest navigation entry
+    const currentAppId = navigationHistory[navigationHistory.length - 1]?.appId
+
+    // Get displayed app IDs + current app
+    const displayedAppIds = new Set(displayedApps.map((a) => a.id))
+    if (currentAppId) {
+      displayedAppIds.add(currentAppId) // Exclude current app
+    }
+
+    // Find most recent app not in displayedApps and not current
+    for (let i = navigationHistory.length - 1; i >= 0; i--) {
+      const entry = navigationHistory[i]
+      if (entry && !displayedAppIds.has(entry.appId)) {
+        return {
+          appId: entry.appId,
+          appName: entry.appName,
+          timestamp: entry.timestamp,
+          duration: entry.duration,
+        }
+      }
+    }
+
+    return null
+  }, [navigationHistory, displayedApps])
+
+  const lastApp = storeApps.find((app) => app.id === lastAnchorApp?.appId)
+
+  const back = useMemo(
+    () => (!apps.some((app) => app.id === lastApp?.id) ? lastApp : undefined),
+    [apps, lastApp],
+  )
+
   useEffect(() => {
     if (auth_token) {
       // Remove auth_token from URL
@@ -2337,6 +2465,64 @@ export function AuthProvider({
       !isE2E && removeParams("fp")
     }
   }, [searchParams])
+
+  // Track spatial navigation (app changes)
+  useEffect(() => {
+    if (!app?.id) return
+
+    const now = Date.now()
+
+    // Throttle: Skip rapid transitions (< 100ms)
+    if (now - lastNavigationTime.current < NAVIGATION_THROTTLE_MS) {
+      return
+    }
+    lastNavigationTime.current = now
+
+    setNavigationHistory((prev) => {
+      // Update duration of last entry
+      if (prev.length > 0) {
+        const lastEntry = prev[prev.length - 1]
+        if (lastEntry && !lastEntry.duration) {
+          const updated = [...prev]
+          updated[updated.length - 1] = {
+            ...lastEntry,
+            duration: now - lastEntry.timestamp,
+          }
+          return [
+            ...updated,
+            {
+              appId: app.id,
+              appName: app.name || app.id,
+              timestamp: now,
+              from: lastEntry.appId,
+            },
+          ]
+        }
+      }
+
+      // Add new navigation entry
+      return [
+        ...prev,
+        {
+          appId: app.id,
+          appName: app.name || app.id,
+          timestamp: now,
+          from: prev[prev.length - 1]?.appId,
+        },
+      ]
+    })
+
+    // Track spatial navigation analytics
+    plausible({
+      name: ANALYTICS_EVENTS.SPATIAL_NAVIGATION,
+      props: {
+        from: navigationHistory[navigationHistory.length - 1]?.appId,
+        to: app.id,
+        duration:
+          navigationHistory[navigationHistory.length - 1]?.duration || 0,
+      },
+    })
+  }, [app?.id])
 
   return (
     <AuthContext.Provider
@@ -2351,6 +2537,11 @@ export function AuthProvider({
         setThreads,
         showFocus,
         setShowFocus,
+        displayedApps,
+        lastApp,
+        setDisplayedApps,
+        lastAnchorApp,
+        back,
         updatedApp,
         setUpdatedApp,
         isLoadingTasks,

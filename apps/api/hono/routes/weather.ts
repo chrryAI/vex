@@ -203,6 +203,9 @@ weather.get("/", async (c) => {
       console.log(`💾 Cached weather for ${weatherQuery} (TTL: ${cacheTime}s)`)
     }
 
+    if (!weatherData) {
+      return c.json({ error: "Weather data not found" }, 502)
+    }
     // Update weather on user/guest (runs for both cached and fresh data)
     const weatherCache = {
       location: weatherData.location.name,
@@ -214,31 +217,29 @@ weather.get("/", async (c) => {
       lastUpdated: new Date(),
     }
 
-    location = {
+    const locationUpdate = {
       city: weatherData.location.name,
       country: weatherData.location.country,
     }
 
-    if (location) {
-      if (member) {
-        await updateUser({
-          ...member,
-          city: location.city,
-          country: location.country,
-          weather: weatherCache,
-        })
-        // Invalidate guest cache after updating
-        await redis.del(`user:${member.id}`)
-      } else if (guest) {
-        await updateGuest({
-          ...guest,
-          city: location.city,
-          country: location.country,
-          weather: weatherCache,
-        })
-        // Invalidate guest cache after updating
-        await redis.del(`guest:${guest.fingerprint}`)
-      }
+    if (member) {
+      await updateUser({
+        ...member,
+        city: locationUpdate.city,
+        country: locationUpdate.country,
+        weather: weatherCache,
+      })
+      // Invalidate guest cache after updating
+      await redis.del(`user:${member.id}`)
+    } else if (guest) {
+      await updateGuest({
+        ...guest,
+        city: locationUpdate.city,
+        country: locationUpdate.country,
+        weather: weatherCache,
+      })
+      // Invalidate guest cache after updating
+      await redis.del(`guest:${guest.fingerprint}`)
     }
 
     return c.json(weatherData)

@@ -1951,5 +1951,6 @@
   "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "要求提供文档！要求提供行内注释、JSDoc或README文件，以使您的代码可维护。",
   "Let's Pear": "让我们配对",
   "Minimize": "最小化",
-  "Maximize": "最大化"
+  "Maximize": "最大化",
+  "You can lock the theme from the side menu": "您可以从侧边菜单锁定主题"
 }
