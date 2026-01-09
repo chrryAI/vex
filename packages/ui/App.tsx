@@ -159,6 +159,9 @@ export default function App({
     setBurn,
     isPear,
     isIDE,
+    displayedApps,
+    setDisplayedApps,
+    lastApp,
     ...auth
   } = useAuth()
 
@@ -253,9 +256,30 @@ export default function App({
     ],
   )
 
+  useEffect(() => {
+    // Only update if app IDs actually changed (prevent infinite loop)
+    const currentIds = displayedApps
+      .map((a) => a.id)
+      .sort()
+      .join(",")
+    const newIds = appsInternal
+      .map((a) => a.id)
+      .sort()
+      .join(",")
+
+    if (currentIds !== newIds) {
+      setDisplayedApps(appsInternal)
+    }
+  }, [appsInternal])
+
   // Use apps from context - sort: store base app first, Chrry second, rest keep original order
   // No need for separate state + useEffect, useMemo already handles updates
   const appsState = appsInternal
+
+  const back = useMemo(
+    () => (!apps.some((app) => app.id === lastApp?.id) ? lastApp : null),
+    [apps, lastApp],
+  )
 
   const grapes = auth.grapes
 

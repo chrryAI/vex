@@ -1938,6 +1938,7 @@
   "Specify non-functional requirements: latency, availability, consistency. These drive architectural decisions!": "Specify non-functional requirements: latency, availability, consistency. These drive architectural decisions!",
   "Request trade-off analysis! Understand pros/cons of microservices vs monolith, SQL vs NoSQL, etc.": "Request trade-off analysis! Understand pros/cons of microservices vs monolith, SQL vs NoSQL, etc.",
   "Code Generation Tips": "Code Generation Tips",
+  "You can lock the theme from the side menu": "You can lock the theme from the side menu",
   "Be specific about your requirements. Instead of 'make a login', say 'create a React login form with email validation and JWT auth'.": "Be specific about your requirements. Instead of 'make a login', say 'create a React login form with email validation and JWT auth'.",
   "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.": "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.",
   "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.": "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.",

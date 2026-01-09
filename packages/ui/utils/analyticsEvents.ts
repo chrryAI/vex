@@ -32,6 +32,7 @@ export const ANALYTICS_EVENTS = {
   LOAD_MORE_THREADS_MENU: "load-more-threads-menu",
   STORE_VIEW: "store_view",
   STORE_APP_SELECTED: "store_app_selected",
+  SPATIAL_NAVIGATION: "spatial_navigation",
 
   // Chat & Messaging
   CHAT_SEND: "chat",
@@ -56,7 +57,9 @@ export const ANALYTICS_EVENTS = {
   FEEDBACK_LIKE: "feedback_like",
   FEEDBACK_DISLIKE: "feedback_dislike",
   AGENT_SELECTED: "agent-selected",
+  SUBSCRIBE_FROM_CHAT_CLICK: "subscribe-from-chat-click",
 
+  TASK_ADD: "task_add",
   // Subscription
   SUBSCRIBE_CHECKOUT: "subscribe_checkout",
   SUBSCRIBE_VERIFY_PAYMENT: "subscribe_verify_payment",
@@ -111,6 +114,9 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.APP_SAVE_ERROR,
   ANALYTICS_EVENTS.APP_DELETE_SUCCESS,
   ANALYTICS_EVENTS.APP_STATUS,
+  ANALYTICS_EVENTS.SPATIAL_NAVIGATION,
+  ANALYTICS_EVENTS.TASK_ADD,
+  ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
 
   // Chat & messaging - Core user interactions
   ANALYTICS_EVENTS.CHAT_SEND,
