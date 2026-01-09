@@ -8,6 +8,7 @@ import {
   HatGlasses,
   LoaderCircle,
   LockOpen,
+  Lock,
   MessageCirclePlus,
   PanelRight,
   Search,
@@ -24,6 +25,7 @@ import {
   FRONTEND_URL,
   VERSION,
 } from "./utils"
+import { toast } from "./platform/toast"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import { hasThreadNotification } from "./utils/hasThreadNotification"
 import Loading from "./Loading"
@@ -150,6 +152,8 @@ export default function Menu({
     setIsDrawerOpen,
     isSmallDevice,
     colors,
+    isThemeLocked,
+    setIsThemeLocked,
   } = useTheme()
 
   const toggleMenu = () => {
@@ -841,6 +845,40 @@ export default function Menu({
 
             <Div style={styles.colorSchemeContainer.style}>
               <ColorScheme style={styles.colorScheme.style} />
+              {isThemeLocked ? (
+                <Button
+                  title={t("Unlock theme")}
+                  onClick={() => {
+                    setIsThemeLocked(false)
+                    toast.success(t("Theme unlocked"))
+                  }}
+                  style={{
+                    color: colors.accent6,
+                    marginLeft: 5,
+                    fontSize: "0.5rem",
+                  }}
+                  className={"link"}
+                >
+                  <LockOpen size={15} />
+                </Button>
+              ) : (
+                <Button
+                  title={t("Lock theme")}
+                  onClick={() => {
+                    setIsThemeLocked(true)
+                    toast.success(t("Theme locked"))
+                  }}
+                  style={{
+                    color: colors.accent6,
+                    marginLeft: 5,
+                    fontSize: "0.7rem",
+                  }}
+                  className={"link"}
+                >
+                  <Lock size={15} />
+                </Button>
+              )}
+
               {hasHydrated && (
                 <Button
                   title={t("Motion")}
@@ -850,14 +888,15 @@ export default function Menu({
                   style={{
                     ...styles.reduceMotionButton.style,
                     marginLeft: "auto",
-                    color: !reduceMotionContext
-                      ? colors.accent6
-                      : colors.shade3,
                   }}
                   className={"link"}
                 >
-                  <Tornado size={18} />
-                  Motion
+                  <Tornado
+                    color={
+                      !reduceMotionContext ? colors.accent6 : colors.shade3
+                    }
+                    size={20}
+                  />
                 </Button>
               )}
             </Div>

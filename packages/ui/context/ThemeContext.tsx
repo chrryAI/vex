@@ -40,6 +40,8 @@ export type ColorScheme = keyof typeof COLORS
 export type themeType = "dark" | "light"
 
 interface ThemeContextValue {
+  isThemeLocked: boolean
+  setIsThemeLocked: (isThemeLocked: boolean) => void
   isSmallDevice: boolean
   isMobileDevice: boolean
   isDrawerOpen: boolean
@@ -217,6 +219,11 @@ export function ThemeProvider({
     }
   }, [themeMode, isWeb])
 
+  const [isThemeLocked, setIsThemeLocked] = useLocalStorage<boolean>(
+    "isThemeLocked",
+    false,
+  )
+
   // Detect initial dark mode preference
   const isDark = useMemo(() => {
     return themeMode === "dark"
@@ -322,6 +329,8 @@ export function ThemeProvider({
     playNotification,
     enableSound,
     setEnableSound,
+    isThemeLocked,
+    setIsThemeLocked,
     setReduceMotion,
     addHapticFeedback,
     isSmallDevice,

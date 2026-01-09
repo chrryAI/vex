@@ -1943,7 +1943,7 @@ export function AuthProvider({
     }
   }, [user, guest, isSessionLoading])
 
-  const { setColorScheme, setTheme, theme, colorScheme, isDark } = useTheme()
+  const { setColorScheme, setTheme, isThemeLocked } = useTheme()
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -2033,8 +2033,10 @@ export function AuthProvider({
         // Only update theme if app actually changed
         // Defer theme updates to avoid "setState during render" error
         setTimeout(() => {
-          newApp?.themeColor && setColorScheme(newApp.themeColor)
-          newApp?.backgroundColor && setAppTheme(newApp.backgroundColor)
+          if (!isThemeLocked) {
+            newApp?.themeColor && setColorScheme(newApp.themeColor)
+            newApp?.backgroundColor && setAppTheme(newApp.backgroundColor)
+          }
         }, 0)
 
         // Merge apps from the new app's store
@@ -2042,7 +2044,15 @@ export function AuthProvider({
         return newApp
       })
     },
-    [setColorScheme, setAppTheme, baseApp, mergeApps, user, guest],
+    [
+      setColorScheme,
+      setAppTheme,
+      baseApp,
+      mergeApps,
+      user,
+      guest,
+      isThemeLocked,
+    ],
   )
 
   const [thread, setThreadInternal] = useState<thread | undefined>(
