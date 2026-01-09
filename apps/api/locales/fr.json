@@ -1950,5 +1950,6 @@
   "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Demandez de la documentation ! Demandez des commentaires en ligne, JSDoc, ou des fichiers README pour rendre votre code maintenable.",
   "Let's Pear": "Allons Pear",
   "Minimize": "Minimiser",
-  "Maximize": "Maximiser"
+  "Maximize": "Maximiser",
+  "You can lock the theme from the side menu": "Vous pouvez verrouiller le thème depuis le menu latéral"
 }

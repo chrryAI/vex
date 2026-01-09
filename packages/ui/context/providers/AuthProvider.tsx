@@ -1673,6 +1673,9 @@ export function AuthProvider({
   const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
   const hasInformedRef = useRef(false)
+  const hasShownThemeLockToastRef = useRef(false)
+  const [hasSeenThemeLockNotification, setHasSeenThemeLockNotification] =
+    useLocalStorage<boolean>("hasSeenThemeLockNotification", false)
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
@@ -1943,7 +1946,14 @@ export function AuthProvider({
     }
   }, [user, guest, isSessionLoading])
 
-  const { setColorScheme, setTheme, isThemeLocked } = useTheme()
+  const {
+    setColorScheme,
+    setTheme,
+    isThemeLocked,
+    colorScheme,
+    theme,
+    themeMode,
+  } = useTheme()
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -2034,8 +2044,48 @@ export function AuthProvider({
         // Defer theme updates to avoid "setState during render" error
         setTimeout(() => {
           if (!isThemeLocked) {
-            newApp?.themeColor && setColorScheme(newApp.themeColor)
-            newApp?.backgroundColor && setAppTheme(newApp.backgroundColor)
+            // Detect if dark/light mode will change
+            const isDarkColor = (color: string) => {
+              // Simple heuristic: if hex color is dark (low luminance)
+              const hex = color.replace("#", "")
+              const r = parseInt(hex.substr(0, 2), 16)
+              const g = parseInt(hex.substr(2, 2), 16)
+              const b = parseInt(hex.substr(4, 2), 16)
+              const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+              return luminance < 0.5
+            }
+
+            // Compare previous and new app's background colors to detect actual mode change
+            const prevMode =
+              prevApp?.backgroundColor && isDarkColor(prevApp.backgroundColor)
+                ? "dark"
+                : "light"
+            const newMode =
+              newApp?.backgroundColor && isDarkColor(newApp.backgroundColor)
+                ? "dark"
+                : "light"
+            const modeChanged = prevApp && newMode !== prevMode
+
+            if (newApp?.themeColor) {
+              setColorScheme(newApp.themeColor)
+            }
+            if (newApp?.backgroundColor) {
+              setAppTheme(newApp.backgroundColor)
+            }
+
+            // Only show toast once ever if dark/light mode changed between apps
+            // Use both ref (for immediate duplicate prevention) and localStorage (for persistence)
+            if (
+              modeChanged &&
+              !hasSeenThemeLockNotification &&
+              !hasShownThemeLockToastRef.current
+            ) {
+              hasShownThemeLockToastRef.current = true
+              setHasSeenThemeLockNotification(true)
+              toast.success("You can lock the theme from the side menu", {
+                duration: 3000,
+              })
+            }
           }
         }, 0)
 
@@ -2052,6 +2102,9 @@ export function AuthProvider({
       user,
       guest,
       isThemeLocked,
+      colorScheme,
+      theme,
+      themeMode,
     ],
   )
 

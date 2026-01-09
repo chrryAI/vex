@@ -1950,5 +1950,6 @@
   "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "ドキュメンテーションをリクエストしましょう！コードを保守可能にするために、インラインコメント、JSDoc、またはREADMEファイルをリクエストしてください。",
   "Let's Pear": "Let's Pear",
   "Minimize": "最小化",
-  "Maximize": "最大化"
+  "Maximize": "最大化",
+  "You can lock the theme from the side menu": "サイドメニューからテーマをロックすることができます"
 }

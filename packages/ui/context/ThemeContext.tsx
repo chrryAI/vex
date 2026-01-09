@@ -49,6 +49,7 @@ interface ThemeContextValue {
   setIsSmallDevice: (isSmallDevice: boolean) => void
   theme: Theme
   isDark: boolean
+  themeMode: themeType
   colors: Theme
   colorScheme: string
   reduceMotion: boolean
@@ -319,6 +320,7 @@ export function ThemeProvider({
   const value: ThemeContextValue = {
     theme,
     isDark,
+    themeMode,
     colors: theme,
     colorScheme,
     setTheme,
