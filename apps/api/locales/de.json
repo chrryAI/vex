@@ -1951,5 +1951,6 @@
   "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Fordern Sie Dokumentation an! Bitten Sie um Inline-Kommentare, JSDoc oder README-Dateien, um Ihren Code wartbar zu machen.",
   "Let's Pear": "Lass uns Pear",
   "Minimize": "Minimieren",
-  "Maximize": "Maximieren"
+  "Maximize": "Maximieren",
+  "You can lock the theme from the side menu": "Sie können das Thema über das Seitenmenü sperren"
 }

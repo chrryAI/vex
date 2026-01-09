@@ -1950,5 +1950,6 @@
   "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Dokümantasyon talep edin! Kodunuzu sürdürülebilir hale getirmek için satır içi yorumlar, JSDoc veya README dosyaları talep edin.",
   "Let's Pear": "Hadi Birleşelim",
   "Minimize": "Küçült",
-  "Maximize": "Büyüt"
+  "Maximize": "Büyüt",
+  "You can lock the theme from the side menu": "Tema kilidini yan menüden kilitleyebilirsiniz"
 }

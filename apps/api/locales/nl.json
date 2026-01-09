@@ -1951,5 +1951,6 @@
   "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Vraag om documentatie! Vraag om inline commentaar, JSDoc, of README-bestanden om je code onderhoudbaar te maken.",
   "Let's Pear": "Laten we paren",
   "Minimize": "Minimaliseren",
-  "Maximize": "Maximaliseren"
+  "Maximize": "Maximaliseren",
+  "You can lock the theme from the side menu": "U kunt het thema vergrendelen vanuit het zijmenu"
 }
