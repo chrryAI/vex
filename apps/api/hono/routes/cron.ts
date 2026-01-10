@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { decayMemories } from "@repo/db"
+import { decayMemories, cleanupIncognitoThreads } from "@repo/db"
 import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
 
 export const cron = new Hono()
@@ -50,6 +50,36 @@ cron.get("/syncPlausible", async (c) => {
     message: "Plausible analytics sync started",
     timestamp: new Date().toISOString(),
   })
+})
+
+cron.get("/burn", async (c) => {
+  // Verify auth
+  const authHeader = c.req.header("authorization")
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  try {
+    console.log("🔥 Starting incognito thread cleanup...")
+    const deletedCount = await cleanupIncognitoThreads(30) // 30 days retention
+    console.log(`✅ Cleanup complete - deleted ${deletedCount} threads`)
+
+    return c.json({
+      success: true,
+      message: "Incognito thread cleanup completed",
+      deletedCount: Number(deletedCount),
+      timestamp: new Date().toISOString(),
+    })
+  } catch (error) {
+    console.error("❌ Cleanup failed:", error)
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500,
+    )
+  }
 })
 
 // Shared handler for fetchNews
