@@ -232,6 +232,7 @@ export default function Chat({
     isProgramme,
     burn,
     isPear,
+    setIsPear,
     isIDE,
     accountApps,
     isRetro,
@@ -3723,6 +3724,7 @@ export default function Chat({
                         href={getAppSlug(back)}
                         onClick={(e) => {
                           e.preventDefault()
+                          setIsPear(back)
 
                           plausible({
                             name: ANALYTICS_EVENTS.APP_BACK,
@@ -3777,7 +3779,7 @@ export default function Chat({
                           <Span style={{ flex: 1 }}>
                             {t(
                               isPear
-                                ? "Share your feedback and earn credits!"
+                                ? "Share your feedback and earn bonus credits!"
                                 : hitHourlyLimit
                                   ? t(
                                       "You hit your hourly limit {{hourlyLimit}}",
@@ -3807,6 +3809,7 @@ export default function Chat({
                         href={getAppSlug(back)}
                         onClick={(e) => {
                           e.preventDefault()
+                          setIsPear(back)
 
                           setIsNewAppChat(back)
                           addHapticFeedback()
@@ -3936,10 +3939,12 @@ export default function Chat({
                   name="chat"
                   id="chat"
                   placeholder={
-                    !isHydrated
-                      ? ""
-                      : placeholder ||
-                        `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
+                    isChatFloating && isPear
+                      ? `${t("Share your feedback and earn bonus credits!")} 🍐`
+                      : !isHydrated
+                        ? ""
+                        : placeholder ||
+                          `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
                   }
                   ref={chatInputRef}
                   disabled={disabled}

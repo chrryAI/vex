@@ -6,6 +6,7 @@ import { appWithStore } from "./types"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useStyles } from "./context/StylesContext"
 import Img from "./Image"
+import { useEffect } from "react"
 
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
@@ -24,7 +25,11 @@ const Grappes = ({
   const [showGrapes, setShowGrapes] = useState(false)
   const [selectedGrapeApp, setSelectedGrapeApp] = useState<
     appWithStore | undefined
-  >()
+  >(grapes[0])
+
+  useEffect(() => {
+    !selectedGrapeApp && setSelectedGrapeApp(grapes[0])
+  }, [grapes, selectedGrapeApp])
 
   const { utilities } = useStyles()
 

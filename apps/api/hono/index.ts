@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-// import { compress } from "hono/compress" // Disabled: CompressionStream not available in Bun
+import { compress } from "@hono/bun-compress"
 import { headersMiddleware } from "./middleware/headers"
 import { corsMiddleware } from "./middleware/cors"
 import { session } from "./routes/session"
@@ -88,9 +88,14 @@ app.use("*", corsMiddleware)
 // Custom headers middleware for app/store detection and fingerprinting
 app.use("*", headersMiddleware)
 
-// Enable compression (gzip/deflate) - Works with Bun runtime
-// DISABLED: CompressionStream not available in Bun
-// app.use("*", compress())
+// Enable compression with @hono/bun-compress (official Bun middleware)
+app.use(
+  "*",
+  compress({
+    threshold: 1024, // Only compress responses > 1KB
+    encoding: "gzip", // gzip or deflate (gzip is default and prioritized)
+  }),
+)
 
 // Create API group with /api basePath
 const api = new Hono()

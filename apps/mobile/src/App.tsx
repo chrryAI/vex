@@ -46,10 +46,11 @@ function App() {
   console.log("🍒 App mounting...")
 
   useEffect(() => {
-    // Enable vConsole debug tool on mobile
-    if (typeof window !== "undefined" && (window as any).Capacitor) {
+    // Enable vConsole debug tool on mobile (development only for security)
+    const isDev = import.meta.env.DEV || import.meta.env.MODE === "development"
+    if (typeof window !== "undefined" && (window as any).Capacitor && isDev) {
       const vConsole = new VConsole()
-      console.log("✅ vConsole initialized")
+      console.log("✅ vConsole initialized (dev mode)")
       return () => {
         vConsole.destroy()
       }
