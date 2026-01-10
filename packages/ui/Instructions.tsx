@@ -178,14 +178,15 @@ export default function Instructions({
 
   const count = useResponsiveCount(
     [
-      { height: 500, count: 0 }, // Below 500px: show none
-      { height: 600, count: 1 }, // 500-599px: show 1
-      { height: 625, count: 2 }, // 600-624px: show 2
-      { height: 650, count: 3 }, // 625-649px: show 3
-      { height: 750, count: 3 }, // 650-749px: show 4
-      { height: Infinity, count: 7 }, // 750px+: show all
+      { height: 550, count: 0 }, // Small phones: show none (was 1)
+      { height: 700, count: 1 }, // Medium phones: show 1 (was 2)
+      { height: 750, count: 2 }, // Larger phones: show 2 (was 3)
+      { height: 800, count: 3 }, // Small tablets/large phones: show 3 (was 4)
+      { height: 850, count: 5 }, // Tablets: show 4 (was 5)
+      { height: 950, count: 7 }, // Large tablets: show 5 (was 6)
+      { height: Infinity, count: 7 }, // Desktop: show 6 (was 7)
     ],
-    offset,
+    offset, // -250 for PWA (standalone mode)
   )
 
   // Theme context

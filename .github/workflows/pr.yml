@@ -1,7 +1,7 @@
 name: PR
 on:
   pull_request:
-    branches: [prod]
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -178,8 +178,8 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            if curl -f ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
-              API_VERSION=$(curl -s ${{ env.STAGING_API_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
+            if curl -f --compressed ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
+              API_VERSION=$(curl -s --compressed ${{ env.STAGING_API_URL }}/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
               echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$API_VERSION" = "$EXPECTED_VERSION" ]; then
@@ -210,8 +210,8 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            if curl -f ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
-              WEB_VERSION=$(curl -s ${{ env.STAGING_URL }}/api/health | jq -r '.version // "unknown"' 2>/dev/null || echo "unknown")
+            if curl -f --compressed ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
+              WEB_VERSION=$(curl -s --compressed ${{ env.STAGING_URL }}/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
               echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$WEB_VERSION" = "$EXPECTED_VERSION" ]; then
