@@ -4,7 +4,7 @@ import styles from "./SignIn.module.scss"
 import clsx from "clsx"
 import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
 import { apiFetch, isDevelopment } from "./utils"
-import { FaGoogle, FaApple } from "react-icons/fa"
+import { FaGoogle, FaApple, FaGithub } from "react-icons/fa"
 import { v4 as uuidv4 } from "uuid"
 export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
@@ -24,6 +24,7 @@ import {
 } from "./context/providers"
 import { Button, usePlatform } from "./platform"
 import useCache from "./hooks/useCache"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function SignIn({
   className,
@@ -61,10 +62,13 @@ export default function SignIn({
     setSignInPart: setPart,
     siteConfig,
     setDeviceId,
+    plausible,
   } = useAuth()
 
+  const isGithubSignInAvailable = user?.role === "admin"
+
   const signInContext = async (
-    provider: "google" | "apple" | "credentials",
+    provider: "google" | "apple" | "github" | "credentials",
     options: {
       email?: string | undefined
       password?: string | undefined
@@ -428,6 +432,108 @@ export default function SignIn({
     }
   }
 
+  const handleGitHubAuth = async () => {
+    // Capacitor: Use Firebase Authentication (if GitHub is configured in Firebase)
+    if (isCapacitor) {
+      try {
+        // Note: GitHub auth via Firebase requires additional setup
+        // For now, we'll use the web flow
+        toast.error(
+          "GitHub sign-in via mobile app is not yet supported. Please use the web version.",
+        )
+        return
+      } catch (error) {
+        console.error("GitHub auth error:", error)
+        toast.error(
+          error instanceof Error ? error.message : "Failed to sign in",
+        )
+      }
+      return
+    }
+
+    // Web/PWA: Use standard OAuth redirect
+    if (!isExtension) {
+      const { successUrl, errorUrl } = getCallbacks()
+
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get("isApp") === "true")
+        successUrl.searchParams.set("isApp", "true")
+
+      // Track GitHub sign-in attempt
+      plausible?.({ name: ANALYTICS_EVENTS.GITHUB_SIGNIN })
+
+      await signInContext?.("github", {
+        redirect: true,
+        errorUrl: errorUrl.href,
+        callbackUrl: successUrl.toString(),
+      })
+      return
+    }
+
+    // Extension: Use chrome.identity API
+    try {
+      const query = new URLSearchParams()
+      query.append("redirect_uri", getRedirectURL())
+      query.append("extension", "true")
+      const response = await apiFetch(`${API_URL}/auth/github/init?${query}`)
+
+      if (!response.ok) {
+        toast.error("Failed to get auth URL")
+        return
+      }
+
+      const { authUrl } = await response.json()
+
+      chrome.identity.launchWebAuthFlow(
+        {
+          url: authUrl,
+          interactive: true,
+        },
+        async (responseUrl) => {
+          if (!responseUrl) {
+            toast.error("Failed to get auth code")
+            return
+          }
+
+          const urlParams = new URLSearchParams(new URL(responseUrl).search)
+          const authCode = urlParams.get("code")
+          if (!authCode) {
+            toast.error("Failed to get auth code")
+            return
+          }
+
+          const searchParams = new URLSearchParams(window.location.search)
+          searchParams.delete("signIn")
+          const newUrl = searchParams.toString()
+            ? `?${searchParams.toString()}`
+            : window.location.pathname
+          window.history.replaceState({}, "", newUrl)
+
+          const redirectUri = getRedirectURL().replace(/\/$/, "")
+          console.log("Using redirect URI:", redirectUri)
+          const response = await apiFetch(`${API_URL}/signIn/github`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              code: authCode,
+              redirect_uri: redirectUri,
+            }),
+          })
+          const data = await response.json()
+          if (data.token) {
+            setToken(data.token)
+            setPart(undefined)
+          }
+        },
+      )
+    } catch (error) {
+      captureException(error)
+      console.error("GitHub auth failed:", error)
+    }
+  }
+
   return (
     <>
       <>
@@ -520,6 +626,22 @@ export default function SignIn({
                 <FaGoogle size={16} />{" "}
                 {t(`${part === "login" ? "Sign in" : "Register"} with Google`)}
               </button>
+              {isGithubSignInAvailable && (
+                <button
+                  data-testid={
+                    part === "login"
+                      ? "sign-in-github-button"
+                      : "register-github-button"
+                  }
+                  onClick={handleGitHubAuth}
+                  className={clsx("inverted", styles.githubButton)}
+                >
+                  <FaGithub size={16} />{" "}
+                  {t(
+                    `${part === "login" ? "Sign in" : "Register"} with GitHub`,
+                  )}
+                </button>
+              )}
               {isAppleSignInAvailable && (
                 <button
                   type="button"

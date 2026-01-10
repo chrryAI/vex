@@ -383,7 +383,6 @@ export function TimerContextProvider({
           selectedTasks,
           type: "timer",
         })
-        console.log(`🚀 ~ data:`, data)
         lastSent.current = now
       }
     },

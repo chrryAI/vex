@@ -10,6 +10,7 @@ import { useAuth } from "./context/providers/AuthProvider"
 import { CodeXml, FolderOpen, File } from "./icons"
 import Home from "./Home"
 import { useTheme } from "./context/ThemeContext"
+import GitHubConnectButton from "./GitHubConnectButton"
 
 export interface IDEProps {
   rootPath?: string
@@ -83,6 +84,7 @@ export function IDE({ rootPath = ".", initialFile }: IDEProps) {
           <P style={{ fontSize: "13px", color: "#888", margin: 0 }}>
             {user?.email || "Guest"}
           </P>
+          <GitHubConnectButton variant="small" size={16} buttonText="GitHub" />
           <Button
             className="transparent"
             onClick={() => setIsChatOpen(!isChatOpen)}

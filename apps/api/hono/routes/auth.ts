@@ -15,6 +15,10 @@ const GOOGLE_WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID
 
 const GOOGLE_WEB_CLIENT_SECRET = process.env.GOOGLE_WEB_CLIENT_SECRET
 
+const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID
+
+const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET
+
 // JWT secret (reuse existing env var)
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
 const JWT_EXPIRY = "30d"
@@ -821,6 +825,269 @@ authRoutes.post("/exchange-code", async (c) => {
   } catch (error) {
     console.error("Code exchange error:", error)
     return c.json({ error: "Code exchange failed" }, 500)
+  }
+})
+
+/**
+ * GET /api/auth/signin/github
+ * Initiate GitHub OAuth flow
+ */
+authRoutes.get("/signin/github", async (c) => {
+  try {
+    if (!GITHUB_CLIENT_ID) {
+      return c.json({ error: "GitHub OAuth not configured" }, 500)
+    }
+
+    // Allowed domains for callback URLs (security validation)
+    const ALLOWED_DOMAINS = [
+      ".chrry.ai",
+      ".chrry.dev",
+      ".chrry.store",
+      "localhost",
+    ]
+
+    // Get callback URLs from query params and ensure they're strings
+    const callbackUrlParam = c.req.query("callbackUrl")
+    // Decode if already encoded (to prevent double-encoding)
+    let callbackUrl =
+      typeof callbackUrlParam === "string" ? callbackUrlParam : undefined
+    if (callbackUrl && callbackUrl.includes("%")) {
+      try {
+        callbackUrl = decodeURIComponent(callbackUrl)
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+    }
+
+    // Validate callback URL belongs to allowed domain
+    if (callbackUrl) {
+      try {
+        const callbackUrlObj = new URL(callbackUrl)
+        const isValidDomain = ALLOWED_DOMAINS.some(
+          (domain) =>
+            callbackUrlObj.hostname === domain.replace(".", "") ||
+            callbackUrlObj.hostname.endsWith(domain),
+        )
+        if (!isValidDomain) {
+          console.error("Invalid callback domain:", callbackUrlObj.hostname)
+          return c.json({ error: "Invalid callback domain" }, 400)
+        }
+      } catch (e) {
+        console.error("Invalid callback URL:", callbackUrl)
+        return c.json({ error: "Invalid callback URL" }, 400)
+      }
+    } else {
+      // Fallback to current origin if no callback URL provided
+      const requestUrl = new URL(c.req.url)
+      callbackUrl = `${requestUrl.protocol}//${requestUrl.host}`
+    }
+
+    const errorUrlParam = c.req.query("errorUrl")
+    let errorUrl = typeof errorUrlParam === "string" ? errorUrlParam : undefined
+    if (errorUrl && errorUrl.includes("%")) {
+      try {
+        errorUrl = decodeURIComponent(errorUrl)
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+    }
+
+    // Fallback for error URL
+    if (!errorUrl) {
+      errorUrl = callbackUrl + "/?error=oauth_failed"
+    }
+
+    // Generate state for CSRF protection and encode callback URLs in it
+    const stateId = uuidv4()
+    const stateData = {
+      id: stateId,
+      callbackUrl: callbackUrl || "",
+      errorUrl: errorUrl || "",
+    }
+    // Base64 encode the state to make it URL-safe
+    const state = Buffer.from(JSON.stringify(stateData)).toString("base64url")
+
+    // Build GitHub OAuth URL with API server callback
+    const redirectUri = `${API_URL}/auth/callback/github`
+    const authUrl = new URL("https://github.com/login/oauth/authorize")
+    authUrl.searchParams.set("client_id", GITHUB_CLIENT_ID)
+    authUrl.searchParams.set("redirect_uri", redirectUri)
+    authUrl.searchParams.set("scope", "read:user user:email")
+    authUrl.searchParams.set("state", state)
+
+    // Redirect to GitHub
+    return c.redirect(authUrl.toString())
+  } catch (error) {
+    console.error("GitHub OAuth initiation error:", error)
+    return c.json({ error: "OAuth initiation failed" }, 500)
+  }
+})
+
+/**
+ * GET /api/auth/callback/github
+ * GitHub OAuth callback
+ */
+authRoutes.get("/callback/github", async (c) => {
+  try {
+    const code = c.req.query("code")
+    const state = c.req.query("state")
+
+    if (!code || !state) {
+      return c.redirect(`https://chrry.ai/?error=oauth_failed`)
+    }
+
+    // Decode state to get callback URLs
+    let stateData: { id: string; callbackUrl: string; errorUrl: string }
+    try {
+      const stateJson = Buffer.from(state, "base64url").toString("utf-8")
+      stateData = JSON.parse(stateJson)
+    } catch (e) {
+      console.error("Failed to decode state:", e)
+      return c.redirect(`https://chrry.ai/?error=invalid_state`)
+    }
+
+    const storedCallbackUrl = stateData.callbackUrl
+    const storedErrorUrl = stateData.errorUrl
+
+    if (!code || !storedCallbackUrl || !storedErrorUrl) {
+      const forwardedHost = c.req.header("X-Forwarded-Host")
+      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+      return c.redirect(`${siteconfig.url}/?error=oauth_failed`)
+    }
+
+    // Exchange code for access token
+    if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
+      return c.redirect(`${storedErrorUrl}/?error=oauth_not_configured`)
+    }
+
+    const tokenResponse = await fetch(
+      "https://github.com/login/oauth/access_token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          client_id: GITHUB_CLIENT_ID,
+          client_secret: GITHUB_CLIENT_SECRET,
+          code,
+        }),
+      },
+    )
+
+    if (!tokenResponse.ok) {
+      return c.redirect(`${storedErrorUrl}/?error=token_exchange_failed`)
+    }
+
+    const tokens = await tokenResponse.json()
+
+    if (tokens.error) {
+      console.error("GitHub token error:", tokens.error_description)
+      return c.redirect(
+        `${storedErrorUrl}/?error=${tokens.error_description || "token_exchange_failed"}`,
+      )
+    }
+
+    // Get user info from GitHub
+    const userInfoResponse = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${tokens.access_token}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    })
+
+    if (!userInfoResponse.ok) {
+      return c.redirect(`${storedErrorUrl}/?error=user_info_failed`)
+    }
+
+    const githubUser = await userInfoResponse.json()
+
+    // Get user's primary email from GitHub
+    const emailsResponse = await fetch("https://api.github.com/user/emails", {
+      headers: {
+        Authorization: `Bearer ${tokens.access_token}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    })
+
+    let email = githubUser.email
+    if (!email && emailsResponse.ok) {
+      const emails = await emailsResponse.json()
+      const primaryEmail =
+        emails.find((e: any) => e.primary && e.verified) || emails[0]
+      email = primaryEmail?.email
+    }
+
+    if (!email) {
+      return c.redirect(`${storedErrorUrl}/?error=no_email_found`)
+    }
+
+    // Find or create user
+    let user = await getUser({ email })
+
+    if (!user) {
+      // Create new user
+      user = await createUser({
+        email,
+        name: githubUser.name || githubUser.login,
+        image: githubUser.avatar_url,
+        userName: await generateUniqueUsername(
+          githubUser.name || githubUser.login,
+        ),
+        emailVerified: new Date(), // GitHub emails are verified
+      })
+    }
+
+    if (!user) {
+      return c.redirect(`${storedErrorUrl}/?error=user_creation_failed`)
+    }
+
+    // Generate JWT token
+    const token = generateToken(user.id, user.email)
+
+    // Determine cookie domain from callback URL with validation
+    const ALLOWED_DOMAINS = [".chrry.ai", ".chrry.dev", ".chrry.store"]
+    let cookieDomain = ""
+    try {
+      const callbackHostname = new URL(storedCallbackUrl).hostname
+      const domainParts = callbackHostname.split(".")
+      if (domainParts.length >= 2) {
+        const rootDomain = domainParts.slice(-2).join(".")
+        const isAllowed = ALLOWED_DOMAINS.some(
+          (allowed) =>
+            allowed === `.${rootDomain}` || rootDomain === "localhost",
+        )
+        if (isAllowed) {
+          cookieDomain = `; Domain=.${rootDomain}`
+        } else {
+          console.warn("Callback domain not in allowed list:", rootDomain)
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse callback URL for cookie domain:", e)
+    }
+
+    // Set auth cookie with domain for cross-subdomain auth
+    const isDev = process.env.NODE_ENV === "development"
+    const secureFlag = isDev ? "" : "; Secure"
+    c.header(
+      "Set-Cookie",
+      `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax${cookieDomain}${secureFlag}`,
+    )
+
+    // Generate one-time exchange code (more secure than token in URL)
+    const authCode = await generateExchangeCode(token)
+
+    // Redirect back to the original site with auth_code in URL
+    const redirectUrl = new URL(storedCallbackUrl)
+    redirectUrl.searchParams.set("auth_token", authCode)
+    return c.redirect(redirectUrl.toString())
+  } catch (error) {
+    console.error("GitHub OAuth callback error:", error)
+    const forwardedHost = c.req.header("X-Forwarded-Host")
+    const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
+    return c.redirect(`${siteconfig.url}/?error=oauth_callback_failed`)
   }
 })
 

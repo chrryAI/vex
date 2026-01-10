@@ -3024,7 +3024,6 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         guestId: guest?.id,
         skipCache: true,
       })
-      console.log(`🚀 ~ app.post ~ app:`, app?.name)
     } catch (error) {
       captureException(error)
     }
