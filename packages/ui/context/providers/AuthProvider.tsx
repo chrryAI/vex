@@ -1822,6 +1822,9 @@ export function AuthProvider({
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
+    if (!!value === isPear) {
+      return
+    }
     setIsPearInternal(!!value)
     if (value && app) {
       if (app.id === value.id) {
