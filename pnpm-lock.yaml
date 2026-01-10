@@ -485,6 +485,9 @@ importers:
       vite:
         specifier: ^7.2.6
         version: 7.2.6(@types/node@20.19.27)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2)
+      vite-plugin-compression:
+        specifier: ^0.5.1
+        version: 0.5.1(vite@7.2.6(@types/node@20.19.27)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
     devDependencies:
       '@tauri-apps/cli':
         specifier: ^2.0
@@ -492,9 +495,6 @@ importers:
       '@types/node':
         specifier: ^20.11.5
         version: 20.19.27
-      vite-plugin-compression:
-        specifier: ^0.5.1
-        version: 0.5.1(vite@7.2.6(@types/node@20.19.27)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
 
   apps/extension:
     dependencies:
@@ -704,6 +704,9 @@ importers:
       vite:
         specifier: ^7.2.6
         version: 7.2.6(@types/node@25.0.2)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2)
+      vite-plugin-compression:
+        specifier: ^0.5.1
+        version: 0.5.1(vite@7.2.6(@types/node@25.0.2)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
     devDependencies:
       '@capacitor/cli':
         specifier: ^7.0.0
@@ -720,9 +723,6 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
-      vite-plugin-compression:
-        specifier: ^0.5.1
-        version: 0.5.1(vite@7.2.6(@types/node@25.0.2)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
 
   packages/calendar:
     dependencies:

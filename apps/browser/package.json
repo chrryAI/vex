@@ -34,11 +34,11 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.3.3",
-    "vite": "^7.2.6"
+    "vite": "^7.2.6",
+    "vite-plugin-compression": "^0.5.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0",
-    "@types/node": "^20.11.5",
-    "vite-plugin-compression": "^0.5.1"
+    "@types/node": "^20.11.5"
   }
 }
