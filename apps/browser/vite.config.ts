@@ -1,6 +1,7 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import path from "path"
+import viteCompression from "vite-plugin-compression"
 
 // Get MODE from environment (e.g., MODE=burn, MODE=vex, etc.)
 const mode = process.env.MODE || process.env.VITE_SITE_MODE || "vex"
@@ -13,7 +14,15 @@ console.log("🔧 Tauri Build Config:", {
 })
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    viteCompression({
+      algorithm: "gzip",
+      ext: ".gz",
+      threshold: 1024, // Only compress files > 1KB
+      deleteOriginFile: false,
+    }),
+  ],
   server: {
     port: 5174,
   },

@@ -33,6 +33,11 @@ export const ANALYTICS_EVENTS = {
   STORE_VIEW: "store_view",
   STORE_APP_SELECTED: "store_app_selected",
   SPATIAL_NAVIGATION: "spatial_navigation",
+  MAXIMIZE_DURATION: "maximize_duration",
+  MINIMIZE_DURATION: "minimize_duration",
+  MAXIMIZE: "maximize",
+  MINIMIZE: "minimize",
+  APP_BACK: "app_back",
 
   // Chat & Messaging
   CHAT_SEND: "chat",
@@ -78,6 +83,9 @@ export const ANALYTICS_EVENTS = {
   LOGIN: "login",
   LOGOUT: "logout",
   SIGNUP: "signup",
+  GOOGLE_SIGNIN: "google_signin",
+  APPLE_SIGNIN: "apple_signin",
+  GITHUB_SIGNIN: "github_signin",
 
   // Store & Discovery
   STORE_INSTALL: "store_install",
@@ -148,6 +156,15 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.LOGIN,
   ANALYTICS_EVENTS.LOGOUT,
   ANALYTICS_EVENTS.SIGNUP,
+  ANALYTICS_EVENTS.GOOGLE_SIGNIN,
+  ANALYTICS_EVENTS.APPLE_SIGNIN,
+  ANALYTICS_EVENTS.GITHUB_SIGNIN,
+
+  ANALYTICS_EVENTS.APP_BACK,
+  ANALYTICS_EVENTS.MAXIMIZE_DURATION,
+  ANALYTICS_EVENTS.MINIMIZE_DURATION,
+  ANALYTICS_EVENTS.MAXIMIZE,
+  ANALYTICS_EVENTS.MINIMIZE,
 
   // Store & Discovery - Feature adoption
   ANALYTICS_EVENTS.STORE_VIEW,

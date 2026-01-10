@@ -59,6 +59,7 @@ import { getSiteConfig } from "./utils/siteConfig"
 import { useFocusButtonStyles } from "./FocusButton.styles"
 import ThemeSwitcher from "./ThemeSwitcher"
 import ConfirmButton from "./ConfirmButton"
+import GitHubConnectButton from "./GitHubConnectButton"
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -417,6 +418,11 @@ export default function FocusButton({
           <Checkbox checked={enableSound} onChange={(e) => setEnableSound(e)}>
             {t("Sound")}
           </Checkbox>
+          <GitHubConnectButton
+            variant="small"
+            size={14}
+            buttonText="Connect GitHub"
+          />
         </Div>
         <Div style={styles.settingsFooter.style}>
           <A

@@ -276,14 +276,7 @@ export default function App({
   // No need for separate state + useEffect, useMemo already handles updates
   const appsState = appsInternal
 
-  const back = useMemo(
-    () => (!apps.some((app) => app.id === lastApp?.id) ? lastApp : null),
-    [apps, lastApp],
-  )
-
-  const grapes = auth.grapes
-
-  const [file, setFile] = React.useState<File | undefined>()
+  const [, setFile] = React.useState<File | undefined>()
 
   const [image, setImageInternal] = React.useState<string | undefined>(
     app?.image || undefined,
