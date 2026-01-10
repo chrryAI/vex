@@ -3342,9 +3342,10 @@ export async function cleanupIncognitoThreads(retentionDays = 30) {
     DELETE FROM threads
     WHERE "isIncognito" = true
     AND "createdOn" < NOW() - INTERVAL '${sql.raw(retentionDays.toString())} days'
+    RETURNING id
   `)
 
-  return result.rowCount
+  return result.length
 }
 
 export async function getMemories({
