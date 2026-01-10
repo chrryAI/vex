@@ -344,8 +344,17 @@ verifyPayment.post("/", async (c) => {
 
     // Handle one-time credit purchase
     if (session.mode === "payment" && session.line_items?.data[0]) {
-      const creditAmount = session.line_items.data[0].quantity || 0
-      const creditsToAdd = creditAmount * ADDITIONAL_CREDITS
+      // Get the amount paid (in cents)
+      const amountPaidCents = session.amount_total || 0
+      const amountPaidEur = amountPaidCents / 100
+
+      // Calculate credits: €0.01 per credit = 1 cent per credit
+      // So: cents / 1 = credits (100 credits per euro)
+      const creditsToAdd = amountPaidCents
+
+      console.log(
+        `💰 Credit purchase: €${amountPaidEur} (${amountPaidCents} cents) = ${creditsToAdd} credits`,
+      )
 
       const affiliateCode = session.metadata?.affiliateCode
       let bonusCredits = 0
@@ -365,7 +374,7 @@ verifyPayment.post("/", async (c) => {
               throw new Error("Cannot use your own affiliate link")
             }
 
-            const purchaseAmount = creditAmount * 500
+            const purchaseAmount = amountPaidCents
             const commission = Math.floor(
               purchaseAmount * (affiliateLink.commissionRate / 100),
             )
