@@ -1225,7 +1225,10 @@ export function AuthProvider({
 
   // Throttle map to prevent duplicate rapid-fire events
   const plausibleThrottleMap = useRef<Map<string, number>>(new Map())
-  const plausible_THROTTLE_MS = 3000 // 3 seconds
+  const plausible_THROTTLE_MS = 500 // 500ms
+
+  // Duration map to track time between same event calls
+  const plausibleDurationMap = useRef<Map<string, number>>(new Map())
 
   const plausible = ({
     name,
@@ -1240,8 +1243,21 @@ export function AuthProvider({
   }) => {
     if (!user && !guest) return
 
-    // Throttle: Skip if same event was plausibleed recently
     const now = Date.now()
+
+    // Calculate duration if this event was called before
+    let duration = 0
+    const lastEventTime = plausibleDurationMap.current.get(name)
+    if (lastEventTime) {
+      const durationMs = now - lastEventTime
+      duration = durationMs // Keep as milliseconds
+      console.log("⏱️ Duration tracking:", { name, duration, durationMs })
+    }
+
+    // Update the timestamp for this event
+    plausibleDurationMap.current.set(name, now)
+
+    // Throttle: Skip if same event was plausibleed recently
     const lastplausibleed = plausibleThrottleMap.current.get(name)
     if (lastplausibleed && now - lastplausibleed < plausible_THROTTLE_MS) {
       return // Skip this event
@@ -1268,6 +1284,9 @@ export function AuthProvider({
       }
     }
 
+    // Add duration to props if it exists (> 0 means this is not the first call)
+    const enrichedProps = duration > 0 ? { ...props, duration } : props
+
     // Only send meaningful events to API for AI context
     if (token && MEANINGFUL_EVENTS.includes(name as any)) {
       fetch(`${API_URL}/analytics/grape`, {
@@ -1281,7 +1300,7 @@ export function AuthProvider({
           name,
           url: normalizedUrl,
           props: {
-            ...props,
+            ...enrichedProps,
             appName: app?.name,
             appSlug: app?.slug,
             baseAppName: baseApp?.name,
@@ -1311,7 +1330,7 @@ export function AuthProvider({
               memoriesEnabled,
             }
           : {
-              ...props,
+              ...enrichedProps,
               isStandalone,
               os,
               device,
