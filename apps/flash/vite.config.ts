@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react"
 import path from "path"
 import type { UserConfig } from "vite"
 import { swVersionPlugin } from "./vite-plugin-sw-version"
-import viteCompression from "vite-plugin-compression"
+import { compression } from "vite-plugin-compression2"
 import dotenv from "dotenv"
 
 // Load environment variables from .env file
@@ -41,16 +41,16 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       // Generate gzip compressed files (client build only)
       ...(!isSsrBuild
         ? [
-            viteCompression({
+            compression({
               algorithm: "gzip",
-              ext: ".gz",
-              threshold: 1024, // Only compress files > 1KB
-              deleteOriginFile: false, // Keep original files
+              exclude: [/\.(br)$/, /\.(gz)$/],
+              threshold: 1024,
+              deleteOriginFile: false,
             }),
             // Generate brotli compressed files (better compression than gzip)
-            viteCompression({
+            compression({
               algorithm: "brotliCompress",
-              ext: ".br",
+              exclude: [/\.(br)$/, /\.(gz)$/],
               threshold: 1024,
               deleteOriginFile: false,
             }),

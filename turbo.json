@@ -150,8 +150,9 @@
       "persistent": true
     },
     "check-types": {
-      "cache": false,
-      "persistent": true
+      "outputs": [],
+      "cache": true,
+      "persistent": false
     }
   }
 }

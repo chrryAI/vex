@@ -3336,6 +3336,18 @@ export async function decayMemories() {
   `)
 }
 
+// Clean up old incognito threads (privacy + database optimization)
+export async function cleanupIncognitoThreads(retentionDays = 30) {
+  const result = await db.execute(sql`
+    DELETE FROM threads
+    WHERE "isIncognito" = true
+    AND "createdOn" < NOW() - INTERVAL '${sql.raw(retentionDays.toString())} days'
+    RETURNING id
+  `)
+
+  return result.length
+}
+
 export async function getMemories({
   userId,
   guestId,
