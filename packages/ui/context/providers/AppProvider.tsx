@@ -549,7 +549,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const durationMin = Math.round(durationMs / 60000) // Convert to minutes
 
       // Track time spent in previous state
-      plausible({ name: newValue ? "maximize_duration" : "minimize_duration" })
+      plausible({
+        name: newValue
+          ? ANALYTICS_EVENTS.MAXIMIZE_DURATION
+          : ANALYTICS_EVENTS.MINIMIZE_DURATION,
+      })
     }
 
     // Update state
@@ -557,7 +561,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMinimizeStartTime(now)
 
     // Track state change
-    plausible({ name: newValue ? "minimize" : "maximize" })
+    plausible({
+      name: newValue ? ANALYTICS_EVENTS.MINIMIZE : ANALYTICS_EVENTS.MAXIMIZE,
+    })
   }
 
   const contextInstructions = useMemo(() => {

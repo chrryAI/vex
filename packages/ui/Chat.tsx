@@ -3724,6 +3724,14 @@ export default function Chat({
                         onClick={(e) => {
                           e.preventDefault()
 
+                          plausible({
+                            name: ANALYTICS_EVENTS.APP_BACK,
+                            props: {
+                              back: back.name,
+                              app: app?.name,
+                            },
+                          })
+
                           setIsNewAppChat(back)
                           addHapticFeedback()
                           setAppStatus(undefined)

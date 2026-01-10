@@ -3024,7 +3024,6 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         guestId: guest?.id,
         skipCache: true,
       })
-      console.log(`🚀 ~ app.post ~ app:`, app?.name)
     } catch (error) {
       captureException(error)
     }
@@ -4317,7 +4316,7 @@ All features are FREE during beta. Transitioning to organic marketing, emphasize
    - **Pear Plus**: Private feedback loop with sentiment analysis and bug severity rankings.
    - **Coder Plus**: Private Student agent for internal-only PR auditing.
 
-4. 🤖 Coder (The Student Agent) (€150/month)
+4. 🤖 Coder (The Student Agent) (€50/month)
    - Kaizen Learning Loop: Gains XP from every code review to level up from Junior to Master.
    - Visual Dojo: Integrated Playwright video recording for visual UI validation.
 

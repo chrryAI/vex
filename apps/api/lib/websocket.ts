@@ -200,7 +200,6 @@ export const websocketHandler = {
 
               // Try to update first (most common case)
               const updated = await updateTimer(timerUpdate)
-              console.log(`🚀 ~ ; ~ updated:`, updated)
 
               // If no timer exists, create one
               if (!updated) {

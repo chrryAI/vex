@@ -243,7 +243,7 @@ const AuthContext = createContext<
       characterProfilesEnabled?: boolean
       isExtensionRedirect: boolean
       signInContext?: (
-        provider: "google" | "apple" | "credentials",
+        provider: "google" | "apple" | "github" | "credentials",
         options: {
           email?: string
           password?: string
@@ -495,6 +495,33 @@ export function AuthProvider({
     [],
   )
 
+  /**
+   * Sign in with GitHub OAuth
+   * Redirects to GitHub OAuth page
+   */
+  const signInWithGitHub = useCallback(
+    async (options?: { callbackUrl?: string; errorUrl?: string }) => {
+      try {
+        // Build OAuth URL with callback parameters
+        const url = new URL(`${API_URL}/auth/signin/github`)
+        if (options?.callbackUrl) {
+          url.searchParams.set("callbackUrl", options.callbackUrl)
+        }
+        if (options?.errorUrl) {
+          url.searchParams.set("errorUrl", options.errorUrl)
+        }
+
+        // Redirect to GitHub OAuth
+        window.location.href = url.toString()
+        return { success: true }
+      } catch (error) {
+        console.error("GitHub sign in error:", error)
+        return { success: false, error: "GitHub sign in failed" }
+      }
+    },
+    [],
+  )
+
   const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
 
   const [state, setState] = useState<AuthState>({
@@ -529,7 +556,6 @@ export function AuthProvider({
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
 
   const [input, setInput] = useState<string>("")
-  console.log(`🚀 ~ input:`, input)
 
   // Reset daily questions when entering Retro mode
 
@@ -2335,7 +2361,7 @@ export function AuthProvider({
 
   // Create sign in wrapper to match Chrry's expected interface
   const signInContext = async (
-    provider: "google" | "apple" | "credentials",
+    provider: "google" | "apple" | "github" | "credentials",
     options: {
       email?: string
       password?: string
@@ -2352,6 +2378,11 @@ export function AuthProvider({
       })
     } else if (provider === "apple") {
       return signInWithApple({
+        callbackUrl: options.callbackUrl,
+        errorUrl: options.errorUrl,
+      })
+    } else if (provider === "github") {
+      return signInWithGitHub({
         callbackUrl: options.callbackUrl,
         errorUrl: options.errorUrl,
       })
@@ -2450,10 +2481,17 @@ export function AuthProvider({
 
   const lastApp = storeApps.find((app) => app.id === lastAnchorApp?.appId)
 
-  const back = useMemo(
-    () => (!apps.some((app) => app.id === lastApp?.id) ? lastApp : undefined),
-    [apps, lastApp],
-  )
+  const backInternal = !apps.some((app) => app.id === lastApp?.id)
+    ? lastApp
+    : undefined
+
+  const [back, setBack] = useState(backInternal)
+
+  useEffect(() => {
+    if (backInternal) {
+      setBack(backInternal)
+    }
+  }, [backInternal])
 
   useEffect(() => {
     if (auth_token) {
