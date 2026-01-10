@@ -535,29 +535,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     false,
   )
 
-  const [minimizeStartTime, setMinimizeStartTime] = useLocalStorage<
-    number | null
-  >("minimizeStartTime", null)
-
   const setMinimize = (value: boolean | ((prev: boolean) => boolean)) => {
     const newValue = typeof value === "function" ? value(minimize) : value
-    const now = Date.now()
-
-    // Calculate duration if we have a start time
-    if (minimizeStartTime) {
-      const durationMs = now - minimizeStartTime
-      const durationMin = Math.round(durationMs / 60000) // Convert to minutes
-
-      // Track time spent in previous state
-      plausible({ name: newValue ? "maximize_duration" : "minimize_duration" })
-    }
 
     // Update state
     setMinimizeInternal(newValue)
-    setMinimizeStartTime(now)
 
-    // Track state change
-    plausible({ name: newValue ? "minimize" : "maximize" })
+    // Track state change - plausible will automatically calculate duration
+    plausible({
+      name: newValue ? ANALYTICS_EVENTS.MINIMIZE : ANALYTICS_EVENTS.MAXIMIZE,
+    })
   }
 
   const contextInstructions = useMemo(() => {

@@ -243,7 +243,7 @@ const AuthContext = createContext<
       characterProfilesEnabled?: boolean
       isExtensionRedirect: boolean
       signInContext?: (
-        provider: "google" | "apple" | "credentials",
+        provider: "google" | "apple" | "github" | "credentials",
         options: {
           email?: string
           password?: string
@@ -495,6 +495,33 @@ export function AuthProvider({
     [],
   )
 
+  /**
+   * Sign in with GitHub OAuth
+   * Redirects to GitHub OAuth page
+   */
+  const signInWithGitHub = useCallback(
+    async (options?: { callbackUrl?: string; errorUrl?: string }) => {
+      try {
+        // Build OAuth URL with callback parameters
+        const url = new URL(`${API_URL}/auth/signin/github`)
+        if (options?.callbackUrl) {
+          url.searchParams.set("callbackUrl", options.callbackUrl)
+        }
+        if (options?.errorUrl) {
+          url.searchParams.set("errorUrl", options.errorUrl)
+        }
+
+        // Redirect to GitHub OAuth
+        window.location.href = url.toString()
+        return { success: true }
+      } catch (error) {
+        console.error("GitHub sign in error:", error)
+        return { success: false, error: "GitHub sign in failed" }
+      }
+    },
+    [],
+  )
+
   const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
 
   const [state, setState] = useState<AuthState>({
@@ -529,7 +556,6 @@ export function AuthProvider({
   const [dailyQuestionIndex, setDailyQuestionIndex] = useState(0)
 
   const [input, setInput] = useState<string>("")
-  console.log(`🚀 ~ input:`, input)
 
   // Reset daily questions when entering Retro mode
 
@@ -1199,7 +1225,10 @@ export function AuthProvider({
 
   // Throttle map to prevent duplicate rapid-fire events
   const plausibleThrottleMap = useRef<Map<string, number>>(new Map())
-  const plausible_THROTTLE_MS = 3000 // 3 seconds
+  const plausible_THROTTLE_MS = 500 // 500ms
+
+  // Duration map to track time between same event calls
+  const plausibleDurationMap = useRef<Map<string, number>>(new Map())
 
   const plausible = ({
     name,
@@ -1214,8 +1243,21 @@ export function AuthProvider({
   }) => {
     if (!user && !guest) return
 
-    // Throttle: Skip if same event was plausibleed recently
     const now = Date.now()
+
+    // Calculate duration if this event was called before
+    let duration = 0
+    const lastEventTime = plausibleDurationMap.current.get(name)
+    if (lastEventTime) {
+      const durationMs = now - lastEventTime
+      duration = durationMs // Keep as milliseconds
+      console.log("⏱️ Duration tracking:", { name, duration, durationMs })
+    }
+
+    // Update the timestamp for this event
+    plausibleDurationMap.current.set(name, now)
+
+    // Throttle: Skip if same event was plausibleed recently
     const lastplausibleed = plausibleThrottleMap.current.get(name)
     if (lastplausibleed && now - lastplausibleed < plausible_THROTTLE_MS) {
       return // Skip this event
@@ -1242,6 +1284,9 @@ export function AuthProvider({
       }
     }
 
+    // Add duration to props if it exists (> 0 means this is not the first call)
+    const enrichedProps = duration > 0 ? { ...props, duration } : props
+
     // Only send meaningful events to API for AI context
     if (token && MEANINGFUL_EVENTS.includes(name as any)) {
       fetch(`${API_URL}/analytics/grape`, {
@@ -1255,7 +1300,7 @@ export function AuthProvider({
           name,
           url: normalizedUrl,
           props: {
-            ...props,
+            ...enrichedProps,
             appName: app?.name,
             appSlug: app?.slug,
             baseAppName: baseApp?.name,
@@ -1285,7 +1330,7 @@ export function AuthProvider({
               memoriesEnabled,
             }
           : {
-              ...props,
+              ...enrichedProps,
               isStandalone,
               os,
               device,
@@ -1777,6 +1822,9 @@ export function AuthProvider({
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
+    if (!!value === isPear) {
+      return
+    }
     setIsPearInternal(!!value)
     if (value && app) {
       if (app.id === value.id) {
@@ -2335,7 +2383,7 @@ export function AuthProvider({
 
   // Create sign in wrapper to match Chrry's expected interface
   const signInContext = async (
-    provider: "google" | "apple" | "credentials",
+    provider: "google" | "apple" | "github" | "credentials",
     options: {
       email?: string
       password?: string
@@ -2352,6 +2400,11 @@ export function AuthProvider({
       })
     } else if (provider === "apple") {
       return signInWithApple({
+        callbackUrl: options.callbackUrl,
+        errorUrl: options.errorUrl,
+      })
+    } else if (provider === "github") {
+      return signInWithGitHub({
         callbackUrl: options.callbackUrl,
         errorUrl: options.errorUrl,
       })
@@ -2450,10 +2503,17 @@ export function AuthProvider({
 
   const lastApp = storeApps.find((app) => app.id === lastAnchorApp?.appId)
 
-  const back = useMemo(
-    () => (!apps.some((app) => app.id === lastApp?.id) ? lastApp : undefined),
-    [apps, lastApp],
-  )
+  const backInternal = !apps.some((app) => app.id === lastApp?.id)
+    ? lastApp
+    : undefined
+
+  const [back, setBack] = useState(backInternal)
+
+  useEffect(() => {
+    if (backInternal) {
+      setBack(backInternal)
+    }
+  }, [backInternal])
 
   useEffect(() => {
     if (auth_token) {

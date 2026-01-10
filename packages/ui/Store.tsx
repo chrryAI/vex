@@ -251,14 +251,19 @@ export default function Store({
                   }}
                   onClick={() => setSelectedApp(app)}
                 >
-                  <Span
+                  <A
+                    href={getAppSlug(app)}
                     style={{
                       ...styles.badge.style,
                       display: isMobileDevice ? "none" : "flex",
                     }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      // setSelectedApp(app)
+                    }}
                   >
                     {t(app.status === "active" ? "live" : "testing")}
-                  </Span>
+                  </A>
                   <Img
                     style={{ ...styles.appImage.style }}
                     app={app}
