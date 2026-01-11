@@ -85,9 +85,10 @@ export default function Subscribe({
   // Navigation context (router is the wrapper)
   const { router, searchParams, removeParam } = useNavigationContext()
 
-  // URL state persistence helper
+  // URL state persistence helper - only update when modal is open
   const updateURLParam = (key: string, value: string) => {
     if (typeof window === "undefined") return
+    if (!isModalOpen) return // Don't update URL when modal is closed
     const params = new URLSearchParams(window.location.search)
     params.set(key, value)
     const newUrl = `${window.location.pathname}?${params.toString()}`
@@ -718,7 +719,14 @@ export default function Subscribe({
         dataTestId="subscribe-modal"
         isModalOpen={isModalOpen}
         params="?subscribe=true"
-        onToggle={(open) => setIsModalOpen(open)}
+        onToggle={(open) => {
+          setIsModalOpen(open)
+          // Clear URL params when modal closes
+          if (!open && typeof window !== "undefined") {
+            const newUrl = window.location.pathname
+            window.history.replaceState({}, "", newUrl)
+          }
+        }}
         title={
           <>
             {selectedPlan === "credits" ? (
