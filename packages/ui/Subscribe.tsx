@@ -530,6 +530,9 @@ export default function Subscribe({
       name: ANALYTICS_EVENTS.SUBSCRIBE_TIER_VIEW,
       props: { plan: "watermelon", tier },
     })
+    if (showContact) {
+      setShowContact(false)
+    }
   }
 
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)

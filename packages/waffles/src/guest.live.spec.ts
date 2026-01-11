@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive })
 })
 
-test("Subscribe As Guest - Plus", async ({ page }) => {
+test("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,
@@ -37,136 +37,9 @@ test("Subscribe As Guest - Plus", async ({ page }) => {
   await subscribe({
     page,
     isMember,
-    plan: "plus",
+    // createChat: false,
   })
 })
-
-//later
-
-// test("Subscribe As Guest - Pro", async ({ page }) => {
-//   await page.goto(
-//     getURL({
-//       isMember,
-//       isLive,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//       timeout: 100000,
-//     },
-//   )
-//   await wait(2000)
-
-//   await subscribe({
-//     page,
-//     isMember,
-//     plan: "pro",
-//   })
-// })
-
-// test("Subscribe As Guest - Credits", async ({ page }) => {
-//   await page.goto(
-//     getURL({
-//       isMember,
-//       isLive,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//       timeout: 100000,
-//     },
-//   )
-//   await wait(2000)
-
-//   await subscribe({
-//     page,
-//     isMember,
-//     plan: "credits",
-//     createChat: false,
-//   })
-// })
-
-// test("Subscribe As Guest - Grape", async ({ page }) => {
-//   await page.goto(
-//     getURL({
-//       isMember,
-//       isLive,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//       timeout: 100000,
-//     },
-//   )
-//   await wait(2000)
-
-//   await subscribe({
-//     page,
-//     isMember,
-//     plan: "grape",
-//     createChat: false,
-//   })
-// })
-
-// test("Subscribe As Guest - Pear", async ({ page }) => {
-//   await page.goto(
-//     getURL({
-//       isMember,
-//       isLive,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//       timeout: 100000,
-//     },
-//   )
-//   await wait(2000)
-
-//   await subscribe({
-//     page,
-//     isMember,
-//     plan: "pear",
-//     createChat: false,
-//   })
-// })
-
-// test("Subscribe As Guest - Sushi (Coder)", async ({ page }) => {
-//   await page.goto(
-//     getURL({
-//       isMember,
-//       isLive,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//       timeout: 100000,
-//     },
-//   )
-//   await wait(2000)
-
-//   await subscribe({
-//     page,
-//     isMember,
-//     plan: "coder",
-//     createChat: false,
-//   })
-// })
-
-// test("Subscribe As Guest - Watermelon", async ({ page }) => {
-//   await page.goto(
-//     getURL({
-//       isMember,
-//       isLive,
-//     }),
-//     {
-//       waitUntil: "networkidle",
-//       timeout: 100000,
-//     },
-//   )
-//   await wait(2000)
-
-//   await subscribe({
-//     page,
-//     isMember,
-//     plan: "watermelon",
-//     createChat: false,
-//   })
-// })
 
 test("Invite", async ({ page }) => {
   await page.goto(
