@@ -84,6 +84,7 @@ export const Hey = memo(
       isProgramme,
       isIDE,
     } = useAuth()
+    console.log(`🚀 ~ Hey ~ app:`, app)
 
     const { currentStore } = useApp()
 

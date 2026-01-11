@@ -1507,7 +1507,10 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
           </Div>
         )}
         {!thread && !icon && showInstructions && (
-          <Div data-testid={`${dataTestId}-about`} style={styles.bottom.style}>
+          <Div
+            data-testid={`${dataTestId}-about`}
+            style={{ ...styles.bottom.style, marginBottom: 0 }}
+          >
             {!showGrape && (
               <A href={"/about"}>
                 <MousePointerClick color="var(--accent-1)" size={26} />

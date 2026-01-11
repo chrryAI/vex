@@ -132,7 +132,7 @@ export default function Chat({
   thread,
   onStreamingStop,
   Top,
-  placeholder,
+  placeholder: placeHolderInternal,
   compactMode,
   onTyping,
   style,
@@ -244,6 +244,8 @@ export default function Chat({
     back,
     lastApp,
     getAppSlug,
+    ask,
+    about,
     ...auth
   } = useAuth()
 
@@ -424,6 +426,10 @@ export default function Chat({
     isIDE ||
     (isChatFloatingInternal &&
       (!!threadIdRef.current || shouldUseCompactMode || minimize))
+
+  const placeholder = isPear
+    ? `${t("Share your feedback and earn bonus credits!")} 🍐`
+    : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -1829,6 +1835,8 @@ export default function Chat({
         const formData = new FormData()
         slug && formData.append("slug", slug)
         app?.id && formData.append("appId", app.id)
+        ask && formData.append("ask", ask)
+        about && formData.append("about", about)
         app?.id === chrry?.id &&
           suggestSaveApp &&
           appStatus?.part &&
@@ -1881,6 +1889,8 @@ export default function Chat({
           deviceId,
           weather,
           placeholder,
+          ask,
+          about,
           retro: isRetro,
           appId: app?.id,
           draft:
@@ -3758,6 +3768,7 @@ export default function Chat({
                           alignItems: "center",
                           justifyContent: "center",
                           flex: 1,
+                          marginBottom: 35,
                         }}
                       >
                         {burn ? <HatGlasses size={24} /> : ""}
@@ -3769,14 +3780,14 @@ export default function Chat({
                           }}
                           data-testid={`brand-help-${isPear ? "pear" : "chat"}`}
                         >
-                          {isPear ? (
+                          {/* {isPear ? (
                             "🍐"
                           ) : isRetro && dailyQuestionData ? (
                             <Span style={{}}>⌨️</Span>
                           ) : (
                             "👋"
-                          )}
-                          <Span style={{ flex: 1 }}>
+                          )} */}
+                          {/* <Span style={{ flex: 1 }}>
                             {t(
                               isPear
                                 ? "Share your feedback and earn bonus credits!"
@@ -3794,7 +3805,7 @@ export default function Chat({
                                         dailyQuestionData.appTitle) ||
                                       "What's on your mind?",
                             )}
-                          </Span>
+                          </Span> */}
                         </Span>
                       </H2>
                     ) : null}
@@ -3939,12 +3950,10 @@ export default function Chat({
                   name="chat"
                   id="chat"
                   placeholder={
-                    isChatFloating && isPear
-                      ? `${t("Share your feedback and earn bonus credits!")} 🍐`
-                      : !isHydrated
-                        ? ""
-                        : placeholder ||
-                          `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
+                    !isHydrated
+                      ? ""
+                      : placeholder ||
+                        `${t("Ask anything")}${placeholderStages[placeholderIndex]}`
                   }
                   ref={chatInputRef}
                   disabled={disabled}
