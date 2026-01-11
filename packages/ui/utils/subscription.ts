@@ -492,11 +492,11 @@ export const getFeatures = ({
     },
     {
       emoji: "🔐",
-      text: t("RSA Military-Grade Key Signing"),
+      text: t("RSA Key Signing & Encryption"),
     },
     {
       emoji: "⚔️",
-      text: t("Zero Data Leakage Guarantee"),
+      text: t("Enhanced Data Privacy Protection"),
     },
   ]
 

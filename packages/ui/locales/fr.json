@@ -2000,5 +2000,7 @@
   "Isolated (Private DB & Instance)": "Isolé (DB & Instance privées)",
   "Same-Tab Kanban & GitHub Focus": "Focus Kanban & GitHub dans le même onglet",
   "RSA Military-Grade Key Signing": "Signature de clé de qualité militaire RSA",
-  "Zero Data Leakage Guarantee": "Garantie zéro fuite de données"
+  "Zero Data Leakage Guarantee": "Garantie zéro fuite de données",
+  "RSA Key Signing & Encryption": "Signature et cryptage de clé RSA",
+  "Enhanced Data Privacy Protection": "Protection renforcée de la confidentialité des données"
 }
