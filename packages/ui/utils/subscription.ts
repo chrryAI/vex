@@ -1,3 +1,5 @@
+import { emoji } from "zod"
+
 export const getFeatures = ({
   t,
   ADDITIONAL_CREDITS,
@@ -119,6 +121,385 @@ export const getFeatures = ({
       text: t("0.5% of subscription goes to CO₂ removal"),
     },
   ]
+
+  const grapeFreeFeatures = [
+    {
+      emoji: "🍒",
+      text: t("Create your own brand"),
+    },
+    {
+      emoji: "🧠",
+      text: t("Build app knowledge"),
+    },
+    {
+      emoji: "🧬",
+      text: t("DNA Thread & RAG"),
+    },
+    {
+      emoji: "📱",
+      text: t("1 app in your store"),
+    },
+    {
+      emoji: "🔗",
+      text: t("Extend from any existing store apps"),
+    },
+    {
+      emoji: "📊",
+      text: t("View public analytics"),
+    },
+    {
+      emoji: "🌐",
+      text: t("AI analytics chat"),
+    },
+    {
+      emoji: "🆓",
+      text: t("Free analytics tracking"),
+    },
+  ]
+
+  const grapePlusFeatures = [
+    {
+      emoji: "🍇",
+      text: t("Everything in free"),
+    },
+    {
+      emoji: "🚀",
+      text: t("Unlimited apps in your store"),
+    },
+    {
+      emoji: "🔗",
+      text: t("Extend from any existing store apps"),
+    },
+    {
+      emoji: "📊",
+      text: t("View public analytics"),
+    },
+    {
+      emoji: "📈",
+      text: t("Advanced analytics dashboard"),
+    },
+    {
+      emoji: "🔌",
+      text: t("Send analytics from your API"),
+    },
+    {
+      emoji: "🌐",
+      text: t("Public analytics sharing"),
+    },
+    {
+      emoji: "📉",
+      text: t("Real-time event tracking"),
+    },
+  ]
+
+  const grapeProFeatures = [
+    {
+      emoji: "🌀",
+      text: t("Create your universe, 🍒 multiple brands"),
+    },
+    {
+      emoji: "🔗",
+      text: t("Extend from any existing store apps"),
+    },
+    {
+      emoji: "📊",
+      text: t("Full analytics access"),
+    },
+    {
+      emoji: "🔒",
+      text: t("Private analytics option"),
+    },
+    {
+      emoji: "🔌",
+      text: t("Send analytics from your API"),
+    },
+    {
+      emoji: "📈",
+      text: t("Plausible/Sovereign integration"),
+    },
+    {
+      emoji: "🎯",
+      text: t("Custom event tracking"),
+    },
+    {
+      emoji: "📉",
+      text: t("Advanced analytics queries"),
+    },
+    {
+      emoji: "💾",
+      text: t("Data export capabilities"),
+    },
+  ]
+
+  const pearFreeFeatures = [
+    {
+      emoji: "🍒",
+      text: t("Create your own brand"),
+    },
+    {
+      emoji: "🧠",
+      text: t("Build app knowledge"),
+    },
+    {
+      emoji: "🧬",
+      text: t("DNA Thread & RAG"),
+    },
+    {
+      emoji: "💬",
+      text: t("Get feedbacks on your apps"),
+    },
+    {
+      emoji: "💰",
+      text: t("Auto credit deduction"),
+    },
+    {
+      emoji: "🌐",
+      text: t("Public feedback only"),
+    },
+    {
+      emoji: "🎯",
+      text: t("AI-validated feedback"),
+    },
+  ]
+
+  const pearPlusFeatures = [
+    {
+      emoji: "🍐",
+      text: t("Everything in free"),
+    },
+    {
+      emoji: "🍓",
+      text: t("Strawberry included (€9.99/month)"),
+    },
+    {
+      emoji: "💎",
+      text: t("€50 feedback credits/month"),
+    },
+    {
+      emoji: "💬",
+      text: t("Give unlimited feedback"),
+    },
+    {
+      emoji: "🌐",
+      text: t("Public feedback only"),
+    },
+    {
+      emoji: "🎯",
+      text: t("AI-validated feedback"),
+    },
+    {
+      emoji: "📊",
+      text: t("Feedback analytics"),
+    },
+  ]
+
+  const pearProFeatures = [
+    {
+      emoji: "🍐",
+      text: t("Everything in plus"),
+    },
+    {
+      emoji: "🌀",
+      text: t("Create your universe, 🍒 multiple brands"),
+    },
+    {
+      emoji: "💎",
+      text: t("€500 feedback credits/month"),
+    },
+    {
+      emoji: "🫐",
+      text: t("Raspberry included (€19.99/month)"),
+    },
+    {
+      emoji: "💬",
+      text: t("Give unlimited feedback"),
+    },
+    {
+      emoji: "🔒",
+      text: t("Private feedback option"),
+    },
+    {
+      emoji: "🎯",
+      text: t("AI-validated feedback"),
+    },
+    {
+      emoji: "📊",
+      text: t("Advanced feedback analytics"),
+    },
+    {
+      emoji: "⭐",
+      text: t("Higher credit rewards"),
+    },
+  ]
+
+  const sushiFreeFeatures = [
+    {
+      emoji: "🍣",
+      text: "Sushi GitHub Agent: The First Strike",
+    },
+    {
+      emoji: "🏗️",
+      text: "Automated .sushi Dojo Discovery & App Memory",
+    },
+    {
+      emoji: "🕸️",
+      text: "Dead Code Hunt (The Ghost in the Machine)",
+    },
+    {
+      emoji: "🥋",
+      text: "E2E Testing Foundation (Single Dojo Branch)",
+    },
+    {
+      emoji: "⚖️",
+      text: "Basic Metrics (Moral Usage)",
+    },
+    {
+      emoji: "🍒",
+      text: t("Create your own brand"),
+    },
+    {
+      emoji: "🧠",
+      text: t("Build app knowledge"),
+    },
+    {
+      emoji: "🧬",
+      text: t("DNA Thread & RAG"),
+    },
+    {
+      emoji: "🎯",
+      text: "Create, Grow, Sell, Earn 70%",
+    },
+  ]
+
+  const sushiCoderFeatures = [
+    {
+      emoji: "🍓",
+      text: t("Strawberry included (€9.99/month)"),
+    },
+    {
+      emoji: "🦅",
+      text: "Advanced Logic Reasoning",
+    },
+    {
+      emoji: "🍣",
+      text: "Bam 💥 Strike 🏹 Injection",
+    },
+    {
+      emoji: "🎲",
+      text: "Scenario Simulation (The Combatant's Trial)",
+    },
+    {
+      emoji: "👊",
+      text: "Post-Merge 🧼 Tyler Insights: 'You are not your code'",
+    },
+    {
+      emoji: "♾️",
+      text: "Unlimited E2E Runs (No Handbrake/Sınırsız Mermi)",
+    },
+    {
+      emoji: "🧠",
+      text: "Deep Context Awareness & PR Memory",
+    },
+
+    {
+      emoji: "⚡",
+      text: "Priority Queue Access (141ms Latency Goal)",
+    },
+    {
+      emoji: "🎯",
+      text: "Create, Grow, Sell, Earn 70%",
+    },
+  ]
+
+  const sushiArchitectFeatures = [
+    {
+      emoji: "🦁",
+      text: "Strategic Architect Insights",
+    },
+    {
+      emoji: "🏛️",
+      text: "Architecture & Complexity XP Audit",
+    },
+    {
+      emoji: "🗝️",
+      text: "Full System Sovereignty Audit (Sato Mode)",
+    },
+    {
+      emoji: "🎭",
+      text: "Customizable 👊 Tyler & 🪢 Zarathustra Personas",
+    },
+    {
+      emoji: "🛡️",
+      text: "Logic Toggle (Opt-out for Philosophy)",
+    },
+    {
+      emoji: "📉",
+      text: "Technical Debt Analytics & Autonomous Refactor",
+    },
+    {
+      emoji: "🌀",
+      text: t("Create your apps, 🍋 multiple Coders"),
+    },
+    {
+      emoji: "🎯",
+      text: "Create, Grow, Sell, Earn 70%",
+    },
+  ]
+
+  const watermelonFeatures = [
+    {
+      emoji: "🍒",
+      text: t("Create your own brand"),
+    },
+    {
+      emoji: "🏷️",
+      text: t("White Label & Custom Branding"),
+    },
+    {
+      emoji: "🌐",
+      text: t("Custom Domain Integration"),
+    },
+    {
+      emoji: "📊",
+      text: t("Full Plausible Analytics Integration"),
+    },
+    {
+      emoji: "🏢",
+      text: t("Agency-Level Deployment"),
+    },
+    {
+      emoji: "✅",
+      text: t("All Standard Features Included"),
+    },
+  ]
+
+  const watermelonPlusFeatures = [
+    {
+      emoji: "🌀",
+      text: t("Create your universe, 🍒 multiple brands"),
+    },
+    {
+      emoji: "🏯",
+      text: t("Private Dojo: Pure Sovereignty"),
+    },
+    {
+      emoji: "🧠",
+      text: t("Isolated (Private DB & Instance)"),
+    },
+    {
+      emoji: "👁️",
+      text: t("Same-Tab Kanban & GitHub Focus"),
+    },
+    {
+      emoji: "🔐",
+      text: t("RSA Key Signing & Encryption"),
+    },
+    {
+      emoji: "⚔️",
+      text: t("Enhanced Data Privacy Protection"),
+    },
+  ]
+
   const creditsFeatures = [
     {
       emoji: "💰",
@@ -151,5 +532,16 @@ export const getFeatures = ({
     memberFeatures,
     creditsFeatures,
     proFeatures,
+    grapeFreeFeatures,
+    grapePlusFeatures,
+    grapeProFeatures,
+    watermelonFeatures,
+    watermelonPlusFeatures,
+    pearFreeFeatures,
+    pearPlusFeatures,
+    pearProFeatures,
+    sushiFreeFeatures,
+    sushiCoderFeatures,
+    sushiArchitectFeatures,
   }
 }

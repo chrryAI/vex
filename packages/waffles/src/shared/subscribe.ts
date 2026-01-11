@@ -12,6 +12,7 @@ export const subscribe = async ({
   gift,
   invite,
   createChat = true,
+  plan = "plus",
 }: {
   page: Page
   isMember?: boolean
@@ -20,6 +21,7 @@ export const subscribe = async ({
   gift?: string
   invite?: string
   createChat?: boolean
+  plan?: "plus" | "pro" | "credits" | "grape" | "pear" | "coder" | "watermelon"
 }) => {
   log({ page })
   const inviteOrGift = invite || gift
@@ -94,6 +96,35 @@ export const subscribe = async ({
 
   const modal = page.getByTestId("subscribe-modal")
   await expect(modal).toBeVisible()
+
+  // Select the plan
+  if (plan === "pro") {
+    const proButton = page.getByTestId("pro-button")
+    await expect(proButton).toBeVisible()
+    await proButton.click()
+  } else if (plan === "credits") {
+    const creditsButton = page.getByTestId("credits-button")
+    await expect(creditsButton).toBeVisible()
+    await creditsButton.click()
+  } else if (plan === "grape") {
+    const grapeButton = page.getByTestId("grape-button")
+    await expect(grapeButton).toBeVisible()
+    await grapeButton.click()
+  } else if (plan === "pear") {
+    const pearButton = page.getByTestId("pear-button")
+    await expect(pearButton).toBeVisible()
+    await pearButton.click()
+  } else if (plan === "coder") {
+    const coderButton = page.getByTestId("coder-button")
+    await expect(coderButton).toBeVisible()
+    await coderButton.click()
+  } else if (plan === "watermelon") {
+    const watermelonButton = page.getByTestId("watermelon-button")
+    await expect(watermelonButton).toBeVisible()
+    await watermelonButton.click()
+  }
+
+  await page.waitForTimeout(1000)
 
   const checkoutButton = page.getByTestId("subscribe-checkout")
 

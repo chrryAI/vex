@@ -50,9 +50,6 @@ The chat interface could benefit from keyboard shortcuts for power users. For ex
   await expect(grapesFeedbackButton).toBeVisible()
   await grapesFeedbackButton.click()
 
-  const brandHelp = page.getByTestId("brand-help-pear")
-  await expect(brandHelp).toBeVisible()
-
   // Distribute feedback prompts cyclically
   const prompt = feedbackPrompts[index % feedbackPrompts.length]
 

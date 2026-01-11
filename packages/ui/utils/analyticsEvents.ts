@@ -72,6 +72,7 @@ export const ANALYTICS_EVENTS = {
   SUBSCRIBE_PAYMENT_VERIFICATION_FAILED:
     "subscribe_payment_verification_failed",
   SUBSCRIPTION_CHANGE: "subscription",
+  SUBSCRIBE_TIER_VIEW: "subscribe_tier_view",
   APP: "app",
   AD_VISIT: "ad_visit",
   BURN: "burn",
@@ -125,6 +126,7 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.SPATIAL_NAVIGATION,
   ANALYTICS_EVENTS.TASK_ADD,
   ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
+  ANALYTICS_EVENTS.SUBSCRIBE_TIER_VIEW,
 
   // Chat & messaging - Core user interactions
   ANALYTICS_EVENTS.CHAT_SEND,

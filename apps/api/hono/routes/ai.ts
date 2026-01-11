@@ -79,9 +79,14 @@ import {
   isOwner,
   MAX_FILE_SIZES,
   MAX_FILE_LIMITS,
+  ADDITIONAL_CREDITS,
 } from "@chrryai/chrry/utils"
 import Replicate from "replicate"
-import { webSearchResultType } from "@repo/db/src/schema"
+import {
+  apps,
+  feedbackTransactions,
+  webSearchResultType,
+} from "@repo/db/src/schema"
 import {
   CHATGPT_API_KEY,
   CLAUDE_API_KEY,
@@ -109,6 +114,7 @@ import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
 import { getTools } from "../../lib/tools"
 import { appWithStore } from "@chrryai/chrry/types"
 import { appFormData } from "@chrryai/chrry/schemas/appSchema"
+import { getFeatures } from "@chrryai/chrry/utils/subscription"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { getGuest, getMember } from "../lib/auth"
 
@@ -277,14 +283,81 @@ Respond ONLY with a JSON object in this exact format:
         creditCost: -evaluation.credits,
       })
 
-      await logCreditUsage({
-        userId,
-        guestId,
-        agentId: agentId, // Use actual agent UUID, not string
-        creditCost: -evaluation.credits, // Negative = top-up
-        messageType: "pear_feedback",
-        threadId: undefined,
-      })
+      // Get app owner to deduct credits from
+      const app = appId
+        ? await db.query.apps.findFirst({
+            where: eq(apps.id, appId),
+            columns: { userId: true, guestId: true },
+          })
+        : null
+
+      const appOwnerId = app?.userId || app?.guestId
+
+      if (appOwnerId) {
+        // Calculate commission (10%)
+        const commission = Math.floor(evaluation.credits * 0.1)
+        const userCredits = evaluation.credits - commission
+
+        console.log("🍐 Transferring credits from app owner:", {
+          appOwnerId: appOwnerId.substring(0, 8),
+          totalCredits: evaluation.credits,
+          userCredits,
+          commission,
+        })
+
+        // Deduct from app owner
+        await logCreditUsage({
+          userId: appOwnerId,
+          agentId,
+          guestId: appOwnerId,
+          creditCost: evaluation.credits, // Positive = deduction
+          messageType: "pear_feedback_payment",
+          // metadata: {
+          //   feedbackUserId: userId,
+          //   feedbackGuestId: guestId,
+          //   appId,
+          //   credits: evaluation.credits,
+          //   commission,
+          // },
+        })
+
+        // Give to feedback user
+        await logCreditUsage({
+          userId,
+          guestId,
+          agentId,
+          creditCost: -userCredits, // Negative = top-up
+          messageType: "pear_feedback_reward",
+          metadata: {
+            appId,
+            appOwnerId,
+            credits: userCredits,
+            commission,
+          },
+        })
+
+        // Record transaction
+        await db.insert(feedbackTransactions).values({
+          appId,
+          appOwnerId,
+          feedbackUserId: userId || null,
+          amount: userCredits,
+          commission,
+        })
+
+        console.log("✅ Feedback credit transfer completed")
+      } else {
+        // Fallback: No app owner, give credits from system
+        console.log("⚠️ No app owner found, awarding from system")
+        await logCreditUsage({
+          userId,
+          guestId,
+          agentId: agentId,
+          creditCost: -evaluation.credits,
+          messageType: "pear_feedback",
+          threadId: undefined,
+        })
+      }
 
       console.log("✅ Pear credits awarded successfully")
 
@@ -1441,6 +1514,8 @@ app.post("/", async (c) => {
       actionEnabled: formData.get("actionEnabled") === "true",
       imageGenerationEnabled: formData.get("imageGenerationEnabled") === "true",
       stopStreamId: (formData.get("stopStreamId") as string) || "",
+      ask: formData.get("ask") === "true",
+      about: formData.get("about") === "true",
       isSpeechActive: formData.get("isSpeechActive") === "true",
       pear: formData.get("pear") === "true",
       weather: formData.get("weather")
@@ -1483,6 +1558,8 @@ app.post("/", async (c) => {
     imageGenerationEnabled,
     pauseDebate,
     stopStreamId,
+    ask,
+    about,
     selectedAgentId,
     isSpeechActive,
     weather,
@@ -3426,6 +3503,112 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   - **UI Logic**: "What's visible = Where you can go". "What's missing = Where you are".
   `
 
+  // Subscription plans context - AI knows about plans but only explains when asked
+  const PLUS_PRICE = 9.99
+  const PRO_PRICE = 19.99
+  const CREDITS_PRICE = 5.0
+  const FREE_DAYS = 5
+
+  // Simple translation function for features
+  const simpleT = (key: string, options?: any) => {
+    // Basic translations for feature display
+    const translations: Record<string, string> = {
+      "AI credits per month": `${options?.credits} AI credits per month`,
+      "Messages per hour": `${options?.messages} messages per hour`,
+      "Character profiles per day": `${options?.profiles} character profiles per day`,
+      "Create apps in your store with unlimited collaboration":
+        "Create apps in your store with unlimited collaboration",
+      "Image processing & analysis": "Image processing & analysis",
+      "Priority support & assistance": "Priority support & assistance",
+      "Unlimited voice conversations": "Unlimited voice conversations",
+      "0.5% of subscription goes to CO₂ removal":
+        "0.5% of subscription goes to CO₂ removal",
+      "Unlimited stores with nested apps": "Unlimited stores with nested apps",
+      "Create custom AI apps with team collaboration":
+        "Create custom AI apps with team collaboration",
+      "Higher generation limits (25 titles/instructions per hour)":
+        "Higher generation limits (25 titles/instructions per hour)",
+      credits_pricing: `€${options?.price} per ${options?.credits} credits`,
+    }
+    return translations[key] || key
+  }
+
+  // Get features using the getFeatures function
+  const {
+    plusFeatures,
+    memberFeatures,
+    creditsFeatures,
+    proFeatures,
+    grapeFreeFeatures,
+    grapePlusFeatures,
+    grapeProFeatures,
+    watermelonFeatures,
+    watermelonPlusFeatures,
+    pearFreeFeatures,
+    pearPlusFeatures,
+    pearProFeatures,
+    sushiFreeFeatures,
+    sushiCoderFeatures,
+    sushiArchitectFeatures,
+  } = getFeatures({
+    t: simpleT,
+    ADDITIONAL_CREDITS,
+    CREDITS_PRICE,
+  })
+
+  const subscriptionContext = `
+
+## 💳 SUBSCRIPTION PLANS REFERENCE
+
+${ask && about === "subscribe" ? `**USER CONTEXT**: The user is asking about subscription plans. They want to know: "${message.message.content}"\nProvide a helpful, detailed response about the specific plan they're asking about.\n\n` : ""}You have knowledge of all available subscription plans. Only provide detailed information when users specifically ask about plans, pricing, subscriptions, or upgrades.
+
+**Core Plans:**
+
+🍒 **Chrry (Credits)** - Pay-as-you-go
+${creditsFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
+
+🆓 **Free Member**
+${memberFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
+
+🍓 **Strawberry (Plus)** - €${PLUS_PRICE}/month
+${plusFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
+- ${FREE_DAYS} days free trial
+
+🫐 **Raspberry (Pro)** - €${PRO_PRICE}/month
+${proFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
+- ${FREE_DAYS} days free trial
+
+**Premium Brand Plans:**
+
+🍇 **Grape** (White-label branding)
+- Free Tier: ${grapeFreeFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+- Plus Tier: ${grapePlusFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+- Pro Tier: ${grapeProFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+
+🍐 **Pear** (Feedback & Analytics)
+- Free Tier: ${pearFreeFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+- Plus Tier: ${pearPlusFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+- Pro Tier: ${pearProFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+
+🍣 **Sushi** (Developer-focused)
+- Free Tier: ${sushiFreeFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+- Coder Tier: ${sushiCoderFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+- Architect Tier: ${sushiArchitectFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+
+🍉 **Watermelon** (Agency/Enterprise)
+- Standard: ${watermelonFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+- Plus: ${watermelonPlusFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
+
+**When users ask about plans:**
+- Explain the differences clearly and concisely
+- Help them choose based on their usage needs
+- Mention the ${FREE_DAYS}-day free trial for subscriptions
+- Be helpful but not pushy about upgrading
+- Focus on value and benefits, not just features
+
+**Important**: Only discuss subscription details when the user explicitly asks. Don't proactively suggest upgrades unless directly relevant to their question or need.
+`
+
   const satoContext =
     member?.role === "admin"
       ? `
@@ -3456,6 +3639,7 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
   let systemPrompt = [
     baseSystemPrompt,
     satoContext,
+    subscriptionContext, // Subscription plans information
     burnModeContext,
     statisticsContext,
     inheritanceContext,
@@ -5802,7 +5986,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           const INACTIVITY_TIMEOUT_MS = 60000 // 60 seconds of no activity = stuck (increased for reasoning models)
           let lastActivityTime = Date.now()
           let streamFinished = false
-          let monitoringInterval: NodeJS.Timeout | null = null
+          let monitoringInterval: ReturnType<typeof setInterval> | null = null
 
           const streamPromise = (async () => {
             try {
