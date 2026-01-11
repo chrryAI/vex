@@ -46,6 +46,7 @@ import A from "./a/A"
 import { useSubscribeStyles } from "./Subscribe.styles"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
+import { se } from "date-fns/locale"
 
 export default function Subscribe({
   customerEmail,
@@ -666,6 +667,7 @@ export default function Subscribe({
 
   const isContact = !!(
     ["coder", "architect"].includes(selectedPlan) ||
+    selectedPlan === "watermelon" ||
     (selectedPlan === "grape" && grapeTier) ||
     (selectedPlan === "pear" && pearTier)
   )
