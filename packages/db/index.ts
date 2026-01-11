@@ -54,6 +54,7 @@ import {
   talentEarnings,
   talentInvitations,
   premiumSubscriptions,
+  feedbackTransactions,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -220,6 +221,9 @@ export type userWithRelations = user & {
 
 export type analyticsSite = typeof analyticsSites.$inferSelect
 export type newAnalyticsSite = typeof analyticsSites.$inferInsert
+
+export type feedbackTransaction = typeof feedbackTransactions.$inferSelect
+export type newFeedbackTransaction = typeof feedbackTransactions.$inferInsert
 
 export type appOrder = typeof appOrders.$inferSelect
 export type newAppOrder = typeof appOrders.$inferInsert
@@ -464,13 +468,22 @@ export async function logCreditUsage({
   messageId,
   appId,
   // isWebSearchEnabled,
+  metadata,
   ...rest
 }: {
   userId?: string
   guestId?: string
   agentId: string
   creditCost: number
-  messageType: "user" | "ai" | "image" | "search" | "pear_feedback"
+  metadata?: Record<string, any>
+  messageType:
+    | "user"
+    | "ai"
+    | "image"
+    | "search"
+    | "pear_feedback"
+    | "pear_feedback_payment"
+    | "pear_feedback_reward"
   threadId?: string
   messageId?: string
   appId?: string
@@ -485,6 +498,7 @@ export async function logCreditUsage({
     creditCost,
     messageType,
     isTopUp: creditCost < 0,
+    metadata,
   })
 
   // // Additional credit for AI-enhanced web search
@@ -501,6 +515,7 @@ export async function logCreditUsage({
       threadId,
       messageId,
       appId,
+      metadata,
     })
 
     console.log("💰 Credit usage logged:", {
@@ -6620,7 +6635,7 @@ export const createTalentProfile = async (
 
 export const hasPremiumAccess = async (
   userId: string,
-  productType: "grape_analytics" | "pear_feedback" | "debugger" | "white_label",
+  productType: "grape_analytics" | "pear_feedback" | "white_label",
 ): Promise<boolean> => {
   try {
     // 🍷 God Mode: White Label subscribers get access to ALL premium features
@@ -6742,5 +6757,37 @@ export const cancelPremiumSubscription = async (
   } catch (error) {
     console.error("Error canceling premium subscription:", error)
     return null
+  }
+}
+
+// ============================================================================
+// FEEDBACK TRANSACTIONS: Pear Credit Management
+// ============================================================================
+
+export const createFeedbackTransaction = async (
+  data: typeof feedbackTransactions.$inferInsert,
+) => {
+  try {
+    const [created] = await db
+      .insert(feedbackTransactions)
+      .values(data)
+      .returning()
+    return created
+  } catch (error) {
+    console.error("Error creating feedback transaction:", error)
+    return null
+  }
+}
+
+export const getFeedbackTransactions = async (userId: string) => {
+  try {
+    const transactions = await db
+      .select()
+      .from(feedbackTransactions)
+      .where(eq(feedbackTransactions.feedbackUserId, userId))
+    return transactions
+  } catch (error) {
+    console.error("Error getting feedback transactions:", error)
+    return []
   }
 }

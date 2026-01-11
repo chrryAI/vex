@@ -35,7 +35,13 @@ type ImageProps = {
     | "chrry"
     | "blossom"
     | "focus"
+    | "architect"
+    | "sushi"
+    | "coder"
     | "grape"
+    | "pear"
+    | "watermelon"
+
   icon?:
     | "spaceInvader"
     | "pacman"

@@ -135,7 +135,6 @@ app.get("/access/:productType", async (c) => {
     const productType = c.req.param("productType") as
       | "grape_analytics"
       | "pear_feedback"
-      | "debugger"
       | "white_label"
 
     const hasAccess = await hasPremiumAccess(userId, productType)

@@ -10,6 +10,8 @@ import {
   useData,
   useError,
 } from "./context/providers"
+import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
+
 import { Button, Div, Input, P, Span, usePlatform, useTheme } from "./platform"
 
 import clsx from "clsx"
@@ -26,7 +28,10 @@ import {
   UserRoundPlus,
   CircleArrowDown,
   CircleArrowUp,
+  AtSign,
+  Sparkles,
 } from "./icons"
+import { Building2 } from "lucide-react"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -56,7 +61,6 @@ export default function Subscribe({
   const { utilities } = useStyles()
 
   const [loading, setLoading] = useState(false)
-  const [isGifting, setIsGifting] = useState(false)
 
   // Split contexts for better organization
   const { t } = useAppContext()
@@ -71,6 +75,8 @@ export default function Subscribe({
     plausible,
     fingerprint,
     setSignInPart,
+    setAsk,
+    setAbout,
   } = useAuth()
 
   // Chat context
@@ -78,6 +84,24 @@ export default function Subscribe({
 
   // Navigation context (router is the wrapper)
   const { router, searchParams, removeParam } = useNavigationContext()
+
+  // URL state persistence helper
+  const updateURLParam = (key: string, value: string) => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    params.set(key, value)
+    const newUrl = `${window.location.pathname}?${params.toString()}`
+    window.history.replaceState({}, "", newUrl)
+  }
+
+  const [isGifting, setIsGiftingInternal] = useState(
+    searchParams.get("isGifting") === "true",
+  )
+
+  const setIsGifting = (value: boolean) => {
+    setIsGiftingInternal(value)
+    updateURLParam("isGifting", value.toString())
+  }
 
   // Data context
   const {
@@ -94,12 +118,27 @@ export default function Subscribe({
 
   const { isExtension, BrowserInstance } = usePlatform()
 
-  const { plusFeatures, memberFeatures, proFeatures, creditsFeatures } =
-    getFeatures({
-      t,
-      ADDITIONAL_CREDITS,
-      CREDITS_PRICE,
-    })
+  const {
+    plusFeatures,
+    memberFeatures,
+    proFeatures,
+    creditsFeatures,
+    grapeFreeFeatures,
+    grapePlusFeatures,
+    grapeProFeatures,
+    pearFreeFeatures,
+    pearPlusFeatures,
+    pearProFeatures,
+    sushiFreeFeatures,
+    sushiCoderFeatures,
+    sushiArchitectFeatures,
+    watermelonFeatures,
+    watermelonPlusFeatures,
+  } = getFeatures({
+    t,
+    ADDITIONAL_CREDITS,
+    CREDITS_PRICE,
+  })
 
   const { captureException } = useError()
 
@@ -114,13 +153,25 @@ export default function Subscribe({
     }
   }, [searchParams])
 
-  const [part, setPart] = useState<"subscription" | "gift">("subscription")
+  const [part, setPartInternal] = useState<"subscription" | "gift">(
+    (searchParams.get("part") as "subscription" | "gift") ?? "subscription",
+  )
+
+  const setPart = (value: "subscription" | "gift") => {
+    setPartInternal(value)
+    updateURLParam("part", value)
+  }
 
   const purchaseTypeParam = searchParams.get("purchaseType")
 
-  const [purchaseType, setPurchaseType] = useState<"subscription" | "gift">(
-    (purchaseTypeParam as "subscription") || "subscription",
-  )
+  const [purchaseType, setPurchaseTypeInternal] = useState<
+    "subscription" | "gift"
+  >((purchaseTypeParam as "subscription") || "subscription")
+
+  const setPurchaseType = (value: "subscription" | "gift") => {
+    setPurchaseTypeInternal(value)
+    updateURLParam("purchaseType", value)
+  }
 
   const handleCheckout = async (part: "subscription" | "gift") => {
     setPurchaseType(part)
@@ -166,6 +217,16 @@ export default function Subscribe({
           userId: user?.id,
           guestId: guest?.id,
           plan: selectedPlan,
+          tier:
+            selectedPlan === "grape"
+              ? grapeTier
+              : selectedPlan === "pear"
+                ? pearTier
+                : selectedPlan === "coder"
+                  ? sushiTier
+                  : selectedPlan === "watermelon"
+                    ? watermelonTier
+                    : undefined,
           affiliateCode,
         }),
       })
@@ -279,6 +340,17 @@ export default function Subscribe({
         userId,
         guestId,
         email,
+        plan: selectedPlan,
+        tier:
+          selectedPlan === "grape"
+            ? grapeTier
+            : selectedPlan === "pear"
+              ? pearTier
+              : selectedPlan === "coder"
+                ? sushiTier
+                : selectedPlan === "watermelon"
+                  ? watermelonTier
+                  : undefined,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -400,8 +472,81 @@ export default function Subscribe({
     }
   }, [is])
 
+  const [grapeTier, setGrapeTierInternal] = useState<"free" | "plus" | "pro">(
+    (searchParams.get("grapeTier") as "free" | "plus" | "pro") ?? "free",
+  )
+  const [pearTier, setPearTierInternal] = useState<"free" | "plus" | "pro">(
+    (searchParams.get("pearTier") as "free" | "plus" | "pro") ?? "free",
+  )
+  const [sushiTier, setSushiTierInternal] = useState<
+    "free" | "coder" | "architect"
+  >((searchParams.get("sushiTier") as "free" | "coder" | "architect") ?? "free")
+  const [watermelonTier, setWatermelonTierInternal] = useState<
+    "standard" | "plus"
+  >((searchParams.get("watermelonTier") as "standard" | "plus") ?? "standard")
+
+  const setGrapeTier = (tier: "free" | "plus" | "pro") => {
+    setGrapeTierInternal(tier)
+    updateURLParam("grapeTier", tier)
+    plausible({
+      name: ANALYTICS_EVENTS.SUBSCRIBE_TIER_VIEW,
+      props: { plan: "grape", tier },
+    })
+    if (showContact) {
+      setShowContact(false)
+    }
+  }
+
+  const setPearTier = (tier: "free" | "plus" | "pro") => {
+    setPearTierInternal(tier)
+    updateURLParam("pearTier", tier)
+    plausible({
+      name: ANALYTICS_EVENTS.SUBSCRIBE_TIER_VIEW,
+      props: { plan: "pear", tier },
+    })
+    if (showContact) {
+      setShowContact(false)
+    }
+  }
+
+  const setSushiTier = (tier: "free" | "coder" | "architect") => {
+    setSushiTierInternal(tier)
+    updateURLParam("sushiTier", tier)
+    plausible({
+      name: ANALYTICS_EVENTS.SUBSCRIBE_TIER_VIEW,
+      props: { plan: "sushi", tier },
+    })
+    if (showContact) {
+      setShowContact(false)
+    }
+  }
+
+  const setWatermelonTier = (tier: "standard" | "plus") => {
+    setWatermelonTierInternal(tier)
+    updateURLParam("watermelonTier", tier)
+    plausible({
+      name: ANALYTICS_EVENTS.SUBSCRIBE_TIER_VIEW,
+      props: { plan: "watermelon", tier },
+    })
+  }
+
+  // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)
+
   const [selectedPlan, setSelectedPlanInternal] = useState<
-    "plus" | "pro" | "member" | "credits"
+    | "plus"
+    | "pro"
+    | "member"
+    | "credits"
+    | "coder"
+    | "coderPlus"
+    | "pear"
+    | "pearPlus"
+    | "grape"
+    | "grapePlus"
+    | "sushi"
+    | "architect"
+    | "watermelon"
+    | "watermelonPlus"
   >(
     (searchParams.get("plan") as
       | "plus"
@@ -411,8 +556,24 @@ export default function Subscribe({
       | "plus") ?? "plus",
   )
 
-  const setSelectedPlan = (plan: "plus" | "pro" | "member" | "credits") => {
+  const setSelectedPlan = (
+    plan:
+      | "plus"
+      | "pro"
+      | "member"
+      | "credits"
+      | "coder"
+      | "coderPlus"
+      | "pear"
+      | "pearPlus"
+      | "grape"
+      | "grapePlus"
+      | "architect"
+      | "watermelon"
+      | "watermelonPlus",
+  ) => {
     setSelectedPlanInternal(plan)
+    updateURLParam("plan", plan)
     setAnimationKey((prev) => prev + 1)
   }
 
@@ -451,11 +612,42 @@ export default function Subscribe({
           ? proFeatures
           : selectedPlan === "credits"
             ? creditsFeatures
-            : []
+            : selectedPlan === "grape"
+              ? grapeTier === "free"
+                ? grapeFreeFeatures
+                : grapeTier === "plus"
+                  ? grapePlusFeatures
+                  : grapeProFeatures
+              : selectedPlan === "pear"
+                ? pearTier === "free"
+                  ? pearFreeFeatures
+                  : pearTier === "plus"
+                    ? pearPlusFeatures
+                    : pearProFeatures
+                : selectedPlan === "coder"
+                  ? sushiTier === "free"
+                    ? sushiFreeFeatures
+                    : sushiTier === "coder"
+                      ? sushiCoderFeatures
+                      : sushiArchitectFeatures
+                  : selectedPlan === "watermelon"
+                    ? watermelonTier === "standard"
+                      ? watermelonFeatures
+                      : watermelonPlusFeatures
+                    : []
   const shouldShowGift = () => {
     if (isGifting && !userToGift) return false
 
     if (userToGift?.subscription?.plan === selectedPlan) return false
+
+    // Disable gift for Grape and Pear plans (premium pricing)
+    if (
+      selectedPlan === "grape" ||
+      selectedPlan === "pear" ||
+      selectedPlan === "coder" ||
+      selectedPlan === "watermelon"
+    )
+      return false
 
     return true
   }
@@ -470,11 +662,47 @@ export default function Subscribe({
     selectedPlan === "pro" && currentPlan() === "plus"
   const canBuyCredits = () =>
     selectedPlan === "credits" && !isGifting && !isInviting
-  const canSubscribe = () => !hasSubscription() && !isGifting && !isInviting
+
+  const isContact = !!(
+    ["coder", "architect"].includes(selectedPlan) ||
+    (selectedPlan === "grape" && grapeTier) ||
+    (selectedPlan === "pear" && pearTier)
+  )
+  const [contact, setContact] = useState<boolean>(isContact)
+
+  const [showContact, setShowContactInternal] = useState(
+    searchParams.get("showContact") === "true",
+  )
+
+  const setShowContact = (value: boolean) => {
+    setShowContactInternal(value)
+    updateURLParam("showContact", value.toString())
+  }
+
+  useEffect(() => {
+    if (isContact) {
+      setContact(true)
+      return
+    }
+
+    setContact(false)
+    setShowContact(false)
+  }, [isContact])
+  console.log(`🚀 ~ Subscribe ~ selectedPlan:`, selectedPlan)
+  const canSubscribe = () =>
+    !hasSubscription() &&
+    !isGifting &&
+    !isInviting &&
+    !(selectedPlan === "grape" && grapeTier === "free") &&
+    !(selectedPlan === "pear" && pearTier === "free") &&
+    !(selectedPlan === "coder" && sushiTier === "free")
   const hasCurrentPlan = () =>
     currentPlan() === selectedPlan && !isGifting && !isInviting
   const canShowGiftButton = () =>
     selectedPlan !== "member" &&
+    selectedPlan !== "grape" &&
+    selectedPlan !== "pear" &&
+    selectedPlan !== "coder" &&
     (canBuyCredits() ||
       canSubscribe() ||
       !userToGift ||
@@ -495,6 +723,14 @@ export default function Subscribe({
           <>
             {selectedPlan === "credits" ? (
               <Img icon="chrry" size={28} />
+            ) : selectedPlan === "grape" ? (
+              <Img logo="grape" size={30} />
+            ) : selectedPlan === "pear" ? (
+              <Img logo="pear" size={30} />
+            ) : selectedPlan === "coder" ? (
+              <Img logo="sushi" size={30} />
+            ) : selectedPlan === "watermelon" ? (
+              <Img logo="watermelon" size={30} />
             ) : (
               <Img
                 icon={
@@ -510,15 +746,61 @@ export default function Subscribe({
             )}
             {selectedPlan === "member"
               ? t("Free")
-              : t(
-                  selectedPlan === "credits"
-                    ? "Chrry"
-                    : selectedPlan === "pro"
-                      ? "Raspberry"
-                      : selectedPlan === "plus"
-                        ? "Strawberry"
-                        : "Chrry",
-                )}
+              : selectedPlan === "grape"
+                ? t("Grape")
+                : selectedPlan === "pear"
+                  ? t("Pear")
+                  : selectedPlan === "coder"
+                    ? t("Sushi")
+                    : selectedPlan === "watermelon"
+                      ? t("Watermelon")
+                      : t(
+                          selectedPlan === "credits"
+                            ? "Chrry"
+                            : selectedPlan === "pro"
+                              ? "Raspberry"
+                              : selectedPlan === "plus"
+                                ? "Strawberry"
+                                : "Chrry",
+                        )}
+            <Div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginLeft: "auto",
+              }}
+            >
+              <Button
+                onClick={() => {
+                  addHapticFeedback()
+                  const emoji =
+                    selectedPlan === "credits"
+                      ? "💰"
+                      : selectedPlan === "grape"
+                        ? "🍇"
+                        : selectedPlan === "pear"
+                          ? "🍐"
+                          : selectedPlan === "coder"
+                            ? "🍣"
+                            : selectedPlan === "watermelon"
+                              ? "🍉"
+                              : "🍒"
+                  setAsk(
+                    `${emoji} ${t(`Tell me more about {{selectedPlan}} plan`, {
+                      selectedPlan: capitalizeFirstLetter(selectedPlan),
+                      // tier: sushiTier || grapeTier || pearTier,
+                    })}`,
+                  )
+                  setAbout("subscribe")
+                  setIsModalOpen(false)
+                }}
+                className="button link"
+                style={{ fontWeight: "normal" }}
+              >
+                <Sparkles size={18} />
+                {t("Ask AI")}
+              </Button>
+            </Div>
           </>
         }
       >
@@ -526,68 +808,239 @@ export default function Subscribe({
           key={`selectedPlan-${selectedPlan}`}
           style={{ ...styles.plans.style }}
         >
-          <Button
-            data-testid="member-button"
-            onClick={() => {
-              addHapticFeedback()
-              setSelectedPlan("member")
-              setUserToGift(null)
-              setIsGifting(false)
-              setIsInviting(false)
-            }}
-            style={{
-              ...(selectedPlan === "member"
-                ? utilities.inverted.style
-                : utilities.transparent.style),
-            }}
-          >
-            <UsersRound size={14} /> {t("Free")}
-          </Button>
-          <Button
-            onClick={() => {
-              addHapticFeedback()
-              setSelectedPlan("credits")
-              setIsGifting(false)
-              setIsInviting(false)
-            }}
-            style={{
-              ...(selectedPlan === "credits"
-                ? utilities.inverted.style
-                : utilities.transparent.style),
-            }}
-          >
-            <Coins size={14} /> {t("Credits")}
-          </Button>
-          <Button
-            onClick={() => {
-              addHapticFeedback()
-              setSelectedPlan("plus")
-              setIsGifting(false)
-              setIsInviting(false)
-            }}
-            style={{
-              ...(selectedPlan === "plus"
-                ? utilities.inverted.style
-                : utilities.transparent.style),
-            }}
-          >
-            <Plus size={14} /> {t("Plus")}
-          </Button>
-          <Button
-            onClick={() => {
-              addHapticFeedback()
-              setSelectedPlan("pro")
-              setIsGifting(false)
-              setIsInviting(false)
-            }}
-            style={{
-              ...(selectedPlan === "pro"
-                ? utilities.inverted.style
-                : utilities.transparent.style),
-            }}
-          >
-            <SmilePlus size={14} /> {t("Pro")}
-          </Button>
+          {selectedPlan === "grape" ? (
+            // Grape Tier Selection
+            <>
+              <Button
+                className="transparent"
+                onClick={() => {
+                  addHapticFeedback()
+                  setGrapeTier("free")
+                }}
+                style={{
+                  ...(grapeTier === "free"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <UsersRound size={14} /> {t("Free")}
+              </Button>
+              <Button
+                onClick={() => {
+                  addHapticFeedback()
+                  setGrapeTier("plus")
+                }}
+                style={{
+                  ...(grapeTier === "plus"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Plus size={14} /> {t("Plus")}
+              </Button>
+              <Button
+                onClick={() => {
+                  addHapticFeedback()
+                  setGrapeTier("pro")
+                }}
+                style={{
+                  ...(grapeTier === "pro"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <SmilePlus size={14} /> {t("Pro")}
+              </Button>
+            </>
+          ) : selectedPlan === "pear" ? (
+            // Pear Tier Selection
+            <>
+              <Button
+                className="transparent"
+                onClick={() => {
+                  addHapticFeedback()
+                  setPearTier("free")
+                }}
+                style={{
+                  ...(pearTier === "free"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <UsersRound size={14} /> {t("Free")}
+              </Button>
+              <Button
+                onClick={() => {
+                  addHapticFeedback()
+                  setPearTier("plus")
+                }}
+                style={{
+                  ...(pearTier === "plus"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Plus size={14} /> {t("Plus")}
+              </Button>
+              <Button
+                onClick={() => {
+                  addHapticFeedback()
+                  setPearTier("pro")
+                }}
+                style={{
+                  ...(pearTier === "pro"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <SmilePlus size={14} /> {t("Pro")}
+              </Button>
+            </>
+          ) : selectedPlan === "coder" ? (
+            // Sushi Tier Selection
+            <>
+              <Button
+                className="transparent"
+                onClick={() => {
+                  addHapticFeedback()
+                  setSushiTier("free")
+                }}
+                style={{
+                  ...(sushiTier === "free"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Img logo="sushi" size={18} /> {t("Free")}
+              </Button>
+              <Button
+                className="transparent"
+                onClick={() => {
+                  addHapticFeedback()
+                  setSushiTier("coder")
+                }}
+                style={{
+                  ...(sushiTier === "coder"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Img logo="coder" size={18} /> {t("Coder")}
+              </Button>
+              <Button
+                className="transparent"
+                onClick={() => {
+                  addHapticFeedback()
+                  setSushiTier("architect")
+                }}
+                style={{
+                  ...(sushiTier === "architect"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Img logo="architect" size={18} /> {t("Architect")}
+              </Button>
+            </>
+          ) : selectedPlan === "watermelon" ? (
+            // Watermelon Tier Selection
+            <>
+              <Button
+                className="transparent"
+                onClick={() => {
+                  addHapticFeedback()
+                  setWatermelonTier("standard")
+                }}
+                style={{
+                  ...(watermelonTier === "standard"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Img logo="watermelon" size={18} /> {t("Agency")}
+              </Button>
+              <Button
+                className="transparent"
+                onClick={() => {
+                  addHapticFeedback()
+                  setWatermelonTier("plus")
+                }}
+                style={{
+                  ...(watermelonTier === "plus"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Img icon="zarathustra" size={18} /> {t("Sovereign")}
+              </Button>
+            </>
+          ) : (
+            // Regular subscription buttons
+            <>
+              <Button
+                data-testid="member-button"
+                onClick={() => {
+                  addHapticFeedback()
+                  setSelectedPlan("member")
+                  setUserToGift(null)
+                  setIsGifting(false)
+                  setIsInviting(false)
+                }}
+                style={{
+                  ...(selectedPlan === "member"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <UsersRound size={14} /> {t("Free")}
+              </Button>
+              <Button
+                onClick={() => {
+                  addHapticFeedback()
+                  setSelectedPlan("credits")
+                  setIsGifting(false)
+                  setIsInviting(false)
+                }}
+                style={{
+                  ...(selectedPlan === "credits"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Coins size={14} /> {t("Credits")}
+              </Button>
+              <Button
+                onClick={() => {
+                  addHapticFeedback()
+                  setSelectedPlan("plus")
+                  setIsGifting(false)
+                  setIsInviting(false)
+                }}
+                style={{
+                  ...(selectedPlan === "plus"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <Plus size={14} /> {t("Plus")}
+              </Button>
+              <Button
+                onClick={() => {
+                  addHapticFeedback()
+                  setSelectedPlan("pro")
+                  setIsGifting(false)
+                  setIsInviting(false)
+                }}
+                style={{
+                  ...(selectedPlan === "pro"
+                    ? utilities.inverted.style
+                    : utilities.transparent.style),
+                }}
+              >
+                <SmilePlus size={14} /> {t("Pro")}
+              </Button>
+            </>
+          )}
         </Div>
         <Div
           data-testid={`subscribe-features`}
@@ -631,7 +1084,7 @@ export default function Subscribe({
             )
           ) : (
             <>
-              <MotiView
+              {/* <MotiView
                 key={`0-${animationKey}`}
                 from={{ opacity: 0, translateY: 0, translateX: -10 }}
                 animate={{ opacity: 1, translateY: 0, translateX: 0 }}
@@ -646,7 +1099,7 @@ export default function Subscribe({
                     {t("Need a white label like Vex?")}
                   </A>
                 </Div>
-              </MotiView>
+              </MotiView> */}
               <MotiView
                 key={`1000-${animationKey}`}
                 from={{ opacity: 0, translateY: 0, translateX: -10 }}
@@ -672,7 +1125,7 @@ export default function Subscribe({
                 <Div className={clsx(styles.feature, "feature")}>
                   <A openInNewTab href={"https://chrry.dev"} className={"link"}>
                     <Img logo="chrry" width={16} height={16} />
-                    {t("0 trackers")}. {t("Open Source")}
+                    {t("AGPLv3")}. {t("Open Source")}
                   </A>
                 </Div>
               </MotiView>
@@ -718,8 +1171,150 @@ export default function Subscribe({
               </MotiView>
             </>
           )}
-        </Div>
+          <Div
+            key={`selectedPlan-${selectedPlan}`}
+            style={{
+              ...styles.plans.style,
+              marginBottom: "0rem",
+              marginTop: "0.2rem",
+            }}
+          >
+            <Button
+              className="transparent"
+              data-testid="grape-button"
+              onClick={() => {
+                addHapticFeedback()
+                setSelectedPlan(selectedPlan === "grape" ? "member" : "grape")
+                setUserToGift(null)
+                setIsGifting(false)
+                setIsInviting(false)
+              }}
+              style={{
+                ...(selectedPlan === "grape"
+                  ? utilities.inverted.style
+                  : utilities.transparent.style),
+              }}
+            >
+              {selectedPlan === "grape" ? (
+                <>
+                  <Img icon="chrry" width={18} height={18} /> {t("Chrry")}
+                </>
+              ) : (
+                <>
+                  <Img logo="grape" width={18} height={18} /> {t("Grape")}
+                </>
+              )}
+            </Button>
 
+            <Button
+              className="transparent"
+              onClick={() => {
+                addHapticFeedback()
+                setSelectedPlan(selectedPlan === "pear" ? "member" : "pear")
+                setIsGifting(false)
+                setIsInviting(false)
+              }}
+              style={{
+                ...(selectedPlan === "pear"
+                  ? utilities.inverted.style
+                  : utilities.transparent.style),
+              }}
+            >
+              {selectedPlan === "pear" ? (
+                <>
+                  <Img icon="chrry" width={18} height={18} /> {t("Chrry")}
+                </>
+              ) : (
+                <>
+                  <Img logo="pear" width={18} height={18} /> {t("Pear")}
+                </>
+              )}
+            </Button>
+            <Button
+              className="transparent"
+              onClick={() => {
+                addHapticFeedback()
+                setSelectedPlan(selectedPlan === "coder" ? "member" : "coder")
+                setIsGifting(false)
+                setIsInviting(false)
+              }}
+              style={{
+                ...(selectedPlan === "coder"
+                  ? utilities.inverted.style
+                  : utilities.transparent.style),
+              }}
+            >
+              {selectedPlan === "coder" ? (
+                <>
+                  <Img icon="chrry" width={18} height={18} /> {t("Chrry")}
+                </>
+              ) : (
+                <>
+                  <Img logo="sushi" width={18} height={18} /> {t("Sushi")}
+                </>
+              )}
+            </Button>
+
+            {/* <Button
+              className="transparent"
+              onClick={() => {
+                addHapticFeedback()
+                setSelectedPlan("coder")
+                setIsGifting(false)
+                setIsInviting(false)
+              }}
+              style={{
+                ...(selectedPlan === "coder"
+                  ? utilities.inverted.style
+                  : utilities.transparent.style),
+              }}
+            >
+              <Img logo="coder" width={18} height={18} /> {t("Coder")}
+            </Button>
+            <Button
+              className="transparent"
+              onClick={() => {
+                addHapticFeedback()
+                setSelectedPlan("architect")
+                setIsGifting(false)
+                setIsInviting(false)
+              }}
+              style={{
+                ...(selectedPlan === "architect"
+                  ? utilities.inverted.style
+                  : utilities.transparent.style),
+              }}
+            >
+              <Img logo="architect" width={18} height={18} /> {t("Architect")}
+            </Button> */}
+            <Button
+              className="transparent"
+              onClick={() => {
+                addHapticFeedback()
+                setSelectedPlan(
+                  selectedPlan === "watermelon" ? "member" : "watermelon",
+                )
+                setIsGifting(false)
+                setIsInviting(false)
+              }}
+              style={{
+                ...(selectedPlan === "watermelon"
+                  ? utilities.inverted.style
+                  : utilities.transparent.style),
+              }}
+            >
+              {selectedPlan === "watermelon" ? (
+                <>
+                  <Img icon="chrry" width={18} height={18} /> {t("Chrry")}
+                </>
+              ) : (
+                <>
+                  <Img logo="watermelon" width={18} height={18} /> {t("WM")}
+                </>
+              )}
+            </Button>
+          </Div>
+        </Div>
         <Div style={{ ...styles.gift.style }}>
           {userToGift?.subscription && selectedPlan !== "credits" ? (
             <Div style={{ ...styles.userToGift.style }}>
@@ -802,9 +1397,16 @@ export default function Subscribe({
             )
           )}
         </Div>
-
-        <Div style={{ ...styles.checkoutButtonContainer.style }}>
-          {selectedPlan !== "member" ? (
+        <Div style={{ ...styles.checkoutButtonContainer.style, marginTop: -3 }}>
+          {selectedPlan !== "member" &&
+          (selectedPlan === "watermelon" ||
+            selectedPlan === "pro" ||
+            selectedPlan === "plus" ||
+            selectedPlan === "credits" ||
+            (selectedPlan === "grape" && grapeTier !== "free") ||
+            (selectedPlan === "pear" && pearTier !== "free") ||
+            (selectedPlan === "architect" && pearTier !== "free") ||
+            (selectedPlan === "coder" && sushiTier !== "free")) ? (
             <>
               {canDowngradeToPlus() && (
                 <ConfirmButton
@@ -862,12 +1464,26 @@ export default function Subscribe({
               )}
               {canBuyCredits() || canSubscribe() ? (
                 <Button
+                  className="small"
                   data-testid="subscribe-checkout"
                   onClick={() => {
                     addHapticFeedback()
+
+                    if (contact) {
+                      setShowContact(true)
+
+                      if (showContact) {
+                        window.location.href = "mailto:iliyan@chrry.ai"
+                        return
+                      }
+                      return
+                    }
                     handleCheckout("subscription")
                   }}
-                  style={{ ...styles.checkoutButton.style }}
+                  style={{
+                    ...styles.checkoutButton.style,
+                    marginTop: ".5rem",
+                  }}
                 >
                   {loading && part === "subscription" ? (
                     <Loading color="#fff" />
@@ -875,6 +1491,8 @@ export default function Subscribe({
                     <>
                       {selectedPlan === "plus" || selectedPlan === "credits" ? (
                         <Coins />
+                      ) : showContact ? (
+                        <AtSign />
                       ) : (
                         <SmilePlus />
                       )}
@@ -887,10 +1505,28 @@ export default function Subscribe({
                         </Span>
                       ) : (
                         <Span>
-                          {t("pricing", {
+                          {t(showContact ? "Contact" : "pricing", {
                             freeDays: FREE_DAYS,
                             price:
-                              selectedPlan === "plus" ? PLUS_PRICE : PRO_PRICE,
+                              selectedPlan === "grape"
+                                ? grapeTier === "plus"
+                                  ? "50" // Grape Plus: €50/month
+                                  : "500" // Grape Pro: €500/month
+                                : selectedPlan === "pear"
+                                  ? pearTier === "plus"
+                                    ? "50" // Pear Plus: €50/month
+                                    : "500" // Pear Pro: €500/month
+                                  : selectedPlan === "coder"
+                                    ? sushiTier === "coder"
+                                      ? "50"
+                                      : "500"
+                                    : selectedPlan === "watermelon"
+                                      ? watermelonTier === "standard"
+                                        ? "1000"
+                                        : "5000"
+                                      : selectedPlan === "plus"
+                                        ? PLUS_PRICE
+                                        : PRO_PRICE,
                           })}
                         </Span>
                       )}
@@ -899,7 +1535,7 @@ export default function Subscribe({
                 </Button>
               ) : (
                 hasCurrentPlan() && (
-                  <>
+                  <Div>
                     {!user && guest?.subscription && (
                       <Button
                         data-testid="migrate-button"
@@ -967,7 +1603,7 @@ export default function Subscribe({
                         })}
                       </Span>
                     </ConfirmButton>
-                  </>
+                  </Div>
                 )
               )}
               {shouldShowGift() && (
@@ -975,6 +1611,7 @@ export default function Subscribe({
                   style={{
                     display: "flex",
                     alignItems: "center",
+                    justifyContent: "center",
                     gap: "0.5rem",
                   }}
                 >
@@ -1031,7 +1668,11 @@ export default function Subscribe({
                   addHapticFeedback()
                   setSignInPart("register")
                 }}
-                style={{ ...utilities.inverted.style, ...styles.button.style }}
+                style={{
+                  ...utilities.inverted.style,
+                  ...styles.button.style,
+                  marginTop: ".3rem",
+                }}
               >
                 <UserRoundPlus size={20} />
                 {t("Register")}
@@ -1043,14 +1684,22 @@ export default function Subscribe({
                   addHapticFeedback()
                   setSignInPart("login")
                 }}
-                style={{ ...utilities.link.style, ...styles.button.style }}
+                style={{
+                  ...utilities.link.style,
+                  ...styles.button.style,
+                  marginTop: ".3rem",
+                }}
               >
                 <LogIn size={18} />
-                {"Login"}
+                {t("Login")}
               </Button>
             </>
           ) : (
-            !user?.subscription && (
+            !user?.subscription &&
+            (selectedPlan === "member" ||
+              (selectedPlan === "grape" && grapeTier === "free") ||
+              (selectedPlan === "sushi" && sushiTier === "free") ||
+              (selectedPlan === "pear" && pearTier === "free")) && (
               <Button
                 className="transparent"
                 data-testid="current-plan"
