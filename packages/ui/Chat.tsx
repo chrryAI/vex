@@ -3796,7 +3796,6 @@ export default function Chat({
                           marginBottom: 35,
                         }}
                       >
-                        {burn ? <HatGlasses size={24} /> : ""}
                         <Span
                           style={{
                             display: "flex",
