@@ -1641,12 +1641,6 @@ export function AuthProvider({
       : undefined,
   )
 
-  useEffect(() => {
-    if (showFocus === undefined && baseApp?.slug) {
-      setShowFocusInternal(baseApp?.slug === "focus" && app?.slug === "focus")
-    }
-  }, [baseApp?.slug, app?.slug]) // Only depend on slugs, not showFocus
-
   const setShowFocus = (showFocus: boolean) => {
     setShowFocusInternal(showFocus)
 
@@ -1655,6 +1649,13 @@ export function AuthProvider({
       setThreadId(undefined)
     }
   }
+
+  useEffect(() => {
+    if (!baseApp || !app) return
+    if (showFocus === undefined && baseApp?.slug) {
+      setShowFocus(baseApp?.slug === "focus" && app?.slug === "focus")
+    }
+  }, [baseApp, app]) // Only depend on slugs, not showFocus
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 

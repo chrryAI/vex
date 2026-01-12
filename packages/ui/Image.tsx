@@ -41,6 +41,8 @@ type ImageProps = {
     | "grape"
     | "pear"
     | "watermelon"
+    | "avocado"
+    | "donut"
 
   icon?:
     | "spaceInvader"

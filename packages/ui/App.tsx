@@ -49,9 +49,15 @@ import {
 import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
 import { appWithStore } from "./types"
-import Grappes from "./Grapes"
+import Grapes from "./Grapes"
 
-function FocusButton() {
+function FocusButton({
+  style,
+  width,
+}: {
+  width?: number
+  style?: CSSProperties
+}) {
   const { time, presetMin1 } = useTimerContext()
 
   const { appStyles } = useStyles()
@@ -94,12 +100,18 @@ function FocusButton() {
       openInNewTab={isExtension && isFirefox}
       style={{
         ...appStyles.focus.style,
+        ...style,
       }}
     >
       {hasHydrated && (
         <Span style={appStyles.focusTime.style}>{formatTime()}</Span>
       )}
-      <Img style={appStyles.focus.style} logo="focus" width={22} height={22} />
+      <Img
+        style={appStyles.focus.style}
+        logo="focus"
+        width={width || 22}
+        height={width || 22}
+      />
     </A>
   )
 }
@@ -531,19 +543,26 @@ export default function App({
         }}
       >
         <Button
-          title={t("Minimize")}
-          className="transparent"
+          data-testid={`${minimize ? "maximize" : "minimize"}`}
+          title={t(!minimize ? "Hide" : "Maximize")}
+          className="transparent xSmall link"
           style={{
             ...utilities.small.style,
             gap: "0.4rem",
+            padding: "5px 8px",
+            border: "none",
           }}
           onClick={() => {
             addHapticFeedback()
             setMinimize(!minimize)
           }}
         >
-          {minimize ? <Maximize size={17} /> : <Minimize size={17} />}{" "}
-          {minimize ? t("Maximize") : t("Minimize")}
+          {minimize ? (
+            <Img logo="coder" size={24} />
+          ) : (
+            <Img logo="avocado" size={24} />
+          )}{" "}
+          {minimize ? t("Superpowers") : t("Minimize")}
         </Button>
       </Div>
       <H1 style={styles.title.style}>
@@ -554,12 +573,17 @@ export default function App({
               ...(isIDE && { fontSize: "18px" }),
             }}
           >
-            <Logo
-              app={app}
-              logo={app?.slug === "vex" ? "isVivid" : undefined}
-              showLoading={false}
-              size={35}
-            />
+            {app?.id === focus?.id ? (
+              <FocusButton width={40} style={{ marginRight: 5 }} />
+            ) : (
+              <Logo
+                app={app}
+                logo={app?.slug === "vex" ? "isVivid" : undefined}
+                showLoading={false}
+                size={35}
+              />
+            )}
+
             {t(app?.title || appFormWatcher?.title || ("" as string))}
           </Div>
         ) : (
@@ -790,7 +814,7 @@ export default function App({
             />
           </Div>
           {minimize && (
-            <Span style={fbStyles.greeting.style}>
+            <Div style={{ ...fbStyles.greeting.style }}>
               <>
                 <Span>{t("Let’s focus")}</Span>
                 <Div
@@ -830,7 +854,6 @@ export default function App({
                         size={16}
                       />
                     )}
-
                     <Video
                       // ref={videoRef}
                       style={fbStyles.video.style}
@@ -843,7 +866,7 @@ export default function App({
                   </Div>
                 </Div>
               </>
-            </Span>
+            </Div>
           )}
 
           <Div
@@ -1095,7 +1118,7 @@ export default function App({
               )}
               {(!isManagingApp && grape && app?.store?.slug !== "wine") ||
               isPear ? (
-                <Grappes goToGrape={!isPear} />
+                <Grapes goToGrape={!isPear} />
               ) : (
                 !isManagingApp && (
                   <A
@@ -1156,8 +1179,7 @@ export default function App({
               >
                 <Div style={{ ...styles.apps.style }}>
                   {appsState.slice(0, 5)?.map((item, index) => {
-                    const showAtlasHere =
-                      index === 1 && isBlossom && app?.id !== focus?.id
+                    const showAtlasHere = index === 1 && isBlossom
 
                     const showFocusHere = focus && !showAtlasHere && index === 1
 

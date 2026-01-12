@@ -532,7 +532,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [minimize, setMinimizeInternal] = useLocalStorage<boolean>(
     "minimize",
-    false,
+    true,
   )
 
   const setMinimize = (value: boolean | ((prev: boolean) => boolean)) => {
@@ -701,6 +701,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       | undefined,
   ) => {
+    setMinimize(false)
     setAppStatusInternal(payload)
 
     plausible({

@@ -44,10 +44,10 @@ function FocusButton({
   isCountingDown?: boolean
   isDrawerOpen?: boolean
 }) {
-  const { appStyles } = useStyles()
+  const { minimize } = useApp()
+
   const { viewPortWidth, isTauri } = usePlatform()
-  const { app, getAppSlug, setShowFocus, isIDE, toggleIDE, threadId } =
-    useAuth()
+  const { app, chrry, getAppSlug, setShowFocus } = useAuth()
 
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
 
@@ -76,13 +76,12 @@ function FocusButton({
       return `${hours}:${String(minutes).padStart(2, "0")}`
     }
   }
-  const { isEmpty } = useChat()
 
-  if (!focus || viewPortWidth < 375) {
+  if (!focus || viewPortWidth < 375 || minimize) {
     return (
       <>
         <A
-          href={`/blossom`}
+          href={`/${app?.store?.slug}`}
           className="button transparent"
           style={{
             ...utilities.button.style,
@@ -91,7 +90,13 @@ function FocusButton({
             ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
           }}
         >
-          <Img logo="blossom" size={22} /> {"Blossom"}
+          <Img
+            showLoading={false}
+            logo={app?.store?.slug === "blossom" ? "blossom" : "lifeOS"}
+            store={app?.store}
+            size={18}
+          />
+          {app?.store?.name}
         </A>
       </>
     )
@@ -172,7 +177,7 @@ export default function Skeleton({
   const threadId = threadIdRef.current
 
   // App context
-  const { app, isRemovingApp, isSavingApp } = useApp()
+  const { app } = useApp()
 
   // Theme context
   const { addHapticFeedback } = useTheme()
