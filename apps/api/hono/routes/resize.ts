@@ -24,10 +24,12 @@ resize.get("/", async (c) => {
     const padding = parseInt(c.req.query("padding") || c.req.query("p") || "0")
 
     if (!url) {
+      c.header("Cache-Control", "no-cache, no-store, must-revalidate")
       return c.json({ error: "Missing 'url' parameter" }, 400)
     }
 
     if (!width && !height) {
+      c.header("Cache-Control", "no-cache, no-store, must-revalidate")
       return c.json(
         { error: "Must specify at least 'w' (width) or 'h' (height)" },
         400,
@@ -53,6 +55,9 @@ resize.get("/", async (c) => {
       console.log(`🔗 Converted relative path: ${url} → ${fullUrl}`)
     }
 
+    // Replace search.chrry.ai with chrry.ai for image paths
+    fullUrl = fullUrl.replace("search.chrry.ai", "chrry.ai")
+
     console.log(`🖼️  Resizing image: ${fullUrl} → ${width}x${height}`)
 
     let buffer: Buffer
@@ -77,6 +82,9 @@ resize.get("/", async (c) => {
           console.log(`✅ Loaded from filesystem: ${absolutePath}`)
         } catch (fsError: any) {
           console.error(`❌ Filesystem read failed:`, fsError.message)
+          c.header("Cache-Control", "no-cache, no-store, must-revalidate")
+          c.header("Pragma", "no-cache")
+          c.header("Expires", "0")
           return c.json(
             { error: `Failed to load image: ${fetchError.message}` },
             500,
@@ -84,6 +92,9 @@ resize.get("/", async (c) => {
         }
       } else {
         console.error(`❌ Failed to fetch image:`, fetchError.message)
+        c.header("Cache-Control", "no-cache, no-store, must-revalidate")
+        c.header("Pragma", "no-cache")
+        c.header("Expires", "0")
         return c.json(
           { error: `Failed to fetch image: ${fetchError.message}` },
           500,
@@ -163,6 +174,9 @@ resize.get("/", async (c) => {
     return c.redirect(uploadResult.url, 301)
   } catch (error: any) {
     console.error("❌ Image resize error:", error)
+    c.header("Cache-Control", "no-cache, no-store, must-revalidate")
+    c.header("Pragma", "no-cache")
+    c.header("Expires", "0")
     return c.json({ error: error.message || "Failed to resize image" }, 500)
   }
 })
