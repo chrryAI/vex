@@ -147,6 +147,14 @@ export const subscribe = async ({
   }
 
   const getCreditsLeft = async (page: Page) => {
+    const max = page.getByTestId("maximize")
+    await expect(max).toBeVisible({
+      timeout: 20000,
+    })
+
+    const isVisible = await max.isVisible()
+
+    isVisible && (await max.click())
     const creditsInfo = page.getByTestId("credits-info")
 
     await expect(creditsInfo).toBeVisible({

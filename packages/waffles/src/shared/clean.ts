@@ -1,5 +1,12 @@
 import { Page, expect } from "@playwright/test"
-import { getURL } from "../index"
+import { getURL, wait } from "../index"
+
+export async function maximize({ page }: { page: Page }) {
+  await wait(2000)
+  const max = page.getByTestId("maximize")
+  const isVisible = await max.isVisible()
+  isVisible && (await max.click())
+}
 
 export async function clean({
   page,
@@ -17,12 +24,7 @@ export async function clean({
     timeout: 100000,
   })
 
-  const max = page.getByTestId("maximize")
-  await expect(max).toBeVisible({
-    timeout: 20000,
-  })
-
-  await max.click()
+  await maximize({ page })
 
   const clearSessionButton = page.getByTestId("clear-session")
 
