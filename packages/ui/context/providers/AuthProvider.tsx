@@ -131,6 +131,8 @@ const AuthContext = createContext<
       isProgramme: boolean
       siteConfig: SiteConfig
       isManagingApp: boolean
+      minimize: boolean
+      setMinimize: (value: boolean) => void
       setIsManagingApp: (value: boolean) => void
       isRemovingApp: boolean
       setIsRemovingApp: (value: boolean) => void
@@ -651,6 +653,8 @@ export function AuthProvider({
   const [enableNotifications, setEnableNotifications] = useLocalStorage<
     boolean | undefined
   >("enableNotifications", true)
+
+  const [minimize, setMinimize] = useLocalStorage<boolean>("minimize", true)
 
   const [shouldFetchSession, setShouldFetchSession] = useState(!props.session)
 
@@ -1291,6 +1295,30 @@ export function AuthProvider({
     // Add duration to props if it exists (> 0 means this is not the first call)
     const enrichedProps = duration > 0 ? { ...props, duration } : props
 
+    const basic = {
+      isStandalone,
+      os,
+      device,
+      burn,
+      appName: app?.name,
+      appSlug: app?.slug,
+      baseAppName: baseApp?.name,
+      duration,
+      minimize,
+    }
+    const finalProps = burn
+      ? basic
+      : {
+          ...basic,
+          ...enrichedProps,
+          isMember: !!user,
+          isGuest: !!guest,
+          isSubscriber: !!(user || guest)?.subscription,
+          isOwner: isOwner(app, {
+            userId: user?.id,
+            guestId: guest?.id,
+          }),
+        }
     // Only send meaningful events to API for AI context
     if (token && MEANINGFUL_EVENTS.includes(name as any)) {
       fetch(`${API_URL}/analytics/grape`, {
@@ -1303,12 +1331,7 @@ export function AuthProvider({
         body: JSON.stringify({
           name,
           url: normalizedUrl,
-          props: {
-            ...enrichedProps,
-            appName: app?.name,
-            appSlug: app?.slug,
-            baseAppName: baseApp?.name,
-          },
+          props: finalProps,
           timestamp: Date.now(),
         }),
       }).catch((error) => {
@@ -1332,23 +1355,9 @@ export function AuthProvider({
           ? {
               burn,
               memoriesEnabled,
+              minimize,
             }
-          : {
-              ...enrichedProps,
-              isStandalone,
-              os,
-              device,
-              isMember: !!user,
-              isGuest: !!guest,
-              appName: app?.name,
-              appSlug: app?.slug,
-              baseAppName: baseApp?.name,
-              isSubscriber: !!(user || guest)?.subscription,
-              isOwner: isOwner(app, {
-                userId: user?.id,
-                guestId: guest?.id,
-              }),
-            },
+          : finalProps,
     })
   }
 
@@ -2738,6 +2747,8 @@ export function AuthProvider({
         thread,
         isSplash,
         setIsSplash,
+        minimize,
+        setMinimize,
         setThread,
         isExtensionRedirect,
         signInContext,
