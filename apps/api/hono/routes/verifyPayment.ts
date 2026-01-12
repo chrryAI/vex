@@ -18,6 +18,7 @@ import {
   getAffiliateLink,
   createAffiliateReferral,
   updateAffiliateLink,
+  createFeedbackTransaction,
 } from "@repo/db"
 import { getMember } from "../lib/auth"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
@@ -35,6 +36,7 @@ import {
   isE2E,
 } from "@chrryai/chrry/utils"
 import Gift from "../../components/emails/Gift"
+import { createPremiumSubscription } from "@repo/db"
 
 export const verifyPayment = new Hono()
 
@@ -42,7 +44,14 @@ export const verifyPayment = new Hono()
 verifyPayment.post("/", async (c) => {
   const body = await c.req.json()
   const siteConfig = getSiteConfig()
-  const { session_id, userId, guestId, email } = body
+  const {
+    session_id,
+    userId,
+    guestId,
+    email,
+    plan: requestPlan,
+    tier: requestTier,
+  } = body
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -86,7 +95,28 @@ verifyPayment.post("/", async (c) => {
     let newCredits = 0
 
     const plan =
-      (session.metadata?.plan as "plus" | "pro" | "credits") || "plus"
+      requestPlan ||
+      (session.metadata?.plan as
+        | "plus"
+        | "pro"
+        | "credits"
+        | "grape"
+        | "pear"
+        | "coder"
+        | "watermelon") ||
+      "plus"
+
+    const tier =
+      requestTier ||
+      (session.metadata?.tier as
+        | "free"
+        | "plus"
+        | "pro"
+        | "coder"
+        | "architect"
+        | "standard"
+        | "sovereign"
+        | undefined)
 
     const subscription = user?.subscription || guest?.subscription
 
@@ -216,6 +246,107 @@ verifyPayment.post("/", async (c) => {
         plan,
         sessionId: session.id,
       })
+
+      // Create premium subscription for grape, pear, coder, watermelon plans
+      if (
+        ["grape", "pear", "coder", "watermelon"].includes(plan) &&
+        tier &&
+        tier !== "free" &&
+        user
+      ) {
+        const productTypeMap: Record<string, string> = {
+          grape: "grape_analytics",
+          pear: "pear_feedback",
+          coder: "sushi_debugger",
+          watermelon: "watermelon_white_label",
+        }
+
+        // Always retrieve the full subscription object to ensure we have all properties
+        const subscriptionId =
+          typeof session.subscription === "string"
+            ? session.subscription
+            : session.subscription.id
+
+        const stripeSubscription =
+          await stripe.subscriptions.retrieve(subscriptionId)
+
+        const subscriptionItem = stripeSubscription.items.data[0]
+        if (!subscriptionItem) {
+          console.error("❌ No subscription items found")
+          throw new Error("Invalid subscription: no items")
+        }
+
+        try {
+          await createPremiumSubscription({
+            userId: user.id,
+            stripeSubscriptionId: stripeSubscription.id,
+            stripePriceId: subscriptionItem.price.id,
+            stripeProductId: subscriptionItem.price.product as string,
+            stripeCustomerId: stripeSubscription.customer as string,
+            productType: productTypeMap[plan] as any,
+            tier: tier as any,
+            status: "active",
+            currentPeriodStart: new Date(
+              (stripeSubscription as any).current_period_start * 1000,
+            ),
+            currentPeriodEnd: new Date(
+              (stripeSubscription as any).current_period_end * 1000,
+            ),
+            cancelAtPeriodEnd: false,
+            metadata: {
+              plan,
+              tier,
+              sessionId: session.id,
+            } as any,
+          })
+
+          console.log(`✅ Premium subscription created: ${plan} (${tier})`, {
+            userId: user.id,
+            productType: productTypeMap[plan],
+            tier,
+          })
+
+          // Initialize Pear feedback credits
+          if (plan === "pear" && tier !== "free") {
+            const pearCredits =
+              tier === "plus" ? 5000 : tier === "pro" ? 50000 : 0
+
+            if (pearCredits > 0) {
+              // Update user's pearFeedbackCount
+              await updateUser({
+                ...user,
+                pearFeedbackCount: pearCredits,
+              })
+
+              // Create transaction record
+              await createFeedbackTransaction({
+                appOwnerId: user.id,
+                feedbackUserId: user.id,
+                amount: pearCredits,
+                commission: 0,
+                transactionType: "monthly_allocation",
+                pearTier: tier as "plus" | "pro",
+                creditsRemaining: pearCredits,
+                metadata: {
+                  subscriptionId: stripeSubscription.id,
+                },
+              })
+
+              console.log(
+                `💎 Pear feedback credits allocated: ${pearCredits}`,
+                {
+                  userId: user.id,
+                  tier,
+                  pearFeedbackCount: pearCredits,
+                },
+              )
+            }
+          }
+        } catch (error) {
+          console.error("❌ Error creating premium subscription:", error)
+          captureException(error)
+        }
+      }
 
       if (!newSubscription) {
         return c.json({

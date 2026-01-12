@@ -148,7 +148,7 @@ export const users = pgTable(
     stripeConnectAccountId: text("stripeConnectAccountId"), // For payouts TO user
     stripeConnectOnboarded: boolean("stripeConnectOnboarded").default(false),
 
-    // Pear feedback quota (10 submissions per day)
+    // Pear feedback credits (monthly allocation based on tier)
     pearFeedbackCount: integer("pearFeedbackCount").default(0).notNull(),
     pearFeedbackResetAt: timestamp("pearFeedbackResetAt", {
       mode: "date",
@@ -175,6 +175,44 @@ export const users = pgTable(
     ),
   ],
 )
+
+export const feedbackTransactions = pgTable("feedbackTransactions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  appId: uuid("appId").references(() => apps.id, {
+    onDelete: "cascade",
+  }),
+  appOwnerId: uuid("appOwnerId").references(() => users.id, {
+    onDelete: "cascade",
+  }),
+  feedbackUserId: uuid("feedbackUserId").references(() => users.id, {
+    onDelete: "cascade",
+  }),
+  amount: integer("amount").default(0).notNull(),
+  commission: integer("commission").default(0).notNull(),
+  transactionType: text("transactionType", {
+    enum: [
+      "feedback_given",
+      "feedback_received",
+      "credit_purchase",
+      "monthly_allocation",
+    ],
+  })
+    .notNull()
+    .default("feedback_given"),
+  pearTier: text("pearTier", {
+    enum: ["free", "plus", "pro"],
+  }),
+  creditsRemaining: integer("creditsRemaining").default(0),
+  metadata: jsonb("metadata").$type<{
+    feedbackId?: string
+    subscriptionId?: string
+    stripePaymentId?: string
+  }>(),
+  createdOn: timestamp("createdOn", {
+    mode: "date",
+    withTimezone: true,
+  }).defaultNow(),
+})
 
 export const devices = pgTable(
   "device",
@@ -949,8 +987,23 @@ export const creditUsage = pgTable(
       .notNull(),
     creditCost: integer("creditCost").notNull(),
     messageType: text("messageType", {
-      enum: ["user", "ai", "image", "search", "pear_feedback"],
+      enum: [
+        "user",
+        "ai",
+        "image",
+        "search",
+        "pear_feedback",
+        "pear_feedback_payment",
+        "pear_feedback_reward",
+      ],
     }).notNull(),
+    metadata: jsonb("metadata").$type<{
+      feedbackUserId?: string
+      feedbackGuestId?: string
+      appId?: string
+      credits?: number
+      commission?: number
+    }>(),
     threadId: uuid("threadId").references(() => threads.id, {
       onDelete: "set null",
     }),
@@ -3773,10 +3826,26 @@ export const premiumSubscriptions = pgTable(
 
     // Product info
     productType: text("productType", {
-      enum: ["grape_analytics", "pear_feedback", "debugger", "white_label"],
+      enum: [
+        "grape_analytics",
+        "pear_feedback",
+        "sushi_debugger",
+        "watermelon_white_label",
+        "plus_subscription",
+        "pro_subscription",
+        "white_label",
+      ],
     }).notNull(),
     tier: text("tier", {
-      enum: ["public", "private", "shared", "standard"],
+      enum: [
+        "free",
+        "plus",
+        "pro",
+        "coder",
+        "architect",
+        "standard",
+        "sovereign",
+      ],
     }).notNull(),
 
     // Status

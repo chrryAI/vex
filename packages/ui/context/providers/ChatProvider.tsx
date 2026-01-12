@@ -1078,6 +1078,7 @@ export function ChatProvider({
   useEffect(() => {
     if (!toFetch) {
       status && setStatus(null)
+      // setMessages([])
       return
     }
 
@@ -1085,7 +1086,7 @@ export function ChatProvider({
 
     if (threadData?.thread && Array.isArray(serverMessages.messages)) {
       // Skip if we've already processed this exact threadData
-      if (lastProcessedThreadDataRef.current === threadData) return
+      // if (lastProcessedThreadDataRef.current === threadData) return
       lastProcessedThreadDataRef.current = threadData
 
       // setMessages(serverMessages.messages)

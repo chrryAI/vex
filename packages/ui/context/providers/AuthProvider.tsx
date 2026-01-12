@@ -81,6 +81,10 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      about: string | undefined
+      setAbout: (value: string | undefined) => void
+      ask: string | undefined
+      setAsk: (value: string | undefined) => void
       displayedApps: appWithStore[]
       setDisplayedApps: (value: appWithStore[]) => void
       lastAnchorApp: {
@@ -1637,12 +1641,6 @@ export function AuthProvider({
       : undefined,
   )
 
-  useEffect(() => {
-    if (showFocus === undefined && baseApp?.slug) {
-      setShowFocusInternal(baseApp?.slug === "focus" && app?.slug === "focus")
-    }
-  }, [baseApp?.slug, app?.slug]) // Only depend on slugs, not showFocus
-
   const setShowFocus = (showFocus: boolean) => {
     setShowFocusInternal(showFocus)
 
@@ -1651,6 +1649,13 @@ export function AuthProvider({
       setThreadId(undefined)
     }
   }
+
+  useEffect(() => {
+    if (!baseApp || !app) return
+    if (showFocus === undefined && baseApp?.slug) {
+      setShowFocus(baseApp?.slug === "focus" && app?.slug === "focus")
+    }
+  }, [baseApp, app]) // Only depend on slugs, not showFocus
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
@@ -1807,6 +1812,22 @@ export function AuthProvider({
 
   const pear = storeApps.find((app) => app.slug === "pear")
 
+  const [about, setAbout] = useState(searchParams.get("about") ?? undefined)
+
+  const [ask, setAskInternal] = useState(searchParams.get("ask") ?? undefined)
+
+  useEffect(() => {
+    const ask = searchParams.get("ask")
+    ask !== null && setAskInternal(ask)
+    const about = searchParams.get("about")
+    about !== null && setAbout(about)
+  }, [searchParams])
+
+  const setAsk = (value: string | undefined) => {
+    setAskInternal(value)
+    value && setInput(value)
+  }
+
   useEffect(() => {
     setIsPearInternal(isPearInternal)
     if (isPearInternal)
@@ -1822,6 +1843,9 @@ export function AuthProvider({
   }, [isPearInternal])
 
   const setIsPear = (value: appWithStore | undefined) => {
+    if (value) {
+      setInput("")
+    }
     if (!!value === isPear) {
       return
     }
@@ -2621,6 +2645,10 @@ export function AuthProvider({
         favouriteAgent,
         perplexityAgent,
         setMood,
+        about,
+        setAbout,
+        ask,
+        setAsk,
         isLoadingMoods,
         mood,
         moods,

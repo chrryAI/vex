@@ -7211,7 +7211,7 @@ When users access you through **Grape** (privacy-first AI advertising), they fol
     onlyAgent: false,
     themeColor: "violet",
     backgroundColor: "#000000",
-    defaultModel: "sushi" as const,
+    defaultModel: "claude" as const,
     icon: "💻",
     visibility: "public" as const,
     systemPrompt: sushiSystemPrompt,
@@ -7716,7 +7716,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
         emoji: "📚",
       },
     ],
-    defaultModel: "sushi" as const,
+    defaultModel: "claude" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -7793,7 +7793,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
         emoji: "⚖️",
       },
     ],
-    defaultModel: "sushi" as const,
+    defaultModel: "claude" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"
@@ -7870,7 +7870,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
         emoji: "⚖️",
       },
     ],
-    defaultModel: "sushi" as const,
+    defaultModel: "claude" as const,
     tools: ["calendar", "location", "weather"] as (
       | "calendar"
       | "location"

@@ -1072,6 +1072,20 @@
       "when": 1767867776102,
       "tag": "0152_motionless_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 153,
+      "version": "7",
+      "when": 1768110387731,
+      "tag": "0153_strong_paladin",
+      "breakpoints": true
+    },
+    {
+      "idx": 154,
+      "version": "7",
+      "when": 1768112881025,
+      "tag": "0154_milky_slipstream",
+      "breakpoints": true
     }
   ]
 }
