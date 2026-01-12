@@ -1305,6 +1305,7 @@ export function AuthProvider({
       baseAppName: baseApp?.name,
       duration,
       minimize,
+      isPear,
     }
     const finalProps = burn
       ? basic
