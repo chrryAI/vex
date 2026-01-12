@@ -2200,7 +2200,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "zarathustra"
+  const devMode = "vex"
 
   if (isDevelopment && !checkIsExtension()) {
     return devMode

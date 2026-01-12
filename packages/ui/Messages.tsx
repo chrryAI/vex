@@ -11,6 +11,7 @@ import type {
   threadSummary,
 } from "./types"
 import Message from "./Message"
+import Img from "./Image"
 import { CircleX, Loader, Sparkles } from "./icons"
 import { useAppContext } from "./context/AppContext"
 import {
@@ -100,6 +101,7 @@ export default forwardRef<
     app,
     chrry,
     accountApp,
+    isPear,
   } = useAuth()
 
   const canCreateAgent = !accountApp && app && chrry && app?.id === chrry?.id
@@ -275,17 +277,9 @@ export default forwardRef<
                   {isUpdating ? (
                     <CircleX size={16} color="var(--accent-6)" />
                   ) : (
-                    <Sparkles
-                      color="var(--accent-1)"
-                      fill="var(--accent-1)"
-                      size={16}
-                    />
+                    <Img logo="pear" size={18} />
                   )}
-                  {t(
-                    canCreateAgent
-                      ? "Create Your Agent"
-                      : "Enable Character Profiles",
-                  )}
+                  {t(canCreateAgent ? "Create Your Agent" : "Earn a Badge")}
                 </Button>
               ) : null}
             </Div>

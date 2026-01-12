@@ -17,6 +17,13 @@ export async function clean({
     timeout: 100000,
   })
 
+  const max = page.getByTestId("maximize")
+  await expect(max).toBeVisible({
+    timeout: 20000,
+  })
+
+  await max.click()
+
   const clearSessionButton = page.getByTestId("clear-session")
 
   await expect(clearSessionButton).toBeVisible({

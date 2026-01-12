@@ -19,8 +19,8 @@ LINE_NUM=$(grep -n "^end$" "$PODFILE" | head -1 | cut -d: -f1)
 # Insert plugins before the 'end' line
 sed -i.bak "${LINE_NUM}i\\
   # Capacitor plugins for OAuth\\
-  pod 'CapacitorBrowser', :path => '../../../../node_modules/.pnpm/@capacitor+browser@7.0.3_@capacitor+core@8.0.0/node_modules/@capacitor/browser'\\
-  pod 'CapacitorApp', :path => '../../../../node_modules/.pnpm/@capacitor+app@7.1.1_@capacitor+core@8.0.0/node_modules/@capacitor/app'\\
+  pod 'CapacitorBrowser', :path => '../../../../node_modules/.pnpm/@capacitor+browser@7.0.3_@capacitor+core@7.4.4/node_modules/@capacitor/browser'\\
+  pod 'CapacitorApp', :path => '../../../../node_modules/.pnpm/@capacitor+app@7.1.1_@capacitor+core@7.4.4/node_modules/@capacitor/app'\\
 " "$PODFILE"
 
 echo "✅ Plugins added to Podfile"
