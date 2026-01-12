@@ -1,6 +1,10 @@
 PODS:
   - Capacitor (7.4.4):
     - CapacitorCordova
+  - CapacitorApp (7.1.1):
+    - Capacitor
+  - CapacitorBrowser (7.0.3):
+    - Capacitor
   - CapacitorCordova (7.4.4)
   - CapacitorFirebaseAuthentication (8.0.1):
     - Capacitor
@@ -54,6 +58,8 @@ PODS:
 
 DEPENDENCIES:
   - "Capacitor (from `../../../../node_modules/.pnpm/@capacitor+ios@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../../../node_modules/.pnpm/@capacitor+app@7.1.1_@capacitor+core@7.4.4/node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../../../node_modules/.pnpm/@capacitor+browser@7.0.3_@capacitor+core@7.4.4/node_modules/@capacitor/browser`)"
   - "CapacitorCordova (from `../../../../node_modules/.pnpm/@capacitor+ios@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/ios`)"
   - "CapacitorFirebaseAuthentication (from `../../../../node_modules/.pnpm/@capacitor-firebase+authentication@8.0.1_@capacitor+core@7.4.4_firebase@12.7.0/node_modules/@capacitor-firebase/authentication`)"
 
@@ -72,6 +78,10 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Capacitor:
     :path: "../../../../node_modules/.pnpm/@capacitor+ios@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../../../node_modules/.pnpm/@capacitor+app@7.1.1_@capacitor+core@7.4.4/node_modules/@capacitor/app"
+  CapacitorBrowser:
+    :path: "../../../../node_modules/.pnpm/@capacitor+browser@7.0.3_@capacitor+core@7.4.4/node_modules/@capacitor/browser"
   CapacitorCordova:
     :path: "../../../../node_modules/.pnpm/@capacitor+ios@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/ios"
   CapacitorFirebaseAuthentication:
@@ -79,6 +89,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Capacitor: 09d9ff8e9618e8c4b3cab2bbee34a17215dd2fef
+  CapacitorApp: 3ddbd30ac18c321531c3da5e707b60873d89dd60
+  CapacitorBrowser: 66aa8ff09cdca2a327ce464b113b470e6f667753
   CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
   CapacitorFirebaseAuthentication: 118ba4b6bf8ecc5b76a64d18213f9bad526c40c7
   FirebaseAppCheckInterop: d58366471f1dadf2ed998b15f85c658458a10142
@@ -91,6 +103,6 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 02d6e866e90bc236f48a703a041dfe43e6221a29
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
 
-PODFILE CHECKSUM: 9ad88e8426e56133871c2288f84eb3cb40de43ea
+PODFILE CHECKSUM: 5c0a89316c6ea930b8e5237961f906b341182d57
 
 COCOAPODS: 1.16.2

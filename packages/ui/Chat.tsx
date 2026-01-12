@@ -427,7 +427,7 @@ export default function Chat({
     (isChatFloatingInternal &&
       (!!threadIdRef.current || shouldUseCompactMode || minimize))
 
-  const placeholder = true
+  const placeholder = isPear
     ? `${t("Share your feedback and earn bonus credits!")} 🍐`
     : placeHolderInternal
   // useEffect(() => {
