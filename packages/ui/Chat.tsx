@@ -2636,7 +2636,7 @@ export default function Chat({
     }, 0)
 
     return () => clearTimeout(timer)
-  }, [input, placeholder, isWeb])
+  }, [input, placeholder, isWeb, minimize])
 
   const inputText = inputRef.current?.trim() || input?.trim() || ""
 
