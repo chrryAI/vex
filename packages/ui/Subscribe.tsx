@@ -9,6 +9,7 @@ import {
   useNavigationContext,
   useData,
   useError,
+  useApp,
 } from "./context/providers"
 import { capitalizeFirstLetter } from "@chrryai/chrry/utils"
 
@@ -46,7 +47,6 @@ import A from "./a/A"
 import { useSubscribeStyles } from "./Subscribe.styles"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
-import { se } from "date-fns/locale"
 
 export default function Subscribe({
   customerEmail,
@@ -74,7 +74,8 @@ export default function Subscribe({
     isExtensionRedirect,
     guest,
     plausible,
-    fingerprint,
+    accountApp,
+    app,
     setSignInPart,
     setAsk,
     setAbout,
@@ -143,6 +144,7 @@ export default function Subscribe({
   })
 
   const { captureException } = useError()
+  const { setAppStatus } = useApp()
 
   const { addHapticFeedback, reduceMotion } = useTheme()
   const [isModalOpen, setIsModalOpen] = React.useState<boolean | undefined>(
@@ -1711,17 +1713,36 @@ export default function Subscribe({
             !user?.subscription &&
             (selectedPlan === "member" ||
               (selectedPlan === "grape" && grapeTier === "free") ||
-              (selectedPlan === "sushi" && sushiTier === "free") ||
+              ((selectedPlan === "sushi" ||
+                selectedPlan === "coder" ||
+                selectedPlan === "architect") &&
+                sushiTier === "free") ||
               (selectedPlan === "pear" && pearTier === "free")) && (
               <Button
-                className="transparent"
+                className={accountApp ? "transparent" : "inverted"}
                 data-testid="current-plan"
                 style={{
-                  ...utilities.transparent.style,
                   ...styles.currentPlanButton.style,
+                  marginTop: 7.5,
+                  padding: "5px 10px",
+                  fontSize: 15,
+                }}
+                onClick={() => {
+                  if (!accountApp) {
+                    setAppStatus({
+                      part: "highlights",
+                      step: "add",
+                    })
+                    setIsModalOpen(false)
+                  }
                 }}
               >
-                <UserRound size={20} /> {t("Current Plan")}
+                {!accountApp && app ? (
+                  <Img app={app} size={30} />
+                ) : (
+                  <UserRound size={20} />
+                )}{" "}
+                {t(accountApp ? "Current Plan" : "Create your agent")}
               </Button>
             )
           )}

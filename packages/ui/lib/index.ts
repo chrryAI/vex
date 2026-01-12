@@ -53,6 +53,8 @@ export const getImageSrc = ({
     | "coder"
     | "sushi"
     | "watermelon"
+    | "avocado"
+    | "donut"
   icon?:
     | "spaceInvader"
     | "pacman"
@@ -130,31 +132,35 @@ export const getImageSrc = ({
     : null
 
   const logoSrc =
-    logo === "sushi"
-      ? `${BASE_URL}/images/apps/sushi.png`
-      : logo === "watermelon"
-        ? `${BASE_URL}/images/apps/watermelon.png`
-        : logo === "architect"
-          ? `${BASE_URL}/images/apps/architect.png`
-          : logo === "coder"
-            ? `${BASE_URL}/images/apps/coder.png`
-            : logo === "pear"
-              ? `${BASE_URL}/images/apps/pear.png`
-              : logo === "focus"
-                ? `${BASE_URL}/images/focus.png`
-                : logo === "blossom"
-                  ? `${BASE_URL}/images/apps/blossom.png`
-                  : logo === "grape"
-                    ? `${BASE_URL}/images/apps/grape.png`
-                    : logo === "chrry" || store?.slug === "explore"
-                      ? `${BASE_URL}/logo/cherry-500.png`
-                      : logo === "lifeOS" || store?.slug === "lifeOS"
-                        ? `${BASE_URL}/icons/lifeOS-128.png`
-                        : logo === "vex" || store?.slug === "vex"
-                          ? `${BASE_URL}/icons/icon-128.png`
-                          : logo
-                            ? `${BASE_URL}/icons/icon-128${logo === "isMagenta" ? "-m" : ""}${logo === "isVivid" ? "-v" : ""}.png`
-                            : null // Remote web asset
+    logo === "avocado"
+      ? `${BASE_URL}/images/apps/avocado.png`
+      : logo === "donut"
+        ? `${BASE_URL}/images/apps/donut.png`
+        : logo === "sushi"
+          ? `${BASE_URL}/images/apps/sushi.png`
+          : logo === "watermelon"
+            ? `${BASE_URL}/images/apps/watermelon.png`
+            : logo === "architect"
+              ? `${BASE_URL}/images/apps/architect.png`
+              : logo === "coder"
+                ? `${BASE_URL}/images/apps/coder.png`
+                : logo === "pear"
+                  ? `${BASE_URL}/images/apps/pear.png`
+                  : logo === "focus"
+                    ? `${BASE_URL}/images/focus.png`
+                    : logo === "blossom"
+                      ? `${BASE_URL}/images/apps/blossom.png`
+                      : logo === "grape"
+                        ? `${BASE_URL}/images/apps/grape.png`
+                        : logo === "chrry" || store?.slug === "explore"
+                          ? `${BASE_URL}/logo/cherry-500.png`
+                          : logo === "lifeOS" || store?.slug === "lifeOS"
+                            ? `${BASE_URL}/icons/lifeOS-128.png`
+                            : logo === "vex" || store?.slug === "vex"
+                              ? `${BASE_URL}/icons/icon-128.png`
+                              : logo
+                                ? `${BASE_URL}/icons/icon-128${logo === "isMagenta" ? "-m" : ""}${logo === "isVivid" ? "-v" : ""}.png`
+                                : null // Remote web asset
 
   // Pick the right image size based on requested size
   // images array: [512px, 192px, 180px, 128px, 32px]
