@@ -55,6 +55,9 @@ resize.get("/", async (c) => {
       console.log(`🔗 Converted relative path: ${url} → ${fullUrl}`)
     }
 
+    // Replace search.chrry.ai with chrry.ai for image paths
+    fullUrl = fullUrl.replace("search.chrry.ai", "chrry.ai")
+
     console.log(`🖼️  Resizing image: ${fullUrl} → ${width}x${height}`)
 
     let buffer: Buffer
