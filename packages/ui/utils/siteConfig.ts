@@ -2200,7 +2200,7 @@ export function detectSiteModeDomain(
   hostname?: string,
   mode?: SiteMode,
 ): SiteMode {
-  const devMode = "vex"
+  const devMode = "focus"
 
   if (isDevelopment && !checkIsExtension()) {
     return devMode

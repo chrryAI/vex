@@ -574,7 +574,7 @@ export default function App({
             }}
           >
             {app?.id === focus?.id ? (
-              <FocusButton width={45} style={{ marginRight: 5 }} />
+              <FocusButton width={40} style={{ marginRight: 5 }} />
             ) : (
               <Logo
                 app={app}
