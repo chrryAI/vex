@@ -427,7 +427,7 @@ export default function Chat({
     (isChatFloatingInternal &&
       (!!threadIdRef.current || shouldUseCompactMode || minimize))
 
-  const placeholder = isPear
+  const placeholder = true
     ? `${t("Share your feedback and earn bonus credits!")} 🍐`
     : placeHolderInternal
   // useEffect(() => {
@@ -2576,42 +2576,67 @@ export default function Chat({
   const initialHeight = useRef<number | null>(null)
 
   useEffect(() => {
-    if (chatInputRef.current) {
+    // Use setTimeout to ensure ref is registered
+    const timer = setTimeout(() => {
       const el = chatInputRef.current
+
+      if (!el || typeof window === "undefined") return
 
       // Save initial height on first render
       if (initialHeight.current === null) {
         initialHeight.current = el.scrollHeight
       }
 
-      // Only adjust height if there's actual input
-      if (input) {
-        if (typeof window !== "undefined") {
-          // Reset height to auto, then expand
-          el.style.height = "auto"
-          const newHeight = el.scrollHeight
-
-          // For extensions, cap the max height to prevent very tall initial height
-          const maxHeight = newHeight
-          if (isWeb) {
-            el.style.height = Math.min(newHeight, maxHeight) + "px"
-          }
-          // Check if exceeded (works for both input and placeholder)
-          setExceededInitial(
-            el.scrollHeight > (initialHeight.current + 30 || 0),
-          )
-        }
-      } else {
-        // Reset to initial height when input is empty
-        if (initialHeight.current) {
-          if (typeof window !== "undefined" && isWeb) {
-            el.style.height = initialHeight.current + "px"
-          }
-        }
-        setExceededInitial(false)
+      // Wait for element to be fully rendered with width
+      if (el.clientWidth === 0) {
+        return
       }
-    }
-  }, [input])
+
+      let newHeight = initialHeight.current || 0
+
+      // If there's input, measure it directly
+      if (input && el?.scrollHeight) {
+        el.style.height = "auto"
+        newHeight = el.scrollHeight
+      }
+      // If no input but placeholder exists, estimate height
+      else if (placeholder && !input) {
+        // Get computed styles
+        const styles = window.getComputedStyle(el)
+        const lineHeight = parseInt(styles.lineHeight) || 20
+        const paddingTop = parseInt(styles.paddingTop) || 0
+        const paddingBottom = parseInt(styles.paddingBottom) || 0
+        const width =
+          el.clientWidth -
+          parseInt(styles.paddingLeft || "0") -
+          parseInt(styles.paddingRight || "0")
+
+        // Only calculate if we have a valid width
+        if (width > 0) {
+          // Estimate characters per line based on average character width
+          const avgCharWidth = 8 // approximate for most fonts
+          const charsPerLine = Math.floor(width / avgCharWidth)
+          const estimatedLines = Math.ceil(placeholder.length / charsPerLine)
+
+          // Calculate estimated height
+          newHeight = estimatedLines * lineHeight + paddingTop + paddingBottom
+        }
+      }
+
+      // Apply calculated height
+      if (isWeb && (input || placeholder)) {
+        el.style.height = newHeight + "px"
+      } else if (!input && !placeholder && initialHeight.current) {
+        // Reset to initial height when both are empty
+        el.style.height = initialHeight.current + "px"
+      }
+
+      // Check if exceeded
+      setExceededInitial(newHeight > (initialHeight.current + 30 || 0))
+    }, 0)
+
+    return () => clearTimeout(timer)
+  }, [input, placeholder, isWeb])
 
   const inputText = inputRef.current?.trim() || input?.trim() || ""
 
