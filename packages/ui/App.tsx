@@ -544,7 +544,7 @@ export default function App({
       >
         <Button
           data-testid={`${minimize ? "maximize" : "minimize"}`}
-          title={t("Minimize")}
+          title={t(!minimize ? "Hide" : "Maximize")}
           className="transparent xSmall link"
           style={{
             ...utilities.small.style,
@@ -562,7 +562,7 @@ export default function App({
           ) : (
             <Img logo="avocado" size={24} />
           )}{" "}
-          {minimize ? t("Maximize") : t("Minimize")}
+          {minimize ? t("Superpowers") : t("Minimize")}
         </Button>
       </Div>
       <H1 style={styles.title.style}>
