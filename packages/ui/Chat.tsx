@@ -429,11 +429,9 @@ export default function Chat({
 
   const placeholder = isPear
     ? `${t("Share your feedback and earn bonus credits!")} 🍐`
-    : (!user && hourlyUsageLeft >= 4 && hourlyUsageLeft <= 6) ||
+    : (!user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7) ||
         (user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26)
-      ? empty
-        ? `${t("Explore grape adds by clicking 🍇")} `
-        : placeHolderInternal
+      ? t("Click 🍇 to explore available ads")
       : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
