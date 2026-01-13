@@ -188,6 +188,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     burning,
     setBurn,
     plausible,
+    minimize,
+    setMinimize: setMinimizeInternal,
     ...auth
   } = useAuth()
   const { actions } = useData()
@@ -530,10 +532,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }),
   )
 
-  const [minimize, setMinimizeInternal] = useLocalStorage<boolean>(
-    "minimize",
-    true,
-  )
+  // const [minimize, setMinimizeInternal] = useLocalStorage<boolean>(
+  //   "minimize",
+  //   true,
+  // )
 
   const setMinimize = (value: boolean | ((prev: boolean) => boolean)) => {
     const newValue = typeof value === "function" ? value(minimize) : value

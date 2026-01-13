@@ -5,6 +5,9 @@ export const useUserScroll = () => {
   const [hasStoppedScrolling, setHasStoppedScrolling] = useState(false)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isUserInitiatedRef = useRef(false)
+  const interactionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
 
   // ✅ Expose reset function
   const resetScrollState = useCallback(() => {
@@ -14,14 +17,25 @@ export const useUserScroll = () => {
       clearTimeout(scrollTimeoutRef.current)
       scrollTimeoutRef.current = null
     }
+    if (interactionTimeoutRef.current) {
+      clearTimeout(interactionTimeoutRef.current)
+      interactionTimeoutRef.current = null
+    }
   }, [])
 
   useEffect(() => {
     const handleUserInteraction = () => {
       isUserInitiatedRef.current = true
-      setTimeout(() => {
+
+      // Clear previous timeout
+      if (interactionTimeoutRef.current) {
+        clearTimeout(interactionTimeoutRef.current)
+      }
+
+      // iOS Safari needs longer timeout for touch scrolling
+      interactionTimeoutRef.current = setTimeout(() => {
         isUserInitiatedRef.current = false
-      }, 100)
+      }, 500)
     }
 
     const handleScroll = () => {
