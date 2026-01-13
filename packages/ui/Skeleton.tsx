@@ -362,20 +362,9 @@ export default function Skeleton({
                   </Div>
                 </Div>
                 <Div style={{ ...skeletonStyles.right.style }}>
-                  {time && !isEmpty ? (
-                    <>
-                      <FocusButton
-                        isDrawerOpen={isDrawerOpen}
-                        time={time}
-                        isCountingDown={isCountingDown}
-                      />
-                    </>
-                  ) : null}
-                  <CharacterProfiles
-                    style={{ display: time && !isEmpty ? "none" : "block" }}
-                  />
+                  <CharacterProfiles />
 
-                  {<Subscribe />}
+                  <Subscribe />
 
                   <SignIn showSignIn={false} />
 
