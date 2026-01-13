@@ -918,6 +918,7 @@ export default function Menu({
                           : "grape"
                         : "watermelon",
                   })
+                  isSmallDevice ? toggleMenu() : null
                 }}
                 target="_blank"
                 rel="noopener noreferrer"
