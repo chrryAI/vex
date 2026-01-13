@@ -800,12 +800,7 @@ export default function Menu({
               }}
             >
               <Img icon="hamster" showLoading={false} width={26} height={26} />
-              {hasHydrated ? (
-                <Span>
-                  {new Date().getFullYear()}
-                  &#169;
-                </Span>
-              ) : null}
+              {hasHydrated ? <Span>{new Date().getFullYear()}</Span> : null}
               <Button
                 style={{
                   marginLeft: "auto",
@@ -904,21 +899,51 @@ export default function Menu({
             <Div style={styles.bottom.style}>
               <A
                 openInNewTab
-                href={`https://wannathis.one/?via=iliyan&ref=${app?.slug}`}
+                href={`/?subscribe=true&plan=${app?.store?.slug?.includes("sushi") ? "coder" : app?.store?.slug === "wine" ? (app?.slug === "pear" ? "pear" : "grape") : "watermelon"}`}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
                   alignSelf: "flex-start",
-                  gap: 3,
-                  paddingInline: 8.5,
+                }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  addParams({
+                    subscribe: true,
+                    plan: app?.store?.slug?.includes("sushi")
+                      ? "coder"
+                      : app?.store?.slug === "wine"
+                        ? app?.slug === "pear"
+                          ? "pear"
+                          : "grape"
+                        : "watermelon",
+                  })
                 }}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="button transparent"
+                className="button transparent small"
               >
-                <WannathisIcon width={18} height={18} />
-                Wannathis
+                <Img
+                  logo={
+                    app?.store?.slug?.includes("sushi")
+                      ? "sushi"
+                      : app?.store?.slug === "wine"
+                        ? app?.slug === "pear"
+                          ? "pear"
+                          : "grape"
+                        : "watermelon"
+                  }
+                  width={20}
+                  height={20}
+                />
+                {app?.store?.slug?.includes("sushi")
+                  ? "Sushi"
+                  : app?.store?.slug === "wine"
+                    ? app?.slug === "pear"
+                      ? "Pear"
+                      : "Grape"
+                    : "WM"}
+                &#169;
               </A>
 
               <ThemeSwitcher />
