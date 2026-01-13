@@ -139,7 +139,7 @@ export default function Instructions({
 
   const canGrape = !burn
 
-  const showGrape = (canGrape && showGrapeInternal) || isRetro
+  const showGrape = canGrape && showGrapeInternal
 
   // Replace instructions with Zarathustra philosophy when burn is active
 
