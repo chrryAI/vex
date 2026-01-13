@@ -1,6 +1,6 @@
 {
   "name": "@repo/db",
-  "version": "1.10.35",
+  "version": "1.10.37",
   "description": "",
   "type": "module",
   "main": "./index.ts",
