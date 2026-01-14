@@ -574,7 +574,7 @@ export default function App({
             }}
           >
             {app?.id === focus?.id ? (
-              <FocusButton width={40} style={{ marginRight: 5 }} />
+              <FocusButton width={38} style={{ marginRight: 5 }} />
             ) : (
               <Logo
                 app={app}
@@ -779,7 +779,16 @@ export default function App({
               </Div>
             ) : appFormWatcher && appFormWatcher.canSubmit ? (
               <Div style={styles.titleFormTitle.style}>
-                <Logo app={app} showLoading={false} size={35} />
+                {app?.id === focus?.id ? (
+                  <FocusButton width={38} style={{ marginRight: 5 }} />
+                ) : (
+                  <Logo
+                    app={app}
+                    logo={app?.slug === "vex" ? "isVivid" : undefined}
+                    showLoading={false}
+                    size={35}
+                  />
+                )}
                 {t(appFormWatcher?.title || "Your personal AI agent")}
               </Div>
             ) : (

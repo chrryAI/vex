@@ -246,7 +246,8 @@ export default function Skeleton({
               }),
             ...{
               display: "flex",
-              // paddingTop: isCapacitor && os === "ios" ? 40 : undefined,
+              paddingTop:
+                !threadId && isCapacitor && os === "ios" ? 40 : undefined,
             },
           }}
         >
