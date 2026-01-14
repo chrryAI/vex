@@ -3322,7 +3322,7 @@ export default function Chat({
           ...style,
           ...(isDrawerOpen && !isSmallDevice ? styles.drawerOpen.style : {}),
           // ...(isMobileDevice ? styles.mobile.style : {}),
-          ...(isStandalone && os === "ios" ? { marginBottom: 17.5 } : {}),
+          ...(isStandalone && os === "ios" ? { marginBottom: 16 } : {}),
           ...(isIDE
             ? {
                 position: "fixed",
@@ -3335,7 +3335,7 @@ export default function Chat({
                 right: 0,
               }
             : {}),
-          ...(isCapacitor && os === "ios" ? { paddingBottom: 17.5 } : {}),
+          ...(isCapacitor && os === "ios" ? { paddingBottom: 16 } : {}),
         }}
       >
         {isSpeechActive && (
@@ -3875,6 +3875,7 @@ export default function Chat({
                   ...(isChatFloating ? styles.chatFloating.style : {}),
                   "--glow-color":
                     COLORS[app?.themeColor as keyof typeof COLORS],
+                  margin: "0 -3px 1.5px -3px",
                 }}
               >
                 {selectedAgent?.capabilities.imageGeneration && (
@@ -4279,7 +4280,7 @@ export default function Chat({
                       ...styles.chatFooterButtons.style,
                     }}
                   >
-                    {isHydrated && (
+                    {isHydrated && viewPortWidth > 320 && (
                       <Div
                         style={{
                           top: "0.15rem",
