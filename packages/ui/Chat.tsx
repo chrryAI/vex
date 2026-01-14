@@ -429,11 +429,9 @@ export default function Chat({
 
   const placeholder = isPear
     ? `${t("Share your feedback and earn bonus credits!")} 🍐`
-    : (!user && hourlyUsageLeft >= 4 && hourlyUsageLeft <= 6) ||
+    : (!user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7) ||
         (user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26)
-      ? empty
-        ? `${t("Explore grape adds by clicking 🍇")} `
-        : placeHolderInternal
+      ? t("Click 🍇 to explore available ads")
       : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
@@ -3324,7 +3322,7 @@ export default function Chat({
           ...style,
           ...(isDrawerOpen && !isSmallDevice ? styles.drawerOpen.style : {}),
           // ...(isMobileDevice ? styles.mobile.style : {}),
-          ...(isStandalone && os === "ios" ? { marginBottom: 17.5 } : {}),
+          ...(isStandalone && os === "ios" ? { marginBottom: 16 } : {}),
           ...(isIDE
             ? {
                 position: "fixed",
@@ -3337,7 +3335,7 @@ export default function Chat({
                 right: 0,
               }
             : {}),
-          ...(isCapacitor && os === "ios" ? { paddingBottom: 17.5 } : {}),
+          ...(isCapacitor && os === "ios" ? { paddingBottom: 16 } : {}),
         }}
       >
         {isSpeechActive && (
@@ -3877,6 +3875,7 @@ export default function Chat({
                   ...(isChatFloating ? styles.chatFloating.style : {}),
                   "--glow-color":
                     COLORS[app?.themeColor as keyof typeof COLORS],
+                  margin: "0 -4px 1.5px -4px",
                 }}
               >
                 {selectedAgent?.capabilities.imageGeneration && (
@@ -4281,7 +4280,7 @@ export default function Chat({
                       ...styles.chatFooterButtons.style,
                     }}
                   >
-                    {isHydrated && (
+                    {isHydrated && viewPortWidth > 320 && (
                       <Div
                         style={{
                           top: "0.15rem",
@@ -4726,6 +4725,14 @@ export default function Chat({
                             threadId: threadId,
                           },
                         })
+                        if (isExtension) {
+                          BrowserInstance?.runtime?.sendMessage({
+                            action: "openInSameTab",
+                            url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                          })
+
+                          return
+                        }
                         addParams({ subscribe: "true" })
                       }}
                       className="link"
@@ -4741,6 +4748,21 @@ export default function Chat({
                     <Button
                       data-testid="login-from-chat-button"
                       onClick={() => {
+                        plausible({
+                          name: ANALYTICS_EVENTS.LOGIN,
+                          props: {
+                            form: "chat",
+                            threadId: threadId,
+                          },
+                        })
+                        if (isExtension) {
+                          BrowserInstance?.runtime?.sendMessage({
+                            action: "openInSameTab",
+                            url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=member`,
+                          })
+
+                          return
+                        }
                         addParams({ signIn: "login" })
                       }}
                       className="link"
