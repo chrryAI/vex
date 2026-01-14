@@ -11,14 +11,23 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../../../node_modules/.pnpm/@capacitor+ios@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../../../node_modules/.pnpm/@capacitor+ios@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/ios'
-  pod 'CapacitorFirebaseAuthentication', :path => '../../../../node_modules/.pnpm/@capacitor-firebase+authentication@8.0.1_@capacitor+core@7.4.4_firebase@12.7.0/node_modules/@capacitor-firebase/authentication'
+  pod 'CapacitorFirebaseAuthentication', :path => '../../../../node_modules/.pnpm/@capacitor-firebase+authentication@7.5.0_@capacitor+core@7.4.4/node_modules/@capacitor-firebase/authentication'
 end
 
 target 'App' do
   capacitor_pods
   # Add your Pods here
+  pod 'CapacitorFirebaseAuthentication/Google', :path => '../../../../node_modules/.pnpm/@capacitor-firebase+authentication@7.5.0_@capacitor+core@7.4.4/node_modules/@capacitor-firebase/authentication'
 end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  # Disable code signing for bundles (required for Google Sign-In)
+  installer.pods_project.targets.each do |target|
+    if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
+      target.build_configurations.each do |config|
+        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      end
+    end
+  end
 end
