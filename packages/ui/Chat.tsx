@@ -4725,6 +4725,14 @@ export default function Chat({
                             threadId: threadId,
                           },
                         })
+                        if (isExtension) {
+                          BrowserInstance?.runtime?.sendMessage({
+                            action: "openInSameTab",
+                            url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                          })
+
+                          return
+                        }
                         addParams({ subscribe: "true" })
                       }}
                       className="link"
@@ -4740,6 +4748,21 @@ export default function Chat({
                     <Button
                       data-testid="login-from-chat-button"
                       onClick={() => {
+                        plausible({
+                          name: ANALYTICS_EVENTS.LOGIN,
+                          props: {
+                            form: "chat",
+                            threadId: threadId,
+                          },
+                        })
+                        if (isExtension) {
+                          BrowserInstance?.runtime?.sendMessage({
+                            action: "openInSameTab",
+                            url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=member`,
+                          })
+
+                          return
+                        }
                         addParams({ signIn: "login" })
                       }}
                       className="link"
