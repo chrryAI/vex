@@ -676,8 +676,8 @@ importers:
   apps/mobile:
     dependencies:
       '@capacitor-firebase/authentication':
-        specifier: ^8.0.1
-        version: 8.0.1(@capacitor/core@7.4.4)(firebase@12.7.0)
+        specifier: ^7.0.0
+        version: 7.5.0(@capacitor/core@7.4.4)
       '@capacitor/android':
         specifier: ^7.0.0
         version: 7.4.4(@capacitor/core@7.4.4)
@@ -2316,6 +2316,15 @@ packages:
 
   '@bufbuild/protobuf@1.10.1':
     resolution: {integrity: sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ==}
+
+  '@capacitor-firebase/authentication@7.5.0':
+    resolution: {integrity: sha512-xPvKXWZhb0ZP/ysGYADWmFngQK82sPbRsZXE8b9W65MkFdoDc5df5O+gZTjw2wbVRFuUKqn07FHn9guxMg1iQw==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
+      firebase: ^11.2.0
+    peerDependenciesMeta:
+      firebase:
+        optional: true
 
   '@capacitor-firebase/authentication@8.0.1':
     resolution: {integrity: sha512-F9ocfBGAnMGSvZ7dfwcqACS17HFZEF7B3dSbao34ZBxo5wCDikCROX/T6L5jNq2CGX4ByLOpOmvvzfH+nT5w3A==}
@@ -10060,7 +10069,6 @@ packages:
     resolution: {integrity: sha512-DgtH8GId1/+oj8n9yYEmhTq1QkxOZZzqHJhHEa1bmtV3t3/u2YsE3LSvRUNpVRWVXRcCdn+3Tu6+mD2YXKL7lA==}
     engines: {node: '>=20.18.0'}
     hasBin: true
-    bundledDependencies: []
 
   peberminta@0.9.0:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
@@ -14342,6 +14350,10 @@ snapshots:
   '@braintree/sanitize-url@7.1.1': {}
 
   '@bufbuild/protobuf@1.10.1': {}
+
+  '@capacitor-firebase/authentication@7.5.0(@capacitor/core@7.4.4)':
+    dependencies:
+      '@capacitor/core': 7.4.4
 
   '@capacitor-firebase/authentication@8.0.1(@capacitor/core@7.4.4)(firebase@12.7.0)':
     dependencies:
