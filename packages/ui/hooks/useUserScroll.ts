@@ -5,6 +5,7 @@ export const useUserScroll = () => {
   const [hasStoppedScrolling, setHasStoppedScrolling] = useState(false)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isUserInitiatedRef = useRef(false)
+  const lastScrollTopRef = useRef(0)
   const interactionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
@@ -39,7 +40,14 @@ export const useUserScroll = () => {
     }
 
     const handleScroll = () => {
-      if (isUserInitiatedRef.current) {
+      const currentScrollTop =
+        window.scrollY || document.documentElement.scrollTop
+      const isScrollingUp = currentScrollTop < lastScrollTopRef.current
+      lastScrollTopRef.current = currentScrollTop
+
+      // Always set isUserScrolling to true when scrolling up (to top)
+      // This prevents auto-scroll from interrupting user's upward scroll
+      if (isScrollingUp || isUserInitiatedRef.current) {
         setIsUserScrolling(true)
         setHasStoppedScrolling(false)
 
