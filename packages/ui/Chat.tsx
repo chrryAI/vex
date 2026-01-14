@@ -3630,7 +3630,7 @@ export default function Chat({
                       </Button>
                     </Div>
                   ) : null}
-                  {empty && !threadIdRef.current && !isPear && (
+                  {empty && !threadIdRef.current && (
                     <>
                       <Grapes
                         dataTestId="grapes-button"
