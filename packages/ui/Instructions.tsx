@@ -139,7 +139,7 @@ export default function Instructions({
 
   const canGrape = !burn
 
-  const showGrape = (canGrape && showGrapeInternal) || isRetro
+  const showGrape = canGrape && showGrapeInternal
 
   // Replace instructions with Zarathustra philosophy when burn is active
 
@@ -1509,10 +1509,10 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         {!thread && !icon && showInstructions && (
           <Div
             data-testid={`${dataTestId}-about`}
-            style={{ ...styles.bottom.style, marginBottom: 15 }}
+            style={{ ...styles.bottom.style, marginBottom: 30 }}
           >
             {!showGrape && (
-              <A href={"/about"}>
+              <A style={{ lineHeight: 1.5 }} href={"/about"}>
                 <MousePointerClick color="var(--accent-1)" size={26} />
 
                 {t(appStatus?.part ? "Description" : "About")}
