@@ -277,7 +277,7 @@ export default forwardRef<
                   {isUpdating ? (
                     <CircleX size={16} color="var(--accent-6)" />
                   ) : (
-                    <Img logo="pear" size={18} />
+                    <Img app={app} size={18} />
                   )}
                   {t(canCreateAgent ? "Create Your Agent" : "Earn a Badge")}
                 </Button>
