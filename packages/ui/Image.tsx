@@ -1,6 +1,11 @@
 "use client"
 import { appWithStore, store } from "./types"
-import { PROD_FRONTEND_URL, FRONTEND_URL, API_URL } from "./utils"
+import {
+  PROD_FRONTEND_URL,
+  FRONTEND_URL,
+  API_URL,
+  isDevelopment,
+} from "./utils"
 
 import React, { useEffect } from "react"
 import Img from "./Img"
@@ -138,6 +143,9 @@ export default function ImageComponent(props: ImageProps) {
     width?: number | string
     height?: number | string
   }) => {
+    if (isDevelopment) {
+      return url
+    }
     if (typeof width === "string") {
       return url
     }
