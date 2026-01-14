@@ -3875,7 +3875,7 @@ export default function Chat({
                   ...(isChatFloating ? styles.chatFloating.style : {}),
                   "--glow-color":
                     COLORS[app?.themeColor as keyof typeof COLORS],
-                  margin: "0 -3px 1.5px -3px",
+                  margin: "0 -4px 1.5px -4px",
                 }}
               >
                 {selectedAgent?.capabilities.imageGeneration && (
