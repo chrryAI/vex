@@ -195,7 +195,11 @@ export default forwardRef<
 
   if (!showEmptyState && messages?.length === 0) return null
   return (
-    <Div style={{ ...styles.messagesContainer, ...style }} id={id} ref={ref}>
+    <Div
+      style={{ ...styles.messagesContainer, margin: "0 -10px", ...style }}
+      id={id}
+      ref={ref}
+    >
       {nextPage && (
         <Div style={{ ...styles.loadMoreContainer.style }}>
           <Button

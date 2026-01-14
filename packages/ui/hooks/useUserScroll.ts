@@ -43,12 +43,11 @@ export const useUserScroll = () => {
       const currentScrollTop =
         window.scrollY || document.documentElement.scrollTop
       const isScrollingUp = currentScrollTop < lastScrollTopRef.current
-      const scrollDelta = Math.abs(currentScrollTop - lastScrollTopRef.current)
       lastScrollTopRef.current = currentScrollTop
 
-      // Only track user-initiated scrolling
-      // Ignore small programmatic scrolls (< 5px) or scrolls without user interaction
-      if (isUserInitiatedRef.current && scrollDelta > 5) {
+      // Always set isUserScrolling to true when scrolling up (to top)
+      // This prevents auto-scroll from interrupting user's upward scroll
+      if (isScrollingUp || isUserInitiatedRef.current) {
         setIsUserScrolling(true)
         setHasStoppedScrolling(false)
 

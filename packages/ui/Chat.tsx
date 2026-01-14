@@ -422,11 +422,10 @@ export default function Chat({
     showChatInput,
   ])
 
+  const m = minimize && empty
+
   const isChatFloating =
-    minimize ||
-    isIDE ||
-    (isChatFloatingInternal &&
-      (!!threadIdRef.current || shouldUseCompactMode || minimize))
+    m || isIDE || (isChatFloatingInternal && shouldUseCompactMode)
 
   const placeholder = isPear
     ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍒`
@@ -2477,10 +2476,6 @@ export default function Chat({
     needsReviewRef.current = value
   }
 
-  useEffect(() => {
-    threadId && scrollToBottom()
-  }, [threadId])
-
   const handlePaste = (e: React.ClipboardEvent) => {
     addHapticFeedback()
     device === "desktop" && setShouldFocus(true)
@@ -3877,7 +3872,9 @@ export default function Chat({
                 style={{
                   ...styles.chat.style,
                   ...(isStandalone ? styles.standalone : {}),
-                  ...(isChatFloating ? styles.chatFloating.style : {}),
+                  ...(isChatFloating
+                    ? { ...styles.chatFloating.style, paddingBottom: 45 }
+                    : {}),
                   "--glow-color":
                     COLORS[app?.themeColor as keyof typeof COLORS],
                   margin: "0 -4px 1.5px -4px",
