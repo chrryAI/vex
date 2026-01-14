@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useEffect, useState, useMemo } from "react"
+import { forwardRef, useEffect, useState, useMemo, useRef } from "react"
 import type {
   aiAgent,
   guest,
@@ -156,6 +156,9 @@ export default forwardRef<
   const { isUserScrolling, hasStoppedScrolling, resetScrollState } =
     useUserScroll()
 
+  // Track if we've already scrolled for this character profile loading session
+  const hasScrolledForLoadingRef = useRef(false)
+
   useEffect(() => {
     setCharacterProfile(thread?.characterProfile)
   }, [thread?.characterProfile])
@@ -170,13 +173,23 @@ export default forwardRef<
     characterProfilesEnabled &&
     loadingCharacterProfile?.threadId === threadId
 
+  // Reset scroll tracking when loading starts
+  useEffect(() => {
+    if (showLoadingCharacterProfile) {
+      hasScrolledForLoadingRef.current = false
+    }
+  }, [showLoadingCharacterProfile])
+
+  // Only scroll once when loading starts, don't interrupt user scroll
   useEffect(() => {
     if (
       showLoadingCharacterProfile &&
+      !hasScrolledForLoadingRef.current &&
       !isUserScrolling &&
       !hasStoppedScrolling
     ) {
       scrollToBottom()
+      hasScrolledForLoadingRef.current = true
     }
   }, [showLoadingCharacterProfile, isUserScrolling, hasStoppedScrolling])
 

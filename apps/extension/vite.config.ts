@@ -99,15 +99,13 @@ export default async ({ command, mode }) => {
   }
 
   const getIconPath = (size: 16 | 32 | 48 | 128) =>
-    siteConfig.slug === "chrry"
-      ? `icons/blossom-icon-${size}.png`
-      : `icons/${siteConfig.slug}-icon-${size}.png`
+    `icons/${siteConfig.slug}-icon-${size}.png`
 
   // Manifest base
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.10.48",
+    version: siteConfig.version || "1.10.49",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -340,15 +338,7 @@ export default async ({ command, mode }) => {
           index: resolve(__dirname, "index.html"),
         },
         // Exclude Tauri, Capacitor, and Firebase packages - they're only for desktop/mobile apps
-        external: [
-          "@tauri-apps/api",
-          "@tauri-apps/plugin-shell",
-          "@capacitor-firebase/authentication",
-          "@codetrix-studio/capacitor-google-auth",
-          "@capacitor/core",
-          /^@capacitor\//,
-          /^firebase\//,
-        ],
+        external: [],
         output: {
           entryFileNames: "assets/[name].js",
           chunkFileNames: "assets/[name].js",

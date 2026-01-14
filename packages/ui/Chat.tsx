@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   useMemo,
+  useCallback,
 } from "react"
 import clsx from "clsx"
 import {
@@ -428,11 +429,12 @@ export default function Chat({
       (!!threadIdRef.current || shouldUseCompactMode || minimize))
 
   const placeholder = isPear
-    ? `${t("Share your feedback and earn bonus credits!")} 🍐`
-    : (!user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7) ||
-        (user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26)
-      ? t("Click 🍇 to explore available ads")
-      : placeHolderInternal
+    ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍒`
+    : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+      ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+      : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+        ? `✨ ${t("Explore new apps while you chat")} 🍇`
+        : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -2120,26 +2122,29 @@ export default function Chat({
     }
   }
 
-  const handleInputChange = (
-    e:
-      | React.ChangeEvent<HTMLTextAreaElement>
-      | React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const value = e.target.value
-    setInput(value)
+  const handleInputChange = useCallback(
+    (
+      e:
+        | React.ChangeEvent<HTMLTextAreaElement>
+        | React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      const value = e.target.value
+      setInput(value)
 
-    // Handle typing notifications for collaborative threads
-    if (onTyping && thread) {
-      // Clear existing timeout
+      // Handle typing notifications for collaborative threads
+      if (onTyping && thread) {
+        // Clear existing timeout
 
-      // If input is empty, immediately stop typing
-      if (value.length === 0) {
-        onTyping(false)
-      } else {
-        onTyping(true)
+        // If input is empty, immediately stop typing
+        if (value.length === 0) {
+          onTyping(false)
+        } else {
+          onTyping(true)
+        }
       }
-    }
-  }
+    },
+    [onTyping, thread, setInput],
+  )
 
   function getUnlockTime() {
     if (user) {
