@@ -26,6 +26,9 @@ importers:
       '@axiomhq/pino':
         specifier: ^1.3.1
         version: 1.3.1
+      '@capacitor-firebase/authentication':
+        specifier: ^7.0.0
+        version: 7.5.0(@capacitor/core@7.4.4)
       '@capacitor/app':
         specifier: ^7.0.0
         version: 7.1.1(@capacitor/core@7.4.4)
@@ -675,9 +678,6 @@ importers:
 
   apps/mobile:
     dependencies:
-      '@capacitor-firebase/authentication':
-        specifier: ^7.0.0
-        version: 7.5.0(@capacitor/core@7.4.4)
       '@capacitor/android':
         specifier: ^7.0.0
         version: 7.4.4(@capacitor/core@7.4.4)
@@ -693,6 +693,9 @@ importers:
       '@chrryai/pepper':
         specifier: workspace:*
         version: link:../../packages/pepper
+      '@codetrix-studio/capacitor-google-auth':
+        specifier: 3.4.0-rc.4
+        version: 3.4.0-rc.4(@capacitor/core@7.4.4)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
         version: 4.7.0(vite@7.2.6(@types/node@25.0.2)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.2))
@@ -931,9 +934,9 @@ importers:
 
   packages/ui:
     dependencies:
-      '@capacitor-firebase/authentication':
-        specifier: ^8.0.1
-        version: 8.0.1(@capacitor/core@7.4.4)(firebase@12.7.0)
+      '@codetrix-studio/capacitor-google-auth':
+        specifier: 3.4.0-rc.4
+        version: 3.4.0-rc.4(@capacitor/core@7.4.4)
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -2326,15 +2329,6 @@ packages:
       firebase:
         optional: true
 
-  '@capacitor-firebase/authentication@8.0.1':
-    resolution: {integrity: sha512-F9ocfBGAnMGSvZ7dfwcqACS17HFZEF7B3dSbao34ZBxo5wCDikCROX/T6L5jNq2CGX4ByLOpOmvvzfH+nT5w3A==}
-    peerDependencies:
-      '@capacitor/core': '>=8.0.0'
-      firebase: ^12.6.0
-    peerDependenciesMeta:
-      firebase:
-        optional: true
-
   '@capacitor/android@7.4.4':
     resolution: {integrity: sha512-y8knfV1JXNrd6XZZLZireGT+EBCN0lvOo+HZ/s7L8LkrPBu4nY5UZn0Wxz4yOezItEII9rqYJSHsS5fMJG9gdw==}
     peerDependencies:
@@ -2377,6 +2371,11 @@ packages:
 
   '@chevrotain/utils@11.0.3':
     resolution: {integrity: sha512-YslZMgtJUyuMbZ+aKvfF3x1f5liK4mWNxghFRv7jqRR9C3R3fAOGTTKvxXDa2Y1s9zSbcpuO0cAxDYsc9SrXoQ==}
+
+  '@codetrix-studio/capacitor-google-auth@3.4.0-rc.4':
+    resolution: {integrity: sha512-d548/xKrbMHHbzMYSWnlgZCLZYo2zzY7Onrh3x8ujojrb7atkNK68I6su5WgmaBt4E+R4gxBsWams4554aOFjA==}
+    peerDependencies:
+      '@capacitor/core': ^6.0.0
 
   '@connectrpc/connect-node@1.6.1':
     resolution: {integrity: sha512-DxcD1wsF/aX9GegjAtl7VbpiZNjVJozy87VbaFoN6AF0Ln1Q757r5dgV59Gz0wmlk5f17txUsrEr1f2inlnnAg==}
@@ -14355,12 +14354,6 @@ snapshots:
     dependencies:
       '@capacitor/core': 7.4.4
 
-  '@capacitor-firebase/authentication@8.0.1(@capacitor/core@7.4.4)(firebase@12.7.0)':
-    dependencies:
-      '@capacitor/core': 7.4.4
-    optionalDependencies:
-      firebase: 12.7.0
-
   '@capacitor/android@7.4.4(@capacitor/core@7.4.4)':
     dependencies:
       '@capacitor/core': 7.4.4
@@ -14419,6 +14412,10 @@ snapshots:
   '@chevrotain/types@11.0.3': {}
 
   '@chevrotain/utils@11.0.3': {}
+
+  '@codetrix-studio/capacitor-google-auth@3.4.0-rc.4(@capacitor/core@7.4.4)':
+    dependencies:
+      '@capacitor/core': 7.4.4
 
   '@connectrpc/connect-node@1.6.1(@bufbuild/protobuf@1.10.1)(@connectrpc/connect@1.6.1(@bufbuild/protobuf@1.10.1))':
     dependencies:

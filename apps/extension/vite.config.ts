@@ -107,7 +107,7 @@ export default async ({ command, mode }) => {
   const manifestBase = {
     manifest_version: 3,
     name: `${siteConfig.name} 🍒`,
-    version: siteConfig.version || "1.10.46",
+    version: siteConfig.version || "1.10.48",
     description: siteConfig.description,
     permissions: isFirefox
       ? ["storage", "tabs", "contextMenus", "cookies"] // Firefox doesn't support sidePanel permission
@@ -271,6 +271,13 @@ export default async ({ command, mode }) => {
           ),
         },
         {
+          find: "@codetrix-studio/capacitor-google-auth",
+          replacement: path.resolve(
+            __dirname,
+            "./src/stubs/capacitor-firebase.ts",
+          ),
+        },
+        {
           find: "@capacitor/core",
           replacement: path.resolve(__dirname, "./src/stubs/capacitor-core.ts"),
         },
@@ -337,6 +344,7 @@ export default async ({ command, mode }) => {
           "@tauri-apps/api",
           "@tauri-apps/plugin-shell",
           "@capacitor-firebase/authentication",
+          "@codetrix-studio/capacitor-google-auth",
           "@capacitor/core",
           /^@capacitor\//,
           /^firebase\//,

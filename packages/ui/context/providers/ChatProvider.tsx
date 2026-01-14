@@ -44,6 +44,7 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      scrollToTop: (timeout?: number) => void
       onlyAgent: boolean
       shouldFetchThread: boolean
       setShouldFetchThread: (shouldFetchThread: boolean) => void
@@ -436,6 +437,7 @@ export function ChatProvider({
       setMessages([])
       threadIdRef.current = undefined
       router.push(to)
+      scrollToTop(100)
 
       refetchThreads()
     }
@@ -1046,7 +1048,7 @@ export function ChatProvider({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
-    if (showFocus) return
+    if (showFocus || isEmpty || !threadIdRef.current) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri
       requestAnimationFrame(() => {
@@ -1054,6 +1056,20 @@ export function ChatProvider({
         const behavior = isTauri ? "instant" : "smooth"
         window.scrollTo({
           top: document.body.scrollHeight,
+          behavior: behavior as ScrollBehavior,
+        })
+      })
+    }, timeout)
+  }
+
+  const scrollToTop = (timeout = 0) => {
+    setTimeout(() => {
+      // Use requestAnimationFrame for more stable scrolling in Tauri
+      requestAnimationFrame(() => {
+        // In Tauri, use instant scroll instead of smooth to prevent hopping
+        const behavior = isTauri ? "instant" : "smooth"
+        window.scrollTo({
+          top: 0,
           behavior: behavior as ScrollBehavior,
         })
       })
@@ -1160,6 +1176,7 @@ export function ChatProvider({
         setIsLoadingMore,
         isLoading,
         shouldFetchThread,
+        scrollToTop,
         setShouldFetchThread,
         refetchThread: async () => {
           setShouldFetchThread(true)
