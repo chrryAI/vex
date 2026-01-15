@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react"
+import { usePathname } from "./useWindowHistory"
 
 export const useUserScroll = () => {
+  const pathname = usePathname()
   const [isUserScrolling, setIsUserScrolling] = useState(false)
   const [hasStoppedScrolling, setHasStoppedScrolling] = useState(false)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isUserInitiatedRef = useRef(false)
-  const lastScrollTopRef = useRef(0)
   const interactionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
@@ -40,14 +41,17 @@ export const useUserScroll = () => {
     }
 
     const handleScroll = () => {
-      const currentScrollTop =
-        window.scrollY || document.documentElement.scrollTop
-      const isScrollingUp = currentScrollTop < lastScrollTopRef.current
-      lastScrollTopRef.current = currentScrollTop
+      const scrollTop = window.scrollY || document.documentElement.scrollTop
+      const scrollHeight = document.documentElement.scrollHeight
+      const clientHeight = window.innerHeight
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 50 // 50px threshold
 
-      // Always set isUserScrolling to true when scrolling up (to top)
-      // This prevents auto-scroll from interrupting user's upward scroll
-      if (isScrollingUp || isUserInitiatedRef.current) {
+      // If user scrolled to bottom (or programmatic scroll), reset stopped state
+      if (isAtBottom) {
+        setHasStoppedScrolling(false)
+      }
+
+      if (isUserInitiatedRef.current) {
         setIsUserScrolling(true)
         setHasStoppedScrolling(false)
 
@@ -55,9 +59,13 @@ export const useUserScroll = () => {
           clearTimeout(scrollTimeoutRef.current)
         }
 
+        // User stopped scrolling after 150ms
         scrollTimeoutRef.current = setTimeout(() => {
           setIsUserScrolling(false)
-          setHasStoppedScrolling(true) // User stopped scrolling = reading
+          // Only set hasStoppedScrolling if NOT at bottom
+          if (!isAtBottom) {
+            setHasStoppedScrolling(true)
+          }
         }, 150)
       }
     }
@@ -84,6 +92,11 @@ export const useUserScroll = () => {
       }
     }
   }, [])
+
+  // Reset scroll state when pathname changes (e.g., navigating to a new thread)
+  useEffect(() => {
+    resetScrollState()
+  }, [pathname, resetScrollState])
 
   return { isUserScrolling, hasStoppedScrolling, resetScrollState }
 }

@@ -1637,6 +1637,9 @@ export default function Chat({
     device === "desktop" && setShouldFocus(true)
     setIsLoading(true)
 
+    // Scroll to bottom after sending message
+    scrollToBottom(100)
+
     playNotification()
 
     if (!suggestSaveApp) {
