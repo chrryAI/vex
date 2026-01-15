@@ -256,9 +256,7 @@ const Thread = ({
       isWebSearchEnabled?: boolean
       isImageGenerationEnabled?: boolean
     }) => {
-      if (!isLoadingMore && !isUserScrolling && !hasStoppedScrolling) {
-        scrollToBottom()
-      }
+      scrollToBottom()
 
       if (isE2E && content.length > 500) {
         const wordCount = content.split(/\s+/).length
