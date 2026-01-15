@@ -273,7 +273,7 @@ export default function Skeleton({
             style={{
               ...skeletonStyles.header.style,
               ...(isStandalone && skeletonStyles.headerStandalone.style),
-              ...(isEmpty && skeletonStyles.headerEmpty.style),
+              ...((!threadId || isEmpty) && skeletonStyles.headerEmpty.style),
               ...(isCapacitor && os === "ios" && (!threadId || isEmpty)
                 ? { paddingTop: 55 }
                 : {}),

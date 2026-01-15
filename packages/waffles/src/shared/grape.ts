@@ -70,6 +70,7 @@ The chat interface could benefit from keyboard shortcuts for power users. For ex
     isLive,
     isNewChat: false,
     bookmark: false,
+    isPear: true, // Pear feedback doesn't count towards hourly limit
     prompts: [
       {
         text: prompt,

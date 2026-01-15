@@ -36,6 +36,7 @@ import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
+import { useUserScroll } from "../../hooks/useUserScroll"
 import { useError } from "./ErrorProvider"
 interface placeHolder {
   // TODO: Define placeHolder type
@@ -1047,8 +1048,10 @@ export function ChatProvider({
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
+  const { isUserScrolling, hasStoppedScrolling } = useUserScroll()
+
   const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
-    if (showFocus || isEmpty || !threadIdRef.current) return
+    if (showFocus || isEmpty || isUserScrolling) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri
       requestAnimationFrame(() => {
