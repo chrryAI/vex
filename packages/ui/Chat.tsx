@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   useMemo,
+  useCallback,
 } from "react"
 import clsx from "clsx"
 import {
@@ -421,18 +422,18 @@ export default function Chat({
     showChatInput,
   ])
 
+  const m = minimize && empty
+
   const isChatFloating =
-    minimize ||
-    isIDE ||
-    (isChatFloatingInternal &&
-      (!!threadIdRef.current || shouldUseCompactMode || minimize))
+    m || isIDE || (isChatFloatingInternal && shouldUseCompactMode)
 
   const placeholder = isPear
-    ? `${t("Share your feedback and earn bonus credits!")} 🍐`
-    : (!user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7) ||
-        (user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26)
-      ? t("Click 🍇 to explore available ads")
-      : placeHolderInternal
+    ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍒`
+    : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+      ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+      : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+        ? `✨ ${t("Explore new apps while you chat")} 🍇`
+        : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -1636,6 +1637,9 @@ export default function Chat({
     device === "desktop" && setShouldFocus(true)
     setIsLoading(true)
 
+    // Scroll to bottom after sending message
+    scrollToBottom(100)
+
     playNotification()
 
     if (!suggestSaveApp) {
@@ -2120,26 +2124,29 @@ export default function Chat({
     }
   }
 
-  const handleInputChange = (
-    e:
-      | React.ChangeEvent<HTMLTextAreaElement>
-      | React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const value = e.target.value
-    setInput(value)
+  const handleInputChange = useCallback(
+    (
+      e:
+        | React.ChangeEvent<HTMLTextAreaElement>
+        | React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      const value = e.target.value
+      setInput(value)
 
-    // Handle typing notifications for collaborative threads
-    if (onTyping && thread) {
-      // Clear existing timeout
+      // Handle typing notifications for collaborative threads
+      if (onTyping && thread) {
+        // Clear existing timeout
 
-      // If input is empty, immediately stop typing
-      if (value.length === 0) {
-        onTyping(false)
-      } else {
-        onTyping(true)
+        // If input is empty, immediately stop typing
+        if (value.length === 0) {
+          onTyping(false)
+        } else {
+          onTyping(true)
+        }
       }
-    }
-  }
+    },
+    [onTyping, thread, setInput],
+  )
 
   function getUnlockTime() {
     if (user) {
@@ -2471,10 +2478,6 @@ export default function Chat({
     setNeedsReviewInternal(value)
     needsReviewRef.current = value
   }
-
-  useEffect(() => {
-    threadId && scrollToBottom()
-  }, [threadId])
 
   const handlePaste = (e: React.ClipboardEvent) => {
     addHapticFeedback()
@@ -3630,7 +3633,7 @@ export default function Chat({
                       </Button>
                     </Div>
                   ) : null}
-                  {empty && !threadIdRef.current && !isPear && (
+                  {empty && !threadIdRef.current && (
                     <>
                       <Grapes
                         dataTestId="grapes-button"
@@ -3872,7 +3875,9 @@ export default function Chat({
                 style={{
                   ...styles.chat.style,
                   ...(isStandalone ? styles.standalone : {}),
-                  ...(isChatFloating ? styles.chatFloating.style : {}),
+                  ...(isChatFloating
+                    ? { ...styles.chatFloating.style, paddingBottom: 45 }
+                    : {}),
                   "--glow-color":
                     COLORS[app?.themeColor as keyof typeof COLORS],
                   margin: "0 -4px 1.5px -4px",

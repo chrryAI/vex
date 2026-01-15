@@ -15,7 +15,7 @@ echo "1️⃣  Creating .env.example files..."
 # apps/api
 cat > apps/api/.env.example << 'EOF'
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/chrry
+DB_URL=postgresql://user:password@localhost:5432/chrry
 
 # NextAuth
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
@@ -50,7 +50,7 @@ EOF
 # apps/web
 cat > apps/web/.env.example << 'EOF'
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/chrry
+DB_URL=postgresql://user:password@localhost:5432/chrry
 
 # NextAuth
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
@@ -69,7 +69,7 @@ EOF
 # apps/ws
 cat > apps/ws/.env.example << 'EOF'
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/chrry
+DB_URL=postgresql://user:password@localhost:5432/chrry
 
 # WebSocket
 WS_PORT=8080
@@ -81,7 +81,7 @@ EOF
 # packages/db
 cat > packages/db/.env.example << 'EOF'
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/chrry
+DB_URL=postgresql://user:password@localhost:5432/chrry
 EOF
 
 echo "✅ Created .env.example files"

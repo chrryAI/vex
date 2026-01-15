@@ -14,7 +14,7 @@ services:
       # API URL - point to your API server
       - VITE_API_URL=${VITE_API_URL:-http://localhost:3001}
       # Database connection (if needed)
-      - DATABASE_URL=${DATABASE_URL}
+      - DB_URL=${DB_URL}
       # Auth secrets
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
@@ -38,7 +38,7 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
+      - DB_URL=${DB_URL}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
     networks:

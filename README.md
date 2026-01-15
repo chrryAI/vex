@@ -81,7 +81,7 @@ Bash
 # Generates necessary .env files from templates
 
 pnpm run setup:env
-Edit the .env files to add your DATABASE_URL and OPENAI_API_KEY (or set VITE_TESTING_ENV='e2e' for mock mode).
+Edit the .env files to add your DB_URL and OPENAI_API_KEY (or set VITE_TESTING_ENV='e2e' for mock mode).
 
 Database Initialization
 

@@ -36,6 +36,7 @@ import { useApp } from "./AppProvider"
 import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
+import { useUserScroll } from "../../hooks/useUserScroll"
 import { useError } from "./ErrorProvider"
 interface placeHolder {
   // TODO: Define placeHolder type
@@ -44,6 +45,7 @@ interface placeHolder {
 
 const ChatContext = createContext<
   | {
+      scrollToTop: (timeout?: number) => void
       onlyAgent: boolean
       shouldFetchThread: boolean
       setShouldFetchThread: (shouldFetchThread: boolean) => void
@@ -436,6 +438,7 @@ export function ChatProvider({
       setMessages([])
       threadIdRef.current = undefined
       router.push(to)
+      scrollToTop(100)
 
       refetchThreads()
     }
@@ -1045,15 +1048,39 @@ export function ChatProvider({
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
+  const { isUserScrolling, hasStoppedScrolling } = useUserScroll()
+
+  const toFetchRef = useRef<boolean | null>(null)
+
   const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
-    if (showFocus) return
+    if (showFocus) setShowFocus(false)
     setTimeout(() => {
+      if (isEmpty || isUserScrolling || hasStoppedScrolling) return
       // Use requestAnimationFrame for more stable scrolling in Tauri
       requestAnimationFrame(() => {
         // In Tauri, use instant scroll instead of smooth to prevent hopping
         const behavior = isTauri ? "instant" : "smooth"
         window.scrollTo({
           top: document.body.scrollHeight,
+          behavior: behavior as ScrollBehavior,
+        })
+        toFetchRef.current = null
+      })
+    }, timeout)
+  }
+
+  useEffect(() => {
+    !toFetchRef.current && (toFetchRef.current = !!toFetch)
+  }, [toFetch])
+
+  const scrollToTop = (timeout = 0) => {
+    setTimeout(() => {
+      // Use requestAnimationFrame for more stable scrolling in Tauri
+      requestAnimationFrame(() => {
+        // In Tauri, use instant scroll instead of smooth to prevent hopping
+        const behavior = isTauri ? "instant" : "smooth"
+        window.scrollTo({
+          top: 0,
           behavior: behavior as ScrollBehavior,
         })
       })
@@ -1160,6 +1187,7 @@ export function ChatProvider({
         setIsLoadingMore,
         isLoading,
         shouldFetchThread,
+        scrollToTop,
         setShouldFetchThread,
         refetchThread: async () => {
           setShouldFetchThread(true)
