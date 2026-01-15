@@ -1051,14 +1051,7 @@ export function ChatProvider({
   const { isUserScrolling, hasStoppedScrolling } = useUserScroll()
 
   const scrollToBottom = (timeout = isTauri ? 0 : 500, force = false) => {
-    if (
-      showFocus ||
-      isEmpty ||
-      !threadIdRef.current ||
-      isUserScrolling ||
-      hasStoppedScrolling
-    )
-      return
+    if (showFocus || isEmpty || isUserScrolling) return
     setTimeout(() => {
       // Use requestAnimationFrame for more stable scrolling in Tauri
       requestAnimationFrame(() => {
