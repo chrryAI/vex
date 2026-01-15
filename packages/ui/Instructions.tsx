@@ -174,7 +174,7 @@ export default function Instructions({
 
   const { os, isStandalone, isTauri, isCapacitor } = usePlatform()
 
-  const offset = isStandalone ? -250 : 0
+  const offset = isStandalone ? -300 : 0
 
   const count = useResponsiveCount(
     [
@@ -183,6 +183,7 @@ export default function Instructions({
       { height: 750, count: 2 }, // Larger phones: show 2 (was 3)
       { height: 800, count: 3 }, // Small tablets/large phones: show 3 (was 4)
       { height: 850, count: 5 }, // Tablets: show 4 (was 5)
+      { height: 900, count: 6 }, // Tablets: show 4 (was 5)
       { height: 950, count: 7 }, // Large tablets: show 5 (was 6)
       { height: Infinity, count: 7 }, // Desktop: show 6 (was 7)
     ],
