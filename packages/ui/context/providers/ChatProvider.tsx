@@ -909,6 +909,12 @@ export function ChatProvider({
   >("selectedAgent", defaultAgent)
 
   useEffect(() => {
+    auth.selectedAgent?.name !== selectedAgent?.name &&
+      selectedAgent &&
+      auth.setSelectedAgent(selectedAgent)
+  }, [selectedAgent])
+
+  useEffect(() => {
     if (selectedAgent == null) return
 
     !selectedAgent && setSelectedAgent(defaultAgent)
