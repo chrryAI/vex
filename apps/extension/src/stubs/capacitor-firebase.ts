@@ -18,4 +18,14 @@ export const FirebaseAuthentication = {
   },
 }
 
+export const GoogleAuth = {
+  initialize: async () => {},
+  signIn: async () => {
+    throw new Error("Capacitor auth not available in extension")
+  },
+  signOut: async () => {
+    throw new Error("Capacitor auth not available in extension")
+  },
+}
+
 export default {}

@@ -170,7 +170,7 @@ export default function Menu({
       () => {
         setIsDrawerOpen(!isDrawerOpen)
       },
-      isCapacitor ? 300 : 0,
+      isCapacitor ? 300 : 200,
     )
   }
 
