@@ -180,6 +180,7 @@ export function TimerContextProvider({
     isLoadingTasks,
     fetchTasks,
     session,
+    ...auth
   } = useAuth()
 
   const { enableSound } = useTheme()
@@ -228,6 +229,7 @@ export function TimerContextProvider({
   const [activePomodoro, setActivePomodoro] = useState<number | null>(null)
 
   const setTimer = (timer: timer | null) => {
+    timer && auth.setTimer(timer)
     setTimerInternal((prevTimer) => {
       if (
         prevTimer?.id === timer?.id &&
