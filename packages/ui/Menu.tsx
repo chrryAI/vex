@@ -137,6 +137,7 @@ export default function Menu({
     if (!loadingAppId) {
       setLoadingThreadId(null)
       loadingThreadId && router.push(`/threads/${loadingThreadId}`)
+      loadingThreadId && isSmallDevice ? toggleMenu() : null
     }
   }, [loadingAppId])
 
