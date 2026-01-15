@@ -60,6 +60,7 @@ export const chat = async ({
   bookmark = true,
   isRetro = false,
   app,
+  isPear = false,
 }: {
   messagesConsumed?: number
   isSubscriber?: boolean
@@ -102,6 +103,7 @@ export const chat = async ({
   bookmark?: boolean
   isRetro?: boolean
   app?: string
+  isPear?: boolean
 }) => {
   log({ page })
   let credits = isSubscriber ? 2000 : isMember ? 150 : 30
@@ -743,7 +745,10 @@ export const chat = async ({
 
       prompt.model && (credits -= getModelCredits(prompt.model))
     } else {
-      hourlyUsage += 1 + (prompt.debateAgent ? 1 : 0)
+      // Don't count Pear feedback messages towards hourly limit
+      if (!isPear) {
+        hourlyUsage += 1 + (prompt.debateAgent ? 1 : 0)
+      }
     }
 
     // Check if delete button exists
