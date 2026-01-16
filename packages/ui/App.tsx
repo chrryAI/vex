@@ -890,6 +890,7 @@ export default function App({
             <Div style={{ ...styles.section.style }}>
               {appStatus?.part || userBaseApp || guestBaseApp ? null : (
                 <Button
+                  data-testid="add-agent-button"
                   className="link"
                   style={{
                     ...utilities.link,

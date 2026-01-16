@@ -425,8 +425,9 @@ export default function Share({
                       {collaboration.user.image ? (
                         <Img
                           src={collaboration.user.image}
-                          width={20}
-                          height={20}
+                          width={30}
+                          height={30}
+                          style={{ borderRadius: "50%" }}
                           alt={collaboration.user.name || ""}
                         />
                       ) : (
