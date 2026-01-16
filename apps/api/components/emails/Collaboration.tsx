@@ -238,7 +238,7 @@ export default function CollaborationEmail({
       <Body style={main}>
         <Container style={container}>
           <Img
-            src={`${resolvedOrigin}/icons/${iconName}-128.png`}
+            src={`https://chrry.ai/icons/${iconName}-128.png`}
             width="64"
             height="64"
             alt={siteConfig.name}
