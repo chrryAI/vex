@@ -61,7 +61,7 @@ Use the full description above, formatted appropriately for each store's require
 
 ### Keywords:
 
-AI marketplace, AI apps, productivity, sidebar, research, collaboration, writing, code review, document analysis, browser extension, artificial intelligence, multi-model AI, Claude, GPT-4, DeepSeek, Chrry
+AI assistant, productivity tools, browser sidebar, research helper, coding assistant
 
 ### Category:
 

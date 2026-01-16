@@ -78,6 +78,7 @@ const Thread = ({
     dailyQuestionData,
     dailyQuestionIndex,
     setDailyQuestionIndex,
+    minimize,
     ...auth
   } = useAuth()
 
@@ -372,7 +373,12 @@ const Thread = ({
           // paddingBottom: 195,
           // paddingLeft: isMobileDevice ? 0 : 10,
           ...styles.thread.style,
-          ...(isEmpty && !threadId && hasHydrated && styles.threadEmpty.style),
+          ...(isEmpty &&
+            !threadId &&
+            hasHydrated && {
+              ...styles.threadEmpty.style,
+              paddingBottom: minimize ? 120 : 160,
+            }),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
             marginBottom: isIDE ? 50 : undefined,
