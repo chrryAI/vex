@@ -97,7 +97,6 @@ collaborations.post("/", async (c) => {
         language={member?.language || defaultLocale}
       />,
     )
-    console.log(`🚀 ~ collaborations.post ~ emailHtml:`, emailHtml)
 
     await sendEmail({
       c,
