@@ -203,7 +203,11 @@ export function checkThreadSummaryLimit({
 
   // Determine user type and limit
   let limit: number
-  if (user?.subscription || guest?.subscription) {
+
+  // Admins get Plus-level limits (matches average user tier)
+  if (user?.role === "admin") {
+    limit = THREAD_SUMMARY_LIMITS.plus
+  } else if (user?.subscription || guest?.subscription) {
     limit =
       user?.subscription?.plan === "pro"
         ? THREAD_SUMMARY_LIMITS.pro
