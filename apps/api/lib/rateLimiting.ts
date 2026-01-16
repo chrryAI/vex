@@ -2,6 +2,11 @@ import arcjet, { slidingWindow } from "@arcjet/node"
 import { type user, type guest, type subscription, type app } from "@repo/db"
 import { isDevelopment, isE2E, isOwner } from "@chrryai/chrry/utils"
 
+// Type-safe Arcjet request interface
+interface ArcjetCompatibleRequest extends Omit<Request, "headers"> {
+  headers: Record<string, string | string[] | undefined>
+}
+
 // Create separate Arcjet instances for each tier
 const ajAnonymous = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -121,8 +126,20 @@ export async function checkRateLimit(
   // Determine identifier
   const identifier = member?.id || guest?.id || "anonymous"
 
+  // Convert Headers to plain object for Arcjet compatibility
+  const headers: Record<string, string | string[] | undefined> = {}
+  request.headers.forEach((value, key) => {
+    headers[key] = value
+  })
+
+  // Create Arcjet-compatible request object
+  const arcjetRequest: ArcjetCompatibleRequest = {
+    ...request,
+    headers,
+  }
+
   // Protect with custom characteristic
-  const decision = await arcjetInstance.protect(request, {
+  const decision = await arcjetInstance.protect(arcjetRequest, {
     userId: identifier,
   })
 
@@ -359,10 +376,22 @@ export async function checkGenerationRateLimit(
     "127.0.0.1"
   const threadKey = `${identifier}:${threadId}`
 
+  // Convert Headers to plain object for Arcjet compatibility
+  const headers: Record<string, string | string[] | undefined> = {}
+  request.headers.forEach((value, key) => {
+    headers[key] = value
+  })
+
+  // Create Arcjet-compatible request object
+  const arcjetRequest: ArcjetCompatibleRequest = {
+    ...request,
+    headers,
+  }
+
   // Check both limits
   const [hourlyDecision, threadDecision] = await Promise.all([
-    hourlyInstance.protect(request, { userId: identifier }),
-    perThreadInstance.protect(request, { threadKey }),
+    hourlyInstance.protect(arcjetRequest, { userId: identifier }),
+    perThreadInstance.protect(arcjetRequest, { threadKey }),
   ])
 
   const success = !hourlyDecision.isDenied() && !threadDecision.isDenied()

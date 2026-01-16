@@ -101,13 +101,17 @@ export default forwardRef<
     app,
     chrry,
     accountApp,
+
     isPear,
+    ...auth
   } = useAuth()
 
   const canCreateAgent = !accountApp && app && chrry && app?.id === chrry?.id
 
   // Chat context
-  const { threadId, scrollToBottom } = useChat()
+  const { scrollToBottom } = useChat()
+
+  const threadId = auth.threadId || auth.threadIdRef.current
 
   // Navigation context (router is the wrapper)
   const { router } = useNavigationContext()
@@ -123,6 +127,11 @@ export default forwardRef<
   const [loadingCharacterProfile, setLoadingCharacterProfile] = useState<
     characterProfile | undefined
   >()
+
+  console.log(
+    `🚀 ~ onMessage: ~ loadingCharacterProfile:`,
+    loadingCharacterProfile,
+  )
 
   const [characterProfile, setCharacterProfile] = useState<
     characterProfile | undefined
@@ -144,6 +153,7 @@ export default forwardRef<
         setLoadingCharacterProfile(undefined)
       }
       if (type === "character_tag_creating") {
+        console.log(`🚀 ~ onMessage: ~ type:`, type)
         onCharacterProfileUpdate?.()
         setLoadingCharacterProfile(data)
       }
