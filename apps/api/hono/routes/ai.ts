@@ -15,6 +15,7 @@ import {
   sql,
   and,
   isNull,
+  aiAgent,
 } from "@repo/db"
 
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
@@ -1977,7 +1978,7 @@ ${
     guestId: guest?.id,
   })
 
-  const agent = await getAiAgent({ id: agentId })
+  let agent = await getAiAgent({ id: agentId })
 
   if (stopStreamId && agent) {
     if (
@@ -5064,6 +5065,27 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       apiKey: claudeKey,
     })
     model = claudeProvider(claude.modelId) // Use Claude Sonnet 4 for multimodal
+  } else if (rest.webSearchEnabled && agent.name === "sushi") {
+    const perplexityAgent = await getAiAgent({
+      name: "perplexity",
+    })
+
+    if (!perplexityAgent) {
+      console.log("❌ Perplexity not found")
+      return c.json({ error: "Perplexity not found" }, { status: 404 })
+    }
+    console.log("🤖 Using Perplexity for web search (no reasoning)")
+    const perplexityKey =
+      appApiKeys.perplexity || process.env.PERPLEXITY_API_KEY
+    if (appApiKeys.perplexity) {
+      console.log("✅ Using app-specific Perplexity API key")
+    }
+    // Perplexity doesn't have a createPerplexity, uses env var
+    if (appApiKeys.perplexity) {
+      process.env.PERPLEXITY_API_KEY = appApiKeys.perplexity
+    }
+    model = perplexity(perplexityAgent.modelId) // "sonar"
+    agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     switch (agent.name) {
       case "deepSeek":
@@ -5197,14 +5219,22 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
     ? console.log("🤖 Agent supports web search")
     : console.log("❌ Agent does not support web search")
 
-  // Function to extract web search results from Perplexity response and process citations
-  const processPerplexityResponse = (
+  // Function to extract web search results from web search response and process citations
+  // Supports any agent with webSearch capability (Perplexity, Sushi, etc.)
+  const processWebSearchResponse = (
     text: string,
-    agentName: string,
+    agent: aiAgent,
     responseMetadata?: any,
   ): { processedText: string; webSearchResults: webSearchResultType[] } => {
-    // Only process Perplexity responses
-    if (agentName !== "perplexity") {
+    console.log(
+      `🔍 processWebSearchResponse called with agent: "${agent.name}" (webSearch: ${agent.capabilities?.webSearch})`,
+    )
+
+    // Only process if agent has web search capability
+    if (!agent.capabilities?.webSearch) {
+      console.log(
+        `⏭️ Skipping - agent "${agent.name}" does not have webSearch capability`,
+      )
       return { processedText: text, webSearchResults: [] }
     }
 
@@ -5300,6 +5330,19 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
           break
         }
       }
+    }
+
+    // Fallback: If we found citations but no sources (e.g., Sushi web search),
+    // create placeholder sources so citations can still be rendered
+    if (webSearchResults.length === 0 && citationNumbers.length > 0) {
+      console.log(
+        `⚠️ Found ${citationNumbers.length} citations but no sources in metadata - creating placeholders`,
+      )
+      webSearchResults = citationNumbers.map((num) => ({
+        title: `Source ${num}`,
+        url: "#", // Placeholder URL
+        snippet: "Source information not available",
+      }))
     }
 
     // Build citation references section if we have search results
@@ -6259,12 +6302,28 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // // Save final message to database
         if (finalText) {
           console.log("💾 Saving Sushi message to DB...")
+
+          // Process web search citations only if web search is enabled by user
+          let processedText = finalText
+          let webSearchResults: webSearchResultType[] = []
+
+          if (rest.webSearchEnabled) {
+            const result = processWebSearchResponse(
+              finalText,
+              agent,
+              responseMetadata,
+            )
+            processedText = result.processedText
+            webSearchResults = result.webSearchResults
+          }
+
           try {
             const aiMessage = await createMessage({
               ...newMessagePayload,
-              content: finalText + creditRewardMessage, // Add credit reward thank you
+              content: processedText + creditRewardMessage, // Use processed text with citations
               reasoning: reasoningText || undefined, // Store reasoning separately
               isPear: requestData.pear || false, // Track Pear feedback submissions
+              webSearchResult: webSearchResults, // Save web search results
             })
             console.log("✅ createMessage completed successfully")
 
@@ -7010,10 +7069,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         aiResponse:
           finalText.slice(0, 150) + (finalText.length > 150 ? "..." : ""), // Use first 50 chars as title
       })
-      // Process Perplexity response and extract web search results
-      const { processedText, webSearchResults } = processPerplexityResponse(
+      // Process web search response and extract web search results (any agent with webSearch capability)
+      const { processedText, webSearchResults } = processWebSearchResponse(
         finalText,
-        agent.name,
+        agent,
         responseMetadata,
       )
 

@@ -137,6 +137,7 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
 
   // Debug: Show markdown content
   console.log(
+    webSearchResults,
     "📝 Markdown content preview:",
     processedContent.substring(0, 300),
   )

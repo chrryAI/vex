@@ -727,18 +727,6 @@ export function ChatProvider({
 
   // AI Agents
 
-  const returnSelectedAgent = (
-    agent: aiAgent | undefined | null,
-  ): aiAgent | undefined | null => {
-    if (!isAgentAuthorized(agent)) {
-      const a = isWebSearchEnabled ? perplexityAgent : sushiAgent
-
-      return a
-    }
-
-    return agent
-  }
-
   useEffect(() => {
     isPear && setSelectedAgent(sushiAgent)
   }, [isPear])
@@ -921,7 +909,9 @@ export function ChatProvider({
   }, [defaultAgent, selectedAgent])
 
   const setIsWebSearchEnabled = (value: boolean) => {
-    value ? setSelectedAgent(perplexityAgent) : undefined
+    value && !selectedAgent?.capabilities?.webSearch
+      ? setSelectedAgent(perplexityAgent)
+      : undefined
     setIsWebSearchEnabledInternal(value)
   }
 
