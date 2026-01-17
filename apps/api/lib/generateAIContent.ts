@@ -30,7 +30,7 @@ import {
   retroSessions,
 } from "@repo/db"
 import { and, eq, isNull } from "@repo/db"
-import { instructions } from "@repo/db/src/schema"
+import { instructions, threads } from "@repo/db/src/schema"
 
 const memorySchema = z.array(
   z.object({
@@ -1080,6 +1080,18 @@ async function generateAIContent({
   const userId = user?.id
   const guestId = guest?.id
   try {
+    // Verify thread exists in DB before proceeding (prevents race condition errors)
+    const threadExists = await db.query.threads.findFirst({
+      where: eq(threads.id, threadId),
+    })
+
+    if (!threadExists) {
+      console.log(
+        `⚠️ Thread ${threadId} not found in DB - skipping background content generation (likely race condition)`,
+      )
+      return
+    }
+
     // Check rate limits first
     if (!checkThreadSummaryLimit({ user, guest, thread })) {
       console.log(
