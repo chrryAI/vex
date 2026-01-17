@@ -120,7 +120,9 @@ const Threads = ({
   const [lastStarredId, setLastStarredId] = useState<string | null>(null)
 
   // Use backend sorting - no client-side sorting needed when sortByDate is false
-  const sortedThreads = threads.threads
+  const sortedThreads = threads.threads.sort((a, b) => {
+    return (b.isMainThread ? 1 : 0) - (a.isMainThread ? 1 : 0)
+  })
 
   const threadRefs = useRef<{ [id: string]: HTMLDivElement | null }>({})
 
@@ -401,14 +403,28 @@ const Threads = ({
                       })()}
 
                       {!isVisitor && (
-                        <Bookmark
-                          dataTestId="threads"
-                          onSave={() => {
-                            refetch()
-                            refetchThreads()
-                          }}
-                          thread={thread}
-                        />
+                        <>
+                          {thread.isMainThread ? (
+                            <Span
+                              title={t("DNA thread")}
+                              style={{
+                                marginRight: 3,
+                                marginLeft: 3,
+                                fontSize: 12,
+                              }}
+                            >
+                              🧬
+                            </Span>
+                          ) : null}
+                          <Bookmark
+                            dataTestId="threads"
+                            onSave={() => {
+                              refetch()
+                              refetchThreads()
+                            }}
+                            thread={thread}
+                          />
+                        </>
                       )}
                       <Div style={{ ...styles.right.style }}>
                         <Span style={{ ...styles.threadItemDate.style }}>
