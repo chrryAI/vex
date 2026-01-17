@@ -1185,9 +1185,10 @@ export default function App({
                 style={{
                   ...styles.section.style,
                   ...styles.appsGrid.style,
+                  padding: 0,
                 }}
               >
-                <Div style={{ ...styles.apps.style }}>
+                <Div style={{ ...styles.apps.style, overflowWrap: "anywhere" }}>
                   {appsState.slice(0, 5)?.map((item, index) => {
                     const showAtlasHere = index === 1 && isBlossom
 
@@ -1389,6 +1390,7 @@ export default function App({
                                     display: "inline-flex",
                                     alignItems: "center",
                                     gap: "0.35rem",
+                                    textAlign: "center",
                                   }}
                                   href={getAppSlug(item)}
                                   onClick={(e) => {

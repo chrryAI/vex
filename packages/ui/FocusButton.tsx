@@ -866,7 +866,7 @@ export default function FocusButton({
                         }}
                       >
                         <AlarmClockCheck width={16} height={16} />
-                        {t("New task")}
+                        {t("New Task")}
                       </Button>
                       {focus && (
                         <Span
