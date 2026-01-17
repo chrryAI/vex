@@ -388,6 +388,14 @@ const Thread = ({
         {!isVisitor && thread && (
           <Div style={styles.headers.style}>
             <Div style={styles.header.style}>
+              {thread.isMainThread ? (
+                <Span
+                  title={t("DNA thread")}
+                  style={{ marginRight: 3, fontSize: 16 }}
+                >
+                  🧬
+                </Span>
+              ) : null}
               <Instructions
                 onSave={(data) => {
                   setThread({

@@ -6,6 +6,7 @@ import { LinkIcon, LogInIcon, LogIn, UserRoundPlus } from "./icons"
 import { apiFetch, isDevelopment } from "./utils"
 import { FaGoogle, FaApple, FaGithub } from "react-icons/fa"
 import { v4 as uuidv4 } from "uuid"
+import A from "./a/A"
 export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
 }
@@ -94,7 +95,7 @@ export default function SignIn({
 
   const { threadId } = useChat()
 
-  const { router } = useNavigationContext()
+  const { router, removeParams } = useNavigationContext()
 
   const { captureException } = useError()
 
@@ -663,7 +664,8 @@ export default function SignIn({
                 >
                   {/* <LogInIcon color="var(--accent-6)" size={16} />{" "}
                   <span>{t("Login")}</span> */}
-                  <a
+                  <A
+                    openInNewTab
                     target="_blank"
                     href={`${FRONTEND_URL}/privacy`}
                     className="button small transparent"
@@ -671,23 +673,14 @@ export default function SignIn({
                       if (e.metaKey || e.ctrlKey) {
                         return
                       }
-                      e.preventDefault()
+                      // setPart(undefined)
 
-                      if (checkIsExtension()) {
-                        BrowserInstance?.runtime?.sendMessage({
-                          action: "openInSameTab",
-                          url: `${FRONTEND_URL}/privacy`,
-                        })
-
-                        return
-                      }
-
-                      window.open(`${FRONTEND_URL}/privacy`, "_blank")
+                      // window.open(`${FRONTEND_URL}/privacy`, "_blank")
                     }}
                     rel="noreferrer"
                   >
                     <LinkIcon size={16} /> {t("Privacy")}
-                  </a>
+                  </A>
                   <button
                     className="button small"
                     onClick={() => {
