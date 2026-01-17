@@ -628,8 +628,12 @@ export default function Menu({
                             }}
                             className="menuThreadItem"
                           >
-                            {thread.visibility !== "private" ||
-                            thread.collaborations?.length ? (
+                            {app?.mainThreadId === thread.id ? (
+                              <Span style={{ marginRight: 3, fontSize: 12 }}>
+                                🧬
+                              </Span>
+                            ) : thread.visibility !== "private" ||
+                              thread.collaborations?.length ? (
                               <Span
                                 style={{
                                   display: "inline-flex",
@@ -704,6 +708,7 @@ export default function Menu({
                                 </A>
                               )
                             })()}
+
                             {loadingThreadId === thread.id ? (
                               <Loading
                                 style={{
