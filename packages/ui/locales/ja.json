@@ -2013,5 +2013,15 @@
   "messages left! Discover more apps": "メッセージが残っています！もっと多くのアプリを見つけてみましょう",
   "Explore new apps while you chat": "チャットしながら新しいアプリを探索しましょう",
   "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Perplexity for web search. Use palette icon for image generation.": "🍣 高度な推論を持つ統合多モーダルAI。思考過程を表示し、画像/ビデオ/PDFを分析します。DeepSeek R1によって駆動されています。ウェブ検索のための混乱度。画像生成のためにパレットアイコンを使用してください。",
-  "Most advanced Gemini 3 Pro model.": "最も高度なGemini 3 Proモデル。"
+  "Most advanced Gemini 3 Pro model.": "最も高度なGemini 3 Proモデル。",
+  "Discover Apps": "アプリを探す",
+  "Discover apps and earn credits": "アプリを探してクレジットを獲得する",
+  "Discover relevant apps and earn credits for your attention": "関連性のあるアプリを探し、あなたの注目に対してクレジットを獲得する",
+  "Ready to Discover": "探す準備ができています",
+  "No apps available right now": "現在利用可能なアプリはありません",
+  "Check back soon or browse content to discover relevant apps": "すぐに再確認するか、関連性のあるアプリを見つけるためにコンテンツを閲覧してください",
+  "Manage your campaigns": "キャンペーンを管理する",
+  "Discovery Consent": "ディスカバリー同意",
+  "Enable discovery consent": "ディスカバリー同意を有効にする",
+  "Allow Grape to analyze content and show relevant apps": "Grapeにコンテンツを分析させ、関連するアプリを表示することを許可する"
 }

@@ -1940,8 +1940,8 @@
   "Request trade-off analysis! Understand pros/cons of microservices vs monolith, SQL vs NoSQL, etc.": "Request trade-off analysis! Understand pros/cons of microservices vs monolith, SQL vs NoSQL, etc.",
   "Code Generation Tips": "Code Generation Tips",
   "Most advanced Gemini 3 Pro model.": "Most advanced Gemini 3 Pro model.",
-  "Click 🍇 to explore available ads": "Click 🍇 to explore available ads",
-  "Explore grape by clicking 🍇(Available ads)": "Explore grape adds by clicking 🍇",
+  "Click 🍇 to explore available ads": "Click 🍇 to discover apps",
+  "Explore grape by clicking 🍇(Available ads)": "Discover apps by clicking 🍇",
   "Share your feedback and earn bonus credits!": "Share your feedback and earn bonus credits!",
   "You can lock the theme from the side menu": "You can lock the theme from the side menu",
   "Be specific about your requirements. Instead of 'make a login', say 'create a React login form with email validation and JWT auth'.": "Be specific about your requirements. Instead of 'make a login', say 'create a React login form with email validation and JWT auth'.",
@@ -2002,5 +2002,15 @@
   "Enhanced Data Privacy Protection": "Enhanced Data Privacy Protection",
   "💬 Share feedback, earn 10-50 credits!": "💬 Share feedback, earn 10-50 credits!",
   "messages left! Discover more apps": "messages left! Discover more apps",
-  "Explore new apps while you chat": "Explore new apps while you chat"
+  "Explore new apps while you chat": "Explore new apps while you chat",
+  "Discover Apps": "Discover Apps",
+  "Discover apps and earn credits": "Discover apps and earn credits",
+  "Discover relevant apps and earn credits for your attention": "Discover relevant apps and earn credits for your attention",
+  "Ready to Discover": "Ready to Discover",
+  "No apps available right now": "No apps available right now",
+  "Check back soon or browse content to discover relevant apps": "Check back soon or browse content to discover relevant apps",
+  "Manage your campaigns": "Manage your campaigns",
+  "Discovery Consent": "Discovery Consent",
+  "Enable discovery consent": "Enable discovery consent",
+  "Allow Grape to analyze content and show relevant apps": "Allow Grape to analyze content and show relevant apps"
 }
