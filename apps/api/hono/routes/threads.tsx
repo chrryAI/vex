@@ -130,6 +130,25 @@ threads.get("/", async (c) => {
     }
   }
 
+  const app = await getApp({
+    id: appId,
+    userId: member?.id,
+    guestId: guest?.id,
+  })
+
+  const dnaThread =
+    app?.mainThreadId &&
+    isOwner(app, {
+      userId: member?.id,
+      guestId: guest?.id,
+    })
+      ? await getThread({
+          id: app.mainThreadId,
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+      : undefined
+
   const pageSize = Number(c.req.query("pageSize") || "100")
   const search = c.req.query("search")
 
@@ -221,6 +240,15 @@ threads.get("/", async (c) => {
 
   return c.json({
     ...threadsResult,
+    threads: dnaThread
+      ? [
+          // Prepend DNA thread if it exists and is not already in the list
+          ...(threadsResult.threads.some((t) => t.id === dnaThread.id)
+            ? []
+            : [dnaThread]),
+          ...threadsResult.threads,
+        ]
+      : threadsResult.threads,
     user:
       userFromUserName &&
       userFromUserName.characterProfilesEnabled &&
