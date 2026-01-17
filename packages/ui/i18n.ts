@@ -48,19 +48,19 @@ let savedLang: string | null
 ;(async () => {
   savedLang = ""
   try {
-    savedLang = storage.getItem("locale")
+    savedLang =
+      (await BrowserInstance?.storage?.local?.get?.("locale")).locale ||
+      storage.getItem("locale")
   } catch (error) {
     console.log("Error reading language from storage:", error)
   }
 
   // Priority: URL > NEXT_LOCALE cookie > storage > browser language > default 'en'
-  const lang =
-    (await BrowserInstance?.storage?.local?.get?.("locale")).locale ||
-    ((urlLang ||
-      cookieLang ||
-      savedLang ||
-      getBrowserLanguage() ||
-      "en") as string)
+  const lang = (urlLang ||
+    cookieLang ||
+    savedLang ||
+    getBrowserLanguage() ||
+    "en") as string
 
   const safeLang = LANGUAGES.some((x) => x.code === lang) ? lang : "en"
   console.log(`🚀 ~ ; ~ lang:`, lang)
