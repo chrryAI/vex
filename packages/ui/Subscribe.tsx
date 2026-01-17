@@ -696,7 +696,6 @@ export default function Subscribe({
     setContact(false)
     setShowContact(false)
   }, [isContact])
-  console.log(`🚀 ~ Subscribe ~ selectedPlan:`, selectedPlan)
   const canSubscribe = () =>
     !hasSubscription() &&
     !isGifting &&

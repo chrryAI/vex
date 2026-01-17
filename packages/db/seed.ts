@@ -142,7 +142,7 @@ async function createAgents() {
       image: true,
       audio: true,
       video: true,
-      webSearch: false,
+      webSearch: true,
       pdf: true,
       imageGeneration: true, // Available via UI palette icon
     },

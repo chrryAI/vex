@@ -128,11 +128,6 @@ export default forwardRef<
     characterProfile | undefined
   >()
 
-  console.log(
-    `🚀 ~ onMessage: ~ loadingCharacterProfile:`,
-    loadingCharacterProfile,
-  )
-
   const [characterProfile, setCharacterProfile] = useState<
     characterProfile | undefined
   >(thread?.characterProfile)
@@ -153,7 +148,6 @@ export default forwardRef<
         setLoadingCharacterProfile(undefined)
       }
       if (type === "character_tag_creating") {
-        console.log(`🚀 ~ onMessage: ~ type:`, type)
         onCharacterProfileUpdate?.()
         setLoadingCharacterProfile(data)
       }
