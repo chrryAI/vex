@@ -335,23 +335,23 @@ export const getFeatures = ({
   const sushiFreeFeatures = [
     {
       emoji: "🍣",
-      text: "Sushi GitHub Agent: The First Strike",
+      text: t("Sushi GitHub Agent: The First Strike"),
     },
     {
       emoji: "🏗️",
-      text: "Automated .sushi Dojo Discovery & App Memory",
+      text: t("Automated .sushi Dojo Discovery & App Memory"),
     },
     {
       emoji: "🕸️",
-      text: "Dead Code Hunt (The Ghost in the Machine)",
+      text: t("Dead Code Hunt (The Ghost in the Machine)"),
     },
     {
       emoji: "🥋",
-      text: "E2E Testing Foundation (Single Dojo Branch)",
+      text: t("E2E Testing Foundation (Single Dojo Branch)"),
     },
     {
       emoji: "⚖️",
-      text: "Basic Metrics (Moral Usage)",
+      text: t("Basic Metrics (Moral Usage)"),
     },
     {
       emoji: "🍒",
@@ -367,7 +367,7 @@ export const getFeatures = ({
     },
     {
       emoji: "🎯",
-      text: "Create, Grow, Sell, Earn 70%",
+      text: t("Create, Grow, Sell, Earn 70%"),
     },
   ]
 
@@ -378,63 +378,63 @@ export const getFeatures = ({
     },
     {
       emoji: "🦅",
-      text: "Advanced Logic Reasoning",
+      text: t("Advanced Logic Reasoning"),
     },
     {
       emoji: "🍣",
-      text: "Bam 💥 Strike 🏹 Injection",
+      text: t("Bam 💥 Strike 🏹 Injection"),
     },
     {
       emoji: "🎲",
-      text: "Scenario Simulation (The Combatant's Trial)",
+      text: t("Scenario Simulation (The Combatant's Trial)"),
     },
     {
       emoji: "👊",
-      text: "Post-Merge 🧼 Tyler Insights: 'You are not your code'",
+      text: t("Post-Merge 🧼 Tyler Insights: 'You are not your code'"),
     },
     {
       emoji: "♾️",
-      text: "Unlimited E2E Runs (No Handbrake/Sınırsız Mermi)",
+      text: t("Unlimited E2E Runs (No Handbrake/Sınırsız Mermi)"),
     },
     {
       emoji: "🧠",
-      text: "Deep Context Awareness & PR Memory",
+      text: t("Deep Context Awareness & PR Memory"),
     },
 
     {
       emoji: "⚡",
-      text: "Priority Queue Access (141ms Latency Goal)",
+      text: t("Priority Queue Access (141ms Latency Goal)"),
     },
     {
       emoji: "🎯",
-      text: "Create, Grow, Sell, Earn 70%",
+      text: t("Create, Grow, Sell, Earn 70%"),
     },
   ]
 
   const sushiArchitectFeatures = [
     {
       emoji: "🦁",
-      text: "Strategic Architect Insights",
+      text: t("Strategic Architect Insights"),
     },
     {
       emoji: "🏛️",
-      text: "Architecture & Complexity XP Audit",
+      text: t("Architecture & Complexity XP Audit"),
     },
     {
       emoji: "🗝️",
-      text: "Full System Sovereignty Audit (Sato Mode)",
+      text: t("Full System Sovereignty Audit (Sato Mode)"),
     },
     {
       emoji: "🎭",
-      text: "Customizable 👊 Tyler & 🪢 Zarathustra Personas",
+      text: t("Customizable 👊 Tyler & 🪢 Zarathustra Personas"),
     },
     {
       emoji: "🛡️",
-      text: "Logic Toggle (Opt-out for Philosophy)",
+      text: t("Logic Toggle (Opt-out for Philosophy)"),
     },
     {
       emoji: "📉",
-      text: "Technical Debt Analytics & Autonomous Refactor",
+      text: t("Technical Debt Analytics & Autonomous Refactor"),
     },
     {
       emoji: "🌀",
@@ -442,7 +442,7 @@ export const getFeatures = ({
     },
     {
       emoji: "🎯",
-      text: "Create, Grow, Sell, Earn 70%",
+      text: t("Create, Grow, Sell, Earn 70%"),
     },
   ]
 
