@@ -20,7 +20,15 @@ const RESERVED_PATHS = [
  * Matches the behavior of Next.js middleware
  */
 export async function headersMiddleware(c: Context, next: Next) {
-  const url = new URL(c.req.url)
+  let url: URL
+  try {
+    // Try to parse as absolute URL
+    url = new URL(c.req.url)
+  } catch {
+    // Fallback for relative URLs (e.g., "/" during WebSocket upgrade)
+    // Use a dummy base URL since we only need pathname and searchParams
+    url = new URL(c.req.url, "http://localhost")
+  }
 
   const searchParams = url.searchParams
 
