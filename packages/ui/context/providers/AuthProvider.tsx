@@ -1463,14 +1463,14 @@ export function AuthProvider({
   const [language, setLanguageInternal] = useCookieOrLocalStorage(
     "locale",
     locale || (session?.locale as locale) || i18n.language || "en",
-    isExtension || isCapacitor,
+    // isExtension || isCapacitor,
   )
 
-  useEffect(() => {
-    if (session?.locale) {
-      setLanguageInternal(session?.locale)
-    }
-  }, [session?.locale])
+  // useEffect(() => {
+  //   if (session?.locale) {
+  //     setLanguageInternal(session?.locale)
+  //   }
+  // }, [session?.locale])
 
   const setLanguage = async (language: locale) => {
     setLanguageInternal(language)

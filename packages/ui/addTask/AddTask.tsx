@@ -131,12 +131,12 @@ const AddTask = ({
               ...styles.input.style,
             }}
             {...registerNewTask("title")}
-            placeholder="Task title"
+            placeholder={t("Task title")}
             type="text"
           />
           {errors.title && (
             <Div data-testid="add-task-error" style={styles.fieldError.style}>
-              {errors.title?.message}
+              {t(errors.title?.message || "")}
             </Div>
           )}
           <Div style={styles.addTaskButtons.style}>

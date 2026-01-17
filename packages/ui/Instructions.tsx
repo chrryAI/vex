@@ -1467,6 +1467,10 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                     style={{
                       ...utilities.link.style,
                       ...styles.instruction.style,
+                      textOverflow: "ellipsis",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      maxWidth: "300px",
                       ...(selectedInstruction?.id === instruction.id
                         ? styles.instructionSelected.style
                         : {}),
