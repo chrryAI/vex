@@ -8,6 +8,7 @@ import { useAuth, useNavigationContext } from "./context/providers"
 import { Button } from "./platform"
 import { useBookmarkStyles } from "./Bookmark.styles"
 import { useStyles } from "./context/StylesContext"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 export default function Bookmark({
   thread,
@@ -30,7 +31,7 @@ export default function Bookmark({
   const styles = useBookmarkStyles()
   const { utilities } = useStyles()
 
-  const { token, user, guest } = useAuth()
+  const { token, user, guest, plausible } = useAuth()
 
   const { threads } = useNavigationContext()
 
@@ -53,6 +54,14 @@ export default function Bookmark({
 
   const setBookmarked = async (bookmarked: boolean) => {
     setBookmarkedInternal(bookmarked)
+    plausible({
+      name: ANALYTICS_EVENTS.BOOKMARK,
+      props: {
+        bookmarked,
+        visibility: thread?.visibility,
+        hasCollaborations: !!thread?.collaborations?.length,
+      },
+    })
 
     onClick?.(bookmarked)
 
