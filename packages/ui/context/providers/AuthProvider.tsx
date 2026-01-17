@@ -45,6 +45,7 @@ import {
   paginatedMessages,
   moodType,
   instruction,
+  timer,
 } from "../../types"
 import toast from "react-hot-toast"
 import { getApp, getSession, getUser, getGuest } from "../../lib"
@@ -93,6 +94,8 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      timer?: timer
+      setTimer: (value: timer | undefined) => void
       chromeWebStoreUrl: string
       downloadUrl: string
       isRetro: boolean
@@ -181,6 +184,8 @@ const AuthContext = createContext<
           | undefined
         >
       >
+      selectedAgent?: aiAgent
+      setSelectedAgent: (value: aiAgent | undefined) => void
       threadId?: string
       taskId?: string
       updateMood: ({ type }: { type: moodType }) => Promise<void>
@@ -1237,7 +1242,9 @@ export function AuthProvider({
 
   // Duration map to track time between same event calls
   const plausibleDurationMap = useRef<Map<string, number>>(new Map())
+  const [timer, setTimer] = useState<timer | undefined>(undefined)
 
+  const [selectedAgent, setSelectedAgent] = useState<aiAgent | undefined>()
   const plausible = ({
     name,
     url,
@@ -1306,7 +1313,10 @@ export function AuthProvider({
       duration,
       minimize,
       isPear,
+      agentName: selectedAgent?.name,
+      agentVersion: selectedAgent?.version,
     }
+
     const finalProps = burn
       ? basic
       : {
@@ -1319,6 +1329,13 @@ export function AuthProvider({
             userId: user?.id,
             guestId: guest?.id,
           }),
+          timer: {
+            count: timer?.count,
+            preset1: timer?.preset1,
+            preset2: timer?.preset2,
+            isCountingDown: timer?.isCountingDown,
+            preset3: timer?.preset3,
+          },
         }
     // Only send meaningful events to API for AI context
     if (token && MEANINGFUL_EVENTS.includes(name as any)) {
@@ -1446,14 +1463,14 @@ export function AuthProvider({
   const [language, setLanguageInternal] = useCookieOrLocalStorage(
     "locale",
     locale || (session?.locale as locale) || i18n.language || "en",
-    isExtension || isCapacitor,
+    // isExtension || isCapacitor,
   )
 
-  useEffect(() => {
-    if (session?.locale) {
-      setLanguageInternal(session?.locale)
-    }
-  }, [session?.locale])
+  // useEffect(() => {
+  //   if (session?.locale) {
+  //     setLanguageInternal(session?.locale)
+  //   }
+  // }, [session?.locale])
 
   const setLanguage = async (language: locale) => {
     setLanguageInternal(language)
@@ -2644,6 +2661,8 @@ export function AuthProvider({
         setTasks,
         threadId,
         loadingApp,
+        selectedAgent,
+        setSelectedAgent,
         setLoadingApp,
         taskId,
         focus,
@@ -2738,6 +2757,8 @@ export function AuthProvider({
         shouldFetchSession,
         profile,
         setProfile,
+        timer,
+        setTimer,
         isLoadingApps,
         setShouldFetchSession,
         isLoading,

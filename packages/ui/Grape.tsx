@@ -90,7 +90,9 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
           // onClick={() => handleRoleSelect("consumer")}
           >
             <h3 style={styles.title.style}>I want to earn 💰</h3>
-            <p>View relevant ads and earn credits for your attention</p>
+            <p>
+              {t("Discover relevant apps and earn credits for your attention")}
+            </p>
           </div>
         )}
 
@@ -126,8 +128,8 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
   const renderConsumerHome = () => (
     <section>
       <header>
-        <h2>Available Ads</h2>
-        <p>View ads and earn credits</p>
+        <h2>{t("Discover Apps")}</h2>
+        <p>{t("Discover apps and earn credits")}</p>
       </header>
 
       <article>
@@ -140,9 +142,11 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
         </div>
 
         <div>
-          <h3>Ready to View</h3>
-          <p>No ads available right now</p>
-          <small>Check back soon or browse content to find relevant ads</small>
+          <h3>{t("Ready to Discover")}</h3>
+          <p>{t("No apps available right now")}</p>
+          <small>
+            {t("Check back soon or browse content to discover relevant apps")}
+          </small>
         </div>
       </article>
     </section>
@@ -254,7 +258,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
     <section>
       <header>
         <h2>Campaigns</h2>
-        <p>Manage your ad campaigns</p>
+        <p>{t("Manage your campaigns")}</p>
       </header>
 
       <article>
@@ -325,7 +329,7 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
             <dt>Role</dt>
             <dd>{userRole}</dd>
 
-            <dt>Ad Consent</dt>
+            <dt>{t("Discovery Consent")}</dt>
             <dd>
               {(user as any)?.adConsent || (guest as any)?.adConsent
                 ? "Granted"
@@ -349,9 +353,11 @@ export default function Grape({ style }: { style?: React.CSSProperties }) {
           <h3>Privacy</h3>
           <label>
             <input type="checkbox" />
-            Enable ad consent
+            {t("Enable discovery consent")}
           </label>
-          <small>Allow Grape to analyze content and show relevant ads</small>
+          <small>
+            {t("Allow Grape to analyze content and show relevant apps")}
+          </small>
         </div>
 
         <button

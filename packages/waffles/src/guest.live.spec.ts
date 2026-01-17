@@ -13,6 +13,7 @@ import { collaboration } from "./shared/collaboration"
 import { thread } from "./shared/thread"
 import { v4 as uuidv4 } from "uuid"
 import app from "./shared/app"
+import createApp from "./shared/createApp"
 
 const isMember = false
 
@@ -202,4 +203,89 @@ test.skip("File upload", async ({ page }) => {
       },
     ],
   })
+})
+
+test.skip("Create App", async ({ page }) => {
+  await createApp({ page, isLive, app: "test", slug: "test", isMember })
+})
+
+test.skip("App Name Validation - Minimum 3 Characters", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+  await wait(5000)
+
+  // Click add agent button
+  const addAgentButton = page.getByTestId("add-agent-button")
+  await addAgentButton.click()
+
+  // Clear name input
+  const nameInput = page.getByTestId("name-input")
+  await nameInput.clear()
+
+  // Error message should appear
+  const errorMessage = page.getByTestId("name-error-message")
+  await errorMessage.waitFor({ state: "visible" })
+
+  // System Prompt button should not be visible
+  const systemPromptButton = page.getByTestId("system-prompt-button")
+  await systemPromptButton.waitFor({ state: "hidden" })
+})
+
+test.skip("App Name Validation - 3 Characters Passes", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+  await wait(5000)
+
+  const addAgentButton = page.getByTestId("add-agent-button")
+  await addAgentButton.click()
+
+  const nameInput = page.getByTestId("name-input")
+  await nameInput.clear()
+  await nameInput.fill("ABC") // Exactly 3 characters
+
+  // Error should not be visible
+  const errorMessage = page.getByTestId("name-error-message")
+  await errorMessage.waitFor({ state: "hidden" })
+
+  // System Prompt button should be visible
+  const systemPromptButton = page.getByTestId("system-prompt-button")
+  await systemPromptButton.waitFor({ state: "visible" })
+})
+
+test.skip("System Prompt Validation - Required Field", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+  await wait(5000)
+
+  const addAgentButton = page.getByTestId("add-agent-button")
+  await addAgentButton.click()
+
+  const nameInput = page.getByTestId("name-input")
+  await nameInput.fill("TestApp")
+
+  // Click System Prompt button
+  const systemPromptButton = page.getByTestId("system-prompt-button")
+  await systemPromptButton.click()
+
+  // System prompt textarea should be visible
+  const systemPromptTextarea = page.getByTestId("system-prompt-textarea")
+  await systemPromptTextarea.waitFor({ state: "visible" })
+
+  // Continue button should be visible
+  const continueButton = page.getByTestId("continue-button")
+  await continueButton.waitFor({ state: "visible" })
+
+  // Click continue without filling system prompt
+  await continueButton.click()
+
+  await wait(1000)
+
+  // Modal should still be open (validation failed)
+  await systemPromptTextarea.waitFor({ state: "visible" })
 })

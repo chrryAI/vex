@@ -53,7 +53,7 @@ const app = async ({
       bookmark?: boolean
     }
   }[]
-  isNewChat: boolean
+  isNewChat?: boolean
   creditsConsumed?: number
   messagesConsumed?: number
 }) => {

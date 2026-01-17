@@ -101,13 +101,17 @@ export default forwardRef<
     app,
     chrry,
     accountApp,
+
     isPear,
+    ...auth
   } = useAuth()
 
   const canCreateAgent = !accountApp && app && chrry && app?.id === chrry?.id
 
   // Chat context
-  const { threadId, scrollToBottom } = useChat()
+  const { scrollToBottom } = useChat()
+
+  const threadId = auth.threadId || auth.threadIdRef.current
 
   // Navigation context (router is the wrapper)
   const { router } = useNavigationContext()

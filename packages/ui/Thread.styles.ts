@@ -21,7 +21,7 @@ export const ThreadStyleDefs = {
   },
   threadEmpty: {
     marginTop: "auto",
-    padding: "0 10px 160px 10px",
+    padding: "0 0px 160px 0px",
   },
   hourlyLimit: {
     fontSize: 12,

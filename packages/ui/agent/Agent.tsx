@@ -464,6 +464,7 @@ export default function Agent({
   return (
     <Div>
       <Button
+        data-testid="app-settings-button"
         style={{
           ...styles.settingsButton.style,
           ...utilities.small.style,
@@ -492,7 +493,8 @@ export default function Agent({
           title={
             tab !== "systemPrompt" ? (
               <Div style={styles.titleContainer.style}>
-                <input
+                <Input
+                  data-testid="name-input"
                   autoComplete="false"
                   {...register("name")}
                   title={t("Name your app......")}
@@ -505,11 +507,17 @@ export default function Agent({
                   placeholder={t("Name your app......")}
                 />
                 {!appFormWatcher.name ? (
-                  <Span style={styles.errorMessage.style}>
+                  <Span
+                    data-testid="name-error-message"
+                    style={styles.errorMessage.style}
+                  >
                     {t("Name: minimum 3 characters")}
                   </Span>
                 ) : errors.name?.message ? (
-                  <Span style={styles.errorMessage.style}>
+                  <Span
+                    data-testid="name-error-message"
+                    style={styles.errorMessage.style}
+                  >
                     {t(errors.name.message)}
                   </Span>
                 ) : null}
@@ -1133,6 +1141,7 @@ export default function Agent({
                 }}
               >
                 <TextArea
+                  data-testid="system-prompt-textarea"
                   id="systemPrompt"
                   {...register("systemPrompt")}
                   placeholder={`🎯 ${t("You are a specialized AI assistant with expertise in [your domain].")}
@@ -1753,6 +1762,7 @@ export default function Agent({
                   onClick={() => {
                     setTab("systemPrompt")
                   }}
+                  data-testid="system-prompt-button"
                   className={clsx(styles.tabButton, "small")}
                   type="button"
                   style={{
@@ -1774,6 +1784,7 @@ export default function Agent({
 
               {appFormWatcher.name && tab === "systemPrompt" && (
                 <Button
+                  data-testid="continue-button"
                   className={clsx(styles.tabButton, "inverted")}
                   type="button"
                   onClick={() => {

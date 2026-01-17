@@ -696,7 +696,6 @@ export default function Subscribe({
     setContact(false)
     setShowContact(false)
   }, [isContact])
-  console.log(`🚀 ~ Subscribe ~ selectedPlan:`, selectedPlan)
   const canSubscribe = () =>
     !hasSubscription() &&
     !isGifting &&
@@ -1738,7 +1737,22 @@ export default function Subscribe({
                 }}
               >
                 {!accountApp && app ? (
-                  <Img app={app} size={30} />
+                  <Img
+                    logo={
+                      selectedPlan === "grape"
+                        ? "grape"
+                        : selectedPlan === "pear"
+                          ? "pear"
+                          : selectedPlan === "coder" ||
+                              selectedPlan === "sushi" ||
+                              selectedPlan === "architect"
+                            ? "sushi"
+                            : selectedPlan === "member"
+                              ? "chrry"
+                              : "watermelon"
+                    }
+                    size={26}
+                  />
                 ) : (
                   <UserRound size={20} />
                 )}{" "}

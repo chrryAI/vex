@@ -49,7 +49,7 @@ export const sendEmail = async ({
   try {
     // Add timeout to prevent hanging
     const emailPromise = transporter.sendMail({
-      from: from || `${siteConfig.name} Team <no-reply@${siteConfig.domain}>`,
+      from: from || `Chrry <no-reply@chrry.ai>`,
       to,
       subject,
       html,

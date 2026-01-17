@@ -93,7 +93,8 @@ const getFileUploadQuota = async ({
   }
 
   const fingerprint = user?.fingerprint || guest?.fingerprint
-  const isE2E = !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+  const isE2E =
+    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
 
   const limits = getUploadLimitsForUser({ user, guest })
 
@@ -216,7 +217,8 @@ messages.post("/", async (c) => {
   }
 
   const fingerprint = member?.fingerprint || guest?.fingerprint
-  const isE2E = !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+  const isE2E =
+    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
 
   const { success } = await checkRateLimit(c.req.raw, { member, guest })
 

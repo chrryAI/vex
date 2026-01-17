@@ -47,8 +47,8 @@ export default function Terms() {
         </Section>
 
         <Section>
-          <H2>{t("terms.traking.title")}</H2>
-          <P>{t("terms.traking.content2")}</P>
+          <H2>{t("terms.tracking.title")}</H2>
+          <P>{t("terms.tracking.content2")}</P>
         </Section>
 
         <Section>

@@ -130,7 +130,7 @@ async function createAgents() {
     version: "1.0.0",
     apiURL: "https://api.deepseek.com/v1",
     description:
-      "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Use palette icon for image generation.",
+      "🍣 Unified multimodal AI with advanced reasoning. Shows its thinking process, analyzes images/videos/PDFs. Powered by DeepSeek R1. Perplexity for web search. Use palette icon for image generation.",
     state: "active",
     creditCost: 2,
     authorization: "all",
@@ -142,7 +142,7 @@ async function createAgents() {
       image: true,
       audio: true,
       video: true,
-      webSearch: false,
+      webSearch: true,
       pdf: true,
       imageGeneration: true, // Available via UI palette icon
     },
