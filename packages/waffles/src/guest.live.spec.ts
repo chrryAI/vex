@@ -138,13 +138,12 @@ test("Chat", async ({ page }) => {
         text: "How can I enable character profile? Answer shortly",
         model: "perplexity",
       },
-      // Replicate is down
-      // {
-      //   text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
-      //   imageGenerationEnabled: true,
+      {
+        text: "Create a futuristic cityscape at sunset with flying cars, 4K, hyperrealistic",
+        imageGenerationEnabled: true,
 
-      //   model: "sushi",
-      // },
+        model: "sushi",
+      },
     ],
   })
 })
