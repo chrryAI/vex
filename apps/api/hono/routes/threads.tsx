@@ -149,6 +149,24 @@ threads.get("/", async (c) => {
         })
       : undefined
 
+  // Migration: Ensure DNA thread has isMainThread flag set
+  // This is a one-time backfill for existing threads
+  if (
+    dnaThread &&
+    isOwner(dnaThread, {
+      userId: member?.id,
+      guestId: guest?.id,
+    }) &&
+    !dnaThread.isMainThread
+  ) {
+    await updateThreadDb({
+      ...dnaThread,
+      isMainThread: true,
+    })
+
+    dnaThread.isMainThread = true
+  }
+
   const pageSize = Number(c.req.query("pageSize") || "100")
   const search = c.req.query("search")
 
