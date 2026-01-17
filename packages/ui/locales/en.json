@@ -1623,6 +1623,13 @@
   "Agency": "Agency",
   "Sovereign": "Sovereign",
   "Watermelon": "Watermelon",
+  "New Task": "New Task",
+  "Add a task": "Add a task",
+  "Max tasks count reached": "Max tasks count reached",
+  "Task title": "Task title",
+  "Focus helped me finally build a daily focus habit. The mood tracker is a bonus!": "Focus helped me finally build a daily focus habit. The mood tracker is a bonus!",
+  "I love how simple and effective Focus is. My productivity has doubled.": "I love how simple and effective Focus is. My productivity has doubled.",
+  "The reports make it easy to spot patterns in my work and mood. Highly recommended!": "The reports make it easy to spot patterns in my work and mood. Highly recommended!",
   "Create your agent": "Create your agent",
   "Technical Debt Analytics & Autonomous Refactor": "Technical Debt Analytics & Autonomous Refactor",
   "Logic Toggle (Opt-out for Philosophy)": "Logic Toggle (Opt-out for Philosophy)",
@@ -2035,5 +2042,6 @@
   "Manage your campaigns": "Manage your campaigns",
   "Discovery Consent": "Discovery Consent",
   "Enable discovery consent": "Enable discovery consent",
-  "Allow Grape to analyze content and show relevant apps": "Allow Grape to analyze content and show relevant apps"
+  "Allow Grape to analyze content and show relevant apps": "Allow Grape to analyze content and show relevant apps",
+  "Track your mood daily": "Track your mood daily"
 }

@@ -16,6 +16,7 @@ import tr from "./locales/tr.json"
 import { locales, locale, LANGUAGES } from "./locales"
 import { storage } from "./platform/storage"
 import { getCookieSync } from "./platform/cookies"
+import { BrowserInstance } from "./utils"
 
 // Cross-platform function to get locale from URL
 const getLocaleFromUrl = (): string | null => {
@@ -43,58 +44,63 @@ const getBrowserLanguage = (): string | undefined => {
 
 const urlLang = getLocaleFromUrl()
 const cookieLang = getCookieSync("NEXT_LOCALE")
-let savedLang: string | null = null
+let savedLang: string | null
+;(async () => {
+  savedLang = ""
+  try {
+    savedLang =
+      (await BrowserInstance?.storage?.local?.get?.("locale")).locale ||
+      storage.getItem("locale")
+  } catch (error) {
+    console.log("Error reading language from storage:", error)
+  }
 
-try {
-  savedLang = storage.getItem("language")
-} catch (error) {
-  console.log("Error reading language from storage:", error)
-}
+  // Priority: URL > NEXT_LOCALE cookie > storage > browser language > default 'en'
+  const lang = (urlLang ||
+    cookieLang ||
+    savedLang ||
+    getBrowserLanguage() ||
+    "en") as string
 
-// Priority: URL > NEXT_LOCALE cookie > storage > browser language > default 'en'
-const lang = (urlLang ||
-  cookieLang ||
-  savedLang ||
-  getBrowserLanguage() ||
-  "en") as string
+  const safeLang = LANGUAGES.some((x) => x.code === lang) ? lang : "en"
+  console.log(`🚀 ~ ; ~ lang:`, lang)
 
-const safeLang = LANGUAGES.some((x) => x.code === lang) ? lang : "en"
+  // Save to cross-platform storage
+  // try {
+  //   if (typeof BrowserInstance !== "undefined") {
+  //     BrowserInstance?.storage?.local?.set?.({ language: safeLang })
+  //   }
+  //   // Extension-specific storage (if available)
+  // } catch (error) {
+  //   console.log("Error saving language to storage:", error)
+  // }
 
-// Save to cross-platform storage
-// try {
-//   if (typeof BrowserInstance !== "undefined") {
-//     BrowserInstance?.storage?.local?.set?.({ language: safeLang })
-//   }
-//   // Extension-specific storage (if available)
-// } catch (error) {
-//   console.log("Error saving language to storage:", error)
-// }
+  // Simple i18next configuration for the extension
 
-// Simple i18next configuration for the extension
-
-i18n.use(initReactI18next).init({
-  resources: {
-    en: { translation: en },
-    zh: { translation: zh },
-    ja: { translation: ja },
-    es: { translation: es },
-    pt: { translation: pt },
-    de: { translation: de },
-    fr: { translation: fr },
-    ko: { translation: ko },
-    nl: { translation: nl },
-    tr: { translation: tr },
-  },
-  debug: false,
-  lng: safeLang,
-  fallbackLng: "en",
-  interpolation: {
-    escapeValue: false, // React already does escaping
-  },
-  react: {
-    useSuspense: false, // Disable suspense for extension environment
-  },
-})
+  i18n.use(initReactI18next).init({
+    resources: {
+      en: { translation: en },
+      zh: { translation: zh },
+      ja: { translation: ja },
+      es: { translation: es },
+      pt: { translation: pt },
+      de: { translation: de },
+      fr: { translation: fr },
+      ko: { translation: ko },
+      nl: { translation: nl },
+      tr: { translation: tr },
+    },
+    debug: false,
+    lng: safeLang,
+    fallbackLng: "en",
+    interpolation: {
+      escapeValue: false, // React already does escaping
+    },
+    react: {
+      useSuspense: false, // Disable suspense for extension environment
+    },
+  })
+})()
 
 export function i18nReady() {
   return new Promise<void>((resolve) => {
