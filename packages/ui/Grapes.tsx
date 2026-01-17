@@ -23,9 +23,21 @@ const Grappes = ({
 
   const { setIsNewAppChat } = useChat()
   const [showGrapes, setShowGrapes] = useState(false)
-  const [selectedGrapeApp, setSelectedGrapeApp] = useState<
+  const [selectedGrapeApp, setSelectedGrapeAppInternal] = useState<
     appWithStore | undefined
   >(grapes[0])
+
+  const setSelectedGrapeApp = (app: appWithStore | undefined) => {
+    setSelectedGrapeAppInternal(app)
+    plausible({
+      name: ANALYTICS_EVENTS.GRAPE_APP_SELECT,
+      props: {
+        app: app?.name,
+        slug: app?.slug,
+        id: app?.id,
+      },
+    })
+  }
 
   useEffect(() => {
     !selectedGrapeApp && setSelectedGrapeApp(grapes[0])
@@ -90,14 +102,6 @@ const Grappes = ({
                   className={`card link border ${selectedGrapeApp?.id === app.id ? "selected" : ""}`}
                   onClick={() => {
                     setSelectedGrapeApp(app)
-                    plausible({
-                      name: ANALYTICS_EVENTS.GRAPE_APP_SELECT,
-                      props: {
-                        app: app.name,
-                        slug: app.slug,
-                        id: app.id,
-                      },
-                    })
                   }}
                   style={{
                     ...utilities.link.style,
@@ -169,7 +173,7 @@ const Grappes = ({
                         color: "var(--shade-6)",
                       }}
                     >
-                      {selectedGrapeApp.subtitle || selectedGrapeApp.title}
+                      {t(selectedGrapeApp.subtitle || selectedGrapeApp.title)}
                     </Span>
                   </Div>
                 </Div>
@@ -181,7 +185,7 @@ const Grappes = ({
                     margin: 0,
                   }}
                 >
-                  {selectedGrapeApp.description}
+                  {t(selectedGrapeApp.description || "")}
                 </P>
 
                 <Div
@@ -209,7 +213,7 @@ const Grappes = ({
                     }}
                     style={{}}
                   >
-                    🍐 Give Feedback with Pear
+                    🍐 {t("Give Feedback with Pear")}
                   </Button>
                 </Div>
               </Div>
