@@ -1119,6 +1119,8 @@ export function ChatProvider({
         !isStreaming &&
         !isStreamingStop &&
         (!threadIdRef.current ||
+          (liked !== undefined &&
+            serverMessages.messages.length !== messages.length) ||
           serverMessages.messages[0]?.thread?.id !== threadIdRef.current)
       ) {
         setMessages(serverMessages.messages)
