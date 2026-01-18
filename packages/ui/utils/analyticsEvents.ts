@@ -19,6 +19,7 @@ export const ANALYTICS_EVENTS = {
   HIT_HOURLY_LIMIT: "hit-hourly-limit",
   FILE_UPLOAD: "file-upload",
   LIKE: "like",
+  VIDEO_CLICKED: "video_clicked",
   THREAD_LIKES: "thread_likes",
   GRAPE_MODAL_CLOSE: "grape_modal_close",
   GRAPE_APP_SELECT: "grape_app_select",
@@ -54,6 +55,7 @@ export const ANALYTICS_EVENTS = {
   THREAD_VIEW: "thread_view",
   THREAD_DELETE: "thread_delete",
   THREAD_SHARE: "thread_share",
+  TIMER_START: "timer_start",
 
   // Memory
   MEMORY_SAVE: "memory",
@@ -78,7 +80,11 @@ export const ANALYTICS_EVENTS = {
   SUBSCRIBE_TIER_VIEW: "subscribe_tier_view",
   APP: "app",
   AD_VISIT: "ad_visit",
+  TIMER_PRESET: "timer_preset",
   BURN: "burn",
+  TIMER_CANCEL: "timer_cancel",
+  TIMER_PAUSE: "timer_pause",
+  TIMER_RESUME: "timer_resume",
   PEAR: "pear",
   THEME_CHANGE: "theme_change",
   COLOR_SCHEME_CHANGE: "color_scheme_change",
@@ -87,6 +93,7 @@ export const ANALYTICS_EVENTS = {
   LOGIN: "login",
   LOGOUT: "logout",
   SIGNUP: "signup",
+  PLAY_BIRD_SOUND: "play_bird_sound",
   GOOGLE_SIGNIN: "google_signin",
   APPLE_SIGNIN: "apple_signin",
   GITHUB_SIGNIN: "github_signin",
@@ -123,6 +130,7 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   // App lifecycle - AI needs to know what apps user is working on
   ANALYTICS_EVENTS.APP,
   ANALYTICS_EVENTS.APP_SAVE_SUCCESS,
+  ANALYTICS_EVENTS.VIDEO_CLICKED,
   ANALYTICS_EVENTS.THREAD_LIKES,
   ANALYTICS_EVENTS.APP_SAVE_ERROR,
   ANALYTICS_EVENTS.APP_DELETE_SUCCESS,
@@ -133,6 +141,12 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.SUBSCRIBE_TIER_VIEW,
   ANALYTICS_EVENTS.BOOKMARK,
   ANALYTICS_EVENTS.LIKE,
+  ANALYTICS_EVENTS.TIMER_PRESET,
+  ANALYTICS_EVENTS.TIMER_START,
+  ANALYTICS_EVENTS.TIMER_CANCEL,
+  ANALYTICS_EVENTS.TIMER_PAUSE,
+  ANALYTICS_EVENTS.TIMER_RESUME,
+  ANALYTICS_EVENTS.PLAY_BIRD_SOUND,
 
   // Chat & messaging - Core user interactions
   ANALYTICS_EVENTS.CHAT_SEND,
