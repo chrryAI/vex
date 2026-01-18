@@ -638,7 +638,7 @@ export default function Menu({
                               {thread.isMainThread ? (
                                 <Span
                                   title={t("DNA thread")}
-                                  style={{ marginRight: 3, fontSize: 12 }}
+                                  style={{ marginRight: 3, fontSize: 11 }}
                                 >
                                   🧬
                                 </Span>
