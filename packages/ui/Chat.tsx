@@ -3272,21 +3272,13 @@ export default function Chat({
                                           }}
                                         >
                                           <Globe
-                                            color={
-                                              value
-                                                ? `var(--accent-6)`
-                                                : `var(--shade-3)`
-                                            }
+                                            color={`var(--accent-6)`}
                                             size={14}
                                           />
                                         </Button>
                                       ) : (
-                                        <Globe
-                                          color={
-                                            value
-                                              ? `var(--accent-6)`
-                                              : `var(--shade-3)`
-                                          }
+                                        <GlobeLock
+                                          color={`var(--shade-3)`}
                                           size={14}
                                         />
                                       )}
@@ -3320,11 +3312,7 @@ export default function Chat({
                                         </Button>
                                       ) : (
                                         <Palette
-                                          color={
-                                            value
-                                              ? `var(--accent-6)`
-                                              : `var(--shade-3)`
-                                          }
+                                          color={`var(--shade-3)`}
                                           size={14}
                                         />
                                       )}
