@@ -427,15 +427,17 @@ export default function Chat({
   const isChatFloating =
     m || isIDE || (isChatFloatingInternal && shouldUseCompactMode)
 
-  const placeholder = isSelectingMood
-    ? `📊 ${t("Track your mood daily")} 🎭`
-    : isPear
-      ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
-      : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
-        ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
-        : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
-          ? `✨ ${t("Explore new apps while you chat")} 🍇`
-          : placeHolderInternal
+  const placeholder = isImageGenerationEnabled
+    ? `🎨 ${t("Describe the image you want to create")} ✨`
+    : isSelectingMood
+      ? `📊 ${t("Track your mood daily")} 🎭`
+      : isPear
+        ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
+        : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+          ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+          : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+            ? `✨ ${t("Explore new apps while you chat")} 🍇`
+            : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
