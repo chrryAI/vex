@@ -32,6 +32,7 @@ import type {
   webSearchResult,
 } from "./types"
 import MarkdownContent from "./MarkdownContent"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 import { isOwner, apiFetch, getInstructionConfig } from "./utils"
 import {
@@ -92,6 +93,7 @@ export default function Message({
     setGuest,
     deviceId,
     timeAgo,
+    plausible,
   } = useAuth()
 
   const styles = useMessageStyles()
@@ -485,6 +487,16 @@ export default function Message({
   const toggleLike = async () => {
     addHapticFeedback()
     if (!token) return
+
+    plausible({
+      name: ANALYTICS_EVENTS.LIKE,
+      props: {
+        from: "message",
+        liked,
+        visibility: message?.thread?.visibility,
+        hasCollaborations: !!message?.thread?.collaborations?.length,
+      },
+    })
 
     const newLiked = liked ? undefined : !liked
     setLiked(newLiked)
