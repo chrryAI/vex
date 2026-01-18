@@ -198,6 +198,8 @@ export function ChatProvider({
     setInput,
     setShowFocus,
     showFocus,
+    hourlyLimit,
+    hourlyUsageLeft,
     ...auth
   } = useAuth()
 
@@ -799,7 +801,15 @@ export function ChatProvider({
   }, [threadId, shouldFetchThread])
 
   const [until, setUntil] = useState<number>(1)
-  const [liked, setLiked] = useState<boolean | undefined>(undefined)
+  const [liked, setLikedInternal] = useState<boolean | undefined>(undefined)
+
+  const setLiked = (liked: boolean | undefined) => {
+    setLikedInternal(liked)
+    plausible({
+      name: ANALYTICS_EVENTS.THREAD_LIKES,
+      props: { liked },
+    })
+  }
 
   const [isLoading, setIsLoading] = useState(!!threadId)
 
@@ -979,18 +989,6 @@ export function ChatProvider({
 
   const { isDevelopment, isE2E, actions } = useData()
 
-  const hourlyLimit =
-    isDevelopment && !isE2E
-      ? 50000
-      : getHourlyLimit({
-          member: user,
-          guest,
-        })
-
-  const hourlyUsageLeft = user
-    ? hourlyLimit - (user?.messagesLastHour || 0)
-    : hourlyLimit - (guest?.messagesLastHour || 0)
-
   const isDebating = !!debateAgent
 
   const hitHourlyLimit = hourlyUsageLeft <= 0
@@ -1119,6 +1117,8 @@ export function ChatProvider({
         !isStreaming &&
         !isStreamingStop &&
         (!threadIdRef.current ||
+          (liked !== undefined &&
+            serverMessages.messages.length !== messages.length) ||
           serverMessages.messages[0]?.thread?.id !== threadIdRef.current)
       ) {
         setMessages(serverMessages.messages)

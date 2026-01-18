@@ -29,6 +29,7 @@ import console from "../../utils/log"
 import useCache from "../../hooks/useCache"
 import { SiteConfig, whiteLabels } from "../../utils/siteConfig"
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
+import { getHourlyLimit } from "../../utils/getHourlyLimit"
 
 import {
   aiAgent,
@@ -82,6 +83,8 @@ const VERSION = "1.1.63"
 
 const AuthContext = createContext<
   | {
+      hourlyLimit: number
+      hourlyUsageLeft: number
       about: string | undefined
       setAbout: (value: string | undefined) => void
       ask: string | undefined
@@ -636,6 +639,22 @@ export function AuthProvider({
 
   const fingerprintParam = searchParams.get("fp") || ""
 
+  const [guest, setGuest] = React.useState<sessionGuest | undefined>(
+    session?.guest,
+  )
+  // Calculate hourly limits for analytics and UI
+  const hourlyLimit =
+    isDevelopment && !isE2E
+      ? 50000
+      : getHourlyLimit({
+          member: user,
+          guest,
+        })
+
+  const hourlyUsageLeft = user
+    ? hourlyLimit - (user?.messagesLastHour || 0)
+    : hourlyLimit - (guest?.messagesLastHour || 0)
+
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
     props.session?.deviceId,
@@ -1134,10 +1153,6 @@ export function AuthProvider({
   )
   const sessionData = sessionSwr || session
 
-  const [guest, setGuest] = React.useState<sessionGuest | undefined>(
-    session?.guest,
-  )
-
   const getAlterNativeDomains = (store: storeWithApps) => {
     // Map askvex.com and vex.chrry.ai as equivalent domains
     if (
@@ -1299,6 +1314,8 @@ export function AuthProvider({
       }
     }
 
+    const creditsLeft = user?.creditsLeft || guest?.creditsLeft
+
     // Add duration to props if it exists (> 0 means this is not the first call)
     const enrichedProps = duration > 0 ? { ...props, duration } : props
 
@@ -1315,6 +1332,9 @@ export function AuthProvider({
       isPear,
       agentName: selectedAgent?.name,
       agentVersion: selectedAgent?.version,
+      creditsLeft,
+      hourlyLimit,
+      hourlyUsageLeft,
     }
 
     const finalProps = burn
@@ -1359,6 +1379,7 @@ export function AuthProvider({
     }
 
     if (!isE2E && user?.role === "admin") return
+    if (isDevelopment) return
 
     plausibleEvent({
       name,
@@ -2764,6 +2785,8 @@ export function AuthProvider({
         isLoading,
         setIsLoading,
         signOut,
+        hourlyLimit,
+        hourlyUsageLeft,
         instructions,
         setInstructions,
         thread,

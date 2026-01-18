@@ -18,6 +18,8 @@ export const ANALYTICS_EVENTS = {
   GAME_TOGGLE: "game-toggle",
   HIT_HOURLY_LIMIT: "hit-hourly-limit",
   FILE_UPLOAD: "file-upload",
+  LIKE: "like",
+  THREAD_LIKES: "thread_likes",
   GRAPE_MODAL_CLOSE: "grape_modal_close",
   GRAPE_APP_SELECT: "grape_app_select",
   GRAPE_PEAR_FEEDBACK: "grape_pear_feedback",
@@ -31,6 +33,7 @@ export const ANALYTICS_EVENTS = {
   THREAD_CLICK_MENU: "thread-click-menu",
   LOAD_MORE_THREADS_MENU: "load-more-threads-menu",
   STORE_VIEW: "store_view",
+  BOOKMARK: "bookmark",
   STORE_APP_SELECTED: "store_app_selected",
   SPATIAL_NAVIGATION: "spatial_navigation",
   MAXIMIZE_DURATION: "maximize_duration",
@@ -120,6 +123,7 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   // App lifecycle - AI needs to know what apps user is working on
   ANALYTICS_EVENTS.APP,
   ANALYTICS_EVENTS.APP_SAVE_SUCCESS,
+  ANALYTICS_EVENTS.THREAD_LIKES,
   ANALYTICS_EVENTS.APP_SAVE_ERROR,
   ANALYTICS_EVENTS.APP_DELETE_SUCCESS,
   ANALYTICS_EVENTS.APP_STATUS,
@@ -127,6 +131,8 @@ export const MEANINGFUL_EVENTS: AnalyticsEventName[] = [
   ANALYTICS_EVENTS.TASK_ADD,
   ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
   ANALYTICS_EVENTS.SUBSCRIBE_TIER_VIEW,
+  ANALYTICS_EVENTS.BOOKMARK,
+  ANALYTICS_EVENTS.LIKE,
 
   // Chat & messaging - Core user interactions
   ANALYTICS_EVENTS.CHAT_SEND,

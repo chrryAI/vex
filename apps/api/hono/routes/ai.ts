@@ -5714,7 +5714,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           auth: REPLICATE_API_KEY,
         })
 
-        const output = await replicate.run("black-forest-labs/flux-schnell", {
+        const output = await replicate.run("black-forest-labs/flux-1.1-pro", {
           input: {
             prompt: enhancedPrompt,
             width: 1024,
