@@ -1557,8 +1557,6 @@ export default function Chat({
       setIsPrivacyApproved(true)
     }
 
-    isImageGenerationEnabled && setIsImageGenerationEnabled(false)
-
     addHapticFeedback()
 
     clearFiles()
@@ -2346,6 +2344,8 @@ export default function Chat({
 
         // Notify completion
         onStreamingComplete?.(data.message)
+        isImageGenerationEnabled && setIsImageGenerationEnabled(false)
+
         data.streamId === streamId && setStreamId(null)
 
         if (
