@@ -1242,7 +1242,12 @@ export function TimerContextProvider({
 
   useEffect(() => {
     if (playKitasaku) {
-      plausible({ name: "video_clicked" })
+      plausible({
+        name: "video_clicked",
+        props: {
+          description: "Mark Barrott's Kitasaku clicked",
+        },
+      })
       kitasakuRef.current?.play()
     } else {
       kitasakuRef.current?.pause()

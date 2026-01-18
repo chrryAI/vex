@@ -1216,8 +1216,6 @@ export function AuthProvider({
   }
 
   const trackPageview = () => {
-    if (isDevelopment) return
-
     plausibleEvent({
       name: "pageview",
       url: window.location.pathname,
@@ -1378,8 +1376,7 @@ export function AuthProvider({
       }) // Fire and forget
     }
 
-    if (!isE2E && user?.role === "admin") return
-    if (isDevelopment) return
+    if (user?.role === "admin") return
 
     plausibleEvent({
       name,

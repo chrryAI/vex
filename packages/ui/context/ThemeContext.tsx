@@ -40,6 +40,9 @@ export type ColorScheme = keyof typeof COLORS
 export type themeType = "dark" | "light"
 
 interface ThemeContextValue {
+  playLongPop: () => void
+  playHardPopClick: () => void
+  playSillyPopCluster: () => void
   isThemeLocked: boolean
   setIsThemeLocked: (isThemeLocked: boolean) => void
   isSmallDevice: boolean
@@ -340,6 +343,9 @@ export function ThemeProvider({
     isDrawerOpen,
     setIsDrawerOpen,
     setIsSmallDevice,
+    playLongPop,
+    playHardPopClick,
+    playSillyPopCluster,
   }
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
