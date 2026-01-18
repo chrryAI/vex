@@ -427,15 +427,17 @@ export default function Chat({
   const isChatFloating =
     m || isIDE || (isChatFloatingInternal && shouldUseCompactMode)
 
-  const placeholder = isSelectingMood
-    ? `📊 ${t("Track your mood daily")} 🎭`
-    : isPear
-      ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
-      : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
-        ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
-        : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
-          ? `✨ ${t("Explore new apps while you chat")} 🍇`
-          : placeHolderInternal
+  const placeholder = isImageGenerationEnabled
+    ? `🎨 ${t("Describe the image you want to create")} ✨`
+    : isSelectingMood
+      ? `📊 ${t("Track your mood daily")} 🎭`
+      : isPear
+        ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
+        : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+          ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+          : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+            ? `✨ ${t("Explore new apps while you chat")} 🍇`
+            : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -1546,6 +1548,7 @@ export default function Chat({
 
       return
     }
+
     if (!isPrivacyApproved && !approve) {
       setNeedsReview(true)
       return
@@ -2343,6 +2346,13 @@ export default function Chat({
 
         // Notify completion
         onStreamingComplete?.(data.message)
+        isImageGenerationEnabled && setIsImageGenerationEnabled(false)
+
+        sushiAgent &&
+          selectedAgent?.name === sushiAgent?.name &&
+          isWebSearchEnabled &&
+          setIsWebSearchEnabled(false)
+
         data.streamId === streamId && setStreamId(null)
 
         if (
@@ -3175,6 +3185,8 @@ export default function Chat({
                             <Span
                               style={{
                                 ...styles.creditCost.style,
+                                display:
+                                  viewPortWidth > 400 ? "inline-flex" : "none",
                               }}
                             >
                               <Coins size={15} color="var(--accent-1)" />
@@ -3246,14 +3258,39 @@ export default function Chat({
                                     />
                                   )) ||
                                   (key === "webSearch" && (
-                                    <Globe
-                                      color={
-                                        value
-                                          ? `var(--accent-6)`
-                                          : `var(--shade-3)`
-                                      }
-                                      size={14}
-                                    />
+                                    <>
+                                      {value ? (
+                                        <Button
+                                          className="link"
+                                          onClick={() => {
+                                            setIsWebSearchEnabled(true)
+                                            setSelectedAgent(agent)
+                                            setIsAgentModalOpen(false)
+                                          }}
+                                          style={{
+                                            fontSize: 14,
+                                          }}
+                                        >
+                                          <Globe
+                                            color={
+                                              value
+                                                ? `var(--accent-6)`
+                                                : `var(--shade-3)`
+                                            }
+                                            size={14}
+                                          />
+                                        </Button>
+                                      ) : (
+                                        <Globe
+                                          color={
+                                            value
+                                              ? `var(--accent-6)`
+                                              : `var(--shade-3)`
+                                          }
+                                          size={14}
+                                        />
+                                      )}
+                                    </>
                                   )) ||
                                   (key === "image" && (
                                     <ImageIcon
@@ -3266,13 +3303,32 @@ export default function Chat({
                                     />
                                   )) ||
                                   (key === "imageGeneration" && (
-                                    <Span
-                                      style={{
-                                        fontSize: 14,
-                                      }}
-                                    >
-                                      🎨
-                                    </Span>
+                                    <>
+                                      {value ? (
+                                        <Button
+                                          className="link"
+                                          onClick={() => {
+                                            setIsImageGenerationEnabled(true)
+                                            setSelectedAgent(agent)
+                                            setIsAgentModalOpen(false)
+                                          }}
+                                          style={{
+                                            fontSize: 14,
+                                          }}
+                                        >
+                                          🎨
+                                        </Button>
+                                      ) : (
+                                        <Palette
+                                          color={
+                                            value
+                                              ? `var(--accent-6)`
+                                              : `var(--shade-3)`
+                                          }
+                                          size={14}
+                                        />
+                                      )}
+                                    </>
                                   )) ||
                                   (key === "audio" && (
                                     <AudioLines

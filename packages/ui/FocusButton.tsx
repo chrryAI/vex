@@ -516,22 +516,31 @@ export default function FocusButton({
             {t("min")}
           </Button>
         </Div>
-        <Span style={styles.greeting.style}>
+        <Span
+          onClick={() => {
+            if (videoRef.current && os === "ios") {
+              !playKitasaku
+                ? videoRef.current.play().catch((error: any) => {
+                    console.error(error)
+                  })
+                : videoRef.current.pause()
+            }
+            setPlayKitasaku(!playKitasaku)
+          }}
+          style={styles.greeting.style}
+        >
           <>
-            <Span>{t("Let’s focus")}</Span>
+            <Span
+              style={{
+                cursor: "pointer",
+                color: !user ? "var(--accent-6)" : undefined,
+              }}
+            >
+              {t("Let’s focus")}
+            </Span>
             <Div
               className="letsFocusContainer"
               style={styles.letsFocusContainer.style}
-              onClick={() => {
-                if (videoRef.current && os === "ios") {
-                  !playKitasaku
-                    ? videoRef.current.play().catch((error: any) => {
-                        console.error(error)
-                      })
-                    : videoRef.current.pause()
-                }
-                setPlayKitasaku(!playKitasaku)
-              }}
             >
               {user?.name ? (
                 <Span style={styles.userName.style}>

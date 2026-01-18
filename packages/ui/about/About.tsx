@@ -208,10 +208,10 @@ export default function About() {
                     <Span style={{ fontSize: 30 }}>
                       {<Img app={app} size={30} />}
                     </Span>
-                    {app.title || app.name}
+                    {app.name}
                   </H4>
                   <P style={styles.appDescription.style}>
-                    {app.description || t("No description available")}
+                    {t(app.description || "") || t("No description available")}
                   </P>
                 </Div>
               ))}

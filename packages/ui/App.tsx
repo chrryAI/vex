@@ -823,22 +823,35 @@ export default function App({
             />
           </Div>
           {minimize && (
-            <Div style={{ ...fbStyles.greeting.style }}>
+            <Div
+              onClick={() => {
+                if (videoRef.current && os === "ios") {
+                  !playKitasaku
+                    ? videoRef.current.play().catch((error: any) => {
+                        console.error(error)
+                      })
+                    : videoRef.current.pause()
+                }
+                setPlayKitasaku(!playKitasaku)
+              }}
+              style={{
+                ...fbStyles.greeting.style,
+                cursor: "pointer",
+                fontSize: "0.9rem",
+              }}
+            >
               <>
-                <Span>{t("Let’s focus")}</Span>
+                <Span
+                  style={{
+                    cursor: "pointer",
+                    color: !user ? "var(--accent-6)" : undefined,
+                  }}
+                >
+                  {t("Let’s focus")}
+                </Span>
                 <Div
                   className="letsFocusContainer"
                   style={fbStyles.letsFocusContainer.style}
-                  onClick={() => {
-                    if (videoRef.current && os === "ios") {
-                      !playKitasaku
-                        ? videoRef.current.play().catch((error: any) => {
-                            console.error(error)
-                          })
-                        : videoRef.current.pause()
-                    }
-                    setPlayKitasaku(!playKitasaku)
-                  }}
                 >
                   {user?.name ? (
                     <Span style={fbStyles.userName.style}>
