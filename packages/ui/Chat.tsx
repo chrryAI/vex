@@ -1546,6 +1546,7 @@ export default function Chat({
 
       return
     }
+
     if (!isPrivacyApproved && !approve) {
       setNeedsReview(true)
       return
@@ -1555,6 +1556,8 @@ export default function Chat({
       setNeedsReview(false)
       setIsPrivacyApproved(true)
     }
+
+    isImageGenerationEnabled && setIsImageGenerationEnabled(false)
 
     addHapticFeedback()
 
