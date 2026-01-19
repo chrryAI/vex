@@ -914,6 +914,17 @@ Return only valid JSON object.`
       console.log(`✅ Created instruction: ${suggestion.title}`)
     } catch (error) {
       captureException(error)
+
+      // Gracefully handle guest migration race condition
+      // If guest migrated to user during background task, instructions are already migrated
+      const err = error as any
+      if (err?.cause?.constraint_name === "instructions_guestId_guest_id_fk") {
+        console.log(
+          `⏭️  Skipping instruction - guest migrated to user: ${suggestion.title}`,
+        )
+        continue
+      }
+
       console.error("❌ Failed to create instruction:", error)
     }
   }
