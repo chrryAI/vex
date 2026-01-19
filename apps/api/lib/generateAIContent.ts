@@ -1191,9 +1191,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
     const summarySchema = z.object({
       summary: z.string().optional(),
       keyTopics: z.array(z.string()).optional(),
-      conversationTone: z
-        .enum(["professional", "casual", "technical", "creative"])
-        .optional(),
+      conversationTone: z.string().optional(), // Accept any string, will fallback to "casual" if invalid
       userPreferences: z.array(z.string()).optional(),
     })
 
@@ -1258,6 +1256,18 @@ Focus on the main discussion points, user preferences, and conversation style.`
       }
       const parsedData = JSON.parse(jsonText)
       summaryData = summarySchema.parse(parsedData)
+
+      // Validate conversationTone and fallback to "casual" if invalid
+      const validTones = ["professional", "casual", "technical", "creative"]
+      if (
+        summaryData.conversationTone &&
+        !validTones.includes(summaryData.conversationTone)
+      ) {
+        console.log(
+          `⚠️ Invalid conversationTone "${summaryData.conversationTone}", falling back to "casual"`,
+        )
+        summaryData.conversationTone = "casual"
+      }
     } catch (error) {
       captureException(error)
       console.log("⚠️ Failed to parse or validate summary:", error)
