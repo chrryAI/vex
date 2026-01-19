@@ -638,7 +638,7 @@ export default function Menu({
                               {thread.isMainThread ? (
                                 <Span
                                   title={t("DNA thread")}
-                                  style={{ marginRight: 3, fontSize: 12 }}
+                                  style={{ marginRight: 3, fontSize: 11 }}
                                 >
                                   🧬
                                 </Span>
@@ -701,6 +701,12 @@ export default function Menu({
                                       ) {
                                         setLoadingThreadId(thread.id)
                                         setLoadingAppId(thread.appId)
+                                        plausible({
+                                          name: ANALYTICS_EVENTS.THREAD_CLICK_MENU,
+                                          props: {
+                                            threadId: thread.id,
+                                          },
+                                        })
                                         return
                                       }
                                       plausible({

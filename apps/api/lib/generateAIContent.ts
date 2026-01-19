@@ -126,6 +126,7 @@ Return only valid JSON array.`
     const parsedData = JSON.parse(jsonText)
     memories = memorySchema.parse(parsedData)
   } catch (error) {
+    captureException(error)
     console.log("⚠️ Failed to parse or validate memories:", error)
   }
 
@@ -221,6 +222,7 @@ async function extractAndSaveMemories(
         )
       }
     } catch (error) {
+      captureException(error)
       console.error("❌ Failed to create memory:", error)
     }
   }
@@ -459,6 +461,7 @@ async function generateSuggestionsAndPlaceholders({
 - Timer status: ${timer?.isCountingDown ? "Running" : "Stopped"}`
       }
     } catch (error) {
+      captureException(error)
       console.error("Failed to fetch Bloom context:", error)
     }
   }
@@ -716,6 +719,7 @@ Return only valid JSON object.`
     const parsedData = JSON.parse(jsonText)
     responseData = responseSchema.parse(parsedData)
   } catch (error) {
+    captureException(error)
     console.log("⚠️ Failed to parse or validate response:", error)
     responseData = {
       suggestions: [],
@@ -850,6 +854,7 @@ Return only valid JSON object.`
         }
       }
     } catch (error) {
+      captureException(error)
       // Handle foreign key constraint violation gracefully
       // This can happen when thread isn't fully committed yet (especially for guests)
       console.warn(
@@ -908,6 +913,7 @@ Return only valid JSON object.`
       createdInstructions.push(instruction)
       console.log(`✅ Created instruction: ${suggestion.title}`)
     } catch (error) {
+      captureException(error)
       console.error("❌ Failed to create instruction:", error)
     }
   }
@@ -1242,6 +1248,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
       const parsedData = JSON.parse(jsonText)
       summaryData = summarySchema.parse(parsedData)
     } catch (error) {
+      captureException(error)
       console.log("⚠️ Failed to parse or validate summary:", error)
       summaryData = {
         summary: summaryResult.text.slice(0, 200),
@@ -1269,6 +1276,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
         `🎭 Detected mood: ${moodData.type} (confidence: ${moodData.confidence})`,
       )
     } catch (error) {
+      captureException(error)
       console.log("⚠️ Failed to parse or validate mood:", error)
     }
 
@@ -1294,6 +1302,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
           `✅ Created mood: ${moodData.type} (confidence: ${moodData.confidence}, reason: ${moodData.reason})`,
         )
       } catch (error) {
+        captureException(error)
         console.error("❌ Failed to create mood:", error)
       }
     }
@@ -1312,6 +1321,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
       const parsedData = JSON.parse(jsonText)
       characterData = characterSchema.parse(parsedData)
     } catch (error) {
+      captureException(error)
       console.log("⚠️ Failed to parse or validate character:", error)
       characterData = {
         name: "User",
@@ -1507,6 +1517,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
 
     // Generate personalized suggestions and placeholders (only if memories enabled)
   } catch (error) {
+    captureException(error)
     console.error("❌ DeepSeek content generation error:", error)
     throw error
   }

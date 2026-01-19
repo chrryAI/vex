@@ -307,6 +307,10 @@ const Thread = ({
           )
         }
 
+        if (threadId !== prev?.[0]?.message?.threadId) {
+          return prev
+        }
+
         // If message doesn't exist, add it (from other device/collaboration)
         return [
           ...prev,

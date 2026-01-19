@@ -1190,18 +1190,17 @@ export function AuthProvider({
     const canAdd =
       isPWA !== undefined && os !== undefined && browser !== undefined
 
-    const u =
-      url || isExtension
-        ? `/extension/${isFirefox ? "firefox" : "chrome"}${window.location.pathname}`
-        : isTauri
-          ? `/tauri/${os || "desktop"}${window?.location?.pathname || ""}`
-          : isCapacitor
-            ? `/capacitor/${os || "mobile"}${window?.location?.pathname || ""}`
-            : typeof window !== "undefined"
-              ? canAdd
-                ? `${isPWA ? `${os}/${browser}` : ""}${window?.location?.pathname || ""}`
-                : window?.location?.pathname || ""
-              : "/"
+    const u = isExtension
+      ? `/extension/${isFirefox ? "firefox" : "chrome"}${window.location.pathname}`
+      : isTauri
+        ? `/tauri/${os || "desktop"}${window?.location?.pathname || ""}`
+        : isCapacitor
+          ? `/capacitor/${os || "mobile"}${window?.location?.pathname || ""}`
+          : typeof window !== "undefined"
+            ? canAdd
+              ? `${isPWA ? `${os}/${browser}` : ""}${window?.location?.pathname || ""}`
+              : window?.location?.pathname || ""
+            : "/"
 
     fetch("https://a.chrry.dev/api/data", {
       method: "POST",
@@ -1216,12 +1215,8 @@ export function AuthProvider({
   }
 
   const trackPageview = () => {
-    if (isDevelopment) return
-
-    plausibleEvent({
+    plausible({
       name: "pageview",
-      url: window.location.pathname,
-      domain: window.location.hostname,
     })
   }
 
@@ -1378,8 +1373,7 @@ export function AuthProvider({
       }) // Fire and forget
     }
 
-    if (!isE2E && user?.role === "admin") return
-    if (isDevelopment) return
+    if (user?.role === "admin") return
 
     plausibleEvent({
       name,
