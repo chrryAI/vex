@@ -1257,16 +1257,11 @@ Focus on the main discussion points, user preferences, and conversation style.`
       const parsedData = JSON.parse(jsonText)
       summaryData = summarySchema.parse(parsedData)
 
-      // Validate conversationTone and fallback to "casual" if invalid
-      const validTones = ["professional", "casual", "technical", "creative"]
-      if (
-        summaryData.conversationTone &&
-        !validTones.includes(summaryData.conversationTone)
-      ) {
+      // Log conversation tone for analytics (no validation, DeepSeek is free to use any tone)
+      if (summaryData.conversationTone) {
         console.log(
-          `⚠️ Invalid conversationTone "${summaryData.conversationTone}", falling back to "casual"`,
+          `📊 Conversation tone detected: "${summaryData.conversationTone}"`,
         )
-        summaryData.conversationTone = "casual"
       }
     } catch (error) {
       captureException(error)
