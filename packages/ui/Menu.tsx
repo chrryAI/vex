@@ -701,6 +701,12 @@ export default function Menu({
                                       ) {
                                         setLoadingThreadId(thread.id)
                                         setLoadingAppId(thread.appId)
+                                        plausible({
+                                          name: ANALYTICS_EVENTS.THREAD_CLICK_MENU,
+                                          props: {
+                                            threadId: thread.id,
+                                          },
+                                        })
                                         return
                                       }
                                       plausible({
