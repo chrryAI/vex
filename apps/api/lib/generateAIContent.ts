@@ -855,13 +855,25 @@ Return only valid JSON object.`
       }
     } catch (error) {
       captureException(error)
-      // Handle foreign key constraint violation gracefully
-      // This can happen when thread isn't fully committed yet (especially for guests)
-      console.warn(
-        `⚠️ Skipping thread placeholder creation - thread may not be committed yet:`,
-        error,
-      )
-      threadPlaceHolder = null
+
+      // Gracefully handle thread not committed yet or deleted
+      const err = error as any
+      if (
+        err?.cause?.constraint_name === "placeHolders_threadId_threads_id_fk"
+      ) {
+        console.log(
+          `⏭️  Skipping thread placeholder - thread not committed yet or deleted`,
+        )
+        threadPlaceHolder = null
+      } else {
+        // Handle foreign key constraint violation gracefully
+        // This can happen when thread isn't fully committed yet (especially for guests)
+        console.warn(
+          `⚠️ Skipping thread placeholder creation - thread may not be committed yet:`,
+          error,
+        )
+        threadPlaceHolder = null
+      }
     }
   }
 
