@@ -20,7 +20,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     rollupOptions: {
-      external: ["@codetrix-studio/capacitor-google-auth", "firebase"],
+      external: ["@capacitor-firebase/authentication", "firebase"],
     },
   },
   resolve: {
@@ -30,6 +30,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ["@codetrix-studio/capacitor-google-auth", "firebase"],
+    exclude: ["@capacitor-firebase/authentication", "firebase"],
   },
 })
