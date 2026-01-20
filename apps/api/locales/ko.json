@@ -1712,7 +1712,6 @@
   "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!": "실행 가능한 제안은 금입니다! '키보드 단축키 추가'는 '개선 필요'보다 가치가 있습니다. 창작자들이 무엇을 해야 할지 알게 도와주세요!",
   "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!": "첫 인상은 중요합니다! 처음 반응을 공유하세요—혼란, 기쁨, 좌절. 진정한 감정은 창작자들이 UX를 이해하는 데 도움이 됩니다!",
   "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!": "양보다는 질. 상세하고 신중한 피드백 하나(20 크레딧)는 애매한 피드백 다섯 개(각 5 크레딧)를 이깁니다. 시간을 가지세요!",
-  "Provide Feedback from Grape Ads": "그레이프 광고로부터 피드백 제공",
   "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!": "그레이프에서 앱 광고를 클릭하면 페어가 자동으로 열리고 당신의 생각을 묻습니다. 앱에 대한 솔직한 피드백을 공유하세요—무엇이 좋고, 무엇이 혼란스럽고, 무엇이 더 나아질 수 있는지. 피드백이 더 구체적이고 실행 가능할수록 더 많은 크레딧을 얻습니다(피드백당 5-20 크레딧)!",
   "Earn Credits for Quality Feedback": "품질 있는 피드백에 대한 크레딧 획득",
   "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!": "AI가 피드백의 품질을 검증합니다. 기본 피드백은 5 크레딧을 얻고, 구체적인 피드백은 10 크레딧을 얻으며, 실행 가능한 제안은 15 크레딧을 얻고, 탁월한 상세 분석은 20 크레딧을 얻습니다. 수익을 극대화하기 위해 건설적이고, 구체적이며, 도움이 되는 피드백을 제공하세요!",
@@ -2058,5 +2057,6 @@
   "DNA thread": "DNA 스레드",
   "Describe the image you want to create": "생성하고 싶은 이미지를 설명해주세요",
   "Discover AI-powered apps from our store": "저희 스토어에서 AI 기반 앱을 찾아보세요",
-  "Available Apps": "사용 가능한 앱들"
+  "Available Apps": "사용 가능한 앱들",
+  "Provide Feedback from Grape Apps": "Grape Apps에서 피드백 제공"
 }

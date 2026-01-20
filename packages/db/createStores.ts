@@ -6216,7 +6216,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
   const pearInstructions = [
     {
       id: "pear-1",
-      title: "Provide Feedback from Grape Ads",
+      title: "Provide Feedback from Grape Apps",
       content:
         "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!",
       emoji: "🍐",
