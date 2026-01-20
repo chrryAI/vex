@@ -235,38 +235,35 @@ export async function loadServerData(
   let apiError: Error | undefined
 
   // Fetch thread if threadId exists
-  if (threadId) {
-    try {
-      thread = await getThread({
-        id: threadId,
-        pageSize: pageSizes.threads,
-        token: apiKey,
-      })
-    } catch (error) {
-      console.error("Error fetching thread:", error)
-    }
-  }
 
   const appId = thread?.thread?.appId || headers["x-app-id"]
 
   try {
-    const appResult = await getApp({
-      chrryUrl,
-      appId,
-      token: apiKey,
-      pathname,
-      API_URL,
-    })
-
     apiKey = session?.user?.token || session?.guest?.fingerprint || apiKey
 
-    const [translationsResult] = await Promise.all([
+    const [translationsResult, appResult, threadResult] = await Promise.all([
       getTranslations({
         token: apiKey,
         locale,
         API_URL,
       }),
+      getApp({
+        chrryUrl,
+        appId,
+        token: apiKey,
+        pathname,
+        API_URL,
+      }),
+      threadId
+        ? getThread({
+            id: threadId,
+            pageSize: pageSizes.threads,
+            token: apiKey,
+          })
+        : Promise.resolve(undefined),
     ])
+
+    thread = threadResult
 
     translations = translationsResult
 
