@@ -368,10 +368,15 @@ export function TimerContextProvider({
 
       const deviceId = fingerprint
 
+      // Filter out tasks with empty total arrays (not actively running)
+      const activeTasks = selectedTasks?.filter(
+        (task) => task.total && task.total.length > 0,
+      )
+
       if (!data.isCountingDown) {
         send({
           timer: data,
-          selectedTasks,
+          selectedTasks: activeTasks,
           type: "timer",
           isCountingDown: false,
         })
@@ -382,7 +387,7 @@ export function TimerContextProvider({
       if (now - lastSent.current >= 5000) {
         send({
           timer: data,
-          selectedTasks,
+          selectedTasks: activeTasks,
           type: "timer",
         })
         lastSent.current = now
@@ -578,6 +583,17 @@ export function TimerContextProvider({
 
         setTasks((prevTasks) => {
           if (!prevTasks) return prevTasks
+
+          const taskExists = prevTasks.tasks.find(
+            (t) => t.id === selectedTask.id,
+          )
+          if (!taskExists) {
+            console.warn(
+              `❌ Task ${selectedTask.id.substring(0, 8)} not found in tasks state!`,
+            )
+            return prevTasks
+          }
+
           return {
             ...prevTasks,
             tasks: prevTasks.tasks.map((task) => {
@@ -614,24 +630,31 @@ export function TimerContextProvider({
             }),
           }
         })
+      }
 
-        // Collect the updated task for batch update
-        if (updatedTotal) {
-          updatedSelectedTasks.push({
-            ...selectedTask,
-            total: updatedTotal,
-          })
-        } else {
-          updatedSelectedTasks.push(selectedTask)
+      // Get updated tasks from tasks state instead of using stale selectedTask values
+      setTasks((prevTasks) => {
+        if (!prevTasks) return prevTasks
+
+        const updatedTasks = selectedTasks
+          .map((st) => prevTasks.tasks.find((t) => t.id === st.id))
+          .filter((t): t is Task => t !== undefined)
+
+        if (updatedTasks.length > 0) {
+          setSelectedTasks(updatedTasks)
         }
-      }
 
-      // Update selectedTasks after all setTasks calls complete
-      if (updatedSelectedTasks.length > 0) {
-        setSelectedTasks(updatedSelectedTasks)
-      }
+        return prevTasks // No change to tasks state
+      })
     }
-  }, [time, isCountingDown, isPaused, token])
+    // Use stable key from task IDs to detect selection changes without causing infinite loop
+  }, [
+    time,
+    isCountingDown,
+    isPaused,
+    token,
+    selectedTasks?.map((t) => t.id).join(","), // Stable key from IDs
+  ])
 
   // Use ref to plausible timer sync - only sync on state changes, not every second
   const timerSyncRef = useRef<number>(0)

@@ -280,9 +280,9 @@ export const websocketHandler = {
                   activeOn: collaboration.activeOn
                     ? new Date(collaboration.activeOn)
                     : null,
-                  lastTypedOn: collaboration.lastTypedOn
-                    ? new Date(collaboration.lastTypedOn)
-                    : null,
+                  // lastTypedOn: collaboration.lastTypedOn
+                  //   ? new Date(collaboration.lastTypedOn)
+                  //   : null,
                   // Update with new values
                   isTyping,
                   lastTypedOn: isTyping

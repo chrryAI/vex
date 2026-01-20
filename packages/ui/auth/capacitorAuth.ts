@@ -1,7 +1,7 @@
-// Google Sign-In for Capacitor using @codetrix-studio/capacitor-google-auth
+// Firebase Authentication for Capacitor
 // This file is only imported when running on Capacitor (mobile)
 
-import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth"
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication"
 
 export interface AuthSignInResult {
   idToken: string
@@ -14,41 +14,45 @@ export interface AuthSignInResult {
 }
 
 /**
- * Initialize Google Auth
+ * Initialize Firebase Auth
  * Must be called before using any auth methods
  */
 export async function initializeGoogleAuth() {
+  // Firebase Auth auto-initializes via native config
+  console.log("Firebase Auth initialized")
   try {
-    await GoogleAuth.initialize()
-  } catch (error) {
-    console.error("Google Auth initialization error:", error)
-    // Initialization errors are non-fatal, plugin will auto-initialize on first use
+    await FirebaseAuthentication.setLanguageCode({ languageCode: "en-US" })
+  } catch (e) {
+    console.error("Failed to set language code", e)
   }
 }
 
 /**
- * Sign in with Google
- * Returns Google ID token that should be exchanged with your backend
+ * Sign in with Google using Firebase Authentication
+ * Returns Firebase ID token that should be exchanged with your backend
  */
 export async function googleSignIn(): Promise<AuthSignInResult> {
   try {
-    const result = await GoogleAuth.signIn()
+    const result = await FirebaseAuthentication.signInWithGoogle()
 
-    if (!result) {
-      throw new Error("No result received from Google Sign-In")
+    if (!result.user) {
+      throw new Error("No user received from Google Sign-In")
     }
 
-    if (!result.authentication?.idToken) {
-      throw new Error("No ID token received from Google Sign-In")
+    // Get ID token
+    const tokenResult = await FirebaseAuthentication.getIdToken()
+
+    if (!tokenResult.token) {
+      throw new Error("No ID token received from Firebase")
     }
 
     return {
-      idToken: result.authentication.idToken,
+      idToken: tokenResult.token,
       user: {
-        uid: result.id || "",
-        email: result.email || null,
-        displayName: result.name || null,
-        photoURL: result.imageUrl || null,
+        uid: result.user.uid,
+        email: result.user.email || null,
+        displayName: result.user.displayName || null,
+        photoURL: result.user.photoUrl || null,
       },
     }
   } catch (error) {
@@ -60,18 +64,46 @@ export async function googleSignIn(): Promise<AuthSignInResult> {
 }
 
 /**
- * Sign in with Apple (placeholder - not implemented yet)
+ * Sign in with Apple using Firebase Authentication
  */
 export async function appleSignIn(): Promise<AuthSignInResult> {
-  throw new Error("Apple Sign-In not yet implemented with new library")
+  try {
+    const result = await FirebaseAuthentication.signInWithApple()
+
+    if (!result.user) {
+      throw new Error("No user received from Apple Sign-In")
+    }
+
+    // Get ID token
+    const tokenResult = await FirebaseAuthentication.getIdToken()
+
+    if (!tokenResult.token) {
+      throw new Error("No ID token received from Firebase")
+    }
+
+    return {
+      idToken: tokenResult.token,
+      user: {
+        uid: result.user.uid,
+        email: result.user.email || null,
+        displayName: result.user.displayName || null,
+        photoURL: result.user.photoUrl || null,
+      },
+    }
+  } catch (error) {
+    console.error("Apple Sign-In error:", error)
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to sign in with Apple",
+    )
+  }
 }
 
 /**
- * Sign out from Google
+ * Sign out from Firebase
  */
 export async function signOut(): Promise<void> {
   try {
-    await GoogleAuth.signOut()
+    await FirebaseAuthentication.signOut()
   } catch (error) {
     console.error("Sign-Out error:", error)
     throw new Error(
