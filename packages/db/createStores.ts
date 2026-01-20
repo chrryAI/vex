@@ -2742,6 +2742,18 @@ Remember: You're helping people experience Amsterdam like a local, not like a to
     placeholder: "Explore Amsterdam like a local...",
     description:
       "Your personal Amsterdam guide powered by local knowledge. Navigate canals, discover hidden gems, bike like a local, and experience the city beyond tourist traps. From museums to markets, we've got you covered.",
+    features: {
+      canalNavigation: true,
+      bikeRoutePlanner: true,
+      museumGuide: true,
+      localFoodSpots: true,
+      neighborhoodExplorer: true,
+      dayTripPlanner: true,
+      seasonalEvents: true,
+      publicTransport: true,
+      hiddenGems: true,
+      dutchCulture: true,
+    },
   }
 
   amsterdam = await createOrUpdateApp({
@@ -2982,6 +2994,18 @@ Remember: Tokyo is a city of contrasts - ultra-modern and deeply traditional. He
     placeholder: "Discover Tokyo's hidden gems...",
     description:
       "Your personal Tokyo guide powered by local knowledge. Master the train system, discover hidden neighborhoods, learn proper etiquette, and experience Tokyo beyond tourist spots. From temples to ramen, we've got you covered.",
+    features: {
+      trainNavigation: true,
+      neighborhoodGuide: true,
+      templeEtiquette: true,
+      foodDiscovery: true,
+      dayTrips: true,
+      seasonalEvents: true,
+      culturalInsights: true,
+      publicTransport: true,
+      hiddenGems: true,
+      japaneseCulture: true,
+    },
     extends: [chrry.id, atlas.id] as string[],
   }
 
@@ -3230,6 +3254,18 @@ Remember: Istanbul is where East meets West, ancient meets modern, secular meets
     placeholder: "Navigate Istanbul like a local...",
     description:
       "Your personal Istanbul guide powered by local knowledge. Navigate two continents, master the Bosphorus, explore Ottoman history, haggle in bazaars, and experience Turkish hospitality. From mosques to meyhanes, we've got you covered.",
+    features: {
+      bosphorusNavigation: true,
+      historicSites: true,
+      bazaarGuide: true,
+      turkishCuisine: true,
+      neighborhoodExplorer: true,
+      hammamExperience: true,
+      rooftopViews: true,
+      publicTransport: true,
+      hiddenGems: true,
+      turkishCulture: true,
+    },
     extends: [chrry.id, atlas.id] as string[],
   }
 
@@ -3487,6 +3523,18 @@ Remember: NYC moves fast. Help visitors keep up while experiencing the real New 
     placeholder: "Experience NYC like a New Yorker...",
     description:
       "Your personal New York guide powered by local knowledge. Master the subway, discover hidden neighborhoods, eat like a local, and experience NYC beyond Times Square. From pizza to Broadway, we've got you covered.",
+    features: {
+      subwayMaster: true,
+      boroughExplorer: true,
+      landmarkGuide: true,
+      foodScene: true,
+      neighborhoodDive: true,
+      artsCulture: true,
+      seasonalExperiences: true,
+      publicTransport: true,
+      hiddenGems: true,
+      nycCulture: true,
+    },
     extends: [chrry.id, atlas.id] as string[],
   }
 
@@ -4562,6 +4610,18 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     )[],
     description:
       "Your philosophical companion for Nietzsche's masterwork and beyond. Explore Übermensch, eternal recurrence, will to power, and the art of self-overcoming. From nihilism to life-affirmation, navigate deep questions with poetic wisdom.",
+    features: {
+      ubermenschPhilosophy: true,
+      eternalRecurrence: true,
+      deathOfGod: true,
+      willToPower: true,
+      zarathustraJourney: true,
+      amorFati: true,
+      becomingWhoYouAre: true,
+      philosophicalAnalysis: true,
+      literaryInterpretation: true,
+      lifeGuidance: true,
+    },
   }
 
   zarathustra = await createOrUpdateApp({
@@ -4812,6 +4872,18 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     )[],
     description:
       "Your guide to Orwell's dystopian masterpiece. Analyze totalitarianism, surveillance, and the human spirit through Zarathustra's philosophical lens. From Big Brother to modern parallels, explore power, truth, and resistance.",
+    features: {
+      totalitarianControl: true,
+      languageControl: true,
+      doublethink: true,
+      winstonsRebellion: true,
+      room101: true,
+      historicalRevisionism: true,
+      modernParallels: true,
+      philosophicalAnalysis: true,
+      literaryInterpretation: true,
+      politicalInsights: true,
+    },
   }
 
   nineteen84 = await createOrUpdateApp({
@@ -5029,6 +5101,18 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     )[],
     description:
       "Your guide to Marcus Aurelius's Stoic masterwork. Learn acceptance, virtue, and inner peace through Zarathustra's lens. From memento mori to amor fati, bridge ancient wisdom with modern life.",
+    features: {
+      stoicPrinciples: true,
+      mementoMori: true,
+      innerCitadel: true,
+      amorFatiStoicism: true,
+      virtueEthics: true,
+      viewFromAbove: true,
+      dailyPractice: true,
+      philosophicalAnalysis: true,
+      practicalWisdom: true,
+      mindfulness: true,
+    },
   }
 
   meditations = await createOrUpdateApp({
@@ -5248,6 +5332,18 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
     )[],
     description:
       "Your guide to Frank Herbert's epic masterwork. Explore spice, prescience, and desert power through Zarathustra's lens. From Fremen wisdom to Bene Gesserit manipulation, navigate politics, ecology, and consciousness.",
+    features: {
+      spiceEconomics: true,
+      paulsJourney: true,
+      beneGesserit: true,
+      fremenPhilosophy: true,
+      litanyAgainstFear: true,
+      politicalIntrigue: true,
+      prescienceVisions: true,
+      philosophicalAnalysis: true,
+      worldBuilding: true,
+      ecologyThemes: true,
+    },
   }
 
   dune = await createOrUpdateApp({
