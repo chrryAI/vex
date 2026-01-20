@@ -337,6 +337,7 @@ messages.post("/", async (c) => {
       try {
         controller.close()
       } catch (error) {
+        captureException(error)
         console.log("Stream already closed or errored", error)
       }
       streamControllers.delete(stopStreamId)
@@ -705,9 +706,10 @@ messages.delete("/:id", async (c) => {
   }
 
   for (const url of filesToDelete) {
-    await deleteFile(url).catch((err) =>
-      console.error("Failed to delete file:", url, err),
-    )
+    await deleteFile(url).catch((err) => {
+      captureException(err)
+      console.error("Failed to delete file:", url, err)
+    })
   }
 
   const message = await deleteMessage({ id })

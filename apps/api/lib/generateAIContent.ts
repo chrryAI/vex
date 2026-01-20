@@ -855,13 +855,25 @@ Return only valid JSON object.`
       }
     } catch (error) {
       captureException(error)
-      // Handle foreign key constraint violation gracefully
-      // This can happen when thread isn't fully committed yet (especially for guests)
-      console.warn(
-        `⚠️ Skipping thread placeholder creation - thread may not be committed yet:`,
-        error,
-      )
-      threadPlaceHolder = null
+
+      // Gracefully handle thread not committed yet or deleted
+      const err = error as any
+      if (
+        err?.cause?.constraint_name === "placeHolders_threadId_threads_id_fk"
+      ) {
+        console.log(
+          `⏭️  Skipping thread placeholder - thread not committed yet or deleted`,
+        )
+        threadPlaceHolder = null
+      } else {
+        // Handle foreign key constraint violation gracefully
+        // This can happen when thread isn't fully committed yet (especially for guests)
+        console.warn(
+          `⚠️ Skipping thread placeholder creation - thread may not be committed yet:`,
+          error,
+        )
+        threadPlaceHolder = null
+      }
     }
   }
 
@@ -1191,9 +1203,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
     const summarySchema = z.object({
       summary: z.string().optional(),
       keyTopics: z.array(z.string()).optional(),
-      conversationTone: z
-        .enum(["professional", "casual", "technical", "creative"])
-        .optional(),
+      conversationTone: z.string().optional(), // Accept any string, will fallback to "casual" if invalid
       userPreferences: z.array(z.string()).optional(),
     })
 
@@ -1258,6 +1268,13 @@ Focus on the main discussion points, user preferences, and conversation style.`
       }
       const parsedData = JSON.parse(jsonText)
       summaryData = summarySchema.parse(parsedData)
+
+      // Log conversation tone for analytics (no validation, DeepSeek is free to use any tone)
+      if (summaryData.conversationTone) {
+        console.log(
+          `📊 Conversation tone detected: "${summaryData.conversationTone}"`,
+        )
+      }
     } catch (error) {
       captureException(error)
       console.log("⚠️ Failed to parse or validate summary:", error)
