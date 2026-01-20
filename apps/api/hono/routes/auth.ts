@@ -385,6 +385,97 @@ authRoutes.post("/signout", async (c) => {
 })
 
 /**
+ * POST /api/auth/native/google
+ * Verify Google ID token from Capacitor native plugin
+ */
+authRoutes.post("/native/google", async (c) => {
+  try {
+    const { idToken, callbackUrl } = await c.req.json()
+
+    if (!idToken) {
+      return c.json({ error: "ID token required" }, 400)
+    }
+
+    if (!GOOGLE_WEB_CLIENT_ID) {
+      return c.json({ error: "Google OAuth not configured" }, 500)
+    }
+
+    const { OAuth2Client } = await import("google-auth-library")
+    const client = new OAuth2Client(GOOGLE_WEB_CLIENT_ID)
+
+    // Verify the ID token
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: [
+        // The token might be issued for the iOS client ID or the Web client ID
+        // depending on how the plugin is configured. We should accept both if possible.
+        // For now, allow the web client ID as checking failure is expected if mismatched.
+        GOOGLE_WEB_CLIENT_ID,
+        // Add iOS client ID if available in env
+        process.env.GOOGLE_IOS_CLIENT_ID ||
+          "230848351758-64o69nn4a4mknvnol73bfl3e4vb46ljt.apps.googleusercontent.com",
+      ],
+    })
+
+    const payload = ticket.getPayload()
+
+    if (!payload || !payload.email) {
+      return c.json({ error: "Invalid token payload" }, 400)
+    }
+
+    const { email, name, picture } = payload
+
+    // Find or create user
+    let user = await getUser({ email })
+
+    if (!user) {
+      // Create new user
+      user = await createUser({
+        email,
+        name: name || email.split("@")[0],
+        image: picture,
+        userName: await generateUniqueUsername(name || email.split("@")[0]),
+        emailVerified: new Date(),
+      })
+    }
+
+    if (!user) {
+      return c.json({ error: "User creation failed" }, 500)
+    }
+
+    // Generate JWT token
+    const token = generateToken(user.id, user.email)
+
+    // Set cookie
+    const isDev = process.env.NODE_ENV === "development"
+    const secureFlag = isDev ? "" : "; Secure"
+    const sameSite = isDev ? "Lax" : "None"
+
+    // For native apps, cookies might not work effectively for persistence if not using CookieManager.
+    // However, the standard response is to set-cookie for subsequent webview requests.
+    const cookieValue = `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=${sameSite}${secureFlag}`
+    c.header("Set-Cookie", cookieValue)
+
+    // Generate exchange code so the app can manually store the token if needed
+    const authCode = await generateExchangeCode(token)
+
+    return c.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      },
+      token: authCode, // Return code/token for client to use
+      jwt: token, // Also return raw JWT for direct use in Authorization header
+    })
+  } catch (error) {
+    console.error("Native Google auth error:", error)
+    return c.json({ error: "Authentication failed" }, 500)
+  }
+})
+
+/**
  * GET /api/auth/signin/google
  * Initiate Google OAuth flow
  */
@@ -634,6 +725,99 @@ authRoutes.get("/callback/google", async (c) => {
     const forwardedHost = c.req.header("X-Forwarded-Host")
     const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
     return c.redirect(`${siteconfig.url}/?error=oauth_callback_failed`)
+  }
+})
+
+/**
+ * POST /api/auth/native/apple
+ * Verify Apple ID token from Capacitor native plugin
+ */
+authRoutes.post("/native/apple", async (c) => {
+  try {
+    const { idToken, name: nameData } = await c.req.json()
+
+    if (!idToken) {
+      return c.json({ error: "ID token required" }, 400)
+    }
+
+    const appleSignin = (await import("apple-signin-auth")).default
+    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
+
+    // Verify the ID token
+    // Note: verifying Apple tokens often requires the clientID (app bundle ID)
+    // to match the aud claim.
+    const {
+      sub: userAppleId,
+      email,
+      email_verified: emailVerified,
+    } = await appleSignin.verifyIdToken(idToken, {
+      audience: [
+        APPLE_CLIENT_ID,
+        process.env.APPLE_IOS_CLIENT_ID || "dev.chrry",
+      ],
+      ignoreExpiration: false,
+    })
+
+    if (!email) {
+      return c.json({ error: "No email in token" }, 400)
+    }
+
+    // Find or create user
+    let user = await getUser({ email })
+
+    if (!user) {
+      // Create new user
+      // For Apple Sign In, we only get the name on the FIRST sign in.
+      // The client should send it if available.
+      let name = email.split("@")[0]
+      if (nameData) {
+        const { givenName, familyName } = nameData
+        if (givenName || familyName) {
+          name = `${givenName || ""} ${familyName || ""}`.trim()
+        }
+      }
+
+      user = await createUser({
+        email,
+        name,
+        userName: await generateUniqueUsername(name),
+        emailVerified:
+          emailVerified === "true" || emailVerified === true
+            ? new Date()
+            : undefined,
+      })
+    }
+
+    if (!user) {
+      return c.json({ error: "User creation failed" }, 500)
+    }
+
+    // Generate JWT token
+    const token = generateToken(user.id, user.email)
+
+    // Set cookie
+    const isDev = process.env.NODE_ENV === "development"
+    const secureFlag = isDev ? "" : "; Secure"
+    const sameSite = isDev ? "Lax" : "None"
+
+    const cookieValue = `token=${token}; HttpOnly; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=${sameSite}${secureFlag}`
+    c.header("Set-Cookie", cookieValue)
+
+    const authCode = await generateExchangeCode(token)
+
+    return c.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      },
+      token: authCode,
+      jwt: token,
+    })
+  } catch (error) {
+    console.error("Native Apple auth error:", error)
+    return c.json({ error: "Authentication failed" }, 500)
   }
 })
 

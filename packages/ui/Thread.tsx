@@ -381,7 +381,7 @@ const Thread = ({
             !threadId &&
             hasHydrated && {
               ...styles.threadEmpty.style,
-              paddingBottom: minimize ? 120 : 160,
+              paddingBottom: minimize ? 60 : 160,
             }),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,
