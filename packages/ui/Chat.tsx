@@ -306,6 +306,7 @@ export default function Chat({
     appStatus,
     appFormWatcher,
     minimize,
+    setMinimize,
     setAppStatus,
   } = useApp()
 
@@ -2680,13 +2681,15 @@ export default function Chat({
   }, [device])
 
   useEffect(() => {
-    hitHourlyLimit &&
-      plausible({
-        name: ANALYTICS_EVENTS.HIT_HOURLY_LIMIT,
-        props: {
-          hourlyUsageLeft,
-        },
-      })
+    if (!hitHourlyLimit) return
+    plausible({
+      name: ANALYTICS_EVENTS.HIT_HOURLY_LIMIT,
+      props: {
+        hourlyUsageLeft,
+      },
+    })
+
+    setMinimize(false)
   }, [hitHourlyLimit])
 
   useEffect(() => {

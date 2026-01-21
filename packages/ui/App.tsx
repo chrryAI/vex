@@ -905,7 +905,7 @@ export default function App({
                   position: "relative",
                 }}
               >
-                {user && !user?.subscription && (
+                {user && !user?.subscription ? (
                   <Button
                     data-testid="subscribe-from-chat-button"
                     onClick={() => {
@@ -920,7 +920,7 @@ export default function App({
 
                         return
                       }
-                      addParams({ subscribe: "true" })
+                      addParams({ subscribe: "true", plan: "pro" })
                     }}
                     className="transparent"
                     style={{
@@ -929,6 +929,45 @@ export default function App({
                     }}
                   >
                     <Img icon="raspberry" size={22} /> {t("Subscribe")}
+                  </Button>
+                ) : (
+                  <Button
+                    data-testid="subscribe-from-chat-button"
+                    onClick={() => {
+                      plausible({
+                        name: ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
+                      })
+                      if (isExtension) {
+                        BrowserInstance?.runtime?.sendMessage({
+                          action: "openInSameTab",
+                          url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                        })
+
+                        return
+                      }
+                      addParams({
+                        subscribe: "true",
+                        plan:
+                          user?.subscription?.plan === "pro" ? "pro" : "plus",
+                      })
+                    }}
+                    className="transparent"
+                    style={{
+                      ...utilities.transparent.style,
+                      ...utilities.small.style,
+                    }}
+                  >
+                    <Img
+                      icon={
+                        user?.subscription?.plan === "pro"
+                          ? "raspberry"
+                          : "strawberry"
+                      }
+                      size={22}
+                    />{" "}
+                    {user?.subscription?.plan === "pro"
+                      ? t("Raspberry")
+                      : t("Strawberry")}
                   </Button>
                 )}
                 {guest && (
