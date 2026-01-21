@@ -707,6 +707,7 @@ export default function Menu({
                                             threadId: thread.id,
                                           },
                                         })
+                                        isSmallDevice ? toggleMenu() : null
                                         return
                                       }
                                       plausible({
