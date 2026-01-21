@@ -61,6 +61,7 @@ export default function SignIn({
     setSignInPart: setPart,
     siteConfig,
     setDeviceId,
+    refetchSession,
     plausible,
   } = useAuth()
 
@@ -91,7 +92,7 @@ export default function SignIn({
     TEST_MEMBER_FINGERPRINTS,
   } = useData()
 
-  const isAppleSignInAvailable = !isTauri && isE2E
+  const isAppleSignInAvailable = isCapacitor || (!isTauri && isE2E)
 
   const { threadId } = useChat()
 
@@ -251,9 +252,10 @@ export default function SignIn({
           return
         }
 
-        const { token } = await response.json()
-        setToken(token)
+        const { token, jwt } = await response.json()
+        setToken(jwt || token) // Use JWT if available, fallback to token
         setPart(undefined)
+        await refetchSession()
         toast.success("Signed in successfully!")
       } catch (error) {
         console.error("Apple auth error:", error)
@@ -343,9 +345,10 @@ export default function SignIn({
           return
         }
 
-        const { token } = await response.json()
-        setToken(token)
+        const { token, jwt } = await response.json()
+        setToken(jwt || token) // Use JWT if available, fallback to token
         setPart(undefined)
+        await refetchSession()
         toast.success("Signed in successfully!")
       } catch (error) {
         console.error("Google auth error:", error)

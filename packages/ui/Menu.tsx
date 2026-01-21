@@ -157,7 +157,7 @@ export default function Menu({
     setIsThemeLocked,
   } = useTheme()
 
-  const toggleMenu = () => {
+  const toggleMenu = ({ timeout = 200 }: { timeout?: number } = {}) => {
     addHapticFeedback()
     plausible({
       name: ANALYTICS_EVENTS.MENU_TOGGLE,
@@ -171,7 +171,7 @@ export default function Menu({
       () => {
         setIsDrawerOpen(!isDrawerOpen)
       },
-      isCapacitor ? 300 : 200,
+      timeout ?? (isCapacitor ? 300 : timeout),
     )
   }
 
@@ -473,8 +473,8 @@ export default function Menu({
                                   onClick={() => {
                                     addHapticFeedback()
                                     isSmallDevice
-                                      ? toggleMenu()
-                                      : addHapticFeedback()
+                                      ? toggleMenu({ timeout: 0 })
+                                      : null
                                     setIsAccountVisible(true)
                                   }}
                                 >

@@ -107,7 +107,7 @@ export const MAX_TOOL_CALLS_PER_MESSAGE = 7
 export const WS_URL =
   getEnv().VITE_WS_URL ||
   (isTestingDevice
-    ? "ws://192.168.2.27:3001"
+    ? "ws://192.168.2.3:3001"
     : isDevelopment
       ? "ws://localhost:3001"
       : "wss://chrry.dev") // Unified WebSocket on production
@@ -133,7 +133,7 @@ const API_PORT = getEnv().API_PORT || "3001"
 export const FRONTEND_URL =
   getEnv().VITE_FRONTEND_URL ||
   (isTestingDevice
-    ? `http://192.168.2.27:${FE_PORT}`
+    ? `http://192.168.2.3:${FE_PORT}`
     : isDevelopment
       ? `http://localhost:${FE_PORT}`
       : CHRRY_URL)
@@ -145,7 +145,7 @@ export const API_INTERNAL_URL = getEnv().VITE_API_INTERNAL_URL
 export const API_URL =
   getEnv().VITE_API_URL ||
   (isTestingDevice
-    ? `http://192.168.2.27:${API_PORT}/api`
+    ? `http://192.168.2.3:${API_PORT}/api`
     : isDevelopment
       ? `http://localhost:${API_PORT}/api`
       : isE2E
