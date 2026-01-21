@@ -19,6 +19,7 @@ import {
   createAffiliateReferral,
   updateAffiliateLink,
   createFeedbackTransaction,
+  getApp,
 } from "@repo/db"
 import { getMember } from "../lib/auth"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
@@ -51,7 +52,10 @@ verifyPayment.post("/", async (c) => {
     email,
     plan: requestPlan,
     tier: requestTier,
+    appId,
   } = body
+
+  const app = appId ? await getApp({ id: appId }) : undefined
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -245,6 +249,7 @@ verifyPayment.post("/", async (c) => {
         guestId: guest?.id,
         plan,
         sessionId: session.id,
+        appId: app?.id,
       })
 
       // Create premium subscription for grape, pear, coder, watermelon plans
@@ -285,6 +290,7 @@ verifyPayment.post("/", async (c) => {
             stripeCustomerId: stripeSubscription.customer as string,
             productType: productTypeMap[plan] as any,
             tier: tier as any,
+            appId: app?.id,
             status: "active",
             currentPeriodStart: new Date(
               (stripeSubscription as any).current_period_start * 1000,
