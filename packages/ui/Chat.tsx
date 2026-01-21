@@ -4062,7 +4062,7 @@ export default function Chat({
                   returnKeyType="send"
                 />
                 {/* Quota Info Display */}
-                {showQuotaInfo && quotaInfo && (
+                {showQuotaInfo && quotaInfo && !needsReview && (
                   <Div style={styles.quotaDisplay.style}>
                     <Div style={styles.quotaHeader.style}>
                       <HardDrive size={16} color="var(--accent-6)" />
@@ -4594,6 +4594,11 @@ export default function Chat({
                         className="button small transparent"
                         openInNewTab
                         href="/privacy"
+                        style={{
+                          position: "relative",
+                          right: "-5px",
+                          top: "-1px",
+                        }}
                       >
                         <Link size={15} />
                         {t("Privacy")}
