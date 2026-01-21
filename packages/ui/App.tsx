@@ -907,7 +907,7 @@ export default function App({
               >
                 {user && !user?.subscription ? (
                   <Button
-                    data-testid="subscribe-from-chat-button"
+                    data-testid="subscribe-from-minimize-button"
                     onClick={() => {
                       plausible({
                         name: ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
@@ -931,44 +931,47 @@ export default function App({
                     <Img icon="raspberry" size={22} /> {t("Subscribe")}
                   </Button>
                 ) : (
-                  <Button
-                    data-testid="subscribe-from-chat-button"
-                    onClick={() => {
-                      plausible({
-                        name: ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
-                      })
-                      if (isExtension) {
-                        BrowserInstance?.runtime?.sendMessage({
-                          action: "openInSameTab",
-                          url: `${FRONTEND_URL}?subscribe=true&plan=${user?.subscription?.plan === "pro" ? "pro" : "plus"}&extension=true`,
+                  user &&
+                  user?.subscription && (
+                    <Button
+                      data-testid="subscription-from-minimize-button"
+                      onClick={() => {
+                        plausible({
+                          name: ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
                         })
+                        if (isExtension) {
+                          BrowserInstance?.runtime?.sendMessage({
+                            action: "openInSameTab",
+                            url: `${FRONTEND_URL}?subscribe=true&plan=${user?.subscription?.plan === "pro" ? "pro" : "plus"}&extension=true`,
+                          })
 
-                        return
-                      }
-                      addParams({
-                        subscribe: "true",
-                        plan:
-                          user?.subscription?.plan === "pro" ? "pro" : "plus",
-                      })
-                    }}
-                    className="transparent"
-                    style={{
-                      ...utilities.transparent.style,
-                      ...utilities.small.style,
-                    }}
-                  >
-                    <Img
-                      icon={
-                        user?.subscription?.plan === "pro"
-                          ? "raspberry"
-                          : "strawberry"
-                      }
-                      size={22}
-                    />{" "}
-                    {user?.subscription?.plan === "pro"
-                      ? t("Raspberry")
-                      : t("Strawberry")}
-                  </Button>
+                          return
+                        }
+                        addParams({
+                          subscribe: "true",
+                          plan:
+                            user?.subscription?.plan === "pro" ? "pro" : "plus",
+                        })
+                      }}
+                      className="transparent"
+                      style={{
+                        ...utilities.transparent.style,
+                        ...utilities.small.style,
+                      }}
+                    >
+                      <Img
+                        icon={
+                          user?.subscription?.plan === "pro"
+                            ? "raspberry"
+                            : "strawberry"
+                        }
+                        size={22}
+                      />{" "}
+                      {user?.subscription?.plan === "pro"
+                        ? t("Raspberry")
+                        : t("Strawberry")}
+                    </Button>
+                  )
                 )}
                 {guest && (
                   <Button
