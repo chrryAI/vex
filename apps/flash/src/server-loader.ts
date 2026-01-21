@@ -221,6 +221,13 @@ export async function loadServerData(
     headers["x-real-ip"] ||
     "0.0.0.0"
 
+  let threads:
+    | {
+        threads: thread[]
+        totalCount: number
+      }
+    | undefined
+
   // Handle OAuth callback token
 
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
@@ -235,59 +242,72 @@ export async function loadServerData(
   let apiError: Error | undefined
 
   // Fetch thread if threadId exists
-  if (threadId) {
-    try {
-      thread = await getThread({
-        id: threadId,
-        pageSize: pageSizes.threads,
-        token: apiKey,
-      })
-    } catch (error) {
-      console.error("Error fetching thread:", error)
-    }
-  }
 
   const appId = thread?.thread?.appId || headers["x-app-id"]
 
   try {
-    const appResult = await getApp({
-      chrryUrl,
-      appId,
-      token: apiKey,
-      pathname,
-      API_URL,
-    })
-
     apiKey = session?.user?.token || session?.guest?.fingerprint || apiKey
 
-    const [translationsResult] = await Promise.all([
+    const [
+      translationsResult,
+      appResult,
+      threadResult,
+      threadsResult,
+      sessionResult,
+    ] = await Promise.all([
       getTranslations({
         token: apiKey,
         locale,
         API_URL,
       }),
+      getApp({
+        chrryUrl,
+        appId,
+        token: apiKey,
+        pathname,
+        API_URL,
+      }),
+      threadId
+        ? getThread({
+            id: threadId,
+            pageSize: pageSizes.threads,
+            token: apiKey,
+          })
+        : Promise.resolve(undefined),
+      getThreads({
+        appId,
+        pageSize: pageSizes.menuThreads,
+        sort: "bookmark",
+        token: apiKey,
+        API_URL,
+      }),
+      getSession({
+        // appId: appResult.id,
+        deviceId,
+        fingerprint,
+        token: apiKey,
+        agentName,
+        pathname,
+        routeType,
+        translate: true,
+        locale,
+        chrryUrl,
+        screenWidth: Number(viewPortWidth),
+        screenHeight: Number(viewPortHeight),
+        gift: gift || undefined,
+        source: "layout",
+        API_URL,
+        ip: clientIp, // Pass client IP for Arcjet
+      }),
     ])
+
+    threads = threadsResult
+
+    thread = threadResult
 
     translations = translationsResult
 
-    session = await getSession({
-      appId: appResult.id,
-      deviceId,
-      fingerprint,
-      token: apiKey,
-      agentName,
-      pathname,
-      routeType,
-      translate: true,
-      locale,
-      chrryUrl,
-      screenWidth: Number(viewPortWidth),
-      screenHeight: Number(viewPortHeight),
-      gift: gift || undefined,
-      source: "layout",
-      API_URL,
-      ip: clientIp, // Pass client IP for Arcjet
-    })
+    session = sessionResult
 
     const accountApp = session?.userBaseApp || session?.guestBaseApp
     app = appResult.id === accountApp?.id ? accountApp : appResult
@@ -300,38 +320,7 @@ export async function loadServerData(
     apiError = error as Error
   }
 
-  let threads:
-    | {
-        threads: thread[]
-        totalCount: number
-      }
-    | undefined
-
-  try {
-    threads = await getThreads({
-      // appId: (session as session)?.app?.id,
-      pageSize: pageSizes.menuThreads,
-      sort: "bookmark",
-      token: apiKey,
-      API_URL,
-    })
-  } catch (error) {
-    // captureException(error)
-    console.error("❌ API Error:", error)
-  }
-
   // Fetch threads
-  try {
-    threads = await getThreads({
-      appId: app?.id,
-      pageSize: pageSizes.menuThreads,
-      sort: "bookmark",
-      token: apiKey,
-      API_URL,
-    })
-  } catch (error) {
-    console.error("Error fetching threads:", error)
-  }
 
   const theme = app?.backgroundColor === "#ffffff" ? "light" : "dark"
 

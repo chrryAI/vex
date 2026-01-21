@@ -1712,7 +1712,6 @@
   "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!": "Uygulanabilir öneriler altındır! 'Klavye kısayolları ekleyin' 'iyileştirme gerekiyor' dan daha değerlidir. Yaratıcıların ne yapması gerektiğini bilmesine yardımcı olun!",
   "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!": "İlk izlenimler önemlidir! İlk tepkinizi paylaşın - kafa karışıklığı, memnuniyet, hayal kırıklığı. Otantik duygular, yaratıcıların UX'i anlamasına yardımcı olur!",
   "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!": "Miktar yerine kalite. Bir ayrıntılı, düşünceli geri bildirim (20 kredi), beş belirsiz olanı (her biri 5 kredi) yener. Zamanınızı alın!",
-  "Provide Feedback from Grape Ads": "Grape Reklamlarından Geri Bildirim Sağlayın",
   "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!": "Grape'deki bir uygulama reklamına tıkladığınızda, Pear otomatik olarak düşüncelerinizi sorar. Uygulama hakkındaki dürüst geri bildiriminizi paylaşın - beğendiğiniz, kafa karıştıran, daha iyi olabilecek şeyler. Geri bildiriminiz ne kadar belirgin ve uygulanabilir olursa, o kadar çok kredi kazanırsınız (her geri bildirim için 5-20 kredi)!",
   "Earn Credits for Quality Feedback": "Kaliteli Geri Bildirim İçin Kredi Kazanın",
   "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!": "AI, geri bildirim kalitenizi doğrular. Temel geri bildirim 5 kredi kazandırır, belirli geri bildirim 10 kredi kazandırır, uygulanabilir öneriler 15 kredi kazandırır ve olağanüstü ayrıntılı analiz 20 kredi kazandırır. Kazancınızı maksimize etmek için yapıcı, belirgin ve yardımcı olun!",
@@ -2058,5 +2057,12 @@
   "DNA thread": "DNA ipliği",
   "Describe the image you want to create": "Oluşturmak istediğiniz görüntüyü tanımlayın",
   "Discover AI-powered apps from our store": "Mağazamızdan AI destekli uygulamaları keşfedin",
-  "Available Apps": "Mevcut Uygulamalar"
+  "Available Apps": "Mevcut Uygulamalar",
+  "Provide Feedback from Grape Apps": "Grape Apps'ten Geri Bildirim Sağlayın",
+  "Join": "Katıl",
+  "Raspberry": "Ahududu",
+  "Strawberry": "Çilek",
+  "Web, Desktop & Mobile, Extension build pipelines": "Web, Masaüstü & Mobil, Eklenti oluşturma pipeline'ları",
+  "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry dahil (25 takım koltuğu, sonrasında koltuk başına €19.99)",
+  "Unlimited team seats (you manage)": "Sınırsız takım koltuğu (siz yönetirsiniz)"
 }

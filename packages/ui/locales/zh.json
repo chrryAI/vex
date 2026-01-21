@@ -1713,7 +1713,6 @@
   "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!": "可行的建议是金子！'添加键盘快捷键'比'需要改进'更有价值。帮助创作者知道该做什么！",
   "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!": "第一印象很重要！分享你的初步反应——困惑，喜悦，挫败。真实的情绪帮助创作者理解用户体验！",
   "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!": "质量优于数量。一条详细、深思熟虑的反馈（20积分）胜过五条模糊的反馈（每条5积分）。慢慢来！",
-  "Provide Feedback from Grape Ads": "从Grape广告提供反馈",
   "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!": "当你点击Grape中的应用广告时，Pear会自动打开询问你的想法。分享你对应用的诚实反馈——你喜欢什么，什么让你困惑，什么可以做得更好。你的反馈越具体和可行，你赚取的积分就越多（每条反馈5-20积分）！",
   "Earn Credits for Quality Feedback": "为高质量反馈赚取积分",
   "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!": "AI验证你的反馈质量。基本反馈赚取5积分，具体反馈赚取10积分，可行的建议赚取15积分，特别详细的分析赚取20积分。要建设性的，具体的，有帮助的，以最大化你的收益！",
@@ -2059,5 +2058,12 @@
   "DNA thread": "DNA线程",
   "Describe the image you want to create": "描述你想要创建的图像",
   "Discover AI-powered apps from our store": "从我们的商店发现AI驱动的应用程序",
-  "Available Apps": "可用的应用程序"
+  "Available Apps": "可用的应用程序",
+  "Provide Feedback from Grape Apps": "来自Grape Apps的反馈",
+  "Join": "加入",
+  "Raspberry": "树莓",
+  "Strawberry": "草莓",
+  "Web, Desktop & Mobile, Extension build pipelines": "Web，桌面 & 移动，扩展构建管道",
+  "Raspberry included (25 team seats, €19.99/seat after)": "包含Raspberry（25个团队座位，之后每座位€19.99）",
+  "Unlimited team seats (you manage)": "无限团队座位（由您管理）"
 }

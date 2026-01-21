@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useEffect, lazy, Suspense } from "react"
 import { useForm } from "react-hook-form"
 import { customZodResolver } from "../utils/customZodResolver"
 import { z } from "zod"
@@ -9,13 +9,15 @@ import { Task } from "../FocusButton"
 import sanitizeHtml from "sanitize-html"
 import { useAppContext } from "../context/AppContext"
 import { API_URL, apiFetch, GUEST_TASKS_COUNT } from "../utils"
-import SignIn from "../SignIn"
-import Subscribe from "../Subscribe"
 import { ArrowLeft } from "../icons"
 import { Button, Div, H3, Input, Span, toast, useNavigation } from "../platform"
 import { useAuth } from "../context/providers"
 import { useAddTaskStyles } from "./AddTask.styles"
 import { useStyles } from "../context/StylesContext"
+
+// Lazy load heavy components
+const SignIn = lazy(() => import("../SignIn"))
+const Subscribe = lazy(() => import("../Subscribe"))
 
 const NewTaskSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -115,7 +117,9 @@ const AddTask = ({
           <Span style={styles.addTaskMaxCountReachedText.style}>
             {t("Max tasks count reached")}
           </Span>
-          {!user ? <SignIn /> : <Subscribe />}
+          <Suspense fallback={null}>
+            {!user ? <SignIn /> : <Subscribe />}
+          </Suspense>
           <Button onClick={() => onCancel()}>
             <ArrowLeft size={14} />
             {t("Back")}

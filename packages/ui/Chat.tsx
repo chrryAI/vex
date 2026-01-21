@@ -306,6 +306,7 @@ export default function Chat({
     appStatus,
     appFormWatcher,
     minimize,
+    setMinimize,
     setAppStatus,
   } = useApp()
 
@@ -2680,13 +2681,15 @@ export default function Chat({
   }, [device])
 
   useEffect(() => {
-    hitHourlyLimit &&
-      plausible({
-        name: ANALYTICS_EVENTS.HIT_HOURLY_LIMIT,
-        props: {
-          hourlyUsageLeft,
-        },
-      })
+    if (!hitHourlyLimit) return
+    plausible({
+      name: ANALYTICS_EVENTS.HIT_HOURLY_LIMIT,
+      props: {
+        hourlyUsageLeft,
+      },
+    })
+
+    setMinimize(false)
   }, [hitHourlyLimit])
 
   useEffect(() => {
@@ -4059,7 +4062,7 @@ export default function Chat({
                   returnKeyType="send"
                 />
                 {/* Quota Info Display */}
-                {showQuotaInfo && quotaInfo && (
+                {showQuotaInfo && quotaInfo && !needsReview && (
                   <Div style={styles.quotaDisplay.style}>
                     <Div style={styles.quotaHeader.style}>
                       <HardDrive size={16} color="var(--accent-6)" />
@@ -4591,6 +4594,11 @@ export default function Chat({
                         className="button small transparent"
                         openInNewTab
                         href="/privacy"
+                        style={{
+                          position: "relative",
+                          right: "-5px",
+                          top: "-1px",
+                        }}
                       >
                         <Link size={15} />
                         {t("Privacy")}
@@ -4745,7 +4753,7 @@ export default function Chat({
                               data-testid="credits-info"
                               style={styles.creditInfoText.style}
                             >
-                              <Info color="var(--accent-6)" size={16} />
+                              🍒
                               <Span
                                 style={{
                                   color:
@@ -4792,7 +4800,7 @@ export default function Chat({
                         ...styles.subscribeButton.style,
                       }}
                     >
-                      <UserRoundPlus size={16} /> {t("Subscribe")}
+                      <Img logo="coder" size={14} /> {t("Subscribe")}
                     </Button>
                   )}
                   {guest && (

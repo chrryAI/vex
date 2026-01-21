@@ -48,8 +48,6 @@ export default function SignIn({
 }) {
   const { isExtension, isTauri, isCapacitor } = usePlatform()
 
-  const isAppleSignInAvailable = !isTauri
-
   const { clear } = useCache()
 
   const {
@@ -92,6 +90,8 @@ export default function SignIn({
     TEST_GUEST_FINGERPRINTS,
     TEST_MEMBER_FINGERPRINTS,
   } = useData()
+
+  const isAppleSignInAvailable = !isTauri && isE2E
 
   const { threadId } = useChat()
 
@@ -238,14 +238,16 @@ export default function SignIn({
         const result = await appleSignIn()
 
         // Exchange the Firebase ID token for our app token
-        const response = await apiFetch(`${API_URL}/auth/apple/token`, {
+        const response = await apiFetch(`${API_URL}/auth/native/apple`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idToken: result.idToken }),
         })
 
         if (!response.ok) {
-          toast.error("Failed to sign in")
+          const errorText = await response.text()
+          console.error("Apple Backend Error:", errorText)
+          toast.error("Failed: " + errorText)
           return
         }
 
@@ -255,9 +257,8 @@ export default function SignIn({
         toast.success("Signed in successfully!")
       } catch (error) {
         console.error("Apple auth error:", error)
-        toast.error(
-          error instanceof Error ? error.message : "Failed to sign in",
-        )
+        const msg = error instanceof Error ? error.message : "Failed to sign in"
+        toast.error(msg)
       }
       return
     }
@@ -329,14 +330,16 @@ export default function SignIn({
         const result = await googleSignIn()
 
         // Exchange the Firebase ID token for our app token
-        const response = await apiFetch(`${API_URL}/auth/google/token`, {
+        const response = await apiFetch(`${API_URL}/auth/native/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idToken: result.idToken }),
         })
 
         if (!response.ok) {
-          toast.error("Failed to sign in")
+          const errorText = await response.text()
+          console.error("Google Backend Error:", errorText)
+          toast.error("Failed: " + errorText)
           return
         }
 

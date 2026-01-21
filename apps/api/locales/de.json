@@ -1713,7 +1713,6 @@
   "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!": "Umsetzbare Vorschläge sind Gold wert! 'Fügen Sie Tastaturkürzel hinzu' ist mehr wert als 'verbesserungsbedürftig'. Helfen Sie den Erstellern zu wissen, was zu tun ist!",
   "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!": "Erste Eindrücke zählen! Teilen Sie Ihre erste Reaktion - Verwirrung, Begeisterung, Frustration. Authentische Emotionen helfen den Erstellern, UX zu verstehen!",
   "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!": "Qualität vor Quantität. Ein detailliertes, durchdachtes Feedback (20 Credits) schlägt fünf vage (je 5 Credits). Nehmen Sie sich Zeit!",
-  "Provide Feedback from Grape Ads": "Geben Sie Feedback zu Grape-Anzeigen",
   "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!": "Wenn Sie auf eine App-Anzeige in Grape klicken, öffnet Pear automatisch und fragt nach Ihren Gedanken. Teilen Sie Ihr ehrliches Feedback zur App - was Ihnen gefällt, was verwirrend ist, was besser sein könnte. Je spezifischer und handlungsorientierter Ihr Feedback ist, desto mehr Credits verdienen Sie (5-20 Credits pro Feedback)!",
   "Earn Credits for Quality Feedback": "Verdienen Sie Credits für qualitativ hochwertiges Feedback",
   "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!": "KI validiert die Qualität Ihres Feedbacks. Grundlegendes Feedback verdient 5 Credits, spezifisches Feedback verdient 10 Credits, umsetzbare Vorschläge verdienen 15 Credits und außergewöhnlich detaillierte Analysen verdienen 20 Credits. Seien Sie konstruktiv, spezifisch und hilfreich, um Ihre Einnahmen zu maximieren!",
@@ -2060,5 +2059,12 @@
   "DNA thread": "DNA-Strang",
   "Describe the image you want to create": "Beschreiben Sie das Bild, das Sie erstellen möchten",
   "Discover AI-powered apps from our store": "Entdecken Sie AI-gesteuerte Apps aus unserem Store",
-  "Available Apps": "Verfügbare Apps"
+  "Available Apps": "Verfügbare Apps",
+  "Provide Feedback from Grape Apps": "Feedback von Grape Apps geben",
+  "Join": "Beitreten",
+  "Raspberry": "Himbeere",
+  "Strawberry": "Erdbeere",
+  "Web, Desktop & Mobile, Extension build pipelines": "Web, Desktop & Mobile, Erweiterungs-Build-Pipelines",
+  "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry enthalten (25 Teamplätze, €19.99/Platz danach)",
+  "Unlimited team seats (you manage)": "Unbegrenzte Teamplätze (Sie verwalten)"
 }

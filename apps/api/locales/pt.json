@@ -1712,7 +1712,6 @@
   "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!": "Sugestões acionáveis são ouro! 'Adicionar atalhos de teclado' vale mais do que 'precisa de melhorias'. Ajude os criadores a saber o que fazer!",
   "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!": "Primeiras impressões importam! Compartilhe sua reação inicial - confusão, encanto, frustração. Emoções autênticas ajudam os criadores a entender UX!",
   "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!": "Qualidade sobre quantidade. Um feedback detalhado e atencioso (20 créditos) supera cinco vagos (5 créditos cada). Tome seu tempo!",
-  "Provide Feedback from Grape Ads": "Forneça Feedback dos Anúncios Grape",
   "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!": "Quando você clica em um anúncio de aplicativo no Grape, Pear abre automaticamente pedindo suas opiniões. Compartilhe seu feedback honesto sobre o aplicativo - o que você gosta, o que é confuso, o que poderia ser melhor. Quanto mais específico e acionável for seu feedback, mais créditos você ganha (5-20 créditos por feedback)!",
   "Earn Credits for Quality Feedback": "Ganhe Créditos por Feedback de Qualidade",
   "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!": "A IA valida a qualidade do seu feedback. Feedback básico ganha 5 créditos, feedback específico ganha 10 créditos, sugestões acionáveis ganham 15 créditos e análise detalhada excepcional ganha 20 créditos. Seja construtivo, específico e útil para maximizar seus ganhos!",
@@ -2058,5 +2057,12 @@
   "DNA thread": "Fio de DNA",
   "Describe the image you want to create": "Descreva a imagem que você deseja criar",
   "Discover AI-powered apps from our store": "Descubra aplicativos alimentados por IA em nossa loja",
-  "Available Apps": "Aplicativos Disponíveis"
+  "Available Apps": "Aplicativos Disponíveis",
+  "Provide Feedback from Grape Apps": "Forneça Feedback da Grape Apps",
+  "Join": "Junte-se",
+  "Raspberry": "Framboesa",
+  "Strawberry": "Morango",
+  "Web, Desktop & Mobile, Extension build pipelines": "Web, Desktop & Mobile, pipelines de construção de extensões",
+  "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry incluído (25 lugares para a equipe, €19.99/lugar após)",
+  "Unlimited team seats (you manage)": "Lugares ilimitados para a equipe (você gerencia)"
 }

@@ -22,12 +22,13 @@ export default function ColorScheme({
     colorScheme: colorSchemeInternal,
     setColorScheme: setColorSchemeInternal,
     isDark,
+    setIsThemeLocked,
   } = useTheme()
   const colorScheme = props.colorScheme || colorSchemeInternal
 
   const setColorScheme = (scheme?: string) => {
     if (!scheme) return
-
+    setIsThemeLocked(true)
     setColorSchemeInternal(scheme)
 
     plausible({

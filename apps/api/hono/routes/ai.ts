@@ -5785,6 +5785,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           permanentUrl = result.url
           title = result.title
         } catch (error: any) {
+          captureException(error)
           console.error("❌ Flux image upload failed:", error)
           return c.json(
             { error: `Failed to upload generated image: ${error.message}` },
@@ -6588,6 +6589,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 }
               }
             } catch (error) {
+              captureException(error)
               console.error("❌ Failed to generate follow-up response:", error)
               // Fallback to simple message if second call fails
               finalText = "✓ Done"
@@ -6655,16 +6657,18 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         return c.json({ success: true })
       } catch (error: unknown) {
         clearTimeout(timeoutId!) // Clear the timeout on error
+
         if (error instanceof Error && error.message.includes("timed out")) {
           console.error("❌", error.message)
-          captureException(error)
           return c.json(
             { error: "Request timed out. Please try again." },
             { status: 504 }, // 504 Gateway Timeout
           )
         }
-        console.error("❌ Error in DeepSeek API call:", error)
+
+        // Only capture non-timeout errors as exceptions
         captureException(error)
+        console.error("❌ Error in DeepSeek API call:", error)
         return c.json({ error: "Failed to generate response" }, { status: 500 })
       } finally {
         clearTimeout(timeoutId!) // Clean up the timeout
@@ -6966,6 +6970,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
       } catch (streamError) {
         console.error("❌ Stream reading error:", streamError)
+        captureException(streamError)
         throw new Error("Failed to read AI response stream")
       } finally {
         try {
@@ -6973,6 +6978,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             reader.releaseLock()
           }
         } catch (releaseError) {
+          captureException(releaseError)
           console.error("❌ Error releasing reader lock:", releaseError)
         }
       }
@@ -7046,6 +7052,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               })
             }
           } catch (error) {
+            captureException(error)
             console.error("❌ Failed to generate follow-up response:", error)
             // Fallback to simple message if second call fails
             finalText = "✓ Done"
@@ -7143,6 +7150,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 memoryIds.map((memoryId) => reinforceMemory(memoryId)),
               )
             } catch (error) {
+              captureException(error)
               console.error("❌ Memory reinforcement failed:", error)
             }
           })

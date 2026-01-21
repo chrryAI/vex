@@ -1712,7 +1712,6 @@
   "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!": "¡Las sugerencias accionables son oro! 'Agregar atajos de teclado' vale más que 'necesita mejora'. ¡Ayuda a los creadores a saber qué hacer!",
   "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!": "¡Las primeras impresiones importan! Comparte tu reacción inicial: confusión, deleite, frustración. ¡Las emociones auténticas ayudan a los creadores a entender la UX!",
   "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!": "Calidad sobre cantidad. Una retroalimentación detallada y reflexiva (20 créditos) supera a cinco vagas (5 créditos cada una). ¡Tómate tu tiempo!",
-  "Provide Feedback from Grape Ads": "Proporciona Retroalimentación desde los Anuncios de Grape",
   "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!": "Cuando haces clic en un anuncio de aplicación en Grape, Pear se abre automáticamente pidiendo tus pensamientos. Comparte tu retroalimentación honesta sobre la aplicación: lo que te gusta, lo que es confuso, lo que podría ser mejor. ¡Cuanto más específica y accionable sea tu retroalimentación, más créditos ganas (5-20 créditos por retroalimentación)!",
   "Earn Credits for Quality Feedback": "Gana Créditos por Retroalimentación de Calidad",
   "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!": "La IA valida la calidad de tu retroalimentación. La retroalimentación básica gana 5 créditos, la retroalimentación específica gana 10 créditos, las sugerencias accionables ganan 15 créditos y el análisis detallado excepcional gana 20 créditos. ¡Sé constructivo, específico y útil para maximizar tus ganancias!",
@@ -2058,5 +2057,12 @@
   "DNA thread": "Hilo de ADN",
   "Describe the image you want to create": "Describe la imagen que quieres crear",
   "Discover AI-powered apps from our store": "Descubre aplicaciones potenciadas por IA en nuestra tienda",
-  "Available Apps": "Aplicaciones Disponibles"
+  "Available Apps": "Aplicaciones Disponibles",
+  "Provide Feedback from Grape Apps": "Proporcionar comentarios desde Grape Apps",
+  "Join": "Unirse",
+  "Raspberry": "Frambuesa",
+  "Strawberry": "Fresa",
+  "Web, Desktop & Mobile, Extension build pipelines": "Web, Escritorio & Móvil, Pipelines de construcción de extensiones",
+  "Raspberry included (25 team seats, €19.99/seat after)": "Incluye Raspberry (25 asientos de equipo, €19.99/asiento después)",
+  "Unlimited team seats (you manage)": "Asientos de equipo ilimitados (tú gestionas)"
 }

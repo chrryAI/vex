@@ -1712,7 +1712,6 @@
   "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!": "Les suggestions exploitables sont en or ! 'Ajouter des raccourcis clavier' vaut plus que 'nécessite des améliorations'. Aidez les créateurs à savoir quoi faire !",
   "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!": "Les premières impressions comptent ! Partagez votre réaction initiale : confusion, enchantement, frustration. Les émotions authentiques aident les créateurs à comprendre l'UX !",
   "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!": "La qualité plutôt que la quantité. Un commentaire détaillé et réfléchi (20 crédits) vaut mieux que cinq commentaires vagues (5 crédits chacun). Prenez votre temps !",
-  "Provide Feedback from Grape Ads": "Fournir des commentaires à partir des publicités Grape",
   "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!": "Lorsque vous cliquez sur une publicité d'application dans Grape, Pear s'ouvre automatiquement pour demander vos impressions. Partagez vos commentaires honnêtes sur l'application : ce que vous aimez, ce qui est déroutant, ce qui pourrait être amélioré. Plus vos commentaires sont spécifiques et exploitables, plus vous gagnez de crédits (5-20 crédits par commentaire) !",
   "Earn Credits for Quality Feedback": "Gagnez des crédits pour des commentaires de qualité",
   "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!": "L'IA valide la qualité de vos commentaires. Un commentaire basique rapporte 5 crédits, un commentaire spécifique rapporte 10 crédits, des suggestions exploitables rapportent 15 crédits et une analyse détaillée exceptionnelle rapporte 20 crédits. Soyez constructif, précis et utile pour maximiser vos gains !",
@@ -2058,5 +2057,12 @@
   "DNA thread": "Fil d'ADN",
   "Describe the image you want to create": "Décrivez l'image que vous souhaitez créer",
   "Discover AI-powered apps from our store": "Découvrez des applications alimentées par l'IA dans notre boutique",
-  "Available Apps": "Applications disponibles"
+  "Available Apps": "Applications disponibles",
+  "Provide Feedback from Grape Apps": "Fournir des commentaires depuis Grape Apps",
+  "Join": "Rejoindre",
+  "Raspberry": "Framboise",
+  "Strawberry": "Fraise",
+  "Web, Desktop & Mobile, Extension build pipelines": "Web, Desktop & Mobile, pipelines de construction d'extension",
+  "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry inclus (25 sièges d'équipe, €19.99/siège après)",
+  "Unlimited team seats (you manage)": "Sièges d'équipe illimités (vous gérez)"
 }

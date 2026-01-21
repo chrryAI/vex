@@ -1712,7 +1712,6 @@
   "Actionable suggestions are gold! 'Add keyboard shortcuts' is worth more than 'needs improvement'. Help creators know what to do!": "実行可能な提案は金の価値があります！'キーボードショートカットを追加する'は'改善が必要'よりも価値があります。クリエイターが何をすべきかを知る手助けをしましょう！",
   "First impressions matter! Share your initial reaction—confusion, delight, frustration. Authentic emotions help creators understand UX!": "第一印象は重要です！最初の反応を共有しましょう。混乱、喜び、フラストレーションなど。本物の感情はクリエイターがUXを理解するのに役立ちます！",
   "Quality over quantity. One detailed, thoughtful feedback (20 credits) beats five vague ones (5 credits each). Take your time!": "量より質。1つの詳細で思慮深いフィードバック（20クレジット）は、5つの曖昧なフィードバック（各5クレジット）よりも優れています。時間をかけてください！",
-  "Provide Feedback from Grape Ads": "Grape広告からフィードバックを提供する",
   "When you click an app ad in Grape, Pear automatically opens asking for your thoughts. Share your honest feedback about the app—what you like, what's confusing, what could be better. The more specific and actionable your feedback, the more credits you earn (5-20 credits per feedback)!": "Grapeのアプリ広告をクリックすると、Pearが自動的に開き、あなたの意見を求めます。アプリについての正直なフィードバックを共有してください。あなたが好きなこと、混乱していること、改善できることなど。フィードバックが具体的で実行可能であればあるほど、あなたが獲得するクレジットは多くなります（フィードバックあたり5-20クレジット）！",
   "Earn Credits for Quality Feedback": "質の高いフィードバックでクレジットを獲得する",
   "AI validates your feedback quality. Basic feedback earns 5 credits, specific feedback earns 10 credits, actionable suggestions earn 15 credits, and exceptional detailed analysis earns 20 credits. Be constructive, specific, and helpful to maximize your earnings!": "AIがあなたのフィードバックの質を検証します。基本的なフィードバックは5クレジット、具体的なフィードバックは10クレジット、実行可能な提案は15クレジット、特別に詳細な分析は20クレジットを獲得します。建設的で、具体的で、役立つことで収益を最大化しましょう！",
@@ -2058,5 +2057,12 @@
   "DNA thread": "DNAスレッド",
   "Describe the image you want to create": "作成したい画像を説明してください",
   "Discover AI-powered apps from our store": "私たちのストアからAIパワードのアプリを見つけてみてください",
-  "Available Apps": "利用可能なアプリ"
+  "Available Apps": "利用可能なアプリ",
+  "Provide Feedback from Grape Apps": "Grape Appsからフィードバックを提供する",
+  "Join": "参加する",
+  "Raspberry": "ラズベリー",
+  "Strawberry": "ストロベリー",
+  "Web, Desktop & Mobile, Extension build pipelines": "Web、デスクトップ＆モバイル、エクステンションビルドパイプライン",
+  "Raspberry included (25 team seats, €19.99/seat after)": "Raspberryが含まれています（25チームシート、その後は€19.99/シート）",
+  "Unlimited team seats (you manage)": "無制限のチームシート（あなたが管理）"
 }

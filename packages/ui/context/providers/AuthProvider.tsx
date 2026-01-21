@@ -72,6 +72,11 @@ import {
   isCI,
   WS_URL,
 } from "../../utils"
+import {
+  googleSignIn as nativeGoogleSignIn,
+  appleSignIn as nativeAppleSignIn,
+  initializeGoogleAuth,
+} from "../../auth/capacitorAuth"
 import { Task } from "../TimerContext"
 import { useError } from "./ErrorProvider"
 
@@ -364,6 +369,18 @@ export function AuthProvider({
 
   const { searchParams, removeParams, pathname, addParams, ...router } =
     useNavigation()
+  const {
+    isExtension,
+    isStandalone,
+    isFirefox,
+    device,
+    os,
+    browser,
+    isCapacitor,
+    // IDE state from platform
+    isIDE,
+    toggleIDE,
+  } = usePlatform()
 
   const hasStoreApps = (app: appWithStore | undefined) => {
     return Boolean(app?.store?.app && app?.store?.apps.length)
@@ -433,6 +450,13 @@ export function AuthProvider({
     [],
   )
 
+  // Initialize native auth for Capacitor
+  useEffect(() => {
+    if (isCapacitor) {
+      initializeGoogleAuth().catch(console.error)
+    }
+  }, [isCapacitor])
+
   /**
    * Sign in with Google OAuth
    * Redirects to Google OAuth page
@@ -440,6 +464,31 @@ export function AuthProvider({
   const signInWithGoogle = useCallback(
     async (options?: { callbackUrl?: string; errorUrl?: string }) => {
       try {
+        if (isCapacitor) {
+          const result = await nativeGoogleSignIn()
+
+          // Verify on backend
+          const response = await fetch(`${API_URL}/auth/native/google`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken: result.idToken }),
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            setState({ user: data.user, loading: false })
+            setToken(data.jwt) // Use the raw JWT for API calls
+            return { success: true, user: data.user }
+          } else {
+            const error = await response.json()
+            console.error("Backend google verification failed:", error)
+            return {
+              success: false,
+              error: error.error || "Google verification failed",
+            }
+          }
+        }
+
         // Build OAuth URL with callback parameters
         const url = new URL(`${API_URL}/auth/signin/google`)
         if (options?.callbackUrl) {
@@ -486,6 +535,62 @@ export function AuthProvider({
   const signInWithApple = useCallback(
     async (options?: { callbackUrl?: string; errorUrl?: string }) => {
       try {
+        if (isCapacitor) {
+          const result = await nativeAppleSignIn()
+
+          console.log(
+            "🍎 Native Apple Sign In Success! Token:",
+            result.idToken.substring(0, 10) + "...",
+          )
+
+          // Verify on backend
+          console.log("🚀 Sending token to:", `${API_URL}/auth/native/apple`)
+          try {
+            const response = await fetch(`${API_URL}/auth/native/apple`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                idToken: result.idToken,
+                name: result.user?.displayName
+                  ? {
+                      givenName: result.user.displayName.split(" ")[0],
+                      familyName: result.user.displayName
+                        .split(" ")
+                        .slice(1)
+                        .join(" "),
+                    }
+                  : undefined,
+              }),
+            })
+
+            console.log("📡 Backend Status:", response.status)
+
+            if (response.ok) {
+              const data = await response.json()
+              console.log("✅ Auth Success, User:", data.user.email)
+              setState({ user: data.user, loading: false })
+              setToken(data.jwt)
+              return { success: true, user: data.user }
+            } else {
+              const errorText = await response.text()
+              console.error("❌ Backend Error:", response.status, errorText)
+              let error
+              try {
+                error = JSON.parse(errorText)
+              } catch {
+                error = { error: errorText }
+              }
+              return {
+                success: false,
+                error: error.error || "Apple verification failed",
+              }
+            }
+          } catch (netError) {
+            console.error("❌ Network Error / Fetch Failed:", netError)
+            throw netError
+          }
+        }
+
         // Build OAuth URL with callback parameters
         const url = new URL(`${API_URL}/auth/signin/apple`)
         if (options?.callbackUrl) {
@@ -600,24 +705,10 @@ export function AuthProvider({
 
   useEffect(() => {
     if (error) {
+      console.error("🔥 Global Auth Error Triggered:", error)
       toast.error(error)
     }
   }, [error])
-
-  const {
-    isExtension,
-    isStandalone,
-    isFirefox,
-    device,
-    os,
-    browser,
-    isCapacitor,
-    // IDE state from platform
-    isIDE,
-    toggleIDE,
-    idePanelWidth,
-    setIdePanelWidth,
-  } = usePlatform()
 
   const env = isDevelopment ? "development" : "production"
 
@@ -2197,9 +2288,6 @@ export function AuthProvider({
             ) {
               hasShownThemeLockToastRef.current = true
               setHasSeenThemeLockNotification(true)
-              toast.success("You can lock the theme from the side menu", {
-                duration: 3000,
-              })
             }
           }
         }, 0)
