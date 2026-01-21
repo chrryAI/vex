@@ -84,9 +84,8 @@ export default function Subscribe({
   // Chat context
   const { threadId } = useChat()
 
-  // Navigation context (router is the wrapper)
-  const { router, searchParams, removeParams, addParams } =
-    useNavigationContext()
+  // Navigation context
+  const { searchParams, removeParams } = useNavigationContext()
 
   // URL state persistence helper - only update when modal is open
   const updateURLParam = (key: string, value: string) => {

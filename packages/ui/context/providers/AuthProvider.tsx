@@ -380,8 +380,6 @@ export function AuthProvider({
     // IDE state from platform
     isIDE,
     toggleIDE,
-    idePanelWidth,
-    setIdePanelWidth,
   } = usePlatform()
 
   const hasStoreApps = (app: appWithStore | undefined) => {
