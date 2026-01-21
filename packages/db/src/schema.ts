@@ -271,6 +271,7 @@ export const subscriptions = pgTable(
     plan: text("plan", {
       enum: ["plus", "pro"],
     }).notNull(),
+    appId: uuid("appId").references(() => apps.id, { onDelete: "set null" }),
   },
   (table) => [
     {
@@ -3823,6 +3824,7 @@ export const premiumSubscriptions = pgTable(
     stripePriceId: text("stripePriceId").notNull(),
     stripeProductId: text("stripeProductId").notNull(),
     stripeCustomerId: text("stripeCustomerId"),
+    appId: uuid("appId").references(() => apps.id, { onDelete: "set null" }),
 
     // Product info
     productType: text("productType", {
