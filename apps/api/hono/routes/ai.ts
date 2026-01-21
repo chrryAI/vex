@@ -6656,9 +6656,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         return c.json({ success: true })
       } catch (error: unknown) {
-        captureException(error)
-
         clearTimeout(timeoutId!) // Clear the timeout on error
+
         if (error instanceof Error && error.message.includes("timed out")) {
           console.error("❌", error.message)
           return c.json(
@@ -6666,8 +6665,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             { status: 504 }, // 504 Gateway Timeout
           )
         }
-        console.error("❌ Error in DeepSeek API call:", error)
+
+        // Only capture non-timeout errors as exceptions
         captureException(error)
+        console.error("❌ Error in DeepSeek API call:", error)
         return c.json({ error: "Failed to generate response" }, { status: 500 })
       } finally {
         clearTimeout(timeoutId!) // Clean up the timeout

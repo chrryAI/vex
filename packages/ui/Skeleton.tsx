@@ -2,14 +2,16 @@
 
 import clsx from "clsx"
 import Menu from "./Menu"
-import SignIn from "./SignIn"
-import Subscribe from "./Subscribe"
 import { CircleEllipsis, CodeXml } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
-import { useEffect } from "react"
+import { useEffect, lazy, Suspense } from "react"
 import Img from "./Image"
 import { useState } from "react"
-import CharacterProfiles from "./CharacterProfiles"
+
+// Lazy load heavy components to reduce initial bundle
+const Subscribe = lazy(() => import("./Subscribe"))
+const SignIn = lazy(() => import("./SignIn"))
+const CharacterProfiles = lazy(() => import("./CharacterProfiles"))
 import {
   Button,
   Div,
@@ -367,11 +369,17 @@ export default function Skeleton({
                   </Div>
                 </Div>
                 <Div style={{ ...skeletonStyles.right.style }}>
-                  <CharacterProfiles />
+                  <Suspense fallback={null}>
+                    <CharacterProfiles />
+                  </Suspense>
 
-                  <Subscribe />
+                  <Suspense fallback={null}>
+                    <Subscribe />
+                  </Suspense>
 
-                  <SignIn showSignIn={false} />
+                  <Suspense fallback={null}>
+                    <SignIn showSignIn={false} />
+                  </Suspense>
 
                   <LanguageSwitcher />
                 </Div>
