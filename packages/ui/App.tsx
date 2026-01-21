@@ -901,9 +901,8 @@ export default function App({
               }
               <Div
                 style={{
-                  marginTop: "1rem",
+                  marginTop: 70,
                   position: "relative",
-                  marginLeft: "-1.30rem",
                 }}
               >
                 {user && !user?.subscription && (
