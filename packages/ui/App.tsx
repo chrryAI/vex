@@ -27,6 +27,8 @@ import {
   Maximize,
   CirclePlay,
   CirclePause,
+  UserRoundPlus,
+  LogIn,
 } from "./icons"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -34,7 +36,7 @@ import ConfirmButton from "./ConfirmButton"
 import { useHasHydrated } from "./hooks"
 import { Div, H1, Button, Label, Span, Input, Video } from "./platform"
 import A from "./a/A"
-import { apiFetch } from "./utils"
+import { apiFetch, BrowserInstance } from "./utils"
 import { useStyles } from "./context/StylesContext"
 
 import { useFocusButtonStyles } from "./FocusButton.styles"
@@ -50,6 +52,7 @@ import { COLORS, useAppContext } from "./context/AppContext"
 import { useTimerContext } from "./context/TimerContext"
 import { appWithStore } from "./types"
 import Grapes from "./Grapes"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 
 function FocusButton({
   style,
@@ -173,6 +176,7 @@ export default function App({
     isIDE,
     displayedApps,
     setDisplayedApps,
+    plausible,
     lastApp,
     ...auth
   } = useAuth()
@@ -183,7 +187,7 @@ export default function App({
 
   const { FRONTEND_URL, API_URL } = useData()
 
-  const { router, getStoreSlug } = useNavigationContext()
+  const { router, getStoreSlug, addParams } = useNavigationContext()
 
   const { setInput, setIsWebSearchEnabled, setIsNewAppChat } = useChat()
 
@@ -823,72 +827,142 @@ export default function App({
             />
           </Div>
           {minimize && (
-            <Div
-              onClick={() => {
-                if (videoRef.current && os === "ios") {
-                  !playKitasaku
-                    ? videoRef.current.play().catch((error: any) => {
-                        console.error(error)
-                      })
-                    : videoRef.current.pause()
-                }
-                setPlayKitasaku(!playKitasaku)
-              }}
-              style={{
-                ...fbStyles.greeting.style,
-                cursor: "pointer",
-                fontSize: "0.9rem",
-              }}
-            >
-              <>
-                <Span
+            <>
+              {
+                <Div
+                  onClick={() => {
+                    if (videoRef.current && os === "ios") {
+                      !playKitasaku
+                        ? videoRef.current.play().catch((error: any) => {
+                            console.error(error)
+                          })
+                        : videoRef.current.pause()
+                    }
+                    setPlayKitasaku(!playKitasaku)
+                  }}
                   style={{
+                    ...fbStyles.greeting.style,
                     cursor: "pointer",
-                    color: !user ? "var(--accent-6)" : undefined,
+                    fontSize: "0.9rem",
                   }}
                 >
-                  {t("Let’s focus")}
-                </Span>
-                <Div
-                  className="letsFocusContainer"
-                  style={fbStyles.letsFocusContainer.style}
-                >
-                  {user?.name ? (
-                    <Span style={fbStyles.userName.style}>
-                      {user.name.split(" ")[0]}
+                  <>
+                    <Span
+                      style={{
+                        cursor: "pointer",
+                        color: !user ? "var(--accent-6)" : undefined,
+                      }}
+                    >
+                      {t("Let’s focus")}
                     </Span>
-                  ) : (
-                    ""
-                  )}
-                  <Div style={fbStyles.videoContainer.style} title="Kitasaku">
-                    {!playKitasaku ? (
-                      <CirclePlay
-                        className="videoPlay"
-                        style={fbStyles.videoPlay.style}
-                        color="var(--shade-5)"
-                        size={16}
-                      />
-                    ) : (
-                      <CirclePause
-                        className="videoPause"
-                        style={fbStyles.videoPause.style}
-                        color="var(--shade-5)"
-                        size={16}
-                      />
-                    )}
-                    <Video
-                      // ref={videoRef}
-                      style={fbStyles.video.style}
-                      src={`${FRONTEND_URL}/video/blob.mp4`}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    />
-                  </Div>
+                    <Div
+                      className="letsFocusContainer"
+                      style={fbStyles.letsFocusContainer.style}
+                    >
+                      {user?.name ? (
+                        <Span style={fbStyles.userName.style}>
+                          {user.name.split(" ")[0]}
+                        </Span>
+                      ) : (
+                        ""
+                      )}
+                      <Div
+                        style={fbStyles.videoContainer.style}
+                        title="Kitasaku"
+                      >
+                        {!playKitasaku ? (
+                          <CirclePlay
+                            className="videoPlay"
+                            style={fbStyles.videoPlay.style}
+                            color="var(--shade-5)"
+                            size={16}
+                          />
+                        ) : (
+                          <CirclePause
+                            className="videoPause"
+                            style={fbStyles.videoPause.style}
+                            color="var(--shade-5)"
+                            size={16}
+                          />
+                        )}
+                        <Video
+                          // ref={videoRef}
+                          style={fbStyles.video.style}
+                          src={`${FRONTEND_URL}/video/blob.mp4`}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                        />
+                      </Div>
+                    </Div>
+                  </>
                 </Div>
-              </>
-            </Div>
+              }
+              <Div
+                style={{
+                  marginTop: 70,
+                  position: "relative",
+                }}
+              >
+                {user && !user?.subscription && (
+                  <Button
+                    data-testid="subscribe-from-chat-button"
+                    onClick={() => {
+                      plausible({
+                        name: ANALYTICS_EVENTS.SUBSCRIBE_FROM_CHAT_CLICK,
+                      })
+                      if (isExtension) {
+                        BrowserInstance?.runtime?.sendMessage({
+                          action: "openInSameTab",
+                          url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                        })
+
+                        return
+                      }
+                      addParams({ subscribe: "true" })
+                    }}
+                    className="transparent"
+                    style={{
+                      ...utilities.transparent.style,
+                      ...utilities.small.style,
+                    }}
+                  >
+                    <Img icon="raspberry" size={22} /> {t("Subscribe")}
+                  </Button>
+                )}
+                {guest && (
+                  <Button
+                    data-testid="login-from-chat-button"
+                    onClick={() => {
+                      plausible({
+                        name: ANALYTICS_EVENTS.LOGIN,
+                        props: {
+                          form: "app",
+                          // threadId: threadId,
+                        },
+                      })
+                      if (isExtension) {
+                        BrowserInstance?.runtime?.sendMessage({
+                          action: "openInSameTab",
+                          url: `${FRONTEND_URL}?subscribe=true&extension=true&plan=member`,
+                        })
+
+                        return
+                      }
+                      addParams({ signIn: "login" })
+                    }}
+                    className="transparent"
+                    style={{
+                      ...utilities.transparent.style,
+                      ...utilities.small.style,
+                    }}
+                  >
+                    <Img icon="spaceInvader" size={22} /> {t("Join")}
+                  </Button>
+                )}
+              </Div>
+            </>
           )}
 
           <Div
