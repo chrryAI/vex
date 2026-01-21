@@ -347,6 +347,7 @@ export default function Subscribe({
         userId,
         guestId,
         email,
+        appId: app?.id,
         plan: selectedPlan,
         tier:
           selectedPlan === "grape"
