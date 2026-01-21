@@ -4745,7 +4745,7 @@ export default function Chat({
                               data-testid="credits-info"
                               style={styles.creditInfoText.style}
                             >
-                              <Info color="var(--accent-6)" size={16} />
+                              🍒
                               <Span
                                 style={{
                                   color:
@@ -4792,7 +4792,7 @@ export default function Chat({
                         ...styles.subscribeButton.style,
                       }}
                     >
-                      <UserRoundPlus size={16} /> {t("Subscribe")}
+                      <Img logo="coder" size={14} /> {t("Subscribe")}
                     </Button>
                   )}
                   {guest && (

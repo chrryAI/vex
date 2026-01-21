@@ -45,6 +45,7 @@ paths = [
   '''\.bundle\.js$''',
   '''PITCH_DECK.pdf''',
   '''playwright-report/''',
+  '''Podfile\.lock$''',
 ]
 
 # .env.example files WILL be scanned to ensure they don't contain real secrets

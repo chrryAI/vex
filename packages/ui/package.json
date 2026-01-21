@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.10.99",
+  "version": "1.11.4",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -71,7 +71,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@codetrix-studio/capacitor-google-auth": "3.4.0-rc.4",
+    "@capacitor-firebase/authentication": "^7.5.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
