@@ -162,7 +162,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setApp: setAppInternal,
     storeApp,
     chrry,
-    threadId,
     vex,
     baseApp,
     userBaseApp,
@@ -192,6 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMinimize: setMinimizeInternal,
     ...auth
   } = useAuth()
+  const threadId = auth.threadId || auth?.threadIdRef.current
   const { actions } = useData()
 
   const { t } = useTranslation()
@@ -723,6 +723,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (step === "add") {
         // Clear localStorage draft first
         setFormDraft(undefined)
+
         // Then reset form to default values (clears id and all fields)
         // Recalculate default extends to include chrry and base app
         const freshDefaults = {
@@ -782,62 +783,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setHasRestoredDraft(true)
     }
   }, [formDraft, step]) // Only run on mount or when step changes
-
-  // Update favicons when app changes (moved from ThemeProvider to avoid circular dependency)
-  // useEffect(() => {
-  //   if (typeof document === "undefined") return
-
-  //   let favicon = document.querySelector(
-  //     'link[rel="icon"]',
-  //   ) as HTMLLinkElement | null
-  //   let appleTouchIcon = document.querySelector(
-  //     'link[rel="apple-touch-icon"]',
-  //   ) as HTMLLinkElement | null
-
-  //   if (favicon) {
-  //     favicon.remove()
-  //     favicon = null
-  //   }
-  //   if (appleTouchIcon) {
-  //     appleTouchIcon.remove()
-  //     appleTouchIcon = null
-  //   }
-
-  //   // Create new favicon element
-  //   const newFavicon = document.createElement("link")
-  //   newFavicon.rel = "icon"
-  //   newFavicon.type = "image/png"
-
-  //   // const newAppleTouchIcon = document.createElement("link")
-  //   // newAppleTouchIcon.rel = "apple-touch-icon"
-
-  //   // images array: [512px, 192px, 180px, 128px, 32px]
-  //   if (app?.images?.[4]?.url) {
-  //     // Use favicon version (32x32) with cache buster
-  //     const faviconUrl = `${app.images[4].url}?t=${Date.now()}`
-  //     newFavicon.href = faviconUrl
-  //   } else if (app?.images?.[0]?.url) {
-  //     // Fallback to large version with cache buster
-  //     const faviconUrl = `${app.images[0].url}?t=${Date.now()}`
-  //     newFavicon.href = faviconUrl
-  //   } else {
-  //     // Reset to default
-  //     newFavicon.href = `/${siteConfig.favicon}.ico`
-  //   }
-
-  //   // // Apple touch icon uses 180px version
-  //   // if (app?.images?.[2]?.url) {
-  //   //   newAppleTouchIcon.href = `${app.images[2].url}?t=${Date.now()}`
-  //   // } else if (app?.images?.[0]?.url) {
-  //   //   newAppleTouchIcon.href = `${app.images[0].url}?t=${Date.now()}`
-  //   // } else {
-  //   //   // newAppleTouchIcon.href = `/${siteConfig.mode}.ico`
-  //   // }
-
-  //   // Append new favicons to head
-  //   document.head.appendChild(newFavicon)
-  //   document.head.appendChild(newAppleTouchIcon)
-  // }, [app?.images])
 
   return (
     <AppFormContext.Provider

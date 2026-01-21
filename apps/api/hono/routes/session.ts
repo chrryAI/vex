@@ -195,7 +195,7 @@ session.get("/", async (c) => {
     webVersion: VERSION,
     firefoxVersion: "1.1.47",
     chromeVersion: "1.1.47",
-    macosVersion: "1.10.80", // Desktop app version (macOS, Windows, Linux)
+    macosVersion: "1.11.8", // Desktop app version (macOS, Windows, Linux)
   }
 
   let member = await getMemberAction(c, { full: true, skipCache: true })

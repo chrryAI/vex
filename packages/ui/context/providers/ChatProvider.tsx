@@ -881,7 +881,7 @@ export function ChatProvider({
       setIsImageGenerationEnabledInternal(
         agent?.capabilities?.imageGeneration || false,
       )
-    setIsWebSearchEnabledInternal(agent?.capabilities?.webSearch || false)
+    setIsWebSearchEnabledInternal(agent?.name === "perplexity" || false)
   }
 
   const defaultAgentInternal =
