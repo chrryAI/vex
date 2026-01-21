@@ -2202,12 +2202,11 @@ export function detectSiteModeDomain(
 ): SiteMode {
   const devMode = "vex"
 
-  if (isDevelopment && !checkIsExtension()) {
-    return devMode
-  }
-
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 
+  if (isDevelopment && !checkIsExtension()) {
+    return defaultMode || devMode
+  }
   // Get hostname from parameter or window (client-side)
   const rawHost =
     hostname ||

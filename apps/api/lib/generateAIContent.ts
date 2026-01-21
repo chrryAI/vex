@@ -925,8 +925,6 @@ Return only valid JSON object.`
       createdInstructions.push(instruction)
       console.log(`✅ Created instruction: ${suggestion.title}`)
     } catch (error) {
-      captureException(error)
-
       // Gracefully handle guest migration race condition
       // If guest migrated to user during background task, instructions are already migrated
       if (
@@ -943,6 +941,8 @@ Return only valid JSON object.`
         continue
       }
 
+      // Only capture unexpected errors
+      captureException(error)
       console.error("❌ Failed to create instruction:", error)
     }
   }
