@@ -2288,9 +2288,6 @@ export function AuthProvider({
             ) {
               hasShownThemeLockToastRef.current = true
               setHasSeenThemeLockNotification(true)
-              toast.success("You can lock the theme from the side menu", {
-                duration: 3000,
-              })
             }
           }
         }, 0)
