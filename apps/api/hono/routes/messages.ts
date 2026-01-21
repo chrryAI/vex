@@ -705,12 +705,14 @@ messages.delete("/:id", async (c) => {
     )
   }
 
-  for (const url of filesToDelete) {
-    await deleteFile(url).catch((err) => {
+  const deletePromises = filesToDelete.map((url) =>
+    deleteFile(url).catch((err) => {
       captureException(err)
       console.error("Failed to delete file:", url, err)
-    })
-  }
+    }),
+  )
+
+  await Promise.all(deletePromises)
 
   const message = await deleteMessage({ id })
 

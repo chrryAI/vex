@@ -929,8 +929,14 @@ Return only valid JSON object.`
 
       // Gracefully handle guest migration race condition
       // If guest migrated to user during background task, instructions are already migrated
-      const err = error as any
-      if (err?.cause?.constraint_name === "instructions_guestId_guest_id_fk") {
+      if (
+        error instanceof Error &&
+        "cause" in error &&
+        typeof error.cause === "object" &&
+        error.cause !== null &&
+        "constraint_name" in error.cause &&
+        error.cause.constraint_name === "instructions_guestId_guest_id_fk"
+      ) {
         console.log(
           `⏭️  Skipping instruction - guest migrated to user: ${suggestion.title}`,
         )
@@ -1203,7 +1209,10 @@ Focus on the main discussion points, user preferences, and conversation style.`
     const summarySchema = z.object({
       summary: z.string().optional(),
       keyTopics: z.array(z.string()).optional(),
-      conversationTone: z.string().optional(), // Accept any string, will fallback to "casual" if invalid
+      conversationTone: z
+        .enum(["professional", "casual", "technical", "creative"])
+        .optional()
+        .catch("casual"), // Type-safe enum with fallback to "casual" if invalid
       userPreferences: z.array(z.string()).optional(),
     })
 

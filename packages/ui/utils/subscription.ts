@@ -93,20 +93,24 @@ export const getFeatures = ({
 
   const proFeatures = [
     {
-      emoji: "🌀",
-      text: t("Unlimited stores with nested apps"),
-    },
-    {
-      emoji: "👩‍💻",
-      text: t("Create custom AI apps with team collaboration"),
-    },
-    {
       emoji: "🚀",
       text: `${t("AI credits per month", { credits: `${5000}`, freeCredits: 150 })}`,
     },
     {
       emoji: "⚡",
       text: t("Messages per hour", { messages: 200, freeMessages: 30 }),
+    },
+    {
+      emoji: "🔑",
+      text: t("Can bring your own API keys"),
+    },
+    {
+      emoji: "👩‍💻",
+      text: t("Create custom AI apps with team collaboration"),
+    },
+    {
+      emoji: "🍒",
+      text: t("Unlimited apps in your store"),
     },
     {
       emoji: "✨",
@@ -163,6 +167,10 @@ export const getFeatures = ({
       text: t("Everything in free"),
     },
     {
+      emoji: "🍓",
+      text: t("Strawberry included (€9.99/month)"),
+    },
+    {
       emoji: "🚀",
       text: t("Unlimited apps in your store"),
     },
@@ -196,6 +204,10 @@ export const getFeatures = ({
     {
       emoji: "🌀",
       text: t("Create your universe, 🍒 multiple brands"),
+    },
+    {
+      emoji: "🫐",
+      text: t("Raspberry included (€19.99/month)"),
     },
     {
       emoji: "🔗",
@@ -297,6 +309,10 @@ export const getFeatures = ({
     {
       emoji: "🍐",
       text: t("Everything in plus"),
+    },
+    {
+      emoji: "🫐",
+      text: t("Raspberry included (€19.99/month)"),
     },
     {
       emoji: "🌀",
@@ -413,6 +429,10 @@ export const getFeatures = ({
 
   const sushiArchitectFeatures = [
     {
+      emoji: "🫐",
+      text: t("Raspberry included (€19.99/month)"),
+    },
+    {
       emoji: "🦁",
       text: t("Strategic Architect Insights"),
     },
@@ -456,6 +476,15 @@ export const getFeatures = ({
       text: t("White Label & Custom Branding"),
     },
     {
+      emoji: "🫐",
+      text: t("Raspberry included (25 team seats, €19.99/seat after)"),
+    },
+    {
+      emoji: "👩‍💻",
+      text: t("Create custom AI apps with team collaboration"),
+    },
+
+    {
       emoji: "🌐",
       text: t("Custom Domain Integration"),
     },
@@ -478,6 +507,15 @@ export const getFeatures = ({
       emoji: "🌀",
       text: t("Create your universe, 🍒 multiple brands"),
     },
+
+    {
+      emoji: "👩‍💻",
+      text: t("Create custom AI apps with team collaboration"),
+    },
+    {
+      emoji: "👥",
+      text: t("Unlimited team seats (you manage)"),
+    },
     {
       emoji: "🏯",
       text: t("Private Dojo: Pure Sovereignty"),
@@ -487,9 +525,10 @@ export const getFeatures = ({
       text: t("Isolated (Private DB & Instance)"),
     },
     {
-      emoji: "👁️",
-      text: t("Same-Tab Kanban & GitHub Focus"),
+      emoji: "📱",
+      text: t("Web, Desktop & Mobile, Extension build pipelines"),
     },
+
     {
       emoji: "🔐",
       text: t("RSA Key Signing & Encryption"),

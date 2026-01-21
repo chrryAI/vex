@@ -18,13 +18,19 @@ export default function ThemeSwitcher({
   style?: React.CSSProperties
 }) {
   const hasHydrated = useHasHydrated()
-  const { isDark, setTheme: setThemeInternal, colorScheme } = useTheme()
+  const {
+    isDark,
+    setTheme: setThemeInternal,
+    colorScheme,
+    setIsThemeLocked,
+  } = useTheme()
 
   const { t } = useAppContext()
 
   const { plausible } = useAuth()
 
   const setTheme = (item: "light" | "dark") => {
+    setIsThemeLocked(true)
     setThemeInternal(item)
     plausible({
       name: ANALYTICS_EVENTS.THEME_CHANGE,

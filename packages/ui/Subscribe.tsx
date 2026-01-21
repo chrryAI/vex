@@ -84,9 +84,8 @@ export default function Subscribe({
   // Chat context
   const { threadId } = useChat()
 
-  // Navigation context (router is the wrapper)
-  const { router, searchParams, removeParams, addParams } =
-    useNavigationContext()
+  // Navigation context
+  const { searchParams, removeParams } = useNavigationContext()
 
   // URL state persistence helper - only update when modal is open
   const updateURLParam = (key: string, value: string) => {
@@ -1142,7 +1141,7 @@ export default function Subscribe({
               >
                 <Div className={clsx(styles.feature, "feature")}>
                   <A openInNewTab href={"https://chrry.dev"} className={"link"}>
-                    <Img logo="chrry" width={16} height={16} />
+                    <Img logo="watermelon" width={16} height={16} />
                     {t("AGPLv3")}. {t("Open Source")}
                   </A>
                 </Div>

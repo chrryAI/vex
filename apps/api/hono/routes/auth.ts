@@ -390,7 +390,7 @@ authRoutes.post("/signout", async (c) => {
  */
 authRoutes.post("/native/google", async (c) => {
   try {
-    const { idToken, callbackUrl } = await c.req.json()
+    const { idToken } = await c.req.json()
 
     if (!idToken) {
       return c.json({ error: "ID token required" }, 400)
@@ -746,17 +746,14 @@ authRoutes.post("/native/apple", async (c) => {
     // Verify the ID token
     // Note: verifying Apple tokens often requires the clientID (app bundle ID)
     // to match the aud claim.
-    const {
-      sub: userAppleId,
-      email,
-      email_verified: emailVerified,
-    } = await appleSignin.verifyIdToken(idToken, {
-      audience: [
-        APPLE_CLIENT_ID,
-        process.env.APPLE_IOS_CLIENT_ID || "dev.chrry",
-      ],
-      ignoreExpiration: false,
-    })
+    const { email, email_verified: emailVerified } =
+      await appleSignin.verifyIdToken(idToken, {
+        audience: [
+          APPLE_CLIENT_ID,
+          process.env.APPLE_IOS_CLIENT_ID || "dev.chrry",
+        ],
+        ignoreExpiration: false,
+      })
 
     if (!email) {
       return c.json({ error: "No email in token" }, 400)
