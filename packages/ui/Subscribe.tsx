@@ -85,10 +85,12 @@ export default function Subscribe({
   const { threadId } = useChat()
 
   // Navigation context (router is the wrapper)
-  const { router, searchParams, removeParam } = useNavigationContext()
+  const { router, searchParams, removeParams, addParams } =
+    useNavigationContext()
 
   // URL state persistence helper - only update when modal is open
   const updateURLParam = (key: string, value: string) => {
+    if (key === "isGifting" || key === "showContact") return
     if (typeof window === "undefined") return
     if (!isModalOpen) return // Don't update URL when modal is closed
     const params = new URLSearchParams(window.location.search)
@@ -248,9 +250,11 @@ export default function Subscribe({
   }
 
   useEffect(() => {
-    !isModalOpen &&
-      (user || guest) &&
+    if (isModalOpen) return
+    ;(user || guest) &&
       setSelectedPlan((user || guest)?.subscription?.plan || "plus")
+
+    removeParams(["subscribe", "plan", "purchaseType"])
   }, [isModalOpen, user, guest])
 
   const cleanSessionId = (sessionId: string | null): string => {
