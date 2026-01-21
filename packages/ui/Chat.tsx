@@ -428,17 +428,21 @@ export default function Chat({
   const isChatFloating =
     m || isIDE || (isChatFloatingInternal && shouldUseCompactMode)
 
+  const [needsReview, setNeedsReviewInternal] = useState(false)
+  const needsReviewRef = useRef(needsReview)
   const placeholder = isImageGenerationEnabled
     ? `🎨 ${t("Describe the image you want to create")} ✨`
     : isSelectingMood
       ? `📊 ${t("Track your mood daily")} 🎭`
-      : isPear
-        ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
-        : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
-          ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
-          : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
-            ? `✨ ${t("Explore new apps while you chat")} 🍇`
-            : placeHolderInternal
+      : needsReview
+        ? `🍒 ${t("By using this, you accept our privacy policy")} 🔒`
+        : isPear
+          ? `${t("💬 Share feedback, earn 10-50 credits!")} 🍇`
+          : !user && hourlyUsageLeft >= 5 && hourlyUsageLeft <= 7
+            ? `⏰ ${hourlyUsageLeft} ${t("messages left! Discover more apps")} 🍇`
+            : user && hourlyUsageLeft >= 24 && hourlyUsageLeft <= 26
+              ? `✨ ${t("Explore new apps while you chat")} 🍇`
+              : placeHolderInternal
   // useEffect(() => {
   //   setIsChatFloating(isChatFloating)
   // }, [isChatFloating])
@@ -2484,9 +2488,6 @@ export default function Chat({
     !!user,
   )
 
-  const [needsReview, setNeedsReviewInternal] = useState(false)
-  const needsReviewRef = useRef(needsReview)
-
   const setNeedsReview = (value: boolean) => {
     setNeedsReviewInternal(value)
     needsReviewRef.current = value
@@ -4018,7 +4019,6 @@ export default function Chat({
                     })}
                   </Div>
                 )}
-
                 <TextArea
                   className="chatTextArea"
                   rows={isHydrated && isChatFloating ? 1 : 2}
@@ -4062,7 +4062,7 @@ export default function Chat({
                   returnKeyType="send"
                 />
                 {/* Quota Info Display */}
-                {showQuotaInfo && quotaInfo && !needsReview && (
+                {showQuotaInfo && quotaInfo && (
                   <Div style={styles.quotaDisplay.style}>
                     <Div style={styles.quotaHeader.style}>
                       <HardDrive size={16} color="var(--accent-6)" />
@@ -4639,7 +4639,7 @@ export default function Chat({
                       )
                     )}
                     {/* Quota info button */}
-                    {user && !isSelectingMood && (
+                    {!isSelectingMood && !needsReview && (
                       <Button
                         className="link"
                         onClick={async () => {
