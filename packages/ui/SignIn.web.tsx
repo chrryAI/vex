@@ -48,8 +48,6 @@ export default function SignIn({
 }) {
   const { isExtension, isTauri, isCapacitor } = usePlatform()
 
-  const isAppleSignInAvailable = !isTauri
-
   const { clear } = useCache()
 
   const {
@@ -92,6 +90,8 @@ export default function SignIn({
     TEST_GUEST_FINGERPRINTS,
     TEST_MEMBER_FINGERPRINTS,
   } = useData()
+
+  const isAppleSignInAvailable = !isTauri && isE2E
 
   const { threadId } = useChat()
 
