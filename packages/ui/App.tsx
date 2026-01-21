@@ -915,7 +915,7 @@ export default function App({
                       if (isExtension) {
                         BrowserInstance?.runtime?.sendMessage({
                           action: "openInSameTab",
-                          url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                          url: `${FRONTEND_URL}?subscribe=true&plan=pro&extension=true`,
                         })
 
                         return
@@ -940,7 +940,7 @@ export default function App({
                       if (isExtension) {
                         BrowserInstance?.runtime?.sendMessage({
                           action: "openInSameTab",
-                          url: `${FRONTEND_URL}?subscribe=true&extension=true`,
+                          url: `${FRONTEND_URL}?subscribe=true&plan=${user?.subscription?.plan === "pro" ? "pro" : "plus"}&extension=true`,
                         })
 
                         return
