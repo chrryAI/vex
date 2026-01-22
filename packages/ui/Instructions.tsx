@@ -2,7 +2,9 @@
 
 import React, {
   Dispatch,
+  lazy,
   SetStateAction,
+  Suspense,
   useEffect,
   useRef,
   useState,
@@ -67,14 +69,15 @@ import ConfirmButton from "./ConfirmButton"
 import { FaApple, FaAndroid, FaChrome } from "react-icons/fa"
 import { SiMacos } from "react-icons/si"
 
-import Agent from "./agent"
 import { useLocalStorage } from "./hooks"
 import A from "./a/A"
 import { useInstructionsStyles } from "./Instructions.styles"
 import { useStyles } from "./context/StylesContext"
-import EmojiPicker from "./EmojiPicker"
 import { MotiView } from "./platform/MotiView"
 import { useResponsiveCount } from "./hooks/useResponsiveCount"
+
+const Agent = lazy(() => import("./agent"))
+const EmojiPicker = lazy(() => import("./EmojiPicker"))
 
 export default function Instructions({
   className,
@@ -1326,29 +1329,31 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                   }}
                 >
                   {showEmojiPicker && (
-                    <Div
-                      style={{
-                        position: "absolute",
-                        bottom: "100%",
-                        right: 0,
-                        marginBottom: "0.5rem",
-                        zIndex: 1000,
-                      }}
-                    >
-                      <EmojiPicker
-                        open={showEmojiPicker}
-                        onClose={() => setShowEmojiPicker(false)}
-                        onEmojiClick={handleEmojiClick}
-                        width={300}
-                        height={400}
-                        previewConfig={{
-                          showPreview: false,
+                    <Suspense>
+                      <Div
+                        style={{
+                          position: "absolute",
+                          bottom: "100%",
+                          right: 0,
+                          marginBottom: "0.5rem",
+                          zIndex: 1000,
                         }}
-                        skinTonesDisabled
-                        lazyLoadEmojis={true}
-                        isDark={isDark}
-                      />
-                    </Div>
+                      >
+                        <EmojiPicker
+                          open={showEmojiPicker}
+                          onClose={() => setShowEmojiPicker(false)}
+                          onEmojiClick={handleEmojiClick}
+                          width={300}
+                          height={400}
+                          previewConfig={{
+                            showPreview: false,
+                          }}
+                          skinTonesDisabled
+                          lazyLoadEmojis={true}
+                          isDark={isDark}
+                        />
+                      </Div>
+                    </Suspense>
                   )}
                   <Button
                     className="inverted"
@@ -1524,7 +1529,9 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
               </A>
             )}
             {appStatus?.part ? (
-              <Agent />
+              <Suspense>
+                <Agent />
+              </Suspense>
             ) : (
               <Div
                 style={{

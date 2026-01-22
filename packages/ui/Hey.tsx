@@ -85,6 +85,8 @@ export const Hey = memo(
       isIDE,
     } = useAuth()
 
+    console.log("app", app)
+
     const { currentStore } = useApp()
 
     const lastPathSegment = pathname.split("/").pop()?.split("?")[0]

@@ -79,6 +79,7 @@ export default function Subscribe({
     setSignInPart,
     setAsk,
     setAbout,
+    ask,
   } = useAuth()
 
   // Chat context
@@ -148,9 +149,13 @@ export default function Subscribe({
   const { setAppStatus } = useApp()
 
   const { addHapticFeedback, reduceMotion } = useTheme()
-  const [isModalOpen, setIsModalOpen] = React.useState<boolean | undefined>(
-    searchParams.get("subscribe") === "true" || undefined,
-  )
+  const [isModalOpen, setIsModalOpenInternal] = React.useState<
+    boolean | undefined
+  >(searchParams.get("subscribe") === "true" || undefined)
+
+  const setIsModalOpen = (value: boolean) => {
+    setIsModalOpenInternal(value)
+  }
 
   useEffect(() => {
     if (searchParams.get("subscribe") === "true") {
@@ -798,19 +803,25 @@ export default function Subscribe({
                         ? "🍇"
                         : selectedPlan === "pear"
                           ? "🍐"
-                          : selectedPlan === "coder"
+                          : selectedPlan === "coder" ||
+                              sushiTier === "architect"
                             ? "🍣"
                             : selectedPlan === "watermelon"
                               ? "🍉"
                               : "🍒"
+
+                  setIsModalOpen(false)
+
                   setAsk(
                     `${emoji} ${t(`Tell me more about {{selectedPlan}} plan`, {
-                      selectedPlan: capitalizeFirstLetter(selectedPlan),
+                      selectedPlan:
+                        sushiTier === "architect"
+                          ? "Architect"
+                          : capitalizeFirstLetter(selectedPlan),
                       // tier: sushiTier || grapeTier || pearTier,
                     })}`,
                   )
                   setAbout("subscribe")
-                  setIsModalOpen(false)
                 }}
                 className="button link"
                 style={{ fontWeight: "normal" }}

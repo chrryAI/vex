@@ -18,7 +18,7 @@ export default function AddToHomeScreen(): React.ReactElement | null {
   const { app, storeApp } = useApp()
   const { ...platform } = usePlatform()
 
-  const os = platform.os === "macos" ? "ios" : "android"
+  const os = platform.os === "macos" ? "ios" : platform.os
 
   const { setShowAddToHomeScreen, showAddToHomeScreen } = useNavigationContext()
 

@@ -403,21 +403,33 @@ authRoutes.post("/native/google", async (c) => {
     const { OAuth2Client } = await import("google-auth-library")
     const client = new OAuth2Client(GOOGLE_WEB_CLIENT_ID)
 
-    // Verify the ID token
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: [
-        // The token might be issued for the iOS client ID or the Web client ID
-        // depending on how the plugin is configured. We should accept both if possible.
-        // For now, allow the web client ID as checking failure is expected if mismatched.
-        GOOGLE_WEB_CLIENT_ID,
-        // Add iOS client ID if available in env
-        process.env.GOOGLE_IOS_CLIENT_ID ||
-          "230848351758-64o69nn4a4mknvnol73bfl3e4vb46ljt.apps.googleusercontent.com",
-      ],
-    })
+    // In development, allow bypassing verification for testing
+    const isDevelopment = process.env.NODE_ENV === "development"
 
-    const payload = ticket.getPayload()
+    let payload: any
+
+    if (isDevelopment) {
+      console.log("🔍 Development mode: Skipping Google token verification")
+      try {
+        const jwt = (await import("jsonwebtoken")).default
+        payload = jwt.decode(idToken) as any
+        console.log("🔍 Decoded email:", payload?.email)
+      } catch (e) {
+        console.error("Failed to decode token:", e)
+        return c.json({ error: "Invalid Google ID token" }, 401)
+      }
+    } else {
+      // Production: Verify token properly
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: [
+          GOOGLE_WEB_CLIENT_ID,
+          process.env.GOOGLE_IOS_CLIENT_ID ||
+            "230848351758-64o69nn4a4mknvnol73bfl3e4vb46ljt.apps.googleusercontent.com",
+        ],
+      })
+      payload = ticket.getPayload()
+    }
 
     if (!payload || !payload.email) {
       return c.json({ error: "Invalid token payload" }, 400)
@@ -741,19 +753,102 @@ authRoutes.post("/native/apple", async (c) => {
     }
 
     const appleSignin = (await import("apple-signin-auth")).default
-    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
+    const APPLE_CLIENT_ID = process.env.APPLE_IOS_CLIENT_ID
 
     // Verify the ID token
     // Note: verifying Apple tokens often requires the clientID (app bundle ID)
     // to match the aud claim.
-    const { email, email_verified: emailVerified } =
-      await appleSignin.verifyIdToken(idToken, {
-        audience: [
-          APPLE_CLIENT_ID,
-          process.env.APPLE_IOS_CLIENT_ID || "dev.chrry",
-        ],
-        ignoreExpiration: false,
-      })
+
+    // Debug: Decode token to inspect (without verification)
+    try {
+      const jwt = (await import("jsonwebtoken")).default
+      const decoded = jwt.decode(idToken, { complete: true })
+      console.log("🍎 Apple token header:", decoded?.header)
+      console.log(
+        "🍎 Apple token payload (aud):",
+        (decoded?.payload as any)?.aud,
+      )
+      console.log("🍎 Expected audience:", [
+        APPLE_CLIENT_ID,
+        process.env.APPLE_IOS_CLIENT_ID || "dev.chrry",
+      ])
+    } catch (e) {
+      console.error("Failed to decode token for debugging:", e)
+    }
+
+    let email: string | undefined
+    let emailVerified: boolean | undefined
+
+    // In development, Apple test tokens may use different public keys
+    // that aren't available in Apple's public key endpoint
+    const isDevelopment = process.env.NODE_ENV === "development"
+
+    if (isDevelopment) {
+      console.log("🍎 Development mode: Skipping Apple token verification")
+      try {
+        const jwt = (await import("jsonwebtoken")).default
+        const decoded = jwt.decode(idToken) as any
+        email = decoded?.email
+        emailVerified =
+          decoded?.email_verified === "true" || decoded?.email_verified === true
+        console.log("🍎 Decoded email:", email)
+      } catch (e) {
+        console.error("Failed to decode token:", e)
+        return c.json({ error: "Invalid Apple ID token" }, 401)
+      }
+    } else {
+      // Production: Verify token properly
+      try {
+        const result = await appleSignin.verifyIdToken(idToken, {
+          audience: [
+            APPLE_CLIENT_ID,
+            process.env.APPLE_IOS_CLIENT_ID || "dev.chrry",
+          ],
+          ignoreExpiration: false,
+        })
+        email = result.email
+        emailVerified =
+          result.email_verified === "true" || result.email_verified === true
+      } catch (verifyError: any) {
+        console.error("Apple token verification failed:", verifyError)
+
+        // If it's a public key error, try one more time (Apple rotates keys)
+        if (verifyError.message?.includes("public key")) {
+          console.log(
+            "Retrying Apple token verification (public key refresh)...",
+          )
+          try {
+            const result = await appleSignin.verifyIdToken(idToken, {
+              audience: [
+                APPLE_CLIENT_ID,
+                process.env.APPLE_IOS_CLIENT_ID || "dev.chrry",
+              ],
+              ignoreExpiration: false,
+            })
+            email = result.email
+            emailVerified =
+              result.email_verified === "true" || result.email_verified === true
+          } catch (retryError: any) {
+            console.error("Apple token verification retry failed:", retryError)
+            return c.json(
+              {
+                error: "Failed to verify Apple ID token",
+                details: retryError.message,
+              },
+              401,
+            )
+          }
+        } else {
+          return c.json(
+            {
+              error: "Failed to verify Apple ID token",
+              details: verifyError.message,
+            },
+            401,
+          )
+        }
+      }
+    }
 
     if (!email) {
       return c.json({ error: "No email in token" }, 400)
@@ -778,10 +873,7 @@ authRoutes.post("/native/apple", async (c) => {
         email,
         name,
         userName: await generateUniqueUsername(name),
-        emailVerified:
-          emailVerified === "true" || emailVerified === true
-            ? new Date()
-            : undefined,
+        emailVerified: emailVerified ? new Date() : undefined,
       })
     }
 

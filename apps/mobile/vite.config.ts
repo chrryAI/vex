@@ -16,6 +16,7 @@ export default defineConfig({
   ],
   server: {
     port: 5175,
+    host: "0.0.0.0", // Allow iOS Simulator to connect
   },
   build: {
     outDir: "dist",
