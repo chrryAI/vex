@@ -72,7 +72,7 @@ export const isDevelopment = checkIsExtension()
     ].some((id) => getExtensionUrl()?.includes(id))
   : !isProduction
 
-export const isTestingDevice = false && isDevelopment
+export const isTestingDevice = isDevelopment
 
 export const isE2E =
   getEnv().VITE_TESTING_ENV === "e2e" || getEnv().TESTING_ENV === "e2e"

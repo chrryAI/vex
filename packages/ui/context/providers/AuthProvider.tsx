@@ -1151,7 +1151,7 @@ export function AuthProvider({
       !isRemovingApp &&
       !isSavingApp &&
       !isManagingApp
-      ? "session"
+      ? ["session", token]
       : null,
     async () => {
       // debugger
@@ -1951,13 +1951,21 @@ export function AuthProvider({
 
   useEffect(() => {
     const ask = searchParams.get("ask")
-    ask !== null && setAskInternal(ask)
+    if (ask !== null) {
+      setAskInternal(ask)
+      setInput(ask)
+    }
     const about = searchParams.get("about")
     about !== null && setAbout(about)
   }, [searchParams])
 
   const setAsk = (value: string | undefined) => {
     setAskInternal(value)
+
+    if (value) {
+      router.push(`/?ask=${encodeURIComponent(value)}`)
+    }
+
     value && setInput(value)
   }
 

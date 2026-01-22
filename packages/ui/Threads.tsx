@@ -23,7 +23,12 @@ import { useLocalStorage } from "./hooks"
 import Share from "./Share"
 import Bookmark from "./Bookmark"
 import Img from "./Image"
-import { useAuth, useData, useNavigationContext } from "./context/providers"
+import {
+  useAuth,
+  useChat,
+  useData,
+  useNavigationContext,
+} from "./context/providers"
 import { A, Button, Div, H2, P, Span, useTheme } from "./platform"
 import { useThreadsStyles } from "./Threads.styles"
 
@@ -48,9 +53,15 @@ const Threads = ({
     userNameByUrl,
   } = useNavigationContext()
 
+  const { scrollToTop } = useChat()
+
   const { reduceMotion } = useTheme()
 
   const [animationKey, setAnimationKey] = useState(0)
+
+  useEffect(() => {
+    scrollToTop(100)
+  }, [pathname])
 
   useEffect(() => {
     if (!reduceMotion) {
