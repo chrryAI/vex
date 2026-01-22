@@ -38,8 +38,20 @@ function setCorsHeaders(c: Context) {
     c.header("Access-Control-Allow-Credentials", "true")
     c.header("Vary", "Origin")
   } else if (isDevelopment) {
-    // Allow all origins in development for testing
-    c.header("Access-Control-Allow-Origin", "*")
+    // Development: Allow localhost and local network IPs with credentials
+    if (
+      origin &&
+      (origin.includes("localhost") ||
+        origin.includes("127.0.0.1") ||
+        origin.includes("192.168."))
+    ) {
+      c.header("Access-Control-Allow-Origin", origin)
+      c.header("Access-Control-Allow-Credentials", "true")
+      c.header("Vary", "Origin")
+    } else {
+      // Allow all other origins in development (no credentials)
+      c.header("Access-Control-Allow-Origin", "*")
+    }
   } else if (
     origin &&
     (origin.includes(".chrry.ai") ||

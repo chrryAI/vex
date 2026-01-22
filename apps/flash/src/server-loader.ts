@@ -289,7 +289,6 @@ export async function loadServerData(
         agentName,
         pathname,
         routeType,
-        translate: true,
         locale,
         chrryUrl,
         screenWidth: Number(viewPortWidth),
