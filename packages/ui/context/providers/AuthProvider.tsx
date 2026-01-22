@@ -1151,7 +1151,7 @@ export function AuthProvider({
       !isRemovingApp &&
       !isSavingApp &&
       !isManagingApp
-      ? "session"
+      ? ["session", token]
       : null,
     async () => {
       // debugger
