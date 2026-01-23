@@ -41,6 +41,34 @@ app.set("trust proxy", 1)
 
 app.use(cookieParser())
 
+// CORS middleware for development (mobile app access)
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  // Allow localhost and local network IPs
+  if (
+    isDev &&
+    origin &&
+    (origin.includes("localhost") ||
+      origin.includes("127.0.0.1") ||
+      origin.includes("192.168."))
+  ) {
+    res.setHeader("Access-Control-Allow-Origin", origin)
+    res.setHeader("Access-Control-Allow-Credentials", "true")
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS",
+    )
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+  }
+
+  // Handle preflight
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200)
+  }
+
+  next()
+})
+
 // Initialize Arcjet for rate limiting and security
 const aj = arcjet({
   key: process.env.ARCJET_KEY || "test-key",

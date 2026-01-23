@@ -804,6 +804,7 @@ export default function Subscribe({
                         : selectedPlan === "pear"
                           ? "🍐"
                           : selectedPlan === "coder" ||
+                              selectedPlan === "sushi" ||
                               sushiTier === "architect"
                             ? "🍣"
                             : selectedPlan === "watermelon"

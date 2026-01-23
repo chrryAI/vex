@@ -280,10 +280,12 @@ async function clearGuests() {
       .from(guests)
       .leftJoin(subscriptions, eq(subscriptions.guestId, guests.id))
       .leftJoin(messages, eq(messages.guestId, guests.id))
+      .leftJoin(apps, eq(apps.guestId, guests.id))
       .leftJoin(sql`task`, sql`task."guestId" = ${guests.id}`)
       .where(
         and(
           isNull(subscriptions.id),
+          isNull(apps.id),
           isNull(messages.id),
           sql`task.id IS NULL`,
         ),
@@ -994,12 +996,12 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  const { vex } = await createStores({ user: admin })
+  // const { vex } = await createStores({ user: admin })
 
   // await updateStoreUrls({ user: admin })
 
   // Delete inactive bot guests in batches
-  // await clearGuests()
+  await clearGuests()
   // const vex = await createStores({ user: admin, isProd: true })
   // const allInstructions = await db.select().from(instructions)
   // const seen = new Map<string, string>() // Map of unique key -> instruction ID
@@ -1108,8 +1110,8 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    await clearDb()
-    await create()
+    // await clearDb()
+    // await create()
     process.exit(0)
   }
 }
