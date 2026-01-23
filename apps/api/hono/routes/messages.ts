@@ -414,6 +414,7 @@ messages.post("/", async (c) => {
         await updateThread({
           ...newThread,
           title: newTitle,
+          updatedOn: new Date(),
         })
       } catch (error) {
         captureException(error)
