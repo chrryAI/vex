@@ -136,37 +136,6 @@ threads.get("/", async (c) => {
     guestId: guest?.id,
   })
 
-  const dnaThread =
-    app?.mainThreadId &&
-    isOwner(app, {
-      userId: member?.id,
-      guestId: guest?.id,
-    })
-      ? await getThread({
-          id: app.mainThreadId,
-          userId: member?.id,
-          guestId: guest?.id,
-        })
-      : undefined
-
-  // Migration: Ensure DNA thread has isMainThread flag set
-  // This is a one-time backfill for existing threads
-  if (
-    dnaThread &&
-    isOwner(dnaThread, {
-      userId: member?.id,
-      guestId: guest?.id,
-    }) &&
-    !dnaThread.isMainThread
-  ) {
-    await updateThreadDb({
-      ...dnaThread,
-      isMainThread: true,
-    })
-
-    dnaThread.isMainThread = true
-  }
-
   const pageSize = Number(c.req.query("pageSize") || "100")
   const search = c.req.query("search")
 
@@ -258,15 +227,6 @@ threads.get("/", async (c) => {
 
   return c.json({
     ...threadsResult,
-    threads: dnaThread
-      ? [
-          // Prepend DNA thread if it exists and is not already in the list
-          ...(threadsResult.threads.some((t) => t.id === dnaThread.id)
-            ? []
-            : [dnaThread]),
-          ...threadsResult.threads,
-        ]
-      : threadsResult.threads,
     user:
       userFromUserName &&
       userFromUserName.characterProfilesEnabled &&
