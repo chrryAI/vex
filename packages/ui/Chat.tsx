@@ -100,7 +100,6 @@ import {
   PROMPT_LIMITS,
   apiFetch,
   MAX_FILE_LIMITS,
-  isE2E,
 } from "./utils"
 import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
@@ -4668,6 +4667,8 @@ export default function Chat({
                   style={{
                     ...styles.creditInfo.style,
                     ...(isStandalone ? styles.standalone.style : undefined),
+                    marginTop: 2,
+                    marginBottom: 2,
                   }}
                 >
                   <Span
@@ -4680,7 +4681,12 @@ export default function Chat({
                       <Coins color="var(--accent-1)" size={16} />
                     )}
                     {creditEstimate && creditEstimate.multiplier > 1 ? (
-                      <Span
+                      <Button
+                        className="link"
+                        onClick={() => {
+                          addHapticFeedback()
+                          setIsAgentModalOpen(true)
+                        }}
                         title={t("task_detected_tooltip", {
                           taskType: t(`task_type_${creditEstimate.taskType}`),
                           multiplier: creditEstimate.multiplier,
@@ -4695,14 +4701,13 @@ export default function Chat({
                               (selectedAgent?.creditCost || 1),
                           ),
                         })}
-                      </Span>
+                      </Button>
                     ) : hitHourlyLimit && !threadId ? (
                       <Span
                         data-testid="hourly-limit-info"
                         data-hourly-left={hourlyUsageLeft}
                         style={styles.hourlyLimit.style}
                       >
-                        {isE2E && hourlyUsageLeft}
                         {!user?.subscription || !guest?.subscription ? (
                           <Button
                             onClick={() => {
@@ -4722,13 +4727,29 @@ export default function Chat({
                         /{hourlyLimit}
                       </Span>
                     ) : selectedAgent ? (
-                      <>
+                      <Button
+                        className="link"
+                        onClick={() => {
+                          addHapticFeedback()
+                          setIsAgentModalOpen(true)
+                        }}
+                        style={{
+                          ...utilities.link.style,
+                          color: "var(--shade-7)",
+                          fontSize: "0.8rem",
+                        }}
+                        title={t("credits", {
+                          count:
+                            (selectedAgent?.creditCost || 1) +
+                            (debateAgent?.creditCost || 0),
+                        })}
+                      >
                         {t("credits", {
                           count:
                             (selectedAgent?.creditCost || 1) +
                             (debateAgent?.creditCost || 0),
                         })}
-                      </>
+                      </Button>
                     ) : (
                       t("Doesn't cost credits")
                     )}
@@ -4754,12 +4775,14 @@ export default function Chat({
                               style={styles.creditInfoText.style}
                             >
                               🍒
-                              <Span
+                              <A
+                                className="link"
+                                href={`${FRONTEND_URL}?subscribe=true&plan=credits`}
                                 style={{
                                   color:
                                     creditsLeft === 0
                                       ? "var(--accent-0)"
-                                      : undefined,
+                                      : "var(--shade-7)",
                                 }}
                               >
                                 {creditsLeft > OWNER_CREDITS / 10
@@ -4767,7 +4790,7 @@ export default function Chat({
                                   : t("credit_left", {
                                       count: creditsLeft,
                                     })}
-                              </Span>
+                              </A>
                             </Span>
                           )}
                         </>

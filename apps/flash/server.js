@@ -18,7 +18,7 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.11.18"
+const VERSION = "1.11.23"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -40,6 +40,49 @@ const app = express()
 app.set("trust proxy", 1)
 
 app.use(cookieParser())
+
+// CORS middleware for development (mobile app access)
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+
+  // Strict validation for development origins
+  if (isDev && origin) {
+    try {
+      const url = new URL(origin)
+      const hostname = url.hostname
+
+      // Allow only specific localhost and local network patterns
+      const isAllowed =
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        /^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname) || // Strict IP validation
+        /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) || // Private network
+        /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/.test(hostname) // Private network
+
+      if (isAllowed) {
+        res.setHeader("Access-Control-Allow-Origin", origin)
+        res.setHeader("Access-Control-Allow-Credentials", "true")
+        res.setHeader(
+          "Access-Control-Allow-Methods",
+          "GET, POST, PUT, DELETE, OPTIONS",
+        )
+        res.setHeader(
+          "Access-Control-Allow-Headers",
+          "Content-Type, Authorization",
+        )
+      }
+    } catch (e) {
+      // Invalid origin URL, skip CORS headers
+    }
+  }
+
+  // Handle preflight
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200)
+  }
+
+  next()
+})
 
 // Initialize Arcjet for rate limiting and security
 const aj = arcjet({
