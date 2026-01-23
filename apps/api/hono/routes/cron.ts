@@ -34,7 +34,7 @@ async function clearGuests() {
           isNull(messages.id),
           isNull(apps.id),
           sql`task.id IS NULL`,
-          sql`${guests.createdOn} < NOW() - INTERVAL '30 days'`, // Only delete guests older than 30 days
+          sql`${guests.createdOn} < NOW() - INTERVAL '5 days'`, // Only delete guests older than 5 days
         ),
       )
       .groupBy(guests.id, guests.ip)
