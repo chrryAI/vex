@@ -3079,6 +3079,7 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         ...thread,
         isMainThread: true,
         bookmarks,
+        updatedOn: new Date(),
       })
 
       thread = await getThread({
@@ -5504,6 +5505,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       ...thread,
       aiResponse:
         testResponse.slice(0, 150) + (testResponse.length > 150 ? "..." : ""),
+      updatedOn: new Date(),
     })
 
     const aiMessage = await createMessage({
@@ -5831,6 +5833,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // Update thread with image generation result
         await updateThread({
           ...thread,
+          updatedOn: new Date(),
           aiResponse: `Generated image: ${content.slice(0, 50)}${content.length > 50 ? "..." : ""}`,
         })
 
@@ -6370,6 +6373,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 aiResponse:
                   finalText.slice(0, 150) +
                   (finalText.length > 150 ? "..." : ""),
+                updatedOn: new Date(),
               })
 
               // Run in background after response
@@ -6606,6 +6610,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         await updateThread({
           ...thread,
+          updatedOn: new Date(),
           aiResponse:
             finalText.slice(0, 150) + (finalText.length > 150 ? "..." : ""), // Use first 50 chars as title
         })
@@ -7073,6 +7078,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
       await updateThread({
         ...thread,
+        updatedOn: new Date(),
         aiResponse:
           finalText.slice(0, 150) + (finalText.length > 150 ? "..." : ""), // Use first 50 chars as title
       })
