@@ -2622,9 +2622,9 @@ export const getThreads = async ({
               desc(
                 sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
               ),
-              desc(threads.createdOn),
+              desc(threads.updatedOn),
             ]
-          : [desc(threads.createdOn)]),
+          : [desc(threads.updatedOn)]),
       )
       .limit(pageSize)
       .offset((page - 1) * pageSize)
@@ -2712,9 +2712,9 @@ export const getThreads = async ({
               desc(
                 sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
               ),
-              desc(threads.createdOn),
+              desc(threads.updatedOn),
             ]
-          : [desc(threads.createdOn)]),
+          : [desc(threads.updatedOn)]),
       )
       .limit(pageSize)
       .offset((page - 1) * pageSize)
