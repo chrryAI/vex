@@ -100,7 +100,6 @@ import {
   PROMPT_LIMITS,
   apiFetch,
   MAX_FILE_LIMITS,
-  isE2E,
 } from "./utils"
 import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
