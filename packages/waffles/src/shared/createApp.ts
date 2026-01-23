@@ -17,6 +17,7 @@ const createApp = async ({
   creditsConsumed,
   messagesConsumed,
   isGrape,
+  defaultAgent,
 }: {
   app: string
   isRetro?: boolean
@@ -64,6 +65,60 @@ const createApp = async ({
       timeout: 100000,
     })
     await wait(5000) // Increased wait to ensure page is fully loaded
+  }
+
+  const capabilities = {
+    chatGPT: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+      codeExecution: true,
+    },
+    claude: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+      codeExecution: true,
+    },
+
+    sushi: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: true,
+      pdf: true,
+      imageGeneration: true,
+      codeExecution: true,
+    },
+    gemini: {
+      text: true,
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+      codeExecution: true,
+    },
+    perplexity: {
+      text: true,
+      image: false,
+      audio: false,
+      video: false,
+      webSearch: true,
+      pdf: false,
+      imageGeneration: false,
+      codeExecution: false,
+    },
   }
 
   const addAgentButton = page.getByTestId("add-agent-button")

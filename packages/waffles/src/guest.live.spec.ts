@@ -205,7 +205,7 @@ test.skip("File upload", async ({ page }) => {
   })
 })
 
-test.skip("Create App", async ({ page }) => {
+test.only("Create App", async ({ page }) => {
   await createApp({ page, isLive, app: "test", slug: "test", isMember })
 })
 

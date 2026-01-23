@@ -182,10 +182,12 @@ export default function Agent({
       highlight?.content?.includes("{{temp}}"),
   )
 
-  const calendarRequiredApp = apps.find(
-    (app) =>
-      appForm?.watch("extends")?.includes(app.name) &&
-      app.tools?.includes("calendar"),
+  const extendetApps = apps.filter((app) =>
+    appForm?.watch("extends")?.includes(app.id),
+  )
+
+  const calendarRequiredApp = extendetApps.find(
+    (app) => app.tools?.includes("calendar") && app?.id !== chrry?.id,
   )
 
   const locationRequiredApp = apps.find(
@@ -617,6 +619,7 @@ export default function Agent({
                             ...styles.select.style,
                             ...utilities.right.style,
                           }}
+                          data-testid="default-model-select"
                           options={[
                             { value: "sushi", label: "Sushi" },
                             { value: "claude", label: "Claude" },

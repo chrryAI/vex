@@ -866,6 +866,8 @@ export function ChatProvider({
     value && setDebateAgent(null)
   }
 
+  const [isUserSelectedAgent, setIsUserSelectedAgent] = useState<boolean>(false)
+
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     if (selectedAgent?.name === agent?.name) return
     if (agent === null) {
@@ -881,7 +883,7 @@ export function ChatProvider({
       setIsImageGenerationEnabledInternal(
         agent?.capabilities?.imageGeneration || false,
       )
-    setIsWebSearchEnabledInternal(agent?.name === "perplexity" || false)
+    setIsWebSearchEnabledInternal(agent?.capabilities?.webSearch || false)
   }
 
   const defaultAgentInternal =
@@ -892,19 +894,19 @@ export function ChatProvider({
     defaultAgentInternal,
   )
 
+  const [selectedAgent, setSelectedAgentInternal] = useLocalStorage<
+    aiAgent | undefined | null
+  >("selectedAgent", defaultAgent)
+
   useEffect(() => {
     setDefaultAgent(defaultAgentInternal)
   }, [defaultAgentInternal])
 
   useEffect(() => {
     defaultAgent &&
-      selectedAgent === undefined &&
+      (selectedAgent === undefined || !isUserSelectedAgent) &&
       setSelectedAgent(defaultAgent)
-  }, [defaultAgent])
-
-  const [selectedAgent, setSelectedAgentInternal] = useLocalStorage<
-    aiAgent | undefined | null
-  >("selectedAgent", defaultAgent)
+  }, [defaultAgent, isUserSelectedAgent, selectedAgent])
 
   useEffect(() => {
     auth.selectedAgent?.name !== selectedAgent?.name &&
@@ -919,9 +921,16 @@ export function ChatProvider({
   }, [defaultAgent, selectedAgent])
 
   const setIsWebSearchEnabled = (value: boolean) => {
-    value && !selectedAgent?.capabilities?.webSearch
-      ? setSelectedAgent(perplexityAgent)
-      : undefined
+    if (value) {
+      app?.defaultModel === "perplexity" &&
+      app?.onlyAgent &&
+      selectedAgent?.name !== "perplexity"
+        ? setSelectedAgent(perplexityAgent)
+        : selectedAgent?.name !== "sushi" &&
+          !selectedAgent?.capabilities?.webSearch &&
+          setSelectedAgent(sushiAgent)
+    }
+
     setIsWebSearchEnabledInternal(value)
   }
 
@@ -1213,7 +1222,10 @@ export function ChatProvider({
         scrollToBottom,
         isWebSearchEnabled,
         selectedAgent,
-        setSelectedAgent,
+        setSelectedAgent: (agent: aiAgent | undefined | null) => {
+          setSelectedAgent(agent)
+          !isUserSelectedAgent && setIsUserSelectedAgent(true)
+        },
         hitHourlyLimit,
         debateAgent,
         setDebateAgent,
