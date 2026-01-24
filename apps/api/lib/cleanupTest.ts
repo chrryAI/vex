@@ -114,8 +114,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
 
   const stores = await getStores({
     pageSize: 100000,
-    userId: user?.id,
-    guestId: guest?.id,
+    ownerId: user?.id || guest?.id,
   })
 
   await Promise.all(
