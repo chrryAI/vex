@@ -869,6 +869,10 @@ export function ChatProvider({
   const [isUserSelectedAgent, setIsUserSelectedAgent] = useState<boolean>(false)
 
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
+    setIsWebSearchEnabledInternal(
+      agent?.name === "perplexity" ||
+        (isWebSearchEnabled ? !!selectedAgent?.capabilities?.webSearch : false),
+    )
     if (selectedAgent?.name === agent?.name) return
     if (agent === null) {
       setAgentName("")
@@ -883,10 +887,6 @@ export function ChatProvider({
       setIsImageGenerationEnabledInternal(
         agent?.capabilities?.imageGeneration || false,
       )
-    setIsWebSearchEnabledInternal(
-      agent?.name === "perplexity" ||
-        (isWebSearchEnabled ? !!selectedAgent?.capabilities?.webSearch : false),
-    )
   }
 
   const defaultAgentInternal =

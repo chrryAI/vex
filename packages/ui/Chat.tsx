@@ -4270,7 +4270,7 @@ export default function Chat({
                             <Span
                               style={{
                                 ...styles.agentName.style,
-                                maxWidth: isMobileDevice ? 75 : 150,
+                                maxWidth: viewPortWidth < 400 ? 100 : 150,
                               }}
                             >
                               {selectedAgent?.displayName}
