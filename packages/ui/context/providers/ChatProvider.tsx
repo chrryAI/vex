@@ -871,7 +871,7 @@ export function ChatProvider({
   const setSelectedAgent = (agent: aiAgent | undefined | null) => {
     setIsWebSearchEnabledInternal(
       agent?.name === "perplexity" ||
-        (isWebSearchEnabled ? !!selectedAgent?.capabilities?.webSearch : false),
+        (isWebSearchEnabled ? !!agent?.capabilities?.webSearch : false),
     )
     if (selectedAgent?.name === agent?.name) return
     if (agent === null) {
