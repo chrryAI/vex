@@ -34,7 +34,7 @@ test.describe("Tauri Desktop App", () => {
     const window = await electronApp.firstWindow()
 
     // Wait for app to load
-    await window.waitForLoadState("domcontentloaded")
+    await window.waitForLoadState("networkidle")
 
     // Test basic functionality
     await expect(window.locator("h1")).toBeVisible()
@@ -59,7 +59,7 @@ test.describe("Tauri Desktop App", () => {
     })
 
     const window = await electronApp.firstWindow()
-    await window.waitForLoadState("domcontentloaded")
+    await window.waitForLoadState("networkidle")
 
     // Click login button
     await window.click('[data-testid="login-button"]')
@@ -87,7 +87,7 @@ test.describe("Tauri Desktop App", () => {
     })
 
     const window = await electronApp.firstWindow()
-    await window.waitForLoadState("domcontentloaded")
+    await window.waitForLoadState("networkidle")
 
     // Navigate to subscription page
     // Test Stripe checkout flow in native app

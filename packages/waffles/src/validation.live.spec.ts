@@ -12,7 +12,7 @@ const isMember = false
 test.skip("App Creation Validation", () => {
   test("Name validation - minimum 3 characters", async ({ page }) => {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     })
     await wait(5000)
@@ -41,7 +41,7 @@ test.skip("App Creation Validation", () => {
 
   test("Name validation - 2 characters should show error", async ({ page }) => {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     })
     await wait(5000)
@@ -65,7 +65,7 @@ test.skip("App Creation Validation", () => {
 
   test("Name validation - 3 characters should pass", async ({ page }) => {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     })
     await wait(5000)
@@ -89,7 +89,7 @@ test.skip("App Creation Validation", () => {
 
   test("System Prompt validation - required field", async ({ page }) => {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     })
     await wait(5000)
@@ -124,7 +124,7 @@ test.skip("App Creation Validation", () => {
 
   test("System Prompt validation - filled should proceed", async ({ page }) => {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     })
     await wait(5000)
@@ -160,7 +160,7 @@ test.skip("App Creation Validation", () => {
 
   test("Complete flow - name + system prompt", async ({ page }) => {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     })
     await wait(5000)
