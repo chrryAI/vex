@@ -2066,5 +2066,6 @@
   "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry incluído (25 lugares para a equipe, €19.99/lugar após)",
   "Unlimited team seats (you manage)": "Lugares ilimitados para a equipe (você gerencia)",
   "By using this, you accept our privacy policy": "Ao usar isto, você aceita nossa política de privacidade",
-  "Name: maximum 8 characters": "Nome: máximo de 8 caracteres"
+  "Name: maximum 8 characters": "Nome: máximo de 8 caracteres",
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter é necessário. Chrry usa suas chaves de API, você paga os custos da API e ganha 70% da receita de assinatura (Chrry mantém 30% para infraestrutura)."
 }

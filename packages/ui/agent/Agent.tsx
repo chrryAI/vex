@@ -1359,14 +1359,25 @@ export default function Agent({
                     name="apiKeys.openrouter"
                     control={control}
                     render={({ field }) => (
-                      <input
+                      <Input
                         type="password"
                         placeholder="sk-..."
                         {...field}
                         value={field.value || ""}
+                        style={{
+                          border:
+                            appFormWatcher.tier !== "free"
+                              ? "1px solid var(--accent-1)"
+                              : "1px solid var(--shade-2)",
+                        }}
                       />
                     )}
                   />
+                  {appFormWatcher.tier !== "free" && (
+                    <Span style={{ color: "var(--accent-1)" }}>
+                      *{t("Required")}
+                    </Span>
+                  )}
                 </Div>
                 <Div
                   style={{ ...styles.apiKeys.style, ...utilities.row.style }}
@@ -1433,27 +1444,16 @@ export default function Agent({
                   {/* OpenRouter Key - REQUIRED for paid tiers */}
                   <Div style={{ ...utilities.column.style }}>
                     <Label>
-                      <OpenRouter /> OpenRouter{" "}
-                      {appFormWatcher.tier !== "free" && (
-                        <Span style={{ color: "var(--accent-1)" }}>
-                          *{t("Required")}
-                        </Span>
-                      )}
+                      <DeepSeek /> DeepSeek{" "}
                     </Label>
                     <Controller
-                      name="apiKeys.openrouter"
+                      name="apiKeys.deepseek"
                       control={control}
                       render={({ field }) => (
                         <input
                           type="password"
-                          placeholder="sk-or-v1-..."
+                          placeholder="sk-deepseek-..."
                           required={appFormWatcher.tier !== "free"}
-                          style={{
-                            border:
-                              appFormWatcher.tier !== "free"
-                                ? "1px solid var(--accent-1)"
-                                : "1px solid var(--shade-2)",
-                          }}
                           {...field}
                           value={field.value || ""}
                         />
@@ -1507,7 +1507,11 @@ export default function Agent({
                     }}
                   >
                     <p>⚠️ {t("byok_required_title")}</p>
-                    <p>{t("byok_required_description")}</p>
+                    <p>
+                      {t(
+                        "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).",
+                      )}
+                    </p>
                   </Div>
                 )}
                 {appFormWatcher.tier === "free" && (

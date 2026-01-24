@@ -2066,5 +2066,6 @@
   "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry 포함 (25개 팀 좌석, 좌석당 €19.99 추가)",
   "Unlimited team seats (you manage)": "무제한 팀 좌석 (당신이 관리)",
   "By using this, you accept our privacy policy": "이것을 사용함으로써 당신은 우리의 개인정보 보호정책을 수락합니다",
-  "Name: maximum 8 characters": "이름: 최대 8자"
+  "Name: maximum 8 characters": "이름: 최대 8자",
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter가 필요합니다. Chrry는 귀하의 API 키를 사용하며, API 비용을 지불하고 구독 수익의 70%를 얻습니다 (Chrry는 인프라를 위해 30%를 유지합니다)."
 }
