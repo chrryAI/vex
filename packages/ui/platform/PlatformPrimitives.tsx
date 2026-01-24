@@ -358,7 +358,10 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
 )
 Link.displayName = "Link"
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+export const Input = forwardRef<
+  HTMLInputElement,
+  InputProps & { "data-testid"?: string }
+>(
   (
     {
       type = "text",
@@ -394,6 +397,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         name={name}
         required={required}
         disabled={disabled}
+        data-testid={props["data-testid"]}
         {...props}
       />
     )

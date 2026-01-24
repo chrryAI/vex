@@ -1938,5 +1938,6 @@
   "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.": "Mention your tech stack! Specify frameworks, libraries, and versions for accurate, production-ready code.",
   "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.": "Ask for tests! Request unit tests, integration tests, or E2E tests alongside your code for better quality.",
   "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.": "Need optimization? Ask for time/space complexity analysis or performance improvements for existing code.",
-  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable."
+  "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.": "Request documentation! Ask for inline comments, JSDoc, or README files to make your code maintainable.",
+  "Provide Feedback from Grape Apps": "Provide Feedback from Grape Apps"
 }

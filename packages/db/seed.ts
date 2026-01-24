@@ -75,6 +75,7 @@ async function createAgents() {
       webSearch: false,
       pdf: true,
       imageGeneration: false,
+      codeExecution: true,
     },
   })
 
@@ -98,6 +99,7 @@ async function createAgents() {
       webSearch: false,
       pdf: true,
       imageGeneration: false,
+      codeExecution: true,
     },
   })
 
@@ -121,6 +123,7 @@ async function createAgents() {
       webSearch: false,
       pdf: true,
       imageGeneration: false,
+      codeExecution: true,
     },
   })
 
@@ -145,6 +148,7 @@ async function createAgents() {
       webSearch: true,
       pdf: true,
       imageGeneration: true, // Available via UI palette icon
+      codeExecution: true,
     },
   })
 
@@ -169,6 +173,7 @@ async function createAgents() {
       webSearch: false,
       pdf: true,
       imageGeneration: false,
+      codeExecution: true,
     },
   })
 
@@ -192,6 +197,7 @@ async function createAgents() {
       webSearch: true,
       pdf: false,
       imageGeneration: false,
+      codeExecution: false,
     },
   })
 
@@ -1110,8 +1116,8 @@ const seedDb = async (): Promise<void> => {
     await prod()
     process.exit(0)
   } else {
-    // await clearDb()
-    // await create()
+    await clearDb()
+    await create()
     process.exit(0)
   }
 }

@@ -5,6 +5,15 @@ import { clean } from "./clean"
 import { grape } from "./grape"
 import app from "./app"
 
+const COLORS = {
+  red: "#ef4444", // red-500
+  orange: "#f97316", // orange-500
+  blue: "#3b82f6", // blue-500
+  green: "#22c55e", // green-500
+  violet: "#8b5cf6", // violet-500
+  purple: "#a855f7", // purple-500
+} as const
+
 const createApp = async ({
   app: appName,
   isRetro,
@@ -17,6 +26,11 @@ const createApp = async ({
   creditsConsumed,
   messagesConsumed,
   isGrape,
+  defaultAgent,
+  colorScheme,
+  placeholder,
+  temperature,
+  theme,
 }: {
   app: string
   isRetro?: boolean
@@ -25,6 +39,8 @@ const createApp = async ({
   isLive: boolean
   isMember: boolean
   isGrape?: boolean
+  defaultAgent?: string
+  placeholder?: string
   nav?: {
     name: string
     chat: {
@@ -57,13 +73,62 @@ const createApp = async ({
   isNewChat?: boolean
   creditsConsumed?: number
   messagesConsumed?: number
+  theme?: "dark" | "light"
+  colorScheme?: keyof typeof COLORS
+  temperature?: number
 }) => {
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     })
-    await wait(5000) // Increased wait to ensure page is fully loaded
+    // Wait for the main app container or chat input to ensure load
+    await page.waitForSelector("body", { state: "attached" })
+    await wait(2000) // Give hydration a moment
+  }
+
+  const capabilities = {
+    chatGPT: {
+      image: false,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      codeExecution: true,
+    },
+    claude: {
+      image: false,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      codeExecution: true,
+    },
+
+    sushi: {
+      image: true,
+      audio: true,
+      video: true,
+      webSearch: true,
+      pdf: true,
+      codeExecution: true,
+    },
+    gemini: {
+      image: false,
+      audio: true,
+      video: true,
+      webSearch: false,
+      pdf: true,
+      codeExecution: true,
+    },
+    perplexity: {
+      image: false,
+      audio: false,
+      video: false,
+      webSearch: true,
+      pdf: false,
+      codeExecution: false,
+    },
   }
 
   const addAgentButton = page.getByTestId("add-agent-button")
@@ -76,7 +141,121 @@ const createApp = async ({
 
   await expect(nameInput).toHaveValue("MyAgent")
 
+  await nameInput.fill("")
+
+  const errorMessage = page.getByTestId("name-error-message")
+
+  const closeButton = page.getByTestId("agent-modal-close-button")
+
+  await expect(errorMessage).toBeVisible()
+
+  await closeButton.click()
+
+  await wait(1000)
+
+  expect(page.getByText("Name: minimum 3 characters")).toBeVisible()
+
+  await wait(1000)
+
+  await nameInput.clear()
+  await nameInput.fill("123456789")
+
+  const errorMessage2 = page.getByTestId("name-error-message")
+  await expect(errorMessage2).toBeVisible()
+
+  await closeButton.click()
+
+  await wait(1000)
+
+  expect(page.getByText("Name: maximum 8 characters")).toBeVisible()
+
+  await wait(1000)
+
+  await nameInput.clear()
   await nameInput.fill(appName)
+  await expect(errorMessage).toBeHidden()
+
+  if (colorScheme) {
+    const colorSchemeSelect = page.getByTestId(
+      `agent-color-scheme-${colorScheme}`,
+    )
+    await expect(colorSchemeSelect).toBeVisible()
+
+    await colorSchemeSelect.click()
+  }
+
+  if (theme) {
+    const lightThemeSelect = page.getByTestId(`agent-theme-light`)
+    await expect(lightThemeSelect).toBeVisible()
+    await lightThemeSelect.click()
+
+    if (theme === "dark") {
+      const darkThemeSelect = page.getByTestId(`agent-theme-dark`)
+      await expect(darkThemeSelect).toBeVisible()
+      await darkThemeSelect.click()
+    }
+  }
+
+  if (defaultAgent) {
+    const defaultModelSelect = page.getByTestId("default-model-select")
+    await expect(defaultModelSelect).toBeVisible()
+    await defaultModelSelect.selectOption(defaultAgent)
+
+    // Test capability requirements based on selected model
+    const modelCapabilities =
+      capabilities[defaultAgent as keyof typeof capabilities]
+
+    // Capability name mapping for error messages
+    const capabilityNames: Record<string, string> = {
+      audio: "Voice",
+      video: "Video",
+      webSearch: "Web Search",
+      pdf: "File Analysis",
+      image: "Image Generation",
+      codeExecution: "Code Execution",
+    }
+
+    if (modelCapabilities) {
+      // Test trying to disable a required capability
+      for (const capability of Object.keys(modelCapabilities)) {
+        const checkbox = page.getByTestId(`${capability}-checkbox`)
+        await expect(checkbox).toBeEnabled()
+        await expect(checkbox).toBeChecked()
+
+        // Click the parent label to toggle the checkbox
+        const checkboxLabel = checkbox.locator("..")
+        await checkboxLabel.click()
+
+        if (
+          modelCapabilities[capability as keyof typeof modelCapabilities] ===
+          true
+        ) {
+          await wait(500)
+
+          const capabilityDisplayName =
+            capabilityNames[capability] || capability
+          const errorToast = page.getByText(
+            `${capabilityDisplayName} required by ${defaultAgent}`,
+          )
+          await expect(errorToast).toBeVisible()
+          await expect(checkbox).toBeChecked()
+        }
+      }
+
+      // Test web search if required
+    }
+  }
+
+  if (temperature !== undefined) {
+    const temperatureInput = page.getByTestId("temperature-input")
+    await expect(temperatureInput).toBeVisible()
+    await temperatureInput.fill(temperature.toString())
+  }
+
+  if (placeholder) {
+    const placeholderInput = page.getByTestId("placeholder-input")
+    await placeholderInput.fill(placeholder)
+  }
 
   // Click System Prompt button
   const systemPromptButton = page.getByTestId("system-prompt-button")

@@ -10,11 +10,13 @@ import { useAuth } from "./context/providers/AuthProvider"
 export default function ColorScheme({
   style,
   onChange,
+  dataTestId,
   ...props
 }: {
   style?: React.CSSProperties
   onChange?: (color: keyof typeof COLORS) => void
   colorScheme?: string
+  dataTestId?: string
 }) {
   const styles = useColorSchemeStyles()
   const { plausible } = useAuth()
@@ -48,6 +50,7 @@ export default function ColorScheme({
     <Div style={{ ...styles.colorScheme.style, ...style }}>
       {Object.entries(COLORS).map(([key, value]) => (
         <Button
+          data-testid={dataTestId + "-" + key}
           key={key}
           onClick={() => {
             !props.colorScheme && setColorScheme(key as keyof typeof COLORS)

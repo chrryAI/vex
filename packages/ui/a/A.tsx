@@ -11,80 +11,85 @@ const Anchor = React.forwardRef<
     clientOnly?: boolean
     target?: "_blank" | "_self" | "_parent" | "_top"
   }
->(({ clientOnly, target, children, preventDefault, ...props }, ref) => {
-  const { FRONTEND_URL } = useData()
+>(
+  (
+    { clientOnly, target, children, preventDefault, openInNewTab, ...props },
+    ref,
+  ) => {
+    const { FRONTEND_URL } = useData()
 
-  const { addHapticFeedback } = useTheme()
-  const { isExtension, BrowserInstance, isTauri } = usePlatform()
-  const router = useNavigation()
+    const { addHapticFeedback } = useTheme()
+    const { isExtension, BrowserInstance, isTauri } = usePlatform()
+    const router = useNavigation()
 
-  const openInNewTab = !isTauri && props.openInNewTab
+    const newTab = !isTauri && openInNewTab
 
-  const isExternalUrl = (url?: string) => {
-    if (isTauri) return false
-    if (openInNewTab) return true
-    if (!url) return false
+    const isExternalUrl = (url?: string) => {
+      if (isTauri) return false
+      if (newTab) return true
+      if (!url) return false
+      return (
+        (url.startsWith("http://") ||
+          url.startsWith("https://") ||
+          url.startsWith("mailto:") ||
+          url.startsWith("//")) &&
+        !url.startsWith(FRONTEND_URL)
+      )
+    }
+
+    // Normalize internal URLs by stripping FRONTEND_URL
+    const href =
+      !newTab && props.href?.startsWith(FRONTEND_URL)
+        ? props.href.replace(FRONTEND_URL, "") || "/"
+        : props.href
+
     return (
-      (url.startsWith("http://") ||
-        url.startsWith("https://") ||
-        url.startsWith("mailto:") ||
-        url.startsWith("//")) &&
-      !url.startsWith(FRONTEND_URL)
-    )
-  }
+      <A
+        {...props}
+        ref={ref}
+        target={target}
+        onClick={(e) => {
+          props.onClick?.(e)
 
-  // Normalize internal URLs by stripping FRONTEND_URL
-  const href =
-    !openInNewTab && props.href?.startsWith(FRONTEND_URL)
-      ? props.href.replace(FRONTEND_URL, "") || "/"
-      : props.href
-
-  return (
-    <A
-      {...props}
-      ref={ref}
-      target={target}
-      onClick={(e) => {
-        props.onClick?.(e)
-
-        if (clientOnly) {
-          return
-        }
-        // Allow meta/ctrl+click to open in new tab
-        if (e.metaKey || e.ctrlKey) {
-          return
-        }
-
-        // Don't prevent default for external URLs (let browser handle)
-        if (isExternalUrl(href)) {
-          addHapticFeedback()
-          // For extensions, open external URLs in new tab via background script
-          if (isExtension && BrowserInstance && href) {
-            e.preventDefault()
-            BrowserInstance?.runtime?.sendMessage({
-              action: "openInSameTab",
-              url: href,
-            })
+          if (clientOnly) {
+            return
           }
-          return
-        }
+          // Allow meta/ctrl+click to open in new tab
+          if (e.metaKey || e.ctrlKey) {
+            return
+          }
 
-        e.preventDefault()
-        addHapticFeedback()
+          // Don't prevent default for external URLs (let browser handle)
+          if (isExternalUrl(href)) {
+            addHapticFeedback()
+            // For extensions, open external URLs in new tab via background script
+            if (isExtension && BrowserInstance && href) {
+              e.preventDefault()
+              BrowserInstance?.runtime?.sendMessage({
+                action: "openInSameTab",
+                url: href,
+              })
+            }
+            return
+          }
 
-        // Handle internal routing
-        if (href && !preventDefault) {
-          router.push(href, {
-            clientOnly,
-          })
-          return
-        }
-      }}
-    >
-      {children}
-    </A>
-  )
-})
+          e.preventDefault()
+          addHapticFeedback()
+
+          // Handle internal routing
+          if (href && !preventDefault) {
+            router.push(href, {
+              clientOnly,
+            })
+            return
+          }
+        }}
+      >
+        {children}
+      </A>
+    )
+  },
+)
 
 Anchor.displayName = "Anchor"
 

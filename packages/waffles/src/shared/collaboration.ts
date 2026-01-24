@@ -51,7 +51,7 @@ export async function collaboration({
   const page1 = page
 
   // User 1: Create a new thread and get the thread ID
-  await page1.goto(TEST_URL, { waitUntil: "networkidle" })
+  await page1.goto(TEST_URL, { waitUntil: "domcontentloaded" })
 
   // Send first message to create thread
 
@@ -155,7 +155,7 @@ export async function collaboration({
   await wait(5000)
 
   await page2.goto(getMemberUrl(), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -171,7 +171,7 @@ export async function collaboration({
   await page2.goto(
     withShareLink ? `${getMemberUrl(`/threads/${threadId}`)}` : getMemberUrl(),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )

@@ -37,7 +37,15 @@ import {
   createCustomAiAgentSchema,
   type CreateCustomAiAgent,
 } from "../schemas/agentSchema"
-import { DeepSeek, OpenAI, Claude, Gemini, Flux, Perplexity } from "../icons"
+import {
+  DeepSeek,
+  OpenAI,
+  Claude,
+  Gemini,
+  Flux,
+  Perplexity,
+  OpenRouter,
+} from "../icons"
 import {
   Button,
   Div,
@@ -182,10 +190,12 @@ export default function Agent({
       highlight?.content?.includes("{{temp}}"),
   )
 
-  const calendarRequiredApp = apps.find(
-    (app) =>
-      appForm?.watch("extends")?.includes(app.name) &&
-      app.tools?.includes("calendar"),
+  const extendetApps = apps.filter((app) =>
+    appForm?.watch("extends")?.includes(app.id),
+  )
+
+  const calendarRequiredApp = extendetApps.find(
+    (app) => app.tools?.includes("calendar") && app?.id !== chrry?.id,
   )
 
   const locationRequiredApp = apps.find(
@@ -334,6 +344,15 @@ export default function Agent({
 
     // Only validate when actually closing (transitioning from open to closed)
     if (!open && isModalOpen) {
+      if (!appFormWatcher.name || appFormWatcher.name.length < 3) {
+        toast.error(t("Name: minimum 3 characters"))
+        return
+      }
+
+      if (appFormWatcher.name.length > 8) {
+        toast.error(t("Name: maximum 8 characters"))
+        return
+      }
       // Check for validation errors
       if (Object.keys(errors).length > 0) {
         // Show first error
@@ -346,10 +365,6 @@ export default function Agent({
       }
 
       // Check required fields
-      if (!appFormWatcher.name || appFormWatcher.name.length < 3) {
-        toast.error(t("Name: minimum 3 characters"))
-        return
-      }
 
       // Validate API keys based on tier and capabilities
       const tier = appFormWatcher.tier || "free"
@@ -357,10 +372,10 @@ export default function Agent({
       const apiKeys = appFormWatcher.apiKeys || {}
       const tools = appFormWatcher.tools || []
 
-      // For paid tiers (plus/pro), DeepSeek is REQUIRED
-      // If no DeepSeek API key, automatically set to free tier
+      // For paid tiers (plus/pro), OpenRouter is REQUIRED
+      // If no OpenRouter API key, automatically set to free tier
       if (tier !== "free") {
-        if (!apiKeys.deepseek?.trim()) {
+        if (!apiKeys.openrouter?.trim()) {
           appForm.setValue("tier", "free")
         } else {
           if ((tier === "plus" || tier === "pro") && capabilities) {
@@ -479,6 +494,7 @@ export default function Agent({
       </Button>
       {hasHydrated && (
         <Modal
+          dataTestId="agent-modal"
           hasCloseButton
           hideOnClickOutside={false}
           icon={
@@ -511,7 +527,7 @@ export default function Agent({
                     data-testid="name-error-message"
                     style={styles.errorMessage.style}
                   >
-                    {t("Name: minimum 3 characters")}
+                    {t("Minimum 3 characters")}
                   </Span>
                 ) : errors.name?.message ? (
                   <Span
@@ -553,6 +569,7 @@ export default function Agent({
                           }}
                         >
                           <ThemeSwitcher
+                            dataTestId="agent-theme"
                             size={26}
                             onThemeChange={(theme) => {
                               field.onChange(theme)
@@ -573,7 +590,10 @@ export default function Agent({
                         name={"themeColor"}
                         control={control}
                         render={({ field }) => (
-                          <ColorScheme onChange={field.onChange} />
+                          <ColorScheme
+                            dataTestId="agent-color-scheme"
+                            onChange={field.onChange}
+                          />
                         )}
                       />
                     </Div>
@@ -617,6 +637,7 @@ export default function Agent({
                             ...styles.select.style,
                             ...utilities.right.style,
                           }}
+                          data-testid="default-model-select"
                           options={[
                             { value: "sushi", label: "Sushi" },
                             { value: "claude", label: "Claude" },
@@ -696,6 +717,7 @@ export default function Agent({
                     <Input
                       style={styles.range.style}
                       id="temperature"
+                      data-testid="temperature-input"
                       type="range"
                       min="0"
                       max="2"
@@ -721,6 +743,7 @@ export default function Agent({
                     <Input
                       style={styles.placeholder.style}
                       id="placeholder"
+                      data-testid="placeholder-input"
                       placeholder={t(
                         `${t("e.g., Plan your dream vacation with me")} ✈️`,
                       )}
@@ -746,6 +769,7 @@ export default function Agent({
                         render={({ field }) => (
                           <Label>
                             <Checkbox
+                              dataTestId="webSearch-checkbox"
                               checked={field.value}
                               onChange={(checked) => {
                                 if (aiAgent?.capabilities?.webSearch === true) {
@@ -770,6 +794,7 @@ export default function Agent({
                         render={({ field }) => (
                           <Label>
                             <Checkbox
+                              dataTestId="image-checkbox"
                               checked={field.value}
                               onChange={(checked) => {
                                 if (
@@ -800,6 +825,7 @@ export default function Agent({
                         render={({ field }) => (
                           <Label>
                             <Checkbox
+                              dataTestId="pdf-checkbox"
                               checked={field.value}
                               onChange={(checked) => {
                                 if (aiAgent?.capabilities?.pdf === true) {
@@ -825,6 +851,7 @@ export default function Agent({
                           <Label>
                             <Checkbox
                               checked={field.value}
+                              dataTestId="audio-checkbox"
                               onChange={(checked) => {
                                 if (aiAgent?.capabilities?.audio === true) {
                                   toast.error(
@@ -848,6 +875,7 @@ export default function Agent({
                         render={({ field }) => (
                           <Label>
                             <Checkbox
+                              dataTestId="video-checkbox"
                               checked={field.value}
                               onChange={(checked) => {
                                 if (aiAgent?.capabilities?.video === true) {
@@ -872,6 +900,7 @@ export default function Agent({
                         render={({ field }) => (
                           <Label>
                             <Checkbox
+                              dataTestId="codeExecution-checkbox"
                               checked={field.value}
                               onChange={(checked) => {
                                 if (
@@ -1322,9 +1351,39 @@ export default function Agent({
             {tab === "api" && (
               <>
                 {/* API Keys Section (BYOK) */}
+                <Div style={{ ...utilities.column.style }}>
+                  <Label>
+                    <OpenRouter /> OpenRouter
+                  </Label>
+                  <Controller
+                    name="apiKeys.openrouter"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        type="password"
+                        placeholder="sk-..."
+                        {...field}
+                        value={field.value || ""}
+                        style={{
+                          border:
+                            appFormWatcher.tier !== "free"
+                              ? "1px solid var(--accent-1)"
+                              : "1px solid var(--shade-2)",
+                        }}
+                      />
+                    )}
+                  />
+                  {appFormWatcher.tier !== "free" && (
+                    <Span style={{ color: "var(--accent-1)" }}>
+                      *{t("Required")}
+                    </Span>
+                  )}
+                </Div>
                 <Div
                   style={{ ...styles.apiKeys.style, ...utilities.row.style }}
                 >
+                  {/* OpenRouter Key */}
+
                   {/* OpenAI Key */}
                   <Div style={{ ...utilities.column.style }}>
                     <Label>
@@ -1382,15 +1441,10 @@ export default function Agent({
                     />
                   </Div>
 
-                  {/* DeepSeek Key - REQUIRED for paid tiers */}
+                  {/* OpenRouter Key - REQUIRED for paid tiers */}
                   <Div style={{ ...utilities.column.style }}>
                     <Label>
                       <DeepSeek /> DeepSeek{" "}
-                      {appFormWatcher.tier !== "free" && (
-                        <Span style={{ color: "var(--accent-1)" }}>
-                          *{t("Required")}
-                        </Span>
-                      )}
                     </Label>
                     <Controller
                       name="apiKeys.deepseek"
@@ -1398,14 +1452,8 @@ export default function Agent({
                       render={({ field }) => (
                         <input
                           type="password"
-                          placeholder="sk-..."
+                          placeholder="sk-deepseek-..."
                           required={appFormWatcher.tier !== "free"}
-                          style={{
-                            border:
-                              appFormWatcher.tier !== "free"
-                                ? "1px solid var(--accent-1)"
-                                : "1px solid var(--shade-2)",
-                          }}
                           {...field}
                           value={field.value || ""}
                         />
@@ -1459,7 +1507,11 @@ export default function Agent({
                     }}
                   >
                     <p>⚠️ {t("byok_required_title")}</p>
-                    <p>{t("byok_required_description")}</p>
+                    <p>
+                      {t(
+                        "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).",
+                      )}
+                    </p>
                   </Div>
                 )}
                 {appFormWatcher.tier === "free" && (

@@ -1726,6 +1726,7 @@
   "Reconnecting...": "Reconnecting...",
   "Back online": "Back online",
   "Join": "Join",
+  "Name: maximum 8 characters": "Name: maximum 8 characters",
   "Discover Apps, Earn Credits": "Discover Apps, Earn Credits",
   "Give Feedback with Pear": "Give Feedback with Pear",
   "Wine": "Wine",
@@ -2055,5 +2056,6 @@
   "Discovery Consent": "Discovery Consent",
   "Enable discovery consent": "Enable discovery consent",
   "Allow Grape to analyze content and show relevant apps": "Allow Grape to analyze content and show relevant apps",
-  "Track your mood daily": "Track your mood daily"
+  "Track your mood daily": "Track your mood daily",
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure)."
 }

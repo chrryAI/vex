@@ -129,7 +129,7 @@ export const chat = async ({
 
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     })
     await wait(3000)
