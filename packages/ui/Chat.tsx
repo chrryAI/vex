@@ -4389,7 +4389,9 @@ export default function Chat({
                               }
                               size={22}
                             />
-                          ) : null}
+                          ) : (
+                            <GlobeLock color="var(--shade-3)" size={22} />
+                          )}
                         </Button>
                       </>
                     )}

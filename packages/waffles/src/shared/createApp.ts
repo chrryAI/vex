@@ -79,10 +79,12 @@ const createApp = async ({
 }) => {
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     })
-    await wait(5000) // Increased wait to ensure page is fully loaded
+    // Wait for the main app container or chat input to ensure load
+    await page.waitForSelector("body", { state: "attached" })
+    await wait(2000) // Give hydration a moment
   }
 
   const capabilities = {
