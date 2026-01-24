@@ -121,11 +121,11 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
   await Promise.all(
     stores.stores.map((store) => {
       const isOwner = user
-        ? store.userId === user.id
-        : guest && store.guestId === guest.id
+        ? store.user?.id === user.id
+        : guest && store.guest?.id === guest.id
 
       if (isOwner) {
-        return deleteStore({ id: store.id })
+        return deleteStore({ id: store.store.id })
       }
     }),
   )
