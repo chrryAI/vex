@@ -883,7 +883,10 @@ export function ChatProvider({
       setIsImageGenerationEnabledInternal(
         agent?.capabilities?.imageGeneration || false,
       )
-    agent?.name === "perplexity" && setIsWebSearchEnabledInternal(true)
+    setIsWebSearchEnabledInternal(
+      agent?.name === "perplexity" ||
+        (isWebSearchEnabled ? !!selectedAgent?.capabilities?.webSearch : false),
+    )
   }
 
   const defaultAgentInternal =
