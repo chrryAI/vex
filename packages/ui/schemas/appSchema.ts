@@ -135,6 +135,7 @@ export const appSchema = z.object({
       deepseek: z.string().optional(),
       perplexity: z.string().optional(),
       replicate: z.string().optional(), // For Flux
+      openrouter: z.string().optional(),
     })
     .optional(),
 

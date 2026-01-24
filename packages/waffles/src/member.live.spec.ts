@@ -1,16 +1,7 @@
 import { test } from "@playwright/test"
-import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
-import {
-  getURL,
-  wait,
-  VEX_TEST_EMAIL_3,
-  VEX_TEST_PASSWORD_3,
-  VEX_TEST_EMAIL_4,
-} from "."
+import { getURL, wait, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3 } from "."
 import { subscribe } from "./shared/subscribe"
-import { collaboration } from "./shared/collaboration"
-import { thread } from "./shared/thread"
 import { v4 as uuidv4 } from "uuid"
 import app from "./shared/app"
 import { signIn } from "./shared/signIn"
@@ -29,7 +20,7 @@ test("Subscribe As Member", async ({ page }) => {
       isLive,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -52,7 +43,7 @@ test("Invite", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 100000,
     },
   )
@@ -68,7 +59,7 @@ test("Invite", async ({ page }) => {
 
 test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -85,7 +76,7 @@ test("Gift", async ({ page }) => {
 
 test("App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -160,7 +151,7 @@ test("App", async ({ page }) => {
 
 test("Grape", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 
@@ -179,7 +170,7 @@ test("Grape", async ({ page }) => {
 
 test.skip("Retro", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
+    waitUntil: "domcontentloaded",
     timeout: 100000,
   })
 

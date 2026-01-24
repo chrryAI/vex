@@ -132,6 +132,7 @@ export const isProd = isSeedSafe
 // Export cache functions and redis instance for external use
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
+export { encrypt, decrypt, generateEncryptionKey } from "./encryption"
 export { sql, eq, desc, and, isNull, cosineDistance, notInArray }
 
 // Export Better Auth tables
@@ -5011,6 +5012,18 @@ export function toSafeApp({ app }: { app?: app | appWithStore }) {
     tier: app.tier,
     placeholder: app.placeholder,
     mainThreadId: app.mainThreadId,
+    apiKeys: app.apiKeys
+      ? Object.keys(app.apiKeys).reduce(
+          (acc, key) => ({
+            ...acc,
+            [key]:
+              app?.apiKeys && app?.apiKeys?.[key as keyof typeof app.apiKeys]
+                ? "********"
+                : undefined,
+          }),
+          {},
+        )
+      : undefined,
   }
 
   return result

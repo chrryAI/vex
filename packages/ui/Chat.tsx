@@ -4270,7 +4270,7 @@ export default function Chat({
                             <Span
                               style={{
                                 ...styles.agentName.style,
-                                maxWidth: isMobileDevice ? 75 : 150,
+                                maxWidth: viewPortWidth < 400 ? 100 : 150,
                               }}
                             >
                               {selectedAgent?.displayName}
@@ -4338,7 +4338,6 @@ export default function Chat({
                         style={{
                           top: "0.15rem",
                           position: "relative",
-                          left: "0.4rem",
                         }}
                       >
                         <MoodSelector
@@ -4378,28 +4377,9 @@ export default function Chat({
                               : t("Enable Web Search")
                           }
                           onClick={() => {
-                            // if (!selectedAgent?.capabilities?.webSearch) {
-                            //   setAttempt("webSearch")
-                            //   setIsAgentModalOpen(true)
-                            //   return
-                            // }
                             setIsWebSearchEnabled(!isWebSearchEnabled)
                           }}
                         >
-                          {app?.features?.moodplausibleing ? null : (
-                            <Span
-                              style={{
-                                fontSize: 12,
-                                color:
-                                  isWebSearchEnabled || needSearch
-                                    ? "var(--accent-6)"
-                                    : "var(--shade-3)",
-                              }}
-                            >
-                              {/* {t("Web")} */}
-                            </Span>
-                          )}
-
                           {selectedAgent?.capabilities?.webSearch ? (
                             <Globe
                               color={

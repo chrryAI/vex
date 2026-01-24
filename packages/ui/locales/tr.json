@@ -2065,5 +2065,7 @@
   "Web, Desktop & Mobile, Extension build pipelines": "Web, Masaüstü & Mobil, Eklenti oluşturma pipeline'ları",
   "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry dahil (25 takım koltuğu, sonrasında koltuk başına €19.99)",
   "Unlimited team seats (you manage)": "Sınırsız takım koltuğu (siz yönetirsiniz)",
-  "By using this, you accept our privacy policy": "Bunu kullanarak, gizlilik politikamızı kabul etmiş olursunuz"
+  "By using this, you accept our privacy policy": "Bunu kullanarak, gizlilik politikamızı kabul etmiş olursunuz",
+  "Name: maximum 8 characters": "Ad: en fazla 8 karakter",
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter gereklidir. Chrry, API anahtarlarınızı kullanır, API maliyetlerini siz ödersiniz ve abonelik gelirinin %70'ini kazanırsınız (Chrry, altyapı için %30'unu saklar)."
 }

@@ -17,6 +17,8 @@ import {
   guest,
   deleteGuest,
   updateUser,
+  getStores,
+  deleteStore,
 } from "@repo/db"
 import { MEMBER_CREDITS_PER_MONTH } from "@repo/db/src/schema"
 
@@ -106,6 +108,24 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
                 : bookmark.guestId !== guest?.id,
             ) || [],
         })
+      }
+    }),
+  )
+
+  const stores = await getStores({
+    pageSize: 100000,
+    userId: user?.id,
+    guestId: guest?.id,
+  })
+
+  await Promise.all(
+    stores.stores.map((store) => {
+      const isOwner = user
+        ? store.userId === user.id
+        : guest && store.guestId === guest.id
+
+      if (isOwner) {
+        return deleteStore({ id: store.id })
       }
     }),
   )

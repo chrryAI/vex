@@ -12,10 +12,12 @@ export default function ThemeSwitcher({
   onThemeChange,
   size = 18,
   style,
+  dataTestId,
 }: {
   onThemeChange?: (theme: "#000000" | "#ffffff") => void
   size?: number
   style?: React.CSSProperties
+  dataTestId?: string
 }) {
   const hasHydrated = useHasHydrated()
   const {
@@ -48,6 +50,7 @@ export default function ThemeSwitcher({
     <Div>
       {hasHydrated && (
         <Button
+          data-testid={dataTestId + (isDark ? "-light" : "-dark")}
           title={isDark ? t("Light") : t("Dark")}
           onClick={() => {
             setTheme(isDark ? "light" : "dark")

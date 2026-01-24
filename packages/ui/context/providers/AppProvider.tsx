@@ -139,6 +139,7 @@ interface AppFormContextType {
       deepseek?: string
       perplexity?: string
       replicate?: string
+      openrouter?: string
     }
     isDefaultValues?: boolean
     canSubmit: boolean
