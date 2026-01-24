@@ -19,6 +19,7 @@ const isMember = false
 
 const isLive = true
 test.beforeEach(async ({ page }) => {
+  // console.log("🔗 Testing URL:", getURL({ isLive, isMember }))
   await clean({ page, isLive })
 })
 
