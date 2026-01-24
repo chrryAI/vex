@@ -2032,6 +2032,7 @@ export const apps = pgTable(
       deepseek?: string // Encrypted DeepSeek API key
       perplexity?: string // Encrypted Perplexity API key
       replicate?: string // Encrypted Replicate API key (for Flux)
+      openrouter?: string // Encrypted OpenRouter API key
     }>(), // If provided, app uses creator's keys instead of Vex's
 
     // Usage Limits (customizable per app)

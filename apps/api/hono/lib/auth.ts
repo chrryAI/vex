@@ -257,6 +257,7 @@ export async function getApp({
         guestId: guest.id,
         depth: 1,
         skipCache,
+        isSafe: false,
       })
     } else if (member) {
       resolutionPath = "accountApp:member"

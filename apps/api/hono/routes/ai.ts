@@ -16,6 +16,7 @@ import {
   and,
   isNull,
   aiAgent,
+  decrypt,
 } from "@repo/db"
 
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
@@ -59,8 +60,6 @@ import {
 
 import { eq, desc, gte } from "drizzle-orm"
 
-import { perplexity } from "@ai-sdk/perplexity"
-
 import {
   processFileForRAG,
   buildEnhancedRAGContext,
@@ -99,6 +98,7 @@ import {
   isCollaborator,
   getHourlyLimit,
 } from "../../lib"
+import { getModelProvider } from "../../lib/getModelProvider"
 import { scanFileForMalware } from "../../lib/security"
 import { upload } from "../../lib/minio"
 import slugify from "slug"
@@ -177,7 +177,7 @@ async function validatePearFeedback({
   guestId,
   appName,
   agentId,
-  appId,
+  app,
   messageId,
 }: {
   feedbackText: string
@@ -185,7 +185,7 @@ async function validatePearFeedback({
   guestId?: string
   appName?: string
   agentId: string
-  appId?: string
+  app: appWithStore
   messageId?: string
 }): Promise<{ isValid: boolean; credits: number; reason: string }> {
   console.log("🍐🍐🍐 validatePearFeedback CALLED:", {
@@ -195,6 +195,8 @@ async function validatePearFeedback({
     appName,
     agentId: agentId?.substring(0, 8),
   })
+
+  const appId = app.id
 
   try {
     // Quick validation checks
@@ -216,7 +218,8 @@ async function validatePearFeedback({
         reason: "Feedback validation temporarily unavailable",
       }
     }
-    const deepseek = createDeepSeek({ apiKey: deepseekApiKey })
+    const providerResult = await getModelProvider(app)
+    const deepseek = providerResult.provider
 
     const evaluationPrompt = `You are evaluating user feedback for the app "${appName || "this app"}". 
 
@@ -242,7 +245,7 @@ Respond ONLY with a JSON object in this exact format:
 }`
 
     const result = await generateText({
-      model: deepseek("deepseek-chat"),
+      model: deepseek,
       messages: [{ role: "user", content: evaluationPrompt }],
       temperature: 0.3,
     })
@@ -4620,7 +4623,7 @@ All features are FREE during beta. Transitioning to organic marketing, emphasize
           guestId: guest?.id,
           appName: app?.name,
           agentId: agent?.id,
-          appId: app?.id,
+          app: app,
           messageId: message.message.id,
         })
 
@@ -5058,14 +5061,8 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    const claudeKey = appApiKeys.anthropic || CLAUDE_API_KEY
-    if (appApiKeys.anthropic) {
-      console.log("✅ Using app-specific Claude API key")
-    }
-    const claudeProvider = createAnthropic({
-      apiKey: claudeKey,
-    })
-    model = claudeProvider(claude.modelId) // Use Claude Sonnet 4 for multimodal
+    const claudeProvider = await getModelProvider(app, claude.name)
+    model = claudeProvider.provider
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
       name: "perplexity",
@@ -5075,25 +5072,31 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       console.log("❌ Perplexity not found")
       return c.json({ error: "Perplexity not found" }, { status: 404 })
     }
-    console.log("🤖 Using Perplexity for web search (no reasoning)")
-    const perplexityKey =
-      appApiKeys.perplexity || process.env.PERPLEXITY_API_KEY
-    if (appApiKeys.perplexity) {
-      console.log("✅ Using app-specific Perplexity API key")
-    }
-    // Perplexity doesn't have a createPerplexity, uses env var
-    if (appApiKeys.perplexity) {
-      process.env.PERPLEXITY_API_KEY = appApiKeys.perplexity
-    }
-    model = perplexity(perplexityAgent.modelId) // "sonar"
+    const perplexityProvider = await getModelProvider(app, perplexityAgent.name)
+    model = perplexityProvider.provider
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
+    console.log(`🤖 Model resolution for: ${agent.name}`)
+    const providerResult = await getModelProvider(app, agent.name)
+    model = providerResult.provider
+    console.log(
+      `✅ Provider created using: ${providerResult.agentName || agent.name}`,
+    )
+
+    /*
     switch (agent.name) {
       case "deepSeek":
         console.log("🤖 Using DeepSeek model")
         const deepseekKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
         if (appApiKeys.deepseek) {
           console.log("✅ Using app-specific DeepSeek API key")
+        }
+        if (!deepseekKey) {
+          console.error("❌ DeepSeek API key is required")
+          return c.json(
+            { error: "DeepSeek API key is required" },
+            { status: 500 },
+          )
         }
         const deepseekProvider = createDeepSeek({
           apiKey: deepseekKey,
@@ -5199,6 +5202,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
 
         break
     }
+    */
   }
 
   // Perform web search if user enabled it, agent supports it, message needs search, and no files attached
@@ -5712,8 +5716,27 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         console.log("🎨 Generating image with enhanced Flux prompt...")
 
+        // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
+        // If the app has a specific key for 'replicate', use it.
+        // Note: Currently Agent.tsx might not have a dedicated 'replicate' field, but if it exists in DB, we use it.
+        let replicateAuth = app.tier === "free" ? REPLICATE_API_KEY : ""
+
+        // Check for 'replicate' key or reuse 'openrouter'/'deepseek' key if intended for Replicate
+        // For now, checks 'replicate' explicit key in apiKeys jsonb
+        const appReplicateKey = app?.apiKeys?.replicate
+
+        if (appReplicateKey) {
+          try {
+            replicateAuth = decrypt(appReplicateKey)
+            console.log("✅ Using app-specific Replicate API key")
+          } catch (e) {
+            console.warn("⚠️ Failed to decrypt Replicate key, using as-is")
+            replicateAuth = appReplicateKey
+          }
+        }
+
         const replicate = new Replicate({
-          auth: REPLICATE_API_KEY,
+          auth: replicateAuth,
         })
 
         const output = await replicate.run("black-forest-labs/flux-1.1-pro", {

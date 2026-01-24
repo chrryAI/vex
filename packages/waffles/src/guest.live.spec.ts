@@ -205,11 +205,47 @@ test.skip("File upload", async ({ page }) => {
   })
 })
 
-test.skip("Create App", async ({ page }) => {
-  await createApp({ page, isLive, app: "test", slug: "test", isMember })
+test.only("Create A Claude App", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+  await wait(5000)
+  await createApp({
+    page,
+    isLive,
+    app: "test",
+    slug: "test",
+    isMember,
+    defaultAgent: "claude",
+    theme: "dark",
+    colorScheme: "orange",
+    placeholder: "Claude placeholder",
+    temperature: 0.9,
+  })
 })
 
-test.skip("App Name Validation - Minimum 3 Characters", async ({ page }) => {
+test("Create A Sushi App", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+  await wait(5000)
+  await createApp({
+    page,
+    isLive,
+    app: "test",
+    slug: "test",
+    isMember,
+    defaultAgent: "sushi",
+    theme: "light",
+    colorScheme: "red",
+    placeholder: "Sushi placeholder",
+    temperature: 0.3,
+  })
+})
+
+test("App Name Validation - Minimum 3 Characters", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,

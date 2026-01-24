@@ -20,6 +20,7 @@ import {
   eq,
   getApp as getAppDb,
   deleteApp,
+  encrypt,
 } from "@repo/db"
 import { appOrders, storeInstalls } from "@repo/db/src/schema"
 import captureException from "../../lib/captureException"
@@ -421,6 +422,18 @@ app.post("/", async (c) => {
       console.log(`⚠️ App slug taken in store, using: ${appSlug}`)
     }
 
+    // Hash API keys before saving
+    let hashedApiKeys: Record<string, string> | undefined = undefined
+    if (apiKeys && typeof apiKeys === "object") {
+      hashedApiKeys = {}
+      for (const [key, value] of Object.entries(apiKeys)) {
+        if (value && typeof value === "string" && value.trim()) {
+          // Encrypt the API key using AES-256-GCM
+          hashedApiKeys[key] = await encrypt(value.trim())
+        }
+      }
+    }
+
     // Create the app in the database
     const newApp = await createOrUpdateApp({
       app: {
@@ -436,7 +449,7 @@ app.post("/", async (c) => {
           | undefined,
         defaultModel: validationResult.data.defaultModel,
         images: images.length > 0 ? images : undefined,
-        apiKeys: apiKeys || undefined,
+        apiKeys: hashedApiKeys || undefined,
       },
       extends: extendedApps
         .map((app) => (app ? app.id : undefined))
@@ -813,6 +826,7 @@ app.patch("/:id", async (c) => {
       extends: extendsData,
       tools,
       image: imageUrl,
+      apiKeys,
     } = body
 
     // Handle image - accept URL from /api/image endpoint
@@ -853,6 +867,23 @@ app.patch("/:id", async (c) => {
       updateData.apiMonthlyPrice = apiMonthlyPrice
     if (apiRateLimit !== undefined) updateData.apiRateLimit = apiRateLimit
     if (shouldUpdateImages) updateData.images = images
+
+    // Hash API keys before saving (if provided)
+    if (apiKeys !== undefined) {
+      if (apiKeys && typeof apiKeys === "object") {
+        const hashedApiKeys: Record<string, string> = {}
+        for (const [key, value] of Object.entries(apiKeys)) {
+          if (value && typeof value === "string" && value.trim()) {
+            // Encrypt the API key using AES-256-GCM
+            hashedApiKeys[key] = await encrypt(value.trim())
+          }
+        }
+        updateData.apiKeys = hashedApiKeys
+      } else {
+        // If apiKeys is explicitly null or empty, clear it
+        updateData.apiKeys = null
+      }
+    }
 
     console.log("🔍 Update data before validation:", {
       shouldUpdateImages,
