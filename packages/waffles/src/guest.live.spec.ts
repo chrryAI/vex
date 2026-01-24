@@ -205,7 +205,7 @@ test.skip("File upload", async ({ page }) => {
   })
 })
 
-test.only("Create A Claude App", async ({ page }) => {
+test("Create A Claude App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
