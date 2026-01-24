@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive, isMember })
 })
 
-test("Subscribe As Member", async ({ page }) => {
+test.only("Subscribe As Member", async ({ page }) => {
   await page.goto(
     getURL({
       isMember,

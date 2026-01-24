@@ -6,6 +6,7 @@ import { app, getAiAgents, decrypt } from "@repo/db"
 import type { LanguageModel } from "ai"
 import { appWithStore } from "@chrryai/chrry/types"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { createPerplexity } from "@ai-sdk/perplexity"
 
 /**
  * Safely decrypt an API key if it's encrypted
@@ -45,10 +46,11 @@ export async function getModelProvider(
   if (!agent) {
     // Fallback to DeepSeek if agent not found
     console.log("⚠️ Agent not found, using DeepSeek fallback")
-    const deepseekKey = safeDecrypt(
-      app?.apiKeys?.deepseek ||
-        (app?.tier === "free" ? process.env.DEEPSEEK_API_KEY : ""),
-    )
+    const deepseekKey = app?.apiKeys?.deepseek
+      ? safeDecrypt(app?.apiKeys?.deepseek)
+      : app?.tier === "free"
+        ? process.env.DEEPSEEK_API_KEY
+        : ""
     const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
     return {
       provider: deepseekProvider("deepseek-chat"),
@@ -62,9 +64,11 @@ export async function getModelProvider(
 
   switch (name) {
     case "deepSeek":
-      const deepseekKey =
-        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (app?.tier === "free" ? process.env.DEEPSEEK_API_KEY : "")
+      const deepseekKey = app?.apiKeys?.deepseek
+        ? safeDecrypt(app?.apiKeys?.deepseek)
+        : app?.tier === "free"
+          ? process.env.DEEPSEEK_API_KEY
+          : ""
 
       if (deepseekKey) {
         const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
@@ -75,9 +79,11 @@ export async function getModelProvider(
       }
 
       // Fallback to OpenRouter
-      const openRouterKeyForDeepSeek =
-        (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
-        (app?.tier === "free" ? process.env.OPENROUTER_API_KEY : "")
+      const openRouterKeyForDeepSeek = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : app?.tier === "free"
+          ? process.env.OPENROUTER_API_KEY
+          : ""
 
       if (openRouterKeyForDeepSeek) {
         const openRouterProvider = createOpenAI({
@@ -115,9 +121,11 @@ export async function getModelProvider(
       }
 
       // Fallback to OpenRouter
-      const openRouterKeyForDeepSeekReasoner =
-        (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
-        (app?.tier === "free" ? process.env.OPENROUTER_API_KEY : "")
+      const openRouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : app?.tier === "free"
+          ? process.env.OPENROUTER_API_KEY
+          : ""
 
       if (openRouterKeyForDeepSeekReasoner) {
         const openRouterProvider = createOpenAI({
@@ -144,9 +152,11 @@ export async function getModelProvider(
 
     case "chatGPT":
       // Check for OpenAI key first
-      const openaiKey =
-        (appApiKeys.openai ? safeDecrypt(appApiKeys.openai) : "") ||
-        (app?.tier === "free" ? process.env.CHATGPT_API_KEY : "")
+      const openaiKey = app?.apiKeys?.openai
+        ? safeDecrypt(app?.apiKeys?.openai)
+        : app?.tier === "free"
+          ? process.env.CHATGPT_API_KEY
+          : ""
 
       if (openaiKey) {
         const openaiProvider = createOpenAI({ apiKey: openaiKey })
@@ -185,9 +195,11 @@ export async function getModelProvider(
       }
 
     case "claude":
-      const claudeKey =
-        (appApiKeys.anthropic ? safeDecrypt(appApiKeys.anthropic) : "") ||
-        (app?.tier === "free" ? process.env.CLAUDE_API_KEY : "")
+      const claudeKey = app?.apiKeys?.anthropic
+        ? safeDecrypt(app?.apiKeys?.anthropic)
+        : app?.tier === "free"
+          ? process.env.CLAUDE_API_KEY
+          : ""
 
       if (claudeKey) {
         const claudeProvider = createAnthropic({ apiKey: claudeKey })
@@ -240,9 +252,11 @@ export async function getModelProvider(
       }
 
       // Fallback to OpenRouter
-      const openRouterKeyForGemini =
-        (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
-        (app?.tier === "free" ? process.env.OPENROUTER_API_KEY : "")
+      const openRouterKeyForGemini = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : app?.tier === "free"
+          ? process.env.OPENROUTER_API_KEY
+          : ""
 
       if (openRouterKeyForGemini) {
         const openRouterProvider = createOpenAI({
@@ -267,10 +281,62 @@ export async function getModelProvider(
         agentName: agent.name,
       }
 
+    case "perplexity":
+      const perplexityKey = app?.apiKeys?.perplexity
+        ? safeDecrypt(app?.apiKeys?.perplexity)
+        : app?.tier === "free"
+          ? process.env.PERPLEXITY_API_KEY
+          : ""
+
+      if (perplexityKey) {
+        const perplexityProvider = createPerplexity({
+          apiKey: perplexityKey,
+        })
+        return {
+          provider: perplexityProvider(agent.modelId),
+          agentName: agent.name,
+        }
+      }
+
+      // Fallback to OpenRouter
+      const openRouterKeyForPerplexity = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : app?.tier === "free"
+          ? process.env.OPENROUTER_API_KEY
+          : ""
+
+      if (openRouterKeyForPerplexity) {
+        const openRouterProvider = createOpenAI({
+          apiKey: openRouterKeyForPerplexity,
+          baseURL: "https://openrouter.ai/api/v1",
+          headers: {
+            "HTTP-Referer": FRONTEND_URL,
+            "X-Title": "Vex AI",
+          },
+        })
+        const modelId = agent.modelId.startsWith("perplexity/")
+          ? agent.modelId
+          : `perplexity/${agent.modelId}`
+        return {
+          provider: openRouterProvider(modelId),
+          agentName: agent.name,
+        }
+      }
+
+      return {
+        provider: createOpenAI({
+          apiKey: "",
+          baseURL: "https://api.perplexity.ai",
+        })(agent.modelId),
+        agentName: agent.name,
+      }
+
     case "openrouter":
-      const openRouterKey =
-        (appApiKeys.openrouter ? safeDecrypt(appApiKeys.openrouter) : "") ||
-        (app?.tier === "free" ? process.env.OPENROUTER_API_KEY : "")
+      const openRouterKey = app?.apiKeys?.openrouter
+        ? safeDecrypt(app?.apiKeys?.openrouter)
+        : app?.tier === "free"
+          ? process.env.OPENROUTER_API_KEY
+          : ""
       const openRouterProvider = createOpenAI({
         apiKey: openRouterKey,
         baseURL: "https://openrouter.ai/api/v1",
@@ -304,9 +370,11 @@ export async function getModelProvider(
 
       // Fallback to DeepSeek for unknown agents
       console.log("⚠️ Unknown agent, using DeepSeek fallback")
-      const fallbackKey =
-        (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (app?.tier === "free" ? process.env.DEEPSEEK_API_KEY : "")
+      const fallbackKey = app?.apiKeys?.deepseek
+        ? safeDecrypt(app?.apiKeys?.deepseek)
+        : app?.tier === "free"
+          ? process.env.DEEPSEEK_API_KEY
+          : ""
       const fallbackProvider = createDeepSeek({ apiKey: fallbackKey })
       return {
         provider: fallbackProvider("deepseek-chat"),

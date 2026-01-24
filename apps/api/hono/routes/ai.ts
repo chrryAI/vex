@@ -5042,15 +5042,6 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
 
   let model
 
-  console.log("🤖 Using custom OpenAI-compatible model:", agent.name)
-  if (!agent.apiURL) {
-    console.log("❌ Custom agent missing apiURL:", agent.name)
-    return c.json(
-      { error: "Custom agent requires an API URL" },
-      { status: 400 },
-    )
-  }
-
   if (files.length > 0 && agent.name === "sushi") {
     const claude = await getAiAgent({
       name: "claude",
