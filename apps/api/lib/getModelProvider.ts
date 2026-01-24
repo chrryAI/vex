@@ -38,19 +38,9 @@ export async function getModelProvider(
   app?: app | appWithStore,
   name = "deepSeek",
 ): Promise<{ provider: LanguageModel; agentName: string }> {
-  const agents = app ? await getAiAgents({ include: app.id }) : []
+  const agents = await getAiAgents({ include: app?.id })
 
-  const agent = app
-    ? agents.find(
-        (a) =>
-          // Priority 1: If the specified name (default: deepSeek) has an API key AND matches this agent
-          (name &&
-            Object.keys(app.apiKeys || {}).includes(name.toLowerCase()) &&
-            a.name.toLowerCase() === name.toLowerCase()) ||
-          // Priority 2: Agent assigned to this app
-          (app && a.appId === app.id),
-      )
-    : agents.find((a) => a.name.toLowerCase() === name.toLowerCase())
+  const agent = agents.find((a) => a.name.toLowerCase() === name.toLowerCase())
 
   if (!agent) {
     // Fallback to DeepSeek if agent not found
