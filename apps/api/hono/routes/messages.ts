@@ -457,6 +457,7 @@ messages.post("/", async (c) => {
       webSearchResult: webSearchResults,
       agentId: selectedAgent.id,
       agentVersion: selectedAgent.version,
+      appId: app?.id,
     })
 
     if (!agentMessage) {
@@ -482,6 +483,7 @@ messages.post("/", async (c) => {
     isImageGenerationEnabled: imageGenerationEnabled,
     isPear: pear || false, // Track Pear feedback submissions
     debateAgentId: selectedDebateAgent?.id,
+    appId: app?.id,
   })
 
   if (userMessage) {

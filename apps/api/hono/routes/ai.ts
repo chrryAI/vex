@@ -291,7 +291,7 @@ Respond ONLY with a JSON object in this exact format:
       const app = appId
         ? await db.query.apps.findFirst({
             where: eq(apps.id, appId),
-            columns: { userId: true, guestId: true },
+            columns: { userId: true, guestId: true, id: true },
           })
         : null
 
@@ -316,6 +316,7 @@ Respond ONLY with a JSON object in this exact format:
           guestId: appOwnerId,
           creditCost: evaluation.credits, // Positive = deduction
           messageType: "pear_feedback_payment",
+          appId: app?.id,
           // metadata: {
           //   feedbackUserId: userId,
           //   feedbackGuestId: guestId,
@@ -332,6 +333,7 @@ Respond ONLY with a JSON object in this exact format:
           agentId,
           creditCost: -userCredits, // Negative = top-up
           messageType: "pear_feedback_reward",
+          appId: app?.id,
           metadata: {
             appId,
             appOwnerId,
@@ -359,6 +361,7 @@ Respond ONLY with a JSON object in this exact format:
           agentId: agentId,
           creditCost: -evaluation.credits,
           messageType: "pear_feedback",
+          appId: app?.id,
           threadId: undefined,
         })
       }
@@ -5509,6 +5512,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       reasoning: testReasoning, // Save test reasoning
       originalContent: testResponse.trim(),
       searchContext: null,
+      appId: app?.id,
       images: imageGenerationEnabled
         ? [
             {
@@ -5818,6 +5822,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           ...newMessagePayload,
           content: aiResponseContent,
           originalContent: aiResponseContent,
+          appId: app?.id,
           images: [
             {
               url: permanentUrl, // Use permanent UploadThing URL
@@ -6338,6 +6343,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           try {
             const aiMessage = await createMessage({
               ...newMessagePayload,
+              appId: app?.id,
               content: processedText + creditRewardMessage, // Use processed text with citations
               reasoning: reasoningText || undefined, // Store reasoning separately
               isPear: requestData.pear || false, // Track Pear feedback submissions
@@ -6630,6 +6636,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         })
         // Save AI response to database (no Perplexity processing for DeepSeek)
         const aiMessage = await createMessage({
+          appId: app?.id,
           ...newMessagePayload,
           content: (finalText + creditRewardMessage).trim(), // Add credit reward thank you
           originalContent: finalText.trim(),
@@ -6821,6 +6828,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             : finalText
 
           const aiMessage = await createMessage({
+            appId: app?.id,
             id: clientId,
             threadId: currentThreadId,
             agentId: agent.id,
@@ -7111,6 +7119,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         threadId: currentThreadId,
         searchContext,
         webSearchResult: webSearchResults,
+        appId: app?.id,
       })
 
       console.timeEnd("messageProcessing")

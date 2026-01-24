@@ -896,6 +896,9 @@ export const messages = pgTable(
         id: string
       }[]
     >(),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
     video: jsonb("video").$type<
       {
         url: string
