@@ -4670,7 +4670,7 @@ export default function Chat({
                       </Button>
                     ) : hitHourlyLimit && !threadId ? (
                       <Span
-                        data-testid="hourly-limit-info"
+                        data-testid="hit-hourly-limit-info"
                         data-hourly-left={hourlyUsageLeft}
                         style={styles.hourlyLimit.style}
                       >
