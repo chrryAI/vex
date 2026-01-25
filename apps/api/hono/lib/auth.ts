@@ -268,6 +268,8 @@ export async function getApp({
         skipCache,
         isSafe: false,
       })
+
+      console.log(`🚀 ~ spppppp:`, appInternal?.name)
     }
   }
   // PATH B: Explicit App ID

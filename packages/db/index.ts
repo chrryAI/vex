@@ -1830,6 +1830,20 @@ export async function migrateUser({
       // --- BULK UPDATES (High Performance) ---
       // Tek bir SQL sorgusu ile tüm tabloyu güncelliyoruz, döngü yok!
 
+      const guestStoresList = await tx
+        .select({ id: stores.id })
+        .from(stores)
+        .where(eq(stores.guestId, guestId))
+
+      const existingStoresWithSlug = await tx
+        .select()
+        .from(stores)
+        .where(eq(stores.slug, user.userName))
+        .limit(1)
+
+      const canUseSlug =
+        existingStoresWithSlug.length === 0 && guestStoresList.length > 0
+
       const [tCount, mCount, memCount] = await Promise.all([
         tx
           .update(threads)
@@ -1880,13 +1894,21 @@ export async function migrateUser({
           .where(eq(moods.guestId, guestId)),
         tx
           .update(stores)
-          .set({ userId, guestId: null, updatedOn: now, slug: user.userName })
+          .set({ userId, guestId: null, updatedOn: now })
           .where(eq(stores.guestId, guestId)),
         tx
           .update(apps)
           .set({ userId, guestId: null, updatedOn: now })
           .where(eq(apps.guestId, guestId)),
       ])
+
+      // After bulk ownership update, safely update the slug for only ONE store if available
+      if (canUseSlug && guestStoresList[0]) {
+        await tx
+          .update(stores)
+          .set({ slug: user.userName, name: `${user.userName}'s Store` })
+          .where(eq(stores.id, guestStoresList[0].id))
+      }
 
       // --- ÖZEL MANTIK: TIMERS ---
       // Kullanıcının hali hazırda bir sayacı yoksa misafirinkini al
@@ -4756,15 +4778,16 @@ export const getApp = async ({
 
   // Build access conditions (can user/guest access this app?)
   // Skip access check when searching by ID or ownerId (direct lookup)
-  const accessConditions = id
-    ? undefined
-    : or(
-        // User's own apps
-        userId ? eq(apps.userId, userId) : undefined,
-        // Guest's own apps
-        guestId ? eq(apps.guestId, guestId) : undefined,
-        eq(apps.visibility, "public"),
-      )
+  const accessConditions =
+    id || ownerId
+      ? undefined
+      : or(
+          // User's own apps
+          userId ? eq(apps.userId, userId) : undefined,
+          // Guest's own apps
+          guestId ? eq(apps.guestId, guestId) : undefined,
+          eq(apps.visibility, "public"),
+        )
 
   // Check if user owns any apps to determine cache strategy
 
