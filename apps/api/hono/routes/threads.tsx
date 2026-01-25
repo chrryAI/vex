@@ -35,7 +35,12 @@ import {
   generateThreadInstructions,
   generateThreadTitle,
 } from "../../utils/titleGenerator"
-import { FRONTEND_URL, isE2E, MAX_FILE_LIMITS } from "@chrryai/chrry/utils"
+import {
+  FRONTEND_URL,
+  isE2E,
+  MAX_FILE_LIMITS,
+  getMaxFiles,
+} from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { render } from "@react-email/render"
 import Collaboration from "../../components/emails/Collaboration"
@@ -414,18 +419,30 @@ threads.patch("/:id", async (c) => {
     requestData = await c.req.json()
   }
 
-  if (files.length > MAX_FILE_LIMITS.artifacts) {
-    return c.json(
-      {
-        error: `Maximum ${MAX_FILE_LIMITS.artifacts} files allowed`,
-      },
-      400,
+  const member = await getMemberAction(c, { full: true, skipCache: true })
+  const guest = !member
+    ? await getGuestAction(c, { skipCache: true })
+    : undefined
+
+  if (!member && !guest) {
+    return c.json({ error: "Unauthorized", status: 401 }, 401)
+  }
+
+  const MAX_FILES = getMaxFiles({ user: member, guest })
+
+  // Level 5: Silent Slicing (User Experience optimization)
+  // Instead of erroring out, we take what we can and skip the rest
+  let processedFiles = files
+  if (files.length > MAX_FILES) {
+    console.warn(
+      `⚠️ User tried to upload ${files.length} files. Slicing to ${MAX_FILES}.`,
     )
+    processedFiles = files.slice(0, MAX_FILES)
   }
 
   // Scan files for malware
   console.log("🔍 Scanning files for malware...")
-  for (const file of files) {
+  for (const file of processedFiles) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
@@ -464,15 +481,6 @@ threads.patch("/:id", async (c) => {
 
   if (!id || !validate(id)) {
     return c.json({ error: "Thread not found", status: 404 }, 404)
-  }
-
-  const member = await getMemberAction(c, { full: true, skipCache: true })
-  const guest = !member
-    ? await getGuestAction(c, { skipCache: true })
-    : undefined
-
-  if (!member && !guest) {
-    return c.json({ error: "Unauthorized", status: 401 }, 401)
   }
 
   const thread = await getThread({ id })
@@ -693,11 +701,11 @@ threads.patch("/:id", async (c) => {
   })
 
   // Process uploaded artifacts if any
-  if (files && files.length > 0) {
+  if (processedFiles && processedFiles.length > 0) {
     const updatedThread = await getThread({ id })
     if (updatedThread) {
       await uploadArtifacts({
-        files,
+        files: processedFiles,
         thread: updatedThread,
         member,
         guest,
