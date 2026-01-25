@@ -119,9 +119,14 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
 
   await Promise.all(
     stores.stores.map((store) => {
+      if (user?.email === process.env.VEX_TEST_EMAIL) {
+        return
+      }
       const isOwner = user
         ? store.user?.id === user.id
         : guest && store.guest?.id === guest.id
+
+      console.log(`🚀 ~ stores.stores.map ~ isOwner:`, isOwner)
 
       if (isOwner) {
         return deleteStore({ id: store.store.id })

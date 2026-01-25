@@ -3,6 +3,7 @@ import { getMember, getGuest } from "../lib/auth"
 import { isE2E } from "@chrryai/chrry/utils"
 import cleanupTest from "../../lib/cleanupTest"
 import {
+  getStores,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_FINGERPRINTS,
   VEX_LIVE_FINGERPRINTS,
@@ -38,3 +39,6 @@ clear.post("/", async (c) => {
 
   return c.json({ error: "Unauthorized" }, 401)
 })
+function deleteStore(arg0: { id: string }): any {
+  throw new Error("Function not implemented.")
+}

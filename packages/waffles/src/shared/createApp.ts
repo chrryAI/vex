@@ -4,6 +4,7 @@ import { chat } from "./chat"
 import { clean } from "./clean"
 import { grape } from "./grape"
 import app from "./app"
+import { signIn } from "./signIn"
 
 const COLORS = {
   red: "#ef4444", // red-500
@@ -30,7 +31,10 @@ const createApp = async ({
   colorScheme,
   placeholder,
   temperature,
+  extend,
   theme,
+  tier = "plus",
+  visibility = "public",
 }: {
   app: string
   isRetro?: boolean
@@ -41,6 +45,9 @@ const createApp = async ({
   isGrape?: boolean
   defaultAgent?: string
   placeholder?: string
+  extend?: string[]
+  tier?: "free" | "pro" | "plus"
+  visibility?: "public" | "private" | "unlisted"
   nav?: {
     name: string
     chat: {
@@ -90,6 +97,7 @@ const createApp = async ({
   const capabilities = {
     chatGPT: {
       image: false,
+      imageGeneration: false,
       audio: true,
       video: true,
       webSearch: false,
@@ -98,6 +106,7 @@ const createApp = async ({
     },
     claude: {
       image: false,
+      imageGeneration: false,
       audio: true,
       video: true,
       webSearch: false,
@@ -107,6 +116,7 @@ const createApp = async ({
 
     sushi: {
       image: true,
+      imageGeneration: true,
       audio: true,
       video: true,
       webSearch: true,
@@ -115,6 +125,7 @@ const createApp = async ({
     },
     gemini: {
       image: false,
+      imageGeneration: false,
       audio: true,
       video: true,
       webSearch: false,
@@ -123,6 +134,7 @@ const createApp = async ({
     },
     perplexity: {
       image: false,
+      imageGeneration: false,
       audio: false,
       video: false,
       webSearch: true,
@@ -211,7 +223,8 @@ const createApp = async ({
       video: "Video",
       webSearch: "Web Search",
       pdf: "File Analysis",
-      image: "Image Generation",
+      image: "Image Analysis",
+      imageGeneration: "Image Generation",
       codeExecution: "Code Execution",
     }
 
@@ -257,6 +270,101 @@ const createApp = async ({
     await placeholderInput.fill(placeholder)
   }
 
+  const extendsTab = page.getByTestId("extends-tab")
+  await extendsTab.click()
+
+  const calendarCheckbox = page.getByTestId("calendar-checkbox")
+  const calendarCheckboxLabel = calendarCheckbox.locator("..")
+  await calendarCheckboxLabel.click()
+
+  expect(
+    page.getByText("Calendar required because you are using Vex"),
+  ).toBeVisible()
+
+  const locationCheckbox = page.getByTestId("location-checkbox")
+  const locationCheckboxLabel = locationCheckbox.locator("..")
+  await locationCheckboxLabel.click()
+
+  expect(
+    page.getByText(
+      "Location required because you are using {{location}} templates on your instructions",
+    ),
+  ).toBeVisible()
+
+  const weatherCheckbox = page.getByTestId("weather-checkbox")
+  const weatherCheckboxLabel = weatherCheckbox.locator("..")
+  await weatherCheckboxLabel.click()
+
+  expect(
+    page.getByText(
+      "Weather required because you are using {{weather}} templates on your instructions",
+    ),
+  ).toBeVisible()
+
+  if (visibility) {
+    const visibilitySelect = page.getByTestId("visibility-select")
+    await expect(visibilitySelect).toBeVisible()
+    await visibilitySelect.selectOption(visibility)
+  }
+
+  const monetizationTab = page.getByTestId("monetization-tab")
+
+  if (tier) {
+    await monetizationTab.click()
+    const tierSelect = page.getByTestId("tier-select")
+    await expect(tierSelect).toBeVisible()
+    await tierSelect.selectOption(tier)
+  }
+
+  const settingsTab = page.getByTestId("settings-tab")
+
+  const apiTab = page.getByTestId("api-tab")
+  await apiTab.click()
+
+  const apiKeyRequired = page.getByTestId("openrouter-api-key-required")
+
+  if (tier !== "free") {
+    await expect(apiKeyRequired).toBeVisible()
+
+    const systemPromptButton = page.getByTestId("system-prompt-button")
+    await expect(systemPromptButton).toBeVisible()
+    await systemPromptButton.click()
+
+    const continueButton = page.getByTestId("continue-button")
+    await expect(continueButton).toBeVisible()
+    await continueButton.click()
+
+    const apiKeyRequiredSystemPrompt = page.getByText(
+      "OpenRouter API key is required for paid tiers to enable revenue sharing.",
+    )
+    await expect(apiKeyRequiredSystemPrompt).toBeVisible()
+
+    await expect(settingsTab).toBeVisible()
+    await settingsTab.click()
+
+    await apiTab.click()
+
+    const replicateApiKey = page.getByTestId("replicate-api-key")
+
+    const replicateApiKeyRequired =
+      await replicateApiKey.getAttribute("data-required")
+    expect(replicateApiKeyRequired).toBe("true")
+
+    await expect(replicateApiKey).toBeVisible()
+    await replicateApiKey.fill("testReplicateApiKey")
+
+    const openRouterApiKey = page.getByTestId("openrouter-api-key")
+    await expect(openRouterApiKey).toBeVisible()
+    await openRouterApiKey.fill("testOpenRouterApiKey")
+  } else {
+    const replicateApiKey = page.getByTestId("replicate-api-key")
+
+    const replicateApiKeyRequired =
+      await replicateApiKey.getAttribute("data-required")
+    expect(replicateApiKeyRequired).toBe("false")
+    await expect(apiKeyRequired).not.toBeVisible()
+  }
+
   // Click System Prompt button
   const systemPromptButton = page.getByTestId("system-prompt-button")
   await expect(systemPromptButton).toBeVisible()
@@ -274,7 +382,25 @@ const createApp = async ({
   await expect(continueButton).toBeVisible()
   await continueButton.click()
 
-  await wait(2000)
+  const saveAppButton = page.getByTestId("save-app")
+  await expect(saveAppButton).toBeVisible()
+  await saveAppButton.click()
+
+  const editAppButton = page.getByTestId("edit-app")
+  await expect(editAppButton).toBeVisible({
+    timeout: 10000,
+  })
+
+  if (extend) {
+    for (const element of extend) {
+      const app = page.getByTestId(`app-${element}`)
+      await expect(app).toBeVisible()
+    }
+  }
+
+  await signIn({ page })
+
+  await wait(7000)
 
   await app({
     app: appName,
@@ -282,9 +408,10 @@ const createApp = async ({
     slug,
     page,
     isLive,
-    isMember,
+    isStoreApp: true,
+    isMember: true,
     nav,
-    isNewChat,
+    isNewChat: true,
     creditsConsumed,
     messagesConsumed,
     isGrape,

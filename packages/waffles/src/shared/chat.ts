@@ -105,7 +105,6 @@ export const chat = async ({
   app?: string
   isPear?: boolean
 }) => {
-  await wait(2000)
   log({ page })
   let credits = isSubscriber ? 2000 : isMember ? 150 : 30
 

@@ -12,6 +12,7 @@ import { useSelectStyles } from "./Select.styles"
 
 export interface SelectProps extends Omit<PlatformSelectProps, "options"> {
   options: { value: string; label: string }[]
+  dataTestId?: string
 }
 
 export default function Select({
@@ -25,6 +26,7 @@ export default function Select({
   id,
   disabled,
   required,
+  dataTestId,
   ...rest
 }: SelectProps) {
   const styles = useSelectStyles()
@@ -34,6 +36,7 @@ export default function Select({
       <PlatformSelect
         className={"select"}
         name={name}
+        dataTestId={dataTestId}
         id={id}
         defaultValue={defaultValue}
         value={value}

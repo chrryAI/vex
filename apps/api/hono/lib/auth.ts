@@ -254,7 +254,7 @@ export async function getApp({
       resolutionPath = "accountApp:guest"
       appInternal = await getAppDb({
         storeSlug: guest.id,
-        guestId: guest.id,
+        ownerId: guest.id,
         depth: 1,
         skipCache,
         isSafe: false,
@@ -263,9 +263,10 @@ export async function getApp({
       resolutionPath = "accountApp:member"
       appInternal = await getAppDb({
         storeSlug: member.userName,
-        userId: member.id,
+        ownerId: member.id,
         depth: 1,
         skipCache,
+        isSafe: false,
       })
     }
   }

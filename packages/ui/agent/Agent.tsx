@@ -11,6 +11,7 @@ import {
   Brain,
   Coins,
   GlobeLock,
+  Globe,
   MicVocal,
   Settings2,
   Sparkles,
@@ -78,7 +79,8 @@ export default function Agent({
   const styles = useAgentStyles()
   const { utilities } = useStyles()
   const { t } = useAppContext()
-  const { chrry, baseApp, token } = useAuth()
+  const { chrry, baseApp, token, accountApp } = useAuth()
+  console.log(`🚀 ~ accountApp:`, accountApp)
 
   const bordered = {
     border: "1px dashed var(--shade-2)",
@@ -267,6 +269,10 @@ export default function Agent({
     }
   }, [appForm?.watch("defaultModel"), aiAgent])
 
+  const isReplicateRequired =
+    appForm?.watch("capabilities")?.imageGeneration &&
+    !appFormWatcher.apiKeys?.replicate?.trim()
+
   // Auto-check required tools
   useEffect(() => {
     const currentTools = appForm?.watch("tools") || []
@@ -380,28 +386,12 @@ export default function Agent({
         } else {
           if ((tier === "plus" || tier === "pro") && capabilities) {
             // Image generation requires OpenAI
-            if (
-              capabilities.imageGeneration === true &&
-              !apiKeys.openai?.trim()
-            ) {
-              toast.error(t("OpenAI API key required for image generation"))
-              setTab("api")
-              return
-            }
-
-            // Web search requires Perplexity
-            if (
-              capabilities.webSearch === true &&
-              !apiKeys.perplexity?.trim()
-            ) {
-              toast.error(t("Perplexity API key required for web search"))
-              setTab("api")
-              return
-            }
-
-            // Voice/audio requires OpenAI
-            if (capabilities.audio === true && !apiKeys.openai?.trim()) {
-              toast.error(t("OpenAI API key required for voice capabilities"))
+            if (isReplicateRequired) {
+              toast.error(
+                t(
+                  "Image generation is enabled. Replicate API key is required for paid tiers",
+                ),
+              )
               setTab("api")
               return
             }
@@ -789,12 +779,37 @@ export default function Agent({
                         )}
                       />
                       <Controller
-                        name="capabilities.imageGeneration"
+                        name="capabilities.image"
                         control={control}
                         render={({ field }) => (
                           <Label>
                             <Checkbox
                               dataTestId="image-checkbox"
+                              checked={field.value}
+                              onChange={(checked) => {
+                                if (aiAgent?.capabilities?.image === true) {
+                                  toast.error(
+                                    t("Image Analysis required by {{model}}", {
+                                      model: aiAgent.name,
+                                    }),
+                                  )
+                                  return
+                                }
+                                field.onChange(checked)
+                              }}
+                            >
+                              <Span>{t("Image Analysis")}</Span>
+                            </Checkbox>
+                          </Label>
+                        )}
+                      />
+                      <Controller
+                        name="capabilities.imageGeneration"
+                        control={control}
+                        render={({ field }) => (
+                          <Label>
+                            <Checkbox
+                              dataTestId="imageGeneration-checkbox"
                               checked={field.value}
                               onChange={(checked) => {
                                 if (
@@ -948,7 +963,9 @@ export default function Agent({
                       control={control}
                       render={({ field }) => {
                         // Get store-based apps from Chrry store
-                        const storeApps = baseApp?.store?.apps || []
+                        const storeApps = (baseApp?.store?.apps || []).filter(
+                          (item) => item.id !== app?.id,
+                        )
 
                         return (
                           <>
@@ -966,6 +983,7 @@ export default function Agent({
                               return (
                                 <Label key={item.id || item.name}>
                                   <Checkbox
+                                    data-testid={`extends-checkbox-${item.name.toLowerCase()}`}
                                     checked={checked}
                                     // disabled={isDisabled || isChrry}
                                     onChange={(isChecked) => {
@@ -1019,7 +1037,13 @@ export default function Agent({
                       }}
                       htmlFor="visibility"
                     >
-                      <GlobeLock size={18} color="var(--accent-6)" />
+                      {watch("visibility") === "public" ? (
+                        <Globe size={18} color="var(--accent-6)" />
+                      ) : watch("visibility") === "unlisted" ? (
+                        <GlobeLock size={18} color="var(--accent-6)" />
+                      ) : (
+                        <GlobeLock size={18} color="var(--shade-3)" />
+                      )}
                       {t("Visibility")}
                     </Label>
                     <Controller
@@ -1027,6 +1051,7 @@ export default function Agent({
                       control={control}
                       render={({ field }) => (
                         <Select
+                          dataTestId="visibility-select"
                           style={{ ...styles.select.style }}
                           id="visibility"
                           options={[
@@ -1066,6 +1091,7 @@ export default function Agent({
                         <>
                           <Label>
                             <Checkbox
+                              dataTestId="calendar-checkbox"
                               checked={
                                 field.value?.includes("calendar") || false
                               }
@@ -1093,12 +1119,10 @@ export default function Agent({
                           </Label>
                           <Label>
                             <Checkbox
+                              dataTestId="location-checkbox"
                               checked={
                                 field.value?.includes("location") || false
                               }
-                              // disabled={
-                              //   isLocationRequired || !!locationRequiredApp
-                              // }
                               onChange={(checked) => {
                                 if (isLocationRequired || locationRequiredApp) {
                                   toast.error(
@@ -1127,9 +1151,7 @@ export default function Agent({
                               checked={
                                 field.value?.includes("weather") || false
                               }
-                              // disabled={
-                              //   isWeatherRequired || !!weatherRequiredApp
-                              // }
+                              dataTestId="weather-checkbox"
                               onChange={(checked) => {
                                 if (isWeatherRequired || weatherRequiredApp) {
                                   toast.error(
@@ -1231,6 +1253,7 @@ export default function Agent({
                     control={control}
                     render={({ field }) => (
                       <Select
+                        dataTestId="tier-select"
                         style={{ ...styles.select.style }}
                         id="tier"
                         options={[
@@ -1360,6 +1383,7 @@ export default function Agent({
                     control={control}
                     render={({ field }) => (
                       <Input
+                        dataTestId="openrouter-api-key"
                         type="password"
                         placeholder="sk-..."
                         {...field}
@@ -1374,7 +1398,10 @@ export default function Agent({
                     )}
                   />
                   {appFormWatcher.tier !== "free" && (
-                    <Span style={{ color: "var(--accent-1)" }}>
+                    <Span
+                      data-testid="openrouter-api-key-required"
+                      style={{ color: "var(--accent-1)" }}
+                    >
                       *{t("Required")}
                     </Span>
                   )}
@@ -1393,7 +1420,8 @@ export default function Agent({
                       name="apiKeys.openai"
                       control={control}
                       render={({ field }) => (
-                        <input
+                        <Input
+                          dataTestId="openai-api-key"
                           type="password"
                           placeholder="sk-..."
                           {...field}
@@ -1412,7 +1440,8 @@ export default function Agent({
                       name="apiKeys.anthropic"
                       control={control}
                       render={({ field }) => (
-                        <input
+                        <Input
+                          dataTestId="anthropic-api-key"
                           type="password"
                           placeholder="sk-ant-..."
                           {...field}
@@ -1431,7 +1460,8 @@ export default function Agent({
                       name="apiKeys.google"
                       control={control}
                       render={({ field }) => (
-                        <input
+                        <Input
+                          dataTestId="google-api-key"
                           type="password"
                           placeholder="AIza..."
                           {...field}
@@ -1450,7 +1480,8 @@ export default function Agent({
                       name="apiKeys.deepseek"
                       control={control}
                       render={({ field }) => (
-                        <input
+                        <Input
+                          dataTestId="deepseek-api-key"
                           type="password"
                           placeholder="sk-deepseek-..."
                           required={appFormWatcher.tier !== "free"}
@@ -1470,7 +1501,8 @@ export default function Agent({
                       name="apiKeys.perplexity"
                       control={control}
                       render={({ field }) => (
-                        <input
+                        <Input
+                          dataTestId="perplexity-api-key"
                           type="password"
                           placeholder="pplx-..."
                           {...field}
@@ -1489,11 +1521,24 @@ export default function Agent({
                       name="apiKeys.replicate"
                       control={control}
                       render={({ field }) => (
-                        <input
+                        <Input
+                          dataTestId="replicate-api-key"
                           type="password"
-                          placeholder="r8_..."
+                          data-required={isReplicateRequired}
+                          placeholder={
+                            isReplicateRequired
+                              ? t("Required or disable image generation")
+                              : "r8_..."
+                          }
                           {...field}
                           value={field.value || ""}
+                          style={{
+                            borderColor:
+                              appFormWatcher.tier !== "free" &&
+                              appFormWatcher?.capabilities?.imageGeneration
+                                ? "var(--accent-1)"
+                                : "var(--shade-2)",
+                          }}
                         />
                       )}
                     />
@@ -1739,6 +1784,7 @@ export default function Agent({
             >
               <>
                 <Button
+                  data-testid="settings-tab"
                   style={{
                     ...styles.tabButton.style,
 
@@ -1758,8 +1804,8 @@ export default function Agent({
               </>
               {tab !== "systemPrompt" && (
                 <>
-                  {" "}
                   <Button
+                    data-testid="extends-tab"
                     style={{
                       ...styles.tabButton.style,
                       ...utilities.small.style,
@@ -1777,6 +1823,7 @@ export default function Agent({
                     {t("Extend")}
                   </Button>
                   <Button
+                    data-testid="monetization-tab"
                     onClick={() => {
                       setTab("monetization")
                     }}
@@ -1796,6 +1843,7 @@ export default function Agent({
                     onClick={() => {
                       setTab("api")
                     }}
+                    data-testid="api-tab"
                     type="button"
                     style={{
                       ...styles.tabButton.style,
@@ -1833,17 +1881,28 @@ export default function Agent({
                   <Brain size={16} /> {t("System Prompt")}
                 </Button>
               )}
-
               {appFormWatcher.name && tab === "systemPrompt" && (
                 <Button
                   data-testid="continue-button"
                   className={clsx(styles.tabButton, "inverted")}
                   type="button"
                   onClick={() => {
+                    if (
+                      appFormWatcher.tier !== "free" &&
+                      !appFormWatcher?.apiKeys?.openrouter
+                    ) {
+                      toast.error(
+                        t(
+                          "OpenRouter API key is required for paid tiers to enable revenue sharing.",
+                        ),
+                      )
+                      return
+                    }
                     if (!appFormWatcher.systemPrompt) {
                       toast.error(t("System prompt is required"))
                       return
                     }
+
                     setTab("settings")
                     setAppStatus({
                       part: "title",

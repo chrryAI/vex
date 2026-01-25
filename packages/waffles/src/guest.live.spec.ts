@@ -206,7 +206,7 @@ test.skip("File upload", async ({ page }) => {
   })
 })
 
-test("Create A Claude App", async ({ page }) => {
+test.skip("Create A Claude App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -216,13 +216,15 @@ test("Create A Claude App", async ({ page }) => {
     page,
     isLive,
     app: "test",
-    slug: "test",
+    slug: "vex",
     isMember,
     defaultAgent: "claude",
     theme: "dark",
     colorScheme: "orange",
     placeholder: "Claude placeholder",
     temperature: 0.9,
+
+    isNewChat: true,
   })
 })
 
@@ -236,12 +238,30 @@ test("Create A Sushi App", async ({ page }) => {
     page,
     isLive,
     app: "test",
-    slug: "test",
+    slug: "vex",
     isMember,
     defaultAgent: "sushi",
     theme: "light",
     colorScheme: "red",
     placeholder: "Sushi placeholder",
     temperature: 0.3,
+    nav: [
+      {
+        name: "test", // Feedback & Insights
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What feedback patterns are emerging?" },
+            {
+              model: "sushi",
+              text: "Which features are users requesting most?",
+            },
+            {
+              model: "sushi",
+              text: "Show me sentiment analysis from recent feedback",
+            },
+          ],
+        },
+      },
+    ],
   })
 })

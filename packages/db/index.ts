@@ -4885,7 +4885,9 @@ export const getApp = async ({
     : undefined
 
   const result = {
-    ...(isSafe ? (toSafeApp({ app: app.app }) as app) : app.app),
+    ...(isSafe
+      ? (toSafeApp({ app: app.app, userId, guestId }) as app)
+      : app.app),
     extends: await getAppExtends({
       appId: app.app.id,
     }),
@@ -4975,7 +4977,15 @@ export const getPureApp = async ({
   } as app
 }
 
-export function toSafeApp({ app }: { app?: app | appWithStore }) {
+export function toSafeApp({
+  app,
+  userId,
+  guestId,
+}: {
+  app?: app | appWithStore
+  userId?: string
+  guestId?: string
+}) {
   if (!app) return undefined
 
   if ("store" in app && app?.store?.apps) {
@@ -5012,6 +5022,9 @@ export function toSafeApp({ app }: { app?: app | appWithStore }) {
     tier: app.tier,
     placeholder: app.placeholder,
     mainThreadId: app.mainThreadId,
+    systemPrompt: isOwner(app, { userId, guestId })
+      ? app.systemPrompt
+      : undefined,
     apiKeys: app.apiKeys
       ? Object.keys(app.apiKeys).reduce(
           (acc, key) => ({
