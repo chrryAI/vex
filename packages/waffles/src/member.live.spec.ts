@@ -1,16 +1,7 @@
 import { test } from "@playwright/test"
-import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
-import {
-  getURL,
-  wait,
-  VEX_TEST_EMAIL_3,
-  VEX_TEST_PASSWORD_3,
-  VEX_TEST_EMAIL_4,
-} from "."
+import { getURL, wait, VEX_TEST_EMAIL_3, VEX_TEST_PASSWORD_3 } from "."
 import { subscribe } from "./shared/subscribe"
-import { collaboration } from "./shared/collaboration"
-import { thread } from "./shared/thread"
 import { v4 as uuidv4 } from "uuid"
 import app from "./shared/app"
 import { signIn } from "./shared/signIn"

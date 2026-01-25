@@ -2066,5 +2066,11 @@
   "Web, Desktop & Mobile, Extension build pipelines": "Web, Desktop & Mobiel, Extension build pipelines",
   "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry inbegrepen (25 teamplaatsen, €19.99/plaats daarna)",
   "Unlimited team seats (you manage)": "Onbeperkte teamplaatsen (u beheert)",
-  "By using this, you accept our privacy policy": "Door dit te gebruiken, accepteert u ons privacybeleid"
+  "By using this, you accept our privacy policy": "Door dit te gebruiken, accepteert u ons privacybeleid",
+  "Name: maximum 8 characters": "Naam: maximaal 8 tekens",
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter is vereist. Chrry gebruikt uw API-sleutels, u betaalt API-kosten en verdient 70% van de abonnementsinkomsten (Chrry houdt 30% voor infrastructuur).",
+  "Image Analysis required by {{model}}": "Beeldanalyse vereist door {{model}}",
+  "OpenRouter API key is required for paid tiers to enable revenue sharing.": "OpenRouter API-sleutel is vereist voor betaalde niveaus om inkomstendeling mogelijk te maken.",
+  "Image generation is enabled. Replicate API key is required for paid tiers": "Beeldgeneratie is ingeschakeld. Replicate API-sleutel is vereist voor betaalde niveaus",
+  "Required or disable image generation": "Vereist of schakel beeldgeneratie uit"
 }

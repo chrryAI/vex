@@ -19,6 +19,7 @@ const isMember = false
 
 const isLive = true
 test.beforeEach(async ({ page }) => {
+  // console.log("🔗 Testing URL:", getURL({ isLive, isMember }))
   await clean({ page, isLive })
 })
 
@@ -205,87 +206,62 @@ test.skip("File upload", async ({ page }) => {
   })
 })
 
-test.skip("Create App", async ({ page }) => {
-  await createApp({ page, isLive, app: "test", slug: "test", isMember })
-})
-
-test.skip("App Name Validation - Minimum 3 Characters", async ({ page }) => {
+test.skip("Create A Claude App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
   })
   await wait(5000)
+  await createApp({
+    page,
+    isLive,
+    app: "test",
+    slug: "vex",
+    isMember,
+    defaultAgent: "claude",
+    theme: "dark",
+    colorScheme: "orange",
+    placeholder: "Claude placeholder",
+    temperature: 0.9,
 
-  // Click add agent button
-  const addAgentButton = page.getByTestId("add-agent-button")
-  await addAgentButton.click()
-
-  // Clear name input
-  const nameInput = page.getByTestId("name-input")
-  await nameInput.clear()
-
-  // Error message should appear
-  const errorMessage = page.getByTestId("name-error-message")
-  await errorMessage.waitFor({ state: "visible" })
-
-  // System Prompt button should not be visible
-  const systemPromptButton = page.getByTestId("system-prompt-button")
-  await systemPromptButton.waitFor({ state: "hidden" })
+    isNewChat: true,
+  })
 })
 
-test.skip("App Name Validation - 3 Characters Passes", async ({ page }) => {
+test("Create A Sushi App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
   })
   await wait(5000)
-
-  const addAgentButton = page.getByTestId("add-agent-button")
-  await addAgentButton.click()
-
-  const nameInput = page.getByTestId("name-input")
-  await nameInput.clear()
-  await nameInput.fill("ABC") // Exactly 3 characters
-
-  // Error should not be visible
-  const errorMessage = page.getByTestId("name-error-message")
-  await errorMessage.waitFor({ state: "hidden" })
-
-  // System Prompt button should be visible
-  const systemPromptButton = page.getByTestId("system-prompt-button")
-  await systemPromptButton.waitFor({ state: "visible" })
-})
-
-test.skip("System Prompt Validation - Required Field", async ({ page }) => {
-  await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "networkidle",
-    timeout: 100000,
+  await createApp({
+    page,
+    isLive,
+    app: "test",
+    slug: "vex",
+    isMember,
+    defaultAgent: "sushi",
+    theme: "light",
+    colorScheme: "red",
+    placeholder: "Sushi placeholder",
+    temperature: 0.3,
+    nav: [
+      {
+        name: "test", // Feedback & Insights
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What feedback patterns are emerging?" },
+            {
+              model: "sushi",
+              text: "Which features are users requesting most?",
+            },
+            {
+              model: "sushi",
+              text: "Show me sentiment analysis from recent feedback",
+            },
+          ],
+        },
+      },
+    ],
   })
-  await wait(5000)
-
-  const addAgentButton = page.getByTestId("add-agent-button")
-  await addAgentButton.click()
-
-  const nameInput = page.getByTestId("name-input")
-  await nameInput.fill("TestApp")
-
-  // Click System Prompt button
-  const systemPromptButton = page.getByTestId("system-prompt-button")
-  await systemPromptButton.click()
-
-  // System prompt textarea should be visible
-  const systemPromptTextarea = page.getByTestId("system-prompt-textarea")
-  await systemPromptTextarea.waitFor({ state: "visible" })
-
-  // Continue button should be visible
-  const continueButton = page.getByTestId("continue-button")
-  await continueButton.waitFor({ state: "visible" })
-
-  // Click continue without filling system prompt
-  await continueButton.click()
-
-  await wait(1000)
-
-  // Modal should still be open (validation failed)
-  await systemPromptTextarea.waitFor({ state: "visible" })
 })

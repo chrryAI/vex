@@ -389,6 +389,10 @@
   "Oops, 20 characters max please": "Oops, 20 characters max please",
   "Open": "Open",
   "Open Source": "Open Source",
+  "Image Analysis required by {{model}}": "Image Analysis required by {{model}}",
+  "OpenRouter API key is required for paid tiers to enable revenue sharing.": "OpenRouter API key is required for paid tiers to enable revenue sharing.",
+  "Image generation is enabled. Replicate API key is required for paid tiers": "Image generation is enabled. Replicate API key is required for paid tiers",
+  "Required or disable image generation": "Required or disable image generation",
   "Optional": "Optional",
   "Orange": "Orange",
   "Organize meetups, brunches, or game nights. Regular gatherings reduce stress and boost happiness!": "Organize meetups, brunches, or game nights. Regular gatherings reduce stress and boost happiness!",
@@ -1726,6 +1730,7 @@
   "Reconnecting...": "Reconnecting...",
   "Back online": "Back online",
   "Join": "Join",
+  "Name: maximum 8 characters": "Name: maximum 8 characters",
   "Discover Apps, Earn Credits": "Discover Apps, Earn Credits",
   "Give Feedback with Pear": "Give Feedback with Pear",
   "Wine": "Wine",
@@ -2055,5 +2060,6 @@
   "Discovery Consent": "Discovery Consent",
   "Enable discovery consent": "Enable discovery consent",
   "Allow Grape to analyze content and show relevant apps": "Allow Grape to analyze content and show relevant apps",
-  "Track your mood daily": "Track your mood daily"
+  "Track your mood daily": "Track your mood daily",
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure)."
 }

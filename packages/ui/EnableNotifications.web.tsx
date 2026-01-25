@@ -110,6 +110,7 @@ export default function EnableNotifications({
     ({ icon }: { icon?: boolean }) =>
       storeApp && (
         <A
+          data-testid={`app-${storeApp.slug}`}
           className={`${icon ? "link" : "button transparent"}`}
           style={{
             ...(icon

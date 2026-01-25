@@ -2067,5 +2067,11 @@
   "Web, Desktop & Mobile, Extension build pipelines": "Web, Desktop & Mobile, Erweiterungs-Build-Pipelines",
   "Raspberry included (25 team seats, €19.99/seat after)": "Raspberry enthalten (25 Teamplätze, €19.99/Platz danach)",
   "Unlimited team seats (you manage)": "Unbegrenzte Teamplätze (Sie verwalten)",
-  "By using this, you accept our privacy policy": "Durch die Nutzung dieser App akzeptieren Sie unsere Datenschutzrichtlinie"
+  "By using this, you accept our privacy policy": "Durch die Nutzung dieser App akzeptieren Sie unsere Datenschutzrichtlinie",
+  "Name: maximum 8 characters": "Name: maximal 8 Zeichen",
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter ist erforderlich. Chrry verwendet Ihre API-Schlüssel, Sie zahlen API-Kosten und verdienen 70% der Abonnement-Einnahmen (Chrry behält 30% für die Infrastruktur).",
+  "Image Analysis required by {{model}}": "Bildanalyse erforderlich durch {{model}}",
+  "OpenRouter API key is required for paid tiers to enable revenue sharing.": "OpenRouter API-Schlüssel ist für kostenpflichtige Stufen erforderlich, um Umsatzbeteiligung zu ermöglichen.",
+  "Image generation is enabled. Replicate API key is required for paid tiers": "Bildgenerierung ist aktiviert. Replicate API-Schlüssel ist für kostenpflichtige Stufen erforderlich",
+  "Required or disable image generation": "Erforderlich oder Bildgenerierung deaktivieren"
 }

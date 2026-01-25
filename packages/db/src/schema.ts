@@ -896,6 +896,9 @@ export const messages = pgTable(
         id: string
       }[]
     >(),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
     video: jsonb("video").$type<
       {
         url: string
@@ -2032,6 +2035,7 @@ export const apps = pgTable(
       deepseek?: string // Encrypted DeepSeek API key
       perplexity?: string // Encrypted Perplexity API key
       replicate?: string // Encrypted Replicate API key (for Flux)
+      openrouter?: string // Encrypted OpenRouter API key
     }>(), // If provided, app uses creator's keys instead of Vex's
 
     // Usage Limits (customizable per app)

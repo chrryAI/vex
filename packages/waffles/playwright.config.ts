@@ -22,7 +22,7 @@ export default defineConfig({
   // },
   testDir: "./src",
   // globalSetup: require.resolve("./global-setup"),
-  timeout: process.env.CI ? 4800000 : 1200000, // 20 minutes in dev for long AI responses
+  timeout: process.env.CI ? 1200000 : 1200000, // 20 minutes in dev for long AI responses
   /* Run tests in files in parallel */
   // fullyParallel: true,
   fullyParallel: true,
@@ -30,7 +30,8 @@ export default defineConfig({
   forbidOnly: false, //!!process.env.CI,
   // forbidOnly: false,
 
-  retries: process.env.CI ? 1 : 0,
+  retries: process.env.CI ? 0 : 0,
+  maxFailures: process.env.CI ? 1 : 1,
   /* Opt out of parallel tests on CI. */
   // workers: process.env.CI ? 1 : undefined,
   workers: 1,

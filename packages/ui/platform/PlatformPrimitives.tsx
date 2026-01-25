@@ -358,7 +358,10 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
 )
 Link.displayName = "Link"
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+export const Input = forwardRef<
+  HTMLInputElement,
+  InputProps & { "data-testid"?: string; dataTestId?: string }
+>(
   (
     {
       type = "text",
@@ -372,6 +375,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       name,
       required,
       disabled,
+      dataTestId,
       ...props
     },
     ref,
@@ -394,6 +398,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         name={name}
         required={required}
         disabled={disabled}
+        data-testid={props["data-testid"] || dataTestId}
         {...props}
       />
     )
@@ -459,7 +464,10 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
 )
 TextArea.displayName = "TextArea"
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(
+export const Select = forwardRef<
+  HTMLSelectElement,
+  SelectProps & { dataTestId?: string }
+>(
   (
     {
       className,
@@ -474,6 +482,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       required,
       options,
       children,
+      dataTestId,
       ...props
     },
     ref,
@@ -491,6 +500,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         className={className}
+        data-testid={dataTestId}
         style={style as CSSProperties}
         value={value}
         defaultValue={defaultValue}

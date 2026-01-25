@@ -80,7 +80,7 @@ export default function MemoryConsent({
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
       ) {
-        setIsMemoryConsentManageVisible(false)
+        isMemoryConsentManageVisible && setIsMemoryConsentManageVisible(false)
       }
     }
 
@@ -88,7 +88,7 @@ export default function MemoryConsent({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
-  }, [])
+  }, [isMemoryConsentManageVisible])
 
   const [isUpdatingMemories, setIsUpdatingMemories] = useState(false)
 

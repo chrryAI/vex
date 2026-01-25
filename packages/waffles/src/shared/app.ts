@@ -16,7 +16,9 @@ const app = async ({
   creditsConsumed,
   messagesConsumed,
   isGrape,
+  ...props
 }: {
+  isStoreApp?: boolean
   app?: string
   isRetro?: boolean
   slug: string
@@ -84,7 +86,7 @@ const app = async ({
 
       await appButton.click()
 
-      const isStoreApp = storeApps.includes(item.name)
+      const isStoreApp = props.isStoreApp ?? storeApps.includes(item.name)
 
       await expect(storeAppButton).toBeVisible({
         visible: !isStoreApp,

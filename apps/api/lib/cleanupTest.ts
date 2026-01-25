@@ -17,6 +17,8 @@ import {
   guest,
   deleteGuest,
   updateUser,
+  getStores,
+  deleteStore,
 } from "@repo/db"
 import { MEMBER_CREDITS_PER_MONTH } from "@repo/db/src/schema"
 
@@ -106,6 +108,28 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
                 : bookmark.guestId !== guest?.id,
             ) || [],
         })
+      }
+    }),
+  )
+
+  const stores = await getStores({
+    pageSize: 100000,
+    ownerId: user?.id || guest?.id,
+  })
+
+  await Promise.all(
+    stores.stores.map((store) => {
+      if (user?.email === process.env.VEX_TEST_EMAIL) {
+        return
+      }
+      const isOwner = user
+        ? store.user?.id === user.id
+        : guest && store.guest?.id === guest.id
+
+      console.log(`🚀 ~ stores.stores.map ~ isOwner:`, isOwner)
+
+      if (isOwner) {
+        return deleteStore({ id: store.store.id })
       }
     }),
   )

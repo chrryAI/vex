@@ -40,10 +40,5 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2.0",
     "@types/node": "^20.11.5"
-  },
-  "pnpm": {
-    "overrides": {
-      "hono@<4.11.4": ">=4.11.4"
-    }
   }
 }
