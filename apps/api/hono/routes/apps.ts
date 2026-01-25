@@ -778,23 +778,6 @@ app.patch("/:id", async (c) => {
       return c.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const storeInstalls = existingApp.storeId
-      ? await getStoreInstalls({
-          storeId: existingApp.storeId,
-        })
-      : undefined
-
-    if (storeInstalls) {
-      await Promise.all(
-        storeInstalls.map(async (storeInstall) => {
-          deleteInstall({
-            appId: storeInstall.appId,
-            storeId: storeInstall.storeId,
-          })
-        }),
-      )
-    }
-
     // Parse JSON body
     const body = await c.req.json()
 
@@ -931,6 +914,23 @@ app.patch("/:id", async (c) => {
       return c.json(
         { error: "You must provide at least one extended app" },
         { status: 400 },
+      )
+    }
+
+    const storeInstalls = existingApp.storeId
+      ? await getStoreInstalls({
+          storeId: existingApp.storeId,
+        })
+      : undefined
+
+    if (storeInstalls) {
+      await Promise.all(
+        storeInstalls.map(async (storeInstall) => {
+          deleteInstall({
+            appId: storeInstall.appId,
+            storeId: storeInstall.storeId,
+          })
+        }),
       )
     }
 
