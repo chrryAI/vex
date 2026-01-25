@@ -8,6 +8,12 @@ import { generateText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
 import { isE2E } from "@chrryai/chrry/utils"
 import captureException from "../../lib/captureException"
+import {
+  extractAndStoreKnowledge,
+  getGraphContext,
+  storeDocumentChunk,
+  linkChunkToEntities,
+} from "../../lib/graph/graphService"
 
 const API_KEY = process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
 
@@ -219,6 +225,16 @@ export async function processFileForRAG({
           },
           tokenCount: Math.ceil(chunk.length / 4),
         })
+
+        // 3b. SYNC TO FALKORDB (Graph RAG)
+        // We do this in parallel or background to not block legacy flow
+        storeDocumentChunk(filename, i, chunk, embedding, threadId, fileType)
+          .then(() => {
+            // Level 4: Entity Linking (God Mode)
+            // Extract topics from chunk and link to Graph entities
+            return linkChunkToEntities(chunk, filename, i)
+          })
+          .catch((err) => console.error("⚠️ Graph Sync/Linking Error:", err))
 
         // Rate limiting
         if (i < chunks.length - 1) {
@@ -440,6 +456,15 @@ export async function processMessageForRAG({
     })
 
     console.log(`📝 Processed message for RAG: ${content.substring(0, 50)}...`)
+
+    // Extract and Store Knowledge Graph Data
+    if (process.env.ENABLE_GRAPH_RAG === "true") {
+      extractAndStoreKnowledge(content, messageId, userId || guestId).catch(
+        (err) => {
+          console.error("Failed to extract knowledge graph:", err)
+        },
+      )
+    }
   } catch (error) {
     captureException(error)
     console.error("❌ Error processing message for RAG:", error)
@@ -523,7 +548,7 @@ export async function buildEnhancedRAGContext(
 ): Promise<string> {
   if (isE2E) return ""
 
-  const [relevantChunks, documentSummaries, relevantMessages] =
+  const [relevantChunks, documentSummaries, relevantMessages, graphContext] =
     await Promise.all([
       findRelevantChunks({ query, threadId, limit: 3, threshold: 0.7 }),
       getDocumentSummaries(threadId),
@@ -534,9 +559,21 @@ export async function buildEnhancedRAGContext(
         threshold: 0.7,
         excludeMessageId,
       }),
+      // Graph Retrieval - Only if enabled
+      process.env.ENABLE_GRAPH_RAG === "true"
+        ? getGraphContext(query).catch((err) => {
+            console.error("Failed to get graph context:", err)
+            return ""
+          })
+        : Promise.resolve(""),
     ])
 
   let context = ""
+
+  // Add Graph Context (FalkorDB)
+  if (graphContext) {
+    context += "\n" + graphContext + "\n"
+  }
 
   // Add document summaries for broad context
   if (documentSummaries.length > 0) {

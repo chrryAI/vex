@@ -167,6 +167,7 @@ export default function App({
     apps,
     guestBaseApp,
     userBaseApp,
+    accountApp,
     token,
     loadingApp,
     userBaseStore,
@@ -624,6 +625,7 @@ export default function App({
                   <Trash2 color="var(--accent-0)" size={18} />
                 </ConfirmButton>
                 <Button
+                  data-testid="save-app"
                   className="inverted"
                   onClick={async () => {
                     await saveApp()
@@ -1017,7 +1019,7 @@ export default function App({
             }}
           >
             <Div style={{ ...styles.section.style }}>
-              {appStatus?.part || userBaseApp || guestBaseApp ? null : (
+              {appStatus?.part || app?.id === accountApp?.id ? null : (
                 <Button
                   data-testid="add-agent-button"
                   className="link"
@@ -1029,6 +1031,10 @@ export default function App({
                   }}
                   key={suggestSaveApp ? "highlights" : "settings"}
                   onClick={() => {
+                    if (accountApp) {
+                      setIsNewAppChat(accountApp)
+                      return
+                    }
                     if (user?.role !== "admin") {
                       if (user && owningApps.length >= 3) {
                         toast.error(
@@ -1049,7 +1055,13 @@ export default function App({
                       step: canEditApp ? "update" : "add",
                     })
                   }}
-                  title={t(isManagingApp ? "Cancel" : "Add agent")}
+                  title={t(
+                    isManagingApp
+                      ? "Cancel"
+                      : !accountApp
+                        ? "Add agent"
+                        : "Go to agent",
+                  )}
                 >
                   <Span
                     style={{
@@ -1060,7 +1072,13 @@ export default function App({
                   >
                     🤯
                   </Span>
-                  {t("Add agent")}
+                  {t(
+                    isManagingApp
+                      ? "Cancel"
+                      : !accountApp
+                        ? "Add agent"
+                        : "Go to agent",
+                  )}
                   <Img
                     showLoading={false}
                     alt="Plus"
@@ -1170,6 +1188,7 @@ export default function App({
               ) : isManagingApp ? (
                 <Div style={styles.nameImage.style}>
                   <Button
+                    data-testid="edit-app"
                     className="link"
                     title={t("Edit")}
                     onClick={() => {

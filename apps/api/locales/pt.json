@@ -2067,5 +2067,9 @@
   "Unlimited team seats (you manage)": "Lugares ilimitados para a equipe (você gerencia)",
   "By using this, you accept our privacy policy": "Ao usar isto, você aceita nossa política de privacidade",
   "Name: maximum 8 characters": "Nome: máximo de 8 caracteres",
-  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter é necessário. Chrry usa suas chaves de API, você paga os custos da API e ganha 70% da receita de assinatura (Chrry mantém 30% para infraestrutura)."
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter é necessário. Chrry usa suas chaves de API, você paga os custos da API e ganha 70% da receita de assinatura (Chrry mantém 30% para infraestrutura).",
+  "Image Analysis required by {{model}}": "Análise de imagem necessária por {{model}}",
+  "OpenRouter API key is required for paid tiers to enable revenue sharing.": "A chave da API OpenRouter é necessária para os níveis pagos para habilitar o compartilhamento de receita.",
+  "Image generation is enabled. Replicate API key is required for paid tiers": "A geração de imagem está habilitada. A chave da API Replicate é necessária para os níveis pagos",
+  "Required or disable image generation": "Necessário ou desativar a geração de imagem"
 }

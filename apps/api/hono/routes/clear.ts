@@ -3,6 +3,7 @@ import { getMember, getGuest } from "../lib/auth"
 import { isE2E } from "@chrryai/chrry/utils"
 import cleanupTest from "../../lib/cleanupTest"
 import {
+  getStores,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_FINGERPRINTS,
   VEX_LIVE_FINGERPRINTS,

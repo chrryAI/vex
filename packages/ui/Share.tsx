@@ -53,7 +53,8 @@ export default function Share({
   const [copied, setCopied] = useState(false)
   const { collaborationStep } = useNavigationContext()
   const { token, FRONTEND_URL, API_URL } = useAuth()
-  const { t } = useAppContext()
+
+  const { t, captureException } = useAppContext()
   const [visibility, setVisibility] = useState(thread.visibility)
 
   const copyToClipboard = async () => {
@@ -65,6 +66,7 @@ export default function Share({
       toast.success(t("Copied"))
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
+      captureException(err)
       toast.error("Failed to copy code")
     }
   }
@@ -93,6 +95,7 @@ export default function Share({
       setVisibility(visibility)
       onChangeVisibility?.(visibility)
     } catch (error) {
+      captureException(error)
       toast.error("Failed to update thread visibility")
     } finally {
       setLoading(false)
@@ -150,6 +153,7 @@ export default function Share({
       }
       toast.success(t("User invited"))
     } catch (error) {
+      captureException(error)
       toast.error(t("Failed to invite user"))
     } finally {
       setIsInvitingSending(false)
@@ -179,6 +183,7 @@ export default function Share({
           toast.error(t("User not found"))
           return
         }
+        captureException(new Error("Failed to fetch users"))
         toast.error(t("Failed to fetch users"))
         return
       }
@@ -238,11 +243,13 @@ export default function Share({
 
           toast.success(t("User added"))
         } catch (error) {
+          captureException(error)
           toast.error(t("Failed to add user"))
         }
         return
       }
     } catch (error) {
+      captureException(error)
       toast.error(t("Failed to fetch users"))
     } finally {
       setIsAdding(false)
@@ -273,6 +280,7 @@ export default function Share({
 
       onCollaborationChange?.(collaborations)
     } catch (error) {
+      captureException(error)
       toast.error(t("Failed to revoke"))
     } finally {
       setIsRevoking(false)
@@ -303,6 +311,7 @@ export default function Share({
       }
       toast.success(t("Deleted"))
     } catch (error) {
+      captureException(error)
       toast.error(t("Failed to delete"))
     } finally {
       setIsDeleting(false)

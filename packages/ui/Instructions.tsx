@@ -62,6 +62,7 @@ import {
   instructionBase,
   isOwner,
   isDeepEqual,
+  getMaxFiles,
 } from "./utils"
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -213,7 +214,7 @@ export default function Instructions({
   const country = user?.country || guest?.country
 
   const productionExtensions = ["chrome"]
-  const MAX_FILES = 10
+  const MAX_FILES = getMaxFiles({ user, guest })
   const [selectedInstruction, setSelectedInstructionInternal] =
     useState<instructionBase | null>(null)
 

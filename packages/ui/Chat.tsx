@@ -2788,14 +2788,14 @@ export default function Chat({
 
     // Listen for image loads and other layout-affecting events
     window.addEventListener("load", handleDOMChange)
-    window.addEventListener("DOMContentLoaded", handleDOMChange)
+    window.addEventListener("networkidle", handleDOMChange)
 
     return () => {
       window.removeEventListener("scroll", handleScroll)
       window.removeEventListener("resize", handleResize)
       window.removeEventListener("orientationchange", handleResize)
       window.removeEventListener("load", handleDOMChange)
-      window.removeEventListener("DOMContentLoaded", handleDOMChange)
+      window.removeEventListener("networkidle", handleDOMChange)
       observer.disconnect()
       if (domChangeTimeout) {
         clearTimeout(domChangeTimeout)
@@ -4270,7 +4270,7 @@ export default function Chat({
                             <Span
                               style={{
                                 ...styles.agentName.style,
-                                maxWidth: viewPortWidth < 400 ? 100 : 150,
+                                maxWidth: viewPortWidth < 400 ? 90 : 150,
                               }}
                             >
                               {selectedAgent?.displayName}

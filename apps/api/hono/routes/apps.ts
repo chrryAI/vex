@@ -121,6 +121,7 @@ app.post("/", async (c) => {
       image: imageUrl,
       apiKeys,
       tips,
+      placeholder,
     } = body
 
     // Validate app name: no spaces, must be unique
@@ -193,6 +194,7 @@ app.post("/", async (c) => {
       apiPricePerRequest,
       apiMonthlyPrice,
       apiRateLimit,
+      placeholder,
     }
 
     const chrry = await getStore({
@@ -826,6 +828,7 @@ app.patch("/:id", async (c) => {
       extends: extendsData,
       tools,
       image: imageUrl,
+      placeholder,
       apiKeys,
     } = body
 
@@ -837,6 +840,7 @@ app.patch("/:id", async (c) => {
     const updateData: any = {}
 
     if (name !== null) updateData.name = name
+    if (placeholder !== null) updateData.placeholder = placeholder
     if (title !== null) updateData.title = title
     if (description !== null) updateData.description = description
     if (icon !== null) updateData.icon = icon
