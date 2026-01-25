@@ -41,26 +41,40 @@ export async function extractAndStoreKnowledge(
       const { source, type, relation, target, targetType } = triple
 
       // Cypher query to merge nodes and create relationship
+      // SECURITY: Using parameterized queries to prevent injection
       const query = `
-        MERGE (s:${type} {name: '${source.replace(/'/g, "\\'")}'})
-        MERGE (t:${targetType} {name: '${target.replace(/'/g, "\\'")}'})
+        MERGE (s:${type} {name: $source})
+        MERGE (t:${targetType} {name: $target})
         MERGE (s)-[:${relation.toUpperCase()}]->(t)
         RETURN s, t
       `
 
-      await graph.query(query)
+      await graph.query(query, {
+        params: {
+          source,
+          target,
+        },
+      })
       console.log(`🕸️ Graph Synced: (${source})-[${relation}]->(${target})`)
     }
 
     // Connect User to these entities if userId present
     if (userId) {
       // Assume User node exists (synced elsewhere or Created here lazily)
-      await graph.query(`
-            MERGE (u:User {id: '${userId}'})
+      await graph.query(
+        `
+            MERGE (u:User {id: $userId})
             WITH u
-            MATCH (n {name: '${data.triplets[0].source.replace(/'/g, "\\'")}'}) 
+            MATCH (n {name: $nodeName}) 
             MERGE (u)-[:MENTIONED]->(n)
-        `)
+        `,
+        {
+          params: {
+            userId,
+            nodeName: data.triplets[0].source,
+          },
+        },
+      )
     }
   } catch (error) {
     console.error("❌ Graph Extraction Failed:", error)
@@ -79,16 +93,18 @@ export async function getGraphContext(queryText: string): Promise<string> {
     // Note: FalkorDB supports full-text search indices if configured, simple contains for now
 
     // Cleaning query for safe cypher insertion (basic)
-    const cleanQuery = queryText.replace(/'/g, "\\'")
-
     const cypher = `
       MATCH (n)-[r]->(m)
-      WHERE '${cleanQuery}' CONTAINS n.name OR '${cleanQuery}' CONTAINS m.name
+      WHERE $query CONTAINS n.name OR $query CONTAINS m.name
       RETURN n.name, type(r), m.name
       LIMIT 10
     `
 
-    const result = await graph.query(cypher)
+    const result = await graph.query(cypher, {
+      params: {
+        query: queryText,
+      },
+    })
 
     if ((result as any)?.resultSet?.length === 0) return ""
 

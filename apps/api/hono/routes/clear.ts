@@ -39,6 +39,3 @@ clear.post("/", async (c) => {
 
   return c.json({ error: "Unauthorized" }, 401)
 })
-function deleteStore(arg0: { id: string }): any {
-  throw new Error("Function not implemented.")
-}
