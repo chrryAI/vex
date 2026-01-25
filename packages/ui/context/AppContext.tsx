@@ -52,7 +52,7 @@ export const MONTHLY_GUEST_CREDITS = 30
 
 export const AppContext = createContext<{
   t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => string
-  captureException: (error: Error) => void
+  captureException: (error: Error | unknown) => void
   console: ReturnType<typeof createCustomConsole>
 }>({
   t: (key: string, values?: Record<string, any>, autoAdd?: boolean) => key,

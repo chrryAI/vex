@@ -200,18 +200,9 @@ session.get("/", async (c) => {
 
   let member = await getMemberAction(c, { full: true, skipCache: true })
 
-  const accountApp = await getAppAction({
-    c,
-    accountApp: true,
-    skipCache: true,
-  })
-  const userBaseApp = member ? accountApp : undefined
-
   const guest = !member
     ? await getGuestAction(c, { skipCache: true })
     : undefined
-
-  const guestBaseApp = guest ? accountApp : undefined
 
   const { success } = await checkRateLimit(c.req.raw, {
     member: member ?? undefined,
@@ -549,6 +540,12 @@ session.get("/", async (c) => {
         }
       }
 
+      const accountApp = await getAppAction({
+        c,
+        accountApp: true,
+        skipCache: true,
+      })
+
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401)
       }
@@ -599,8 +596,7 @@ session.get("/", async (c) => {
         hasNotification,
         note: "This is a fake guest for bot/crawler traffic.",
         deviceId,
-        userBaseApp,
-        guestBaseApp,
+        userBaseApp: accountApp,
         // app,
         env,
       })
@@ -718,6 +714,12 @@ session.get("/", async (c) => {
       setFingerprintCookie(c, fingerprint!, cookieDomain, isExtension)
       setDeviceIdCookie(c, deviceId!, cookieDomain, isExtension)
 
+      const accountApp = await getAppAction({
+        c,
+        accountApp: true,
+        skipCache: true,
+      })
+
       return c.json({
         locale,
         TEST_MEMBER_FINGERPRINTS,
@@ -728,8 +730,7 @@ session.get("/", async (c) => {
         os,
         browser,
         // app,
-        userBaseApp,
-        guestBaseApp,
+        guestBaseApp: accountApp,
         aiAgent,
         versions,
         guest: {
@@ -769,9 +770,14 @@ session.get("/", async (c) => {
     setFingerprintCookie(c, fingerprint!, cookieDomain, isExtension)
     setDeviceIdCookie(c, deviceId!, cookieDomain, isExtension)
 
+    const accountApp = await getAppAction({
+      c,
+      accountApp: true,
+      skipCache: true,
+    })
+
     return c.json({
-      userBaseApp,
-      guestBaseApp,
+      guestBaseApp: accountApp,
       locale,
       TEST_MEMBER_FINGERPRINTS,
       TEST_GUEST_FINGERPRINTS,

@@ -18,7 +18,7 @@ import Loading from "./Loading"
 import { updateUser } from "./lib"
 import toast from "react-hot-toast"
 import { useMemoryConsentStyles } from "./MemoryConsent.styles"
-import { Button, Div } from "./platform"
+import { Button, Div, Input } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 import useCache from "./hooks/useCache"
@@ -71,6 +71,7 @@ export default function MemoryConsent({
   const isHydrated = useHasHydrated()
 
   const [isDeletingSession, setIsDeletingSession] = useState(false)
+  const [isDeleted, setIsDeleted] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -320,9 +321,18 @@ export default function MemoryConsent({
                     )}
                     {t("Disable Memories")}
                   </ConfirmButton>
+                  {isDeleted && (
+                    <Input
+                      type="hidden"
+                      value={isDeleted.toString()}
+                      onChange={() => {}}
+                      data-testid="is-deleted"
+                    />
+                  )}
 
                   {isE2E && isLiveTest && (
                     <ConfirmButton
+                      dataDeleted={isDeleted}
                       className="transparent"
                       processing={isDeletingSession}
                       data-testid="clear-session"
@@ -330,6 +340,7 @@ export default function MemoryConsent({
                       onConfirm={async () => {
                         if (!token) return
                         try {
+                          setIsDeletingSession(true)
                           const result = await apiFetch(`${API_URL}/clear`, {
                             method: "POST",
                             headers: {
@@ -344,12 +355,15 @@ export default function MemoryConsent({
                             return
                           }
 
+                          setIsDeleted(true)
+
                           data.success && toast.success(t("Session cleared"))
                           clear()
                         } catch (error) {
                           console.error("Error updating guest:", error)
                         } finally {
                           setIsUpdatingMemories(false)
+                          setIsDeletingSession(false)
                         }
                       }}
                     >

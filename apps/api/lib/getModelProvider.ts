@@ -63,7 +63,7 @@ export async function getModelProvider(
   const appApiKeys = app?.apiKeys || {}
 
   switch (name) {
-    case "deepSeek":
+    case "deepSeek": {
       const deepseekKey = app?.apiKeys?.deepseek
         ? safeDecrypt(app?.apiKeys?.deepseek)
         : app?.tier === "free"
@@ -107,7 +107,8 @@ export async function getModelProvider(
         provider: createDeepSeek({ apiKey: "" })(agent.modelId),
         agentName: agent.name,
       }
-    case "sushi":
+    }
+    case "sushi": {
       const sushiKey =
         (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
         (app?.tier === "free" ? process.env.DEEPSEEK_API_KEY : "")
@@ -149,8 +150,9 @@ export async function getModelProvider(
         provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
         agentName: agent.name,
       }
+    }
 
-    case "chatGPT":
+    case "chatGPT": {
       // Check for OpenAI key first
       const openaiKey = app?.apiKeys?.openai
         ? safeDecrypt(app?.apiKeys?.openai)
@@ -193,8 +195,9 @@ export async function getModelProvider(
         provider: createOpenAI({ apiKey: "" })(agent.modelId),
         agentName: agent.name,
       }
+    }
 
-    case "claude":
+    case "claude": {
       const claudeKey = app?.apiKeys?.anthropic
         ? safeDecrypt(app?.apiKeys?.anthropic)
         : app?.tier === "free"
@@ -237,8 +240,9 @@ export async function getModelProvider(
         provider: createAnthropic({ apiKey: "" })(agent.modelId),
         agentName: agent.name,
       }
+    }
 
-    case "gemini":
+    case "gemini": {
       const geminiKey =
         (appApiKeys.google ? safeDecrypt(appApiKeys.google) : "") ||
         (app?.tier === "free" ? process.env.GEMINI_API_KEY : "")
@@ -280,8 +284,9 @@ export async function getModelProvider(
         provider: createGoogleGenerativeAI({ apiKey: "" })(agent.modelId),
         agentName: agent.name,
       }
+    }
 
-    case "perplexity":
+    case "perplexity": {
       const perplexityKey = app?.apiKeys?.perplexity
         ? safeDecrypt(app?.apiKeys?.perplexity)
         : app?.tier === "free"
@@ -330,8 +335,9 @@ export async function getModelProvider(
         })(agent.modelId),
         agentName: agent.name,
       }
+    }
 
-    case "openrouter":
+    case "openrouter": {
       const openRouterKey = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : app?.tier === "free"
@@ -349,6 +355,7 @@ export async function getModelProvider(
         provider: openRouterProvider(agent.modelId),
         agentName: agent.name,
       }
+    }
 
     default:
       // Custom OpenAI-compatible model

@@ -4544,9 +4544,23 @@ All features are FREE during beta. Transitioning to organic marketing, emphasize
       })
     : ""
 
+  // 🧠 Memory System Explanation (Default for all apps)
+  const memorySystemExplanation = `
+## 🧠 Memory & Knowledge System (RAG)
+
+How I process and remember information:
+1. **Document Processing**: When you upload files (PDFs, images, etc.), I split them into smaller **chunks** (~1200 characters) to maintain context and overlap them to ensure continuity.
+2. **Vector Embeddings**: Each chunk is converted into a high-dimensional mathematical representation called an **embedding** using the \`text-embedding-3-small\` model.
+3. **Semantic Search**: When you ask a question, I use **vector similarity search** (pgvector) to find the most relevant chunks from your documents and past message history.
+4. **Knowledge Graph**: I extract entities and relationships from our conversation to build a **FalkorDB Knowledge Graph**, allowing me to connect complex dots across different topics.
+5. **Contextual Retrieval**: The most relevant pieces of information are injected into my current thought process, enabling me to give precise answers based on your unique data.
+
+**USE THIS INFORMATION**: If a user asks how you remember things, how your RAG system works, or how you process documents, use this explanation to give them a brief, clear summary of the technical process.
+`.trim()
+
   const enhancedSystemPrompt = debatePrompt
-    ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${debatePrompt}` // Combine all
-    : `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}`
+    ? `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${memorySystemExplanation}\n\n${debatePrompt}` // Combine all
+    : `${ragSystemPrompt}${calendarInstructions}${pricingContext}${pearFeedbackContext}${retroAnalyticsContext}\n\n${memorySystemExplanation}`
 
   // User message remains unchanged - RAG context now in system prompt
   const enhancedUserMessage = userMessage

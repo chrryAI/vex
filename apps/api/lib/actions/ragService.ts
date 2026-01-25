@@ -6,11 +6,12 @@ import {
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
-import { isE2E } from "@chrryai/chrry/utils"
 import captureException from "../../lib/captureException"
 import {
   extractAndStoreKnowledge,
   getGraphContext,
+  storeDocumentChunk,
+  linkChunkToEntities,
 } from "../../lib/graph/graphService"
 
 const API_KEY = process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
@@ -164,8 +165,6 @@ export async function processFileForRAG({
   userId?: string
   guestId?: string
 }): Promise<void> {
-  if (isE2E) return
-
   console.log(
     `📚 Processing ${filename} for RAG (${Math.round(fileSizeBytes / 1024)}KB)...`,
   )
@@ -223,6 +222,16 @@ export async function processFileForRAG({
           },
           tokenCount: Math.ceil(chunk.length / 4),
         })
+
+        // 3b. SYNC TO FALKORDB (Graph RAG)
+        // We do this in parallel or background to not block legacy flow
+        storeDocumentChunk(filename, i, chunk, embedding, threadId, fileType)
+          .then(() => {
+            // Level 4: Entity Linking (God Mode)
+            // Extract topics from chunk and link to Graph entities
+            return linkChunkToEntities(chunk, filename, i)
+          })
+          .catch((err) => console.error("⚠️ Graph Sync/Linking Error:", err))
 
         // Rate limiting
         if (i < chunks.length - 1) {
@@ -370,8 +379,6 @@ export async function buildRAGContext(
   query: string,
   threadId: string,
 ): Promise<string> {
-  if (isE2E) return ""
-
   const [relevantChunks, documentSummaries] = await Promise.all([
     findRelevantChunks({ query, threadId, limit: 3, threshold: 0.7 }),
     getDocumentSummaries(threadId),
@@ -416,8 +423,6 @@ export async function processMessageForRAG({
   content: string
   role: "user" | "assistant"
 }): Promise<void> {
-  if (isE2E) return
-
   try {
     // Skip empty or very short messages
     if (!content || content.trim().length < 10) {
@@ -534,9 +539,7 @@ export async function buildEnhancedRAGContext(
   threadId: string,
   excludeMessageId?: string,
 ): Promise<string> {
-  if (isE2E) return ""
-
-  const [relevantChunks, documentSummaries, relevantMessages] =
+  const [relevantChunks, documentSummaries, relevantMessages, graphContext] =
     await Promise.all([
       findRelevantChunks({ query, threadId, limit: 3, threshold: 0.7 }),
       getDocumentSummaries(threadId),
@@ -558,9 +561,9 @@ export async function buildEnhancedRAGContext(
 
   let context = ""
 
-  // Add Graph Context
-  if (relevantChunks[3]) {
-    context += "\n" + relevantChunks[3] + "\n"
+  // Add Graph Context (FalkorDB)
+  if (graphContext) {
+    context += "\n" + graphContext + "\n"
   }
 
   // Add document summaries for broad context
