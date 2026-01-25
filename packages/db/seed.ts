@@ -581,8 +581,8 @@ async function createRealisticUsers() {
       // Unique check logic - Mermi gibi hız!
       while (await getUser({ email })) {
         attempt++
-        userName = `${firstName}${attempt}${Math.floor(Math.random() * 999)}`
-        email = generateEmail(name, attempt + Math.floor(Math.random() * 999))
+        userName = `${firstName}${attempt}`
+        email = generateEmail(name, attempt)
         if (attempt > 100) break
       }
 
