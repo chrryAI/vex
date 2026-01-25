@@ -6,7 +6,6 @@ import {
 } from "@repo/db/src/schema"
 import { generateText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
-import { isE2E } from "@chrryai/chrry/utils"
 import captureException from "../../lib/captureException"
 import {
   extractAndStoreKnowledge,
@@ -166,8 +165,6 @@ export async function processFileForRAG({
   userId?: string
   guestId?: string
 }): Promise<void> {
-  if (isE2E) return
-
   console.log(
     `📚 Processing ${filename} for RAG (${Math.round(fileSizeBytes / 1024)}KB)...`,
   )
@@ -382,8 +379,6 @@ export async function buildRAGContext(
   query: string,
   threadId: string,
 ): Promise<string> {
-  if (isE2E) return ""
-
   const [relevantChunks, documentSummaries] = await Promise.all([
     findRelevantChunks({ query, threadId, limit: 3, threshold: 0.7 }),
     getDocumentSummaries(threadId),
@@ -428,8 +423,6 @@ export async function processMessageForRAG({
   content: string
   role: "user" | "assistant"
 }): Promise<void> {
-  if (isE2E) return
-
   try {
     // Skip empty or very short messages
     if (!content || content.trim().length < 10) {
@@ -546,8 +539,6 @@ export async function buildEnhancedRAGContext(
   threadId: string,
   excludeMessageId?: string,
 ): Promise<string> {
-  if (isE2E) return ""
-
   const [relevantChunks, documentSummaries, relevantMessages, graphContext] =
     await Promise.all([
       findRelevantChunks({ query, threadId, limit: 3, threshold: 0.7 }),
