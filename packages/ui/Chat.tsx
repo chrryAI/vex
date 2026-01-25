@@ -1643,17 +1643,10 @@ export default function Chat({
 
     playNotification()
 
-    if (!suggestSaveApp) {
-      if (isImageGenerationEnabled) {
-        toast.success(t("Generating image, keep calm..."), {
-          duration: 6000,
-        })
-      }
-    } else {
-      const saved = await saveApp()
-      if (!saved) {
-        return
-      }
+    if (isImageGenerationEnabled) {
+      toast.success(t("Generating image, keep calm..."), {
+        duration: 6000,
+      })
     }
 
     onMessage?.({
@@ -1845,7 +1838,8 @@ export default function Chat({
         app?.id && formData.append("appId", app.id)
         ask && formData.append("ask", ask)
         about && formData.append("about", about)
-        app?.id === chrry?.id &&
+        !appFormWatcher.id &&
+          app?.id === chrry?.id &&
           suggestSaveApp &&
           appStatus?.part &&
           formData.append("draft", JSON.stringify(appFormWatcher))

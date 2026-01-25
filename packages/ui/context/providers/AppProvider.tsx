@@ -685,6 +685,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const suggestSaveApp = !!(
     !!appStatus?.part &&
+    !appFormWatcher.id &&
     appFormWatcher.systemPrompt &&
     appFormWatcher.canSubmit
   )
