@@ -997,14 +997,6 @@ export default function Chat({
     }
   }
 
-  // Auto-suggest save when system prompt is set
-  useEffect(() => {
-    if (suggestSaveApp) {
-      // Set input to trigger save suggestion with explanation
-      setInput(t("Save my app and explain what it does 🚀"))
-    }
-  }, [suggestSaveApp])
-
   const {
     data: quotaData,
     mutate: refetchQuotaInfo,
