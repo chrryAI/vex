@@ -80,7 +80,6 @@ export default function Agent({
   const { utilities } = useStyles()
   const { t } = useAppContext()
   const { chrry, baseApp, token, accountApp } = useAuth()
-  console.log(`🚀 ~ accountApp:`, accountApp)
 
   const bordered = {
     border: "1px dashed var(--shade-2)",

@@ -1188,7 +1188,6 @@ export default function App({
               ) : isManagingApp ? (
                 <Div style={styles.nameImage.style}>
                   <Button
-                    data-testid="edit-app"
                     className="link"
                     title={t("Edit")}
                     onClick={() => {
@@ -1303,6 +1302,7 @@ export default function App({
                   className="link"
                   style={{ ...utilities.link.style, ...styles.grip.style }}
                   title={t("Edit")}
+                  data-testid="edit-app"
                   onClick={() => {
                     setAppStatus({
                       step: "restore",

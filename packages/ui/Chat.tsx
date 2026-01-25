@@ -997,14 +997,6 @@ export default function Chat({
     }
   }
 
-  // Auto-suggest save when system prompt is set
-  useEffect(() => {
-    if (suggestSaveApp) {
-      // Set input to trigger save suggestion with explanation
-      setInput(t("Save my app and explain what it does 🚀"))
-    }
-  }, [suggestSaveApp])
-
   const {
     data: quotaData,
     mutate: refetchQuotaInfo,
@@ -1651,17 +1643,10 @@ export default function Chat({
 
     playNotification()
 
-    if (!suggestSaveApp) {
-      if (isImageGenerationEnabled) {
-        toast.success(t("Generating image, keep calm..."), {
-          duration: 6000,
-        })
-      }
-    } else {
-      const saved = await saveApp()
-      if (!saved) {
-        return
-      }
+    if (isImageGenerationEnabled) {
+      toast.success(t("Generating image, keep calm..."), {
+        duration: 6000,
+      })
     }
 
     onMessage?.({
@@ -1853,7 +1838,8 @@ export default function Chat({
         app?.id && formData.append("appId", app.id)
         ask && formData.append("ask", ask)
         about && formData.append("about", about)
-        app?.id === chrry?.id &&
+        !appFormWatcher.id &&
+          app?.id === chrry?.id &&
           suggestSaveApp &&
           appStatus?.part &&
           formData.append("draft", JSON.stringify(appFormWatcher))

@@ -684,7 +684,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const siteConfig = getSiteConfig()
 
   const suggestSaveApp = !!(
-    appFormWatcher.systemPrompt && appFormWatcher.canSubmit
+    !!appStatus?.part &&
+    !appFormWatcher.id &&
+    appFormWatcher.systemPrompt &&
+    appFormWatcher.canSubmit
   )
 
   const canEditApp = isAppOwner
