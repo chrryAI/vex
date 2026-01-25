@@ -23,6 +23,7 @@ import {
   user,
   updateApp,
 } from "./index"
+import crypto from "crypto"
 import { eq, and, isNull, sql, inArray } from "drizzle-orm"
 import {
   users,
@@ -527,6 +528,21 @@ const COUNTRIES = [
   "India",
 ]
 
+// Dojo Entropy Helpers
+const cryptoInt = (min: number, max: number) => crypto.randomInt(min, max)
+const cryptoFloat = () => crypto.randomBytes(4).readUInt32BE() / 0xffffffff
+const pickCrypto = <T>(arr: T[]): T => arr[cryptoInt(0, arr.length)]!
+
+// Cryptographically Secure Shuffle
+const secureShuffle = <T>(arr: T[]): T[] => {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = cryptoInt(0, i + 1)
+    ;[result[i], result[j]] = [result[j]!, result[i]!]
+  }
+  return result
+}
+
 function generateUsername(name: string): string {
   const parts = name.toLowerCase().split(" ")
   const firstName = parts[0] || ""
@@ -547,24 +563,18 @@ function generateEmail(name: string, attempt: number = 0): string {
     "gmail.com",
     "outlook.com",
     "yahoo.com",
-    "hotmail.com",
     "proton.me",
     "icloud.com",
   ]
-  return `${finalUsername}@${domains[Math.floor(Math.random() * domains.length)]}`
+
+  // domains arasından kriptografik seçim
+  return `${finalUsername}@${pickCrypto(domains)}`
 }
 
 // Sonra create fonksiyonunun sonuna (admin ve feedback user'lardan sonra) ekleyin:
 
 async function createRealisticUsers() {
   console.log("👥 Creating 150+ UNIQUE realistic users...")
-
-  // Yardımcı Fonksiyon: Array'den rastgele eleman seçme
-  const pickRandom = (arr: string[]) =>
-    arr[Math.floor(Math.random() * arr.length)]
-
-  // Yardımcı Fonksiyon: Array'i karıştırma (Fisher-Yates Shuffle)
-  const shuffle = (arr: string[]) => [...arr].sort(() => Math.random() - 0.5)
 
   const createdUsers = []
 
@@ -578,7 +588,6 @@ async function createRealisticUsers() {
       let email = generateEmail(name)
       let attempt = 0
 
-      // Unique check logic - Mermi gibi hız!
       while (await getUser({ email })) {
         attempt++
         userName = `${firstName}${attempt}`
@@ -588,9 +597,9 @@ async function createRealisticUsers() {
 
       if (attempt > 100) continue
 
-      // --- UNIQUE MUTATION START ---
+      // --- CRYPTO GÜNCELLEME BAŞLANGIÇ ---
 
-      // 1. Skill Mutasyonu: Sabit array yerine, seçeneklerden rastgele 3 tane mürleme
+      // 1. Skill Mutasyonu: secureShuffle kullan
       const flatSkills = [
         "React",
         "TypeScript",
@@ -610,9 +619,9 @@ async function createRealisticUsers() {
         "SEO",
         "Copywriting",
       ]
-      const expertise = shuffle(flatSkills).slice(0, 3)
+      const expertise = secureShuffle(flatSkills).slice(0, 3)
 
-      // 2. Bio Mutasyonu: Dinamik birleştirme (Max 50 char check)
+      // 2. Bio Mutasyonu: pickCrypto kullan
       const templates = [
         "Specialist in",
         "Focusing on",
@@ -623,24 +632,30 @@ async function createRealisticUsers() {
         "Scaling",
         "Architecting",
       ]
-      let bio = `${pickRandom(templates)} ${expertise[0]} and ${expertise[1]}`
+      let bio = `${pickCrypto(templates)} ${expertise[0]} and ${expertise[1]}`
       if (bio.length > 50) bio = bio.substring(0, 47) + "..."
 
-      // 3. Financial & Availability
-      const hourlyRate = Math.floor(Math.random() * 50) + 30 // 30-80cr
-      const isAvailableForHire = Math.random() > 0.3 // %70 true
+      // 3. Financial & Availability: cryptoInt ve cryptoFloat kullan
+      const hourlyRate = cryptoInt(30, 81) // 30-80 cr (81 exclusive)
+      const isAvailableForHire = cryptoFloat() > 0.3 // %70 true
 
-      // --- UNIQUE MUTATION END ---
+      // 4. Role: cryptoFloat kullan
+      const role = cryptoFloat() > 0.98 ? "admin" : "user" // %2 admin
+
+      // 5. Credits: cryptoInt kullan
+      const credits = cryptoInt(1000, 6000) // 1000-5999
+
+      // --- CRYPTO GÜNCELLEME BİTİŞ ---
 
       const user = await createUser({
         email,
         name,
         password: passwordToSalt("password123"),
-        role: Math.random() > 0.98 ? "admin" : "user", // Nadir adminler
+        role,
         userName,
-        city: pickRandom(CITIES),
-        country: pickRandom(COUNTRIES),
-        credits: Math.floor(Math.random() * 5000) + 1000,
+        city: pickCrypto(CITIES),
+        country: pickCrypto(COUNTRIES),
+        credits,
         bio,
         expertise,
         hourlyRate,
@@ -680,6 +695,10 @@ async function createCharacterProfiles() {
     console.error("❌ Sushi agent not found")
     return
   }
+
+  // ... personalities array aynı kalır ...
+
+  const createdProfiles = []
 
   const personalities = [
     {
@@ -770,18 +789,14 @@ async function createCharacterProfiles() {
     },
   ]
 
-  const createdProfiles = []
-
   for (let i = 0; i < users.users.length; i++) {
     const user = users.users[i]
     if (!user) continue
 
     try {
-      // Rastgele personality seç
       const profile = personalities[i % personalities.length]
       if (!profile) continue
 
-      // Her kullanıcı için bir thread oluştur (showcase için)
       const thread = await createThread({
         userId: user.id,
         title: `${user.name}'s Profile`,
@@ -794,7 +809,7 @@ async function createCharacterProfiles() {
         continue
       }
 
-      // Character profile oluştur
+      // CRYPTO GÜNCELLEME: cryptoFloat ve cryptoInt kullan
       const characterProfile = await db
         .insert(characterProfiles)
         .values({
@@ -803,17 +818,17 @@ async function createCharacterProfiles() {
           threadId: thread.id,
           name: user.name || "Anonymous",
           personality: profile.personality,
-          visibility: i % 3 === 0 ? "public" : "protected", // %33 public, %67 protected
-          pinned: i % 10 === 0, // %10 pinned
+          visibility: i % 3 === 0 ? "public" : "protected",
+          pinned: i % 10 === 0,
           traits: profile.traits,
           tags: profile.tags,
           conversationStyle: profile.conversationStyle,
           userRelationship: profile.userRelationship,
-          usageCount: Math.floor(Math.random() * 50),
+          usageCount: cryptoInt(0, 51), // 0-50
           metadata: {
             version: "1.0",
             createdBy: "seed",
-            effectiveness: Math.random() * 0.5 + 0.5, // 0.5-1.0
+            effectiveness: cryptoFloat() * 0.5 + 0.5, // 0.5-1.0
             creditRate: profile.creditRate,
           },
         })
@@ -821,8 +836,6 @@ async function createCharacterProfiles() {
 
       if (characterProfile[0]) {
         createdProfiles.push(characterProfile[0])
-
-        // Her 20 kullanıcıda bir progress göster
         if (i % 20 === 0) {
           console.log(
             `✅ Created profile ${i + 1}/${users.users.length}: ${user.name}`,
