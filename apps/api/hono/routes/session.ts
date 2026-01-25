@@ -206,7 +206,7 @@ session.get("/", async (c) => {
     skipCache: true,
   })
   const userBaseApp = member ? accountApp : undefined
-
+  console.log(`🚀 ~ userBaseApp:`, userBaseApp?.name)
   const guest = !member
     ? await getGuestAction(c, { skipCache: true })
     : undefined

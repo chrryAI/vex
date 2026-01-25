@@ -63,7 +63,6 @@ let savedLang: string | null
     "en") as string
 
   const safeLang = LANGUAGES.some((x) => x.code === lang) ? lang : "en"
-  console.log(`🚀 ~ ; ~ lang:`, lang)
 
   // Save to cross-platform storage
   // try {
