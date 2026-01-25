@@ -8,6 +8,10 @@ import { generateText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
 import { isE2E } from "@chrryai/chrry/utils"
 import captureException from "../../lib/captureException"
+import {
+  extractAndStoreKnowledge,
+  getGraphContext,
+} from "../../lib/graph/graphService"
 
 const API_KEY = process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
 
@@ -440,6 +444,15 @@ export async function processMessageForRAG({
     })
 
     console.log(`📝 Processed message for RAG: ${content.substring(0, 50)}...`)
+
+    // Extract and Store Knowledge Graph Data
+    if (process.env.ENABLE_GRAPH_RAG === "true") {
+      extractAndStoreKnowledge(content, messageId, userId || guestId).catch(
+        (err) => {
+          console.error("Failed to extract knowledge graph:", err)
+        },
+      )
+    }
   } catch (error) {
     captureException(error)
     console.error("❌ Error processing message for RAG:", error)
@@ -534,9 +547,21 @@ export async function buildEnhancedRAGContext(
         threshold: 0.7,
         excludeMessageId,
       }),
+      // Graph Retrieval - Only if enabled
+      process.env.ENABLE_GRAPH_RAG === "true"
+        ? getGraphContext(query).catch((err) => {
+            console.error("Failed to get graph context:", err)
+            return ""
+          })
+        : Promise.resolve(""),
     ])
 
   let context = ""
+
+  // Add Graph Context
+  if (relevantChunks[3]) {
+    context += "\n" + relevantChunks[3] + "\n"
+  }
 
   // Add document summaries for broad context
   if (documentSummaries.length > 0) {
