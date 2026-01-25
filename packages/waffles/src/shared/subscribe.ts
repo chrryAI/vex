@@ -306,7 +306,7 @@ export const subscribe = async ({
     await giftPage.goto(
       `${page.url().split("?")[0]}?gift=${fingerprintValue}`,
       {
-        waitUntil: "domcontentloaded",
+        waitUntil: "networkidle",
         timeout: 100000,
       },
     )

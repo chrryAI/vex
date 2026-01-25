@@ -2067,5 +2067,9 @@
   "Unlimited team seats (you manage)": "무제한 팀 좌석 (당신이 관리)",
   "By using this, you accept our privacy policy": "이것을 사용함으로써 당신은 우리의 개인정보 보호정책을 수락합니다",
   "Name: maximum 8 characters": "이름: 최대 8자",
-  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter가 필요합니다. Chrry는 귀하의 API 키를 사용하며, API 비용을 지불하고 구독 수익의 70%를 얻습니다 (Chrry는 인프라를 위해 30%를 유지합니다)."
+  "OpenRouter is required. Chrry uses your API keys, you pay API costs, and earn 70% of subscription revenue (Chrry keeps 30% for infrastructure).": "OpenRouter가 필요합니다. Chrry는 귀하의 API 키를 사용하며, API 비용을 지불하고 구독 수익의 70%를 얻습니다 (Chrry는 인프라를 위해 30%를 유지합니다).",
+  "Image Analysis required by {{model}}": "{{model}}에 의해 필요한 이미지 분석",
+  "OpenRouter API key is required for paid tiers to enable revenue sharing.": "수익 공유를 활성화하기 위해 유료 계층에는 OpenRouter API 키가 필요합니다.",
+  "Image generation is enabled. Replicate API key is required for paid tiers": "이미지 생성이 활성화되었습니다. 유료 계층에는 Replicate API 키가 필요합니다",
+  "Required or disable image generation": "필요하거나 이미지 생성을 비활성화"
 }

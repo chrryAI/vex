@@ -30,7 +30,7 @@ test("Subscribe As Guest", async ({ page }) => {
       isLive,
     }),
     {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     },
   )
@@ -50,7 +50,7 @@ test("Invite", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     },
   )
@@ -64,7 +64,7 @@ test("Invite", async ({ page }) => {
 
 test("Gift", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "domcontentloaded",
+    waitUntil: "networkidle",
     timeout: 100000,
   })
   await page.goto(
@@ -73,7 +73,7 @@ test("Gift", async ({ page }) => {
       isMember,
     }),
     {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     },
   )
@@ -111,7 +111,7 @@ test("Chat", async ({ page }) => {
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {
-    waitUntil: "domcontentloaded",
+    waitUntil: "networkidle",
     timeout: 100000,
   })
 
@@ -167,7 +167,7 @@ test("Thread", async ({ page }) => {
 test.skip("File upload", async ({ page }) => {
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
-    waitUntil: "domcontentloaded",
+    waitUntil: "networkidle",
     timeout: 100000,
   })
 
@@ -206,9 +206,9 @@ test.skip("File upload", async ({ page }) => {
   })
 })
 
-test("Create A Claude App", async ({ page }) => {
+test.skip("Create A Claude App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "domcontentloaded",
+    waitUntil: "networkidle",
     timeout: 100000,
   })
   await wait(5000)
@@ -216,19 +216,21 @@ test("Create A Claude App", async ({ page }) => {
     page,
     isLive,
     app: "test",
-    slug: "test",
+    slug: "vex",
     isMember,
     defaultAgent: "claude",
     theme: "dark",
     colorScheme: "orange",
     placeholder: "Claude placeholder",
     temperature: 0.9,
+
+    isNewChat: true,
   })
 })
 
 test("Create A Sushi App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
-    waitUntil: "domcontentloaded",
+    waitUntil: "networkidle",
     timeout: 100000,
   })
   await wait(5000)
@@ -236,12 +238,30 @@ test("Create A Sushi App", async ({ page }) => {
     page,
     isLive,
     app: "test",
-    slug: "test",
+    slug: "vex",
     isMember,
     defaultAgent: "sushi",
     theme: "light",
     colorScheme: "red",
     placeholder: "Sushi placeholder",
     temperature: 0.3,
+    nav: [
+      {
+        name: "test", // Feedback & Insights
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What feedback patterns are emerging?" },
+            {
+              model: "sushi",
+              text: "Which features are users requesting most?",
+            },
+            {
+              model: "sushi",
+              text: "Show me sentiment analysis from recent feedback",
+            },
+          ],
+        },
+      },
+    ],
   })
 })

@@ -16,7 +16,9 @@ const app = async ({
   creditsConsumed,
   messagesConsumed,
   isGrape,
+  ...props
 }: {
+  isStoreApp?: boolean
   app?: string
   isRetro?: boolean
   slug: string
@@ -59,7 +61,7 @@ const app = async ({
 }) => {
   if (isNewChat) {
     await page.goto(getURL({ isLive, isMember }), {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 100000,
     })
     await wait(5000) // Increased wait to ensure page is fully loaded
@@ -84,7 +86,7 @@ const app = async ({
 
       await appButton.click()
 
-      const isStoreApp = storeApps.includes(item.name)
+      const isStoreApp = props.isStoreApp ?? storeApps.includes(item.name)
 
       await expect(storeAppButton).toBeVisible({
         visible: !isStoreApp,

@@ -394,7 +394,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.11.42"
+export const VERSION = config.version || "1.11.54"
 export type instructionBase = {
   id: string
   title: string
@@ -608,6 +608,25 @@ export const PDF_LIMITS = {
 export const MAX_FILE_LIMITS = {
   artifacts: 10,
   chat: 5,
+}
+
+export const getMaxFiles = ({
+  user,
+  guest,
+}: {
+  user?: { role?: string; subscription?: subscription }
+  guest?: { role?: string; subscription?: subscription }
+}) => {
+  // Level 5 Balanced: High enough for RAG, low enough for UI
+  if (user?.role === "admin") return 50
+  if (user?.subscription?.plan === "pro" || guest?.subscription?.plan === "pro")
+    return 20
+  if (
+    user?.subscription?.plan === "plus" ||
+    guest?.subscription?.plan === "plus"
+  )
+    return 15
+  return MAX_FILE_LIMITS.artifacts // Guest/Default (5 or 10)
 }
 
 export const MAX_FILE_SIZES = {
