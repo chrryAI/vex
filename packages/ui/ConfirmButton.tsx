@@ -23,6 +23,7 @@ const ConfirmButton = ({
   confirmTitle,
   onClick,
   processing,
+  dataDeleted,
   ...rest
 }: {
   children?: React.ReactNode
@@ -37,6 +38,7 @@ const ConfirmButton = ({
   title?: string
   confirmTitle?: string
   processing?: boolean
+  dataDeleted?: boolean
   onClick?: () => void
 }): React.ReactElement => {
   const { burn } = useAuth()
@@ -70,6 +72,7 @@ const ConfirmButton = ({
       disabled={disabled}
       data-testid={dataTestId}
       ref={buttonRef}
+      data-deleted={dataDeleted}
       style={{
         ...(transparent
           ? {

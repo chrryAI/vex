@@ -35,6 +35,10 @@ export async function clean({
   await clearSessionButton.click()
   // Second click to confirm
   await clearSessionButton.click()
+
+  await expect(page.getByTestId("is-deleted")).toBeAttached({
+    timeout: 20000,
+  })
   // Wait for the API call to complete
   await page.waitForTimeout(5000)
 }
