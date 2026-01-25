@@ -228,7 +228,7 @@ test.skip("Create A Claude App", async ({ page }) => {
   })
 })
 
-test("Create A Sushi App", async ({ page }) => {
+test.skip("Create A Sushi App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,

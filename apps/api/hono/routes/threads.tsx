@@ -437,7 +437,7 @@ threads.patch("/:id", async (c) => {
     console.warn(
       `⚠️ User tried to upload ${files.length} files. Slicing to ${MAX_FILES}.`,
     )
-    processedFiles = files.slice(0, MAX_FILES)
+    return c.json({ error: "Too many files", status: 400 }, 400)
   }
 
   // Scan files for malware
