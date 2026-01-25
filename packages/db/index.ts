@@ -4902,8 +4902,8 @@ export const getApp = async ({
     ? {
         ...storeData.store,
         title: storeData.store.name, // Use name as title
-        apps: storeData.apps.map((app) => toSafeApp({ app })),
-        app: toSafeApp({ app: storeData.app }), // Include the store's base app
+        apps: storeData.apps.map((app) => toSafeApp({ app, userId, guestId })),
+        app: toSafeApp({ app: storeData.app, userId, guestId }), // Include the store's base app
       }
     : undefined
 
@@ -4996,7 +4996,9 @@ export const getPureApp = async ({
   if (!app) return undefined
 
   return {
-    ...(isSafe ? (toSafeApp({ app: app.app }) as app) : app.app),
+    ...(isSafe
+      ? (toSafeApp({ app: app.app, userId, guestId }) as app)
+      : app.app),
   } as app
 }
 
@@ -5260,7 +5262,7 @@ export const getApps = async (
             : app.store
 
           return {
-            ...(isSafe ? toSafeApp({ app }) : app),
+            ...(isSafe ? toSafeApp({ app, userId, guestId }) : app),
             extends: await getAppExtends({
               appId: app.id,
             }),
@@ -5899,7 +5901,7 @@ export async function getStores({
             ? toSafeGuest({ guest: row.guest })
             : row.guest,
         team: row.teams,
-        app: row.app ? toSafeApp({ app: row.app }) : undefined,
+        app: row.app ? toSafeApp({ app: row.app, userId, guestId }) : undefined,
         apps: await Promise.all(
           appsResult.items.map(
             (app) => getApp({ id: app.id, userId, guestId })!,
@@ -6033,7 +6035,7 @@ export async function getStore({
         })
 
         return {
-          ...toSafeApp({ app: appItem }),
+          ...toSafeApp({ app: appItem, userId, guestId }),
 
           store: appItem.store
             ? {

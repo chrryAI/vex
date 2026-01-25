@@ -79,6 +79,12 @@ export const users = pgTable(
       mode: "date",
       withTimezone: true,
     }),
+
+    hourlyRate: integer("hourlyRate"), // Credits per hour for collaboration
+    isAvailableForHire: boolean("isAvailableForHire").default(false).notNull(),
+    bio: text("bio"), // Short bio for /users page
+    expertise: jsonb("expertise").$type<string[]>().default([]), // ["React", "TypeScript", "Design"]
+
     tasksCount: integer("tasksCount").default(MEMBER_TASKS_COUNT).notNull(),
     userName: text("userName").notNull(),
     fileUploadsToday: integer("fileUploadsToday").default(0).notNull(),
@@ -1403,6 +1409,7 @@ export const characterProfiles = pgTable(
       version: string
       createdBy: string
       effectiveness: number
+      creditRate: number
     }>(),
 
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
