@@ -28,7 +28,7 @@ fi
 # Get app name from argument
 APP_NAME=$1
 
-if [ -z "$APP_NAME" ]; then
+if [[ -z "$APP_NAME" ]]; then
     echo -e "${RED}❌ Usage: ./scripts/generate-store-assets.sh <app-name>${NC}"
     echo -e "${YELLOW}Example: ./scripts/generate-store-assets.sh atlas${NC}"
     exit 1
@@ -44,7 +44,7 @@ SOURCE_ICON="apps/flash/public/images/apps/${APP_NAME_LOWER}.png"
 OUTPUT_DIR="apps/extension/store-assets/${APP_NAME_LOWER}"
 
 # Check if source icon exists
-if [ ! -f "$SOURCE_ICON" ]; then
+if [[ ! -f "$SOURCE_ICON" ]]; then
     echo -e "${RED}❌ Source icon not found: $SOURCE_ICON${NC}"
     exit 1
 fi

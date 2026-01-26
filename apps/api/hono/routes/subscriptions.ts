@@ -20,7 +20,7 @@ export const subscriptions = new Hono()
 // DELETE /subscriptions - Cancel and delete subscription
 subscriptions.delete("/", async (c) => {
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   if (!member && !guest) {

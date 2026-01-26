@@ -57,9 +57,7 @@ export const threads = new Hono()
 threads.get("/", async (c) => {
   const request = c.req.raw
   const member = await getMemberAction(c, { full: true, skipCache: true })
-  const guest = !member
-    ? await getGuestAction(c, { skipCache: true })
-    : undefined
+  const guest = await getGuestAction(c, { skipCache: true })
 
   if (!member && !guest) {
     console.log("❌ No valid credentials")
@@ -264,9 +262,7 @@ threads.get("/:id", async (c) => {
   }
 
   const member = await getMemberAction(c, { full: true, skipCache: true })
-  const guest = !member
-    ? await getGuestAction(c, { skipCache: true })
-    : undefined
+  const guest = await getGuestAction(c, { skipCache: true })
 
   const pageSize = Number(c.req.query("pageSize") || "100")
 
@@ -312,9 +308,7 @@ threads.delete("/:id", async (c) => {
   }
 
   const member = await getMemberAction(c, { full: true, skipCache: true })
-  const guest = !member
-    ? await getGuestAction(c, { skipCache: true })
-    : undefined
+  const guest = await getGuestAction(c, { skipCache: true })
 
   if (!member && !guest) {
     return c.json({ error: "Unauthorized", status: 401 }, 401)
@@ -420,9 +414,7 @@ threads.patch("/:id", async (c) => {
   }
 
   const member = await getMemberAction(c, { full: true, skipCache: true })
-  const guest = !member
-    ? await getGuestAction(c, { skipCache: true })
-    : undefined
+  const guest = await getGuestAction(c, { skipCache: true })
 
   if (!member && !guest) {
     return c.json({ error: "Unauthorized", status: 401 }, 401)

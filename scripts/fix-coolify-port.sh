@@ -9,7 +9,7 @@ echo "🔍 Finding what's using port 3010..."
 # Find container using port 3010
 CONTAINER_ID=$(docker ps -q --filter "publish=3010")
 
-if [ -n "$CONTAINER_ID" ]; then
+if [[ -n "$CONTAINER_ID" ]]; then
     echo "📦 Found container using port 3010: $CONTAINER_ID"
     echo "🛑 Stopping container..."
     docker stop $CONTAINER_ID

@@ -117,7 +117,7 @@ echo ""
 echo "🔟 Checking for .env.example files..."
 ENV_DIRS=("apps/api" "apps/web" "apps/ws" "apps/extension" "packages/db")
 for dir in "${ENV_DIRS[@]}"; do
-    if [ -f "$dir/.env.example" ]; then
+    if [[ -f "$dir/.env.example" ]]; then
         report_success "$dir/.env.example exists"
     else
         report_warning "$dir/.env.example missing (create one for contributors)"
@@ -126,7 +126,7 @@ done
 echo ""
 
 echo "=================================================="
-if [ $ISSUES_FOUND -eq 0 ]; then
+if [[ $ISSUES_FOUND -eq 0 ]]; then
     echo -e "${GREEN}🎉 All critical checks passed! Ready for open source.${NC}"
     echo ""
     echo "Recommended next steps:"

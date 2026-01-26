@@ -339,7 +339,7 @@ const REALISTIC_NAMES = [
   "Audrey Peterson",
   "Dylan Gray",
   "Hazel Ramirez",
-  "Isaac James",
+  "Jimmy Isaac",
   "Brooklyn Watson",
   "Levi Brooks",
   "Zoe Kelly",

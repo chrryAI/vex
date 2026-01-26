@@ -14,7 +14,7 @@ echo "This should only be used if you accidentally committed sensitive files."
 echo ""
 read -p "Have you backed up your repo? (yes/no): " backup_confirm
 
-if [ "$backup_confirm" != "yes" ]; then
+if [[ "$backup_confirm" != "yes" ]]; then
     echo "❌ Please backup your repo first, then run this script again."
     exit 1
 fi
@@ -22,7 +22,7 @@ fi
 echo ""
 read -p "Are you sure you want to continue? (yes/no): " continue_confirm
 
-if [ "$continue_confirm" != "yes" ]; then
+if [[ "$continue_confirm" != "yes" ]]; then
     echo "❌ Aborted."
     exit 1
 fi

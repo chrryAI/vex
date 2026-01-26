@@ -92,7 +92,7 @@ export default function SignIn({
     TEST_MEMBER_FINGERPRINTS,
   } = useData()
 
-  const isAppleSignInAvailable = isCapacitor || (!isTauri && isE2E)
+  const isAppleSignInAvailable = true
 
   const { threadId } = useChat()
 
