@@ -449,9 +449,9 @@ export async function getApp({
 
   // TELEMETRY: Log resolution path and performance
   const duration = Date.now() - startTime
-  // console.log(
-  //   `[getApp] ✓ Resolved via "${resolutionPath}" in ${duration}ms | App: ${app.slug} | Store: ${app.store?.slug || "none"}`,
-  // )
+  console.log(
+    `[getApp] ✓ Resolved via "${resolutionPath}" in ${duration}ms | App: ${app.slug} | Store: ${app.store?.slug || "none"}`,
+  )
 
   return app
 }

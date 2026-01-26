@@ -358,11 +358,6 @@ button {
   display: inline-flex;
 }
 
-.button.small,
-button.small {
-  padding: 0.35rem 0.55rem;
-}
-
 .button.xSmall,
 button.xSmall {
   padding: 0.25rem 0.45rem;
