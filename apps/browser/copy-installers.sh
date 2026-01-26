@@ -14,7 +14,7 @@ for app in *.app; do
   cleanname=$(echo "$appname" | sed 's/ 🍒//g' | sed 's/  / /g')
   
   # Only create DMG if it doesn't exist or app is newer
-  if [ ! -f "${cleanname}.dmg" ] || [ "$app" -nt "${cleanname}.dmg" ]; then
+  if [[ ! -f "${cleanname}.dmg" ]] || [ "$app" -nt "${cleanname}.dmg" ]; then
     echo "  Creating ${cleanname}.dmg..."
     hdiutil create -volname "$appname" -srcfolder "$app" -ov -format UDZO "${cleanname}.dmg" > /dev/null 2>&1
   else

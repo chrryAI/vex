@@ -394,8 +394,6 @@ export type CustomPushSubscription = NewCustomPushSubscription & {
   id: string
 }
 
-export let db: PostgresJsDatabase<typeof schema>
-
 export type messageActionType = {
   type: string
   params?: Record<string, any>
@@ -434,12 +432,16 @@ const client = postgres(
       },
 )
 
-if (NODE_ENV !== "production" && !isCI) {
-  if (!global.db) global.db = postgresDrizzle(client, { schema })
-  db = global.db
-} else {
-  db = postgresDrizzle(client, { schema })
+const getDb = () => {
+  if (NODE_ENV !== "production" && !isCI) {
+    if (!global.db) global.db = postgresDrizzle(client, { schema })
+    return global.db
+  } else {
+    return postgresDrizzle(client, { schema })
+  }
 }
+
+export const db: PostgresJsDatabase<typeof schema> = getDb()
 
 export function sanitizeSearchTerm(search: string): string {
   // Remove any non-alphanumeric characters except spaces
