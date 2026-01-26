@@ -14,7 +14,7 @@ tasks.post("/", async (c) => {
   }
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
@@ -39,7 +39,7 @@ tasks.post("/", async (c) => {
 // PATCH /tasks - Update multiple tasks (bulk selection)
 tasks.patch("/", async (c) => {
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
@@ -73,7 +73,7 @@ tasks.patch("/", async (c) => {
 // GET /tasks - Get all tasks for user/guest
 tasks.get("/", async (c) => {
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
@@ -105,7 +105,7 @@ tasks.patch("/:id", async (c) => {
     : []
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
@@ -205,7 +205,7 @@ tasks.delete("/:id", async (c) => {
   }
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)

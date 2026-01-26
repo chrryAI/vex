@@ -8,7 +8,7 @@ export const users = new Hono()
 // GET /users - Search for users or get user by username/email
 users.get("/", async (c) => {
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Unauthorized" }, 401)

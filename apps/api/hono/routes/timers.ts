@@ -10,7 +10,7 @@ timers.get("/:deviceId", async (c) => {
   const deviceId = c.req.param("deviceId")
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Member not found" }, 401)
@@ -49,7 +49,7 @@ timers.patch("/:deviceId", async (c) => {
   }
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Member not found" }, 401)

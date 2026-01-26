@@ -471,7 +471,7 @@ export async function upgradeWebSocket(
   }
 
   const member = await getMemberWithToken(token)
-  const guest = !member ? await getGuestWithToken(token) : undefined
+  const guest = await getGuestWithToken(token)
 
   if (!member && !guest) {
     return new Response("Authentication failed", { status: 401 })
