@@ -200,9 +200,7 @@ session.get("/", async (c) => {
 
   let member = await getMemberAction(c, { full: true, skipCache: true })
 
-  const guest = !member
-    ? await getGuestAction(c, { skipCache: true })
-    : undefined
+  const guest = await getGuestAction(c, { skipCache: true })
 
   const { success } = await checkRateLimit(c.req.raw, {
     member: member ?? undefined,

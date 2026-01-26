@@ -243,7 +243,7 @@ export async function getApp({
   // 3. AUTH RESOLUTION (Sequential for DB Economy)
   const member = await getMember(c, { full: true, skipCache: true })
   // Lazy evaluation: Only fetch guest if member is missing
-  const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
+  const guest = await getGuest(c, { skipCache: true })
 
   // 4. CONTEXT RESOLUTION
   const chrryUrl = chrryUrlParam || getChrryUrl(request)

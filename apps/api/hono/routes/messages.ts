@@ -173,7 +173,7 @@ const getFileUploadQuota = async ({
 // GET /messages - Fetch messages or quota info
 messages.get("/", async (c) => {
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
   if (!member && !guest) {
     console.log("❌ No valid credentials")
     return c.json({ error: "Invalid credentials" }, 401)
@@ -546,7 +546,7 @@ messages.get("/:id", async (c) => {
   if (!id) return c.json({ error: "ID is required" }, 400)
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
@@ -578,7 +578,7 @@ messages.patch("/:id", async (c) => {
   }
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)
@@ -653,7 +653,7 @@ messages.delete("/:id", async (c) => {
   if (!id) return c.json({ error: "ID is required" }, 400)
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Invalid credentials" }, 401)

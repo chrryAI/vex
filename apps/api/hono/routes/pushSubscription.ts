@@ -14,7 +14,7 @@ pushSubscription.post("/", async (c) => {
   const { endpoint } = await c.req.json()
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Unauthorized" }, 401)
@@ -42,7 +42,7 @@ pushSubscription.delete("/", async (c) => {
   }
 
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Unauthorized" }, 401)
@@ -71,7 +71,7 @@ export const pushSubscriptions = new Hono()
 // POST /pushSubscriptions - Create a new push subscription
 pushSubscriptions.post("/", async (c) => {
   const member = await getMember(c)
-  const guest = !member ? await getGuest(c) : undefined
+  const guest = await getGuest(c)
 
   if (!member && !guest) {
     return c.json({ error: "Unauthorized" }, 401)

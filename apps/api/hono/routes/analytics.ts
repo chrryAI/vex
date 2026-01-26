@@ -21,7 +21,7 @@ analytics.post("/grape", async (c) => {
   try {
     // Auth handled by middleware - read from context
     const member = await getMember(c)
-    const guest = !member ? await getGuest(c) : undefined
+    const guest = await getGuest(c)
 
     const isMemoriesEnabled = member?.memoriesEnabled || guest?.memoriesEnabled
 
