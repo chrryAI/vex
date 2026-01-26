@@ -4726,7 +4726,6 @@ export default function Chat({
                         <>
                           {remainingMs ? (
                             <Span
-                              data-testid="hourly-limit-info"
                               data-hourly-left={hourlyUsageLeft}
                               style={styles.hourlyLimit.style}
                             >

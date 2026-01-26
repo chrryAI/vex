@@ -323,7 +323,7 @@ export async function extractAndStoreKnowledge(
         {
           params: {
             userId,
-            nodeName: data.triplets[0].source,
+            nodeName: data?.triplets?.[0]?.source,
           },
         },
       )
