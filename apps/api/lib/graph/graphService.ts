@@ -112,8 +112,14 @@ async function generateDynamicCypher(
 
 // Security: Sanitize labels to prevent Cypher injection
 function sanitize(label: string): string {
-  // Only allow alphanumeric and underscore, remove everything else
-  return label.replace(/[^a-zA-Z0-9_]/g, "") || "Generic"
+  let sanitized = label.replace(/[^a-zA-Z0-9_]/g, "_").trim()
+
+  // Eğer ilk karakter rakamsa başına _ ekle (BAM!)
+  if (/^[0-9]/.test(sanitized)) {
+    sanitized = "_" + sanitized
+  }
+
+  return sanitized || "Generic"
 }
 
 // Store document chunks in Graph
@@ -260,15 +266,15 @@ export async function extractAndStoreKnowledge(
       // FalkorDB client handles array -> vector conversion if supported, or we pass it as parameter
       // Level 5: Advanced versioned storage with temporal tracking
       const vectorQuery = `
-        MERGE (s:${sLabel} {name: $source})
+        MERGE (s:\`${sLabel}\` {name: $source})
         ON CREATE SET s.createdAt = $now, s.embedding = $sourceEmbedding
         ON MATCH SET s.updatedAt = $now, s.embedding = $sourceEmbedding
         
-        MERGE (t:${tLabel} {name: $target})
+        MERGE (t:\`${tLabel}\` {name: $target})
         ON CREATE SET t.createdAt = $now, t.embedding = $targetEmbedding
         ON MATCH SET t.updatedAt = $now, t.embedding = $targetEmbedding
         
-        MERGE (s)-[r:${rType}]->(t)
+        MERGE (s)-[r:\`${rType}\`]->(t)
         ON CREATE SET r.createdAt = $now
         ON MATCH SET r.updatedAt = $now
       `
