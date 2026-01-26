@@ -74,7 +74,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test("App", async ({ page }) => {
+test.only("App", async ({ page }) => {
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
