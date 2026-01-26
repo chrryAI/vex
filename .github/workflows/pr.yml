@@ -87,6 +87,8 @@ env:
 jobs:
   # Safety check: prevent external PRs from triggering deployments
   check-pr:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Check if PR is from fork
@@ -100,24 +102,32 @@ jobs:
 
     # Cancel any in-progress Coolify deployments
   cancel-deployments:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: [check-pr]
     steps:
       - name: Cancel in-progress API deployment
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         continue-on-error: true
         run: |
           echo "🛑 Canceling any in-progress API deployment..."
           curl -X POST "https://coolify.askvex.com/api/v1/applications/z84cko4g4kwss0gockcgkogw/cancel" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
+            -H "Authorization: Bearer $COOLIFY_TOKEN" || echo "No deployment to cancel"
 
       - name: Cancel in-progress Web deployment
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         continue-on-error: true
         run: |
           echo "🛑 Canceling any in-progress Web deployment..."
           curl -X POST "https://coolify.askvex.com/api/v1/applications/xcgo4kw884kkow40wk040sco/cancel" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
+            -H "Authorization: Bearer $COOLIFY_TOKEN" || echo "No deployment to cancel"
 
   build:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: check-pr
     steps:
@@ -156,6 +166,8 @@ jobs:
 
   # Deploy both API and Web sequentially
   deploy:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: [check-pr, build, cancel-deployments]
     steps:
@@ -167,11 +179,9 @@ jobs:
         run: |
           echo "📦 Deploying API app (e2e.chrry.dev)..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
-            -H "Authorization: Bearer "$COOLIFY_TOKEN"
+            -H "Authorization: Bearer $COOLIFY_TOKEN"
 
       - name: Wait for API deployment
-        env:
-          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
         run: |
           echo "⏳ Waiting for API to finish deploying..."
           MAX_ATTEMPTS=150
@@ -179,14 +189,17 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            if curl -f --compressed "${STAGING_API_URL}/api/health" > /dev/null 2>&1; then
-              API_VERSION=$(curl -s --compressed "${STAGING_API_URL}/api/health" | jq -r '.version' 2>/dev/null || echo "unknown")
+            echo "🔍 Checking $STAGING_API_URL/api/health..."
+            if curl -f --compressed $STAGING_API_URL/api/health > /dev/null 2>&1; then
+              API_VERSION=$(curl -s --compressed $STAGING_API_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
               echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$API_VERSION" = "$EXPECTED_VERSION" ]; then
                 echo "✅ API deployment complete!"
                 exit 0
               fi
+            else
+              echo "❌ Health check failed (curl exit code: $?)"
             fi
 
             ATTEMPT=$((ATTEMPT + 1))
@@ -203,11 +216,9 @@ jobs:
         run: |
           echo "📦 Deploying web app (e2e.chrry.ai)..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
-            -H "Authorization: Bearer  "$COOLIFY_TOKEN"
+            -H "Authorization: Bearer $COOLIFY_TOKEN"
 
       - name: Wait for Web deployment
-        env:
-          STAGING_URL: ${{ secrets.STAGING_URL }}
         run: |
           echo "⏳ Waiting for Web to finish deploying..."
           MAX_ATTEMPTS=150
@@ -215,14 +226,17 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            if curl -f --compressed "${STAGING_URL}/api/health" > /dev/null 2>&1; then
-              WEB_VERSION=$(curl -s --compressed "${STAGING_URL}/api/health" | jq -r '.version' 2>/dev/null || echo "unknown")
+            echo "🔍 Checking $STAGING_URL/api/health..."
+            if curl -f --compressed $STAGING_URL/api/health > /dev/null 2>&1; then
+              WEB_VERSION=$(curl -s --compressed $STAGING_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
               echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$WEB_VERSION" = "$EXPECTED_VERSION" ]; then
                 echo "✅ Web deployment complete!"
                 exit 0
               fi
+            else
+              echo "❌ Health check failed (curl exit code: $?)"
             fi
 
             ATTEMPT=$((ATTEMPT + 1))
@@ -236,6 +250,8 @@ jobs:
   # Run Guest E2E tests first (uses shared fingerprints)
 
   e2e-guest-live:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: deploy
     timeout-minutes: 120
@@ -272,6 +288,8 @@ jobs:
 
   # Run Member E2E tests (Grape/Pear flows, spatial nav)
   e2e-member-live:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: e2e-guest-live
     timeout-minutes: 120

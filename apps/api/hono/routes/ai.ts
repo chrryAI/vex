@@ -16,12 +16,11 @@ import {
   and,
   isNull,
   aiAgent,
+  VEX_LIVE_FINGERPRINTS,
   decrypt,
 } from "@repo/db"
 
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
-
-import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
 
 import {
   getMemories,
@@ -68,10 +67,6 @@ import {
 import { getLatestNews, getNewsBySource } from "../../lib/newsFetcher"
 import { streamText, generateText, ModelMessage } from "ai"
 
-import { createDeepSeek } from "@ai-sdk/deepseek"
-import { createOpenAI } from "@ai-sdk/openai"
-import { createAnthropic } from "@ai-sdk/anthropic"
-import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { faker } from "@faker-js/faker"
 import {
   isE2E as isE2EInternal,
@@ -5060,7 +5055,6 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
   // Initialize AI model based on selected agent
   // Priority: app.apiKeys > environment variables
   console.log("🔧 Initializing AI model for:", agent.name)
-  const appApiKeys = app?.apiKeys || {}
 
   let model
 
@@ -5095,127 +5089,6 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
     console.log(
       `✅ Provider created using: ${providerResult.agentName || agent.name}`,
     )
-
-    /*
-    switch (agent.name) {
-      case "deepSeek":
-        console.log("🤖 Using DeepSeek model")
-        const deepseekKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
-        if (appApiKeys.deepseek) {
-          console.log("✅ Using app-specific DeepSeek API key")
-        }
-        if (!deepseekKey) {
-          console.error("❌ DeepSeek API key is required")
-          return c.json(
-            { error: "DeepSeek API key is required" },
-            { status: 500 },
-          )
-        }
-        const deepseekProvider = createDeepSeek({
-          apiKey: deepseekKey,
-        })
-        model = deepseekProvider(agent.modelId)
-        break
-      case "sushi":
-        // console.log("🍣 Using OpenRouter model")
-        // const openrouterKey = appApiKeys.openrouter || OPENROUTER_API_KEY
-        // if (appApiKeys.openrouter) {
-        //   console.log("✅ Using app-specific OpenRouter API key")
-        // }
-        // const provider = createOpenAI({
-        //   apiKey: openrouterKey,
-        //   baseURL: "https://openrouter.ai/api/v1",
-        //   headers: {
-        //     "HTTP-Referer": "https://chrry.ai",
-        //     "X-Title": "Chrry AI Ecosystem",
-        //   },
-        // })
-
-        // model = provider("xiaomi/mimo-v2-flash:free")
-        // model = openrouterProvider(agent.modelId)
-        const sushiKey = appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
-        if (appApiKeys.deepseek) {
-          console.log("✅ Using app-specific DeepSeek API key for Sushi")
-        }
-        if (!sushiKey) {
-          console.error("❌ DeepSeek API key is required for Sushi AI")
-          return c.json(
-            { error: "DeepSeek API key is required for Sushi AI" },
-            { status: 500 },
-          )
-        }
-        const sushiProvider = createDeepSeek({
-          apiKey: sushiKey,
-        })
-        model = sushiProvider(agent.modelId) // "deepseek-reasoner"
-        break
-      case "chatGPT":
-        console.log("🤖 Using ChatGPT model")
-        const openaiKey = appApiKeys.openai || CHATGPT_API_KEY
-        if (appApiKeys.openai) {
-          console.log("✅ Using app-specific OpenAI API key")
-        }
-        const openaiProvider = createOpenAI({
-          apiKey: openaiKey,
-        })
-        model = openaiProvider(agent.modelId)
-
-        break
-      case "claude":
-        console.log("🤖 Using Claude model")
-        const claudeKey = appApiKeys.anthropic || CLAUDE_API_KEY
-        if (appApiKeys.anthropic) {
-          console.log("✅ Using app-specific Claude API key")
-        }
-        const claudeProvider = createAnthropic({
-          apiKey: claudeKey,
-        })
-        model = claudeProvider(agent.modelId)
-        break
-      case "gemini":
-        console.log("🤖 Using Gemini model")
-        const geminiKey = appApiKeys.google || GEMINI_API_KEY
-        if (appApiKeys.google) {
-          console.log("✅ Using app-specific Gemini API key")
-        }
-        const geminiProvider = createGoogleGenerativeAI({
-          apiKey: geminiKey,
-        })
-        model = geminiProvider(agent.modelId)
-        break
-
-      case "perplexity":
-        console.log("🤖 Using Perplexity Sonar model")
-        const perplexityKey =
-          appApiKeys.perplexity || process.env.PERPLEXITY_API_KEY
-        if (appApiKeys.perplexity) {
-          console.log("✅ Using app-specific Perplexity API key")
-        }
-        // Perplexity doesn't have a createPerplexity, uses env var
-        if (appApiKeys.perplexity) {
-          process.env.PERPLEXITY_API_KEY = appApiKeys.perplexity
-        }
-        model = perplexity(agent.modelId) // "sonar"
-        break
-      default:
-        // Parse stored format: "baseURL|apiKey"
-        const [customBaseURL, customApiKey] = agent.apiURL.includes("|")
-          ? agent.apiURL.split("|")
-          : ["https://api.openai.com/v1", agent.apiURL]
-
-        console.log("🔗 Custom model base URL:", customBaseURL)
-        console.log("🎯 Custom model ID:", agent.modelId)
-        console.log("🔑 Has API key:", !!customApiKey)
-
-        const customProvider = createOpenAI({
-          apiKey: customApiKey,
-          baseURL: customBaseURL,
-        })
-        model = customProvider(agent.modelId)
-
-        break
-    }
-    */
   }
 
   // Perform web search if user enabled it, agent supports it, message needs search, and no files attached
@@ -5636,13 +5509,9 @@ Respond in this exact JSON format:
 Make the enhanced prompt contextually aware and optimized for high-quality image generation.`
 
         // Use app-specific DeepSeek key if available
-        const deepseekEnhanceKey =
-          appApiKeys.deepseek || process.env.DEEPSEEK_API_KEY
-        const deepseekEnhanceProvider = createDeepSeek({
-          apiKey: deepseekEnhanceKey,
-        })
+        const deepseekEnhanceProvider = await getModelProvider(app)
         const enhancementResponse = await generateText({
-          model: deepseekEnhanceProvider("deepseek-chat"),
+          model: deepseekEnhanceProvider.provider,
           messages: [{ role: "user", content: enhancementPrompt }],
         })
 
