@@ -56,11 +56,9 @@ app.get("/", async (c) => {
     skipCache: true,
   })
 
-  const guest = !member
-    ? await getGuest(c, {
-        skipCache: true,
-      })
-    : undefined
+  const guest = await getGuest(c, {
+    skipCache: true,
+  })
 
   if (!isE2E && !member && !guest) {
     return c.json({ error: "Unauthorized" }, { status: 401 })
@@ -81,11 +79,9 @@ app.get("/:id", async (c) => {
     skipCache: true,
   })
 
-  const guest = !member
-    ? await getGuest(c, {
-        skipCache: true,
-      })
-    : undefined
+  const guest = await getGuest(c, {
+    skipCache: true,
+  })
 
   if (!isE2E && !member && !guest) {
     return c.json({ error: "Unauthorized" }, { status: 401 })
@@ -108,11 +104,9 @@ app.post("/", async (c) => {
       skipCache: true,
     })
 
-    const guest = !member
-      ? await getGuest(c, {
-          skipCache: true,
-        })
-      : undefined
+    const guest = await getGuest(c, {
+      skipCache: true,
+    })
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
@@ -575,11 +569,9 @@ app.post("/reorder", async (c) => {
     const member = await getMember(c, {
       skipCache: true,
     })
-    const guest = !member
-      ? await getGuest(c, {
-          skipCache: true,
-        })
-      : undefined
+    const guest = await getGuest(c, {
+      skipCache: true,
+    })
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
@@ -778,12 +770,9 @@ app.patch("/:id", async (c) => {
     const member = await getMember(c, {
       skipCache: true,
     })
-    const guest = !member
-      ? await getGuest(c, {
-          skipCache: true,
-        })
-      : undefined
-
+    const guest = await getGuest(c, {
+      skipCache: true,
+    })
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
     }
