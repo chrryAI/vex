@@ -174,12 +174,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Deploy API to Coolify
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
           echo "📦 Deploying API app (e2e.chrry.dev)..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+            -H "Authorization: Bearer $COOLIFY_TOKEN"
 
       - name: Wait for API deployment
+        env:
+          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
         run: |
           echo "⏳ Waiting for API to finish deploying..."
           MAX_ATTEMPTS=150
@@ -187,8 +191,8 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            if curl -f --compressed ${{ env.STAGING_API_URL }}/api/health > /dev/null 2>&1; then
-              API_VERSION=$(curl -s --compressed ${{ env.STAGING_API_URL }}/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
+            if curl -f --compressed $STAGING_API_URL/api/health > /dev/null 2>&1; then
+              API_VERSION=$(curl -s --compressed $STAGING_API_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
               echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$API_VERSION" = "$EXPECTED_VERSION" ]; then
@@ -206,12 +210,16 @@ jobs:
           exit 1
 
       - name: Deploy Web to Coolify
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
           echo "📦 Deploying web app (e2e.chrry.ai)..."
           curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+            -H "Authorization: Bearer $COOLIFY_TOKEN"
 
       - name: Wait for Web deployment
+        env:
+          STAGING_URL: ${{ secrets.STAGING_URL }}
         run: |
           echo "⏳ Waiting for Web to finish deploying..."
           MAX_ATTEMPTS=150
@@ -219,8 +227,8 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            if curl -f --compressed ${{ env.STAGING_URL }}/api/health > /dev/null 2>&1; then
-              WEB_VERSION=$(curl -s --compressed ${{ env.STAGING_URL }}/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
+            if curl -f --compressed $STAGING_URL/api/health > /dev/null 2>&1; then
+              WEB_VERSION=$(curl -s --compressed $STAGING_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
               echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
 
               if [ "$WEB_VERSION" = "$EXPECTED_VERSION" ]; then
