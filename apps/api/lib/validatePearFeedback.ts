@@ -1,4 +1,10 @@
+import { generateText } from "ai"
+import { getApp } from "../hono/lib/getApp"
+import { db, eq, logCreditUsage, pearFeedback } from "@repo/db"
+import { apps, feedbackTransactions } from "@repo/db/src/schema"
+import type { appWithStore } from "@chrryai/chrry/types"
 import { getModelProvider } from "./getModelProvider"
+
 // ==================== TYPES ====================
 interface FeedbackValidationResult {
   isValid: boolean
@@ -291,7 +297,12 @@ async function storeFeedbackInDatabase(
       guestId,
       appId,
       messageId,
-      feedbackType: metrics.feedbackType,
+      feedbackType: metrics.feedbackType as
+        | "suggestion"
+        | "praise"
+        | "complaint"
+        | "bug"
+        | "feature_request",
       category: metrics.category,
       sentimentScore: metrics.sentimentScore,
       specificityScore: metrics.specificityScore,
