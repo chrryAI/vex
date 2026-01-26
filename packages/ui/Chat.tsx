@@ -1785,7 +1785,6 @@ export default function Chat({
 
       setMessage(userMessage)
       // Refresh tasks list after first message to task (to get newly created threadId)
-      !threadId && taskId && fetchTasks()
       // playNotification()
 
       // const clientId = message?.message?.clientId

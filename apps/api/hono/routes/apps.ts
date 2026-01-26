@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import { Hono } from "hono"
-import { getApps, getStore, getStoreInstalls, deleteInstall } from "@repo/db"
+import {
+  getApps,
+  getStore,
+  getStoreInstalls,
+  deleteInstall,
+  isE2E,
+} from "@repo/db"
 import { apps } from "@repo/db/src/schema"
 import { getMember, getGuest } from "../lib/auth"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"
@@ -1100,6 +1106,13 @@ app.delete("/:id", async (c) => {
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (member?.role === "admin" && !isE2E) {
+      return c.json(
+        { error: "Use seed api for deleting apps" },
+        { status: 403 },
+      )
     }
 
     const app = await getAppDb({
