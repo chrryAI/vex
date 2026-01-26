@@ -1,7 +1,7 @@
 name: PR
 on:
   pull_request:
-    branches: [prod]
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -108,18 +108,22 @@ jobs:
     needs: [check-pr]
     steps:
       - name: Cancel in-progress API deployment
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         continue-on-error: true
         run: |
           echo "🛑 Canceling any in-progress API deployment..."
           curl -X POST "https://coolify.askvex.com/api/v1/applications/z84cko4g4kwss0gockcgkogw/cancel" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
+            -H "Authorization: Bearer $COOLIFY_TOKEN" || echo "No deployment to cancel"
 
       - name: Cancel in-progress Web deployment
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         continue-on-error: true
         run: |
           echo "🛑 Canceling any in-progress Web deployment..."
           curl -X POST "https://coolify.askvex.com/api/v1/applications/xcgo4kw884kkow40wk040sco/cancel" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
+            -H "Authorization: Bearer $COOLIFY_TOKEN" || echo "No deployment to cancel"
 
   build:
     permissions:
