@@ -25,9 +25,6 @@ resize.get("/", async (c) => {
     const quality = Number.parseInt(
       c.req.query("q") || c.req.query("quality") || "100",
     )
-    const padding = Number.parseInt(
-      c.req.query("padding") || c.req.query("p") || "0",
-    )
 
     if (!url) {
       c.header("Cache-Control", "no-cache, no-store, must-revalidate")
