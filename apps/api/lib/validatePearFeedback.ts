@@ -71,11 +71,16 @@ Respond ONLY with a JSON object in this exact format:
  */
 function parseAIEvaluation(responseText: string): AIEvaluation | null {
   try {
-    const cleanText = responseText
-      .trim()
-      .replace(/^[^{]*/, "")
-      .replace(/[^}]*$/, "")
+    // Safe extraction: find first { and last } without backtracking regex
+    const trimmed = responseText.trim()
+    const firstBrace = trimmed.indexOf("{")
+    const lastBrace = trimmed.lastIndexOf("}")
 
+    if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
+      return null
+    }
+
+    const cleanText = trimmed.substring(firstBrace, lastBrace + 1)
     const parsed = JSON.parse(cleanText)
 
     // Validate structure
