@@ -1077,6 +1077,7 @@ landing.get("/", (c) => {
         ::view-transition-old(app-title) {
           animation-duration: 0.35s;
           animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+          animation-name: slide-down;
         }
       
         ::view-transition-new(app-title) {
@@ -1084,9 +1085,6 @@ landing.get("/", (c) => {
           animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         }
       
-        ::view-transition-old(app-title) {
-          animation-name: slide-down;
-        }
       
         ::view-transition-new(app-title) {
           animation-name: slide-up;

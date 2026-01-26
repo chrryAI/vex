@@ -1,6 +1,9 @@
 import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
+import { signIn } from "./shared/signIn"
+import { app } from "./shared/app"
+
 import {
   getURL,
   wait,

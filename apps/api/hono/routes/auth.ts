@@ -998,7 +998,7 @@ authRoutes.get("/signin/apple", async (c) => {
     const isProduction = process.env.NODE_ENV === "production"
     c.header(
       "Set-Cookie",
-      `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=None${isProduction ? "; Secure" : ""}`,
+      `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=None; Secure`,
     )
 
     // Build Apple OAuth URL with API server callback
@@ -1137,7 +1137,8 @@ authRoutes.post("/callback/apple", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     // Redirect back to app with auth_token in URL
-    return c.redirect(`${storedCallbackUrl}?auth_token=${authCode}`)
+    const separator = storedCallbackUrl.includes("?") ? "&" : "?"
+    return c.redirect(`${storedCallbackUrl}${separator}auth_token=${authCode}`)
   } catch (error) {
     console.error("Apple OAuth callback error:", error)
     // Fallback to chrry.ai if callback URL not available
