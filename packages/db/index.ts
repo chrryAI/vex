@@ -196,11 +196,6 @@ export const canCollaborate = ({
       )
 }
 
-declare global {
-  // eslint-disable-next-line no-var -- only var works here
-  // eslint-disable-next-line no-unused-vars
-  var db: PostgresJsDatabase<typeof schema> | undefined
-}
 export type user = typeof users.$inferSelect
 export type newUser = typeof users.$inferInsert
 
@@ -219,6 +214,12 @@ export type userWithRelations = user & {
   lastMessage: string | undefined
   messageCount: number | undefined
   subscription: subscription | undefined
+}
+
+declare global {
+  // eslint-disable-next-line no-var -- only var works here
+  // eslint-disable-next-line no-unused-vars
+  var db: PostgresJsDatabase<typeof schema> | undefined
 }
 
 export type analyticsSite = typeof analyticsSites.$inferSelect
@@ -432,10 +433,10 @@ const client = postgres(
       },
 )
 
-const getDb = () => {
+const getDb = (): PostgresJsDatabase<typeof schema> => {
   if (NODE_ENV !== "production" && !isCI) {
-    if (!global.db) global.db = postgresDrizzle(client, { schema })
-    return global.db
+    if (!globalThis.db) global.db = postgresDrizzle(client, { schema })
+    return globalThis.db!
   } else {
     return postgresDrizzle(client, { schema })
   }

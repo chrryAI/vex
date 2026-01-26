@@ -33,7 +33,7 @@ test("App", async ({ page }) => {
   await signIn({ page })
   await app({
     page,
-    isMember,
+    isMember: true,
     isLive,
     slug: "vex",
     nav: [
