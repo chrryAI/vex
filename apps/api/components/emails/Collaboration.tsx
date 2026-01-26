@@ -9,7 +9,7 @@ import {
   Section,
   Text,
 } from "@react-email/components"
-import { thread, user, guest } from "@repo/db"
+import { thread, user } from "@repo/db"
 import { locale } from "@chrryai/chrry/locales"
 import * as React from "react"
 import { SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"

@@ -5055,7 +5055,6 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
   // Initialize AI model based on selected agent
   // Priority: app.apiKeys > environment variables
   console.log("🔧 Initializing AI model for:", agent.name)
-  const appApiKeys = app?.apiKeys || {}
 
   let model
 

@@ -117,9 +117,8 @@ Examples:
 
 // Run if called directly
 if (require.main === module) {
-  generateCommitMessage().then((message) => {
-    console.log(message)
-  })
+  const message = await generateCommitMessage()
+  console.log(message)
 }
 
 module.exports = { generateCommitMessage }
