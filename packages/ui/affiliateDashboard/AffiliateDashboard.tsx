@@ -76,7 +76,7 @@ export default function AffiliateDashboard() {
       <Div style={styles.affiliate.style}>
         <Div style={styles.dashboard.style}>
           <Div style={styles.header.style}>
-            <H1>
+            <H1 style={styles.h1.style}>
               <Button
                 className="link"
                 onClick={() => {

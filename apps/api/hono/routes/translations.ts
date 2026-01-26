@@ -174,16 +174,14 @@ translations.post("/missing", async (c) => {
       newTranslations[key] = defaultValue || key
 
       // Sort keys alphabetically
-      const sortedTranslations = Object.keys(newTranslations)
-        .sort()
-        .reduce(
-          (acc, k) => {
-            const value = newTranslations[k]
-            if (value) acc[k] = value
-            return acc
-          },
-          {} as Record<string, string>,
-        )
+      const sortedTranslations = Object.keys(newTranslations).reduce(
+        (acc, k) => {
+          const value = newTranslations[k]
+          if (value) acc[k] = value
+          return acc
+        },
+        {} as Record<string, string>,
+      )
 
       // Generate JSON content
       const newContent = JSON.stringify(sortedTranslations, null, 2) + "\n"
@@ -207,16 +205,14 @@ translations.post("/missing", async (c) => {
           apiTranslations[key] = defaultValue || key
 
           // Sort keys alphabetically
-          const sortedApiTranslations = Object.keys(apiTranslations)
-            .sort()
-            .reduce(
-              (acc, k) => {
-                const value = apiTranslations[k]
-                if (value) acc[k] = value
-                return acc
-              },
-              {} as Record<string, string>,
-            )
+          const sortedApiTranslations = Object.keys(apiTranslations).reduce(
+            (acc, k) => {
+              const value = apiTranslations[k]
+              if (value) acc[k] = value
+              return acc
+            },
+            {} as Record<string, string>,
+          )
 
           // Write back to API locale file
           const apiContent =

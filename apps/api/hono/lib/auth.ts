@@ -33,10 +33,11 @@ export async function getMember(
   const full = options.full || skipCache
 
   if (byEmail) {
-    const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
     const user = await getUser({ email: byEmail, skipCache, appId })
 
     if (user) {
+      const token = jwt.sign({ email: byEmail }, process.env.NEXTAUTH_SECRET!)
+
       return {
         ...user,
         token,
@@ -51,7 +52,7 @@ export async function getMember(
     // Check for token in Authorization header
     const authHeader = c.req.header("authorization")
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
+    if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "")
 
       // Basic JWT format validation
@@ -121,7 +122,7 @@ export async function getGuest(
 
     const authHeader = c.req.header("authorization")
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
+    if (authHeader?.startsWith("Bearer ")) {
       const fp = authHeader.replace("Bearer ", "")
 
       if (!validate(fp)) {
@@ -241,7 +242,7 @@ export async function getApp({
   const guest = !member ? await getGuest(c, { skipCache: true }) : undefined
 
   // 4. CONTEXT RESOLUTION
-  const chrryUrl = chrryUrlParam || (await getChrryUrl(request))
+  const chrryUrl = chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
 
   // 5. APP RESOLUTION LOGIC (Flattened for Readability)
@@ -448,9 +449,9 @@ export async function getApp({
 
   // TELEMETRY: Log resolution path and performance
   const duration = Date.now() - startTime
-  // console.log(
-  //   `[getApp] ✓ Resolved via "${resolutionPath}" in ${duration}ms | App: ${app.slug} | Store: ${app.store?.slug || "none"}`,
-  // )
+  console.log(
+    `[getApp] ✓ Resolved via "${resolutionPath}" in ${duration}ms | App: ${app.slug} | Store: ${app.store?.slug || "none"}`,
+  )
 
   return app
 }

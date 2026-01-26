@@ -638,9 +638,10 @@ export default function Message({
     id: string
   } | null>(null)
 
-  const requiresLogin = !limitCheck.allowed && user && !user.subscription
+  const requiresLogin = !limitCheck.allowed && !user
   const requiresSubscription =
-    !limitCheck.allowed && guest && !guest.subscription
+    !limitCheck.allowed &&
+    ((guest && !guest.subscription) || (user && !user.subscription))
 
   const [evenChance] = useState(Math.random() >= 0.5)
 

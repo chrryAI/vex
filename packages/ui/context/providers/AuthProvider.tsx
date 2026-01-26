@@ -693,7 +693,9 @@ export function AuthProvider({
 
         setState({ user: undefined, loading: false })
 
-        callbackUrl ? (window.location.href = `${callbackUrl}`) : undefined
+        if (callbackUrl) {
+          window.location.href = `${callbackUrl}`
+        }
         return { success: true }
       } catch (error) {
         console.error("Sign out error:", error)
@@ -849,15 +851,12 @@ export function AuthProvider({
     newApps.forEach((newApp) => {
       const existingApp = existingAppsMap.get(newApp.id)
 
-      if (newApp.name === "MyAgent") {
-        // debugger
-      }
-
-      if (existingApp && hasStoreApps(newApp)) {
-        existingAppsMap.set(newApp.id, newApp)
-      } else {
-        existingAppsMap.set(newApp.id, newApp)
-      }
+      existingAppsMap.set(newApp.id, newApp)
+      // if (existingApp && hasStoreApps(newApp)) {
+      //   existingAppsMap.set(newApp.id, newApp)
+      // } else {
+      //   existingAppsMap.set(newApp.id, newApp)
+      // }
     })
 
     return Array.from(existingAppsMap.values())

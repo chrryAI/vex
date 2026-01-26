@@ -224,14 +224,10 @@ export class ClientRouter {
   prefetch(url: string) {
     if (typeof window === "undefined") return
 
-    try {
-      // HEAD request to warm up cache without downloading full content
-      fetch(url, { method: "HEAD", mode: "no-cors" }).catch(() => {
-        // Silently fail - prefetch is a hint, not critical
-      })
-    } catch {
-      // Ignore prefetch errors
-    }
+    // HEAD request to warm up cache without downloading full content
+    fetch(url, { method: "HEAD", mode: "no-cors" }).catch(() => {
+      // Silently fail - prefetch is a hint, not critical
+    })
   }
 
   /**
