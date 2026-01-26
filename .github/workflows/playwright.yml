@@ -7,9 +7,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: write
-
 #  # Deploy WebSocket server (will use cached build)
 # echo "📦 Deploying WebSocket server (e2e-ws.chrry.dev) - using cached build..."
 # curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=y8kkk00co844wg880cw4w8k0&force=false" \
