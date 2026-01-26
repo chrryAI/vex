@@ -351,7 +351,7 @@ export async function getApp({
   skipCache?: boolean
 }) {
   const startTime = Date.now()
-  let resolutionPath = "unknown"
+  let resolutionPath = ""
 
   // 1. Check cache
   const cachedApp = c.get("app")

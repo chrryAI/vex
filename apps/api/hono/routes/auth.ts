@@ -995,7 +995,6 @@ authRoutes.get("/signin/apple", async (c) => {
 
     // Store state in cookie for verification (Apple uses POST callback)
     // SameSite=None required for Apple's cross-site POST callback
-    const isProduction = process.env.NODE_ENV === "production"
     c.header(
       "Set-Cookie",
       `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=None; Secure`,

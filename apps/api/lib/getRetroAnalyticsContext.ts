@@ -286,7 +286,7 @@ Use this data to answer questions about daily check-in engagement, completion ra
 
 // ==================== MAIN FUNCTION ====================
 
-async function getRetroAnalyticsContext({
+export async function getRetroAnalyticsContext({
   appId,
   userId,
   guestId,
