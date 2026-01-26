@@ -191,6 +191,7 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            echo "🔍 Checking $STAGING_API_URL/api/health..."
             if curl -f --compressed $STAGING_API_URL/api/health > /dev/null 2>&1; then
               API_VERSION=$(curl -s --compressed $STAGING_API_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
               echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
@@ -199,6 +200,8 @@ jobs:
                 echo "✅ API deployment complete!"
                 exit 0
               fi
+            else
+              echo "❌ Health check failed (curl exit code: $?)"
             fi
 
             ATTEMPT=$((ATTEMPT + 1))
@@ -227,6 +230,7 @@ jobs:
           EXPECTED_VERSION=$(jq -r '.version' package.json)
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            echo "🔍 Checking $STAGING_URL/api/health..."
             if curl -f --compressed $STAGING_URL/api/health > /dev/null 2>&1; then
               WEB_VERSION=$(curl -s --compressed $STAGING_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
               echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
@@ -235,6 +239,8 @@ jobs:
                 echo "✅ Web deployment complete!"
                 exit 0
               fi
+            else
+              echo "❌ Health check failed (curl exit code: $?)"
             fi
 
             ATTEMPT=$((ATTEMPT + 1))
