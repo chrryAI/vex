@@ -973,19 +973,6 @@ landing.get("/", (c) => {
         display: flex;
       }
       
-      .column {
-        flex-direction: column;
-        gap: 0.3125rem;
-        display: flex;
-      }
-      
-      .left {
-        margin-right: auto;
-      }
-      
-      .right {
-        margin-left: auto;
-      }
       
       .storeApp:hover {
         outline: 2px solid var(--accent-1);

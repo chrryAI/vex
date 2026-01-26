@@ -229,33 +229,30 @@ sitemap.get("/", async (c) => {
         ]
       : []),
 
-    ...(app?.store?.apps
-      ? app?.store?.apps
-          ?.filter((app) => app.slug !== siteconfig.slug && app.store)
-          .map((app) => {
-            const baseApp = app?.store?.apps.find(
-              (a) => a.id === a.store?.appId,
-            )
+    ...(
+      app?.store?.apps
+        ?.filter((app) => app.slug !== siteconfig.slug && app.store)
+        .map((app) => {
+          const baseApp = app?.store?.apps.find((a) => a.id === a.store?.appId)
 
-            if (!app.store?.domain) {
-              return null
-            }
-            const slug = getAppSlug({
-              targetApp: app,
-              pathname: app.store?.domain,
-              baseApp,
-            })
-
-            if (!slug) {
-              return null
-            }
-            return {
-              url: `${baseUrl}${slug}`,
-              lastModified: new Date(),
-              priority: 0.9,
-            }
+          if (!app.store?.domain) {
+            return null
+          }
+          const slug = getAppSlug({
+            targetApp: app,
+            pathname: app.store?.domain,
+            baseApp,
           })
-      : []
+
+          if (!slug) {
+            return null
+          }
+          return {
+            url: `${baseUrl}${slug}`,
+            lastModified: new Date(),
+            priority: 0.9,
+          }
+        }) || []
     ).filter(Boolean),
   ]
 
