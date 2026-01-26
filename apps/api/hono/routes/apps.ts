@@ -60,9 +60,10 @@ app.get("/", async (c) => {
     skipCache: true,
   })
 
-  if (!isE2E && !member && !guest) {
-    return c.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  if (!isE2E)
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
   // Get final app
   const app = await getApp({ c })
 
@@ -83,9 +84,10 @@ app.get("/:id", async (c) => {
     skipCache: true,
   })
 
-  if (!isE2E && !member && !guest) {
-    return c.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  if (!isE2E)
+    if (!member && !guest) {
+      return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
   const id = c.req.param("id")
 
