@@ -23,6 +23,82 @@ test.beforeEach(async ({ page }) => {
   await clean({ page, isLive })
 })
 
+// Temp moved from member
+test("App", async ({ page }) => {
+  await page.goto(getURL({ isLive, isMember: true }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+
+  await signIn({ page })
+  await app({
+    page,
+    isMember,
+    isLive,
+    slug: "vex",
+    nav: [
+      {
+        name: "vault", // Finance & Budgeting
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Where am I overspending this month?" },
+            { model: "sushi", text: "Compare my spending to last month" },
+            { model: "sushi", text: "What's my biggest expense category?" },
+          ],
+        },
+      },
+      {
+        name: "peach", // Feedback & Insights
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What feedback patterns are emerging?" },
+            {
+              model: "sushi",
+              text: "Which features are users requesting most?",
+            },
+            {
+              model: "sushi",
+              text: "Show me sentiment analysis from recent feedback",
+            },
+          ],
+        },
+      },
+      {
+        name: "bloom", // Productivity & Focus
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What's my most productive time of day?" },
+            { model: "sushi", text: "Show my focus session statistics" },
+            { model: "sushi", text: "Help me plan a deep work session" },
+          ],
+        },
+      },
+
+      {
+        name: "atlas", // Travel & Navigation
+        chat: {
+          prompts: [
+            { model: "sushi", text: "Plan a day trip in Amsterdam" },
+            { model: "sushi", text: "Find the best coffee shops nearby" },
+            { model: "sushi", text: "What's the fastest route to Centraal?" },
+          ],
+        },
+      },
+      {
+        name: "chrry", // App Marketplace
+        chat: {
+          prompts: [
+            { model: "sushi", text: "What are the top-rated apps this week?" },
+            { model: "sushi", text: "Show me apps for productivity" },
+            { model: "sushi", text: "How do I monetize my app idea?" },
+          ],
+        },
+      },
+    ],
+    isNewChat: true,
+  })
+})
+
 test("Subscribe As Guest", async ({ page }) => {
   await page.goto(
     getURL({

@@ -983,16 +983,10 @@ landing.get("/", (c) => {
       ::view-transition-new(root) {
         animation-duration: 0.2s;
         animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      
-      ::view-transition-old(root) {
-        animation-name: slide-down;
-      }
-      
-      ::view-transition-new(root) {
         animation-name: slide-up;
+
       }
-      
+    
       @media (max-width: 600px) {
         ::view-transition-old(root) {
           animation-name: slide-to-left;

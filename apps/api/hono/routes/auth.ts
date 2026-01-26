@@ -918,18 +918,82 @@ authRoutes.post("/native/apple", async (c) => {
 authRoutes.get("/signin/apple", async (c) => {
   try {
     const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
-    const APPLE_REDIRECT_URI =
-      process.env.APPLE_REDIRECT_URI ||
-      `${process.env.VITE_API_URL}/auth/callback/apple`
 
     if (!APPLE_CLIENT_ID) {
       return c.json({ error: "Apple OAuth not configured" }, 500)
     }
 
-    // Generate state for CSRF protection
-    const state = uuidv4()
+    // Allowed domains for callback URLs (security validation)
+    const ALLOWED_DOMAINS = [
+      ".chrry.ai",
+      ".chrry.dev",
+      ".chrry.store",
+      "localhost",
+    ]
 
-    // Store state in cookie for verification
+    // Get callback URLs from query params and ensure they're strings
+    const callbackUrlParam = c.req.query("callbackUrl")
+    // Decode if already encoded (to prevent double-encoding)
+    let callbackUrl =
+      typeof callbackUrlParam === "string" ? callbackUrlParam : undefined
+    if (callbackUrl && callbackUrl.includes("%")) {
+      try {
+        callbackUrl = decodeURIComponent(callbackUrl)
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+    }
+
+    // Validate callback URL belongs to allowed domain
+    if (callbackUrl) {
+      try {
+        const callbackUrlObj = new URL(callbackUrl)
+        const isValidDomain = ALLOWED_DOMAINS.some(
+          (domain) =>
+            callbackUrlObj.hostname === domain.replace(".", "") ||
+            callbackUrlObj.hostname.endsWith(domain),
+        )
+        if (!isValidDomain) {
+          console.error("Invalid callback domain:", callbackUrlObj.hostname)
+          return c.json({ error: "Invalid callback domain" }, 400)
+        }
+      } catch (e) {
+        console.error("Invalid callback URL:", callbackUrl)
+        return c.json({ error: "Invalid callback URL" }, 400)
+      }
+    } else {
+      // Fallback to current origin if no callback URL provided
+      const requestUrl = new URL(c.req.url)
+      callbackUrl = `${requestUrl.protocol}//${requestUrl.host}`
+    }
+
+    const errorUrlParam = c.req.query("errorUrl")
+    let errorUrl = typeof errorUrlParam === "string" ? errorUrlParam : undefined
+    if (errorUrl && errorUrl.includes("%")) {
+      try {
+        errorUrl = decodeURIComponent(errorUrl)
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+    }
+
+    // Fallback for error URL
+    if (!errorUrl) {
+      errorUrl = callbackUrl + "/?error=oauth_failed"
+    }
+
+    // Generate state for CSRF protection and encode callback URLs in it
+    // Format: {stateId}:{callbackUrl}:{errorUrl}
+    const stateId = uuidv4()
+    const stateData = {
+      id: stateId,
+      callbackUrl: callbackUrl || "",
+      errorUrl: errorUrl || "",
+    }
+    // Base64 encode the state to make it URL-safe
+    const state = Buffer.from(JSON.stringify(stateData)).toString("base64url")
+
+    // Store state in cookie for verification (Apple uses POST callback)
     // SameSite=None required for Apple's cross-site POST callback
     const isProduction = process.env.NODE_ENV === "production"
     c.header(
@@ -937,10 +1001,11 @@ authRoutes.get("/signin/apple", async (c) => {
       `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=None${isProduction ? "; Secure" : ""}`,
     )
 
-    // Build Apple OAuth URL
+    // Build Apple OAuth URL with API server callback
+    const redirectUri = `${API_URL}/auth/callback/apple`
     const authUrl = new URL("https://appleid.apple.com/auth/authorize")
     authUrl.searchParams.set("client_id", APPLE_CLIENT_ID)
-    authUrl.searchParams.set("redirect_uri", APPLE_REDIRECT_URI)
+    authUrl.searchParams.set("redirect_uri", redirectUri)
     authUrl.searchParams.set("response_type", "code")
     authUrl.searchParams.set("response_mode", "form_post")
     authUrl.searchParams.set("scope", "name email")
@@ -965,36 +1030,44 @@ authRoutes.post("/callback/apple", async (c) => {
     const state = body.state as string
 
     if (!code || !state) {
-      // Get site config for error redirect
-      const forwardedHost = c.req.header("X-Forwarded-Host")
-      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-      return c.redirect(`${siteconfig.url}/?error=oauth_failed`)
+      return c.redirect(`https://chrry.ai/?error=oauth_failed`)
     }
 
-    // Verify state (CSRF protection)
+    // Decode state to get callback URLs
+    let stateData: { id: string; callbackUrl: string; errorUrl: string }
+    try {
+      const stateJson = Buffer.from(state, "base64url").toString("utf-8")
+      stateData = JSON.parse(stateJson)
+    } catch (e) {
+      console.error("Failed to decode state:", e)
+      return c.redirect(`https://chrry.ai/?error=invalid_state`)
+    }
+
+    const storedCallbackUrl = stateData.callbackUrl
+    const storedErrorUrl = stateData.errorUrl
+
+    if (!code || !storedCallbackUrl || !storedErrorUrl) {
+      return c.redirect(`https://chrry.ai/?error=oauth_failed`)
+    }
+
+    // Verify state cookie (CSRF protection)
     const cookieHeader = c.req.header("cookie")
     const stateMatch = cookieHeader?.match(/oauth_state=([^;]+)/)
     const storedState = stateMatch ? stateMatch[1] : null
 
     if (state !== storedState) {
-      const forwardedHost = c.req.header("X-Forwarded-Host")
-      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-      return c.redirect(`${siteconfig.url}/?error=invalid_state`)
+      return c.redirect(`${storedErrorUrl}?error=invalid_state`)
     }
 
     const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
     const APPLE_CLIENT_SECRET = process.env.APPLE_CLIENT_SECRET
-    const APPLE_REDIRECT_URI =
-      process.env.APPLE_REDIRECT_URI ||
-      `${process.env.VITE_API_URL}/auth/callback/apple`
 
     if (!APPLE_CLIENT_ID || !APPLE_CLIENT_SECRET) {
-      const forwardedHost = c.req.header("X-Forwarded-Host")
-      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-      return c.redirect(`${siteconfig.url}/?error=oauth_not_configured`)
+      return c.redirect(`${storedErrorUrl}?error=oauth_not_configured`)
     }
 
     // Exchange code for tokens
+    const redirectUri = `${API_URL}/auth/callback/apple`
     const tokenResponse = await fetch("https://appleid.apple.com/auth/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -1002,15 +1075,15 @@ authRoutes.post("/callback/apple", async (c) => {
         code,
         client_id: APPLE_CLIENT_ID,
         client_secret: APPLE_CLIENT_SECRET,
-        redirect_uri: APPLE_REDIRECT_URI,
+        redirect_uri: redirectUri,
         grant_type: "authorization_code",
       }),
     })
 
     if (!tokenResponse.ok) {
-      const forwardedHost = c.req.header("X-Forwarded-Host")
-      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-      return c.redirect(`${siteconfig.url}/?error=token_exchange_failed`)
+      const errorText = await tokenResponse.text()
+      console.error("Apple token exchange failed:", errorText)
+      return c.redirect(`${storedErrorUrl}?error=token_exchange_failed`)
     }
 
     const tokens = await tokenResponse.json()
@@ -1051,9 +1124,7 @@ authRoutes.post("/callback/apple", async (c) => {
     }
 
     if (!user) {
-      const forwardedHost = c.req.header("X-Forwarded-Host")
-      const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-      return c.redirect(`${siteconfig.url}/?error=user_creation_failed`)
+      return c.redirect(`${storedErrorUrl}?error=user_creation_failed`)
     }
 
     // Generate JWT token
@@ -1066,14 +1137,11 @@ authRoutes.post("/callback/apple", async (c) => {
     const authCode = await generateExchangeCode(token)
 
     // Redirect back to app with auth_token in URL
-    const forwardedHost = c.req.header("X-Forwarded-Host")
-    const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-    return c.redirect(`${siteconfig.url}/?auth_token=${authCode}`)
+    return c.redirect(`${storedCallbackUrl}?auth_token=${authCode}`)
   } catch (error) {
     console.error("Apple OAuth callback error:", error)
-    const forwardedHost = c.req.header("X-Forwarded-Host")
-    const siteconfig = getSiteConfig(forwardedHost || "chrry.ai")
-    return c.redirect(`${siteconfig.url}/?error=oauth_callback_failed`)
+    // Fallback to chrry.ai if callback URL not available
+    return c.redirect(`https://chrry.ai/?error=oauth_callback_failed`)
   }
 })
 
