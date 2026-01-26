@@ -718,6 +718,8 @@ session.get("/", async (c) => {
         skipCache: true,
       })
 
+      console.log(`🚀 ~ accountApp:`, accountApp?.name)
+
       return c.json({
         locale,
         TEST_MEMBER_FINGERPRINTS,

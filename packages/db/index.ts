@@ -196,11 +196,6 @@ export const canCollaborate = ({
       )
 }
 
-declare global {
-  // eslint-disable-next-line no-var -- only var works here
-  // eslint-disable-next-line no-unused-vars
-  var db: PostgresJsDatabase<typeof schema> | undefined
-}
 export type user = typeof users.$inferSelect
 export type newUser = typeof users.$inferInsert
 
@@ -219,6 +214,12 @@ export type userWithRelations = user & {
   lastMessage: string | undefined
   messageCount: number | undefined
   subscription: subscription | undefined
+}
+
+declare global {
+  // eslint-disable-next-line no-var -- only var works here
+  // eslint-disable-next-line no-unused-vars
+  var db: PostgresJsDatabase<typeof schema> | undefined
 }
 
 export type analyticsSite = typeof analyticsSites.$inferSelect
@@ -394,8 +395,6 @@ export type CustomPushSubscription = NewCustomPushSubscription & {
   id: string
 }
 
-export let db: PostgresJsDatabase<typeof schema>
-
 export type messageActionType = {
   type: string
   params?: Record<string, any>
@@ -434,12 +433,16 @@ const client = postgres(
       },
 )
 
-if (NODE_ENV !== "production" && !isCI) {
-  if (!global.db) global.db = postgresDrizzle(client, { schema })
-  db = global.db
-} else {
-  db = postgresDrizzle(client, { schema })
+const getDb = (): PostgresJsDatabase<typeof schema> => {
+  if (NODE_ENV !== "production" && !isCI) {
+    if (!globalThis.db) global.db = postgresDrizzle(client, { schema })
+    return globalThis.db!
+  } else {
+    return postgresDrizzle(client, { schema })
+  }
 }
+
+export const db: PostgresJsDatabase<typeof schema> = getDb()
 
 export function sanitizeSearchTerm(search: string): string {
   // Remove any non-alphanumeric characters except spaces
