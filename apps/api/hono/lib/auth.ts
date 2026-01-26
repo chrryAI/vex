@@ -4,6 +4,7 @@ import captureException from "../../lib/captureException"
 import { Context } from "hono"
 import { validate } from "uuid"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { getApp } from "./getApp"
 
 // ==================== MAIN FUNCTION ====================
 
@@ -166,3 +167,5 @@ export function getChrryUrl(request: Request): string | undefined {
     return undefined
   }
 }
+
+export { getApp }
