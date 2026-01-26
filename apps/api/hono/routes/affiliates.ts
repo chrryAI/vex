@@ -137,7 +137,7 @@ app.post("/", async (c) => {
     const code = generateAffiliateCode(member.name || member.userName)
 
     // Create new affiliate link
-    const newLink = await createAffiliateLink({
+    await createAffiliateLink({
       userId: member.id,
       code: code,
     })
@@ -169,7 +169,7 @@ function generateAffiliateCode(name: string): string {
   // Create readable code from name + random string
   const cleanName = name
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
+    .replaceAll(/[^a-z0-9]/g, "")
     .substring(0, 8)
 
   const random = Math.random().toString(36).substring(2, 8)

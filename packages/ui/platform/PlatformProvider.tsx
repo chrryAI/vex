@@ -193,7 +193,7 @@ export function PlatformProvider({
     () => {
       // Use passed prop if available (from server cookies)
       if (rest.viewPortWidth) {
-        return parseInt(rest.viewPortWidth, 10)
+        return Number.parseInt(rest.viewPortWidth, 10)
       }
       // Fallback to window on client (initial render)
       if (typeof window !== "undefined") {
@@ -204,7 +204,7 @@ export function PlatformProvider({
     },
   )
 
-  const viewportWidth = parseInt(
+  const viewportWidth = Number.parseInt(
     viewportWidthInternal?.toString() ||
       rest.viewPortWidth?.toString() ||
       "1024",

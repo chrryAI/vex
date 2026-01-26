@@ -53,7 +53,7 @@ export function useOnlineStatus() {
 
     async function checkConnection() {
       const now = Date.now()
-      const lastCheck = parseInt(getStorageItem(THROTTLE_KEY) || "0", 10)
+      const lastCheck = Number.parseInt(getStorageItem(THROTTLE_KEY) || "0", 10)
       const isChecking = getStorageItem(CHECKING_KEY) === "true"
 
       // Throttle: skip if called too soon OR if already checking

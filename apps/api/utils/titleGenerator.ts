@@ -2,9 +2,8 @@ import { isE2E } from "@chrryai/chrry/utils"
 import { generateText } from "ai"
 import { faker } from "@faker-js/faker"
 import captureException from "../lib/captureException"
-import { getThread, getPureApp } from "@repo/db"
+import { getThread, getPureApp, VEX_LIVE_FINGERPRINTS } from "@repo/db"
 import { getModelProvider } from "../lib/getModelProvider"
-import { VEX_LIVE_FINGERPRINTS } from "@repo/db"
 
 export const trimTitle = (str: string) =>
   str.slice(0, 50) + (str.length > 50 ? "..." : "")

@@ -6,8 +6,8 @@
  */
 
 const fs = require("fs")
-const path = require("path")
-const https = require("https")
+const path = require("node:path")
+const https = require("node:https")
 
 const VIDEOS_DIR = path.join(__dirname, "../src/shared/video")
 

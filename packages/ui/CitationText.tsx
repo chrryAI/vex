@@ -35,7 +35,7 @@ export const processTextWithCitations = ({
       parts.push(content.substring(lastIndex, match.index))
     }
 
-    const citationNumber = parseInt(match[1] || "0")
+    const citationNumber = Number.parseInt(match[1] || "0")
     const sourceIndex = citationNumber - 1 // Convert to 0-based index
     const source = webSearchResults[sourceIndex]
 

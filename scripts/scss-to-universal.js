@@ -219,7 +219,7 @@ const convertValue = (property, value) => {
 
   // Pixel values
   if (value.endsWith("px")) {
-    const num = parseInt(value)
+    const num = Number.parseInt(value)
     return num
   }
 
@@ -452,7 +452,7 @@ const parseScss = (scssContent) => {
 
           // IMPORTANT: Check if parent has any actual properties (not just whitespace/nested classes)
           const hasParentProps =
-            cleanContent.trim().replace(/\s+/g, " ").length > 0
+            cleanContent.trim().replaceAll(/\s+/g, " ").length > 0
 
           // Always keep the parent class definition, even if it only has nested modifiers
           // This ensures comma-separated selectors like .userIcon, .agentIcon are both preserved
@@ -523,7 +523,7 @@ const parseScss = (scssContent) => {
 
           // Check if parent has any properties (not just whitespace)
           const hasParentProps =
-            cleanContent.trim().replace(/\s+/g, " ").length > 0
+            cleanContent.trim().replaceAll(/\s+/g, " ").length > 0
           const parentClass = hasParentProps
             ? `.${className} { ${cleanContent.trim()} }\n`
             : ""

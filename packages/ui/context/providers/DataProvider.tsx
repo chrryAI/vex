@@ -202,7 +202,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.11.72"
+  const VERSION = "1.11.81"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -419,7 +419,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
 
     // Pad with zeros if needed and convert each part
     const [major = 0, minor = 0, patch = 0] = parts.map((part) => {
-      const num = parseInt(part.replace(/\D/g, ""), 10)
+      const num = Number.parseInt(part.replace(/\D/g, ""), 10)
       return isNaN(num) ? 0 : num
     })
 

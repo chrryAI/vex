@@ -174,14 +174,16 @@ translations.post("/missing", async (c) => {
       newTranslations[key] = defaultValue || key
 
       // Sort keys alphabetically
-      const sortedTranslations = Object.keys(newTranslations).reduce(
-        (acc, k) => {
-          const value = newTranslations[k]
-          if (value) acc[k] = value
-          return acc
-        },
-        {} as Record<string, string>,
-      )
+      const sortedTranslations = Object.keys(newTranslations)
+        .sort()
+        .reduce(
+          (acc, k) => {
+            const value = newTranslations[k]
+            if (value) acc[k] = value
+            return acc
+          },
+          {} as Record<string, string>,
+        )
 
       // Generate JSON content
       const newContent = JSON.stringify(sortedTranslations, null, 2) + "\n"

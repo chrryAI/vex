@@ -104,7 +104,7 @@ export default function AppProviders({
         const now = Date.now()
 
         // Only show toast if it's been more than 30 seconds since last one
-        if (!lastShown || now - parseInt(lastShown) > 30000) {
+        if (!lastShown || now - Number.parseInt(lastShown) > 30000) {
           setError(
             "Rate limit exceeded. Please wait a moment before trying again.",
           )
