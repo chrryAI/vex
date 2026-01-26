@@ -15,14 +15,14 @@ SERVER_PATH="/var/www/vex.chrry.ai/public/installs"
 LOCAL_PATH="../../public/installs"
 
 # Check if DMGs exist
-if [ ! -d "$LOCAL_PATH" ]; then
+if [[ ! -d "$LOCAL_PATH" ]]; then
   echo "❌ Error: $LOCAL_PATH directory not found"
   echo "   Run ./build-and-release.sh first"
   exit 1
 fi
 
 DMG_COUNT=$(find "$LOCAL_PATH" -name "*.dmg" -type f | wc -l | tr -d ' ')
-if [ "$DMG_COUNT" -eq 0 ]; then
+if [[ "$DMG_COUNT" -eq 0 ]]; then
   echo "❌ Error: No DMG files found in $LOCAL_PATH"
   exit 1
 fi
@@ -71,7 +71,7 @@ fi
 # Upload each DMG file
 echo "Uploading to: $MINIO_ALIAS/$MINIO_BUCKET/$MINIO_PATH/"
 for dmg in "$LOCAL_PATH"/*.dmg; do
-    if [ -f "$dmg" ]; then
+    if [[ -f "$dmg" ]]; then
         filename=$(basename "$dmg")
         echo "  📦 Uploading $filename..."
         mc cp "$dmg" "$MINIO_ALIAS/$MINIO_BUCKET/$MINIO_PATH/$filename" --attr "Content-Type=application/x-apple-diskimage"

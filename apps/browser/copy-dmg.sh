@@ -5,7 +5,7 @@
 
 APP_NAME=$1
 
-if [ -z "$APP_NAME" ]; then
+if [[ -z "$APP_NAME" ]]; then
   echo "❌ Error: App name required"
   echo "Usage: ./copy-dmg.sh <app-name>"
   exit 1
@@ -14,7 +14,7 @@ fi
 # Find the DMG (with emoji in filename)
 DMG_FILE=$(find src-tauri/target/release/bundle/dmg -name "*${APP_NAME}*_0.1.0_aarch64.dmg" -type f | head -n 1)
 
-if [ -z "$DMG_FILE" ]; then
+if [[ -z "$DMG_FILE" ]]; then
   echo "❌ Error: No DMG found for $APP_NAME"
   exit 1
 fi

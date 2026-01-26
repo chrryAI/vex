@@ -92,7 +92,6 @@ export default function Chrry() {
           <div className="header-inner">
             <div className="vex">
               <span>Built by </span>
-
               <a href={"https://vex.chrry.ai"}>
                 <img
                   alt="Vex"

@@ -919,9 +919,6 @@ button.large,
 ::view-transition-new(root) {
   animation-duration: 0.2s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-::view-transition-new(root) {
   animation-name: slide-up;
 }
 
@@ -1012,15 +1009,12 @@ button.large,
   ::view-transition-old(app-title) {
     animation-duration: 0.35s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-name: slide-down;
   }
 
   ::view-transition-new(app-title) {
     animation-duration: 0.35s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  ::view-transition-old(app-title) {
-    animation-name: slide-down;
   }
 
   ::view-transition-new(app-title) {

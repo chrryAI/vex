@@ -175,7 +175,7 @@ translations.post("/missing", async (c) => {
 
       // Sort keys alphabetically
       const sortedTranslations = Object.keys(newTranslations)
-        .sort()
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
         .reduce(
           (acc, k) => {
             const value = newTranslations[k]

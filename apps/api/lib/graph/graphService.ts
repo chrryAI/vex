@@ -310,20 +310,27 @@ export async function extractAndStoreKnowledge(
       )
     }
 
+    const sourceNodeName = data?.triplets?.[0]?.source
+    if (!sourceNodeName) {
+      console.warn(
+        `Cannot connect User ${userId} to entity: missing source in triplets`,
+        data,
+      )
+    }
     // Connect User to these entities if userId present
-    if (userId) {
+    if (userId && sourceNodeName) {
       // Assume User node exists (synced elsewhere or Created here lazily)
       await graph.query(
         `
-            MERGE (u:User {id: $userId})
-            WITH u
-            MATCH (n {name: $nodeName}) 
-            MERGE (u)-[:MENTIONED]->(n)
-        `,
+        MERGE (u:User {id: $userId})
+        WITH u
+        MATCH (n {name: $nodeName}) 
+        MERGE (u)-[:MENTIONED]->(n)
+    `,
         {
           params: {
             userId,
-            nodeName: data.triplets[0].source,
+            nodeName: sourceNodeName,
           },
         },
       )

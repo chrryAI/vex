@@ -23,7 +23,7 @@ build_and_deploy() {
   # Tauri cleans the directory usually, but to be safe we find the aarch64 dmg
   local dmg_file=$(find src-tauri/target/release/bundle/dmg -name "*_0.1.0_aarch64.dmg" -type f | head -n 1)
   
-  if [ -n "$dmg_file" ]; then
+  if [[ -n "$dmg_file" ]]; then
     echo "✅ Found DMG for $app_name: $dmg_file"
     
     # Copy to public/installs with clean name

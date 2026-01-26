@@ -8,7 +8,7 @@ export const stores = new Hono()
 stores.get("/", async (c) => {
   try {
     const member = await getMember(c)
-    const guest = !member ? await getGuest(c) : undefined
+    const guest = await getGuest(c)
 
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)

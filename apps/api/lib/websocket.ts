@@ -122,6 +122,11 @@ async function getMemberWithToken(token: string) {
 }
 
 async function getGuestWithToken(token: string) {
+  if (!validate(token)) {
+    console.log("Member token")
+    return null
+  }
+
   const guest = await getGuest({ fingerprint: token, skipCache: true })
   if (guest) {
     console.log("getGuestWithToken: guest resolved", guest.id)
@@ -471,7 +476,7 @@ export async function upgradeWebSocket(
   }
 
   const member = await getMemberWithToken(token)
-  const guest = !member ? await getGuestWithToken(token) : undefined
+  const guest = await getGuestWithToken(token)
 
   if (!member && !guest) {
     return new Response("Authentication failed", { status: 401 })

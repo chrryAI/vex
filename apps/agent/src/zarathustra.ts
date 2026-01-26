@@ -177,13 +177,13 @@ export async function runSimulation() {
 
 // Execute if run directly
 if (require.main === module) {
-  runSimulation()
-    .then(() => {
-      console.log("✅ Simulation complete")
-      process.exit(0)
-    })
-    .catch((error) => {
-      console.error("❌ Simulation failed:", error)
-      process.exit(1)
-    })
+  try {
+    await runSimulation()
+    console.log("✅ Simulation complete")
+
+    process.exit(0)
+  } catch (error) {
+    console.error("❌ Simulation failed:", error)
+    process.exit(1)
+  }
 }

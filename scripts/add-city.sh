@@ -22,7 +22,7 @@ COLOR=$4
 LANGUAGE=$5
 
 # Validate arguments
-if [ -z "$CITY" ] || [ -z "$COUNTRY" ] || [ -z "$EMOJI" ] || [ -z "$COLOR" ] || [ -z "$LANGUAGE" ]; then
+if [[ -z "$CITY" ]] || [[ -z "$COUNTRY" ]] || [[ -z "$EMOJI" ]] || [[ -z "$COLOR" ]] || [[ -z "$LANGUAGE" ]]; then
   echo -e "${RED}❌ Missing arguments${NC}"
   echo ""
   echo "Usage: ./add-city.sh <city> <country> <emoji> <color> <language>"
@@ -119,7 +119,7 @@ nginx -t
 systemctl reload nginx
 ENDSSH
 
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]; then
   echo -e "${GREEN}✅ Nginx config created${NC}"
 else
   echo -e "${RED}❌ Nginx config failed${NC}"

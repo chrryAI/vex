@@ -152,7 +152,8 @@ export const VEX_LIVE_FINGERPRINTS =
 
 export const isDevelopment = process.env.NODE_ENV === "development"
 
-export const isE2E = process.env.TESTING_ENV === "e2e"
+export const isE2E =
+  process.env.TESTING_ENV === "e2e" || process.env.VITE_TESTING_ENV === "e2e"
 // Define locally to avoid circular dependency issues with chrry/utils
 export const OWNER_CREDITS = 999999
 
@@ -195,11 +196,6 @@ export const canCollaborate = ({
       )
 }
 
-declare global {
-  // eslint-disable-next-line no-var -- only var works here
-  // eslint-disable-next-line no-unused-vars
-  var db: PostgresJsDatabase<typeof schema> | undefined
-}
 export type user = typeof users.$inferSelect
 export type newUser = typeof users.$inferInsert
 
@@ -218,6 +214,12 @@ export type userWithRelations = user & {
   lastMessage: string | undefined
   messageCount: number | undefined
   subscription: subscription | undefined
+}
+
+declare global {
+  // eslint-disable-next-line no-var -- only var works here
+  // eslint-disable-next-line no-unused-vars
+  var db: PostgresJsDatabase<typeof schema> | undefined
 }
 
 export type analyticsSite = typeof analyticsSites.$inferSelect
@@ -393,8 +395,6 @@ export type CustomPushSubscription = NewCustomPushSubscription & {
   id: string
 }
 
-export let db: PostgresJsDatabase<typeof schema>
-
 export type messageActionType = {
   type: string
   params?: Record<string, any>
@@ -433,12 +433,16 @@ const client = postgres(
       },
 )
 
-if (NODE_ENV !== "production" && !isCI) {
-  if (!global.db) global.db = postgresDrizzle(client, { schema })
-  db = global.db
-} else {
-  db = postgresDrizzle(client, { schema })
+const getDb = (): PostgresJsDatabase<typeof schema> => {
+  if (NODE_ENV !== "production" && !isCI) {
+    if (!globalThis.db) global.db = postgresDrizzle(client, { schema })
+    return globalThis.db!
+  } else {
+    return postgresDrizzle(client, { schema })
+  }
 }
+
+export const db: PostgresJsDatabase<typeof schema> = getDb()
 
 export function sanitizeSearchTerm(search: string): string {
   // Remove any non-alphanumeric characters except spaces
@@ -4914,8 +4918,8 @@ export const getApp = async ({
     extends: await getAppExtends({
       appId: app.app.id,
     }),
-    user: app.user,
-    guest: app.guest,
+    user: toSafeUser({ user: app.user }),
+    guest: toSafeGuest({ guest: app.guest }),
     store: storeWithApps,
     placeHolder: await getPlaceHolder({
       appId: app.app.id,
@@ -5067,7 +5071,8 @@ export function toSafeApp({
   return result
 }
 
-export function toSafeUser({ user }: { user: user }) {
+export function toSafeUser({ user }: { user?: user | null }) {
+  if (!user) return
   const result: Partial<user> = {
     id: user.id,
     name: user.name,
@@ -5082,7 +5087,8 @@ export function toSafeUser({ user }: { user: user }) {
   return result
 }
 
-export function toSafeGuest({ guest }: { guest: guest }) {
+export function toSafeGuest({ guest }: { guest?: guest | null }) {
+  if (!guest) return
   const result: Partial<guest> = {
     id: guest.id,
     activeOn: guest.activeOn,

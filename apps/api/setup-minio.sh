@@ -8,14 +8,14 @@ echo "================================="
 echo ""
 
 # Check if .env file exists
-if [ ! -f .env ]; then
+if [[ ! -f .env ]]; then
     echo "❌ .env file not found!"
     echo "Please create a .env file first (you can copy from .env.example)"
     exit 1
 fi
 
 # Check if MinIO variables are set
-if [ -z "$MINIO_SERVER_URL" ] || [ -z "$MINIO_ROOT_USER" ] || [ -z "$MINIO_ROOT_PASSWORD" ]; then
+if [[ -z "$MINIO_SERVER_URL" ]] || [[ -z "$MINIO_ROOT_USER" ]] || [[ -z "$MINIO_ROOT_PASSWORD" ]]; then
     echo "⚠️  MinIO environment variables not found!"
     echo ""
     echo "Please add these from your Coolify MinIO deployment:"
