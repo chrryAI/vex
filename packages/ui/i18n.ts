@@ -48,9 +48,9 @@ let savedLang: string | null
 ;(async () => {
   savedLang = ""
   try {
-    savedLang =
-      (await BrowserInstance?.storage?.local?.get?.("locale")).locale ||
-      storage.getItem("locale")
+    savedLang = BrowserInstance?.storage?.local
+      ? (await BrowserInstance?.storage?.local?.get?.("locale")).locale
+      : storage.getItem("locale")
   } catch (error) {
     console.log("Error reading language from storage:", error)
   }
