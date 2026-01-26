@@ -83,17 +83,18 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
 
   useEffect(() => {
     if (user?.userName) {
-      validate(user.userName)
-        ? (() => {
-            setIsModalOpen(true)
-            setIsUserNameNotSet(false)
-          })()
-        : setUserName(user.userName)
-    } else {
+      if (validate(user.userName)) {
+        setIsModalOpen(true)
+        setIsUserNameNotSet(false)
+      } else {
+        setUserName(user.userName)
+      }
+    } else if (user) {
+      // Only open modal if user exists but has no userName
       setIsModalOpen(true)
       setIsUserNameNotSet(true)
     }
-  }, [user])
+  }, [user?.userName, user?.id, setIsModalOpen])
 
   const isLoggingOut = searchParams.get("logout") === "true" || undefined
   const [isSaving, setIsSaving] = useState(false)

@@ -77,11 +77,7 @@ import {
   ADDITIONAL_CREDITS,
 } from "@chrryai/chrry/utils"
 import Replicate from "replicate"
-import {
-  apps,
-  feedbackTransactions,
-  webSearchResultType,
-} from "@repo/db/src/schema"
+import { webSearchResultType } from "@repo/db/src/schema"
 import {
   CHATGPT_API_KEY,
   CLAUDE_API_KEY,

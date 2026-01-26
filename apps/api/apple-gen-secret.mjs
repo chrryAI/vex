@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { SignJWT } from "jose"
-import { createPrivateKey } from "crypto"
+import { createPrivateKey } from "node:crypto"
 import * as dotenv from "dotenv"
 
 // Load environment variables
@@ -10,7 +10,7 @@ dotenv.config()
 const teamId = process.env.APPLE_TEAM_ID
 const clientId = process.env.APPLE_CLIENT_ID
 const keyId = process.env.APPLE_KEY_ID
-const privateKey = process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, "\n")
+const privateKey = process.env.APPLE_PRIVATE_KEY.replaceAll(/\\n/g, "\n")
 
 // Default expiration is 6 months (180 days)
 const expiresIn = 86400 * 180 // 180 days in seconds
@@ -39,4 +39,4 @@ ${secret}
   }
 }
 
-generateSecret()
+await generateSecret()
