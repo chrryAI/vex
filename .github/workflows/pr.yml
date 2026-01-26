@@ -182,8 +182,6 @@ jobs:
             -H "Authorization: Bearer $COOLIFY_TOKEN"
 
       - name: Wait for API deployment
-        env:
-          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
         run: |
           echo "⏳ Waiting for API to finish deploying..."
           MAX_ATTEMPTS=150
@@ -221,8 +219,6 @@ jobs:
             -H "Authorization: Bearer $COOLIFY_TOKEN"
 
       - name: Wait for Web deployment
-        env:
-          STAGING_URL: ${{ secrets.STAGING_URL }}
         run: |
           echo "⏳ Waiting for Web to finish deploying..."
           MAX_ATTEMPTS=150
