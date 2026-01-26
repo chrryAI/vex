@@ -1,5 +1,4 @@
 import { Context, Next } from "hono"
-import { getCookie } from "hono/cookie"
 import { getSlugFromPathname } from "@chrryai/chrry/utils"
 
 const RESERVED_PATHS = [
