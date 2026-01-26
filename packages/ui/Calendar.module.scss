@@ -168,7 +168,6 @@
   :global(.rbc-time-view),
   :global(.rbc-agenda-view) {
     background: var(--background);
-    border: none;
     border-radius: var(--radius);
     margin-top: toRem.toRem(10);
     margin-bottom: toRem.toRem(20);

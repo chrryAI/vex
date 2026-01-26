@@ -137,7 +137,9 @@ export default function Menu({
     if (!loadingAppId) {
       setLoadingThreadId(null)
       loadingThreadId && router.push(`/threads/${loadingThreadId}`)
-      loadingThreadId && isSmallDevice ? toggleMenu() : null
+      if (loadingThreadId && isSmallDevice) {
+        toggleMenu()
+      }
     }
   }, [loadingAppId])
 
@@ -173,6 +175,12 @@ export default function Menu({
       },
       timeout ?? (isCapacitor ? 300 : timeout),
     )
+  }
+
+  const toggleMenuIfSmallDevice = () => {
+    if (isSmallDevice) {
+      toggleMenu()
+    }
   }
 
   const hasHydrated = useHasHydrated()
@@ -342,7 +350,7 @@ export default function Menu({
                       e.preventDefault()
                       setShowFocus(false)
 
-                      isSmallDevice ? toggleMenu() : null
+                      toggleMenuIfSmallDevice()
                       setIsNewChat(true)
                       reload()
                     }}
@@ -542,7 +550,7 @@ export default function Menu({
                                       addParams({
                                         signIn: "register",
                                       })
-                                      isSmallDevice ? toggleMenu() : null
+                                      toggleMenuIfSmallDevice()
                                       return
                                     }
                                     setCollaborationStatus("active")
@@ -707,7 +715,7 @@ export default function Menu({
                                             threadId: thread.id,
                                           },
                                         })
-                                        isSmallDevice ? toggleMenu() : null
+                                        toggleMenuIfSmallDevice()
                                         return
                                       }
                                       plausible({
@@ -792,7 +800,7 @@ export default function Menu({
                                     plausible({
                                       name: ANALYTICS_EVENTS.LOAD_MORE_THREADS_MENU,
                                     })
-                                    isSmallDevice ? toggleMenu() : null
+                                    toggleMenuIfSmallDevice()
                                     collaborationStatus
                                       ? goToThreads({
                                           collaborationStatus,
@@ -947,7 +955,7 @@ export default function Menu({
                           : "grape"
                         : "watermelon",
                   })
-                  isSmallDevice ? toggleMenu() : null
+                  toggleMenuIfSmallDevice()
                 }}
                 target="_blank"
                 rel="noopener noreferrer"

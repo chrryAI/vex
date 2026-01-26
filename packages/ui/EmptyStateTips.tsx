@@ -31,6 +31,13 @@ export default function EmptyStateTips({
 
   const [animationKey, setAnimationKey] = useState(0)
 
+  const count = useResponsiveCount([
+    { height: 600, count: 2 },
+    { height: 700, count: 3 },
+    { height: 800, count: 4 },
+    { height: 900, count: 5 },
+  ])
+
   useEffect(() => {
     if (!reduceMotion) {
       setAnimationKey((prev) => prev + 1)
@@ -142,13 +149,6 @@ export default function EmptyStateTips({
       },
     ],
   }
-
-  const count = useResponsiveCount([
-    { height: 600, count: 2 },
-    { height: 700, count: 3 },
-    { height: 800, count: 4 },
-    { height: 900, count: 5 },
-  ])
 
   const currentTips = isPear
     ? tips.pear

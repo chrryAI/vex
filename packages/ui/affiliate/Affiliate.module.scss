@@ -67,7 +67,7 @@
   }
 
   &:hover {
-    @media (min: breakpoints.$breakpoint-mobile) {
+    @media (min-width: breakpoints.$breakpoint-mobile) {
       transform: translateY(-2px);
     }
     border-style: solid;
@@ -138,7 +138,7 @@
   }
 
   &:hover {
-    @media (min: breakpoints.$breakpoint-mobile) {
+    @media (min-width: breakpoints.$breakpoint-mobile) {
       transform: translateY(-2px);
     }
   }

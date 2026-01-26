@@ -1277,8 +1277,8 @@ const create = async () => {
   // --- BEGIN meaningful threads/messages/AI agent seeding ---
 
   for (const adminUser of [admin]) {
-    const foo = process.env.TESTING_ENV === "e2e" || isSeedSafe
-    if (foo) return
+    const block = process.env.TESTING_ENV === "e2e" || isSeedSafe
+    if (block) return
 
     // Pool of user prompts and AI responses
     const prompts = [
@@ -1327,8 +1327,8 @@ const create = async () => {
     ]
 
     // --- JSON-like structure for multi-turn threads ---
-    const THREAD_COUNT = foo ? 2 : 20
-    const MESSAGES_PER_THREAD = foo ? (isCI ? 5 : 5) : 50
+    const THREAD_COUNT = block ? 2 : 20
+    const MESSAGES_PER_THREAD = block ? 5 : 50
     const threadsData = Array.from({ length: THREAD_COUNT }).map((_, t) => {
       const usedIndexes = new Set<number>()
       const messages: { role: "user" | "ai"; content: string }[] = []

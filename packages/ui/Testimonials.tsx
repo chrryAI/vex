@@ -39,7 +39,7 @@ const Testimonials = ({ style }: { style?: React.CSSProperties }) => {
               <Quote
                 size={22}
                 strokeWidth={1.25}
-                fill={isDark ? "var(--shade-1)" : "var(--shade-1)"}
+                fill={"var(--shade-1)"}
                 style={{
                   position: "absolute",
                   top: "-7px",

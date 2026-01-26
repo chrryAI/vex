@@ -125,6 +125,20 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
   const [isMounted, setIsMounted] = useState(false)
   const { addHapticFeedback } = useTheme()
 
+  const galleryContainerStyles = usePlatformStyles({
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    marginVertical: 20,
+  })
+
+  const imageStyles = usePlatformStyles({
+    height: 400,
+    width: "auto",
+    borderRadius: 12,
+  })
+
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -298,20 +312,6 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
                   { src: "/images/pwa/peachPWA.png", alt: "Peach PWA" },
                   { src: "/images/pwa/vaultPWA.png", alt: "Vault PWA" },
                 ]
-
-                const galleryContainerStyles = usePlatformStyles({
-                  display: "flex",
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: 16,
-                  marginVertical: 20,
-                })
-
-                const imageStyles = usePlatformStyles({
-                  height: 400,
-                  width: "auto",
-                  borderRadius: 12,
-                })
 
                 return (
                   <Div style={galleryContainerStyles}>
