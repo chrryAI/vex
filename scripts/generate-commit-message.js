@@ -5,21 +5,21 @@
  * Analyzes git diff and generates a meaningful commit message using OpenAI
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
-const OpenAI = require('openai').default
+const { execSync } = require("node:child_process")
+const fs = require("fs")
+const path = require("node:path")
+const OpenAI = require("openai").default
 
 // Load .env file
 function loadEnv() {
-  const envPath = path.join(__dirname, '..', '.env')
+  const envPath = path.join(__dirname, "..", ".env")
   if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf-8')
-    envContent.split('\n').forEach(line => {
+    const envContent = fs.readFileSync(envPath, "utf-8")
+    envContent.split("\n").forEach((line) => {
       const match = line.match(/^([^=:#]+)=(.*)$/)
       if (match) {
         const key = match[1].trim()
-        const value = match[2].trim().replace(/^["']|["']$/g, '')
+        const value = match[2].trim().replace(/^["']|["']$/g, "")
         if (!process.env[key]) {
           process.env[key] = value
         }
@@ -33,28 +33,33 @@ loadEnv()
 async function generateCommitMessage() {
   try {
     // Get staged changes
-    const diff = execSync('git diff --cached --stat', { encoding: 'utf-8' })
-    const diffDetails = execSync('git diff --cached', { encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10 })
+    const diff = execSync("git diff --cached --stat", { encoding: "utf-8" })
+    const diffDetails = execSync("git diff --cached", {
+      encoding: "utf-8",
+      maxBuffer: 1024 * 1024 * 10,
+    })
 
     if (!diff.trim()) {
-      console.error('No staged changes found.')
+      console.error("No staged changes found.")
       process.exit(0)
     }
 
-    console.error('📊 Analyzing changes...\n')
+    console.error("📊 Analyzing changes...\n")
     console.error(diff)
 
     // Check for DeepSeek API key (fallback to OpenAI)
     const apiKey = process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY
-    const baseURL = process.env.DEEPSEEK_API_KEY 
-      ? 'https://api.deepseek.com'
+    const baseURL = process.env.DEEPSEEK_API_KEY
+      ? "https://api.deepseek.com"
       : undefined
 
     if (!apiKey) {
-      console.error('⚠️  DEEPSEEK_API_KEY or OPENAI_API_KEY not found in .env.')
-      console.error('💡 Add DEEPSEEK_API_KEY to .env for AI-generated messages.')
-      console.error('   Get your key at: https://platform.deepseek.com/')
-      return '🚀'
+      console.error("⚠️  DEEPSEEK_API_KEY or OPENAI_API_KEY not found in .env.")
+      console.error(
+        "💡 Add DEEPSEEK_API_KEY to .env for AI-generated messages.",
+      )
+      console.error("   Get your key at: https://platform.deepseek.com/")
+      return "🚀"
     }
 
     const openai = new OpenAI({
@@ -62,14 +67,14 @@ async function generateCommitMessage() {
       baseURL,
     })
 
-    console.error(`🤖 Using ${baseURL ? 'DeepSeek' : 'OpenAI'}...`)
+    console.error(`🤖 Using ${baseURL ? "DeepSeek" : "OpenAI"}...`)
 
     // Generate commit message using AI
     const response = await openai.chat.completions.create({
-      model: process.env.DEEPSEEK_API_KEY ? 'deepseek-chat' : 'gpt-4o-mini',
+      model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gpt-4o-mini",
       messages: [
         {
-          role: 'system',
+          role: "system",
           content: `You are a commit message generator. Analyze git diffs and generate concise, meaningful commit messages.
 
 Rules:
@@ -88,7 +93,7 @@ Examples:
 - "🚀" (for minor/experimental changes)`,
         },
         {
-          role: 'user',
+          role: "user",
           content: `Generate a commit message for these changes:\n\nFiles changed:\n${diff}\n\nDiff preview (first 3000 chars):\n${diffDetails.slice(0, 3000)}`,
         },
       ],
@@ -97,24 +102,23 @@ Examples:
     })
 
     const message = response.choices[0].message.content.trim()
-    console.error('\n✨ Generated commit message:')
+    console.error("\n✨ Generated commit message:")
     console.error(`   "${message}"`)
     console.error(`\n🔍 Debug: Model used: ${response.model}`)
-    console.error(`🔍 Debug: Tokens: ${response.usage?.total_tokens || 'N/A'}`)
-    
+    console.error(`🔍 Debug: Tokens: ${response.usage?.total_tokens || "N/A"}`)
+
     return message
   } catch (error) {
-    console.error('❌ Error generating commit message:', error.message)
-    console.error('🔍 Full error:', error)
-    return '🚀'
+    console.error("❌ Error generating commit message:", error.message)
+    console.error("🔍 Full error:", error)
+    return "🚀"
   }
 }
 
 // Run if called directly
 if (require.main === module) {
-  generateCommitMessage().then(message => {
-    console.log(message)
-  })
+  const message = await generateCommitMessage()
+  console.log(message)
 }
 
 module.exports = { generateCommitMessage }

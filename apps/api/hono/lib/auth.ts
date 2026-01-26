@@ -1,11 +1,15 @@
-import { getUser, getGuest as getGuestDb, getStore } from "@repo/db"
+import {
+  getUser,
+  getGuest as getGuestDb,
+  getStore,
+  getApp as getAppDb,
+} from "@repo/db"
 import jwt from "jsonwebtoken"
 import captureException from "../../lib/captureException"
 import { Context } from "hono"
 import { validate } from "uuid"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
-import { getApp as getAppDb } from "@repo/db"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
 import { appWithStore } from "@chrryai/chrry/types"
 /**

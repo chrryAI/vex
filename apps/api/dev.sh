@@ -23,7 +23,7 @@ while true; do
   fi
   
   # If exit code is 130 (Ctrl+C), exit
-  if [ $exit_code -eq 130 ]; then
+  if [[ $exit_code -eq 130 ]]; then
     echo -e "\n${GREEN}👋 Shutting down...${NC}\n"
     exit 0
   fi

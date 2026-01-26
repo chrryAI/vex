@@ -118,23 +118,23 @@ export function sanitizeForAI(text: string): string {
   return (
     text
       // Remove prompt injection attempts
-      .replace(/ignore\s+previous\s+instructions/gi, "[REDACTED]")
-      .replace(/disregard\s+all\s+previous/gi, "[REDACTED]")
-      .replace(/forget\s+everything/gi, "[REDACTED]")
+      .replaceAll(/ignore\s+previous\s+instructions/gi, "[REDACTED]")
+      .replaceAll(/disregard\s+all\s+previous/gi, "[REDACTED]")
+      .replaceAll(/forget\s+everything/gi, "[REDACTED]")
 
       // Remove role markers that could confuse AI
-      .replace(/system:|assistant:|user:/gi, "[REDACTED]")
-      .replace(/\[INST\]|\[\/INST\]/g, "[REDACTED]")
-      .replace(/<\|im_start\|>|<\|im_end\|>/g, "[REDACTED]")
+      .replaceAll(/system:|assistant:|user:/gi, "[REDACTED]")
+      .replaceAll(/\[INST\]|\[\/INST\]/g, "[REDACTED]")
+      .replaceAll(/<\|im_start\|>|<\|im_end\|>/g, "[REDACTED]")
 
       // Remove potential code execution
-      .replace(/eval\(|exec\(|Function\(/gi, "[REDACTED]")
+      .replaceAll(/eval\(|exec\(|Function\(/gi, "[REDACTED]")
 
       // Limit length to prevent token overflow
       .slice(0, 50000) // Max 50k chars
 
       // Normalize whitespace
-      .replace(/\s+/g, " ")
+      .replaceAll(/\s+/g, " ")
       .trim()
   )
 }

@@ -46,7 +46,7 @@ export const processTextWithCitations = ({
   processedContent = processedContent.replace(
     citationPattern,
     (match, citationNumber) => {
-      const sourceIndex = parseInt(citationNumber) - 1 // Convert to 0-based index
+      const sourceIndex = Number.parseInt(citationNumber) - 1 // Convert to 0-based index
       const source = webSearchResults[sourceIndex]
 
       if (source && source.url && source.url !== "#") {

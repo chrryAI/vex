@@ -199,7 +199,7 @@ messages.get("/", async (c) => {
   }
 
   const messages = await getMessages({
-    pageSize: parseInt(pageSize || "24"),
+    pageSize: Number.parseInt(pageSize || "24"),
     userId: member?.id,
     guestId: guest?.id,
     threadId: threadId || undefined,

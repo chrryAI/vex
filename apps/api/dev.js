@@ -2,8 +2,8 @@
 
 // Suppress ECONNRESET errors globally before Next.js starts
 if (process.env.NODE_ENV !== "production") {
-  const http = require("http")
-  const https = require("https")
+  const http = require("node:http")
+  const https = require("node:https")
 
   // Patch http.Server to add error handlers to all incoming requests
   const originalCreateServer = http.createServer

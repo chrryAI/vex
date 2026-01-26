@@ -71,7 +71,7 @@ function normalizeValue(prop: string, value: any): any {
 
   // Single value conversions
   if (typeof unwrappedValue === "string" && unwrappedValue.endsWith("px")) {
-    return parseInt(unwrappedValue)
+    return Number.parseInt(unwrappedValue)
   }
 
   if (typeof unwrappedValue === "string" && unwrappedValue.endsWith("rem")) {

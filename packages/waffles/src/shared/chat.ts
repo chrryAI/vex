@@ -253,7 +253,7 @@ export const chat = async ({
   // Update credits from page before final assertion (accounts for earned credits)
   const finalCreditsLeft = await getCreditsLeft()
   if (finalCreditsLeft !== null) {
-    credits = parseInt(finalCreditsLeft)
+    credits = Number.parseInt(finalCreditsLeft)
   }
 
   expect(await getCreditsLeft()).toBe(credits.toString())
@@ -916,7 +916,7 @@ export const chat = async ({
       // Update hourlyUsage from page (actual usage count)
       const hourlyUsageLeft = await getHourlyUsageLeft()
       if (hourlyUsageLeft !== null) {
-        hourlyUsage = hourlyLimit - parseInt(hourlyUsageLeft)
+        hourlyUsage = hourlyLimit - Number.parseInt(hourlyUsageLeft)
       }
 
       expect(hourlyUsageLeft).toBe((hourlyLimit - hourlyUsage).toString())
@@ -926,7 +926,7 @@ export const chat = async ({
       // Update credits from page (accounts for earned credits like Pear feedback)
       const creditsLeftFromPage = await getCreditsLeft()
       if (creditsLeftFromPage !== null) {
-        credits = parseInt(creditsLeftFromPage)
+        credits = Number.parseInt(creditsLeftFromPage)
       }
 
       // When credits are shown, assert the credits left value
