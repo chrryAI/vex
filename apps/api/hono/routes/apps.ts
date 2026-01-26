@@ -62,7 +62,7 @@ app.get("/", async (c) => {
       })
     : undefined
 
-  if (!member && !guest) {
+  if (!isE2E && !member && !guest) {
     return c.json({ error: "Unauthorized" }, { status: 401 })
   }
   // Get final app
@@ -87,7 +87,7 @@ app.get("/:id", async (c) => {
       })
     : undefined
 
-  if (!member && !guest) {
+  if (!isE2E && !member && !guest) {
     return c.json({ error: "Unauthorized" }, { status: 401 })
   }
 

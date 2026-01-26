@@ -152,7 +152,8 @@ export const VEX_LIVE_FINGERPRINTS =
 
 export const isDevelopment = process.env.NODE_ENV === "development"
 
-export const isE2E = process.env.TESTING_ENV === "e2e"
+export const isE2E =
+  process.env.TESTING_ENV === "e2e" || process.env.VITE_TESTING_ENV === "e2e"
 // Define locally to avoid circular dependency issues with chrry/utils
 export const OWNER_CREDITS = 999999
 
