@@ -6736,7 +6736,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
           const m = await getMessage({ id: aiMessage.id })
 
-          await notifyOwnerAndCollaborations({
+          notifyOwnerAndCollaborations({
             notifySender: true,
             thread,
             payload: {

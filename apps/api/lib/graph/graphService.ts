@@ -311,7 +311,7 @@ export async function extractAndStoreKnowledge(
     }
 
     // Connect User to these entities if userId present
-    if (userId) {
+    if (userId && data?.triplets?.[0]?.source) {
       // Assume User node exists (synced elsewhere or Created here lazily)
       await graph.query(
         `
