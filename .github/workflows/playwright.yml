@@ -90,6 +90,8 @@ env:
 jobs:
   # Safety check: prevent external PRs from triggering deployments
   check-pr:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Check if PR is from fork
@@ -103,6 +105,8 @@ jobs:
 
     # Cancel any in-progress Coolify deployments
   cancel-deployments:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: [check-pr]
     steps:
@@ -121,6 +125,8 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" || echo "No deployment to cancel"
 
   build:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: check-pr
     steps:
@@ -159,6 +165,8 @@ jobs:
 
   # Deploy both API and Web sequentially
   deploy:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: [check-pr, build, cancel-deployments]
     steps:
@@ -231,6 +239,8 @@ jobs:
   # Run Guest E2E tests first (uses shared fingerprints)
 
   e2e-guest-live:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: deploy
     timeout-minutes: 120
@@ -266,6 +276,8 @@ jobs:
           retention-days: 30
 
   e2e-guest:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: e2e-guest-live
     timeout-minutes: 120
@@ -302,6 +314,8 @@ jobs:
 
   # Run Member E2E tests after guest tests (sequential, uses same fingerprints)
   e2e-member:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: e2e-guest # Wait for guest tests to finish first
     timeout-minutes: 120
