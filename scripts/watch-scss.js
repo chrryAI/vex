@@ -6,7 +6,7 @@
  */
 
 const fs = require("fs")
-const path = require("path")
+const path = require("node:path")
 const { execSync } = require("child_process")
 
 const WATCH_DIR = path.join(__dirname, "../packages/ui")

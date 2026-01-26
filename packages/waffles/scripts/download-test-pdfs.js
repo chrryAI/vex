@@ -6,9 +6,9 @@
  */
 
 const fs = require("fs")
-const path = require("path")
-const https = require("https")
-const http = require("http")
+const path = require("node:path")
+const https = require("node:https")
+const http = require("node:http")
 
 const PDFS_DIR = path.join(__dirname, "../src/shared/pdf")
 

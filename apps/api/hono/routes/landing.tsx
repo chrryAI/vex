@@ -385,10 +385,7 @@ landing.get("/", (c) => {
         padding: 0.25rem 0.45rem;
       }
       
-      .button.large,
-      button.large {
-        padding: 0.5rem 1.25rem;
-      }
+   
       
       button.transparent,
       .button.transparent {

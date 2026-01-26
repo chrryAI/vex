@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.11.76",
+  "version": "1.11.77",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -20,7 +20,7 @@
     "seed": "NODE_ENV=production turbo run seed --filter=@repo/db --log-order=stream",
     "migrate": "NODE_ENV=production turbo run migrate --filter=@repo/db --log-order=stream",
     "e2e": "pnpm run generate && pnpm run migrate && pnpm run seed && turbo run e2e --filter=@chrryai/waffles --log-order=stream",
-    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { require('child_process').execSync('husky', { stdio: 'inherit' }) }\" || true",
+    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') { require('node:child_process').execSync('husky', { stdio: 'inherit' }) }\" || true",
     "pdf": "pandoc PITCH_DECK.md -o PITCH_DECK.pdf --pdf-engine=xelatex -V geometry:margin=1in --toc",
     "check-types": "turbo run check-types",
     "start:flash": "turbo run start --log-order=stream --filter=flash",

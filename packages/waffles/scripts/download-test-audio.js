@@ -6,8 +6,8 @@
  */
 
 const fs = require("fs")
-const path = require("path")
-const https = require("https")
+const path = require("node:path")
+const https = require("node:https")
 
 const AUDIO_DIR = path.join(__dirname, "../src/shared/audio")
 
@@ -72,7 +72,7 @@ function downloadFile(url, dest) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest)
 
-    const protocol = url.startsWith("https") ? https : require("http")
+    const protocol = url.startsWith("https") ? https : require("node:http")
 
     const request = protocol.get(url, (response) => {
       // Handle redirects

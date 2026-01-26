@@ -60,20 +60,6 @@ export async function headersMiddleware(c: Context, next: Next) {
     c.header("x-chrry-url", chrryUrl)
   }
 
-  // Set fingerprint cookie if not already set
-  const existingFingerprintCookie = getCookie(c, "fingerprint")
-  const fingerprint = searchParams.get("fp") || c.req.header("x-fp")
-
-  // if (!existingFingerprintCookie && fingerprint && validate(fingerprint)) {
-  //   setCookie(c, "fingerprint", fingerprint, {
-  //     httpOnly: false,
-  //     secure: process.env.NODE_ENV !== "development",
-  //     sameSite: "Lax",
-  //     maxAge: 60 * 60 * 24 * 400, // 400 days (browser maximum)
-  //     path: "/",
-  //   })
-  // }
-
   // Extract path segments to check for reserved paths
   const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}\//, "/")
   const segments = pathWithoutLocale.split("/").filter(Boolean)

@@ -14,11 +14,11 @@ import { locale } from "@chrryai/chrry/locales"
 import * as React from "react"
 import { SiteConfig, getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 
-interface CollaborationEmailProps {
+type CollaborationEmailProps = {
   origin?: string
   thread: thread
   user?: user
-  guest?: guest
+  // guest?: guest
   language: locale
   type?: "accepted" | "invited"
   siteConfig?: SiteConfig

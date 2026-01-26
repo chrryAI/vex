@@ -358,16 +358,6 @@ button {
   display: inline-flex;
 }
 
-.button.xSmall,
-button.xSmall {
-  padding: 0.25rem 0.45rem;
-}
-
-.button.large,
-button.large {
-  padding: 0.5rem 1.25rem;
-}
-
 button.transparent,
 .button.transparent {
   background-color: var(--background);
@@ -916,39 +906,12 @@ button.large,
   font-size: 1rem;
 }
 
-button.transparent,
-.button.transparent {
-  background-color: var(--background);
-  color: var(--foreground);
-  border: 0.0625rem solid var(--shade-2);
-  box-shadow: none;
-}
-
-button.transparent:hover,
-.button.transparent:hover {
-  background-color: var(--shade-1);
-  color: var(--foreground);
-}
-
-button.inverted,
-.button.inverted {
-  background-color: var(--foreground);
-  color: var(--background);
-  border: 0.0625rem solid var(--shade-2);
-  box-shadow: none;
-}
-
-button.inverted:hover,
-.button.inverted:hover {
-  background-color: var(--shade-7);
-  color: var(--background);
-}
-
 .storeApp:hover {
   outline: 2px solid var(--accent-1);
 }
 
 ::view-transition-old(root) {
+  animation-name: slide-down;
   animation-duration: 0.2s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -956,10 +919,6 @@ button.inverted:hover,
 ::view-transition-new(root) {
   animation-duration: 0.2s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-::view-transition-old(root) {
-  animation-name: slide-down;
 }
 
 ::view-transition-new(root) {
@@ -1036,6 +995,7 @@ button.inverted:hover,
     animation-duration: 0.4s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     overflow: clip;
+    animation-name: scale-down;
   }
 
   ::view-transition-new(app-image) {
@@ -1043,10 +1003,6 @@ button.inverted:hover,
     animation-duration: 0.4s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     overflow: clip;
-  }
-
-  ::view-transition-old(app-image) {
-    animation-name: scale-down;
   }
 
   ::view-transition-new(app-image) {
@@ -1129,18 +1085,12 @@ button.inverted:hover,
   .page-transitions ::view-transition-old(root) {
     animation-duration: 0.2s;
     animation-timing-function: ease-in-out;
+    animation-name: fade-out;
   }
 
   .page-transitions ::view-transition-new(root) {
     animation-duration: 0.2s;
     animation-timing-function: ease-in-out;
-  }
-
-  .page-transitions ::view-transition-old(root) {
-    animation-name: fade-out;
-  }
-
-  .page-transitions ::view-transition-new(root) {
     animation-name: fade-in;
   }
 

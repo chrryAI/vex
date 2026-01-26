@@ -6,7 +6,7 @@
  */
 
 const { spawnSync } = require("child_process")
-const path = require("path")
+const path = require("node:path")
 
 const scripts = [
   { name: "Videos", file: "download-test-videos.js", emoji: "🎬" },
