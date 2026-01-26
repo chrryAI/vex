@@ -154,7 +154,7 @@ export const subscribe = async ({
       timeout: 100000,
     })
 
-    return parseInt(
+    return Number.parseInt(
       (await creditsInfo.getAttribute("data-credits-left", {
         timeout: 1000,
       })) || "0",

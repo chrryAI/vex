@@ -693,7 +693,9 @@ export function AuthProvider({
 
         setState({ user: undefined, loading: false })
 
-        callbackUrl ? (window.location.href = `${callbackUrl}`) : undefined
+        if (callbackUrl) {
+          window.location.href = `${callbackUrl}`
+        }
         return { success: true }
       } catch (error) {
         console.error("Sign out error:", error)
@@ -849,15 +851,12 @@ export function AuthProvider({
     newApps.forEach((newApp) => {
       const existingApp = existingAppsMap.get(newApp.id)
 
-      if (newApp.name === "MyAgent") {
-        // debugger
-      }
-
-      if (existingApp && hasStoreApps(newApp)) {
-        existingAppsMap.set(newApp.id, newApp)
-      } else {
-        existingAppsMap.set(newApp.id, newApp)
-      }
+      existingAppsMap.set(newApp.id, newApp)
+      // if (existingApp && hasStoreApps(newApp)) {
+      //   existingAppsMap.set(newApp.id, newApp)
+      // } else {
+      //   existingAppsMap.set(newApp.id, newApp)
+      // }
     })
 
     return Array.from(existingAppsMap.values())
@@ -2262,9 +2261,9 @@ export function AuthProvider({
             const isDarkColor = (color: string) => {
               // Simple heuristic: if hex color is dark (low luminance)
               const hex = color.replace("#", "")
-              const r = parseInt(hex.substr(0, 2), 16)
-              const g = parseInt(hex.substr(2, 2), 16)
-              const b = parseInt(hex.substr(4, 2), 16)
+              const r = Number.parseInt(hex.substr(0, 2), 16)
+              const g = Number.parseInt(hex.substr(2, 2), 16)
+              const b = Number.parseInt(hex.substr(4, 2), 16)
               const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
               return luminance < 0.5
             }

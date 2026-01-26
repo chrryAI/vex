@@ -13,9 +13,6 @@ const app = new Hono()
 
 // GET - Get affiliate stats for current user
 app.get("/", async (c) => {
-  const hostname = c.req.header("host") || ""
-  const siteConfig = getSiteConfig(hostname)
-
   try {
     const member = await getMember(c)
 

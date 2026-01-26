@@ -4278,16 +4278,21 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           // Process text file for RAG so AI can analyze it
           if (textContent) {
-            await processFileForRAG({
-              content: textContent,
-              filename: file.filename,
-              fileType: "text",
-              fileSizeBytes: file.size,
-              messageId: message.message.id,
-              threadId: thread.id,
-              userId: member?.id,
-              guestId: guest?.id,
-            })
+            try {
+              await processFileForRAG({
+                content: textContent,
+                filename: file.filename,
+                fileType: "text",
+                fileSizeBytes: file.size,
+                messageId: message.message.id,
+                threadId: thread.id,
+                userId: member?.id,
+                guestId: guest?.id,
+              })
+            } catch (error) {
+              captureException(error)
+              console.error("❌ Failed to process text file:", error)
+            }
           }
 
           uploadedFiles.push({
@@ -5266,7 +5271,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
         citations
           .map((match) => {
             const num = match.match(/\[(\d+)\]/)?.[1]
-            return num ? parseInt(num) : null
+            return num ? Number.parseInt(num) : null
           })
           .filter((num) => num !== null),
       ),

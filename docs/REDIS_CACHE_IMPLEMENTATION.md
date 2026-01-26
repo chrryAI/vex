@@ -263,7 +263,7 @@ type CachedGuestData = Awaited<ReturnType<typeof getGuest>>
 // /packages/db/src/redis.ts
 export const redis = new Redis({
   host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379"),
+  port: Number.parseInt(process.env.REDIS_PORT || "6379"),
   password: process.env.REDIS_PASSWORD,
   // ... self-hosted Redis config
 })

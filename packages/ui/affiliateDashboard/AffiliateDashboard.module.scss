@@ -74,7 +74,6 @@
 }
 
 .linkHelp {
-  color: var(--text-secondary);
   font-size: 0.9rem;
   margin-top: toRem.toRem(5);
   color: var(--accent-1);
@@ -149,7 +148,7 @@
     border: 1px dashed var(--shade-2);
 
     &:hover {
-      @media (min: breakpoints.$breakpoint-mobile) {
+      @media (min-width: breakpoints.$breakpoint-mobile) {
         transform: translateY(-2px);
       }
       border-style: solid;
@@ -208,7 +207,7 @@
     min-width: toRem.toRem(130);
 
     &:hover {
-      @media (min: breakpoints.$breakpoint-mobile) {
+      @media (min-width: breakpoints.$breakpoint-mobile) {
         transform: translateY(-2px);
       }
       border-style: solid;

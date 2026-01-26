@@ -202,7 +202,7 @@ export const extractActionFromResponse = (
     ].find((match) => match)
 
     if (indexMatches && indexMatches[1]) {
-      const elementIndex = parseInt(indexMatches[1])
+      const elementIndex = Number.parseInt(indexMatches[1])
       if (!isNaN(elementIndex)) {
         const singleAction = {
           type: "click_element",

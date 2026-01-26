@@ -53,7 +53,7 @@ export async function runSimulation() {
 
   // 2. Check Permissions (The "Invisible Thing")
   const hunterPerms = getAgentPermissions(hunter.level)
-  const writerPerms = getAgentPermissions(writer.level)
+  // const writerPerms = getAgentPermissions(writer.level)
 
   if (!hunterPerms.canManageBusiness) {
     console.log(

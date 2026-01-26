@@ -48,7 +48,7 @@ news.get("/", async (c) => {
     const source = c.req.query("source")
     const category = c.req.query("category")
     const query = c.req.query("query")
-    const limit = parseInt(c.req.query("limit") || "20")
+    const limit = Number.parseInt(c.req.query("limit") || "20")
 
     let newsData
 

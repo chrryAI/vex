@@ -115,7 +115,7 @@ export default function Calendar({
   useWebSocket<{ type: string; data: { event: calendarEvent } }>({
     onMessage: async ({ type, data }) => {
       if (type === "calendar_event") {
-        refetchCalendarEvents()
+        await refetchCalendarEvents()
       }
     },
     token,

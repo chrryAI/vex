@@ -236,7 +236,7 @@ const SkiaLineChart: React.FC<SkiaLineChartProps> = ({
           {datasets[0]?.data?.map((point, index) => {
             const x =
               paddingLeft +
-              (chartWidth / (datasets[0]?.data?.length ?? 1 - 1)) * index
+              (chartWidth / (datasets[0]?.data?.length ?? 1)) * index
             return (
               <Text
                 key={`x-label-${index}`}

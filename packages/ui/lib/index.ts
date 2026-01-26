@@ -92,14 +92,14 @@ export const getImageSrc = ({
     typeof width === "number"
       ? width
       : typeof width === "string" && isNumericString(width)
-        ? parseInt(width, 10)
+        ? Number.parseInt(width, 10)
         : width || size
 
   const finalHeight =
     typeof height === "number"
       ? height
       : typeof height === "string" && isNumericString(height)
-        ? parseInt(height, 10)
+        ? Number.parseInt(height, 10)
         : height || size
 
   const finalSize =

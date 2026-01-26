@@ -711,12 +711,12 @@ export default function Chat({
                 tempDiv.textContent = xmlBufferRef.current // Use textContent to safely extract text
                 const textContent = tempDiv.textContent || ""
                 xmlBufferRef.current = ""
-                return textContent.replace(/\s+/g, " ").trim()
+                return textContent.replaceAll(/\s+/g, " ").trim()
               }
 
               // Extract text content from parsed XML (textContent is safe)
               const textContent = doc.documentElement.textContent || ""
-              const cleanedContent = textContent.replace(/\s+/g, " ").trim()
+              const cleanedContent = textContent.replaceAll(/\s+/g, " ").trim()
 
               xmlBufferRef.current = ""
               return cleanedContent
@@ -726,7 +726,7 @@ export default function Chat({
               const tempDiv = document.createElement("div")
               tempDiv.textContent = xmlBufferRef.current
               const textContent = (tempDiv.textContent || "")
-                .replace(/\s+/g, " ")
+                .replaceAll(/\s+/g, " ")
                 .trim()
               xmlBufferRef.current = ""
               return textContent
@@ -2607,13 +2607,13 @@ export default function Chat({
       else if (placeholder && !input) {
         // Get computed styles
         const styles = window.getComputedStyle(el)
-        const lineHeight = parseInt(styles.lineHeight) || 20
-        const paddingTop = parseInt(styles.paddingTop) || 0
-        const paddingBottom = parseInt(styles.paddingBottom) || 0
+        const lineHeight = Number.parseInt(styles.lineHeight) || 20
+        const paddingTop = Number.parseInt(styles.paddingTop) || 0
+        const paddingBottom = Number.parseInt(styles.paddingBottom) || 0
         const width =
           el.clientWidth -
-          parseInt(styles.paddingLeft || "0") -
-          parseInt(styles.paddingRight || "0")
+          Number.parseInt(styles.paddingLeft || "0") -
+          Number.parseInt(styles.paddingRight || "0")
 
         // Only calculate if we have a valid width
         if (width > 0) {

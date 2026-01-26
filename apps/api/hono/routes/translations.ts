@@ -207,16 +207,14 @@ translations.post("/missing", async (c) => {
           apiTranslations[key] = defaultValue || key
 
           // Sort keys alphabetically
-          const sortedApiTranslations = Object.keys(apiTranslations)
-            .sort()
-            .reduce(
-              (acc, k) => {
-                const value = apiTranslations[k]
-                if (value) acc[k] = value
-                return acc
-              },
-              {} as Record<string, string>,
-            )
+          const sortedApiTranslations = Object.keys(apiTranslations).reduce(
+            (acc, k) => {
+              const value = apiTranslations[k]
+              if (value) acc[k] = value
+              return acc
+            },
+            {} as Record<string, string>,
+          )
 
           // Write back to API locale file
           const apiContent =

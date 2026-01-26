@@ -27,38 +27,6 @@ let socket: WebSocket | null = null
 
 let connectionPromise: Promise<void> | null = null
 
-async function ensureConnected(): Promise<WebSocket> {
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    return socket
-  }
-
-  if (!connectionPromise) {
-    connectionPromise = new Promise<void>((resolve, reject) => {
-      socket = new WebSocket(WS_URL)
-
-      const timeout = setTimeout(() => {
-        reject(new Error("Connection timeout"))
-        connectionPromise = null
-      }, 5000)
-
-      socket.onopen = () => {
-        clearTimeout(timeout)
-        resolve()
-        connectionPromise = null
-      }
-
-      socket.onerror = (err) => {
-        clearTimeout(timeout)
-        reject(err)
-        connectionPromise = null
-      }
-    })
-  }
-
-  await connectionPromise
-  return socket!
-}
-
 import { notifyClients } from "./wsClients"
 
 export async function notify(

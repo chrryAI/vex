@@ -1,7 +1,7 @@
 import { FalkorDB } from "falkordb"
 
 const FALKORDB_HOST = process.env.FALKORDB_HOST || "localhost"
-const FALKORDB_PORT = parseInt(process.env.FALKORDB_PORT || "6379")
+const FALKORDB_PORT = Number.parseInt(process.env.FALKORDB_PORT || "6379")
 
 // Initialize FalkorDB connection
 // Note: In production, you might want to reuse a connection from a pool or similar

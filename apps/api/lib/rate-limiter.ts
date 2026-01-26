@@ -86,7 +86,7 @@ export async function fetchWithRetry(
       if (response.status === 429) {
         const retryAfter = response.headers.get("retry-after")
         const delay = retryAfter
-          ? parseInt(retryAfter) * 1000
+          ? Number.parseInt(retryAfter) * 1000
           : Math.pow(2, attempt) * 1000
 
         console.warn(

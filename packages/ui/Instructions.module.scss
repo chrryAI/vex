@@ -85,8 +85,6 @@
 
 .charLeft,
 .maxCharCount {
-  color: var(--shade-6);
-  font-size: toRem.toRem(12);
   color: var(--accent-4);
   font-size: toRem.toRem(11);
   font-weight: normal;
@@ -230,7 +228,6 @@
   margin-bottom: toRem.toRem(8);
   background: var(--shade-1);
   border: toRem.toRem(1) solid var(--shade-2);
-  margin: toRem.toRem(-2.75) toRem.toRem(-10) 0 toRem.toRem(-10);
   border-radius: toRem.toRem(16);
   margin: toRem.toRem(12) 0 0 0;
 }

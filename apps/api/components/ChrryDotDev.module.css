@@ -358,11 +358,6 @@ button {
   display: inline-flex;
 }
 
-.button.small,
-button.small {
-  padding: 0.35rem 0.55rem;
-}
-
 .button.xSmall,
 button.xSmall {
   padding: 0.25rem 0.45rem;
@@ -727,7 +722,6 @@ button.favorite:hover svg {
 
 .dateTimeInput {
   margin-left: auto;
-  font-size: 13px;
   transition: all 0.2s;
   font-family: var(--font-mono) !important;
   font-size: 13.5px !important;
@@ -950,27 +944,6 @@ button.inverted:hover,
   color: var(--background);
 }
 
-.row {
-  flex-flow: wrap;
-  align-items: center;
-  gap: 0.3125rem;
-  display: flex;
-}
-
-.column {
-  flex-direction: column;
-  gap: 0.3125rem;
-  display: flex;
-}
-
-.left {
-  margin-right: auto;
-}
-
-.right {
-  margin-left: auto;
-}
-
 .storeApp:hover {
   outline: 2px solid var(--accent-1);
 }
@@ -1139,15 +1112,12 @@ button.inverted:hover,
   ::view-transition-old(content-section) {
     animation-duration: 0.2s;
     animation-timing-function: ease-in-out;
+    animation-name: fade-out;
   }
 
   ::view-transition-new(content-section) {
     animation-duration: 0.2s;
     animation-timing-function: ease-in-out;
-  }
-
-  ::view-transition-old(content-section) {
-    animation-name: fade-out;
   }
 
   ::view-transition-new(content-section) {
@@ -1213,10 +1183,6 @@ button.inverted:hover,
   margin-top: 0.625rem;
   margin-bottom: 1.25rem;
   display: flex;
-}
-
-.link {
-  display: inline-flex;
 }
 
 .features {
