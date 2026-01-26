@@ -288,9 +288,7 @@ export default function Agent({
     }
 
     const newTools = Array.from(requiredTools)
-    if (
-      JSON.stringify(currentTools.sort()) !== JSON.stringify(newTools.sort())
-    ) {
+    if (JSON.stringify(currentTools) !== JSON.stringify(newTools)) {
       appForm?.setValue("tools", newTools)
     }
   }, [

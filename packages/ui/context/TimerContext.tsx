@@ -330,10 +330,7 @@ export function TimerContextProvider({
     if (!tasks?.tasks || !Array.isArray(tasks.tasks)) return
 
     // Create a stable key from task IDs to detect actual changes
-    const taskIdsKey = tasks.tasks
-      .map((t) => t.id)
-      .sort()
-      .join(",")
+    const taskIdsKey = tasks.tasks.map((t) => t.id).join(",")
 
     // Skip if tasks haven't actually changed
     if (lastFilteredTasksRef.current === taskIdsKey) return

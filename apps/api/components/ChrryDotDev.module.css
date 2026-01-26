@@ -727,7 +727,6 @@ button.favorite:hover svg {
 
 .dateTimeInput {
   margin-left: auto;
-  font-size: 13px;
   transition: all 0.2s;
   font-family: var(--font-mono) !important;
   font-size: 13.5px !important;
@@ -1139,15 +1138,12 @@ button.inverted:hover,
   ::view-transition-old(content-section) {
     animation-duration: 0.2s;
     animation-timing-function: ease-in-out;
+    animation-name: fade-out;
   }
 
   ::view-transition-new(content-section) {
     animation-duration: 0.2s;
     animation-timing-function: ease-in-out;
-  }
-
-  ::view-transition-old(content-section) {
-    animation-name: fade-out;
   }
 
   ::view-transition-new(content-section) {
@@ -1213,10 +1209,6 @@ button.inverted:hover,
   margin-top: 0.625rem;
   margin-bottom: 1.25rem;
   display: flex;
-}
-
-.link {
-  display: inline-flex;
 }
 
 .features {

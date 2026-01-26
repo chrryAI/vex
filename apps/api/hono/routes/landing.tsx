@@ -744,7 +744,6 @@ landing.get("/", (c) => {
       
       .dateTimeInput {
         margin-left: auto;
-        font-size: 13px;
         transition: all 0.2s;
         font-family: var(--font-mono) !important;
         font-size: 13.5px !important;
@@ -1156,15 +1155,12 @@ landing.get("/", (c) => {
         ::view-transition-old(content-section) {
           animation-duration: 0.2s;
           animation-timing-function: ease-in-out;
+          animation-name: fade-out;
         }
       
         ::view-transition-new(content-section) {
           animation-duration: 0.2s;
           animation-timing-function: ease-in-out;
-        }
-      
-        ::view-transition-old(content-section) {
-          animation-name: fade-out;
         }
       
         ::view-transition-new(content-section) {
