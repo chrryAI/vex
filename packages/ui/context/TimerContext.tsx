@@ -330,10 +330,7 @@ export function TimerContextProvider({
     if (!tasks?.tasks || !Array.isArray(tasks.tasks)) return
 
     // Create a stable key from task IDs to detect actual changes
-    const taskIdsKey = tasks.tasks
-      .map((t) => t.id)
-      .sort()
-      .join(",")
+    const taskIdsKey = tasks.tasks.map((t) => t.id).join(",")
 
     // Skip if tasks haven't actually changed
     if (lastFilteredTasksRef.current === taskIdsKey) return
@@ -563,97 +560,51 @@ export function TimerContextProvider({
   }, [fingerprint, token, user, timer, isLoadingTimer])
 
   useEffect(() => {
-    if (!token) return
-    if (isCountingDown && selectedTasks?.length && !isPaused) {
-      const currentDay = new Date()
+    if (!token || !isCountingDown || isPaused || !selectedTasks?.length) return
 
-      const currentElapsed = startTime
-        ? Math.floor((Date.now() - startTime) / 1000)
-        : 0
+    const currentElapsed = startTime
+      ? Math.floor((Date.now() - startTime) / 1000)
+      : 0
+    if (currentElapsed === 0) return
 
-      if (currentElapsed === 0) {
-        return
-      }
+    const currentDay = new Date()
+    const selectedIds = new Set(selectedTasks.map((t) => t.id))
 
-      // Collect updates to apply after setTasks completes
-      const updatedSelectedTasks: Task[] = []
+    // TEK SEFERDE TÜMÜNÜ GÜNCELLEME (BAM!)
+    setTasks((prevTasks) => {
+      if (!prevTasks) return prevTasks
 
-      for (const selectedTask of selectedTasks) {
-        let updatedTotal: any = null
+      const newTasksList = prevTasks.tasks.map((task) => {
+        // Sadece seçili olanları mürle
+        if (!selectedIds.has(task.id)) return task
 
-        setTasks((prevTasks) => {
-          if (!prevTasks) return prevTasks
+        const hasDay = task.total?.find((t) =>
+          isSameDay(new Date(t.date), currentDay),
+        )
 
-          const taskExists = prevTasks.tasks.find(
-            (t) => t.id === selectedTask.id,
-          )
-          if (!taskExists) {
-            console.warn(
-              `❌ Task ${selectedTask.id.substring(0, 8)} not found in tasks state!`,
+        const updatedTotal = hasDay
+          ? task.total?.map((t) =>
+              isSameDay(new Date(t.date), currentDay)
+                ? { ...t, count: t.count + 1 }
+                : t,
             )
-            return prevTasks
-          }
+          : [
+              ...(task.total || []),
+              { date: currentDay.toISOString(), count: 1 },
+            ]
 
-          return {
-            ...prevTasks,
-            tasks: prevTasks.tasks.map((task) => {
-              if (task.id === selectedTask.id) {
-                const hasDay = task.total?.find?.((t) =>
-                  isSameDay(new Date(t.date), currentDay),
-                )
-
-                const total = hasDay
-                  ? task.total?.map((t) => {
-                      return {
-                        ...t,
-                        count: isSameDay(new Date(t.date), currentDay)
-                          ? t.count + 1
-                          : t.count,
-                      }
-                    })
-                  : task.total?.length
-                    ? [
-                        ...task.total,
-                        { date: currentDay.toISOString(), count: 1 },
-                      ]
-                    : [{ date: currentDay.toISOString(), count: 1 }]
-
-                // Store the updated total to apply later
-                updatedTotal = total
-
-                return {
-                  ...task,
-                  total,
-                }
-              }
-              return task
-            }),
-          }
-        })
-      }
-
-      // Get updated tasks from tasks state instead of using stale selectedTask values
-      setTasks((prevTasks) => {
-        if (!prevTasks) return prevTasks
-
-        const updatedTasks = selectedTasks
-          .map((st) => prevTasks.tasks.find((t) => t.id === st.id))
-          .filter((t): t is Task => t !== undefined)
-
-        if (updatedTasks.length > 0) {
-          setSelectedTasks(updatedTasks)
-        }
-
-        return prevTasks // No change to tasks state
+        return { ...task, total: updatedTotal }
       })
-    }
-    // Use stable key from task IDs to detect selection changes without causing infinite loop
+
+      // Side Effect'i burada değil, başka bir useEffect'te yakalamak en Sato'su!
+      return { ...prevTasks, tasks: newTasksList }
+    })
   }, [
     time,
     isCountingDown,
     isPaused,
     token,
-    selectedTasks?.map((t) => t.id).join(","), // Stable key from IDs
+    selectedTasks?.map((t) => t.id).join(","),
   ])
 
   // Use ref to plausible timer sync - only sync on state changes, not every second

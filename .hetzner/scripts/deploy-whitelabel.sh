@@ -19,7 +19,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Check arguments
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo -e "${RED}Usage: $0 <subdomain> <port>${NC}"
     echo -e "${YELLOW}Example: $0 burn 3009${NC}"
     exit 1

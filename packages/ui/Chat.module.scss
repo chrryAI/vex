@@ -3,7 +3,6 @@
 @use "./toRem.scss";
 
 .chatContainerWrapper {
-  display: flex;
   position: fixed;
   z-index: 1000;
   bottom: toRem.toRem(3);
@@ -48,7 +47,6 @@
   margin-bottom: toRem.toRem(3);
   background-color: var(--shade-1-transparent);
   padding-right: toRem.toRem(19);
-  position: relative;
 
   transition:
     height 0.2s ease-out,
@@ -807,7 +805,6 @@
   background-color: #000;
   width: toRem.toRem(34);
   height: toRem.toRem(34);
-  display: inline-flex;
   border-radius: 50%;
   display: flex;
   align-items: center;

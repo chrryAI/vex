@@ -70,7 +70,7 @@ export default function Account({ style }: { style?: React.CSSProperties }) {
   const searchParams = useSearchParams()
   const innerRef = React.useRef<HTMLDivElement>(null)
   const isExtension = checkIsExtension()
-  const isAppleAvailable = false && isExtension
+  const isAppleAvailable = false
   const isOAuthAccountNotLinkedError =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("error") ===

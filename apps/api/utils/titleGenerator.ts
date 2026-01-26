@@ -101,8 +101,8 @@ Title:`
     // Clean and truncate the title
     const cleanTitle = text
       .trim()
-      .replace(/^["']|["']$/g, "") // Remove quotes
-      .substring(0, 50) // Ensure max length
+      .replace(/(^["'])|(["']$)/g, "")
+      .substring(0, 50)
       .trim()
 
     return cleanTitle || "New Conversation"
@@ -201,8 +201,8 @@ Write in ${languageName}. Return only the instruction text:`
     // Clean and validate the instructions
     const cleanInstructions = text
       .trim()
-      .replace(/^["']|["']$/g, "") // Remove quotes
-      .substring(0, 500) // Ensure max length
+      .replace(/(^["'])|(["']$)/g, "")
+      .substring(0, 500)
       .trim()
 
     return (

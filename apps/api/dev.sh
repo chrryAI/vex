@@ -17,7 +17,7 @@ while true; do
   exit_code=$?
   
   # If exit code is 0 or 130 (Ctrl+C), exit cleanly
-  if [ $exit_code -eq 0 ] || [ $exit_code -eq 130 ]; then
+  if [[ $exit_code -eq 0 ]] || [[ $exit_code -eq 130 ]]; then
     echo -e "\n${GREEN}👋 Server stopped cleanly${NC}\n"
     exit 0
   fi

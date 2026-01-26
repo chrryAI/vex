@@ -275,14 +275,8 @@ export default function App({
 
   useEffect(() => {
     // Only update if app IDs actually changed (prevent infinite loop)
-    const currentIds = displayedApps
-      .map((a) => a.id)
-      .sort()
-      .join(",")
-    const newIds = appsInternal
-      .map((a) => a.id)
-      .sort()
-      .join(",")
+    const currentIds = displayedApps.map((a) => a.id).join(",")
+    const newIds = appsInternal.map((a) => a.id).join(",")
 
     if (currentIds !== newIds) {
       setDisplayedApps(appsInternal)

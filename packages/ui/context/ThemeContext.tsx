@@ -40,9 +40,9 @@ export type ColorScheme = keyof typeof COLORS
 export type themeType = "dark" | "light"
 
 interface ThemeContextValue {
-  playLongPop: () => void
-  playHardPopClick: () => void
-  playSillyPopCluster: () => void
+  playLongPop: () => Promise<void>
+  playHardPopClick: () => Promise<void>
+  playSillyPopCluster: () => Promise<void>
   isThemeLocked: boolean
   setIsThemeLocked: (isThemeLocked: boolean) => void
   isSmallDevice: boolean
@@ -62,7 +62,7 @@ interface ThemeContextValue {
   enableSound: boolean
   addHapticFeedback: (intensity?: number) => void
   setEnableSound: (enableSound: boolean) => void
-  playNotification: () => void
+  playNotification: () => Promise<void>
   resolveColor: (cssVar: string) => string
   resolveStyles: (style: Record<string, any>) => Record<string, any>
 }
