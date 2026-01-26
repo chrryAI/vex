@@ -93,7 +93,6 @@ collaborations.post("/", async (c) => {
         thread={thread}
         type="invited"
         user={member}
-        guest={guest}
         language={member?.language || defaultLocale}
       />,
     )

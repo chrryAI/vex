@@ -4,7 +4,6 @@ import { compare, hash } from "bcrypt"
 import { getUser, createUser, getStore } from "@repo/db"
 import { v4 as uuidv4 } from "uuid"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
-import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { randomBytes } from "crypto"
 import { db, authExchangeCodes } from "@repo/db"
 import { eq, and, gt } from "drizzle-orm"
@@ -151,15 +150,12 @@ function getCookieDomain(hostname: string): string {
   }
 }
 
-function buildCookieString(
-  token: string,
-  options: CookieOptions = { sameSite: "Lax" },
-): string {
+function buildCookieString(token: string, options: CookieOptions): string {
   const isDev = process.env.NODE_ENV === "development"
   const secureFlag = (options.secure ?? !isDev) ? "; Secure" : ""
   const domainFlag = options.domain || ""
 
-  return `token=${token}; HttpOnly; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=${options.sameSite}${domainFlag}${secureFlag}`
+  return `token=${token}; HttpOnly; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=${options.sameSite || "Lax"}${domainFlag}${secureFlag}`
 }
 
 function setCookieFromHost(
@@ -190,7 +186,7 @@ function setCookieFromUrl(
     )
   } catch (e) {
     console.error("Failed to parse callback URL for cookie domain:", e)
-    c.header("Set-Cookie", buildCookieString(token))
+    c.header("Set-Cookie", buildCookieString(token, { sameSite: "Lax" }))
   }
 }
 
@@ -303,7 +299,7 @@ function extractTokenFromRequest(c: Context): string | null {
 
   if (cookieHeader) {
     const match = cookieHeader.match(/token=([^;]+)/)
-    return match ? match[1] : null
+    return match?.[1] ?? null
   }
 
   if (authHeader?.startsWith("Bearer ")) {
@@ -637,7 +633,199 @@ authRoutes.get("/callback/google", async (c) => {
   }
 })
 
-// Similar patterns for Apple and GitHub...
-// (I'll skip them to save space, but they follow the same pattern)
+// ==================== APPLE OAUTH ====================
+
+authRoutes.post("/native/apple", async (c) => {
+  try {
+    const { idToken, name: nameData } = await c.req.json()
+    const APPLE_CLIENT_ID = process.env.APPLE_IOS_CLIENT_ID
+
+    if (!idToken || !APPLE_CLIENT_ID) {
+      return c.json({ error: "Invalid request" }, 400)
+    }
+
+    const appleSignin = (await import("apple-signin-auth")).default
+    const isDevelopment = process.env.NODE_ENV === "development"
+
+    let email: string | undefined
+    let emailVerified: boolean | undefined
+
+    if (isDevelopment) {
+      const jwt = (await import("jsonwebtoken")).default
+      const decoded = jwt.decode(idToken) as any
+      email = decoded?.email
+      emailVerified =
+        decoded?.email_verified === "true" || decoded?.email_verified === true
+    } else {
+      const result = await appleSignin.verifyIdToken(idToken, {
+        audience: [APPLE_CLIENT_ID, process.env.APPLE_IOS_CLIENT_ID || ""],
+        ignoreExpiration: false,
+      })
+      email = result.email
+      emailVerified =
+        result.email_verified === "true" || result.email_verified === true
+    }
+
+    if (!email) {
+      return c.json({ error: "No email in token" }, 400)
+    }
+
+    let name = email.split("@")[0]
+    if (nameData) {
+      const { givenName, familyName } = nameData
+      if (givenName || familyName) {
+        name = `${givenName || ""} ${familyName || ""}`.trim()
+      }
+    }
+
+    const user = await findOrCreateUser({
+      email,
+      name,
+      emailVerified,
+    })
+
+    if (!user) {
+      return c.json({ error: "User creation failed" }, 500)
+    }
+
+    const token = generateToken(user.id, user.email)
+    setCookieFromHost(c, token, "None")
+
+    const authCode = await generateExchangeCode(token)
+
+    return c.json({
+      ...buildAuthResponse(user, authCode),
+      jwt: token,
+    })
+  } catch (error) {
+    console.error("Native Apple auth error:", error)
+    return c.json({ error: "Authentication failed" }, 500)
+  }
+})
+
+authRoutes.get("/signin/apple", async (c) => {
+  try {
+    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
+
+    if (!APPLE_CLIENT_ID) {
+      return c.json({ error: "Apple OAuth not configured" }, 500)
+    }
+
+    const { callbackUrl, errorUrl } = getCallbackUrls(c)
+    const state = createOAuthState(callbackUrl, errorUrl)
+
+    c.header(
+      "Set-Cookie",
+      `oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=None; Secure`,
+    )
+
+    const redirectUri = `${API_URL}/auth/callback/apple`
+    const authUrl = new URL("https://appleid.apple.com/auth/authorize")
+    authUrl.searchParams.set("client_id", APPLE_CLIENT_ID)
+    authUrl.searchParams.set("redirect_uri", redirectUri)
+    authUrl.searchParams.set("response_type", "code")
+    authUrl.searchParams.set("response_mode", "form_post")
+    authUrl.searchParams.set("scope", "name email")
+    authUrl.searchParams.set("state", state)
+
+    return c.redirect(authUrl.toString())
+  } catch (error) {
+    console.error("Apple OAuth initiation error:", error)
+    return c.json({ error: "OAuth initiation failed" }, 500)
+  }
+})
+
+authRoutes.post("/callback/apple", async (c) => {
+  try {
+    const body = await c.req.parseBody()
+    const code = body.code as string
+    const state = body.state as string
+
+    if (!code || !state) {
+      return c.redirect(`https://chrry.ai/?error=oauth_failed`)
+    }
+
+    const stateData = decodeOAuthState(state)
+    if (!stateData) {
+      return c.redirect(`https://chrry.ai/?error=invalid_state`)
+    }
+
+    const cookieHeader = c.req.header("cookie")
+    const stateMatch = cookieHeader?.match(/oauth_state=([^;]+)/)
+    const storedState = stateMatch ? stateMatch[1] : null
+
+    if (state !== storedState) {
+      return c.redirect(`${stateData.errorUrl}?error=invalid_state`)
+    }
+
+    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID
+    const APPLE_CLIENT_SECRET = process.env.APPLE_CLIENT_SECRET
+
+    if (!APPLE_CLIENT_ID || !APPLE_CLIENT_SECRET) {
+      return c.redirect(`${stateData.errorUrl}?error=oauth_not_configured`)
+    }
+
+    const redirectUri = `${API_URL}/auth/callback/apple`
+    const tokenResponse = await fetch("https://appleid.apple.com/auth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: APPLE_CLIENT_ID,
+        client_secret: APPLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }),
+    })
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text()
+      console.error("Apple token exchange failed:", errorText)
+      return c.redirect(`${stateData.errorUrl}?error=token_exchange_failed`)
+    }
+
+    const tokens = await tokenResponse.json()
+    const idToken = tokens.id_token
+    const payload = JSON.parse(
+      Buffer.from(idToken.split(".")[1], "base64").toString(),
+    )
+
+    const email = payload.email
+    const emailVerified = payload.email_verified === "true"
+
+    let name = null
+    if (body.user) {
+      try {
+        const userData = JSON.parse(body.user as string)
+        name =
+          `${userData.name?.firstName || ""} ${userData.name?.lastName || ""}`.trim()
+      } catch (e) {
+        // Name not provided
+      }
+    }
+
+    const user = await findOrCreateUser({
+      email,
+      name: name || email.split("@")[0],
+      emailVerified,
+    })
+
+    if (!user) {
+      return c.redirect(`${stateData.errorUrl}?error=user_creation_failed`)
+    }
+
+    const token = generateToken(user.id, user.email)
+
+    c.header("Set-Cookie", "oauth_state=; HttpOnly; Path=/; Max-Age=0")
+
+    setCookieFromUrl(c, token, stateData.callbackUrl)
+
+    const authCode = await generateExchangeCode(token)
+    return c.redirect(buildRedirectUrl(stateData.callbackUrl, authCode))
+  } catch (error) {
+    console.error("Apple OAuth callback error:", error)
+    return c.redirect(`https://chrry.ai/?error=oauth_callback_failed`)
+  }
+})
 
 export default authRoutes

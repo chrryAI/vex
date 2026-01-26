@@ -7,7 +7,4 @@ export const logger = console
 // No-op promise for compatibility
 export const loggerPromise = Promise.resolve(console)
 
-// Re-export console as-is
-export { console }
-
 export default logger

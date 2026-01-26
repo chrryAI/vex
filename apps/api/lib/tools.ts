@@ -1395,19 +1395,21 @@ export const getTools = ({
         preset3,
       }: {
         isCountingDown?: boolean
+        count?: number
         preset1?: number
         preset2?: number
         preset3?: number
       }) => {
         console.log("⏱️ Updating timer:", {
           isCountingDown,
+          count: providedCount,
           preset1,
           preset2,
           preset3,
         })
 
         // Support both members and guests
-        const updateData: timer = {}
+        const updateData: Partial<timer> = {}
         if (member?.id) {
           updateData.userId = member.id
         } else if (guest?.id) {
@@ -1652,7 +1654,6 @@ export const getTools = ({
   return {
     calendarTools,
     vaultTools,
-    focusTools,
     focusTools,
     imageTools,
     talentTools,
