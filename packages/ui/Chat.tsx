@@ -1785,7 +1785,6 @@ export default function Chat({
 
       setMessage(userMessage)
       // Refresh tasks list after first message to task (to get newly created threadId)
-      !threadId && taskId && fetchTasks()
       // playNotification()
 
       // const clientId = message?.message?.clientId
@@ -4670,7 +4669,7 @@ export default function Chat({
                       </Button>
                     ) : hitHourlyLimit && !threadId ? (
                       <Span
-                        data-testid="hourly-limit-info"
+                        data-testid="hit-hourly-limit-info"
                         data-hourly-left={hourlyUsageLeft}
                         style={styles.hourlyLimit.style}
                       >

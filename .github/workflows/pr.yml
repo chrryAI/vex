@@ -7,8 +7,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: write
+# permissions:
+#   contents: write
 
 #  # Deploy WebSocket server (will use cached build)
 # echo "📦 Deploying WebSocket server (e2e-ws.chrry.dev) - using cached build..."
@@ -318,21 +318,18 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Merge to dev
+        # GÜVENLİ KATMAN: Veriyi env olarak haritalıyoruz
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo "🔀 Auto-merging PR #${{ github.event.pull_request.number }} to dev branch..."
-
-          # Fetch latest dev
+          echo "🔀 Auto-merging PR #$PR_NUMBER to dev branch..."
           git fetch origin dev
-
-          # Checkout dev
           git checkout dev
-
-          # Merge the PR branch
-          git merge --no-ff origin/${{ github.head_ref }} -m "Auto-merge PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
-
-          # Push to dev
+          # Değişkenleri shell variable olarak ($) kullanıyoruz
+          git merge --no-ff "origin/$HEAD_REF" -m "Auto-merge PR #$PR_NUMBER: $PR_TITLE"
           git push origin dev
-
           echo "✅ Successfully merged to dev!"
   #Auto-merge to web branch after all tests pass
   auto-merge-to-web:
@@ -351,19 +348,14 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Merge to web
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo "🔀 Auto-merging PR #${{ github.event.pull_request.number }} to web branch..."
-
-          # Fetch latest web
+          echo "🔀 Auto-merging PR #$PR_NUMBER to web branch..."
           git fetch origin web
-
-          # Checkout web
           git checkout web
-
-          # Merge the PR branch
-          git merge --no-ff origin/${{ github.head_ref }} -m "Auto-merge PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
-
-          # Push to web
+          git merge --no-ff "origin/$HEAD_REF" -m "Auto-merge PR #$PR_NUMBER: $PR_TITLE"
           git push origin web
-
           echo "✅ Successfully merged to web!"

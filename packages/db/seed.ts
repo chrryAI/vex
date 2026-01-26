@@ -23,6 +23,7 @@ import {
   user,
   updateApp,
 } from "./index"
+import crypto from "crypto"
 import { eq, and, isNull, sql, inArray } from "drizzle-orm"
 import {
   users,
@@ -274,6 +275,591 @@ const VEX_TEST_EMAIL_4 = process.env.VEX_TEST_EMAIL_4!
 const VEX_TEST_NAME_4 = process.env.VEX_TEST_NAME_4!
 const VEX_TEST_PASSWORD_4 = process.env.VEX_TEST_PASSWORD_4!
 
+// Önce dosyanın başına bu yardımcı fonksiyonları ekleyin:
+
+const REALISTIC_NAMES = [
+  "Emma Johnson",
+  "Liam Smith",
+  "Olivia Brown",
+  "Noah Davis",
+  "Ava Wilson",
+  "Ethan Martinez",
+  "Sophia Anderson",
+  "Mason Taylor",
+  "Isabella Thomas",
+  "William Jackson",
+  "Mia White",
+  "James Harris",
+  "Charlotte Martin",
+  "Benjamin Thompson",
+  "Amelia Garcia",
+  "Lucas Rodriguez",
+  "Harper Lee",
+  "Henry Walker",
+  "Evelyn Hall",
+  "Alexander Allen",
+  "Abigail Young",
+  "Michael King",
+  "Emily Wright",
+  "Daniel Lopez",
+  "Elizabeth Hill",
+  "Matthew Scott",
+  "Sofia Green",
+  "Joseph Adams",
+  "Avery Baker",
+  "David Nelson",
+  "Ella Carter",
+  "Jackson Mitchell",
+  "Scarlett Perez",
+  "Sebastian Roberts",
+  "Victoria Turner",
+  "Jack Phillips",
+  "Grace Campbell",
+  "Owen Parker",
+  "Chloe Evans",
+  "Samuel Edwards",
+  "Zoey Collins",
+  "Luke Stewart",
+  "Lily Morris",
+  "Ryan Nguyen",
+  "Hannah Rogers",
+  "Nathan Reed",
+  "Lillian Cook",
+  "Isaac Morgan",
+  "Addison Bell",
+  "Gabriel Murphy",
+  "Ellie Bailey",
+  "Carter Rivera",
+  "Natalie Cooper",
+  "Wyatt Richardson",
+  "Leah Cox",
+  "John Howard",
+  "Aria Ward",
+  "Jayden Torres",
+  "Audrey Peterson",
+  "Dylan Gray",
+  "Hazel Ramirez",
+  "Isaac James",
+  "Brooklyn Watson",
+  "Levi Brooks",
+  "Zoe Kelly",
+  "Christian Sanders",
+  "Penelope Price",
+  "Andrew Bennett",
+  "Layla Wood",
+  "Joshua Barnes",
+  "Nora Ross",
+  "Christopher Henderson",
+  "Riley Coleman",
+  "Theodore Jenkins",
+  "Paisley Perry",
+  "Caleb Powell",
+  "Aurora Long",
+  "Aaron Patterson",
+  "Savannah Hughes",
+  "Thomas Flores",
+  "Claire Washington",
+  "Charles Butler",
+  "Lucy Simmons",
+  "Jeremiah Foster",
+  "Anna Gonzales",
+  "Connor Bryant",
+  "Caroline Alexander",
+  "Cameron Russell",
+  "Genesis Griffin",
+  "Adrian Diaz",
+  "Violet Hayes",
+  "Robert Myers",
+  "Samantha Ford",
+  "Eli Hamilton",
+  "Stella Graham",
+  "Jonathan Sullivan",
+  "Maya Wallace",
+  "Nolan Woods",
+  "Madelyn Cole",
+  "Hunter West",
+  "Piper Jordan",
+  "Josiah Owens",
+  "Ruby Reynolds",
+  "Colton Fisher",
+  "Kennedy Ellis",
+  "Landon Gibson",
+  "Ivy McDonald",
+  "Asher Cruz",
+  "Gianna Marshall",
+  "Jaxon Ortiz",
+  "Quinn Gomez",
+  "Cooper Murray",
+  "Sadie Freeman",
+  "Lincoln Wells",
+  "Sophie Webb",
+  "Carson Simpson",
+  "Kinsley Stevens",
+  "Dominic Tucker",
+  "Alice Porter",
+  "Easton Hicks",
+  "Maria Crawford",
+  "Micah Henry",
+  "Bella Boyd",
+  "Jace Mason",
+  "Ariana Morales",
+  "Greyson Kennedy",
+  "Gabriella Warren",
+  "Grayson Dixon",
+  "Autumn Ramos",
+  "Ian Reyes",
+  "Aaliyah Burns",
+  "Ezra Gordon",
+  "Eva Shaw",
+  "Collin Holmes",
+  "Willow Rice",
+  "Axel Robertson",
+  "Athena Hunt",
+  "Maverick Black",
+  "Nevaeh Daniels",
+  "Leonardo Palmer",
+  "Skylar Mills",
+  "Silas Nichols",
+  "Emilia Grant",
+  "Ezekiel Knight",
+  "Cora Nuñez",
+  "Jameson Medina",
+  "Reagan Blair",
+  "Brody Wagner",
+  "Everleigh Pearson",
+  "Kai Carpenter",
+  "Melody Hansen",
+  "Maxwell Castillo",
+  "Jade Bowman",
+  "Miles Hanson",
+  "Faith Sims",
+  "Sawyer Dunn",
+  "Trinity George",
+  "Declan Lynch",
+  "Hope Johnston",
+  "Weston Tran",
+  "Rose Malone",
+  "Kaiden Payne",
+  "Isabelle Holland",
+  "Ryder Sherman",
+  "Jasmine Goodwin",
+  "Louis Moss",
+  "Molly Maldonado",
+  "Preston Garrett",
+  "Juniper Love",
+]
+
+const CITIES = [
+  "Amsterdam",
+  "Rotterdam",
+  "Utrecht",
+  "The Hague",
+  "Eindhoven",
+  "London",
+  "Paris",
+  "Berlin",
+  "Barcelona",
+  "Madrid",
+  "Rome",
+  "Milan",
+  "Vienna",
+  "Prague",
+  "Budapest",
+  "Copenhagen",
+  "Stockholm",
+  "Oslo",
+  "Helsinki",
+  "Dublin",
+  "Brussels",
+  "Zurich",
+  "Geneva",
+  "Lisbon",
+  "Porto",
+  "Athens",
+  "Istanbul",
+  "Warsaw",
+  "Krakow",
+  "Bucharest",
+  "New York",
+  "Los Angeles",
+  "Chicago",
+  "San Francisco",
+  "Seattle",
+  "Toronto",
+  "Vancouver",
+  "Montreal",
+  "Sydney",
+  "Melbourne",
+  "Tokyo",
+  "Singapore",
+  "Hong Kong",
+  "Dubai",
+  "Mumbai",
+]
+
+const COUNTRIES = [
+  "Netherlands",
+  "United Kingdom",
+  "France",
+  "Germany",
+  "Spain",
+  "Italy",
+  "Austria",
+  "Czech Republic",
+  "Hungary",
+  "Denmark",
+  "Sweden",
+  "Norway",
+  "Finland",
+  "Ireland",
+  "Belgium",
+  "Switzerland",
+  "Portugal",
+  "Greece",
+  "Turkey",
+  "Poland",
+  "Romania",
+  "United States",
+  "Canada",
+  "Australia",
+  "Japan",
+  "Singapore",
+  "UAE",
+  "India",
+]
+
+// Dojo Entropy Helpers
+const cryptoInt = (min: number, max: number) => crypto.randomInt(min, max)
+const cryptoFloat = () => crypto.randomBytes(4).readUInt32BE() / 0xffffffff
+const pickCrypto = <T>(arr: T[]): T => arr[cryptoInt(0, arr.length)]!
+
+// Cryptographically Secure Shuffle
+const secureShuffle = <T>(arr: T[]): T[] => {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = cryptoInt(0, i + 1)
+    ;[result[i], result[j]] = [result[j]!, result[i]!]
+  }
+  return result
+}
+
+function generateUsername(name: string): string {
+  const parts = name.toLowerCase().split(" ")
+  const firstName = parts[0] || ""
+  const lastName = parts[1] || ""
+
+  // Önce sadece first name dene
+  const baseUsername = firstName
+
+  // Eğer daha önce kullanılmışsa sonuna random sayı ekle
+  // (getUser check'i create sırasında olacak, burada sadece format oluştur)
+  return baseUsername
+}
+
+function generateEmail(name: string, attempt: number = 0): string {
+  const username = generateUsername(name)
+  const finalUsername = attempt > 0 ? `${username}${attempt}` : username
+  const domains = [
+    "gmail.com",
+    "outlook.com",
+    "yahoo.com",
+    "proton.me",
+    "icloud.com",
+  ]
+
+  // domains arasından kriptografik seçim
+  return `${finalUsername}@${pickCrypto(domains)}`
+}
+
+// Sonra create fonksiyonunun sonuna (admin ve feedback user'lardan sonra) ekleyin:
+
+async function createRealisticUsers() {
+  console.log("👥 Creating 150+ UNIQUE realistic users...")
+
+  const createdUsers = []
+
+  for (let index = 0; index < REALISTIC_NAMES.length; index++) {
+    const name = REALISTIC_NAMES[index]!
+    const parts = name.toLowerCase().split(" ")
+    const firstName = parts[0] || "user"
+
+    try {
+      let userName = firstName
+      let email = generateEmail(name)
+      let attempt = 0
+
+      while (await getUser({ email })) {
+        attempt++
+        userName = `${firstName}${attempt}`
+        email = generateEmail(name, attempt)
+        if (attempt > 100) break
+      }
+
+      if (attempt > 100) continue
+
+      // --- CRYPTO GÜNCELLEME BAŞLANGIÇ ---
+
+      // 1. Skill Mutasyonu: secureShuffle kullan
+      const flatSkills = [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Figma",
+        "UI/UX",
+        "Python",
+        "Machine Learning",
+        "DevOps",
+        "AWS",
+        "PostgreSQL",
+        "Next.js",
+        "Tailwind",
+        "Rust",
+        "Go",
+        "Solidity",
+        "SEO",
+        "Copywriting",
+      ]
+      const expertise = secureShuffle(flatSkills).slice(0, 3)
+
+      // 2. Bio Mutasyonu: pickCrypto kullan
+      const templates = [
+        "Specialist in",
+        "Focusing on",
+        "Expert at",
+        "Passionate about",
+        "Building",
+        "Crafting",
+        "Scaling",
+        "Architecting",
+      ]
+      let bio = `${pickCrypto(templates)} ${expertise[0]} and ${expertise[1]}`
+      if (bio.length > 50) bio = bio.substring(0, 47) + "..."
+
+      // 3. Financial & Availability: cryptoInt ve cryptoFloat kullan
+      const hourlyRate = cryptoInt(30, 81) // 30-80 cr (81 exclusive)
+      const isAvailableForHire = cryptoFloat() > 0.3 // %70 true
+
+      // 4. Role: cryptoFloat kullan
+      const role = cryptoFloat() > 0.98 ? "admin" : "user" // %2 admin
+
+      // 5. Credits: cryptoInt kullan
+      const credits = cryptoInt(1000, 6000) // 1000-5999
+
+      // --- CRYPTO GÜNCELLEME BİTİŞ ---
+
+      const user = await createUser({
+        email,
+        name,
+        password: passwordToSalt("password123"),
+        role,
+        userName,
+        city: pickCrypto(CITIES),
+        country: pickCrypto(COUNTRIES),
+        credits,
+        bio,
+        expertise,
+        hourlyRate,
+        isAvailableForHire,
+      })
+
+      if (user) {
+        createdUsers.push(user)
+        if (index % 25 === 0) {
+          console.log(
+            `✅ [Sato-Seed] ${index + 1}/${REALISTIC_NAMES.length}: ${name} (@${userName}) -> ${bio}`,
+          )
+        }
+      }
+    } catch (error) {
+      console.error(`❌ Failed to create unique user: ${name}`, error)
+    }
+  }
+
+  console.log(
+    `🚀 Mission Complete: ${createdUsers.length} unique ninjas deployed to Dojo.`,
+  )
+  return createdUsers
+}
+
+// seed.ts dosyasının createRealisticUsers fonksiyonundan sonra ekleyin:
+
+async function createCharacterProfiles() {
+  console.log("🎭 Creating character profiles for users...")
+
+  const users = await getUsers({ pageSize: 200 })
+  const sushiAgent = await db.query.aiAgents.findFirst({
+    where: eq(aiAgents.name, "sushi"),
+  })
+
+  if (!sushiAgent) {
+    console.error("❌ Sushi agent not found")
+    return
+  }
+
+  // ... personalities array aynı kalır ...
+
+  const createdProfiles = []
+
+  const personalities = [
+    {
+      personality:
+        "Professional software engineer with expertise in full-stack development",
+      traits: {
+        communication: ["Clear", "Direct", "Technical"],
+        expertise: ["React", "TypeScript", "Node.js", "PostgreSQL"],
+        behavior: ["Detail-oriented", "Problem-solver", "Collaborative"],
+        preferences: ["Clean code", "Testing", "Documentation"],
+      },
+      conversationStyle: "technical",
+      tags: ["engineering", "fullstack", "web"],
+      userRelationship: "Professional collaborator",
+      creditRate: 50, // credits per hour
+    },
+    {
+      personality:
+        "Creative designer focused on user experience and visual aesthetics",
+      traits: {
+        communication: ["Visual", "Empathetic", "Innovative"],
+        expertise: ["UI/UX", "Figma", "Design Systems", "Branding"],
+        behavior: ["Creative", "User-focused", "Iterative"],
+        preferences: ["Minimalism", "Accessibility", "User research"],
+      },
+      conversationStyle: "casual",
+      tags: ["design", "ux", "creative"],
+      userRelationship: "Design partner",
+      creditRate: 45,
+    },
+    {
+      personality:
+        "Data scientist specializing in machine learning and analytics",
+      traits: {
+        communication: ["Analytical", "Data-driven", "Precise"],
+        expertise: ["Python", "ML", "Statistics", "Data visualization"],
+        behavior: ["Methodical", "Research-oriented", "Quantitative"],
+        preferences: ["Clean data", "Reproducibility", "Insights"],
+      },
+      conversationStyle: "formal",
+      tags: ["data-science", "ml", "analytics"],
+      userRelationship: "Technical advisor",
+      creditRate: 60,
+    },
+    {
+      personality:
+        "Product manager with strong business acumen and strategic thinking",
+      traits: {
+        communication: ["Strategic", "Clear", "Persuasive"],
+        expertise: [
+          "Product strategy",
+          "Roadmapping",
+          "Stakeholder management",
+        ],
+        behavior: ["Goal-oriented", "User-centric", "Data-informed"],
+        preferences: ["Impact", "Metrics", "User feedback"],
+      },
+      conversationStyle: "professional",
+      tags: ["product", "strategy", "business"],
+      userRelationship: "Strategic partner",
+      creditRate: 55,
+    },
+    {
+      personality: "DevOps engineer focused on infrastructure and automation",
+      traits: {
+        communication: ["Systematic", "Practical", "Efficient"],
+        expertise: ["Docker", "Kubernetes", "CI/CD", "AWS"],
+        behavior: ["Automation-first", "Reliability-focused", "Scalable"],
+        preferences: ["Infrastructure as code", "Monitoring", "Security"],
+      },
+      conversationStyle: "technical",
+      tags: ["devops", "infrastructure", "automation"],
+      userRelationship: "Infrastructure specialist",
+      creditRate: 50,
+    },
+    {
+      personality: "Content writer and storyteller with marketing expertise",
+      traits: {
+        communication: ["Engaging", "Creative", "Persuasive"],
+        expertise: ["Copywriting", "Content strategy", "SEO", "Storytelling"],
+        behavior: ["Creative", "Audience-focused", "Adaptable"],
+        preferences: ["Clear messaging", "Brand voice", "Engagement"],
+      },
+      conversationStyle: "casual",
+      tags: ["content", "marketing", "writing"],
+      userRelationship: "Content collaborator",
+      creditRate: 40,
+    },
+  ]
+
+  for (let i = 0; i < users.users.length; i++) {
+    const user = users.users[i]
+    if (!user) continue
+
+    try {
+      const profile = personalities[i % personalities.length]
+      if (!profile) continue
+
+      const thread = await createThread({
+        userId: user.id,
+        title: `${user.name}'s Profile`,
+        aiResponse: `Hi! I'm ${user.name}, ${profile.personality}`,
+        visibility: "public",
+      })
+
+      if (!thread) {
+        console.error(`Failed to create thread for ${user.name}`)
+        continue
+      }
+
+      // CRYPTO GÜNCELLEME: cryptoFloat ve cryptoInt kullan
+      const characterProfile = await db
+        .insert(characterProfiles)
+        .values({
+          agentId: sushiAgent.id,
+          userId: user.id,
+          threadId: thread.id,
+          name: user.name || "Anonymous",
+          personality: profile.personality,
+          visibility: i % 3 === 0 ? "public" : "protected",
+          pinned: i % 10 === 0,
+          traits: profile.traits,
+          tags: profile.tags,
+          conversationStyle: profile.conversationStyle,
+          userRelationship: profile.userRelationship,
+          usageCount: cryptoInt(0, 51), // 0-50
+          metadata: {
+            version: "1.0",
+            createdBy: "seed",
+            effectiveness: cryptoFloat() * 0.5 + 0.5, // 0.5-1.0
+            creditRate: profile.creditRate,
+          },
+        })
+        .returning()
+
+      if (characterProfile[0]) {
+        createdProfiles.push(characterProfile[0])
+        if (i % 20 === 0) {
+          console.log(
+            `✅ Created profile ${i + 1}/${users.users.length}: ${user.name}`,
+          )
+        }
+      }
+    } catch (error) {
+      console.error(`❌ Failed to create profile for ${user.name}:`, error)
+    }
+  }
+
+  console.log(
+    `✅ Successfully created ${createdProfiles.length}/${users.users.length} character profiles`,
+  )
+  return createdProfiles
+}
+
+// create fonksiyonunun sonuna ekleyin (await createRealisticUsers() satırından sonra):
+
+// Create character profiles for all users
+
+// create fonksiyonunun içinde, localswaphub user'dan sonra ekleyin:
+
+// Create 150+ realistic users
 async function clearGuests() {
   const batchSize = 500
   let totalDeleted = 0
@@ -385,6 +971,9 @@ const create = async () => {
     return
   }
 
+  await createRealisticUsers()
+  await createCharacterProfiles()
+
   console.log("🌍 Creating cities...")
   await createCities()
   console.log("✅ Cities created")
@@ -429,7 +1018,7 @@ const create = async () => {
       email: VEX_TEST_EMAIL_2,
       name: VEX_TEST_NAME_2,
       password: passwordToSalt(VEX_TEST_PASSWORD_2),
-      role: "admin",
+      role: "user",
       userName: VEX_TEST_NAME_2,
       fingerprint: TEST_MEMBER_FINGERPRINTS[0],
     })
@@ -1002,12 +1591,12 @@ const prod = async () => {
     email: isProd ? "ibsukru@gmail.com" : "test@gmail.com",
   })
   if (!admin) throw new Error("Admin user not found")
-  // const { vex } = await createStores({ user: admin })
+  const { vex } = await createStores({ user: admin })
 
   // await updateStoreUrls({ user: admin })
 
   // Delete inactive bot guests in batches
-  await clearGuests()
+  // await clearGuests()
   // const vex = await createStores({ user: admin, isProd: true })
   // const allInstructions = await db.select().from(instructions)
   // const seen = new Map<string, string>() // Map of unique key -> instruction ID
