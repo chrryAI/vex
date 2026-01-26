@@ -374,8 +374,11 @@ export async function getApp({
   let appInternal = null
 
   if (accountApp) {
+    // For account app: if no auth exists, return null early
     const result = await resolveAccountApp(auth, requestParams.skipCache)
-    if (!result) return null
+    console.log(`🚀 ~ getApp ~ result:`, result)
+    if (!result) return null // No auth (guest/member) - fail fast
+    if (!result.app) return null // Auth exists but no app - don't use fallback
     appInternal = result.app
     resolutionPath = result.path
   } else if (appId) {
