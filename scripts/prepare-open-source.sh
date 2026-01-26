@@ -340,7 +340,7 @@ echo ""
 
 # Update README with setup instructions
 echo "4️⃣  Checking README.md..."
-if [ -f README.md ]; then
+if [[ -f README.md ]]; then
     echo "ℹ️  README.md exists - please review and update with:"
     echo "   - Setup instructions"
     echo "   - Environment variables"
