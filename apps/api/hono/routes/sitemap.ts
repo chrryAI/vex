@@ -39,11 +39,11 @@ function getBlogPosts() {
 // Escape XML special characters to prevent XSS
 function escapeXml(unsafe: string): string {
   return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;")
+    .replaceAll(/&/g, "&amp;")
+    .replaceAll(/</g, "&lt;")
+    .replaceAll(/>/g, "&gt;")
+    .replaceAll(/"/g, "&quot;")
+    .replaceAll(/'/g, "&apos;")
 }
 
 // Simplified getApp logic for Hono context without Next.js headers() dependency

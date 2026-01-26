@@ -102,7 +102,7 @@ async function generateUniqueUsername(
   const firstNameRaw = fullName.split(" ")[0]
   if (!firstNameRaw) return uuidv4()
 
-  const firstName = firstNameRaw.toLowerCase().replace(/[^a-z0-9]/g, "")
+  const firstName = firstNameRaw.toLowerCase().replaceAll(/[^a-z0-9]/g, "")
 
   // Early validation check
   if (!firstName || !isValidUsername(firstName)) return uuidv4()

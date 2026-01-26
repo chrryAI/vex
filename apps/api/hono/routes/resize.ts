@@ -10,18 +10,24 @@ export const resize = new Hono()
 resize.get("/", async (c) => {
   try {
     const url = c.req.query("url")
-    const width = parseInt(c.req.query("w") || c.req.query("width") || "0")
-    const height = parseInt(c.req.query("h") || c.req.query("height") || "0")
+    const width = Number.parseInt(
+      c.req.query("w") || c.req.query("width") || "0",
+    )
+    const height = Number.parseInt(
+      c.req.query("h") || c.req.query("height") || "0",
+    )
     const fit = (c.req.query("fit") || "cover") as
       | "cover"
       | "contain"
       | "fill"
       | "inside"
       | "outside"
-    const quality = parseInt(
+    const quality = Number.parseInt(
       c.req.query("q") || c.req.query("quality") || "100",
     )
-    const padding = parseInt(c.req.query("padding") || c.req.query("p") || "0")
+    const padding = Number.parseInt(
+      c.req.query("padding") || c.req.query("p") || "0",
+    )
 
     if (!url) {
       c.header("Cache-Control", "no-cache, no-store, must-revalidate")

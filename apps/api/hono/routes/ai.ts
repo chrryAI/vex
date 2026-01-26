@@ -5271,7 +5271,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
         citations
           .map((match) => {
             const num = match.match(/\[(\d+)\]/)?.[1]
-            return num ? parseInt(num) : null
+            return num ? Number.parseInt(num) : null
           })
           .filter((num) => num !== null),
       ),

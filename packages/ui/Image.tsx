@@ -187,7 +187,7 @@ export default function ImageComponent(props: ImageProps) {
     typeof size === "number"
       ? size
       : typeof size === "string" && isNumericString(size)
-        ? parseInt(size, 10)
+        ? Number.parseInt(size, 10)
         : 24 // Default size for emojis when size is CSS unit
 
   const emojiSize = intSize <= 24 ? intSize * 0.85 : intSize

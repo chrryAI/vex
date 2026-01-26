@@ -89,15 +89,15 @@ function parseUtilityClass(className: string): StyleObject | null {
 
   // Spacing (simplified - you can expand this)
   if (className.startsWith("p-")) {
-    const value = parseInt(className.substring(2)) * 4
+    const value = Number.parseInt(className.substring(2)) * 4
     return { padding: value }
   }
   if (className.startsWith("m-")) {
-    const value = parseInt(className.substring(2)) * 4
+    const value = Number.parseInt(className.substring(2)) * 4
     return { margin: value }
   }
   if (className.startsWith("gap-")) {
-    const value = parseInt(className.substring(4)) * 4
+    const value = Number.parseInt(className.substring(4)) * 4
     return { gap: value }
   }
 
@@ -107,7 +107,7 @@ function parseUtilityClass(className: string): StyleObject | null {
 
   // Opacity
   if (className.startsWith("opacity-")) {
-    const value = parseInt(className.substring(8)) / 100
+    const value = Number.parseInt(className.substring(8)) / 100
     return { opacity: value }
   }
 
