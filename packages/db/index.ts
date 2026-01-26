@@ -4914,8 +4914,8 @@ export const getApp = async ({
     extends: await getAppExtends({
       appId: app.app.id,
     }),
-    user: app.user,
-    guest: app.guest,
+    user: toSafeUser({ user: app.user }),
+    guest: toSafeGuest({ guest: app.guest }),
     store: storeWithApps,
     placeHolder: await getPlaceHolder({
       appId: app.app.id,
@@ -5067,7 +5067,8 @@ export function toSafeApp({
   return result
 }
 
-export function toSafeUser({ user }: { user: user }) {
+export function toSafeUser({ user }: { user?: user | null }) {
+  if (!user) return
   const result: Partial<user> = {
     id: user.id,
     name: user.name,
@@ -5082,7 +5083,8 @@ export function toSafeUser({ user }: { user: user }) {
   return result
 }
 
-export function toSafeGuest({ guest }: { guest: guest }) {
+export function toSafeGuest({ guest }: { guest?: guest | null }) {
+  if (!guest) return
   const result: Partial<guest> = {
     id: guest.id,
     activeOn: guest.activeOn,
