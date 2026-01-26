@@ -1409,7 +1409,7 @@ export const characterProfiles = pgTable(
       version: string
       createdBy: string
       effectiveness: number
-      creditRate: number
+      creditRate?: number
     }>(),
 
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })

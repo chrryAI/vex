@@ -1018,7 +1018,7 @@ const create = async () => {
       email: VEX_TEST_EMAIL_2,
       name: VEX_TEST_NAME_2,
       password: passwordToSalt(VEX_TEST_PASSWORD_2),
-      role: "admin",
+      role: "user",
       userName: VEX_TEST_NAME_2,
       fingerprint: TEST_MEMBER_FINGERPRINTS[0],
     })
