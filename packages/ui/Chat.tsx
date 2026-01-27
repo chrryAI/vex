@@ -246,6 +246,7 @@ export default function Chat({
     getAppSlug,
     ask,
     about,
+    setShowGrapes,
     ...auth
   } = useAuth()
 
@@ -3630,7 +3631,7 @@ export default function Chat({
                         gap: 5,
                         position: "relative",
 
-                        top: !isChatFloating ? (showQuotaInfo ? 0 : 30) : 0,
+                        top: !isChatFloating ? (showQuotaInfo ? 0 : 32) : 0,
                         zIndex: 50,
                       }}
                     >
@@ -3642,43 +3643,63 @@ export default function Chat({
                           <CircleX size={13} />
                         </Button>
                       )}
-                      <Button
-                        data-testid="retro-button"
-                        className="link"
-                        style={{
-                          ...utilities.link.style,
-                        }}
-                        onClick={() => {
-                          if (isRetro) {
-                            // Advance to next question
-                            if (dailyQuestionData?.isLastQuestionOfSection) {
-                              advanceDailySection()
+                      {user?.role === "admin" && (
+                        <Button
+                          data-testid="retro-button"
+                          className="link"
+                          style={{
+                            ...utilities.link.style,
+                            marginRight: 4,
+                          }}
+                          onClick={() => {
+                            if (isRetro) {
+                              // Advance to next question
+                              if (dailyQuestionData?.isLastQuestionOfSection) {
+                                advanceDailySection()
+                              } else {
+                                setDailyQuestionIndex(dailyQuestionIndex + 1)
+                              }
                             } else {
-                              setDailyQuestionIndex(dailyQuestionIndex + 1)
+                              setIsRetro(true)
                             }
-                          } else {
-                            setIsRetro(true)
-                          }
-                          // setInput("Hey guys, what you learned today?")
-                        }}
-                      >
-                        <Img size={22} app={app} />
-                        {isSmallDevice ? null : "Sato"}
-                      </Button>
+                          }}
+                        >
+                          <Img size={22} app={app} />
+                          {isSmallDevice ? null : "Sato"}
+                        </Button>
+                      )}
                     </Div>
                   ) : null}
                   {empty && !threadIdRef.current && (
-                    <>
+                    <Div
+                      style={{
+                        position: "relative",
+                        top: !isChatFloating ? (showQuotaInfo ? 0 : 32) : 0,
+                        zIndex: 50,
+                        display: "inline-flex",
+                        gap: 7.5,
+                        alignItems: "center",
+                      }}
+                    >
                       <Grapes
+                        style={{ padding: "6px 8px" }}
                         dataTestId="grapes-button"
-                        style={{
-                          position: "relative",
-                          top: !isChatFloating ? (showQuotaInfo ? 0 : 30) : 0,
-                          zIndex: 50,
-                          ...utilities.xSmall.style,
-                        }}
                       />
-                    </>
+
+                      <Button
+                        className={"link"}
+                        onClick={() => {
+                          setShowGrapes(true)
+                        }}
+                        style={{
+                          ...utilities.link.style,
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        <Coins size={14} />
+                        {t("Earn Credits")}
+                      </Button>
+                    </Div>
                   )}
                 </Div>
               </Div>
