@@ -2204,7 +2204,7 @@ export function detectSiteModeDomain(
 
   const defaultMode = (getEnv().VITE_SITE_MODE as SiteMode) || mode || devMode
 
-  if (isDevelopment && !checkIsExtension()) {
+  if (isDevelopment && !checkIsExtension() && !isTauri()) {
     return defaultMode || devMode
   }
   // Get hostname from parameter or window (client-side)

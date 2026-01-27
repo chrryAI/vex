@@ -21,7 +21,7 @@
     "build:vite": "vite build",
     "build:zarathustra": "MODE=zarathustra pnpm icon:generate && MODE=zarathustra pnpm config:generate && MODE=zarathustra vite build && MODE=zarathustra tauri build && bash copy-dmg.sh Zarathustra",
     "config:generate": "node ../../apps/scripts/generate-tauri-config.js",
-    "dev": "MODE=sushi pnpm config:generate && MODE=sushi pnpm icon:generate && MODE=sushi tauri dev",
+    "dev": "MODE=vex pnpm config:generate && MODE=vex pnpm icon:generate && MODE=vex tauri dev",
     "dev:vite": "vite",
     "icon:generate": "node ../../apps/scripts/generate-icons.js"
   },
