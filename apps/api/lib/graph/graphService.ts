@@ -4,6 +4,29 @@ import captureException from "../../lib/captureException"
 import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
 import { appWithStore } from "@chrryai/chrry/types"
 
+/**
+ * FUTURE: App-level provider configuration
+ *
+ * Each app can specify which AI provider to use for different features:
+ *
+ * app.metadata.providers = {
+ *   rag: "deepSeek",              // Graph RAG operations (Cypher, entity extraction)
+ *   memory: "chatGPT",             // Memory/context management
+ *   titleGeneration: "claude",     // Thread title generation
+ *   summarization: "deepSeek",     // Document summarization
+ *   codeExecution: "chatGPT",      // Code analysis and execution
+ * }
+ *
+ * Benefits:
+ * - Cost optimization per feature
+ * - Quality tuning per use case
+ * - User choice and flexibility
+ * - Enterprise custom configurations
+ *
+ * Currently: Hardcoded to "deepSeek" for RAG operations
+ * TODO: Implement app.metadata.providers.rag selection
+ */
+
 // Ensure indices exist (Lazy initialization)
 let isIndexChecked = false
 async function ensureIndices() {
@@ -103,6 +126,8 @@ async function generateDynamicCypher(
     - NO regex operators (=~, CONTAINS, STARTS WITH, ENDS WITH)
     - Use exact string matching with = only
     - For partial matching, use multiple OR conditions with exact values
+    - If you define a relationship variable like [r] or [relationship], you MUST use it in WHERE or RETURN
+    - If you don't need the relationship, use anonymous [] instead of [relationship]
     
     Rules:
     1. Focus on finding relationships and content related to entities in the question.
@@ -110,7 +135,13 @@ async function generateDynamicCypher(
     3. Return meaningful properties: node.name, type(relationship), property values.
     4. Keep it efficient (LIMIT 15).
     5. Use ONLY exact string matching with = operator.
-    6. Return ONLY the raw Cypher query string.`
+    6. IMPORTANT: Use anonymous [] for relationships you don't need, or use [r] and include type(r) in RETURN.
+    7. Return ONLY the raw Cypher query string.
+    
+    Examples:
+    - GOOD: MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name
+    - GOOD: MATCH (n)-[]->(m) RETURN n.name, m.name
+    - BAD:  MATCH (n)-[relationship]->(m) RETURN n.name, m.name`
 
     const provider = await getModelProvider(app, "deepSeek")
 
@@ -134,16 +165,23 @@ async function generateDynamicCypher(
       return null // Skip invalid query
     }
 
-    // Validate: Check if all defined variables are used in RETURN
+    // Validate: Check if all defined variables are used in WHERE or RETURN
     // Extract relationship variables like [r], [r1], [relationship]
     const relVars =
       cleanQuery.match(/\[(\w+)\]/g)?.map((v) => v.slice(1, -1)) || []
+
+    // Get WHERE and RETURN clauses
+    const whereClause =
+      cleanQuery.match(/WHERE\s+(.+?)(?:RETURN|LIMIT|ORDER|$)/is)?.[1] || ""
     const returnClause =
       cleanQuery.match(/RETURN\s+(.+?)(?:LIMIT|ORDER|$)/is)?.[1] || ""
 
+    // Combine both clauses for checking
+    const usageContext = whereClause + " " + returnClause
+
     // Check if any relationship variable is unused
     const unusedVars = relVars.filter(
-      (v) => !returnClause.includes(v) && !returnClause.includes(`type(${v})`),
+      (v) => !usageContext.includes(v) && !usageContext.includes(`type(${v})`),
     )
 
     if (unusedVars.length > 0) {
