@@ -24,7 +24,7 @@ import {
   updateApp,
 } from "./index"
 import crypto from "crypto"
-import { eq, and, isNull, sql, inArray } from "drizzle-orm"
+import { eq, and, isNull, sql, inArray, lt } from "drizzle-orm"
 import {
   users,
   messages,
@@ -865,6 +865,10 @@ async function clearGuests() {
   let totalDeleted = 0
   let hasMore = true
 
+  // 5 gün önceki tarih
+  const fiveDaysAgo = new Date()
+  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
+
   while (hasMore) {
     // Find inactive guests (no subscription, no messages, no tasks)
     const inactiveGuests = await db
@@ -880,6 +884,8 @@ async function clearGuests() {
           isNull(apps.id),
           isNull(messages.id),
           sql`task.id IS NULL`,
+          lt(guests.createdOn, fiveDaysAgo),
+          // sql<boolean>`${guests.createdOn} < NOW() - INTERVAL '5 days'`,
         ),
       )
       .groupBy(guests.id, guests.ip)
@@ -1702,11 +1708,12 @@ const seedDb = async (): Promise<void> => {
   }
 
   if (isProd) {
-    await prod()
+    await clearGuests()
+    // await prod()
     process.exit(0)
   } else {
-    await clearDb()
-    await create()
+    // await clearDb()
+    // await create()
     process.exit(0)
   }
 }
