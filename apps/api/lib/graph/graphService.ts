@@ -99,12 +99,18 @@ async function generateDynamicCypher(
     - Nodes: (Topic {name, createdAt}), (Document {name, threadId, createdAt}), (Chunk {content, chunkIndex}), (User {id})
     - Relations: (Topic)-[REL]->(Topic), (Document)-[:HAS_CHUNK]->(Chunk), (Chunk)-[:MENTIONS]->(Topic)
     
+    CRITICAL FalkorDB Limitations:
+    - NO regex operators (=~, CONTAINS, STARTS WITH, ENDS WITH)
+    - Use exact string matching with = only
+    - For partial matching, use multiple OR conditions with exact values
+    
     Rules:
     1. Focus on finding relationships and content related to entities in the question.
     2. Use temporal ordering (DESC createdAt) if relevance is time-sensitive.
     3. Return meaningful properties: node.name, type(relationship), property values.
     4. Keep it efficient (LIMIT 15).
-    5. Return ONLY the raw Cypher query string.`
+    5. Use ONLY exact string matching with = operator.
+    6. Return ONLY the raw Cypher query string.`
 
     const provider = await getModelProvider(app, "deepSeek")
 
@@ -116,6 +122,17 @@ async function generateDynamicCypher(
 
     const cleanQuery = text.replace(/```cypher|```/g, "").trim()
     if (!cleanQuery.toLowerCase().includes("match")) return null
+
+    // Validate: Check for unsupported regex operators
+    const unsupportedOperators = ["=~", "CONTAINS", "STARTS WITH", "ENDS WITH"]
+    const hasUnsupportedOp = unsupportedOperators.some((op) =>
+      cleanQuery.includes(op),
+    )
+    if (hasUnsupportedOp) {
+      console.warn("⚠️ Cypher query contains unsupported regex operators")
+      console.warn(`Query: ${cleanQuery}`)
+      return null // Skip invalid query
+    }
 
     // Validate: Check if all defined variables are used in RETURN
     // Extract relationship variables like [r], [r1], [relationship]
