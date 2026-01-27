@@ -246,59 +246,56 @@ export async function loadServerData(
   const appId = thread?.thread?.appId || headers["x-app-id"]
 
   try {
-    apiKey = session?.user?.token || session?.guest?.fingerprint || apiKey
+    const sessionResult = await getSession({
+      // appId: appResult.id,
+      deviceId,
+      fingerprint,
+      token: apiKey,
+      agentName,
+      pathname,
+      routeType,
+      locale,
+      chrryUrl,
+      screenWidth: Number(viewPortWidth),
+      screenHeight: Number(viewPortHeight),
+      gift: gift || undefined,
+      source: "layout",
+      API_URL,
+      ip: clientIp, // Pass client IP for Arcjet
+    })
 
-    const [
-      translationsResult,
-      appResult,
-      threadResult,
-      threadsResult,
-      sessionResult,
-    ] = await Promise.all([
-      getTranslations({
-        token: apiKey,
-        locale,
-        API_URL,
-      }),
-      getApp({
-        chrryUrl,
-        appId,
-        token: apiKey,
-        pathname,
-        API_URL,
-      }),
-      threadId
-        ? getThread({
-            id: threadId,
-            pageSize: pageSizes.threads,
-            token: apiKey,
-          })
-        : Promise.resolve(undefined),
-      getThreads({
-        appId,
-        pageSize: pageSizes.menuThreads,
-        sort: "bookmark",
-        token: apiKey,
-        API_URL,
-      }),
-      getSession({
-        // appId: appResult.id,
-        deviceId,
-        fingerprint,
-        token: apiKey,
-        agentName,
-        pathname,
-        routeType,
-        locale,
-        chrryUrl,
-        screenWidth: Number(viewPortWidth),
-        screenHeight: Number(viewPortHeight),
-        gift: gift || undefined,
-        source: "layout",
-        API_URL,
-        ip: clientIp, // Pass client IP for Arcjet
-      }),
-    ])
+    apiKey =
+      sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
+
+    const [translationsResult, appResult, threadResult, threadsResult] =
+      await Promise.all([
+        getTranslations({
+          token: apiKey,
+          locale,
+          API_URL,
+        }),
+        getApp({
+          chrryUrl,
+          appId,
+          token: apiKey,
+          pathname,
+          API_URL,
+        }),
+        threadId
+          ? getThread({
+              id: threadId,
+              pageSize: pageSizes.threads,
+              token: apiKey,
+            })
+          : Promise.resolve(undefined),
+        getThreads({
+          appId,
+          pageSize: pageSizes.menuThreads,
+          sort: "bookmark",
+          token: apiKey,
+          API_URL,
+        }),
+      ])
 
     threads = threadsResult
 
@@ -315,6 +312,7 @@ export async function loadServerData(
       session.app = app
     }
   } catch (error) {
+    captureException(error)
     console.error("❌ API Error:", error)
     apiError = error as Error
   }

@@ -1,10 +1,10 @@
 import { getStore, getApp as getAppDb } from "@repo/db"
 import { getGuest, getMember } from "./auth"
-import captureException from "../../lib/captureException"
 import { Context } from "hono"
 import { getSiteConfig, whiteLabels } from "@chrryai/chrry/utils/siteConfig"
 import { getAppAndStoreSlugs } from "@chrryai/chrry/utils/url"
 import { appWithStore } from "@chrryai/chrry/types"
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 
 // ==================== HELPER TYPES ====================
 interface RequestParams {
@@ -431,4 +431,14 @@ export async function getApp({
   )
 
   return app
+}
+
+export function getChrryUrl(request: Request): string | undefined {
+  try {
+    const chrryUrlHeader = request.headers.get("x-chrry-url")
+    return chrryUrlHeader || FRONTEND_URL
+  } catch (error) {
+    console.error("Error getting chrryUrl:", error)
+    return undefined
+  }
 }

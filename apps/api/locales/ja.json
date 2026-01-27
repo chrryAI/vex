@@ -2071,5 +2071,6 @@
   "Image Analysis required by {{model}}": "{{model}}によって必要とされる画像解析",
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "収益分配を有効にするためには、有料プランでOpenRouter APIキーが必要です。",
   "Image generation is enabled. Replicate API key is required for paid tiers": "画像生成が有効化されています。有料プランではReplicate APIキーが必要です",
-  "Required or disable image generation": "必要な場合、または画像生成を無効にする"
+  "Required or disable image generation": "必要な場合、または画像生成を無効にする",
+  "Earn Credits": "クレジットを獲得する"
 }

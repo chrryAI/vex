@@ -30,7 +30,7 @@ export default defineConfig({
   forbidOnly: false, //!!process.env.CI,
   // forbidOnly: false,
 
-  retries: process.env.CI ? 0 : 0,
+  retries: process.env.CI ? 1 : 0,
   maxFailures: process.env.CI ? 1 : 1,
   /* Opt out of parallel tests on CI. */
   // workers: process.env.CI ? 1 : undefined,

@@ -46,7 +46,7 @@ export default function SignIn({
   style?: React.CSSProperties
   desktopAuthHandler?: DesktopAuthHandler
 }) {
-  const { isExtension, isTauri, isCapacitor } = usePlatform()
+  const { isExtension, isCapacitor } = usePlatform()
 
   const { clear } = useCache()
 
