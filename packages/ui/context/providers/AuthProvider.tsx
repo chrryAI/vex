@@ -1991,9 +1991,7 @@ export function AuthProvider({
     if (value) {
       setInput("")
     }
-    if (!!value === isPear) {
-      return
-    }
+
     setIsPearInternal(!!value)
     if (value && app) {
       if (app.id === value.id) {
