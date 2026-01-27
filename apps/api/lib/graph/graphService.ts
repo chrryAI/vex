@@ -165,14 +165,19 @@ async function generateDynamicCypher(
       return null // Skip invalid query
     }
 
-    // Validate: Check if all defined variables are used somewhere in the query
-    // Extract relationship variables like [r], [r1], [relationship]
-    const relVars =
-      cleanQuery.match(/\[(\w+)\]/g)?.map((v) => v.slice(1, -1)) || []
+    // Validate: Check if variables without relationship types are used
+    // Extract relationship patterns: [r], [r:TYPE], [r1], etc.
+    // Only validate variables WITHOUT types (e.g., [r] not [r:FRIEND])
+    const relPatterns = cleanQuery.match(/\[(\w+)(?::[\w_]+)?\]/g) || []
 
-    if (relVars.length > 0) {
+    // Filter to only variables without types: [r] but not [r:TYPE]
+    const varsWithoutTypes = relPatterns
+      .filter((pattern) => !pattern.includes(":"))
+      .map((v) => v.slice(1, -1))
+
+    if (varsWithoutTypes.length > 0) {
       // Check if each variable is used anywhere in the query after its definition
-      const unusedVars = relVars.filter((varName) => {
+      const unusedVars = varsWithoutTypes.filter((varName) => {
         // Find where the variable is defined
         const defineIndex = cleanQuery.indexOf(`[${varName}]`)
         if (defineIndex === -1) return false
@@ -182,16 +187,19 @@ async function generateDynamicCypher(
           defineIndex + varName.length + 2,
         )
 
+        // Use regex with word boundaries to catch all usages regardless of spacing
         // Variable is used if it appears in:
-        // - WHERE clause: WHERE r.prop = ...
-        // - RETURN clause: RETURN r, type(r), ...
-        // - WITH clause: WITH r, ...
-        const isUsed =
-          afterDefinition.includes(` ${varName}.`) || // r.property
-          afterDefinition.includes(` ${varName},`) || // r, m
-          afterDefinition.includes(` ${varName} `) || // r WHERE
-          afterDefinition.includes(`(${varName})`) || // type(r)
-          afterDefinition.includes(`[${varName}]`) // Used in another pattern
+        // - r.property (property access)
+        // - type(r) or count(r) (function call)
+        // - RETURN r, or WHERE r (with word boundary)
+        const varPattern = new RegExp(
+          `\\b${varName}\\.|` + // r.property
+            `\\(${varName}\\)|` + // type(r), count(r)
+            `\\b${varName}\\b(?![\\]])`, // r as standalone word (not in [r])
+          "i",
+        )
+
+        const isUsed = varPattern.test(afterDefinition)
 
         return !isUsed
       })
