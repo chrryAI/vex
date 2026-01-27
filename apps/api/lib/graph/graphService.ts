@@ -1,11 +1,8 @@
-import { graph } from "@repo/db"
-import { createOpenAI } from "@ai-sdk/openai"
+import { graph, app } from "@repo/db"
 import { generateText, embed } from "ai"
 import captureException from "../../lib/captureException"
-
-const openai = createOpenAI({
-  apiKey: process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY,
-})
+import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
+import { appWithStore } from "@chrryai/chrry/types"
 
 // Ensure indices exist (Lazy initialization)
 let isIndexChecked = false
@@ -26,24 +23,33 @@ async function ensureIndices() {
     )
     console.log("✅ Full-Text Index ensured: node_text_index")
   } catch (error: any) {
-    // Log error to see what's wrong
-    console.log("ℹ️ Index creation error:", error.message)
-    captureException(error)
+    // Silently ignore "already indexed" errors - expected on restart
+    if (error.message?.includes("already indexed")) {
+      console.log("ℹ️ Indices already exist, skipping creation")
+    } else {
+      console.log("ℹ️ Index creation error:", error.message)
+      captureException(error)
+    }
   }
   isIndexChecked = true
 }
 
 // Generate embedding for text
-async function getEmbedding(text: string): Promise<number[] | null> {
+async function getEmbedding(
+  text: string,
+  app?: app | appWithStore,
+): Promise<number[] | null> {
   try {
+    const provider = await getEmbeddingProvider(app)
+
     const { embedding } = await embed({
-      model: openai.embedding("text-embedding-3-small"),
+      model: provider.embedding("text-embedding-3-small"),
       value: text,
     })
     return embedding
-  } catch (error) {
-    captureException(error)
-    console.error("❌ Embedding Generation Failed:", error)
+  } catch (err) {
+    captureException(err)
+    console.error("⚠️ Embedding Generation Failed:", err)
     return null
   }
 }
@@ -52,6 +58,7 @@ async function getEmbedding(text: string): Promise<number[] | null> {
 export async function findPath(
   sourceName: string,
   targetName: string,
+  app?: app | appWithStore,
 ): Promise<string> {
   try {
     // Find shortest path up to 5 hops
@@ -83,6 +90,7 @@ export async function findPath(
  */
 async function generateDynamicCypher(
   queryText: string,
+  app?: app | appWithStore,
 ): Promise<string | null> {
   try {
     const prompt = `You are an expert FalkorDB Cypher architect. Generate a Cypher query to retrieve context for this user question: "${queryText}"
@@ -98,15 +106,38 @@ async function generateDynamicCypher(
     4. Keep it efficient (LIMIT 15).
     5. Return ONLY the raw Cypher query string.`
 
+    const provider = await getModelProvider(app, "deepSeek")
+
     const { text } = await generateText({
-      model: openai("gpt-4o"), // Use the smartest model for logic
+      model: provider.provider, // DeepSeek: cheaper, faster, great for structured tasks
       prompt,
       temperature: 0,
     })
 
     const cleanQuery = text.replace(/```cypher|```/g, "").trim()
-    if (cleanQuery.toLowerCase().includes("match")) return cleanQuery
-    return null
+    if (!cleanQuery.toLowerCase().includes("match")) return null
+
+    // Validate: Check if all defined variables are used in RETURN
+    // Extract relationship variables like [r], [r1], [relationship]
+    const relVars =
+      cleanQuery.match(/\[(\w+)\]/g)?.map((v) => v.slice(1, -1)) || []
+    const returnClause =
+      cleanQuery.match(/RETURN\s+(.+?)(?:LIMIT|ORDER|$)/is)?.[1] || ""
+
+    // Check if any relationship variable is unused
+    const unusedVars = relVars.filter(
+      (v) => !returnClause.includes(v) && !returnClause.includes(`type(${v})`),
+    )
+
+    if (unusedVars.length > 0) {
+      console.warn(
+        `⚠️ Cypher query has unused variables: ${unusedVars.join(", ")}`,
+      )
+      console.warn(`Query: ${cleanQuery}`)
+      return null // Skip invalid query
+    }
+
+    return cleanQuery
   } catch (err) {
     captureException(err)
     console.error("⚠️ Dynamic Cypher Generation Failed:", err)
@@ -175,18 +206,26 @@ export async function storeDocumentChunk(
 }
 
 // Extract entities from a chunk and link them (Level 4 - God Mode)
-export async function linkChunkToEntities(
-  content: string,
-  filename: string,
-  chunkIndex: number,
-) {
+export async function linkChunkToEntities({
+  content,
+  filename,
+  chunkIndex,
+  app,
+}: {
+  content: string
+  filename: string
+  chunkIndex: number
+  app?: app | appWithStore
+}) {
   try {
-    const prompt = `Extract exactly the top 3 key entities (Topics, People, Tech, Concepts) from this text fragment.
-        Text: "${content.substring(0, 1000)}"
-        Return ONLY a JSON array of strings: ["Entity1", "Entity2", "Entity3"]`
+    const prompt = `Extract key entities (people, places, topics, concepts) from this text chunk. Return ONLY a JSON array of entity names.
+    Text: "${content}"
+    Example: ["Entity1", "Entity2"]`
+
+    const provider = await getModelProvider(app, "deepSeek")
 
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"), // Cheap model for extraction
+      model: provider.provider,
       prompt,
       temperature: 0,
     })
@@ -224,8 +263,8 @@ export async function linkChunkToEntities(
 // Extract entities and relationships from message content
 export async function extractAndStoreKnowledge(
   content: string,
-  messageId: string,
   userId?: string,
+  app?: app | appWithStore,
 ) {
   try {
     // 1. LLM Extraction
@@ -239,8 +278,10 @@ export async function extractAndStoreKnowledge(
       ]
     }`
 
+    const provider = await getModelProvider(app, "deepSeek")
+
     const { text } = await generateText({
-      model: openai("gpt-4o"), // Use a smart model for extraction
+      model: provider.provider, // Use a smart model for extraction
       prompt,
       temperature: 0,
     })
@@ -263,8 +304,8 @@ export async function extractAndStoreKnowledge(
       const rType = sanitize(relation).toUpperCase()
 
       // Generate embeddings
-      const sourceEmbedding = await getEmbedding(source)
-      const targetEmbedding = await getEmbedding(target)
+      const sourceEmbedding = await getEmbedding(source, app)
+      const targetEmbedding = await getEmbedding(target, app)
 
       // Cypher query to merge nodes and create relationship
       // SECURITY: Using parameterized queries to prevent injection
@@ -348,7 +389,10 @@ export async function extractAndStoreKnowledge(
 }
 
 // Retrieve relevant graph context
-export async function getGraphContext(queryText: string): Promise<string> {
+export async function getGraphContext(
+  queryText: string,
+  app?: app | appWithStore,
+): Promise<string> {
   try {
     // Ensure indices exist before querying
     await ensureIndices()
@@ -357,7 +401,7 @@ export async function getGraphContext(queryText: string): Promise<string> {
 
     // Level 5: Dynamic Reasoner (Primary)
     // AI determines the best way to query the graph for THIS specific question
-    const dynamicQuery = await generateDynamicCypher(queryText)
+    const dynamicQuery = await generateDynamicCypher(queryText, app)
     if (dynamicQuery) {
       try {
         const dynamicResult = await graph.query(dynamicQuery)
@@ -376,7 +420,7 @@ export async function getGraphContext(queryText: string): Promise<string> {
 
     // Fallback: Triple-Hybrid Search (Level 4 logic)
     // 1. Vector Search (Semantic)
-    const embedding = await getEmbedding(queryText)
+    const embedding = await getEmbedding(queryText, app)
     if (embedding) {
       try {
         // FalkorDB vector query: queryNodes(label, attribute, k, vector)

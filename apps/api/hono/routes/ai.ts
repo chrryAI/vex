@@ -3929,6 +3929,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 threadId: thread.id,
                 userId: member?.id,
                 guestId: guest?.id,
+                app,
               })
             } catch (error) {
               captureException(error)
@@ -4104,7 +4105,11 @@ ${lastMessageContent}
       : ""
 
   // Build enhanced RAG context from uploaded documents and message history
-  const ragContext = await buildEnhancedRAGContext(content, thread.id)
+  const ragContext = await buildEnhancedRAGContext({
+    query: content,
+    threadId: thread.id,
+    app,
+  })
 
   // Add RAG context to system prompt if available
   const ragSystemPrompt = ragContext
@@ -6698,6 +6703,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           userId: m.message.userId || undefined,
           guestId: m.message.guestId || undefined,
           role: "assistant",
+          app,
         }).catch((error) => {
           captureException(error)
           console.error("❌ AI Message RAG processing failed:", error)

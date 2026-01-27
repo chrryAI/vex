@@ -509,6 +509,7 @@ messages.post("/", async (c) => {
       userId: m.message.userId || undefined,
       guestId: m.message.guestId || undefined,
       role: "user",
+      app,
     }).catch((error) => {
       captureException(error)
     })

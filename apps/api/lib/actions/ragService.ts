@@ -1,4 +1,6 @@
-import { db, sql, eq, desc } from "@repo/db"
+import { db, sql, eq, desc, app } from "@repo/db"
+import { appWithStore } from "@chrryai/chrry/types"
+
 import {
   documentChunks,
   documentSummaries,
@@ -13,6 +15,7 @@ import {
   storeDocumentChunk,
   linkChunkToEntities,
 } from "../../lib/graph/graphService"
+import { getModelProvider } from "../getModelProvider"
 
 const API_KEY = process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
 
@@ -88,6 +91,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 export async function generateDocumentSummary(
   content: string,
   filename: string,
+  app?: app | appWithStore,
 ): Promise<{
   summary: string
   keyTopics: string[]
@@ -104,8 +108,10 @@ Required JSON format:
   "keyTopics": ["topic1", "topic2", "topic3"]
 }`
 
+    const provider = await getModelProvider(app, "deepSeek")
+
     const result = await generateText({
-      model: openaiProvider("gpt-3.5-turbo"),
+      model: provider.provider,
       prompt,
       temperature: 0.1,
     })
@@ -155,6 +161,7 @@ export async function processFileForRAG({
   threadId,
   userId,
   guestId,
+  app,
 }: {
   content: string
   filename: string
@@ -164,6 +171,7 @@ export async function processFileForRAG({
   threadId: string
   userId?: string
   guestId?: string
+  app?: app | appWithStore
 }): Promise<void> {
   console.log(
     `📚 Processing ${filename} for RAG (${Math.round(fileSizeBytes / 1024)}KB)...`,
@@ -174,6 +182,7 @@ export async function processFileForRAG({
     const { summary, keyTopics } = await generateDocumentSummary(
       content,
       filename,
+      app,
     )
     console.log(
       `📋 Generated summary for ${filename}:`,
@@ -229,7 +238,12 @@ export async function processFileForRAG({
           .then(() => {
             // Level 4: Entity Linking (God Mode)
             // Extract topics from chunk and link to Graph entities
-            return linkChunkToEntities(chunk, filename, i)
+            return linkChunkToEntities({
+              content: chunk,
+              filename,
+              chunkIndex: i,
+              app,
+            })
           })
           .catch((err) => console.error("⚠️ Graph Sync/Linking Error:", err))
 
@@ -405,8 +419,6 @@ export async function buildRAGContext(
   return context
 }
 
-// MESSAGE RAG FUNCTIONS
-
 // Process message for semantic search (called after message creation)
 export async function processMessageForRAG({
   messageId,
@@ -415,6 +427,7 @@ export async function processMessageForRAG({
   guestId,
   content,
   role,
+  app,
 }: {
   messageId: string
   threadId: string
@@ -422,15 +435,27 @@ export async function processMessageForRAG({
   guestId?: string
   content: string
   role: "user" | "assistant"
+  app?: app | appWithStore
 }): Promise<void> {
   try {
-    // Skip empty or very short messages
-    if (!content || content.trim().length < 10) {
+    console.log(`📝 Processing ${role} message for RAG:`, {
+      messageId,
+      threadId,
+      contentLength: content.length,
+      hasApp: !!app,
+      appId: app?.id,
+    })
+
+    // Skip only empty messages
+    if (!content || content.trim().length === 0) {
+      console.log("⏭️ Skipping message - empty")
       return
     }
 
     // Generate embedding for the message
+    console.log("🔢 Generating embedding...")
     const embedding = await generateEmbedding(content)
+    console.log("✅ Embedding generated:", embedding.length, "dimensions")
 
     // Store message embedding
     await db.insert(messageEmbeddings).values({
@@ -452,11 +477,9 @@ export async function processMessageForRAG({
 
     // Extract and Store Knowledge Graph Data
     if (process.env.ENABLE_GRAPH_RAG === "true") {
-      extractAndStoreKnowledge(content, messageId, userId || guestId).catch(
-        (err) => {
-          console.error("Failed to extract knowledge graph:", err)
-        },
-      )
+      extractAndStoreKnowledge(content, userId || guestId, app).catch((err) => {
+        console.error("Failed to extract knowledge graph:", err)
+      })
     }
   } catch (error) {
     captureException(error)
@@ -534,11 +557,17 @@ export async function findRelevantMessages({
 }
 
 // Enhanced context builder that combines documents + message history
-export async function buildEnhancedRAGContext(
-  query: string,
-  threadId: string,
-  excludeMessageId?: string,
-): Promise<string> {
+export async function buildEnhancedRAGContext({
+  query,
+  threadId,
+  excludeMessageId,
+  app,
+}: {
+  query: string
+  threadId: string
+  excludeMessageId?: string
+  app?: app | appWithStore
+}): Promise<string> {
   const [relevantChunks, documentSummaries, relevantMessages, graphContext] =
     await Promise.all([
       findRelevantChunks({ query, threadId, limit: 3, threshold: 0.7 }),
@@ -552,7 +581,7 @@ export async function buildEnhancedRAGContext(
       }),
       // Graph Retrieval - Only if enabled
       process.env.ENABLE_GRAPH_RAG === "true"
-        ? getGraphContext(query).catch((err) => {
+        ? getGraphContext(query, app).catch((err) => {
             console.error("Failed to get graph context:", err)
             return ""
           })
