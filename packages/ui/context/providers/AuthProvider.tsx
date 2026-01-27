@@ -261,6 +261,9 @@ const AuthContext = createContext<
       getAppSlug: (app: appWithStore, defaultSlug?: string) => string
       characterProfilesEnabled?: boolean
       isExtensionRedirect: boolean
+      showGrapes: boolean
+      setShowGrapes: (value: boolean) => void
+
       signInContext?: (
         provider: "google" | "apple" | "github" | "credentials",
         options: {
@@ -747,6 +750,8 @@ export function AuthProvider({
   const hourlyUsageLeft = user
     ? hourlyLimit - (user?.messagesLastHour || 0)
     : hourlyLimit - (guest?.messagesLastHour || 0)
+
+  const [showGrapes, setShowGrapes] = useState(false)
 
   const [deviceId, setDeviceId] = useCookieOrLocalStorage(
     "deviceId",
@@ -2748,6 +2753,8 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        showGrapes,
+        setShowGrapes,
         grapes,
         burn,
         setBurn,

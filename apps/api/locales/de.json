@@ -2073,5 +2073,6 @@
   "Image Analysis required by {{model}}": "Bildanalyse erforderlich durch {{model}}",
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "OpenRouter API-Schlüssel ist für kostenpflichtige Stufen erforderlich, um Umsatzbeteiligung zu ermöglichen.",
   "Image generation is enabled. Replicate API key is required for paid tiers": "Bildgenerierung ist aktiviert. Replicate API-Schlüssel ist für kostenpflichtige Stufen erforderlich",
-  "Required or disable image generation": "Erforderlich oder Bildgenerierung deaktivieren"
+  "Required or disable image generation": "Erforderlich oder Bildgenerierung deaktivieren",
+  "Earn Credits": "Verdienen Sie Credits"
 }

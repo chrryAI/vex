@@ -19,10 +19,10 @@ const Grappes = ({
   goToGrape?: boolean
   dataTestId?: string
 }) => {
-  const { grapes, setIsPear, grape, plausible } = useAuth()
+  const { grapes, setIsPear, grape, plausible, showGrapes, setShowGrapes } =
+    useAuth()
 
   const { setIsNewAppChat } = useChat()
-  const [showGrapes, setShowGrapes] = useState(false)
   const [selectedGrapeApp, setSelectedGrapeAppInternal] = useState<
     appWithStore | undefined
   >(grapes[0])
@@ -55,6 +55,7 @@ const Grappes = ({
         <Modal
           isModalOpen={showGrapes}
           hasCloseButton={true}
+          hideOnClickOutside={false}
           onToggle={(open) => {
             if (!open) {
               setShowGrapes(false)
