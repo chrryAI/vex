@@ -37,7 +37,7 @@ async function clearGuests() {
           isNull(messages.id),
           isNull(apps.id),
           sql`task.id IS NULL`,
-          lt(guests.createdOn, fiveDaysAgo),
+          lt(guests.activeOn, fiveDaysAgo),
         ),
       )
       .groupBy(guests.id, guests.ip)
