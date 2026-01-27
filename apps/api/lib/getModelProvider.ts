@@ -391,3 +391,21 @@ export async function getModelProvider(
       }
   }
 }
+
+/**
+ * Get embedding model provider based on app configuration
+ * Embeddings are typically from OpenAI (text-embedding-3-small)
+ */
+export async function getEmbeddingProvider(app?: app | appWithStore) {
+  const openaiKey = app?.apiKeys?.openai
+    ? safeDecrypt(app?.apiKeys?.openai)
+    : app?.tier === "free"
+      ? process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
+      : ""
+
+  if (!openaiKey) {
+    throw new Error("OpenAI API key required for embeddings")
+  }
+
+  return createOpenAI({ apiKey: openaiKey })
+}
