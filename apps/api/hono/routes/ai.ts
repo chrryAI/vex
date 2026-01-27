@@ -2186,9 +2186,8 @@ These reflect the user's interests and recent conversations. If the user seems u
   )
 
   // Fetch Vault data for context (expenses, budgets, shared expenses)
-  const { getExpenses, getBudgets, getSharedExpenses } = await import(
-    "@repo/db"
-  )
+  const { getExpenses, getBudgets, getSharedExpenses } =
+    await import("@repo/db")
 
   const vaultExpenses =
     app?.name === "Vault"
