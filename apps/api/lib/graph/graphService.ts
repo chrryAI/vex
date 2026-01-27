@@ -165,31 +165,44 @@ async function generateDynamicCypher(
       return null // Skip invalid query
     }
 
-    // Validate: Check if all defined variables are used in WHERE or RETURN
+    // Validate: Check if all defined variables are used somewhere in the query
     // Extract relationship variables like [r], [r1], [relationship]
     const relVars =
       cleanQuery.match(/\[(\w+)\]/g)?.map((v) => v.slice(1, -1)) || []
 
-    // Get WHERE and RETURN clauses
-    const whereClause =
-      cleanQuery.match(/WHERE\s+(.+?)(?:RETURN|LIMIT|ORDER|$)/is)?.[1] || ""
-    const returnClause =
-      cleanQuery.match(/RETURN\s+(.+?)(?:LIMIT|ORDER|$)/is)?.[1] || ""
+    if (relVars.length > 0) {
+      // Check if each variable is used anywhere in the query after its definition
+      const unusedVars = relVars.filter((varName) => {
+        // Find where the variable is defined
+        const defineIndex = cleanQuery.indexOf(`[${varName}]`)
+        if (defineIndex === -1) return false
 
-    // Combine both clauses for checking
-    const usageContext = whereClause + " " + returnClause
+        // Check if it's used after definition (not just in the brackets)
+        const afterDefinition = cleanQuery.substring(
+          defineIndex + varName.length + 2,
+        )
 
-    // Check if any relationship variable is unused
-    const unusedVars = relVars.filter(
-      (v) => !usageContext.includes(v) && !usageContext.includes(`type(${v})`),
-    )
+        // Variable is used if it appears in:
+        // - WHERE clause: WHERE r.prop = ...
+        // - RETURN clause: RETURN r, type(r), ...
+        // - WITH clause: WITH r, ...
+        const isUsed =
+          afterDefinition.includes(` ${varName}.`) || // r.property
+          afterDefinition.includes(` ${varName},`) || // r, m
+          afterDefinition.includes(` ${varName} `) || // r WHERE
+          afterDefinition.includes(`(${varName})`) || // type(r)
+          afterDefinition.includes(`[${varName}]`) // Used in another pattern
 
-    if (unusedVars.length > 0) {
-      console.warn(
-        `⚠️ Cypher query has unused variables: ${unusedVars.join(", ")}`,
-      )
-      console.warn(`Query: ${cleanQuery}`)
-      return null // Skip invalid query
+        return !isUsed
+      })
+
+      if (unusedVars.length > 0) {
+        console.warn(
+          `⚠️ Cypher query has unused variables: ${unusedVars.join(", ")}`,
+        )
+        console.warn(`Query: ${cleanQuery}`)
+        return null // Skip invalid query
+      }
     }
 
     return cleanQuery
@@ -496,7 +509,7 @@ export async function getGraphContext(
           const expandQuery = `
                 MATCH (n)-[r]->(m)
                 WHERE n.name IN $names
-                RETURN n.name, type(r), m.name
+                RETURN n.name as source, type(r) as rel, m.name as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
@@ -541,7 +554,7 @@ export async function getGraphContext(
         const expandQuery = `
                 MATCH (n)-[r]->(m)
                 WHERE n.name IN $names
-                RETURN n.name, type(r), m.name
+                RETURN n.name as source, type(r) as rel, m.name as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
