@@ -55,6 +55,7 @@ const Grappes = ({
         <Modal
           isModalOpen={showGrapes}
           hasCloseButton={true}
+          hideOnClickOutside={false}
           onToggle={(open) => {
             if (!open) {
               setShowGrapes(false)
