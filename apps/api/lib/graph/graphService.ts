@@ -4,6 +4,29 @@ import captureException from "../../lib/captureException"
 import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
 import { appWithStore } from "@chrryai/chrry/types"
 
+/**
+ * FUTURE: App-level provider configuration
+ *
+ * Each app can specify which AI provider to use for different features:
+ *
+ * app.metadata.providers = {
+ *   rag: "deepSeek",              // Graph RAG operations (Cypher, entity extraction)
+ *   memory: "chatGPT",             // Memory/context management
+ *   titleGeneration: "claude",     // Thread title generation
+ *   summarization: "deepSeek",     // Document summarization
+ *   codeExecution: "chatGPT",      // Code analysis and execution
+ * }
+ *
+ * Benefits:
+ * - Cost optimization per feature
+ * - Quality tuning per use case
+ * - User choice and flexibility
+ * - Enterprise custom configurations
+ *
+ * Currently: Hardcoded to "deepSeek" for RAG operations
+ * TODO: Implement app.metadata.providers.rag selection
+ */
+
 // Ensure indices exist (Lazy initialization)
 let isIndexChecked = false
 async function ensureIndices() {
@@ -99,12 +122,26 @@ async function generateDynamicCypher(
     - Nodes: (Topic {name, createdAt}), (Document {name, threadId, createdAt}), (Chunk {content, chunkIndex}), (User {id})
     - Relations: (Topic)-[REL]->(Topic), (Document)-[:HAS_CHUNK]->(Chunk), (Chunk)-[:MENTIONS]->(Topic)
     
+    CRITICAL FalkorDB Limitations:
+    - NO regex operators (=~, CONTAINS, STARTS WITH, ENDS WITH)
+    - Use exact string matching with = only
+    - For partial matching, use multiple OR conditions with exact values
+    - If you define a relationship variable like [r] or [relationship], you MUST use it in WHERE or RETURN
+    - If you don't need the relationship, use anonymous [] instead of [relationship]
+    
     Rules:
     1. Focus on finding relationships and content related to entities in the question.
     2. Use temporal ordering (DESC createdAt) if relevance is time-sensitive.
     3. Return meaningful properties: node.name, type(relationship), property values.
     4. Keep it efficient (LIMIT 15).
-    5. Return ONLY the raw Cypher query string.`
+    5. Use ONLY exact string matching with = operator.
+    6. IMPORTANT: Use anonymous [] for relationships you don't need, or use [r] and include type(r) in RETURN.
+    7. Return ONLY the raw Cypher query string.
+    
+    Examples:
+    - GOOD: MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name
+    - GOOD: MATCH (n)-[]->(m) RETURN n.name, m.name
+    - BAD:  MATCH (n)-[relationship]->(m) RETURN n.name, m.name`
 
     const provider = await getModelProvider(app, "deepSeek")
 
@@ -117,24 +154,63 @@ async function generateDynamicCypher(
     const cleanQuery = text.replace(/```cypher|```/g, "").trim()
     if (!cleanQuery.toLowerCase().includes("match")) return null
 
-    // Validate: Check if all defined variables are used in RETURN
-    // Extract relationship variables like [r], [r1], [relationship]
-    const relVars =
-      cleanQuery.match(/\[(\w+)\]/g)?.map((v) => v.slice(1, -1)) || []
-    const returnClause =
-      cleanQuery.match(/RETURN\s+(.+?)(?:LIMIT|ORDER|$)/is)?.[1] || ""
-
-    // Check if any relationship variable is unused
-    const unusedVars = relVars.filter(
-      (v) => !returnClause.includes(v) && !returnClause.includes(`type(${v})`),
+    // Validate: Check for unsupported regex operators
+    const unsupportedOperators = ["=~", "CONTAINS", "STARTS WITH", "ENDS WITH"]
+    const hasUnsupportedOp = unsupportedOperators.some((op) =>
+      cleanQuery.includes(op),
     )
-
-    if (unusedVars.length > 0) {
-      console.warn(
-        `⚠️ Cypher query has unused variables: ${unusedVars.join(", ")}`,
-      )
+    if (hasUnsupportedOp) {
+      console.warn("⚠️ Cypher query contains unsupported regex operators")
       console.warn(`Query: ${cleanQuery}`)
       return null // Skip invalid query
+    }
+
+    // Validate: Check if variables without relationship types are used
+    // Extract relationship patterns: [r], [r:TYPE], [r1], etc.
+    // Only validate variables WITHOUT types (e.g., [r] not [r:FRIEND])
+    const relPatterns = cleanQuery.match(/\[(\w+)(?::[\w_]+)?\]/g) || []
+
+    // Filter to only variables without types: [r] but not [r:TYPE]
+    const varsWithoutTypes = relPatterns
+      .filter((pattern) => !pattern.includes(":"))
+      .map((v) => v.slice(1, -1))
+
+    if (varsWithoutTypes.length > 0) {
+      // Check if each variable is used anywhere in the query after its definition
+      const unusedVars = varsWithoutTypes.filter((varName) => {
+        // Find where the variable is defined
+        const defineIndex = cleanQuery.indexOf(`[${varName}]`)
+        if (defineIndex === -1) return false
+
+        // Check if it's used after definition (not just in the brackets)
+        const afterDefinition = cleanQuery.substring(
+          defineIndex + varName.length + 2,
+        )
+
+        // Use regex with word boundaries to catch all usages regardless of spacing
+        // Variable is used if it appears in:
+        // - r.property (property access)
+        // - type(r) or count(r) (function call)
+        // - RETURN r, or WHERE r (with word boundary)
+        const varPattern = new RegExp(
+          `\\b${varName}\\.|` + // r.property
+            `\\(${varName}\\)|` + // type(r), count(r)
+            `\\b${varName}\\b(?![\\]])`, // r as standalone word (not in [r])
+          "i",
+        )
+
+        const isUsed = varPattern.test(afterDefinition)
+
+        return !isUsed
+      })
+
+      if (unusedVars.length > 0) {
+        console.warn(
+          `⚠️ Cypher query has unused variables: ${unusedVars.join(", ")}`,
+        )
+        console.warn(`Query: ${cleanQuery}`)
+        return null // Skip invalid query
+      }
     }
 
     return cleanQuery
@@ -441,7 +517,7 @@ export async function getGraphContext(
           const expandQuery = `
                 MATCH (n)-[r]->(m)
                 WHERE n.name IN $names
-                RETURN n.name, type(r), m.name
+                RETURN n.name as source, type(r) as rel, m.name as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
@@ -486,7 +562,7 @@ export async function getGraphContext(
         const expandQuery = `
                 MATCH (n)-[r]->(m)
                 WHERE n.name IN $names
-                RETURN n.name, type(r), m.name
+                RETURN n.name as source, type(r) as rel, m.name as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)

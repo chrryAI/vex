@@ -105,6 +105,24 @@ export async function getModelProvider(
         }
       }
 
+      // Final fallback to ChatGPT if no DeepSeek key available
+      console.warn("⚠️ No DeepSeek API key found, falling back to ChatGPT")
+      const chatgptKey = app?.apiKeys?.openai
+        ? safeDecrypt(app?.apiKeys?.openai)
+        : app?.tier === "free"
+          ? process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
+          : ""
+
+      if (chatgptKey) {
+        const openaiProvider = createOpenAI({ apiKey: chatgptKey })
+        return {
+          provider: openaiProvider("gpt-3.5-turbo"),
+          agentName: "chatGPT",
+        }
+      }
+
+      // Last resort - return with empty key (will fail but at least logged)
+      console.error("❌ No API keys available for DeepSeek or ChatGPT fallback")
       return {
         provider: createDeepSeek({ apiKey: "" })(agent.modelId),
         agentName: agent.name,
@@ -363,6 +381,25 @@ export async function getModelProvider(
       // Custom OpenAI-compatible model
       if (agent.apiURL) {
         console.log("🤖 Using custom agent:", agent.name)
+
+        // Special handling for DeepSeek - don't use apiURL as key
+        if (agent.name.toLowerCase() === "deepseek") {
+          console.warn("⚠️ DeepSeek agent in default case - using env key")
+          const deepseekKey = app?.apiKeys?.deepseek
+            ? safeDecrypt(app?.apiKeys?.deepseek)
+            : app?.tier === "free"
+              ? process.env.DEEPSEEK_API_KEY
+              : ""
+
+          if (deepseekKey) {
+            const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
+            return {
+              provider: deepseekProvider(agent.modelId),
+              agentName: agent.name,
+            }
+          }
+        }
+
         const [customBaseURL, customApiKey] = agent.apiURL.includes("|")
           ? agent.apiURL.split("|")
           : ["https://api.openai.com/v1", agent.apiURL]
