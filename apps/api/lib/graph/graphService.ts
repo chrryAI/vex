@@ -12,22 +12,23 @@ let isIndexChecked = false
 async function ensureIndices() {
   if (isIndexChecked) return
   try {
-    // 1. Vector Index (Semantic)
+    // 1. Vector Index (Semantic) - FalkorDB syntax
+    // Note: FalkorDB requires a label - using generic 'Entity' label for all nodes
     // Dimension 1536 for text-embedding-3-small
     await graph.query(
-      `CALL db.idx.vector.createNodeIndex('node_vector_index', 'name', 'embedding', 1536, 'COSINE')`,
+      `CREATE VECTOR INDEX FOR (n:Entity) ON (n.embedding) OPTIONS {dimension:1536, similarityFunction:'cosine'}`,
     )
-    console.log("✅ Vector Index ensured: node_vector_index")
+    console.log("✅ Vector Index ensured: Entity.embedding")
 
     // 2. Full-Text Index (Fuzzy/Typo-tolerant)
-    // Indexes the 'name' property of any node
     await graph.query(
       `CALL db.idx.fulltext.createNodeIndex('node_text_index', 'name')`,
     )
     console.log("✅ Full-Text Index ensured: node_text_index")
-  } catch (error) {
-    // Indices likely exist, ignore specifics
-    // console.log("ℹ️ Index check:", error.message)
+  } catch (error: any) {
+    // Log error to see what's wrong
+    console.log("ℹ️ Index creation error:", error.message)
+    captureException(error)
   }
   isIndexChecked = true
 }
@@ -41,6 +42,7 @@ async function getEmbedding(text: string): Promise<number[] | null> {
     })
     return embedding
   } catch (error) {
+    captureException(error)
     console.error("❌ Embedding Generation Failed:", error)
     return null
   }
@@ -70,6 +72,7 @@ export async function findPath(
     // Let's assume we get nodes/rels in the path
     return `🔗 CONNECTION FOUND: ${sourceName} is related to ${targetName} (Shortest Path)`
   } catch (e) {
+    captureException(e)
     return ""
   }
 }
@@ -105,6 +108,7 @@ async function generateDynamicCypher(
     if (cleanQuery.toLowerCase().includes("match")) return cleanQuery
     return null
   } catch (err) {
+    captureException(err)
     console.error("⚠️ Dynamic Cypher Generation Failed:", err)
     return null
   }
@@ -164,6 +168,7 @@ export async function storeDocumentChunk(
     })
     // console.log(`📚 Graph Chunk Synced: ${filename} #${chunkIndex}`)
   } catch (error) {
+    captureException(error)
     console.error("❌ Failed to store chunk in graph:", error)
     // Do not throw, keep legacy flow alive
   }
@@ -211,6 +216,7 @@ export async function linkChunkToEntities(
     }
     // console.log(`🔗 Entity Linking Done: ${filename} #${chunkIndex} -> [${entities.join(', ')}]`)
   } catch (e) {
+    captureException(e)
     console.error("⚠️ Entity Linking Failed:", e)
   }
 }
@@ -344,6 +350,9 @@ export async function extractAndStoreKnowledge(
 // Retrieve relevant graph context
 export async function getGraphContext(queryText: string): Promise<string> {
   try {
+    // Ensure indices exist before querying
+    await ensureIndices()
+
     const contextItems = new Set<string>()
 
     // Level 5: Dynamic Reasoner (Primary)
@@ -358,6 +367,7 @@ export async function getGraphContext(queryText: string): Promise<string> {
           }
         }
       } catch (err) {
+        captureException(err)
         console.warn(
           "⚠️ Dynamic Cypher execution failed, using hybrid fallback.",
         )
@@ -369,14 +379,15 @@ export async function getGraphContext(queryText: string): Promise<string> {
     const embedding = await getEmbedding(queryText)
     if (embedding) {
       try {
+        // FalkorDB vector query: queryNodes(label, attribute, k, vector)
+        // Note: vecf32() requires inline array, not parameter
+        // Label must match the index we created (Entity)
         const vectorQuery = `
-          CALL db.idx.vector.queryNodes('node_vector_index', 'embedding', $embedding, 5) 
+          CALL db.idx.vector.queryNodes('Entity', 'embedding', 5, vecf32(${JSON.stringify(embedding)})) 
           YIELD node, score
           RETURN node.name, score
         `
-        const vectorResult = await graph.query(vectorQuery, {
-          params: { embedding },
-        })
+        const vectorResult = await graph.query(vectorQuery)
 
         const semanticNodes =
           (vectorResult as any)?.resultSet?.map((row: any) => row[0]) || []
@@ -409,6 +420,7 @@ export async function getGraphContext(queryText: string): Promise<string> {
         }
       } catch (err) {
         console.warn("⚠️ Vector search failed:", err)
+        captureException(err)
       }
     }
 
@@ -452,7 +464,8 @@ export async function getGraphContext(queryText: string): Promise<string> {
         }
       }
     } catch (err) {
-      // console.warn("FT search failed:", err)
+      captureException(err)
+      console.warn("FT search failed:", err)
     }
 
     if (contextItems.size === 0) return ""

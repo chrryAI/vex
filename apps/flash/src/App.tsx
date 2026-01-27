@@ -37,9 +37,10 @@ function App({ serverData }: AppProps) {
             overflow: "auto",
           }}
         >
-          {serverData?.apiError instanceof Error
+          {/* {serverData?.apiError instanceof Error
             ? `${serverData.apiError.name}: ${serverData.apiError.message}\n\n${serverData.apiError.stack}`
-            : JSON.stringify(serverData?.apiError, null, 2)}
+            : JSON.stringify(serverData?.apiError, null, 2)} */}
+          {JSON.stringify(serverData?.siteConfig, null, 2)}
         </pre>
       </div>
     )

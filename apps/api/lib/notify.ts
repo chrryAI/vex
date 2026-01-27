@@ -77,12 +77,12 @@ export async function notify(
       data: payload.data,
     }
 
-    console.log(
-      "📦 Sending notification type:",
-      notificationPayload.type,
-      "to:",
-      recipientId,
-    )
+    // console.log(
+    //   "📦 Sending notification type:",
+    //   notificationPayload.type,
+    //   "to:",
+    //   recipientId,
+    // )
 
     // Use internal WebSocket notification instead of HTTP
     notifyClients(recipientId, notificationPayload)
@@ -154,9 +154,9 @@ export const notifyOwnerAndCollaborations = async ({
 }: notifyOwnerAndCollaborationsPayload) => {
   if (notifySender) {
     const recipientId = member?.id || guest?.id || ""
-    console.log(
-      `📨 notifyOwnerAndCollaborations: Sending ${payload.type} to ${recipientId}`,
-    )
+    // console.log(
+    //   `📨 notifyOwnerAndCollaborations: Sending ${payload.type} to ${recipientId}`,
+    // )
     try {
       await notify(recipientId, payload)
     } catch (error) {

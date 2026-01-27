@@ -681,15 +681,50 @@ threads.patch("/:id", async (c) => {
     })
   }
 
+  const rawInstructions =
+    instructions === "" ? null : instructions || thread.instructions
+
+  const sanitizedInstructions = rawInstructions
+    ? sanitizeHtml(rawInstructions, {
+        // Sato minimalist config - sadece gerekli tag'ler
+        allowedTags: [
+          "b",
+          "i",
+          "em",
+          "strong",
+          "a",
+          "code",
+          "pre",
+          "blockquote",
+          "ul",
+          "ol",
+          "li",
+          "p",
+          "br",
+          "span",
+          "h1",
+          "h2",
+          "h3",
+        ],
+        allowedAttributes: {
+          a: ["href", "target", "rel"],
+          span: ["class"],
+          "*": ["style"], // conditional - eğer CSS support gerekliyse
+        },
+        allowedSchemes: ["http", "https", "mailto"],
+        // Sato performance optimization
+        parseStyleAttributes: false, // Style parsing disable - performance için
+      })
+    : null
+
   await updateThreadDb({
     ...thread,
     appId: appId ?? thread.appId,
     star: star === 0 ? null : star,
-    title: title || thread.title,
+    title: sanitizeHtml(title || thread.title),
     visibility: visibility || thread.visibility,
     bookmarks: newBookmarks,
-    instructions:
-      instructions === "" ? null : instructions || thread.instructions,
+    instructions: sanitizedInstructions,
   })
 
   // Process uploaded artifacts if any

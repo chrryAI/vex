@@ -131,7 +131,7 @@ setInterval(() => {
   streamControllers.forEach((controller, id) => {
     // Remove controllers older than 5 minutes (likely abandoned streams)
     if (now - controller.createdAt > AUTO_CLEANUP_TIMEOUT) {
-      console.log(`🧹 Cleaning up stale stream controller: ${id}`)
+      // console.log(`🧹 Cleaning up stale stream controller: ${id}`)
       streamControllers.delete(id)
     }
   })
@@ -262,6 +262,7 @@ ${praise.map((f, i) => `${i + 1}. [Sentiment: ${f.sentimentScore.toFixed(2)}] ${
 Use this data to answer questions about feedback trends, common complaints, and user sentiment.
 `
   } catch (error) {
+    captureException(error)
     console.error("Error fetching Pear feedback context:", error)
     return ""
   }
@@ -428,9 +429,9 @@ async function getRelevantMemoryContext({
         .filter((id): id is string => id !== null),
     ).size
 
-    console.log(
-      `🧠 Retrieved ${memoriesResult.memories.length} memories (${userMemories.length} user, ${appMemories.length} app) from ${uniqueThreads} different threads`,
-    )
+    // console.log(
+    //   `🧠 Retrieved ${memoriesResult.memories.length} memories (${userMemories.length} user, ${appMemories.length} app) from ${uniqueThreads} different threads`,
+    // )
 
     let context = ""
     if (userMemoryContext) {
@@ -444,6 +445,7 @@ async function getRelevantMemoryContext({
     }
     return { context, memoryIds, isAppCreator, recentAnalytics }
   } catch (error) {
+    captureException(error)
     console.error("❌ Error retrieving memory context:", error)
     return { context: "", memoryIds: [] }
   }
@@ -493,6 +495,7 @@ async function getNewsContext(slug?: string | null): Promise<string> {
     const today = new Date().toLocaleDateString()
     return `\n\n## Recent News Context (Last 7 Days):\nToday's date: ${today}\n\n${newsContext}\n\nIMPORTANT: These are RECENT news articles (published within the last 7 days). When referencing them, use present tense or recent past tense (e.g., "According to recent reports..." or "Today, CNN reports..."). Always cite the source and check the published date.`
   } catch (error) {
+    captureException(error)
     console.error("Error fetching news context:", error)
     return ""
   }
@@ -509,15 +512,15 @@ async function getAnalyticsContext({
   member?: user & { subscription?: subscription }
   guest?: guest & { subscription?: subscription }
 }): Promise<string> {
-  console.log("🍇 getAnalyticsContext called for Grape!")
+  // console.log("🍇 getAnalyticsContext called for Grape!")
 
   try {
     // Fetch all analytics sites from DB (synced by cron)
     const sites = await getAnalyticsSites()
-    console.log(`🍇 Found ${sites.length} analytics sites in DB`)
+    // console.log(`🍇 Found ${sites.length} analytics sites in DB`)
 
     if (!sites || sites.length === 0) {
-      console.log("🍇 No analytics sites found in DB")
+      // console.log("🍇 No analytics sites found in DB")
       return "" // No data yet, cron hasn't run
     }
 
@@ -551,9 +554,9 @@ async function getAnalyticsContext({
     const isPro = member?.subscription?.plan === "pro"
     const isAppOwner = isOwner(app, { userId: member?.id, guestId: guest?.id })
 
-    console.log(
-      `📊 Analytics Access | User: ${userType}:${userId} | Level: ${accessLevel} | App: ${app?.slug} | Owner: ${isAppOwner} | Pro: ${isPro}`,
-    )
+    // console.log(
+    //   `📊 Analytics Access | User: ${userType}:${userId} | Level: ${accessLevel} | App: ${app?.slug} | Owner: ${isAppOwner} | Pro: ${isPro}`,
+    // )
 
     // Add security warning for public data
     if (!isAdmin) {
@@ -572,7 +575,7 @@ async function getAnalyticsContext({
       )
       .forEach((site, index) => {
         if (!site.stats) {
-          console.log(`🍇 No stats for ${site.domain}`)
+          // console.log(`🍇 No stats for ${site.domain}`)
           return
         }
 
@@ -631,20 +634,20 @@ async function getAnalyticsContext({
       })
 
     if (!isAdmin) {
-      console.log(
-        `📊 Returning public analytics only (${sites.filter((s) => s.domain === "e2e.chrry.ai").length} sites)`,
-      )
+      // console.log(
+      //   `📊 Returning public analytics only (${sites.filter((s) => s.domain === "e2e.chrry.ai").length} sites)`,
+      // )
       return context
     }
 
-    console.log(
-      `📊 Admin access granted - including real-time events for all ${sites.length} sites`,
-    )
+    // console.log(
+    //   `📊 Admin access granted - including real-time events for all ${sites.length} sites`,
+    // )
 
     if (!db) {
-      console.log(
-        `📊 No subscription found for member or guest - returning public analytics only`,
-      )
+      // console.log(
+      //   `📊 No subscription found for member or guest - returning public analytics only`,
+      // )
       return ""
     }
 
@@ -682,9 +685,9 @@ async function getAnalyticsContext({
               .limit(200)
           : [] // Free users: No real-time events
 
-      console.log(
-        `🔥 Real-time events query | Found: ${realtimeEvents.length} events | Access: ${isAdmin ? "admin-all" : isPro && isAppOwner ? `pro-${app?.slug}` : "none"}`,
-      )
+      // console.log(
+      //   `🔥 Real-time events query | Found: ${realtimeEvents.length} events | Access: ${isAdmin ? "admin-all" : isPro && isAppOwner ? `pro-${app?.slug}` : "none"}`,
+      // )
 
       if (realtimeEvents.length > 0) {
         context += `## 🔥 Real-Time User Behavior (Last 24 Hours):\n\n`
@@ -734,20 +737,21 @@ async function getAnalyticsContext({
     context += `6. Compare performance across different domains\n\n`
     context += `You decide what's important enough to remember.`
 
-    console.log(
-      "🍇 Full analytics context being injected:",
-      context.substring(0, 500),
-    )
+    // console.log(
+    //   "🍇 Full analytics context being injected:",
+    //   context.substring(0, 500),
+    // )
 
     return context
   } catch (error) {
+    captureException(error)
     console.error("Error fetching analytics context:", error)
     return ""
   }
 }
 
 const getPearContext = async (): Promise<string> => {
-  console.log("🍐 getPearContext called for Pear!")
+  // console.log("🍐 getPearContext called for Pear!")
 
   try {
     // Fetch recent Pear feedback messages
@@ -758,11 +762,11 @@ const getPearContext = async (): Promise<string> => {
     })
 
     if (!feedbacks || feedbacks.messages.length === 0) {
-      console.log("🍐 No Pear feedback found")
+      // console.log("🍐 No Pear feedback found")
       return ""
     }
 
-    console.log(`🍐 Found ${feedbacks.messages.length} Pear feedback messages`)
+    // console.log(`🍐 Found ${feedbacks.messages.length} Pear feedback messages`)
 
     // Fetch unique app IDs from threads
     const appIds = [
@@ -832,10 +836,12 @@ const getPearContext = async (): Promise<string> => {
     context += `4. Suggest actionable improvements for app creators\n`
     context += `5. Track sentiment trends (positive, negative, neutral)\n`
 
-    console.log("🍐 Pear context being injected:", context.substring(0, 500))
+    // console.log("🍐 Pear context being injected:", context.substring(0, 500))
 
     return context
   } catch (error) {
+    captureException(error)
+
     console.error("🍐 Error fetching Pear context:", error)
     return ""
   }
@@ -911,6 +917,8 @@ Use this to understand the app's purpose and guide users effectively.
 
     return context
   } catch (error) {
+    captureException(error)
+
     console.error("Error fetching DNA context:", error)
     return ""
   }
@@ -989,7 +997,7 @@ function renderSystemPrompt(params: {
       : null
 
     // Render template with data
-    return compiledTemplate({
+    const templateData = {
       app: {
         name: app?.name || "Vex",
         title: app?.title,
@@ -1035,11 +1043,26 @@ function renderSystemPrompt(params: {
       weather: weatherData,
       location,
       threadInstructions,
-    })
+    }
+
+    const renderedPrompt = compiledTemplate(templateData)
+
+    return renderedPrompt
   } catch (error) {
+    captureException(error)
+
     // Log the template error but don't crash
-    console.error("❌ Template rendering error:", error)
-    console.error("Template content:", template?.substring(0, 200))
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error(
+      "❌ Template rendering error:",
+      errorMessage.substring(0, 200),
+    )
+    console.error("📄 FULL TEMPLATE THAT FAILED:")
+    console.error(template)
+    console.error("📏 Template length:", template.length)
+    console.error("📄 Template line 166 area:")
+    const lines = template.split("\n")
+    console.error(lines.slice(163, 169).join("\n"))
 
     // Fallback to a basic system prompt
     const appName = app?.name || "Vex"
@@ -1048,7 +1071,6 @@ function renderSystemPrompt(params: {
       app?.description || "I help users accomplish their goals efficiently."
 
     // Extract error details for user-friendly message
-    const errorMessage = error instanceof Error ? error.message : String(error)
     const lineMatch = errorMessage.match(/line (\d+)/i)
     const lineNumber = lineMatch ? lineMatch[1] : "unknown"
 
@@ -1080,23 +1102,23 @@ const app = new Hono()
 app.post("/", async (c) => {
   const request = c.req.raw
   const startTime = Date.now()
-  console.log("🚀 POST /api/ai - Request received")
-  console.time("messageProcessing")
+  // console.log("🚀 POST /api/ai - Request received")
+  // console.time("messageProcessing")
 
   const member = await getMember(c, { full: true, skipCache: true })
   const guest = member ? undefined : await getGuest(c, { skipCache: true })
 
   if (!member && !guest) {
-    console.log("❌ No valid credentials")
+    // console.log("❌ No valid credentials")
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
   // Log user type and tier for analytics
   const userType = member ? "member" : "guest"
   const tier = member?.subscription?.plan || guest?.subscription?.plan || "free"
-  console.log(
-    `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
-  )
+  // console.log(
+  //   `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
+  // )
 
   const { success } = await checkRateLimit(request, { member, guest })
 
@@ -1234,10 +1256,10 @@ app.post("/", async (c) => {
     clientId?: string
     streamId?: string
   }) {
-    console.log(
-      `📤 Sending chunk ${chunkNumber}/${totalChunks}:`,
-      chunk.substring(0, 20) + "...",
-    )
+    // console.log(
+    //   `📤 Sending chunk ${chunkNumber}/${totalChunks}:`,
+    //   chunk.substring(0, 20) + "...",
+    // )
 
     // Send lightweight notification - only metadata, NOT full content
     // This prevents 413 Payload Too Large errors
@@ -1271,7 +1293,7 @@ app.post("/", async (c) => {
     await wait(waitFor)
   }
 
-  console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
+  // console.log("🔍 Request data:", { agentId, messageId, stopStreamId })
 
   const draft = rest.draft as appFormData & {
     canSubmit?: boolean
@@ -1547,16 +1569,16 @@ ${
 
   const appId = app?.id || null
 
-  console.log("📝 Request data:", {
-    agentId,
-    messageId,
-    language,
-    filesCount: files.length,
-    fileTypes: files.map((f) => f.type),
-    pauseDebate,
-    selectedAgentId,
-    stopStreamId,
-  })
+  // console.log("📝 Request data:", {
+  //   agentId,
+  //   messageId,
+  //   language,
+  //   filesCount: files.length,
+  //   fileTypes: files.map((f) => f.type),
+  //   pauseDebate,
+  //   selectedAgentId,
+  //   stopStreamId,
+  // })
 
   const timezone = member?.timezone || guest?.timezone
 
@@ -1611,8 +1633,10 @@ ${
       try {
         controller.close() // Close the stream
       } catch (error) {
+        captureException(error)
+
         // Stream might already be closed
-        console.log("Stream already closed or errored")
+        // console.log("Stream already closed or errored")
       }
       streamControllers.delete(stopStreamId) // Remove from map
 
@@ -1690,9 +1714,9 @@ ${
   if (debateAgent) features.push("debate")
   if (requestData.pear) features.push("pear-feedback")
 
-  console.log(
-    `🤖 Model: ${modelName} | Features: ${features.join(", ") || "none"}`,
-  )
+  // console.log(
+  //   `🤖 Model: ${modelName} | Features: ${features.join(", ") || "none"}`,
+  // )
 
   const clientId = message.message.clientId
   const currentThreadId = threadId
@@ -3375,9 +3399,9 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
         // Filter out empty messages that would cause Claude to fail
         const content = msg.content?.trim()
         if (!content || content === "") {
-          console.log(
-            `🗑️ Filtering out empty message from conversation history`,
-          )
+          // console.log(
+          //   `🗑️ Filtering out empty message from conversation history`,
+          // )
           return false
         }
         return true
@@ -3756,6 +3780,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               },
             })
           } catch (error: any) {
+            captureException(error)
+
             console.error("❌ Image upload failed:", error)
             return c.json(
               { error: `Failed to upload image: ${error.message}` },
@@ -3792,6 +3818,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 },
               })
             } catch (error: any) {
+              captureException(error)
+
               console.error("❌ Audio upload failed:", error)
               return c.json(
                 { error: `Failed to upload audio: ${error.message}` },
@@ -3815,6 +3843,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 },
               })
             } catch (error: any) {
+              captureException(error)
+
               console.error("❌ Video upload failed:", error)
               return c.json(
                 { error: `Failed to upload video: ${error.message}` },
@@ -3864,6 +3894,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                   },
                 })
               } catch (uploadError: any) {
+                captureException(uploadError)
+
                 console.error("❌ Fallback video upload failed:", uploadError)
                 return c.json(
                   {
@@ -3927,6 +3959,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               },
             })
           } catch (error: any) {
+            captureException(error)
+
             console.error("❌ PDF upload failed:", error)
             return c.json(
               { error: `Failed to upload PDF: ${error.message}` },
@@ -4266,6 +4300,8 @@ How I process and remember information:
 
         console.log("🍐 Pear validation completed:", pearValidationResult)
       } catch (error) {
+        captureException(error)
+
         console.error("❌ Pear validation error:", error)
       }
     }
@@ -4350,6 +4386,8 @@ How I process and remember information:
 
       console.log("✅ Retro response recorded")
     } catch (error) {
+      captureException(error)
+
       console.error("❌ Error tracking retro session:", error)
       // Don't fail the request if tracking fails
     }
@@ -4464,6 +4502,8 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
             )
           }
         } catch (error) {
+          captureException(error)
+
           console.error("Failed to award credits for like:", error)
         }
       } else {
@@ -5090,11 +5130,11 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
 
     // Special handling for Flux image generation with DeepSeek enhancement
     if (imageGenerationEnabled) {
-      console.log("🎨 Hybrid DeepSeek + Flux image generation path")
+      // console.log("🎨 Hybrid DeepSeek + Flux image generation path")
 
       try {
         // Step 1: Use DeepSeek to enhance the prompt and generate description
-        console.log("🧠 Enhancing prompt with DeepSeek...")
+        // console.log("🧠 Enhancing prompt with DeepSeek...")
 
         // First, get enhanced prompt from DeepSeek internally (no streaming)
         // In the enhancement prompt, add conversation context
@@ -5146,10 +5186,12 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           aiDescription =
             enhancedData.description ||
             "I'm generating a beautiful image for you..."
-          console.log("✅ DeepSeek enhancement complete:", {
-            enhancedPrompt: enhancedPrompt.substring(0, 100),
-          })
+          // console.log("✅ DeepSeek enhancement complete:", {
+          //   enhancedPrompt: enhancedPrompt.substring(0, 100),
+          // })
         } catch (parseError) {
+          captureException(parseError)
+
           console.log(
             "⚠️ DeepSeek parsing failed, using original prompt:",
             parseError,
@@ -5227,6 +5269,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             replicateAuth = decrypt(appReplicateKey)
             console.log("✅ Using app-specific Replicate API key")
           } catch (e) {
+            captureException(e)
+
             console.warn("⚠️ Failed to decrypt Replicate key, using as-is")
             replicateAuth = appReplicateKey
           }
@@ -5410,10 +5454,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
     // Special handling for Sushi AI (unified multimodal agent)
     if (agent.name === "sushi") {
-      console.log("=".repeat(80))
-      console.log("🍣🍣🍣 SUSHI BLOCK ENTERED 🍣🍣🍣")
-      console.log("🍣 Sushi AI - Unified multimodal agent")
-      console.log("=".repeat(80))
+      // console.log("=".repeat(80))
+      // console.log("🍣🍣🍣 SUSHI BLOCK ENTERED 🍣🍣🍣")
+      // console.log("🍣 Sushi AI - Unified multimodal agent")
+      // console.log("=".repeat(80))
 
       // Sushi uses DeepSeek Reasoner with tool calling for image generation
       // Use the same enhanced streaming as DeepSeek for consistency
@@ -5436,12 +5480,12 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             toolCallsDetected = toolCalls && toolCalls.length > 0
             streamCompleted = true
 
-            console.log("🍣 Sushi finished:", {
-              hasToolCalls: toolCallsDetected,
-              toolNames: toolCalls?.map((tc) => tc.toolName),
-              textLength: text?.length,
-              pearValidation: requestData.pear,
-            })
+            // console.log("🍣 Sushi finished:", {
+            //   hasToolCalls: toolCallsDetected,
+            //   toolNames: toolCalls?.map((tc) => tc.toolName),
+            //   textLength: text?.length,
+            //   pearValidation: requestData.pear,
+            // })
           },
         })
         console.log("🍣 Step 2: streamText result created")
@@ -5500,7 +5544,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           if (reader) {
             while (true) {
               if (!streamControllers.has(streamId)) {
-                console.log("🍣 Sushi stream was stopped")
+                // console.log("🍣 Sushi stream was stopped")
                 break
               }
               const { done, value } = await reader.read()
@@ -5545,10 +5589,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               }
             }
           }
-          console.log("🍣 Claude text stream completed")
+          // console.log("🍣 Claude text stream completed")
         } else {
           // Use fullStream for DeepSeek Reasoner (supports reasoning parts)
-          console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
+          // console.log("🍣 Using DeepSeek Reasoner - iterating fullStream...")
 
           // Monitor inactivity to detect stuck streams (Bun-compatible)
           const INACTIVITY_TIMEOUT_MS = 60000 // 60 seconds of no activity = stuck (increased for reasoning models)
@@ -5565,10 +5609,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 // Update activity timestamp on every part received
                 lastActivityTime = Date.now()
 
-                console.log("🔍 Stream part type:", part.type)
+                // console.log("🔍 Stream part type:", part.type)
 
                 if (!streamControllers.has(streamId)) {
-                  console.log("🍣 Sushi stream was stopped")
+                  // console.log("🍣 Sushi stream was stopped")
                   streamFinished = true
                   continue
                 }
@@ -5578,7 +5622,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 } else if (part.type === "reasoning-delta") {
                   // DeepSeek Reasoner's thinking process chunks
                   reasoningText += part.text
-                  console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
+                  // console.log("🧠 Reasoning delta:", part.text.substring(0, 50))
                   await enhancedStreamChunk({
                     chunk: `__REASONING__${part.text}__/REASONING__`,
                     chunkNumber: currentChunk++,
@@ -5595,7 +5639,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 } else if (part.type === "text-delta") {
                   // Final answer text - batch for performance
                   answerText += part.text
-                  console.log("💬 Text delta:", part.text)
+                  // console.log("💬 Text delta:", part.text)
 
                   // Note: We don't batch text-delta here because the AI SDK already
                   // provides reasonably-sized chunks. Batching would add complexity
@@ -5621,6 +5665,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               }
               console.log("🍣 Successfully completed fullStream iteration")
             } catch (streamError) {
+              captureException(streamError)
+
               console.error(
                 "❌ Error during fullStream iteration:",
                 streamError,
@@ -5668,6 +5714,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           try {
             await Promise.race([streamPromise, inactivityMonitor])
           } catch (error) {
+            captureException(error)
+
             if (error instanceof Error && error.message.includes("stuck")) {
               console.error("⏱️ Stream stuck - using partial response")
               // Continue with whatever we have so far instead of failing completely
@@ -5752,6 +5800,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               }
             }
           } catch (fallbackError) {
+            captureException(fallbackError)
+
             console.error(
               "❌ Fallback response generation failed:",
               fallbackError,
@@ -5816,6 +5866,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               }
             }
           } catch (fallbackError) {
+            captureException(fallbackError)
+
             console.error(
               "❌ Tool-call fallback generation failed:",
               fallbackError,
@@ -5826,7 +5878,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         // // Save final message to database
         if (finalText) {
-          console.log("💾 Saving Sushi message to DB...")
+          // console.log("💾 Saving Sushi message to DB...")
 
           // Process web search citations only if web search is enabled by user
           let processedText = finalText
@@ -5851,25 +5903,25 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               isPear: requestData.pear || false, // Track Pear feedback submissions
               webSearchResult: webSearchResults, // Save web search results
             })
-            console.log("✅ createMessage completed successfully")
+            // console.log("✅ createMessage completed successfully")
 
             if (aiMessage) {
-              console.log("✅ Sushi message saved to DB")
-              console.log("🔍 Fetching full message with relations...")
+              // console.log("✅ Sushi message saved to DB")
+              // console.log("🔍 Fetching full message with relations...")
 
               // Get full message with relations
               const m = await getMessage({ id: aiMessage.id })
               console.log("✅ Message retrieved:", m ? "success" : "failed")
 
-              console.log(
-                "📡 Preparing to send stream_complete notification...",
-              )
-              console.log("🔍 Thread exists:", !!thread)
-              console.log("🔍 Message exists:", !!m)
+              // console.log(
+              //   "📡 Preparing to send stream_complete notification...",
+              // )
+              // console.log("🔍 Thread exists:", !!thread)
+              // console.log("🔍 Message exists:", !!m)
 
               // Send stream_complete notification
               if (thread && m) {
-                console.log("📡 Sending stream_complete notification...")
+                // console.log("📡 Sending stream_complete notification...")
                 notifyOwnerAndCollaborations({
                   notifySender: true,
                   thread,
@@ -5883,7 +5935,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                   member,
                   guest,
                 })
-                console.log("✅ stream_complete notification call completed")
+                // console.log("✅ stream_complete notification call completed")
               } else {
                 console.error(
                   "❌ Cannot send notification - missing thread or message",
@@ -5906,7 +5958,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                   captureException(err)
                 })
 
-              console.log("✅ Sushi stream_complete notification sent")
+              // console.log("✅ Sushi stream_complete notification sent")
             }
           } catch (createError) {
             console.error("❌ Error in createMessage:", createError)
@@ -5925,10 +5977,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
     // Special handling for DeepSeek streaming
     if (agent.name === "deepSeek") {
-      console.log("🔄 DeepSeek streaming path")
-      console.log("📤 Sending to DeepSeek:", {
-        content: content?.substring(0, 100),
-      })
+      // console.log("🔄 DeepSeek streaming path")
+      // console.log("📤 Sending to DeepSeek:", {
+      //   content: content?.substring(0, 100),
+      // })
 
       // Set a 60-second timeout for DeepSeek API calls
       let timeoutId: NodeJS.Timeout
@@ -6039,9 +6091,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         console.timeEnd("fullProcessing")
 
-        console.log("✅ DeepSeek response finished:", {
-          textLength: finalText?.length,
-        })
+        // console.log("✅ DeepSeek response finished:", {
+        //   textLength: finalText?.length,
+        // })
 
         // Handle tool-only responses with second AI call
         if (!finalText || finalText.trim().length === 0) {
@@ -6184,6 +6236,8 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         return c.json({ success: true })
       } catch (error: unknown) {
+        captureException(error)
+
         clearTimeout(timeoutId!) // Clear the timeout on error
 
         if (error instanceof Error && error.message.includes("timed out")) {
@@ -6205,10 +6259,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
     // Special handling for Gemini streaming (show reasoning immediately)
     if (agent.name === "gemini") {
-      console.log("🔄 Gemini fullStream path (with reasoning)")
-      console.log("📤 Sending to Gemini:", {
-        content: content?.substring(0, 100),
-      })
+      // console.log("🔄 Gemini fullStream path (with reasoning)")
+      // console.log("📤 Sending to Gemini:", {
+      //   content: content?.substring(0, 100),
+      // })
 
       let finalText = ""
       let responseMetadata: any = null
@@ -6233,10 +6287,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           async onFinish({ text, usage, response }) {
             finalText = text
             responseMetadata = response
-            console.log("✅ Gemini response finished:", {
-              textLength: text?.length,
-              usage,
-            })
+            // console.log("✅ Gemini response finished:", {
+            //   textLength: text?.length,
+            //   usage,
+            // })
           },
         })
         console.timeEnd("geminiProviderCall")
@@ -6244,7 +6298,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // Set up stream controller for cancellation support
         const controller: StreamController = {
           close: () => {
-            console.log("Gemini stream controller close called")
+            // console.log("Gemini stream controller close called")
           },
           desiredSize: null,
           enqueue: () => {},
@@ -6277,7 +6331,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         for await (const part of result.fullStream) {
           // await wait(175)
           if (!streamControllers.has(streamId)) {
-            console.log("Gemini stream was stopped")
+            // console.log("Gemini stream was stopped")
             break
           }
 
@@ -6316,7 +6370,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
 
         if (!streamControllers.has(streamId)) {
-          console.log("Gemini stream was stopped")
+          // console.log("Gemini stream was stopped")
           return c.json({ error: "Stream was stopped" }, { status: 400 })
         }
 
@@ -6387,10 +6441,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         return c.json({ error: "Failed to generate response" }, { status: 500 })
       }
     } else {
-      console.log("🔄 Other provider streaming path:", agent.name)
-      console.log("📤 Sending to provider:", {
-        content: content?.substring(0, 100),
-      })
+      // console.log("🔄 Other provider streaming path:", agent.name)
+      // console.log("📤 Sending to provider:", {
+      //   content: content?.substring(0, 100),
+      // })
 
       let finalText = ""
       let responseMetadata: any = null
