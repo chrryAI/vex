@@ -37,7 +37,7 @@ function App({ serverData }: AppProps) {
             overflow: "auto",
           }}
         >
-          {JSON.stringify(serverData, null, 2)}
+          {JSON.stringify(serverData?.apiError, null, 2)}
         </pre>
       </div>
     )
