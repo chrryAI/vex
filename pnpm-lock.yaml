@@ -20,6 +20,8 @@ overrides:
   tar@<=7.5.2: '>=7.5.3'
   lodash-es@>=4.0.0 <=4.17.22: '>=4.17.23'
   lodash@>=4.0.0 <=4.17.22: '>=4.17.23'
+  hono@<4.11.7: '>=4.11.7'
+  next@>=15.6.0-canary.0 <16.1.5: '>=16.1.5'
 
 importers:
 
@@ -173,10 +175,10 @@ importers:
         version: 3.2.0
       '@hono/bun-compress':
         specifier: ^0.1.0
-        version: 0.1.0(hono@4.11.4)
+        version: 0.1.0(hono@4.11.7)
       '@hono/node-server':
         specifier: ^1.19.7
-        version: 1.19.7(hono@4.11.4)
+        version: 1.19.7(hono@4.11.7)
       '@maxmind/geoip2-node':
         specifier: ^6.1.0
         version: 6.3.4
@@ -307,8 +309,8 @@ importers:
         specifier: ^4.7.8
         version: 4.7.8
       hono:
-        specifier: '>=4.11.4'
-        version: 4.11.4
+        specifier: '>=4.11.7'
+        version: 4.11.7
       i18n-iso-countries:
         specifier: ^7.14.0
         version: 7.14.0
@@ -3527,13 +3529,13 @@ packages:
   '@hono/bun-compress@0.1.0':
     resolution: {integrity: sha512-wxy9PdC07Yc81NawIcdIiuGAEeDujwPWd01KdxubXJ33G9vdjUO85ec0UMjH0Cy7+zfNXlcWgJ+zoATjT/IfTg==}
     peerDependencies:
-      hono: '>=4.11.4'
+      hono: '>=4.11.7'
 
   '@hono/node-server@1.19.7':
     resolution: {integrity: sha512-vUcD0uauS7EU2caukW8z5lJKtoGMokxNbJtBiwHgpqxEXokaHCBkQUmCHhjFB1VUTWdqj25QoMkMKzgjq+uhrw==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.11.4'
+      hono: '>=4.11.7'
 
   '@hookform/resolvers@3.10.0':
     resolution: {integrity: sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag==}
@@ -8742,8 +8744,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.11.4:
-    resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
+  hono@4.11.7:
+    resolution: {integrity: sha512-l7qMiNee7t82bH3SeyUCt9UF15EVmaBvsppY2zQtrbIhl/yzBTny+YUxsVjSjQ6gaqaeVtZmGocom8TzBlA4Yw==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@7.0.2:
@@ -10675,6 +10677,7 @@ packages:
     resolution: {integrity: sha512-DgtH8GId1/+oj8n9yYEmhTq1QkxOZZzqHJhHEa1bmtV3t3/u2YsE3LSvRUNpVRWVXRcCdn+3Tu6+mD2YXKL7lA==}
     engines: {node: '>=20.18.0'}
     hasBin: true
+    bundledDependencies: []
 
   peberminta@0.9.0:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
@@ -16519,13 +16522,13 @@ snapshots:
       '@hapi/hoek': 9.3.0
     optional: true
 
-  '@hono/bun-compress@0.1.0(hono@4.11.4)':
+  '@hono/bun-compress@0.1.0(hono@4.11.7)':
     dependencies:
-      hono: 4.11.4
+      hono: 4.11.7
 
-  '@hono/node-server@1.19.7(hono@4.11.4)':
+  '@hono/node-server@1.19.7(hono@4.11.7)':
     dependencies:
-      hono: 4.11.4
+      hono: 4.11.7
 
   '@hookform/resolvers@3.10.0(react-hook-form@7.67.0(react@19.2.0))':
     dependencies:
@@ -22899,7 +22902,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.11.4: {}
+  hono@4.11.7: {}
 
   hosted-git-info@7.0.2:
     dependencies:
