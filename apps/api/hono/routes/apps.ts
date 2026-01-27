@@ -52,18 +52,6 @@ interface ReorderRequest {
 
 // GET /apps - Intelligent app resolution (no ID)
 app.get("/", async (c) => {
-  const member = await getMember(c, {
-    skipCache: true,
-  })
-
-  const guest = await getGuest(c, {
-    skipCache: true,
-  })
-
-  if (!isE2E)
-    if (!member && !guest) {
-      return c.json({ error: "Unauthorized" }, { status: 401 })
-    }
   // Get final app
   const app = await getApp({ c })
 
@@ -76,19 +64,6 @@ app.get("/", async (c) => {
 
 // GET /apps/:id - Get single app by ID
 app.get("/:id", async (c) => {
-  const member = await getMember(c, {
-    skipCache: true,
-  })
-
-  const guest = await getGuest(c, {
-    skipCache: true,
-  })
-
-  if (!isE2E)
-    if (!member && !guest) {
-      return c.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
   const id = c.req.param("id")
 
   const app = await getApp({ c, appId: id })

@@ -1993,14 +1993,8 @@ export function AuthProvider({
     }
 
     setIsPearInternal(!!value)
-    if (value && app) {
-      if (app.id === value.id) {
-        addParams({
-          pear: "true",
-        })
-      } else {
-        router.push(`${getAppSlug(value)}?pear=true`)
-      }
+    if (value) {
+      router.push(`${getAppSlug(value)}?pear=true`)
       toast.success(t("Let's Pear") + " 🍐")
     }
   }

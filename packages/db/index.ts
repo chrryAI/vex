@@ -5010,15 +5010,36 @@ export function toSafeApp({
   app,
   userId,
   guestId,
+  skip,
 }: {
   app?: app | appWithStore
   userId?: string
   guestId?: string
-}) {
+  skip?: boolean
+}): Partial<app | appWithStore> | undefined {
   if (!app) return undefined
 
-  if ("store" in app && app?.store?.apps) {
-    return { ...app, systemPrompt: undefined }
+  if (!skip && "store" in app && app?.store?.apps) {
+    const safeApps = app.store.apps
+      .map((a) => ({
+        ...toSafeApp({ app: a, userId, guestId, skip: true }),
+        store: {
+          ...a.store,
+          apps:
+            a.store?.apps?.map((b) =>
+              toSafeApp({ app: b, userId, guestId, skip: true }),
+            ) || [],
+        },
+      }))
+      .filter((a) => a !== undefined)
+
+    return {
+      ...toSafeApp({ app, userId, guestId, skip: true }),
+      store: {
+        ...app.store,
+        apps: safeApps as (app | appWithStore)[],
+      },
+    }
   }
   const result: Partial<app | appWithStore> = {
     id: app.id,
@@ -5054,18 +5075,19 @@ export function toSafeApp({
     systemPrompt: isOwner(app, { userId, guestId })
       ? app.systemPrompt
       : undefined,
-    apiKeys: app.apiKeys
-      ? Object.keys(app.apiKeys).reduce(
-          (acc, key) => ({
-            ...acc,
-            [key]:
-              app?.apiKeys && app?.apiKeys?.[key as keyof typeof app.apiKeys]
-                ? "********"
-                : undefined,
-          }),
-          {},
-        )
-      : undefined,
+    apiKeys:
+      app.apiKeys && typeof app.apiKeys === "object"
+        ? Object.keys(app.apiKeys).reduce(
+            (acc, key) => ({
+              ...acc,
+              [key]:
+                app?.apiKeys && app?.apiKeys?.[key as keyof typeof app.apiKeys]
+                  ? "********"
+                  : undefined,
+            }),
+            {},
+          )
+        : undefined,
   }
 
   return result

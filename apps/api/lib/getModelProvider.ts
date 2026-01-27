@@ -5,7 +5,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { app, getAiAgents, decrypt } from "@repo/db"
 import type { LanguageModel } from "ai"
 import { appWithStore } from "@chrryai/chrry/types"
-import { FRONTEND_URL } from "@chrryai/chrry/utils"
+import { FRONTEND_URL, isE2E } from "@chrryai/chrry/utils"
 import { createPerplexity } from "@ai-sdk/perplexity"
 
 /**
@@ -31,6 +31,7 @@ function safeDecrypt(encryptedKey: string | undefined): string | undefined {
  * @returns Object with provider (AI SDK model) and agentName
  *
  * Logic:
+ * - If E2E testing, uses free OpenRouter models (no cost)
  * - If agent has appId (custom agent), uses its custom configuration
  * - Otherwise uses global agents with app's API keys or env variables
  * - Falls back to DeepSeek if agent not found or unsupported
@@ -39,6 +40,8 @@ export async function getModelProvider(
   app?: app | appWithStore,
   name = "deepSeek",
 ): Promise<{ provider: LanguageModel; agentName: string }> {
+  const appApiKeys = app?.apiKeys || {}
+
   const agents = await getAiAgents({ include: app?.id })
 
   const agent = agents.find((a) => a.name.toLowerCase() === name.toLowerCase())
@@ -60,7 +63,6 @@ export async function getModelProvider(
 
   // If agent has appId (custom agent), use its configuration
   // Otherwise use global configuration with app's API keys
-  const appApiKeys = app?.apiKeys || {}
 
   switch (name) {
     case "deepSeek": {
@@ -388,4 +390,22 @@ export async function getModelProvider(
         agentName: "deepSeek",
       }
   }
+}
+
+/**
+ * Get embedding model provider based on app configuration
+ * Embeddings are typically from OpenAI (text-embedding-3-small)
+ */
+export async function getEmbeddingProvider(app?: app | appWithStore) {
+  const openaiKey = app?.apiKeys?.openai
+    ? safeDecrypt(app?.apiKeys?.openai)
+    : app?.tier === "free"
+      ? process.env.CHATGPT_API_KEY || process.env.OPENAI_API_KEY
+      : ""
+
+  if (!openaiKey) {
+    throw new Error("OpenAI API key required for embeddings")
+  }
+
+  return createOpenAI({ apiKey: openaiKey })
 }
