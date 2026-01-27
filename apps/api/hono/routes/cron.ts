@@ -10,7 +10,7 @@ import {
 } from "@repo/db"
 import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
 import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
-import { inArray } from "drizzle-orm"
+import { inArray, lt } from "drizzle-orm"
 
 export const cron = new Hono()
 
@@ -18,6 +18,9 @@ async function clearGuests() {
   const batchSize = 500
   let totalDeleted = 0
   let hasMore = true
+  // 5 gün önceki tarih
+  const fiveDaysAgo = new Date()
+  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
 
   while (hasMore) {
     // Find inactive guests (no subscription, no messages, no tasks)
@@ -34,7 +37,7 @@ async function clearGuests() {
           isNull(messages.id),
           isNull(apps.id),
           sql`task.id IS NULL`,
-          sql`${guests.createdOn} < NOW() - INTERVAL '5 days'`, // Only delete guests older than 5 days
+          lt(guests.createdOn, fiveDaysAgo),
         ),
       )
       .groupBy(guests.id, guests.ip)
