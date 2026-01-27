@@ -5021,7 +5021,16 @@ export function toSafeApp({
 
   if (!skip && "store" in app && app?.store?.apps) {
     const safeApps = app.store.apps
-      .map((a) => toSafeApp({ app: a, userId, guestId, skip: true }))
+      .map((a) => ({
+        ...toSafeApp({ app: a, userId, guestId, skip: true }),
+        store: {
+          ...a.store,
+          apps:
+            a.store?.apps?.map((b) =>
+              toSafeApp({ app: b, userId, guestId, skip: true }),
+            ) || [],
+        },
+      }))
       .filter((a) => a !== undefined)
 
     return {
