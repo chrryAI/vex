@@ -20,12 +20,6 @@ const isMember = false
 
 const isLive = true
 
-test("Chat - Hourly Limit Test", async ({ page }) => {
-  await clean({ page, isLive: false })
-  test.slow()
-  await limit({ page })
-})
-
 test("Subscribe As Guest", async ({ page }) => {
   await clean({ page, isLive })
   await page.goto(
@@ -276,4 +270,10 @@ test("Create A Sushi App", async ({ page }) => {
       },
     ],
   })
+})
+
+test("Chat - Hourly Limit Test", async ({ page }) => {
+  await clean({ page, isLive: false })
+  test.slow()
+  await limit({ page })
 })

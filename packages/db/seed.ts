@@ -887,7 +887,7 @@ async function clearGuests() {
           isNull(apps.id),
           isNull(messages.id),
           sql`task.id IS NULL`,
-          lt(guests.createdOn, fiveDaysAgo),
+          lt(guests.activeOn, fiveDaysAgo),
           // sql<boolean>`${guests.createdOn} < NOW() - INTERVAL '5 days'`,
         ),
       )
