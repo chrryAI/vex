@@ -64,21 +64,21 @@ export function notify(userId: string, data: any) {
   let sent = 0
 
   for (const [deviceId, deviceConnections] of userConnections.entries()) {
-    console.log(
-      `📱 Checking device ${deviceId}: ${deviceConnections.length} connections`,
-    )
+    // console.log(
+    //   `📱 Checking device ${deviceId}: ${deviceConnections.length} connections`,
+    // )
     for (const client of deviceConnections) {
       try {
         client.send(message)
         sent++
-        console.log(`✅ Sent to device ${deviceId}`)
+        // console.log(`✅ Sent to device ${deviceId}`)
       } catch (error) {
         console.error(`Send failed for ${userId} device ${deviceId}`, error)
       }
     }
   }
 
-  console.log(`Notified ${sent} connections for ${userId}`)
+  // console.log(`Notified ${sent} connections for ${userId}`)
   return sent
 }
 

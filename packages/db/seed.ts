@@ -56,6 +56,9 @@ const now = new Date()
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
 async function createAgents() {
+  if (isProd) {
+    return undefined
+  }
   const chatGptAgent = await createAiAgent({
     name: "chatGPT",
     displayName: "GPT-5.1",
@@ -1009,9 +1012,11 @@ const create = async () => {
 
   await updateStoreUrls({ user: admin })
 
-  const { sushiAgent } = await createAgents()
+  const agents = await createAgents()
 
-  if (!sushiAgent) throw new Error("Failed to add agent")
+  if (!agents?.sushiAgent) throw new Error("Failed to add agent")
+
+  const { sushiAgent } = agents
 
   await createEvent({ user: admin })
 
@@ -1708,12 +1713,12 @@ const seedDb = async (): Promise<void> => {
   }
 
   if (isProd) {
-    await clearGuests()
-    // await prod()
+    // await clearGuests()
+    await prod()
     process.exit(0)
   } else {
-    // await clearDb()
-    // await create()
+    await clearDb()
+    await create()
     process.exit(0)
   }
 }
