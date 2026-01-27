@@ -1,6 +1,7 @@
 import { test } from "@playwright/test"
 import { chat } from "./shared/chat"
 import { clean } from "./shared/clean"
+import { limit } from "./shared/limit"
 
 import {
   getURL,
@@ -18,12 +19,15 @@ import createApp from "./shared/createApp"
 const isMember = false
 
 const isLive = true
-test.beforeEach(async ({ page }) => {
-  // console.log("🔗 Testing URL:", getURL({ isLive, isMember }))
-  await clean({ page, isLive })
+
+test("Chat - Hourly Limit Test", async ({ page }) => {
+  await clean({ page, isLive: false })
+  test.slow()
+  await limit({ page })
 })
 
 test("Subscribe As Guest", async ({ page }) => {
+  await clean({ page, isLive })
   await page.goto(
     getURL({
       isMember,
@@ -44,6 +48,7 @@ test("Subscribe As Guest", async ({ page }) => {
 })
 
 test("Invite", async ({ page }) => {
+  await clean({ page, isLive })
   await page.goto(
     getURL({
       isLive,
@@ -63,6 +68,7 @@ test("Invite", async ({ page }) => {
 })
 
 test("Gift", async ({ page }) => {
+  await clean({ page, isLive })
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -87,6 +93,7 @@ test("Gift", async ({ page }) => {
 })
 
 test("Long text", async ({ page }) => {
+  await clean({ page, isLive })
   const result = await chat({
     page,
     isMember,
@@ -108,6 +115,7 @@ test("Long text", async ({ page }) => {
 })
 
 test("Chat", async ({ page }) => {
+  await clean({ page, isLive })
   test.slow()
 
   await page.goto(getURL({ isMember, isLive }), {
@@ -150,6 +158,7 @@ test("Chat", async ({ page }) => {
 })
 
 test("Thread", async ({ page }) => {
+  await clean({ page, isLive })
   test.slow()
   await thread({ page, isLive })
 })
@@ -165,6 +174,7 @@ test("Thread", async ({ page }) => {
 // })
 
 test.skip("File upload", async ({ page }) => {
+  await clean({ page, isLive })
   // test.slow()
   await page.goto(getURL({ isMember, isLive }), {
     waitUntil: "networkidle",
@@ -207,6 +217,7 @@ test.skip("File upload", async ({ page }) => {
 })
 
 test.skip("Create A Claude App", async ({ page }) => {
+  await clean({ page, isLive })
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -229,6 +240,7 @@ test.skip("Create A Claude App", async ({ page }) => {
 })
 
 test("Create A Sushi App", async ({ page }) => {
+  await clean({ page, isLive })
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
