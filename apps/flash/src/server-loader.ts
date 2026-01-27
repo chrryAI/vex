@@ -315,6 +315,7 @@ export async function loadServerData(
       session.app = app
     }
   } catch (error) {
+    captureException(error)
     console.error("❌ API Error:", error)
     apiError = error as Error
   }
