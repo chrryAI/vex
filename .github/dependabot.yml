@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # Next.js - fixed via pnpm overrides
+      - dependency-name: "next"
+        update-types:
+          ["version-update:semver-patch", "version-update:semver-minor"]
+      # Tauri/Rust - low priority
+      - dependency-name: "glib"
+        update-types: ["version-update:semver-patch"]
+    open-pull-requests-limit: 5
