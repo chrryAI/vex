@@ -38,6 +38,7 @@ analytics.post("/grape", async (c) => {
 
     // Validate required fields
     if (!name || !timestamp) {
+      captureException(new Error("Missing required fields"))
       return c.json({ error: "Missing required fields" }, 400)
     }
 
