@@ -169,8 +169,9 @@ async function generateDynamicCypher(
     // Extract relationship patterns: [r], [r:TYPE], [r1], etc.
     // Only validate variables WITHOUT types (e.g., [r] not [r:FRIEND])
     // Handle spaces: [ r ] → [r], and variable-length paths: [*] or [*1..3]
+    // Use simpler regex to avoid ReDoS (catastrophic backtracking)
     const relPatterns =
-      cleanQuery.match(/\[\s*(\w+)\s*(?::[\w_]+)?\s*\]/g) || []
+      cleanQuery.match(/\[\s*(\w+)(?:\s*:\s*[\w_]+)?\s*\]/g) || []
 
     // Filter to only variables without types: [r] but not [r:TYPE]
     // Also exclude variable-length path markers: [*], [*1..3]
