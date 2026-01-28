@@ -20,6 +20,7 @@ import { ErrorBoundary } from "./ErrorBoundary"
 import Thread from "./Thread"
 import Home from "./Home"
 import { useApp } from "./context/providers"
+import Programme from "./z/Programme"
 
 // Lazy load less frequently used components to reduce initial bundle
 const Store = lazy(() => import("./Store"))
@@ -32,7 +33,6 @@ const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
 const Affiliate = lazy(() => import("./affiliate"))
 const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
-const Programme = lazy(() => import("./z/Programme"))
 const IDE = lazy(() => import("./IDE"))
 
 // Route map with conditional lazy loading
