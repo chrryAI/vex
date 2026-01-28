@@ -2,21 +2,6 @@
 
 A sovereign, self-sustaining AI platform powered by user-provided models.
 
-## � Support The Project
-
-Vex is built entirely open source by a solo developer, pioneering a new economic model for AI. If you find value in this platform, support it directly by **buying credits** at [vex.chrry.ai](https://vex.chrry.ai).
-
-No sponsors. No middlemen. Just users supporting the product they use.
-
-🚀 One Codebase, Unlimited Apps
-Vex introduces a breakthrough Polymorphic PWA Architecture. It enables a single codebase to spawn infinite, independent applications on a user's device.
-
-📱 Dynamic Manifest Generation: The server generates unique PWA manifests on the fly (/api/manifest/[id]).
-
-🔄 Context Switching: The app detects which "personality" (Atlas, Bloom, Vault) it should adopt based on the install context.
-
-📲 Native-Grade Experience: Each app installs separately with its own name, icon, theme, and memory, despite running on shared infrastructure.
-
 The Ecosystem:
 
 Plaintext
@@ -139,3 +124,18 @@ Icons: This project uses premium icons from Wannathis.
 Note: If you fork this project for commercial use, you must purchase your own license for these assets or replace them.
 
 Support: Issues • Email • Twitter
+
+## Support The Project
+
+Vex is built entirely open source by a solo developer, pioneering a new economic model for AI. If you find value in this platform, support it directly by **buying credits** at [vex.chrry.ai](https://vex.chrry.ai).
+
+No sponsors. No middlemen. Just users supporting the product they use.
+
+🚀 One Codebase, Unlimited Apps
+Vex introduces a breakthrough Polymorphic PWA Architecture. It enables a single codebase to spawn infinite, independent applications on a user's device.
+
+📱 Dynamic Manifest Generation: The server generates unique PWA manifests on the fly (/api/manifest/[id]).
+
+🔄 Context Switching: The app detects which "personality" (Atlas, Bloom, Vault) it should adopt based on the install context.
+
+📲 Native-Grade Experience: Each app installs separately with its own name, icon, theme, and memory, despite running on shared infrastructure.
