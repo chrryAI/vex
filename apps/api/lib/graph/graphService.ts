@@ -168,23 +168,29 @@ async function generateDynamicCypher(
     // Validate: Check if variables without relationship types are used
     // Extract relationship patterns: [r], [r:TYPE], [r1], etc.
     // Only validate variables WITHOUT types (e.g., [r] not [r:FRIEND])
-    const relPatterns = cleanQuery.match(/\[(\w+)(?::[\w_]+)?\]/g) || []
+    // Handle spaces: [ r ] → [r], and variable-length paths: [*] or [*1..3]
+    const relPatterns =
+      cleanQuery.match(/\[\s*(\w+)\s*(?::[\w_]+)?\s*\]/g) || []
 
     // Filter to only variables without types: [r] but not [r:TYPE]
+    // Also exclude variable-length path markers: [*], [*1..3]
     const varsWithoutTypes = relPatterns
-      .filter((pattern) => !pattern.includes(":"))
-      .map((v) => v.slice(1, -1))
+      .filter((pattern) => !pattern.includes(":") && !pattern.includes("*"))
+      .map((v) => v.replace(/[\[\]\s]/g, "")) // Remove brackets and spaces
 
     if (varsWithoutTypes.length > 0) {
       // Check if each variable is used anywhere in the query after its definition
       const unusedVars = varsWithoutTypes.filter((varName) => {
-        // Find where the variable is defined
-        const defineIndex = cleanQuery.indexOf(`[${varName}]`)
-        if (defineIndex === -1) return false
+        // Find where the variable is defined (handle spaces: [r] or [ r ])
+        const definePattern = new RegExp(`\\[\\s*${varName}\\s*\\]`)
+        const defineMatch = cleanQuery.match(definePattern)
+        if (!defineMatch) return false
+
+        const defineIndex = cleanQuery.indexOf(defineMatch[0])
 
         // Check if it's used after definition (not just in the brackets)
         const afterDefinition = cleanQuery.substring(
-          defineIndex + varName.length + 2,
+          defineIndex + defineMatch[0].length,
         )
 
         // Use regex with word boundaries to catch all usages regardless of spacing
@@ -547,13 +553,18 @@ export async function getGraphContext(
     // 2. Full-Text Search (Fuzzy/Typo-tolerant)
     // Uses RediSearch underneath for powerful text matching
     try {
+      // Escape RediSearch special characters: - : @ | ( ) [ ] { } " ' \
+      const escapedQuery = queryText
+        .replace(/[\-:@|()[\]{}"\\']/g, "\\$&")
+        .trim()
+
       const ftQuery = `
             CALL db.idx.fulltext.queryNodes('node_text_index', $query) 
             YIELD node
             RETURN node.name
         `
       const ftResult = await graph.query(ftQuery, {
-        params: { query: queryText },
+        params: { query: escapedQuery },
       })
       const textNodes =
         (ftResult as any)?.resultSet?.map((row: any) => row[0]) || []

@@ -9,11 +9,10 @@ import { signIn } from "./shared/signIn"
 const isMember = true
 
 const isLive = true
-test.beforeEach(async ({ page }) => {
-  await clean({ page, isLive, isMember })
-})
 
 test("Subscribe As Member", async ({ page }) => {
+  await clean({ page, isLive, isMember })
+
   await page.goto(
     getURL({
       isMember,
@@ -37,6 +36,8 @@ test("Subscribe As Member", async ({ page }) => {
 })
 
 test("Invite", async ({ page }) => {
+  await clean({ page, isLive, isMember })
+
   await page.goto(
     getURL({
       isLive,
@@ -58,6 +59,8 @@ test("Invite", async ({ page }) => {
 })
 
 test("Gift", async ({ page }) => {
+  await clean({ page, isLive, isMember })
+
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -75,6 +78,8 @@ test("Gift", async ({ page }) => {
 })
 
 test("App", async ({ page }) => {
+  await clean({ page, isLive, isMember })
+
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -150,6 +155,8 @@ test("App", async ({ page }) => {
 })
 
 test("Grape", async ({ page }) => {
+  await clean({ page, isLive, isMember })
+
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
@@ -169,6 +176,8 @@ test("Grape", async ({ page }) => {
 })
 
 test.skip("Retro", async ({ page }) => {
+  await clean({ page, isLive, isMember })
+
   await page.goto(getURL({ isLive, isMember }), {
     waitUntil: "networkidle",
     timeout: 100000,
