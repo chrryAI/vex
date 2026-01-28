@@ -14,16 +14,6 @@ export const grape = async ({
   index?: number
   earnedCredits?: number
 }): Promise<number> => {
-  const grapesButton = page.getByTestId("grapes-button")
-  await expect(grapesButton).toBeVisible()
-  await grapesButton.click()
-
-  const grapesCount = await page.getByTestId("grapes-app-button").count()
-
-  if (index >= grapesCount) {
-    return earnedCredits
-  }
-
   const feedbackPrompts = [
     `I really like the clean design and the color scheme feels modern.
 10 Credits - Specific Feedback:
@@ -40,6 +30,17 @@ The chat interface could benefit from keyboard shortcuts for power users. For ex
     //     4. The credit system isn't explained anywhere visible. New users might not understand why their messages stop working. A small "?" icon next to the credit counter with a tooltip explaining the system would help.
     //        These changes would significantly reduce friction for new users and improve retention.`,
   ]
+  const grapesButton = page.getByTestId("grapes-button")
+  await expect(grapesButton).toBeVisible()
+  await grapesButton.click()
+
+  const actualGrapesCount = await page.getByTestId("grapes-app-button").count()
+  // Limit to available feedback prompts
+  const grapesCount = Math.min(actualGrapesCount, feedbackPrompts.length)
+
+  if (index >= grapesCount) {
+    return earnedCredits
+  }
 
   // Re-query elements inside loop to avoid staleness
   const getGrapeButton = () => page.getByTestId("grapes-app-button").nth(index)

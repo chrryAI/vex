@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.12.21",
+  "version": "1.12.22",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -15,7 +15,7 @@
     "translate": "node scripts/translate.js",
     "update-version": "node scripts/update-version.js",
     "t": "node scripts/translate.js",
-    "i": "rm -rf node_modules && rm -rf package-lock.json && npm install --legacy-peer-deps",
+    "i": "rm -rf node_modules && rm -f package-lock.json && pnpm install",
     "generate": "NODE_ENV=production turbo run generate --filter=@repo/db --log-order=stream",
     "seed": "NODE_ENV=production turbo run seed --filter=@repo/db --log-order=stream",
     "migrate": "NODE_ENV=production turbo run migrate --filter=@repo/db --log-order=stream",
@@ -68,6 +68,7 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
+      "next": ">=16.1.5",
       "react-native": "0.78.3",
       "markdown-it@<12.3.2": ">=12.3.2",
       "esbuild@<=0.24.2": ">=0.25.0",
