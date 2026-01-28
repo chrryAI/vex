@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import { db } from "@repo/db"
 import { realtimeAnalytics, isE2E } from "@repo/db"
 import { getGuest, getMember } from "../lib/auth"
+import { captureException } from "@sentry/node"
 
 type Variables = {
   auth: {
@@ -25,12 +26,12 @@ analytics.post("/grape", async (c) => {
 
     const isMemoriesEnabled = member?.memoriesEnabled || guest?.memoriesEnabled
 
-    if (!isMemoriesEnabled) {
-      return c.json({ error: "Memories are not enabled" }, 401)
-    }
-
     if (!member && !guest) {
       return c.json({ error: "Unauthorized" }, 401)
+    }
+
+    if (!isMemoriesEnabled) {
+      return c.json({ error: "Memories are not enabled" }, 401)
     }
 
     const { name, url, props, timestamp } = await c.req.json()
@@ -74,6 +75,7 @@ analytics.post("/grape", async (c) => {
 
     return c.json({ success: true })
   } catch (error) {
+    captureException(error)
     console.error("❌ Analytics track error:", error)
     return c.json({ error: "Internal server error" }, 500)
   }
