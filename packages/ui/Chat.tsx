@@ -4339,7 +4339,7 @@ export default function Chat({
                       ...styles.chatFooterButtons.style,
                     }}
                   >
-                    {isHydrated && viewPortWidth > 320 && !needsReview && (
+                    {isHydrated && viewPortWidth > 410 && !needsReview && (
                       <Div
                         style={{
                           top: "0.15rem",
