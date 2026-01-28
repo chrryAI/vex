@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
-import { API_URL, FRONTEND_URL } from "../utils"
+import { API_URL, FRONTEND_URL, apiFetch } from "../utils"
 import { isTauri } from "../platform/detection"
+import { useAuth } from "../context/providers"
 
 const THROTTLE_MS = 5000 // 5 seconds
 const THROTTLE_KEY = "vex_health_check_throttle"
@@ -37,6 +38,8 @@ function removeStorageItem(key: string): void {
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(true)
 
+  const { user, guest } = useAuth()
+
   useEffect(() => {
     // Skip if window or addEventListener is not available (React Native)
     if (typeof window === "undefined" || !window.addEventListener) {
@@ -52,6 +55,11 @@ export function useOnlineStatus() {
     }
 
     async function checkConnection() {
+      // Skip health check if no user or guest (not authenticated)
+      if (!user && !guest) {
+        return
+      }
+
       const now = Date.now()
       const lastCheck = Number.parseInt(getStorageItem(THROTTLE_KEY) || "0", 10)
       const isChecking = getStorageItem(CHECKING_KEY) === "true"
@@ -68,7 +76,7 @@ export function useOnlineStatus() {
         // In Tauri, only check API health (no frontend server)
         if (isTauri()) {
           // Tauri: only check API
-          const apiResponse = await fetch(`${API_URL}/health`, {
+          const apiResponse = await apiFetch(`${API_URL}/health`, {
             method: "HEAD",
             cache: "no-store",
           }).catch(() => null)
@@ -77,11 +85,11 @@ export function useOnlineStatus() {
         } else {
           // Web/Extension: check both API and frontend health
           const [apiResponse, webResponse] = await Promise.all([
-            fetch(`${API_URL}/health`, {
+            apiFetch(`${API_URL}/health`, {
               method: "HEAD",
               cache: "no-store",
             }).catch(() => null),
-            fetch(`${FRONTEND_URL}/api/health`, {
+            apiFetch(`${FRONTEND_URL}/api/health`, {
               method: "HEAD",
               cache: "no-store",
             }).catch(() => null),
@@ -93,7 +101,9 @@ export function useOnlineStatus() {
 
           setIsOnline(apiOnline && webOnline)
         }
-      } catch {
+      } catch (error) {
+        // Silent fail - network errors are expected when offline
+        // Don't send to Sentry as this is normal behavior
         setIsOnline(false)
       } finally {
         removeStorageItem(CHECKING_KEY)
@@ -118,7 +128,7 @@ export function useOnlineStatus() {
       }
       clearInterval(interval)
     }
-  }, [])
+  }, [user?.id, guest?.id])
 
   return isOnline
 }
