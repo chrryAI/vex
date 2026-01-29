@@ -285,7 +285,7 @@ export function NavigationProvider({
         hasNotification,
         isLoadingThreads,
         setIsLoadingThreads,
-        pathname: navigation.pathname,
+        pathname,
         searchParams: navigation.searchParams,
         addParams: navigation.addParams,
         removeParams: navigation.removeParams,

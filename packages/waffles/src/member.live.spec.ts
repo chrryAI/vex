@@ -77,7 +77,7 @@ test("Gift", async ({ page }) => {
   })
 })
 
-test("App", async ({ page }) => {
+test.only("App", async ({ page }) => {
   await clean({ page, isLive, isMember })
 
   await page.goto(getURL({ isLive, isMember }), {
