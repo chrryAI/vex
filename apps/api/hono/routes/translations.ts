@@ -14,6 +14,7 @@ import nl from "../../locales/nl.json"
 import pt from "../../locales/pt.json"
 import tr from "../../locales/tr.json"
 import zh from "../../locales/zh.json"
+import { captureException } from "@sentry/node"
 
 // Translation map for quick lookup
 const translationMap: Record<string, Record<string, any>> = {
@@ -67,6 +68,7 @@ translations.get("/", async (c) => {
 
     return c.json(translations)
   } catch (error) {
+    captureException(error)
     console.error("❌ Translations API error:", error)
     return c.json({ error: "Failed to load translations" }, 500)
   }

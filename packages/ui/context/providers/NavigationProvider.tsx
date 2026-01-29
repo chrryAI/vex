@@ -225,31 +225,32 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   // toast.success(API_URL)
   // toast.success(FRONTEND_URL)
 
-  const [wasOffline, setWasOffline] = useState(false)
+  // const [wasOffline, setWasOffline] = useState(false)
 
-  useEffect(() => {
-    // 1. The "Panic" State (Lost Connection)
-    if (!isOnline) {
-      setWasOffline(true)
-      // Change from "Error" to "Loading" or "Status" icon if possible
-      toast.loading(t("Reconnecting..."), {
-        id: "connection-status", // specific ID so we can update this exact toast
-      })
-    }
+  // ⚠️ unstable
+  // useEffect(() => {
+  //   // 1. The "Panic" State (Lost Connection)
+  //   if (!isOnline) {
+  //     setWasOffline(true)
+  //     // Change from "Error" to "Loading" or "Status" icon if possible
+  //     toast.loading(t("Reconnecting..."), {
+  //       id: "connection-status", // specific ID so we can update this exact toast
+  //     })
+  //   }
 
-    // 2. The "Relief" State (Connection Restored)
-    else if (isOnline && wasOffline) {
-      // Update the EXISTING toast to Success
-      toast.success(t("Back online"), {
-        id: "connection-status",
-        duration: 3000,
-      })
-      setWasOffline(false)
+  //   // 2. The "Relief" State (Connection Restored)
+  //   else if (isOnline && wasOffline) {
+  //     // Update the EXISTING toast to Success
+  //     toast.success(t("Back online"), {
+  //       id: "connection-status",
+  //       duration: 3000,
+  //     })
+  //     setWasOffline(false)
 
-      // OPTIONAL: Trigger a silent revalidation of the current thread
-      // mutate("/api/messages")
-    }
-  }, [isOnline, wasOffline])
+  //     // OPTIONAL: Trigger a silent revalidation of the current thread
+  //     // mutate("/api/messages")
+  //   }
+  // }, [isOnline, wasOffline])
 
   const [
     isMemoryConsentManageVisible,

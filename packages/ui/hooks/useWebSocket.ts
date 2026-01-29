@@ -463,11 +463,12 @@ export const useWebSocket = <T extends { type: string }>({
       return
     }
 
-    // Don't attempt connection if offline (API or web is down)
-    if (!isOnline) {
-      console.log("⏸️ Skipping WebSocket connection - system is offline")
-      return
-    }
+    // ⚠️ unstable
+    // // Don't attempt connection if offline (API or web is down)
+    // if (!isOnline) {
+    //   console.log("⏸️ Skipping WebSocket connection - system is offline")
+    //   return
+    // }
 
     const base = WS_URL
     const wsUrl = `${base}?token=${encodeURIComponent(token)}&deviceId=${encodeURIComponent(deviceId)}`
