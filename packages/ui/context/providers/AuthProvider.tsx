@@ -352,7 +352,6 @@ export function AuthProvider({
   locale?: locale
   apiKey?: string
   pathname?: string // SSR pathname for thread ID extraction
-
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   children: ReactNode
   fingerprint?: string
@@ -360,6 +359,7 @@ export function AuthProvider({
   error?: string
   session?: session
   app?: appWithStore
+  siteConfig?: ReturnType<typeof getSiteConfig>
   threads?: {
     threads: thread[]
     totalCount: number
@@ -735,7 +735,8 @@ export function AuthProvider({
     | undefined
   >(props.threads)
 
-  const siteConfig = getSiteConfig(CHRRY_URL)
+  const siteConfig = props.siteConfig || getSiteConfig(CHRRY_URL)
+  console.log(`🚀 ~ props.siteConfig:`, props.siteConfig)
 
   const { isStorageReady, isTauri } = usePlatform()
 

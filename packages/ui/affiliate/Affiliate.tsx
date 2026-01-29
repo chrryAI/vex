@@ -31,7 +31,7 @@ import { useAffiliateStyles } from "./Affiliate.styles"
 import { useStyles } from "../context/StylesContext"
 
 export default function Affiliate() {
-  const { user, token, API_URL, FRONTEND_URL } = useAuth()
+  const { user, token, API_URL, FRONTEND_URL, siteConfig: config } = useAuth()
   const router = useNavigation()
   const { t } = useAppContext()
 
@@ -73,8 +73,6 @@ export default function Affiliate() {
       setCreating(false)
     }
   }
-
-  const config = getSiteConfig()
 
   const isChrryAI = config.mode === "chrryAI"
 

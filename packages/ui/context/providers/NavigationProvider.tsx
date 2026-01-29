@@ -140,8 +140,15 @@ export function NavigationProvider({
     router.push(url)
   }
 
-  const { slug, setSlug, getAppSlug, language, setShowFocus, plausible } =
-    useAuth()
+  const {
+    slug,
+    setSlug,
+    getAppSlug,
+    language,
+    setShowFocus,
+    plausible,
+    siteConfig,
+  } = useAuth()
 
   const goToThreads = (params?: Record<string, string>) => {
     setShowFocus(false)
@@ -181,7 +188,7 @@ export function NavigationProvider({
 
   const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false)
 
-  const siteApp = getSiteConfig()
+  const siteApp = siteConfig
 
   const copiedRef = useRef(false)
 
