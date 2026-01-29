@@ -90,7 +90,6 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
     pageSize: 100000,
     userId: user?.id,
     guestId: guest?.id,
-    // publicBookmarks: true,
   })
 
   await Promise.all(
