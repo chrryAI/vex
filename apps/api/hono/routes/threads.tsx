@@ -35,12 +35,7 @@ import {
   generateThreadInstructions,
   generateThreadTitle,
 } from "../../utils/titleGenerator"
-import {
-  FRONTEND_URL,
-  isE2E,
-  MAX_FILE_LIMITS,
-  getMaxFiles,
-} from "@chrryai/chrry/utils"
+import { FRONTEND_URL, isE2E, getMaxFiles } from "@chrryai/chrry/utils"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import { render } from "@react-email/render"
 import Collaboration from "../../components/emails/Collaboration"

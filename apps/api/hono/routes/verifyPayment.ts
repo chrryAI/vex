@@ -25,7 +25,6 @@ import { getMember } from "../lib/auth"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import captureException from "../../lib/captureException"
 import {
-  ADDITIONAL_CREDITS,
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
   PLUS_CREDITS_PER_MONTH,

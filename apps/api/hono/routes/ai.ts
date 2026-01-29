@@ -79,12 +79,8 @@ import {
 import Replicate from "replicate"
 import { webSearchResultType } from "@repo/db/src/schema"
 import {
-  CHATGPT_API_KEY,
-  CLAUDE_API_KEY,
   extractPDFText,
-  GEMINI_API_KEY,
   REPLICATE_API_KEY,
-  OPENROUTER_API_KEY,
   wait,
   isCollaborator,
   getHourlyLimit,

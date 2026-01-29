@@ -2,7 +2,7 @@
 
 import clsx from "clsx"
 import Menu from "./Menu"
-import { CircleEllipsis, CodeXml } from "./icons"
+import { CircleEllipsis } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import { useEffect, lazy, Suspense } from "react"
 import Img from "./Image"
