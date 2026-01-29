@@ -249,9 +249,6 @@ export default function Chat({
     ...auth
   } = useAuth()
 
-  const [baseApp, setBaseApp] = useState(auth.baseApp)
-  const [siteConfig, setSiteConfig] = useState(auth.siteConfig)
-
   const threadId = auth.threadId || auth.threadIdRef.current
 
   const [isSelectingMood, setIsSelectingMood] = useState(false)
@@ -3674,15 +3671,6 @@ export default function Chat({
                       )}
                     </Div>
                   ) : null}
-                  {user?.role === "admin" && (
-                    <Div>
-                      {JSON.stringify(siteConfig?.name)}
-                      {JSON.stringify(baseApp?.name)}
-                      {JSON.stringify(
-                        baseApp?.store?.apps.map((app) => app.name),
-                      )}
-                    </Div>
-                  )}
                   {empty && !threadIdRef.current && (
                     <Div
                       style={{
