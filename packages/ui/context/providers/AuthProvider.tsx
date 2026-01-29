@@ -1026,7 +1026,7 @@ export function AuthProvider({
     session?.app?.store?.apps || [],
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
-  console.log(`🚀 ~ allApps:`, allApps)
+  // console.log(`🚀 ~ allApps:`, allApps)
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
   const baseAppInternal = storeApps.find((item) => {
@@ -1044,10 +1044,11 @@ export function AuthProvider({
     baseAppInternal,
   )
 
-  const getAppSlug = (
-    targetApp: appWithStore,
-    defaultSlug: string = "/",
-  ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
+  const getAppSlug = useCallback(
+    (targetApp: appWithStore, defaultSlug: string = "/"): string =>
+      getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp }),
+    [pathname, baseApp],
+  )
 
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined

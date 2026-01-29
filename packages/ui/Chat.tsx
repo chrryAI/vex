@@ -245,10 +245,12 @@ export default function Chat({
     about,
     setShowGrapes,
     grapes,
-    baseApp,
-    siteConfig,
+
     ...auth
   } = useAuth()
+
+  const [baseApp, setBaseApp] = useState(auth.baseApp)
+  const [siteConfig, setSiteConfig] = useState(auth.siteConfig)
 
   const threadId = auth.threadId || auth.threadIdRef.current
 
