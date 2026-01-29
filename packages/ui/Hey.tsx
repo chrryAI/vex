@@ -17,6 +17,7 @@ import { usePlatform, useLocalStorage, Div } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import { useHasHydrated } from "./hooks"
 import { ErrorBoundary } from "./ErrorBoundary"
+import Loading from "./Loading"
 import Thread from "./Thread"
 import Home from "./Home"
 import { useApp } from "./context/providers"
@@ -210,7 +211,7 @@ export const Hey = memo(
           ) : (
             <>
               {splash}
-              <Suspense>
+              <Suspense fallback={<Loading fullScreen />}>
                 <Programme />
                 <Div style={{ display: isProgramme ? "none" : "block" }}>
                   {isIDE ? (
