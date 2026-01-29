@@ -315,7 +315,7 @@ export async function loadServerData(
         siteConfig,
         chrryUrl,
         app?.store?.apps
-          .find((item) => {
+          ?.find((item) => {
             if (!item) return false
 
             if (
@@ -325,7 +325,7 @@ export async function loadServerData(
               return true
             }
           })
-          .map((item) => item.slug),
+          ?.map((item) => item.slug),
       )
     }
   } catch (error) {
