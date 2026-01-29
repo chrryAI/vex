@@ -297,8 +297,7 @@ async function enrichStoreApps(
           userId: auth.member?.id,
           guestId: auth.guest?.id,
           skipCache,
-          depth: 1,
-          skipCache,
+          depth: 0,
         })
       }
 
