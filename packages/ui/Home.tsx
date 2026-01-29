@@ -24,11 +24,7 @@ export default function Home({
   useAppMetadata()
 
   return (
-    <Div
-      className={className}
-      style={style}
-      data-url={language === defaultLocale ? "/" : `/${language}`}
-    >
+    <Div className={className} style={style}>
       <Thread isHome={!threadId && !threadIdRef.current} />
     </Div>
   )
