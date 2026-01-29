@@ -307,7 +307,7 @@ export default function Skeleton({
                   }
                 : {}),
               ...{
-                backgroundColor: "var(shade-2)",
+                backgroundColor: "none",
               },
             }}
             // className={clsx(hasHydrated && device && styles[device])}
