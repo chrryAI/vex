@@ -736,7 +736,6 @@ export function AuthProvider({
   >(props.threads)
 
   const siteConfig = props.siteConfig || getSiteConfig(CHRRY_URL)
-  console.log(`🚀 ~ props.siteConfig:`, props.siteConfig)
 
   const { isStorageReady, isTauri } = usePlatform()
 
