@@ -42,7 +42,7 @@ calendar.get("/", async (c) => {
     return c.json({ error: "Invalid query parameters", errors }, 400)
   }
 
-  const { startDate, endDate } = validation.data
+  const { startDate, endDate, status } = validation.data
   const startTime = startDate ? new Date(startDate) : undefined
   const endTime = endDate ? new Date(endDate) : undefined
 
@@ -61,6 +61,7 @@ calendar.get("/", async (c) => {
     userId: member?.id,
     guestId: guest?.id,
     startTime: startTime || todayUTC,
+    status,
     endTime:
       endTime ||
       new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0)), // End of current month

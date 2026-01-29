@@ -535,13 +535,15 @@ export async function getGraphContext(
           const expansion = await graph.query(expandQuery, {
             params: { names: semanticNodes },
           })
-          for (const row of (expansion as any).resultSet) {
-            if (row[1] === "DISCUSSES") {
-              contextItems.add(
-                `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 200)}...`,
-              )
-            } else {
-              contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
+          if ((expansion as any)?.resultSet) {
+            for (const row of (expansion as any).resultSet) {
+              if (row[1] === "DISCUSSES") {
+                contextItems.add(
+                  `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 200)}...`,
+                )
+              } else {
+                contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
+              }
             }
           }
         }
@@ -585,13 +587,15 @@ export async function getGraphContext(
         const expansion = await graph.query(expandQuery, {
           params: { names: textNodes },
         })
-        for (const row of (expansion as any).resultSet) {
-          if (row[1] === "DISCUSSES") {
-            contextItems.add(
-              `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 150)}...`,
-            )
-          } else {
-            contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
+        if ((expansion as any)?.resultSet) {
+          for (const row of (expansion as any).resultSet) {
+            if (row[1] === "DISCUSSES") {
+              contextItems.add(
+                `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 150)}...`,
+              )
+            } else {
+              contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
+            }
           }
         }
       }
@@ -607,5 +611,57 @@ export async function getGraphContext(
     captureException(error)
     console.error("❌ Graph Retrieval Failed:", error)
     return ""
+  }
+}
+
+/**
+ * Clear all graph data for a specific user or guest
+ * Used when deleting user/guest accounts or memories
+ */
+export async function clearGraphDataForUser({
+  userId,
+  guestId,
+}: {
+  userId?: string
+  guestId?: string
+}): Promise<void> {
+  try {
+    const identifier = userId || guestId
+    if (!identifier) {
+      console.warn("⚠️ No userId or guestId provided for graph cleanup")
+      return
+    }
+
+    // Delete all entities and relationships for this user/guest
+    // DETACH DELETE removes the node and all its relationships
+    await graph.query(
+      `MATCH (n) WHERE n.userId = $identifier OR n.guestId = $identifier DETACH DELETE n`,
+      { params: { identifier } },
+    )
+
+    console.log(
+      `🧹 Cleared graph data for ${userId ? "user" : "guest"}: ${identifier}`,
+    )
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Failed to clear graph data:", error)
+    // Don't throw - cleanup should be best-effort
+  }
+}
+
+/**
+ * Clear ALL graph data
+ * Used for test cleanup and full database resets
+ * ⚠️ DESTRUCTIVE - Use with caution!
+ */
+export async function clearAllGraphData(): Promise<void> {
+  try {
+    // Delete all nodes and relationships
+    await graph.query("MATCH (n) DETACH DELETE n")
+    console.log("🧹 Cleared all graph data")
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Failed to clear all graph data:", error)
+    // Don't throw - cleanup should be best-effort
   }
 }

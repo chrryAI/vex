@@ -153,23 +153,15 @@ export const updateCalendarEventSchema = createCalendarEventSchema
 export const getCalendarEventsSchema = z.object({
   startDate: z
     .union([
-      z
-        .string()
-        .datetime("Invalid start time format")
-        .transform((str) => new Date(str)),
+      z.coerce.date(), // ✅ Use coerce instead of datetime
       z.date(),
     ])
-    .pipe(z.date())
     .optional(),
   endDate: z
     .union([
-      z
-        .string()
-        .datetime("Invalid end time format")
-        .transform((str) => new Date(str)),
+      z.coerce.date(), // ✅ Use coerce instead of datetime
       z.date(),
     ])
-    .pipe(z.date())
     .optional(),
   category: z.string().optional(),
   status: z.enum(["confirmed", "tentative", "cancelled"]).optional(),
