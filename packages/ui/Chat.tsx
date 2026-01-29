@@ -4339,35 +4339,32 @@ export default function Chat({
                       ...styles.chatFooterButtons.style,
                     }}
                   >
-                    {false &&
-                      isHydrated &&
-                      viewPortWidth > 410 &&
-                      !needsReview && (
-                        <Div
+                    {isHydrated && viewPortWidth > 410 && !needsReview && (
+                      <Div
+                        style={{
+                          top: "0.15rem",
+                          position: "relative",
+                        }}
+                      >
+                        <MoodSelector
+                          showEdit={false}
                           style={{
-                            top: "0.15rem",
-                            position: "relative",
+                            fontSize: "1.40rem",
                           }}
-                        >
-                          <MoodSelector
-                            showEdit={false}
-                            style={{
-                              fontSize: "1.40rem",
-                            }}
-                            key={mood?.type}
-                            mood={mood?.type}
-                            onSelectingMood={(v) => {
-                              setIsSelectingMood(v)
-                            }}
-                            onMoodChange={async (newMood) => {
-                              if (mood?.type !== newMood) {
-                                await updateMood({ type: newMood })
-                                toast.success(emojiMap[newMood])
-                              }
-                            }}
-                          />
-                        </Div>
-                      )}
+                          key={mood?.type}
+                          mood={mood?.type}
+                          onSelectingMood={(v) => {
+                            setIsSelectingMood(v)
+                          }}
+                          onMoodChange={async (newMood) => {
+                            if (mood?.type !== newMood) {
+                              await updateMood({ type: newMood })
+                              toast.success(emojiMap[newMood])
+                            }
+                          }}
+                        />
+                      </Div>
+                    )}
                     {!isSelectingMood && !needsReview && isHydrated && (
                       <>
                         <Button
