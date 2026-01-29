@@ -66,6 +66,8 @@ export const signIn = async ({
     timeout: 50000,
   })
 
+  await wait(5000)
+
   if (signOut) {
     await accountButton.click()
 
