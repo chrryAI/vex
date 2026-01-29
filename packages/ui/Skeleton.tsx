@@ -48,12 +48,10 @@ function FocusButton({
 }) {
   const { minimize } = useApp()
 
-  const { viewPortWidth, isTauri } = usePlatform()
-  const { app, chrry, getAppSlug, setShowFocus } = useAuth()
+  const { viewPortWidth } = usePlatform()
+  const { app, getAppSlug, setShowFocus } = useAuth()
 
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
-
-  const codeEditor = isTauri && app?.store?.app?.slug === "sushi"
 
   const hasHydrated = useHasHydrated()
   const { isMobileDevice } = useTheme()
@@ -89,6 +87,9 @@ function FocusButton({
             ...utilities.button.style,
             ...utilities.transparent.style,
             ...utilities.small.style,
+            position: "relative",
+
+            left: 250,
             ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
           }}
         >
@@ -116,6 +117,9 @@ function FocusButton({
         ...utilities.link.style,
         marginTop: !isDrawerOpen ? 1 : -7.5,
         marginLeft: isDrawerOpen ? 0 : -5,
+        position: "relative",
+
+        left: 250,
       }}
     >
       {hasHydrated && (
@@ -240,7 +244,7 @@ export default function Skeleton({
         <Main
           style={{
             ...skeletonStyles.main.style,
-            ...((!threadId || isEmpty) && skeletonStyles.mainEmpty.style),
+            // ...((!threadId || isEmpty) && skeletonStyles.mainEmpty.style),
             ...(isDrawerOpen &&
               {
                 // position: "absolute",
@@ -254,6 +258,7 @@ export default function Skeleton({
           }}
         >
           <Div
+            className="blur"
             data-tauri-drag-region
             onDoubleClick={async () => {
               if (!isTauri) return
@@ -274,7 +279,7 @@ export default function Skeleton({
             style={{
               ...skeletonStyles.header.style,
               ...(isStandalone && skeletonStyles.headerStandalone.style),
-              ...((!threadId || isEmpty) && skeletonStyles.headerEmpty.style),
+              // ...((!threadId || isEmpty) && skeletonStyles.headerEmpty.style),
               ...(isCapacitor && os === "ios" && (!threadId || isEmpty)
                 ? { paddingTop: 55 }
                 : {}),
@@ -286,6 +291,9 @@ export default function Skeleton({
                     backgroundColor: "var(--background)",
                   }
                 : {}),
+              ...{
+                backgroundColor: "var(shade-2)",
+              },
             }}
             // className={clsx(hasHydrated && device && styles[device])}
           >
@@ -358,7 +366,7 @@ export default function Skeleton({
                       </Div>
                     ) : null}
 
-                    {!isEmpty || threadId ? null : (
+                    {isMobileDevice ? null : (
                       <FocusButton
                         isDrawerOpen={isDrawerOpen}
                         time={time}
