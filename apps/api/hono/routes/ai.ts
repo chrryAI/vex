@@ -3914,7 +3914,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
           // Process text file for RAG so AI can analyze it
           // Only if memories are enabled (RAG requires memory context)
           // Run in background to avoid blocking response
-          if (textContent && memoriesEnabled) {
+          if (textContent && memoriesEnabled && !isE2E) {
             processFileForRAG({
               content: textContent,
               filename: file.filename,
@@ -3979,7 +3979,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             // Process PDF for RAG so AI can analyze it
             // Only if memories are enabled (RAG requires memory context)
             // Run in background to avoid blocking response
-            if (memoriesEnabled) {
+            if (memoriesEnabled && !isE2E) {
               processFileForRAG({
                 content: extractedText,
                 filename: file.filename,
