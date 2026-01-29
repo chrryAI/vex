@@ -131,9 +131,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       minify: "terser",
       terserOptions: {
         compress: {
-          drop_console: mode === "production", // Remove console.logs in production
-          drop_debugger: true,
-          pure_funcs: ["console.log", "console.info"], // Remove specific console methods
+          // drop_console: mode === "production", // Remove console.logs in production
+          // drop_debugger: true,
+          // pure_funcs: ["console.log", "console.info"], // Remove specific console methods
         },
       },
       // Increase chunk size warning limit (we're splitting chunks now)
