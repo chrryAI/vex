@@ -97,8 +97,7 @@ export async function loadServerData(
     : `/${request.pathname}`
 
   const isLocalePathname =
-    pathname &&
-    (locales.includes(pathname.split("/")?.[1] as locale) || pathname === "/")
+    pathname && locales.includes(pathname.split("/")?.[1] as locale)
 
   const localeCookie = cookies.locale as locale
 
