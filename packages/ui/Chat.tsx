@@ -245,6 +245,8 @@ export default function Chat({
     about,
     setShowGrapes,
     grapes,
+    baseApp,
+    siteConfig,
     ...auth
   } = useAuth()
 
@@ -3670,6 +3672,15 @@ export default function Chat({
                       )}
                     </Div>
                   ) : null}
+                  {user?.role === "admin" && (
+                    <Div>
+                      {JSON.stringify(siteConfig?.name)}
+                      {JSON.stringify(baseApp?.name)}
+                      {JSON.stringify(
+                        baseApp?.store?.apps.map((app) => app.name),
+                      )}
+                    </Div>
+                  )}
                   {empty && !threadIdRef.current && (
                     <Div
                       style={{
