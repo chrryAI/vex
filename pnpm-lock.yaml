@@ -702,8 +702,8 @@ importers:
         specifier: ^7.4.5
         version: 7.4.5
       '@capacitor/ios':
-        specifier: ^7.4.5
-        version: 7.4.5(@capacitor/core@7.4.5)
+        specifier: ^8.0.2
+        version: 8.0.2(@capacitor/core@7.4.5)
       '@chrryai/chrry':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -2575,10 +2575,10 @@ packages:
   '@capacitor/core@7.4.5':
     resolution: {integrity: sha512-JnUywi0WRbqm4QYoplNsMQ7KAVuyrQFha0dOH9YDVCyrVHUvPcvrnK+9j5elUMgy+pOh3ve+pk6BVoySr91c+A==}
 
-  '@capacitor/ios@7.4.5':
-    resolution: {integrity: sha512-i9cfo15Vn0GvFJ0Pm2zPhxQrK3NW5ISrf7bdzmKWUM5TUaCnWkCO4Zxsgjm8/VMXwt/gabA/di1O1c9pC3enCA==}
+  '@capacitor/ios@8.0.2':
+    resolution: {integrity: sha512-7EM7vBxXI3Ku49aYCJcS9su5Y3i6UmXpx7e0y+oQV9PzCnZ6l5B0ACJ+gXAU0bM3q7/f+kGBsOtXMid84rU6MQ==}
     peerDependencies:
-      '@capacitor/core': ^7.4.0
+      '@capacitor/core': ^8.0.0
 
   '@chevrotain/cst-dts-gen@11.0.3':
     resolution: {integrity: sha512-BvIKpRLeS/8UbfxXxgC33xOumsacaeCKAjAeLyOn7Pcp95HiRbrpl14S+9vaZLolnbssPIUuiUd8IvgkRyt6NQ==}
@@ -3225,8 +3225,8 @@ packages:
   '@expo/ws-tunnel@1.0.6':
     resolution: {integrity: sha512-nDRbLmSrJar7abvUjp3smDwH8HcbZcoOEa5jVPUv9/9CajgmWw20JNRwTuBRzWIWIkEJDkz20GoNA+tSwUqk0Q==}
 
-  '@expo/xcpretty@4.3.2':
-    resolution: {integrity: sha512-ReZxZ8pdnoI3tP/dNnJdnmAk7uLT4FjsKDGW7YeDdvdOMz2XCQSmSCM9IWlrXuWtMF9zeSB6WJtEhCQ41gQOfw==}
+  '@expo/xcpretty@4.4.0':
+    resolution: {integrity: sha512-o2qDlTqJ606h4xR36H2zWTywmZ3v3842K6TU8Ik2n1mfW0S580VHlt3eItVYdLYz+klaPp7CXqanja8eASZjRw==}
     hasBin: true
 
   '@faker-js/faker@9.9.0':
@@ -10799,7 +10799,6 @@ packages:
     resolution: {integrity: sha512-DgtH8GId1/+oj8n9yYEmhTq1QkxOZZzqHJhHEa1bmtV3t3/u2YsE3LSvRUNpVRWVXRcCdn+3Tu6+mD2YXKL7lA==}
     engines: {node: '>=20.18.0'}
     hasBin: true
-    bundledDependencies: []
 
   peberminta@0.9.0:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
@@ -12549,6 +12548,7 @@ packages:
   tar@7.5.4:
     resolution: {integrity: sha512-AN04xbWGrSTDmVwlI4/GTlIIwMFk/XEv7uL8aa57zuvRy6s4hdBed+lVq2fAZ89XDa7Us3ANXcE3Tvqvja1kTA==}
     engines: {node: '>=18'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exhorbitant rates) by contacting i@izs.me
 
   tar@7.5.7:
     resolution: {integrity: sha512-fov56fJiRuThVFXD6o6/Q354S7pnWMJIVlDBYijsTNx6jKSE4pvrDTs6lUnmGvNyfJwFQQwWy3owKz1ucIhveQ==}
@@ -15510,7 +15510,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@capacitor/ios@7.4.5(@capacitor/core@7.4.5)':
+  '@capacitor/ios@8.0.2(@capacitor/core@7.4.5)':
     dependencies:
       '@capacitor/core': 7.4.5
 
@@ -15974,7 +15974,7 @@ snapshots:
       '@expo/schema-utils': 0.1.8
       '@expo/spawn-async': 1.7.2
       '@expo/ws-tunnel': 1.0.6
-      '@expo/xcpretty': 4.3.2
+      '@expo/xcpretty': 4.4.0
       '@react-native/dev-middleware': 0.81.5
       '@urql/core': 5.2.0
       '@urql/exchange-retry': 1.3.2(@urql/core@5.2.0)
@@ -16244,11 +16244,10 @@ snapshots:
 
   '@expo/ws-tunnel@1.0.6': {}
 
-  '@expo/xcpretty@4.3.2':
+  '@expo/xcpretty@4.4.0':
     dependencies:
-      '@babel/code-frame': 7.10.4
+      '@babel/code-frame': 7.28.6
       chalk: 4.1.2
-      find-up: 5.0.0
       js-yaml: 4.1.1
 
   '@faker-js/faker@9.9.0': {}
