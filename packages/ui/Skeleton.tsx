@@ -54,7 +54,7 @@ function FocusButton({
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
 
   const hasHydrated = useHasHydrated()
-  const { isMobileDevice } = useTheme()
+  const { isMobileDevice, isSmallDevice } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const { skeletonStyles, utilities } = useStyles()
 
@@ -80,6 +80,10 @@ function FocusButton({
     return "--:--"
   }
 
+  if (!isDrawerOpen || viewPortWidth < 700) {
+    return null
+  }
+
   if (!focus || viewPortWidth < 375 || minimize) {
     return (
       <>
@@ -92,7 +96,7 @@ function FocusButton({
             ...utilities.small.style,
             position: "relative",
 
-            left: 250,
+            left: "15.625rem",
             ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
           }}
         >
