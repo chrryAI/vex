@@ -32,6 +32,7 @@ import { UAParser } from "ua-parser-js"
 import arcjet, { detectBot } from "@arcjet/node"
 
 import { isDevelopment, isE2E, VERSION } from "@chrryai/chrry/utils"
+import { locales } from "@chrryai/chrry/locales"
 import { v4 as uuidv4 } from "uuid"
 import {
   GUEST_CREDITS_PER_MONTH,
@@ -254,8 +255,10 @@ session.get("/", async (c) => {
     }
   }
 
-  const locale =
+  const localeInternal =
     url.searchParams.get("locale") || getCookie(c, "locale") || "en"
+
+  const locale = locales.includes(localeInternal) ? localeInternal : "en"
 
   const source = url.searchParams.get("source") || "client"
 
