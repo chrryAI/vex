@@ -1520,7 +1520,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
         {!thread && !icon && showInstructions && (
           <Div
             data-testid={`${dataTestId}-about`}
-            style={{ ...styles.bottom.style, marginBottom: 30 }}
+            style={{ ...styles.bottom.style, marginBottom: 30, zIndex: 10 }}
           >
             {!showGrape && (
               <A style={{ lineHeight: 1.5 }} href={"/about"}>

@@ -3360,7 +3360,9 @@ export default function Chat({
           ...style,
           ...(isDrawerOpen && !isSmallDevice ? styles.drawerOpen.style : {}),
           // ...(isMobileDevice ? styles.mobile.style : {}),
-          ...(isStandalone && os === "ios" ? { marginBottom: 16 } : {}),
+          ...(isHydrated && isStandalone && os === "ios"
+            ? { marginBottom: 16 }
+            : {}),
           ...(isIDE
             ? {
                 position: "fixed",
@@ -3924,7 +3926,6 @@ export default function Chat({
                   </Div>
                 )
               )}
-
               <Div
                 className={showglow ? "chat glow blur" : "chat blur"}
                 style={{
