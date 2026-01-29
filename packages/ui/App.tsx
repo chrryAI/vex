@@ -23,12 +23,8 @@ import {
   RefreshCw,
   Settings2,
   Trash2,
-  Minimize,
-  Maximize,
   CirclePlay,
   CirclePause,
-  UserRoundPlus,
-  LogIn,
 } from "./icons"
 import toast from "react-hot-toast"
 import Loading from "./Loading"

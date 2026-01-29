@@ -17,7 +17,6 @@ import {
   UserRoundCog,
   UserRoundPlus,
   UsersRound,
-  WannathisIcon,
 } from "./icons"
 import {
   BrowserInstance,

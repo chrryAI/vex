@@ -7,7 +7,6 @@ import {
   useRouter as useClientRouter,
   usePathname as useClientPathname,
   useSearchParams as useClientSearchParams,
-  RouterState,
 } from "../hooks/useWindowHistory"
 
 // No longer using Next.js - fully migrated to Vite

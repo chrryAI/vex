@@ -33,7 +33,6 @@ import {
 } from "../../platform"
 import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 import { useApp } from "./AppProvider"
-import { getHourlyLimit } from "../../utils/getHourlyLimit"
 import useSWR from "swr"
 import { useWebSocket } from "../../hooks/useWebSocket"
 import { useUserScroll } from "../../hooks/useUserScroll"

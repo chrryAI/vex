@@ -11,7 +11,7 @@ export type DesktopAuthHandler = {
   openAuthWindow: (url: string) => Promise<void>
 }
 
-import { BrowserInstance, checkIsExtension, getRedirectURL } from "./utils"
+import { BrowserInstance, getRedirectURL } from "./utils"
 import toast from "react-hot-toast"
 import Account from "./account/Account"
 import { useAppContext } from "./context/AppContext"
