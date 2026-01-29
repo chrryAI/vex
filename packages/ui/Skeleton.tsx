@@ -48,19 +48,19 @@ function FocusButton({
 }) {
   const { minimize } = useApp()
 
-  const { viewPortWidth, isTauri } = usePlatform()
-  const { app, chrry, getAppSlug, setShowFocus } = useAuth()
+  const { viewPortWidth } = usePlatform()
+  const { app, getAppSlug, setShowFocus } = useAuth()
 
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
 
-  const codeEditor = isTauri && app?.store?.app?.slug === "sushi"
-
   const hasHydrated = useHasHydrated()
-  const { isMobileDevice } = useTheme()
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const { isMobileDevice, isSmallDevice } = useTheme()
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const { skeletonStyles, utilities } = useStyles()
 
   useEffect(() => {
+    setCurrentTime(new Date())
+
     if (time === 0) {
       const interval = setInterval(() => {
         setCurrentTime(new Date())
@@ -72,14 +72,19 @@ function FocusButton({
   const formatTime = () => {
     if (time > 0) {
       return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
-    } else {
+    } else if (currentTime) {
       const hours = currentTime.getHours()
       const minutes = currentTime.getMinutes()
       return `${hours}:${String(minutes).padStart(2, "0")}`
     }
+    return "--:--"
   }
 
-  if (!focus || viewPortWidth < 375 || minimize) {
+  if (!isDrawerOpen || viewPortWidth < 700 || !hasHydrated) {
+    return null
+  }
+
+  if (!focus || minimize) {
     return (
       <>
         <A
@@ -89,6 +94,9 @@ function FocusButton({
             ...utilities.button.style,
             ...utilities.transparent.style,
             ...utilities.small.style,
+            position: "relative",
+
+            left: "15.625rem",
             ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
           }}
         >
@@ -116,6 +124,9 @@ function FocusButton({
         ...utilities.link.style,
         marginTop: !isDrawerOpen ? 1 : -7.5,
         marginLeft: isDrawerOpen ? 0 : -5,
+        position: "relative",
+
+        left: 250,
       }}
     >
       {hasHydrated && (
@@ -240,7 +251,7 @@ export default function Skeleton({
         <Main
           style={{
             ...skeletonStyles.main.style,
-            ...((!threadId || isEmpty) && skeletonStyles.mainEmpty.style),
+            // ...((!threadId || isEmpty) && skeletonStyles.mainEmpty.style),
             ...(isDrawerOpen &&
               {
                 // position: "absolute",
@@ -254,6 +265,7 @@ export default function Skeleton({
           }}
         >
           <Div
+            className="blur"
             data-tauri-drag-region
             onDoubleClick={async () => {
               if (!isTauri) return
@@ -273,12 +285,20 @@ export default function Skeleton({
             }}
             style={{
               ...skeletonStyles.header.style,
-              ...(isStandalone && skeletonStyles.headerStandalone.style),
-              ...((!threadId || isEmpty) && skeletonStyles.headerEmpty.style),
-              ...(isCapacitor && os === "ios" && (!threadId || isEmpty)
+              ...(hasHydrated &&
+                isStandalone &&
+                skeletonStyles.headerStandalone.style),
+              // ...((!threadId || isEmpty) && skeletonStyles.headerEmpty.style),
+              ...(hasHydrated &&
+              isCapacitor &&
+              os === "ios" &&
+              (!threadId || isEmpty)
                 ? { paddingTop: 55 }
                 : {}),
-              ...(isCapacitor && os === "ios" && (threadId || !isEmpty)
+              ...(hasHydrated &&
+              isCapacitor &&
+              os === "ios" &&
+              (threadId || !isEmpty)
                 ? {
                     position: "fixed",
                     top: 0,
@@ -286,6 +306,9 @@ export default function Skeleton({
                     backgroundColor: "var(--background)",
                   }
                 : {}),
+              ...{
+                backgroundColor: "none",
+              },
             }}
             // className={clsx(hasHydrated && device && styles[device])}
           >
@@ -301,7 +324,10 @@ export default function Skeleton({
                       display: "flex",
                       alignItems: "center",
                       gap: 5,
-                      paddingTop: !isDrawerOpen && isTauri ? "1.4rem" : "0",
+                      paddingTop:
+                        hasHydrated && !isDrawerOpen && isTauri
+                          ? "1.4rem"
+                          : "0",
                     }}
                   >
                     {!isDrawerOpen && (
@@ -358,7 +384,7 @@ export default function Skeleton({
                       </Div>
                     ) : null}
 
-                    {!isEmpty || threadId ? null : (
+                    {isMobileDevice ? null : (
                       <FocusButton
                         isDrawerOpen={isDrawerOpen}
                         time={time}

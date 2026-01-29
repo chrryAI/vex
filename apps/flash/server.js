@@ -18,7 +18,7 @@ import arcjet, { shield, fixedWindow } from "@arcjet/node"
 
 const isE2E = process.env.VITE_TESTING_ENV === "e2e"
 
-const VERSION = "1.12.22"
+const VERSION = "1.12.26"
 // Constants
 const isProduction = process.env.NODE_ENV === "production"
 const port = process.env.PORT || 5173
@@ -606,6 +606,10 @@ app.use(async (req, res) => {
       ? (await vite.ssrLoadModule("/src/App.tsx")).default
       : (await import("./dist/server/entry-server.js")).App
 
+    console.log(
+      "🔧 SSR: serverData.pathname before render:",
+      serverData?.pathname,
+    )
     const appHtml = renderToString(React.createElement(App, { serverData }))
 
     // Collect CSS from Vite's module graph (dev only)
@@ -625,12 +629,25 @@ app.use(async (req, res) => {
       ? `<script>window.__SERVER_DATA__ = ${JSON.stringify(serverData).replace(/</g, "\\u003c")}</script>`
       : ""
 
-    // Replace placeholders - inject metadata, CSS, server data, and lang attribute
+    // Inject router state for SSR hydration (pathname from server)
+    const routerState = {
+      pathname: serverData?.pathname || url,
+      searchParams: Object.fromEntries(
+        new URLSearchParams(url.split("?")[1] || ""),
+      ),
+      hash: url.split("#")[1] || "",
+    }
+    console.log("🔧 SSR: Injecting router state:", routerState)
+    const routerStateScript = serverData
+      ? `<script>window.__ROUTER_STATE__ = ${JSON.stringify(routerState).replace(/</g, "\\u003c")}</script>`
+      : ""
+
+    // Replace placeholders - inject metadata, CSS, server data, router state, and lang attribute
     const html = template
       .replace(`<html lang="en"`, `<html lang="${serverData?.locale || "en"}"`)
       .replace(
         `<!--app-head-->`,
-        `${metaTags}\n  ${cssLinks}\n  ${serverDataScript}`,
+        `${metaTags}\n  ${cssLinks}\n  ${serverDataScript}\n  ${routerStateScript}`,
       )
       .replace(`<!--app-html-->`, appHtml)
 

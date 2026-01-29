@@ -247,6 +247,7 @@ export default function Chat({
     ask,
     about,
     setShowGrapes,
+    grapes,
     ...auth
   } = useAuth()
 
@@ -3360,7 +3361,9 @@ export default function Chat({
           ...style,
           ...(isDrawerOpen && !isSmallDevice ? styles.drawerOpen.style : {}),
           // ...(isMobileDevice ? styles.mobile.style : {}),
-          ...(isStandalone && os === "ios" ? { marginBottom: 16 } : {}),
+          ...(isHydrated && isStandalone && os === "ios"
+            ? { marginBottom: 16 }
+            : {}),
           ...(isIDE
             ? {
                 position: "fixed",
@@ -3686,19 +3689,21 @@ export default function Chat({
                         dataTestId="grapes-button"
                       />
 
-                      <Button
-                        className={"link"}
-                        onClick={() => {
-                          setShowGrapes(true)
-                        }}
-                        style={{
-                          ...utilities.link.style,
-                          fontSize: "0.75rem",
-                        }}
-                      >
-                        <Coins size={14} />
-                        {t("Earn Credits")}
-                      </Button>
+                      {grapes?.length ? (
+                        <Button
+                          className={"link"}
+                          onClick={() => {
+                            setShowGrapes(true)
+                          }}
+                          style={{
+                            ...utilities.link.style,
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          <Coins size={14} />
+                          {t("Earn Credits")}
+                        </Button>
+                      ) : null}
                     </Div>
                   )}
                 </Div>
@@ -3924,7 +3929,6 @@ export default function Chat({
                   </Div>
                 )
               )}
-
               <Div
                 className={showglow ? "chat glow blur" : "chat blur"}
                 style={{

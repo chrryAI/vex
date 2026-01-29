@@ -154,7 +154,7 @@ export default function AppProviders({
                 <AppProvider>
                   <ChatProvider>
                     <TimerContextProvider>
-                      <NavigationProvider>
+                      <NavigationProvider pathname={pathname}>
                         <AppContextProvider>
                           <StylesProvider>
                             <Hey useExtensionIcon={useExtensionIcon}>
