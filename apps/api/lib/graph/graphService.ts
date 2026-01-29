@@ -537,11 +537,11 @@ export async function getGraphContext(
           })
           if ((expansion as any)?.resultSet) {
             for (const row of (expansion as any).resultSet) {
-              if (row[1] === "DISCUSSES") {
+              if (row[1] === "DISCUSSES" && row[2]) {
                 contextItems.add(
                   `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 200)}...`,
                 )
-              } else {
+              } else if (row[2]) {
                 contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
               }
             }
@@ -589,11 +589,11 @@ export async function getGraphContext(
         })
         if ((expansion as any)?.resultSet) {
           for (const row of (expansion as any).resultSet) {
-            if (row[1] === "DISCUSSES") {
+            if (row[1] === "DISCUSSES" && row[2]) {
               contextItems.add(
                 `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 150)}...`,
               )
-            } else {
+            } else if (row[2]) {
               contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
             }
           }
