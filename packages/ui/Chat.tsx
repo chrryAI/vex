@@ -247,6 +247,7 @@ export default function Chat({
     ask,
     about,
     setShowGrapes,
+    grapes,
     ...auth
   } = useAuth()
 
@@ -3688,19 +3689,21 @@ export default function Chat({
                         dataTestId="grapes-button"
                       />
 
-                      <Button
-                        className={"link"}
-                        onClick={() => {
-                          setShowGrapes(true)
-                        }}
-                        style={{
-                          ...utilities.link.style,
-                          fontSize: "0.75rem",
-                        }}
-                      >
-                        <Coins size={14} />
-                        {t("Earn Credits")}
-                      </Button>
+                      {grapes?.length ? (
+                        <Button
+                          className={"link"}
+                          onClick={() => {
+                            setShowGrapes(true)
+                          }}
+                          style={{
+                            ...utilities.link.style,
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          <Coins size={14} />
+                          {t("Earn Credits")}
+                        </Button>
+                      ) : null}
                     </Div>
                   )}
                 </Div>
