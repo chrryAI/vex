@@ -735,7 +735,7 @@ export function AuthProvider({
     | undefined
   >(props.threads)
 
-  const siteConfig = getSiteConfig()
+  const siteConfig = getSiteConfig(CHRRY_URL)
 
   const { isStorageReady, isTauri } = usePlatform()
 
@@ -1026,12 +1026,9 @@ export function AuthProvider({
     session?.app?.store?.apps || [],
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
+  console.log(`🚀 ~ allApps:`, allApps)
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const getAppSlug = (
-    targetApp: appWithStore,
-    defaultSlug: string = "/",
-  ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
 
@@ -1046,6 +1043,11 @@ export function AuthProvider({
   const [baseApp, setBaseApp] = useState<appWithStore | undefined>(
     baseAppInternal,
   )
+
+  const getAppSlug = (
+    targetApp: appWithStore,
+    defaultSlug: string = "/",
+  ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
 
   const [app, setAppInternal] = useState<
     (appWithStore & { image?: string }) | undefined
