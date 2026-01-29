@@ -1748,9 +1748,8 @@ ${
     - If asked about local regulations, laws, or procedures, specify that information is for ${location} and may vary by jurisdiction`
   }
 
-  const memoriesEnabled = (member || guest)?.memoriesEnabled || isAppOwner
-  const characterProfilesEnabled =
-    (member || guest)?.characterProfilesEnabled || isAppOwner
+  const memoriesEnabled = (member || guest)?.memoriesEnabled
+  const characterProfilesEnabled = (member || guest)?.characterProfilesEnabled
 
   // Feature status context for AI
   const featureStatusContext = `
@@ -3915,10 +3914,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
           // Process text file for RAG so AI can analyze it
           // Only if memories are enabled (RAG requires memory context)
           // Run in background to avoid blocking response
-          if (
-            textContent &&
-            (member?.memoriesEnabled || guest?.memoriesEnabled)
-          ) {
+          if (textContent && memoriesEnabled) {
             processFileForRAG({
               content: textContent,
               filename: file.filename,
@@ -3983,7 +3979,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             // Process PDF for RAG so AI can analyze it
             // Only if memories are enabled (RAG requires memory context)
             // Run in background to avoid blocking response
-            if (member?.memoriesEnabled || guest?.memoriesEnabled) {
+            if (memoriesEnabled) {
               processFileForRAG({
                 content: extractedText,
                 filename: file.filename,
