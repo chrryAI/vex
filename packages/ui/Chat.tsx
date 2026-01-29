@@ -245,6 +245,7 @@ export default function Chat({
     about,
     setShowGrapes,
     grapes,
+
     ...auth
   } = useAuth()
 

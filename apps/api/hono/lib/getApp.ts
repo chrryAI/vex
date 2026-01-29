@@ -277,7 +277,7 @@ async function enrichStoreApps(
   if (!app?.store?.apps?.length) return
 
   const enrichedApps = await Promise.all(
-    app.store.apps.map(async (storeApp: any) => {
+    app.store.apps.map(async (storeApp: appWithStore) => {
       if (!storeApp) return null
 
       const isBaseApp = storeApp?.id === storeApp?.store?.appId
@@ -297,7 +297,8 @@ async function enrichStoreApps(
           userId: auth.member?.id,
           guestId: auth.guest?.id,
           skipCache,
-          depth: 0,
+          depth: 1,
+          skipCache,
         })
       }
 

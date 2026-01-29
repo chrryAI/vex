@@ -31,7 +31,8 @@ export const createCustomConsole = (user?: { role?: string }) => {
   const role = getUserRole(user)
   const isCapacitor =
     typeof window !== "undefined" && !!(window as any).Capacitor
-  const shouldLog = isE2E || isDevelopment || role === "admin" || isCapacitor
+  const shouldLog =
+    true || isE2E || isDevelopment || role === "admin" || isCapacitor
 
   return {
     log: (message?: any, ...args: any[]) => {
