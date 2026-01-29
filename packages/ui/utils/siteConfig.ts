@@ -2397,6 +2397,7 @@ const getClientHostname = () => {
  * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
 export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
+  console.log(`🚀 ~ getSiteConfig ~ hostnameOrMode:`, hostnameOrMode)
   // If it's a valid SiteMode, use it directly
 
   // if (hostnameOrMode && matchesDomain(hostnameOrMode, "staging.chrry.ai")) {
