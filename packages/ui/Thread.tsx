@@ -115,7 +115,9 @@ const Thread = ({
     isEmpty,
   } = useChat()
 
-  const showFocus = auth.showFocus && isEmpty
+  const hasHydrated = useHasHydrated()
+
+  const showFocus = auth.showFocus && isEmpty && hasHydrated
 
   const { isIDE } = usePlatform()
 
@@ -213,8 +215,6 @@ const Thread = ({
     }
   }, [messages, autoSelectedAgent, debateAgent])
   // aiAgents excluded to prevent loop, setSelectedAgent is stable
-
-  const hasHydrated = useHasHydrated()
 
   const nameIsRequired = `👋 ${t("Name your app...")}`
   const titleIsRequired = `✍️ ${t("Give it a title...")}`

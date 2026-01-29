@@ -254,7 +254,8 @@ session.get("/", async (c) => {
     }
   }
 
-  const locale = url.searchParams.get("locale") || "en"
+  const locale =
+    url.searchParams.get("locale") || getCookie(c, "locale") || "en"
 
   const source = url.searchParams.get("source") || "client"
 
