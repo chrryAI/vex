@@ -8,7 +8,7 @@ import {
   guest,
   thread,
 } from "@repo/db"
-import { FRONTEND_URL, WS_URL } from "@chrryai/chrry/utils"
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import webpush from "web-push"
 import captureException from "./captureException"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
@@ -23,9 +23,9 @@ interface CustomWebSocket {
 }
 
 const WebSocket: CustomWebSocket = (global as any).WebSocket || require("ws")
-let socket: WebSocket | null = null
+const socket: WebSocket | null = null
 
-let connectionPromise: Promise<void> | null = null
+const connectionPromise: Promise<void> | null = null
 
 import { notifyClients } from "./wsClients"
 

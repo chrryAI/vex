@@ -22,8 +22,6 @@ import {
   Info,
   CircleCheck,
   Coins,
-  UserRoundPlus,
-  HatGlasses,
   Timer,
   LogIn,
   Clock,
@@ -41,7 +39,6 @@ import {
   ClockPlus,
   Star,
   Link,
-  ArrowLeft,
   RefreshCw,
 } from "./icons"
 import { COLORS, useAppContext } from "./context/AppContext"
