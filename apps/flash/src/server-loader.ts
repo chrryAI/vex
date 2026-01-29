@@ -314,7 +314,7 @@ export async function loadServerData(
         `🚀 ~ siteConfig:`,
         siteConfig,
         chrryUrl,
-        app?.store?.apps
+        (app?.store?.apps || [])
           ?.find((item) => {
             if (!item) return false
 
