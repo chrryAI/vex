@@ -234,7 +234,7 @@ export async function loadServerData(
   console.log(`🚀 ~ chrryUrl:`, chrryUrl)
 
   const siteConfig = getSiteConfig(hostname)
-  console.log(`🚀 ~ siteConfig:`, siteConfig.domain)
+  console.log(`🚀 ~ siteConfig:`, siteConfig.domain, hostname)
 
   let thread: { thread: thread; messages: paginatedMessages } | undefined
   let session: session | undefined
@@ -310,9 +310,9 @@ export async function loadServerData(
     app = appResult.id === accountApp?.id ? accountApp : appResult
 
     console.log(
-      `🚀 ~ siteConfig:`,
-      siteConfig,
-      chrryUrl,
+      `🚀 ~ ssss:`,
+      // siteConfig,
+      // chrryUrl,
       (app?.store?.apps || [])?.find((item) => {
         if (!item) return false
 
