@@ -30,7 +30,7 @@ export default function About() {
   const styles = useWhyStyles()
   const { utilities } = useStyles()
 
-  const { plausible, siteConfig } = useAuth()
+  const { siteConfig } = useAuth()
 
   return (
     <Skeleton>
