@@ -230,9 +230,8 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     TEST_GUEST_FINGERPRINTS,
     TEST_MEMBER_FINGERPRINTS,
     session,
+    siteConfig,
   } = useAuth()
-
-  const siteConfig = getSiteConfig()
 
   const {
     data: weatherData,

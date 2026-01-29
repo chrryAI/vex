@@ -317,7 +317,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.11.11",
+  version: "26.11.12",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -2396,8 +2396,11 @@ const getClientHostname = () => {
  * Get site configuration based on current domain
  * @param hostnameOrMode - Either a hostname (for SSR) or a SiteMode string
  */
-export function getSiteConfig(hostnameOrMode?: string): SiteConfig {
-  console.log(`🚀 ~ getSiteConfig ~ hostnameOrMode:`, hostnameOrMode)
+export function getSiteConfig(
+  hostnameOrMode?: string,
+  caller?: string,
+): SiteConfig {
+  // console.log(`🚀 ~ getSiteConfig ~ hostnameOrMode:`, hostnameOrMode, caller)
   // If it's a valid SiteMode, use it directly
 
   // if (hostnameOrMode && matchesDomain(hostnameOrMode, "staging.chrry.ai")) {

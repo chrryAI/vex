@@ -66,10 +66,7 @@ export const AppContextProvider = ({
   children: React.ReactNode
 }) => {
   const { t: i18nT } = useTranslation()
-  const { user, storeApps, atlas } = useAuth()
-
-  // Get site config for dynamic app name
-  const config = getSiteConfig()
+  const { user, storeApps, atlas, siteConfig: config } = useAuth()
 
   // Auto-append missing translation keys in dev mode
   const t = (key: string, values?: Record<string, any>, autoAdd = true) => {

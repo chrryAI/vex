@@ -66,6 +66,7 @@ function App({ serverData }: AppProps) {
   return (
     <>
       <Chrry
+        siteConfig={serverData?.siteConfig}
         locale={serverData?.locale as any}
         session={serverData?.session}
         thread={serverData?.thread}
