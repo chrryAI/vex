@@ -140,7 +140,8 @@ export const FRONTEND_URL =
 
 export const PROD_FRONTEND_URL = FRONTEND_URL
 
-export const API_INTERNAL_URL = getEnv().VITE_API_INTERNAL_URL
+export const API_INTERNAL_URL =
+  getEnv().VITE_API_INTERNAL_URL || getEnv().API_INTERNAL_URL
 
 export const API_URL =
   getEnv().VITE_API_URL ||
