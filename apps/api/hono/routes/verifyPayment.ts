@@ -55,6 +55,12 @@ verifyPayment.post("/", async (c) => {
     appId,
   } = body
 
+  console.log("🔍 verifyPayment received session_id:", {
+    session_id,
+    length: session_id?.length,
+    type: typeof session_id,
+  })
+
   const app = appId ? await getApp({ id: appId }) : undefined
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
