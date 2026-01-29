@@ -16,6 +16,7 @@ import React from "react"
 import AppProviders from "./context/providers"
 import { session, thread, paginatedMessages, appWithStore } from "./types"
 import { locale } from "./locales"
+import { getSiteConfig } from "./utils/siteConfig"
 
 export default function Chrry({
   children,
@@ -31,6 +32,7 @@ export default function Chrry({
   threads,
   app,
   pathname,
+  siteConfig,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -42,6 +44,7 @@ export default function Chrry({
   app?: appWithStore
   viewPortWidth?: string
   viewPortHeight?: string
+  siteConfig?: ReturnType<typeof getSiteConfig>
   pathname?: string // SSR pathname for thread ID extraction
   threads?: {
     threads: thread[]
@@ -53,6 +56,7 @@ export default function Chrry({
     <AppProviders
       useExtensionIcon={useExtensionIcon}
       locale={locale}
+      siteConfig={siteConfig}
       session={session}
       app={app}
       viewPortWidth={viewPortWidth}
