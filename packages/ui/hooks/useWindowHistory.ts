@@ -34,11 +34,37 @@ class ClientRouter {
   private isInitialized = false // Track if client-side init has run
 
   constructor() {
-    // SSR hydration: Use server state if available
-    this.state =
-      typeof window !== "undefined" && window.__ROUTER_STATE__
-        ? window.__ROUTER_STATE__
-        : this.getCurrentState()
+    console.log(
+      "🔧 ClientRouter constructor: window.__ROUTER_STATE__ =",
+      typeof window !== "undefined" ? window.__ROUTER_STATE__ : "SSR",
+    )
+
+    // Priority: 1. window.__ROUTER_STATE__ (injected by server), 2. getCurrentState()
+    if (typeof window !== "undefined" && window.__ROUTER_STATE__) {
+      const serverState = window.__ROUTER_STATE__
+      this.state = {
+        pathname: serverState.pathname,
+        searchParams: new URLSearchParams(
+          Object.entries(serverState.searchParams || {}).map(([k, v]) => [
+            k,
+            String(v),
+          ]),
+        ),
+        hash: serverState.hash,
+      }
+      console.log(
+        "🔧 ClientRouter: Hydrated from window.__ROUTER_STATE__:",
+        this.state,
+      )
+    } else {
+      this.state = this.getCurrentState()
+      console.log(
+        "🔧 ClientRouter: Initialized from client state:",
+        this.state.pathname,
+        "window location:",
+        typeof window !== "undefined" ? window.location.href : "SSR",
+      )
+    }
 
     // Cache View Transitions API support check
     this.supportsViewTransitions =
@@ -327,6 +353,11 @@ class ClientRouter {
   // Get cached View Transitions support status
   hasViewTransitions() {
     return this.supportsViewTransitions
+  }
+
+  // Check if router has been initialized
+  getIsInitialized() {
+    return this.isInitialized
   }
 }
 

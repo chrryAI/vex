@@ -283,6 +283,10 @@ export default function Menu({
     }
   }, [threads, lastStarredId])
 
+  // if (!hasHydrated) {
+  //   return null
+  // }
+
   return (
     <>
       <Div

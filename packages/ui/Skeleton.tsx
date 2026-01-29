@@ -80,11 +80,11 @@ function FocusButton({
     return "--:--"
   }
 
-  if (!isDrawerOpen || viewPortWidth < 700) {
+  if (!isDrawerOpen || viewPortWidth < 700 || !hasHydrated) {
     return null
   }
 
-  if (!focus || viewPortWidth < 375 || minimize) {
+  if (!focus || minimize) {
     return (
       <>
         <A
@@ -285,12 +285,20 @@ export default function Skeleton({
             }}
             style={{
               ...skeletonStyles.header.style,
-              ...(isStandalone && skeletonStyles.headerStandalone.style),
+              ...(hasHydrated &&
+                isStandalone &&
+                skeletonStyles.headerStandalone.style),
               // ...((!threadId || isEmpty) && skeletonStyles.headerEmpty.style),
-              ...(isCapacitor && os === "ios" && (!threadId || isEmpty)
+              ...(hasHydrated &&
+              isCapacitor &&
+              os === "ios" &&
+              (!threadId || isEmpty)
                 ? { paddingTop: 55 }
                 : {}),
-              ...(isCapacitor && os === "ios" && (threadId || !isEmpty)
+              ...(hasHydrated &&
+              isCapacitor &&
+              os === "ios" &&
+              (threadId || !isEmpty)
                 ? {
                     position: "fixed",
                     top: 0,
@@ -316,7 +324,10 @@ export default function Skeleton({
                       display: "flex",
                       alignItems: "center",
                       gap: 5,
-                      paddingTop: !isDrawerOpen && isTauri ? "1.4rem" : "0",
+                      paddingTop:
+                        hasHydrated && !isDrawerOpen && isTauri
+                          ? "1.4rem"
+                          : "0",
                     }}
                   >
                     {!isDrawerOpen && (
