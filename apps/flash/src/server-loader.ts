@@ -314,18 +314,16 @@ export async function loadServerData(
         `🚀 ~ siteConfig:`,
         siteConfig,
         chrryUrl,
-        (app?.store?.apps || [])
-          ?.find((item) => {
-            if (!item) return false
+        (app?.store?.apps || [])?.find((item) => {
+          if (!item) return false
 
-            if (
-              siteConfig.slug === item.slug &&
-              item.store?.slug === siteConfig.storeSlug
-            ) {
-              return true
-            }
-          })
-          ?.map((item) => item.slug),
+          if (
+            siteConfig.slug === item.slug &&
+            item.store?.slug === siteConfig.storeSlug
+          ) {
+            return true
+          }
+        })?.name,
       )
     }
   } catch (error) {
