@@ -306,8 +306,9 @@ export default function Menu({
                 onDoubleClick={async () => {
                   if (!isTauri) return
                   try {
-                    const { getCurrentWindow } =
-                      await import("@tauri-apps/api/window")
+                    const { getCurrentWindow } = await import(
+                      "@tauri-apps/api/window"
+                    )
                     const appWindow = getCurrentWindow()
                     const isMaximized = await appWindow.isMaximized()
                     if (isMaximized) {
@@ -876,7 +877,7 @@ export default function Menu({
 
             <Div style={styles.colorSchemeContainer.style}>
               <ColorScheme style={styles.colorScheme.style} />
-              {isThemeLocked ? (
+              {!hasHydrated ? null : isThemeLocked ? (
                 <Button
                   title={t("Unlock theme")}
                   onClick={() => {
