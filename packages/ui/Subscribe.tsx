@@ -32,7 +32,6 @@ import {
   AtSign,
   Sparkles,
 } from "./icons"
-import { Building2 } from "lucide-react"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import toast from "react-hot-toast"
 import Loading from "./Loading"

@@ -19,8 +19,12 @@ import {
   updateUser,
   getStores,
   deleteStore,
+  updateGuest,
 } from "@repo/db"
-import { MEMBER_CREDITS_PER_MONTH } from "@repo/db/src/schema"
+import {
+  GUEST_CREDITS_PER_MONTH,
+  MEMBER_CREDITS_PER_MONTH,
+} from "@repo/db/src/schema"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
   TEST_MEMBER_FINGERPRINTS,
@@ -147,5 +151,21 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       fingerprint: null,
     }))
 
-  guest && (await deleteGuest({ id: guest.id }))
+  // Reset guest data instead of deleting to prevent foreign key constraint violations
+  // during concurrent operations (e.g., AI streaming while cleanup runs)
+  guest &&
+    (await updateGuest({
+      ...guest,
+      credits: GUEST_CREDITS_PER_MONTH,
+      subscribedOn: null,
+      migratedToUser: false,
+      imagesGeneratedToday: 0,
+      fileUploadsToday: 0,
+      fileUploadsThisHour: 0,
+      totalFileSizeToday: 0,
+      speechRequestsToday: 0,
+      speechRequestsThisHour: 0,
+      speechCharactersToday: 0,
+      pearFeedbackCount: 0,
+    }))
 }

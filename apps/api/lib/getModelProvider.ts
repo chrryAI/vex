@@ -5,7 +5,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { app, getAiAgents, decrypt, aiAgent } from "@repo/db"
 import type { LanguageModel } from "ai"
 import { appWithStore } from "@chrryai/chrry/types"
-import { FRONTEND_URL, isE2E } from "@chrryai/chrry/utils"
+import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { createPerplexity } from "@ai-sdk/perplexity"
 
 const plusTiers = ["plus", "pro"]

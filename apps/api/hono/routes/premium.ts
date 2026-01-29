@@ -8,7 +8,7 @@ import {
   cancelPremiumSubscription,
   logStripeRevenue,
 } from "@repo/db"
-import { getGuest, getMember } from "../lib/auth"
+import { getMember } from "../lib/auth"
 import { sendWebPush } from "../../lib/sendWebPush"
 
 // Type helper for Stripe webhook subscription data

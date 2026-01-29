@@ -1,5 +1,4 @@
 import { generateText } from "ai"
-import { getApp } from "../hono/lib/getApp"
 import { db, eq, logCreditUsage, pearFeedback } from "@repo/db"
 import { apps, feedbackTransactions } from "@repo/db/src/schema"
 import type { appWithStore } from "@chrryai/chrry/types"
