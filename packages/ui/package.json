@@ -179,6 +179,6 @@
   "optionalDependencies": {
     "date-fns": "^4.1.0",
     "react-big-calendar": "^1.19.4",
-    "recharts": "^3.3.0"
+    "recharts": "^3.7.0"
   }
 }
