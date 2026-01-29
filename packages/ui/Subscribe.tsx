@@ -264,14 +264,16 @@ export default function Subscribe({
   const cleanSessionId = (sessionId: string | null): string => {
     if (!sessionId) return ""
 
-    // Decode URI component first
-    let cleaned = decodeURIComponent(sessionId)
+    // Remove any query params that got appended to session_id
+    // Stripe session IDs should be exactly 66 characters (cs_test_...)
+    const cleaned = sessionId?.split("?")?.[0]?.trim() || ""
 
-    // Remove all question marks (not just trailing)
-    cleaned = cleaned.replace(/\?/g, "")
-
-    // Trim whitespace
-    cleaned = cleaned.trim()
+    console.log(" cleanSessionId:", {
+      original: sessionId,
+      cleaned,
+      originalLength: sessionId.length,
+      cleanedLength: cleaned.length,
+    })
 
     return cleaned
   }
