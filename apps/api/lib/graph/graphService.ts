@@ -632,10 +632,15 @@ export async function clearGraphDataForUser({
       return
     }
 
-    // Delete all entities and relationships for this user/guest
-    // DETACH DELETE removes the node and all its relationships
+    // Delete User node and all connected entities/relationships
+    // User nodes are stored as (u:User {id: $identifier})
+    // This will cascade delete all connected Document, Chunk, Topic, Entity nodes
     await graph.query(
-      `MATCH (n) WHERE n.userId = $identifier OR n.guestId = $identifier DETACH DELETE n`,
+      `
+      MATCH (u:User {id: $identifier})
+      OPTIONAL MATCH (u)-[*]-(connected)
+      DETACH DELETE u, connected
+      `,
       { params: { identifier } },
     )
 
