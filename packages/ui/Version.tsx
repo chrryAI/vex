@@ -17,6 +17,7 @@ import A from "./a/A"
 import { useVersionStyles } from "./Version.styles"
 import { useStyles } from "./context/StylesContext"
 import { SiMacos } from "react-icons/si"
+import { useHasHydrated } from "./hooks"
 
 export default function Version() {
   const {
@@ -25,6 +26,8 @@ export default function Version() {
     needsUpdateModalOpen,
     needsUpdate,
   } = useData()
+
+  const hasHydrated = useHasHydrated()
 
   const { showAddToHomeScreen, setShowAddToHomeScreen } = useNavigationContext()
   const { t } = useTranslation()
@@ -40,6 +43,10 @@ export default function Version() {
   const { utilities } = useStyles()
 
   const [urlCopied, setUrlCopied] = useState(false)
+
+  if (!hasHydrated) {
+    return null
+  }
 
   return (
     <Div>

@@ -84,7 +84,13 @@ const NavigationContext = createContext<
   | undefined
 >(undefined)
 
-export function NavigationProvider({ children }: { children: ReactNode }) {
+export function NavigationProvider({
+  children,
+  ...props
+}: {
+  children: ReactNode
+  pathname?: string
+}) {
   // TODO: Move navigation logic here
 
   const addParam = (key: string, value: string) => {
@@ -95,9 +101,12 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     // TODO: Implement
   }
 
+  // useNavigation will read from window.__ROUTER_STATE__ injected by server
   const navigation = useNavigation()
 
-  const { searchParams, pathname, ...router } = navigation
+  const { searchParams, pathname: pn, ...router } = navigation
+
+  const pathname = (typeof window === "undefined" ? props.pathname : pn) || "/"
 
   const { app } = useApp()
 

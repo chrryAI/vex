@@ -652,7 +652,7 @@ export default function Message({
 
     const messageId = message.message.id
 
-    if (isStreamingStop || !token) return null
+    if (isStreamingStop) return null
 
     return (
       <ConfirmButton

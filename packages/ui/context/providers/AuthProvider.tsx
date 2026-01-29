@@ -346,7 +346,6 @@ export function AuthProvider({
   error,
   locale,
   translations,
-  pathname: ssrPathname, // SSR pathname from server
   ...props
 }: {
   translations?: Record<string, any>
@@ -370,8 +369,13 @@ export function AuthProvider({
   const [wasGifted, setWasGifted] = useState<boolean>(false)
   const [session, setSession] = useState<session | undefined>(props.session)
 
-  const { searchParams, removeParams, pathname, addParams, ...router } =
-    useNavigation()
+  const {
+    searchParams,
+    removeParams,
+    pathname: pn,
+    addParams,
+    ...router
+  } = useNavigation()
   const {
     isExtension,
     isStandalone,
@@ -384,6 +388,8 @@ export function AuthProvider({
     isIDE,
     toggleIDE,
   } = usePlatform()
+
+  const pathname = (typeof window === "undefined" ? props.pathname : pn) || "/"
 
   const hasStoreApps = (app: appWithStore | undefined) => {
     return Boolean(app?.store?.app && app?.store?.apps.length)

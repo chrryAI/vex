@@ -8,6 +8,7 @@ import { COLORS, useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { apiFetch } from "./utils"
 import { Span } from "./platform"
+import { useHasHydrated } from "./hooks"
 
 export default function DeleteThread({
   className,
@@ -24,9 +25,11 @@ export default function DeleteThread({
   const { t } = useAppContext()
   const { token, API_URL } = useAuth()
 
+  const isHydrated = useHasHydrated()
+
   const { refetchThreads } = useNavigationContext()
 
-  if (!token || !id) {
+  if (!token || !id || !isHydrated) {
     return null
   }
   return (

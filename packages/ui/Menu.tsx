@@ -283,6 +283,10 @@ export default function Menu({
     }
   }, [threads, lastStarredId])
 
+  // if (!hasHydrated) {
+  //   return null
+  // }
+
   return (
     <>
       <Div
@@ -876,7 +880,7 @@ export default function Menu({
 
             <Div style={styles.colorSchemeContainer.style}>
               <ColorScheme style={styles.colorScheme.style} />
-              {isThemeLocked ? (
+              {!hasHydrated ? null : isThemeLocked ? (
                 <Button
                   title={t("Unlock theme")}
                   onClick={() => {
