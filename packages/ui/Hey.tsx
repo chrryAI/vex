@@ -115,8 +115,6 @@ export const Hey = memo(
     //   }
     // }, [pathnameLocal, isExtension, pathname])
 
-    const isChrry = app && app.slug === "chrry"
-
     // Check if current route is a store slug by checking all apps
     const isStorePage = storeApps?.find(
       (app) => app.store?.slug === pathWithoutLocale,

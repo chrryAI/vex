@@ -92,7 +92,7 @@ function FocusButton({
     }
   }
 
-  if (!focus) {
+  if (!focus || !hasHydrated) {
     return null
   }
 
@@ -537,39 +537,41 @@ export default function App({
 
   return (
     <Div>
-      <Div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "100%",
-          marginBottom: "0.5rem",
-          position: "relative",
-        }}
-      >
-        <Button
-          data-testid={`${minimize ? "maximize" : "minimize"}`}
-          title={t(!minimize ? "Hide" : "Maximize")}
-          className="transparent xSmall link"
+      {hasHydrated && (
+        <Div
           style={{
-            ...utilities.small.style,
-            gap: "0.4rem",
-            padding: "5px 8px",
-            border: "none",
-          }}
-          onClick={() => {
-            addHapticFeedback()
-            setMinimize(!minimize)
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            marginBottom: "0.5rem",
+            position: "relative",
           }}
         >
-          {minimize ? (
-            <Img logo="coder" size={24} />
-          ) : (
-            <Img logo="avocado" size={24} />
-          )}{" "}
-          {minimize ? t("Superpowers") : t("Minimize")}
-        </Button>
-      </Div>
+          <Button
+            data-testid={`${minimize ? "maximize" : "minimize"}`}
+            title={t(!minimize ? "Hide" : "Maximize")}
+            className="transparent xSmall link"
+            style={{
+              ...utilities.small.style,
+              gap: "0.4rem",
+              padding: "5px 8px",
+              border: "none",
+            }}
+            onClick={() => {
+              addHapticFeedback()
+              setMinimize(!minimize)
+            }}
+          >
+            {minimize ? (
+              <Img logo="coder" size={24} />
+            ) : (
+              <Img logo="avocado" size={24} />
+            )}{" "}
+            {minimize ? t("Superpowers") : t("Minimize")}
+          </Button>
+        </Div>
+      )}
       <H1 style={styles.title.style}>
         {!isManagingApp && !canEditApp && app ? (
           <Div
@@ -828,7 +830,7 @@ export default function App({
               }}
             />
           </Div>
-          {minimize && (
+          {minimize && hasHydrated && (
             <>
               {
                 <Div
@@ -1011,8 +1013,8 @@ export default function App({
 
           <Div
             style={{
-              opacity: minimize ? 0 : 1,
-              pointerEvents: minimize ? "none" : "auto",
+              opacity: hasHydrated && minimize ? 0 : 1,
+              pointerEvents: hasHydrated && minimize ? "none" : "auto",
               display: "flex",
               flexDirection: "column",
               gap: "0.5rem",
@@ -1664,8 +1666,8 @@ export default function App({
         <Div
           style={{
             ...styles.instructions.style,
-            opacity: minimize ? 0 : 1,
-            pointerEvents: minimize ? "none" : "auto",
+            opacity: hasHydrated && minimize ? 0 : 1,
+            pointerEvents: hasHydrated && minimize ? "none" : "auto",
           }}
         >
           {isManagingApp && (

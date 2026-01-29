@@ -283,6 +283,10 @@ export default function Menu({
     }
   }, [threads, lastStarredId])
 
+  // if (!hasHydrated) {
+  //   return null
+  // }
+
   return (
     <>
       <Div
@@ -306,9 +310,8 @@ export default function Menu({
                 onDoubleClick={async () => {
                   if (!isTauri) return
                   try {
-                    const { getCurrentWindow } = await import(
-                      "@tauri-apps/api/window"
-                    )
+                    const { getCurrentWindow } =
+                      await import("@tauri-apps/api/window")
                     const appWindow = getCurrentWindow()
                     const isMaximized = await appWindow.isMaximized()
                     if (isMaximized) {

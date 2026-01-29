@@ -54,7 +54,7 @@ function FocusButton({
   const focus = app?.store?.apps?.find((app) => app.slug === "focus")
 
   const hasHydrated = useHasHydrated()
-  const { isMobileDevice } = useTheme()
+  const { isMobileDevice, isSmallDevice } = useTheme()
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const { skeletonStyles, utilities } = useStyles()
 
@@ -80,7 +80,11 @@ function FocusButton({
     return "--:--"
   }
 
-  if (!focus || viewPortWidth < 375 || minimize) {
+  if (!isDrawerOpen || viewPortWidth < 700 || !hasHydrated) {
+    return null
+  }
+
+  if (!focus || minimize) {
     return (
       <>
         <A
@@ -92,7 +96,7 @@ function FocusButton({
             ...utilities.small.style,
             position: "relative",
 
-            left: 250,
+            left: "15.625rem",
             ...(hasHydrated && isMobileDevice && skeletonStyles.blog.style),
           }}
         >
@@ -281,12 +285,20 @@ export default function Skeleton({
             }}
             style={{
               ...skeletonStyles.header.style,
-              ...(isStandalone && skeletonStyles.headerStandalone.style),
+              ...(hasHydrated &&
+                isStandalone &&
+                skeletonStyles.headerStandalone.style),
               // ...((!threadId || isEmpty) && skeletonStyles.headerEmpty.style),
-              ...(isCapacitor && os === "ios" && (!threadId || isEmpty)
+              ...(hasHydrated &&
+              isCapacitor &&
+              os === "ios" &&
+              (!threadId || isEmpty)
                 ? { paddingTop: 55 }
                 : {}),
-              ...(isCapacitor && os === "ios" && (threadId || !isEmpty)
+              ...(hasHydrated &&
+              isCapacitor &&
+              os === "ios" &&
+              (threadId || !isEmpty)
                 ? {
                     position: "fixed",
                     top: 0,
@@ -312,7 +324,10 @@ export default function Skeleton({
                       display: "flex",
                       alignItems: "center",
                       gap: 5,
-                      paddingTop: !isDrawerOpen && isTauri ? "1.4rem" : "0",
+                      paddingTop:
+                        hasHydrated && !isDrawerOpen && isTauri
+                          ? "1.4rem"
+                          : "0",
                     }}
                   >
                     {!isDrawerOpen && (
