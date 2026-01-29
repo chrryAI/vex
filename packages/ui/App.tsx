@@ -783,7 +783,7 @@ export default function App({
                     </Button>
                   )}
               </Div>
-            ) : appFormWatcher && appFormWatcher.canSubmit ? (
+            ) : appFormWatcher && appFormWatcher.canSubmit && hasHydrated ? (
               <Div style={styles.titleFormTitle.style}>
                 {app?.id === focus?.id ? (
                   <FocusButton width={38} style={{ marginRight: 5 }} />
@@ -1239,7 +1239,8 @@ export default function App({
                   )}
                 </Div>
               ) : (
-                store && (
+                store &&
+                hasHydrated && (
                   <A
                     title={t(store?.title || "Your AI-Powered Life")}
                     href={getStoreSlug(store?.slug)}
