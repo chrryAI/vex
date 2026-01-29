@@ -55,10 +55,12 @@ function FocusButton({
 
   const hasHydrated = useHasHydrated()
   const { isMobileDevice } = useTheme()
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
   const { skeletonStyles, utilities } = useStyles()
 
   useEffect(() => {
+    setCurrentTime(new Date())
+
     if (time === 0) {
       const interval = setInterval(() => {
         setCurrentTime(new Date())
@@ -70,11 +72,12 @@ function FocusButton({
   const formatTime = () => {
     if (time > 0) {
       return `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
-    } else {
+    } else if (currentTime) {
       const hours = currentTime.getHours()
       const minutes = currentTime.getMinutes()
       return `${hours}:${String(minutes).padStart(2, "0")}`
     }
+    return "--:--"
   }
 
   if (!focus || viewPortWidth < 375 || minimize) {
