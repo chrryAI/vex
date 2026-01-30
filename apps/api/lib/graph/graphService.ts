@@ -661,7 +661,7 @@ export async function clearGraphDataForUser({
  * ⚠️ DESTRUCTIVE - Use with caution!
  */
 export async function clearAllGraphData(): Promise<void> {
-  if (isDevelopment || isE2E) return
+  if (!isDevelopment && !isE2E) return
 
   try {
     // Delete all nodes and relationships
