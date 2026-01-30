@@ -23,8 +23,8 @@ export const MenuStyleDefs = {
     opacity: 0,
   },
   open: {
-    position: "fixed",
     display: "flex",
+    position: "fixed",
     zIndex: 9999,
   },
   closed: {

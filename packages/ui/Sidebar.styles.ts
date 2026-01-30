@@ -13,8 +13,8 @@ export const SidebarStyleDefs = {
     padding: 10,
   },
   splash: {
-    height: "100vh",
-    width: "100vw",
+    height: "100dvh",
+    width: "100dvw",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",

@@ -106,9 +106,9 @@ export const StoreStyleDefs = {
     flex: 1,
   },
   appInfo: {
-    display: "none",
     flexDirection: "column",
     gap: 2,
+    display: "none",
   },
   appName: {
     fontSize: 15,
