@@ -4,10 +4,16 @@ import slugify from "slug"
 import { upload } from "../../lib/minio"
 import { processFileForRAG } from "./ragService"
 // Note: getMember/getGuest are passed as parameters, not imported
-import { getMessages, thread, updateThread, createMessage } from "@repo/db"
+import {
+  getMessages,
+  thread,
+  updateThread,
+  createMessage,
+  VEX_LIVE_FINGERPRINTS,
+} from "@repo/db"
 import { extractPDFText } from "../../lib"
 import { v4 as uuidv4 } from "uuid"
-import { isE2E } from "@chrryai/chrry/utils"
+import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
 import captureException from "../../lib/captureException"
 
 export const uploadArtifacts = async ({
@@ -24,6 +30,12 @@ export const uploadArtifacts = async ({
   if (!member && !guest) {
     throw new Error("User or guest not found")
   }
+  const fingerprint = member?.fingerprint || guest?.fingerprint
+
+  const isE2E =
+    isE2EInternal &&
+    (!fingerprint || !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
+  const memoriesEnabled = (member || guest)?.memoriesEnabled
 
   let firstMessage = (await getMessages({ threadId: thread.id, isAsc: true }))
     ?.messages?.[0]?.message
@@ -73,6 +85,7 @@ export const uploadArtifacts = async ({
       }
     }),
   )
+  const burn = !!thread.isIncognito
   // Add file parts - only process new files
   if (fileContents && fileContents.length > 0) {
     for (const file of fileContents) {
@@ -92,8 +105,9 @@ export const uploadArtifacts = async ({
               type: "text",
             },
           })
-          !isE2E &&
-            (await processFileForRAG({
+          // Process for RAG in background (non-blocking)
+          if (!isE2E && memoriesEnabled && !burn) {
+            processFileForRAG({
               content: textContent,
               filename: file.filename,
               fileType: "text",
@@ -102,7 +116,11 @@ export const uploadArtifacts = async ({
               threadId: thread.id,
               userId: member?.id,
               guestId: guest?.id,
-            }))
+            }).catch((error) => {
+              captureException(error)
+              console.error("❌ Failed to process text file for RAG:", error)
+            })
+          }
 
           uploadedFiles.push({
             data: textContent,
@@ -135,8 +153,9 @@ export const uploadArtifacts = async ({
             type: "pdf",
             id: uuidv4(),
           })
-          !isE2E &&
-            (await processFileForRAG({
+          // Process for RAG in background (non-blocking)
+          if (!isE2E && memoriesEnabled && !burn) {
+            processFileForRAG({
               content: extractedText,
               filename: file.filename,
               fileType: "pdf",
@@ -145,7 +164,11 @@ export const uploadArtifacts = async ({
               threadId: thread.id,
               userId: member?.id,
               guestId: guest?.id,
-            }))
+            }).catch((error) => {
+              captureException(error)
+              console.error("❌ Failed to process PDF for RAG:", error)
+            })
+          }
         } catch (error) {
           captureException(error)
           console.error("PDF extraction failed:", error)
@@ -170,8 +193,9 @@ export const uploadArtifacts = async ({
         })
 
         // Process image for RAG (vision models can analyze it)
-        !isE2E &&
-          (await processFileForRAG({
+        // Process for RAG in background (non-blocking)
+        if (!isE2E && memoriesEnabled && !burn) {
+          processFileForRAG({
             content: `[Image: ${file.filename}]`,
             filename: file.filename,
             fileType: "image",
@@ -180,7 +204,11 @@ export const uploadArtifacts = async ({
             threadId: thread.id,
             userId: member?.id,
             guestId: guest?.id,
-          }))
+          }).catch((error) => {
+            captureException(error)
+            console.error("❌ Failed to process image for RAG:", error)
+          })
+        }
       } else if (file.type === "video") {
         // Upload video
         const uploadResult = await upload({

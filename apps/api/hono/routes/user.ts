@@ -14,6 +14,7 @@ import { isValidUsername } from "@chrryai/chrry/utils"
 import { protectedRoutes } from "@chrryai/chrry/utils/url"
 import { deleteFile, upload } from "../../lib/minio"
 import { scanFileForMalware } from "../../lib/security"
+import { clearGraphDataForUser } from "../../lib/graph/graphService"
 
 export const user = new Hono()
 
@@ -174,6 +175,13 @@ user.delete("/", async (c) => {
     if (stripeSubscriptionId) {
       await stripe.subscriptions.cancel(stripeSubscriptionId)
     }
+
+    // Clear graph data before deleting user
+    // This removes all FalkorDB entities and relationships
+    await clearGraphDataForUser({
+      userId: member.id,
+    })
+
     await deleteUser(member.id)
     return c.json({ success: true })
   } catch (error) {

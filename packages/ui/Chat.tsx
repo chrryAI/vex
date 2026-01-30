@@ -295,6 +295,7 @@ export default function Chat({
     collaborationStep,
     setCollaborationStep,
     addParams,
+    pathname,
   } = useNavigationContext()
 
   const {
@@ -1599,7 +1600,7 @@ export default function Chat({
     shouldStopRef.current = false
 
     if (requiresSignin && !user) {
-      addParams({ signIn: "login" })
+      addParams({ signIn: "login", callbackUrl: pathname })
       return
     }
 
@@ -4832,7 +4833,7 @@ export default function Chat({
 
                           return
                         }
-                        addParams({ signIn: "login" })
+                        addParams({ signIn: "login", callbackUrl: pathname })
                       }}
                       className="link"
                       style={{
