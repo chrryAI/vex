@@ -33,10 +33,12 @@ export async function clean({
   await expect(clearSessionButton).toBeVisible({
     timeout: 20000,
   })
+
+  await wait(2000)
   // First click to show confirm
   await clearSessionButton.click()
 
-  await wait(1000)
+  await wait(2000)
   // Second click to confirm
   await clearSessionButton.click()
 
