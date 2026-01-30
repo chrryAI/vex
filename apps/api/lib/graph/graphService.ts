@@ -127,22 +127,33 @@ async function generateDynamicCypher(
     - NO regex operators (=~, CONTAINS, STARTS WITH, ENDS WITH)
     - Use exact string matching with = only
     - For partial matching, use multiple OR conditions with exact values
-    - If you define a relationship variable like [r] or [relationship], you MUST use it in WHERE or RETURN
-    - If you don't need the relationship, use anonymous [] instead of [relationship]
+    - Relationship variables MUST be used via type(r) function or in RETURN clause
+    - NEVER access relationship properties directly (r.property) - use type(r) instead
+    - If you don't need the relationship, use anonymous [] instead of [r]
+    - ORDER BY can ONLY reference variables that are in the RETURN clause (projected variables)
+    - NEVER use ORDER BY with computed expressions - always alias them in RETURN first
+    - You can use $queryText parameter for the user's question text
     
     Rules:
     1. Focus on finding relationships and content related to entities in the question.
-    2. Use temporal ordering (DESC createdAt) if relevance is time-sensitive.
+    2. Use temporal ordering (ORDER BY createdAt DESC) ONLY if you RETURN createdAt.
     3. Return meaningful properties: node.name, type(relationship), property values.
     4. Keep it efficient (LIMIT 15).
     5. Use ONLY exact string matching with = operator.
-    6. IMPORTANT: Use anonymous [] for relationships you don't need, or use [r] and include type(r) in RETURN.
-    7. Return ONLY the raw Cypher query string.
+    6. CRITICAL: If you define [r], you MUST use it as type(r) in WHERE or RETURN.
+    7. CRITICAL: If using ORDER BY, ensure the variable is in RETURN clause.
+    8. You may use $queryText parameter if needed for matching.
+    9. Return ONLY the raw Cypher query string.
     
     Examples:
     - GOOD: MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name
+    - GOOD: MATCH (n)-[r]->(m) WHERE type(r) = 'FRIEND' RETURN n.name
     - GOOD: MATCH (n)-[]->(m) RETURN n.name, m.name
-    - BAD:  MATCH (n)-[relationship]->(m) RETURN n.name, m.name`
+    - GOOD: MATCH (n) RETURN n.name, n.createdAt ORDER BY n.createdAt DESC
+    - BAD:  MATCH (n)-[r]->(m) RETURN n.name, m.name (r defined but not used!)
+    - BAD:  MATCH (n)-[r]->(m) WHERE r.type = 'FRIEND' RETURN n.name (use type(r)!)
+    - BAD:  MATCH (n) RETURN n.name ORDER BY n.createdAt DESC (createdAt not in RETURN!)
+    - BAD:  MATCH (n) RETURN n.name ORDER BY score DESC (score not defined!)`
 
     const provider = await getModelProvider(app, "deepSeek")
 
@@ -488,7 +499,10 @@ export async function getGraphContext(
     const dynamicQuery = await generateDynamicCypher(queryText, app)
     if (dynamicQuery) {
       try {
-        const dynamicResult = await graph.query(dynamicQuery)
+        // Pass queryText as parameter for safe injection-free queries
+        const dynamicResult = await graph.query(dynamicQuery, {
+          params: { queryText },
+        })
         if ((dynamicResult as any)?.resultSet?.length > 0) {
           for (const row of (dynamicResult as any).resultSet) {
             contextItems.add(`- [Dynamic Reasoning] ${JSON.stringify(row)}`)

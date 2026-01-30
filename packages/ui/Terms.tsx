@@ -6,7 +6,7 @@ import { useAppContext } from "./context/AppContext"
 import { CircleArrowLeft } from "./icons"
 import Img from "./Img"
 import { FRONTEND_URL } from "./utils"
-import { useAuth, useNavigationContext } from "./context/providers"
+import { useNavigationContext } from "./context/providers"
 import { Button, Div, H1, H2, P, Section, useTheme } from "./platform"
 import { useAboutStyles } from "./about/About.styles"
 import { useStyles } from "./context/StylesContext"
@@ -18,8 +18,6 @@ export default function Terms() {
 
   const styles = useAboutStyles()
   const { utilities } = useStyles()
-
-  const { plausible } = useAuth()
 
   return (
     <Skeleton>
