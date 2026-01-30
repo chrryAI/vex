@@ -28,9 +28,8 @@ import {
   getTimer,
   isOwner,
   retroSessions,
-  getThread,
 } from "@repo/db"
-import { and, eq, isNull, or } from "@repo/db"
+import { and, eq, isNull } from "@repo/db"
 import { instructions, threads } from "@repo/db/src/schema"
 
 const memorySchema = z.array(
