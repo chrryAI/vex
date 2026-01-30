@@ -25,13 +25,12 @@ export default function About() {
   const { router } = useNavigationContext()
   const { isDrawerOpen } = useTheme()
 
-  const siteConfig = getSiteConfig()
   const { t } = useAppContext()
 
   const styles = useWhyStyles()
   const { utilities } = useStyles()
 
-  const { plausible } = useAuth()
+  const { siteConfig } = useAuth()
 
   return (
     <Skeleton>

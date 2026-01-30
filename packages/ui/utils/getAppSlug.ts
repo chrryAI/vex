@@ -1,4 +1,4 @@
-import { locales } from "../locales"
+import { locales, type locale } from "../locales"
 import { appWithStore } from "../types"
 
 const getAppSlug = ({
@@ -12,9 +12,10 @@ const getAppSlug = ({
   pathname: string
   baseApp?: appWithStore
 }): string => {
-  const localeMatch = locales.find((loc) => {
-    return pathname === `/${loc}` || pathname.startsWith(`/${loc}/`)
-  })
+  // Extract locale from pathname using split (more performant than multiple string comparisons)
+  const pathParts = pathname.split("/").filter(Boolean) // ['tr', 'vex', ...] or ['vex', ...]
+  const firstPart = pathParts[0]
+  const localeMatch = locales.includes(firstPart as locale) ? firstPart : null
 
   const localePrefix = localeMatch ? `/${localeMatch}` : ""
 

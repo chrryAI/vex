@@ -277,7 +277,7 @@ async function enrichStoreApps(
   if (!app?.store?.apps?.length) return
 
   const enrichedApps = await Promise.all(
-    app.store.apps.map(async (storeApp: any) => {
+    app.store.apps.map(async (storeApp: appWithStore) => {
       if (!storeApp) return null
 
       const isBaseApp = storeApp?.id === storeApp?.store?.appId
@@ -369,6 +369,7 @@ export async function getApp({
   const chrryUrlParam = c.req.query("chrryUrl")
   const chrryUrl = chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
+  // console.log(`🚀 ~ siteConfig:`, siteConfig?.slug, chrryUrlParam)
 
   // 5. Resolve app based on request type
   let appInternal = null

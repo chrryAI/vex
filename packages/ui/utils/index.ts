@@ -140,7 +140,8 @@ export const FRONTEND_URL =
 
 export const PROD_FRONTEND_URL = FRONTEND_URL
 
-export const API_INTERNAL_URL = getEnv().VITE_API_INTERNAL_URL
+export const API_INTERNAL_URL =
+  getEnv().VITE_API_INTERNAL_URL || getEnv().API_INTERNAL_URL
 
 export const API_URL =
   getEnv().VITE_API_URL ||
@@ -394,7 +395,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.12.28"
+export const VERSION = config.version || "1.12.47"
 export type instructionBase = {
   id: string
   title: string

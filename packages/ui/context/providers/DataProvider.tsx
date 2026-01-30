@@ -26,7 +26,6 @@ import {
 import useSWR from "swr"
 import { getWeatherCacheTime } from "../../utils/getWeatherCacheTime"
 import { useError } from "./ErrorProvider"
-import { getSiteConfig } from "../../utils/siteConfig"
 import { ADDITIONAL_CREDITS, apiFetch, isDevelopment, isE2E } from "../../utils"
 
 export type affiliateStats = {
@@ -202,7 +201,7 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
   const [loadingAffiliateStats, setLoadingAffiliateStats] =
     useState<boolean>(false)
 
-  const VERSION = "1.12.28"
+  const VERSION = "1.12.47"
 
   const [weather, setWeather] = useLocalStorage<
     | {
@@ -230,9 +229,8 @@ export function DataProvider({ children, ...rest }: { children: ReactNode }) {
     TEST_GUEST_FINGERPRINTS,
     TEST_MEMBER_FINGERPRINTS,
     session,
+    siteConfig,
   } = useAuth()
-
-  const siteConfig = getSiteConfig()
 
   const {
     data: weatherData,

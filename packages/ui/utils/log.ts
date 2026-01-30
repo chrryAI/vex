@@ -61,4 +61,4 @@ export const createCustomConsole = (user?: { role?: string }) => {
   }
 }
 
-export default createCustomConsole()
+export default originalConsole

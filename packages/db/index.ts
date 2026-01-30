@@ -185,7 +185,6 @@ export const canCollaborate = ({
   userId?: string
   guestId?: string
 }) => {
-  if (thread?.visibility === "public") return true
   return isOwner(thread, { userId, guestId })
     ? true
     : thread?.collaborations?.some(
@@ -2446,7 +2445,6 @@ export const getThreads = async ({
   userName,
   collaborationStatus,
   myPendingCollaborations,
-  publicBookmarks = true,
   appId,
   appIds,
   ownerId,
@@ -2463,7 +2461,6 @@ export const getThreads = async ({
   collaborationStatus?: ("active" | "pending")[]
   userName?: string
   myPendingCollaborations?: boolean // I'm pending on others' threads
-  publicBookmarks?: boolean
   appId?: string
   appIds?: string[]
   ownerId?: string
@@ -2510,9 +2507,8 @@ export const getThreads = async ({
 
   // Get bookmarked thread IDs
   // Only filter by visibility:public if explicitly requested (viewing others' profiles)
-  const bookmarkedThreadIds = !publicBookmarks
-    ? []
-    : userId || guestId
+  const bookmarkedThreadIds =
+    userId || guestId
       ? (
           await db
             .select({ id: threads.id })
@@ -3818,18 +3814,21 @@ export async function getCalendarEvents({
   guestId,
   startTime,
   endTime,
+  status,
 }: {
   id?: string
   userId?: string
   guestId?: string
   startTime?: Date
   endTime?: Date
+  status?: "confirmed" | "tentative" | "cancelled"
 }): Promise<calendarEvent[]> {
   const result = await db
     .select()
     .from(calendarEvents)
     .where(
       and(
+        status ? eq(calendarEvents.status, status) : undefined,
         id ? eq(calendarEvents.id, id) : undefined,
         userId ? eq(calendarEvents.userId, userId) : undefined,
         guestId ? eq(calendarEvents.guestId, guestId) : undefined,

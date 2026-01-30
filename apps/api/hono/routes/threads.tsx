@@ -119,7 +119,8 @@ threads.get("/", async (c) => {
         thread,
         userId: member?.id,
         guestId: guest?.id,
-      })
+      }) &&
+      thread?.visibility === "private"
     ) {
       return c.json(
         { error: "Unauthorized access to private thread", status: 401 },
@@ -152,8 +153,7 @@ threads.get("/", async (c) => {
 
     // Thread context - check collaboration access
     if (thread) {
-      const hasAccess = canCollaborate({
-        thread,
+      const hasAccess = isOwner(thread, {
         userId: member?.id,
         guestId: guest?.id,
       })

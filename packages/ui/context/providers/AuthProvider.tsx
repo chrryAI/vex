@@ -352,7 +352,6 @@ export function AuthProvider({
   locale?: locale
   apiKey?: string
   pathname?: string // SSR pathname for thread ID extraction
-
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
   children: ReactNode
   fingerprint?: string
@@ -360,6 +359,7 @@ export function AuthProvider({
   error?: string
   session?: session
   app?: appWithStore
+  siteConfig?: ReturnType<typeof getSiteConfig>
   threads?: {
     threads: thread[]
     totalCount: number
@@ -735,7 +735,7 @@ export function AuthProvider({
     | undefined
   >(props.threads)
 
-  const siteConfig = getSiteConfig(CHRRY_URL)
+  const siteConfig = props.siteConfig || getSiteConfig(CHRRY_URL)
 
   const { isStorageReady, isTauri } = usePlatform()
 
@@ -1008,7 +1008,7 @@ export function AuthProvider({
 
     // Sync URL with state
     if (newPart) {
-      addParams({ signIn: newPart })
+      addParams({ signIn: newPart, callbackUrl: pathname })
     } else {
       removeParams("signIn")
     }
@@ -1026,12 +1026,9 @@ export function AuthProvider({
     session?.app?.store?.apps || [],
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
+  // console.log(`🚀 ~ allApps:`, allApps)
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
-  const getAppSlug = (
-    targetApp: appWithStore,
-    defaultSlug: string = "/",
-  ): string => getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp })
   const baseAppInternal = storeApps.find((item) => {
     if (!item) return false
 
@@ -1045,6 +1042,12 @@ export function AuthProvider({
 
   const [baseApp, setBaseApp] = useState<appWithStore | undefined>(
     baseAppInternal,
+  )
+
+  const getAppSlug = useCallback(
+    (targetApp: appWithStore, defaultSlug: string = "/"): string =>
+      getAppSlugUtil({ targetApp, defaultSlug, pathname, baseApp }),
+    [pathname, baseApp],
   )
 
   const [app, setAppInternal] = useState<

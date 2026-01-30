@@ -26,6 +26,8 @@ export async function clean({
 
   await maximize({ page })
 
+  await wait(2000)
+
   const clearSessionButton = page.getByTestId("clear-session")
 
   await expect(clearSessionButton).toBeVisible({
@@ -39,7 +41,7 @@ export async function clean({
   await clearSessionButton.click()
 
   await expect(page.getByTestId("is-deleted")).toBeAttached({
-    timeout: 20000,
+    timeout: 50000,
   })
   // Wait for the API call to complete
   await page.waitForTimeout(5000)

@@ -31,6 +31,7 @@ import { thread, paginatedMessages, appWithStore } from "../../types"
 import { TimerContextProvider } from "../TimerContext"
 import { Hey } from "../../Hey"
 import getCacheProvider from "../../lib/swrCacheProvider"
+import { getSiteConfig } from "../../utils/siteConfig"
 
 interface AppProvidersProps {
   translations?: Record<string, any>
@@ -52,6 +53,8 @@ interface AppProvidersProps {
       blankTarget?: boolean
     },
   ) => Promise<any>
+  siteConfig?: ReturnType<typeof getSiteConfig>
+
   signOutContext?: (options: {
     callbackUrl: string
     errorUrl?: string
@@ -84,6 +87,7 @@ export default function AppProviders({
   locale,
   translations,
   useExtensionIcon,
+  siteConfig,
   threads,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
@@ -149,6 +153,7 @@ export default function AppProviders({
               threads={threads}
               onSetLanguage={onSetLanguage}
               session={session}
+              siteConfig={siteConfig}
             >
               <DataProvider>
                 <AppProvider>
