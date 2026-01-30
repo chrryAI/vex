@@ -1748,9 +1748,8 @@ ${
     - If asked about local regulations, laws, or procedures, specify that information is for ${location} and may vary by jurisdiction`
   }
 
-  const memoriesEnabled = (member || guest)?.memoriesEnabled || isAppOwner
-  const characterProfilesEnabled =
-    (member || guest)?.characterProfilesEnabled || isAppOwner
+  const memoriesEnabled = (member || guest)?.memoriesEnabled
+  const characterProfilesEnabled = (member || guest)?.characterProfilesEnabled
 
   // Feature status context for AI
   const featureStatusContext = `
@@ -2181,6 +2180,8 @@ These reflect the user's interests and recent conversations. If the user seems u
     isOwner(event, { userId: member?.id, guestId: guest?.id }),
   )
 
+  const burn = !!message.thread.isIncognito
+
   // Fetch Vault data for context (expenses, budgets, shared expenses)
   const { getExpenses, getBudgets, getSharedExpenses } =
     await import("@repo/db")
@@ -2215,7 +2216,7 @@ These reflect the user's interests and recent conversations. If the user seems u
 ## 🔥 Burn Feature (Privacy Mode)
 
 ${
-  message.thread.isIncognito
+  burn
     ? `**🔥 BURN MODE IS CURRENTLY ACTIVE** - This conversation is ephemeral and unrecorded.
 
 **Current State:**
@@ -3913,23 +3914,23 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               : undefined
 
           // Process text file for RAG so AI can analyze it
-          if (textContent) {
-            try {
-              await processFileForRAG({
-                content: textContent,
-                filename: file.filename,
-                fileType: "text",
-                fileSizeBytes: file.size,
-                messageId: message.message.id,
-                threadId: thread.id,
-                userId: member?.id,
-                guestId: guest?.id,
-                app,
-              })
-            } catch (error) {
+          // Only if memories are enabled (RAG requires memory context)
+          // Run in background to avoid blocking response
+          if (textContent && memoriesEnabled && !isE2E && !burn) {
+            processFileForRAG({
+              content: textContent,
+              filename: file.filename,
+              fileType: "text",
+              fileSizeBytes: file.size,
+              messageId: message.message.id,
+              threadId: thread.id,
+              userId: member?.id,
+              guestId: guest?.id,
+              app,
+            }).catch((error) => {
               captureException(error)
-              console.error("❌ Failed to process text file:", error)
-            }
+              console.error("❌ Failed to process text file for RAG:", error)
+            })
           }
 
           uploadedFiles.push({
@@ -3976,17 +3977,26 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               name: file.filename,
               type: "pdf",
             })
+
             // Process PDF for RAG so AI can analyze it
-            await processFileForRAG({
-              content: extractedText,
-              filename: file.filename,
-              fileType: "pdf",
-              fileSizeBytes: file.size,
-              messageId: message.message.id,
-              threadId: thread.id,
-              userId: member?.id,
-              guestId: guest?.id,
-            })
+            // Only if memories are enabled (RAG requires memory context)
+            // Run in background to avoid blocking response
+            if (memoriesEnabled && !isE2E && !burn) {
+              processFileForRAG({
+                content: extractedText,
+                filename: file.filename,
+                fileType: "pdf",
+                fileSizeBytes: file.size,
+                messageId: message.message.id,
+                threadId: thread.id,
+                userId: member?.id,
+                guestId: guest?.id,
+                app,
+              }).catch((error) => {
+                captureException(error)
+                console.error("❌ Failed to process PDF for RAG:", error)
+              })
+            }
 
             contentParts.push({
               type: "text",
@@ -4100,11 +4110,15 @@ ${lastMessageContent}
       : ""
 
   // Build enhanced RAG context from uploaded documents and message history
-  const ragContext = await buildEnhancedRAGContext({
-    query: content,
-    threadId: thread.id,
-    app,
-  })
+  // Only if memories are enabled (RAG requires memory context)
+  const ragContext =
+    member?.memoriesEnabled || guest?.memoriesEnabled
+      ? await buildEnhancedRAGContext({
+          query: content,
+          threadId: thread.id,
+          app,
+        })
+      : ""
 
   // Add RAG context to system prompt if available
   const ragSystemPrompt = ragContext
@@ -6690,7 +6704,12 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       const m = await getMessage({ id: aiMessage.id })
 
       // Process AI message for RAG embeddings in background
-      if (m?.message && !isE2E) {
+      // Only if memories are enabled (RAG requires memory context)
+      if (
+        m?.message &&
+        !isE2E &&
+        (member?.memoriesEnabled || guest?.memoriesEnabled)
+      ) {
         processMessageForRAG({
           messageId: m.message.id,
           content: m.message.content,

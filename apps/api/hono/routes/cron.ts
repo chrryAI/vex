@@ -11,6 +11,7 @@ import {
 import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
 import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
 import { inArray, lt } from "drizzle-orm"
+import { clearGraphDataForUser } from "../../lib/graph/graphService"
 
 export const cron = new Hono()
 
@@ -48,7 +49,12 @@ async function clearGuests() {
       break
     }
 
-    // Delete batch
+    // Clean up graph data for each guest before deletion
+    for (const guest of inactiveGuests) {
+      await clearGraphDataForUser({ guestId: guest.id })
+    }
+
+    // Delete batch from PostgreSQL
     const idsToDelete = inactiveGuests.map((g) => g.id)
     await db.delete(guests).where(inArray(guests.id, idsToDelete))
 

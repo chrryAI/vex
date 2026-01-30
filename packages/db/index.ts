@@ -3814,18 +3814,21 @@ export async function getCalendarEvents({
   guestId,
   startTime,
   endTime,
+  status,
 }: {
   id?: string
   userId?: string
   guestId?: string
   startTime?: Date
   endTime?: Date
+  status?: "confirmed" | "tentative" | "cancelled"
 }): Promise<calendarEvent[]> {
   const result = await db
     .select()
     .from(calendarEvents)
     .where(
       and(
+        status ? eq(calendarEvents.status, status) : undefined,
         id ? eq(calendarEvents.id, id) : undefined,
         userId ? eq(calendarEvents.userId, userId) : undefined,
         guestId ? eq(calendarEvents.guestId, guestId) : undefined,

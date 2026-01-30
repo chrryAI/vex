@@ -1,4 +1,5 @@
-import { graph, app } from "@repo/db"
+import { graph, app, isDevelopment, isE2E, db, eq } from "@repo/db"
+import { threads } from "@repo/db/src/schema"
 import { generateText, embed } from "ai"
 import captureException from "../../lib/captureException"
 import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
@@ -529,19 +530,25 @@ export async function getGraphContext(
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
                 WHERE e.name IN $names
-                RETURN d.name as source, 'DISCUSSES' as rel, c.content as target
+                RETURN d.name as source, 'DISCUSSES' as rel, substring(c.content, 0, 500) as target
                 LIMIT 5
             `
           const expansion = await graph.query(expandQuery, {
             params: { names: semanticNodes },
           })
-          for (const row of (expansion as any).resultSet) {
-            if (row[1] === "DISCUSSES") {
-              contextItems.add(
-                `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 200)}...`,
-              )
-            } else {
-              contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
+          if ((expansion as any)?.resultSet) {
+            for (const row of (expansion as any).resultSet) {
+              if (
+                row[1] === "DISCUSSES" &&
+                row[2] &&
+                typeof row[2] === "string"
+              ) {
+                contextItems.add(
+                  `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 200)}...`,
+                )
+              } else if (row[2]) {
+                contextItems.add(`- (${row[0]}) ${row[1]} (${String(row[2])})`)
+              }
             }
           }
         }
@@ -579,19 +586,25 @@ export async function getGraphContext(
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
                 WHERE e.name IN $names
-                RETURN d.name as source, 'DISCUSSES' as rel, c.content as target
+                RETURN d.name as source, 'DISCUSSES' as rel, substring(c.content, 0, 500) as target
                 LIMIT 3
             `
         const expansion = await graph.query(expandQuery, {
           params: { names: textNodes },
         })
-        for (const row of (expansion as any).resultSet) {
-          if (row[1] === "DISCUSSES") {
-            contextItems.add(
-              `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 150)}...`,
-            )
-          } else {
-            contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
+        if ((expansion as any)?.resultSet) {
+          for (const row of (expansion as any).resultSet) {
+            if (
+              row[1] === "DISCUSSES" &&
+              row[2] &&
+              typeof row[2] === "string"
+            ) {
+              contextItems.add(
+                `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 150)}...`,
+              )
+            } else if (row[2]) {
+              contextItems.add(`- (${row[0]}) ${row[1]} (${String(row[2])})`)
+            }
           }
         }
       }
@@ -607,5 +620,88 @@ export async function getGraphContext(
     captureException(error)
     console.error("❌ Graph Retrieval Failed:", error)
     return ""
+  }
+}
+
+/**
+ * Clear all graph data for a specific user or guest
+ * Used when deleting user/guest accounts or memories
+ */
+export async function clearGraphDataForUser({
+  userId,
+  guestId,
+}: {
+  userId?: string
+  guestId?: string
+}): Promise<void> {
+  try {
+    const identifier = userId || guestId
+    if (!identifier) {
+      console.warn("⚠️ No userId or guestId provided for graph cleanup")
+      return
+    }
+
+    // Get user's thread IDs from PostgreSQL
+    const userThreads = await db
+      .select({ id: threads.id })
+      .from(threads)
+      .where(
+        userId ? eq(threads.userId, userId) : eq(threads.guestId, guestId!),
+      )
+      .limit(10000) // Prevent performance issues with users who have many threads
+
+    const threadIds = userThreads.map((t) => t.id)
+
+    // Delete User node
+    await graph.query(`MATCH (u:User {id: $identifier}) DETACH DELETE u`, {
+      params: { identifier },
+    })
+
+    // Delete Documents and Chunks for each thread
+    // Documents are linked by threadId property, not by relationship
+    // Use UNWIND for batch processing (FalkorDB best practice)
+    if (threadIds.length > 0) {
+      // Process in chunks of 1000 to avoid overwhelming the graph
+      const chunkSize = 1000
+      for (let i = 0; i < threadIds.length; i += chunkSize) {
+        const chunk = threadIds.slice(i, i + chunkSize)
+        await graph.query(
+          `
+          UNWIND $threadIds AS threadId
+          MATCH (d:Document {threadId: threadId})
+          OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
+          DETACH DELETE d, c
+          `,
+          { params: { threadIds: chunk } },
+        )
+      }
+    }
+
+    console.log(
+      `🧹 Cleared graph data for ${userId ? "user" : "guest"}: ${identifier} (${threadIds.length} threads)`,
+    )
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Failed to clear graph data:", error)
+    // Don't throw - cleanup should be best-effort
+  }
+}
+
+/**
+ * Clear ALL graph data
+ * Used for test cleanup and full database resets
+ * ⚠️ DESTRUCTIVE - Use with caution!
+ */
+export async function clearAllGraphData(): Promise<void> {
+  if (!isDevelopment && !isE2E) return
+
+  try {
+    // Delete all nodes and relationships
+    await graph.query("MATCH (n) DETACH DELETE n")
+    console.log("🧹 Cleared all graph data")
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Failed to clear all graph data:", error)
+    // Don't throw - cleanup should be best-effort
   }
 }

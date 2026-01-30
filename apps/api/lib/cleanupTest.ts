@@ -25,6 +25,7 @@ import {
   GUEST_CREDITS_PER_MONTH,
   MEMBER_CREDITS_PER_MONTH,
 } from "@repo/db/src/schema"
+import { clearGraphDataForUser } from "./graph/graphService"
 
 const allowedFingerprints = TEST_GUEST_FINGERPRINTS.concat(
   TEST_MEMBER_FINGERPRINTS,
@@ -167,4 +168,12 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       speechCharactersToday: 0,
       pearFeedbackCount: 0,
     }))
+
+  // 5. Clear graph data (FalkorDB)
+  // Remove all graph entities and relationships for this user/guest
+  // This prevents stale graph references after test cleanup
+  await clearGraphDataForUser({
+    userId: user?.id,
+    guestId: guest?.id,
+  })
 }

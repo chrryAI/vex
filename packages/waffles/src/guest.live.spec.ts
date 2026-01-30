@@ -118,6 +118,12 @@ test("Chat", async ({ page }) => {
   })
 
   await chat({
+    artifacts: {
+      paste: 1,
+      pdf: 1,
+      image: 1,
+      video: 1,
+    },
     isNewChat: false,
     page,
     isMember,

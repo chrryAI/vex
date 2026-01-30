@@ -321,10 +321,6 @@ export const getFeatures = ({
       text: t("€500 feedback credits/month"),
     },
     {
-      emoji: "🫐",
-      text: t("Raspberry included (€19.99/month)"),
-    },
-    {
       emoji: "💬",
       text: t("Give unlimited feedback"),
     },

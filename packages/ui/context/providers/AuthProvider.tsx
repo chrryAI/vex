@@ -1008,7 +1008,7 @@ export function AuthProvider({
 
     // Sync URL with state
     if (newPart) {
-      addParams({ signIn: newPart })
+      addParams({ signIn: newPart, callbackUrl: pathname })
     } else {
       removeParams("signIn")
     }

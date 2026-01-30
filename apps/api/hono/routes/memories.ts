@@ -11,6 +11,7 @@ import {
   deletePlaceHolder,
 } from "@repo/db"
 import { isOwner } from "@repo/db"
+import { clearGraphDataForUser } from "../../lib/graph/graphService"
 
 export const memories = new Hono()
 
@@ -99,6 +100,13 @@ memories.delete("/", async (c) => {
   await Promise.all(
     memoriesData.memories.map((memory) => deleteMemory({ id: memory.id })),
   )
+
+  // Clear graph data (FalkorDB) for this user/guest
+  // This removes all graph entities and relationships associated with their memories
+  await clearGraphDataForUser({
+    userId: member?.id,
+    guestId: guest?.id,
+  })
 
   return c.json({ success: true })
 })
