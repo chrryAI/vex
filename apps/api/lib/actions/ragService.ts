@@ -348,7 +348,7 @@ export async function findRelevantChunks({
       FROM document_chunks 
       WHERE "threadId" = ${threadId}
         AND 1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) > ${threshold}
-      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector
+      ORDER BY similarity DESC
       LIMIT ${limit}
     `)
 
@@ -438,19 +438,20 @@ export async function processMessageForRAG({
   app?: app | appWithStore
 }): Promise<void> {
   try {
+    // Skip only empty messages
+    if (!content || content.trim().length === 0) {
+      console.log("⏭️ Skipping message - empty")
+      return
+    }
+
     console.log(`📝 Processing ${role} message for RAG:`, {
       messageId,
       threadId,
       contentLength: content.length,
       hasApp: !!app,
       appId: app?.id,
+      content: content.substring(0, 250) + "...",
     })
-
-    // Skip only empty messages
-    if (!content || content.trim().length === 0) {
-      console.log("⏭️ Skipping message - empty")
-      return
-    }
 
     // Generate embedding for the message
     console.log("🔢 Generating embedding...")
@@ -532,7 +533,7 @@ export async function findRelevantMessages({
       WHERE "threadId" = ${threadId}
         AND 1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) > ${threshold}
         ${excludeMessageId ? sql`AND "messageId" != ${excludeMessageId}` : sql``}
-      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector
+      ORDER BY similarity DESC
       LIMIT ${limit}
     `)
 

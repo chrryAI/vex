@@ -1,4 +1,4 @@
-import { defineConfig, type PluginOption } from "vite"
+import { defineConfig, type PluginOption, loadEnv } from "vite"
 import react from "@vitejs/plugin-react"
 import path from "path"
 import type { UserConfig } from "vite"
@@ -30,6 +30,11 @@ function tauriStubPlugin(): PluginOption {
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode, isSsrBuild }) => {
+  // Load environment variables to check for E2E/production
+  const env = loadEnv(mode, process.cwd(), "")
+  const isE2E = !!(
+    env.VITE_TESTING_ENV === "e2e" || process.env.TESTING_ENV === "e2e"
+  )
   const config: UserConfig = {
     plugins: [
       tauriStubPlugin(), // Must be first to intercept Tauri imports
@@ -136,6 +141,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
           pure_funcs: ["console.log", "console.info"], // Remove specific console methods
         },
       },
+      // Enable source maps only for E2E/production (when VEX_LIVE_FINGERPRINTS is set)
+      // Hidden = not in bundle, but available for error tracking (GlitchTip)
+      sourcemap: isE2E ? "hidden" : false,
       // Increase chunk size warning limit (we're splitting chunks now)
       chunkSizeWarningLimit: 1000,
       commonjsOptions: {
