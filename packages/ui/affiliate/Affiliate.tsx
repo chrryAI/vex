@@ -12,17 +12,7 @@ import {
 } from "../icons"
 import Img from "../Image"
 import { useAuth, useData } from "../context/providers"
-import {
-  Button,
-  Div,
-  H1,
-  H2,
-  H3,
-  P,
-  Strong,
-  useNavigation,
-  useTheme,
-} from "../platform"
+import { Button, Div, H1, H2, H3, P, Strong, useTheme } from "../platform"
 import { useHasHydrated } from "../hooks"
 import Skeleton from "../Skeleton"
 import { getSiteConfig } from "../utils/siteConfig"
@@ -30,9 +20,11 @@ import { apiFetch } from "../utils"
 import { useAffiliateStyles } from "./Affiliate.styles"
 import { useStyles } from "../context/StylesContext"
 
+import { useNavigationContext } from "../context/providers"
+
 export default function Affiliate() {
   const { user, token, API_URL, FRONTEND_URL, siteConfig: config } = useAuth()
-  const router = useNavigation()
+  const { router, addParams } = useNavigationContext()
   const { t } = useAppContext()
 
   const styles = useAffiliateStyles()
@@ -258,6 +250,13 @@ export default function Affiliate() {
               <Button
                 className={"inverted"}
                 disabled={creating}
+                onClick={() => {
+                  if (!user) {
+                    addParams({ signIn: "login", callbackUrl: "/affiliate" })
+                    return
+                  }
+                  createAffiliateLink()
+                }}
                 style={{
                   ...utilities.button.style,
                   ...utilities.inverted.style,
