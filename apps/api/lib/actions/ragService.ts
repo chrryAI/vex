@@ -454,7 +454,7 @@ export async function processMessageForRAG({
       hasApp: !!app,
       appId: app?.id,
       ...(isE2E && {
-        contentPreview: content.substring(0, 50).replace(/[\w]/g, "*") + "...",
+        contentPreview: content.substring(0, 250) + "...",
       }), // Redacted preview ❤️ 🐰
     })
 
