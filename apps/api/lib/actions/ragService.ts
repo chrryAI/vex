@@ -1,4 +1,4 @@
-import { db, sql, eq, desc, app } from "@repo/db"
+import { db, sql, eq, desc, app, isE2E } from "@repo/db"
 import { appWithStore } from "@chrryai/chrry/types"
 
 import {
@@ -338,6 +338,8 @@ export async function findRelevantChunks({
     const queryEmbedding = await generateEmbedding(query)
 
     // Use raw SQL for vector similarity search with pgvector
+    // CRITICAL: Use raw operator in ORDER BY for index usage (HNSW/IVFFlat)
+    const thresholdDistance = 1 - threshold // Convert similarity to distance
     const relevantChunks = await db.execute(sql`
       SELECT 
         content,
@@ -347,8 +349,8 @@ export async function findRelevantChunks({
         1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
       FROM document_chunks 
       WHERE "threadId" = ${threadId}
-        AND 1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) > ${threshold}
-      ORDER BY similarity DESC
+        AND embedding <=> ${JSON.stringify(queryEmbedding)}::vector < ${thresholdDistance}
+      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector ASC
       LIMIT ${limit}
     `)
 
@@ -444,13 +446,16 @@ export async function processMessageForRAG({
       return
     }
 
+    // Only log content in E2E/dev mode for debugging (privacy)
     console.log(`📝 Processing ${role} message for RAG:`, {
       messageId,
       threadId,
       contentLength: content.length,
       hasApp: !!app,
       appId: app?.id,
-      content: content.substring(0, 250) + "...",
+      ...(isE2E && {
+        contentPreview: content.substring(0, 50).replace(/[\w]/g, "*") + "...",
+      }), // Redacted preview ❤️ 🐰
     })
 
     // Generate embedding for the message
@@ -521,6 +526,8 @@ export async function findRelevantMessages({
     const queryEmbedding = await generateEmbedding(query)
 
     // Search for similar messages using pgvector
+    // CRITICAL: Use raw operator in ORDER BY for index usage (HNSW/IVFFlat)
+    const thresholdDistance = 1 - threshold // Convert similarity to distance
     const relevantMessages = await db.execute(sql`
       SELECT 
         "messageId",
@@ -531,9 +538,9 @@ export async function findRelevantMessages({
         1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
       FROM message_embeddings 
       WHERE "threadId" = ${threadId}
-        AND 1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) > ${threshold}
+        AND embedding <=> ${JSON.stringify(queryEmbedding)}::vector < ${thresholdDistance}
         ${excludeMessageId ? sql`AND "messageId" != ${excludeMessageId}` : sql``}
-      ORDER BY similarity DESC
+      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector ASC
       LIMIT ${limit}
     `)
 
