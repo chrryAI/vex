@@ -405,8 +405,6 @@ export function AuthProvider({
     toString: () => "",
   }
 
-  console.log(`🚀 ~ props.searchParams:`, props.searchParams)
-
   const hasStoreApps = (app: appWithStore | undefined) => {
     return Boolean(app?.store?.app && app?.store?.apps.length)
   }
@@ -1042,7 +1040,6 @@ export function AuthProvider({
     session?.app?.store?.apps || [],
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
-  // console.log(`🚀 ~ allApps:`, allApps)
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
   const baseAppInternal = storeApps.find((item) => {
