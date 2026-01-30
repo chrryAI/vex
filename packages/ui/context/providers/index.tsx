@@ -35,6 +35,11 @@ import { getSiteConfig } from "../../utils/siteConfig"
 
 interface AppProvidersProps {
   translations?: Record<string, any>
+  searchParams?: Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
+  } // URL search params with URLSearchParams-compatible API
   locale?: locale
   apiKey?: string
   children: ReactNode
@@ -88,6 +93,7 @@ export default function AppProviders({
   translations,
   useExtensionIcon,
   siteConfig,
+  searchParams,
   threads,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
@@ -154,12 +160,16 @@ export default function AppProviders({
               onSetLanguage={onSetLanguage}
               session={session}
               siteConfig={siteConfig}
+              searchParams={searchParams}
             >
               <DataProvider>
                 <AppProvider>
                   <ChatProvider>
                     <TimerContextProvider>
-                      <NavigationProvider pathname={pathname}>
+                      <NavigationProvider
+                        pathname={pathname}
+                        searchParams={searchParams}
+                      >
                         <AppContextProvider>
                           <StylesProvider>
                             <Hey useExtensionIcon={useExtensionIcon}>

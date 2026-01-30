@@ -369,7 +369,6 @@ export async function getApp({
   const chrryUrlParam = c.req.query("chrryUrl")
   const chrryUrl = chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
-  // console.log(`🚀 ~ siteConfig:`, siteConfig?.slug, chrryUrlParam)
 
   // 5. Resolve app based on request type
   let appInternal = null

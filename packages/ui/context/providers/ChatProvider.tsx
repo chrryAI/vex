@@ -847,8 +847,9 @@ export function ChatProvider({
 
   const [agentName, setAgentName] = useState(session?.aiAgent?.name || "")
 
-  const [isWebSearchEnabled, setIsWebSearchEnabledInternal] =
-    useLocalStorage<boolean>("isWebSearchEnabled", agentName === "perplexity")
+  const [isWebSearchEnabled, setIsWebSearchEnabledInternal] = useState<boolean>(
+    agentName === "perplexity",
+  )
 
   const [isImageGenerationEnabled, setIsImageGenerationEnabledInternal] =
     useState(false)

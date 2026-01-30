@@ -50,7 +50,7 @@ import premium from "./routes/premium"
 import * as Sentry from "@sentry/node"
 
 // Patch console.error to send errors to Sentry (server-side)
-if (process.env.SENTRY_DSN) {
+if (process.env.VITE_SENTRY === "true" && process.env.SENTRY_DSN) {
   Sentry.init({
     beforeSend(event, hint) {
       // Ignore Applebot DOM errors
@@ -81,8 +81,9 @@ if (process.env.SENTRY_DSN) {
     // CRITICAL: Always attach stack traces to all events (including messages)
     attachStacktrace: true,
 
-    // Environment for filtering
-    environment: process.env.NODE_ENV || "development",
+    // Environment for filtering (e2e, development, production)
+    environment:
+      process.env.VITE_TESTING_ENV || process.env.NODE_ENV || "development",
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,
