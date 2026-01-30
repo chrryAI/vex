@@ -74,6 +74,11 @@ export interface ServerData {
   blogPosts?: BlogPost[]
   blogPost?: BlogPostWithContent
   isBlogRoute?: boolean
+  searchParams?: Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
+  } // URL search params with URLSearchParams-compatible API
 }
 
 /**
@@ -231,10 +236,8 @@ export async function loadServerData(
 
   // For now, use a placeholder - you'd need to implement getChrryUrl for Vite
   const chrryUrl = getSiteConfig(hostname).url
-  // console.log(`🚀 ~ chrryUrl:`, chrryUrl)
 
   const siteConfig = getSiteConfig(hostname)
-  // console.log(`🚀 ~ siteConfig:`, siteConfig.domain, hostname)
 
   let thread: { thread: thread; messages: paginatedMessages } | undefined
   let session: session | undefined
@@ -309,22 +312,6 @@ export async function loadServerData(
     const accountApp = session?.userBaseApp || session?.guestBaseApp
     app = appResult.id === accountApp?.id ? accountApp : appResult
 
-    // console.log(
-    // `🚀 ~ ssss:`,
-    // // siteConfig,
-    // // chrryUrl,
-    // (app?.store?.apps || [])?.find((item) => {
-    // if (!item) return false
-    //
-    // if (
-    // siteConfig.slug === item.slug &&
-    // item.store?.slug === siteConfig.storeSlug
-    // ) {
-    // return true
-    // }
-    // })?.name,
-    // )
-
     if (session && app) {
       session.app = app
     }
@@ -387,9 +374,25 @@ export async function loadServerData(
     console.error("Error generating metadata in server-loader:", error)
   }
 
+  // Parse all search params for client hydration
+  // Create URLSearchParams-compatible object for server-client consistency
+  const searchParamsRecord: Record<string, string> = {}
+  urlObj.searchParams.forEach((value, key) => {
+    searchParamsRecord[key] = value
+  })
+
+  // Wrap in object with .get() method to match URLSearchParams API
+  const searchParams = {
+    ...searchParamsRecord,
+    get: (key: string) => searchParamsRecord[key] ?? null,
+    has: (key: string) => key in searchParamsRecord,
+    toString: () => new URLSearchParams(searchParamsRecord).toString(),
+  }
+
   return {
     ...result,
-    fingerprint: session?.fingerprint!,
+    fingerprint: session?.fingerprint ?? fingerprint,
     metadata,
+    searchParams, // Pass search params to client for hydration consistency
   }
 }

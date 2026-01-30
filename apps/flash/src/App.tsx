@@ -76,6 +76,7 @@ function App({ serverData }: AppProps) {
         viewPortWidth={serverData?.viewPortWidth}
         viewPortHeight={serverData?.viewPortHeight}
         pathname={serverData?.pathname}
+        searchParams={serverData?.searchParams}
       >
         {serverData?.isBlogRoute ? (
           <Skeleton>
