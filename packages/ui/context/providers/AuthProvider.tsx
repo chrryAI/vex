@@ -1505,17 +1505,6 @@ export function AuthProvider({
       })
   }, [app, pathname])
 
-  useEffect(() => {
-    if (!fingerprint) return
-
-    if (TEST_MEMBER_FINGERPRINTS?.includes(fingerprint)) {
-      setIsLiveMemberTest(true)
-    }
-    if (TEST_GUEST_FINGERPRINTS?.includes(fingerprint)) {
-      setIsLiveGuestTest(true)
-    }
-  }, [fingerprint])
-
   const gift = searchParams.get("gift") || ""
 
   // Note: deviceId initialization is handled by useLocalStorage hook above
