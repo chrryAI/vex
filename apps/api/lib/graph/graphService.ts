@@ -1,4 +1,4 @@
-import { graph, app, isDevelopment, isE2E } from "@repo/db"
+import { graph, app, isDevelopment, isE2E, db, threads, eq, or } from "@repo/db"
 import { generateText, embed } from "ai"
 import captureException from "../../lib/captureException"
 import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
@@ -632,21 +632,39 @@ export async function clearGraphDataForUser({
       return
     }
 
-    // Delete only user-owned Documents and Chunks
-    // DO NOT delete shared Topics/Entities (they may be referenced by other users)
-    // Bounded traversal: User → Document → Chunk (max 2 hops)
-    await graph.query(
-      `
-      MATCH (u:User {id: $identifier})
-      OPTIONAL MATCH (u)-[:HAS_DOCUMENT]->(d:Document)
-      OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
-      DETACH DELETE u, d, c
-      `,
-      { params: { identifier } },
-    )
+    // Get user's thread IDs from PostgreSQL
+    const userThreads = await db
+      .select({ id: threads.id })
+      .from(threads)
+      .where(
+        userId ? eq(threads.userId, userId) : eq(threads.guestId, guestId!),
+      )
+      .limit(10000) // Prevent performance issues with users who have many threads
+
+    const threadIds = userThreads.map((t) => t.id)
+
+    // Delete User node
+    await graph.query(`MATCH (u:User {id: $identifier}) DETACH DELETE u`, {
+      params: { identifier },
+    })
+
+    // Delete Documents and Chunks for each thread
+    // Documents are linked by threadId property, not by relationship
+    if (threadIds.length > 0) {
+      for (const threadId of threadIds) {
+        await graph.query(
+          `
+          MATCH (d:Document {threadId: $threadId})
+          OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
+          DETACH DELETE d, c
+          `,
+          { params: { threadId } },
+        )
+      }
+    }
 
     console.log(
-      `🧹 Cleared graph data for ${userId ? "user" : "guest"}: ${identifier}`,
+      `🧹 Cleared graph data for ${userId ? "user" : "guest"}: ${identifier} (${threadIds.length} threads)`,
     )
   } catch (error) {
     captureException(error)
