@@ -1,4 +1,5 @@
-import { graph, app, isDevelopment, isE2E, db, threads, eq, or } from "@repo/db"
+import { graph, app, isDevelopment, isE2E, db, eq } from "@repo/db"
+import { threads } from "@repo/db/src/schema"
 import { generateText, embed } from "ai"
 import captureException from "../../lib/captureException"
 import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
