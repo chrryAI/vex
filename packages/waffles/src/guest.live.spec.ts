@@ -119,8 +119,10 @@ test("Chat", async ({ page }) => {
 
   await chat({
     artifacts: {
-      paste: 3,
-      pdf: 3,
+      paste: 1,
+      pdf: 1,
+      image: 1,
+      video: 1,
     },
     isNewChat: false,
     page,

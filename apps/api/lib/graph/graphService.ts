@@ -530,7 +530,7 @@ export async function getGraphContext(
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
                 WHERE e.name IN $names
-                RETURN d.name as source, 'DISCUSSES' as rel, c.content as target
+                RETURN d.name as source, 'DISCUSSES' as rel, substring(c.content, 0, 500) as target
                 LIMIT 5
             `
           const expansion = await graph.query(expandQuery, {
@@ -586,7 +586,7 @@ export async function getGraphContext(
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
                 WHERE e.name IN $names
-                RETURN d.name as source, 'DISCUSSES' as rel, c.content as target
+                RETURN d.name as source, 'DISCUSSES' as rel, substring(c.content, 0, 500) as target
                 LIMIT 3
             `
         const expansion = await graph.query(expandQuery, {

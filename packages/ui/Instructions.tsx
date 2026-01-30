@@ -176,9 +176,9 @@ export default function Instructions({
   const { captureException } = useError()
   const { weather } = useData()
 
-  const { os, isStandalone, isTauri, isCapacitor } = usePlatform()
+  const { os, isStandalone, isTauri, isCapacitor, isExtension } = usePlatform()
 
-  const offset = isStandalone ? -100 : 0
+  const offset = isStandalone || isExtension || isCapacitor ? -100 : 0
 
   const count = useResponsiveCount(
     [
