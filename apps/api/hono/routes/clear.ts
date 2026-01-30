@@ -12,6 +12,10 @@ export const clear = new Hono()
 
 // POST /clear - Clear test data (E2E only)
 clear.post("/", async (c) => {
+  // Add anti-cache headers to prevent caching and reduce CSRF surface
+  c.header("Cache-Control", "no-store")
+  c.header("Vary", "Authorization")
+
   if (!isE2E) {
     return c.json({ error: "Unauthorized" }, 401)
   }
