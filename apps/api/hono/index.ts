@@ -57,6 +57,17 @@ if (process.env.SENTRY_DSN) {
       if (event.request?.headers?.["User-Agent"]?.includes("Applebot")) {
         return null
       }
+
+      // Log error details for debugging (helps identify missing stack traces)
+      if (hint.originalException) {
+        const err = hint.originalException as Error
+        console.error("📤 Sending to Sentry:", {
+          type: err.constructor?.name || typeof hint.originalException,
+          message: err.message || String(hint.originalException),
+          hasStack: !!err.stack,
+        })
+      }
+
       return event
     },
     dsn: process.env.SENTRY_DSN,
@@ -66,6 +77,12 @@ if (process.env.SENTRY_DSN) {
 
     // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
     tracesSampleRate: 1,
+
+    // CRITICAL: Always attach stack traces to all events (including messages)
+    attachStacktrace: true,
+
+    // Environment for filtering
+    environment: process.env.NODE_ENV || "development",
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,

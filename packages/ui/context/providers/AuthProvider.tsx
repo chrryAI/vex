@@ -803,7 +803,7 @@ export function AuthProvider({
     isExtension,
   )
 
-  const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
+  const [tokenWeb, setTokenWeb] = useState(ssrToken)
 
   const token =
     isExtension || isTauri || isCapacitor ? tokenExtension : tokenWeb
@@ -1504,17 +1504,6 @@ export function AuthProvider({
         name: ANALYTICS_EVENTS.APP,
       })
   }, [app, pathname])
-
-  useEffect(() => {
-    if (!fingerprint) return
-
-    if (TEST_MEMBER_FINGERPRINTS?.includes(fingerprint)) {
-      setIsLiveMemberTest(true)
-    }
-    if (TEST_GUEST_FINGERPRINTS?.includes(fingerprint)) {
-      setIsLiveGuestTest(true)
-    }
-  }, [fingerprint])
 
   const gift = searchParams.get("gift") || ""
 

@@ -522,10 +522,11 @@ export async function getGraphContext(
 
         if (semanticNodes.length > 0) {
           // Expand semantically similar nodes + follow MENTIONS links
+          // CRITICAL: UNION requires exact column type match - cast both to string
           const expandQuery = `
                 MATCH (n)-[r]->(m)
                 WHERE n.name IN $names
-                RETURN n.name as source, type(r) as rel, m.name as target
+                RETURN n.name as source, type(r) as rel, toString(m.name) as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)
@@ -578,10 +579,11 @@ export async function getGraphContext(
         (ftResult as any)?.resultSet?.map((row: any) => row[0]) || []
 
       if (textNodes.length > 0) {
+        // CRITICAL: UNION requires exact column type match - cast both to string
         const expandQuery = `
                 MATCH (n)-[r]->(m)
                 WHERE n.name IN $names
-                RETURN n.name as source, type(r) as rel, m.name as target
+                RETURN n.name as source, type(r) as rel, toString(m.name) as target
                 LIMIT 10
                 UNION
                 MATCH (e:Topic)<-[rm:MENTIONS]-(c:Chunk)<-[:HAS_CHUNK]-(d:Document)

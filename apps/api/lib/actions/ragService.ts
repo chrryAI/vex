@@ -1,4 +1,4 @@
-import { db, sql, eq, desc, app } from "@repo/db"
+import { db, sql, eq, desc, app, isE2E, isDevelopment } from "@repo/db"
 import { appWithStore } from "@chrryai/chrry/types"
 
 import {
@@ -338,6 +338,8 @@ export async function findRelevantChunks({
     const queryEmbedding = await generateEmbedding(query)
 
     // Use raw SQL for vector similarity search with pgvector
+    // CRITICAL: Use raw operator in ORDER BY for index usage (HNSW/IVFFlat)
+    const thresholdDistance = 1 - threshold // Convert similarity to distance
     const relevantChunks = await db.execute(sql`
       SELECT 
         content,
@@ -347,8 +349,8 @@ export async function findRelevantChunks({
         1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
       FROM document_chunks 
       WHERE "threadId" = ${threadId}
-        AND 1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) > ${threshold}
-      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector
+        AND embedding <=> ${JSON.stringify(queryEmbedding)}::vector < ${thresholdDistance}
+      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector ASC
       LIMIT ${limit}
     `)
 
@@ -438,19 +440,23 @@ export async function processMessageForRAG({
   app?: app | appWithStore
 }): Promise<void> {
   try {
+    // Skip only empty messages
+    if (!content || content.trim().length === 0) {
+      console.log("⏭️ Skipping message - empty")
+      return
+    }
+
+    // Only log content in E2E/dev mode for debugging (privacy)
     console.log(`📝 Processing ${role} message for RAG:`, {
       messageId,
       threadId,
       contentLength: content.length,
       hasApp: !!app,
       appId: app?.id,
+      ...((isE2E || isDevelopment) && {
+        contentPreview: content.substring(0, 250) + "...",
+      }), // Redacted preview ❤️ 🐰
     })
-
-    // Skip only empty messages
-    if (!content || content.trim().length === 0) {
-      console.log("⏭️ Skipping message - empty")
-      return
-    }
 
     // Generate embedding for the message
     console.log("🔢 Generating embedding...")
@@ -473,7 +479,9 @@ export async function processMessageForRAG({
       tokenCount: Math.ceil(content.length / 4),
     })
 
-    console.log(`📝 Processed message for RAG: ${content.substring(0, 50)}...`)
+    console.log(
+      `📝 Processed message for RAG: ${isE2E || isDevelopment ? content.substring(0, 50) + "..." : "[content hidden]"}`,
+    )
 
     // Extract and Store Knowledge Graph Data
     if (process.env.ENABLE_GRAPH_RAG === "true") {
@@ -520,6 +528,8 @@ export async function findRelevantMessages({
     const queryEmbedding = await generateEmbedding(query)
 
     // Search for similar messages using pgvector
+    // CRITICAL: Use raw operator in ORDER BY for index usage (HNSW/IVFFlat)
+    const thresholdDistance = 1 - threshold // Convert similarity to distance
     const relevantMessages = await db.execute(sql`
       SELECT 
         "messageId",
@@ -530,9 +540,9 @@ export async function findRelevantMessages({
         1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
       FROM message_embeddings 
       WHERE "threadId" = ${threadId}
-        AND 1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) > ${threshold}
+        AND embedding <=> ${JSON.stringify(queryEmbedding)}::vector < ${thresholdDistance}
         ${excludeMessageId ? sql`AND "messageId" != ${excludeMessageId}` : sql``}
-      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector
+      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector ASC
       LIMIT ${limit}
     `)
 
