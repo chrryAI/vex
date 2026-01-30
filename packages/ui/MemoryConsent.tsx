@@ -342,12 +342,13 @@ export default function MemoryConsent({
                         try {
                           setIsDeletingSession(true)
                           const result = await apiFetch(`${API_URL}/clear`, {
-                            method: "POST",
+                            method: "GET",
                             headers: {
                               "Content-Type": "application/json",
                               Authorization: `Bearer ${token}`,
                             },
                           })
+
                           const data = await result.json()
 
                           if (data.error) {
