@@ -132,8 +132,8 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
             : undefined,
         },
       },
-      // Enable minification
-      minify: "terser",
+      // Enable minification (disable for E2E to see full React error messages)
+      minify: isE2E || mode === "development" ? false : "terser",
       terserOptions: {
         compress: {
           drop_console: mode === "production", // Remove console.logs in production
@@ -141,9 +141,10 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
           pure_funcs: ["console.log", "console.info"], // Remove specific console methods
         },
       },
-      // Enable source maps only for E2E/production (when VEX_LIVE_FINGERPRINTS is set)
-      // Hidden = not in bundle, but available for error tracking (GlitchTip)
-      sourcemap: isE2E ? "hidden" : false,
+      // Enable source maps for Sentry
+      // E2E/Dev: true (visible for debugging)
+      // Production: "hidden" (upload to Sentry but don't expose to browser)
+      sourcemap: isE2E || mode === "development" ? true : "hidden",
       // Increase chunk size warning limit (we're splitting chunks now)
       chunkSizeWarningLimit: 1000,
       commonjsOptions: {
