@@ -33,7 +33,8 @@ export const uploadArtifacts = async ({
   const fingerprint = member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    fingerprint && !VEX_LIVE_FINGERPRINTS.includes(fingerprint) && isE2EInternal
+    isE2EInternal &&
+    (!fingerprint || !VEX_LIVE_FINGERPRINTS.includes(fingerprint))
   const memoriesEnabled = (member || guest)?.memoriesEnabled
 
   let firstMessage = (await getMessages({ threadId: thread.id, isAsc: true }))

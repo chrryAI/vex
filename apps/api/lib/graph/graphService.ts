@@ -538,12 +538,16 @@ export async function getGraphContext(
           })
           if ((expansion as any)?.resultSet) {
             for (const row of (expansion as any).resultSet) {
-              if (row[1] === "DISCUSSES" && row[2]) {
+              if (
+                row[1] === "DISCUSSES" &&
+                row[2] &&
+                typeof row[2] === "string"
+              ) {
                 contextItems.add(
                   `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 200)}...`,
                 )
               } else if (row[2]) {
-                contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
+                contextItems.add(`- (${row[0]}) ${row[1]} (${String(row[2])})`)
               }
             }
           }
@@ -590,12 +594,16 @@ export async function getGraphContext(
         })
         if ((expansion as any)?.resultSet) {
           for (const row of (expansion as any).resultSet) {
-            if (row[1] === "DISCUSSES" && row[2]) {
+            if (
+              row[1] === "DISCUSSES" &&
+              row[2] &&
+              typeof row[2] === "string"
+            ) {
               contextItems.add(
                 `- [From Doc: ${row[0]}] Mentioned Content: ${row[2].substring(0, 150)}...`,
               )
             } else if (row[2]) {
-              contextItems.add(`- (${row[0]}) ${row[1]} (${row[2]})`)
+              contextItems.add(`- (${row[0]}) ${row[1]} (${String(row[2])})`)
             }
           }
         }
@@ -651,15 +659,20 @@ export async function clearGraphDataForUser({
 
     // Delete Documents and Chunks for each thread
     // Documents are linked by threadId property, not by relationship
+    // Use UNWIND for batch processing (FalkorDB best practice)
     if (threadIds.length > 0) {
-      for (const threadId of threadIds) {
+      // Process in chunks of 1000 to avoid overwhelming the graph
+      const chunkSize = 1000
+      for (let i = 0; i < threadIds.length; i += chunkSize) {
+        const chunk = threadIds.slice(i, i + chunkSize)
         await graph.query(
           `
-          MATCH (d:Document {threadId: $threadId})
+          UNWIND $threadIds AS threadId
+          MATCH (d:Document {threadId: threadId})
           OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
           DETACH DELETE d, c
           `,
-          { params: { threadId } },
+          { params: { threadIds: chunk } },
         )
       }
     }
