@@ -1,4 +1,4 @@
-import { db, sql, eq, desc, app, isE2E } from "@repo/db"
+import { db, sql, eq, desc, app, isE2E, isDevelopment } from "@repo/db"
 import { appWithStore } from "@chrryai/chrry/types"
 
 import {
@@ -453,7 +453,7 @@ export async function processMessageForRAG({
       contentLength: content.length,
       hasApp: !!app,
       appId: app?.id,
-      ...(isE2E && {
+      ...((isE2E || isDevelopment) && {
         contentPreview: content.substring(0, 250) + "...",
       }), // Redacted preview ❤️ 🐰
     })
@@ -479,7 +479,9 @@ export async function processMessageForRAG({
       tokenCount: Math.ceil(content.length / 4),
     })
 
-    console.log(`📝 Processed message for RAG: ${content.substring(0, 50)}...`)
+    console.log(
+      `📝 Processed message for RAG: ${isE2E || isDevelopment ? content.substring(0, 50) + "..." : "[content hidden]"}`,
+    )
 
     // Extract and Store Knowledge Graph Data
     if (process.env.ENABLE_GRAPH_RAG === "true") {
