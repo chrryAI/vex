@@ -84,6 +84,7 @@ export const uploadArtifacts = async ({
       }
     }),
   )
+  const burn = !!thread.isIncognito
   // Add file parts - only process new files
   if (fileContents && fileContents.length > 0) {
     for (const file of fileContents) {
@@ -104,7 +105,7 @@ export const uploadArtifacts = async ({
             },
           })
           // Process for RAG in background (non-blocking)
-          if (!isE2E && memoriesEnabled) {
+          if (!isE2E && memoriesEnabled && !burn) {
             processFileForRAG({
               content: textContent,
               filename: file.filename,
@@ -152,7 +153,7 @@ export const uploadArtifacts = async ({
             id: uuidv4(),
           })
           // Process for RAG in background (non-blocking)
-          if (!isE2E && memoriesEnabled) {
+          if (!isE2E && memoriesEnabled && !burn) {
             processFileForRAG({
               content: extractedText,
               filename: file.filename,
@@ -192,7 +193,7 @@ export const uploadArtifacts = async ({
 
         // Process image for RAG (vision models can analyze it)
         // Process for RAG in background (non-blocking)
-        if (!isE2E && memoriesEnabled) {
+        if (!isE2E && memoriesEnabled && !burn) {
           processFileForRAG({
             content: `[Image: ${file.filename}]`,
             filename: file.filename,

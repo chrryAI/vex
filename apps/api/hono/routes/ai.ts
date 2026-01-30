@@ -2180,6 +2180,8 @@ These reflect the user's interests and recent conversations. If the user seems u
     isOwner(event, { userId: member?.id, guestId: guest?.id }),
   )
 
+  const burn = !!message.thread.isIncognito
+
   // Fetch Vault data for context (expenses, budgets, shared expenses)
   const { getExpenses, getBudgets, getSharedExpenses } =
     await import("@repo/db")
@@ -2214,7 +2216,7 @@ These reflect the user's interests and recent conversations. If the user seems u
 ## 🔥 Burn Feature (Privacy Mode)
 
 ${
-  message.thread.isIncognito
+  burn
     ? `**🔥 BURN MODE IS CURRENTLY ACTIVE** - This conversation is ephemeral and unrecorded.
 
 **Current State:**
@@ -3914,7 +3916,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
           // Process text file for RAG so AI can analyze it
           // Only if memories are enabled (RAG requires memory context)
           // Run in background to avoid blocking response
-          if (textContent && memoriesEnabled && !isE2E) {
+          if (textContent && memoriesEnabled && !isE2E && !burn) {
             processFileForRAG({
               content: textContent,
               filename: file.filename,
@@ -3979,7 +3981,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             // Process PDF for RAG so AI can analyze it
             // Only if memories are enabled (RAG requires memory context)
             // Run in background to avoid blocking response
-            if (memoriesEnabled && !isE2E) {
+            if (memoriesEnabled && !isE2E && !burn) {
               processFileForRAG({
                 content: extractedText,
                 filename: file.filename,
