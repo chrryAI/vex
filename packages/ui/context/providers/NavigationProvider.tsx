@@ -31,13 +31,25 @@ const NavigationContext = createContext<
       setIsInstructionsModalOpen: (value: boolean) => void
       hasNotification: boolean
       userNameByUrl: string | undefined
-      searchParams: ReturnType<typeof useNavigation>["searchParams"]
+      searchParams:
+        | URLSearchParams
+        | (Record<string, string> & {
+            get: (key: string) => string | null
+            has: (key: string) => boolean
+            toString: () => string
+          })
+        | {
+            get: (key: string) => string | null
+            has: (key: string) => boolean
+            toString: () => string
+          }
       pathname: ReturnType<typeof useNavigation>["pathname"]
       isLoadingThreads: boolean
       setIsLoadingThreads: (value: boolean) => void
       burn: boolean
       addParams: ReturnType<typeof useNavigation>["addParams"]
       removeParams: ReturnType<typeof useNavigation>["removeParams"]
+      push: ReturnType<typeof useNavigation>["push"]
       threads?: {
         threads?: thread[]
         totalCount: number
@@ -90,6 +102,11 @@ export function NavigationProvider({
 }: {
   children: ReactNode
   pathname?: string
+  searchParams?: Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
+  } // URL search params with URLSearchParams-compatible API
 }) {
   // TODO: Move navigation logic here
 
@@ -104,9 +121,18 @@ export function NavigationProvider({
   // useNavigation will read from window.__ROUTER_STATE__ injected by server
   const navigation = useNavigation()
 
-  const { searchParams, pathname: pn, ...router } = navigation
+  const { searchParams: sp, pathname: pn, ...router } = navigation
 
   const pathname = (typeof window === "undefined" ? props.pathname : pn) || "/"
+
+  // Ensure searchParams always has .get() method for compatibility
+  const searchParams = (typeof window === "undefined"
+    ? props.searchParams
+    : sp) || {
+    get: (_key: string) => null,
+    has: (_key: string) => false,
+    toString: () => "",
+  }
 
   const { app } = useApp()
 
@@ -293,9 +319,10 @@ export function NavigationProvider({
         isLoadingThreads,
         setIsLoadingThreads,
         pathname,
-        searchParams: navigation.searchParams,
+        searchParams,
         addParams: navigation.addParams,
         removeParams: navigation.removeParams,
+        push: navigation.push,
         threads,
         setThreads,
         wasIncognito,

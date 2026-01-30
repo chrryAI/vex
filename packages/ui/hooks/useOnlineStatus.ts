@@ -35,7 +35,7 @@ function removeStorageItem(key: string): void {
   }
 }
 
-export function useOnlineStatusLegacy() {
+export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(true)
 
   const { user, guest } = useAuth()
@@ -131,9 +131,4 @@ export function useOnlineStatusLegacy() {
   }, [user?.id, guest?.id])
 
   return isOnline
-}
-
-export function useOnlineStatus() {
-  // Always return true - let browser handle offline detection naturally
-  return true
 }

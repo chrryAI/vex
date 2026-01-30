@@ -119,7 +119,7 @@ const Thread = ({
 
   const showFocus = auth.showFocus && isEmpty && hasHydrated
 
-  const { isIDE, isStandalone } = usePlatform()
+  const { isIDE } = usePlatform()
 
   // Navigation context
   const {
@@ -381,7 +381,7 @@ const Thread = ({
             !threadId &&
             hasHydrated && {
               ...styles.threadEmpty.style,
-              paddingBottom: minimize ? 0 : isStandalone ? 165 : 163.5,
+              paddingBottom: minimize && !showFocus ? 0 : 166,
             }),
           ...{
             maxWidth: isSmallDevice ? BREAKPOINTS.tablet : BREAKPOINTS.desktop,

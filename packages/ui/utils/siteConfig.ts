@@ -2400,13 +2400,6 @@ export function getSiteConfig(
   hostnameOrMode?: string,
   caller?: string,
 ): SiteConfig {
-  // console.log(`🚀 ~ getSiteConfig ~ hostnameOrMode:`, hostnameOrMode, caller)
-  // If it's a valid SiteMode, use it directly
-
-  // if (hostnameOrMode && matchesDomain(hostnameOrMode, "staging.chrry.ai")) {
-  //   return staging
-  // }
-  // Extract hostname from URL if needed
   let hostname = hostnameOrMode || getClientHostname()
   if (hostnameOrMode && hostnameOrMode.includes("://")) {
     try {

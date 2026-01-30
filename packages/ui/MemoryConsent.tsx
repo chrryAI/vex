@@ -52,7 +52,6 @@ export default function MemoryConsent({
   } = useAuth()
 
   const burn = !!(auth.burn || (burnApp && app && burnApp?.id === app?.id))
-  const messageRef = useRef<boolean>(false)
 
   const {
     router,
@@ -367,7 +366,11 @@ export default function MemoryConsent({
                         }
                       }}
                     >
-                      <Trash2 color="red" size={13} />
+                      {isDeletingSession ? (
+                        <Loading width={13} height={13} />
+                      ) : (
+                        <Trash2 color="red" size={13} />
+                      )}
                     </ConfirmButton>
                   )}
                 </>

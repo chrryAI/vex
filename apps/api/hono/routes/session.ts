@@ -32,7 +32,7 @@ import { UAParser } from "ua-parser-js"
 import arcjet, { detectBot } from "@arcjet/node"
 
 import { isDevelopment, isE2E, VERSION } from "@chrryai/chrry/utils"
-import { locales } from "@chrryai/chrry/locales"
+import { locales, type locale } from "@chrryai/chrry/locales"
 import { v4 as uuidv4 } from "uuid"
 import {
   GUEST_CREDITS_PER_MONTH,
@@ -196,7 +196,7 @@ session.get("/", async (c) => {
     webVersion: VERSION,
     firefoxVersion: "1.1.47",
     chromeVersion: "1.1.47",
-    macosVersion: "1.12.11", // Desktop app version (macOS, Windows, Linux)
+    macosVersion: "1.12.60", // Desktop app version (macOS, Windows, Linux)
   }
 
   let member = await getMemberAction(c, { full: true, skipCache: true })
@@ -258,7 +258,9 @@ session.get("/", async (c) => {
   const localeInternal =
     url.searchParams.get("locale") || getCookie(c, "locale") || "en"
 
-  const locale = locales.includes(localeInternal) ? localeInternal : "en"
+  const locale = locales.includes(localeInternal as locale)
+    ? localeInternal
+    : "en"
 
   const source = url.searchParams.get("source") || "client"
 

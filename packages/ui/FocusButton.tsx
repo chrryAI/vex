@@ -48,8 +48,8 @@ import Checkbox from "./Checkbox"
 import AddTask from "./addTask/AddTask"
 import { useTimerContext } from "./context/TimerContext"
 import SwipeableTimeControl from "./SwipeableTimeControl"
-import { useAuth, useChat } from "./context/providers"
-import { useNavigation, usePlatform, useTheme } from "./platform"
+import { useAuth, useChat, useNavigationContext } from "./context/providers"
+import { usePlatform, useTheme } from "./platform"
 import { COLORS, themeType } from "./context/ThemeContext"
 import Img from "./Image"
 import A from "./a/A"
@@ -107,7 +107,7 @@ export default function FocusButton({
     loadingApp,
   } = useAuth()
 
-  const { searchParams, addParams, push, removeParams } = useNavigation()
+  const { searchParams, addParams, push, removeParams } = useNavigationContext()
 
   const hasHydrated = useHasHydrated()
 

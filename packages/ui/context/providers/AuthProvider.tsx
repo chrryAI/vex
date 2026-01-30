@@ -359,6 +359,11 @@ export function AuthProvider({
   error?: string
   session?: session
   app?: appWithStore
+  searchParams?: Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
+  } // URL search params with URLSearchParams-compatible API
   siteConfig?: ReturnType<typeof getSiteConfig>
   threads?: {
     threads: thread[]
@@ -370,7 +375,7 @@ export function AuthProvider({
   const [session, setSession] = useState<session | undefined>(props.session)
 
   const {
-    searchParams,
+    searchParams: sp,
     removeParams,
     pathname: pn,
     addParams,
@@ -390,6 +395,15 @@ export function AuthProvider({
   } = usePlatform()
 
   const pathname = (typeof window === "undefined" ? props.pathname : pn) || "/"
+
+  // Ensure searchParams always has .get() method for compatibility
+  const searchParams = (typeof window === "undefined"
+    ? props.searchParams
+    : sp) || {
+    get: (_key: string) => null,
+    has: (_key: string) => false,
+    toString: () => "",
+  }
 
   const hasStoreApps = (app: appWithStore | undefined) => {
     return Boolean(app?.store?.app && app?.store?.apps.length)
@@ -1026,7 +1040,6 @@ export function AuthProvider({
     session?.app?.store?.apps || [],
     userBaseApp ? [userBaseApp] : guestBaseApp ? [guestBaseApp] : [],
   )
-  // console.log(`🚀 ~ allApps:`, allApps)
   const [storeApps, setAllApps] = useState<appWithStore[]>(allApps)
 
   const baseAppInternal = storeApps.find((item) => {
