@@ -20,7 +20,7 @@ export async function clean({
   isMember?: boolean
 }) {
   await page.goto(getURL({ isLive, isMember, fingerprint }), {
-    waitUntil: "domcontentloaded",
+    waitUntil: "networkidle",
     timeout: 100000,
   })
 

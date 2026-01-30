@@ -422,6 +422,8 @@ export const useWebSocket = <T extends { type: string }>({
   const [connected, setConnected] = useState<boolean>(false)
 
   useEffect(() => {
+    if (!token) return
+
     const handleOnline = () => {
       if (!wsManager?.isConnected()) {
         wsManager?.forceReconnect()
@@ -429,7 +431,7 @@ export const useWebSocket = <T extends { type: string }>({
     }
 
     isOnline && handleOnline()
-  }, [wsManager, isOnline])
+  }, [wsManager, isOnline, token])
 
   useEffect(() => {
     if (!session) return
