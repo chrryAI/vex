@@ -803,7 +803,7 @@ export function AuthProvider({
     isExtension,
   )
 
-  const [tokenWeb, setTokenWeb] = useLocalStorage("token", ssrToken)
+  const [tokenWeb, setTokenWeb] = useState(ssrToken)
 
   const token =
     isExtension || isTauri || isCapacitor ? tokenExtension : tokenWeb
