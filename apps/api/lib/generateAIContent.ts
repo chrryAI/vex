@@ -28,8 +28,9 @@ import {
   getTimer,
   isOwner,
   retroSessions,
+  getThread,
 } from "@repo/db"
-import { and, eq, isNull } from "@repo/db"
+import { and, eq, isNull, or } from "@repo/db"
 import { instructions, threads } from "@repo/db/src/schema"
 
 const memorySchema = z.array(
@@ -685,6 +686,21 @@ Return only valid JSON object.`
     model,
     prompt: suggestionsPrompt,
   })
+
+  if (
+    !(await db
+      .select({ id: threads.id })
+      .from(threads)
+      .where(
+        and(
+          eq(threads.id, thread.id),
+          user?.id ? eq(threads.userId, user.id) : undefined,
+          guest?.id ? eq(threads.guestId, guest.id) : undefined,
+        ),
+      ))
+  ) {
+    return
+  }
 
   const responseSchema = z.object({
     suggestions: z.array(
