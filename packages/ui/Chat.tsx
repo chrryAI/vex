@@ -3803,6 +3803,7 @@ export default function Chat({
                   </Div>
                 </Div>
               ) : (
+                selectedAgent !== null &&
                 !showQuotaInfo && (
                   <Div
                     style={{
