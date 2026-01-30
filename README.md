@@ -33,9 +33,13 @@ Inheritance: New apps can "extend" existing apps, inheriting their capabilities 
 
 🧠 Vector Memory: Smart context management that persists across sessions.
 
+📚 RAG (Retrieval-Augmented Generation): Upload documents (PDF, images, video) and chat with your files using hybrid vector + graph search.
+
+🕸️ Knowledge Graph: FalkorDB-powered entity extraction and relationship mapping for advanced context understanding.
+
 🌍 Multi-App PWA: The only open-source implementation of dynamic manifest injection.
 
-🔒 Privacy First: User-controlled keys mean user-controlled data.
+🔒 Privacy First: User-controlled keys mean user-controlled data. Burn mode for incognito conversations.
 
 ⚡ Real-Time: WebSocket-powered collaboration and streaming.
 
@@ -45,7 +49,9 @@ Node.js 18+
 
 pnpm 9+
 
-PostgreSQL 14+
+PostgreSQL 14+ (with `pgvector` extension)
+
+FalkorDB (for Knowledge Graph RAG)
 
 Installation
 Clone the Monorepo
@@ -70,13 +76,39 @@ Edit the .env files to add your DB_URL and OPENAI_API_KEY (or set VITE_TESTING_E
 
 Database Initialization
 
+**PostgreSQL + pgvector:**
+
 Bash
+
+# Install pgvector extension
+
+psql -d your_database -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+# Run migrations
 
 cd packages/db
 pnpm run generate # Generate Drizzle artifacts
 pnpm run migrate # Push to Postgres
 pnpm run seed # Populate default apps
 cd ../..
+
+**FalkorDB (Knowledge Graph):**
+
+Bash
+
+# Using Docker (recommended)
+
+docker run -p 6379:6379 -it --rm falkordb/falkordb:latest
+
+# Or install locally via Homebrew (macOS)
+
+brew tap FalkorDB/falkordb
+brew install falkordb
+
+# Add to .env
+
+FALKORDB_URL=redis://localhost:6379
+FALKORDB_GRAPH_NAME=vex_knowledge_graph
 Launch
 
 Bash
@@ -95,7 +127,7 @@ Frontend: Next.js 15 (App Router), React 19
 
 Backend: Next.js API Routes, WebSocket Server
 
-Data: PostgreSQL, Drizzle ORM, Redis (Upstash)
+Data: PostgreSQL (pgvector), FalkorDB (Knowledge Graph), Drizzle ORM, Redis (Upstash)
 
 State: React Context + Server Actions
 
@@ -105,14 +137,23 @@ Plaintext
 
 vex/
 ├── apps/
-│ ├── api/ # Marketing site & Core API (Port 3001)
-│ ├── web/ # The PWA Application Shell (Port 3000)
-│ ├── ws/ # Real-time WebSocket Server
-│ └── native/ # React Native (Expo)
-├── packages/
+│ ├── api/ # Core API & Marketing (Hono, Port 3001)
+│ ├── flash/ # Main PWA (Vite + React, Port 5173)
+│ ├── mobile/ # React Native (Expo)
+│ ├── extension/ # Browser Extension (Chrome/Firefox)
+│ ├── browser/ # Desktop App (Tauri)
+── packages/
 │ ├── ui/ # Shared Design System (@chrryai/chrry)
+│ ├── db/ # Drizzle Schema & Migrations
 │ ├── pepper/ # Universal Routing Logic
-│ └── db/ # Drizzle Schema & Migrations
+│ ├── waffles/ # E2E Testing (Playwright)
+│ ├── auth/ # Better Auth Configuration
+│ ├── calendar/ # Calendar Utilities
+│ ├── focus/ # Focus Mode Logic
+│ ├── shared/ # Shared Utilities
+│ ├── cache/ # Caching Layer
+│ ├── typescript-config/# Shared TypeScript Config
+│ └── eslint-config/ # Shared ESLint Config
 └── scripts/ # DevOps & Automation
 
 ## ⚖️ License & Attribution

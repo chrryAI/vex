@@ -251,16 +251,8 @@ export default function Skeleton({
         <Main
           style={{
             ...skeletonStyles.main.style,
-            // ...((!threadId || isEmpty) && skeletonStyles.mainEmpty.style),
-            ...(isDrawerOpen &&
-              {
-                // position: "absolute",
-                // lef: 0,
-              }),
             ...{
               display: "flex",
-              // paddingTop:
-              //   !threadId && isCapacitor && os === "ios" ? 40 : undefined,
             },
           }}
         >
@@ -288,7 +280,6 @@ export default function Skeleton({
               ...(hasHydrated &&
                 isStandalone &&
                 skeletonStyles.headerStandalone.style),
-              // ...((!threadId || isEmpty) && skeletonStyles.headerEmpty.style),
               ...(hasHydrated &&
               isCapacitor &&
               os === "ios" &&
@@ -310,10 +301,7 @@ export default function Skeleton({
                 backgroundColor: "none",
               },
             }}
-            // className={clsx(hasHydrated && device && styles[device])}
           >
-            {/* {isEmpty ? "ds" : "fuull"} */}
-
             {isIDE ? (
               <></>
             ) : (

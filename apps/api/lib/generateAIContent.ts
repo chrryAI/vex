@@ -686,6 +686,22 @@ Return only valid JSON object.`
     prompt: suggestionsPrompt,
   })
 
+  const threadRow = await db
+    .select({ id: threads.id })
+    .from(threads)
+    .where(
+      and(
+        eq(threads.id, thread.id),
+        user?.id ? eq(threads.userId, user.id) : undefined,
+        guest?.id ? eq(threads.guestId, guest.id) : undefined,
+      ),
+    )
+    .limit(1)
+
+  if (threadRow.length === 0) {
+    return
+  }
+
   const responseSchema = z.object({
     suggestions: z.array(
       z.object({

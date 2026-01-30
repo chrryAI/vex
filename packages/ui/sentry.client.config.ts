@@ -58,6 +58,9 @@ if (ENABLE_SENTRY && SENTRY_DSN) {
       return event
     },
 
+    // CRITICAL: Always attach stack traces to all events
+    attachStacktrace: true,
+
     // Environment
     environment: import.meta.env.MODE,
 

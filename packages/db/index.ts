@@ -133,7 +133,7 @@ export const isProd = isSeedSafe
 export * from "./src/cache"
 export { redis, upstashRedis } from "./src/redis"
 export { encrypt, decrypt, generateEncryptionKey } from "./encryption"
-export { sql, eq, desc, and, isNull, cosineDistance, notInArray }
+export { sql, eq, desc, and, isNull, cosineDistance, notInArray, or }
 
 // Export Better Auth tables
 export { baSessions, baAccounts, baVerifications }
