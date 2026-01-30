@@ -166,11 +166,10 @@ export const InstructionsStyleDefs = {
     flexWrap: "wrap",
     gap: 8,
     padding: 12,
-    marginBottom: 8,
     backgroundColor: "var(--shade-1)",
     border: "1px solid var(--shade-2)",
-    margin: "12px 0 0 0",
     borderRadius: 16,
+    margin: "12px 0 0 0",
   },
   filePreviewImage: {
     width: 32,

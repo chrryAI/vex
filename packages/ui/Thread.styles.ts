@@ -21,7 +21,7 @@ export const ThreadStyleDefs = {
   },
   threadEmpty: {
     marginTop: "auto",
-    padding: "0 0px 160px 0px",
+    padding: "0 10px 160px 10px",
   },
   hourlyLimit: {
     fontSize: 12,
@@ -59,23 +59,23 @@ export const ThreadStyleDefs = {
     alignItems: "center",
   },
   loadingContainer: {
-    display: "flex",
     justifyContent: "center",
     marginTop: 30,
     width: "100%",
     height: "100%",
     flex: 1,
     alignItems: "center",
+    display: "flex",
     gap: 5,
   },
   errorContainer: {
-    display: "flex",
     justifyContent: "center",
     marginTop: 30,
     width: "100%",
     height: "100%",
     flex: 1,
     alignItems: "center",
+    display: "flex",
     gap: 5,
   },
 } as const
