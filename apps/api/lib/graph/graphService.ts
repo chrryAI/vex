@@ -1,4 +1,4 @@
-import { graph, app } from "@repo/db"
+import { graph, app, isDevelopment, isE2E } from "@repo/db"
 import { generateText, embed } from "ai"
 import captureException from "../../lib/captureException"
 import { getModelProvider, getEmbeddingProvider } from "../getModelProvider"
@@ -661,6 +661,8 @@ export async function clearGraphDataForUser({
  * ⚠️ DESTRUCTIVE - Use with caution!
  */
 export async function clearAllGraphData(): Promise<void> {
+  if (isDevelopment || isE2E) return
+
   try {
     // Delete all nodes and relationships
     await graph.query("MATCH (n) DETACH DELETE n")

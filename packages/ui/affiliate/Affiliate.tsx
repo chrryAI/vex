@@ -42,10 +42,9 @@ export default function Affiliate() {
   const createAffiliateLink = async () => {
     addHapticFeedback()
     if (!user) {
-      router.push("/affiliate?subscribe=true&plan=member")
+      addParams({ signIn: "login", callbackUrl: "/affiliate" })
       return
     }
-
     setCreating(true)
     try {
       const res = await apiFetch(`${API_URL}/affiliates`, {
@@ -251,10 +250,6 @@ export default function Affiliate() {
                 className={"inverted"}
                 disabled={creating}
                 onClick={() => {
-                  if (!user) {
-                    addParams({ signIn: "login", callbackUrl: "/affiliate" })
-                    return
-                  }
                   createAffiliateLink()
                 }}
                 style={{
