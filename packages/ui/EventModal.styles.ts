@@ -123,9 +123,9 @@ export const EventModalStyleDefs = {
     color: "var(--text-secondary)",
   },
   dateTimeInput: {
-    fontSize: 14,
     marginLeft: "auto",
     fontFamily: "var(--font-mono)",
+    fontSize: 14,
   },
   error: {
     color: "var(--accent-0)",

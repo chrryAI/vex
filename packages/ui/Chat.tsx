@@ -3672,11 +3672,11 @@ export default function Chat({
                       )}
                     </Div>
                   ) : null}
-                  {empty && !threadIdRef.current && (
+                  {empty && !threadIdRef.current && !showQuotaInfo && (
                     <Div
                       style={{
                         position: "relative",
-                        top: !isChatFloating ? (showQuotaInfo ? 0 : 32) : 0,
+                        top: !isChatFloating ? 32 : 0,
                         zIndex: 50,
                         display: "inline-flex",
                         gap: 7.5,
@@ -3697,6 +3697,7 @@ export default function Chat({
                           style={{
                             ...utilities.link.style,
                             fontSize: "0.75rem",
+                            order: minimize ? -1 : 0,
                           }}
                         >
                           <Coins size={14} />
@@ -3802,8 +3803,8 @@ export default function Chat({
                   </Div>
                 </Div>
               ) : (
-                !showQuotaInfo &&
-                selectedAgent !== null && (
+                selectedAgent !== null &&
+                !showQuotaInfo && (
                   <Div
                     style={{
                       ...styles.content.style,

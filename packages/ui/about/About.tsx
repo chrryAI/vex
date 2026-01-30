@@ -406,7 +406,7 @@ export default function About() {
               <Video
                 style={styles.video.style}
                 controls
-                src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOL8j2AfbZ5dgLDCVo4JzBsXqI3MrF8KatARwv`}
+                src={`https://7079yofdv0.ufs.sh/f/5ALK9G4mxClOqa4rl8Lok8fCavjF0phyGSZ4TwWJ3rlbcQ6X`}
               />
             </Div>
 
@@ -457,11 +457,13 @@ export default function About() {
             ...styles.ossWrapper.style,
           }}
         >
-          <H2>🥰 {t("Open Source")}</H2>
+          <H2>
+            <Span style={{ fontSize: "2.5rem" }}>🍉</Span> {t("Open Source")}
+          </H2>
           <Div
             style={{
               ...styles.ossContainer.style,
-              marginBottom: "1.5rem",
+              marginBottom: "2rem",
               ...(isMobileDevice
                 ? undefined
                 : styles.ossContainerDesktop.style),
@@ -586,7 +588,7 @@ export default function About() {
           <Div
             style={{
               ...styles.ossContainer.style,
-              marginBottom: "1.5rem",
+              marginBottom: "2rem",
               ...(isMobileDevice
                 ? undefined
                 : styles.ossContainerDesktop.style),

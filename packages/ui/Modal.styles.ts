@@ -29,7 +29,6 @@ export const ModalStyleDefs = {
   },
   main: {
     margin: "0 auto",
-    width: "100%",
     padding: "0 10px",
     zIndex: 3,
     position: "relative",
@@ -37,6 +36,7 @@ export const ModalStyleDefs = {
     flexDirection: "column",
     display: "flex",
     justifyContent: "center",
+    width: "100%",
   },
   inner: {
     backgroundColor: "var(--background)",
