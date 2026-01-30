@@ -7,13 +7,13 @@
 
 export const ChatStyleDefs = {
   chatContainerWrapper: {
-    display: "flex",
     position: "fixed",
     zIndex: 1000,
     bottom: 3,
     padding: "0 10px",
     maxWidth: 620,
     width: "100%",
+    display: "flex",
     flexDirection: "column",
     flex: 1,
     gap: 12,
@@ -258,7 +258,6 @@ export const ChatStyleDefs = {
     flexWrap: "wrap",
     gap: 8,
     padding: 12,
-    marginBottom: 8,
     backgroundColor: "var(--shade-1)",
     borderBottom: "1px solid var(--shade-2)",
     margin: "-3px -10px 0 -10px",
@@ -578,8 +577,8 @@ export const ChatStyleDefs = {
     backgroundColor: "#000",
     width: 34,
     height: 34,
-    display: "flex",
     borderRadius: "50%",
+    display: "flex",
     alignItems: "center",
     justifyContent: "center",
     boxShadow: "var(--shadow)",

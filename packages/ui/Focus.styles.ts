@@ -19,10 +19,10 @@ export const FocusStyleDefs = {
     paddingTop: 0,
   },
   focusButtonHidden: {
-    display: "none",
     flexDirection: "column",
     gap: 20,
     flex: 1,
+    display: "none",
   },
   focusButtonFocusButton: {},
   moodReports: {

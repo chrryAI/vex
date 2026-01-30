@@ -121,8 +121,6 @@ test("Chat", async ({ page }) => {
     artifacts: {
       paste: 1,
       pdf: 1,
-      image: 1,
-      video: 1,
     },
     isNewChat: false,
     page,

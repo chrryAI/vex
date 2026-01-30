@@ -64,9 +64,9 @@ export const AffiliateDashboardStyleDefs = {
   },
   copyButton: {},
   linkHelp: {
-    color: "var(--accent-1)",
     fontSize: "0.9rem",
     marginTop: 5,
+    color: "var(--accent-1)",
     textAlign: "center",
   },
   payoutSection: {
