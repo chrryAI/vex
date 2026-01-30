@@ -33,6 +33,7 @@ export default function Chrry({
   app,
   pathname,
   siteConfig,
+  searchParams,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -45,6 +46,11 @@ export default function Chrry({
   viewPortWidth?: string
   viewPortHeight?: string
   siteConfig?: ReturnType<typeof getSiteConfig>
+  searchParams?: Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
+  } // URL search params with URLSearchParams-compatible API
   pathname?: string // SSR pathname for thread ID extraction
   threads?: {
     threads: thread[]
@@ -67,6 +73,7 @@ export default function Chrry({
       thread={thread}
       translations={translations}
       threads={threads}
+      searchParams={searchParams}
     >
       {children}
     </AppProviders>
