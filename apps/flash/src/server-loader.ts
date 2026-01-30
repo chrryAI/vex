@@ -384,14 +384,14 @@ export async function loadServerData(
   // Wrap in object with .get() method to match URLSearchParams API
   const searchParams = {
     ...searchParamsRecord,
-    get: (key: string) => searchParamsRecord[key] || null,
+    get: (key: string) => searchParamsRecord[key] ?? null,
     has: (key: string) => key in searchParamsRecord,
     toString: () => new URLSearchParams(searchParamsRecord).toString(),
   }
 
   return {
     ...result,
-    fingerprint: session?.fingerprint ?? undefined,
+    fingerprint: session?.fingerprint ?? fingerprint,
     metadata,
     searchParams, // Pass search params to client for hydration consistency
   }

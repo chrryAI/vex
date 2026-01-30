@@ -61,8 +61,8 @@ if (ENABLE_SENTRY && SENTRY_DSN) {
     // CRITICAL: Always attach stack traces to all events
     attachStacktrace: true,
 
-    // Environment
-    environment: import.meta.env.MODE,
+    // Environment for filtering (e2e, development, production)
+    environment: import.meta.env.VITE_TESTING_ENV || import.meta.env.MODE,
 
     // Release tracking
     release: import.meta.env.VITE_APP_VERSION,
