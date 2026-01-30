@@ -10,8 +10,8 @@ import {
 
 export const clear = new Hono()
 
-// GET /clear - Clear test data (E2E only)
-clear.get("/", async (c) => {
+// POST /clear - Clear test data (E2E only)
+clear.post("/", async (c) => {
   if (!isE2E) {
     return c.json({ error: "Unauthorized" }, 401)
   }
