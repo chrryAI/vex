@@ -127,7 +127,7 @@
     "react-hot-toast": "^2.5.2",
     "react-i18next": "^15.6.1",
     "react-icons": "^5.5.0",
-    "react-intersection-observer": "^9.16.0",
+    "react-intersection-observer": "^10.0.2",
     "react-markdown": "^10.1.0",
     "react-native-draglist": "^3.10.0",
     "react-native-gesture-handler": "^2.16.2",
