@@ -30,10 +30,16 @@ function tauriStubPlugin(): PluginOption {
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode, isSsrBuild }) => {
-  // Load environment variables to check for E2E/production
   const env = loadEnv(mode, process.cwd(), "")
+
+  // Check E2E from both sources:
+  // - loadEnv() reads .env files (local development)
+  // - process.env reads runtime variables (CI/GitHub Actions)
   const isE2E = !!(
-    env.VITE_TESTING_ENV === "e2e" || process.env.TESTING_ENV === "e2e"
+    env.VITE_TESTING_ENV === "e2e" ||
+    env.TESTING_ENV === "e2e" ||
+    process.env.VITE_TESTING_ENV === "e2e" ||
+    process.env.TESTING_ENV === "e2e"
   )
   const config: UserConfig = {
     plugins: [
@@ -133,7 +139,8 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
         },
       },
       // Enable minification (disable for E2E to see full React error messages)
-      minify: isE2E || mode === "development" ? false : "terser",
+      // CRITICAL: E2E must NEVER be minified, even with NODE_ENV=production
+      minify: isE2E ? false : mode === "development" ? false : "terser",
       terserOptions: {
         compress: {
           drop_console: mode === "production", // Remove console.logs in production
