@@ -281,3 +281,53 @@ test("Chat - Hourly Limit Test", async ({ page }) => {
   test.slow()
   await limit({ page })
 })
+
+test("Debate", async ({ page }) => {
+  await clean({ page, isLive })
+
+  test.slow()
+  await page.goto(getURL({ isLive, isMember }), {
+    waitUntil: "networkidle",
+    timeout: 100000,
+  })
+
+  await chat({
+    isNewChat: false,
+    page,
+    isMember,
+    isLive,
+    prompts: [
+      {
+        text: "Should AI be regulated? Debate shortly the balance between innovation and safety",
+        model: "claude",
+        debateAgent: "sushi",
+      },
+      {
+        text: "Is Mars colonization ethical? Briefly debate resource allocation",
+        model: "chatGPT",
+        debateAgent: "perplexity",
+      },
+      {
+        text: "Universal Basic Income: Debate shortly pros and cons",
+        model: "sushi",
+        debateAgent: "claude",
+      },
+      {
+        text: "Human vs animal lives in medical research? Debate briefly",
+        model: "sushi",
+        debateAgent: "chatGPT",
+      },
+      {
+        text: "Quantum computing and cybersecurity? Debate shortly both sides",
+        model: "sushi",
+        debateAgent: "gemini",
+      },
+    ],
+  })
+})
+
+test.skip("Collaboration", async ({ page, browser }) => {
+  await clean({ page, isLive: false })
+
+  await collaboration({ page, browser, isMember })
+})

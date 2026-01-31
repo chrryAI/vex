@@ -132,6 +132,8 @@ async function generateDynamicCypher(
     - If you don't need the relationship, use anonymous [] instead of [r]
     - ORDER BY can ONLY reference variables that are in the RETURN clause (projected variables)
     - NEVER use ORDER BY with computed expressions - always alias them in RETURN first
+    - COUNT{} pattern comprehension: MUST use COUNT { MATCH pattern } syntax, NOT COUNT{pattern}
+    - For counting relationships: COUNT { MATCH (n)-[:REL]->() } NOT COUNT{(n)-[:REL]->()}
     - You can use $queryText parameter for the user's question text
     
     Rules:

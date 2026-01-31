@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.12.76",
+  "version": "1.12.77",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -112,6 +112,7 @@
     "eslint": "^9.39.2",
     "eventsource-parser": "^3.0.6",
     "fast-xml-parser": "^5.3.4",
+    "i18next": "^25.4.1",
     "ioredis": "^5.9.2",
     "pino": "^10.3.0",
     "pino-pretty": "^13.1.3",
