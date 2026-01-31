@@ -48,7 +48,7 @@
     "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^9.1.7",
     "is-reference": "^3.0.3",
-    "openai": "^5.23.2",
+    "openai": "^6.17.0",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0"
   },
