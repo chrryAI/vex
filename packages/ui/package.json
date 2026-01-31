@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/chrry",
-  "version": "1.12.74",
+  "version": "1.12.80",
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -125,7 +125,7 @@
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.63.0",
     "react-hot-toast": "^2.5.2",
-    "react-i18next": "^15.6.1",
+    "react-i18next": "^16.5.4",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^10.0.2",
     "react-markdown": "^10.1.0",

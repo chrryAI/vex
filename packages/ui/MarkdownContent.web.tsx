@@ -149,13 +149,6 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
   const processedContent =
     webSearchResults && webSearchResults.length > 0 ? content : content
 
-  // Debug: Show markdown content
-  console.log(
-    webSearchResults,
-    "📝 Markdown content preview:",
-    processedContent.substring(0, 300),
-  )
-
   return (
     <Div
       style={style}
