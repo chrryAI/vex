@@ -14,7 +14,7 @@ MinIO Console provides a web UI to manage your MinIO object storage - browse buc
 
 Add an A record in Cloudflare:
 
-```
+```text
 Type: A
 Name: console (or minio-console)
 Content: YOUR_VPS_IP

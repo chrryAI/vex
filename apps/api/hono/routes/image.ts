@@ -56,7 +56,11 @@ image.post("/", async (c) => {
     const base64 = buffer.toString("base64")
 
     // Generate content hash for deduplication (same image = same hash = cached)
-    const contentHash = createHash("md5").update(buffer).digest("hex")
+    // Using SHA256 for security compliance (MD5 flagged by security scanners)
+    const contentHash = createHash("sha256")
+      .update(buffer)
+      .digest("hex")
+      .substring(0, 32) // Use first 32 chars for shorter filenames
 
     console.log("📤 Uploading app image:", {
       name: file.name,

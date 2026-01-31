@@ -315,12 +315,13 @@ app.post("/", async (c) => {
         const uploadPromises = versions.map(async ({ size, name }) => {
           // Generate content-based hash for deduplication
           // Same image + same size = same hash = no duplicates
+          // Using SHA256 for security compliance (MD5 flagged by security scanners)
           const crypto = await import("crypto")
           const contentHash = crypto
-            .createHash("md5")
+            .createHash("sha256")
             .update(`${imageUrl}-${size}x${size}`)
             .digest("hex")
-            .substring(0, 12)
+            .substring(0, 16)
 
           const result = await upload({
             url: imageUrl,
@@ -1016,12 +1017,13 @@ app.patch("/:id", async (c) => {
         const uploadPromises = versions.map(async ({ size, name }) => {
           // Generate content-based hash for deduplication
           // Same image + same size = same hash = no duplicates
+          // Using SHA256 for security compliance (MD5 flagged by security scanners)
           const crypto = await import("crypto")
           const contentHash = crypto
-            .createHash("md5")
+            .createHash("sha256")
             .update(`${imageUrl}-${size}x${size}`)
             .digest("hex")
-            .substring(0, 12)
+            .substring(0, 16)
 
           const result = await upload({
             url: imageUrl,
