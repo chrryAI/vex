@@ -36,6 +36,7 @@ export const chat = async ({
   isSubscriber,
   instruction,
   hasCP,
+  hasPH,
   prompts = [
     {
       stop: false,
@@ -66,6 +67,7 @@ export const chat = async ({
   messagesConsumed?: number
   isSubscriber?: boolean
   hasCP?: boolean
+  hasPH?: boolean
   artifacts?: {
     text?: number
     paste?: number
@@ -950,6 +952,10 @@ export const chat = async ({
     let shouldCheckProfile = false
     const characterProfile = page.getByTestId("character-profile")
 
+    let placeholder = ""
+    let shouldCheckPlaceholder = false
+    const threadPlaceholder = page.getByTestId("data-thread-placeholder")
+
     if (isLive && hasCP) {
       const earnBadge = page.getByTestId(
         "enable-character-profiles-from-messages",
@@ -980,7 +986,7 @@ export const chat = async ({
           shouldCheckProfile = true
         } else {
           profile = p
-          shouldCheckProfile = true
+          shouldCheckProfile = false
         }
       }
     }
@@ -991,6 +997,29 @@ export const chat = async ({
       expect(p).not.toEqual(profile)
       profile = p
       shouldCheckProfile = false
+    }
+
+    if (isLive && hasPH) {
+      const isPlaceholderVisible = await threadPlaceholder.isVisible()
+
+      if (isPlaceholderVisible) {
+        const ph = await threadPlaceholder.getAttribute("data-placeholder")
+
+        if (placeholder) {
+          shouldCheckPlaceholder = true
+        } else {
+          placeholder = ph || ""
+          shouldCheckPlaceholder = false
+        }
+      }
+    }
+
+    if (placeholder && shouldCheckPlaceholder) {
+      const ph = await threadPlaceholder.getAttribute("data-placeholder")
+      expect(ph).toBeTruthy()
+      expect(ph).not.toEqual(placeholder)
+      placeholder = ph || ""
+      shouldCheckPlaceholder = false
     }
     if (prompt.delete) {
       await deleteMessageButton.click()

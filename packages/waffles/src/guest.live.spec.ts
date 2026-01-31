@@ -123,6 +123,7 @@ test("Chat", async ({ page }) => {
       pdf: 1,
     },
     hasCP: true,
+    hasPH: true,
     isNewChat: false,
     page,
     isMember,

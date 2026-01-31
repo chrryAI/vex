@@ -513,7 +513,11 @@ const Thread = ({
               <Div>
                 {/* Typing indicator for collaborative threads */}
                 {thread?.placeHolder && (
-                  <Input data-testid="data-thread-placeholder" type="hidden" />
+                  <Input
+                    data-testid="data-thread-placeholder"
+                    data-placeholder={thread.placeHolder.text}
+                    type="hidden"
+                  />
                 )}
                 <Div>
                   <Chat
