@@ -4227,7 +4227,9 @@ How I process and remember information:
   // User message remains unchanged - RAG context now in system prompt
   const enhancedUserMessage = userMessage
 
-  // Function to merge consecutive user messages for Perplexity compatibility
+  // Function to merge consecutive messages for Perplexity compatibility
+  // Perplexity requires strict alternation: system → user → assistant → user → assistant
+  // This handles: debate mode (multiple agents), agent switching, and human-to-human collaboration
   const mergeConsecutiveUserMessages = (
     msgs: ModelMessage[],
   ): ModelMessage[] => {
@@ -4237,33 +4239,70 @@ How I process and remember information:
 
     const merged: ModelMessage[] = []
     let currentUserContent: string[] = []
+    let currentAssistantContent: string[] = []
 
     for (const msg of msgs) {
       if (msg.role === "user") {
+        // Flush any accumulated assistant content first
+        if (currentAssistantContent.length > 0) {
+          merged.push({
+            role: "assistant",
+            content: currentAssistantContent.join("\n\n---\n\n"),
+          })
+          currentAssistantContent = []
+        }
         // Accumulate user messages
         currentUserContent.push(
           typeof msg.content === "string"
             ? msg.content
             : JSON.stringify(msg.content),
         )
-      } else {
-        // When we hit a non-user message, flush any accumulated user content
+      } else if (msg.role === "assistant") {
+        // Flush any accumulated user content first
         if (currentUserContent.length > 0) {
           merged.push({
             role: "user",
-            content: currentUserContent.join("\n\n---\n\n"), // Separate multiple user messages with divider
+            content: currentUserContent.join("\n\n---\n\n"),
           })
           currentUserContent = []
+        }
+        // Accumulate assistant messages
+        currentAssistantContent.push(
+          typeof msg.content === "string"
+            ? msg.content
+            : JSON.stringify(msg.content),
+        )
+      } else {
+        // System message or other - flush both accumulated contents
+        if (currentUserContent.length > 0) {
+          merged.push({
+            role: "user",
+            content: currentUserContent.join("\n\n---\n\n"),
+          })
+          currentUserContent = []
+        }
+        if (currentAssistantContent.length > 0) {
+          merged.push({
+            role: "assistant",
+            content: currentAssistantContent.join("\n\n---\n\n"),
+          })
+          currentAssistantContent = []
         }
         merged.push(msg)
       }
     }
 
-    // Don't forget to flush any remaining user content at the end
+    // Flush any remaining content at the end
     if (currentUserContent.length > 0) {
       merged.push({
         role: "user",
         content: currentUserContent.join("\n\n---\n\n"),
+      })
+    }
+    if (currentAssistantContent.length > 0) {
+      merged.push({
+        role: "assistant",
+        content: currentAssistantContent.join("\n\n---\n\n"),
       })
     }
 

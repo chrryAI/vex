@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 import slugify from "slug"
+import { createHash } from "crypto"
 import { upload } from "../../lib/minio"
 import { getMember, getGuest } from "../lib/auth"
 import { scanFileForMalware } from "../../lib/security"
@@ -54,17 +55,26 @@ image.post("/", async (c) => {
 
     const base64 = buffer.toString("base64")
 
+    // Generate content hash for deduplication (same image = same hash = cached)
+    // Using SHA256 for security compliance (MD5 flagged by security scanners)
+    const contentHash = createHash("sha256")
+      .update(buffer)
+      .digest("hex")
+      .substring(0, 32) // Use first 32 chars for shorter filenames
+
     console.log("📤 Uploading app image:", {
       name: file.name,
       type: file.type,
       size: file.size,
+      contentHash,
       draftId,
     })
 
     // Upload with 500x500 dimensions for app icons
+    // Use content hash as messageId for deduplication
     const uploadResult = await upload({
       url: `data:${file.type};base64,${base64}`,
-      messageId: slugify(file.name.substring(0, 10)),
+      messageId: `icon-${contentHash}`,
       options: {
         width: 500, // App icon size
         height: 500,
@@ -72,6 +82,7 @@ image.post("/", async (c) => {
         position: "center",
         title: file.name,
       },
+      context: "apps",
     })
 
     console.log("✅ App image uploaded successfully:", uploadResult.url)
