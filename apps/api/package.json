@@ -67,7 +67,7 @@
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.4",
     "express": "^5.2.1",
-    "fast-xml-parser": "^4.4.0",
+    "fast-xml-parser": "^5.3.4",
     "forwarded-parse": "^2.1.2",
     "google-auth-library": "^10.5.0",
     "googleapis": "^161.0.0",
