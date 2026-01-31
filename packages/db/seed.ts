@@ -253,6 +253,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(threads)
   await db.delete(memories)
   await db.delete(placeHolders)
+  await db.delete(instructions)
   await db.delete(calendarEvents)
   await db.delete(stores)
   await db.delete(apps)

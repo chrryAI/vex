@@ -132,8 +132,9 @@ async function generateDynamicCypher(
     - If you don't need the relationship, use anonymous [] instead of [r]
     - ORDER BY can ONLY reference variables that are in the RETURN clause (projected variables)
     - NEVER use ORDER BY with computed expressions - always alias them in RETURN first
-    - COUNT{} pattern comprehension: MUST use COUNT { MATCH pattern } syntax, NOT COUNT{pattern}
-    - For counting relationships: COUNT { MATCH (n)-[:REL]->() } NOT COUNT{(n)-[:REL]->()}
+    - COUNT{} pattern comprehension: MUST use COUNT { (pattern) } syntax WITHOUT MATCH keyword
+    - For counting relationships: COUNT { (n)-[:REL]->() } NOT COUNT { MATCH (n)-[:REL]->() }
+    - CRITICAL: NEVER put MATCH inside COUNT{} - it will cause syntax errors
     - You can use $queryText parameter for the user's question text
     
     Rules:
@@ -578,9 +579,10 @@ export async function getGraphContext(
     // 2. Full-Text Search (Fuzzy/Typo-tolerant)
     // Uses RediSearch underneath for powerful text matching
     try {
-      // Escape RediSearch special characters: - : @ | ( ) [ ] { } " ' \
+      // Escape RediSearch special characters: - : @ | ( ) [ ] { } " \
+      // Note: Apostrophes (') should NOT be escaped as they cause syntax errors
       const escapedQuery = queryText
-        .replace(/[\-:@|()[\]{}"\\']/g, "\\$&")
+        .replace(/[\-:@|()[\]{}"\\ ]/g, "\\$&")
         .trim()
 
       const ftQuery = `

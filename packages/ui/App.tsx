@@ -1625,6 +1625,16 @@ export default function App({
                               style={{
                                 ...styles.spaceInvader.style,
                               }}
+                              data-key={
+                                showingCustom
+                                  ? "customInstructions"
+                                  : "appInstructions"
+                              }
+                              data-testid={
+                                hasCustomInstructions
+                                  ? "refresh-instructions"
+                                  : null
+                              }
                               onClick={() => {
                                 toggleInstructions()
                               }}

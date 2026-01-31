@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, CSSProperties } from "react"
 import type { thread } from "./types"
 import { useAppContext } from "./context/AppContext"
 import { CircleCheck, CircleX, UsersRound } from "./icons"
@@ -10,6 +10,7 @@ import { useData } from "./context/providers/DataProvider"
 import { Button, Div, useTheme } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useCollaborationStatusStyles } from "./CollaborationStatus.styles"
+import { useChat } from "./context/providers/ChatProvider"
 
 export default function CollaborationStatus({
   thread,
@@ -24,16 +25,17 @@ export default function CollaborationStatus({
   isIcon?: boolean
   onSave?: (status: "active" | "pending" | "revoked" | "rejected") => void
   dataTestId?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }) {
   const { utilities } = useStyles()
 
   const styles = useCollaborationStatusStyles()
 
   const { t } = useAppContext()
+  const { setCollaborationStatus } = useChat()
   const { user, token } = useAuth()
   const { isMobileDevice } = useTheme()
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState<
     "active" | "pending" | "revoked" | "rejected"
   >("pending")
@@ -75,6 +77,9 @@ export default function CollaborationStatus({
       }
       toast.success(t("Updated"))
       onSave?.(status)
+      status !== "revoked" &&
+        status !== "rejected" &&
+        setCollaborationStatus(status)
     } catch (error) {
       toast.error(t("Failed to update collaboration"))
     } finally {

@@ -35,6 +35,7 @@ export const chat = async ({
   isMember,
   isSubscriber,
   instruction,
+  hasCP,
   prompts = [
     {
       stop: false,
@@ -57,13 +58,14 @@ export const chat = async ({
   threadId,
   creditsConsumed = 0,
   messagesConsumed = 0,
-  bookmark = true,
+  bookmark = false,
   isRetro = false,
   app,
   isPear = false,
 }: {
   messagesConsumed?: number
   isSubscriber?: boolean
+  hasCP?: boolean
   artifacts?: {
     text?: number
     paste?: number
@@ -828,10 +830,13 @@ export const chat = async ({
         timeout: 100000,
       })
 
-      const placeholder = page.locator("[data-placeholder]")
-      await expect(placeholder).toBeAttached({
-        timeout: 100000,
-      })
+      if (isLive) {
+        await expect(
+          await page.getByTestId("data-thread-placeholder"),
+        ).toBeAttached({
+          timeout: 200000,
+        })
+      }
 
       if (prompt.like) {
         await wait(3000)
@@ -941,6 +946,50 @@ export const chat = async ({
 
     await scrollToBottom()
 
+    let profile = ""
+    let shouldCheckProfile = false
+    const characterProfile = page.getByTestId("character-profile")
+
+    if (isLive && hasCP) {
+      const earnBadge = page.getByTestId(
+        "enable-character-profiles-from-messages",
+      )
+
+      const canEarnBadge = await earnBadge.isVisible()
+
+      if (canEarnBadge) {
+        await earnBadge.click()
+
+        const ecp = page.getByTestId("enable-character-profiles")
+        await ecp.click()
+
+        await expect(ecp).not.toBeVisible({
+          timeout: 5000,
+        })
+      } else {
+        const generating = page.getByTestId("generating-cp")
+
+        await expect(generating).toBeVisible({
+          timeout: 15000,
+        })
+
+        const p = await characterProfile.getAttribute("data-cp")
+        await expect(p).toBeTruthy()
+
+        if (profile) {
+          shouldCheckProfile = true
+        }
+
+        profile = p
+      }
+    }
+
+    if (profile && shouldCheckProfile) {
+      const p = await characterProfile.getAttribute("data-cp")
+      await expect(p).toBeTruthy()
+      await expect(p).not.toEqual(profile)
+      profile = ""
+    }
     if (prompt.delete) {
       await deleteMessageButton.click()
       await wait(200)
@@ -978,6 +1027,32 @@ export const chat = async ({
     })
     await threadNotBookmarked.click()
     await wait(2000)
+  }
+
+  if (isLive && hasCP) {
+    const menuHomeButton = page.getByTestId("menu-home-button")
+    await expect(menuHomeButton).toBeVisible()
+    await menuHomeButton.click()
+
+    const ri = await page.getByTestId("refresh-instructions")
+
+    await expect(ri).toBeVisible({
+      timeout: 5000,
+    })
+
+    await expect(await ri.getAttribute("data-key")).toBe("customInstructions")
+
+    await ri.click()
+
+    await wait(500)
+
+    await expect(await ri.getAttribute("data-key")).toBe("appInstructions")
+
+    await ri.click()
+
+    await wait(500)
+
+    await expect(await ri.getAttribute("data-key")).toBe("customInstructions")
   }
 
   if (isNewChat) {

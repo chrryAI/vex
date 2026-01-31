@@ -3,7 +3,9 @@ import {
   deleteMessage,
   deleteSubscription,
   deleteThread,
+  deleteInstruction,
   getGuest as getGuestDb,
+  getPlaceHolders,
   getMessages,
   getSubscriptions,
   getThreads,
@@ -13,6 +15,7 @@ import {
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_FINGERPRINTS,
   VEX_LIVE_FINGERPRINTS,
+  getInstructions,
   user,
   guest,
   deleteGuest,
@@ -20,6 +23,7 @@ import {
   getStores,
   deleteStore,
   updateGuest,
+  deletePlaceHolder,
 } from "@repo/db"
 import {
   GUEST_CREDITS_PER_MONTH,
@@ -116,6 +120,42 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
     }),
   )
 
+  const instructions = await getInstructions({
+    userId: user?.id,
+    guestId: guest?.id,
+    pageSize: 100000,
+  })
+
+  await Promise.all(
+    instructions.map((instruction) => {
+      const isOwner = user
+        ? instruction.userId === user.id
+        : guest && instruction.guestId === guest.id
+
+      if (isOwner) {
+        return deleteInstruction({ id: instruction.id })
+      }
+    }),
+  )
+
+  const placeholders = await getPlaceHolders({
+    userId: user?.id,
+    guestId: guest?.id,
+    pageSize: 100000,
+  })
+
+  await Promise.all(
+    placeholders.map((placeholder) => {
+      const isOwner = user
+        ? placeholder.userId === user.id
+        : guest && placeholder.guestId === guest.id
+
+      if (isOwner) {
+        return deletePlaceHolder({ id: placeholder.id })
+      }
+    }),
+  )
+
   const stores = await getStores({
     pageSize: 100000,
   })
@@ -149,6 +189,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       subscribedOn: null,
       migratedFromGuest: false,
       fingerprint: null,
+      characterProfilesEnabled: false,
     }))
 
   // Reset guest data instead of deleting to prevent foreign key constraint violations
@@ -167,6 +208,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       speechRequestsThisHour: 0,
       speechCharactersToday: 0,
       pearFeedbackCount: 0,
+      characterProfilesEnabled: false,
     }))
 
   // 5. Clear graph data (FalkorDB)

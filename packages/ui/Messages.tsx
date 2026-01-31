@@ -27,6 +27,7 @@ import { isOwner } from "./utils"
 import { useMessagesStyles } from "./Messages.styles"
 import { useStyles } from "./context/StylesContext"
 import { useUserScroll } from "./hooks/useUserScroll"
+import { isE2E } from "./utils/siteConfig"
 
 export default forwardRef<
   HTMLDivElement,
@@ -106,7 +107,8 @@ export default forwardRef<
     ...auth
   } = useAuth()
 
-  const canCreateAgent = !accountApp && app && chrry && app?.id === chrry?.id
+  const canCreateAgent =
+    !isE2E && !accountApp && app && chrry && app?.id === chrry?.id
 
   // Chat context
   const { scrollToBottom } = useChat()
@@ -280,6 +282,7 @@ export default forwardRef<
               !isStreaming &&
               messages?.some((message) => !!message.message.agentId) ? (
                 <Button
+                  data-testid={"enable-character-profiles-from-messages"}
                   disabled={isUpdating}
                   onClick={async () => {
                     if (canCreateAgent) {
@@ -307,6 +310,7 @@ export default forwardRef<
 
             {showLoadingCharacterProfile ? (
               <Div
+                data-testid={"generating-cp"}
                 style={{
                   ...styles.characterProfileContainer.style,
                   flexDirection: "row",

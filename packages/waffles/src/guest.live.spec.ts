@@ -122,6 +122,7 @@ test("Chat", async ({ page }) => {
       paste: 1,
       pdf: 1,
     },
+    cp: true,
     isNewChat: false,
     page,
     isMember,
@@ -326,8 +327,8 @@ test("Debate", async ({ page }) => {
   })
 })
 
-test.skip("Collaboration", async ({ page, browser }) => {
-  await clean({ page, isLive: false })
+test("Collaboration", async ({ page, browser }) => {
+  await clean({ page, isLive })
 
-  await collaboration({ page, browser, isMember })
+  await collaboration({ page, browser, isMember, isLive })
 })

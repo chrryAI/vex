@@ -21,7 +21,7 @@ export async function collaboration({
   browser,
   withShareLink = true,
   fingerprint,
-  collaborate = "feedbackwallet@gmail.com",
+  collaborate = VEX_TEST_EMAIL_4,
 }: {
   page: Page
   isLive?: boolean

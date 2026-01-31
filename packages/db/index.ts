@@ -4322,11 +4322,13 @@ export const getPlaceHolders = async ({
   userId,
   guestId,
   appId,
+  pageSize = 50,
 }: {
   threadId?: string
   userId?: string
   guestId?: string
   appId?: string
+  pageSize?: number
 }) => {
   const result = await db
     .select()
@@ -4340,6 +4342,7 @@ export const getPlaceHolders = async ({
       ),
     )
     .orderBy(desc(placeHolders.createdOn))
+    .limit(pageSize)
 
   return result
 }
