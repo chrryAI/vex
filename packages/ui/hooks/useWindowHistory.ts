@@ -34,11 +34,6 @@ class ClientRouter {
   private isInitialized = false // Track if client-side init has run
 
   constructor() {
-    console.log(
-      "🔧 ClientRouter constructor: window.__ROUTER_STATE__ =",
-      typeof window !== "undefined" ? window.__ROUTER_STATE__ : "SSR",
-    )
-
     // Priority: 1. window.__ROUTER_STATE__ (injected by server), 2. getCurrentState()
     if (typeof window !== "undefined" && window.__ROUTER_STATE__) {
       const serverState = window.__ROUTER_STATE__
@@ -52,18 +47,8 @@ class ClientRouter {
         ),
         hash: serverState.hash,
       }
-      console.log(
-        "🔧 ClientRouter: Hydrated from window.__ROUTER_STATE__:",
-        this.state,
-      )
     } else {
       this.state = this.getCurrentState()
-      console.log(
-        "🔧 ClientRouter: Initialized from client state:",
-        this.state.pathname,
-        "window location:",
-        typeof window !== "undefined" ? window.location.href : "SSR",
-      )
     }
 
     // Cache View Transitions API support check
