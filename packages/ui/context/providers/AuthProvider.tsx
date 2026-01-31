@@ -1393,7 +1393,6 @@ export function AuthProvider({
     if (lastEventTime) {
       const durationMs = now - lastEventTime
       duration = durationMs // Keep as milliseconds
-      console.log("⏱️ Duration tracking:", { name, duration, durationMs })
     }
 
     // Update the timestamp for this event
