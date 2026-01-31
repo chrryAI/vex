@@ -122,7 +122,7 @@ test("Chat", async ({ page }) => {
       paste: 1,
       pdf: 1,
     },
-    cp: true,
+    hasCP: true,
     isNewChat: false,
     page,
     isMember,

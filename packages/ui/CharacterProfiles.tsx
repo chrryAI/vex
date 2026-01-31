@@ -179,6 +179,7 @@ export default function CharacterProfiles({
                       }
 
                       setIsModalOpen(false)
+                      setShowCharacterProfiles(false)
                     } catch (error) {
                       console.error("Error updating guest:", error)
                     } finally {

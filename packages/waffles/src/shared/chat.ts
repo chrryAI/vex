@@ -974,21 +974,23 @@ export const chat = async ({
         })
 
         const p = await characterProfile.getAttribute("data-cp")
-        await expect(p).toBeTruthy()
+        expect(p).toBeTruthy()
 
         if (profile) {
           shouldCheckProfile = true
+        } else {
+          profile = p
+          shouldCheckProfile = true
         }
-
-        profile = p
       }
     }
 
     if (profile && shouldCheckProfile) {
       const p = await characterProfile.getAttribute("data-cp")
-      await expect(p).toBeTruthy()
-      await expect(p).not.toEqual(profile)
-      profile = ""
+      expect(p).toBeTruthy()
+      expect(p).not.toEqual(profile)
+      profile = p
+      shouldCheckProfile = false
     }
     if (prompt.delete) {
       await deleteMessageButton.click()

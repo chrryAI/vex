@@ -77,9 +77,11 @@ export default function CollaborationStatus({
       }
       toast.success(t("Updated"))
       onSave?.(status)
-      status !== "revoked" &&
-        status !== "rejected" &&
+      if (status === "revoked" || status === "rejected") {
+        setCollaborationStatus(null)
+      } else {
         setCollaborationStatus(status)
+      }
     } catch (error) {
       toast.error(t("Failed to update collaboration"))
     } finally {
