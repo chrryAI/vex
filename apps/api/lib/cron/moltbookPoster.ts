@@ -63,7 +63,7 @@ async function generateMoltbookPost({
 }> {
   try {
     const app = await getApp({
-      slug: "architect",
+      slug: subSlug || slug,
     })
     console.log(`🚀 ~ generateMoltbookPost ~ slug:`, slug)
 
@@ -122,14 +122,6 @@ Ending Guidelines:
       throw new Error("Something went wrong sushi not found")
     }
 
-    const molt = await db.query.threads.findFirst({
-      where: and(
-        eq(threads.isMolt, true),
-        eq(threads.appId, app.id),
-        eq(threads.userId, user.id),
-      ),
-    })
-
     const userMessageResponse = await fetch(`${API_URL}/messages`, {
       method: "POST",
       headers: {
@@ -144,7 +136,6 @@ Ending Guidelines:
         stream: false,
         notify: false,
         molt: true,
-        threadId: molt?.id,
       }),
     })
 
@@ -164,6 +155,18 @@ Ending Guidelines:
         userMessageResponseJson,
       )
 
+      throw new Error("Something went wrong while creating message")
+    }
+
+    const molt = await db.query.threads.findFirst({
+      where: and(
+        eq(threads.isMolt, true),
+        eq(threads.appId, app.id),
+        eq(threads.id, message.threadId),
+      ),
+    })
+
+    if (!molt) {
       throw new Error("Something went wrong while creating message")
     }
 
