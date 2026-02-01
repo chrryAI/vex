@@ -275,7 +275,7 @@ cron.get("/postToMoltbook", async (c) => {
     }
   }
 
-  const slug = c.req.query("slug") || "sushi"
+  const slug = c.req.query("slug") || "vex"
   const agentName = c.req.query("agentName") || "sushi"
 
   const subSlug = c.req.query("subSlug")
@@ -328,7 +328,7 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
   // Return immediately
   return c.json({
     success: true,
-    message: "Moltbook trends analysis job started in background",
+    message: "Moltbook trends analysis finished",
     timestamp: new Date().toISOString(),
   })
 })

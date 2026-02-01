@@ -8,6 +8,9 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET
 if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
   throw new Error("NEXTAUTH_SECRET is not defined")
 }
+
+import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
+
 const SECRET = JWT_SECRET || "development-secret"
 
 import {
@@ -21,8 +24,9 @@ import {
   updateThread,
   and,
 } from "@repo/db"
-import { messages, moltQuestions, threads } from "@repo/db/src/schema"
+import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
 import { postToMoltbook } from "../integrations/moltbook"
+import { isDevelopment } from ".."
 
 const JWT_EXPIRY = "30d"
 
@@ -47,7 +51,7 @@ function generateToken(userId: string, email: string): string {
 }
 
 async function generateMoltbookPost({
-  slug,
+  slug = "vex",
   instructions,
   subSlug,
   agentName = "sushi",
@@ -64,16 +68,19 @@ async function generateMoltbookPost({
   messageId?: string
 }> {
   try {
-    const app = await getApp({
-      slug: subSlug || slug,
-    })
-    console.log(`🚀 ~ generateMoltbookPost ~ slug:`, slug)
+    const appResult = await db
+      .select()
+      .from(apps)
+      .where(eq(apps.slug, subSlug || slug))
+      .limit(1)
+
+    const app = appResult[0]
 
     if (!app) {
       throw new Error("App not found for Moltbook guest")
     }
 
-    if (app.userId === null) {
+    if (!app.userId) {
       throw new Error("App not found")
     }
 
@@ -81,8 +88,10 @@ async function generateMoltbookPost({
       id: app.userId,
     })
 
+    console.log(user?.role, user?.name, "sdsdsdsds")
+
     if (!user) {
-      throw new Error("User not found")
+      return {}
     }
 
     if (user?.role !== "admin") {
@@ -152,11 +161,6 @@ Ending Guidelines:
     const message = userMessageResponseJson.message?.message
 
     if (!message?.id) {
-      console.log(
-        `🚀 ~ generateMoltbookPost ~ message:`,
-        userMessageResponseJson,
-      )
-
       throw new Error("Something went wrong while creating message")
     }
 
@@ -248,28 +252,52 @@ export async function postToMoltbookCron({
     let instructions = ""
     let questionId = ""
 
-    // 1. Check for unasked trend questions
-    const unaskedQuestions = await db
+    // 1. Check for unasked trend questions (fetch 5 for variety)
+    let unaskedQuestions = await db
       .select()
       .from(moltQuestions)
       .where(eq(moltQuestions.asked, false))
-      .limit(1)
+      .limit(5)
+
+    if (!unaskedQuestions || unaskedQuestions.length === 0) {
+      console.log("📊 No unasked questions found, analyzing trends...")
+      await analyzeMoltbookTrends()
+
+      // Re-query after generating new questions
+      unaskedQuestions = await db
+        .select()
+        .from(moltQuestions)
+        .where(eq(moltQuestions.asked, false))
+        .limit(5)
+    }
 
     if (unaskedQuestions.length > 0) {
-      const q = unaskedQuestions[0]
+      // Let AI agent choose the most interesting question
+      const randomIndex = Math.floor(Math.random() * unaskedQuestions.length)
+      const q = unaskedQuestions[randomIndex]
+
       if (q) {
         instructions = `Reflect on this trending topic/question from the community: "${q.question}". Share your unique perspective as an AI agent.`
         questionId = q.id
-        console.log(`📝 Using trend question: "${q.question}"`)
+        console.log(
+          `📝 Using trend question (${randomIndex + 1}/${unaskedQuestions.length}): "${q.question}"`,
+        )
       }
     } else {
-      return { success: false, error: "No unasked questions found" }
+      throw new Error("No unasked questions generated after trends analysis")
     }
 
     // 2. Generate Post
     const post = await generateMoltbookPost({ slug, instructions, agentName })
 
     console.log(`🦞 Generated Moltbook Post:`, post)
+
+    if (isDevelopment) {
+      return {
+        success: true,
+        post_id: "test",
+      }
+    }
 
     const result = await postToMoltbook(MOLTBOOK_API_KEY, post)
     console.log(`🚀 ~ result:`, result)
