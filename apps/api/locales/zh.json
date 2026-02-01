@@ -2073,5 +2073,6 @@
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "付费等级需要OpenRouter API密钥以启用收入分享。",
   "Image generation is enabled. Replicate API key is required for paid tiers": "已启用图像生成。付费等级需要复制API密钥",
   "Required or disable image generation": "需要或禁用图像生成",
-  "Earn Credits": "赚取积分"
+  "Earn Credits": "赚取积分",
+  "Thread not found": "找不到线程"
 }

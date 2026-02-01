@@ -1,6 +1,5 @@
 "use client"
 
-import { defaultLocale } from "./locales"
 import Thread from "./Thread"
 import { app } from "./types"
 import { useAuth } from "./context/providers"

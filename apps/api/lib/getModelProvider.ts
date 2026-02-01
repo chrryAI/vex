@@ -5,8 +5,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { app, getAiAgents, decrypt, aiAgent } from "@repo/db"
 import type { LanguageModel } from "ai"
 import { appWithStore } from "@chrryai/chrry/types"
-import { FRONTEND_URL } from "@chrryai/chrry/utils"
 import { createPerplexity } from "@ai-sdk/perplexity"
+import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 
 const plusTiers = ["plus", "pro"]
 
@@ -60,7 +60,8 @@ export async function getModelProvider(
     case "deepSeek": {
       const deepseekKey = app?.apiKeys?.deepseek
         ? safeDecrypt(app?.apiKeys?.deepseek)
-        : !plusTiers.includes(app?.tier || "")
+        : !plusTiers.includes(app?.tier || "") &&
+            !process.env.OPENROUTER_API_KEY
           ? process.env.DEEPSEEK_API_KEY
           : ""
 
@@ -80,13 +81,8 @@ export async function getModelProvider(
           : ""
 
       if (openRouterKeyForDeepSeek) {
-        const openRouterProvider = createOpenAI({
+        const openRouterProvider = createOpenRouter({
           apiKey: openRouterKeyForDeepSeek,
-          baseURL: "https://openrouter.ai/api/v1",
-          headers: {
-            "HTTP-Referer": FRONTEND_URL,
-            "X-Title": "Vex AI",
-          },
         })
         const modelId = agent.modelId.startsWith("deepseek/")
           ? agent.modelId
@@ -123,7 +119,7 @@ export async function getModelProvider(
     case "sushi": {
       const sushiKey =
         (appApiKeys.deepseek ? safeDecrypt(appApiKeys.deepseek) : "") ||
-        (!plusTiers.includes(app?.tier || "")
+        (!plusTiers.includes(app?.tier || "") && !process.env.OPENROUTER_API_KEY
           ? process.env.DEEPSEEK_API_KEY
           : "")
 
@@ -135,7 +131,7 @@ export async function getModelProvider(
         }
       }
 
-      // Fallback to OpenRouter
+      // Fallback to OpenRouter - use official SDK
       const openRouterKeyForDeepSeekReasoner = app?.apiKeys?.openrouter
         ? safeDecrypt(app?.apiKeys?.openrouter)
         : !plusTiers.includes(app?.tier || "")
@@ -143,17 +139,11 @@ export async function getModelProvider(
           : ""
 
       if (openRouterKeyForDeepSeekReasoner) {
-        const openRouterProvider = createOpenAI({
+        const openRouterProvider = createOpenRouter({
           apiKey: openRouterKeyForDeepSeekReasoner,
-          baseURL: "https://openrouter.ai/api/v1",
-          headers: {
-            "HTTP-Referer": FRONTEND_URL,
-            "X-Title": "Vex AI",
-          },
         })
-        const modelId = agent.modelId.startsWith("deepseek/")
-          ? agent.modelId
-          : `deepseek/${agent.modelId}`
+        // Use DeepSeek R1 with official OpenRouter SDK
+        const modelId = "deepseek/deepseek-r1"
         return {
           provider: openRouterProvider(modelId),
           agentName: agent.name,
@@ -170,7 +160,8 @@ export async function getModelProvider(
       // Check for OpenAI key first
       const openaiKey = app?.apiKeys?.openai
         ? safeDecrypt(app?.apiKeys?.openai)
-        : !plusTiers.includes(app?.tier || "")
+        : !plusTiers.includes(app?.tier || "") &&
+            !process.env.OPENROUTER_API_KEY
           ? process.env.CHATGPT_API_KEY
           : ""
 
@@ -190,17 +181,10 @@ export async function getModelProvider(
           : "")
 
       if (openRouterKeyForOpenAI) {
-        const openRouterProvider = createOpenAI({
+        const openRouterProvider = createOpenRouter({
           apiKey: openRouterKeyForOpenAI,
-          baseURL: "https://openrouter.ai/api/v1",
-          headers: {
-            "HTTP-Referer": FRONTEND_URL,
-            "X-Title": "Vex AI",
-          },
         })
-        const modelId = agent.modelId.startsWith("openai/")
-          ? agent.modelId
-          : `openai/${agent.modelId}`
+        const modelId = "openai/gpt-5.1-chat"
         return {
           provider: openRouterProvider(modelId),
           agentName: agent.name,
@@ -216,7 +200,8 @@ export async function getModelProvider(
     case "claude": {
       const claudeKey = app?.apiKeys?.anthropic
         ? safeDecrypt(app?.apiKeys?.anthropic)
-        : !plusTiers.includes(app?.tier || "")
+        : !plusTiers.includes(app?.tier || "") &&
+            !process.env.OPENROUTER_API_KEY
           ? process.env.CLAUDE_API_KEY
           : ""
 
@@ -236,17 +221,12 @@ export async function getModelProvider(
           : "")
 
       if (openRouterKeyForClaude) {
-        const openRouterProvider = createOpenAI({
+        const openRouterProvider = createOpenRouter({
           apiKey: openRouterKeyForClaude,
-          baseURL: "https://openrouter.ai/api/v1",
-          headers: {
-            "HTTP-Referer": FRONTEND_URL,
-            "X-Title": "Vex AI",
-          },
         })
-        const modelId = agent.modelId.startsWith("anthropic/")
-          ? agent.modelId
-          : `anthropic/${agent.modelId}`
+
+        // Map old model IDs to correct OpenRouter format
+        const modelId = "anthropic/claude-sonnet-4.5"
 
         return {
           provider: openRouterProvider(modelId),
@@ -263,7 +243,9 @@ export async function getModelProvider(
     case "gemini": {
       const geminiKey =
         (appApiKeys.google ? safeDecrypt(appApiKeys.google) : "") ||
-        (!plusTiers.includes(app?.tier || "") ? process.env.GEMINI_API_KEY : "")
+        (!plusTiers.includes(app?.tier || "") && !process.env.OPENROUTER_API_KEY
+          ? process.env.GEMINI_API_KEY
+          : "")
 
       if (geminiKey) {
         const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
@@ -281,17 +263,10 @@ export async function getModelProvider(
           : ""
 
       if (openRouterKeyForGemini) {
-        const openRouterProvider = createOpenAI({
+        const openRouterProvider = createOpenRouter({
           apiKey: openRouterKeyForGemini,
-          baseURL: "https://openrouter.ai/api/v1",
-          headers: {
-            "HTTP-Referer": FRONTEND_URL,
-            "X-Title": "Vex AI",
-          },
         })
-        const modelId = agent.modelId.startsWith("google/")
-          ? agent.modelId
-          : `google/${agent.modelId}`
+        const modelId = "google/gemini-3-pro-preview"
         return {
           provider: openRouterProvider(modelId),
           agentName: agent.name,
@@ -307,7 +282,8 @@ export async function getModelProvider(
     case "perplexity": {
       const perplexityKey = app?.apiKeys?.perplexity
         ? safeDecrypt(app?.apiKeys?.perplexity)
-        : !plusTiers.includes(app?.tier || "")
+        : !plusTiers.includes(app?.tier || "") &&
+            !process.env.OPENROUTER_API_KEY
           ? process.env.PERPLEXITY_API_KEY
           : ""
 
@@ -329,17 +305,11 @@ export async function getModelProvider(
           : ""
 
       if (openRouterKeyForPerplexity) {
-        const openRouterProvider = createOpenAI({
+        const openRouterProvider = createOpenRouter({
           apiKey: openRouterKeyForPerplexity,
-          baseURL: "https://openrouter.ai/api/v1",
-          headers: {
-            "HTTP-Referer": FRONTEND_URL,
-            "X-Title": "Vex AI",
-          },
         })
-        const modelId = agent.modelId.startsWith("perplexity/")
-          ? agent.modelId
-          : `perplexity/${agent.modelId}`
+        // Use sonar-reasoning for tool calling support
+        const modelId = "perplexity/sonar-pro"
         return {
           provider: openRouterProvider(modelId),
           agentName: agent.name,
@@ -347,7 +317,7 @@ export async function getModelProvider(
       }
 
       return {
-        provider: createOpenAI({
+        provider: createOpenRouter({
           apiKey: "",
           baseURL: "https://api.perplexity.ai",
         })(agent.modelId),
@@ -361,13 +331,13 @@ export async function getModelProvider(
         : !plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : ""
-      const openRouterProvider = createOpenAI({
+
+      if (!openRouterKey) {
+        throw new Error("OpenRouter API key required for openrouter agent")
+      }
+
+      const openRouterProvider = createOpenRouter({
         apiKey: openRouterKey,
-        baseURL: "https://openrouter.ai/api/v1",
-        headers: {
-          "HTTP-Referer": FRONTEND_URL,
-          "X-Title": "Vex AI",
-        },
       })
       return {
         provider: openRouterProvider(agent.modelId),

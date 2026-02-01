@@ -35,6 +35,8 @@ export const chat = async ({
   isMember,
   isSubscriber,
   instruction,
+  hasCP,
+  hasPH,
   prompts = [
     {
       stop: false,
@@ -64,6 +66,8 @@ export const chat = async ({
 }: {
   messagesConsumed?: number
   isSubscriber?: boolean
+  hasCP?: boolean
+  hasPH?: boolean
   artifacts?: {
     text?: number
     paste?: number
@@ -416,6 +420,16 @@ export const chat = async ({
       await debateAgentDeleteButton.click()
     }
   }
+
+  // Declare state variables outside loop so they persist across iterations
+  let profile = ""
+  let shouldCheckProfile = false
+  const characterProfile = page.getByTestId("character-profile")
+
+  let placeholder = ""
+  let shouldCheckPlaceholder = false
+  const threadPlaceholder = page.getByTestId("thread-placeholder")
+
   for (const prompt of prompts) {
     await clearDebate()
 
@@ -828,10 +842,12 @@ export const chat = async ({
         timeout: 100000,
       })
 
-      const placeholder = page.locator("[data-placeholder]")
-      await expect(placeholder).toBeAttached({
-        timeout: 100000,
-      })
+      if (isLive && hasPH) {
+        const placeholderLocator = page.getByTestId("thread-placeholder")
+        await expect(placeholderLocator).toBeAttached({
+          timeout: 200000,
+        })
+      }
 
       if (prompt.like) {
         await wait(3000)
@@ -941,12 +957,91 @@ export const chat = async ({
 
     await scrollToBottom()
 
+    if (isLive && hasCP) {
+      const earnBadge = page.getByTestId(
+        "enable-character-profiles-from-messages",
+      )
+
+      const canEarnBadge = await earnBadge.isVisible()
+
+      if (canEarnBadge) {
+        await earnBadge.click()
+
+        const ecp = page.getByTestId("enable-character-profiles")
+        await ecp.click()
+
+        await expect(ecp).not.toBeVisible({
+          timeout: 5000,
+        })
+      } else {
+        const generating = page.getByTestId("generating-cp")
+
+        await expect(generating).toBeVisible({
+          timeout: 15000,
+        })
+
+        await expect(characterProfile).toBeVisible({
+          timeout: agentMessageTimeout,
+        })
+
+        const p = await characterProfile.getAttribute("data-cp")
+        expect(p).toBeTruthy()
+
+        if (!profile) {
+          // First time seeing a profile - store it but don't check yet
+          profile = p
+          shouldCheckProfile = false
+        } else {
+          // Profile already exists - enable check for next iteration
+          shouldCheckProfile = true
+        }
+      }
+    }
+
+    if (profile && shouldCheckProfile) {
+      const nextProfile = await characterProfile.getAttribute("data-cp")
+      expect(nextProfile).toBeTruthy()
+      expect(nextProfile).not.toEqual(profile)
+      profile = nextProfile
+      shouldCheckProfile = false
+    }
+
+    if (isLive && hasPH) {
+      const isPlaceholderVisible = await threadPlaceholder.isVisible()
+
+      if (isPlaceholderVisible) {
+        const ph = await threadPlaceholder.getAttribute("data-placeholder")
+
+        if (placeholder) {
+          shouldCheckPlaceholder = true
+        } else {
+          placeholder = ph || ""
+          shouldCheckPlaceholder = false
+        }
+      }
+    }
+
+    if (placeholder && shouldCheckPlaceholder) {
+      await expect(threadPlaceholder).toBeVisible({
+        timeout: 10000,
+      })
+
+      const ph = await threadPlaceholder.getAttribute("data-placeholder")
+
+      expect(ph).not.toEqual(placeholder)
+
+      placeholder = ph || ""
+
+      shouldCheckPlaceholder = false
+    }
     if (prompt.delete) {
       await deleteMessageButton.click()
       await wait(200)
       await deleteMessageButton.click()
       await wait(4000)
-      await expect(deleteMessageButton).not.toBeVisible()
+      await expect(deleteMessageButton).not.toBeVisible({
+        timeout: prompt.agentMessageTimeout || agentMessageTimeout,
+      })
     }
   }
 
@@ -978,6 +1073,32 @@ export const chat = async ({
     })
     await threadNotBookmarked.click()
     await wait(2000)
+  }
+
+  if (isLive && hasCP) {
+    const menuHomeButton = page.getByTestId("menu-home-button")
+    await expect(menuHomeButton).toBeVisible()
+    await menuHomeButton.click()
+
+    const ri = await page.getByTestId("refresh-instructions")
+
+    await expect(ri).toBeVisible({
+      timeout: 5000,
+    })
+
+    await expect(await ri.getAttribute("data-key")).toBe("customInstructions")
+
+    await ri.click()
+
+    await wait(500)
+
+    await expect(await ri.getAttribute("data-key")).toBe("appInstructions")
+
+    await ri.click()
+
+    await wait(500)
+
+    await expect(await ri.getAttribute("data-key")).toBe("customInstructions")
   }
 
   if (isNewChat) {

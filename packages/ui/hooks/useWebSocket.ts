@@ -228,7 +228,7 @@ class WebSocketManager {
 
       this.reconnectTimeout = setTimeout(() => {
         this.connect()
-      }, delay)
+      }, delay) as unknown as NodeJS.Timeout
     } else {
       console.error("❌ Max reconnection attempts reached")
       this.connectionLostCallbacks.forEach((cb) => cb())

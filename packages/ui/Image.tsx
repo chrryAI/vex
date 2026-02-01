@@ -1,5 +1,6 @@
 "use client"
 import { appWithStore, store } from "./types"
+import { CircleFlag } from "react-circle-flags"
 import {
   PROD_FRONTEND_URL,
   FRONTEND_URL,
@@ -190,7 +191,7 @@ export default function ImageComponent(props: ImageProps) {
         ? Number.parseInt(size, 10)
         : 24 // Default size for emojis when size is CSS unit
 
-  const emojiSize = intSize <= 24 ? intSize * 0.85 : intSize
+  const emojiSize = intSize
   if (isEmoji) {
     if (app?.store?.slug === "books") {
       if (app.slug === "zarathustra") {
@@ -232,23 +233,23 @@ export default function ImageComponent(props: ImageProps) {
 
     if (app?.store?.slug === "compass") {
       if (app.slug === "amsterdam") {
-        return <Text style={{ fontSize: emojiSize }}>🇳🇱</Text>
+        return <CircleFlag height={emojiSize} countryCode="nl" />
       }
 
       if (app.slug === "tokyo") {
-        return <Text style={{ fontSize: emojiSize }}>🇯🇵</Text>
+        return <CircleFlag height={emojiSize} countryCode="jp" />
       }
 
       if (app.slug === "paris") {
-        return <Text style={{ fontSize: emojiSize }}>🇫🇷</Text>
+        return <CircleFlag height={emojiSize} countryCode="fr" />
       }
 
       if (app.slug === "istanbul") {
-        return <Text style={{ fontSize: emojiSize }}>🇹🇷</Text>
+        return <CircleFlag height={emojiSize} countryCode="tr" />
       }
 
       if (app.slug === "newYork") {
-        return <Text style={{ fontSize: emojiSize }}>🗽</Text>
+        return <CircleFlag height={emojiSize} countryCode="us" />
       }
     }
   }

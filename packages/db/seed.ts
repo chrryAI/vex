@@ -46,6 +46,7 @@ import {
   timers,
   realtimeAnalytics,
   expenses,
+  moltQuestions,
 } from "./src/schema"
 
 import { createEvent } from "./createEvent"
@@ -92,7 +93,7 @@ async function createAgents() {
     description: "Helpful, safe, and human-like conversational AI",
     creditCost: 3,
     authorization: "all",
-    modelId: "claude-sonnet-4-5-20250929",
+    modelId: "claude-sonnet-4-20250514",
     maxPromptSize: 200000,
     order: 0,
     capabilities: {
@@ -243,6 +244,11 @@ const clearDb = async (): Promise<void> => {
     return
   }
   console.log("Clearing database")
+
+  await db.update(moltQuestions).set({
+    asked: false,
+  })
+
   await db.delete(calendarEvents)
   // await db.delete(aiAgents)
   await db.delete(messages)
@@ -253,6 +259,7 @@ const clearDb = async (): Promise<void> => {
   await db.delete(threads)
   await db.delete(memories)
   await db.delete(placeHolders)
+  await db.delete(instructions)
   await db.delete(calendarEvents)
   await db.delete(stores)
   await db.delete(apps)

@@ -4,7 +4,6 @@ import React, { createContext, useContext } from "react"
 import { useTranslation } from "react-i18next"
 import { COLORS } from "./ThemeContext"
 import { useAuth, useError } from "./providers"
-import { getSiteConfig } from "../utils/siteConfig"
 import { isCI, isE2E } from "../utils"
 import { createCustomConsole } from "../utils/log"
 

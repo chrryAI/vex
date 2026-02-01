@@ -4,9 +4,10 @@
 
 [![npm](https://img.shields.io/npm/v/@chrryai/chrry)](https://www.npmjs.com/package/@chrryai/chrry)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > Extracted from [Vex](https://vex.chrry.ai) - A production AI platform with 6,813+ commits in 2025
+
+License: AGPL-3.0. Use it, learn from it, but if you distribute it, share your changes.
 
 ---
 

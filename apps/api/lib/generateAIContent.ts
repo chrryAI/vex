@@ -4,7 +4,7 @@ import {
   createCharacterTag,
   createMemory,
   createThreadSummary,
-  getCharacterTags,
+  getCharacterTag,
   getThreadSummary,
   updateCharacterTag,
   updateThreadSummary,
@@ -1468,38 +1468,57 @@ Focus on the main discussion points, user preferences, and conversation style.`
     // Memories already created by extractAndSaveMemories() above
 
     // Create or update character profile
-    const existingCharacterTags = await getCharacterTags({
+    const existingCharacterTag = await getCharacterTag({
       userId,
       guestId,
       threadId,
     })
-    const existingProfile = existingCharacterTags.find(
-      (profile) =>
-        (profile.userId === userId || profile.guestId === guestId) &&
-        profile.threadId === threadId,
-    )
 
     let characterTag
-    if (existingProfile) {
+    if (
+      existingCharacterTag &&
+      isOwner(existingCharacterTag, {
+        userId,
+        guestId,
+      })
+    ) {
+      console.log(
+        `🚀 ~ generateAIContent ~ existingCharacterTag:`,
+        existingCharacterTag.name,
+      )
+
       // Update existing character profile
       characterTag = await updateCharacterTag({
-        ...existingProfile,
-        name: characterData.name || existingProfile.name,
-        personality: characterData.personality || existingProfile.personality,
-        traits: characterData.traits
-          ? {
-              communication: characterData.traits.communication || [],
-              expertise: characterData.traits.expertise || [],
-              behavior: characterData.traits.behavior || [],
-              preferences: characterData.traits.preferences || [],
-            }
-          : existingProfile.traits,
-        tags: characterData.tags || existingProfile.tags,
-        usageCount: existingProfile.usageCount + 1,
+        ...existingCharacterTag,
+        name: characterData.name || existingCharacterTag.name,
+        personality:
+          characterData.personality || existingCharacterTag.personality,
+        traits: {
+          communication:
+            characterData.traits?.communication ??
+            existingCharacterTag.traits?.communication ??
+            [],
+          expertise:
+            characterData.traits?.expertise ??
+            existingCharacterTag.traits?.expertise ??
+            [],
+          behavior:
+            characterData.traits?.behavior ??
+            existingCharacterTag.traits?.behavior ??
+            [],
+          preferences:
+            characterData.traits?.preferences ??
+            existingCharacterTag.traits?.preferences ??
+            [],
+        },
+        tags: characterData.tags || existingCharacterTag.tags,
+        usageCount: existingCharacterTag.usageCount + 1,
         userRelationship:
-          characterData.userRelationship || existingProfile.userRelationship,
+          characterData.userRelationship ||
+          existingCharacterTag.userRelationship,
         conversationStyle:
-          characterData.conversationStyle || existingProfile.conversationStyle,
+          characterData.conversationStyle ||
+          existingCharacterTag.conversationStyle,
         metadata: {
           version: "1.0",
           createdBy: modelName,
