@@ -331,6 +331,11 @@ export async function getModelProvider(
         : !plusTiers.includes(app?.tier || "")
           ? process.env.OPENROUTER_API_KEY
           : ""
+
+      if (!openRouterKey) {
+        throw new Error("OpenRouter API key required for openrouter agent")
+      }
+
       const openRouterProvider = createOpenRouter({
         apiKey: openRouterKey,
       })

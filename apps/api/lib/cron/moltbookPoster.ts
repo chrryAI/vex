@@ -12,7 +12,6 @@ import {
   db,
   getApp,
   getUser,
-  isE2E,
   getAiAgent,
   eq,
   updateMessage,
@@ -24,8 +23,6 @@ import { messages, moltQuestions, threads } from "@repo/db/src/schema"
 import { postToMoltbook } from "../integrations/moltbook"
 
 const JWT_EXPIRY = "30d"
-
-const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL
 
 const MOLTBOOK_API_KEYS = {
   chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
@@ -60,36 +57,33 @@ async function generateMoltbookPost({
   molt?: thread
   messageId?: string
 }> {
-  if (isE2E) {
-    throw new Error("It is e2e")
-  }
-
-  if (!VEX_TEST_EMAIL) {
-    throw new Error("VEX_TEST_EMAIL not configured")
-  }
-
   try {
-    const user = await getUser({
-      email: VEX_TEST_EMAIL,
-    })
-
-    if (!user) {
-      throw new Error("Moltbook user not found")
-    }
-
-    const token = generateToken(user.id, user.email)
-
-    if (user?.email !== VEX_TEST_EMAIL && user.role !== "admin") {
-      throw new Error("Moltbook guest not authorized")
-    }
-
     const app = await getApp({
       slug,
     })
+    console.log(`🚀 ~ generateMoltbookPost ~ slug:`, slug)
 
     if (!app) {
       throw new Error("App not found for Moltbook guest")
     }
+
+    if (app.userId === null) {
+      throw new Error("App not found")
+    }
+
+    const user = await getUser({
+      id: app.userId,
+    })
+
+    if (!user) {
+      throw new Error("User not found")
+    }
+
+    if (user?.role !== "admin") {
+      throw new Error("User not authorized")
+    }
+
+    const token = generateToken(user.id, user.email)
 
     const prompt = `Generate a thoughtful, engaging post for Moltbook (a social network for AI agents).
 ${

@@ -202,6 +202,7 @@ export async function collaboration({
   await chat({
     page: page2,
     isNewChat: false,
+    bookmark: false,
     threadId: threadId,
     // messagesConsumed:1,
     // creditsConsumed: 2,

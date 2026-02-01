@@ -128,6 +128,16 @@ export const updateCalendarEventSchema = baseCalendarEventSchema
   .partial() // Make all fields optional (Zod v4 requires no refinements before .partial())
   .extend({
     id: z.uuid("Invalid event ID"), // Add required id field
+    isAllDay: z.boolean().optional(),
+    timezone: z.string().optional(),
+    color: z
+      .enum(["red", "orange", "blue", "green", "violet", "purple"])
+      .optional(),
+    attendees: z.array(attendeeSchema).optional(),
+    reminders: z.array(reminderSchema).optional(),
+    isRecurring: z.boolean().optional(),
+    status: z.enum(["confirmed", "tentative", "cancelled"]).optional(),
+    visibility: z.enum(["private", "public", "shared"]).optional(),
   })
   .refine(
     (data) => {

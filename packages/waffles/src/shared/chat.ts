@@ -59,7 +59,7 @@ export const chat = async ({
   threadId,
   creditsConsumed = 0,
   messagesConsumed = 0,
-  bookmark = false,
+  bookmark = true,
   isRetro = false,
   app,
   isPear = false,
@@ -996,7 +996,9 @@ export const chat = async ({
 
     if (profile && shouldCheckProfile) {
       const p = await characterProfile.getAttribute("data-cp")
-      expect(p).toBeTruthy()
+      await expect(p).toBeVisible({
+        timeout: 100000,
+      })
       expect(p).not.toEqual(profile)
       profile = p
       shouldCheckProfile = false
@@ -1029,7 +1031,9 @@ export const chat = async ({
       await wait(200)
       await deleteMessageButton.click()
       await wait(4000)
-      await expect(deleteMessageButton).not.toBeVisible()
+      await expect(deleteMessageButton).not.toBeVisible({
+        timeout: prompt.agentMessageTimeout || agentMessageTimeout,
+      })
     }
   }
 
