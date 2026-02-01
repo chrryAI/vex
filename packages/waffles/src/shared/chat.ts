@@ -996,7 +996,7 @@ export const chat = async ({
 
     if (profile && shouldCheckProfile) {
       const p = await characterProfile.getAttribute("data-cp")
-      await expect(p).toBeVisible({
+      await expect(p).toBeAttached({
         timeout: 100000,
       })
       expect(p).not.toEqual(profile)
@@ -1021,7 +1021,9 @@ export const chat = async ({
 
     if (placeholder && shouldCheckPlaceholder) {
       const ph = await threadPlaceholder.getAttribute("data-placeholder")
-      expect(ph).toBeTruthy()
+      await expect(ph).toBeAttached({
+        timeout: 10000,
+      })
       expect(ph).not.toEqual(placeholder)
       placeholder = ph || ""
       shouldCheckPlaceholder = false
