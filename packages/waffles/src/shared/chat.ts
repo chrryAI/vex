@@ -980,6 +980,10 @@ export const chat = async ({
           timeout: 15000,
         })
 
+        await expect(characterProfile).toBeVisible({
+          timeout: agentMessageTimeout,
+        })
+
         const p = await characterProfile.getAttribute("data-cp")
         expect(p).toBeTruthy()
 
@@ -996,10 +1000,12 @@ export const chat = async ({
     }
 
     if (profile && shouldCheckProfile) {
-      const p = await characterProfile.getAttribute("data-cp")
-      await expect(p).toBeAttached({
-        timeout: 100000,
+      await expect(characterProfile).toBeVisible({
+        timeout: agentMessageTimeout,
       })
+
+      const p = await characterProfile.getAttribute("data-cp")
+
       expect(p).not.toEqual(profile)
       profile = p
       shouldCheckProfile = false
