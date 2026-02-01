@@ -245,7 +245,7 @@ cron.get("/postToMoltbook", async (c) => {
   const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
 
-  const slug = c.req.query("slug") || "chrry"
+  const slug = c.req.query("slug") || "sushi"
 
   if (!isDevelopment) {
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {

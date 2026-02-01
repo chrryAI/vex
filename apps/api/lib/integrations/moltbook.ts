@@ -75,6 +75,7 @@ export async function getMoltbookFeed(
         headers: {
           Authorization: `Bearer ${apiKey}`,
         },
+        timeout: 30000, // 30 seconds for slow Moltbook API
       },
     )
 

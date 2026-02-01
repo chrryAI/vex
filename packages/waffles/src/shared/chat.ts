@@ -988,6 +988,7 @@ export const chat = async ({
           profile = p
           shouldCheckProfile = false
         } else {
+          profile = p ?? ""
           // Profile already exists - enable check for next iteration
           shouldCheckProfile = true
         }
@@ -1020,12 +1021,18 @@ export const chat = async ({
     }
 
     if (placeholder && shouldCheckPlaceholder) {
-      const ph = await threadPlaceholder.getAttribute("data-placeholder")
-      await expect(ph).toBeAttached({
+      const phElement =
+        await threadPlaceholder.getByTestId("thread-placeholder")
+      await expect(phElement).toBeVisible({
         timeout: 10000,
       })
+
+      const ph = await phElement.getAttribute("data-placeholder")
+
       expect(ph).not.toEqual(placeholder)
+
       placeholder = ph || ""
+
       shouldCheckPlaceholder = false
     }
     if (prompt.delete) {

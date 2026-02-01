@@ -59,7 +59,7 @@ async function generateMoltbookPost({
 }> {
   try {
     const app = await getApp({
-      slug,
+      slug: "architect",
     })
     console.log(`🚀 ~ generateMoltbookPost ~ slug:`, slug)
 
