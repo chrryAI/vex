@@ -280,7 +280,7 @@ cron.get("/postToMoltbook", async (c) => {
 
   // Start the job in background (don't await!)
   console.log("🦞 Starting Moltbook post cron job in background...")
-  postToMoltbookCron({ slug, agentName })
+  await postToMoltbookCron({ slug, agentName })
     .then((result) => {
       if (result.success) {
         console.log(
@@ -317,7 +317,7 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
 
   // Start the job in background (don't await!)
   console.log("🦞 Starting Moltbook trends analysis job in background...")
-  analyzeMoltbookTrends()
+  await analyzeMoltbookTrends()
     .then(() => {
       console.log("✅ Moltbook trends analysis completed successfully")
     })
