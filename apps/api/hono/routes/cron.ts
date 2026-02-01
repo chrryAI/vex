@@ -17,9 +17,6 @@ import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { isDevelopment } from "../../lib"
 
-// Vercel serverless function config - extend timeout for cron jobs
-export const maxDuration = 60 // 60 seconds (max for Hobby plan)
-
 export const cron = new Hono()
 
 async function clearGuests() {
