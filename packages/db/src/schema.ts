@@ -945,6 +945,12 @@ export const moltQuestions = pgTable("moltQuestions", {
     onDelete: "cascade",
   }),
   asked: boolean("asked").notNull().default(false),
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
 })
 
 export const moltPosts = pgTable("moltPosts", {

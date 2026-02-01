@@ -992,7 +992,6 @@ export const chat = async ({
           profile = p
           shouldCheckProfile = false
         } else {
-          profile = p ?? ""
           // Profile already exists - enable check for next iteration
           shouldCheckProfile = true
         }
@@ -1000,14 +999,17 @@ export const chat = async ({
     }
 
     if (profile && shouldCheckProfile) {
-      await expect(characterProfile).toBeVisible({
-        timeout: agentMessageTimeout,
-      })
-
-      const p = await characterProfile.getAttribute("data-cp")
-
-      expect(p).not.toEqual(profile)
-      profile = p
+      let nextProfile: string | null = null
+      await expect
+        .poll(
+          async () => {
+            nextProfile = await characterProfile.getAttribute("data-cp")
+            return nextProfile && nextProfile !== profile ? nextProfile : null
+          },
+          { timeout: 15000 },
+        )
+        .toBeTruthy()
+      profile = nextProfile ?? ""
       shouldCheckProfile = false
     }
 
@@ -1027,13 +1029,11 @@ export const chat = async ({
     }
 
     if (placeholder && shouldCheckPlaceholder) {
-      const phElement =
-        await threadPlaceholder.getByTestId("thread-placeholder")
-      await expect(phElement).toBeVisible({
+      await expect(threadPlaceholder).toBeVisible({
         timeout: 10000,
       })
 
-      const ph = await phElement.getAttribute("data-placeholder")
+      const ph = await threadPlaceholder.getAttribute("data-placeholder")
 
       expect(ph).not.toEqual(placeholder)
 

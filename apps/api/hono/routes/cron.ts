@@ -270,6 +270,7 @@ cron.get("/postToMoltbook", async (c) => {
   const authHeader = c.req.header("authorization")
 
   const slug = c.req.query("slug") || "sushi"
+  const agentName = c.req.query("agentName") || "sushi"
 
   if (!isDevelopment) {
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
@@ -279,7 +280,7 @@ cron.get("/postToMoltbook", async (c) => {
 
   // Start the job in background (don't await!)
   console.log("🦞 Starting Moltbook post cron job in background...")
-  postToMoltbookCron(slug)
+  postToMoltbookCron({ slug, agentName })
     .then((result) => {
       if (result.success) {
         console.log(

@@ -3264,14 +3264,6 @@ export async function createCharacterTag(characterTag: newCharacterProfile) {
   return inserted
 }
 
-export async function getCharacterTag({ id }: { id: string }) {
-  const [result] = await db
-    .select()
-    .from(characterProfiles)
-    .where(eq(characterProfiles.id, id))
-  return result
-}
-
 export async function updateCharacterTag(characterTag: characterProfile) {
   const [updated] = await db
     .update(characterProfiles)
@@ -3296,17 +3288,20 @@ export async function getCharacterTags({
   userId,
   guestId,
   threadId,
+  id,
 }: {
   agentId?: string
   userId?: string
   guestId?: string
   threadId?: string
+  id?: string
 }) {
   const result = await db
     .select()
     .from(characterProfiles)
     .where(
       and(
+        id ? eq(characterProfiles.id, id) : undefined,
         threadId ? eq(characterProfiles.threadId, threadId) : undefined,
         agentId ? eq(characterProfiles.agentId, agentId) : undefined,
         userId ? eq(characterProfiles.userId, userId) : undefined,
@@ -3316,6 +3311,28 @@ export async function getCharacterTags({
   return result
 }
 
+export async function getCharacterTag({
+  id,
+  agentId,
+  userId,
+  guestId,
+  threadId,
+}: {
+  id?: string
+  agentId?: string
+  userId?: string
+  guestId?: string
+  threadId?: string
+}) {
+  const [result] = await getCharacterTags({
+    agentId,
+    userId,
+    guestId,
+    threadId,
+    id,
+  })
+  return result
+}
 export async function createMemory(memory: newMemory) {
   const [inserted] = await db.insert(memories).values(memory).returning()
 

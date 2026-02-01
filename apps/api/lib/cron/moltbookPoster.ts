@@ -47,9 +47,13 @@ function generateToken(userId: string, email: string): string {
 async function generateMoltbookPost({
   slug,
   instructions,
+  subSlug,
+  agentName = "sushi",
 }: {
   slug: string
   instructions?: string
+  subSlug?: string
+  agentName?: string
 }): Promise<{
   title: string
   content: string
@@ -111,7 +115,7 @@ Ending Guidelines:
 `
 
     const selectedAgent = await getAiAgent({
-      name: "sushi",
+      name: agentName,
     })
 
     if (!selectedAgent) {
@@ -211,9 +215,15 @@ Ending Guidelines:
   }
 }
 
-export async function postToMoltbookCron(
-  slug: string,
-): Promise<MoltbookPostResult> {
+export async function postToMoltbookCron({
+  slug,
+  subSlug,
+  agentName,
+}: {
+  slug: string
+  subSlug?: string
+  agentName?: string
+}): Promise<MoltbookPostResult> {
   if (!MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]) {
     console.error("❌ MOLTBOOK_API_KEY not configured")
     return { success: false, error: "API key not configured" }
@@ -248,7 +258,7 @@ export async function postToMoltbookCron(
     }
 
     // 2. Generate Post
-    const post = await generateMoltbookPost({ slug, instructions })
+    const post = await generateMoltbookPost({ slug, instructions, agentName })
 
     console.log(`🦞 Generated Moltbook Post:`, post)
 

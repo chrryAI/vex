@@ -13,7 +13,9 @@
     "start": "bun server.ts",
     "build": "echo 'No build needed for Hono'",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "agentdesc:register": "bun scripts/register-agentdesc.ts",
+    "agentdesc:tasks": "bun scripts/agentdesc-tasks.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.35",

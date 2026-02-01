@@ -1109,6 +1109,9 @@ importers:
       react-audio-play:
         specifier: ^1.0.4
         version: 1.0.4(react@19.2.4)
+      react-circle-flags:
+        specifier: ^0.0.25
+        version: 0.0.25(react@19.2.4)
       react-dnd:
         specifier: ^16.0.1
         version: 16.0.1(@types/node@22.19.7)(@types/react@19.1.12)(react@19.2.4)
@@ -11315,6 +11318,12 @@ packages:
     peerDependencies:
       react: ^16.14.0 || ^17 || ^18 || ^19
       react-dom: ^16.14.0 || ^17 || ^18 || ^19
+
+  react-circle-flags@0.0.25:
+    resolution: {integrity: sha512-qdfCo3okpvK5/s/2ptmFfU3vfPgwBHvAkSJ+CB4DG6FS1iFzgdmT06MMQi/2ZxkGM6YK1KfmyilPO3QOhEs3DA==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: ^16.0.0 || 17.x || 18.x || 19.x
 
   react-colorful@5.6.1:
     resolution: {integrity: sha512-1exovf0uGTGyq5mXQT0zgQ80uvj2PCwvF8zY1RN9/vbJVSjSo3fsB/4L3ObbF7u70NduSiK4xu4Y6q1MHoUGEw==}
@@ -26580,6 +26589,10 @@ snapshots:
       react-dom: 19.2.4(react@19.2.4)
       react-overlays: 5.2.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       uncontrollable: 7.2.1(react@19.2.4)
+
+  react-circle-flags@0.0.25(react@19.2.4):
+    dependencies:
+      react: 19.2.4
 
   react-colorful@5.6.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
