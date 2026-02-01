@@ -1,7 +1,8 @@
 name: PR
 on:
+  # will update to main when is ready
   pull_request:
-    branches: [main]
+    branches: [prod]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

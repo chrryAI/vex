@@ -46,6 +46,7 @@ import {
   timers,
   realtimeAnalytics,
   expenses,
+  moltQuestions,
 } from "./src/schema"
 
 import { createEvent } from "./createEvent"
@@ -243,6 +244,11 @@ const clearDb = async (): Promise<void> => {
     return
   }
   console.log("Clearing database")
+
+  await db.update(moltQuestions).set({
+    asked: false,
+  })
+
   await db.delete(calendarEvents)
   // await db.delete(aiAgents)
   await db.delete(messages)

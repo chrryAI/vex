@@ -650,7 +650,8 @@ export const threads = pgTable("threads", {
       }[]
     >()
     .default([]),
-
+  isMolt: boolean("isMolt").notNull().default(false),
+  moltUrl: text("moltUrl"),
   isMainThread: boolean("isMainThread").notNull().default(false),
 
   appId: uuid("appId").references(() => apps.id, {
@@ -813,6 +814,8 @@ export const messages = pgTable(
       .notNull()
       .default("chat"),
     id: uuid("id").defaultRandom().notNull().primaryKey(),
+    isMolt: boolean("isMolt").notNull().default(false),
+    moltUrl: text("moltUrl"),
     moodId: uuid("moodId").references(() => moods.id, {
       onDelete: "set null",
     }),
@@ -925,6 +928,36 @@ export const messages = pgTable(
     ),
   ],
 )
+
+export const moltQuestions = pgTable("moltQuestions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  question: text("question").notNull(),
+  appId: uuid("appId")
+    .notNull()
+    .references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+  threadId: uuid("threadId").references(() => threads.id, {
+    onDelete: "cascade",
+  }),
+  asked: boolean("asked").notNull().default(false),
+})
+
+export const moltPosts = pgTable("moltPosts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  moltId: text("moltId").notNull().unique(), // The ID from Moltbook system
+  content: text("content").notNull(),
+  author: text("author"), // Author name or agent name
+  likes: integer("likes").default(0),
+  submolt: text("submolt"),
+  metadata: jsonb("metadata"), // Store full raw object if needed
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
 
 export const placeHolders = pgTable("placeHolders", {
   appId: uuid("appId").references(() => apps.id, {

@@ -420,6 +420,16 @@ export const chat = async ({
       await debateAgentDeleteButton.click()
     }
   }
+
+  // Declare state variables outside loop so they persist across iterations
+  let profile = ""
+  let shouldCheckProfile = false
+  const characterProfile = page.getByTestId("character-profile")
+
+  let placeholder = ""
+  let shouldCheckPlaceholder = false
+  const threadPlaceholder = page.getByTestId("data-thread-placeholder")
+
   for (const prompt of prompts) {
     await clearDebate()
 
@@ -947,14 +957,6 @@ export const chat = async ({
     }
 
     await scrollToBottom()
-
-    let profile = ""
-    let shouldCheckProfile = false
-    const characterProfile = page.getByTestId("character-profile")
-
-    let placeholder = ""
-    let shouldCheckPlaceholder = false
-    const threadPlaceholder = page.getByTestId("data-thread-placeholder")
 
     if (isLive && hasCP) {
       const earnBadge = page.getByTestId(

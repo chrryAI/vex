@@ -12,6 +12,8 @@ import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
 import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
 import { inArray, lt } from "drizzle-orm"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
+import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
+import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 
 export const cron = new Hono()
 
@@ -233,4 +235,73 @@ cron.get("/fetchNews", async (c) => {
 // POST /cron/fetchNews - Fetch news (for production cron)
 cron.post("/fetchNews", async (c) => {
   return handleFetchNews(c)
+})
+
+// GET /cron/postToMoltbook - Post AI-generated content to Moltbook
+cron.get("/postToMoltbook", async (c) => {
+  // Verify auth
+  const authHeader = c.req.header("authorization")
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  try {
+    console.log("🦞 Starting Moltbook post cron job...")
+    const result = await postToMoltbookCron()
+
+    if (result.success) {
+      return c.json({
+        success: true,
+        message: "Posted to Moltbook successfully",
+        post_id: result.post_id,
+        timestamp: new Date().toISOString(),
+      })
+    } else {
+      return c.json(
+        {
+          success: false,
+          error: result.error,
+        },
+        500,
+      )
+    }
+  } catch (error) {
+    console.error("❌ Moltbook post failed:", error)
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500,
+    )
+  }
+})
+
+// GET /cron/analyzeMoltbookTrends - Analyze Moltbook trends and generate questions
+cron.get("/analyzeMoltbookTrends", async (c) => {
+  // Verify auth
+  const authHeader = c.req.header("authorization")
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  try {
+    console.log("🦞 Starting Moltbook trends analysis job...")
+    await analyzeMoltbookTrends()
+
+    return c.json({
+      success: true,
+      message: "Moltbook trends analysis completed successfully",
+      timestamp: new Date().toISOString(),
+    })
+  } catch (error) {
+    console.error("❌ Moltbook trends analysis failed:", error)
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500,
+    )
+  }
 })

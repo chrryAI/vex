@@ -39,6 +39,7 @@ import { scanFileForMalware } from "../../lib/security"
 import { getGuest, getMember } from "../lib/auth"
 import { deleteFile } from "../../lib/minio"
 import { streamControllers } from "../../lib/streamControllers"
+import { error } from "console"
 
 export const messages = new Hono()
 
@@ -234,7 +235,9 @@ messages.post("/", async (c) => {
     const body = await c.req.parseBody({ all: true })
     requestData = {
       moodId: body["moodId"] as string,
+      notify: body["notify"],
       appId: body["appId"] as string,
+      molt: body["isMolt"] === "true",
       content: body["content"] as string,
       retro: body["retro"] === "true",
       pear: body["pear"] === "true",
@@ -323,9 +326,12 @@ messages.post("/", async (c) => {
     taskId,
     moodId,
     pear,
+    molt,
     retro,
     ...rest
   } = requestData
+
+  const notify = requestData.notify !== false && requestData.notify !== "false"
 
   const task = taskId ? await getTask({ id: taskId }) : undefined
   const mood = moodId ? await getMood({ id: moodId }) : undefined
@@ -386,6 +392,7 @@ messages.post("/", async (c) => {
       isIncognito,
       instructions,
       appId: app?.id,
+      isMolt: !!molt,
     })
 
     if (!newThread) {
@@ -458,6 +465,7 @@ messages.post("/", async (c) => {
       agentId: selectedAgent.id,
       agentVersion: selectedAgent.version,
       appId: app?.id,
+      isMolt: !!molt,
     })
 
     if (!agentMessage) {
@@ -484,6 +492,7 @@ messages.post("/", async (c) => {
     isPear: pear || false, // Track Pear feedback submissions
     debateAgentId: selectedDebateAgent?.id,
     appId: app?.id,
+    isMolt: !!molt,
   })
 
   if (userMessage) {
@@ -515,24 +524,25 @@ messages.post("/", async (c) => {
     })
   }
 
-  notifyOwnerAndCollaborations({
-    c,
-    notifySender: true,
-    pushNotification: true,
-    thread,
-    payload: {
-      type: "message",
-      data: {
-        deviceId,
-        message: m,
-        isFinal: true,
-        isWebSearchEnabled: webSearchEnabled,
-        isImageGenerationEnabled: imageGenerationEnabled,
+  notify &&
+    notifyOwnerAndCollaborations({
+      c,
+      notifySender: true,
+      pushNotification: true,
+      thread,
+      payload: {
+        type: "message",
+        data: {
+          deviceId,
+          message: m,
+          isFinal: true,
+          isWebSearchEnabled: webSearchEnabled,
+          isImageGenerationEnabled: imageGenerationEnabled,
+        },
       },
-    },
-    member,
-    guest,
-  })
+      member,
+      guest,
+    })
 
   return c.json({
     message: m,
@@ -572,7 +582,7 @@ messages.patch("/:id", async (c) => {
   if (!id) return c.json({ error: "ID is required" }, 400)
 
   const body = await c.req.json()
-  const { like, clientId } = body
+  const { like, clientId, moltUrl } = body
 
   if (clientId && !validate(clientId)) {
     return c.json({ error: "Invalid client ID" }, 400)
@@ -639,6 +649,7 @@ messages.patch("/:id", async (c) => {
     ...existingMessage.message,
     reactions: newReactions,
     clientId: clientId ?? existingMessage.message.clientId,
+    moltUrl: moltUrl ?? existingMessage.message.moltUrl,
   })
 
   if (!message) {

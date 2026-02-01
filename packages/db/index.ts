@@ -2328,6 +2328,8 @@ export async function upsertDevice(deviceData: newDevice) {
 }
 
 export const createThread = async (thread: newThread) => {
+  console.log(thread.isMolt, "dddsdssd")
+
   const [inserted] = await db.insert(threads).values(thread).returning()
   return inserted
 }
@@ -2339,6 +2341,7 @@ export const getThread = async ({
   isMainThread,
   appId,
   taskId,
+  isMolt,
 }: {
   id?: string
   userId?: string
@@ -2346,6 +2349,7 @@ export const getThread = async ({
   isMainThread?: boolean
   appId?: string
   taskId?: string
+  isMolt?: boolean
 }) => {
   const [result] = await db
     .select()
@@ -2358,6 +2362,7 @@ export const getThread = async ({
         userId ? eq(threads.userId, userId) : undefined,
         guestId ? eq(threads.guestId, guestId) : undefined,
         taskId ? eq(threads.taskId, taskId) : undefined,
+        isMolt ? eq(threads.isMolt, isMolt) : undefined,
       ),
     )
     .leftJoin(apps, eq(threads.appId, apps.id))
