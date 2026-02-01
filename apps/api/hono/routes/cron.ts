@@ -280,16 +280,17 @@ cron.get("/postToMoltbook", async (c) => {
 
   const subSlug = c.req.query("subSlug")
 
-  // Start the job in background (don't await!)
+  // Start the job in background (fire-and-forget)
   console.log("🦞 Starting Moltbook post cron job in background...")
 
-  try {
-    const result = await postToMoltbookCron({ slug, agentName, subSlug, c })
-    console.log(`✅ Moltbook post completed successfully: ${result.post_id}`)
-  } catch (error) {
-    captureException(error)
-    console.error(`❌ Moltbook post failed:`, error)
-  }
+  postToMoltbookCron({ slug, agentName, subSlug, c })
+    .then((result) => {
+      console.log(`✅ Moltbook post completed successfully: ${result.post_id}`)
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error(`❌ Moltbook post failed:`, error)
+    })
 
   // Return immediately
   return c.json({
@@ -314,21 +315,22 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
 
   const sort = c.req.query("sort") || undefined
 
-  // Start the job in background (don't await!)
+  // Start the job in background (fire-and-forget)
   console.log("🦞 Starting Moltbook trends analysis job in background...")
 
-  try {
-    await analyzeMoltbookTrends({ sort })
-    console.log("✅ Moltbook trends analysis completed successfully")
-  } catch (error) {
-    console.error("❌ Moltbook trends analysis failed:", error)
-    captureException(error)
-  }
+  analyzeMoltbookTrends({ sort })
+    .then(() => {
+      console.log("✅ Moltbook trends analysis completed successfully")
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error("❌ Moltbook trends analysis failed:", error)
+    })
 
   // Return immediately
   return c.json({
     success: true,
-    message: "Moltbook trends analysis finished",
+    message: "Moltbook trends analysis job started in background",
     timestamp: new Date().toISOString(),
   })
 })

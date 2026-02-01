@@ -310,8 +310,8 @@ export async function postToMoltbookCron({
         .where(eq(moltQuestions.id, questionId))
       console.log(`✅ Marked question ${questionId} as asked`)
 
-      // Send email notification (non-blocking)
-      if (c) {
+      // Send email notification (non-blocking) - only if post was successful
+      if (c && result && result.post_id) {
         sendEmail({
           c,
           to: "feedbackwallet@gmail.com",
