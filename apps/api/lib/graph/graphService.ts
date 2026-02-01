@@ -579,10 +579,14 @@ export async function getGraphContext(
     // 2. Full-Text Search (Fuzzy/Typo-tolerant)
     // Uses RediSearch underneath for powerful text matching
     try {
-      // Escape RediSearch special characters: - : @ | ( ) [ ] { } " \
-      // Note: Apostrophes (') should NOT be escaped as they cause syntax errors
+      // Escape RediSearch special characters that cause syntax errors
+      // Special chars: - : @ | ( ) [ ] { } " \ ' and spaces
       const escapedQuery = queryText
-        .replace(/[\-:@|()[\]{}"\\ ]/g, "\\$&")
+        .replace(/\\/g, "\\\\") // Escape backslashes first
+        .replace(/'/g, "\\'") // Escape apostrophes
+        .replace(/"/g, '\\"') // Escape quotes
+        .replace(/[\-:@|()[\]{}]/g, "\\$&") // Escape other special chars
+        .replace(/\s+/g, "\\ ") // Escape spaces
         .trim()
 
       const ftQuery = `
