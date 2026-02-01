@@ -577,16 +577,17 @@ export async function getGraphContext(
     }
 
     // 2. Full-Text Search (Fuzzy/Typo-tolerant)
-    // Uses RediSearch underneath for powerful text matching
+    // Uses RediSearch underneath for powerful multi-term text matching
     try {
       // Escape RediSearch special characters that cause syntax errors
-      // Special chars: - : @ | ( ) [ ] { } " \ ' and spaces
+      // Special chars: - : @ | ( ) [ ] { } " \ '
+      // Note: Spaces are NOT escaped to allow multi-term search (e.g., "AI agent" matches both terms)
       const escapedQuery = queryText
         .replace(/\\/g, "\\\\") // Escape backslashes first
         .replace(/'/g, "\\'") // Escape apostrophes
         .replace(/"/g, '\\"') // Escape quotes
         .replace(/[\-:@|()[\]{}]/g, "\\$&") // Escape other special chars
-        .replace(/\s+/g, "\\ ") // Escape spaces
+        .replace(/\s+/g, " ") // Normalize whitespace to single spaces
         .trim()
 
       const ftQuery = `
