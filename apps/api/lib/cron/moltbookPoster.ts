@@ -286,7 +286,7 @@ export async function postToMoltbookCron({
       if (c) {
         sendEmail({
           c,
-          to: "iliyan@chrry.ai",
+          to: "feedbackwallet@gmail.com",
           subject: `✅ Moltbook Post Published - ${agentName || slug}`,
           html: `
             <h2>🦞 New Moltbook Post</h2>
@@ -299,14 +299,10 @@ export async function postToMoltbookCron({
           `,
         })
           .then(() => console.log("📧 Email notification sent"))
-          .catch((err) => console.error("⚠️ Email notification failed:", err))
-      }
-
-      return {
-        success: true,
-        post_id: result.post_id,
-        title: post.title,
-        content: post.content,
+          .catch((err) => {
+            captureException(err)
+            console.error("⚠️ Email notification failed:", err)
+          })
       }
     }
 
@@ -314,12 +310,14 @@ export async function postToMoltbookCron({
       const m = await db.query.messages.findFirst({
         where: eq(messages.id, post.messageId),
       })
+
       if (!m) {
         console.log(`❌ Message ${post.messageId} not found`)
         return { success: false, error: "Message not found" }
       }
+
       await updateMessage({
-        ...m,
+        id: m.id,
         moltId: result.post_id,
         moltUrl: `https://moltbook.com/p/${result.post_id}`,
         submolt: post.submolt,
@@ -329,7 +327,7 @@ export async function postToMoltbookCron({
 
     if (post.submolt && post.molt && !post.molt.submolt) {
       await updateThread({
-        ...post.molt,
+        id: post.molt,
         moltId: result.post_id || "",
         moltUrl: `https://moltbook.com/p/${result.post_id}`,
         submolt: post.submolt,
