@@ -245,7 +245,7 @@ cron.get("/postToMoltbook", async (c) => {
   const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
 
-  const slug = c.req.query("slug") || "zarathustra"
+  const slug = c.req.query("slug") || "chrry"
 
   if (!isDevelopment) {
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
@@ -253,36 +253,29 @@ cron.get("/postToMoltbook", async (c) => {
     }
   }
 
-  try {
-    console.log("🦞 Starting Moltbook post cron job...")
-    const result = await postToMoltbookCron(slug)
+  // Start the job in background (don't await!)
+  console.log("🦞 Starting Moltbook post cron job in background...")
+  postToMoltbookCron(slug)
+    .then((result) => {
+      if (result.success) {
+        console.log(
+          `✅ Moltbook post completed successfully: ${result.post_id}`,
+        )
+      } else {
+        console.error(`❌ Moltbook post failed: ${result.error}`)
+      }
+    })
+    .catch((error) => {
+      console.error("❌ Moltbook post error:", error)
+    })
 
-    if (result.success) {
-      return c.json({
-        success: true,
-        message: "Posted to Moltbook successfully",
-        post_id: result.post_id,
-        timestamp: new Date().toISOString(),
-      })
-    } else {
-      return c.json(
-        {
-          success: false,
-          error: result.error,
-        },
-        500,
-      )
-    }
-  } catch (error) {
-    console.error("❌ Moltbook post failed:", error)
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500,
-    )
-  }
+  // Return immediately
+  return c.json({
+    success: true,
+    message: "Moltbook post job started in background",
+    slug,
+    timestamp: new Date().toISOString(),
+  })
 })
 
 // GET /cron/analyzeMoltbookTrends - Analyze Moltbook trends and generate questions
@@ -297,23 +290,20 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
     }
   }
 
-  try {
-    console.log("🦞 Starting Moltbook trends analysis job...")
-    await analyzeMoltbookTrends()
-
-    return c.json({
-      success: true,
-      message: "Moltbook trends analysis completed successfully",
-      timestamp: new Date().toISOString(),
+  // Start the job in background (don't await!)
+  console.log("🦞 Starting Moltbook trends analysis job in background...")
+  analyzeMoltbookTrends()
+    .then(() => {
+      console.log("✅ Moltbook trends analysis completed successfully")
     })
-  } catch (error) {
-    console.error("❌ Moltbook trends analysis failed:", error)
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500,
-    )
-  }
+    .catch((error) => {
+      console.error("❌ Moltbook trends analysis failed:", error)
+    })
+
+  // Return immediately
+  return c.json({
+    success: true,
+    message: "Moltbook trends analysis job started in background",
+    timestamp: new Date().toISOString(),
+  })
 })
