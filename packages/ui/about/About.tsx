@@ -39,7 +39,6 @@ import {
   useTheme,
   Video,
 } from "../platform"
-import { getSiteConfig } from "../utils/siteConfig"
 import { Claude, DeepSeek } from "../icons"
 import A from "../a/A"
 import { useAboutStyles } from "./About.styles"

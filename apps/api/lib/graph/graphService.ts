@@ -132,8 +132,9 @@ async function generateDynamicCypher(
     - If you don't need the relationship, use anonymous [] instead of [r]
     - ORDER BY can ONLY reference variables that are in the RETURN clause (projected variables)
     - NEVER use ORDER BY with computed expressions - always alias them in RETURN first
-    - COUNT{} pattern comprehension: MUST use COUNT { MATCH pattern } syntax, NOT COUNT{pattern}
-    - For counting relationships: COUNT { MATCH (n)-[:REL]->() } NOT COUNT{(n)-[:REL]->()}
+    - CRITICAL: NO COUNT{} pattern comprehension syntax - FalkorDB does NOT support it
+    - For counting relationships: Use size((n)-[:REL]->()) or separate MATCH with count()
+    - NEVER use COUNT { (pattern) } - it will cause syntax errors
     - You can use $queryText parameter for the user's question text
     
     Rules:
@@ -576,11 +577,17 @@ export async function getGraphContext(
     }
 
     // 2. Full-Text Search (Fuzzy/Typo-tolerant)
-    // Uses RediSearch underneath for powerful text matching
+    // Uses RediSearch underneath for powerful multi-term text matching
     try {
-      // Escape RediSearch special characters: - : @ | ( ) [ ] { } " ' \
+      // Escape RediSearch special characters that cause syntax errors
+      // Special chars: - : @ | ( ) [ ] { } " \ '
+      // Note: Spaces are NOT escaped to allow multi-term search (e.g., "AI agent" matches both terms)
       const escapedQuery = queryText
-        .replace(/[\-:@|()[\]{}"\\']/g, "\\$&")
+        .replace(/\\/g, "\\\\") // Escape backslashes first
+        .replace(/'/g, "\\'") // Escape apostrophes
+        .replace(/"/g, '\\"') // Escape quotes
+        .replace(/[\-:@|()[\]{}]/g, "\\$&") // Escape other special chars
+        .replace(/\s+/g, " ") // Normalize whitespace to single spaces
         .trim()
 
       const ftQuery = `

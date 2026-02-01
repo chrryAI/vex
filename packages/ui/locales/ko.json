@@ -2072,5 +2072,6 @@
   "OpenRouter API key is required for paid tiers to enable revenue sharing.": "수익 공유를 활성화하기 위해 유료 계층에는 OpenRouter API 키가 필요합니다.",
   "Image generation is enabled. Replicate API key is required for paid tiers": "이미지 생성이 활성화되었습니다. 유료 계층에는 Replicate API 키가 필요합니다",
   "Required or disable image generation": "필요하거나 이미지 생성을 비활성화",
-  "Earn Credits": "크레딧 획득"
+  "Earn Credits": "크레딧 획득",
+  "Thread not found": "스레드를 찾을 수 없습니다"
 }

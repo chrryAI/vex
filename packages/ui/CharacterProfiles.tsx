@@ -153,6 +153,7 @@ export default function CharacterProfiles({
                   {t("Privacy")}
                 </A>
                 <Button
+                  data-testid={"enable-character-profiles"}
                   className="small transparent"
                   disabled={isUpdating}
                   onClick={async () => {
@@ -176,6 +177,9 @@ export default function CharacterProfiles({
 
                         setGuest(updatedGuest)
                       }
+
+                      setIsModalOpen(false)
+                      setShowCharacterProfiles(false)
                     } catch (error) {
                       console.error("Error updating guest:", error)
                     } finally {

@@ -67,14 +67,16 @@ const css = `
 }
 
 .featureTitle {
-  gap: 0.15625rem;
+  gap: 0.5rem;
   margin: 0;
   display: flex;
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .featureDescription {
   color: var(--foreground);
+  font-size: 0.95rem;
+
 }
 
 
@@ -82,7 +84,6 @@ const css = `
 
 export default function Chrry() {
   const config = getSiteConfig("chrryDev")
-  const isChrry = config.mode === "chrryDev"
 
   return (
     <>
@@ -117,34 +118,32 @@ export default function Chrry() {
 
           <p className="description">{config.description}</p>
 
-          {isChrry && config.links && (
-            <div className="links">
-              {config.links.github && (
-                <a
-                  href={config.links.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="link"
-                >
-                  <Github size={20} />
-                  <span>GitHub</span>
-                  <ExternalLink size={16} />
-                </a>
-              )}
-              {config.links.npm && (
-                <a
-                  href={config.links.npm}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="link"
-                >
-                  <Package size={20} />
-                  <span>npm</span>
-                  <ExternalLink size={16} />
-                </a>
-              )}
-            </div>
-          )}
+          <div className="links">
+            {config.links.github && (
+              <a
+                href={config.links.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link"
+              >
+                <Github size={20} />
+                <span>GitHub</span>
+                <ExternalLink size={16} />
+              </a>
+            )}
+            {config.links.npm && (
+              <a
+                href={config.links.npm}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link"
+              >
+                <Package size={20} />
+                <span>npm</span>
+                <ExternalLink size={16} />
+              </a>
+            )}
+          </div>
         </div>
 
         <div className="features">
@@ -157,8 +156,7 @@ export default function Chrry() {
               className="feature"
             >
               <div className="featureTitle">
-                <span>{feature.icon}</span>
-                <span>{feature.title}</span>
+                <span>{feature.icon}</span> <span>{feature.title}</span>
               </div>
               <p className="featureDescription">{feature.description}</p>
             </a>

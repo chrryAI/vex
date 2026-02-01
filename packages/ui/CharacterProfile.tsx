@@ -110,6 +110,8 @@ export default function CharacterProfile({
   }
   return (
     <Div
+      data-testid="character-profile"
+      data-cp={`${characterProfile.name}${characterProfile.tags?.length ? `-${characterProfile.tags.join(", ")}` : ""}`}
       key={characterProfile.id}
       style={{ ...styles.characterProfilesActions.style, ...style }}
     >

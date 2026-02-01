@@ -17,7 +17,6 @@ import {
   Strong,
   useTheme,
 } from "./platform"
-import { getSiteConfig } from "./utils/siteConfig"
 import { useWhyStyles } from "./Why.styles"
 import { useStyles } from "./context/StylesContext"
 

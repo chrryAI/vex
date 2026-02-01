@@ -94,65 +94,57 @@ const chrryDev = {
   links: {
     github: "https://github.com/chrryAI/vex",
     npm: "https://www.npmjs.com/package/@chrryai/chrry",
-    docs: "https://chrry.dev/docs",
-    demo: "https://chrry.dev/demo",
+    // docs: "https://chrry.dev/docs",
+    // demo: "https://chrry.dev/demo",
   },
   features: [
+    {
+      title: "Waffles",
+      description: "🍣 Sushi Playwright testing utilities, e2e strikes 🎯",
+      icon: "🧇",
+      link: "https://github.com/chrryAI/waffles",
+      isOpenSource: true,
+    },
     {
       title: "Pepper",
       description: "Universal router with view transitions",
       icon: "🌶️",
-      link: "https://npmjs.com/package/@chrryai/pepper",
+      link: "https://github.com/chrryAI/pepper",
       isOpenSource: true,
     },
     {
       title: "Components",
-      description: "50+ production-ready UI components",
+      description: "100+ production-ready UI components",
       icon: "🎨",
-      link: "https://github.com/chrryAI/chrry",
-      isOpenSource: true,
-    },
-
-    {
-      title: "Icons",
-      description: "Cross-platform icon system with Lucide",
-      icon: "✨",
-      link: "https://github.com/chrryAI/chrry/tree/main/icons",
+      link: "https://github.com/chrryAI/vex/tree/main/packages/ui",
       isOpenSource: true,
     },
     {
       title: "Styles",
       description: "SCSS to TypeScript converter",
       icon: "🎭",
-      link: "https://github.com/chrryAI/chrry/tree/main/styles",
+      link: "https://github.com/chrryAI/vex/blob/main/scripts/scss-to-universal.js",
       isOpenSource: true,
     },
     {
       title: "Hooks",
       description: "Reusable React hooks",
       icon: "🪝",
-      link: "https://github.com/chrryAI/chrry/tree/main/hooks",
+      link: "https://github.com/chrryAI/vex/tree/main/packages/ui/hooks",
       isOpenSource: true,
     },
     {
       title: "Context",
       description: "State management providers",
       icon: "🔄",
-      link: "https://github.com/chrryAI/chrry/tree/main/context",
+      link: "https://github.com/chrryAI/vex/blob/main/packages/ui/context",
       isOpenSource: true,
     },
     {
       title: "Platform",
       description: "Cross-platform utilities",
       icon: "📱",
-      link: "https://github.com/chrryAI/chrry/tree/main/platform",
-      isOpenSource: true,
-    },
-    {
-      title: "Waffles",
-      description: "Playwright testing utilities",
-      icon: "🧇",
-      link: "https://npmjs.com/package/@chrryai/waffles",
+      link: "https://github.com/chrryAI/vex/blob/main/packages/ui/platform",
       isOpenSource: true,
     },
   ],
@@ -248,7 +240,7 @@ const chrryAI = {
   logo: "🍒",
   primaryColor: "#E91E63", // Cherry pink
   links: {
-    github: "https://github.com/chrryAI/chrry",
+    github: "https://github.com/chrryAI/vex",
     docs: "https://chrry.ai/docs",
     // store: "https://chrry.store",
   },
@@ -317,7 +309,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as SiteMode,
   slug: "focus",
-  version: "26.11.15",
+  version: "26.11.17",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -331,7 +323,7 @@ const focus = {
   logo: "⏱️",
   primaryColor: "#3B82F6", // Blue
   links: {
-    github: "https://github.com/chrryAI/chrry",
+    github: "https://github.com/chrryAI/vex",
     docs: "https://focus.chrry.ai/docs",
   },
   features: [
@@ -916,7 +908,7 @@ const vex = {
   logo: "🤖",
   primaryColor: "#6366F1", // Indigo
   links: {
-    github: "https://github.com/chrryai/chrry",
+    github: "https://github.com/chrryAI/vex",
     docs: "https://vex.chrry.ai/docs",
   },
   features: [
@@ -1059,7 +1051,7 @@ const sushi = {
   logo: "🍣",
   primaryColor: "#10B981", // Emerald green (coding/terminal theme)
   links: {
-    github: "https://github.com/chrryAI/chrry",
+    github: "https://github.com/chrryAI/vex",
     docs: "https://sushi.chrry.ai/docs",
   },
   features: [

@@ -60,10 +60,6 @@ const Threads = ({
   const [animationKey, setAnimationKey] = useState(0)
 
   useEffect(() => {
-    scrollToTop(100)
-  }, [pathname])
-
-  useEffect(() => {
     if (!reduceMotion) {
       setAnimationKey((prev) => prev + 1)
     }
