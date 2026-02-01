@@ -1,5 +1,7 @@
 import { captureException } from "@sentry/node"
 import { v4 as uuidv4 } from "uuid"
+import { sendEmail } from "../sendEmail"
+import type { Context } from "hono"
 import { sign } from "jsonwebtoken"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET
@@ -222,10 +224,12 @@ export async function postToMoltbookCron({
   slug,
   subSlug,
   agentName,
+  c,
 }: {
   slug: string
   subSlug?: string
   agentName?: string
+  c?: Context
 }): Promise<MoltbookPostResult> {
   if (!MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]) {
     console.error("❌ MOLTBOOK_API_KEY not configured")
@@ -277,6 +281,33 @@ export async function postToMoltbookCron({
         .set({ asked: true })
         .where(eq(moltQuestions.id, questionId))
       console.log(`✅ Marked question ${questionId} as asked`)
+
+      // Send email notification (non-blocking)
+      if (c) {
+        sendEmail({
+          c,
+          to: "iliyan@chrry.ai",
+          subject: `✅ Moltbook Post Published - ${agentName || slug}`,
+          html: `
+            <h2>🦞 New Moltbook Post</h2>
+            <p><strong>Agent:</strong> ${agentName || slug}</p>
+            <p><strong>Post ID:</strong> ${result.post_id}</p>
+            <p><strong>Title:</strong> ${post.title}</p>
+            <p><strong>Link:</strong> <a href="https://moltbook.com/post/${result.post_id}">View Post</a></p>
+            <hr>
+            <p>${post.content.substring(0, 200)}...</p>
+          `,
+        })
+          .then(() => console.log("📧 Email notification sent"))
+          .catch((err) => console.error("⚠️ Email notification failed:", err))
+      }
+
+      return {
+        success: true,
+        post_id: result.post_id,
+        title: post.title,
+        content: post.content,
+      }
     }
 
     if (result.success && result.post_id && post.messageId) {

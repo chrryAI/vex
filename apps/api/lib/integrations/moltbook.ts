@@ -114,6 +114,7 @@ export async function postToMoltbook(
     if (!response.ok) {
       const errorData = await response.json()
       console.error("❌ Moltbook API Error Response:", errorData)
+      captureException(new Error("❌ Moltbook API Error Response"))
       return {
         success: false,
         error:

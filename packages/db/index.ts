@@ -1333,7 +1333,9 @@ export const getMessage = async ({
     : undefined
 }
 
-export const updateMessage = async (message: message) => {
+export const updateMessage = async (
+  message: Partial<message> & { id: string },
+) => {
   const [updated] = await db
     .update(messages)
     .set(message)
@@ -2870,7 +2872,9 @@ export const hasThreadNotifications = async ({
   return false
 }
 
-export const updateThread = async (thread: thread) => {
+export const updateThread = async (
+  thread: Partial<thread> & { id: string },
+) => {
   const [updated] = await db
     .update(threads)
     .set(thread)

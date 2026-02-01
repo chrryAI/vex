@@ -15,7 +15,8 @@ import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
-import { isDevelopment } from "../../lib"
+import { isDevelopment, cap } from "../../lib"
+import { captureException } from "@sentry/node"
 
 export const cron = new Hono()
 
@@ -265,12 +266,8 @@ cron.post("/fetchNews", async (c) => {
 
 // GET /cron/postToMoltbook - Post AI-generated content to Moltbook
 cron.get("/postToMoltbook", async (c) => {
-  // Verify auth
   const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-
-  const slug = c.req.query("slug") || "sushi"
-  const agentName = c.req.query("agentName") || "sushi"
 
   if (!isDevelopment) {
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
@@ -278,21 +275,21 @@ cron.get("/postToMoltbook", async (c) => {
     }
   }
 
+  const slug = c.req.query("slug") || "sushi"
+  const agentName = c.req.query("agentName") || "sushi"
+
+  const subSlug = c.req.query("subSlug")
+
   // Start the job in background (don't await!)
   console.log("🦞 Starting Moltbook post cron job in background...")
-  await postToMoltbookCron({ slug, agentName })
-    .then((result) => {
-      if (result.success) {
-        console.log(
-          `✅ Moltbook post completed successfully: ${result.post_id}`,
-        )
-      } else {
-        console.error(`❌ Moltbook post failed: ${result.error}`)
-      }
-    })
-    .catch((error) => {
-      console.error("❌ Moltbook post error:", error)
-    })
+
+  try {
+    const result = await postToMoltbookCron({ slug, agentName, subSlug, c })
+    console.log(`✅ Moltbook post completed successfully: ${result.post_id}`)
+  } catch (error) {
+    captureException(error)
+    console.error(`❌ Moltbook post failed:`, error)
+  }
 
   // Return immediately
   return c.json({
@@ -315,15 +312,18 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
     }
   }
 
+  const sort = c.req.query("sort") || undefined
+
   // Start the job in background (don't await!)
   console.log("🦞 Starting Moltbook trends analysis job in background...")
-  await analyzeMoltbookTrends()
-    .then(() => {
-      console.log("✅ Moltbook trends analysis completed successfully")
-    })
-    .catch((error) => {
-      console.error("❌ Moltbook trends analysis failed:", error)
-    })
+
+  try {
+    await analyzeMoltbookTrends({ sort })
+    console.log("✅ Moltbook trends analysis completed successfully")
+  } catch (error) {
+    console.error("❌ Moltbook trends analysis failed:", error)
+    captureException(error)
+  }
 
   // Return immediately
   return c.json({

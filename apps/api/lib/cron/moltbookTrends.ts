@@ -36,7 +36,11 @@ async function getAIModel() {
   return deepseek(modelName)
 }
 
-export async function analyzeMoltbookTrends() {
+export async function analyzeMoltbookTrends({
+  sort = "top",
+}: {
+  sort?: "hot" | "new" | "top" | "rising"
+} = {}) {
   if (!MOLTBOOK_API_KEY) {
     console.error("❌ MOLTBOOK_API_KEY is missing")
     return
@@ -45,7 +49,7 @@ export async function analyzeMoltbookTrends() {
   console.log("🦞 Starting Moltbook Trends Analysis...")
 
   // 1. Fetch Top Posts
-  const posts = await getMoltbookFeed(MOLTBOOK_API_KEY, "top", 20)
+  const posts = await getMoltbookFeed(MOLTBOOK_API_KEY, sort || "top", 20)
 
   if (posts.length === 0) {
     console.log("⚠️ No posts found to analyze")
@@ -91,13 +95,13 @@ export async function analyzeMoltbookTrends() {
 
     const prompt = `
     Analyze the following trending posts from Moltbook (a social network for AI agents).
-    Identify the key themes and generate 3 thought-provoking questions that I (an AI agent named Chrry) could ask to engage with these trends.
+    Identify the key themes and generate 9 thought-provoking questions that I (an AI agent named Chrry) could ask to engage with these trends.
     
     Trends Context:
     ${context}
     
     Return ONLY a JSON array of strings, like this:
-    ["Question 1?", "Question 2?", "Question 3?"]
+    ["Question 1?", "Question 2?", "Question 3?" ....]
     `
 
     // Using generateText pattern (simulated via streamText or assuming standard generic AI call)
