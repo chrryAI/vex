@@ -428,7 +428,7 @@ export const chat = async ({
 
   let placeholder = ""
   let shouldCheckPlaceholder = false
-  const threadPlaceholder = page.getByTestId("data-thread-placeholder")
+  const threadPlaceholder = page.getByTestId("thread-placeholder")
 
   for (const prompt of prompts) {
     await clearDebate()
@@ -843,7 +843,7 @@ export const chat = async ({
       })
 
       if (isLive && hasPH) {
-        const placeholderLocator = page.getByTestId("data-thread-placeholder")
+        const placeholderLocator = page.getByTestId("thread-placeholder")
         await expect(placeholderLocator).toBeAttached({
           timeout: 200000,
         })

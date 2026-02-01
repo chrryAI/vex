@@ -84,10 +84,12 @@ async function clearGuests() {
 
 // GET /cron/decayMemories - Decay unused memories (Vercel Cron)
 cron.get("/decayMemories", async (c) => {
-  // Verify the request is from Vercel Cron
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
 
   try {
@@ -113,10 +115,12 @@ cron.get("/decayMemories", async (c) => {
 })
 
 cron.get("/syncPlausible", async (c) => {
-  // Verify auth
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
   // Start sync in background (don't await!)
   syncPlausibleAnalytics()
@@ -132,11 +136,13 @@ cron.get("/syncPlausible", async (c) => {
 
 cron.get("/burn", async (c) => {
   // Verify auth
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
-
   try {
     console.log("🔥 Starting incognito thread cleanup...")
     const deletedCount = await cleanupIncognitoThreads(30) // 30 days retention
@@ -163,9 +169,12 @@ cron.get("/burn", async (c) => {
 // GET /cron/clearGuests - Clean up inactive bot guests (Vercel Cron)
 cron.get("/clearGuests", async (c) => {
   // Verify auth
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
 
   try {
@@ -231,11 +240,26 @@ async function handleFetchNews(c: any) {
 
 // GET /cron/fetchNews - Fetch news (for testing)
 cron.get("/fetchNews", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
   return handleFetchNews(c)
 })
 
 // POST /cron/fetchNews - Fetch news (for production cron)
 cron.post("/fetchNews", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
   return handleFetchNews(c)
 })
 
