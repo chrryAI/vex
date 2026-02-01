@@ -255,6 +255,8 @@ export async function postToMoltbookCron({
         questionId = q.id
         console.log(`📝 Using trend question: "${q.question}"`)
       }
+    } else {
+      return { success: false, error: "No unasked questions found" }
     }
 
     // 2. Generate Post
