@@ -32,70 +32,69 @@ const aiContextSchema = z.object({
   suggestedBy: z.string().optional(),
 })
 
-// Create calendar event schema
-export const createCalendarEventSchema = z
-  .object({
-    // Required fields
-    title: z
-      .string()
-      .min(1, "Title is required")
-      .max(200, "Title must be less than 200 characters"),
-    startTime: z.date(),
-    endTime: z.date(),
+// Base calendar event schema without refinements (for .partial() compatibility in Zod v4)
+const baseCalendarEventSchema = z.object({
+  // Required fields
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(200, "Title must be less than 200 characters"),
+  startTime: z.date(),
+  endTime: z.date(),
 
-    // Optional fields
-    description: z
-      .string()
-      .max(2000, "Description must be less than 2000 characters")
-      .optional(),
-    location: z
-      .string()
-      .max(500, "Location must be less than 500 characters")
-      .optional(),
-    isAllDay: z.boolean().default(false),
-    timezone: z.string().default("UTC").optional(),
-    color: z
-      .enum(["red", "orange", "blue", "green", "violet", "purple"])
-      .default("blue"),
-    category: z
-      .string()
-      .max(50, "Category must be less than 50 characters")
-      .optional(),
+  // Optional fields
+  description: z
+    .string()
+    .max(2000, "Description must be less than 2000 characters")
+    .optional(),
+  location: z
+    .string()
+    .max(500, "Location must be less than 500 characters")
+    .optional(),
+  isAllDay: z.boolean().default(false),
+  timezone: z.string().default("UTC").optional(),
+  color: z
+    .enum(["red", "orange", "blue", "green", "violet", "purple"])
+    .default("blue"),
+  category: z
+    .string()
+    .max(50, "Category must be less than 50 characters")
+    .optional(),
 
-    // Complex fields
-    attendees: z.array(attendeeSchema).default([]),
-    reminders: z.array(reminderSchema).default([]),
-    isRecurring: z.boolean().default(false),
-    recurrenceRule: recurrenceRuleSchema.optional(),
+  // Complex fields
+  attendees: z.array(attendeeSchema).default([]),
+  reminders: z.array(reminderSchema).default([]),
+  isRecurring: z.boolean().default(false),
+  recurrenceRule: recurrenceRuleSchema.optional(),
 
-    // Status and visibility
-    status: z
-      .enum(["confirmed", "tentative", "cancelled"])
-      .default("confirmed"),
-    visibility: z.enum(["private", "public", "shared"]).default("private"),
+  // Status and visibility
+  status: z.enum(["confirmed", "tentative", "cancelled"]).default("confirmed"),
+  visibility: z.enum(["private", "public", "shared"]).default("private"),
 
-    // AI integration
-    threadId: z.uuid().optional(),
-    agentId: z.uuid().optional(),
-    aiContext: aiContextSchema.optional(),
+  // AI integration
+  threadId: z.uuid().optional(),
+  agentId: z.uuid().optional(),
+  aiContext: aiContextSchema.optional(),
 
-    // External sync
-    externalId: z.string().optional(),
-    externalSource: z.enum(["google", "outlook", "apple"]).optional(),
-  })
-  .refine(
-    (data) => {
-      // Skip validation for all-day events (they can have same start/end time)
-      if (data.isAllDay) return true
+  // External sync
+  externalId: z.string().optional(),
+  externalSource: z.enum(["google", "outlook", "apple"]).optional(),
+})
 
-      // Validate that end time is after start time for timed events
-      return new Date(data.endTime) > new Date(data.startTime)
-    },
-    {
-      message: "End time must be after start time",
-      path: ["endTime"],
-    },
-  )
+// Create calendar event schema with refinements
+export const createCalendarEventSchema = baseCalendarEventSchema.refine(
+  (data) => {
+    // Skip validation for all-day events (they can have same start/end time)
+    if (data.isAllDay) return true
+
+    // Validate that end time is after start time for timed events
+    return new Date(data.endTime) > new Date(data.startTime)
+  },
+  {
+    message: "End time must be after start time",
+    path: ["endTime"],
+  },
+)
 // .refine(
 //   (data) => {
 //     // Validate that start time is not in the past (unless it's an all-day event)
@@ -123,10 +122,10 @@ export const createCalendarEventSchema = z
 //   },
 // )
 
-// Update calendar event schema - extends create schema with id field
-// All fields from create schema become optional for updates
-export const updateCalendarEventSchema = createCalendarEventSchema
-  .partial() // Make all fields optional
+// Update calendar event schema - use base schema without refinements for .partial()
+// All fields from base schema become optional for updates
+export const updateCalendarEventSchema = baseCalendarEventSchema
+  .partial() // Make all fields optional (Zod v4 requires no refinements before .partial())
   .extend({
     id: z.uuid("Invalid event ID"), // Add required id field
   })
