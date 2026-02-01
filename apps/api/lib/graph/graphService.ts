@@ -132,9 +132,9 @@ async function generateDynamicCypher(
     - If you don't need the relationship, use anonymous [] instead of [r]
     - ORDER BY can ONLY reference variables that are in the RETURN clause (projected variables)
     - NEVER use ORDER BY with computed expressions - always alias them in RETURN first
-    - COUNT{} pattern comprehension: MUST use COUNT { (pattern) } syntax WITHOUT MATCH keyword
-    - For counting relationships: COUNT { (n)-[:REL]->() } NOT COUNT { MATCH (n)-[:REL]->() }
-    - CRITICAL: NEVER put MATCH inside COUNT{} - it will cause syntax errors
+    - CRITICAL: NO COUNT{} pattern comprehension syntax - FalkorDB does NOT support it
+    - For counting relationships: Use size((n)-[:REL]->()) or separate MATCH with count()
+    - NEVER use COUNT { (pattern) } - it will cause syntax errors
     - You can use $queryText parameter for the user's question text
     
     Rules:
