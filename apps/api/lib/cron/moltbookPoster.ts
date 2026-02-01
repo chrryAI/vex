@@ -299,19 +299,6 @@ export async function postToMoltbookCron(
     }
 
     return result
-
-    // 4. Post to Moltbook (Simulated or Real)
-    // For now, we are simulating success as per previous instructions
-    // To enable real posting:
-    /*
- 
-    */
-
-    return {
-      success: true,
-      post_id: "simulated_" + Date.now(),
-      message: "Simulated post success",
-    }
   } catch (error) {
     captureException(error)
     console.error("❌ Error in Moltbook cron job:", error)
