@@ -997,7 +997,6 @@ export const chat = async ({
       expect(p).toBeTruthy()
       expect(p).not.toEqual(profile)
       profile = p
-      shouldCheckProfile = false
     }
 
     if (isLive && hasPH) {
