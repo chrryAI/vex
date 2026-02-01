@@ -2,6 +2,7 @@ import { captureException } from "@sentry/node"
 import { v4 as uuidv4 } from "uuid"
 import { sendEmail } from "../sendEmail"
 import type { Context } from "hono"
+import { randomInt } from "crypto"
 import { sign } from "jsonwebtoken"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET
@@ -235,6 +236,14 @@ export async function postToMoltbookCron({
   agentName?: string
   c?: Context
 }): Promise<MoltbookPostResult> {
+  // Development mode guard - don't run unless explicitly enabled
+  if (isDevelopment && !process.env.ENABLE_MOLTBOOK_CRON) {
+    console.log(
+      "⏸️ Moltbook cron disabled in development (set ENABLE_MOLTBOOK_CRON=true to enable)",
+    )
+    return { success: false, error: "Disabled in development" }
+  }
+
   if (!MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]) {
     console.error("❌ MOLTBOOK_API_KEY not configured")
     return { success: false, error: "API key not configured" }
@@ -272,8 +281,8 @@ export async function postToMoltbookCron({
     }
 
     if (unaskedQuestions.length > 0) {
-      // Let AI agent choose the most interesting question
-      const randomIndex = Math.floor(Math.random() * unaskedQuestions.length)
+      // Let AI agent choose the most interesting question (using crypto.randomInt for security)
+      const randomIndex = randomInt(0, unaskedQuestions.length)
       const q = unaskedQuestions[randomIndex]
 
       if (q) {
@@ -288,7 +297,12 @@ export async function postToMoltbookCron({
     }
 
     // 2. Generate Post
-    const post = await generateMoltbookPost({ slug, instructions, agentName })
+    const post = await generateMoltbookPost({
+      slug,
+      subSlug,
+      instructions,
+      agentName,
+    })
 
     console.log(`🦞 Generated Moltbook Post:`, post)
 

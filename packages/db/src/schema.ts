@@ -969,6 +969,25 @@ export const moltPosts = pgTable("moltPosts", {
     .notNull(),
 })
 
+export const moltComments = pgTable("moltComments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  moltId: text("moltId").notNull(), // Our post's Moltbook ID
+  commentId: text("commentId").notNull().unique(), // Moltbook comment ID
+  authorId: text("authorId").notNull(), // Commenter's Moltbook ID
+  authorName: text("authorName").notNull(), // Commenter's name
+  content: text("content").notNull(), // Comment text
+  replied: boolean("replied").notNull().default(false), // Did we reply?
+  replyId: text("replyId"), // Our reply's Moltbook ID
+  followed: boolean("followed").notNull().default(false), // Did we follow them?
+  metadata: jsonb("metadata"), // Store full comment object
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
 export const placeHolders = pgTable("placeHolders", {
   appId: uuid("appId").references(() => apps.id, {
     onDelete: "cascade",
