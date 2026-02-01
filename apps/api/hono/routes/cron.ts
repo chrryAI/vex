@@ -15,7 +15,7 @@ import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
-import { isDevelopment, cap } from "../../lib"
+import { isDevelopment } from "../../lib"
 import { captureException } from "@sentry/node"
 
 export const cron = new Hono()
