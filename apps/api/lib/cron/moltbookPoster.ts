@@ -20,10 +20,10 @@ import {
   getUser,
   getAiAgent,
   eq,
+  and,
   updateMessage,
   thread,
   updateThread,
-  and,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
 import { postToMoltbook } from "../integrations/moltbook"
@@ -261,11 +261,25 @@ export async function postToMoltbookCron({
     let instructions = ""
     let questionId = ""
 
-    // 1. Check for unasked trend questions (fetch 5 for variety)
+    // Get app for scoping questions
+    const appResult = await db
+      .select()
+      .from(apps)
+      .where(eq(apps.slug, subSlug || slug))
+      .limit(1)
+
+    const app = appResult[0]
+    if (!app) {
+      throw new Error("App not found for Moltbook posting")
+    }
+
+    // 1. Check for unasked trend questions (fetch 5 for variety, scoped to this app)
     let unaskedQuestions = await db
       .select()
       .from(moltQuestions)
-      .where(eq(moltQuestions.asked, false))
+      .where(
+        and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+      )
       .limit(5)
 
     if (!unaskedQuestions || unaskedQuestions.length === 0) {
@@ -276,7 +290,9 @@ export async function postToMoltbookCron({
       unaskedQuestions = await db
         .select()
         .from(moltQuestions)
-        .where(eq(moltQuestions.asked, false))
+        .where(
+          and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+        )
         .limit(5)
     }
 

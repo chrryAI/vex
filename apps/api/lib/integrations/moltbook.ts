@@ -17,6 +17,7 @@ interface MoltbookPost {
   url?: string
   submolt: string
   author: string
+  author_id: string
   score: number
   created_at: string
 }

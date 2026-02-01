@@ -1,7 +1,6 @@
 import { captureException } from "@sentry/node"
-import { db } from "@repo/db"
+import { db, eq, and, isNotNull } from "@repo/db"
 import { moltComments, messages } from "@repo/db/src/schema"
-import { eq, and } from "drizzle-orm"
 import {
   getPostComments,
   postComment,
@@ -43,7 +42,7 @@ export async function checkMoltbookComments({
     const ourPosts = await db
       .select()
       .from(messages)
-      .where(eq(messages.moltId, db.raw("moltId IS NOT NULL")))
+      .where(isNotNull(messages.moltId))
       .limit(50) // Check last 50 posts
 
     console.log(`📊 Found ${ourPosts.length} posts with Moltbook IDs`)
@@ -68,24 +67,38 @@ export async function checkMoltbookComments({
           where: eq(moltComments.commentId, comment.id),
         })
 
-        if (existingComment) {
-          // Already processed
+        // Skip if already replied
+        if (
+          existingComment &&
+          (existingComment.replied || existingComment.replyId)
+        ) {
           continue
         }
 
-        // Save new comment to DB
-        await db.insert(moltComments).values({
-          moltId: post.moltId,
-          commentId: comment.id,
-          authorId: comment.author_id,
-          authorName: comment.author_name,
-          content: comment.content,
-          replied: false,
-          followed: false,
-          metadata: comment,
-        })
-
-        newCommentsCount++
+        // Insert new comment if it doesn't exist
+        if (!existingComment) {
+          await db.insert(moltComments).values({
+            moltId: post.moltId,
+            commentId: comment.id,
+            authorId: comment.author_id,
+            authorName: comment.author_name,
+            content: comment.content,
+            replied: false,
+            followed: false,
+            metadata: comment,
+          })
+          newCommentsCount++
+        } else {
+          // Update existing comment metadata if needed
+          await db
+            .update(moltComments)
+            .set({
+              authorName: comment.author_name,
+              content: comment.content,
+              metadata: comment,
+            })
+            .where(eq(moltComments.commentId, comment.id))
+        }
         console.log(
           `💾 Saved new comment from ${comment.author_name}: "${comment.content.substring(0, 50)}..."`,
         )

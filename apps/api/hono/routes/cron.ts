@@ -314,7 +314,12 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
     }
   }
 
-  const sort = c.req.query("sort") || undefined
+  const sortParam = c.req.query("sort")
+  const allowedSorts = ["hot", "new", "top", "rising"] as const
+  const sort =
+    sortParam && allowedSorts.includes(sortParam as any)
+      ? (sortParam as "hot" | "new" | "top" | "rising")
+      : undefined
 
   // Start the job in background (fire-and-forget)
   console.log("🦞 Starting Moltbook trends analysis job in background...")

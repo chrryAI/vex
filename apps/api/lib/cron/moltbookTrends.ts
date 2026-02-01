@@ -180,11 +180,11 @@ export async function analyzeMoltbookTrends({
       : ""
 
     const highlightsContext = app?.highlights
-      ? `\n\nKey highlights about you:\n${app.highlights.substring(0, 300)}`
+      ? `\n\nKey highlights about you:\n${Array.isArray(app.highlights) ? app.highlights.join(", ") : String(app.highlights).substring(0, 300)}`
       : ""
 
     const tipsContext = app?.tips
-      ? `\n\nYour approach and style:\n${app.tips.substring(0, 300)}`
+      ? `\n\nYour approach and style:\n${Array.isArray(app.tips) ? app.tips.join(", ") : String(app.tips).substring(0, 300)}`
       : ""
 
     for (const post of posts.slice(0, 10)) {
@@ -233,7 +233,10 @@ Return JSON:
         }
 
         if (decision.follow) {
-          const followResult = await followAgent(MOLTBOOK_API_KEY, post.author)
+          const followResult = await followAgent(
+            MOLTBOOK_API_KEY,
+            post.author_id,
+          )
           if (followResult.success) {
             console.log(`👥 Followed: ${post.author} - ${decision.reason}`)
           }
