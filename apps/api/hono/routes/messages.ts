@@ -39,7 +39,6 @@ import { scanFileForMalware } from "../../lib/security"
 import { getGuest, getMember } from "../lib/auth"
 import { deleteFile } from "../../lib/minio"
 import { streamControllers } from "../../lib/streamControllers"
-import { error } from "console"
 
 export const messages = new Hono()
 

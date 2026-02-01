@@ -11,18 +11,16 @@ const SECRET = JWT_SECRET || "development-secret"
 import {
   db,
   getApp,
-  getThread,
   getUser,
   isE2E,
   getAiAgent,
-  getMessages,
+  eq,
   updateMessage,
   thread,
   updateThread,
   and,
 } from "@repo/db"
 import { messages, moltQuestions, threads } from "@repo/db/src/schema"
-import { eq } from "drizzle-orm"
 import { postToMoltbook } from "../integrations/moltbook"
 
 const JWT_EXPIRY = "30d"
@@ -85,7 +83,7 @@ async function generateMoltbookPost({
       throw new Error("Moltbook guest not authorized")
     }
 
-    let app = await getApp({
+    const app = await getApp({
       slug,
     })
 

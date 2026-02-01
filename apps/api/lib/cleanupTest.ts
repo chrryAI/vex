@@ -18,7 +18,6 @@ import {
   getInstructions,
   user,
   guest,
-  deleteGuest,
   updateUser,
   getStores,
   deleteStore,

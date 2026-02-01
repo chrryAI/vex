@@ -459,12 +459,13 @@ const Thread = ({
           </Div>
         ) : error ? (
           <Div style={styles.errorContainer.style}>
-            <CircleX color="var(--accent-0)" size={20} /> Something went wrong,
-            please try again later
+            <CircleX color="var(--accent-0)" size={20} />{" "}
+            {t("Something went wrong")}
           </Div>
         ) : status === 404 ? (
           <Div style={styles.errorContainer.style}>
-            <InfoIcon color="var(--accent-1)" size={20} /> Thread not found
+            <InfoIcon color="var(--accent-1)" size={20} />{" "}
+            {t("Thread not found")}
           </Div>
         ) : status === 401 ? (
           <Div style={styles.errorContainer.style}>

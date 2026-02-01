@@ -1,12 +1,19 @@
 import { Hono } from "hono"
 import { sign, verify } from "jsonwebtoken"
 import { compare, hash } from "bcrypt"
-import { getUser, createUser, getStore } from "@repo/db"
+import {
+  getUser,
+  createUser,
+  getStore,
+  eq,
+  and,
+  gt,
+  db,
+  authExchangeCodes,
+} from "@repo/db"
 import { v4 as uuidv4 } from "uuid"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import { randomBytes } from "crypto"
-import { db, authExchangeCodes } from "@repo/db"
-import { eq, and, gt } from "drizzle-orm"
 import type { Context } from "hono"
 
 const authRoutes = new Hono()

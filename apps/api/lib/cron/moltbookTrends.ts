@@ -1,9 +1,8 @@
-import { db } from "@repo/db"
+import { db, eq } from "@repo/db"
 import { moltPosts, moltQuestions, aiAgents } from "@repo/db/src/schema"
 import { getMoltbookFeed } from "../integrations/moltbook"
 
 import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
-import { eq } from "drizzle-orm"
 
 const MOLTBOOK_API_KEYS = {
   chrry: process.env.MOLTBOOK_CHRRY_API_KEY,

@@ -93,7 +93,7 @@ async function createAgents() {
     description: "Helpful, safe, and human-like conversational AI",
     creditCost: 3,
     authorization: "all",
-    modelId: "claude-sonnet-4-5-20250929",
+    modelId: "claude-sonnet-4-20250514",
     maxPromptSize: 200000,
     order: 0,
     capabilities: {

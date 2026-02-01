@@ -1,7 +1,6 @@
 // ==================== TYPES ====================
 
-import { db, retroResponses, retroSessions } from "@repo/db"
-import { eq, and, desc, sql } from "drizzle-orm"
+import { db, retroResponses, retroSessions, eq, and, desc, sql } from "@repo/db"
 
 type RetroSession = typeof retroSessions.$inferSelect
 type RetroResponse = typeof retroResponses.$inferSelect

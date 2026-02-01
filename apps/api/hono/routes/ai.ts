@@ -55,9 +55,10 @@ import {
   retroSessions,
   retroResponses,
   db,
+  eq,
+  desc,
+  gte,
 } from "@repo/db"
-
-import { eq, desc, gte } from "drizzle-orm"
 
 import {
   processFileForRAG,
@@ -1723,7 +1724,7 @@ ${
   // )
 
   const clientId = message.message.clientId
-  const isMolt = message.message.isMolt
+  const isMolt = member?.role === "admin" ? message.message.isMolt : false
   const currentThreadId = threadId
 
   const newMessagePayload = {
@@ -6486,7 +6487,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               thread,
               clientId,
               streamId,
-              waitFor: 100,
+              // waitFor: 100,
             })
           } else if (part.type === "reasoning-delta") {
             // Capture reasoning text
@@ -6503,7 +6504,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               thread,
               clientId,
               streamId,
-              waitFor: 100,
+              // waitFor: 100,
             })
           }
         }
@@ -6589,13 +6590,15 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       let responseMetadata: any = null
       let toolCallsDetected = false
 
+      const toolsForModel = agent.name === "perplexity" ? undefined : allTools
+
       // Use messages format for other providers
       const result = streamText({
         model,
         messages,
         maxRetries: 3,
         temperature: app?.temperature ?? 0.7,
-        tools: allTools,
+        tools: toolsForModel,
         async onFinish({ text, usage, response, sources, toolCalls }) {
           finalText = text
           responseMetadata = response

@@ -1,5 +1,4 @@
 import { Hono } from "hono"
-import slugify from "slug"
 import { createHash } from "crypto"
 import { upload } from "../../lib/minio"
 import { getMember, getGuest } from "../lib/auth"
