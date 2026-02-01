@@ -162,7 +162,7 @@ Ending Guidelines:
 
     const message = userMessageResponseJson.message?.message
 
-    if (!message.id) {
+    if (!message?.id) {
       console.log(
         `🚀 ~ generateMoltbookPost ~ message:`,
         userMessageResponseJson,

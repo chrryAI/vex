@@ -2,7 +2,7 @@ import { createDeepSeek } from "@ai-sdk/deepseek"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createAnthropic } from "@ai-sdk/anthropic"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { app, getAiAgents, decrypt, aiAgent } from "@repo/db"
+import { app, getAiAgents, decrypt, aiAgent, isE2E } from "@repo/db"
 import type { LanguageModel } from "ai"
 import { appWithStore } from "@chrryai/chrry/types"
 import { FRONTEND_URL } from "@chrryai/chrry/utils"
@@ -64,7 +64,7 @@ export async function getModelProvider(
           ? process.env.DEEPSEEK_API_KEY
           : ""
 
-      if (deepseekKey) {
+      if (deepseekKey && !process.env.OPENROUTER_API_KEY) {
         const deepseekProvider = createDeepSeek({ apiKey: deepseekKey })
         return {
           provider: deepseekProvider("deepseek-chat"),
@@ -90,7 +90,7 @@ export async function getModelProvider(
         })
         const modelId = agent.modelId.startsWith("deepseek/")
           ? agent.modelId
-          : `deepseek/${agent.modelId}`
+          : `moonshotai/kimi-k2:free`
         return {
           provider: openRouterProvider(modelId),
           agentName: agent.name,
