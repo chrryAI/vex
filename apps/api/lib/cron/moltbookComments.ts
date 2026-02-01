@@ -9,6 +9,7 @@ import {
 } from "../integrations/moltbook"
 import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
+import { randomInt } from "crypto"
 
 const MOLTBOOK_API_KEYS = {
   sushi: process.env.MOLTBOOK_SUSHI_API_KEY,
@@ -151,8 +152,8 @@ Reply (just the text, no quotes):`
             console.log(`✅ Posted reply to ${comment.author_name}`)
 
             // 6. Follow the commenter (optional, throttled)
-            if (Math.random() > 0.5) {
-              // 50% chance to follow
+            if (randomInt(0, 2) === 1) {
+              // 50% chance to follow (crypto-secure random)
               const followResult = await followAgent(
                 MOLTBOOK_API_KEY,
                 comment.author_id,
