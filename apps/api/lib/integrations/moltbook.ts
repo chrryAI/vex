@@ -21,11 +21,32 @@ interface MoltbookPost {
   created_at: string
 }
 
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit & { timeout?: number } = {},
+) {
+  const { timeout = 10000, ...fetchOptions } = options
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeout)
+
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      signal: controller.signal,
+    })
+    clearTimeout(id)
+    return response
+  } catch (error) {
+    clearTimeout(id)
+    throw error
+  }
+}
+
 export async function getMoltbookTopAgents(
   limit = 10,
 ): Promise<MoltbookAgent[]> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${MOLTBOOK_API_BASE}/agents/top?limit=${limit}`,
     )
 
@@ -48,7 +69,7 @@ export async function getMoltbookFeed(
   limit = 25,
 ): Promise<MoltbookPost[]> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${MOLTBOOK_API_BASE}/posts?sort=${sort}&limit=${limit}`,
       {
         headers: {
@@ -80,7 +101,7 @@ export async function postToMoltbook(
   },
 ): Promise<{ success: boolean; post_id?: string; error?: string }> {
   try {
-    const response = await fetch(`${MOLTBOOK_API_BASE}/posts`, {
+    const response = await fetchWithTimeout(`${MOLTBOOK_API_BASE}/posts`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -117,7 +138,7 @@ export async function searchMoltbook(
   agents: MoltbookAgent[]
 }> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${MOLTBOOK_API_BASE}/search?q=${encodeURIComponent(query)}&limit=${limit}`,
       {
         headers: {
@@ -147,7 +168,7 @@ export async function getAgentProfile(
   agentName: string,
 ): Promise<MoltbookAgent | null> {
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${MOLTBOOK_API_BASE}/agents/profile?name=${encodeURIComponent(agentName)}`,
       {
         headers: {

@@ -1135,6 +1135,13 @@
       "when": 1769912369966,
       "tag": "0161_gorgeous_ulik",
       "breakpoints": true
+    },
+    {
+      "idx": 162,
+      "version": "7",
+      "when": 1769925390448,
+      "tag": "0162_slow_power_man",
+      "breakpoints": true
     }
   ]
 }

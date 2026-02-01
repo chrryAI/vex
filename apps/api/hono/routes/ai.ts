@@ -1260,6 +1260,7 @@ app.post("/", async (c) => {
     streamId?: string
   }) {
     if (!stream) {
+      return
     }
     // console.log(
     //   `📤 Sending chunk ${chunkNumber}/${totalChunks}:`,
@@ -2013,15 +2014,6 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
   Only return the JSON, nothing else.
   `
     : ""
-
-  const finalSystemPrompt =
-    baseSystemPrompt +
-    featureStatusContext +
-    getLocationContext(
-      member?.city || guest?.city,
-      member?.country || guest?.country,
-    ) +
-    moltbookContext
 
   // Get relevant memory context for personalization
   // Dynamic sizing: short threads need MORE memories, long threads need FEWER
@@ -3318,6 +3310,7 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
   // Using array join for better performance with long context strings
   let systemPrompt = [
     baseSystemPrompt,
+    moltbookContext,
     satoContext,
     subscriptionContext, // Subscription plans information
     burnModeContext,
@@ -5975,6 +5968,10 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           }
         }
 
+        let moltTitle = ""
+        let moltContent = ""
+        let moltSubmolt = ""
+
         // // Save final message to database
         if (finalText) {
           // console.log("💾 Saving Sushi message to DB...")
@@ -5998,12 +5995,12 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 )
                 const parsed = JSON.parse(jsonString)
 
-                // Return the structured JSON string so the UI can parse it
-                finalText = JSON.stringify({
-                  title: parsed.title || "Thoughts from Chrry",
-                  content: parsed.content || finalText,
-                  submolt: parsed.submolt || "general",
-                })
+                moltTitle = parsed.title || "Thoughts from Chrry"
+                moltContent = parsed.content || finalText
+                moltSubmolt = parsed.submolt || "general"
+
+                // Set finalText to just the content for clean DB storage
+                finalText = moltContent
 
                 console.log("✅ Parsed and cleaned Moltbook JSON")
               }
@@ -6097,6 +6094,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 success: true,
                 message: m,
                 text: m?.message?.content,
+                moltTitle,
+                moltContent,
+                moltSubmolt,
               })
             }
           } catch (createError) {

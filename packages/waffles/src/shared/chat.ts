@@ -842,10 +842,9 @@ export const chat = async ({
         timeout: 100000,
       })
 
-      if (isLive) {
-        await expect(
-          await page.getByTestId("data-thread-placeholder"),
-        ).toBeAttached({
+      if (isLive && hasPH) {
+        const placeholderLocator = page.getByTestId("data-thread-placeholder")
+        await expect(placeholderLocator).toBeAttached({
           timeout: 200000,
         })
       }

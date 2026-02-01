@@ -331,6 +331,12 @@ messages.post("/", async (c) => {
     ...rest
   } = requestData
 
+  console.log("📨 Messages Endpoint received:", {
+    molt,
+    retro,
+    contentPreview: content?.substring(0, 20),
+  })
+
   const notify = requestData.notify !== false && requestData.notify !== "false"
 
   const task = taskId ? await getTask({ id: taskId }) : undefined

@@ -14,6 +14,7 @@ import { inArray, lt } from "drizzle-orm"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
+import { isDevelopment } from "../../lib"
 
 export const cron = new Hono()
 
@@ -240,14 +241,20 @@ cron.post("/fetchNews", async (c) => {
 // GET /cron/postToMoltbook - Post AI-generated content to Moltbook
 cron.get("/postToMoltbook", async (c) => {
   // Verify auth
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+
+  const slug = c.req.query("slug") || "zarathustra"
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
 
   try {
     console.log("🦞 Starting Moltbook post cron job...")
-    const result = await postToMoltbookCron()
+    const result = await postToMoltbookCron(slug)
 
     if (result.success) {
       return c.json({
@@ -280,9 +287,13 @@ cron.get("/postToMoltbook", async (c) => {
 // GET /cron/analyzeMoltbookTrends - Analyze Moltbook trends and generate questions
 cron.get("/analyzeMoltbookTrends", async (c) => {
   // Verify auth
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
 
   try {

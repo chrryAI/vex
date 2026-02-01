@@ -652,6 +652,8 @@ export const threads = pgTable("threads", {
     .default([]),
   isMolt: boolean("isMolt").notNull().default(false),
   moltUrl: text("moltUrl"),
+  moltId: text("moltId"),
+  submolt: text("submolt"),
   isMainThread: boolean("isMainThread").notNull().default(false),
 
   appId: uuid("appId").references(() => apps.id, {
@@ -816,6 +818,8 @@ export const messages = pgTable(
     id: uuid("id").defaultRandom().notNull().primaryKey(),
     isMolt: boolean("isMolt").notNull().default(false),
     moltUrl: text("moltUrl"),
+    moltId: text("moltId"),
+    submolt: text("submolt"),
     moodId: uuid("moodId").references(() => moods.id, {
       onDelete: "set null",
     }),

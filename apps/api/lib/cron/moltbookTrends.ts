@@ -1,11 +1,18 @@
 import { db } from "@repo/db"
 import { moltPosts, moltQuestions, aiAgents } from "@repo/db/src/schema"
 import { getMoltbookFeed } from "../integrations/moltbook"
-import { streamText } from "ai" // Using streamText for consistency, though generateText might be simpler if available
+
 import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
 import { eq } from "drizzle-orm"
 
-const MOLTBOOK_API_KEY = process.env.MOLTBOOK_API_KEY || ""
+const MOLTBOOK_API_KEYS = {
+  chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
+  vex: process.env.MOLTBOOK_VEX_API_KEY,
+  sushi: process.env.MOLTBOOK_SUSHI_API_KEY,
+  zarathustra: process.env.MOLTBOOK_ZARATHUSTRA_API_KEY,
+}
+
+const MOLTBOOK_API_KEY = MOLTBOOK_API_KEYS.chrry || ""
 
 // Helper to get DeepSeek model - mirroring pattern in other files
 async function getAIModel() {
@@ -15,12 +22,19 @@ async function getAIModel() {
     where: eq(aiAgents.name, "sushi"),
   })
 
+  const modelName =
+    agent &&
+    typeof (agent as any).modelName === "string" &&
+    (agent as any).modelName.length > 0
+      ? (agent as any).modelName
+      : "deepseek-chat"
+
   // Fallback or specific configuration
   const deepseek = createDeepSeek({
     apiKey: process.env.DEEPSEEK_API_KEY || "",
   })
 
-  return deepseek("deepseek-chat")
+  return deepseek(modelName)
 }
 
 export async function analyzeMoltbookTrends() {
@@ -42,15 +56,12 @@ export async function analyzeMoltbookTrends() {
   console.log(`📊 Fetched ${posts.length} posts from Moltbook`)
 
   // 2. Upsert Posts to DB
+  // 2. Upsert Posts to DB
   let newPostsCount = 0
   for (const post of posts) {
-    // Check if exists (using moltId)
-    const existing = await db.query.moltPosts.findFirst({
-      where: eq(moltPosts.moltId, post.id),
-    })
-
-    if (!existing) {
-      await db.insert(moltPosts).values({
+    const result = await db
+      .insert(moltPosts)
+      .values({
         moltId: post.id,
         content: post.content || post.title, // Title acts as content if content is missing
         author: post.author,
@@ -58,6 +69,10 @@ export async function analyzeMoltbookTrends() {
         submolt: post.submolt,
         metadata: post,
       })
+      .onConflictDoNothing({ target: moltPosts.moltId })
+      .returning({ insertedId: moltPosts.id })
+
+    if (result.length > 0) {
       newPostsCount++
     }
   }

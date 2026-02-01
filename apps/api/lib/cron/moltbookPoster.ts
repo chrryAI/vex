@@ -1,28 +1,40 @@
-import { postToMoltbook } from "../integrations/moltbook"
 import { captureException } from "@sentry/node"
 import { v4 as uuidv4 } from "uuid"
-import { sign, verify } from "jsonwebtoken"
+import { sign } from "jsonwebtoken"
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || "development-secret"
+const JWT_SECRET = process.env.NEXTAUTH_SECRET
+if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
+  throw new Error("NEXTAUTH_SECRET is not defined")
+}
+const SECRET = JWT_SECRET || "development-secret"
 
 import {
   db,
   getApp,
   getThread,
-  createThread,
-  updateThread,
   getUser,
   isE2E,
   getAiAgent,
+  getMessages,
+  updateMessage,
+  thread,
+  updateThread,
+  and,
 } from "@repo/db"
-import { moltQuestions } from "@repo/db/src/schema"
+import { messages, moltQuestions, threads } from "@repo/db/src/schema"
 import { eq } from "drizzle-orm"
-import { generateThreadTitle, trimTitle } from "../../utils/titleGenerator"
+import { postToMoltbook } from "../integrations/moltbook"
+
 const JWT_EXPIRY = "30d"
 
 const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL
 
-const MOLTBOOK_API_KEY = process.env.MOLTBOOK_API_KEY
+const MOLTBOOK_API_KEYS = {
+  chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
+  vex: process.env.MOLTBOOK_VEX_API_KEY,
+  sushi: process.env.MOLTBOOK_SUSHI_API_KEY,
+  zarathustra: process.env.MOLTBOOK_ZARATHUSTRA_API_KEY,
+}
 const API_URL = process.env.VITE_API_URL || "http://localhost:3001"
 
 interface MoltbookPostResult {
@@ -30,16 +42,25 @@ interface MoltbookPostResult {
   post_id?: string
   error?: string
   message?: string
+  molt?: thread
 }
 
 function generateToken(userId: string, email: string): string {
-  return sign({ userId, email }, JWT_SECRET, { expiresIn: JWT_EXPIRY })
+  return sign({ userId, email }, SECRET, { expiresIn: JWT_EXPIRY })
 }
 
-async function generateMoltbookPost(instructions?: string): Promise<{
+async function generateMoltbookPost({
+  slug,
+  instructions,
+}: {
+  slug: string
+  instructions?: string
+}): Promise<{
   title: string
   content: string
   submolt: string
+  molt?: thread
+  messageId?: string
 }> {
   if (isE2E) {
     throw new Error("It is e2e")
@@ -60,16 +81,16 @@ async function generateMoltbookPost(instructions?: string): Promise<{
 
     const token = generateToken(user.id, user.email)
 
-    if (user?.email !== VEX_TEST_EMAIL) {
+    if (user?.email !== VEX_TEST_EMAIL && user.role !== "admin") {
       throw new Error("Moltbook guest not authorized")
     }
 
     let app = await getApp({
-      slug: "chrry",
+      slug,
     })
 
     if (!app) {
-      throw new Error("Chrry not found for Moltbook guest")
+      throw new Error("App not found for Moltbook guest")
     }
 
     const prompt = `Generate a thoughtful, engaging post for Moltbook (a social network for AI agents).
@@ -105,10 +126,12 @@ Ending Guidelines:
       throw new Error("Something went wrong sushi not found")
     }
 
-    const molt = await getThread({
-      isMolt: true,
-      appId: app.id,
-      userId: user.id,
+    const molt = await db.query.threads.findFirst({
+      where: and(
+        eq(threads.isMolt, true),
+        eq(threads.appId, app.id),
+        eq(threads.userId, user.id),
+      ),
     })
 
     const userMessageResponse = await fetch(`${API_URL}/messages`, {
@@ -137,9 +160,14 @@ Ending Guidelines:
       )
     }
 
-    const message = userMessageResponseJson.message
+    const message = userMessageResponseJson.message?.message
 
-    if (!message) {
+    if (!message.id) {
+      console.log(
+        `🚀 ~ generateMoltbookPost ~ message:`,
+        userMessageResponseJson,
+      )
+
       throw new Error("Something went wrong while creating message")
     }
 
@@ -162,68 +190,46 @@ Ending Guidelines:
     }
 
     const data = await aiMessageResponse.json()
-    const aiResponse =
-      data.message?.content ||
-      data.message?.text ||
-      data.text ||
-      data.content ||
-      data.message?.message?.content // recursive message case if any
-
+    const aiResponse = data
     if (!aiResponse) {
       console.log("🚀 ~ generateMoltbookPost ~ data:", data)
       throw new Error("No AI response received")
     }
 
-    console.log("🚀 ~ generateMoltbookPost ~ aiResponse (raw):", aiResponse)
-
-    return {
-      title: "Building AI Conversations",
-      content:
-        "Chrry is an AI-powered conversation platform focused on advanced memory and context understanding. We're exploring new ways for AI agents to interact and learn.",
-      submolt: "general",
-    }
-
-    // Clean up markdown code blocks if present
-    const cleanResponse = aiResponse.replace(/```json\n?|\n?```/g, "").trim()
-
-    // Find the first '{' and last '}'
-    const firstOpen = cleanResponse.indexOf("{")
-    const lastClose = cleanResponse.lastIndexOf("}")
-
-    if (firstOpen === -1 || lastClose === -1) {
-      console.log("❌ No JSON object found in response")
-      throw new Error("No JSON found in AI response")
-    }
-
-    const jsonString = cleanResponse.substring(firstOpen, lastClose + 1)
-
-    let parsed
-    try {
-      parsed = JSON.parse(jsonString)
-    } catch (e) {
-      console.error("❌ JSON Parse Error:", e)
-      throw new Error("Failed to parse JSON")
+    if (
+      !aiResponse.moltTitle ||
+      !aiResponse.moltContent ||
+      !aiResponse.moltSubmolt
+    ) {
+      throw new Error("Invalid AI response format")
     }
 
     return {
-      title: parsed.title || "Thoughts from Chrry",
-      content: parsed.content || aiResponse,
-      submolt: parsed.submolt || "general",
+      title: aiResponse.moltTitle,
+      content: aiResponse.moltContent,
+      submolt: aiResponse.moltSubmolt,
+      molt,
+      messageId: message.id,
     }
   } catch (error) {
     captureException(error)
     console.error("❌ Error generating Moltbook post:", error)
 
-    return {
-      title: "Building AI Conversations",
-      content:
-        "Chrry is an AI-powered conversation platform focused on advanced memory and context understanding. We're exploring new ways for AI agents to interact and learn.",
-      submolt: "general",
-    }
+    throw error
   }
 }
 
-export async function postToMoltbookCron(): Promise<MoltbookPostResult> {
+export async function postToMoltbookCron(
+  slug: string,
+): Promise<MoltbookPostResult> {
+  if (!MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]) {
+    console.error("❌ MOLTBOOK_API_KEY not configured")
+    return { success: false, error: "API key not configured" }
+  }
+
+  const MOLTBOOK_API_KEY =
+    MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]
+
   if (!MOLTBOOK_API_KEY) {
     console.error("❌ MOLTBOOK_API_KEY not configured")
     return { success: false, error: "API key not configured" }
@@ -250,9 +256,12 @@ export async function postToMoltbookCron(): Promise<MoltbookPostResult> {
     }
 
     // 2. Generate Post
-    const post = await generateMoltbookPost(instructions)
+    const post = await generateMoltbookPost({ slug, instructions })
 
     console.log(`🦞 Generated Moltbook Post:`, post)
+
+    const result = await postToMoltbook(MOLTBOOK_API_KEY, post)
+    console.log(`🚀 ~ result:`, result)
 
     // 3. Mark question as asked if used
     if (questionId) {
@@ -263,12 +272,39 @@ export async function postToMoltbookCron(): Promise<MoltbookPostResult> {
       console.log(`✅ Marked question ${questionId} as asked`)
     }
 
+    if (result.success && result.post_id && post.messageId) {
+      const m = await db.query.messages.findFirst({
+        where: eq(messages.id, post.messageId),
+      })
+      if (!m) {
+        console.log(`❌ Message ${post.messageId} not found`)
+        return { success: false, error: "Message not found" }
+      }
+      await updateMessage({
+        ...m,
+        moltId: result.post_id,
+        moltUrl: `https://moltbook.com/p/${result.post_id}`,
+        submolt: post.submolt,
+      })
+      console.log(`✅ Updated message ${post.messageId} with Moltbook metadata`)
+    }
+
+    if (post.submolt && post.molt && !post.molt.submolt) {
+      await updateThread({
+        ...post.molt,
+        moltId: result.post_id || "",
+        moltUrl: `https://moltbook.com/p/${result.post_id}`,
+        submolt: post.submolt,
+      })
+    }
+
+    return result
+
     // 4. Post to Moltbook (Simulated or Real)
     // For now, we are simulating success as per previous instructions
     // To enable real posting:
     /*
-    const result = await postToMoltbook(process.env.MOLTBOOK_API_KEY!, post)
-    return result
+ 
     */
 
     return {
