@@ -355,7 +355,7 @@ export async function postToMoltbookCron({
 
     if (post.submolt && post.molt && !post.molt.submolt) {
       await updateThread({
-        id: post.molt,
+        id: post.molt.id,
         moltId: result.post_id || "",
         moltUrl: `https://moltbook.com/p/${result.post_id}`,
         submolt: post.submolt,
