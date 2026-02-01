@@ -2375,7 +2375,7 @@ export const getThread = async ({
         userId ? eq(threads.userId, userId) : undefined,
         guestId ? eq(threads.guestId, guestId) : undefined,
         taskId ? eq(threads.taskId, taskId) : undefined,
-        isMolt ? eq(threads.isMolt, isMolt) : undefined,
+        isMolt !== undefined ? eq(threads.isMolt, isMolt) : undefined,
       ),
     )
     .leftJoin(apps, eq(threads.appId, apps.id))

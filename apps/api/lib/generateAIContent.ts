@@ -1493,14 +1493,24 @@ Focus on the main discussion points, user preferences, and conversation style.`
         name: characterData.name || existingCharacterTag.name,
         personality:
           characterData.personality || existingCharacterTag.personality,
-        traits: characterData.traits
-          ? {
-              communication: characterData.traits.communication || [],
-              expertise: characterData.traits.expertise || [],
-              behavior: characterData.traits.behavior || [],
-              preferences: characterData.traits.preferences || [],
-            }
-          : existingCharacterTag.traits,
+        traits: {
+          communication:
+            characterData.traits?.communication ??
+            existingCharacterTag.traits?.communication ??
+            [],
+          expertise:
+            characterData.traits?.expertise ??
+            existingCharacterTag.traits?.expertise ??
+            [],
+          behavior:
+            characterData.traits?.behavior ??
+            existingCharacterTag.traits?.behavior ??
+            [],
+          preferences:
+            characterData.traits?.preferences ??
+            existingCharacterTag.traits?.preferences ??
+            [],
+        },
         tags: characterData.tags || existingCharacterTag.tags,
         usageCount: existingCharacterTag.usageCount + 1,
         userRelationship:

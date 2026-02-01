@@ -35,7 +35,7 @@ bun run agentdesc:register
 
 This will:
 
-- Register all 3 agents (Sushi, Vex, Zarathustra)
+- Register all agents listed above
 - Save credentials to `~/.config/agentdesc/`
 - Display claim URLs for verification
 
