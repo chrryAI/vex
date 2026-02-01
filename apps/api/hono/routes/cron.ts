@@ -6,12 +6,16 @@ import {
   and,
   eq,
   isNull,
+  inArray,
+  lt,
   sql,
 } from "@repo/db"
 import { syncPlausibleAnalytics } from "../../cron/sync-plausible"
 import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
-import { inArray, lt } from "drizzle-orm"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
+import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
+import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
+import { isDevelopment } from "../../lib"
 
 export const cron = new Hono()
 
@@ -80,10 +84,12 @@ async function clearGuests() {
 
 // GET /cron/decayMemories - Decay unused memories (Vercel Cron)
 cron.get("/decayMemories", async (c) => {
-  // Verify the request is from Vercel Cron
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
 
   try {
@@ -109,10 +115,12 @@ cron.get("/decayMemories", async (c) => {
 })
 
 cron.get("/syncPlausible", async (c) => {
-  // Verify auth
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
   // Start sync in background (don't await!)
   syncPlausibleAnalytics()
@@ -128,11 +136,13 @@ cron.get("/syncPlausible", async (c) => {
 
 cron.get("/burn", async (c) => {
   // Verify auth
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
-
   try {
     console.log("🔥 Starting incognito thread cleanup...")
     const deletedCount = await cleanupIncognitoThreads(30) // 30 days retention
@@ -159,9 +169,12 @@ cron.get("/burn", async (c) => {
 // GET /cron/clearGuests - Clean up inactive bot guests (Vercel Cron)
 cron.get("/clearGuests", async (c) => {
   // Verify auth
+  const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return c.json({ error: "Unauthorized" }, 401)
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
   }
 
   try {
@@ -227,10 +240,95 @@ async function handleFetchNews(c: any) {
 
 // GET /cron/fetchNews - Fetch news (for testing)
 cron.get("/fetchNews", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
   return handleFetchNews(c)
 })
 
 // POST /cron/fetchNews - Fetch news (for production cron)
 cron.post("/fetchNews", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
   return handleFetchNews(c)
+})
+
+// GET /cron/postToMoltbook - Post AI-generated content to Moltbook
+cron.get("/postToMoltbook", async (c) => {
+  // Verify auth
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  const slug = c.req.query("slug") || "sushi"
+  const agentName = c.req.query("agentName") || "sushi"
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  // Start the job in background (don't await!)
+  console.log("🦞 Starting Moltbook post cron job in background...")
+  postToMoltbookCron({ slug, agentName })
+    .then((result) => {
+      if (result.success) {
+        console.log(
+          `✅ Moltbook post completed successfully: ${result.post_id}`,
+        )
+      } else {
+        console.error(`❌ Moltbook post failed: ${result.error}`)
+      }
+    })
+    .catch((error) => {
+      console.error("❌ Moltbook post error:", error)
+    })
+
+  // Return immediately
+  return c.json({
+    success: true,
+    message: "Moltbook post job started in background",
+    slug,
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// GET /cron/analyzeMoltbookTrends - Analyze Moltbook trends and generate questions
+cron.get("/analyzeMoltbookTrends", async (c) => {
+  // Verify auth
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  // Start the job in background (don't await!)
+  console.log("🦞 Starting Moltbook trends analysis job in background...")
+  analyzeMoltbookTrends()
+    .then(() => {
+      console.log("✅ Moltbook trends analysis completed successfully")
+    })
+    .catch((error) => {
+      console.error("❌ Moltbook trends analysis failed:", error)
+    })
+
+  // Return immediately
+  return c.json({
+    success: true,
+    message: "Moltbook trends analysis job started in background",
+    timestamp: new Date().toISOString(),
+  })
 })

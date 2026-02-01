@@ -18,7 +18,7 @@ import {
   useApp,
 } from "./context/providers"
 import Grapes from "./Grapes"
-import { A, usePlatform, useTheme, Div, Button, Span } from "./platform"
+import { A, usePlatform, useTheme, Div, Button, Span, Input } from "./platform"
 import Loading from "./Loading"
 import { FRONTEND_URL, isCollaborator, isOwner, isE2E } from "./utils"
 import { CircleX, Clock, ClockPlus, InfoIcon, ThumbsUp } from "./icons"
@@ -459,12 +459,13 @@ const Thread = ({
           </Div>
         ) : error ? (
           <Div style={styles.errorContainer.style}>
-            <CircleX color="var(--accent-0)" size={20} /> Something went wrong,
-            please try again later
+            <CircleX color="var(--accent-0)" size={20} />{" "}
+            {t("Something went wrong")}
           </Div>
         ) : status === 404 ? (
           <Div style={styles.errorContainer.style}>
-            <InfoIcon color="var(--accent-1)" size={20} /> Thread not found
+            <InfoIcon color="var(--accent-1)" size={20} />{" "}
+            {t("Thread not found")}
           </Div>
         ) : status === 401 ? (
           <Div style={styles.errorContainer.style}>
@@ -512,8 +513,10 @@ const Thread = ({
               thread?.visibility === "public") && (
               <Div>
                 {/* Typing indicator for collaborative threads */}
-
-                <Div data-placeholder={placeHolderText}>
+                {thread?.placeHolder && (
+                  <Input data-testid="thread-placeholder" type="hidden" />
+                )}
+                <Div>
                   <Chat
                     requiresSignin={isVisitor && !activeCollaborator && !user}
                     compactMode={showFocus}

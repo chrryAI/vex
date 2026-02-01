@@ -383,6 +383,7 @@ threads.patch("/:id", async (c) => {
 
     requestData = {
       language: formData.get("language") as string,
+      moltUrl: formData.get("moltUrl") as string,
       regenerateTitle: formData.get("regenerateTitle") === "true",
       instructions: formData.get("instructions") as string,
       title: formData.get("title") as string,
@@ -453,6 +454,7 @@ threads.patch("/:id", async (c) => {
   const language = requestData.language || "en"
   const title = requestData.title
   const visibility = requestData.visibility
+  const moltUrl = requestData.moltUrl
   const regenerateTitle = requestData.regenerateTitle === true
   const regenerateInstructions = requestData.regenerateInstructions === true
   const pinCharacterProfile = requestData.pinCharacterProfile
@@ -716,6 +718,7 @@ threads.patch("/:id", async (c) => {
     ...thread,
     appId: appId ?? thread.appId,
     star: star === 0 ? null : star,
+    moltUrl,
     title: sanitizeHtml(title || thread.title),
     visibility: visibility || thread.visibility,
     bookmarks: newBookmarks,

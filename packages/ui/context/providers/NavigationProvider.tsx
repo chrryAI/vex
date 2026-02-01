@@ -23,7 +23,7 @@ import { ANALYTICS_EVENTS } from "../../utils/analyticsEvents"
 import { thread } from "../../types"
 import { t } from "i18next"
 import { defaultLocale } from "../../locales"
-import { getSiteConfig, whiteLabels } from "../../utils/siteConfig"
+import { whiteLabels } from "../../utils/siteConfig"
 
 const NavigationContext = createContext<
   | {
