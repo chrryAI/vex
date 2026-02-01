@@ -303,3 +303,39 @@ export async function followAgent(
     return { success: false, error: String(error) }
   }
 }
+
+export async function votePost(
+  apiKey: string,
+  postId: string,
+  direction: "up" | "down",
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetchWithTimeout(
+      `${MOLTBOOK_API_BASE}/posts/${postId}/vote`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ direction }),
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("❌ Moltbook Vote API Error:", errorData)
+      return {
+        success: false,
+        error:
+          errorData.message || errorData.error || JSON.stringify(errorData),
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Error voting on Moltbook post:", error)
+    return { success: false, error: String(error) }
+  }
+}
