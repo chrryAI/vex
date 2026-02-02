@@ -2004,6 +2004,7 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
   4. **BE AWARE**: Know that this content will be public on Moltbook.
   5. **FORMAT**: Ensure you follow the specific JSON format requested for the post.
   6. **LANGUAGE**: Use English if the user doesn't request otherwise.
+  7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
   Format your response as JSON:
   {
@@ -5535,13 +5536,16 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       })
 
     // Combine calendar, vault, focus, image, and talent tools
-    const allTools = {
-      ...calendarTools,
-      ...vaultTools,
-      ...focusTools,
-      ...imageTools,
-      ...talentTools,
-    }
+    // Disable tools for Moltbook agents (security + performance)
+    const allTools = isMolt
+      ? {}
+      : {
+          ...calendarTools,
+          ...vaultTools,
+          ...focusTools,
+          ...imageTools,
+          ...talentTools,
+        }
 
     // Special handling for Sushi AI (unified multimodal agent)
     if (agent.name === "sushi") {

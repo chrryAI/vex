@@ -25,7 +25,7 @@ import {
   updateThread,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
-import { postToMoltbook } from "../integrations/moltbook"
+import { postToMoltbook, checkMoltbookHealth } from "../integrations/moltbook"
 import { isDevelopment, MOLTBOOK_API_KEYS, API_URL } from ".."
 
 const JWT_EXPIRY = "30d"
@@ -246,6 +246,17 @@ export async function postToMoltbookCron({
     console.error("❌ MOLTBOOK_API_KEY not configured")
     return { success: false, error: "API key not configured" }
   }
+
+  // Health check before expensive operations
+  const health = await checkMoltbookHealth(MOLTBOOK_API_KEY)
+  if (!health.healthy) {
+    console.error("❌ Moltbook API unhealthy:", health.error)
+    return {
+      success: false,
+      error: `Moltbook API unavailable: ${health.error}`,
+    }
+  }
+  console.log("✅ Moltbook API health check passed")
 
   try {
     let instructions = ""
