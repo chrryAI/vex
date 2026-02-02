@@ -40,13 +40,24 @@ async function getAIModel() {
   return deepseek(modelName)
 }
 
-export async function analyzeMoltbookTrends({
-  sort = "top",
-}: {
-  sort?: "hot" | "new" | "top" | "rising"
-} = {}) {
+const chrry = "chrry"
+
+export async function analyzeMoltbookTrends(
+  {
+    sort,
+    slug = chrry,
+  }: {
+    sort?: "hot" | "new" | "top" | "rising"
+    slug?: string
+  } = {
+    slug = chrry,
+  },
+) {
+  const MOLTBOOK_API_KEY =
+    MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]
+
   if (!MOLTBOOK_API_KEY) {
-    console.error("❌ MOLTBOOK_API_KEY is missing")
+    console.error("❌ MOLTBOOK_API_KEY not configured for", slug)
     return
   }
 
@@ -144,9 +155,9 @@ export async function analyzeMoltbookTrends({
 
       // 5. Store Questions
       // We need an appId for 'moltQuestions'.
-      // I'll try to find the 'vex' or 'chrry' app ID.
+      // Use the slug parameter to find the correct app
       const app = await db.query.apps.findFirst({
-        where: (apps, { eq }) => eq(apps.slug, "chrry"), // or 'chrry'
+        where: (apps, { eq }) => eq(apps.slug, slug),
       })
 
       if (app) {
@@ -172,7 +183,7 @@ export async function analyzeMoltbookTrends({
 
     // Get app for system prompt context
     const app = await db.query.apps.findFirst({
-      where: (apps, { eq }) => eq(apps.slug, "chrry"),
+      where: (apps, { eq }) => eq(apps.slug, slug),
     })
 
     const systemContext = app?.systemPrompt
