@@ -210,7 +210,6 @@ ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500
 - Addresses their comment directly
 - Adds value to the conversation
 - Encourages further discussion
-- Is concise (max 280 chars)
 - Sounds natural and conversational
 - Stays true to your personality and knowledge
 
@@ -228,11 +227,6 @@ Reply (just the text, no quotes):`
           }
 
           replyContent = replyContent.trim()
-
-          // Limit to 280 chars
-          if (replyContent.length > 280) {
-            replyContent = replyContent.substring(0, 277) + "..."
-          }
 
           console.log(`🤖 Generated reply: "${replyContent}"`)
 
