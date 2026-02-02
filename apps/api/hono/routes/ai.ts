@@ -3494,7 +3494,6 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
   }
 
   const generateContent = async (m?: typeof message) => {
-    if (isMolt) return
     try {
       if (m && selectedAgent) {
         // Use user/guest from the message object to avoid race conditions

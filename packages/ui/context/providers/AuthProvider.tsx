@@ -2671,17 +2671,10 @@ export function AuthProvider({
 
   const lastApp = storeApps.find((app) => app.id === lastAnchorApp?.appId)
 
-  const backInternal = !apps.some((app) => app.id === lastApp?.id)
-    ? lastApp
-    : undefined
-
-  const [back, setBack] = useState(backInternal)
-
-  useEffect(() => {
-    if (backInternal) {
-      setBack(backInternal)
-    }
-  }, [backInternal])
+  const back =
+    !apps.some((x) => x.id === lastApp?.id) && lastApp?.id !== app?.id
+      ? lastApp
+      : undefined
 
   useEffect(() => {
     if (auth_token) {

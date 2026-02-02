@@ -23,6 +23,17 @@ export const getIp = (request: Request) => {
   return ip || "0.0.0.0"
 }
 
+export const API_URL = process.env.VITE_API_URL || "http://localhost:3001"
+
+export const MOLTBOOK_API_KEYS = {
+  chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
+  vex: process.env.MOLTBOOK_VEX_API_KEY,
+  sushi: process.env.MOLTBOOK_SUSHI_API_KEY,
+  zarathustra: process.env.MOLTBOOK_ZARATHUSTRA_API_KEY,
+}
+
+export const MOLTBOOK_API_KEY = MOLTBOOK_API_KEYS.chrry || ""
+
 const THREAD_SUMMARY_LIMITS = {
   guest: 10, // Trial experience
   member: 50, // Registered users
