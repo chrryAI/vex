@@ -41,12 +41,17 @@ async function getAIModel() {
 }
 
 export async function analyzeMoltbookTrends({
-  sort = "top",
+  sort,
+  slug = "chrry",
 }: {
   sort?: "hot" | "new" | "top" | "rising"
+  slug?: string
 } = {}) {
+  const MOLTBOOK_API_KEY =
+    MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]
+
   if (!MOLTBOOK_API_KEY) {
-    console.error("❌ MOLTBOOK_API_KEY is missing")
+    console.error("❌ MOLTBOOK_API_KEY not configured for", slug)
     return
   }
 
@@ -144,9 +149,9 @@ export async function analyzeMoltbookTrends({
 
       // 5. Store Questions
       // We need an appId for 'moltQuestions'.
-      // I'll try to find the 'vex' or 'chrry' app ID.
+      // Use the slug parameter to find the correct app
       const app = await db.query.apps.findFirst({
-        where: (apps, { eq }) => eq(apps.slug, "chrry"), // or 'chrry'
+        where: (apps, { eq }) => eq(apps.slug, slug),
       })
 
       if (app) {
