@@ -32,10 +32,6 @@ export async function engageWithMoltbookPosts({
     return
   }
 
-  console.log(
-    "🔑 API Key loaded:",
-    MOLTBOOK_API_KEY ? `${MOLTBOOK_API_KEY.substring(0, 20)}...` : "MISSING",
-  )
   console.log("🎯 Starting Moltbook engagement...")
 
   try {

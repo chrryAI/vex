@@ -211,11 +211,7 @@ Ending Guidelines:
   } catch (error) {
     captureException(error)
     console.error("❌ Error generating Moltbook post:", error)
-
-    return {
-      success: false,
-      error: error?.message,
-    }
+    throw error
   }
 }
 
