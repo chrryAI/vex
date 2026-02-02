@@ -1405,15 +1405,25 @@ JUST DO IT. You have the power. Use the updateTimer tool immediately.
     const storeApps = app.store.apps || []
 
     // Get agents for each app using forApp parameter
-    const appsWithAgents = await Promise.all(
-      storeApps.map(async (storeApp) => {
-        const agents = await getAiAgents({
-          include: storeApp.id,
-          forApp: storeApp,
-        })
-        return { ...storeApp, agents }
-      }),
-    )
+    // Optimized: Fetch all agents in one query (N+1 optimization)
+    const storeAppIds = storeApps.map((a) => a.id)
+    const allAgents = await getAiAgents({
+      include: storeAppIds,
+    })
+
+    const appsWithAgents = storeApps.map((storeApp) => {
+      // Filter agents for this app (global agents + specific app agents)
+      const appAgents = allAgents.filter(
+        (a) => !a.appId || a.appId === storeApp.id,
+      )
+
+      // Apply forApp filtering logic (same as getAiAgents internal logic)
+      const agents = storeApp.onlyAgent
+        ? appAgents.filter((a) => a.name === storeApp.defaultModel)
+        : appAgents
+
+      return { ...storeApp, agents }
+    })
 
     storeContext = `
 ## 🏪 STORE CONTEXT
