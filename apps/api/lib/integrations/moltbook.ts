@@ -222,12 +222,19 @@ export async function getAgentProfile(
 
 interface MoltbookComment {
   id: string
-  post_id: string
-  author_id: string
-  author_name: string
+  post_id?: string
   content: string
   created_at: string
-  parent_id?: string
+  parent_id?: string | null
+  upvotes: number
+  downvotes: number
+  author: {
+    id: string
+    name: string
+    karma: number
+    follower_count: number
+  }
+  replies: MoltbookComment[]
 }
 
 export async function getPostComments(
