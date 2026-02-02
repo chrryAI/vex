@@ -401,9 +401,14 @@ export async function extractAndStoreKnowledge(
       const tLabel = sanitize(targetType)
       const rType = sanitize(relation).toUpperCase()
 
+      // Sanitize node names to prevent RediSearch syntax errors (e.g., "chatGPT's" → "chatGPT s")
+      // Keep readable but remove special chars that break full-text search
+      const sanitizedSource = source.replace(/['"]/g, "")
+      const sanitizedTarget = target.replace(/['"]/g, "")
+
       // Generate embeddings
-      const sourceEmbedding = await getEmbedding(source, app)
-      const targetEmbedding = await getEmbedding(target, app)
+      const sourceEmbedding = await getEmbedding(sanitizedSource, app)
+      const targetEmbedding = await getEmbedding(sanitizedTarget, app)
 
       // Cypher query to merge nodes and create relationship
       // SECURITY: Using parameterized queries to prevent injection
@@ -428,8 +433,8 @@ export async function extractAndStoreKnowledge(
       if (sourceEmbedding && targetEmbedding) {
         await graph.query(vectorQuery, {
           params: {
-            source,
-            target,
+            source: sanitizedSource,
+            target: sanitizedTarget,
             sourceEmbedding,
             targetEmbedding,
             now,
@@ -446,12 +451,12 @@ export async function extractAndStoreKnowledge(
             MERGE (s)-[r:${rType}]->(t)
             ON CREATE SET r.createdAt = $now
          `,
-          { params: { source, target, now } },
+          { params: { source: sanitizedSource, target: sanitizedTarget, now } },
         )
       }
 
       console.log(
-        `🕸️ Graph Synced (Level 5): (${source})-[${relation}]->(${target})`,
+        `🕸️ Graph Synced (Level 5): (${sanitizedSource})-[${relation}]->(${sanitizedTarget})`,
       )
     }
 

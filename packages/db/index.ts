@@ -115,6 +115,7 @@ export {
   talentInvitations,
   premiumSubscriptions,
   authExchangeCodes,
+  apps,
 }
 
 dotenv.config()
@@ -2926,7 +2927,7 @@ export const getAiAgents = async ({
   state?: ("active" | "testing" | "inactive")[]
   userId?: string
   guestId?: string
-  include?: string
+  include?: string | string[]
   forApp?: app | appWithStore
 } = {}) => {
   const result = await db
@@ -2938,7 +2939,11 @@ export const getAiAgents = async ({
         userId ? eq(aiAgents.userId, userId) : undefined,
         guestId ? eq(aiAgents.guestId, guestId) : undefined,
         appId
-          ? or(isNull(aiAgents.appId), eq(aiAgents.appId, appId))
+          ? Array.isArray(appId)
+            ? appId.length > 0
+              ? or(isNull(aiAgents.appId), inArray(aiAgents.appId, appId))
+              : isNull(aiAgents.appId)
+            : or(isNull(aiAgents.appId), eq(aiAgents.appId, appId))
           : undefined,
       ),
     )

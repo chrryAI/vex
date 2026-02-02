@@ -18,6 +18,8 @@ import {
   aiAgent,
   VEX_LIVE_FINGERPRINTS,
   decrypt,
+  inArray,
+  apps as appsSchema,
 } from "@repo/db"
 
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
@@ -293,15 +295,17 @@ async function getRelevantMemoryContext({
     // Check if user is the app creator
     const isAppCreator = app && isOwner(app, { userId, guestId })
 
-    // Get user memories scattered across different threads (exclude current thread)
-    const userMemoriesData: {
-      memories: memory[]
-      totalCount: number
-      hasNextPage: boolean
-      nextPage: number | null
-    } =
+    // Get app-specific memories
+    // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
+    const appMemoryPageSize = isAppCreator
+      ? pageSize * 10 // Creators get 150 app memories (10x boost)
+      : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
+
+    // Execute memory queries in parallel for performance
+    const [userMemoriesData, appMemoriesData] = await Promise.all([
+      // Get user memories scattered across different threads (exclude current thread)
       userId || guestId
-        ? await getMemories({
+        ? getMemories({
             userId,
             guestId,
             pageSize,
@@ -309,7 +313,29 @@ async function getRelevantMemoryContext({
             excludeThreadId: threadId, // Don't load memories from current thread
             scatterAcrossThreads: true, // Get diverse memories from different conversations
           })
-        : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+        : Promise.resolve({
+            memories: [],
+            totalCount: 0,
+            hasNextPage: false,
+            nextPage: null,
+          }),
+
+      // Get app-specific memories
+      appId
+        ? getMemories({
+            appId,
+            pageSize: appMemoryPageSize,
+            orderBy: "importance",
+            excludeThreadId: threadId,
+            scatterAcrossThreads: true,
+          })
+        : Promise.resolve({
+            memories: [],
+            totalCount: 0,
+            hasNextPage: false,
+            nextPage: null,
+          }),
+    ])
 
     const userMemoriesResult = userMemoriesData.memories.filter(
       (memory) =>
@@ -318,27 +344,6 @@ async function getRelevantMemoryContext({
           guestId,
         }) && !memory.appId,
     )
-
-    // Get app-specific memories
-    // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
-    const appMemoryPageSize = isAppCreator
-      ? pageSize * 10 // Creators get 150 app memories (10x boost)
-      : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
-
-    const appMemoriesData: {
-      memories: memory[]
-      totalCount: number
-      hasNextPage: boolean
-      nextPage: number | null
-    } = appId
-      ? await getMemories({
-          appId,
-          pageSize: appMemoryPageSize,
-          orderBy: "importance",
-          excludeThreadId: threadId,
-          scatterAcrossThreads: true,
-        })
-      : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     const appMemoriesResult = appMemoriesData.memories.filter(
       (memory) => !memory.userId && !memory.guestId && !!memory.appId,
@@ -775,13 +780,13 @@ const getPearContext = async (): Promise<string> => {
     ]
 
     // Fetch app data for all unique app IDs
-    const apps = await Promise.all(
-      appIds.map((appId) =>
-        getApp({
-          id: appId,
-        }),
-      ),
-    )
+    const apps =
+      appIds.length > 0
+        ? await db
+            .select({ id: appsSchema.id, name: appsSchema.name })
+            .from(appsSchema)
+            .where(inArray(appsSchema.id, appIds))
+        : []
 
     // Create app ID to name mapping
     const appIdToName = apps.reduce(
@@ -1405,15 +1410,25 @@ JUST DO IT. You have the power. Use the updateTimer tool immediately.
     const storeApps = app.store.apps || []
 
     // Get agents for each app using forApp parameter
-    const appsWithAgents = await Promise.all(
-      storeApps.map(async (storeApp) => {
-        const agents = await getAiAgents({
-          include: storeApp.id,
-          forApp: storeApp,
-        })
-        return { ...storeApp, agents }
-      }),
-    )
+    // Optimized: Fetch all agents in one query (N+1 optimization)
+    const storeAppIds = storeApps.map((a) => a.id)
+    const allAgents = await getAiAgents({
+      include: storeAppIds,
+    })
+
+    const appsWithAgents = storeApps.map((storeApp) => {
+      // Filter agents for this app (global agents + specific app agents)
+      const appAgents = allAgents.filter(
+        (a) => !a.appId || a.appId === storeApp.id,
+      )
+
+      // Apply forApp filtering logic (same as getAiAgents internal logic)
+      const agents = storeApp.onlyAgent
+        ? appAgents.filter((a) => a.name === storeApp.defaultModel)
+        : appAgents
+
+      return { ...storeApp, agents }
+    })
 
     storeContext = `
 ## 🏪 STORE CONTEXT
@@ -2004,6 +2019,7 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
   4. **BE AWARE**: Know that this content will be public on Moltbook.
   5. **FORMAT**: Ensure you follow the specific JSON format requested for the post.
   6. **LANGUAGE**: Use English if the user doesn't request otherwise.
+  7. **NO TOOL CALLS**: Do NOT attempt to use any tools (calendar, images, etc). Only generate text responses.
 
   Format your response as JSON:
   {
@@ -3494,7 +3510,6 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
   }
 
   const generateContent = async (m?: typeof message) => {
-    if (isMolt) return
     try {
       if (m && selectedAgent) {
         // Use user/guest from the message object to avoid race conditions
@@ -5536,13 +5551,16 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       })
 
     // Combine calendar, vault, focus, image, and talent tools
-    const allTools = {
-      ...calendarTools,
-      ...vaultTools,
-      ...focusTools,
-      ...imageTools,
-      ...talentTools,
-    }
+    // Disable tools for Moltbook agents (security + performance)
+    const allTools = isMolt
+      ? {}
+      : {
+          ...calendarTools,
+          ...vaultTools,
+          ...focusTools,
+          ...imageTools,
+          ...talentTools,
+        }
 
     // Special handling for Sushi AI (unified multimodal agent)
     if (agent.name === "sushi") {

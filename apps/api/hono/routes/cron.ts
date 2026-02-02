@@ -16,6 +16,7 @@ import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { checkMoltbookComments } from "../../lib/cron/moltbookComments"
+import { engageWithMoltbookPosts } from "../../lib/cron/moltbookEngagement"
 import { isDevelopment } from "../../lib"
 import { captureException } from "@sentry/node"
 
@@ -56,9 +57,11 @@ async function clearGuests() {
     }
 
     // Clean up graph data for each guest before deletion
-    for (const guest of inactiveGuests) {
-      await clearGraphDataForUser({ guestId: guest.id })
-    }
+    await Promise.all(
+      inactiveGuests.map((guest) =>
+        clearGraphDataForUser({ guestId: guest.id }),
+      ),
+    )
 
     // Delete batch from PostgreSQL
     const idsToDelete = inactiveGuests.map((g) => g.id)
@@ -321,10 +324,12 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
       ? (sortParam as "hot" | "new" | "top" | "rising")
       : undefined
 
+  const slug = c.req.query("slug") || "chrry"
+
   // Start the job in background (fire-and-forget)
   console.log("🦞 Starting Moltbook trends analysis job in background...")
 
-  analyzeMoltbookTrends({ sort })
+  analyzeMoltbookTrends({ sort, slug })
     .then(() => {
       console.log("✅ Moltbook trends analysis completed successfully")
     })
@@ -370,6 +375,40 @@ cron.get("/checkMoltbookComments", async (c) => {
   return c.json({
     success: true,
     message: "Moltbook comment check job started in background",
+    slug,
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// GET /cron/engageWithMoltbook - Comment on daily top posts
+cron.get("/engageWithMoltbook", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  const slug = c.req.query("slug") || "chrry"
+
+  // Start the job in background (fire-and-forget)
+  console.log("🎯 Starting Moltbook engagement job in background...")
+
+  engageWithMoltbookPosts({ slug })
+    .then(() => {
+      console.log("✅ Moltbook engagement completed successfully")
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error("❌ Moltbook engagement failed:", error)
+    })
+
+  // Return immediately
+  return c.json({
+    success: true,
+    message: "Moltbook engagement job started in background",
     slug,
     timestamp: new Date().toISOString(),
   })

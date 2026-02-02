@@ -16,7 +16,6 @@ const SECRET = JWT_SECRET || "development-secret"
 
 import {
   db,
-  getApp,
   getUser,
   getAiAgent,
   eq,
@@ -26,18 +25,10 @@ import {
   updateThread,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
-import { postToMoltbook } from "../integrations/moltbook"
-import { isDevelopment } from ".."
+import { postToMoltbook, checkMoltbookHealth } from "../integrations/moltbook"
+import { isDevelopment, MOLTBOOK_API_KEYS, API_URL } from ".."
 
 const JWT_EXPIRY = "30d"
-
-const MOLTBOOK_API_KEYS = {
-  chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
-  vex: process.env.MOLTBOOK_VEX_API_KEY,
-  sushi: process.env.MOLTBOOK_SUSHI_API_KEY,
-  zarathustra: process.env.MOLTBOOK_ZARATHUSTRA_API_KEY,
-}
-const API_URL = process.env.VITE_API_URL || "http://localhost:3001"
 
 interface MoltbookPostResult {
   success: boolean
@@ -220,7 +211,6 @@ Ending Guidelines:
   } catch (error) {
     captureException(error)
     console.error("❌ Error generating Moltbook post:", error)
-
     throw error
   }
 }
@@ -257,6 +247,17 @@ export async function postToMoltbookCron({
     return { success: false, error: "API key not configured" }
   }
 
+  // Health check before expensive operations
+  const health = await checkMoltbookHealth(MOLTBOOK_API_KEY)
+  if (!health.healthy) {
+    console.error("❌ Moltbook API unhealthy:", health.error)
+    return {
+      success: false,
+      error: `Moltbook API unavailable: ${health.error}`,
+    }
+  }
+  console.log("✅ Moltbook API health check passed")
+
   try {
     let instructions = ""
     let questionId = ""
@@ -273,6 +274,24 @@ export async function postToMoltbookCron({
       throw new Error("App not found for Moltbook posting")
     }
 
+    // Rate limit check: 30 minutes cooldown
+    if (app.moltPostedOn) {
+      const timeSinceLastPost = Date.now() - app.moltPostedOn.getTime()
+      const thirtyMinutes = 30 * 60 * 1000
+      if (timeSinceLastPost < thirtyMinutes) {
+        const minutesLeft = Math.ceil(
+          (thirtyMinutes - timeSinceLastPost) / 60000,
+        )
+        console.log(
+          `⏸️ Rate limit: Last post was ${Math.floor(timeSinceLastPost / 60000)} minutes ago. Wait ${minutesLeft} more minutes.`,
+        )
+        return {
+          success: false,
+          error: `Rate limited. Try again in ${minutesLeft} minutes.`,
+        }
+      }
+    }
+
     // 1. Check for unasked trend questions (fetch 5 for variety, scoped to this app)
     let unaskedQuestions = await db
       .select()
@@ -284,7 +303,9 @@ export async function postToMoltbookCron({
 
     if (!unaskedQuestions || unaskedQuestions.length === 0) {
       console.log("📊 No unasked questions found, analyzing trends...")
-      await analyzeMoltbookTrends()
+      await analyzeMoltbookTrends({
+        slug,
+      })
 
       // Re-query after generating new questions
       unaskedQuestions = await db
@@ -383,6 +404,15 @@ export async function postToMoltbookCron({
         moltUrl: `https://moltbook.com/p/${result.post_id}`,
         submolt: post.submolt,
       })
+    }
+
+    // Update moltPostedOn timestamp for rate limiting
+    if (result.success) {
+      await db
+        .update(apps)
+        .set({ moltPostedOn: new Date() })
+        .where(eq(apps.id, app.id))
+      console.log(`✅ Updated moltPostedOn timestamp for rate limiting`)
     }
 
     return result

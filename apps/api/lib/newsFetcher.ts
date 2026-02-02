@@ -1,6 +1,9 @@
 import Parser from "rss-parser"
-import { db, eq, and, desc, sql } from "@repo/db"
+import { db, eq, and, desc, sql, cosineDistance } from "@repo/db"
 import { newsArticles } from "@repo/db/src/schema"
+import { embed } from "ai"
+import { getEmbeddingProvider } from "./getModelProvider"
+import { asc } from "drizzle-orm"
 
 const parser = new Parser()
 
@@ -51,6 +54,23 @@ const NEWS_SOURCES = {
 }
 
 /**
+ * Generate embedding for text
+ */
+async function getEmbedding(text: string): Promise<number[] | null> {
+  try {
+    const provider = await getEmbeddingProvider()
+    const { embedding } = await embed({
+      model: provider.embedding("text-embedding-3-small"),
+      value: text,
+    })
+    return embedding
+  } catch (error) {
+    console.error("❌ Error generating embedding:", error)
+    return null
+  }
+}
+
+/**
  * Fetch news from a single RSS feed
  */
 async function fetchFeed(
@@ -60,40 +80,62 @@ async function fetchFeed(
 ): Promise<void> {
   try {
     const feed = await parser.parseURL(feedUrl)
+    const validItems = feed.items.filter((item) => item.link && item.title)
 
-    for (const item of feed.items) {
-      if (!item.link || !item.title) continue
+    // Process in batches of 5 to avoid rate limits
+    const BATCH_SIZE = 5
+    for (let i = 0; i < validItems.length; i += BATCH_SIZE) {
+      const batch = validItems.slice(i, i + BATCH_SIZE)
 
-      // Check if article already exists
-      const existing = await db
-        .select()
-        .from(newsArticles)
-        .where(
-          and(
-            eq(newsArticles.source, source),
-            eq(newsArticles.sourceUrl, item.link),
-          ),
-        )
-        .limit(1)
+      await Promise.all(
+        batch.map(async (item) => {
+          try {
+            if (!item.link || !item.title) return
 
-      if (existing.length > 0) continue
+            // Check if article already exists
+            const existing = await db
+              .select()
+              .from(newsArticles)
+              .where(
+                and(
+                  eq(newsArticles.source, source),
+                  eq(newsArticles.sourceUrl, item.link),
+                ),
+              )
+              .limit(1)
 
-      // Insert new article
-      await db.insert(newsArticles).values({
-        source,
-        sourceUrl: item.link,
-        title: item.title,
-        description: item.contentSnippet || item.content || null,
-        content: item.content || null,
-        author: item.creator || null,
-        category,
-        tags: item.categories || [],
-        imageUrl: item.enclosure?.url || null,
-        publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
-        fetchedAt: new Date(),
-      })
+            if (existing.length > 0) return
 
-      console.log(`✅ Fetched: ${source} - ${item.title}`)
+            // Generate embedding
+            const contentText =
+              `${item.title || ""} ${item.contentSnippet || item.content || ""} ${item.categories?.join(" ") || ""}`.trim()
+            const embedding = await getEmbedding(contentText)
+
+            // Insert new article
+            await db.insert(newsArticles).values({
+              source,
+              sourceUrl: item.link,
+              title: item.title,
+              description: item.contentSnippet || item.content || null,
+              content: item.content || null,
+              author: item.creator || null,
+              category,
+              tags: item.categories || [],
+              imageUrl: item.enclosure?.url || null,
+              publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
+              fetchedAt: new Date(),
+              embedding,
+            })
+
+            console.log(`✅ Fetched: ${source} - ${item.title}`)
+          } catch (err) {
+            console.error(
+              `❌ Error processing item ${item.title} from ${source}:`,
+              err,
+            )
+          }
+        }),
+      )
     }
   } catch (error) {
     console.error(`❌ Error fetching ${source} feed:`, error)
@@ -179,8 +221,18 @@ export async function searchNews(
   query: string,
   limit: number = 20,
 ): Promise<any[]> {
-  // TODO: Implement vector search with embeddings
-  // For now, simple text search
+  // Vector search with embeddings
+  const embedding = await getEmbedding(query)
+
+  if (embedding) {
+    return await db
+      .select()
+      .from(newsArticles)
+      .orderBy(asc(cosineDistance(newsArticles.embedding, embedding)))
+      .limit(limit)
+  }
+
+  // Fallback: simple text search
   return await db
     .select()
     .from(newsArticles)

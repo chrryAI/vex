@@ -6,16 +6,7 @@ import {
   followAgent,
 } from "../integrations/moltbook"
 import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
-import { captureException } from "@sentry/node"
-
-const MOLTBOOK_API_KEYS = {
-  chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
-  vex: process.env.MOLTBOOK_VEX_API_KEY,
-  sushi: process.env.MOLTBOOK_SUSHI_API_KEY,
-  zarathustra: process.env.MOLTBOOK_ZARATHUSTRA_API_KEY,
-}
-
-const MOLTBOOK_API_KEY = MOLTBOOK_API_KEYS.chrry || ""
+import { isProduction, MOLTBOOK_API_KEYS } from ".."
 
 // Helper to get DeepSeek model - mirroring pattern in other files
 async function getAIModel() {
@@ -25,28 +16,26 @@ async function getAIModel() {
     where: eq(aiAgents.name, "sushi"),
   })
 
-  const modelName =
-    agent &&
-    typeof (agent as any).modelName === "string" &&
-    (agent as any).modelName.length > 0
-      ? (agent as any).modelName
-      : "deepseek-chat"
-
   // Fallback or specific configuration
   const deepseek = createDeepSeek({
     apiKey: process.env.DEEPSEEK_API_KEY || "",
   })
 
-  return deepseek(modelName)
+  return deepseek("deepseek-chat")
 }
 
 export async function analyzeMoltbookTrends({
-  sort = "top",
+  sort,
+  slug = "chrry",
 }: {
   sort?: "hot" | "new" | "top" | "rising"
+  slug?: string
 } = {}) {
+  const MOLTBOOK_API_KEY =
+    MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]
+
   if (!MOLTBOOK_API_KEY) {
-    console.error("❌ MOLTBOOK_API_KEY is missing")
+    console.error("❌ MOLTBOOK_API_KEY not configured for", slug)
     return
   }
 
@@ -86,6 +75,9 @@ export async function analyzeMoltbookTrends({
 
   console.log(`💾 Saved ${newPostsCount} new posts to database`)
 
+  if (isProduction) {
+    return
+  }
   // 3. Analyze with DeepSeek
   try {
     const deepseek = await getAIModel()
@@ -144,9 +136,9 @@ export async function analyzeMoltbookTrends({
 
       // 5. Store Questions
       // We need an appId for 'moltQuestions'.
-      // I'll try to find the 'vex' or 'chrry' app ID.
+      // Use the slug parameter to find the correct app
       const app = await db.query.apps.findFirst({
-        where: (apps, { eq }) => eq(apps.slug, "chrry"), // or 'chrry'
+        where: (apps, { eq }) => eq(apps.slug, slug),
       })
 
       if (app) {
@@ -172,7 +164,7 @@ export async function analyzeMoltbookTrends({
 
     // Get app for system prompt context
     const app = await db.query.apps.findFirst({
-      where: (apps, { eq }) => eq(apps.slug, "chrry"),
+      where: (apps, { eq }) => eq(apps.slug, slug),
     })
 
     const systemContext = app?.systemPrompt
