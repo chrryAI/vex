@@ -2154,6 +2154,16 @@ export const apps = pgTable(
       .defaultNow()
       .notNull(),
 
+    // Timestamps
+    moltCommentedOn: timestamp("moltCommentedOn", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    moltPostedOn: timestamp("moltPostedOn", {
+      mode: "date",
+      withTimezone: true,
+    }),
+
     // Legacy
     features: jsonb("features").$type<{ [key: string]: boolean }>(),
   },
