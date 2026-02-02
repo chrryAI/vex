@@ -26,17 +26,9 @@ import {
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
 import { postToMoltbook } from "../integrations/moltbook"
-import { isDevelopment } from ".."
+import { isDevelopment, MOLTBOOK_API_KEYS, API_URL } from ".."
 
 const JWT_EXPIRY = "30d"
-
-const MOLTBOOK_API_KEYS = {
-  chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
-  vex: process.env.MOLTBOOK_VEX_API_KEY,
-  sushi: process.env.MOLTBOOK_SUSHI_API_KEY,
-  zarathustra: process.env.MOLTBOOK_ZARATHUSTRA_API_KEY,
-}
-const API_URL = process.env.VITE_API_URL || "http://localhost:3001"
 
 interface MoltbookPostResult {
   success: boolean
@@ -219,7 +211,6 @@ Ending Guidelines:
   } catch (error) {
     captureException(error)
     console.error("❌ Error generating Moltbook post:", error)
-
     throw error
   }
 }
