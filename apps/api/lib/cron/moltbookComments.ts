@@ -9,13 +9,7 @@ import {
 import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
 import { randomInt } from "crypto"
-
-const MOLTBOOK_API_KEYS = {
-  chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
-  vex: process.env.MOLTBOOK_VEX_API_KEY,
-  sushi: process.env.MOLTBOOK_SUSHI_API_KEY,
-  zarathustra: process.env.MOLTBOOK_ZARATHUSTRA_API_KEY,
-}
+import { MOLTBOOK_API_KEYS } from ".."
 
 const getAIModel = () => {
   const modelName = "deepseek-reasoner"
