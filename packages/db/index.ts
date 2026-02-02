@@ -115,6 +115,7 @@ export {
   talentInvitations,
   premiumSubscriptions,
   authExchangeCodes,
+  apps,
 }
 
 dotenv.config()

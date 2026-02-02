@@ -54,11 +54,21 @@ function setCorsHeaders(c: Context) {
     }
   } else if (
     origin &&
-    (origin.includes(".chrry.ai") ||
-      origin.includes(".chrry.dev") ||
-      origin.includes(".chrry.store"))
+    (() => {
+      try {
+        const hostname = new URL(origin).hostname
+        return (
+          hostname.endsWith(".chrry.ai") ||
+          hostname.endsWith(".chrry.dev") ||
+          hostname.endsWith(".chrry.store")
+        )
+      } catch {
+        return false
+      }
+    })()
   ) {
     // Production: allow cross-domain requests between chrry domains (e.g., e2e.chrry.ai → e2e.chrry.dev)
+    // Securely check hostname suffix to prevent origin reflection attacks
     c.header("Access-Control-Allow-Origin", origin)
     c.header("Access-Control-Allow-Credentials", "true")
     c.header("Vary", "Origin")

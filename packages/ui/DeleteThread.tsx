@@ -35,6 +35,7 @@ export default function DeleteThread({
   return (
     <ConfirmButton
       dataTestId="delete-thread-button"
+      title={t("Delete thread")}
       className={clsx("transparent small", className)}
       style={style}
       confirm={
