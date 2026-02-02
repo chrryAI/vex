@@ -317,7 +317,7 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
   const sortParam = c.req.query("sort")
   const allowedSorts = ["hot", "new", "top", "rising"] as const
   const sort =
-    sortParam && allowedSorts.includes(sortParam as any)
+    sortParam && allowedSorts.includes(sortParam)
       ? (sortParam as "hot" | "new" | "top" | "rising")
       : undefined
 

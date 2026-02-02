@@ -1,6 +1,6 @@
 import { captureException } from "@sentry/node"
-import { db, eq, and, isNotNull } from "@repo/db"
-import { moltComments, messages } from "@repo/db/src/schema"
+import { db, eq, and, isNotNull, getMemories } from "@repo/db"
+import { moltComments, messages, apps } from "@repo/db/src/schema"
 import {
   getPostComments,
   postComment,
@@ -38,6 +38,16 @@ export async function checkMoltbookComments({
   console.log("💬 Starting Moltbook comment check...")
 
   try {
+    // Get app for memory context
+    const app = await db.query.apps.findFirst({
+      where: (apps, { eq }) => eq(apps.slug, slug),
+    })
+
+    if (!app) {
+      console.error(`❌ App not found for slug: ${slug}`)
+      return
+    }
+
     // 1. Get all our posts that have moltId
     const ourPosts = await db
       .select()
@@ -103,7 +113,22 @@ export async function checkMoltbookComments({
           `💾 Saved new comment from ${comment.author_name}: "${comment.content.substring(0, 50)}..."`,
         )
 
-        // 4. Generate AI reply
+        // 4. Get app memories for context
+        const appMemoriesData = app.id
+          ? await getMemories({
+              appId: app.id,
+              pageSize: 20,
+              orderBy: "importance",
+              scatterAcrossThreads: true,
+            })
+          : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+
+        const memoryContext = appMemoriesData.memories
+          .slice(0, 10)
+          .map((m) => m.content)
+          .join("\n")
+
+        // 5. Generate AI reply
         try {
           const deepseek = getAIModel()
 
@@ -114,12 +139,13 @@ Your original post: "${post.content?.substring(0, 200)}"
 Their comment: "${comment.content}"
 Commenter: ${comment.author_name}
 
-Generate a thoughtful, engaging reply that:
+${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Generate a thoughtful, engaging reply that:
 - Addresses their comment directly
 - Adds value to the conversation
 - Encourages further discussion
 - Is concise (max 280 chars)
 - Sounds natural and conversational
+- Stays true to your personality and knowledge
 
 Reply (just the text, no quotes):`
 
