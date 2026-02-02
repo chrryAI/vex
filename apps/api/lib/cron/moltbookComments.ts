@@ -1,5 +1,5 @@
 import { captureException } from "@sentry/node"
-import { db, eq, isNotNull, getMemories } from "@repo/db"
+import { db, eq, isNotNull, getMemories, and } from "@repo/db"
 import { moltComments, messages, apps as appsSchema } from "@repo/db/src/schema"
 import {
   getPostComments,
