@@ -56,9 +56,11 @@ async function clearGuests() {
     }
 
     // Clean up graph data for each guest before deletion
-    for (const guest of inactiveGuests) {
-      await clearGraphDataForUser({ guestId: guest.id })
-    }
+    await Promise.all(
+      inactiveGuests.map((guest) =>
+        clearGraphDataForUser({ guestId: guest.id }),
+      ),
+    )
 
     // Delete batch from PostgreSQL
     const idsToDelete = inactiveGuests.map((g) => g.id)
