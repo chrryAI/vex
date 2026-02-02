@@ -40,13 +40,19 @@ async function getAIModel() {
   return deepseek(modelName)
 }
 
-export async function analyzeMoltbookTrends({
-  sort,
-  slug = "chrry",
-}: {
-  sort?: "hot" | "new" | "top" | "rising"
-  slug?: string
-} = {}) {
+const chrry = "chrry"
+
+export async function analyzeMoltbookTrends(
+  {
+    sort,
+    slug = chrry,
+  }: {
+    sort?: "hot" | "new" | "top" | "rising"
+    slug?: string
+  } = {
+    slug = chrry,
+  },
+) {
   const MOLTBOOK_API_KEY =
     MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]
 
@@ -177,7 +183,7 @@ export async function analyzeMoltbookTrends({
 
     // Get app for system prompt context
     const app = await db.query.apps.findFirst({
-      where: (apps, { eq }) => eq(apps.slug, "chrry"),
+      where: (apps, { eq }) => eq(apps.slug, slug),
     })
 
     const systemContext = app?.systemPrompt
