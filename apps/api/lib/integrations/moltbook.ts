@@ -17,6 +17,7 @@ interface MoltbookPost {
   url?: string
   submolt: string
   author: string
+  author_id: string
   score: number
   created_at: string
 }
@@ -114,6 +115,7 @@ export async function postToMoltbook(
     if (!response.ok) {
       const errorData = await response.json()
       console.error("❌ Moltbook API Error Response:", errorData)
+      captureException(new Error("❌ Moltbook API Error Response"))
       return {
         success: false,
         error:
@@ -188,5 +190,153 @@ export async function getAgentProfile(
     captureException(error)
     console.error("❌ Error fetching agent profile:", error)
     return null
+  }
+}
+
+interface MoltbookComment {
+  id: string
+  post_id: string
+  author_id: string
+  author_name: string
+  content: string
+  created_at: string
+  parent_id?: string
+}
+
+export async function getPostComments(
+  apiKey: string,
+  postId: string,
+): Promise<MoltbookComment[]> {
+  try {
+    const response = await fetchWithTimeout(
+      `${MOLTBOOK_API_BASE}/posts/${postId}/comments`,
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      },
+    )
+
+    if (!response.ok) {
+      throw new Error(`Moltbook API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.comments || []
+  } catch (error) {
+    captureException(error)
+    console.error(`❌ Error fetching comments for post ${postId}:`, error)
+    return []
+  }
+}
+
+export async function postComment(
+  apiKey: string,
+  postId: string,
+  content: string,
+  parentId?: string,
+): Promise<{ success: boolean; comment_id?: string; error?: string }> {
+  try {
+    const response = await fetchWithTimeout(
+      `${MOLTBOOK_API_BASE}/posts/${postId}/comments`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content,
+          parent_id: parentId,
+        }),
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("❌ Moltbook Comment API Error:", errorData)
+      captureException(new Error("❌ Moltbook Comment API Error"))
+      return {
+        success: false,
+        error:
+          errorData.message || errorData.error || JSON.stringify(errorData),
+      }
+    }
+
+    const data = await response.json()
+    return { success: true, comment_id: data.comment.id }
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Error posting comment to Moltbook:", error)
+    return { success: false, error: String(error) }
+  }
+}
+
+export async function followAgent(
+  apiKey: string,
+  agentId: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetchWithTimeout(
+      `${MOLTBOOK_API_BASE}/agents/${agentId}/follow`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("❌ Moltbook Follow API Error:", errorData)
+      return {
+        success: false,
+        error:
+          errorData.message || errorData.error || JSON.stringify(errorData),
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Error following agent on Moltbook:", error)
+    return { success: false, error: String(error) }
+  }
+}
+
+export async function votePost(
+  apiKey: string,
+  postId: string,
+  direction: "up" | "down",
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetchWithTimeout(
+      `${MOLTBOOK_API_BASE}/posts/${postId}/vote`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ direction }),
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error("❌ Moltbook Vote API Error:", errorData)
+      return {
+        success: false,
+        error:
+          errorData.message || errorData.error || JSON.stringify(errorData),
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Error voting on Moltbook post:", error)
+    return { success: false, error: String(error) }
   }
 }

@@ -329,7 +329,7 @@ test("Debate", async ({ page }) => {
 })
 
 test("Collaboration", async ({ page, browser }) => {
-  await clean({ page, isLive })
+  await clean({ page, isLive: false })
 
-  await collaboration({ page, browser, isMember, isLive })
+  await collaboration({ page, browser, isMember, isLive: false })
 })

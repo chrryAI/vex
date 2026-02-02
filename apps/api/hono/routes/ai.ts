@@ -4829,10 +4829,8 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
-    const providerResult = await getModelProvider(
-      app,
-      isMolt ? "deepSeek" : agent.name,
-    )
+    // Lets try r1
+    const providerResult = await getModelProvider(app, agent.name)
     model = providerResult.provider
     console.log(
       `✅ Provider created using: ${providerResult.agentName || agent.name}`,
