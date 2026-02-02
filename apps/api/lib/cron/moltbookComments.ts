@@ -83,7 +83,10 @@ export async function checkMoltbookComments({
       for (const comment of comments) {
         // Skip comments without author info (API inconsistency)
         if (!comment.author_id || !comment.author_name) {
-          console.log(`⏭️ Skipping comment ${comment.id} - missing author info`)
+          console.log(
+            `⏭️ Skipping comment ${comment.id} - missing author info`,
+            comment,
+          )
           continue
         }
 
