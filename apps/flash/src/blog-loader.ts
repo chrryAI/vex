@@ -82,10 +82,7 @@ export function getBlogPosts(): BlogPost[] {
  */
 export function getBlogPost(slug: string): BlogPostWithContent | null {
   // Return cached result in production
-  if (
-    process.env.NODE_ENV === "production" &&
-    cachedPostContent.has(slug)
-  ) {
+  if (process.env.NODE_ENV === "production" && cachedPostContent.has(slug)) {
     return cachedPostContent.get(slug)!
   }
 

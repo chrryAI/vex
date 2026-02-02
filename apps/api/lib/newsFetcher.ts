@@ -107,7 +107,8 @@ async function fetchFeed(
             if (existing.length > 0) return
 
             // Generate embedding
-            const contentText = `${item.title || ""} ${item.contentSnippet || item.content || ""} ${item.categories?.join(" ") || ""}`.trim()
+            const contentText =
+              `${item.title || ""} ${item.contentSnippet || item.content || ""} ${item.categories?.join(" ") || ""}`.trim()
             const embedding = await getEmbedding(contentText)
 
             // Insert new article
