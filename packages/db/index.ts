@@ -137,6 +137,7 @@ export {
   sql,
   eq,
   gte,
+  isNotNull,
   inArray,
   lt,
   desc,
