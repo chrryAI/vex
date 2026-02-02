@@ -59,42 +59,8 @@ function App() {
     }
   }
 
-  const handleNavigate = (url: string) => {
-    setTabs(
-      tabs.map((t) =>
-        t.id === activeTabId ? { ...t, url, title: new URL(url).hostname } : t,
-      ),
-    )
-    // TODO: Send navigation command to main process
-    console.log("Navigate to:", url)
-  }
-
-  const handleBack = () => {
-    // TODO: Implement back navigation
-    console.log("Go back")
-  }
-
-  const handleForward = () => {
-    // TODO: Implement forward navigation
-    console.log("Go forward")
-  }
-
-  const handleReload = () => {
-    // TODO: Implement reload
-    console.log("Reload")
-  }
-
   return (
     <div className="app">
-      {/* <BrowserHeader
-        url={activeTab?.url || ""}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        onNavigate={handleNavigate}
-        onBack={handleBack}
-        onForward={handleForward}
-        onReload={handleReload}
-      /> */}
       <TabBar
         tabs={tabs}
         activeTabId={activeTabId}

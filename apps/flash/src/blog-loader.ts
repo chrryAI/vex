@@ -19,6 +19,10 @@ export interface BlogPostWithContent extends BlogPost {
 
 const BLOG_DIR = path.join(process.cwd(), "content/blog")
 
+// Cache variables
+let cachedPosts: BlogPost[] | null = null
+const cachedPostContent = new Map<string, BlogPostWithContent>()
+
 /**
  * Sanitize slug for URL safety
  */
@@ -33,10 +37,15 @@ function sanitizeSlug(text: string): string {
  * Get all blog posts sorted by date (newest first)
  */
 export function getBlogPosts(): BlogPost[] {
+  // Return cached result in production
+  if (process.env.NODE_ENV === "production" && cachedPosts) {
+    return cachedPosts
+  }
+
   try {
     const files = fs.readdirSync(BLOG_DIR)
 
-    return files
+    const posts = files
       .filter((file) => file.endsWith(".md"))
       .map((file) => {
         const filePath = path.join(BLOG_DIR, file)
@@ -55,6 +64,13 @@ export function getBlogPosts(): BlogPost[] {
         }
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+    // Cache result in production
+    if (process.env.NODE_ENV === "production") {
+      cachedPosts = posts
+    }
+
+    return posts
   } catch (error) {
     console.error("Error reading blog posts:", error)
     return []
@@ -65,6 +81,11 @@ export function getBlogPosts(): BlogPost[] {
  * Get a single blog post by slug
  */
 export function getBlogPost(slug: string): BlogPostWithContent | null {
+  // Return cached result in production
+  if (process.env.NODE_ENV === "production" && cachedPostContent.has(slug)) {
+    return cachedPostContent.get(slug)!
+  }
+
   try {
     const filePath = path.join(BLOG_DIR, `${slug}.md`)
 
@@ -75,7 +96,7 @@ export function getBlogPost(slug: string): BlogPostWithContent | null {
     const fileContent = fs.readFileSync(filePath, "utf-8")
     const { data, content } = matter(fileContent)
 
-    return {
+    const post: BlogPostWithContent = {
       slug: sanitizeSlug(slug),
       title: data.title || "Untitled",
       excerpt: data.excerpt || "No excerpt available",
@@ -86,6 +107,13 @@ export function getBlogPost(slug: string): BlogPostWithContent | null {
       keywords: data.keywords || [],
       content, // React-markdown handles rendering safely
     }
+
+    // Cache result in production
+    if (process.env.NODE_ENV === "production") {
+      cachedPostContent.set(slug, post)
+    }
+
+    return post
   } catch (error) {
     console.error(`Error reading blog post ${slug}:`, error)
     return null

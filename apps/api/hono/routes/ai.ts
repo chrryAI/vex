@@ -295,15 +295,17 @@ async function getRelevantMemoryContext({
     // Check if user is the app creator
     const isAppCreator = app && isOwner(app, { userId, guestId })
 
-    // Get user memories scattered across different threads (exclude current thread)
-    const userMemoriesData: {
-      memories: memory[]
-      totalCount: number
-      hasNextPage: boolean
-      nextPage: number | null
-    } =
+    // Get app-specific memories
+    // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
+    const appMemoryPageSize = isAppCreator
+      ? pageSize * 10 // Creators get 150 app memories (10x boost)
+      : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
+
+    // Execute memory queries in parallel for performance
+    const [userMemoriesData, appMemoriesData] = await Promise.all([
+      // Get user memories scattered across different threads (exclude current thread)
       userId || guestId
-        ? await getMemories({
+        ? getMemories({
             userId,
             guestId,
             pageSize,
@@ -311,7 +313,29 @@ async function getRelevantMemoryContext({
             excludeThreadId: threadId, // Don't load memories from current thread
             scatterAcrossThreads: true, // Get diverse memories from different conversations
           })
-        : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+        : Promise.resolve({
+            memories: [],
+            totalCount: 0,
+            hasNextPage: false,
+            nextPage: null,
+          }),
+
+      // Get app-specific memories
+      appId
+        ? getMemories({
+            appId,
+            pageSize: appMemoryPageSize,
+            orderBy: "importance",
+            excludeThreadId: threadId,
+            scatterAcrossThreads: true,
+          })
+        : Promise.resolve({
+            memories: [],
+            totalCount: 0,
+            hasNextPage: false,
+            nextPage: null,
+          }),
+    ])
 
     const userMemoriesResult = userMemoriesData.memories.filter(
       (memory) =>
@@ -320,27 +344,6 @@ async function getRelevantMemoryContext({
           guestId,
         }) && !memory.appId,
     )
-
-    // Get app-specific memories
-    // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
-    const appMemoryPageSize = isAppCreator
-      ? pageSize * 10 // Creators get 150 app memories (10x boost)
-      : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
-
-    const appMemoriesData: {
-      memories: memory[]
-      totalCount: number
-      hasNextPage: boolean
-      nextPage: number | null
-    } = appId
-      ? await getMemories({
-          appId,
-          pageSize: appMemoryPageSize,
-          orderBy: "importance",
-          excludeThreadId: threadId,
-          scatterAcrossThreads: true,
-        })
-      : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     const appMemoriesResult = appMemoriesData.memories.filter(
       (memory) => !memory.userId && !memory.guestId && !!memory.appId,
@@ -1407,15 +1410,25 @@ JUST DO IT. You have the power. Use the updateTimer tool immediately.
     const storeApps = app.store.apps || []
 
     // Get agents for each app using forApp parameter
-    const appsWithAgents = await Promise.all(
-      storeApps.map(async (storeApp) => {
-        const agents = await getAiAgents({
-          include: storeApp.id,
-          forApp: storeApp,
-        })
-        return { ...storeApp, agents }
-      }),
-    )
+    // Optimized: Fetch all agents in one query (N+1 optimization)
+    const storeAppIds = storeApps.map((a) => a.id)
+    const allAgents = await getAiAgents({
+      include: storeAppIds,
+    })
+
+    const appsWithAgents = storeApps.map((storeApp) => {
+      // Filter agents for this app (global agents + specific app agents)
+      const appAgents = allAgents.filter(
+        (a) => !a.appId || a.appId === storeApp.id,
+      )
+
+      // Apply forApp filtering logic (same as getAiAgents internal logic)
+      const agents = storeApp.onlyAgent
+        ? appAgents.filter((a) => a.name === storeApp.defaultModel)
+        : appAgents
+
+      return { ...storeApp, agents }
+    })
 
     storeContext = `
 ## 🏪 STORE CONTEXT

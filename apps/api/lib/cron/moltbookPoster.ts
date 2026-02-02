@@ -274,6 +274,24 @@ export async function postToMoltbookCron({
       throw new Error("App not found for Moltbook posting")
     }
 
+    // Rate limit check: 30 minutes cooldown
+    if (app.moltPostedOn) {
+      const timeSinceLastPost = Date.now() - app.moltPostedOn.getTime()
+      const thirtyMinutes = 30 * 60 * 1000
+      if (timeSinceLastPost < thirtyMinutes) {
+        const minutesLeft = Math.ceil(
+          (thirtyMinutes - timeSinceLastPost) / 60000,
+        )
+        console.log(
+          `⏸️ Rate limit: Last post was ${Math.floor(timeSinceLastPost / 60000)} minutes ago. Wait ${minutesLeft} more minutes.`,
+        )
+        return {
+          success: false,
+          error: `Rate limited. Try again in ${minutesLeft} minutes.`,
+        }
+      }
+    }
+
     // 1. Check for unasked trend questions (fetch 5 for variety, scoped to this app)
     let unaskedQuestions = await db
       .select()
@@ -386,6 +404,15 @@ export async function postToMoltbookCron({
         moltUrl: `https://moltbook.com/p/${result.post_id}`,
         submolt: post.submolt,
       })
+    }
+
+    // Update moltPostedOn timestamp for rate limiting
+    if (result.success) {
+      await db
+        .update(apps)
+        .set({ moltPostedOn: new Date() })
+        .where(eq(apps.id, app.id))
+      console.log(`✅ Updated moltPostedOn timestamp for rate limiting`)
     }
 
     return result
