@@ -18,6 +18,8 @@ import {
   aiAgent,
   VEX_LIVE_FINGERPRINTS,
   decrypt,
+  inArray,
+  apps as appsSchema,
 } from "@repo/db"
 
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
@@ -775,13 +777,13 @@ const getPearContext = async (): Promise<string> => {
     ]
 
     // Fetch app data for all unique app IDs
-    const apps = await Promise.all(
-      appIds.map((appId) =>
-        getApp({
-          id: appId,
-        }),
-      ),
-    )
+    const apps =
+      appIds.length > 0
+        ? await db
+            .select({ id: appsSchema.id, name: appsSchema.name })
+            .from(appsSchema)
+            .where(inArray(appsSchema.id, appIds))
+        : []
 
     // Create app ID to name mapping
     const appIdToName = apps.reduce(
