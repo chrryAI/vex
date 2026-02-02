@@ -81,6 +81,12 @@ export async function checkMoltbookComments({
 
       // 3. Process each comment
       for (const comment of comments) {
+        // Skip comments without author info (API inconsistency)
+        if (!comment.author_id || !comment.author_name) {
+          console.log(`⏭️ Skipping comment ${comment.id} - missing author info`)
+          continue
+        }
+
         // Check if we already have this comment
         const existingComment = await db.query.moltComments.findFirst({
           where: eq(moltComments.commentId, comment.id),
