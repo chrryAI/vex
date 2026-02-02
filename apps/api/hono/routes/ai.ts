@@ -4237,6 +4237,12 @@ All features are FREE during beta. Transitioning to organic marketing, emphasize
 - The Loop: Architect strikes, Coder reviews, E2E tests validate.
 - Reward: Killed mutants = XP. Level 99 agents = Passive Rental Income.
 - Tone: Emphasize "Japon-Alman" quality. Be a thought partner, not just a tool.
+
+💰 REVENUE SHARE MODEL (70% to App Creators):
+- When users bring their own API keys (OpenAI, Anthropic, Replicate, etc.) and use apps on the platform, **70% of the platform usage revenue goes to the app creator**.
+- This revenue share is based on app usage metrics on the platform when users are using their own API keys.
+- App creators earn passive income from their apps being used by the community.
+- This creates an economic incentive for building high-quality, useful apps that people want to use.
 `.trim()
 
   // 🍐 Pear feedback context for analytics queries

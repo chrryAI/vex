@@ -1,5 +1,5 @@
 import { captureException } from "@sentry/node"
-import { db, eq, isNotNull, getMemories } from "@repo/db"
+import { db, eq, isNotNull, getMemories, and } from "@repo/db"
 import { moltComments, messages, apps as appsSchema } from "@repo/db/src/schema"
 import {
   getPostComments,
@@ -61,7 +61,7 @@ export async function checkMoltbookComments({
     const ourPosts = await db
       .select()
       .from(messages)
-      .where(isNotNull(messages.moltId))
+      .where(and(isNotNull(messages.moltId), eq(messages.appId, app.id)))
       .limit(50) // Check last 50 posts
 
     console.log(`📊 Found ${ourPosts.length} posts with Moltbook IDs`)
@@ -82,7 +82,7 @@ export async function checkMoltbookComments({
       // 3. Process each comment
       for (const comment of comments) {
         // Skip comments without author info (API inconsistency)
-        if (!comment.author_id || !comment.author_name) {
+        if (!comment.author?.id || !comment.author?.name) {
           console.log(`⏭️ Skipping comment ${comment.id} - missing author info`)
           continue
         }
@@ -105,8 +105,8 @@ export async function checkMoltbookComments({
           await db.insert(moltComments).values({
             moltId: post.moltId,
             commentId: comment.id,
-            authorId: comment.author_id,
-            authorName: comment.author_name,
+            authorId: comment.author.id,
+            authorName: comment.author.name,
             content: comment.content,
             replied: false,
             followed: false,
@@ -118,14 +118,14 @@ export async function checkMoltbookComments({
           await db
             .update(moltComments)
             .set({
-              authorName: comment.author_name,
+              authorName: comment.author.name,
               content: comment.content,
               metadata: comment,
             })
             .where(eq(moltComments.commentId, comment.id))
         }
         console.log(
-          `💾 Saved new comment from ${comment.author_name}: "${comment.content.substring(0, 50)}..."`,
+          `💾 Saved new comment from ${comment.author.name}: "${comment.content.substring(0, 50)}..."`,
         )
 
         // 4. Get app memories for context
@@ -151,7 +151,7 @@ export async function checkMoltbookComments({
 
 Your post: "${post.content?.substring(0, 200)}"
 Comment: "${comment.content}"
-Commenter: ${comment.author_name}
+Commenter: ${comment.author.name}
 
 Should you reply to this comment? Only reply if the comment:
 - Asks a meaningful question
@@ -183,13 +183,13 @@ Respond with ONLY "YES" or "NO":`
 
           if (!shouldReply.includes("YES")) {
             console.log(
-              `⏭️ Skipping low-quality comment from ${comment.author_name}: "${comment.content.substring(0, 50)}..."`,
+              `⏭️ Skipping low-quality comment from ${comment.author.name}: "${comment.content.substring(0, 50)}..."`,
             )
             continue
           }
 
           console.log(
-            `✅ Comment quality check passed for ${comment.author_name}`,
+            `✅ Comment quality check passed for ${comment.author.name}`,
           )
         } catch (error) {
           console.error("⚠️ Error in quality filter, proceeding anyway:", error)
@@ -204,13 +204,12 @@ Someone commented on your post.
 
 Your original post: "${post.content?.substring(0, 200)}"
 Their comment: "${comment.content}"
-Commenter: ${comment.author_name}
+Commenter: ${comment.author.name}
 
 ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Generate a thoughtful, engaging reply that:
 - Addresses their comment directly
 - Adds value to the conversation
 - Encourages further discussion
-- Is concise (max 280 chars)
 - Sounds natural and conversational
 - Stays true to your personality and knowledge
 
@@ -228,11 +227,6 @@ Reply (just the text, no quotes):`
           }
 
           replyContent = replyContent.trim()
-
-          // Limit to 280 chars
-          if (replyContent.length > 280) {
-            replyContent = replyContent.substring(0, 277) + "..."
-          }
 
           console.log(`🤖 Generated reply: "${replyContent}"`)
 
@@ -255,7 +249,7 @@ Reply (just the text, no quotes):`
               .where(eq(moltComments.commentId, comment.id))
 
             repliesCount++
-            console.log(`✅ Posted reply to ${comment.author_name}`)
+            console.log(`✅ Posted reply to ${comment.author.name}`)
 
             // Update moltCommentedOn timestamp for rate limiting
             await db
@@ -268,7 +262,7 @@ Reply (just the text, no quotes):`
               // 50% chance to follow (crypto-secure random)
               const followResult = await followAgent(
                 MOLTBOOK_API_KEY,
-                comment.author_id,
+                comment.author.id,
               )
 
               if (followResult.success) {
@@ -277,7 +271,7 @@ Reply (just the text, no quotes):`
                   .set({ followed: true })
                   .where(eq(moltComments.commentId, comment.id))
 
-                console.log(`👥 Followed ${comment.author_name}`)
+                console.log(`👥 Followed ${comment.author.name}`)
               }
             }
           } else {
