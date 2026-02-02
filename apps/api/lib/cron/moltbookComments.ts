@@ -1,6 +1,6 @@
 import { captureException } from "@sentry/node"
 import { db, eq, isNotNull, getMemories } from "@repo/db"
-import { moltComments, messages } from "@repo/db/src/schema"
+import { moltComments, messages, apps as appsSchema } from "@repo/db/src/schema"
 import {
   getPostComments,
   postComment,
@@ -40,6 +40,21 @@ export async function checkMoltbookComments({
     if (!app) {
       console.error(`❌ App not found for slug: ${slug}`)
       return
+    }
+
+    // Rate limit check: 30 minutes cooldown for comments
+    if (app.moltCommentedOn) {
+      const timeSinceLastComment = Date.now() - app.moltCommentedOn.getTime()
+      const thirtyMinutes = 30 * 60 * 1000
+      if (timeSinceLastComment < thirtyMinutes) {
+        const minutesLeft = Math.ceil(
+          (thirtyMinutes - timeSinceLastComment) / 60000,
+        )
+        console.log(
+          `⏸️ Rate limit: Last comment was ${Math.floor(timeSinceLastComment / 60000)} minutes ago. Wait ${minutesLeft} more minutes.`,
+        )
+        return
+      }
     }
 
     // 1. Get all our posts that have moltId
@@ -122,6 +137,58 @@ export async function checkMoltbookComments({
           .map((m) => m.content)
           .join("\n")
 
+        // 4.5. AI Quality Filter - Decide if comment is worth replying to
+        try {
+          const deepseek = getAIModel()
+
+          const filterPrompt = `You are evaluating whether to reply to a comment on your Moltbook post.
+
+Your post: "${post.content?.substring(0, 200)}"
+Comment: "${comment.content}"
+Commenter: ${comment.author_name}
+
+Should you reply to this comment? Only reply if the comment:
+- Asks a meaningful question
+- Adds valuable insight or perspective
+- Engages thoughtfully with your post
+- Opens interesting discussion
+
+DO NOT reply if the comment is:
+- Spam or promotional
+- Low-effort (e.g., just "nice", "cool", emojis only)
+- Off-topic or irrelevant
+- Hostile or trolling
+- Generic/automated
+
+Respond with ONLY "YES" or "NO":`
+
+          const { textStream: filterStream } = await streamText({
+            model: deepseek,
+            prompt: filterPrompt,
+            maxTokens: 10,
+          })
+
+          let shouldReply = ""
+          for await (const chunk of filterStream) {
+            shouldReply += chunk
+          }
+
+          shouldReply = shouldReply.trim().toUpperCase()
+
+          if (!shouldReply.includes("YES")) {
+            console.log(
+              `⏭️ Skipping low-quality comment from ${comment.author_name}: "${comment.content.substring(0, 50)}..."`,
+            )
+            continue
+          }
+
+          console.log(
+            `✅ Comment quality check passed for ${comment.author_name}`,
+          )
+        } catch (error) {
+          console.error("⚠️ Error in quality filter, proceeding anyway:", error)
+        }
+
         // 5. Generate AI reply
         try {
           const deepseek = getAIModel()
@@ -183,6 +250,12 @@ Reply (just the text, no quotes):`
 
             repliesCount++
             console.log(`✅ Posted reply to ${comment.author_name}`)
+
+            // Update moltCommentedOn timestamp for rate limiting
+            await db
+              .update(appsSchema)
+              .set({ moltCommentedOn: new Date() })
+              .where(eq(appsSchema.id, app.id))
 
             // 6. Follow the commenter (optional, throttled)
             if (randomInt(0, 2) === 1) {

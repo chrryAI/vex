@@ -88,8 +88,6 @@ const NavigationContext = createContext<
       setSlug: (slug?: string) => void
       slug?: "atlas" | "peach" | "vault" | "bloom" | string
       goToCalendar: () => void
-      addParam: (key: string, value: string) => void
-      removeParam: (key: string) => void
       showAddToHomeScreen: boolean
       setShowAddToHomeScreen: (value: boolean) => void
     }
@@ -108,16 +106,6 @@ export function NavigationProvider({
     toString: () => string
   } // URL search params with URLSearchParams-compatible API
 }) {
-  // TODO: Move navigation logic here
-
-  const addParam = (key: string, value: string) => {
-    // TODO: Implement
-  }
-
-  const removeParam = (key: string) => {
-    // TODO: Implement
-  }
-
   // useNavigation will read from window.__ROUTER_STATE__ injected by server
   const navigation = useNavigation()
 
@@ -233,7 +221,7 @@ export function NavigationProvider({
     const whiteLabel = app?.slug
       ? whiteLabels.find((a) => a.slug === app.slug)
       : undefined
-    !value && removeParam("showInstall")
+    !value && navigation.removeParams("showInstall")
     if (
       !isStandalone &&
       value &&
@@ -335,8 +323,6 @@ export function NavigationProvider({
         setIsHome,
         goToCalendar,
         slug,
-        addParam,
-        removeParam,
         showAddToHomeScreen,
         isNewChat,
         setIsNewChat,

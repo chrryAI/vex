@@ -96,8 +96,7 @@ export default function Agent({
 
   const { aiAgents } = useChat()
 
-  const { removeParam, searchParams, addParam, addParams } =
-    useNavigationContext()
+  const { removeParams, searchParams, addParams } = useNavigationContext()
 
   const { isMobileDevice } = useTheme()
 
@@ -459,7 +458,7 @@ export default function Agent({
       setTabInternal(value)
       value !== "settings" && addParams({ tab: value })
     } else {
-      removeParam("tab")
+      removeParams("tab")
     }
   }
 
