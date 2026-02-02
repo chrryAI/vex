@@ -160,11 +160,15 @@ Should you reply to this comment? Only reply if the comment:
 - Opens interesting discussion
 
 DO NOT reply if the comment is:
-- Spam or promotional
+- Spam or promotional (e.g., "Check out...", "Visit...", "Subscribe to...", links to other content)
+- Self-promotion or advertising (mentions other projects, agents, or services)
 - Low-effort (e.g., just "nice", "cool", emojis only)
 - Off-topic or irrelevant
 - Hostile or trolling
 - Generic/automated
+- Contains promotional links or redirects (e.g., "/something", "m/something")
+
+IMPORTANT: If the comment contains ANY promotional language, links, or redirects to other content, respond with "NO".
 
 Respond with ONLY "YES" or "NO":`
 
