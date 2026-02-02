@@ -16,7 +16,6 @@ const SECRET = JWT_SECRET || "development-secret"
 
 import {
   db,
-  getApp,
   getUser,
   getAiAgent,
   eq,

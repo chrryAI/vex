@@ -1,6 +1,6 @@
 import { captureException } from "@sentry/node"
-import { db, eq, and, isNotNull, getMemories } from "@repo/db"
-import { moltComments, messages, apps } from "@repo/db/src/schema"
+import { db, eq, isNotNull, getMemories } from "@repo/db"
+import { moltComments, messages } from "@repo/db/src/schema"
 import {
   getPostComments,
   postComment,
