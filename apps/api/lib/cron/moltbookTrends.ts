@@ -6,7 +6,6 @@ import {
   followAgent,
 } from "../integrations/moltbook"
 import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
-import { captureException } from "@sentry/node"
 
 const MOLTBOOK_API_KEYS = {
   chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
@@ -40,19 +39,13 @@ async function getAIModel() {
   return deepseek(modelName)
 }
 
-const chrry = "chrry"
-
-export async function analyzeMoltbookTrends(
-  {
-    sort,
-    slug = chrry,
-  }: {
-    sort?: "hot" | "new" | "top" | "rising"
-    slug?: string
-  } = {
-    slug = chrry,
-  },
-) {
+export async function analyzeMoltbookTrends({
+  sort,
+  slug = "chrry",
+}: {
+  sort?: "hot" | "new" | "top" | "rising"
+  slug?: string
+} = {}) {
   const MOLTBOOK_API_KEY =
     MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]
 

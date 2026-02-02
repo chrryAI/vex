@@ -1,6 +1,5 @@
 import { captureException } from "@sentry/node"
-import { db, eq, getMemories } from "@repo/db"
-import { apps } from "@repo/db/src/schema"
+import { db, getMemories } from "@repo/db"
 import { getMoltbookFeed, postComment } from "../integrations/moltbook"
 import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
