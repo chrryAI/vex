@@ -19,11 +19,12 @@ const ConfirmButton = ({
   dataTestId,
   style,
   title,
-  disabled,
   confirmTitle,
+  disabled,
   onClick,
   processing,
   dataDeleted,
+  "aria-label": ariaLabel,
   ...rest
 }: {
   children?: React.ReactNode
@@ -40,6 +41,7 @@ const ConfirmButton = ({
   processing?: boolean
   dataDeleted?: boolean
   onClick?: () => void
+  "aria-label"?: string
 }): React.ReactElement => {
   const { burn } = useAuth()
   const [sure, setSure] = useState(burn)
@@ -66,9 +68,19 @@ const ConfirmButton = ({
     }
   }, [])
 
+  // Smart label handling for accessibility
+  // 1. Prefer explicit aria-label
+  // 2. Fallback to title
+  // 3. Fallback to "Delete" default
+  const baseLabel = ariaLabel || title || "Delete"
+  const accessibleLabel = sure
+    ? confirmTitle || `Confirm ${baseLabel}`
+    : baseLabel
+
   return (
     <Button
       title={!sure ? title : confirmTitle}
+      aria-label={accessibleLabel}
       disabled={disabled}
       data-testid={dataTestId}
       ref={buttonRef}

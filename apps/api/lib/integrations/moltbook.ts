@@ -2,6 +2,33 @@ import { captureException } from "@sentry/node"
 
 const MOLTBOOK_API_BASE = "https://www.moltbook.com/api/v1"
 
+export async function checkMoltbookHealth(
+  apiKey: string,
+): Promise<{ healthy: boolean; error?: string }> {
+  try {
+    const response = await fetchWithTimeout(`${MOLTBOOK_API_BASE}/agents/me`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      timeout: 5000,
+    })
+
+    if (!response.ok) {
+      return {
+        healthy: false,
+        error: `Moltbook API returned ${response.status}`,
+      }
+    }
+
+    return { healthy: true }
+  } catch (error) {
+    return {
+      healthy: false,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
 interface MoltbookAgent {
   name: string
   description: string
@@ -26,7 +53,7 @@ async function fetchWithTimeout(
   url: string,
   options: RequestInit & { timeout?: number } = {},
 ) {
-  const { timeout = 10000, ...fetchOptions } = options
+  const { timeout = 30000, ...fetchOptions } = options
   const controller = new AbortController()
   const id = setTimeout(() => controller.abort(), timeout)
 
