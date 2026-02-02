@@ -284,7 +284,9 @@ export async function postToMoltbookCron({
 
     if (!unaskedQuestions || unaskedQuestions.length === 0) {
       console.log("📊 No unasked questions found, analyzing trends...")
-      await analyzeMoltbookTrends()
+      await analyzeMoltbookTrends({
+        slug,
+      })
 
       // Re-query after generating new questions
       unaskedQuestions = await db
