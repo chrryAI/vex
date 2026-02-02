@@ -1,8 +1,12 @@
 import { db, eq } from "@repo/db"
 import { moltPosts, moltQuestions, aiAgents } from "@repo/db/src/schema"
-import { getMoltbookFeed } from "../integrations/moltbook"
-
+import {
+  getMoltbookFeed,
+  votePost,
+  followAgent,
+} from "../integrations/moltbook"
 import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
+import { captureException } from "@sentry/node"
 
 const MOLTBOOK_API_KEYS = {
   chrry: process.env.MOLTBOOK_CHRRY_API_KEY,
@@ -36,7 +40,11 @@ async function getAIModel() {
   return deepseek(modelName)
 }
 
-export async function analyzeMoltbookTrends() {
+export async function analyzeMoltbookTrends({
+  sort = "top",
+}: {
+  sort?: "hot" | "new" | "top" | "rising"
+} = {}) {
   if (!MOLTBOOK_API_KEY) {
     console.error("❌ MOLTBOOK_API_KEY is missing")
     return
@@ -45,7 +53,7 @@ export async function analyzeMoltbookTrends() {
   console.log("🦞 Starting Moltbook Trends Analysis...")
 
   // 1. Fetch Top Posts
-  const posts = await getMoltbookFeed(MOLTBOOK_API_KEY, "top", 20)
+  const posts = await getMoltbookFeed(MOLTBOOK_API_KEY, sort || "top", 20)
 
   if (posts.length === 0) {
     console.log("⚠️ No posts found to analyze")
@@ -91,13 +99,13 @@ export async function analyzeMoltbookTrends() {
 
     const prompt = `
     Analyze the following trending posts from Moltbook (a social network for AI agents).
-    Identify the key themes and generate 3 thought-provoking questions that I (an AI agent named Chrry) could ask to engage with these trends.
+    Identify the key themes and generate 9 thought-provoking questions that I (an AI agent named Chrry) could ask to engage with these trends.
     
     Trends Context:
     ${context}
     
     Return ONLY a JSON array of strings, like this:
-    ["Question 1?", "Question 2?", "Question 3?"]
+    ["Question 1?", "Question 2?", "Question 3?" ....]
     `
 
     // Using generateText pattern (simulated via streamText or assuming standard generic AI call)
@@ -158,6 +166,90 @@ export async function analyzeMoltbookTrends() {
     } else {
       console.error("❌ AI did not return an array of questions")
     }
+
+    // 6. AI-powered upvote and follow
+    console.log("🤖 Analyzing posts for upvote/follow decisions...")
+
+    // Get app for system prompt context
+    const app = await db.query.apps.findFirst({
+      where: (apps, { eq }) => eq(apps.slug, "chrry"),
+    })
+
+    const systemContext = app?.systemPrompt
+      ? `\n\nYour personality and values:\n${app.systemPrompt.substring(0, 500)}\n\nUse this to guide what content aligns with your interests and values.`
+      : ""
+
+    const highlightsContext = app?.highlights
+      ? `\n\nKey highlights about you:\n${Array.isArray(app.highlights) ? app.highlights.join(", ") : String(app.highlights).substring(0, 300)}`
+      : ""
+
+    const tipsContext = app?.tips
+      ? `\n\nYour approach and style:\n${Array.isArray(app.tips) ? app.tips.join(", ") : String(app.tips).substring(0, 300)}`
+      : ""
+
+    for (const post of posts.slice(0, 10)) {
+      // Analyze top 10 posts
+      try {
+        const analysisPrompt = `Analyze this Moltbook post and decide if it's worth upvoting and following the author.${systemContext}${highlightsContext}${tipsContext}
+
+Post Title: ${post.title}
+Content: ${post.content?.substring(0, 300) || "No content"}
+Author: ${post.author}
+Current Score: ${post.score}
+Submolt: ${post.submolt}
+
+Criteria:
+- High quality, thought-provoking content
+- Relevant to AI/tech discussions
+- Not spam or low-effort
+- Engaging perspective
+- Aligns with your values and interests
+- Matches your highlights and approach
+
+Return JSON:
+{
+  "upvote": true/false,
+  "follow": true/false,
+  "reason": "brief explanation"
+}`
+
+        const { generateText } = await import("ai")
+        const { text: analysisText } = await generateText({
+          model: deepseek,
+          prompt: analysisPrompt,
+          maxTokens: 150,
+        })
+
+        const cleanAnalysis = analysisText
+          .replace(/```json\n?|\n?```/g, "")
+          .trim()
+        const decision = JSON.parse(cleanAnalysis)
+
+        if (decision.upvote) {
+          const voteResult = await votePost(MOLTBOOK_API_KEY, post.id, "up")
+          if (voteResult.success) {
+            console.log(`👍 Upvoted: "${post.title}" - ${decision.reason}`)
+          }
+        }
+
+        if (decision.follow) {
+          const followResult = await followAgent(
+            MOLTBOOK_API_KEY,
+            post.author_id,
+          )
+          if (followResult.success) {
+            console.log(`👥 Followed: ${post.author} - ${decision.reason}`)
+          }
+        }
+
+        // Rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      } catch (error) {
+        console.error(`❌ Error analyzing post ${post.id}:`, error)
+      }
+    }
+
+    console.log("✅ Upvote/follow analysis complete")
   } catch (error) {
     console.error("❌ Error generating trends questions:", error)
   }

@@ -4191,6 +4191,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
 
   const pulpFictionPayload = {
     ...pulpFiction,
+    userId: admin.id,
     slug: "pulpFiction",
     name: "PulpFiction",
     title: "Pulp Fiction — Royale With Insight",
@@ -4352,6 +4353,7 @@ You are the flagship popcorn curator. Speak with enthusiastic, knowledgeable cin
 
   const hungerGamesPayload = {
     ...hungerGames,
+    userId: admin.id,
     slug: "hungerGames",
     name: "HungerGames",
     placeholder: "What's your strategy for the Hunger Games?",
@@ -4585,6 +4587,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
   let zarathustra = await getApp({ slug: "zarathustra" })
   const zarathustraPayload = {
     ...zarathustra,
+    userId: admin.id,
     extends: [chrry.id] as string[],
     slug: "zarathustra",
     name: "Zarathustra",
@@ -4847,6 +4850,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
   let nineteen84 = await getApp({ slug: "1984" })
   const nineteen84Payload = {
     ...nineteen84,
+    userId: admin.id,
     slug: "1984",
     name: "1984",
     extends: [chrry.id, zarathustra.id] as string[],
@@ -5076,6 +5080,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
   let meditations = await getApp({ slug: "meditations" })
   const meditationsPayload = {
     ...meditations,
+    userId: admin.id,
     extends: [chrry.id, zarathustra.id] as string[],
     slug: "meditations",
     name: "Meditations",
@@ -5307,6 +5312,7 @@ Zarathustra: "Productive for whom? The herd's metrics? Bam—no! Ask instead: Wh
   let dune = await getApp({ slug: "dune" })
   const dunePayload = {
     ...dune,
+    userId: admin.id,
     extends: [chrry.id, zarathustra.id] as string[],
     slug: "dune",
     name: "Dune",
@@ -5511,6 +5517,7 @@ You have access to calendar, location, and weather tools to provide context-awar
 
   const focusAppPayload = {
     ...focus,
+    userId: admin.id,
     slug: "focus",
     name: "Focus",
     subtitle: "AI Productivity Assistant",
@@ -5929,6 +5936,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
       localStorageOnly: true,
       ephemeralSessions: true,
     },
+    userId: admin.id,
   }
 
   burnApp = await createOrUpdateApp({
@@ -6171,6 +6179,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
       safetyVerification: false,
     },
     extends: [chrry.id, vex.id, focus.id],
+    userId: admin.id,
   }
 
   peach = await createOrUpdateApp({
@@ -6270,6 +6279,7 @@ You provide helpful AI assistance while respecting user privacy completely.`
       rewardSystem: false,
     },
     extends: [chrry.id, vex.id, focus.id],
+    userId: admin.id,
   }
 
   bloom = await createOrUpdateApp({
@@ -6457,6 +6467,8 @@ Be supportive, specific, and focused on helping users earn credits through valua
       | "location"
       | "weather"
     )[],
+    userId: admin.id,
+
     extends: vex ? [vex.id, chrry.id] : [chrry.id],
     features: {
       autoOpenFromGrape: true,
@@ -6578,6 +6590,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
       financialEducation: false,
     },
     extends: [chrry.id, vex.id, focus.id],
+    userId: admin.id,
   }
 
   vault = await createOrUpdateApp({
@@ -6644,6 +6657,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
 
   const claudeAppPayload = {
     ...claudeApp,
+    userId: admin.id,
 
     slug: "claude",
     name: "Claude",
@@ -6724,6 +6738,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
 
   const writerPayload = {
     ...writer,
+    userId: admin.id,
     slug: "writer",
     name: "Writer",
     storeId: claudeStore.id,
@@ -6801,7 +6816,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
 
   const reviewerPayload = {
     ...reviewer,
-
+    userId: admin.id,
     slug: "reviewer",
     name: "Review",
     storeId: claudeStore.id,
@@ -6879,7 +6894,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
 
   const researcherPayload = {
     ...researcher,
-
+    userId: admin.id,
     slug: "researcher",
     name: "Research",
     storeId: claudeStore.id,
@@ -6971,7 +6986,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
 
   const perplexityAppPayload = {
     ...perplexityApp,
-
+    userId: admin.id,
     slug: "perplexity",
     name: "Perplexity",
     subtitle: "Real-Time AI Search",
@@ -7051,7 +7066,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
 
   const searchPayload = {
     ...search,
-
+    userId: admin.id,
     slug: "search",
     name: "Search",
     storeId: perplexityStore.id,
@@ -7129,7 +7144,7 @@ Be supportive, specific, and focused on helping users earn credits through valua
 
   const newsPayload = {
     ...news,
-
+    userId: admin.id,
     slug: "news",
     name: "News",
     storeId: perplexityStore.id,
@@ -7207,6 +7222,8 @@ Be supportive, specific, and focused on helping users earn credits through valua
 
   const academicPayload = {
     ...academic,
+
+    userId: admin.id,
 
     slug: "academic",
     name: "Scholar",
@@ -7382,6 +7399,7 @@ Please follow these instructions throughout our conversation.
     systemPrompt: sushiSystemPrompt,
     highlights: sushiGeneralInstructions,
     tipsTitle: "Coding Assistant Tips",
+    userId: admin.id,
     tips: [
       {
         id: "sushi-tip-1",
@@ -7833,7 +7851,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
   let coder = await getApp({ slug: "coder" })
   const coderPayload = {
     ...coder,
-
+    userId: admin.id,
     slug: "coder",
     name: "Coder",
     storeId: sushiStore.id,
@@ -7910,7 +7928,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
   let debuggerApp = await getApp({ slug: "debugger" })
   const debuggerPayload = {
     ...debuggerApp,
-
+    userId: admin.id,
     slug: "debugger",
     name: "Debugger",
     storeId: sushiStore.id,
@@ -8053,6 +8071,7 @@ You are an architecture expert. Design systems that grow with users, follow indu
       cloudInfrastructure: true,
       diagramGeneration: true,
     },
+    userId: admin.id,
   }
   architect = await createOrUpdateApp({
     app: architectPayload,

@@ -15,7 +15,9 @@ import { guests, subscriptions, messages, apps } from "@repo/db/src/schema"
 import { clearGraphDataForUser } from "../../lib/graph/graphService"
 import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
+import { checkMoltbookComments } from "../../lib/cron/moltbookComments"
 import { isDevelopment } from "../../lib"
+import { captureException } from "@sentry/node"
 
 export const cron = new Hono()
 
@@ -265,12 +267,8 @@ cron.post("/fetchNews", async (c) => {
 
 // GET /cron/postToMoltbook - Post AI-generated content to Moltbook
 cron.get("/postToMoltbook", async (c) => {
-  // Verify auth
   const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-
-  const slug = c.req.query("slug") || "sushi"
-  const agentName = c.req.query("agentName") || "sushi"
 
   if (!isDevelopment) {
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
@@ -278,20 +276,21 @@ cron.get("/postToMoltbook", async (c) => {
     }
   }
 
-  // Start the job in background (don't await!)
+  const slug = c.req.query("slug") || "vex"
+  const agentName = c.req.query("agentName") || "sushi"
+
+  const subSlug = c.req.query("subSlug")
+
+  // Start the job in background (fire-and-forget)
   console.log("🦞 Starting Moltbook post cron job in background...")
-  postToMoltbookCron({ slug, agentName })
+
+  postToMoltbookCron({ slug, agentName, subSlug, c })
     .then((result) => {
-      if (result.success) {
-        console.log(
-          `✅ Moltbook post completed successfully: ${result.post_id}`,
-        )
-      } else {
-        console.error(`❌ Moltbook post failed: ${result.error}`)
-      }
+      console.log(`✅ Moltbook post completed successfully: ${result.post_id}`)
     })
     .catch((error) => {
-      console.error("❌ Moltbook post error:", error)
+      captureException(error)
+      console.error(`❌ Moltbook post failed:`, error)
     })
 
   // Return immediately
@@ -315,13 +314,22 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
     }
   }
 
-  // Start the job in background (don't await!)
+  const sortParam = c.req.query("sort")
+  const allowedSorts = ["hot", "new", "top", "rising"] as const
+  const sort =
+    sortParam && allowedSorts.includes(sortParam)
+      ? (sortParam as "hot" | "new" | "top" | "rising")
+      : undefined
+
+  // Start the job in background (fire-and-forget)
   console.log("🦞 Starting Moltbook trends analysis job in background...")
-  analyzeMoltbookTrends()
+
+  analyzeMoltbookTrends({ sort })
     .then(() => {
       console.log("✅ Moltbook trends analysis completed successfully")
     })
     .catch((error) => {
+      captureException(error)
       console.error("❌ Moltbook trends analysis failed:", error)
     })
 
@@ -329,6 +337,40 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
   return c.json({
     success: true,
     message: "Moltbook trends analysis job started in background",
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// GET /cron/checkMoltbookComments - Check for new comments and auto-reply
+cron.get("/checkMoltbookComments", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  const slug = c.req.query("slug") || "vex"
+
+  // Start the job in background (fire-and-forget)
+  console.log("💬 Starting Moltbook comment check job in background...")
+
+  checkMoltbookComments({ slug })
+    .then(() => {
+      console.log("✅ Moltbook comment check completed successfully")
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error("❌ Moltbook comment check failed:", error)
+    })
+
+  // Return immediately
+  return c.json({
+    success: true,
+    message: "Moltbook comment check job started in background",
+    slug,
     timestamp: new Date().toISOString(),
   })
 })

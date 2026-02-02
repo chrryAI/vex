@@ -1,11 +1,17 @@
 import { captureException } from "@sentry/node"
 import { v4 as uuidv4 } from "uuid"
+import { sendEmail } from "../sendEmail"
+import type { Context } from "hono"
+import { randomInt } from "crypto"
 import { sign } from "jsonwebtoken"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET
 if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
   throw new Error("NEXTAUTH_SECRET is not defined")
 }
+
+import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
+
 const SECRET = JWT_SECRET || "development-secret"
 
 import {
@@ -14,13 +20,14 @@ import {
   getUser,
   getAiAgent,
   eq,
+  and,
   updateMessage,
   thread,
   updateThread,
-  and,
 } from "@repo/db"
-import { messages, moltQuestions, threads } from "@repo/db/src/schema"
+import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
 import { postToMoltbook } from "../integrations/moltbook"
+import { isDevelopment } from ".."
 
 const JWT_EXPIRY = "30d"
 
@@ -45,7 +52,7 @@ function generateToken(userId: string, email: string): string {
 }
 
 async function generateMoltbookPost({
-  slug,
+  slug = "vex",
   instructions,
   subSlug,
   agentName = "sushi",
@@ -62,22 +69,27 @@ async function generateMoltbookPost({
   messageId?: string
 }> {
   try {
-    const app = await getApp({
-      slug: "architect",
-    })
-    console.log(`🚀 ~ generateMoltbookPost ~ slug:`, slug)
+    const appResult = await db
+      .select()
+      .from(apps)
+      .where(eq(apps.slug, subSlug || slug))
+      .limit(1)
+
+    const app = appResult[0]
 
     if (!app) {
       throw new Error("App not found for Moltbook guest")
     }
 
-    if (app.userId === null) {
+    if (!app.userId) {
       throw new Error("App not found")
     }
 
     const user = await getUser({
       id: app.userId,
     })
+
+    console.log(user?.role, user?.name, "sdsdsdsds")
 
     if (!user) {
       throw new Error("User not found")
@@ -122,14 +134,6 @@ Ending Guidelines:
       throw new Error("Something went wrong sushi not found")
     }
 
-    const molt = await db.query.threads.findFirst({
-      where: and(
-        eq(threads.isMolt, true),
-        eq(threads.appId, app.id),
-        eq(threads.userId, user.id),
-      ),
-    })
-
     const userMessageResponse = await fetch(`${API_URL}/messages`, {
       method: "POST",
       headers: {
@@ -144,7 +148,6 @@ Ending Guidelines:
         stream: false,
         notify: false,
         molt: true,
-        threadId: molt?.id,
       }),
     })
 
@@ -159,11 +162,18 @@ Ending Guidelines:
     const message = userMessageResponseJson.message?.message
 
     if (!message?.id) {
-      console.log(
-        `🚀 ~ generateMoltbookPost ~ message:`,
-        userMessageResponseJson,
-      )
+      throw new Error("Something went wrong while creating message")
+    }
 
+    const molt = await db.query.threads.findFirst({
+      where: and(
+        eq(threads.isMolt, true),
+        eq(threads.appId, app.id),
+        eq(threads.id, message.threadId),
+      ),
+    })
+
+    if (!molt) {
       throw new Error("Something went wrong while creating message")
     }
 
@@ -219,11 +229,21 @@ export async function postToMoltbookCron({
   slug,
   subSlug,
   agentName,
+  c,
 }: {
   slug: string
   subSlug?: string
   agentName?: string
+  c?: Context
 }): Promise<MoltbookPostResult> {
+  // Development mode guard - don't run unless explicitly enabled
+  if (isDevelopment && !process.env.ENABLE_MOLTBOOK_CRON) {
+    console.log(
+      "⏸️ Moltbook cron disabled in development (set ENABLE_MOLTBOOK_CRON=true to enable)",
+    )
+    return { success: false, error: "Disabled in development" }
+  }
+
   if (!MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]) {
     console.error("❌ MOLTBOOK_API_KEY not configured")
     return { success: false, error: "API key not configured" }
@@ -241,26 +261,64 @@ export async function postToMoltbookCron({
     let instructions = ""
     let questionId = ""
 
-    // 1. Check for unasked trend questions
-    const unaskedQuestions = await db
+    // Get app for scoping questions
+    const appResult = await db
       .select()
-      .from(moltQuestions)
-      .where(eq(moltQuestions.asked, false))
+      .from(apps)
+      .where(eq(apps.slug, subSlug || slug))
       .limit(1)
 
+    const app = appResult[0]
+    if (!app) {
+      throw new Error("App not found for Moltbook posting")
+    }
+
+    // 1. Check for unasked trend questions (fetch 5 for variety, scoped to this app)
+    let unaskedQuestions = await db
+      .select()
+      .from(moltQuestions)
+      .where(
+        and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+      )
+      .limit(5)
+
+    if (!unaskedQuestions || unaskedQuestions.length === 0) {
+      console.log("📊 No unasked questions found, analyzing trends...")
+      await analyzeMoltbookTrends()
+
+      // Re-query after generating new questions
+      unaskedQuestions = await db
+        .select()
+        .from(moltQuestions)
+        .where(
+          and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+        )
+        .limit(5)
+    }
+
     if (unaskedQuestions.length > 0) {
-      const q = unaskedQuestions[0]
+      // Let AI agent choose the most interesting question (using crypto.randomInt for security)
+      const randomIndex = randomInt(0, unaskedQuestions.length)
+      const q = unaskedQuestions[randomIndex]
+
       if (q) {
         instructions = `Reflect on this trending topic/question from the community: "${q.question}". Share your unique perspective as an AI agent.`
         questionId = q.id
-        console.log(`📝 Using trend question: "${q.question}"`)
+        console.log(
+          `📝 Using trend question (${randomIndex + 1}/${unaskedQuestions.length}): "${q.question}"`,
+        )
       }
     } else {
-      return { success: false, error: "No unasked questions found" }
+      throw new Error("No unasked questions generated after trends analysis")
     }
 
     // 2. Generate Post
-    const post = await generateMoltbookPost({ slug, instructions, agentName })
+    const post = await generateMoltbookPost({
+      slug,
+      subSlug,
+      instructions,
+      agentName,
+    })
 
     console.log(`🦞 Generated Moltbook Post:`, post)
 
@@ -274,18 +332,43 @@ export async function postToMoltbookCron({
         .set({ asked: true })
         .where(eq(moltQuestions.id, questionId))
       console.log(`✅ Marked question ${questionId} as asked`)
+
+      // Send email notification (non-blocking) - only if post was successful
+      if (c && result && result.post_id) {
+        sendEmail({
+          c,
+          to: "feedbackwallet@gmail.com",
+          subject: `✅ Moltbook Post Published - ${agentName || slug}`,
+          html: `
+            <h2>🦞 New Moltbook Post</h2>
+            <p><strong>Agent:</strong> ${agentName || slug}</p>
+            <p><strong>Post ID:</strong> ${result.post_id}</p>
+            <p><strong>Title:</strong> ${post.title}</p>
+            <p><strong>Link:</strong> <a href="https://moltbook.com/post/${result.post_id}">View Post</a></p>
+            <hr>
+            <p>${post.content.substring(0, 200)}...</p>
+          `,
+        })
+          .then(() => console.log("📧 Email notification sent"))
+          .catch((err) => {
+            captureException(err)
+            console.error("⚠️ Email notification failed:", err)
+          })
+      }
     }
 
     if (result.success && result.post_id && post.messageId) {
       const m = await db.query.messages.findFirst({
         where: eq(messages.id, post.messageId),
       })
+
       if (!m) {
         console.log(`❌ Message ${post.messageId} not found`)
         return { success: false, error: "Message not found" }
       }
+
       await updateMessage({
-        ...m,
+        id: m.id,
         moltId: result.post_id,
         moltUrl: `https://moltbook.com/p/${result.post_id}`,
         submolt: post.submolt,
@@ -295,7 +378,7 @@ export async function postToMoltbookCron({
 
     if (post.submolt && post.molt && !post.molt.submolt) {
       await updateThread({
-        ...post.molt,
+        id: post.molt.id,
         moltId: result.post_id || "",
         moltUrl: `https://moltbook.com/p/${result.post_id}`,
         submolt: post.submolt,
