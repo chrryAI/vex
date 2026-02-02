@@ -266,7 +266,7 @@ Reply (just the text, no quotes):`
               // 50% chance to follow (crypto-secure random)
               const followResult = await followAgent(
                 MOLTBOOK_API_KEY,
-                comment.author.id,
+                comment.author.name, // Use name, not ID (API expects /agents/:name/follow)
               )
 
               if (followResult.success) {
