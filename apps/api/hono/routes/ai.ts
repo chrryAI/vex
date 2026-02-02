@@ -293,15 +293,17 @@ async function getRelevantMemoryContext({
     // Check if user is the app creator
     const isAppCreator = app && isOwner(app, { userId, guestId })
 
-    // Get user memories scattered across different threads (exclude current thread)
-    const userMemoriesData: {
-      memories: memory[]
-      totalCount: number
-      hasNextPage: boolean
-      nextPage: number | null
-    } =
+    // Get app-specific memories
+    // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
+    const appMemoryPageSize = isAppCreator
+      ? pageSize * 10 // Creators get 150 app memories (10x boost)
+      : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
+
+    // Execute memory queries in parallel for performance
+    const [userMemoriesData, appMemoriesData] = await Promise.all([
+      // Get user memories scattered across different threads (exclude current thread)
       userId || guestId
-        ? await getMemories({
+        ? getMemories({
             userId,
             guestId,
             pageSize,
@@ -309,7 +311,29 @@ async function getRelevantMemoryContext({
             excludeThreadId: threadId, // Don't load memories from current thread
             scatterAcrossThreads: true, // Get diverse memories from different conversations
           })
-        : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
+        : Promise.resolve({
+            memories: [],
+            totalCount: 0,
+            hasNextPage: false,
+            nextPage: null,
+          }),
+
+      // Get app-specific memories
+      appId
+        ? getMemories({
+            appId,
+            pageSize: appMemoryPageSize,
+            orderBy: "importance",
+            excludeThreadId: threadId,
+            scatterAcrossThreads: true,
+          })
+        : Promise.resolve({
+            memories: [],
+            totalCount: 0,
+            hasNextPage: false,
+            nextPage: null,
+          }),
+    ])
 
     const userMemoriesResult = userMemoriesData.memories.filter(
       (memory) =>
@@ -318,27 +342,6 @@ async function getRelevantMemoryContext({
           guestId,
         }) && !memory.appId,
     )
-
-    // Get app-specific memories
-    // If user is app creator, give them 10x more app memories to see comprehensive DNA Thread knowledge
-    const appMemoryPageSize = isAppCreator
-      ? pageSize * 10 // Creators get 150 app memories (10x boost)
-      : Math.ceil(pageSize / 2) // Regular users get 7-8 app memories
-
-    const appMemoriesData: {
-      memories: memory[]
-      totalCount: number
-      hasNextPage: boolean
-      nextPage: number | null
-    } = appId
-      ? await getMemories({
-          appId,
-          pageSize: appMemoryPageSize,
-          orderBy: "importance",
-          excludeThreadId: threadId,
-          scatterAcrossThreads: true,
-        })
-      : { memories: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
     const appMemoriesResult = appMemoriesData.memories.filter(
       (memory) => !memory.userId && !memory.guestId && !!memory.appId,
