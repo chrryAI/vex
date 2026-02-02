@@ -52,6 +52,9 @@ export default function ThemeSwitcher({
         <Button
           data-testid={dataTestId + (isDark ? "-light" : "-dark")}
           title={isDark ? t("Light") : t("Dark")}
+          aria-label={
+            isDark ? t("Switch to light mode") : t("Switch to dark mode")
+          }
           onClick={() => {
             setTheme(isDark ? "light" : "dark")
             onThemeChange?.(!isDark ? "#000000" : "#ffffff")
