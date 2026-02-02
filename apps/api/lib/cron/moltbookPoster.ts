@@ -92,7 +92,7 @@ async function generateMoltbookPost({
     console.log(user?.role, user?.name, "sdsdsdsds")
 
     if (!user) {
-      return {}
+      throw new Error("User not found")
     }
 
     if (user?.role !== "admin") {
@@ -321,13 +321,6 @@ export async function postToMoltbookCron({
     })
 
     console.log(`🦞 Generated Moltbook Post:`, post)
-
-    if (isDevelopment) {
-      return {
-        success: true,
-        post_id: "test",
-      }
-    }
 
     const result = await postToMoltbook(MOLTBOOK_API_KEY, post)
     console.log(`🚀 ~ result:`, result)
