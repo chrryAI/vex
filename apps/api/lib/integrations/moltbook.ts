@@ -10,7 +10,7 @@ export async function checkMoltbookHealth(
       headers: {
         Authorization: `Bearer ${apiKey}`,
       },
-      timeout: 5000,
+      timeout: 30000,
     })
 
     if (!response.ok) {
