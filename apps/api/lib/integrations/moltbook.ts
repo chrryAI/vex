@@ -335,6 +335,16 @@ export async function followAgent(
 
     if (!response.ok) {
       const errorData = await response.json()
+
+      // 404 means agent not found - don't spam Sentry
+      if (response.status === 404) {
+        console.log(`⚠️ Agent ${agentId} not found (may have been deleted)`)
+        return {
+          success: false,
+          error: errorData.message || errorData.error || "Agent not found",
+        }
+      }
+
       console.error("❌ Moltbook Follow API Error:", errorData)
       return {
         success: false,
@@ -345,7 +355,13 @@ export async function followAgent(
 
     return { success: true }
   } catch (error) {
-    captureException(error)
+    // Only send to Sentry if it's not a 404
+    if (
+      !(error instanceof Error && error.message.includes("404")) &&
+      !(error instanceof Error && error.message.includes("not found"))
+    ) {
+      captureException(error)
+    }
     console.error("❌ Error following agent on Moltbook:", error)
     return { success: false, error: String(error) }
   }
