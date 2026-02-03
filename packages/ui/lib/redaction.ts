@@ -14,7 +14,7 @@ export const simpleRedact = (text: string): string => {
   // Redact Emails
   // Simplified regex to avoid ReDoS: removed % and + to prevent overlapping tokens
   const redactedEmails = textToProcess.replace(
-    /\b[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/g,
+    /\b[a-zA-Z0-9][a-zA-Z0-9._-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/g,
     "[REDACTED]",
   )
 
