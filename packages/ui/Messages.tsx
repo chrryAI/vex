@@ -169,6 +169,16 @@ export default forwardRef<
     setCharacterProfile(thread?.characterProfile)
   }, [thread?.characterProfile])
 
+  const sortedMessages = useMemo(() => {
+    // ⚡ Bolt: Memoize sorted messages to prevent re-sorting on every render
+    // and avoid mutating the messages prop.
+    return [...(messages || [])].sort(
+      (a, b) =>
+        new Date(a.message.createdOn).getTime() -
+        new Date(b.message.createdOn).getTime(),
+    )
+  }, [messages])
+
   const isStreaming = messages?.some(
     (message) => message.message.isStreaming === true,
   )
@@ -227,23 +237,17 @@ export default forwardRef<
         </Div>
       )}
       <Div style={{ ...styles.messages.style }}>
-        {messages
-          ?.sort(
-            (a, b) =>
-              new Date(a.message.createdOn).getTime() -
-              new Date(b.message.createdOn).getTime(),
+        {sortedMessages?.map((message) => {
+          return (
+            <Message
+              onToggleLike={onToggleLike}
+              onDelete={onDelete}
+              onPlayAudio={onPlayAudio}
+              key={message.message.id}
+              message={message}
+            />
           )
-          ?.map((message) => {
-            return (
-              <Message
-                onToggleLike={onToggleLike}
-                onDelete={onDelete}
-                onPlayAudio={onPlayAudio}
-                key={message.message.id}
-                message={message}
-              />
-            )
-          })}
+        })}
       </Div>
       {appStatus?.part || suggestSaveApp ? (
         <Div
