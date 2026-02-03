@@ -24,6 +24,7 @@ import {
   getMember as getMemberAction,
   getGuest as getGuestAction,
 } from "../lib/auth"
+import { redact } from "../../lib/redaction"
 import sanitizeHtml from "sanitize-html"
 import {
   checkRateLimit,
@@ -91,7 +92,7 @@ threads.get("/", async (c) => {
 
   // Sanitize username input
   const sanitizedUserName = userName
-    ? sanitizeHtml(userName, {
+    ? sanitizeHtml(await redact(userName), {
         allowedTags: [],
         allowedAttributes: {},
         disallowedTagsMode: "escape",
@@ -681,8 +682,12 @@ threads.patch("/:id", async (c) => {
   const rawInstructions =
     instructions === "" ? null : instructions || thread.instructions
 
-  const sanitizedInstructions = rawInstructions
-    ? sanitizeHtml(rawInstructions, {
+  const redactedInstructions = rawInstructions
+    ? await redact(rawInstructions)
+    : null
+
+  const sanitizedInstructions = redactedInstructions
+    ? sanitizeHtml(redactedInstructions, {
         // Sato minimalist config - sadece gerekli tag'ler
         allowedTags: [
           "b",
@@ -714,12 +719,14 @@ threads.patch("/:id", async (c) => {
       })
     : null
 
+  const redactedTitle = title ? await redact(title) : thread.title
+
   await updateThreadDb({
     ...thread,
     appId: appId ?? thread.appId,
     star: star === 0 ? null : star,
     moltUrl,
-    title: sanitizeHtml(title || thread.title),
+    title: sanitizeHtml(redactedTitle),
     visibility: visibility || thread.visibility,
     bookmarks: newBookmarks,
     instructions: sanitizedInstructions,

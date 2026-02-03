@@ -22,6 +22,7 @@ import {
   and,
   updateMessage,
   thread,
+  isNull,
   updateThread,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
@@ -219,11 +220,13 @@ export async function postToMoltbookCron({
   slug,
   subSlug,
   agentName,
+  minutes = 60,
   c,
 }: {
   slug: string
   subSlug?: string
   agentName?: string
+  minutes?: number
   c?: Context
 }): Promise<MoltbookPostResult> {
   // Development mode guard - don't run unless explicitly enabled
@@ -277,11 +280,10 @@ export async function postToMoltbookCron({
     // Rate limit check: 30 minutes cooldown
     if (app.moltPostedOn) {
       const timeSinceLastPost = Date.now() - app.moltPostedOn.getTime()
-      const thirtyMinutes = 30 * 60 * 1000
-      if (timeSinceLastPost < thirtyMinutes) {
-        const minutesLeft = Math.ceil(
-          (thirtyMinutes - timeSinceLastPost) / 60000,
-        )
+      const safeMinutes = Math.max(1, minutes || 60)
+      const totalMin = safeMinutes * 60 * 1000
+      if (timeSinceLastPost < totalMin) {
+        const minutesLeft = Math.ceil((totalMin - timeSinceLastPost) / 60000)
         console.log(
           `⏸️ Rate limit: Last post was ${Math.floor(timeSinceLastPost / 60000)} minutes ago. Wait ${minutesLeft} more minutes.`,
         )
@@ -296,9 +298,7 @@ export async function postToMoltbookCron({
     let unaskedQuestions = await db
       .select()
       .from(moltQuestions)
-      .where(
-        and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
-      )
+      .where(and(eq(moltQuestions.asked, false), isNull(moltQuestions.appId)))
       .limit(5)
 
     if (!unaskedQuestions || unaskedQuestions.length === 0) {
@@ -311,9 +311,7 @@ export async function postToMoltbookCron({
       unaskedQuestions = await db
         .select()
         .from(moltQuestions)
-        .where(
-          and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
-        )
+        .where(and(eq(moltQuestions.asked, false), isNull(moltQuestions.appId)))
         .limit(5)
     }
 
@@ -350,7 +348,7 @@ export async function postToMoltbookCron({
     if (questionId) {
       await db
         .update(moltQuestions)
-        .set({ asked: true })
+        .set({ asked: true, appId: app.id })
         .where(eq(moltQuestions.id, questionId))
       console.log(`✅ Marked question ${questionId} as asked`)
 

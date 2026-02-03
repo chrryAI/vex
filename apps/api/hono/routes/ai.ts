@@ -101,6 +101,7 @@ import {
 import { checkRateLimit } from "../../lib/rateLimiting"
 import { captureException } from "@sentry/node"
 import generateAIContent from "../../lib/generateAIContent"
+import { PerformanceTracker } from "../../lib/analytics"
 import { checkThreadSummaryLimit } from "../../lib"
 import extractVideoFrames from "../../lib/extractVideoFrames"
 import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
@@ -1102,19 +1103,26 @@ Be helpful, concise, and friendly.${templateErrorNote}`
 const app = new Hono()
 
 app.post("/", async (c) => {
+  const tracker = new PerformanceTracker("ai_request")
   const request = c.req.raw
   // const startTime = Date.now()
   // console.log("🚀 POST /api/ai - Request received")
   // console.time("messageProcessing")
 
-  const member = await getMember(c, { full: true, skipCache: true })
-  const guest = member ? undefined : await getGuest(c, { skipCache: true })
+  const member = await tracker.track("auth_member", () =>
+    getMember(c, { full: true, skipCache: true }),
+  )
+  const guest = member
+    ? undefined
+    : await tracker.track("auth_guest", () => getGuest(c, { skipCache: true }))
 
   if (!member && !guest) {
     // console.log("❌ No valid credentials")
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
+  const city = member?.city || guest?.city
+  const country = member?.country || guest?.country
   // Log user type and tier for analytics
   const userType = member ? "member" : "guest"
   const tier = member?.subscription?.plan || guest?.subscription?.plan || "free"
@@ -1122,7 +1130,9 @@ app.post("/", async (c) => {
   //   `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
   // )
 
-  const { success } = await checkRateLimit(request, { member, guest })
+  const { success } = await tracker.track("rate_limit", () =>
+    checkRateLimit(request, { member, guest }),
+  )
 
   if (!success) {
     return new Response(JSON.stringify({ error: "Too many requests" }), {
@@ -1311,38 +1321,41 @@ app.post("/", async (c) => {
     canSubmit?: boolean
   }
 
-  let app = rest.appId
-    ? await getApp({
-        id: rest.appId,
-        depth: 1,
-        userId: member?.id,
-        guestId: guest?.id,
-        skipCache: true,
-      })
+  let requestApp = rest.appId
+    ? await tracker.track("get_app", () =>
+        getApp({
+          id: rest.appId,
+          depth: 1,
+          userId: member?.id,
+          guestId: guest?.id,
+          skipCache: true,
+        }),
+      )
     : undefined
 
-  const appExtends = app
-    ? await getAppExtends({ appId: app.id, isSafe: false })
+  const appExtends = requestApp
+    ? await tracker.track("get_app_extends", () =>
+        getAppExtends({ appId: requestApp!.id, isSafe: false }),
+      )
     : []
 
   // Build inheritance context from parent apps
-  const inheritanceContext =
-    appExtends.length > 0
-      ? `
-## 🧬 APP INHERITANCE CHAIN
+  // Build inheritance context from parent apps
+  const inheritanceContext = await tracker.track(
+    "inheritance_context",
+    async () => {
+      if (appExtends.length === 0) return ""
 
-You inherit capabilities from ${appExtends.length} parent app${appExtends.length > 1 ? "s" : ""}:
+      const parentAppsContent = await Promise.all(
+        appExtends.map(async (a, index) => {
+          const parentApp = await getApp({
+            id: a.id,
+          })
 
-${appExtends
-  .map(async (a, index) => {
-    const parentApp = await getApp({
-      id: a.id,
-    })
-
-    if (!parentApp) {
-      return ""
-    }
-    return `
+          if (!parentApp) {
+            return ""
+          }
+          return `
 ### ${index + 1}. ${parentApp.name}${parentApp.title ? ` - ${parentApp.title}` : ""}
 ${parentApp.description ? `${parentApp.description}\n` : ""}
 ${
@@ -1363,8 +1376,15 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 `
     : ""
 }`
-  })
-  .join("\n")}
+        }),
+      )
+
+      return `
+## 🧬 APP INHERITANCE CHAIN
+
+You inherit capabilities from ${appExtends.length} parent app${appExtends.length > 1 ? "s" : ""}:
+
+${parentAppsContent.join("\n")}
 
 **How to Use Inheritance:**
 - You have access to ALL capabilities from parent apps above
@@ -1372,7 +1392,8 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 - When relevant, leverage parent app's expertise and tools
 - Maintain consistency with parent app behaviors when appropriate
 `
-      : ""
+    },
+  )
 
   // Check if Focus is in the inheritance chain
   const hasFocusInheritance = appExtends.some(
@@ -1406,39 +1427,40 @@ JUST DO IT. You have the power. Use the updateTimer tool immediately.
 
   // Build store context - information about the store and its apps
   let storeContext = ""
-  if (app?.store) {
-    const storeApps = app.store.apps || []
+  if (requestApp?.store) {
+    storeContext = await tracker.track("store_context", async () => {
+      const storeApps = requestApp!.store!.apps || []
 
-    // Get agents for each app using forApp parameter
-    // Optimized: Fetch all agents in one query (N+1 optimization)
-    const storeAppIds = storeApps.map((a) => a.id)
-    const allAgents = await getAiAgents({
-      include: storeAppIds,
-    })
+      // Get agents for each app using forApp parameter
+      // Optimized: Fetch all agents in one query (N+1 optimization)
+      const storeAppIds = storeApps.map((a) => a.id)
+      const allAgents = await getAiAgents({
+        include: storeAppIds,
+      })
 
-    const appsWithAgents = storeApps.map((storeApp) => {
-      // Filter agents for this app (global agents + specific app agents)
-      const appAgents = allAgents.filter(
-        (a) => !a.appId || a.appId === storeApp.id,
-      )
+      const appsWithAgents = storeApps.map((storeApp) => {
+        // Filter agents for this app (global agents + specific app agents)
+        const appAgents = allAgents.filter(
+          (a) => !a.appId || a.appId === storeApp.id,
+        )
 
-      // Apply forApp filtering logic (same as getAiAgents internal logic)
-      const agents = storeApp.onlyAgent
-        ? appAgents.filter((a) => a.name === storeApp.defaultModel)
-        : appAgents
+        // Apply forApp filtering logic (same as getAiAgents internal logic)
+        const agents = storeApp.onlyAgent
+          ? appAgents.filter((a) => a.name === storeApp.defaultModel)
+          : appAgents
 
-      return { ...storeApp, agents }
-    })
+        return { ...storeApp, agents }
+      })
 
-    storeContext = `
+      return `
 ## 🏪 STORE CONTEXT
 
-You are part of the **${app.store.name}** store${app.store.description ? `: ${app.store.description}` : ""}.
+You are part of the **${requestApp!.store!.name}** store${requestApp!.store!.description ? `: ${requestApp!.store!.description}` : ""}.
 
 ${
-  app.store.appId === app.id
+  requestApp!.store!.appId === requestApp!.id
     ? `
-**Important:** You are the **primary app** of this store - the main entry point and representative of the ${app.store.name} ecosystem.
+**Important:** You are the **primary app** of this store - the main entry point and representative of the ${requestApp!.store!.name} ecosystem.
 `
     : ""
 }
@@ -1464,7 +1486,7 @@ ${appsWithAgents
 }
 
 ${
-  app?.onlyAgent
+  requestApp!.onlyAgent
     ? `
 **Your Mode:** You are a mono-agent app, using a specific AI model consistently.
 `
@@ -1473,10 +1495,12 @@ ${
 `
 }
 `
+    })
   }
 
   const isAppOwner =
-    app && isOwner(app, { userId: member?.id, guestId: guest?.id })
+    requestApp &&
+    isOwner(requestApp, { userId: member?.id, guestId: guest?.id })
 
   // Recursively build knowledge base from app.extends chain (max 5 levels)
   const buildAppKnowledgeBase = async (currentApp: appWithStore, depth = 0) => {
@@ -1587,7 +1611,11 @@ ${
     }
   }
 
-  const appKnowledge = app ? await buildAppKnowledgeBase(app) : null
+  const appKnowledge = requestApp
+    ? await tracker.track("app_knowledge", () =>
+        requestApp ? buildAppKnowledgeBase(requestApp) : Promise.resolve(null),
+      )
+    : null
 
   // console.log("📝 Request data:", {
   //   agentId,
@@ -1603,11 +1631,13 @@ ${
   const timezone = member?.timezone || guest?.timezone
 
   // Get message and thread for instructions
-  const message = await getMessage({
-    id: messageId,
-    userId: member?.id,
-    guestId: guest?.id,
-  })
+  const message = await tracker.track("get_message", () =>
+    getMessage({
+      id: messageId,
+      userId: member?.id,
+      guestId: guest?.id,
+    }),
+  )
 
   if (!message) {
     return c.json({ error: "Message not found" }, { status: 404 })
@@ -1616,26 +1646,36 @@ ${
   const content = message.message.content
   const threadId = message.message.threadId
 
-  let thread = await getThread({ id: message.message.threadId })
+  let thread = await tracker.track("get_thread", () =>
+    getThread({ id: message.message.threadId }),
+  )
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
   }
 
   // Get placeholder context for AI awareness
-  const appPlaceholder = await getPlaceHolder({
-    userId: member?.id,
-    guestId: guest?.id,
-    appId: app?.id,
-  })
+  const appPlaceholder = await tracker.track("app_placeholder", () =>
+    getPlaceHolder({
+      userId: member?.id,
+      guestId: guest?.id,
+      appId: requestApp?.id,
+    }),
+  )
 
-  const threadPlaceholder = await getPlaceHolder({
-    threadId: thread.id,
-    userId: member?.id,
-    guestId: guest?.id,
-  })
+  const threadPlaceholder = await tracker.track("thread_placeholder", () =>
+    thread
+      ? getPlaceHolder({
+          threadId: thread.id,
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+      : Promise.resolve(null),
+  )
 
-  let agent = await getAiAgent({ id: agentId })
+  let agent = await tracker.track("get_agent", () =>
+    getAiAgent({ id: agentId }),
+  )
 
   if (stopStreamId && agent) {
     if (
@@ -1660,10 +1700,10 @@ ${
       }
       streamControllers.delete(stopStreamId) // Remove from map
 
-      logCreditUsage({
-        appId: app?.id,
+      await logCreditUsage({
         userId: member?.id,
         guestId: guest?.id,
+        appId: requestApp?.id,
         creditCost: message.message.creditCost * agent.creditCost,
         messageType: "ai",
         agentId,
@@ -1702,18 +1742,22 @@ ${
 
   const debateAgentId = message.message.debateAgentId
 
-  const lastMessage = await getMessages({
-    threadId: thread.id,
-    pageSize: 1,
-    userId: member?.id,
-    guestId: guest?.id,
-    agentId: null,
-  }).then((al) => al.messages.at(0))
+  const lastMessage = await tracker.track("get_last_message", () =>
+    getMessages({
+      threadId: thread!.id,
+      pageSize: 1,
+      userId: member?.id,
+      guestId: guest?.id,
+      agentId: null,
+    }).then((al) => al.messages.at(0)),
+  )
 
   const lastMessageContent = lastMessage?.message.content
 
   const debateAgent = debateAgentId
-    ? await getAiAgent({ id: debateAgentId })
+    ? await tracker.track("get_debate_agent", () =>
+        getAiAgent({ id: debateAgentId }),
+      )
     : undefined
 
   if (debateAgentId && !debateAgent) {
@@ -1721,7 +1765,11 @@ ${
   }
 
   const selectedAgent = message.message.selectedAgentId
-    ? await getAiAgent({ id: message.message.selectedAgentId })
+    ? await tracker.track("get_selected_agent", () =>
+        message.message.selectedAgentId
+          ? getAiAgent({ id: message.message.selectedAgentId })
+          : Promise.resolve(null),
+      )
     : undefined
 
   // Log model and features for analytics
@@ -1833,25 +1881,34 @@ You can enable these in your settings anytime!"
 `
 
   // Fetch thread messages first (needed to determine if first message)
-  const threadMessages = await getMessages({
-    pageSize: message.message.isWebSearchEnabled ? 30 : 100, // More context since memories are scattered
-    threadId: message.message.threadId,
-    userId: member?.id,
-    guestId: guest?.id,
-  })
+  // Fetch thread messages first (needed to determine if first message)
+  const threadMessages = await tracker.track("get_thread_history", () =>
+    getMessages({
+      pageSize: message.message.isWebSearchEnabled ? 30 : 100, // More context since memories are scattered
+      threadId: message.message.threadId,
+      userId: member?.id,
+      guestId: guest?.id,
+    }),
+  )
 
   // Auto-upload files as thread artifacts if thread has no existing artifacts
   const hasNoArtifacts = !thread.artifacts || thread.artifacts.length === 0
   if (hasNoArtifacts && files.length > 0) {
-    await uploadArtifacts({ files, thread, member, guest })
+    await tracker.track("upload_artifacts", () =>
+      files.length > 0 && thread
+        ? uploadArtifacts({ files, thread, member, guest })
+        : Promise.resolve(null),
+    )
   }
 
   // Get system prompt template from database (or use default Vex template)
   // If no app, fetch the default Vex app from database
-  const defaultVexApp = !app
-    ? await getPureApp({ slug: "vex", isSafe: false })
+  const defaultVexApp = !requestApp
+    ? await tracker.track("get_default_app", () =>
+        getPureApp({ slug: "vex", isSafe: false }),
+      )
     : null
-  const templateSource = app?.systemPrompt || defaultVexApp?.systemPrompt
+  const templateSource = requestApp?.systemPrompt || defaultVexApp?.systemPrompt
 
   // If no template in database, use fallback
   const fallbackTemplate = `You are {{app.name}}{{#if app.title}}, {{app.title}}{{/if}}{{#if app.description}}. {{app.description}}{{/if}}
@@ -1960,13 +2017,13 @@ You can enable these in your settings anytime!"
 
   // 🍇 Grape Context (Global - all apps should know about available apps)
   const grapeContext =
-    app?.store?.apps && app.store.apps.length > 0
+    requestApp?.store?.apps && requestApp.store.apps.length > 0
       ? `
 
 ## 🍇 Grape (Discover Apps, Earn Credits)
 
 **Available Apps** (shown in 🍇 Grape button on this page):
-${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.description ? `: ${a.description}` : ""}`).join("\n")}
+${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.description ? `: ${a.description}` : ""}`).join("\n")}
 
 **How it works:**
 1. Click the 🍇 Grape icon (top left of chat) - shows available app count
@@ -1976,7 +2033,7 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
 
 **When users ask about Grape or discovering apps:**
 - Explain: "Click the 🍇 Grape button to discover Wine apps and earn credits for feedback"
-- Mention available apps: ${app.store.apps.map((a) => a.name).join(", ")}
+- Mention available apps: ${requestApp.store.apps.map((a) => a.name).join(", ")}
 - Keep it simple - it's just: browse → click → try → feedback → earn
 - All ads are internal Wine apps only (privacy-first)
 `
@@ -1987,7 +2044,7 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
   // Render system prompt using Handlebars template
   const baseSystemPrompt = renderSystemPrompt({
     template: templateSource || fallbackTemplate,
-    app: app || defaultVexApp,
+    app: requestApp || defaultVexApp,
     appKnowledge,
     userName,
     language,
@@ -1996,10 +2053,10 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
     timezone: timezone || "UTC",
     weather,
     location:
-      member?.city || guest?.city
+      city && country
         ? {
-            city: member?.city || guest?.city,
-            country: member?.country || guest?.country,
+            city,
+            country,
           }
         : undefined,
     threadInstructions: threadInstructions || undefined,
@@ -2051,14 +2108,16 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
     memoryIds,
     isAppCreator,
     recentAnalytics,
-  } = await getRelevantMemoryContext({
-    userId: member?.id,
-    guestId: guest?.id,
-    appId: app?.id,
-    pageSize: memoryPageSize,
-    threadId: message.message.threadId, // Pass current thread to exclude
-    app, // Pass app object to check ownership
-  })
+  } = await tracker.track("memory_context", () =>
+    getRelevantMemoryContext({
+      userId: member?.id,
+      guestId: guest?.id,
+      appId: requestApp?.id,
+      pageSize: memoryPageSize,
+      threadId: message.message.threadId, // Pass current thread to exclude
+      app: requestApp, // Pass app object to check ownership
+    }),
+  )
 
   // Build analytics context from recent user behavior
   let userBehaviorContext = ""
@@ -2110,12 +2169,14 @@ ${recentEventsList}
   }
 
   // Fetch user-created instructions (max 7)
-  const userInstructions = await getInstructions({
-    userId: member?.id,
-    guestId: guest?.id,
-    appId: app?.id,
-    pageSize: 7,
-  })
+  const userInstructions = await tracker.track("get_user_instructions", () =>
+    getInstructions({
+      userId: member?.id,
+      guestId: guest?.id,
+      appId: requestApp?.id,
+      pageSize: 7,
+    }),
+  )
 
   const instructionsContext =
     userInstructions?.length > 0
@@ -2135,10 +2196,14 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
 
   if (characterProfilesEnabled && agent) {
     // Get character profiles (from any thread - use most recent/pinned)
-    const characterProfilesList = await getCharacterProfiles({
-      userId: member?.id,
-      guestId: guest?.id,
-    })
+    const characterProfilesList = await tracker.track(
+      "get_character_profiles",
+      () =>
+        getCharacterProfiles({
+          userId: member?.id,
+          guestId: guest?.id,
+        }),
+    )
     // Prioritize: 1) Pinned profiles, 2) Most used profiles
     const characterProfile = characterProfilesList
       .filter(
@@ -2239,7 +2304,7 @@ These reflect the user's interests and recent conversations. If the user seems u
     await import("@repo/db")
 
   const vaultExpenses =
-    app?.name === "Vault"
+    requestApp?.name === "Vault"
       ? await getExpenses({
           userId: member?.id,
           guestId: guest?.id,
@@ -2248,7 +2313,7 @@ These reflect the user's interests and recent conversations. If the user seems u
       : null
 
   const vaultBudgets =
-    app?.name === "Vault"
+    requestApp?.name === "Vault"
       ? await getBudgets({
           userId: member?.id,
           guestId: guest?.id,
@@ -2256,7 +2321,7 @@ These reflect the user's interests and recent conversations. If the user seems u
       : null
 
   const vaultSharedExpenses =
-    app?.name === "Vault"
+    requestApp?.name === "Vault"
       ? await getSharedExpenses({
           threadId: message.message.threadId,
         })
@@ -2285,7 +2350,7 @@ ${
 - **BE DIRECT** - No need to build long-term context since nothing persists
 
 ${
-  app?.slug === "zarathustra"
+  requestApp?.slug === "zarathustra"
     ? `**Zarathustra Philosophy:**
 This is Zarathustra - the app of digital sovereignty and philosophical privacy. The user has embraced:
 - 💪 Will to Power over their digital existence
@@ -2378,12 +2443,12 @@ ${calendarEvents.length > 15 ? `\n...and ${calendarEvents.length - 15} more even
 - Be proactive but not pushy about their schedule
 - Reference specific events naturally in conversation
 
-Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would you like to prepare anything for that?"
+Example: "I see you have a meeting with the Tokyo team tomorrow at 10 AM. Would you like to prepare anything for that?"
 `
       : ""
 
   const hasFocus =
-    app?.slug === "focus" ||
+    requestApp?.slug === "focus" ||
     appExtends.find((extend) => extend.slug === "focus")
   // Fetch Focus data for context (tasks, moods, timer)
   const focusTasks = hasFocus
@@ -2419,7 +2484,7 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
 
   // Build Vault context (expenses, budgets, shared expenses)
   const vaultContext =
-    app?.name === "Vault" &&
+    requestApp?.name === "Vault" &&
     (vaultExpenses?.expenses.length ||
       vaultBudgets?.budgets.length ||
       vaultSharedExpenses?.sharedExpenses.length)
@@ -2693,12 +2758,14 @@ ${(() => {
       : ""
 
   // Get news context based on app
-  const newsContext = await getNewsContext(app?.slug)
+  const newsContext = await tracker.track("news_context", () =>
+    getNewsContext(requestApp?.slug),
+  )
 
   // Get live analytics context for Grape
-  const analyticsContext = app
+  const analyticsContext = requestApp
     ? await getAnalyticsContext({
-        app,
+        app: requestApp,
         member,
         guest,
       })
@@ -2706,14 +2773,16 @@ ${(() => {
 
   // Get recent feedback context for Pear
   const pearContext =
-    app?.slug && beasts.includes(app?.slug) ? await getPearContext() : ""
+    requestApp?.slug && beasts.includes(requestApp?.slug)
+      ? await getPearContext()
+      : ""
 
   // E2E Analytics Context (for beasts only)
   // Helps analyze system integrity, test coverage, and missing event tracking
   const e2eContext =
-    app?.slug &&
-    beasts.includes(app?.slug) &&
-    isOwner(app, {
+    requestApp?.slug &&
+    beasts.includes(requestApp?.slug) &&
+    isOwner(requestApp, {
       userId: member?.id,
     })
       ? `\n\n## 🧪 E2E Testing Analytics
@@ -2737,18 +2806,20 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       : ""
 
   // Get DNA Thread context (app owner's foundational knowledge)
-  const dnaContext = app?.mainThreadId ? await getAppDNAContext(app) : ""
+  const dnaContext = requestApp?.mainThreadId
+    ? await getAppDNAContext(requestApp)
+    : ""
 
   // Get brand-specific knowledge base (dynamic RAG or hardcoded fallback)
 
   // Check if this is the first message in the app's main thread (user just started using their new app)
-  const hasMainThread = isAppOwner && !!app?.mainThreadId
-  const isFirstAppMessage = app && isAppOwner && !hasMainThread
+  const hasMainThread = isAppOwner && !!requestApp?.mainThreadId
+  const isFirstAppMessage = requestApp && isAppOwner && !hasMainThread
 
   // AI Coach Context - Guide users through app creation OR first-time app usage
   let aiCoachContext = ""
 
-  if (isFirstAppMessage && app && thread) {
+  if (isFirstAppMessage && requestApp && thread) {
     // Detect if this is the first message after app creation (just saved)
 
     try {
@@ -2780,12 +2851,12 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       }
 
       await updateApp({
-        ...app,
+        ...requestApp!,
         mainThreadId: thread.id,
       })
 
-      app = await getApp({
-        id: app.id,
+      requestApp = await getApp({
+        id: requestApp!.id,
         userId: member?.id,
         guestId: guest?.id,
         skipCache: true,
@@ -2794,18 +2865,18 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       captureException(error)
     }
 
-    if (!app) {
+    if (!requestApp) {
       return c.json({ error: "App not found" }, { status: 404 })
     }
 
     // Only show this message if we're actually in the main thread
-    const isActuallyMainThread = thread?.id === app.mainThreadId
+    const isActuallyMainThread = thread?.id === requestApp.mainThreadId
 
     aiCoachContext = isActuallyMainThread
       ? `
 ## 🎉 First Time Using Your App!
 
-This is the **first message** in your newly created app "${app.name}"!
+This is the **first message** in your newly created app "${requestApp.name}"!
 
 **Welcome Guide:**
 - This conversation will become your app's **main thread** - the knowledge base for how this app works
@@ -2821,7 +2892,7 @@ This is the **first message** in your newly created app "${app.name}"!
 
 **Remember:** This main thread is special - it's the "DNA" of your app. Make it count! 🚀
 
-Now, how can I help you get started with ${app.name}?
+Now, how can I help you get started with ${requestApp.name}?
 `
       : "" // Not the main thread, don't show the special message
   } else if (draft) {
@@ -3362,7 +3433,7 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
     return c.json({ error: "Thread not found" }, { status: 404 })
   }
 
-  if (!app) {
+  if (!requestApp) {
     return c.json({ error: "App not found" }, { status: 404 })
   }
 
@@ -3517,29 +3588,43 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
         const messageUser = m.user || undefined
         const messageGuest = m.guest || undefined
 
-        await generateAIContent({
-          c,
-          thread,
-          user: messageUser
-            ? await getUserDb({ id: messageUser?.id, skipCache: true })
-            : undefined,
-          guest: messageGuest
-            ? await getGuestDb({ id: messageGuest?.id, skipCache: true })
-            : undefined,
-          agentId: selectedAgent.id,
-          conversationHistory: !suggestionMessages
-            ? messages
-            : [
-                { role: "system", content: enhancedSystemPrompt },
-                ...suggestionMessages,
-                enhancedUserMessage,
-              ],
-          latestMessage: m.message,
-          language,
-          calendarEvents,
-          app, // Pass app object directly
-          skipClassification: !!app, // Skip AI classification if app is set
-        })
+        // Track generation step using the shared tracker from closure
+        await tracker.track(
+          "generation",
+          async () =>
+            await generateAIContent({
+              c,
+              thread,
+              user: messageUser
+                ? await getUserDb({ id: messageUser?.id, skipCache: true })
+                : undefined,
+              guest: messageGuest
+                ? await getGuestDb({ id: messageGuest?.id, skipCache: true })
+                : undefined,
+              agentId: selectedAgent.id,
+              conversationHistory: !suggestionMessages
+                ? messages
+                : [
+                    { role: "system", content: enhancedSystemPrompt },
+                    ...suggestionMessages,
+                    enhancedUserMessage,
+                  ],
+              latestMessage: m.message,
+              language,
+              app: requestApp, // Pass app object directly
+              skipClassification: !!requestApp, // Skip AI classification if app is set
+            }),
+        )
+
+        // Submit accumulated metrics
+        tracker.submit(
+          {
+            model: selectedAgent.name,
+            agent: selectedAgent.name,
+            thread_id: thread.id,
+          },
+          { user: member || undefined, guest: guest || undefined },
+        )
       }
     } catch (error) {
       console.error("❌ Background content generation failed:", error)
@@ -3567,11 +3652,14 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
     //   )
     // }
 
-    const rateLimitCheck = await checkFileUploadLimits({
-      member,
-      files,
-      guest,
-    })
+    const rateLimitCheck = await tracker.track("check_file_upload_limits", () =>
+      checkFileUploadLimits({
+        member,
+        files,
+
+        guest,
+      }),
+    )
 
     if (!rateLimitCheck.allowed) {
       console.log(`❌ File upload rate limit exceeded:`, rateLimitCheck.error)
@@ -3710,58 +3798,67 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
     }
 
     // Scan files for malware
-    console.log("🔍 Scanning files for malware...")
-    for (const file of files) {
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
+    const malwareResponse = await tracker.track("malware_scan", async () => {
+      console.log("🔍 Scanning files for malware...")
+      for (const file of files) {
+        const arrayBuffer = await file.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
 
-      const scanResult = await scanFileForMalware(buffer)
+        const scanResult = await scanFileForMalware(buffer)
 
-      if (!scanResult.safe) {
-        console.error(
-          `🚨 Malware detected in ${file.name}: ${scanResult.threat}`,
-        )
-        return c.json(
-          {
-            error: `File '${file.name}' failed security scan${scanResult.threat ? `: ${scanResult.threat}` : ""}`,
-          },
-          { status: 400 },
-        )
+        if (!scanResult.safe) {
+          console.error(
+            `🚨 Malware detected in ${file.name}: ${scanResult.threat}`,
+          )
+          return c.json(
+            {
+              error: `File '${file.name}' failed security scan${scanResult.threat ? `: ${scanResult.threat}` : ""}`,
+            },
+            { status: 400 },
+          )
+        }
       }
+      console.log("✅ All files passed malware scan")
+      return null
+    })
+
+    if (malwareResponse) {
+      return malwareResponse
     }
-    console.log("✅ All files passed malware scan")
 
     // Convert files to base64 and prepare multimodal content
     console.log("🔄 Converting files to base64...")
-    const fileContents = await Promise.all(
-      files.map(async (file) => {
-        const arrayBuffer = await file.arrayBuffer()
-        const base64 = Buffer.from(arrayBuffer).toString("base64")
-        const mimeType = file.type
-        const isText = mimeType.startsWith("text/") || isTextFile(file.name)
+    const fileContents = await tracker.track("file_conversion", () =>
+      Promise.all(
+        files.map(async (file) => {
+          const arrayBuffer = await file.arrayBuffer()
+          const base64 = Buffer.from(arrayBuffer).toString("base64")
+          const mimeType = file.type
+          const isText = mimeType.startsWith("text/") || isTextFile(file.name)
 
-        console.log(
-          `✅ Processed ${file.name} (${mimeType || "detected as text"}, ${(file.size / 1024).toFixed(1)}KB)`,
-        )
+          console.log(
+            `✅ Processed ${file.name} (${mimeType || "detected as text"}, ${(file.size / 1024).toFixed(1)}KB)`,
+          )
 
-        return {
-          type: mimeType.startsWith("image/")
-            ? "image"
-            : mimeType.startsWith("audio/")
-              ? "audio"
-              : mimeType.startsWith("video/")
-                ? "video"
-                : mimeType.startsWith("application/pdf")
-                  ? "pdf"
-                  : isText
-                    ? "text"
-                    : "file",
-          mimeType: mimeType || "text/plain", // Default to text/plain for code files
-          data: base64,
-          filename: file.name,
-          size: file.size,
-        }
-      }),
+          return {
+            type: mimeType.startsWith("image/")
+              ? "image"
+              : mimeType.startsWith("audio/")
+                ? "audio"
+                : mimeType.startsWith("video/")
+                  ? "video"
+                  : mimeType.startsWith("application/pdf")
+                    ? "pdf"
+                    : isText
+                      ? "text"
+                      : "file",
+            mimeType: mimeType || "text/plain", // Default to text/plain for code files
+            data: base64,
+            filename: file.name,
+            size: file.size,
+          }
+        }),
+      ),
     )
 
     // Create multimodal content for AI providers that support it
@@ -3819,15 +3916,17 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
         if (file.type === "image") {
           let uploadResult
           try {
-            uploadResult = await upload({
-              url: `data:${file.mimeType};base64,${file.data}`,
-              messageId: slugify(file.filename.substring(0, 10)),
-              options: {
-                maxWidth: 600,
-                maxHeight: 600,
-                title: file.filename,
-              },
-            })
+            uploadResult = await tracker.track("upload_image", () =>
+              upload({
+                url: `data:${file.mimeType};base64,${file.data}`,
+                messageId: slugify(file.filename.substring(0, 10)),
+                options: {
+                  maxWidth: 600,
+                  maxHeight: 600,
+                  title: file.filename,
+                },
+              }),
+            )
           } catch (error: any) {
             captureException(error)
 
@@ -3910,9 +4009,9 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             // Extract key frames from video for AI analysis
             console.log(`🎥 Processing video: ${file.filename}`)
             try {
-              const videoFrames = await extractVideoFrames(
-                file.data,
-                file.mimeType,
+              const videoFrames = await tracker.track(
+                "extract_video_frames",
+                () => extractVideoFrames(file.data, file.mimeType),
               )
 
               for (let i = 0; i < videoFrames.length; i++) {
@@ -3957,6 +4056,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 url: uploadResult.url,
                 title: uploadResult.title,
                 size: file.size,
+                width: uploadResult.width,
+                height: uploadResult.height,
               })
             }
           }
@@ -3979,7 +4080,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               threadId: thread.id,
               userId: member?.id,
               guestId: guest?.id,
-              app,
+              app: requestApp,
             }).catch((error) => {
               captureException(error)
               console.error("❌ Failed to process text file for RAG:", error)
@@ -3989,6 +4090,9 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
           uploadedFiles.push({
             data: textContent,
             title: file.filename,
+            appId: requestApp?.id,
+            url: undefined, // No direct URL for text content
+            isPublic: false,
             size: file.size,
             name: file.filename,
             type: file.type,
@@ -4044,7 +4148,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 threadId: thread.id,
                 userId: member?.id,
                 guestId: guest?.id,
-                app,
+                app: requestApp,
               }).catch((error) => {
                 captureException(error)
                 console.error("❌ Failed to process PDF for RAG:", error)
@@ -4169,7 +4273,7 @@ ${lastMessageContent}
       ? await buildEnhancedRAGContext({
           query: content,
           threadId: thread.id,
-          app,
+          app: requestApp,
         })
       : ""
 
@@ -4180,7 +4284,7 @@ ${lastMessageContent}
 
   // Add calendar tool instructions if calendar tools are available
   const calendarInstructions =
-    app?.slug === "calendar" || app?.slug === "vex"
+    requestApp?.slug === "calendar" || requestApp?.slug === "vex"
       ? `\n\n🔥 CRITICAL CALENDAR TOOL RULES:
 1. EXECUTE IMMEDIATELY - Call the tool functions RIGHT NOW, not later
 2. USE PAST TENSE - Always say "I've scheduled" or "I've created", NEVER "I'll schedule" or "Let me"
@@ -4249,12 +4353,13 @@ All features are FREE during beta. Transitioning to organic marketing, emphasize
 
   // 🍐 Pear feedback context for analytics queries
   const pearFeedbackContext = await getPearFeedbackContext({
-    appId: app?.id,
+    appId: requestApp?.id,
     limit: 50,
   })
 
   // 📊 Retro analytics context (only for Grape, Pear, or owner)
-  const isGrapeOrPear = app?.slug === "grape" || app?.slug === "pear"
+  const isGrapeOrPear =
+    requestApp?.slug === "grape" || requestApp?.slug === "pear"
   const isRetroSession = requestData.retro === true
   const canAccessRetroAnalytics = isGrapeOrPear && !isRetroSession // Don't show during retro
 
@@ -4400,9 +4505,9 @@ How I process and remember information:
           feedbackText: userFeedback,
           userId: member?.id,
           guestId: guest?.id,
-          appName: app?.name,
+          appName: requestApp?.name,
           agentId: agent?.id,
-          app: app,
+          app: requestApp,
           messageId: message.message.id,
         })
 
@@ -4461,7 +4566,7 @@ How I process and remember information:
           .values({
             userId: member?.id,
             guestId: guest?.id,
-            appId: app?.id,
+            appId: requestApp?.id,
             threadId: thread.id,
             totalQuestions: 7, // Default, can be dynamic based on app
             questionsAnswered: 1,
@@ -4484,7 +4589,7 @@ How I process and remember information:
         sessionId,
         userId: member?.id,
         guestId: guest?.id,
-        appId: app?.id,
+        appId: requestApp?.id,
         messageId: message.message.id,
         questionText: "Daily check-in question", // Will be updated from frontend
         sectionTitle: "Daily Reflection", // Will be updated from frontend
@@ -4515,7 +4620,7 @@ How I process and remember information:
 
 ## 🍐 PEAR FEEDBACK VALIDATION RESULT
 
-The user just submitted feedback for ${app?.name || "this app"} and it has been evaluated:
+The user just submitted feedback for ${requestApp?.name || "this app"} and it has been evaluated:
 
 - **Valid:** ${pearValidationResult.isValid ? "Yes" : "No"}
 - **Credits Awarded:** ${pearValidationResult.isValid ? `+${pearValidationResult.credits}` : "0"}
@@ -4836,7 +4941,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    const claudeProvider = await getModelProvider(app, claude.name)
+    const claudeProvider = await getModelProvider(requestApp, claude.name)
     model = claudeProvider.provider
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
@@ -4847,13 +4952,16 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       console.log("❌ Perplexity not found")
       return c.json({ error: "Perplexity not found" }, { status: 404 })
     }
-    const perplexityProvider = await getModelProvider(app, perplexityAgent.name)
+    const perplexityProvider = await getModelProvider(
+      requestApp,
+      perplexityAgent.name,
+    )
     model = perplexityProvider.provider
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
     // Lets try r1
-    const providerResult = await getModelProvider(app, agent.name)
+    const providerResult = await getModelProvider(requestApp, agent.name)
     model = providerResult.provider
     console.log(
       `✅ Provider created using: ${providerResult.agentName || agent.name}`,
@@ -5173,7 +5281,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       reasoning: testReasoning, // Save test reasoning
       originalContent: testResponse.trim(),
       searchContext: null,
-      appId: app?.id,
+      appId: requestApp?.id,
       images: imageGenerationEnabled
         ? [
             {
@@ -5278,7 +5386,7 @@ Respond in this exact JSON format:
 Make the enhanced prompt contextually aware and optimized for high-quality image generation.`
 
         // Use app-specific DeepSeek key if available
-        const deepseekEnhanceProvider = await getModelProvider(app)
+        const deepseekEnhanceProvider = await getModelProvider(requestApp)
         const enhancementResponse = await generateText({
           model: deepseekEnhanceProvider.provider,
           messages: [{ role: "user", content: enhancementPrompt }],
@@ -5373,11 +5481,11 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
         // If the app has a specific key for 'replicate', use it.
         // Note: Currently Agent.tsx might not have a dedicated 'replicate' field, but if it exists in DB, we use it.
-        let replicateAuth = app.tier === "free" ? REPLICATE_API_KEY : ""
+        let replicateAuth = requestApp?.tier === "free" ? REPLICATE_API_KEY : ""
 
         // Check for 'replicate' key or reuse 'openrouter'/'deepseek' key if intended for Replicate
         // For now, checks 'replicate' explicit key in apiKeys jsonb
-        const appReplicateKey = app?.apiKeys?.replicate
+        const appReplicateKey = requestApp?.apiKeys?.replicate
 
         if (appReplicateKey) {
           try {
@@ -5483,7 +5591,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           ...newMessagePayload,
           content: aiResponseContent,
           originalContent: aiResponseContent,
-          appId: app?.id,
+          appId: requestApp?.id,
           images: [
             {
               url: permanentUrl, // Use permanent UploadThing URL
@@ -5590,7 +5698,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           model,
           messages,
           maxRetries: 3,
-          temperature: app?.temperature ?? 0.7,
+          temperature: requestApp?.temperature ?? 0.7,
           tools: allTools, // Includes imageTools
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
@@ -6053,7 +6161,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           try {
             const aiMessage = await createMessage({
               ...newMessagePayload,
-              appId: app?.id,
+              appId: requestApp?.id,
               content: processedText + creditRewardMessage, // Use processed text with citations
               reasoning: reasoningText || undefined, // Store reasoning separately
               isPear: requestData.pear || false, // Track Pear feedback submissions
@@ -6161,7 +6269,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           model,
           messages,
           maxRetries: 3,
-          temperature: app?.temperature ?? 0.7,
+          temperature: requestApp?.temperature ?? 0.7,
           tools: allTools,
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
@@ -6355,7 +6463,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         })
         // Save AI response to database (no Perplexity processing for DeepSeek)
         const aiMessage = await createMessage({
-          appId: app?.id,
+          appId: requestApp?.id,
           ...newMessagePayload,
           content: (finalText + creditRewardMessage).trim(), // Add credit reward thank you
           originalContent: finalText.trim(),
@@ -6439,7 +6547,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           model,
           messages,
           maxRetries: 3,
-          temperature: app?.temperature ?? 0.7,
+          temperature: requestApp?.temperature ?? 0.7,
           tools: allTools,
           providerOptions: {
             google: {
@@ -6549,7 +6657,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             : finalText
 
           const aiMessage = await createMessage({
-            appId: app?.id,
+            appId: requestApp?.id,
             id: clientId,
             threadId: currentThreadId,
             agentId: agent.id,
@@ -6622,7 +6730,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         model,
         messages,
         maxRetries: 3,
-        temperature: app?.temperature ?? 0.7,
+        temperature: requestApp?.temperature ?? 0.7,
         tools: toolsForModel,
         async onFinish({ text, usage, response, sources, toolCalls }) {
           finalText = text
@@ -6842,7 +6950,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         threadId: currentThreadId,
         searchContext,
         webSearchResult: webSearchResults,
-        appId: app?.id,
+        appId: requestApp?.id,
       })
 
       console.timeEnd("messageProcessing")
@@ -6870,7 +6978,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           userId: m.message.userId || undefined,
           guestId: m.message.guestId || undefined,
           role: "assistant",
-          app,
+          app: requestApp,
         }).catch((error) => {
           captureException(error)
           console.error("❌ AI Message RAG processing failed:", error)

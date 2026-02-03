@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import { v4 as uuidv4, validate } from "uuid"
 import sanitizeHtml from "sanitize-html"
+import { redact } from "../../lib/redaction"
 import {
   getMessages,
   createMessage,
@@ -363,7 +364,9 @@ messages.post("/", async (c) => {
     return c.json({ error: "Instructions too long" }, 400)
   }
 
-  let messageContent = sanitizeHtml(content)
+  // Redact PII before sanitizing HTML
+  const redactedContent = await redact(content)
+  let messageContent = sanitizeHtml(redactedContent)
 
   if (!content && !attachmentType) {
     return c.json({ error: "Please provide a message or attachment" }, 400)
