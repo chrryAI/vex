@@ -15,6 +15,10 @@ tasks.post("/", async (c) => {
     return c.json({ error: "Title is required" }, 400)
   }
 
+  if (typeof title !== "string") {
+    return c.json({ error: "Invalid title format" }, 400)
+  }
+
   const redactedTitle = await redact(title)
   const sanitizedTitle = sanitizeHtml(redactedTitle)
 
@@ -184,7 +188,7 @@ tasks.patch("/:id", async (c) => {
 
   // If not reordering, proceed with normal task update
   let finalTitle = title
-  if (title) {
+  if (title && typeof title === "string") {
     const redactedTitle = await redact(title)
     finalTitle = sanitizeHtml(redactedTitle)
   }

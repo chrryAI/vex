@@ -15,6 +15,7 @@ export const apiAnalyticsMiddleware = async (c: Context, next: Next) => {
   serverPlausibleEvent({
     name: "API Request",
     u: path,
+    domain: "chrry.dev",
     props: {
       method,
       status,

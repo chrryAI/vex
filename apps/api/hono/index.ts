@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import { compress } from "@hono/bun-compress"
 import { headersMiddleware } from "./middleware/headers"
 import { corsMiddleware } from "./middleware/cors"
+import { apiAnalyticsMiddleware } from "./middleware/analytics"
 import { session } from "./routes/session"
 import { threads } from "./routes/threads"
 import { translations } from "./routes/translations"
@@ -104,7 +105,7 @@ app.onError((err, c) => {
 app.use("*", corsMiddleware)
 
 // Apply global API analytics middleware
-// app.use("*", apiAnalyticsMiddleware)
+app.use("*", apiAnalyticsMiddleware)
 
 // Custom headers middleware for app/store detection and fingerprinting
 app.use("*", headersMiddleware)

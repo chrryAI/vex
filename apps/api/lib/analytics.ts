@@ -1,4 +1,3 @@
-import { analyticsDomains } from "@chrryai/chrry/utils/siteConfig"
 import { isDevelopment } from "."
 import { user, guest } from "@repo/db"
 
@@ -23,9 +22,7 @@ export const serverPlausibleEvent = ({
 
   // Default to the first white-label domain if not specified or unknown
   // Ideally, we passed the 'App-Id' or 'Origin' to resolve the domain
-  const targetDomain = isDevelopment
-    ? "local.chrry.ai"
-    : domain || analyticsDomains[0]?.domain || "chrry.ai"
+  const targetDomain = isDevelopment ? "local.chrry.ai" : domain || "chrry.dev"
   const PLAUSIBLE_HOST = process.env.PLAUSIBLE_HOST || "https://a.chrry.dev"
 
   // Construct the full URL for the event
@@ -41,7 +38,6 @@ export const serverPlausibleEvent = ({
     domain: targetDomain,
     props,
   }
-  console.log(`🚀 ~ payload:`, payload)
 
   // Fire and forget - don't await this
   fetch(`${PLAUSIBLE_HOST}/api/event`, {
@@ -54,14 +50,15 @@ export const serverPlausibleEvent = ({
     body: JSON.stringify(payload),
   })
     .catch((err) => {
-      console.log(`🚀 ~ err:`, err)
       // Silently fail in production to avoid log spam, or log debug in dev
-      if (process.env.NODE_ENV === "development") {
-        console.warn("Plausible event failed:", err)
+      if (isDevelopment) {
+        console.warn(`🚨 ~ serverPlausibleEvent err:`, err)
       }
     })
     .then((res) => {
-      console.log(`🚀 ~ Plausible event sent:`, res)
+      if (isDevelopment) {
+        console.log(`🤖 ~ Plausible event sent:`, res)
+      }
     })
 }
 

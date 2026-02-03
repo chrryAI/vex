@@ -1321,7 +1321,7 @@ app.post("/", async (c) => {
     canSubmit?: boolean
   }
 
-  let app = rest.appId
+  let requestApp = rest.appId
     ? await tracker.track("get_app", () =>
         getApp({
           id: rest.appId,
@@ -1333,9 +1333,9 @@ app.post("/", async (c) => {
       )
     : undefined
 
-  const appExtends = app
+  const appExtends = requestApp
     ? await tracker.track("get_app_extends", () =>
-        getAppExtends({ appId: app!.id, isSafe: false }),
+        getAppExtends({ appId: requestApp!.id, isSafe: false }),
       )
     : []
 
@@ -1427,9 +1427,9 @@ JUST DO IT. You have the power. Use the updateTimer tool immediately.
 
   // Build store context - information about the store and its apps
   let storeContext = ""
-  if (app?.store) {
+  if (requestApp?.store) {
     storeContext = await tracker.track("store_context", async () => {
-      const storeApps = app!.store!.apps || []
+      const storeApps = requestApp!.store!.apps || []
 
       // Get agents for each app using forApp parameter
       // Optimized: Fetch all agents in one query (N+1 optimization)
@@ -1455,12 +1455,12 @@ JUST DO IT. You have the power. Use the updateTimer tool immediately.
       return `
 ## 🏪 STORE CONTEXT
 
-You are part of the **${app!.store!.name}** store${app!.store!.description ? `: ${app!.store!.description}` : ""}.
+You are part of the **${requestApp!.store!.name}** store${requestApp!.store!.description ? `: ${requestApp!.store!.description}` : ""}.
 
 ${
-  app!.store!.appId === app!.id
+  requestApp!.store!.appId === requestApp!.id
     ? `
-**Important:** You are the **primary app** of this store - the main entry point and representative of the ${app!.store!.name} ecosystem.
+**Important:** You are the **primary app** of this store - the main entry point and representative of the ${requestApp!.store!.name} ecosystem.
 `
     : ""
 }
@@ -1486,7 +1486,7 @@ ${appsWithAgents
 }
 
 ${
-  app!.onlyAgent
+  requestApp!.onlyAgent
     ? `
 **Your Mode:** You are a mono-agent app, using a specific AI model consistently.
 `
@@ -1499,7 +1499,8 @@ ${
   }
 
   const isAppOwner =
-    app && isOwner(app, { userId: member?.id, guestId: guest?.id })
+    requestApp &&
+    isOwner(requestApp, { userId: member?.id, guestId: guest?.id })
 
   // Recursively build knowledge base from app.extends chain (max 5 levels)
   const buildAppKnowledgeBase = async (currentApp: appWithStore, depth = 0) => {
@@ -1610,9 +1611,9 @@ ${
     }
   }
 
-  const appKnowledge = app
+  const appKnowledge = requestApp
     ? await tracker.track("app_knowledge", () =>
-        app ? buildAppKnowledgeBase(app) : Promise.resolve(null),
+        requestApp ? buildAppKnowledgeBase(requestApp) : Promise.resolve(null),
       )
     : null
 
@@ -1658,7 +1659,7 @@ ${
     getPlaceHolder({
       userId: member?.id,
       guestId: guest?.id,
-      appId: app?.id,
+      appId: requestApp?.id,
     }),
   )
 
@@ -1699,10 +1700,10 @@ ${
       }
       streamControllers.delete(stopStreamId) // Remove from map
 
-      logCreditUsage({
-        appId: app?.id,
+      await logCreditUsage({
         userId: member?.id,
         guestId: guest?.id,
+        appId: requestApp?.id,
         creditCost: message.message.creditCost * agent.creditCost,
         messageType: "ai",
         agentId,
@@ -1902,12 +1903,12 @@ You can enable these in your settings anytime!"
 
   // Get system prompt template from database (or use default Vex template)
   // If no app, fetch the default Vex app from database
-  const defaultVexApp = !app
+  const defaultVexApp = !requestApp
     ? await tracker.track("get_default_app", () =>
         getPureApp({ slug: "vex", isSafe: false }),
       )
     : null
-  const templateSource = app?.systemPrompt || defaultVexApp?.systemPrompt
+  const templateSource = requestApp?.systemPrompt || defaultVexApp?.systemPrompt
 
   // If no template in database, use fallback
   const fallbackTemplate = `You are {{app.name}}{{#if app.title}}, {{app.title}}{{/if}}{{#if app.description}}. {{app.description}}{{/if}}
@@ -2016,13 +2017,13 @@ You can enable these in your settings anytime!"
 
   // 🍇 Grape Context (Global - all apps should know about available apps)
   const grapeContext =
-    app?.store?.apps && app.store.apps.length > 0
+    requestApp?.store?.apps && requestApp.store.apps.length > 0
       ? `
 
 ## 🍇 Grape (Discover Apps, Earn Credits)
 
 **Available Apps** (shown in 🍇 Grape button on this page):
-${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.description ? `: ${a.description}` : ""}`).join("\n")}
+${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.description ? `: ${a.description}` : ""}`).join("\n")}
 
 **How it works:**
 1. Click the 🍇 Grape icon (top left of chat) - shows available app count
@@ -2032,7 +2033,7 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
 
 **When users ask about Grape or discovering apps:**
 - Explain: "Click the 🍇 Grape button to discover Wine apps and earn credits for feedback"
-- Mention available apps: ${app.store.apps.map((a) => a.name).join(", ")}
+- Mention available apps: ${requestApp.store.apps.map((a) => a.name).join(", ")}
 - Keep it simple - it's just: browse → click → try → feedback → earn
 - All ads are internal Wine apps only (privacy-first)
 `
@@ -2043,7 +2044,7 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
   // Render system prompt using Handlebars template
   const baseSystemPrompt = renderSystemPrompt({
     template: templateSource || fallbackTemplate,
-    app: app || defaultVexApp,
+    app: requestApp || defaultVexApp,
     appKnowledge,
     userName,
     language,
@@ -2111,10 +2112,10 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
     getRelevantMemoryContext({
       userId: member?.id,
       guestId: guest?.id,
-      appId: app?.id,
+      appId: requestApp?.id,
       pageSize: memoryPageSize,
       threadId: message.message.threadId, // Pass current thread to exclude
-      app, // Pass app object to check ownership
+      app: requestApp, // Pass app object to check ownership
     }),
   )
 
@@ -2172,7 +2173,7 @@ ${recentEventsList}
     getInstructions({
       userId: member?.id,
       guestId: guest?.id,
-      appId: app?.id,
+      appId: requestApp?.id,
       pageSize: 7,
     }),
   )
@@ -2303,7 +2304,7 @@ These reflect the user's interests and recent conversations. If the user seems u
     await import("@repo/db")
 
   const vaultExpenses =
-    app?.name === "Vault"
+    requestApp?.name === "Vault"
       ? await getExpenses({
           userId: member?.id,
           guestId: guest?.id,
@@ -2312,7 +2313,7 @@ These reflect the user's interests and recent conversations. If the user seems u
       : null
 
   const vaultBudgets =
-    app?.name === "Vault"
+    requestApp?.name === "Vault"
       ? await getBudgets({
           userId: member?.id,
           guestId: guest?.id,
@@ -2320,7 +2321,7 @@ These reflect the user's interests and recent conversations. If the user seems u
       : null
 
   const vaultSharedExpenses =
-    app?.name === "Vault"
+    requestApp?.name === "Vault"
       ? await getSharedExpenses({
           threadId: message.message.threadId,
         })
@@ -2349,7 +2350,7 @@ ${
 - **BE DIRECT** - No need to build long-term context since nothing persists
 
 ${
-  app?.slug === "zarathustra"
+  requestApp?.slug === "zarathustra"
     ? `**Zarathustra Philosophy:**
 This is Zarathustra - the app of digital sovereignty and philosophical privacy. The user has embraced:
 - 💪 Will to Power over their digital existence
@@ -2442,12 +2443,12 @@ ${calendarEvents.length > 15 ? `\n...and ${calendarEvents.length - 15} more even
 - Be proactive but not pushy about their schedule
 - Reference specific events naturally in conversation
 
-Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would you like to prepare anything for that?"
+Example: "I see you have a meeting with the Tokyo team tomorrow at 10 AM. Would you like to prepare anything for that?"
 `
       : ""
 
   const hasFocus =
-    app?.slug === "focus" ||
+    requestApp?.slug === "focus" ||
     appExtends.find((extend) => extend.slug === "focus")
   // Fetch Focus data for context (tasks, moods, timer)
   const focusTasks = hasFocus
@@ -2483,7 +2484,7 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 2 PM. Would y
 
   // Build Vault context (expenses, budgets, shared expenses)
   const vaultContext =
-    app?.name === "Vault" &&
+    requestApp?.name === "Vault" &&
     (vaultExpenses?.expenses.length ||
       vaultBudgets?.budgets.length ||
       vaultSharedExpenses?.sharedExpenses.length)
@@ -2758,13 +2759,13 @@ ${(() => {
 
   // Get news context based on app
   const newsContext = await tracker.track("news_context", () =>
-    getNewsContext(app?.slug),
+    getNewsContext(requestApp?.slug),
   )
 
   // Get live analytics context for Grape
-  const analyticsContext = app
+  const analyticsContext = requestApp
     ? await getAnalyticsContext({
-        app,
+        app: requestApp,
         member,
         guest,
       })
@@ -2772,14 +2773,16 @@ ${(() => {
 
   // Get recent feedback context for Pear
   const pearContext =
-    app?.slug && beasts.includes(app?.slug) ? await getPearContext() : ""
+    requestApp?.slug && beasts.includes(requestApp?.slug)
+      ? await getPearContext()
+      : ""
 
   // E2E Analytics Context (for beasts only)
   // Helps analyze system integrity, test coverage, and missing event tracking
   const e2eContext =
-    app?.slug &&
-    beasts.includes(app?.slug) &&
-    isOwner(app, {
+    requestApp?.slug &&
+    beasts.includes(requestApp?.slug) &&
+    isOwner(requestApp, {
       userId: member?.id,
     })
       ? `\n\n## 🧪 E2E Testing Analytics
@@ -2803,18 +2806,20 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       : ""
 
   // Get DNA Thread context (app owner's foundational knowledge)
-  const dnaContext = app?.mainThreadId ? await getAppDNAContext(app) : ""
+  const dnaContext = requestApp?.mainThreadId
+    ? await getAppDNAContext(requestApp)
+    : ""
 
   // Get brand-specific knowledge base (dynamic RAG or hardcoded fallback)
 
   // Check if this is the first message in the app's main thread (user just started using their new app)
-  const hasMainThread = isAppOwner && !!app?.mainThreadId
-  const isFirstAppMessage = app && isAppOwner && !hasMainThread
+  const hasMainThread = isAppOwner && !!requestApp?.mainThreadId
+  const isFirstAppMessage = requestApp && isAppOwner && !hasMainThread
 
   // AI Coach Context - Guide users through app creation OR first-time app usage
   let aiCoachContext = ""
 
-  if (isFirstAppMessage && app && thread) {
+  if (isFirstAppMessage && requestApp && thread) {
     // Detect if this is the first message after app creation (just saved)
 
     try {
@@ -2846,12 +2851,12 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       }
 
       await updateApp({
-        ...app,
+        ...requestApp!,
         mainThreadId: thread.id,
       })
 
-      app = await getApp({
-        id: app.id,
+      requestApp = await getApp({
+        id: requestApp!.id,
         userId: member?.id,
         guestId: guest?.id,
         skipCache: true,
@@ -2860,18 +2865,18 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       captureException(error)
     }
 
-    if (!app) {
+    if (!requestApp) {
       return c.json({ error: "App not found" }, { status: 404 })
     }
 
     // Only show this message if we're actually in the main thread
-    const isActuallyMainThread = thread?.id === app.mainThreadId
+    const isActuallyMainThread = thread?.id === requestApp.mainThreadId
 
     aiCoachContext = isActuallyMainThread
       ? `
 ## 🎉 First Time Using Your App!
 
-This is the **first message** in your newly created app "${app.name}"!
+This is the **first message** in your newly created app "${requestApp.name}"!
 
 **Welcome Guide:**
 - This conversation will become your app's **main thread** - the knowledge base for how this app works
@@ -2887,7 +2892,7 @@ This is the **first message** in your newly created app "${app.name}"!
 
 **Remember:** This main thread is special - it's the "DNA" of your app. Make it count! 🚀
 
-Now, how can I help you get started with ${app.name}?
+Now, how can I help you get started with ${requestApp.name}?
 `
       : "" // Not the main thread, don't show the special message
   } else if (draft) {
@@ -3428,7 +3433,7 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
     return c.json({ error: "Thread not found" }, { status: 404 })
   }
 
-  if (!app) {
+  if (!requestApp) {
     return c.json({ error: "App not found" }, { status: 404 })
   }
 
@@ -3606,9 +3611,8 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
                   ],
               latestMessage: m.message,
               language,
-              calendarEvents,
-              app, // Pass app object directly
-              skipClassification: !!app, // Skip AI classification if app is set
+              app: requestApp, // Pass app object directly
+              skipClassification: !!requestApp, // Skip AI classification if app is set
             }),
         )
 
@@ -3794,7 +3798,7 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
     }
 
     // Scan files for malware
-    await tracker.track("malware_scan", async () => {
+    const malwareResponse = await tracker.track("malware_scan", async () => {
       console.log("🔍 Scanning files for malware...")
       for (const file of files) {
         const arrayBuffer = await file.arrayBuffer()
@@ -3815,7 +3819,12 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
         }
       }
       console.log("✅ All files passed malware scan")
+      return null
     })
+
+    if (malwareResponse) {
+      return malwareResponse
+    }
 
     // Convert files to base64 and prepare multimodal content
     console.log("🔄 Converting files to base64...")
@@ -4047,6 +4056,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 url: uploadResult.url,
                 title: uploadResult.title,
                 size: file.size,
+                width: uploadResult.width,
+                height: uploadResult.height,
               })
             }
           }
@@ -4069,7 +4080,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
               threadId: thread.id,
               userId: member?.id,
               guestId: guest?.id,
-              app,
+              app: requestApp,
             }).catch((error) => {
               captureException(error)
               console.error("❌ Failed to process text file for RAG:", error)
@@ -4079,6 +4090,9 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
           uploadedFiles.push({
             data: textContent,
             title: file.filename,
+            appId: requestApp?.id,
+            url: undefined, // No direct URL for text content
+            isPublic: false,
             size: file.size,
             name: file.filename,
             type: file.type,
@@ -4134,7 +4148,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
                 threadId: thread.id,
                 userId: member?.id,
                 guestId: guest?.id,
-                app,
+                app: requestApp,
               }).catch((error) => {
                 captureException(error)
                 console.error("❌ Failed to process PDF for RAG:", error)
@@ -4259,7 +4273,7 @@ ${lastMessageContent}
       ? await buildEnhancedRAGContext({
           query: content,
           threadId: thread.id,
-          app,
+          app: requestApp,
         })
       : ""
 
@@ -5263,7 +5277,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       reasoning: testReasoning, // Save test reasoning
       originalContent: testResponse.trim(),
       searchContext: null,
-      appId: app?.id,
+      appId: requestApp?.id,
       images: imageGenerationEnabled
         ? [
             {
