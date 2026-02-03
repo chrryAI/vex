@@ -222,12 +222,19 @@ export async function getAgentProfile(
 
 interface MoltbookComment {
   id: string
-  post_id: string
-  author_id: string
-  author_name: string
+  post_id?: string
   content: string
   created_at: string
-  parent_id?: string
+  parent_id?: string | null
+  upvotes: number
+  downvotes: number
+  author: {
+    id: string
+    name: string
+    karma: number
+    follower_count: number
+  }
+  replies: MoltbookComment[]
 }
 
 export async function getPostComments(
@@ -246,13 +253,24 @@ export async function getPostComments(
     )
 
     if (!response.ok) {
+      // 404 means post was deleted - don't spam Sentry
+      if (response.status === 404) {
+        console.log(`⚠️ Post ${postId} not found (deleted from Moltbook)`)
+        return []
+      }
       throw new Error(`Moltbook API error: ${response.status}`)
     }
 
     const data = await response.json()
     return data.comments || []
   } catch (error) {
-    captureException(error)
+    // Only send to Sentry if it's not a 404
+    if (
+      !(error instanceof Error && error.message.includes("404")) &&
+      !(error instanceof Error && error.message.includes("not found"))
+    ) {
+      captureException(error)
+    }
     console.error(`❌ Error fetching comments for post ${postId}:`, error)
     return []
   }
@@ -316,18 +334,42 @@ export async function followAgent(
     )
 
     if (!response.ok) {
-      const errorData = await response.json()
+      let errorData: any = {}
+      try {
+        errorData = await response.json()
+      } catch {
+        // ignore non-JSON error bodies
+      }
+
+      // 404 means agent not found - don't spam Sentry
+      if (response.status === 404) {
+        console.log(`⚠️ Agent ${agentId} not found (may have been deleted)`)
+        return {
+          success: false,
+          error: errorData.message || errorData.error || "Agent not found",
+        }
+      }
+
+      // Handle other error statuses
       console.error("❌ Moltbook Follow API Error:", errorData)
       return {
         success: false,
         error:
-          errorData.message || errorData.error || JSON.stringify(errorData),
+          errorData.message ||
+          errorData.error ||
+          `Request failed with status ${response.status}`,
       }
     }
 
     return { success: true }
   } catch (error) {
-    captureException(error)
+    // Only send to Sentry if it's not a 404
+    if (
+      !(error instanceof Error && error.message.includes("404")) &&
+      !(error instanceof Error && error.message.includes("not found"))
+    ) {
+      captureException(error)
+    }
     console.error("❌ Error following agent on Moltbook:", error)
     return { success: false, error: String(error) }
   }

@@ -1,10 +1,13 @@
 import { captureException } from "@sentry/node"
 import { db, getMemories } from "@repo/db"
+import { moltComments } from "@repo/db/src/schema"
 import { getMoltbookFeed, postComment } from "../integrations/moltbook"
+import { sendEmail } from "../sendEmail"
 import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
 import { randomInt } from "crypto"
 import { isDevelopment, MOLTBOOK_API_KEYS } from ".."
+import type { Context } from "hono"
 
 const getAIModel = () => {
   const modelName = "deepseek-reasoner"
@@ -13,8 +16,10 @@ const getAIModel = () => {
 
 export async function engageWithMoltbookPosts({
   slug = "vex",
+  c,
 }: {
   slug?: string
+  c?: Context
 } = {}) {
   // Development mode guard - don't run unless explicitly enabled
   if (isDevelopment && !process.env.ENABLE_MOLTBOOK_CRON) {
@@ -86,10 +91,18 @@ export async function engageWithMoltbookPosts({
     console.log(`🎲 Selected ${selectedPosts.length} posts to comment on`)
 
     let commentsPosted = 0
+    const commentedPosts: typeof selectedPosts = [] // Track posts that actually received comments
 
     // 4. Comment on each selected post
     for (const post of selectedPosts) {
       try {
+        // Skip if this is our own post (prevent self-commenting)
+        // Note: Comparing by author name until we add app.moltbookAgentId field
+        if (post.author === app?.name || post.author === slug) {
+          console.log(`⏭️ Skipping own post: "${post.title}"`)
+          continue
+        }
+
         const deepseek = getAIModel()
 
         const commentPrompt = `You are an AI agent on Moltbook (a social network for AI agents).
@@ -140,7 +153,35 @@ Comment (just the text, no quotes):`
         )
 
         if (commentResult.success) {
+          // Save to database for tracking
+          if (commentResult.comment_id && app?.id) {
+            try {
+              await db.insert(moltComments).values({
+                moltId: post.id,
+                commentId: commentResult.comment_id,
+                // authorId should be Moltbook agent ID, not internal app.id
+                // Using app name as temporary identifier until we add app.moltbookAgentId field
+                authorId: app.name || slug, // Moltbook agent name/identifier
+                authorName: app.name || slug,
+                content: commentContent,
+                replied: false, // This is a proactive comment, not a reply
+                followed: false,
+                metadata: {
+                  type: "proactive_engagement",
+                  postTitle: post.title,
+                  timestamp: new Date().toISOString(),
+                  internalAppId: app.id, // Store internal UUID in metadata
+                },
+              })
+              console.log(`💾 Saved engagement comment to DB`)
+            } catch (dbError) {
+              // Don't fail the whole process if DB save fails
+              console.error(`⚠️ Failed to save comment to DB:`, dbError)
+            }
+          }
+
           commentsPosted++
+          commentedPosts.push(post) // Track this post as successfully commented
           console.log(`✅ Posted comment on "${post.title}"`)
         } else {
           console.error(`❌ Failed to post comment: ${commentResult.error}`)
@@ -157,6 +198,36 @@ Comment (just the text, no quotes):`
     console.log(
       `✅ Engagement complete: ${commentsPosted}/${selectedPosts.length} comments posted`,
     )
+
+    // Send email notification (non-blocking) - only if comments were posted
+    if (c && commentedPosts.length > 0) {
+      sendEmail({
+        c,
+        to: "feedbackwallet@gmail.com",
+        subject: `💬 Moltbook Engagement Activity - ${app?.name || slug}`,
+        html: `
+          <h2>🎯 Moltbook Engagement Report</h2>
+          <p><strong>Agent:</strong> ${app?.name || slug}</p>
+          <p><strong>Comments Posted:</strong> ${commentedPosts.length}/${selectedPosts.length}</p>
+          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+          <hr>
+          <h3>Engaged Posts:</h3>
+          <ul>
+            ${commentedPosts
+              .map(
+                (post) =>
+                  `<li><strong>${post.title}</strong> by ${post.author} (Score: ${post.score})</li>`,
+              )
+              .join("")}
+          </ul>
+        `,
+      })
+        .then(() => console.log("📧 Engagement email notification sent"))
+        .catch((err) => {
+          captureException(err)
+          console.error("⚠️ Engagement email notification failed:", err)
+        })
+    }
   } catch (error) {
     captureException(error)
     console.error("❌ Error in Moltbook engagement:", error)
