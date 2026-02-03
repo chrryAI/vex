@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useCheckboxStyles } from "./Checkbox.styles"
-import { Div, Input, Span } from "./platform"
+import { Div, Input, Label, Span } from "./platform"
 
 type CheckboxProps = {
   children: React.ReactNode
@@ -23,34 +23,47 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
     ref,
   ) => {
     const styles = useCheckboxStyles()
+    const generatedId = React.useId()
+    const inputId = dataTestId || generatedId
 
-    const handleClick = (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!disabled && onChange) {
-        onChange(!checked)
+        onChange(e.target.checked)
       }
     }
 
     return (
-      <Div
-        onClick={handleClick}
+      <Label
+        htmlFor={inputId}
         className={"formSwitch"}
-        data-testid={`${dataTestId}-wrapper`}
+        data-testid={dataTestId ? `${dataTestId}-wrapper` : undefined}
         style={{
           ...styles.formSwitch.style,
           ...(disabled && { opacity: 0.5, cursor: "not-allowed" }),
           ...style,
+          cursor: disabled ? "not-allowed" : "pointer",
         }}
       >
         {/* Hidden native input for accessibility and form integration */}
         <Input
-          id={dataTestId}
+          id={inputId}
           ref={ref}
           type="checkbox"
           checked={checked}
           disabled={disabled}
-          style={{ display: "none" }}
+          onChange={handleChange}
+          style={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            padding: 0,
+            margin: -1,
+            overflow: "hidden",
+            clip: "rect(0, 0, 0, 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+            opacity: 0,
+          }}
           data-testid={dataTestId}
         />
         {/* Custom toggle switch */}
@@ -72,7 +85,7 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
         <Span className="checkboxLabel" style={styles.formSwitchLabel.style}>
           {children}
         </Span>
-      </Div>
+      </Label>
     )
   },
 )
