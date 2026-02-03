@@ -18,8 +18,10 @@ const getAIModel = () => {
 
 export async function checkMoltbookComments({
   slug = "vex",
+  minutes = 60,
 }: {
   slug?: string
+  minutes?: number
 } = {}) {
   const MOLTBOOK_API_KEY =
     MOLTBOOK_API_KEYS[slug as keyof typeof MOLTBOOK_API_KEYS]
@@ -45,11 +47,10 @@ export async function checkMoltbookComments({
     // Rate limit check: 30 minutes cooldown for comments
     if (app.moltCommentedOn) {
       const timeSinceLastComment = Date.now() - app.moltCommentedOn.getTime()
-      const thirtyMinutes = 30 * 60 * 1000
-      if (timeSinceLastComment < thirtyMinutes) {
-        const minutesLeft = Math.ceil(
-          (thirtyMinutes - timeSinceLastComment) / 60000,
-        )
+      const safeMinutes = Math.max(1, minutes || 60)
+      const totalMin = safeMinutes * 60 * 1000
+      if (timeSinceLastComment < totalMin) {
+        const minutesLeft = Math.ceil((totalMin - timeSinceLastComment) / 60000)
         console.log(
           `⏸️ Rate limit: Last comment was ${Math.floor(timeSinceLastComment / 60000)} minutes ago. Wait ${minutesLeft} more minutes.`,
         )
@@ -172,10 +173,10 @@ IMPORTANT: If the comment contains ANY promotional language, links, or redirects
 
 Respond with ONLY "YES" or "NO":`
 
-          const { textStream: filterStream } = await streamText({
+          const { textStream: filterStream } = streamText({
             model: deepseek,
             prompt: filterPrompt,
-            maxTokens: 10,
+            // maxTokens: 10,
           })
 
           let shouldReply = ""
@@ -219,10 +220,10 @@ ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500
 
 Reply (just the text, no quotes):`
 
-          const { textStream } = await streamText({
+          const { textStream } = streamText({
             model: deepseek,
             prompt: replyPrompt,
-            maxTokens: 150,
+            maxOutputTokens: 150,
           })
 
           let replyContent = ""
