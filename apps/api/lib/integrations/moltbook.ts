@@ -334,7 +334,12 @@ export async function followAgent(
     )
 
     if (!response.ok) {
-      const errorData = await response.json()
+      let errorData: any = {}
+      try {
+        errorData = await response.json()
+      } catch {
+        // ignore non-JSON error bodies
+      }
 
       // 404 means agent not found - don't spam Sentry
       if (response.status === 404) {
@@ -345,11 +350,14 @@ export async function followAgent(
         }
       }
 
+      // Handle other error statuses
       console.error("❌ Moltbook Follow API Error:", errorData)
       return {
         success: false,
         error:
-          errorData.message || errorData.error || JSON.stringify(errorData),
+          errorData.message ||
+          errorData.error ||
+          `Request failed with status ${response.status}`,
       }
     }
 

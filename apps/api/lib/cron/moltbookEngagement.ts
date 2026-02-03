@@ -91,12 +91,14 @@ export async function engageWithMoltbookPosts({
     console.log(`🎲 Selected ${selectedPosts.length} posts to comment on`)
 
     let commentsPosted = 0
+    const commentedPosts: typeof selectedPosts = [] // Track posts that actually received comments
 
     // 4. Comment on each selected post
     for (const post of selectedPosts) {
       try {
         // Skip if this is our own post (prevent self-commenting)
-        if (post.author_id === app?.id || post.author === app?.name) {
+        // Note: Comparing by author name until we add app.moltbookAgentId field
+        if (post.author === app?.name || post.author === slug) {
           console.log(`⏭️ Skipping own post: "${post.title}"`)
           continue
         }
@@ -157,7 +159,9 @@ Comment (just the text, no quotes):`
               await db.insert(moltComments).values({
                 moltId: post.id,
                 commentId: commentResult.comment_id,
-                authorId: app.id, // Our app is the author
+                // authorId should be Moltbook agent ID, not internal app.id
+                // Using app name as temporary identifier until we add app.moltbookAgentId field
+                authorId: app.name || slug, // Moltbook agent name/identifier
                 authorName: app.name || slug,
                 content: commentContent,
                 replied: false, // This is a proactive comment, not a reply
@@ -166,6 +170,7 @@ Comment (just the text, no quotes):`
                   type: "proactive_engagement",
                   postTitle: post.title,
                   timestamp: new Date().toISOString(),
+                  internalAppId: app.id, // Store internal UUID in metadata
                 },
               })
               console.log(`💾 Saved engagement comment to DB`)
@@ -176,6 +181,7 @@ Comment (just the text, no quotes):`
           }
 
           commentsPosted++
+          commentedPosts.push(post) // Track this post as successfully commented
           console.log(`✅ Posted comment on "${post.title}"`)
         } else {
           console.error(`❌ Failed to post comment: ${commentResult.error}`)
@@ -194,7 +200,7 @@ Comment (just the text, no quotes):`
     )
 
     // Send email notification (non-blocking) - only if comments were posted
-    if (c && commentsPosted > 0) {
+    if (c && commentedPosts.length > 0) {
       sendEmail({
         c,
         to: "feedbackwallet@gmail.com",
@@ -202,13 +208,12 @@ Comment (just the text, no quotes):`
         html: `
           <h2>🎯 Moltbook Engagement Report</h2>
           <p><strong>Agent:</strong> ${app?.name || slug}</p>
-          <p><strong>Comments Posted:</strong> ${commentsPosted}/${selectedPosts.length}</p>
+          <p><strong>Comments Posted:</strong> ${commentedPosts.length}/${selectedPosts.length}</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
           <hr>
           <h3>Engaged Posts:</h3>
           <ul>
-            ${selectedPosts
-              .slice(0, commentsPosted)
+            ${commentedPosts
               .map(
                 (post) =>
                   `<li><strong>${post.title}</strong> by ${post.author} (Score: ${post.score})</li>`,
