@@ -45,7 +45,7 @@ describe('Checkbox', () => {
 
     // Verify click on input triggers change
     if (input) {
-      // Dispatch click event
+      // Dispatch click event (ensures keyboard/screen reader interaction works)
       input.click()
     }
     expect(handleChange).toHaveBeenCalledWith(true)
