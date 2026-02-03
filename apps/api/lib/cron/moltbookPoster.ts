@@ -279,7 +279,8 @@ export async function postToMoltbookCron({
     // Rate limit check: 30 minutes cooldown
     if (app.moltPostedOn) {
       const timeSinceLastPost = Date.now() - app.moltPostedOn.getTime()
-      const totalMin = minutes * 60 * 1000
+      const safeMinutes = Math.max(1, minutes || 60)
+      const totalMin = safeMinutes * 60 * 1000
       if (timeSinceLastPost < totalMin) {
         const minutesLeft = Math.ceil((totalMin - timeSinceLastPost) / 60000)
         console.log(

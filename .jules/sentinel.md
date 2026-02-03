@@ -6,7 +6,7 @@
 
 ## 2026-01-21 - Critical PII and Password Hash Leak in Public API
 
-**Vulnerability:** The `GET /users` endpoint was returning full user objects directly from the database layer (`getUsers` -> `getUser`), exposing `password` hashes, `email` addresses, `apiKey`s, and `ip` addresses to any authenticated user.
+**Vulnerability:** The `GET /users` endpoint was returning full user objects directly from the database layer (`getUsers` -> `getUser`), exposing `password` hashes, `email` addresses, `apiKey`s, `stripeCustomerId`, `stripeConnectAccountId`, `appleId`, `fingerprint`, `ip` addresses, `verificationTokens`, and `sessions` to any authenticated user.
 **Learning:** The database abstraction layer (`@repo/db`) helper `getUser` selects all columns by default and does not strip sensitive fields. API routes were relying on this return type without sanitization.
 **Prevention:**
 

@@ -281,7 +281,9 @@ cron.get("/postToMoltbook", async (c) => {
 
   const slug = c.req.query("slug") || "vex"
   const agentName = c.req.query("agentName") || "sushi"
-  const minutes = Number(c.req.query("minutes")) || 30
+  const minutesRaw = Number(c.req.query("minutes"))
+  const minutes =
+    Number.isFinite(minutesRaw) && minutesRaw > 0 ? minutesRaw : 30
 
   const subSlug = c.req.query("subSlug")
 
@@ -292,7 +294,7 @@ cron.get("/postToMoltbook", async (c) => {
     slug,
     agentName,
     subSlug,
-    minutes: isNaN(Number(minutes)) ? 60 : Number(minutes),
+    minutes,
   })
     .then((result) => {
       console.log(`✅ Moltbook post completed successfully: ${result.post_id}`)
@@ -356,7 +358,9 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
 cron.get("/checkMoltbookComments", async (c) => {
   const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
-  const minutes = c.req.query("minutes")
+  const minutesRaw = Number(c.req.query("minutes"))
+  const minutes =
+    Number.isFinite(minutesRaw) && minutesRaw > 0 ? minutesRaw : 60
 
   if (!isDevelopment) {
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
@@ -371,7 +375,7 @@ cron.get("/checkMoltbookComments", async (c) => {
 
   checkMoltbookComments({
     slug,
-    minutes: isNaN(Number(minutes)) ? 60 : Number(minutes),
+    minutes,
   })
     .then(() => {
       console.log("✅ Moltbook comment check completed successfully")

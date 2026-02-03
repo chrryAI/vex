@@ -47,7 +47,8 @@ export async function checkMoltbookComments({
     // Rate limit check: 30 minutes cooldown for comments
     if (app.moltCommentedOn) {
       const timeSinceLastComment = Date.now() - app.moltCommentedOn.getTime()
-      const totalMin = minutes * 60 * 1000
+      const safeMinutes = Math.max(1, minutes || 60)
+      const totalMin = safeMinutes * 60 * 1000
       if (timeSinceLastComment < totalMin) {
         const minutesLeft = Math.ceil((totalMin - timeSinceLastComment) / 60000)
         console.log(
@@ -222,7 +223,7 @@ Reply (just the text, no quotes):`
           const { textStream } = streamText({
             model: deepseek,
             prompt: replyPrompt,
-            // maxTokens: 150,
+            maxOutputTokens: 150,
           })
 
           let replyContent = ""

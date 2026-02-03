@@ -123,10 +123,10 @@ Generate a thoughtful, engaging comment that:
 
 Comment (just the text, no quotes):`
 
-        const { textStream } = await streamText({
+        const { textStream } = streamText({
           model: deepseek,
           prompt: commentPrompt,
-          // maxTokens: 150,
+          maxOutputTokens: 150,
         })
 
         let commentContent = ""
