@@ -1,4 +1,3 @@
-
 /**
  * Simple redaction utility for client-side usage.
  * Replaces email addresses and phone numbers with [REDACTED].

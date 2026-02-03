@@ -101,6 +101,7 @@ import {
 import { checkRateLimit } from "../../lib/rateLimiting"
 import { captureException } from "@sentry/node"
 import generateAIContent from "../../lib/generateAIContent"
+import { PerformanceTracker } from "../../lib/analytics"
 import { checkThreadSummaryLimit } from "../../lib"
 import extractVideoFrames from "../../lib/extractVideoFrames"
 import checkFileUploadLimits from "../../lib/checkFileUploadLimits"
@@ -1102,19 +1103,26 @@ Be helpful, concise, and friendly.${templateErrorNote}`
 const app = new Hono()
 
 app.post("/", async (c) => {
+  const tracker = new PerformanceTracker("ai_request")
   const request = c.req.raw
   // const startTime = Date.now()
   // console.log("🚀 POST /api/ai - Request received")
   // console.time("messageProcessing")
 
-  const member = await getMember(c, { full: true, skipCache: true })
-  const guest = member ? undefined : await getGuest(c, { skipCache: true })
+  const member = await tracker.track("auth_member", () =>
+    getMember(c, { full: true, skipCache: true }),
+  )
+  const guest = member
+    ? undefined
+    : await tracker.track("auth_guest", () => getGuest(c, { skipCache: true }))
 
   if (!member && !guest) {
     // console.log("❌ No valid credentials")
     return c.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
+  const city = member?.city || guest?.city
+  const country = member?.country || guest?.country
   // Log user type and tier for analytics
   const userType = member ? "member" : "guest"
   const tier = member?.subscription?.plan || guest?.subscription?.plan || "free"
@@ -1122,7 +1130,9 @@ app.post("/", async (c) => {
   //   `👤 User: ${userType} | Tier: ${tier} | ID: ${member?.id || guest?.id}`,
   // )
 
-  const { success } = await checkRateLimit(request, { member, guest })
+  const { success } = await tracker.track("rate_limit", () =>
+    checkRateLimit(request, { member, guest }),
+  )
 
   if (!success) {
     return new Response(JSON.stringify({ error: "Too many requests" }), {
@@ -1312,37 +1322,40 @@ app.post("/", async (c) => {
   }
 
   let app = rest.appId
-    ? await getApp({
-        id: rest.appId,
-        depth: 1,
-        userId: member?.id,
-        guestId: guest?.id,
-        skipCache: true,
-      })
+    ? await tracker.track("get_app", () =>
+        getApp({
+          id: rest.appId,
+          depth: 1,
+          userId: member?.id,
+          guestId: guest?.id,
+          skipCache: true,
+        }),
+      )
     : undefined
 
   const appExtends = app
-    ? await getAppExtends({ appId: app.id, isSafe: false })
+    ? await tracker.track("get_app_extends", () =>
+        getAppExtends({ appId: app!.id, isSafe: false }),
+      )
     : []
 
   // Build inheritance context from parent apps
-  const inheritanceContext =
-    appExtends.length > 0
-      ? `
-## 🧬 APP INHERITANCE CHAIN
+  // Build inheritance context from parent apps
+  const inheritanceContext = await tracker.track(
+    "inheritance_context",
+    async () => {
+      if (appExtends.length === 0) return ""
 
-You inherit capabilities from ${appExtends.length} parent app${appExtends.length > 1 ? "s" : ""}:
+      const parentAppsContent = await Promise.all(
+        appExtends.map(async (a, index) => {
+          const parentApp = await getApp({
+            id: a.id,
+          })
 
-${appExtends
-  .map(async (a, index) => {
-    const parentApp = await getApp({
-      id: a.id,
-    })
-
-    if (!parentApp) {
-      return ""
-    }
-    return `
+          if (!parentApp) {
+            return ""
+          }
+          return `
 ### ${index + 1}. ${parentApp.name}${parentApp.title ? ` - ${parentApp.title}` : ""}
 ${parentApp.description ? `${parentApp.description}\n` : ""}
 ${
@@ -1363,8 +1376,15 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 `
     : ""
 }`
-  })
-  .join("\n")}
+        }),
+      )
+
+      return `
+## 🧬 APP INHERITANCE CHAIN
+
+You inherit capabilities from ${appExtends.length} parent app${appExtends.length > 1 ? "s" : ""}:
+
+${parentAppsContent.join("\n")}
 
 **How to Use Inheritance:**
 - You have access to ALL capabilities from parent apps above
@@ -1372,7 +1392,8 @@ ${parentApp.systemPrompt.split("\n").slice(0, 10).join("\n")}${parentApp.systemP
 - When relevant, leverage parent app's expertise and tools
 - Maintain consistency with parent app behaviors when appropriate
 `
-      : ""
+    },
+  )
 
   // Check if Focus is in the inheritance chain
   const hasFocusInheritance = appExtends.some(
@@ -1407,38 +1428,39 @@ JUST DO IT. You have the power. Use the updateTimer tool immediately.
   // Build store context - information about the store and its apps
   let storeContext = ""
   if (app?.store) {
-    const storeApps = app.store.apps || []
+    storeContext = await tracker.track("store_context", async () => {
+      const storeApps = app!.store!.apps || []
 
-    // Get agents for each app using forApp parameter
-    // Optimized: Fetch all agents in one query (N+1 optimization)
-    const storeAppIds = storeApps.map((a) => a.id)
-    const allAgents = await getAiAgents({
-      include: storeAppIds,
-    })
+      // Get agents for each app using forApp parameter
+      // Optimized: Fetch all agents in one query (N+1 optimization)
+      const storeAppIds = storeApps.map((a) => a.id)
+      const allAgents = await getAiAgents({
+        include: storeAppIds,
+      })
 
-    const appsWithAgents = storeApps.map((storeApp) => {
-      // Filter agents for this app (global agents + specific app agents)
-      const appAgents = allAgents.filter(
-        (a) => !a.appId || a.appId === storeApp.id,
-      )
+      const appsWithAgents = storeApps.map((storeApp) => {
+        // Filter agents for this app (global agents + specific app agents)
+        const appAgents = allAgents.filter(
+          (a) => !a.appId || a.appId === storeApp.id,
+        )
 
-      // Apply forApp filtering logic (same as getAiAgents internal logic)
-      const agents = storeApp.onlyAgent
-        ? appAgents.filter((a) => a.name === storeApp.defaultModel)
-        : appAgents
+        // Apply forApp filtering logic (same as getAiAgents internal logic)
+        const agents = storeApp.onlyAgent
+          ? appAgents.filter((a) => a.name === storeApp.defaultModel)
+          : appAgents
 
-      return { ...storeApp, agents }
-    })
+        return { ...storeApp, agents }
+      })
 
-    storeContext = `
+      return `
 ## 🏪 STORE CONTEXT
 
-You are part of the **${app.store.name}** store${app.store.description ? `: ${app.store.description}` : ""}.
+You are part of the **${app!.store!.name}** store${app!.store!.description ? `: ${app!.store!.description}` : ""}.
 
 ${
-  app.store.appId === app.id
+  app!.store!.appId === app!.id
     ? `
-**Important:** You are the **primary app** of this store - the main entry point and representative of the ${app.store.name} ecosystem.
+**Important:** You are the **primary app** of this store - the main entry point and representative of the ${app!.store!.name} ecosystem.
 `
     : ""
 }
@@ -1464,7 +1486,7 @@ ${appsWithAgents
 }
 
 ${
-  app?.onlyAgent
+  app!.onlyAgent
     ? `
 **Your Mode:** You are a mono-agent app, using a specific AI model consistently.
 `
@@ -1473,6 +1495,7 @@ ${
 `
 }
 `
+    })
   }
 
   const isAppOwner =
@@ -1587,7 +1610,11 @@ ${
     }
   }
 
-  const appKnowledge = app ? await buildAppKnowledgeBase(app) : null
+  const appKnowledge = app
+    ? await tracker.track("app_knowledge", () =>
+        app ? buildAppKnowledgeBase(app) : Promise.resolve(null),
+      )
+    : null
 
   // console.log("📝 Request data:", {
   //   agentId,
@@ -1603,11 +1630,13 @@ ${
   const timezone = member?.timezone || guest?.timezone
 
   // Get message and thread for instructions
-  const message = await getMessage({
-    id: messageId,
-    userId: member?.id,
-    guestId: guest?.id,
-  })
+  const message = await tracker.track("get_message", () =>
+    getMessage({
+      id: messageId,
+      userId: member?.id,
+      guestId: guest?.id,
+    }),
+  )
 
   if (!message) {
     return c.json({ error: "Message not found" }, { status: 404 })
@@ -1616,26 +1645,36 @@ ${
   const content = message.message.content
   const threadId = message.message.threadId
 
-  let thread = await getThread({ id: message.message.threadId })
+  let thread = await tracker.track("get_thread", () =>
+    getThread({ id: message.message.threadId }),
+  )
 
   if (!thread) {
     return c.json({ error: "Thread not found" }, { status: 404 })
   }
 
   // Get placeholder context for AI awareness
-  const appPlaceholder = await getPlaceHolder({
-    userId: member?.id,
-    guestId: guest?.id,
-    appId: app?.id,
-  })
+  const appPlaceholder = await tracker.track("app_placeholder", () =>
+    getPlaceHolder({
+      userId: member?.id,
+      guestId: guest?.id,
+      appId: app?.id,
+    }),
+  )
 
-  const threadPlaceholder = await getPlaceHolder({
-    threadId: thread.id,
-    userId: member?.id,
-    guestId: guest?.id,
-  })
+  const threadPlaceholder = await tracker.track("thread_placeholder", () =>
+    thread
+      ? getPlaceHolder({
+          threadId: thread.id,
+          userId: member?.id,
+          guestId: guest?.id,
+        })
+      : Promise.resolve(null),
+  )
 
-  let agent = await getAiAgent({ id: agentId })
+  let agent = await tracker.track("get_agent", () =>
+    getAiAgent({ id: agentId }),
+  )
 
   if (stopStreamId && agent) {
     if (
@@ -1702,18 +1741,22 @@ ${
 
   const debateAgentId = message.message.debateAgentId
 
-  const lastMessage = await getMessages({
-    threadId: thread.id,
-    pageSize: 1,
-    userId: member?.id,
-    guestId: guest?.id,
-    agentId: null,
-  }).then((al) => al.messages.at(0))
+  const lastMessage = await tracker.track("get_last_message", () =>
+    getMessages({
+      threadId: thread!.id,
+      pageSize: 1,
+      userId: member?.id,
+      guestId: guest?.id,
+      agentId: null,
+    }).then((al) => al.messages.at(0)),
+  )
 
   const lastMessageContent = lastMessage?.message.content
 
   const debateAgent = debateAgentId
-    ? await getAiAgent({ id: debateAgentId })
+    ? await tracker.track("get_debate_agent", () =>
+        getAiAgent({ id: debateAgentId }),
+      )
     : undefined
 
   if (debateAgentId && !debateAgent) {
@@ -1721,7 +1764,11 @@ ${
   }
 
   const selectedAgent = message.message.selectedAgentId
-    ? await getAiAgent({ id: message.message.selectedAgentId })
+    ? await tracker.track("get_selected_agent", () =>
+        message.message.selectedAgentId
+          ? getAiAgent({ id: message.message.selectedAgentId })
+          : Promise.resolve(null),
+      )
     : undefined
 
   // Log model and features for analytics
@@ -1833,23 +1880,32 @@ You can enable these in your settings anytime!"
 `
 
   // Fetch thread messages first (needed to determine if first message)
-  const threadMessages = await getMessages({
-    pageSize: message.message.isWebSearchEnabled ? 30 : 100, // More context since memories are scattered
-    threadId: message.message.threadId,
-    userId: member?.id,
-    guestId: guest?.id,
-  })
+  // Fetch thread messages first (needed to determine if first message)
+  const threadMessages = await tracker.track("get_thread_history", () =>
+    getMessages({
+      pageSize: message.message.isWebSearchEnabled ? 30 : 100, // More context since memories are scattered
+      threadId: message.message.threadId,
+      userId: member?.id,
+      guestId: guest?.id,
+    }),
+  )
 
   // Auto-upload files as thread artifacts if thread has no existing artifacts
   const hasNoArtifacts = !thread.artifacts || thread.artifacts.length === 0
   if (hasNoArtifacts && files.length > 0) {
-    await uploadArtifacts({ files, thread, member, guest })
+    await tracker.track("upload_artifacts", () =>
+      files.length > 0 && thread
+        ? uploadArtifacts({ files, thread, member, guest })
+        : Promise.resolve(null),
+    )
   }
 
   // Get system prompt template from database (or use default Vex template)
   // If no app, fetch the default Vex app from database
   const defaultVexApp = !app
-    ? await getPureApp({ slug: "vex", isSafe: false })
+    ? await tracker.track("get_default_app", () =>
+        getPureApp({ slug: "vex", isSafe: false }),
+      )
     : null
   const templateSource = app?.systemPrompt || defaultVexApp?.systemPrompt
 
@@ -1996,10 +2052,10 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
     timezone: timezone || "UTC",
     weather,
     location:
-      member?.city || guest?.city
+      city && country
         ? {
-            city: member?.city || guest?.city,
-            country: member?.country || guest?.country,
+            city,
+            country,
           }
         : undefined,
     threadInstructions: threadInstructions || undefined,
@@ -2051,14 +2107,16 @@ ${app.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : ""}${a.d
     memoryIds,
     isAppCreator,
     recentAnalytics,
-  } = await getRelevantMemoryContext({
-    userId: member?.id,
-    guestId: guest?.id,
-    appId: app?.id,
-    pageSize: memoryPageSize,
-    threadId: message.message.threadId, // Pass current thread to exclude
-    app, // Pass app object to check ownership
-  })
+  } = await tracker.track("memory_context", () =>
+    getRelevantMemoryContext({
+      userId: member?.id,
+      guestId: guest?.id,
+      appId: app?.id,
+      pageSize: memoryPageSize,
+      threadId: message.message.threadId, // Pass current thread to exclude
+      app, // Pass app object to check ownership
+    }),
+  )
 
   // Build analytics context from recent user behavior
   let userBehaviorContext = ""
@@ -2110,12 +2168,14 @@ ${recentEventsList}
   }
 
   // Fetch user-created instructions (max 7)
-  const userInstructions = await getInstructions({
-    userId: member?.id,
-    guestId: guest?.id,
-    appId: app?.id,
-    pageSize: 7,
-  })
+  const userInstructions = await tracker.track("get_user_instructions", () =>
+    getInstructions({
+      userId: member?.id,
+      guestId: guest?.id,
+      appId: app?.id,
+      pageSize: 7,
+    }),
+  )
 
   const instructionsContext =
     userInstructions?.length > 0
@@ -2135,10 +2195,14 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
 
   if (characterProfilesEnabled && agent) {
     // Get character profiles (from any thread - use most recent/pinned)
-    const characterProfilesList = await getCharacterProfiles({
-      userId: member?.id,
-      guestId: guest?.id,
-    })
+    const characterProfilesList = await tracker.track(
+      "get_character_profiles",
+      () =>
+        getCharacterProfiles({
+          userId: member?.id,
+          guestId: guest?.id,
+        }),
+    )
     // Prioritize: 1) Pinned profiles, 2) Most used profiles
     const characterProfile = characterProfilesList
       .filter(
@@ -2693,7 +2757,9 @@ ${(() => {
       : ""
 
   // Get news context based on app
-  const newsContext = await getNewsContext(app?.slug)
+  const newsContext = await tracker.track("news_context", () =>
+    getNewsContext(app?.slug),
+  )
 
   // Get live analytics context for Grape
   const analyticsContext = app
@@ -3517,29 +3583,44 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
         const messageUser = m.user || undefined
         const messageGuest = m.guest || undefined
 
-        await generateAIContent({
-          c,
-          thread,
-          user: messageUser
-            ? await getUserDb({ id: messageUser?.id, skipCache: true })
-            : undefined,
-          guest: messageGuest
-            ? await getGuestDb({ id: messageGuest?.id, skipCache: true })
-            : undefined,
-          agentId: selectedAgent.id,
-          conversationHistory: !suggestionMessages
-            ? messages
-            : [
-                { role: "system", content: enhancedSystemPrompt },
-                ...suggestionMessages,
-                enhancedUserMessage,
-              ],
-          latestMessage: m.message,
-          language,
-          calendarEvents,
-          app, // Pass app object directly
-          skipClassification: !!app, // Skip AI classification if app is set
-        })
+        // Track generation step using the shared tracker from closure
+        await tracker.track(
+          "generation",
+          async () =>
+            await generateAIContent({
+              c,
+              thread,
+              user: messageUser
+                ? await getUserDb({ id: messageUser?.id, skipCache: true })
+                : undefined,
+              guest: messageGuest
+                ? await getGuestDb({ id: messageGuest?.id, skipCache: true })
+                : undefined,
+              agentId: selectedAgent.id,
+              conversationHistory: !suggestionMessages
+                ? messages
+                : [
+                    { role: "system", content: enhancedSystemPrompt },
+                    ...suggestionMessages,
+                    enhancedUserMessage,
+                  ],
+              latestMessage: m.message,
+              language,
+              calendarEvents,
+              app, // Pass app object directly
+              skipClassification: !!app, // Skip AI classification if app is set
+            }),
+        )
+
+        // Submit accumulated metrics
+        tracker.submit(
+          {
+            model: selectedAgent.name,
+            agent: selectedAgent.name,
+            thread_id: thread.id,
+          },
+          { user: member || undefined, guest: guest || undefined },
+        )
       }
     } catch (error) {
       console.error("❌ Background content generation failed:", error)
@@ -3567,11 +3648,14 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
     //   )
     // }
 
-    const rateLimitCheck = await checkFileUploadLimits({
-      member,
-      files,
-      guest,
-    })
+    const rateLimitCheck = await tracker.track("check_file_upload_limits", () =>
+      checkFileUploadLimits({
+        member,
+        files,
+
+        guest,
+      }),
+    )
 
     if (!rateLimitCheck.allowed) {
       console.log(`❌ File upload rate limit exceeded:`, rateLimitCheck.error)
@@ -3710,58 +3794,62 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
     }
 
     // Scan files for malware
-    console.log("🔍 Scanning files for malware...")
-    for (const file of files) {
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
+    await tracker.track("malware_scan", async () => {
+      console.log("🔍 Scanning files for malware...")
+      for (const file of files) {
+        const arrayBuffer = await file.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
 
-      const scanResult = await scanFileForMalware(buffer)
+        const scanResult = await scanFileForMalware(buffer)
 
-      if (!scanResult.safe) {
-        console.error(
-          `🚨 Malware detected in ${file.name}: ${scanResult.threat}`,
-        )
-        return c.json(
-          {
-            error: `File '${file.name}' failed security scan${scanResult.threat ? `: ${scanResult.threat}` : ""}`,
-          },
-          { status: 400 },
-        )
+        if (!scanResult.safe) {
+          console.error(
+            `🚨 Malware detected in ${file.name}: ${scanResult.threat}`,
+          )
+          return c.json(
+            {
+              error: `File '${file.name}' failed security scan${scanResult.threat ? `: ${scanResult.threat}` : ""}`,
+            },
+            { status: 400 },
+          )
+        }
       }
-    }
-    console.log("✅ All files passed malware scan")
+      console.log("✅ All files passed malware scan")
+    })
 
     // Convert files to base64 and prepare multimodal content
     console.log("🔄 Converting files to base64...")
-    const fileContents = await Promise.all(
-      files.map(async (file) => {
-        const arrayBuffer = await file.arrayBuffer()
-        const base64 = Buffer.from(arrayBuffer).toString("base64")
-        const mimeType = file.type
-        const isText = mimeType.startsWith("text/") || isTextFile(file.name)
+    const fileContents = await tracker.track("file_conversion", () =>
+      Promise.all(
+        files.map(async (file) => {
+          const arrayBuffer = await file.arrayBuffer()
+          const base64 = Buffer.from(arrayBuffer).toString("base64")
+          const mimeType = file.type
+          const isText = mimeType.startsWith("text/") || isTextFile(file.name)
 
-        console.log(
-          `✅ Processed ${file.name} (${mimeType || "detected as text"}, ${(file.size / 1024).toFixed(1)}KB)`,
-        )
+          console.log(
+            `✅ Processed ${file.name} (${mimeType || "detected as text"}, ${(file.size / 1024).toFixed(1)}KB)`,
+          )
 
-        return {
-          type: mimeType.startsWith("image/")
-            ? "image"
-            : mimeType.startsWith("audio/")
-              ? "audio"
-              : mimeType.startsWith("video/")
-                ? "video"
-                : mimeType.startsWith("application/pdf")
-                  ? "pdf"
-                  : isText
-                    ? "text"
-                    : "file",
-          mimeType: mimeType || "text/plain", // Default to text/plain for code files
-          data: base64,
-          filename: file.name,
-          size: file.size,
-        }
-      }),
+          return {
+            type: mimeType.startsWith("image/")
+              ? "image"
+              : mimeType.startsWith("audio/")
+                ? "audio"
+                : mimeType.startsWith("video/")
+                  ? "video"
+                  : mimeType.startsWith("application/pdf")
+                    ? "pdf"
+                    : isText
+                      ? "text"
+                      : "file",
+            mimeType: mimeType || "text/plain", // Default to text/plain for code files
+            data: base64,
+            filename: file.name,
+            size: file.size,
+          }
+        }),
+      ),
     )
 
     // Create multimodal content for AI providers that support it
@@ -3819,15 +3907,17 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
         if (file.type === "image") {
           let uploadResult
           try {
-            uploadResult = await upload({
-              url: `data:${file.mimeType};base64,${file.data}`,
-              messageId: slugify(file.filename.substring(0, 10)),
-              options: {
-                maxWidth: 600,
-                maxHeight: 600,
-                title: file.filename,
-              },
-            })
+            uploadResult = await tracker.track("upload_image", () =>
+              upload({
+                url: `data:${file.mimeType};base64,${file.data}`,
+                messageId: slugify(file.filename.substring(0, 10)),
+                options: {
+                  maxWidth: 600,
+                  maxHeight: 600,
+                  title: file.filename,
+                },
+              }),
+            )
           } catch (error: any) {
             captureException(error)
 
@@ -3910,9 +4000,9 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             // Extract key frames from video for AI analysis
             console.log(`🎥 Processing video: ${file.filename}`)
             try {
-              const videoFrames = await extractVideoFrames(
-                file.data,
-                file.mimeType,
+              const videoFrames = await tracker.track(
+                "extract_video_frames",
+                () => extractVideoFrames(file.data, file.mimeType),
               )
 
               for (let i = 0; i < videoFrames.length; i++) {

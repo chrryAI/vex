@@ -7,7 +7,10 @@ let openRedaction: any = null
 try {
   openRedaction = new OpenRedaction()
 } catch (error) {
-  console.error("Failed to initialize OpenRedaction, falling back to simple redaction:", error)
+  console.error(
+    "Failed to initialize OpenRedaction, falling back to simple redaction:",
+    error,
+  )
 }
 
 /**
@@ -31,11 +34,17 @@ export async function redact(text: string): Promise<string> {
         // BUT update the test to accept OpenRedaction's format OR standardize here.
 
         // Let's standardize to [REDACTED] for consistency across the platform
-        return result.redacted.replace(/\[(EMAIL|PHONE|PERSON|CREDIT_CARD|SSN|IP|URL|DATE|ADDRESS)_[^\]]+\]/g, "[REDACTED]")
+        return result.redacted.replace(
+          /\[(EMAIL|PHONE|PERSON|CREDIT_CARD|SSN|IP|URL|DATE|ADDRESS)_[^\]]+\]/g,
+          "[REDACTED]",
+        )
       }
       return text
     } catch (error) {
-      console.error("OpenRedaction failed, falling back to simple redaction:", error)
+      console.error(
+        "OpenRedaction failed, falling back to simple redaction:",
+        error,
+      )
       return simpleRedact(text)
     }
   }

@@ -172,9 +172,15 @@ app.post("/", async (c) => {
     // This is a second layer of defense complementing the client-side Zod schema
     const redactedName = await redact(name)
     const redactedTitle = await redact(title)
-    const redactedDescription = description ? await redact(description) : description
-    const redactedSystemPrompt = systemPrompt ? await redact(systemPrompt) : systemPrompt
-    const redactedPlaceholder = placeholder ? await redact(placeholder) : placeholder
+    const redactedDescription = description
+      ? await redact(description)
+      : description
+    const redactedSystemPrompt = systemPrompt
+      ? await redact(systemPrompt)
+      : systemPrompt
+    const redactedPlaceholder = placeholder
+      ? await redact(placeholder)
+      : placeholder
 
     // Build the data object for validation
     // Schema will sanitize via sanitizedString helper

@@ -103,6 +103,9 @@ app.onError((err, c) => {
 // Apply custom CORS middleware (matching Next.js middleware)
 app.use("*", corsMiddleware)
 
+// Apply global API analytics middleware
+// app.use("*", apiAnalyticsMiddleware)
+
 // Custom headers middleware for app/store detection and fingerprinting
 app.use("*", headersMiddleware)
 
