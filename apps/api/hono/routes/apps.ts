@@ -173,11 +173,17 @@ app.post("/", async (c) => {
     // Build the data object for validation
     // Schema will sanitize via sanitizedString helper
     const appData = {
-      name: await redact(name),
-      title: await redact(title),
-      description: await redact(description),
+      name: typeof name === "string" ? await redact(name) : name,
+      title: typeof title === "string" ? await redact(title) : title,
+      description:
+        typeof description === "string"
+          ? await redact(description)
+          : description,
       icon, // URLs shouldn't be redacted
-      systemPrompt: await redact(systemPrompt),
+      systemPrompt:
+        typeof systemPrompt === "string"
+          ? await redact(systemPrompt)
+          : systemPrompt,
       tone,
       language,
       defaultModel,
@@ -201,8 +207,12 @@ app.post("/", async (c) => {
       apiPricePerRequest,
       apiMonthlyPrice,
       apiRateLimit,
-      placeholder: await redact(placeholder),
-      moltHandle: await redact(moltHandle),
+      placeholder:
+        typeof placeholder === "string"
+          ? await redact(placeholder)
+          : placeholder,
+      moltHandle:
+        typeof moltHandle === "string" ? await redact(moltHandle) : moltHandle,
       moltApiKey:
         typeof moltApiKey === "string" && moltApiKey.trim()
           ? await encrypt(moltApiKey.trim())
@@ -841,13 +851,26 @@ app.patch("/:id", async (c) => {
     // Build the update data object (only include provided fields)
     const updateData: any = {}
 
-    if (name !== null) updateData.name = await redact(name)
-    if (placeholder !== null) updateData.placeholder = await redact(placeholder)
-    if (title !== null) updateData.title = await redact(title)
-    if (description !== null) updateData.description = await redact(description)
+    if (name !== null)
+      updateData.name = typeof name === "string" ? await redact(name) : name
+    if (placeholder !== null)
+      updateData.placeholder =
+        typeof placeholder === "string"
+          ? await redact(placeholder)
+          : placeholder
+    if (title !== null)
+      updateData.title = typeof title === "string" ? await redact(title) : title
+    if (description !== null)
+      updateData.description =
+        typeof description === "string"
+          ? await redact(description)
+          : description
     if (icon !== null) updateData.icon = icon
     if (systemPrompt !== null)
-      updateData.systemPrompt = await redact(systemPrompt)
+      updateData.systemPrompt =
+        typeof systemPrompt === "string"
+          ? await redact(systemPrompt)
+          : systemPrompt
     if (tone !== null) updateData.tone = tone
     if (language !== null) updateData.language = language
     if (defaultModel !== null) updateData.defaultModel = defaultModel
@@ -863,7 +886,9 @@ app.patch("/:id", async (c) => {
     if (displayMode !== null) updateData.displayMode = displayMode
     if (pricing !== null) updateData.pricing = pricing
     if (price !== undefined) updateData.price = price
-    if (moltHandle !== null) updateData.moltHandle = await redact(moltHandle)
+    if (moltHandle !== null)
+      updateData.moltHandle =
+        typeof moltHandle === "string" ? await redact(moltHandle) : moltHandle
     // moltApiKey is handled below with encrypt
 
     if (currency !== null) updateData.currency = currency
