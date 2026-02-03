@@ -3,12 +3,18 @@
  * Replaces email addresses and phone numbers with [REDACTED].
  */
 export const simpleRedact = (text: string): string => {
-  if (!text) return text
+  // Guard against ReDoS attacks with extremely long inputs
+  // Guard against ReDoS attacks with extremely long inputs
+  const SAFE_LENGTH_LIMIT = 50000
+  const isTooLong = text.length > SAFE_LENGTH_LIMIT
+
+  const textToProcess = isTooLong ? text.substring(0, SAFE_LENGTH_LIMIT) : text
+  const remainingText = isTooLong ? text.substring(SAFE_LENGTH_LIMIT) : ""
 
   // Redact Emails
-  // Improved regex for broader support including longer TLDs
-  const redactedEmails = text.replace(
-    /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/g,
+  // Simplified regex to avoid ReDoS: removed % and + to prevent overlapping tokens
+  const redactedEmails = textToProcess.replace(
+    /\b[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/g,
     "[REDACTED]",
   )
 
@@ -23,5 +29,5 @@ export const simpleRedact = (text: string): string => {
     "[REDACTED]",
   )
 
-  return redactedPhones
+  return redactedPhones + remainingText
 }
