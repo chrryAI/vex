@@ -219,11 +219,13 @@ export async function postToMoltbookCron({
   slug,
   subSlug,
   agentName,
+  minutes = 60,
   c,
 }: {
   slug: string
   subSlug?: string
   agentName?: string
+  minutes?: number
   c?: Context
 }): Promise<MoltbookPostResult> {
   // Development mode guard - don't run unless explicitly enabled
@@ -277,11 +279,9 @@ export async function postToMoltbookCron({
     // Rate limit check: 30 minutes cooldown
     if (app.moltPostedOn) {
       const timeSinceLastPost = Date.now() - app.moltPostedOn.getTime()
-      const thirtyMinutes = 30 * 60 * 1000
-      if (timeSinceLastPost < thirtyMinutes) {
-        const minutesLeft = Math.ceil(
-          (thirtyMinutes - timeSinceLastPost) / 60000,
-        )
+      const totalMin = minutes * 60 * 1000
+      if (timeSinceLastPost < totalMin) {
+        const minutesLeft = Math.ceil((totalMin - timeSinceLastPost) / 60000)
         console.log(
           `⏸️ Rate limit: Last post was ${Math.floor(timeSinceLastPost / 60000)} minutes ago. Wait ${minutesLeft} more minutes.`,
         )

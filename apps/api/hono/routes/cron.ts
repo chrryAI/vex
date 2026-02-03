@@ -281,13 +281,19 @@ cron.get("/postToMoltbook", async (c) => {
 
   const slug = c.req.query("slug") || "vex"
   const agentName = c.req.query("agentName") || "sushi"
+  const minutes = Number(c.req.query("minutes")) || 30
 
   const subSlug = c.req.query("subSlug")
 
   // Start the job in background (fire-and-forget)
   console.log("🦞 Starting Moltbook post cron job in background...")
 
-  postToMoltbookCron({ slug, agentName, subSlug, c })
+  postToMoltbookCron({
+    slug,
+    agentName,
+    subSlug,
+    minutes: isNaN(Number(minutes)) ? 60 : Number(minutes),
+  })
     .then((result) => {
       console.log(`✅ Moltbook post completed successfully: ${result.post_id}`)
     })
@@ -320,7 +326,7 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
   const sortParam = c.req.query("sort")
   const allowedSorts = ["hot", "new", "top", "rising"] as const
   const sort =
-    sortParam && allowedSorts.includes(sortParam)
+    sortParam && allowedSorts.includes(sortParam as any)
       ? (sortParam as "hot" | "new" | "top" | "rising")
       : undefined
 
@@ -350,6 +356,7 @@ cron.get("/analyzeMoltbookTrends", async (c) => {
 cron.get("/checkMoltbookComments", async (c) => {
   const cronSecret = process.env.CRON_SECRET
   const authHeader = c.req.header("authorization")
+  const minutes = c.req.query("minutes")
 
   if (!isDevelopment) {
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
@@ -362,7 +369,10 @@ cron.get("/checkMoltbookComments", async (c) => {
   // Start the job in background (fire-and-forget)
   console.log("💬 Starting Moltbook comment check job in background...")
 
-  checkMoltbookComments({ slug })
+  checkMoltbookComments({
+    slug,
+    minutes: isNaN(Number(minutes)) ? 60 : Number(minutes),
+  })
     .then(() => {
       console.log("✅ Moltbook comment check completed successfully")
     })
