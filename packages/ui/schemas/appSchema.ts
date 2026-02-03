@@ -1,8 +1,9 @@
 import { z } from "zod"
 import sanitizeHtml from "sanitize-html"
+import { simpleRedact } from "../lib/redaction"
 
 // Helper: Sanitized string field
-const sanitizedString = (options?: {
+export const sanitizedString = (options?: {
   min?: number
   max?: number
   regex?: RegExp
@@ -23,12 +24,15 @@ const sanitizedString = (options?: {
   }
 
   // Then apply sanitization transform
-  return baseSchema.transform((val) =>
-    sanitizeHtml(val, {
+  return baseSchema.transform((val) => {
+    // First redact PII
+    const redacted = simpleRedact(val)
+    // Then sanitize HTML
+    return sanitizeHtml(redacted, {
       allowedTags: options?.allowedTags || [],
       allowedAttributes: {},
-    }),
-  )
+    })
+  })
 }
 
 export const appSchema = z.object({
