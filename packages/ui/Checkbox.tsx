@@ -24,9 +24,11 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
   ) => {
     const styles = useCheckboxStyles()
     const generatedId = React.useId()
-    const inputId = dataTestId || generatedId
+    const inputId = `checkbox-${generatedId}`
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
       if (!disabled && onChange) {
         onChange(e.target.checked)
       }
@@ -39,7 +41,7 @@ const Checkbox: React.FC<CheckboxProps> = React.forwardRef<
         data-testid={dataTestId ? `${dataTestId}-wrapper` : undefined}
         style={{
           ...styles.formSwitch.style,
-          ...(disabled && { opacity: 0.5, cursor: "not-allowed" }),
+          ...(disabled && { opacity: 0.5 }),
           ...style,
           cursor: disabled ? "not-allowed" : "pointer",
         }}

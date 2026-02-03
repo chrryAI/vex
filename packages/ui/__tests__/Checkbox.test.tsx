@@ -1,13 +1,13 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest'
-import React, { act } from 'react'
-import { createRoot } from 'react-dom/client'
-import Checkbox from '../Checkbox'
-import { PlatformProvider } from '../platform/PlatformProvider'
+import { describe, it, expect, vi } from "vitest"
+import React, { act } from "react"
+import { createRoot } from "react-dom/client"
+import Checkbox from "../Checkbox"
+import { PlatformProvider } from "../platform/PlatformProvider"
 
-describe('Checkbox', () => {
-  it('renders accessible native input inside a label', async () => {
-    const div = document.createElement('div')
+describe("Checkbox", () => {
+  it("renders accessible native input inside a label", async () => {
+    const div = document.createElement("div")
     document.body.appendChild(div)
     const root = createRoot(div)
 
@@ -16,32 +16,36 @@ describe('Checkbox', () => {
     await act(async () => {
       root.render(
         <PlatformProvider>
-          <Checkbox checked={false} onChange={handleChange} dataTestId="test-checkbox">
+          <Checkbox
+            checked={false}
+            onChange={handleChange}
+            dataTestId="test-checkbox"
+          >
             Test Label
           </Checkbox>
-        </PlatformProvider>
+        </PlatformProvider>,
       )
     })
 
     // Find the input
-    const input = div.querySelector('input')
+    const input = div.querySelector("input")
     expect(input).toBeTruthy()
-    expect(input?.getAttribute('type')).toBe('checkbox')
+    expect(input?.getAttribute("type")).toBe("checkbox")
 
     // Verify it is NOT display: none
-    expect(input?.style.display).not.toBe('none')
+    expect(input?.style.display).not.toBe("none")
 
     // Verify visually hidden styles (approximate check)
-    expect(input?.style.position).toBe('absolute')
-    expect(input?.style.opacity).toBe('0')
+    expect(input?.style.position).toBe("absolute")
+    expect(input?.style.opacity).toBe("0")
 
     // Find the label
-    const label = div.querySelector('label')
+    const label = div.querySelector("label")
     expect(label).toBeTruthy()
 
     // Verify label association
     expect(input?.id).toBeTruthy()
-    expect(label?.getAttribute('for')).toBe(input?.id)
+    expect(label?.getAttribute("for")).toBe(input?.id)
 
     // Verify click on input triggers change
     if (input) {

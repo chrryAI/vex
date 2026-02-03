@@ -9,6 +9,7 @@
 **Vulnerability:** The `GET /users` endpoint was returning full user objects directly from the database layer (`getUsers` -> `getUser`), exposing `password` hashes, `email` addresses, `apiKey`s, and `ip` addresses to any authenticated user.
 **Learning:** The database abstraction layer (`@repo/db`) helper `getUser` selects all columns by default and does not strip sensitive fields. API routes were relying on this return type without sanitization.
 **Prevention:**
+
 1.  Always use Data Transfer Objects (DTOs) or explicit response shaping in API routes.
 2.  Never return raw database objects to the client.
 3.  Implement a `toSafeUser` or `sanitizeUser` utility that is enforced at the API boundary or within the DB layer for public-facing queries.
