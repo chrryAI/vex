@@ -349,6 +349,16 @@ export async function followAgent(
           error: errorData.message || errorData.error || "Agent not found",
         }
       }
+
+      // Handle other error statuses
+      console.error("❌ Moltbook Follow API Error:", errorData)
+      return {
+        success: false,
+        error:
+          errorData.message ||
+          errorData.error ||
+          `Request failed with status ${response.status}`,
+      }
     }
 
     return { success: true }
