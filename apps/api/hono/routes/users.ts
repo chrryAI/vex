@@ -5,6 +5,25 @@ import { getMember, getGuest } from "../lib/auth"
 
 export const users = new Hono()
 
+// Helper to sanitize user object and remove sensitive fields
+const sanitizeUser = (user: any) => {
+  if (!user) return undefined
+  const {
+    password,
+    email,
+    apiKey,
+    stripeCustomerId,
+    stripeConnectAccountId,
+    appleId,
+    fingerprint,
+    ip,
+    verificationTokens,
+    sessions,
+    ...safeUser
+  } = user
+  return safeUser
+}
+
 // GET /users - Search for users or get user by username/email
 users.get("/", async (c) => {
   const member = await getMember(c)
@@ -37,16 +56,16 @@ users.get("/", async (c) => {
         similarTo,
       })
 
+  // Apply sanitization
+  const sanitizedUsersList = Array.isArray(usersList)
+    ? usersList.map(sanitizeUser)
+    : {
+        ...usersList,
+        users: usersList.users.map(sanitizeUser),
+      }
+
   return c.json({
-    users: usersList,
-    user: user
-      ? {
-          id: user.id,
-          name: user.name,
-          image: user.image,
-          userName: user.userName,
-          email: user.email,
-        }
-      : undefined,
+    users: sanitizedUsersList,
+    user: sanitizeUser(user),
   })
 })
