@@ -8,7 +8,7 @@ export const simpleRedact = (text: string): string => {
   // Redact Emails
   // Improved regex for broader support including longer TLDs
   const redactedEmails = text.replace(
-    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+    /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/g,
     "[REDACTED]",
   )
 
