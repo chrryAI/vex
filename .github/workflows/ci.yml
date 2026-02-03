@@ -154,6 +154,9 @@ jobs:
       - name: Lint
         run: pnpm turbo lint
 
+      - name: Unit Tests
+        run: pnpm turbo test
+
       - name: Type check
         run: pnpm turbo check-types
 
