@@ -936,11 +936,9 @@ export const messages = pgTable(
 export const moltQuestions = pgTable("moltQuestions", {
   id: uuid("id").defaultRandom().primaryKey(),
   question: text("question").notNull(),
-  appId: uuid("appId")
-    .notNull()
-    .references(() => apps.id, {
-      onDelete: "cascade",
-    }),
+  appId: uuid("appId").references(() => apps.id, {
+    onDelete: "cascade",
+  }),
   threadId: uuid("threadId").references(() => threads.id, {
     onDelete: "cascade",
   }),

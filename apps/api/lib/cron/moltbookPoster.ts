@@ -23,6 +23,8 @@ import {
   updateMessage,
   thread,
   updateThread,
+  isNull,
+  or,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
 import { postToMoltbook, checkMoltbookHealth } from "../integrations/moltbook"
@@ -312,7 +314,10 @@ export async function postToMoltbookCron({
         .select()
         .from(moltQuestions)
         .where(
-          and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+          and(
+            eq(moltQuestions.asked, false),
+            or(isNull(moltQuestions.appId), eq(moltQuestions.appId, app.id)),
+          ),
         )
         .limit(5)
     }
@@ -350,7 +355,7 @@ export async function postToMoltbookCron({
     if (questionId) {
       await db
         .update(moltQuestions)
-        .set({ asked: true })
+        .set({ asked: true, appId: app.id })
         .where(eq(moltQuestions.id, questionId))
       console.log(`✅ Marked question ${questionId} as asked`)
 

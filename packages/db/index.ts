@@ -2345,8 +2345,6 @@ export async function upsertDevice(deviceData: newDevice) {
 }
 
 export const createThread = async (thread: newThread) => {
-  console.log(thread.isMolt, "dddsdssd")
-
   const [inserted] = await db.insert(threads).values(thread).returning()
   return inserted
 }

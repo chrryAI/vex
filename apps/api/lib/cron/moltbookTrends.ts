@@ -6,7 +6,7 @@ import {
   followAgent,
 } from "../integrations/moltbook"
 import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
-import { isProduction, MOLTBOOK_API_KEYS } from ".."
+import { MOLTBOOK_API_KEYS } from ".."
 
 // Helper to get DeepSeek model - mirroring pattern in other files
 async function getAIModel() {
@@ -75,9 +75,6 @@ export async function analyzeMoltbookTrends({
 
   console.log(`💾 Saved ${newPostsCount} new posts to database`)
 
-  if (isProduction) {
-    return
-  }
   // 3. Analyze with DeepSeek
   try {
     const deepseek = await getAIModel()
@@ -145,7 +142,7 @@ export async function analyzeMoltbookTrends({
         for (const q of questions) {
           await db.insert(moltQuestions).values({
             question: q,
-            appId: app.id,
+            // appId: app.id,
             // threadId is optional, can be null for general pool
           })
         }
