@@ -209,7 +209,6 @@ Return JSON:
         const { text: analysisText } = await generateText({
           model: deepseek,
           prompt: analysisPrompt,
-          maxTokens: 150,
         })
 
         const cleanAnalysis = analysisText
