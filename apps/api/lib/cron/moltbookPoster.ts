@@ -23,8 +23,6 @@ import {
   updateMessage,
   thread,
   updateThread,
-  isNull,
-  or,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
 import { postToMoltbook, checkMoltbookHealth } from "../integrations/moltbook"
@@ -298,9 +296,7 @@ export async function postToMoltbookCron({
     let unaskedQuestions = await db
       .select()
       .from(moltQuestions)
-      .where(
-        and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
-      )
+      .where(and(eq(moltQuestions.asked, false)))
       .limit(5)
 
     if (!unaskedQuestions || unaskedQuestions.length === 0) {
@@ -313,12 +309,7 @@ export async function postToMoltbookCron({
       unaskedQuestions = await db
         .select()
         .from(moltQuestions)
-        .where(
-          and(
-            eq(moltQuestions.asked, false),
-            or(isNull(moltQuestions.appId), eq(moltQuestions.appId, app.id)),
-          ),
-        )
+        .where(and(eq(moltQuestions.asked, false)))
         .limit(5)
     }
 
