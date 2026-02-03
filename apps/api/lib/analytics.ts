@@ -57,7 +57,7 @@ export const serverPlausibleEvent = ({
     })
     .then((res) => {
       if (isDevelopment) {
-        console.log(`🤖 ~ Plausible event sent:`, res)
+        // console.log(`🤖 ~ Plausible event sent:`, res)
       }
     })
 }
