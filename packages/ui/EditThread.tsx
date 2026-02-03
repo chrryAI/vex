@@ -43,7 +43,7 @@ export default function EditThread({
 
   useEffect(() => {
     setTitle(thread.title)
-  }, [])
+  }, [thread.title])
 
   const maxCharCount = MAX_THREAD_TITLE_CHAR_COUNT
 

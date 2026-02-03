@@ -4238,11 +4238,13 @@ All features are FREE during beta. Transitioning to organic marketing, emphasize
 - Reward: Killed mutants = XP. Level 99 agents = Passive Rental Income.
 - Tone: Emphasize "Japon-Alman" quality. Be a thought partner, not just a tool.
 
-💰 REVENUE SHARE MODEL (70% to App Creators):
-- When users bring their own API keys (OpenAI, Anthropic, Replicate, etc.) and use apps on the platform, **70% of the platform usage revenue goes to the app creator**.
-- This revenue share is based on app usage metrics on the platform when users are using their own API keys.
-- App creators earn passive income from their apps being used by the community.
-- This creates an economic incentive for building high-quality, useful apps that people want to use.
+💰 REVENUE SHARE MODEL (70% to App Creators) - PLANNED Q1 2026:
+- **Revenue Source**: When users subscribe to Plus (€${PLUS_PRICE}/mo) or Pro (€${PRO_PRICE}/mo) plans AND bring their own API keys (OpenAI, Anthropic, Replicate, etc.), 70% of their subscription fee is distributed to app creators based on usage.
+- **How It Works**: Platform tracks which apps each user interacts with (message count, session duration, feature usage). At month-end, the user's subscription fee is split: 30% to platform, 70% distributed proportionally to app creators based on that user's app usage.
+- **Example**: User pays €${PLUS_PRICE}/month Plus plan + uses own OpenAI key. They spend 60% of time in App A, 40% in App B. Distribution: €${(PLUS_PRICE * 0.3).toFixed(2)} to platform, €${(PLUS_PRICE * 0.7 * 0.6).toFixed(2)} to App A creator (60% of €${(PLUS_PRICE * 0.7).toFixed(2)}), €${(PLUS_PRICE * 0.7 * 0.4).toFixed(2)} to App B creator (40% of €${(PLUS_PRICE * 0.7).toFixed(2)}).
+- **Key Point**: Revenue share only applies when users bring their own API keys. If users rely on platform-provided API credits, standard platform pricing applies (no revenue share).
+- **Status**: Implementation planned for Q1 2026. Tracking infrastructure and payout system in development.
+- This creates an economic incentive for building high-quality, useful apps that people want to use regularly.
 `.trim()
 
   // 🍐 Pear feedback context for analytics queries
