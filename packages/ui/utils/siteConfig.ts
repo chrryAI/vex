@@ -130,7 +130,7 @@ const chrryDev = {
       title: "Hooks",
       description: "Reusable React hooks",
       icon: "🪝",
-      link: "https://github.com/chrryAI/vex/tree/main/packages/ui/hooks",
+      link: "https://github.com/chrryAI/blob/vex/tree/main/hooks",
       isOpenSource: true,
     },
     {

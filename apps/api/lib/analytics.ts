@@ -98,7 +98,15 @@ export async function withDurationLogging<T>(
         function_name: name,
         duration_ms: duration,
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error_type:
+          error instanceof Error
+            ? error.constructor?.name || "Error"
+            : "UnknownError",
+        error_message: isDevelopment
+          ? error instanceof Error
+            ? error.message
+            : String(error)
+          : undefined,
         ...props,
       },
     })

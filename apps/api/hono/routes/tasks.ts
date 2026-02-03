@@ -187,7 +187,7 @@ tasks.patch("/:id", async (c) => {
   }
 
   // If not reordering, proceed with normal task update
-  let finalTitle = title
+  let finalTitle = existingTask.title
   if (title && typeof title === "string") {
     const redactedTitle = await redact(title)
     finalTitle = sanitizeHtml(redactedTitle)

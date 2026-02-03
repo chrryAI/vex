@@ -4284,7 +4284,7 @@ ${lastMessageContent}
 
   // Add calendar tool instructions if calendar tools are available
   const calendarInstructions =
-    app?.slug === "calendar" || app?.slug === "vex"
+    requestApp?.slug === "calendar" || requestApp?.slug === "vex"
       ? `\n\n🔥 CRITICAL CALENDAR TOOL RULES:
 1. EXECUTE IMMEDIATELY - Call the tool functions RIGHT NOW, not later
 2. USE PAST TENSE - Always say "I've scheduled" or "I've created", NEVER "I'll schedule" or "Let me"
@@ -4353,12 +4353,13 @@ All features are FREE during beta. Transitioning to organic marketing, emphasize
 
   // 🍐 Pear feedback context for analytics queries
   const pearFeedbackContext = await getPearFeedbackContext({
-    appId: app?.id,
+    appId: requestApp?.id,
     limit: 50,
   })
 
   // 📊 Retro analytics context (only for Grape, Pear, or owner)
-  const isGrapeOrPear = app?.slug === "grape" || app?.slug === "pear"
+  const isGrapeOrPear =
+    requestApp?.slug === "grape" || requestApp?.slug === "pear"
   const isRetroSession = requestData.retro === true
   const canAccessRetroAnalytics = isGrapeOrPear && !isRetroSession // Don't show during retro
 
@@ -4504,9 +4505,9 @@ How I process and remember information:
           feedbackText: userFeedback,
           userId: member?.id,
           guestId: guest?.id,
-          appName: app?.name,
+          appName: requestApp?.name,
           agentId: agent?.id,
-          app: app,
+          app: requestApp,
           messageId: message.message.id,
         })
 
@@ -4565,7 +4566,7 @@ How I process and remember information:
           .values({
             userId: member?.id,
             guestId: guest?.id,
-            appId: app?.id,
+            appId: requestApp?.id,
             threadId: thread.id,
             totalQuestions: 7, // Default, can be dynamic based on app
             questionsAnswered: 1,
@@ -4588,7 +4589,7 @@ How I process and remember information:
         sessionId,
         userId: member?.id,
         guestId: guest?.id,
-        appId: app?.id,
+        appId: requestApp?.id,
         messageId: message.message.id,
         questionText: "Daily check-in question", // Will be updated from frontend
         sectionTitle: "Daily Reflection", // Will be updated from frontend
@@ -4619,7 +4620,7 @@ How I process and remember information:
 
 ## 🍐 PEAR FEEDBACK VALIDATION RESULT
 
-The user just submitted feedback for ${app?.name || "this app"} and it has been evaluated:
+The user just submitted feedback for ${requestApp?.name || "this app"} and it has been evaluated:
 
 - **Valid:** ${pearValidationResult.isValid ? "Yes" : "No"}
 - **Credits Awarded:** ${pearValidationResult.isValid ? `+${pearValidationResult.credits}` : "0"}
@@ -4940,7 +4941,7 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
-    const claudeProvider = await getModelProvider(app, claude.name)
+    const claudeProvider = await getModelProvider(requestApp, claude.name)
     model = claudeProvider.provider
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
@@ -4951,13 +4952,16 @@ The user just submitted feedback for ${app?.name || "this app"} and it has been 
       console.log("❌ Perplexity not found")
       return c.json({ error: "Perplexity not found" }, { status: 404 })
     }
-    const perplexityProvider = await getModelProvider(app, perplexityAgent.name)
+    const perplexityProvider = await getModelProvider(
+      requestApp,
+      perplexityAgent.name,
+    )
     model = perplexityProvider.provider
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
     console.log(`🤖 Model resolution for: ${agent.name}`)
     // Lets try r1
-    const providerResult = await getModelProvider(app, agent.name)
+    const providerResult = await getModelProvider(requestApp, agent.name)
     model = providerResult.provider
     console.log(
       `✅ Provider created using: ${providerResult.agentName || agent.name}`,
@@ -5382,7 +5386,7 @@ Respond in this exact JSON format:
 Make the enhanced prompt contextually aware and optimized for high-quality image generation.`
 
         // Use app-specific DeepSeek key if available
-        const deepseekEnhanceProvider = await getModelProvider(app)
+        const deepseekEnhanceProvider = await getModelProvider(requestApp)
         const enhancementResponse = await generateText({
           model: deepseekEnhanceProvider.provider,
           messages: [{ role: "user", content: enhancementPrompt }],
@@ -5477,11 +5481,11 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
         // If the app has a specific key for 'replicate', use it.
         // Note: Currently Agent.tsx might not have a dedicated 'replicate' field, but if it exists in DB, we use it.
-        let replicateAuth = app.tier === "free" ? REPLICATE_API_KEY : ""
+        let replicateAuth = requestApp?.tier === "free" ? REPLICATE_API_KEY : ""
 
         // Check for 'replicate' key or reuse 'openrouter'/'deepseek' key if intended for Replicate
         // For now, checks 'replicate' explicit key in apiKeys jsonb
-        const appReplicateKey = app?.apiKeys?.replicate
+        const appReplicateKey = requestApp?.apiKeys?.replicate
 
         if (appReplicateKey) {
           try {
@@ -5587,7 +5591,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           ...newMessagePayload,
           content: aiResponseContent,
           originalContent: aiResponseContent,
-          appId: app?.id,
+          appId: requestApp?.id,
           images: [
             {
               url: permanentUrl, // Use permanent UploadThing URL
@@ -5694,7 +5698,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           model,
           messages,
           maxRetries: 3,
-          temperature: app?.temperature ?? 0.7,
+          temperature: requestApp?.temperature ?? 0.7,
           tools: allTools, // Includes imageTools
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
@@ -6157,7 +6161,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           try {
             const aiMessage = await createMessage({
               ...newMessagePayload,
-              appId: app?.id,
+              appId: requestApp?.id,
               content: processedText + creditRewardMessage, // Use processed text with citations
               reasoning: reasoningText || undefined, // Store reasoning separately
               isPear: requestData.pear || false, // Track Pear feedback submissions
@@ -6265,7 +6269,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           model,
           messages,
           maxRetries: 3,
-          temperature: app?.temperature ?? 0.7,
+          temperature: requestApp?.temperature ?? 0.7,
           tools: allTools,
           async onFinish({ text, usage, response, toolCalls, toolResults }) {
             finalText = text
@@ -6459,7 +6463,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         })
         // Save AI response to database (no Perplexity processing for DeepSeek)
         const aiMessage = await createMessage({
-          appId: app?.id,
+          appId: requestApp?.id,
           ...newMessagePayload,
           content: (finalText + creditRewardMessage).trim(), // Add credit reward thank you
           originalContent: finalText.trim(),
@@ -6543,7 +6547,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           model,
           messages,
           maxRetries: 3,
-          temperature: app?.temperature ?? 0.7,
+          temperature: requestApp?.temperature ?? 0.7,
           tools: allTools,
           providerOptions: {
             google: {
@@ -6653,7 +6657,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             : finalText
 
           const aiMessage = await createMessage({
-            appId: app?.id,
+            appId: requestApp?.id,
             id: clientId,
             threadId: currentThreadId,
             agentId: agent.id,
@@ -6726,7 +6730,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         model,
         messages,
         maxRetries: 3,
-        temperature: app?.temperature ?? 0.7,
+        temperature: requestApp?.temperature ?? 0.7,
         tools: toolsForModel,
         async onFinish({ text, usage, response, sources, toolCalls }) {
           finalText = text
@@ -6946,7 +6950,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         threadId: currentThreadId,
         searchContext,
         webSearchResult: webSearchResults,
-        appId: app?.id,
+        appId: requestApp?.id,
       })
 
       console.timeEnd("messageProcessing")
@@ -6974,7 +6978,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           userId: m.message.userId || undefined,
           guestId: m.message.guestId || undefined,
           role: "assistant",
-          app,
+          app: requestApp,
         }).catch((error) => {
           captureException(error)
           console.error("❌ AI Message RAG processing failed:", error)
