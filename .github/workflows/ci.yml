@@ -1,33 +1,42 @@
 name: CI
-
 on:
+  # # will update to main when is ready
+  # pull_request:
+  #   branches: [main]
   push:
-    branches: [staging] # Only build on staging branch
+    branches: [prod] # Only build on staging branch
   # pull_request:
   #   branches: [main, chrry]
   workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy and test"
+        required: true
+        type: string
+      skip_auto_merge:
+        description: "Skip auto-merge jobs"
+        required: false
+        default: true
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: write # Allow pushing to main branch
-
-# Centralized environment variables for all
 env:
-  # Turbo cache
+  STAGING_URL: https://e2e.chrry.ai
+  STAGING_API_URL: https://e2e.chrry.dev
+  TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
+  TURBO_TEAM: "vex"
+  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
   TURBO_API: ${{ secrets.TURBO_API }}
   TURBO_VERBOSE: 1
-  TURBO_TOKEN: ${{ secrets.VPS_TURBO_TOKEN }}
-  TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
-  TURBO_TEAM: "vex"
   NODE_OPTIONS: --max-old-space-size=8192
-
-  # Testing
   TESTING_ENV: e2e
   VITE_TESTING_ENV: e2e
   VITE_CI: true
+  CI: true
+  BUILD_ID: ${{ github.sha }}
 
   # Node environment
   NODE_ENV: production
@@ -77,7 +86,6 @@ env:
 
   # URLs
   CHRRY_URL: ${{ secrets.CHRRY_URL }}
-  FRONTEND_URL: https://e2e.chrry.ai
   VITE_API_URL: ${{ secrets.VITE_API_URL }}
   VITE_SITE_MODE: ${{ secrets.VITE_SITE_MODE }}
   VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
@@ -88,13 +96,37 @@ env:
   REDIS_URL: ${{ secrets.REDIS_URL }}
 
 jobs:
-  build:
-    runs-on: ubuntu-latest # 4-core runner with 16GB RAM (free tier)
-    timeout-minutes: 30
-
+  # Safety check: prevent external PRs from triggering deployments
+  cancel-deployments:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Cancel in-progress API deployment
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        continue-on-error: true
+        run: |
+          echo "🛑 Canceling any in-progress API deployment..."
+          curl -X POST "https://coolify.askvex.com/api/v1/applications/z84cko4g4kwss0gockcgkogw/cancel" \
+            -H "Authorization: Bearer $COOLIFY_TOKEN" || echo "No deployment to cancel"
+
+      - name: Cancel in-progress Web deployment
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        continue-on-error: true
+        run: |
+          echo "🛑 Canceling any in-progress Web deployment..."
+          curl -X POST "https://coolify.askvex.com/api/v1/applications/xcgo4kw884kkow40wk040sco/cancel" \
+            -H "Authorization: Bearer $COOLIFY_TOKEN" || echo "No deployment to cancel"
+
+  build:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: cancel-deployments
+    steps:
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -122,22 +154,180 @@ jobs:
         run: pnpm turbo lint
 
       - name: Type check
-        run: |
-          pnpm --filter "@chrryai/chrry" exec tsc --noEmit --project tsconfig.ci.json
-          pnpm --filter "web" check-types
-          pnpm --filter "api" check-types
+        run: pnpm turbo check-types
 
       - name: Build packages
         run: pnpm run build
 
-  merge-to-main:
+  # Deploy both API and Web sequentially
+  deploy:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
-    needs: [build]
-    if: github.ref == 'refs/heads/chrry' && github.event_name == 'push'
-
+    needs: [build, cancel-deployments]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Deploy API to Coolify
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          echo "📦 Deploying API app (e2e.chrry.dev)..."
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=z84cko4g4kwss0gockcgkogw&force=false" \
+            -H "Authorization: Bearer $COOLIFY_TOKEN"
+
+      - name: Wait for API deployment
+        run: |
+          echo "⏳ Waiting for API to finish deploying..."
+          MAX_ATTEMPTS=150
+          ATTEMPT=0
+          EXPECTED_VERSION=$(jq -r '.version' package.json)
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            echo "🔍 Checking $STAGING_API_URL/api/health..."
+            if curl -f --compressed $STAGING_API_URL/api/health > /dev/null 2>&1; then
+              API_VERSION=$(curl -s --compressed $STAGING_API_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
+              echo "📦 API version: $API_VERSION (expected: $EXPECTED_VERSION)"
+
+              if [ "$API_VERSION" = "$EXPECTED_VERSION" ]; then
+                echo "✅ API deployment complete!"
+                exit 0
+              fi
+            else
+              echo "❌ Health check failed (curl exit code: $?)"
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            sleep 10
+          done
+
+          echo "❌ API deployment timed out"
+          exit 1
+
+      - name: Deploy Web to Coolify
+        env:
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          echo "📦 Deploying web app (e2e.chrry.ai)..."
+          curl -X GET "https://coolify.askvex.com/api/v1/deploy?uuid=xcgo4kw884kkow40wk040sco&force=false" \
+            -H "Authorization: Bearer $COOLIFY_TOKEN"
+
+      - name: Wait for Web deployment
+        run: |
+          echo "⏳ Waiting for Web to finish deploying..."
+          MAX_ATTEMPTS=150
+          ATTEMPT=0
+          EXPECTED_VERSION=$(jq -r '.version' package.json)
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            echo "🔍 Checking $STAGING_URL/api/health..."
+            if curl -f --compressed $STAGING_URL/api/health > /dev/null 2>&1; then
+              WEB_VERSION=$(curl -s --compressed $STAGING_URL/api/health | jq -r '.version' 2>/dev/null || echo "unknown")
+              echo "📦 Web version: $WEB_VERSION (expected: $EXPECTED_VERSION)"
+
+              if [ "$WEB_VERSION" = "$EXPECTED_VERSION" ]; then
+                echo "✅ Web deployment complete!"
+                exit 0
+              fi
+            else
+              echo "❌ Health check failed (curl exit code: $?)"
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            sleep 10
+          done
+
+          echo "❌ Web deployment timed out"
+          exit 1
+
+  # Run Guest E2E tests first (uses shared fingerprints)
+
+  e2e-guest-live:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: deploy
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
+
+      - name: Run Live Guest Playwright tests (Real AI)
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
+          VEX_LIVE_FINGERPRINTS: ${{ secrets.VEX_LIVE_FINGERPRINTS }}
+        run: pnpm --filter @chrryai/waffles exec playwright test guest.live.spec.ts
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-guest-live
+          path: packages/waffles/playwright-report/
+          retention-days: 30
+
+  # Run Member E2E tests (Grape/Pear flows, spatial nav)
+  e2e-member-live:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: e2e-guest-live
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter @chrryai/waffles exec playwright install --with-deps
+
+      - name: Run Live Member Playwright tests (Real AI)
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.STAGING_URL }}
+          VEX_LIVE_FINGERPRINTS: ${{ secrets.VEX_LIVE_FINGERPRINTS }}
+        run: pnpm --filter @chrryai/waffles exec playwright test member.live.spec.ts
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-member-live
+          path: packages/waffles/playwright-report/
+          retention-days: 30
+
+  # Auto-merge to dev branch after all tests pass
+  auto-merge-to-dev:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: [e2e-member-live]
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -147,39 +337,55 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Merge staging to main
+      - name: Merge to dev
+        env:
+          SOURCE_BRANCH: ${{ inputs.branch || github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
-          git fetch origin main
-          git checkout main
-          git merge origin/staging --no-edit -m "Auto-merge staging to main after successful build
+          echo "🔀 Auto-merging $SOURCE_BRANCH to dev branch..."
+          git fetch origin dev
+          git checkout dev
+          git merge --no-ff "origin/$SOURCE_BRANCH" -m "Auto-merge $SOURCE_BRANCH to dev
 
           ✅ CI passed - ready for deployment
           ✅ E2E tests passed
+          📦 Commit: $COMMIT_SHA
 
           🤖 Generated by GitHub Actions"
-          git push origin main
+          git push origin dev
+          echo "✅ Successfully merged to dev!"
+  #Auto-merge to web branch after all tests pass
+  auto-merge-to-web:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: [e2e-member-live]
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-  # test:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   if: github.event_name == 'pull_request'
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+      - name: Merge to web
+        env:
+          SOURCE_BRANCH: ${{ inputs.branch || github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "🔀 Auto-merging $SOURCE_BRANCH to web branch..."
+          git fetch origin web
+          git checkout web
+          git merge --no-ff "origin/$SOURCE_BRANCH" -m "Auto-merge $SOURCE_BRANCH to web
 
-  #     - name: Setup pnpm
-  #       uses: pnpm/action-setup@v4
+          ✅ CI passed - ready for deployment
+          ✅ E2E tests passed
+          📦 Commit: $COMMIT_SHA
 
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: "20"
-  #         cache: "pnpm"
-
-  #     - name: Install dependencies
-  #       run: pnpm install --frozen-lockfile
-
-  #     - name: Run tests
-  #       run: pnpm test
-  #       continue-on-error: true
+          🤖 Generated by GitHub Actions"
+          git push origin web
+          echo "✅ Successfully merged to web!"
