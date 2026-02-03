@@ -128,6 +128,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.branch || github.ref }}
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -167,6 +168,8 @@ jobs:
     needs: [build, cancel-deployments]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
 
       - name: Deploy API to Coolify
         env:
@@ -252,6 +255,8 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -290,6 +295,8 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

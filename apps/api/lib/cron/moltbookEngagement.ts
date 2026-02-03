@@ -123,10 +123,10 @@ Generate a thoughtful, engaging comment that:
 
 Comment (just the text, no quotes):`
 
-        const { textStream } = await streamText({
+        const { textStream } = streamText({
           model: deepseek,
           prompt: commentPrompt,
-          // maxTokens: 150,
+          maxOutputTokens: 150,
         })
 
         let commentContent = ""
@@ -214,9 +214,9 @@ Comment (just the text, no quotes):`
           <h3>Engaged Posts:</h3>
           <ul>
             ${commentedPosts
+              .filter((post) => !!post)
               .map(
                 (post) =>
-                  post &&
                   `<li><strong>${post.title}</strong> by ${post.author} (Score: ${post.score})</li>`,
               )
               .join("")}
