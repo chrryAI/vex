@@ -194,6 +194,9 @@ importers:
       '@maxmind/geoip2-node':
         specifier: ^6.1.0
         version: 6.3.4
+      '@openredaction/openredaction':
+        specifier: ^1.0.4
+        version: 1.0.4(express@5.2.1)(react@19.2.4)
       '@openrouter/ai-sdk-provider':
         specifier: ^2.1.1
         version: 2.1.1(ai@6.0.67(zod@4.3.6))(zod@4.3.6)
@@ -4041,6 +4044,28 @@ packages:
     peerDependencies:
       react: ^18 || ^19
       react-dom: ^18 || ^19
+
+  '@openredaction/openredaction@1.0.4':
+    resolution: {integrity: sha512-BOd4nEiz+uhV0YY7P7gBmJIiHKBO7w9e5P5iaLErJ3Ay8IdYHYIORmmTh1xVpwbWYNLtGbGHfn3OFs1aX8QThg==}
+    engines: {node: '>=20.0.0'}
+    hasBin: true
+    peerDependencies:
+      express: ^4.18.0 || ^5.0.0
+      mammoth: ^1.6.0
+      pdf-parse: ^1.1.1
+      react: ^18.0.0 || ^19.0.0
+      tesseract.js: ^5.0.0
+    peerDependenciesMeta:
+      express:
+        optional: true
+      mammoth:
+        optional: true
+      pdf-parse:
+        optional: true
+      react:
+        optional: true
+      tesseract.js:
+        optional: true
 
   '@openrouter/ai-sdk-provider@2.1.1':
     resolution: {integrity: sha512-UypPbVnSExxmG/4Zg0usRiit3auvQVrjUXSyEhm0sZ9GQnW/d8p/bKgCk2neh1W5YyRSo7PNQvCrAEBHZnqQkQ==}
@@ -8605,7 +8630,7 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-dirs@0.1.1:
     resolution: {integrity: sha512-NknMLn7F2J7aflwFOlGdNIuCDpN3VGoSoB+aap3KABFWbHVn1TCgFC+np23J8W2BiZbjfEw3BFBycSMv1AFblg==}
@@ -17408,6 +17433,11 @@ snapshots:
       number-flow: 0.5.9
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
+
+  '@openredaction/openredaction@1.0.4(express@5.2.1)(react@19.2.4)':
+    optionalDependencies:
+      express: 5.2.1
+      react: 19.2.4
 
   '@openrouter/ai-sdk-provider@2.1.1(ai@6.0.67(zod@4.3.6))(zod@4.3.6)':
     dependencies:
