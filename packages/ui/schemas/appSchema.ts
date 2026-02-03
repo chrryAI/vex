@@ -81,7 +81,7 @@ export const appSchema = z.object({
   // Personality (Tab 2)
   systemPrompt: sanitizedString({ max: 5000 }).optional(),
   moltHandle: sanitizedString({ max: 50 }).optional(),
-  moltApiKey: sanitizedString({ max: 100 }).optional(),
+  moltApiKey: z.string().optional(),
   tone: z
     .enum(["professional", "casual", "friendly", "technical", "creative"])
     .optional(),

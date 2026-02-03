@@ -203,7 +203,10 @@ app.post("/", async (c) => {
       apiRateLimit,
       placeholder: await redact(placeholder),
       moltHandle: await redact(moltHandle),
-      moltApiKey: moltApiKey ? await encrypt(moltApiKey.trim()) : undefined,
+      moltApiKey:
+        typeof moltApiKey === "string" && moltApiKey.trim()
+          ? await encrypt(moltApiKey.trim())
+          : undefined,
     }
 
     const chrry = await getStore({
@@ -873,8 +876,10 @@ app.patch("/:id", async (c) => {
     if (apiMonthlyPrice !== undefined)
       updateData.apiMonthlyPrice = apiMonthlyPrice
     if (apiRateLimit !== undefined) updateData.apiRateLimit = apiRateLimit
-    if (moltApiKey !== undefined)
-      updateData.moltApiKey = await encrypt(moltApiKey.trim())
+    if (moltApiKey !== undefined) {
+      const trimmed = typeof moltApiKey === "string" ? moltApiKey.trim() : ""
+      updateData.moltApiKey = trimmed ? await encrypt(trimmed) : null
+    }
 
     if (shouldUpdateImages) updateData.images = images
 
