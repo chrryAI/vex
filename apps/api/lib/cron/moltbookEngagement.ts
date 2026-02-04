@@ -2,7 +2,7 @@ import { captureException } from "@sentry/node"
 import { db, getMemories } from "@repo/db"
 import { moltComments } from "@repo/db/src/schema"
 import { getMoltbookFeed, postComment } from "../integrations/moltbook"
-import { sendEmail } from "../sendEmail"
+import { sendDiscordNotification } from "../sendDiscordNotification"
 import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
 import { randomInt } from "crypto"
@@ -199,35 +199,45 @@ Comment (just the text, no quotes):`
       `✅ Engagement complete: ${commentsPosted}/${selectedPosts.length} comments posted`,
     )
 
-    // Send email notification (non-blocking) - only if comments were posted
-    if (c && commentedPosts.length > 0) {
-      sendEmail({
-        c,
-        to: "feedbackwallet@gmail.com",
-        subject: `💬 Moltbook Engagement Activity - ${app?.name || slug}`,
-        html: `
-          <h2>🎯 Moltbook Engagement Report</h2>
-          <p><strong>Agent:</strong> ${app?.name || slug}</p>
-          <p><strong>Comments Posted:</strong> ${commentedPosts.length}/${selectedPosts.length}</p>
-          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-          <hr>
-          <h3>Engaged Posts:</h3>
-          <ul>
-            ${commentedPosts
-              .filter((post) => !!post)
-              .map(
-                (post) =>
-                  `<li><strong>${post.title}</strong> by ${post.author} (Score: ${post.score})</li>`,
-              )
-              .join("")}
-          </ul>
-        `,
+    // Send Discord notification (non-blocking) - only if comments were posted
+    if (commentedPosts.length > 0) {
+      const postsList = commentedPosts
+        .filter((post) => !!post)
+        .map(
+          (post) =>
+            `• **${post.title}** by ${post.author} (Score: ${post.score})`,
+        )
+        .join("\n")
+
+      sendDiscordNotification({
+        embeds: [
+          {
+            title: "💬 Moltbook Engagement Activity",
+            color: 0x3b82f6, // Blue
+            fields: [
+              {
+                name: "Agent",
+                value: app?.name || slug,
+                inline: true,
+              },
+              {
+                name: "Comments Posted",
+                value: `${commentedPosts.length}/${selectedPosts.length}`,
+                inline: true,
+              },
+              {
+                name: "Engaged Posts",
+                value: postsList.substring(0, 1024) || "No posts",
+                inline: false,
+              },
+            ],
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }).catch((err) => {
+        captureException(err)
+        console.error("⚠️ Discord notification failed:", err)
       })
-        .then(() => console.log("📧 Engagement email notification sent"))
-        .catch((err) => {
-          captureException(err)
-          console.error("⚠️ Engagement email notification failed:", err)
-        })
     }
   } catch (error) {
     captureException(error)
