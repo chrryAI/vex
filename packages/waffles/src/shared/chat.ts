@@ -780,19 +780,7 @@ export const chat = async ({
       return agentMessages.nth(messageCount - 1)
     }
 
-    const lastUserMessage = await getLastMessage()
-    await expect(lastUserMessage).toBeVisible({
-      timeout: agentMessageTimeout,
-    })
-    // Get all agent messages and wait for the last one to be visible
-
-    // Wait for the last message to be visible and have content
     await expect(await getLastAgentMessage()).toBeVisible()
-    // await expect(
-    //   lastAgentMessage.locator("[data-testid=markdown-paragraph]"),
-    // ).toBeVisible({
-    //   timeout: prompt.agentMessageTimeout || agentMessageTimeout,
-    // })
 
     const deleteAgentMessageButton = (await getLastAgentMessage()).locator(
       "[data-testid=delete-message]",
