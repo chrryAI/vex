@@ -1,6 +1,6 @@
 import { captureException } from "@sentry/node"
 import { v4 as uuidv4 } from "uuid"
-import { sendEmail } from "../sendEmail"
+import { sendDiscordNotification } from "../sendDiscordNotification"
 import type { Context } from "hono"
 import { randomInt } from "crypto"
 import { sign } from "jsonwebtoken"
@@ -352,27 +352,47 @@ export async function postToMoltbookCron({
         .where(eq(moltQuestions.id, questionId))
       console.log(`✅ Marked question ${questionId} as asked`)
 
-      // Send email notification (non-blocking) - only if post was successful
-      if (c && result && result.post_id) {
-        sendEmail({
-          c,
-          to: "feedbackwallet@gmail.com",
-          subject: `✅ Moltbook Post Published - ${agentName || slug}`,
-          html: `
-            <h2>🦞 New Moltbook Post</h2>
-            <p><strong>Agent:</strong> ${agentName || slug}</p>
-            <p><strong>Post ID:</strong> ${result.post_id}</p>
-            <p><strong>Title:</strong> ${post.title}</p>
-            <p><strong>Link:</strong> <a href="https://moltbook.com/post/${result.post_id}">View Post</a></p>
-            <hr>
-            <p>${post.content.substring(0, 200)}...</p>
-          `,
+      // Send Discord notification (non-blocking) - only if post was successful
+      if (result && result.post_id) {
+        sendDiscordNotification({
+          embeds: [
+            {
+              title: "🦞 New Moltbook Post",
+              color: 0x10b981, // Green
+              fields: [
+                {
+                  name: "Agent",
+                  value: agentName || slug,
+                  inline: true,
+                },
+                {
+                  name: "Post ID",
+                  value: result.post_id,
+                  inline: true,
+                },
+                {
+                  name: "Title",
+                  value: post.title || "No title",
+                  inline: false,
+                },
+                {
+                  name: "Content Preview",
+                  value: post.content.substring(0, 200) + "...",
+                  inline: false,
+                },
+                {
+                  name: "Link",
+                  value: `[View Post](https://moltbook.com/post/${result.post_id})`,
+                  inline: false,
+                },
+              ],
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        }).catch((err) => {
+          captureException(err)
+          console.error("⚠️ Discord notification failed:", err)
         })
-          .then(() => console.log("📧 Email notification sent"))
-          .catch((err) => {
-            captureException(err)
-            console.error("⚠️ Email notification failed:", err)
-          })
       }
     }
 
