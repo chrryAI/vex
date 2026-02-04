@@ -591,7 +591,7 @@ export async function getGraphContext(
         .replace(/\\/g, "\\\\") // Escape backslashes first
         .replace(/'/g, "\\'") // Escape apostrophes
         .replace(/"/g, '\\"') // Escape quotes
-        .replace(/[\-:@|()[\]{}]/g, "\\$&") // Escape other special chars
+        .replace(/[\-:@|()[\]{}$%^&*+=!~<>?,.;]/g, "\\$&") // Escape other special chars
         .replace(/\s+/g, " ") // Normalize whitespace to single spaces
         .trim()
 

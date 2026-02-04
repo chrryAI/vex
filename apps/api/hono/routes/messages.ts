@@ -366,7 +366,9 @@ messages.post("/", async (c) => {
 
   // Redact PII before sanitizing HTML
   const redactedContent = await redact(content)
-  let messageContent = sanitizeHtml(redactedContent)
+  let messageContent = redactedContent
+    ? sanitizeHtml(redactedContent)
+    : undefined
 
   if (!content && !attachmentType) {
     return c.json({ error: "Please provide a message or attachment" }, 400)
