@@ -1,11 +1,12 @@
 reviews:
-  # Exclude sushi package from reviews (synced to separate repo)
-  path_filters:
-    - "!packages/sushi/**"
+  # Temporarily allow sushi package review for security fixes
+  # path_filters:
+  #   - "!packages/sushi/**"
 
-  # Auto-review settings
+  # Auto-review settings - disabled to prevent automatic reviews
+  # Use @coderabbitai review to manually trigger reviews
   auto_review:
-    enabled: true
+    enabled: false
     drafts: false
 
   # Review scope

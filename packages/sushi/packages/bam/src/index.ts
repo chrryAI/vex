@@ -114,7 +114,8 @@ export class BAM {
 
       // Check for unused imports
       if (line.includes("import") && line.includes("from")) {
-        const importMatch = line.match(/import\s+{([^}]+)}\s+from/)
+        // Use non-greedy match with length limit to prevent ReDoS
+        const importMatch = line.match(/import\s+\{([^}]{1,500}?)\}\s+from/)
         if (importMatch) {
           const imports = importMatch[1].split(",").map((s) => s.trim())
           for (const imp of imports) {
