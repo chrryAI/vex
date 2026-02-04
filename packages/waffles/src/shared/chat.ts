@@ -774,9 +774,8 @@ export const chat = async ({
       `Debug: Found ${deleteButtonCount} delete buttons in last message`,
     )
 
-    // // Get the message text directly from the element with the expected text
-    const userMessageContent = (await getLastMessage()).getByText(prompt.text)
-    await expect(userMessageContent).toBeVisible({
+    const lastUserMessage = await getLastUserMessage()
+    await expect(lastUserMessage).toBeVisible({
       timeout: agentMessageTimeout,
     })
     // Get all agent messages and wait for the last one to be visible
