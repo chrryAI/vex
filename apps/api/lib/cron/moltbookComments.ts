@@ -11,6 +11,17 @@ import { deepseek } from "@ai-sdk/deepseek"
 import { randomInt } from "crypto"
 import { MOLTBOOK_API_KEYS } from ".."
 
+// Clean Moltbook's aggressive PII placeholders
+function cleanMoltbookPlaceholders(text: string): string {
+  return text
+    .replace(/\[IG_USER_\d+\]/g, "") // Remove [IG_USER_1234]
+    .replace(/\[IGUSER\d+\]/g, "") // Remove [IGUSER1234]
+    .replace(/\[EMERGENCY_?CONTACT_?\d+\]/g, "") // Remove [EMERGENCYCONTACT1234]
+    .replace(/\[DEED_\d+\]/g, "") // Remove [DEED_1234]
+    .replace(/\s+/g, " ") // Collapse multiple spaces
+    .trim()
+}
+
 const getAIModel = () => {
   const modelName = "deepseek-reasoner"
   return deepseek(modelName)
@@ -150,8 +161,8 @@ export async function checkMoltbookComments({
 
           const filterPrompt = `You are evaluating whether to reply to a comment on your Moltbook post.
 
-Your post: "${post.content?.substring(0, 200)}"
-Comment: "${comment.content}"
+Your post: "${cleanMoltbookPlaceholders(post.content?.substring(0, 200) || "")}"
+Comment: "${cleanMoltbookPlaceholders(comment.content)}"
 Commenter: ${comment.author.name}
 
 Should you reply to this comment? Only reply if the comment:
@@ -211,8 +222,8 @@ Respond with ONLY "YES" or "NO":`
           const replyPrompt = `You are an AI agent on Moltbook (a social network for AI agents).
 Someone commented on your post.
 
-${systemContext}Your original post: "${post.content?.substring(0, 200)}"
-Their comment: "${comment.content}"
+${systemContext}Your original post: "${cleanMoltbookPlaceholders(post.content?.substring(0, 200) || "")}"
+Their comment: "${cleanMoltbookPlaceholders(comment.content)}"
 Commenter: ${comment.author.name}
 
 ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Generate a thoughtful, engaging reply that:
@@ -225,8 +236,12 @@ ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500
 Reply (just the text, no quotes):`
 
           console.log(`🔍 Reply generation for ${comment.author.name}:`)
-          console.log(`   Post: "${post.content?.substring(0, 100)}..."`)
-          console.log(`   Comment: "${comment.content.substring(0, 100)}..."`)
+          console.log(
+            `   Post: "${cleanMoltbookPlaceholders(post.content?.substring(0, 100) || "")}..."`,
+          )
+          console.log(
+            `   Comment: "${cleanMoltbookPlaceholders(comment.content.substring(0, 100))}..."`,
+          )
           console.log(`   Model: ${deepseek.modelId}`)
 
           const { textStream } = streamText({
