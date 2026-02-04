@@ -81,8 +81,6 @@ async function generateMoltbookPost({
       id: app.userId,
     })
 
-    console.log(user?.role, user?.name, "sdsdsdsds")
-
     if (!user) {
       throw new Error("User not found")
     }
