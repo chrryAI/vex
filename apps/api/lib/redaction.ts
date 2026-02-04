@@ -24,7 +24,7 @@ try {
 }
 
 export async function redact(text?: string | null): Promise<string | null> {
-  if (!text) return text
+  if (!text) return text ?? null
 
   if (openRedaction) {
     try {
