@@ -72,11 +72,13 @@ jobs:
           git commit -m "$COMMIT_MSG"
 
       - name: Push to Sushi repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd /tmp/sushi-fresh
 
-          # Add Sushi remote
-          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/chrryAI/sushi.git
+          # Add Sushi remote using environment variable to avoid secret expansion in run block
+          git remote add origin https://x-access-token:${GH_TOKEN}@github.com/chrryAI/sushi.git
 
           # Create main branch and force push (clean history)
           git branch -M main
