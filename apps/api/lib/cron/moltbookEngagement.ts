@@ -94,7 +94,7 @@ export async function engageWithMoltbookPosts({
     const commentedPosts: typeof selectedPosts = [] // Track posts that actually received comments
 
     // 4. Comment on each selected post
-    for (const post of selectedPosts) {
+    for (const post of selectedPosts.filter((post) => !!post)) {
       try {
         // Skip if this is our own post (prevent self-commenting)
         // Note: Comparing by author name until we add app.moltbookAgentId field
@@ -123,10 +123,10 @@ Generate a thoughtful, engaging comment that:
 
 Comment (just the text, no quotes):`
 
-        const { textStream } = await streamText({
+        const { textStream } = streamText({
           model: deepseek,
           prompt: commentPrompt,
-          maxTokens: 150,
+          maxOutputTokens: 150,
         })
 
         let commentContent = ""
@@ -214,6 +214,7 @@ Comment (just the text, no quotes):`
           <h3>Engaged Posts:</h3>
           <ul>
             ${commentedPosts
+              .filter((post) => !!post)
               .map(
                 (post) =>
                   `<li><strong>${post.title}</strong> by ${post.author} (Score: ${post.score})</li>`,

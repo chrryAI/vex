@@ -28,6 +28,7 @@ overrides:
   tar@<7.5.7: '>=7.5.7'
   happy-dom@<20.0.0: '>=20.0.0'
   fast-xml-parser@>=4.3.6 <=5.3.3: '>=5.3.4'
+  '@isaacs/brace-expansion@<=5.0.0': '>=5.0.1'
 
 importers:
 
@@ -194,6 +195,9 @@ importers:
       '@maxmind/geoip2-node':
         specifier: ^6.1.0
         version: 6.3.4
+      '@openredaction/openredaction':
+        specifier: ^1.0.4
+        version: 1.0.4(express@5.2.1)(react@19.2.4)
       '@openrouter/ai-sdk-provider':
         specifier: ^2.1.1
         version: 2.1.1(ai@6.0.67(zod@4.3.6))(zod@4.3.6)
@@ -825,8 +829,8 @@ importers:
         specifier: ^2.0.1
         version: 2.0.2
       npm:
-        specifier: ^10.9.2
-        version: 10.9.4
+        specifier: ^11.8.0
+        version: 11.8.0
       postgres:
         specifier: ^3.4.5
         version: 3.4.8
@@ -1196,6 +1200,9 @@ importers:
       uuid:
         specifier: ^10.0.0
         version: 10.0.0
+      vitest:
+        specifier: ^2.1.4
+        version: 2.1.9(@types/node@22.19.7)(happy-dom@20.4.0)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0)
       zod:
         specifier: ^4.1.11
         version: 4.3.6
@@ -1246,9 +1253,6 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
-      vitest:
-        specifier: ^2.1.4
-        version: 2.1.9(@types/node@22.19.7)(happy-dom@20.4.0)(lightningcss@1.31.1)(sass@1.97.3)(terser@5.46.0)
 
   packages/waffles:
     dependencies:
@@ -3766,8 +3770,8 @@ packages:
     resolution: {integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==}
     engines: {node: 20 || >=22}
 
-  '@isaacs/brace-expansion@5.0.0':
-    resolution: {integrity: sha512-ZT55BDLV0yv0RBm2czMiZ+SqCGO7AvmOM3G/w2xhVPH+te0aKgFjmBvGlL1dH+ql2tgGO3MVrbb3jCKyvpgnxA==}
+  '@isaacs/brace-expansion@5.0.1':
+    resolution: {integrity: sha512-WMz71T1JS624nWj2n2fnYAuPovhv7EUhk69R6i9dsVyzxt5eM3bjwvgk9L+APE1TRscGysAVMANkB0jh0LQZrQ==}
     engines: {node: 20 || >=22}
 
   '@isaacs/fs-minipass@4.0.1':
@@ -4041,6 +4045,28 @@ packages:
     peerDependencies:
       react: ^18 || ^19
       react-dom: ^18 || ^19
+
+  '@openredaction/openredaction@1.0.4':
+    resolution: {integrity: sha512-BOd4nEiz+uhV0YY7P7gBmJIiHKBO7w9e5P5iaLErJ3Ay8IdYHYIORmmTh1xVpwbWYNLtGbGHfn3OFs1aX8QThg==}
+    engines: {node: '>=20.0.0'}
+    hasBin: true
+    peerDependencies:
+      express: ^4.18.0 || ^5.0.0
+      mammoth: ^1.6.0
+      pdf-parse: ^1.1.1
+      react: ^18.0.0 || ^19.0.0
+      tesseract.js: ^5.0.0
+    peerDependenciesMeta:
+      express:
+        optional: true
+      mammoth:
+        optional: true
+      pdf-parse:
+        optional: true
+      react:
+        optional: true
+      tesseract.js:
+        optional: true
 
   '@openrouter/ai-sdk-provider@2.1.1':
     resolution: {integrity: sha512-UypPbVnSExxmG/4Zg0usRiit3auvQVrjUXSyEhm0sZ9GQnW/d8p/bKgCk2neh1W5YyRSo7PNQvCrAEBHZnqQkQ==}
@@ -8605,7 +8631,7 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-dirs@0.1.1:
     resolution: {integrity: sha512-NknMLn7F2J7aflwFOlGdNIuCDpN3VGoSoB+aap3KABFWbHVn1TCgFC+np23J8W2BiZbjfEw3BFBycSMv1AFblg==}
@@ -10396,9 +10422,9 @@ packages:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
     engines: {node: '>=8'}
 
-  npm@10.9.4:
-    resolution: {integrity: sha512-OnUG836FwboQIbqtefDNlyR0gTHzIfwRfE3DuiNewBvnMnWEpB0VEXwBlFVgqpNzIgYo/MHh3d2Hel/pszapAA==}
-    engines: {node: ^18.17.0 || >=20.5.0}
+  npm@11.8.0:
+    resolution: {integrity: sha512-n19sJeW+RGKdkHo8SCc5xhSwkKhQUFfZaFzSc+EsYXLjSqIV0tl72aDYQVuzVvfrbysGwdaQsNLNy58J10EBSQ==}
+    engines: {node: ^20.17.0 || >=22.9.0}
     hasBin: true
     bundledDependencies:
       - '@isaacs/string-locale-compare'
@@ -10406,6 +10432,7 @@ packages:
       - '@npmcli/config'
       - '@npmcli/fs'
       - '@npmcli/map-workspaces'
+      - '@npmcli/metavuln-calculator'
       - '@npmcli/package-json'
       - '@npmcli/promise-spawn'
       - '@npmcli/redact'
@@ -10430,7 +10457,6 @@ packages:
       - libnpmdiff
       - libnpmexec
       - libnpmfund
-      - libnpmhook
       - libnpmorg
       - libnpmpack
       - libnpmpublish
@@ -10444,7 +10470,6 @@ packages:
       - ms
       - node-gyp
       - nopt
-      - normalize-package-data
       - npm-audit-report
       - npm-install-checks
       - npm-package-arg
@@ -10468,7 +10493,6 @@ packages:
       - treeverse
       - validate-npm-package-name
       - which
-      - write-file-atomic
 
   nprogress@0.2.0:
     resolution: {integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA==}
@@ -10747,6 +10771,7 @@ packages:
     resolution: {integrity: sha512-DgtH8GId1/+oj8n9yYEmhTq1QkxOZZzqHJhHEa1bmtV3t3/u2YsE3LSvRUNpVRWVXRcCdn+3Tu6+mD2YXKL7lA==}
     engines: {node: '>=20.18.0'}
     hasBin: true
+    bundledDependencies: []
 
   peberminta@0.9.0:
     resolution: {integrity: sha512-XIxfHpEuSJbITd1H3EeQwpcZbTLHc+VVr8ANI9t5sit565tsI4/xK3KWTUFE2e6QiangUkh3B0jihzmGnNrRsQ==}
@@ -16765,7 +16790,7 @@ snapshots:
 
   '@isaacs/balanced-match@4.0.1': {}
 
-  '@isaacs/brace-expansion@5.0.0':
+  '@isaacs/brace-expansion@5.0.1':
     dependencies:
       '@isaacs/balanced-match': 4.0.1
 
@@ -17407,6 +17432,11 @@ snapshots:
       number-flow: 0.5.9
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
+
+  '@openredaction/openredaction@1.0.4(express@5.2.1)(react@19.2.4)':
+    optionalDependencies:
+      express: 5.2.1
+      react: 19.2.4
 
   '@openrouter/ai-sdk-provider@2.1.1(ai@6.0.67(zod@4.3.6))(zod@4.3.6)':
     dependencies:
@@ -25358,7 +25388,7 @@ snapshots:
 
   minimatch@10.1.1:
     dependencies:
-      '@isaacs/brace-expansion': 5.0.0
+      '@isaacs/brace-expansion': 5.0.1
 
   minimatch@3.1.2:
     dependencies:
@@ -25600,7 +25630,7 @@ snapshots:
       path-key: 3.1.1
     optional: true
 
-  npm@10.9.4: {}
+  npm@11.8.0: {}
 
   nprogress@0.2.0: {}
 

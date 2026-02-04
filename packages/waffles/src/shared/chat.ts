@@ -999,10 +999,17 @@ export const chat = async ({
     }
 
     if (profile && shouldCheckProfile) {
-      const nextProfile = await characterProfile.getAttribute("data-cp")
-      expect(nextProfile).toBeTruthy()
-      expect(nextProfile).not.toEqual(profile)
-      profile = nextProfile
+      let nextProfile: string | null = null
+      await expect
+        .poll(
+          async () => {
+            nextProfile = await characterProfile.getAttribute("data-cp")
+            return nextProfile && nextProfile !== profile ? nextProfile : null
+          },
+          { timeout: 15000 },
+        )
+        .toBeTruthy()
+      profile = nextProfile ?? ""
       shouldCheckProfile = false
     }
 

@@ -44,7 +44,7 @@ import ConfirmButton from "./ConfirmButton"
 
 import { Check, Copy } from "./icons"
 
-import { useCallback, useEffect, useMemo, useState, useRef } from "react"
+import { useCallback, useEffect, useMemo, useState, useRef, memo } from "react"
 import { updateMessage, updateThread } from "./lib"
 import toast from "react-hot-toast"
 import Img from "./Image"
@@ -58,7 +58,7 @@ import { useMessageStyles } from "./Message.styles"
 import { useStyles } from "./context/StylesContext"
 import A from "./a/A"
 
-export default function Message({
+function Message({
   onDelete,
   onToggleLike,
   message,
@@ -1420,3 +1420,7 @@ export default function Message({
     </Div>
   )
 }
+
+// ⚡ Bolt: Memoize Message component to prevent unnecessary re-renders
+// when parent updates but message props remain stable.
+export default memo(Message)

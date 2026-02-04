@@ -1,5 +1,7 @@
 import { Hono } from "hono"
 import { createTask, getTasks, updateTask, getTask, deleteTask } from "@repo/db"
+import sanitizeHtml from "sanitize-html"
+import { redact } from "../../lib/redaction"
 import { getMember, getGuest } from "../lib/auth"
 import captureException from "../../lib/captureException"
 
@@ -13,6 +15,13 @@ tasks.post("/", async (c) => {
     return c.json({ error: "Title is required" }, 400)
   }
 
+  if (typeof title !== "string") {
+    return c.json({ error: "Invalid title format" }, 400)
+  }
+
+  const redactedTitle = await redact(title)
+  const sanitizedTitle = sanitizeHtml(redactedTitle)
+
   const member = await getMember(c)
   const guest = await getGuest(c)
 
@@ -21,7 +30,7 @@ tasks.post("/", async (c) => {
   }
 
   const task = await createTask({
-    title,
+    title: sanitizedTitle,
     userId: member?.id,
     guestId: !member ? guest?.id : undefined,
     modifiedOn: new Date(),
@@ -178,9 +187,15 @@ tasks.patch("/:id", async (c) => {
   }
 
   // If not reordering, proceed with normal task update
+  let finalTitle = existingTask.title
+  if (title && typeof title === "string") {
+    const redactedTitle = await redact(title)
+    finalTitle = sanitizeHtml(redactedTitle)
+  }
+
   const task = await updateTask({
     ...existingTask,
-    title,
+    title: finalTitle,
     userId: member?.id || null,
     guestId: guest?.id || null,
     modifiedOn: new Date(),

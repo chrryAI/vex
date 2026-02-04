@@ -10,6 +10,7 @@ import {
 import { apps } from "@repo/db/src/schema"
 import { getMember, getGuest } from "../lib/auth"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"
+import { redact } from "../../lib/redaction"
 
 import { getApp } from "../lib/auth"
 
@@ -167,14 +168,28 @@ app.post("/", async (c) => {
 
     // Handle image - accept URL from /api/image endpoint
 
+    // Redact sensitive text fields server-side before validation/storage
+    // This is a second layer of defense complementing the client-side Zod schema
+    const redactedName = await redact(name)
+    const redactedTitle = await redact(title)
+    const redactedDescription = description
+      ? await redact(description)
+      : description
+    const redactedSystemPrompt = systemPrompt
+      ? await redact(systemPrompt)
+      : systemPrompt
+    const redactedPlaceholder = placeholder
+      ? await redact(placeholder)
+      : placeholder
+
     // Build the data object for validation
     // Schema will sanitize via sanitizedString helper
     const appData = {
-      name,
-      title,
-      description: description || undefined,
+      name: redactedName,
+      title: redactedTitle,
+      description: redactedDescription || undefined,
       icon: icon || undefined,
-      systemPrompt: systemPrompt || undefined,
+      systemPrompt: redactedSystemPrompt || undefined,
       tone: tone || undefined,
       language: language || undefined,
       defaultModel: defaultModel || undefined,
@@ -198,7 +213,7 @@ app.post("/", async (c) => {
       apiPricePerRequest,
       apiMonthlyPrice,
       apiRateLimit,
-      placeholder,
+      placeholder: redactedPlaceholder,
     }
 
     const chrry = await getStore({
