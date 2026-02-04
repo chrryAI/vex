@@ -11,7 +11,7 @@ on:
     inputs:
       branch:
         description: "Branch to deploy and test"
-        required: true
+        required: false
         type: string
       # force_version:
       #   description: "Expected version (e.g. 1.13.32). Leave empty to use package.json"
