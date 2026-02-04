@@ -3397,7 +3397,7 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
   // PII Redaction Awareness Context
   const piiRedactionContext = `
 ## 🛡️ PII REDACTION AWARENESS
-You may encounter placeholders like [ARTICLE_] [REDACTED], [EMAIL_REDACTED], [PHONE_REDACTED], etc. in the user's messages or context.
+You may encounter placeholders like [ARTICLE_REDACTED], [EMAIL_REDACTED], [PHONE_REDACTED], etc. in the user's messages or context.
 - **These are NOT bugs.** They are intentional PII (Personally Identifiable Information) redactions for security.
 - **DO NOT** complain about missing data or say "I can't see the email".
 - **DO NOT** act confused.
@@ -4082,7 +4082,20 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           if (textContent) {
             // Redact PII from text content (includes js, ts, txt files)
-            textContent = (await redact(textContent)) || ""
+            try {
+              const redacted = await redact(textContent)
+              if (redacted && redacted.length > 0) {
+                textContent = redacted
+              }
+              // If redact fails or returns empty, keep original textContent
+            } catch (error) {
+              captureException(error)
+              console.error(
+                "⚠️ Text redaction failed, preserving original content:",
+                error,
+              )
+              // Keep original textContent
+            }
           }
           // Process text file for RAG so AI can analyze it
           // Only if memories are enabled (RAG requires memory context)
@@ -4143,7 +4156,20 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             const pdfBuffer = Buffer.from(file.data, "base64")
             let extractedText = await extractPDFText(pdfBuffer)
             // Redact PII from extracted PDF text
-            extractedText = (await redact(extractedText)) || ""
+            try {
+              const redacted = await redact(extractedText)
+              if (redacted && redacted.length > 0) {
+                extractedText = redacted
+              }
+              // If redact fails or returns empty, keep original extractedText
+            } catch (redactError) {
+              captureException(redactError)
+              console.error(
+                "⚠️ PDF redaction failed, preserving original content:",
+                redactError,
+              )
+              // Keep original extractedText
+            }
 
             uploadedFiles.push({
               data: extractedText,
