@@ -13,6 +13,10 @@ on:
         description: "Branch to deploy and test"
         required: true
         type: string
+      force_version:
+        description: "Expected version (e.g. 1.13.32). Leave empty to use package.json"
+        required: false
+        type: string
       skip_auto_merge:
         description: "Skip auto-merge jobs"
         required: false
@@ -184,7 +188,14 @@ jobs:
           echo "⏳ Waiting for API to finish deploying..."
           MAX_ATTEMPTS=150
           ATTEMPT=0
-          EXPECTED_VERSION=$(jq -r '.version' package.json)
+
+          # Use forced version if provided, otherwise read from package.json
+          if [ -n "${{ github.event.inputs.force_version }}" ]; then
+            EXPECTED_VERSION="${{ github.event.inputs.force_version }}"
+            echo "🔧 Using forced expectation: $EXPECTED_VERSION"
+          else
+            EXPECTED_VERSION=$(jq -r '.version' package.json)
+          fi
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
             echo "🔍 Checking $STAGING_API_URL/api/health..."
@@ -221,7 +232,14 @@ jobs:
           echo "⏳ Waiting for Web to finish deploying..."
           MAX_ATTEMPTS=150
           ATTEMPT=0
-          EXPECTED_VERSION=$(jq -r '.version' package.json)
+
+          # Use forced version if provided, otherwise read from package.json
+          if [ -n "${{ github.event.inputs.force_version }}" ]; then
+            EXPECTED_VERSION="${{ github.event.inputs.force_version }}"
+            echo "🔧 Using forced expectation: $EXPECTED_VERSION"
+          else
+            EXPECTED_VERSION=$(jq -r '.version' package.json)
+          fi
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
             echo "🔍 Checking $STAGING_URL/api/health..."
