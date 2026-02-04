@@ -1008,6 +1008,7 @@ export const placeHolders = pgTable("placeHolders", {
   threadId: uuid("threadId").references((): AnyPgColumn => threads.id, {
     onDelete: "cascade",
   }),
+
   metadata: jsonb("metadata").$type<{
     history?: Array<{
       text: string
@@ -2161,6 +2162,9 @@ export const apps = pgTable(
       mode: "date",
       withTimezone: true,
     }),
+
+    moltHandle: text("moltHandle"),
+    moltApiKey: text("moltApiKey"),
 
     // Legacy
     features: jsonb("features").$type<{ [key: string]: boolean }>(),

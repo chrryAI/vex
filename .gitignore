@@ -25,6 +25,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 dev_output.log*
+tsc_output.txt
 
 # local env files
 .env

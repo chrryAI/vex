@@ -1,6 +1,6 @@
 {
   "name": "@repo/db",
-  "version": "1.13.25",
+  "version": "1.13.36",
   "description": "",
   "type": "module",
   "main": "./index.ts",
@@ -45,7 +45,7 @@
     "falkordb": "^6.5.1",
     "install": "^0.13.0",
     "kebab-case": "^2.0.1",
-    "npm": "^10.9.2",
+    "npm": "^11.8.0",
     "postgres": "^3.4.5",
     "slug": "^10.0.0",
     "stripe": "^18.0.0",

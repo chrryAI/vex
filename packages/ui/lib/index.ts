@@ -16,6 +16,7 @@ import { createCalendarEventSchema } from "../utils/calendarValidation"
 import { stringify as superjsonStringify } from "./superjson"
 import { appFormData } from "../schemas/appSchema"
 import { session } from "../context/providers/AuthProvider"
+export { simpleRedact } from "./redaction"
 
 export const getImageSrc = ({
   app,

@@ -1,0 +1,27 @@
+apps/api/hono/routes/ai.ts(1336,32): error TS18048: 'app' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1430,25): error TS18048: 'app' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1430,25): error TS18048: 'app.store' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1456,25): error TS18048: 'app' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1456,25): error TS18048: 'app.store' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1456,50): error TS18048: 'app' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1456,50): error TS18048: 'app.store' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1456,79): error TS18048: 'app' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1456,79): error TS18048: 'app.store' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1459,3): error TS18048: 'app' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1459,3): error TS18048: 'app.store' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1459,23): error TS18048: 'app' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1461,109): error TS18048: 'app' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1461,109): error TS18048: 'app.store' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1612,72): error TS2345: Argument of type 'appWithStore | undefined' is not assignable to parameter of type 'appWithStore'.
+  Type 'undefined' is not assignable to type 'appWithStore'.
+    Type 'undefined' is not assignable to type 'app'.
+apps/api/hono/routes/ai.ts(1663,17): error TS18048: 'thread' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1740,17): error TS18048: 'thread' is possibly 'undefined'.
+apps/api/hono/routes/ai.ts(1762,22): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+apps/api/hono/routes/ai.ts(1889,32): error TS2322: Type '{ user: { image: string | null; email: string; weather: { location: string; country: string; temperature: string; condition: string; code: number; createdOn: Date; lastUpdated: Date; } | null; ... 48 more ...; lastCreditRewardOn: Date | null; } | null; ... 26 more ...; artifacts: { ...; }[] | null; } | undefined' is not assignable to type '{ userId: string | null; guestId: string | null; title: string; id: string; visibility: "private" | "protected" | "public"; metadata: {} | null; appId: string | null; instructions: string | null; ... 12 more ...; submolt: string | null; }'.
+  Type 'undefined' is not assignable to type '{ userId: string | null; guestId: string | null; title: string; id: string; visibility: "private" | "protected" | "public"; metadata: {} | null; appId: string | null; instructions: string | null; ... 12 more ...; submolt: string | null; }'.
+packages/ui/Calendar.web.tsx(31,20): error TS2307: Cannot find module './Calendar.module.scss' or its corresponding type declarations.
+packages/ui/MarkdownContent.web.tsx(5,20): error TS2307: Cannot find module './MarkdownContent.module.scss' or its corresponding type declarations.
+packages/ui/SignIn.web.tsx(3,20): error TS2307: Cannot find module './SignIn.module.scss' or its corresponding type declarations.
+packages/ui/z/Programme.tsx(5,20): error TS2307: Cannot find module './Programme.module.scss' or its corresponding type declarations.
