@@ -285,13 +285,15 @@ Comment (just the text, no quotes):`
 
     // Send Discord notification (non-blocking) - only if comments were posted
     if (commentedPosts.length > 0) {
-      const postsList = commentedPosts
+      // Create separate fields for each post to avoid truncation
+      const postFields = commentedPosts
         .filter((post) => !!post)
-        .map(
-          (post) =>
-            `• **${post.title}** by ${post.author} (Quality: ${post.score || "N/A"}/10)`,
-        )
-        .join("\n")
+        .slice(0, 5) // Discord embed limit is 25 fields, we use 2 + up to 5 posts
+        .map((post, index) => ({
+          name: `${index + 1}. ${post.title.substring(0, 100)}${post.title.length > 100 ? "..." : ""}`,
+          value: `👤 **${post.author}** • ⭐ **${post.score || "N/A"}/10**\n🔗 [View Post](https://moltbook.com/p/${post.id})`,
+          inline: false,
+        }))
 
       sendDiscordNotification({
         embeds: [
@@ -309,11 +311,7 @@ Comment (just the text, no quotes):`
                 value: `${commentedPosts.length}/${qualityPosts.length}`,
                 inline: true,
               },
-              {
-                name: "Quality Posts Engaged",
-                value: postsList.substring(0, 1024) || "No posts",
-                inline: false,
-              },
+              ...postFields,
             ],
             timestamp: new Date().toISOString(),
             footer: {
