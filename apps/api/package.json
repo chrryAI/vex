@@ -33,6 +33,7 @@
     "@hono/bun-compress": "^0.1.0",
     "@hono/node-server": "^1.19.7",
     "@maxmind/geoip2-node": "^6.1.0",
+    "@openredaction/openredaction": "^1.0.4",
     "@openrouter/ai-sdk-provider": "^2.1.1",
     "@opentelemetry/instrumentation-fastify": "^0.44.1",
     "@opentelemetry/instrumentation-nestjs-core": "^0.44.0",

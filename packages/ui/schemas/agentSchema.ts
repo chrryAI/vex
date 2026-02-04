@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { sanitizedString } from "./appSchema"
 
 export const aiAgentCapabilitiesSchema = z.object({
   text: z.boolean().default(true),
@@ -40,9 +41,9 @@ export const aiAgentSchema = z.object({
 
 // Schema for creating a custom AI agent (user-provided fields only)
 export const createCustomAiAgentSchema = z.object({
-  name: z.string().min(1, "Model name is required").max(100),
+  name: sanitizedString({ min: 1, max: 100 }),
   apiKey: z.string().min(1, "API key is required"),
-  displayName: z.string().min(1).max(100).optional(),
+  displayName: sanitizedString({ min: 1, max: 100 }).optional(),
   modelId: z.string().min(1).optional(),
   apiURL: z.string().url().optional(),
   capabilities: aiAgentCapabilitiesSchema.partial().optional(),

@@ -1170,6 +1170,13 @@
       "when": 1770131838229,
       "tag": "0166_sticky_golden_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 167,
+      "version": "7",
+      "when": 1770157171262,
+      "tag": "0167_thankful_mystique",
+      "breakpoints": true
     }
   ]
 }

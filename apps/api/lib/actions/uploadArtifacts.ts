@@ -12,6 +12,7 @@ import {
   VEX_LIVE_FINGERPRINTS,
 } from "@repo/db"
 import { extractPDFText } from "../../lib"
+import { redact } from "../redaction"
 import { v4 as uuidv4 } from "uuid"
 import { isE2E as isE2EInternal } from "@chrryai/chrry/utils"
 import captureException from "../../lib/captureException"
@@ -90,13 +91,16 @@ export const uploadArtifacts = async ({
   if (fileContents && fileContents.length > 0) {
     for (const file of fileContents) {
       if (file.type === "text") {
-        const textContent =
+        let textContent =
           file.type === "text"
             ? Buffer.from(file.data, "base64").toString("utf8")
             : undefined
 
         // Process text file for RAG instead of appending entire content
         if (textContent) {
+          // Redact PII from text content
+          textContent = (await redact(textContent)) || ""
+
           const uploadResult = await upload({
             url: `data:${file.mimeType};base64,${file.data}`,
             messageId: slugify(file.filename.substring(0, 10)),
@@ -143,7 +147,9 @@ export const uploadArtifacts = async ({
 
         try {
           const pdfBuffer = Buffer.from(file.data, "base64")
-          const extractedText = await extractPDFText(pdfBuffer)
+          let extractedText = await extractPDFText(pdfBuffer)
+          // Redact PII from extracted PDF text
+          extractedText = (await redact(extractedText)) || ""
 
           uploadedFiles.push({
             data: extractedText,
