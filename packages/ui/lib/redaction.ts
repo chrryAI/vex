@@ -12,7 +12,8 @@ export const simpleRedact = (text: string): string => {
   const remainingText = isTooLong ? text.substring(SAFE_LENGTH_LIMIT) : ""
 
   // Redact Emails
-  // Simplified regex to avoid ReDoS: removed % and + to prevent overlapping tokens
+  // ReDoS-safe regex: allows subdomains and longer TLDs without backtracking
+  // Matches: user@subdomain.domain.tld (supports dots in domain, any TLD length)
   const redactedEmails = textToProcess.replace(
     /\b[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/g,
     "[REDACTED]",

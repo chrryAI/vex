@@ -1,54 +1,49 @@
 import { simpleRedact } from "@chrryai/chrry/lib/redaction"
 // @ts-ignore
 import { OpenRedaction } from "@openredaction/openredaction"
+import { captureException } from "@sentry/node"
 
 let openRedaction: any = null
 
 try {
-  openRedaction = new OpenRedaction()
+  openRedaction = new OpenRedaction({
+    // Whitelist is empty because OpenRedaction only supports strings, not Regex.
+    // Our placeholders like [ARTICLE_123] are unlikely to be false positives for PII anyway.
+    whitelist: [],
+    includeEmails: true,
+    includePhones: true,
+    includeNames: false, // Too aggressive
+    includeAddresses: false, // Too aggressive
+    redactionMode: "placeholder",
+  })
 } catch (error) {
+  captureException(error)
   console.error(
-    "Failed to initialize OpenRedaction, falling back to simple redaction:",
-    error,
+    "Failed to initialize OpenRedaction, falling back to simple redaction",
   )
 }
 
-/**
- * Server-side redaction service using @openredaction/openredaction.
- * Falls back to simple regex-based redaction if the library fails or for initial pass.
- */
-export async function redact(text: string): Promise<string> {
-  if (!text) return text
+export async function redact(text?: string | null): Promise<string | null> {
+  if (!text) return text ?? null
 
-  // Use heavy library if available
   if (openRedaction) {
     try {
-      const result = openRedaction.detect(text)
-      if (result && result.redacted) {
-        // OpenRedaction returns things like [EMAIL_4106].
-        // We might want to standardize this to [REDACTED] or keep it as is.
-        // For consistency with simpleRedact, let's normalize common placeholders if we want,
-        // but OpenRedaction's detailed placeholders are actually useful features.
-        // However, to pass the "toMatch(/\[?REDACTED\]?/i)" test expectation which implies a unified look,
-        // and because simpleRedact uses [REDACTED], we can keep OpenRedaction's output
-        // BUT update the test to accept OpenRedaction's format OR standardize here.
-
-        // Let's standardize to [REDACTED] for consistency across the platform
+      const result = await openRedaction.detect(text)
+      if (result?.redacted) {
         return result.redacted.replace(
-          /\[(EMAIL|PHONE|PERSON|CREDIT_CARD|SSN|IP|URL|DATE|ADDRESS)_[^\]]+\]/g,
+          /\[(EMAIL|PHONE|CREDIT_CARD|SSN)_[^\]]+\]/g,
           "[REDACTED]",
         )
       }
       return text
     } catch (error) {
+      captureException(error)
       console.error(
-        "OpenRedaction failed, falling back to simple redaction:",
-        error,
+        "OpenRedaction detection failed, falling back to simple redaction",
       )
       return simpleRedact(text)
     }
   }
 
-  // Fallback to simple redaction
   return simpleRedact(text)
 }

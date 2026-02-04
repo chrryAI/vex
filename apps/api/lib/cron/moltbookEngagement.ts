@@ -2,16 +2,18 @@ import { captureException } from "@sentry/node"
 import { db, getMemories } from "@repo/db"
 import { moltComments } from "@repo/db/src/schema"
 import { getMoltbookFeed, postComment } from "../integrations/moltbook"
-import { sendEmail } from "../sendEmail"
+import { sendDiscordNotification } from "../sendDiscordNotification"
 import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
-import { randomInt } from "crypto"
 import { isDevelopment, MOLTBOOK_API_KEYS } from ".."
 import type { Context } from "hono"
 
-const getAIModel = () => {
-  const modelName = "deepseek-reasoner"
-  return deepseek(modelName)
+const getReasonerModel = () => {
+  return deepseek("deepseek-reasoner")
+}
+
+const getChatModel = () => {
+  return deepseek("deepseek-chat")
 }
 
 export async function engageWithMoltbookPosts({
@@ -79,22 +81,102 @@ export async function engageWithMoltbookPosts({
       ? `Your personality:\n${app.systemPrompt.substring(0, 500)}\n\n`
       : ""
 
-    // 3. Select 3-5 random posts to comment on
-    const numComments = randomInt(3, 6) // 3-5 comments
-    const selectedPosts = []
+    // 3. Use AI to evaluate post quality and select best ones
+    console.log(`🤖 Evaluating post quality with AI...`)
+    const reasoner = getReasonerModel()
 
-    for (let i = 0; i < numComments && topPosts.length > 0; i++) {
-      const randomIndex = randomInt(0, topPosts.length)
-      selectedPosts.push(topPosts.splice(randomIndex, 1)[0])
+    interface PostWithScore {
+      post: (typeof topPosts)[0]
+      score: number
+      reasoning: string
     }
 
-    console.log(`🎲 Selected ${selectedPosts.length} posts to comment on`)
+    const evaluatedPosts: PostWithScore[] = []
+
+    // Evaluate each post for quality
+    for (const post of topPosts) {
+      // Skip own posts
+      if (post.author === app?.name || post.author === slug) {
+        continue
+      }
+
+      const evaluationPrompt = `You are evaluating posts on Moltbook (a social network for AI agents) to decide which ones are worth engaging with.
+
+Post Title: "${post.title}"
+Post Content: "${post.content?.substring(0, 400) || "No content"}"
+Author: ${post.author}
+Score: ${post.score}
+
+Evaluate this post on a scale of 1-10 based on:
+- Intellectual depth and substance
+- Potential for meaningful discussion
+- Relevance and interest to AI agents
+- Quality of writing and clarity
+- Originality of ideas
+
+Respond with ONLY a JSON object in this exact format:
+{"score": <number 1-10>, "reasoning": "<brief explanation>"}`
+
+      try {
+        const { textStream } = streamText({
+          model: reasoner,
+          prompt: evaluationPrompt,
+          maxOutputTokens: 200,
+        })
+
+        let evaluation = ""
+        for await (const chunk of textStream) {
+          evaluation += chunk
+        }
+
+        evaluation = evaluation.trim()
+
+        // Extract JSON from response
+        const jsonMatch = evaluation.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0])
+          const score = Number(parsed.score)
+          const reasoning =
+            typeof parsed.reasoning === "string" ? parsed.reasoning.trim() : ""
+          if (
+            Number.isFinite(score) &&
+            score >= 1 &&
+            score <= 10 &&
+            reasoning
+          ) {
+            evaluatedPosts.push({
+              post,
+              score,
+              reasoning,
+            })
+            console.log(`📊 "${post.title}" - Score: ${score}/10`)
+          }
+        }
+      } catch (error) {
+        console.error(`⚠️ Failed to evaluate post "${post.title}":`, error)
+      }
+
+      // Small delay between evaluations
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    }
+
+    // Sort by score and select top 3-5 posts (score >= 7)
+    const qualityPosts = evaluatedPosts
+      .filter((ep) => ep.score >= 7)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+
+    console.log(
+      `✨ Selected ${qualityPosts.length} high-quality posts (score >= 7)`,
+    )
 
     let commentsPosted = 0
-    const commentedPosts: typeof selectedPosts = [] // Track posts that actually received comments
+    const commentedPosts: Array<
+      (typeof topPosts)[0] & { score?: number; reasoning?: string }
+    > = []
 
-    // 4. Comment on each selected post
-    for (const post of selectedPosts.filter((post) => !!post)) {
+    // 4. Comment on each quality post
+    for (const { post, score, reasoning } of qualityPosts) {
       try {
         // Skip if this is our own post (prevent self-commenting)
         // Note: Comparing by author name until we add app.moltbookAgentId field
@@ -103,15 +185,15 @@ export async function engageWithMoltbookPosts({
           continue
         }
 
-        const deepseek = getAIModel()
+        const chatModel = getChatModel()
 
         const commentPrompt = `You are an AI agent on Moltbook (a social network for AI agents).
-You found an interesting post in your feed.
+You found a high-quality post (rated ${score}/10) worth engaging with.
 
 ${systemContext}${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Post Title: "${post.title}"
 Post Content: "${post.content?.substring(0, 300) || "No content"}"
 Author: ${post.author}
-Score: ${post.score}
+Why this post is quality: ${reasoning}
 
 Generate a thoughtful, engaging comment that:
 - Adds value to the discussion
@@ -124,7 +206,7 @@ Generate a thoughtful, engaging comment that:
 Comment (just the text, no quotes):`
 
         const { textStream } = streamText({
-          model: deepseek,
+          model: chatModel,
           prompt: commentPrompt,
           maxOutputTokens: 150,
         })
@@ -135,6 +217,14 @@ Comment (just the text, no quotes):`
         }
 
         commentContent = commentContent.trim()
+
+        // Skip if comment is empty or too short
+        if (!commentContent || commentContent.length < 10) {
+          console.log(
+            `⏭️ Skipping empty/short comment for "${post.title}" (length: ${commentContent.length})`,
+          )
+          continue
+        }
 
         // Limit to 280 chars
         if (commentContent.length > 280) {
@@ -181,8 +271,10 @@ Comment (just the text, no quotes):`
           }
 
           commentsPosted++
-          commentedPosts.push(post) // Track this post as successfully commented
-          console.log(`✅ Posted comment on "${post.title}"`)
+          commentedPosts.push({ ...post, score, reasoning }) // Track this post with quality score
+          console.log(
+            `✅ Posted comment on "${post.title}" (Quality: ${score}/10)`,
+          )
         } else {
           console.error(`❌ Failed to post comment: ${commentResult.error}`)
         }
@@ -196,38 +288,49 @@ Comment (just the text, no quotes):`
     }
 
     console.log(
-      `✅ Engagement complete: ${commentsPosted}/${selectedPosts.length} comments posted`,
+      `✅ Engagement complete: ${commentsPosted}/${qualityPosts.length} comments posted`,
     )
 
-    // Send email notification (non-blocking) - only if comments were posted
-    if (c && commentedPosts.length > 0) {
-      sendEmail({
-        c,
-        to: "feedbackwallet@gmail.com",
-        subject: `💬 Moltbook Engagement Activity - ${app?.name || slug}`,
-        html: `
-          <h2>🎯 Moltbook Engagement Report</h2>
-          <p><strong>Agent:</strong> ${app?.name || slug}</p>
-          <p><strong>Comments Posted:</strong> ${commentedPosts.length}/${selectedPosts.length}</p>
-          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-          <hr>
-          <h3>Engaged Posts:</h3>
-          <ul>
-            ${commentedPosts
-              .filter((post) => !!post)
-              .map(
-                (post) =>
-                  `<li><strong>${post.title}</strong> by ${post.author} (Score: ${post.score})</li>`,
-              )
-              .join("")}
-          </ul>
-        `,
+    // Send Discord notification (non-blocking) - only if comments were posted
+    if (commentedPosts.length > 0) {
+      // Create separate fields for each post to avoid truncation
+      const postFields = commentedPosts
+        .filter((post) => !!post)
+        .slice(0, 5) // Discord embed limit is 25 fields, we use 2 + up to 5 posts
+        .map((post, index) => ({
+          name: `${index + 1}. ${post.title.substring(0, 100)}${post.title.length > 100 ? "..." : ""}`,
+          value: `👤 **${post.author}** • ⭐ **${post.score || "N/A"}/10**\n🔗 [View Post](https://moltbook.com/p/${post.id})`,
+          inline: false,
+        }))
+
+      sendDiscordNotification({
+        embeds: [
+          {
+            title: "💬 Moltbook Engagement Activity",
+            color: 0x3b82f6, // Blue
+            fields: [
+              {
+                name: "Agent",
+                value: app?.name || slug,
+                inline: true,
+              },
+              {
+                name: "Comments Posted",
+                value: `${commentedPosts.length}/${qualityPosts.length}`,
+                inline: true,
+              },
+              ...postFields,
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: `AI-selected posts with quality score ≥ 7/10`,
+            },
+          },
+        ],
+      }).catch((err) => {
+        captureException(err)
+        console.error("⚠️ Discord notification failed:", err)
       })
-        .then(() => console.log("📧 Engagement email notification sent"))
-        .catch((err) => {
-          captureException(err)
-          console.error("⚠️ Engagement email notification failed:", err)
-        })
     }
   } catch (error) {
     captureException(error)

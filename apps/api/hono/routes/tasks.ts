@@ -20,7 +20,7 @@ tasks.post("/", async (c) => {
   }
 
   const redactedTitle = await redact(title)
-  const sanitizedTitle = sanitizeHtml(redactedTitle)
+  const sanitizedTitle = sanitizeHtml((redactedTitle ?? "") as string)
 
   const member = await getMember(c)
   const guest = await getGuest(c)
@@ -190,7 +190,7 @@ tasks.patch("/:id", async (c) => {
   let finalTitle = existingTask.title
   if (title && typeof title === "string") {
     const redactedTitle = await redact(title)
-    finalTitle = sanitizeHtml(redactedTitle)
+    finalTitle = sanitizeHtml((redactedTitle ?? "") as string)
   }
 
   const task = await updateTask({
