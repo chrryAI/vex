@@ -10,8 +10,9 @@ const originalLines = source.split("\n")
 
 let funcs = {},
   funcId = 0
+// Use non-greedy quantifiers and limits to prevent ReDoS
 source = source.replace(
-  /^\s*(function|const)\s*([a-zA-Z0-9]+)(\s*=\s*)?\([^)]*\)\s*(=>)?\s*\{$/gm,
+  /^\s{0,50}(function|const)\s{1,50}([a-zA-Z0-9]+)(\s{0,10}=\s{0,10})?\([^)]{0,500}\)\s{0,50}(=>)?\s{0,10}\{$/gm,
   (x, _, n) => {
     const id = funcId++
     funcs[funcId] = n
@@ -30,7 +31,8 @@ const lines = source.split("\n")
 for (let i = 0; i < lines.length; i++) {
   // Safe concatenation: profiling call is a complete statement, followed by original line
   // No interpolation of line content into template literals, so no injection risk
-  if (lines[i].trim().replace("}", "") !== "") {
+  // Use replaceAll to handle multiple closing braces correctly
+  if (lines[i].trim().replaceAll("}", "") !== "") {
     lines[i] = `profile1(Porffor.wasm.i32.const(${i}));` + lines[i]
   }
 }

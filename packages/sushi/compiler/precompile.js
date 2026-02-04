@@ -456,7 +456,12 @@ ${funcs
               throw new Error(`Invalid comptime flag id: ${id}`)
             }
 
-            return `[null,()=>{const a=Prefs;Prefs={...defaultPrefs,${JSON.stringify(diffPrefs).slice(1, -1)}};resetGlobals(Valtype,Opcodes);const b=generate(_,${comptimeFlagChecks[id](sanitizedExtra)}?${passAst}:${failAst});if(b.at(-1)[0]>=0x41&&b.at(-1)[0]<=0x44)b.pop();Prefs=a;resetGlobals(Valtype,Opcodes);return b;}]`
+            // Get the check result and sanitize it before injecting into code
+            const checkResult = comptimeFlagChecks[id](sanitizedExtra)
+            // Ensure checkResult is safe - must be valid JS expression (typically boolean or simple value)
+            const sanitizedCheckResult = JSON.stringify(checkResult)
+
+            return `[null,()=>{const a=Prefs;Prefs={...defaultPrefs,${JSON.stringify(diffPrefs).slice(1, -1)}};resetGlobals(Valtype,Opcodes);const b=generate(_,${sanitizedCheckResult}?${passAst}:${failAst});if(b.at(-1)[0]>=0x41&&b.at(-1)[0]<=0x44)b.pop();Prefs=a;resetGlobals(Valtype,Opcodes);return b;}]`
           },
         )
         .replaceAll('"-0"', "-0")
