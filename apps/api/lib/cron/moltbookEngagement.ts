@@ -138,7 +138,12 @@ Respond with ONLY a JSON object in this exact format:
           const score = Number(parsed.score)
           const reasoning =
             typeof parsed.reasoning === "string" ? parsed.reasoning.trim() : ""
-          if (Number.isFinite(score) && score >= 1 && score <= 10 && reasoning) {
+          if (
+            Number.isFinite(score) &&
+            score >= 1 &&
+            score <= 10 &&
+            reasoning
+          ) {
             evaluatedPosts.push({
               post,
               score,
