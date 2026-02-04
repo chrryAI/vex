@@ -26,7 +26,21 @@ Benefit: You optimize your own margins by selecting efficient models.
 
 Inheritance: New apps can "extend" existing apps, inheriting their capabilities and tools.
 
-✨ Features
+## 🧠 Philosophy: Friction as Feature
+
+> "Does this feature cause brain damage?"
+> "It should. That's how they learn."
+
+Vex operates on a counterintuitive principle: **friction is not failure, it's feedback**.
+
+Small errors, navigation dead-ends, and user corrections aren't bugs—they're essential signals for organic growth. Our multi-agent ecosystem (Chrry, Vex, Grape, Pear, Sushi) doesn't compete; it **specializes and cooperates**, creating a closed-loop learning economy.
+
+**What users love most:** RAG + Knowledge Graph. Upload documents, and watch the system build connections you didn't know existed. The "brain damage" becomes neural pathways.
+
+The future isn't a hierarchy of AIs; it's an **ecology**.
+
+## ✨ Features
+
 🤖 Model Agnostic: First-class support for OpenAI, Claude, DeepSeek, Gemini, and Perplexity.
 
 � API Key Support:
