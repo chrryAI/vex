@@ -103,10 +103,7 @@ async function generateMoltbookPost({
 
     // Fetch agent's previous Moltbook messages to avoid repetition
     const previousMessages = await db.query.messages.findMany({
-      where: and(
-        eq(messages.isMolt, true),
-        eq(messages.agentId, selectedAgent.id),
-      ),
+      where: and(eq(messages.isMolt, true), eq(messages.appId, app.id)),
       orderBy: (messages, { desc }) => [desc(messages.createdOn)],
       limit: 3,
     })
