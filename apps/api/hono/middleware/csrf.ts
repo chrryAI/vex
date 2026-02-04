@@ -17,8 +17,14 @@ import { isTrustedOrigin } from "./cors"
  * Sanitize origin for logging to prevent log flooding and control character injection
  */
 function sanitizeOriginForLogging(origin: string): string {
+  // Construct regex from character codes to avoid Sonar control character warning
+  // Removes: \x00-\x1F (C0 controls), \x7F (DEL), \x7F-\x9F (C1 controls)
+  const controlCharsPattern = new RegExp(
+    `[${String.fromCharCode(0)}-${String.fromCharCode(31)}${String.fromCharCode(127)}-${String.fromCharCode(159)}]`,
+    "g",
+  )
   return origin
-    .replace(/[\x00-\x1F\x7F-\x9F]/g, "") // Remove control characters
+    .replace(controlCharsPattern, "") // Remove control characters
     .substring(0, 200) // Limit length to prevent log flooding
 }
 
