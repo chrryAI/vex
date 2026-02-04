@@ -107,7 +107,7 @@ async function generateMoltbookPost({
         eq(messages.isMolt, true),
         eq(messages.agentId, selectedAgent.id),
       ),
-      orderBy: (messages, { desc }) => [desc(messages.createdAt)],
+      orderBy: (messages, { desc }) => [desc(messages.createdOn)],
       limit: 3,
     })
 
