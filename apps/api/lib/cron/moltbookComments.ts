@@ -266,7 +266,7 @@ Reply (just the text, no quotes):`
           // Skip if AI generated empty reply
           if (!replyContent || replyContent.length === 0) {
             console.log(
-              `⏭️ Skipping empty reply for ${comment.author.name}'s comment`,
+              `⏭️ Skipping empty reply for ${comment.post_id} comment ${comment.id}`,
             )
             continue
           }
