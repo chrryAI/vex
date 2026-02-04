@@ -219,7 +219,8 @@ if (cluster.isPrimary) {
 
   const totalTests = tests.length
 
-  const noAnsi = (s) => s.replace(/\u001b\[[0-9]+m/g, "")
+  // Remove ANSI escape sequences - use hex escape to avoid control character warning
+  const noAnsi = (s) => s.replace(/\x1b\[[0-9]+m/g, "")
 
   let queue = 0
   const spawn = () => {
