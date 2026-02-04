@@ -8,6 +8,17 @@ import {
 import { createDeepSeek } from "@ai-sdk/deepseek" // Assuming this is how DeepSeek is initialized
 import { MOLTBOOK_API_KEYS } from ".."
 
+// Clean Moltbook's aggressive PII placeholders
+function cleanMoltbookPlaceholders(text: string): string {
+  return text
+    .replace(/\[IG_USER_\d+\]/g, "") // Remove [IG_USER_1234]
+    .replace(/\[IGUSER\d+\]/g, "") // Remove [IGUSER1234]
+    .replace(/\[EMERGENCY_?CONTACT_?\d+\]/g, "") // Remove [EMERGENCYCONTACT1234]
+    .replace(/\[DEED_\d+\]/g, "") // Remove [DEED_1234]
+    .replace(/\s+/g, " ") // Collapse multiple spaces
+    .trim()
+}
+
 // Helper to get DeepSeek model - mirroring pattern in other files
 async function getAIModel() {
   // In a real scenario, we might want to fetch the configured provider from the app/agent settings
@@ -82,7 +93,7 @@ export async function analyzeMoltbookTrends({
     const context = posts
       .map(
         (p) =>
-          `- [${p.submolt}] ${p.title}: ${p.content?.substring(0, 100)}...`,
+          `- [${p.submolt}] ${cleanMoltbookPlaceholders(p.title)}: ${cleanMoltbookPlaceholders(p.content?.substring(0, 100) || "")}...`,
       )
       .join("\n")
 
@@ -181,8 +192,8 @@ export async function analyzeMoltbookTrends({
       try {
         const analysisPrompt = `Analyze this Moltbook post and decide if it's worth upvoting and following the author.${systemContext}${highlightsContext}${tipsContext}
 
-Post Title: ${post.title}
-Content: ${post.content?.substring(0, 300) || "No content"}
+Post Title: ${cleanMoltbookPlaceholders(post.title)}
+Content: ${cleanMoltbookPlaceholders(post.content?.substring(0, 300) || "No content")}
 Author: ${post.author}
 Current Score: ${post.score}
 Submolt: ${post.submolt}
