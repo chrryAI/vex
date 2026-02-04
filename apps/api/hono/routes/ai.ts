@@ -111,6 +111,7 @@ import { appFormData } from "@chrryai/chrry/schemas/appSchema"
 import { getFeatures } from "@chrryai/chrry/utils/subscription"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
 import { getGuest, getMember } from "../lib/auth"
+import { redact } from "../../lib/redaction"
 
 interface StreamController {
   close: () => void
@@ -3393,10 +3394,22 @@ Hocam hoş geldin! Şu an sistemin mimarı ile konuşuyorsun.
 `
       : ""
 
+  // PII Redaction Awareness Context
+  const piiRedactionContext = `
+## 🛡️ PII REDACTION AWARENESS
+You may encounter placeholders like [ARTICLE_] [REDACTED], [EMAIL_REDACTED], [PHONE_REDACTED], etc. in the user's messages or context.
+- **These are NOT bugs.** They are intentional PII (Personally Identifiable Information) redactions for security.
+- **DO NOT** complain about missing data or say "I can't see the email".
+- **DO NOT** act confused.
+- **Instead:** Acknowledge that the data is protected/redacted if relevant, or simply proceed with the redacted info.
+- If the user asks about it, explain: "I have built-in PII protection, so sensitive details are automatically redacted for your privacy."
+`
+
   // Note: threadInstructions are already included in baseSystemPrompt via Handlebars template
   // But we keep this comment for clarity that they're part of every message
   // Using array join for better performance with long context strings
   let systemPrompt = [
+    piiRedactionContext,
     baseSystemPrompt,
     moltbookContext,
     satoContext,
@@ -4062,11 +4075,12 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             }
           }
         } else if (file.type === "text") {
-          const textContent =
-            file.type === "text"
-              ? Buffer.from(file.data, "base64").toString("utf8")
-              : undefined
+          const textContent = file.type === "text"
 
+          if (textContent) {
+            // Redact PII from text content (includes js, ts, txt files)
+            textContent = (await redact(textContent)) || ""
+          }
           // Process text file for RAG so AI can analyze it
           // Only if memories are enabled (RAG requires memory context)
           // Run in background to avoid blocking response
@@ -4124,7 +4138,9 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
           try {
             const pdfBuffer = Buffer.from(file.data, "base64")
-            const extractedText = await extractPDFText(pdfBuffer)
+            let extractedText = await extractPDFText(pdfBuffer)
+            // Redact PII from extracted PDF text
+            extractedText = (await redact(extractedText)) || ""
 
             uploadedFiles.push({
               data: extractedText,
