@@ -13,6 +13,15 @@ import { isTrustedOrigin } from "./cors"
  * 2. They are not vulnerable to browser-based CSRF in the same way (cookies not sent automatically based on browser context).
  * 3. SameSite cookies provide a first layer of defense, but Origin check provides depth.
  */
+/**
+ * Sanitize origin for logging to prevent log flooding and control character injection
+ */
+function sanitizeOriginForLogging(origin: string): string {
+  return origin
+    .replace(/[\x00-\x1F\x7F-\x9F]/g, "") // Remove control characters
+    .substring(0, 200) // Limit length to prevent log flooding
+}
+
 export const csrfMiddleware = async (c: Context, next: Next) => {
   const method = c.req.method
 
@@ -22,7 +31,13 @@ export const csrfMiddleware = async (c: Context, next: Next) => {
 
     if (origin) {
       if (!isTrustedOrigin(origin)) {
-        console.warn(`🛡️ CSRF blocked request from origin: ${origin}`)
+        // Sanitize origin before logging to prevent log flooding/injection
+        const sanitizedOrigin = sanitizeOriginForLogging(origin)
+        console.warn("🛡️ CSRF blocked request", {
+          origin: sanitizedOrigin,
+          method,
+          path: c.req.path,
+        })
         return c.json(
           {
             error: "Forbidden",

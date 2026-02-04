@@ -8,7 +8,7 @@
 **Learning:** The `Checkbox` component was hiding the native input with `display: none`, removing it from the accessibility tree. This prevented screen readers from interacting with it and broke keyboard navigation.
 **Action:** Replace wrapper `Div` with `Label` and use visually hidden (but accessible) styles for the native input. Ensure label and input are linked via `id` and `htmlFor`.
 
-## 2026-05-23 - Accessible Timer Controls
+## 2026-02-04 - Accessible Timer Controls
 
 **Learning:** Complex custom inputs like the "SwipeableTimeControl" (minutes/seconds adjuster) often use icon-only buttons for fine-tuning. These were completely invisible to screen readers, making the timer unusable for non-visual users.
 **Action:** Always add explicit `aria-label`s to up/down chevron buttons in custom number inputs (e.g., "Increase minutes", "Decrease seconds").
