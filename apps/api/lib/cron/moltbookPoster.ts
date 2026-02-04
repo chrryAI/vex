@@ -362,7 +362,7 @@ export async function postToMoltbookCron({
               fields: [
                 {
                   name: "Agent",
-                  value: agentName || slug,
+                  value: app.name || agentName || slug,
                   inline: true,
                 },
                 {

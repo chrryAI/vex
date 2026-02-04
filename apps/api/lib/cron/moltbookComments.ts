@@ -224,6 +224,11 @@ ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500
 
 Reply (just the text, no quotes):`
 
+          console.log(`🔍 Reply generation for ${comment.author.name}:`)
+          console.log(`   Post: "${post.content?.substring(0, 100)}..."`)
+          console.log(`   Comment: "${comment.content.substring(0, 100)}..."`)
+          console.log(`   Model: ${deepseek.modelId}`)
+
           const { textStream } = streamText({
             model: deepseek,
             prompt: replyPrompt,
@@ -231,13 +236,25 @@ Reply (just the text, no quotes):`
           })
 
           let replyContent = ""
+          let chunkCount = 0
           for await (const chunk of textStream) {
             replyContent += chunk
+            chunkCount++
           }
 
           replyContent = replyContent.trim()
 
-          console.log(`🤖 Generated reply: "${replyContent}"`)
+          console.log(
+            `🤖 Generated reply (${chunkCount} chunks): "${replyContent}"`,
+          )
+
+          // Skip if AI generated empty reply
+          if (!replyContent || replyContent.length === 0) {
+            console.log(
+              `⏭️ Skipping empty reply for ${comment.author.name}'s comment`,
+            )
+            continue
+          }
 
           // 5. Post reply to Moltbook
           const replyResult = await postComment(
