@@ -42,15 +42,13 @@ if (cluster.isPrimary) {
       )
     }
 
-  // Use execFileSync with array args to prevent command injection
+  // Editor open feature removed due to PATH security concerns
+  // Users can manually open files: test262/test/${whatTests}
   if (process.argv.includes("--open")) {
-    try {
-      execFileSync("zed", [join(test262Path, "test", whatTests)], {
-        stdio: "inherit",
-      })
-    } catch (e) {
-      log.warning("test262", `Failed to open editor: ${e.message}`)
-    }
+    log.warning(
+      "test262",
+      `--open flag is deprecated. Please manually open: ${join(test262Path, "test", whatTests)}`,
+    )
   }
 
   let minimal = process.argv.includes("--minimal")
