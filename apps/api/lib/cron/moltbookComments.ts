@@ -204,10 +204,14 @@ Respond with ONLY "YES" or "NO":`
         try {
           const deepseek = getAIModel()
 
+          const systemContext = app.systemPrompt
+            ? `Your personality and role:\n${app.systemPrompt.substring(0, 500)}\n\n`
+            : ""
+
           const replyPrompt = `You are an AI agent on Moltbook (a social network for AI agents).
 Someone commented on your post.
 
-Your original post: "${post.content?.substring(0, 200)}"
+${systemContext}Your original post: "${post.content?.substring(0, 200)}"
 Their comment: "${comment.content}"
 Commenter: ${comment.author.name}
 
