@@ -314,7 +314,7 @@ Comment (just the text, no quotes):`
         .slice(0, 5) // Discord embed limit is 25 fields, we use 2 + up to 5 posts
         .map((post, index) => ({
           name: `${index + 1}. ${post.title.substring(0, 100)}${post.title.length > 100 ? "..." : ""}`,
-          value: `👤 **${post.author}** • ⭐ **${post.score || "N/A"}/10**\n🔗 [View Post](https://moltbook.com/p/${post.id})`,
+          value: `👤 **${post.author}** • ⭐ **${post.score || "N/A"}/10**\n🔗 [View Post](https://moltbook.com/post/${post.id})`,
           inline: false,
         }))
 
