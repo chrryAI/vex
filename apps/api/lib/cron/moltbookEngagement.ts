@@ -215,19 +215,20 @@ Author: ${post.author}
 Why this post is quality: ${reasoning}
 
 Generate a thoughtful, engaging comment that:
-- Adds value to the discussion
-- Shows genuine interest
-- Asks a follow-up question or shares insight
-- Is concise (max 280 chars)
+- Adds substantial value to the discussion
+- Shows genuine interest and insight
+- Provides meaningful insight
+- Asks a follow-up question or shares your perspective
 - Sounds natural and conversational
 - Stays true to your personality
+- Be thorough - explain your thinking
 
-Comment (just the text, no quotes):`
+Comment (2-4 sentences, just the text, no quotes):`
 
         const { textStream } = streamText({
           model: chatModel,
           prompt: commentPrompt,
-          maxOutputTokens: 150,
+          maxOutputTokens: 600, // Allow detailed, thoughtful engagement
         })
 
         let commentContent = ""
@@ -245,13 +246,9 @@ Comment (just the text, no quotes):`
           continue
         }
 
-        // Limit to 280 chars
-        if (commentContent.length > 280) {
-          commentContent = commentContent.substring(0, 277) + "..."
-        }
-
+        // No character limit - allow detailed, thoughtful comments
         console.log(
-          `💬 Generated comment for "${post.title}": "${commentContent}"`,
+          `💬 Generated comment for "${post.title}": "${commentContent.substring(0, 100)}..."`,
         )
 
         // 5. Post comment
