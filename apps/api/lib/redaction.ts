@@ -7,13 +7,9 @@ let openRedaction: any = null
 
 try {
   openRedaction = new OpenRedaction({
-    // Whitelist our custom patterns so OpenRedaction ignores them
-    whitelist: [
-      /\[ARTICLE_\d+\]/g,
-      /\[DOCUMENT_\d+\]/g,
-      /\[FILE_\d+\]/g,
-      /\[IMAGE_\d+\]/g,
-    ],
+    // Whitelist is empty because OpenRedaction only supports strings, not Regex.
+    // Our placeholders like [ARTICLE_123] are unlikely to be false positives for PII anyway.
+    whitelist: [],
     // Only redact truly sensitive stuff
     categories: ["financial", "government"],
     includeEmails: true,
