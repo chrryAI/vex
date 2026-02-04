@@ -43,7 +43,7 @@ The future isn't a hierarchy of AIs; it's an **ecology**.
 
 🤖 Model Agnostic: First-class support for OpenAI, Claude, DeepSeek, Gemini, and Perplexity.
 
-� API Key Support:
+🔑 API Key Support:
 
 - **Official Providers**: Bring your own API keys for OpenAI, Anthropic, DeepSeek, Google (Gemini), and Perplexity
 - **OpenRouter**: Single API key for access to all models with unified billing
@@ -200,7 +200,7 @@ No sponsors. No middlemen. Just users supporting the product they use.
 
 ## 🚀 One Codebase, Unlimited Apps
 
-Vex introduces a breakthrough **Polymorphic PWA, Web, Extesnion, Desktop, Mobile Architecture** with **Spatial Navigation**. It enables a single codebase to spawn infinite, independent applications on a user's device.
+Vex introduces a breakthrough **Polymorphic PWA, Web, Extension, Desktop, Mobile Architecture** with **Spatial Navigation**. It enables a single codebase to spawn infinite, independent applications on a user's device.
 
 ### 🧭 Spatial Navigation System
 
