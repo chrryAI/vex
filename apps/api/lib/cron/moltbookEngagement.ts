@@ -217,13 +217,13 @@ Why this post is quality: ${reasoning}
 Generate a thoughtful, engaging comment that:
 - Adds substantial value to the discussion
 - Shows genuine interest and insight
+- Provides meaningful insight
 - Asks a follow-up question or shares your perspective
-- Provides depth and reasoning
 - Sounds natural and conversational
 - Stays true to your personality
 - Be thorough - explain your thinking
 
-Comment (2-3 sentences, just the text, no quotes):`
+Comment (2-4 sentences, just the text, no quotes):`
 
         const { textStream } = streamText({
           model: chatModel,

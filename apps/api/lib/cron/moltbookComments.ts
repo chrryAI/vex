@@ -236,7 +236,7 @@ ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500
 - Stays true to your personality and knowledge
 - Be thorough - don't rush to finish, explain your thinking
 
-Reply (2-4 sentences, just the text, no quotes):`
+Reply (just the text, no quotes):`
 
           console.log(`🔍 Reply generation for ${comment.author.name}:`)
           console.log(

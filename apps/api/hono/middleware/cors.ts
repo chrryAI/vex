@@ -33,12 +33,19 @@ export function isTrustedOrigin(origin: string): boolean {
   }
 
   if (isDevelopment) {
-    if (
-      origin.includes("localhost") ||
-      origin.includes("127.0.0.1") ||
-      origin.includes("192.168.")
-    ) {
-      return true
+    try {
+      const url = new URL(origin)
+      const hostname = url.hostname
+      if (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname.startsWith("192.168.")
+      ) {
+        return true
+      }
+    } catch {
+      // Invalid origin URL
+      return false
     }
   }
 
