@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, memo } from "react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism"
 import styles from "./MarkdownContent.module.scss"
@@ -115,13 +115,15 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   )
 }
 
-const MarkdownContent: React.FC<MarkdownContentProps> = ({
+// ⚡ Bolt: Memoize MarkdownContent to prevent expensive re-rendering/parsing
+// when parent re-renders but content is stable.
+const MarkdownContent = memo(({
   content,
   className,
   "data-testid": dataTestId,
   style,
   webSearchResults,
-}) => {
+}: MarkdownContentProps) => {
   const [isMounted, setIsMounted] = useState(false)
   const { addHapticFeedback } = useTheme()
 
@@ -332,6 +334,6 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
       </Markdown>
     </Div>
   )
-}
+})
 
 export default MarkdownContent
