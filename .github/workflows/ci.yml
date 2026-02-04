@@ -9,10 +9,10 @@ on:
   #   branches: [main, chrry]
   workflow_dispatch:
     inputs:
-      branch:
-        description: "Branch to deploy and test"
-        required: false
-        type: string
+      # branch:
+      #   description: "Branch to deploy and test"
+      #   required: false
+      #   type: string
       # force_version:
       #   description: "Expected version (e.g. 1.13.32). Leave empty to use package.json"
       #   required: false
