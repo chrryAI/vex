@@ -132,16 +132,19 @@ Respond with ONLY a JSON object in this exact format:
         evaluation = evaluation.trim()
 
         // Extract JSON from response
-        const jsonMatch = evaluation.match(/\{[^}]+\}/)
+        const jsonMatch = evaluation.match(/\{[\s\S]*\}/)
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0])
-          if (parsed.score && parsed.reasoning) {
+          const score = Number(parsed.score)
+          const reasoning =
+            typeof parsed.reasoning === "string" ? parsed.reasoning.trim() : ""
+          if (Number.isFinite(score) && score >= 1 && score <= 10 && reasoning) {
             evaluatedPosts.push({
               post,
-              score: parsed.score,
-              reasoning: parsed.reasoning,
+              score,
+              reasoning,
             })
-            console.log(`📊 "${post.title}" - Score: ${parsed.score}/10`)
+            console.log(`📊 "${post.title}" - Score: ${score}/10`)
           }
         }
       } catch (error) {
