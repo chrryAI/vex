@@ -365,15 +365,22 @@ jobs:
       - name: Merge to dev
         # GÜVENLİ KATMAN: Veriyi env olarak haritalıyoruz
         env:
-          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REF: ${{ github.event.inputs.branch || github.head_ref || github.ref_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo "🔀 Auto-merging PR #$PR_NUMBER to dev branch..."
+          echo "🔀 Auto-merging $HEAD_REF to dev branch..."
           git fetch origin dev
           git checkout dev
+
+          if [ -n "$PR_NUMBER" ]; then
+            MSG="Auto-merge PR #$PR_NUMBER: $PR_TITLE"
+          else
+            MSG="Auto-merge branch $HEAD_REF to dev"
+          fi
+
           # Değişkenleri shell variable olarak ($) kullanıyoruz
-          git merge --no-ff "origin/$HEAD_REF" -m "Auto-merge PR #$PR_NUMBER: $PR_TITLE"
+          git merge --no-ff "origin/$HEAD_REF" -m "$MSG"
           git push origin dev
           echo "✅ Successfully merged to dev!"
   #Auto-merge to web branch after all tests pass
@@ -396,13 +403,20 @@ jobs:
 
       - name: Merge to web
         env:
-          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REF: ${{ github.event.inputs.branch || github.head_ref || github.ref_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo "🔀 Auto-merging PR #$PR_NUMBER to web branch..."
+          echo "🔀 Auto-merging $HEAD_REF to web branch..."
           git fetch origin web
           git checkout web
-          git merge --no-ff "origin/$HEAD_REF" -m "Auto-merge PR #$PR_NUMBER: $PR_TITLE"
+
+          if [ -n "$PR_NUMBER" ]; then
+            MSG="Auto-merge PR #$PR_NUMBER: $PR_TITLE"
+          else
+            MSG="Auto-merge branch $HEAD_REF to web"
+          fi
+
+          git merge --no-ff "origin/$HEAD_REF" -m "$MSG"
           git push origin web
           echo "✅ Successfully merged to web!"
