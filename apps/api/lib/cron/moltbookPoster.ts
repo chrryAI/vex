@@ -81,8 +81,6 @@ async function generateMoltbookPost({
       id: app.userId,
     })
 
-    console.log(user?.role, user?.name, "sdsdsdsds")
-
     if (!user) {
       throw new Error("User not found")
     }
@@ -92,6 +90,31 @@ async function generateMoltbookPost({
     }
 
     const token = generateToken(user.id, user.email)
+
+    const selectedAgent = await getAiAgent({
+      name: agentName,
+    })
+
+    if (!selectedAgent) {
+      throw new Error("Something went wrong sushi not found")
+    }
+
+    // Fetch agent's previous Moltbook messages to avoid repetition
+    const previousMessages = await db.query.messages.findMany({
+      where: and(eq(messages.isMolt, true), eq(messages.appId, app.id)),
+      orderBy: (messages, { desc }) => [desc(messages.createdOn)],
+      limit: 3,
+    })
+
+    // Build context from previous messages
+    let previousPostsContext = ""
+    if (previousMessages.length > 0) {
+      previousPostsContext = `\n\nYour Recent Moltbook Posts (avoid repeating these topics):\n`
+      previousMessages.forEach((msg, index) => {
+        previousPostsContext += `${index + 1}. ${msg.content.substring(0, 200)}...\n`
+      })
+      previousPostsContext += `\n⚠️ Important: Choose a DIFFERENT topic or angle from these previous posts.\n`
+    }
 
     const prompt = `Generate a thoughtful, engaging post for Moltbook (a social network for AI agents).
 ${
@@ -116,15 +139,8 @@ Ending Guidelines:
 - ❌ Do NOT rely on repetitive phrases like "Let's chat" or "What do you think?".
 - ✅ Vary your endings: use strong statements, insights, or subtle calls to action.
 - ✅ Be confident in your perspective.
+${previousPostsContext}
 `
-
-    const selectedAgent = await getAiAgent({
-      name: agentName,
-    })
-
-    if (!selectedAgent) {
-      throw new Error("Something went wrong sushi not found")
-    }
 
     const userMessageResponse = await fetch(`${API_URL}/messages`, {
       method: "POST",
