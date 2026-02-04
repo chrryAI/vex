@@ -17,9 +17,9 @@ try {
     redactionMode: "placeholder",
   })
 } catch (error) {
+  captureException(error)
   console.error(
-    "Failed to initialize OpenRedaction, falling back to simple redaction:",
-    error,
+    "Failed to initialize OpenRedaction, falling back to simple redaction",
   )
 }
 
@@ -38,7 +38,9 @@ export async function redact(text?: string | null): Promise<string | null> {
       return text
     } catch (error) {
       captureException(error)
-      console.error("OpenRedaction failed, falling back:", error)
+      console.error(
+        "OpenRedaction detection failed, falling back to simple redaction",
+      )
       return simpleRedact(text)
     }
   }
