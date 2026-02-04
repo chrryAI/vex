@@ -774,12 +774,6 @@ export const chat = async ({
       `Debug: Found ${deleteButtonCount} delete buttons in last message`,
     )
 
-    const lastUserMessage = await getLastUserMessage()
-    await expect(lastUserMessage).toBeVisible({
-      timeout: agentMessageTimeout,
-    })
-    // Get all agent messages and wait for the last one to be visible
-
     const getLastAgentMessage = async () => {
       const agentMessages = page.getByTestId("agent-message")
       const messageCount = await agentMessages.count()
@@ -793,6 +787,12 @@ export const chat = async ({
       const messageCount = await userMessages.count()
       return userMessages.nth(messageCount - 1)
     }
+
+    const lastUserMessage = await getLastUserMessage()
+    await expect(lastUserMessage).toBeVisible({
+      timeout: agentMessageTimeout,
+    })
+    // Get all agent messages and wait for the last one to be visible
 
     // Wait for the last message to be visible and have content
     await expect(await getLastAgentMessage()).toBeVisible()

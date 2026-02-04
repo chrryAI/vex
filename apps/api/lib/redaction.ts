@@ -10,8 +10,6 @@ try {
     // Whitelist is empty because OpenRedaction only supports strings, not Regex.
     // Our placeholders like [ARTICLE_123] are unlikely to be false positives for PII anyway.
     whitelist: [],
-    // Only redact truly sensitive stuff
-    categories: ["financial", "government"],
     includeEmails: true,
     includePhones: true,
     includeNames: false, // Too aggressive
