@@ -2,18 +2,18 @@
 
 A sovereign, self-sustaining AI platform powered by user-provided models.
 
-The Ecosystem:
+## The Ecosystem
 
-Plaintext
-
+```
 🦄 Vex Core (Infrastructure)
-├── 🌍 Atlas (Travel Agent)
-├── 🍑 Peach (Social Assistant)
+├──── 🌍 Atlas (Travel Agent)
+├──── 🍑 Peach (Social Assistant)
 ├── 🌸 Bloom (Wellness Coach)
 └── 🏦 Vault (Finance Manager)
-Coming Soon to Native: A single React Native container that allows users to "install" these apps internally, creating a localized App Store experience.
+```
 
-💸 The Builder Economy (70% Rev Share)
+## 💸 The Builder Economy (70% Rev Share)
+
 Vex is not just a tool; it is a marketplace.
 
 70% Revenue Share: Builders keep the lion's share of subscription revenue.
@@ -26,10 +26,28 @@ Benefit: You optimize your own margins by selecting efficient models.
 
 Inheritance: New apps can "extend" existing apps, inheriting their capabilities and tools.
 
-✨ Features
+## 🧠 Philosophy: Friction as Feature
+
+> "Does this feature cause brain damage?"
+> "It should. That's how they learn."
+
+Vex operates on a counterintuitive principle: **friction is not failure, it's feedback**.
+
+Small errors, navigation dead-ends, and user corrections aren't bugs—they're essential signals for organic growth. Our multi-agent ecosystem (Chrry, Vex, Grape, Pear, Sushi) doesn't compete; it **specializes and cooperates**, creating a closed-loop learning economy.
+
+**What users love most:** RAG + Knowledge Graph. Upload documents, and watch the system build connections you didn't know existed. The "brain damage" becomes neural pathways.
+
+The future isn't a hierarchy of AIs; it's an **ecology**.
+
+## ✨ Features
+
 🤖 Model Agnostic: First-class support for OpenAI, Claude, DeepSeek, Gemini, and Perplexity.
 
-🔌 Custom Models: Point Vex to any OpenAI-compatible endpoint (LocalLLM, Ollama, vLLM).
+🔑 API Key Support:
+
+- **Official Providers**: Bring your own API keys for OpenAI, Anthropic, DeepSeek, Google (Gemini), and Perplexity
+- **OpenRouter**: Single API key for access to all models with unified billing
+- **Coming Soon**: Custom OpenAI-compatible endpoints (LocalLLM, Ollama, vLLM) and per-app API keys
 
 🧠 Vector Memory: Smart context management that persists across sessions.
 
@@ -43,7 +61,15 @@ Inheritance: New apps can "extend" existing apps, inheriting their capabilities 
 
 ⚡ Real-Time: WebSocket-powered collaboration and streaming.
 
-⚡ Quick Start
+🥋 **Sato Dojo**: AI-powered mutation testing system where agents learn through code strikes
+
+- **Students (Coder agents)**: Strike code, gain XP, level up
+- **Senseis (Architect agents)**: Strategic high-value mutations
+- **Organic Learning**: System learns from failures, improves mutation quality
+- **Integration Ready**: BAM (bug detection), STRIKE (mutation engine), Memory (learning system)
+
+## ⚡ Quick Start
+
 Prerequisites
 Node.js 18+
 
@@ -141,8 +167,8 @@ vex/
 │ ├── flash/ # Main PWA (Vite + React, Port 5173)
 │ ├── mobile/ # React Native (Expo)
 │ ├── extension/ # Browser Extension (Chrome/Firefox)
-│ ├── browser/ # Desktop App (Tauri)
-── packages/
+│ └── browser/ # Desktop App (Tauri)
+├── packages/
 │ ├── ui/ # Shared Design System (@chrryai/chrry)
 │ ├── db/ # Drizzle Schema & Migrations
 │ ├── pepper/ # Universal Routing Logic
@@ -152,7 +178,7 @@ vex/
 │ ├── focus/ # Focus Mode Logic
 │ ├── shared/ # Shared Utilities
 │ ├── cache/ # Caching Layer
-│ ├── typescript-config/# Shared TypeScript Config
+│ ├── typescript-config/ # Shared TypeScript Config
 │ └── eslint-config/ # Shared ESLint Config
 └── scripts/ # DevOps & Automation
 
@@ -172,11 +198,32 @@ Vex is built entirely open source by a solo developer, pioneering a new economic
 
 No sponsors. No middlemen. Just users supporting the product they use.
 
-🚀 One Codebase, Unlimited Apps
-Vex introduces a breakthrough Polymorphic PWA Architecture. It enables a single codebase to spawn infinite, independent applications on a user's device.
+## 🚀 One Codebase, Unlimited Apps
 
-📱 Dynamic Manifest Generation: The server generates unique PWA manifests on the fly (/api/manifest/[id]).
+Vex introduces a breakthrough **Polymorphic PWA, Web, Extension, Desktop, Mobile Architecture** with **Spatial Navigation**. It enables a single codebase to spawn infinite, independent applications on a user's device.
 
-🔄 Context Switching: The app detects which "personality" (Atlas, Bloom, Vault) it should adopt based on the install context.
+### 🧭 Spatial Navigation System
 
-📲 Native-Grade Experience: Each app installs separately with its own name, icon, theme, and memory, despite running on shared infrastructure.
+Apps exist in a 3D coordinate system:
+
+- **X-Axis (Apps)**: Navigate between apps (Vex → Atlas → Bloom)
+- **Y-Axis (Stores)**: Navigate between domains/stores (chrry.ai → vex.chrry.ai → atlas.chrry.ai)
+- **Z-Axis (Depth)**: Navigate into code structure (/ → /.sushi → /.sushi/mutations)
+
+**Examples:**
+
+- `chrry.ai` → Blossom store, Chrry app
+- `vex.chrry.ai` → LifeOS store, Vex app
+- `atlas.chrry.ai` → Compass store, Atlas app
+- `chrry.ai/atlas` → Blossom store, Atlas app (different context!)
+- `vex.chrry.ai/.sushi` → LifeOS store, Vex app, Sato Dojo depth
+
+### 🏗️ Architecture Features
+
+📱 **Dynamic Manifest Generation**: The server generates unique PWA manifests on the fly (/api/manifest/[id]).
+
+🔄 **Context Switching**: The app detects which "personality" (Atlas, Bloom, Vault) it should adopt based on the install context.
+
+🧬 **App Inheritance**: Apps extend parent apps (FightClub extends Popcorn extends Chrry), inheriting features and tools.
+
+📲 **Native-Grade Experience**: Each app installs separately with its own name, icon, theme, and memory, despite running on shared infrastructure.

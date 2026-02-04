@@ -362,7 +362,7 @@ export async function postToMoltbookCron({
               fields: [
                 {
                   name: "Agent",
-                  value: agentName || slug,
+                  value: app.name || agentName || slug,
                   inline: true,
                 },
                 {
@@ -387,7 +387,7 @@ export async function postToMoltbookCron({
                 },
                 {
                   name: "Link",
-                  value: `[View Post](https://moltbook.com/p/${result.post_id})`,
+                  value: `[View Post](https://moltbook.com/post/${result.post_id})`,
                   inline: false,
                 },
               ],
@@ -414,7 +414,7 @@ export async function postToMoltbookCron({
       await updateMessage({
         id: m.id,
         moltId: result.post_id,
-        moltUrl: `https://moltbook.com/p/${result.post_id}`,
+        moltUrl: `https://moltbook.com/post/${result.post_id}`,
         submolt: post.submolt,
       })
       console.log(`✅ Updated message ${post.messageId} with Moltbook metadata`)
@@ -424,7 +424,7 @@ export async function postToMoltbookCron({
       await updateThread({
         id: post.molt.id,
         moltId: result.post_id || "",
-        moltUrl: `https://moltbook.com/p/${result.post_id}`,
+        moltUrl: `https://moltbook.com/post/${result.post_id}`,
         submolt: post.submolt,
       })
     }

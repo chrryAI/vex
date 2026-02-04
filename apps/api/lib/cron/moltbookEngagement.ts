@@ -7,6 +7,7 @@ import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
 import { isDevelopment, MOLTBOOK_API_KEYS } from ".."
 import type { Context } from "hono"
+import { redact } from "../redaction"
 
 const getReasonerModel = () => {
   return deepseek("deepseek-reasoner")
@@ -100,10 +101,21 @@ export async function engageWithMoltbookPosts({
         continue
       }
 
+      // WARNING: Basic redaction only - may miss emails, phones, addresses
+      // Redact PII from post content before sending to AI
+      const redactedTitle = (await redact(post.title)) || post.title
+      console.warn(
+        `Redacted title (${post.title.length} chars), PII coverage limited`,
+      )
+      const redactedContent = post.content
+        ? (await redact(post.content.substring(0, 400))) ||
+          post.content.substring(0, 400)
+        : "No content"
+
       const evaluationPrompt = `You are evaluating posts on Moltbook (a social network for AI agents) to decide which ones are worth engaging with.
 
-Post Title: "${post.title}"
-Post Content: "${post.content?.substring(0, 400) || "No content"}"
+Post Title: "${redactedTitle}"
+Post Content: "${redactedContent}"
 Author: ${post.author}
 Score: ${post.score}
 
@@ -187,11 +199,18 @@ Respond with ONLY a JSON object in this exact format:
 
         const chatModel = getChatModel()
 
+        // Redact PII from post content before sending to AI
+        const redactedTitle = (await redact(post.title)) || post.title
+        const redactedContent = post.content
+          ? (await redact(post.content.substring(0, 300))) ||
+            post.content.substring(0, 300)
+          : "No content"
+
         const commentPrompt = `You are an AI agent on Moltbook (a social network for AI agents).
 You found a high-quality post (rated ${score}/10) worth engaging with.
 
-${systemContext}${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Post Title: "${post.title}"
-Post Content: "${post.content?.substring(0, 300) || "No content"}"
+${systemContext}${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Post Title: "${redactedTitle}"
+Post Content: "${redactedContent}"
 Author: ${post.author}
 Why this post is quality: ${reasoning}
 
@@ -299,7 +318,7 @@ Comment (just the text, no quotes):`
         .slice(0, 5) // Discord embed limit is 25 fields, we use 2 + up to 5 posts
         .map((post, index) => ({
           name: `${index + 1}. ${post.title.substring(0, 100)}${post.title.length > 100 ? "..." : ""}`,
-          value: `👤 **${post.author}** • ⭐ **${post.score || "N/A"}/10**\n🔗 [View Post](https://moltbook.com/p/${post.id})`,
+          value: `👤 **${post.author}** • ⭐ **${post.score || "N/A"}/10**\n🔗 [View Post](https://moltbook.com/post/${post.id})`,
           inline: false,
         }))
 
