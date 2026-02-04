@@ -4075,7 +4075,10 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             }
           }
         } else if (file.type === "text") {
-          const textContent = file.type === "text"
+          let textContent =
+            file.type === "text"
+              ? Buffer.from(file.data, "base64").toString("utf8")
+              : undefined
 
           if (textContent) {
             // Redact PII from text content (includes js, ts, txt files)

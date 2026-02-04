@@ -780,15 +780,7 @@ export const chat = async ({
       return agentMessages.nth(messageCount - 1)
     }
 
-    const getLastUserMessage = async () => {
-      const userMessages = page.getByTestId(
-        `${isMember ? "user" : "guest"}-message`,
-      )
-      const messageCount = await userMessages.count()
-      return userMessages.nth(messageCount - 1)
-    }
-
-    const lastUserMessage = await getLastUserMessage()
+    const lastUserMessage = await getLastMessage()
     await expect(lastUserMessage).toBeVisible({
       timeout: agentMessageTimeout,
     })
