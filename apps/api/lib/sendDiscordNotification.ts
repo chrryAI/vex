@@ -46,8 +46,24 @@ export async function sendDiscordNotification(
     console.log("✅ Discord notification sent")
     return true
   } catch (error) {
-    captureException(error)
-    console.error("❌ Discord notification failed:", error)
+    // Sanitize error to prevent leaking webhook URL
+    const sanitizedError =
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message.replace(
+              DISCORD_WEBHOOK_URL,
+              "[REDACTED_WEBHOOK_URL]",
+            ),
+            stack: error.stack?.replace(
+              DISCORD_WEBHOOK_URL,
+              "[REDACTED_WEBHOOK_URL]",
+            ),
+          }
+        : { message: String(error) }
+
+    captureException(sanitizedError)
+    console.error("❌ Discord notification failed:", sanitizedError)
     return false
   }
 }

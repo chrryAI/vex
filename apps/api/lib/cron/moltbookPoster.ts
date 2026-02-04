@@ -382,7 +382,7 @@ export async function postToMoltbookCron({
                 },
                 {
                   name: "Link",
-                  value: `[View Post](https://moltbook.com/post/${result.post_id})`,
+                  value: `[View Post](https://moltbook.com/p/${result.post_id})`,
                   inline: false,
                 },
               ],
