@@ -128,6 +128,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -167,6 +168,8 @@ jobs:
     needs: [build, cancel-deployments]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
 
       - name: Deploy API to Coolify
         env:
@@ -252,6 +255,8 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -290,6 +295,8 @@ jobs:
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -319,65 +326,65 @@ jobs:
           path: packages/waffles/playwright-report/
           retention-days: 30
 
-  # # Auto-merge to dev branch after all tests pass
-  # auto-merge-to-dev:
-  #   permissions:
-  #     contents: write
-  #   runs-on: ubuntu-latest
-  #   needs: [e2e-member-live]
-  #   if: success()
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #         token: ${{ secrets.GITHUB_TOKEN }}
+      # # Auto-merge to dev branch after all tests pass
+      # auto-merge-to-dev:
+      #   permissions:
+      #     contents: write
+      #   runs-on: ubuntu-latest
+      #   needs: [e2e-member-live]
+      #   if: success()
+      #   steps:
+      #     - uses: actions/checkout@v4
+      #       with:
+      #         fetch-depth: 0
+      #         token: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Configure Git
-  #       run: |
-  #         git config user.name "github-actions[bot]"
-  #         git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     - name: Configure Git
+      #       run: |
+      #         git config user.name "github-actions[bot]"
+      #         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-  #     - name: Merge to dev
-  #       # GÜVENLİ KATMAN: Veriyi env olarak haritalıyoruz
-  #       env:
-  #         HEAD_REF: ${{ github.head_ref }}
-  #         PR_NUMBER: ${{ github.event.pull_request.number }}
-  #         PR_TITLE: ${{ github.event.pull_request.title }}
-  #       run: |
-  #         echo "🔀 Auto-merging PR #$PR_NUMBER to dev branch..."
-  #         git fetch origin dev
-  #         git checkout dev
-  #         # Değişkenleri shell variable olarak ($) kullanıyoruz
-  #         git merge --no-ff "origin/$HEAD_REF" -m "Auto-merge PR #$PR_NUMBER: $PR_TITLE"
-  #         git push origin dev
-  #         echo "✅ Successfully merged to dev!"
-  # #Auto-merge to web branch after all tests pass
-  # auto-merge-to-web:
-  #   permissions:
-  #     contents: write
-  #   runs-on: ubuntu-latest
-  #   needs: [e2e-member-live]
-  #   if: success()
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #         token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge to dev
+        # GÜVENLİ KATMAN: Veriyi env olarak haritalıyoruz
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "🔀 Auto-merging PR #$PR_NUMBER to dev branch..."
+          git fetch origin dev
+          git checkout dev
+          # Değişkenleri shell variable olarak ($) kullanıyoruz
+          git merge --no-ff "origin/$HEAD_REF" -m "Auto-merge PR #$PR_NUMBER: $PR_TITLE"
+          git push origin dev
+          echo "✅ Successfully merged to dev!"
+  #Auto-merge to web branch after all tests pass
+  auto-merge-to-web:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: [e2e-member-live]
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Configure Git
-  #       run: |
-  #         git config user.name "github-actions[bot]"
-  #         git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-  #     - name: Merge to web
-  #       env:
-  #         HEAD_REF: ${{ github.head_ref }}
-  #         PR_NUMBER: ${{ github.event.pull_request.number }}
-  #         PR_TITLE: ${{ github.event.pull_request.title }}
-  #       run: |
-  #         echo "🔀 Auto-merging PR #$PR_NUMBER to web branch..."
-  #         git fetch origin web
-  #         git checkout web
-  #         git merge --no-ff "origin/$HEAD_REF" -m "Auto-merge PR #$PR_NUMBER: $PR_TITLE"
-  #         git push origin web
-  #         echo "✅ Successfully merged to web!"
+      - name: Merge to web
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "🔀 Auto-merging PR #$PR_NUMBER to web branch..."
+          git fetch origin web
+          git checkout web
+          git merge --no-ff "origin/$HEAD_REF" -m "Auto-merge PR #$PR_NUMBER: $PR_TITLE"
+          git push origin web
+          echo "✅ Successfully merged to web!"
