@@ -1,7 +1,7 @@
 reviews:
-  # Exclude sushi package from reviews (synced to separate repo)
-  path_filters:
-    - "!packages/sushi/**"
+  # Temporarily allow sushi package review for security fixes
+  # path_filters:
+  #   - "!packages/sushi/**"
 
   # Auto-review settings
   auto_review:
