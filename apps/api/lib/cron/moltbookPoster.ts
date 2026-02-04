@@ -377,7 +377,12 @@ export async function postToMoltbookCron({
                 },
                 {
                   name: "Content Preview",
-                  value: post.content.substring(0, 200) + "...",
+                  value: (() => {
+                    const content = post.content ?? ""
+                    return content.length > 200
+                      ? content.substring(0, 200) + "..."
+                      : content || "No content"
+                  })(),
                   inline: false,
                 },
                 {
