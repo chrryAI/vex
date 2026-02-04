@@ -21,66 +21,41 @@ export const isProduction =
 
 export const isDevelopment = !isProduction
 
-// TODO: Add dynamic store domain loading via API endpoint
-// For now, use static origins to avoid Edge runtime issues with Prisma/bcrypt
-function getAllowedOrigins(): RegExp[] {
-  return STATIC_ALLOWED_ORIGINS
-}
-
-function setCorsHeaders(c: Context) {
-  const origin = c.req.header("origin")
-
-  // Get allowed origins
-  const allowedOrigins = getAllowedOrigins()
-
-  if (origin && allowedOrigins.some((pattern) => pattern.test(origin))) {
-    c.header("Access-Control-Allow-Origin", origin)
-    c.header("Access-Control-Allow-Credentials", "true")
-    c.header("Vary", "Origin")
-  } else if (isDevelopment) {
-    // Development: Allow localhost and local network IPs with credentials
-    if (
-      origin &&
-      (origin.includes("localhost") ||
-        origin.includes("127.0.0.1") ||
-        origin.includes("192.168."))
-    ) {
-      c.header("Access-Control-Allow-Origin", origin)
-      c.header("Access-Control-Allow-Credentials", "true")
-      c.header("Vary", "Origin")
-    } else {
-      // Allow all other origins in development (no credentials)
-      c.header("Access-Control-Allow-Origin", "*")
-    }
-  } else if (
-    origin &&
-    (() => {
-      try {
-        const hostname = new URL(origin).hostname
-        return (
-          hostname.endsWith(".chrry.ai") ||
-          hostname.endsWith(".chrry.dev") ||
-          hostname.endsWith(".chrry.store")
-        )
-      } catch {
-        return false
-      }
-    })()
-  ) {
-    // Production: allow cross-domain requests between chrry domains (e.g., e2e.chrry.ai → e2e.chrry.dev)
-    // Securely check hostname suffix to prevent origin reflection attacks
-    c.header("Access-Control-Allow-Origin", origin)
-    c.header("Access-Control-Allow-Credentials", "true")
-    c.header("Vary", "Origin")
-  } else if (!origin) {
-    // No origin header (Tauri desktop apps, native apps, etc.)
-    // Allow these requests - they're not browser-based CORS requests
-    c.header("Access-Control-Allow-Origin", "*")
-  } else {
-    // Production: only allow chrry.ai for unmatched origins
-    c.header("Access-Control-Allow-Origin", "https://chrry.ai")
+/**
+ * Checks if the origin is trusted for credentialed requests.
+ * @param origin The Origin header value
+ */
+export function isTrustedOrigin(origin: string): boolean {
+  // Use static origins to avoid Edge runtime issues with Prisma/bcrypt
+  // TODO: Add dynamic store domain loading via API endpoint
+  if (STATIC_ALLOWED_ORIGINS.some((pattern) => pattern.test(origin))) {
+    return true
   }
 
+  if (isDevelopment) {
+    if (
+      origin.includes("localhost") ||
+      origin.includes("127.0.0.1") ||
+      origin.includes("192.168.")
+    ) {
+      return true
+    }
+  }
+
+  // Production: allow cross-domain requests between chrry domains
+  try {
+    const hostname = new URL(origin).hostname
+    return (
+      hostname.endsWith(".chrry.ai") ||
+      hostname.endsWith(".chrry.dev") ||
+      hostname.endsWith(".chrry.store")
+    )
+  } catch {
+    return false
+  }
+}
+
+function setCommonHeaders(c: Context) {
   c.header(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, OPTIONS, PATCH",
@@ -109,6 +84,33 @@ function setCorsHeaders(c: Context) {
     "Access-Control-Max-Age",
     isDevelopment ? "0" : "86400", // Disable in dev, 24h in prod
   )
+}
+
+function setCorsHeaders(c: Context) {
+  const origin = c.req.header("origin")
+
+  if (origin && isTrustedOrigin(origin)) {
+    c.header("Access-Control-Allow-Origin", origin)
+    c.header("Access-Control-Allow-Credentials", "true")
+    c.header("Vary", "Origin")
+    setCommonHeaders(c)
+    return
+  }
+
+  // Fallbacks for untrusted or missing origins
+  if (isDevelopment) {
+    // Allow all other origins in development (no credentials)
+    c.header("Access-Control-Allow-Origin", "*")
+  } else if (!origin) {
+    // No origin header (Tauri desktop apps, native apps, etc.)
+    // Allow these requests - they're not browser-based CORS requests
+    c.header("Access-Control-Allow-Origin", "*")
+  } else {
+    // Production: only allow chrry.ai for unmatched origins
+    c.header("Access-Control-Allow-Origin", "https://chrry.ai")
+  }
+
+  setCommonHeaders(c)
 }
 
 const RESERVED_PATHS = [

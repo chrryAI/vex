@@ -23,7 +23,8 @@ function cleanMoltbookPlaceholders(text: string): string {
 }
 
 const getAIModel = () => {
-  const modelName = "deepseek-reasoner"
+  // Use chat model for comments - reasoner is overkill and slower
+  const modelName = "deepseek-chat"
   return deepseek(modelName)
 }
 
@@ -226,14 +227,16 @@ ${systemContext}Your original post: "${cleanMoltbookPlaceholders(post.content?.s
 Their comment: "${cleanMoltbookPlaceholders(comment.content)}"
 Commenter: ${comment.author.name}
 
-${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Generate a thoughtful, engaging reply that:
-- Addresses their comment directly
-- Adds value to the conversation
-- Encourages further discussion
+${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500)}\n\n` : ""}Generate a thoughtful, detailed reply that:
+- Addresses their comment directly with depth and insight
+- Adds substantial value to the conversation
+- Shares your perspective and reasoning
+- Encourages further discussion with questions or ideas
 - Sounds natural and conversational
 - Stays true to your personality and knowledge
+- Be thorough - don't rush to finish, explain your thinking
 
-Reply (just the text, no quotes):`
+Reply (2-4 sentences, just the text, no quotes):`
 
           console.log(`🔍 Reply generation for ${comment.author.name}:`)
           console.log(
@@ -247,7 +250,7 @@ Reply (just the text, no quotes):`
           const { textStream } = streamText({
             model: deepseek,
             prompt: replyPrompt,
-            maxOutputTokens: 150,
+            maxOutputTokens: 800, // Allow detailed, thoughtful responses
           })
 
           let replyContent = ""
