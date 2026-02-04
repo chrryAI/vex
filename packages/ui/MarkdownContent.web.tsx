@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, memo } from "react"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism"
 import styles from "./MarkdownContent.module.scss"
@@ -14,60 +14,14 @@ import Store from "./Store"
 import Markdown from "markdown-to-jsx"
 import { Div, useTheme } from "./platform"
 import { usePlatformStyles } from "./platform/usePlatformStyles"
+import {
+  MarkdownContentProps,
+  CodeBlockProps,
+  processTextWithCitations,
+} from "./MarkdownContent.shared"
 
-interface MarkdownContentProps {
-  content: string
-  className?: string
-  "data-testid"?: string
-  style?: React.CSSProperties
-  webSearchResults?: Array<{
-    title: string
-    url: string
-    snippet: string
-  }>
-}
-
-interface CodeBlockProps {
-  language: string
-  children: string
-  className?: string
-}
-
-export const processTextWithCitations = ({
-  content,
-  webSearchResults,
-}: {
-  content: string
-  webSearchResults?: Array<{
-    title: string
-    url: string
-    snippet: string
-  }>
-}): string => {
-  if (!webSearchResults || webSearchResults.length === 0) return content
-
-  const citationPattern = /\[(\d+)\]/g
-  let processedContent = content
-
-  // Replace citation numbers with markdown links
-  processedContent = processedContent.replace(
-    citationPattern,
-    (match, citationNumber) => {
-      const sourceIndex = Number.parseInt(citationNumber) - 1 // Convert to 0-based index
-      const source = webSearchResults[sourceIndex]
-
-      if (source && source.url && source.url !== "#") {
-        // Create markdown link with title attribute
-        return `[${match}](${source.url} "${source.title} - ${source.snippet}")`
-      } else {
-        // Keep as plain text if no URL available
-        return match
-      }
-    },
-  )
-
-  return processedContent
-}
+export { processTextWithCitations }
+export type { MarkdownContentProps }
 
 const CodeBlock: React.FC<CodeBlockProps> = ({
   language,
@@ -115,13 +69,15 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   )
 }
 
-const MarkdownContent: React.FC<MarkdownContentProps> = ({
+// ⚡ Bolt: Memoize MarkdownContent to prevent expensive re-rendering/parsing
+// when parent re-renders but content is stable.
+const MarkdownContent = memo(({
   content,
   className,
   "data-testid": dataTestId,
   style,
   webSearchResults,
-}) => {
+}: MarkdownContentProps) => {
   const [isMounted, setIsMounted] = useState(false)
   const { addHapticFeedback } = useTheme()
 
@@ -332,6 +288,6 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({
       </Markdown>
     </Div>
   )
-}
+})
 
 export default MarkdownContent
