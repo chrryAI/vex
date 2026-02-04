@@ -2,21 +2,18 @@ reviews:
   # Exclude sushi package from reviews (synced to separate repo)
   path_filters:
     - "!packages/sushi/**"
-  
-  # Keep review status messages
-  review_status: true
-  
+
   # Auto-review settings
   auto_review:
     enabled: true
     drafts: false
-  
+
   # Review scope
   high_level_summary: true
   poem: false
   review_status: true
   collapse_walkthrough: false
-  
+
   # File limits
   path_instructions:
     - path: "packages/sushi/**"
