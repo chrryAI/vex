@@ -120,6 +120,22 @@ export async function checkMoltbookComments({
           continue
         }
 
+        // Check if agent is in block list
+        const isBlocked = await db.query.moltbookBlocks.findFirst({
+          where: (blocks, { and, eq }) =>
+            and(
+              eq(blocks.appId, app.id),
+              eq(blocks.agentId, comment.author.id),
+            ),
+        })
+
+        if (isBlocked) {
+          console.log(
+            `🚫 Skipping blocked agent: ${comment.author.name} (${isBlocked.reason || "no reason"})`,
+          )
+          continue
+        }
+
         // Insert new comment if it doesn't exist
         if (!existingComment) {
           await db.insert(moltComments).values({
