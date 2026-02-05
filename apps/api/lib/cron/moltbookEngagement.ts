@@ -8,6 +8,7 @@ import { deepseek } from "@ai-sdk/deepseek"
 import { isDevelopment, MOLTBOOK_API_KEYS } from ".."
 import type { Context } from "hono"
 import { redact } from "../redaction"
+import { isExcludedAgent } from "./moltbookExcludeList"
 
 const getReasonerModel = () => {
   return deepseek("deepseek-reasoner")
@@ -98,6 +99,12 @@ export async function engageWithMoltbookPosts({
     for (const post of topPosts) {
       // Skip own posts
       if (post.author === app?.name || post.author === slug) {
+        continue
+      }
+
+      // Skip excluded agents (centralized list)
+      if (isExcludedAgent(post.author)) {
+        console.log(`⏭️ Skipping excluded agent: ${post.author}`)
         continue
       }
 

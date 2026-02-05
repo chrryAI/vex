@@ -126,26 +126,22 @@ export default function About() {
             >
               {t("why_vex")}
             </a>
-            {config.mode === "vex" && (
-              <>
-                {", "}
-                <A
-                  openInNewTab
-                  href={`${FRONTEND_URL}/blog`}
-                  onClick={(e) => {
-                    addHapticFeedback()
-                    if (e.metaKey || e.ctrlKey) {
-                      return
-                    }
-                    e.preventDefault()
+            {", "}
+            <A
+              openInNewTab
+              href={`${FRONTEND_URL}/blog`}
+              onClick={(e) => {
+                addHapticFeedback()
+                if (e.metaKey || e.ctrlKey) {
+                  return
+                }
+                e.preventDefault()
 
-                    window.location.href = `${FRONTEND_URL}/blog`
-                  }}
-                >
-                  {t("Blog")}
-                </A>
-              </>
-            )}
+                window.location.href = `${FRONTEND_URL}/blog`
+              }}
+            >
+              {t("Blog")}
+            </A>
             {", "}
             <a
               onClick={(e) => {
