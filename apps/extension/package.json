@@ -1,6 +1,6 @@
 {
   "name": "@repo/extension",
-  "version": "1.13.51",
+  "version": "1.13.55",
   "private": true,
   "type": "module",
   "scripts": {
