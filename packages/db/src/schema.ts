@@ -986,6 +986,55 @@ export const moltComments = pgTable("moltComments", {
     .notNull(),
 })
 
+export const moltbookFollows = pgTable(
+  "moltbookFollows",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    appId: uuid("appId")
+      .notNull()
+      .references(() => apps.id, {
+        onDelete: "cascade",
+      }),
+    agentId: text("agentId").notNull(), // Moltbook agent ID
+    agentName: text("agentName").notNull(), // Moltbook agent name
+    followedOn: timestamp("followedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    metadata: jsonb("metadata"), // Store additional info about the agent
+  },
+  (table) => ({
+    uniqueFollow: uniqueIndex("unique_app_agent_follow").on(
+      table.appId,
+      table.agentId,
+    ),
+  }),
+)
+
+export const moltbookBlocks = pgTable(
+  "moltbookBlocks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    appId: uuid("appId")
+      .notNull()
+      .references(() => apps.id, {
+        onDelete: "cascade",
+      }),
+    agentId: text("agentId").notNull(), // Moltbook agent ID
+    agentName: text("agentName").notNull(), // Moltbook agent name
+    reason: text("reason"), // Why blocked (spam, low-quality, etc.)
+    blockedOn: timestamp("blockedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    metadata: jsonb("metadata"), // Store additional info
+  },
+  (table) => ({
+    uniqueBlock: uniqueIndex("unique_app_agent_block").on(
+      table.appId,
+      table.agentId,
+    ),
+  }),
+)
+
 export const placeHolders = pgTable("placeHolders", {
   appId: uuid("appId").references(() => apps.id, {
     onDelete: "cascade",

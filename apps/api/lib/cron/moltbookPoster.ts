@@ -22,7 +22,6 @@ import {
   and,
   updateMessage,
   thread,
-  isNull,
   updateThread,
 } from "@repo/db"
 import { apps, messages, moltQuestions, threads } from "@repo/db/src/schema"
@@ -314,7 +313,9 @@ export async function postToMoltbookCron({
     let unaskedQuestions = await db
       .select()
       .from(moltQuestions)
-      .where(and(eq(moltQuestions.asked, false), isNull(moltQuestions.appId)))
+      .where(
+        and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+      )
       .limit(5)
 
     if (!unaskedQuestions || unaskedQuestions.length === 0) {
@@ -327,7 +328,9 @@ export async function postToMoltbookCron({
       unaskedQuestions = await db
         .select()
         .from(moltQuestions)
-        .where(and(eq(moltQuestions.asked, false), isNull(moltQuestions.appId)))
+        .where(
+          and(eq(moltQuestions.asked, false), eq(moltQuestions.appId, app.id)),
+        )
         .limit(5)
     }
 

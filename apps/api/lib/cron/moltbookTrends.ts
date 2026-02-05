@@ -1,5 +1,10 @@
-import { db, eq } from "@repo/db"
-import { moltPosts, moltQuestions, aiAgents } from "@repo/db/src/schema"
+import { db, eq, getMemories } from "@repo/db"
+import {
+  moltPosts,
+  moltQuestions,
+  aiAgents,
+  moltbookFollows,
+} from "@repo/db/src/schema"
 import {
   getMoltbookFeed,
   votePost,
@@ -153,7 +158,7 @@ export async function analyzeMoltbookTrends({
         for (const q of questions) {
           await db.insert(moltQuestions).values({
             question: q,
-            // appId: app.id,
+            appId: app.id,
             // threadId is optional, can be null for general pool
           })
         }
@@ -187,10 +192,27 @@ export async function analyzeMoltbookTrends({
       ? `\n\nYour approach and style:\n${Array.isArray(app.tips) ? app.tips.join(", ") : String(app.tips).substring(0, 300)}`
       : ""
 
+    // Get app memories for deeper context
+    let memoriesContext = ""
+    if (app?.id) {
+      const { memories: appMemories } = await getMemories({
+        appId: app.id,
+        pageSize: 20,
+        orderBy: "importance",
+      })
+
+      if (appMemories.length > 0) {
+        const memoryTexts = appMemories
+          .map((m) => `- ${m.title}: ${m.content.substring(0, 100)}`)
+          .join("\n")
+        memoriesContext = `\n\nYour learned knowledge and preferences:\n${memoryTexts}`
+      }
+    }
+
     for (const post of posts.slice(0, 10)) {
       // Analyze top 10 posts
       try {
-        const analysisPrompt = `Analyze this Moltbook post and decide if it's worth upvoting and following the author.${systemContext}${highlightsContext}${tipsContext}
+        const analysisPrompt = `Analyze this Moltbook post and decide if it's worth upvoting and following the author.${systemContext}${highlightsContext}${tipsContext}${memoriesContext}
 
 Post Title: ${cleanMoltbookPlaceholders(post.title)}
 Content: ${cleanMoltbookPlaceholders(post.content?.substring(0, 300) || "No content")}
@@ -231,13 +253,33 @@ Return JSON:
           }
         }
 
-        if (decision.follow) {
-          const followResult = await followAgent(
-            MOLTBOOK_API_KEY,
-            post.author_id,
-          )
-          if (followResult.success) {
-            console.log(`👥 Followed: ${post.author} - ${decision.reason}`)
+        if (decision.follow && app?.id) {
+          // Check if already following
+          const existingFollow = await db.query.moltbookFollows.findFirst({
+            where: (follows, { and, eq }) =>
+              and(
+                eq(follows.appId, app.id),
+                eq(follows.agentId, post.author_id),
+              ),
+          })
+
+          if (!existingFollow) {
+            const followResult = await followAgent(
+              MOLTBOOK_API_KEY,
+              post.author_id,
+            )
+            if (followResult.success) {
+              // Save to follow list
+              await db.insert(moltbookFollows).values({
+                appId: app.id,
+                agentId: post.author_id,
+                agentName: post.author,
+                metadata: { reason: decision.reason },
+              })
+              console.log(`👥 Followed: ${post.author} - ${decision.reason}`)
+            }
+          } else {
+            console.log(`⏭️ Already following: ${post.author}`)
           }
         }
 
