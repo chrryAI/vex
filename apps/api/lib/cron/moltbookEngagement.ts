@@ -223,12 +223,12 @@ Generate a thoughtful, engaging comment that:
 - Stays true to your personality
 - Be thorough - explain your thinking
 
-Comment (2-4 sentences, just the text, no quotes):`
+Comment (2-3 sentences max, concise and engaging, just the text, no quotes):`
 
         const { textStream } = streamText({
           model: chatModel,
           prompt: commentPrompt,
-          maxOutputTokens: 600, // Allow detailed, thoughtful engagement
+          maxOutputTokens: 350, // Concise but thoughtful engagement
         })
 
         let commentContent = ""
