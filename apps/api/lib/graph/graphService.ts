@@ -123,13 +123,10 @@ async function generateDynamicCypher(
     - Nodes: (Topic {name, createdAt}), (Document {name, threadId, createdAt}), (Chunk {content, chunkIndex}), (User {id})
     - Relations: (Topic)-[REL]->(Topic), (Document)-[:HAS_CHUNK]->(Chunk), (Chunk)-[:MENTIONS]->(Topic)
     
-    CRITICAL FalkorDB Limitations:
+    🚨 CRITICAL FalkorDB Limitations (WILL CAUSE ERRORS IF VIOLATED):
     - NO regex operators (=~, CONTAINS, STARTS WITH, ENDS WITH)
     - Use exact string matching with = only
     - For partial matching, use multiple OR conditions with exact values
-    - Relationship variables MUST be used via type(r) function or in RETURN clause
-    - NEVER access relationship properties directly (r.property) - use type(r) instead
-    - If you don't need the relationship, use anonymous [] instead of [r]
     - ORDER BY can ONLY reference variables that are in the RETURN clause (projected variables)
     - NEVER use ORDER BY with computed expressions - always alias them in RETURN first
     - CRITICAL: NO COUNT{} pattern comprehension syntax - FalkorDB does NOT support it
@@ -137,26 +134,37 @@ async function generateDynamicCypher(
     - NEVER use COUNT { (pattern) } - it will cause syntax errors
     - You can use $queryText parameter for the user's question text
     
+    🚨 RELATIONSHIP VARIABLE RULES (MOST COMMON ERROR):
+    1. If you define a relationship variable like [r], you MUST use it somewhere:
+       - Use type(r) in WHERE clause: WHERE type(r) = 'FRIEND'
+       - Use type(r) in RETURN clause: RETURN type(r)
+       - Use in function: count(r), size(r)
+    2. If you DON'T need the relationship info, use anonymous []:
+       - CORRECT: MATCH (n)-[]->(m) RETURN n.name, m.name
+       - WRONG: MATCH (n)-[r]->(m) RETURN n.name, m.name (r unused!)
+    3. NEVER access relationship properties directly (r.property) - use type(r) instead
+    4. NEVER leave type() empty: type() is INVALID, must be type(r)
+    
     Rules:
     1. Focus on finding relationships and content related to entities in the question.
     2. Use temporal ordering (ORDER BY createdAt DESC) ONLY if you RETURN createdAt.
     3. Return meaningful properties: node.name, type(relationship), property values.
     4. Keep it efficient (LIMIT 15).
     5. Use ONLY exact string matching with = operator.
-    6. CRITICAL: If you define [r], you MUST use it as type(r) in WHERE or RETURN.
-    7. CRITICAL: If using ORDER BY, ensure the variable is in RETURN clause.
-    8. You may use $queryText parameter if needed for matching.
-    9. Return ONLY the raw Cypher query string.
+    6. Return ONLY the raw Cypher query string.
     
-    Examples:
-    - GOOD: MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name
-    - GOOD: MATCH (n)-[r]->(m) WHERE type(r) = 'FRIEND' RETURN n.name
-    - GOOD: MATCH (n)-[]->(m) RETURN n.name, m.name
-    - GOOD: MATCH (n) RETURN n.name, n.createdAt ORDER BY n.createdAt DESC
-    - BAD:  MATCH (n)-[r]->(m) RETURN n.name, m.name (r defined but not used!)
-    - BAD:  MATCH (n)-[r]->(m) WHERE r.type = 'FRIEND' RETURN n.name (use type(r)!)
-    - BAD:  MATCH (n) RETURN n.name ORDER BY n.createdAt DESC (createdAt not in RETURN!)
-    - BAD:  MATCH (n) RETURN n.name ORDER BY score DESC (score not defined!)`
+    ✅ CORRECT Examples:
+    - MATCH (n)-[r]->(m) RETURN n.name, type(r), m.name
+    - MATCH (n)-[r]->(m) WHERE type(r) = 'FRIEND' RETURN n.name, type(r)
+    - MATCH (n)-[]->(m) RETURN n.name, m.name (anonymous relationship)
+    - MATCH (n) RETURN n.name, n.createdAt ORDER BY n.createdAt DESC
+    
+    ❌ WRONG Examples (WILL CAUSE ERRORS):
+    - MATCH (n)-[r]->(m) RETURN n.name, m.name (ERROR: 'r' defined but unused!)
+    - MATCH (n)-[r]->(m) WHERE r.type = 'FRIEND' RETURN n.name (ERROR: use type(r)!)
+    - MATCH (n) RETURN n.name ORDER BY n.createdAt DESC (ERROR: createdAt not in RETURN!)
+    - MATCH (n)-[r]->(m) RETURN n.name, type(), m.name (ERROR: type() empty!)
+    - MATCH (n) RETURN n.name ORDER BY score DESC (ERROR: score not defined!)`
 
     const provider = await getModelProvider(app, "deepSeek")
 
@@ -176,6 +184,13 @@ async function generateDynamicCypher(
     )
     if (hasUnsupportedOp) {
       console.warn("⚠️ Cypher query contains unsupported regex operators")
+      console.warn(`Query: ${cleanQuery}`)
+      return null // Skip invalid query
+    }
+
+    // Validate: Check for empty type() function calls
+    if (/type\s*\(\s*\)/i.test(cleanQuery)) {
+      console.warn("⚠️ Cypher query contains empty type() function call")
       console.warn(`Query: ${cleanQuery}`)
       return null // Skip invalid query
     }

@@ -45,6 +45,7 @@ const memorySchema = z.array(
         "instruction",
         "relationship",
         "goal",
+        "character",
       ])
       .optional(),
     importance: z.number().optional(),
@@ -1136,6 +1137,7 @@ async function generateAIContent({
   const shouldGenerateAppProfile = true // Always try to create app profile if appId exists
 
   const threadId = thread.id
+  const appId = app?.id
 
   const userId = user?.id
   const guestId = guest?.id
@@ -1698,7 +1700,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
       }
     }
 
-    characterTag &&
+    userCharacterTag &&
       notifyOwnerAndCollaborations({
         c,
         notifySender: true,
@@ -1707,7 +1709,7 @@ Focus on the main discussion points, user preferences, and conversation style.`
         thread: thread,
         payload: {
           type: "character_tag_created",
-          data: characterTag,
+          data: userCharacterTag,
         },
       })
     console.log(
