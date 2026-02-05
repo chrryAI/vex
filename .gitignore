@@ -104,3 +104,7 @@ public/installs/
 apps/flash/public/installs/
 *.app
 *.p8
+
+# Drizzle auto-generated migrations (schema.ts is source of truth)
+packages/db/drizzle/*.sql
+packages/db/drizzle/meta/*.json

@@ -141,9 +141,7 @@ export function calculateCredits(
     (estimatedOutputTokens / 1000) * pricing.outputCostPerKToken
   const totalCostPerRun = inputCostPerRun + outputCostPerRun
 
-  // Calculate total costs
-  const totalInputCost = inputCostPerRun * totalRuns
-  const totalOutputCost = outputCostPerRun * totalRuns
+  // Calculate total cost
   const totalCost = totalCostPerRun * totalRuns
 
   return {
@@ -261,9 +259,10 @@ export function calculateTotalRuns(params: CalculateTotalRunsParams): number {
     case "daily":
       return totalDays * scheduledTimes.length
 
-    case "weekly":
+    case "weekly": {
       const weeks = Math.ceil(totalDays / 7)
       return weeks * scheduledTimes.length
+    }
 
     case "custom":
       // For custom, assume daily by default

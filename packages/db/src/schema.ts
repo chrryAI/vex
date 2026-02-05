@@ -1166,16 +1166,12 @@ export const tribeLikes = pgTable(
       .notNull(),
   },
   (table) => ({
-    uniquePostLike: uniqueIndex("unique_user_post_like").on(
-      table.userId,
-      table.guestId,
-      table.postId,
-    ),
-    uniqueCommentLike: uniqueIndex("unique_user_comment_like").on(
-      table.userId,
-      table.guestId,
-      table.commentId,
-    ),
+    uniquePostLike: uniqueIndex("unique_user_post_like")
+      .on(table.userId, table.guestId, table.postId)
+      .where(sql`${table.postId} IS NOT NULL`),
+    uniqueCommentLike: uniqueIndex("unique_user_comment_like")
+      .on(table.userId, table.guestId, table.commentId)
+      .where(sql`${table.commentId} IS NOT NULL`),
   }),
 )
 
@@ -1203,11 +1199,9 @@ export const tribeFollows = pgTable(
       .notNull(),
   },
   (table) => ({
-    uniqueFollow: uniqueIndex("unique_tribe_follow").on(
-      table.followerId,
-      table.followerGuestId,
-      table.followingAppId,
-    ),
+    uniqueFollow: uniqueIndex("unique_tribe_follow")
+      .on(table.followerId, table.followerGuestId, table.followingAppId)
+      .where(sql`${table.followingAppId} IS NOT NULL`),
   }),
 )
 
@@ -1235,16 +1229,12 @@ export const tribeBlocks = pgTable(
       .notNull(),
   },
   (table) => ({
-    uniqueAppBlock: uniqueIndex("unique_tribe_app_block").on(
-      table.blockerId,
-      table.blockerGuestId,
-      table.blockedAppId,
-    ),
-    uniqueUserBlock: uniqueIndex("unique_tribe_user_block").on(
-      table.blockerId,
-      table.blockerGuestId,
-      table.blockedUserId,
-    ),
+    uniqueAppBlock: uniqueIndex("unique_tribe_app_block")
+      .on(table.blockerId, table.blockerGuestId, table.blockedAppId)
+      .where(sql`${table.blockedAppId} IS NOT NULL`),
+    uniqueUserBlock: uniqueIndex("unique_tribe_user_block")
+      .on(table.blockerId, table.blockerGuestId, table.blockedUserId)
+      .where(sql`${table.blockedUserId} IS NOT NULL`),
   }),
 )
 
@@ -1273,18 +1263,12 @@ export const tribeReactions = pgTable(
       .notNull(),
   },
   (table) => ({
-    uniquePostReaction: uniqueIndex("unique_user_post_reaction").on(
-      table.userId,
-      table.guestId,
-      table.postId,
-      table.emoji,
-    ),
-    uniqueCommentReaction: uniqueIndex("unique_user_comment_reaction").on(
-      table.userId,
-      table.guestId,
-      table.commentId,
-      table.emoji,
-    ),
+    uniquePostReaction: uniqueIndex("unique_user_post_reaction")
+      .on(table.userId, table.guestId, table.postId, table.emoji)
+      .where(sql`${table.postId} IS NOT NULL`),
+    uniqueCommentReaction: uniqueIndex("unique_user_comment_reaction")
+      .on(table.userId, table.guestId, table.commentId, table.emoji)
+      .where(sql`${table.commentId} IS NOT NULL`),
   }),
 )
 
@@ -1459,30 +1443,39 @@ export const scheduledJobRuns = pgTable("scheduledJobRuns", {
     .notNull(),
 })
 
-export const aiModelPricing = pgTable("aiModelPricing", {
-  id: uuid("id").defaultRandom().primaryKey(),
+export const aiModelPricing = pgTable(
+  "aiModelPricing",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
 
-  // Model identification
-  provider: text("provider", {
-    enum: ["openai", "claude", "deepseek", "sushi"],
-  }).notNull(),
-  modelName: text("modelName").notNull(), // "gpt-4", "claude-3-opus", etc.
+    // Model identification
+    provider: text("provider", {
+      enum: ["openai", "claude", "deepseek", "sushi"],
+    }).notNull(),
+    modelName: text("modelName").notNull(), // "gpt-4", "claude-3-opus", etc.
 
-  // Pricing (in credits per 1K tokens)
-  inputCostPerKToken: integer("inputCostPerKToken").notNull(),
-  outputCostPerKToken: integer("outputCostPerKToken").notNull(),
+    // Pricing (in credits per 1K tokens)
+    inputCostPerKToken: integer("inputCostPerKToken").notNull(),
+    outputCostPerKToken: integer("outputCostPerKToken").notNull(),
 
-  // Metadata
-  isActive: boolean("isActive").notNull().default(true),
-  description: text("description"),
+    // Metadata
+    isActive: boolean("isActive").notNull().default(true),
+    description: text("description"),
 
-  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    uniqueProviderModel: uniqueIndex("unique_provider_model").on(
+      table.provider,
+      table.modelName,
+    ),
+  }),
+)
 
 export const placeHolders = pgTable("placeHolders", {
   appId: uuid("appId").references(() => apps.id, {

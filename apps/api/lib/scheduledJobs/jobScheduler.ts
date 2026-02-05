@@ -3,13 +3,16 @@ import {
   scheduledJobs,
   scheduledJobRuns,
   tribePosts,
+  apps,
 } from "@repo/db/src/schema"
 import { eq, and, lte, gte, isNull, or } from "drizzle-orm"
 import { generateText } from "ai"
 import { getModelProvider } from "../getModelProvider"
 import { captureException } from "@repo/ui/utils/errorTracking"
-import { postToMoltbook } from "../moltbook"
-import { engageWithMoltbookPosts } from "../cron/moltbookTrends"
+import { postToMoltbook } from "../integrations/moltbook"
+import { engageWithMoltbookPosts } from "../cron/moltbookEngagement"
+import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz"
+import { calculateCreditsFromDB } from "./creditCalculator"
 
 interface ExecuteJobParams {
   jobId: string
@@ -104,14 +107,22 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       })
       .where(eq(scheduledJobRuns.id, jobRun.id))
 
+    // Calculate next run time
+    const nextRunAt =
+      job.frequency === "once"
+        ? null
+        : calculateNextRunTime(job.scheduledTimes, job.timezone, job.frequency)
+
     // Update job stats
     await db
       .update(scheduledJobs)
       .set({
         lastRunAt: new Date(),
+        nextRunAt,
         totalRuns: job.totalRuns + 1,
         successfulRuns: job.successfulRuns + 1,
         creditsUsed: job.creditsUsed + result.creditsUsed,
+        status: job.frequency === "once" ? "completed" : job.status,
       })
       .where(eq(scheduledJobs.id, jobId))
 
@@ -136,13 +147,21 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       })
       .where(eq(scheduledJobRuns.id, jobRun.id))
 
+    // Calculate next run time (even on failure to avoid tight loops)
+    const nextRunAt =
+      job.frequency === "once"
+        ? null
+        : calculateNextRunTime(job.scheduledTimes, job.timezone, job.frequency)
+
     // Update job stats
     await db
       .update(scheduledJobs)
       .set({
         lastRunAt: new Date(),
+        nextRunAt,
         totalRuns: job.totalRuns + 1,
         failedRuns: job.failedRuns + 1,
+        status: job.frequency === "once" ? "completed" : job.status,
       })
       .where(eq(scheduledJobs.id, jobId))
   }
@@ -151,15 +170,24 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 async function executeTribePost(job: any) {
   // Get app details
   const app = await db.query.apps.findFirst({
-    where: eq(scheduledJobs.appId, job.appId),
+    where: eq(apps.id, job.appId),
   })
 
   if (!app) {
     throw new Error(`App not found: ${job.appId}`)
   }
 
+  // Normalize provider name (DB stores lowercase, getModelProvider expects camelCase)
+  const providerMap: Record<string, string> = {
+    openai: "chatGPT",
+    claude: "claude",
+    deepseek: "deepSeek",
+    sushi: "sushi",
+  }
+  const normalizedProvider = providerMap[job.aiModel] || job.aiModel
+
   // Generate content using AI
-  const provider = await getModelProvider(app, job.aiModel)
+  const provider = await getModelProvider(app, normalizedProvider)
 
   const prompt = `You are creating a social media post for the app "${app.name}".
 
@@ -191,10 +219,11 @@ Generate an engaging post that follows these guidelines. Be creative and authent
     .returning()
 
   // Calculate credits used
-  const creditsUsed = calculateCreditsFromUsage(
+  const creditsUsed = await calculateCreditsFromUsage(
     usage?.promptTokens || 0,
     usage?.completionTokens || 0,
     job.aiModel,
+    job.modelConfig?.model || "gpt-4o-mini",
   )
 
   return {
@@ -208,15 +237,24 @@ Generate an engaging post that follows these guidelines. Be creative and authent
 async function executeMoltbookPost(job: any) {
   // Get app details
   const app = await db.query.apps.findFirst({
-    where: eq(scheduledJobs.appId, job.appId),
+    where: eq(apps.id, job.appId),
   })
 
   if (!app) {
     throw new Error(`App not found: ${job.appId}`)
   }
 
+  // Normalize provider name (DB stores lowercase, getModelProvider expects camelCase)
+  const providerMap: Record<string, string> = {
+    openai: "chatGPT",
+    claude: "claude",
+    deepseek: "deepSeek",
+    sushi: "sushi",
+  }
+  const normalizedProvider = providerMap[job.aiModel] || job.aiModel
+
   // Generate content using AI
-  const provider = await getModelProvider(app, job.aiModel)
+  const provider = await getModelProvider(app, normalizedProvider)
 
   const prompt = `You are posting to Moltbook on behalf of "${app.name}".
 
@@ -241,20 +279,31 @@ Generate an engaging Moltbook post. Keep it concise and interesting.`
     throw new Error("MOLTBOOK_API_KEY not configured")
   }
 
-  const result = await postToMoltbook(moltbookApiKey, text)
+  // Post to Moltbook with structured payload
+  const result = await postToMoltbook(moltbookApiKey, {
+    submolt: job.metadata?.submolt || "chrry",
+    title: job.metadata?.title || "Scheduled Post",
+    content: text,
+    url: job.metadata?.url,
+  })
 
   // Calculate credits used
-  const creditsUsed = calculateCreditsFromUsage(
+  const creditsUsed = await calculateCreditsFromUsage(
     usage?.promptTokens || 0,
     usage?.completionTokens || 0,
     job.aiModel,
+    job.modelConfig?.model || "gpt-4o-mini",
   )
+
+  if (!result.success) {
+    throw new Error(result.error || "Failed to post to Moltbook")
+  }
 
   return {
     output: text,
     creditsUsed,
     tokensUsed: (usage?.promptTokens || 0) + (usage?.completionTokens || 0),
-    moltPostId: result.id,
+    moltPostId: result.post_id,
   }
 }
 
@@ -268,13 +317,18 @@ async function executeMoltbookComment(job: any) {
 }
 
 async function executeMoltbookEngage(job: any) {
-  // This would integrate with existing moltbookTrends logic
+  // This would integrate with existing moltbookEngagement logic
   const app = await db.query.apps.findFirst({
-    where: eq(scheduledJobs.appId, job.appId),
+    where: eq(apps.id, job.appId),
   })
 
   if (!app) {
     throw new Error(`App not found: ${job.appId}`)
+  }
+
+  // Runtime check for function availability
+  if (typeof engageWithMoltbookPosts !== "function") {
+    throw new Error("engageWithMoltbookPosts is not available")
   }
 
   await engageWithMoltbookPosts({ slug: app.slug || "chrry" })
@@ -285,25 +339,22 @@ async function executeMoltbookEngage(job: any) {
   }
 }
 
-function calculateCreditsFromUsage(
+async function calculateCreditsFromUsage(
   inputTokens: number,
   outputTokens: number,
-  provider: string,
-): number {
-  // Simplified credit calculation
-  // In production, fetch from aiModelPricing table
-  const rates: Record<string, { input: number; output: number }> = {
-    openai: { input: 25, output: 100 },
-    claude: { input: 30, output: 150 },
-    deepseek: { input: 1, output: 2 },
-    sushi: { input: 0, output: 0 },
-  }
+  provider: "openai" | "claude" | "deepseek" | "sushi",
+  modelName: string,
+): Promise<number> {
+  // Use DB-backed pricing via calculateCreditsFromDB
+  const estimate = await calculateCreditsFromDB({
+    provider,
+    modelName,
+    estimatedInputTokens: inputTokens,
+    estimatedOutputTokens: outputTokens,
+    totalRuns: 1,
+  })
 
-  const rate = rates[provider] || rates.openai
-  const inputCost = (inputTokens / 1000) * rate.input
-  const outputCost = (outputTokens / 1000) * rate.output
-
-  return Math.ceil(inputCost + outputCost)
+  return estimate.estimatedCreditsPerRun
 }
 
 // Find jobs that need to run now
@@ -328,29 +379,33 @@ export function calculateNextRunTime(
   timezone: string,
   frequency: string,
 ): Date {
-  const now = new Date()
+  // Convert current UTC time to target timezone
+  const nowUtc = new Date()
+  const zonedNow = utcToZonedTime(nowUtc, timezone)
 
-  // Simple implementation - find next scheduled time
-  // In production, use proper timezone handling
-  const currentHour = now.getHours()
-  const currentMinute = now.getMinutes()
+  // Get current time in target timezone
+  const currentHour = zonedNow.getHours()
+  const currentMinute = zonedNow.getMinutes()
   const currentTime = `${currentHour.toString().padStart(2, "0")}:${currentMinute.toString().padStart(2, "0")}`
 
-  // Find next time slot
+  // Find next time slot in the scheduled times
   const nextTime = scheduledTimes.find((time) => time > currentTime)
 
+  let zonedNext: Date
+
   if (nextTime) {
-    // Today
+    // Next run is today in target timezone
     const [hours, minutes] = nextTime.split(":").map(Number)
-    const next = new Date()
-    next.setHours(hours, minutes, 0, 0)
-    return next
+    zonedNext = new Date(zonedNow)
+    zonedNext.setHours(hours, minutes, 0, 0)
   } else {
-    // Tomorrow
+    // Next run is tomorrow in target timezone
     const [hours, minutes] = scheduledTimes[0].split(":").map(Number)
-    const next = new Date()
-    next.setDate(next.getDate() + 1)
-    next.setHours(hours, minutes, 0, 0)
-    return next
+    zonedNext = new Date(zonedNow)
+    zonedNext.setDate(zonedNext.getDate() + 1)
+    zonedNext.setHours(hours, minutes, 0, 0)
   }
+
+  // Convert zoned time back to UTC
+  return zonedTimeToUtc(zonedNext, timezone)
 }
