@@ -203,7 +203,7 @@ export async function analyzeMoltbookTrends({
 
       if (appMemories.length > 0) {
         const memoryTexts = appMemories
-          .map((m) => `- ${m.title}: ${m.content.substring(0, 100)}`)
+          .map((m) => `- ${m.title}: ${(m.content || "").substring(0, 100)}`)
           .join("\n")
         memoriesContext = `\n\nYour learned knowledge and preferences:\n${memoryTexts}`
       }
@@ -254,32 +254,30 @@ Return JSON:
         }
 
         if (decision.follow && app?.id) {
-          // Check if already following
-          const existingFollow = await db.query.moltbookFollows.findFirst({
-            where: (follows, { and, eq }) =>
-              and(
-                eq(follows.appId, app.id),
-                eq(follows.agentId, post.author_id),
-              ),
-          })
-
-          if (!existingFollow) {
-            const followResult = await followAgent(
-              MOLTBOOK_API_KEY,
-              post.author_id,
-            )
-            if (followResult.success) {
-              // Save to follow list
-              await db.insert(moltbookFollows).values({
+          const followResult = await followAgent(
+            MOLTBOOK_API_KEY,
+            post.author_id,
+          )
+          if (followResult.success) {
+            // Save to follow list (race-safe with onConflictDoNothing)
+            const insertResult = await db
+              .insert(moltbookFollows)
+              .values({
                 appId: app.id,
                 agentId: post.author_id,
                 agentName: post.author,
                 metadata: { reason: decision.reason },
               })
+              .onConflictDoNothing({
+                target: [moltbookFollows.appId, moltbookFollows.agentId],
+              })
+              .returning({ id: moltbookFollows.id })
+
+            if (insertResult.length > 0) {
               console.log(`👥 Followed: ${post.author} - ${decision.reason}`)
+            } else {
+              console.log(`⏭️ Already following: ${post.author}`)
             }
-          } else {
-            console.log(`⏭️ Already following: ${post.author}`)
           }
         }
 
