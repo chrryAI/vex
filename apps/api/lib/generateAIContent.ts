@@ -72,9 +72,10 @@ async function extractMemories(conversationText: string, model: any) {
 CONVERSATION:
 ${conversationText}
 
-Extract TWO types of memories:
+Extract THREE types of memories:
 1. USER MEMORIES: Personal information about this specific user (preferences, relationships, personal facts, goals, settings)
 2. APP/GENERAL MEMORIES: Universal knowledge useful for ALL users (facts, instructions)
+3. APP CHARACTER PROFILE: General personality traits, communication style, and character of THIS app (non-private, general observations)
 
 Category guide:
 - "preference" = User's personal preferences (USER memory)
@@ -83,6 +84,7 @@ Category guide:
 - "context" = User-specific patterns, settings, or behavioral insights (USER memory)
 - "fact" = Universal/general knowledge useful for ALL users (APP memory)
 - "instruction" = How to do something, general how-to knowledge (APP memory)
+- "character" = App's personality, communication style, tone, behavior patterns (APP CHARACTER PROFILE)
 
 USER MEMORY EXAMPLES:
 - "Cross-conversation memory is ENABLED for this user" (category: context)
@@ -95,14 +97,22 @@ APP MEMORY EXAMPLES:
 - "To create a task, use the /task command" (category: instruction)
 - "React hooks were introduced in version 16.8" (category: fact)
 
-⚠️ CRITICAL: User settings, personal patterns, and behavioral insights are USER memories (category: context), NOT app memories.
+APP CHARACTER PROFILE EXAMPLES:
+- "This app uses casual, friendly tone with emojis" (category: character)
+- "This app tends to give concise, technical answers" (category: character)
+- "This app asks clarifying questions before answering" (category: character)
+- "This app uses Turkish slang and informal language" (category: character)
+
+⚠️ CRITICAL: 
+- User settings, personal patterns, and behavioral insights are USER memories (category: context), NOT app memories.
+- App character profiles should be GENERAL observations about the app's style, NOT user-specific info.
 
 Generate ONLY a valid JSON array with no additional text (max 5 memories):
 [
   {
     "title": "Short memory title",
     "content": "Detailed memory content",
-    "category": "preference|fact|context|instruction|relationship|goal",
+    "category": "preference|fact|context|instruction|relationship|goal|character",
     "importance": 1-10,
     "tags": ["tag1", "tag2"]
   }
@@ -155,11 +165,13 @@ async function extractAndSaveMemories(
   for (const memory of memories.slice(0, 5)) {
     try {
       // Check if this should be an app memory or user memory
-      // App memories: ONLY facts and instructions (universal knowledge)
+      // App memories: facts, instructions, and character profiles (universal knowledge)
       // User memories: preferences, context, relationships, goals (personal info)
       let isAppMemory =
         appId &&
-        (memory.category === "fact" || memory.category === "instruction")
+        (memory.category === "fact" ||
+          memory.category === "instruction" ||
+          memory.category === "character")
       // Note: "context" is now treated as USER memory by default
 
       // Safety check: Never store user-specific content as app memory
@@ -1094,8 +1106,6 @@ async function generateAIContent({
   }
 
   // Generate suggestions only if memories are enabled
-  // Character profiles are independent
-  const shouldGenerateCharacterProfiles = characterProfilesEnabled
   if (memoriesEnabled) {
     // Get calendar events for context (optional)
 
@@ -1121,10 +1131,9 @@ async function generateAIContent({
     })
   }
 
-  if (!shouldGenerateCharacterProfiles) {
-    // Generate suggestions and placeholders (only if memories enabled)
-    return
-  }
+  // Character profiles: if disabled (user profile stripped), only create app profile
+  const shouldGenerateUserProfile = characterProfilesEnabled
+  const shouldGenerateAppProfile = true // Always try to create app profile if appId exists
 
   const threadId = thread.id
 
@@ -1467,107 +1476,226 @@ Focus on the main discussion points, user preferences, and conversation style.`
 
     // Memories already created by extractAndSaveMemories() above
 
-    // Create or update character profile
-    const existingCharacterTag = await getCharacterTag({
-      userId,
-      guestId,
-      threadId,
-    })
+    // Create or update TWO character profiles (like memory system):
+    // 1. USER CHARACTER PROFILE: userId/guestId set, appId null (only if shouldGenerateUserProfile)
+    // 2. APP CHARACTER PROFILE: appId set, userId/guestId null (always if appId exists)
 
-    let characterTag
-    if (
-      existingCharacterTag &&
-      isOwner(existingCharacterTag, {
+    // 1. USER CHARACTER PROFILE (skip if user profile stripped from system prompt)
+    let userCharacterTag
+    if (shouldGenerateUserProfile) {
+      const existingUserCharacterTag = await getCharacterTag({
         userId,
         guestId,
-      })
-    ) {
-      console.log(
-        `🚀 ~ generateAIContent ~ existingCharacterTag:`,
-        existingCharacterTag.name,
-      )
-
-      // Update existing character profile
-      characterTag = await updateCharacterTag({
-        ...existingCharacterTag,
-        name: characterData.name || existingCharacterTag.name,
-        personality:
-          characterData.personality || existingCharacterTag.personality,
-        traits: {
-          communication:
-            characterData.traits?.communication ??
-            existingCharacterTag.traits?.communication ??
-            [],
-          expertise:
-            characterData.traits?.expertise ??
-            existingCharacterTag.traits?.expertise ??
-            [],
-          behavior:
-            characterData.traits?.behavior ??
-            existingCharacterTag.traits?.behavior ??
-            [],
-          preferences:
-            characterData.traits?.preferences ??
-            existingCharacterTag.traits?.preferences ??
-            [],
-        },
-        tags: characterData.tags || existingCharacterTag.tags,
-        usageCount: existingCharacterTag.usageCount + 1,
-        userRelationship:
-          characterData.userRelationship ||
-          existingCharacterTag.userRelationship,
-        conversationStyle:
-          characterData.conversationStyle ||
-          existingCharacterTag.conversationStyle,
-        metadata: {
-          version: "1.0",
-          createdBy: modelName,
-          effectiveness: 0.8,
-        },
-      })
-    } else {
-      // Create new character profile
-      characterTag = await createCharacterTag({
-        agentId,
-        userId: userId || null,
-        guestId: guestId || null,
-        name: characterData.name || "User",
-        personality: characterData.personality || "Friendly and helpful",
-        traits: characterData.traits
-          ? {
-              communication: characterData.traits.communication || [
-                "clear",
-                "direct",
-              ],
-              expertise: characterData.traits.expertise || [
-                "general knowledge",
-              ],
-              behavior: characterData.traits.behavior || [
-                "curious",
-                "analytical",
-              ],
-              preferences: characterData.traits.preferences || [
-                "learning",
-                "efficiency",
-              ],
-            }
-          : {
-              communication: ["clear", "direct"],
-              expertise: ["general knowledge"],
-              behavior: ["curious", "analytical"],
-              preferences: ["learning", "efficiency"],
-            },
-        tags: characterData.tags || [],
-        usageCount: 1,
-        userRelationship: characterData.userRelationship || "collaborative",
-        conversationStyle: characterData.conversationStyle || "professional",
-        metadata: {
-          version: "1.0",
-          createdBy: modelName,
-          effectiveness: 0.8,
-        },
         threadId,
       })
+
+      if (
+        existingUserCharacterTag &&
+        isOwner(existingUserCharacterTag, {
+          userId,
+          guestId,
+        }) &&
+        !existingUserCharacterTag.appId // Ensure it's a user profile, not app profile
+      ) {
+        console.log(
+          `🚀 ~ generateAIContent ~ existingUserCharacterTag:`,
+          existingUserCharacterTag.name,
+        )
+
+        // Update existing user character profile
+        userCharacterTag = await updateCharacterTag({
+          ...existingUserCharacterTag,
+          name: characterData.name || existingUserCharacterTag.name,
+          personality:
+            characterData.personality || existingUserCharacterTag.personality,
+          traits: {
+            communication:
+              characterData.traits?.communication ??
+              existingUserCharacterTag.traits?.communication ??
+              [],
+            expertise:
+              characterData.traits?.expertise ??
+              existingUserCharacterTag.traits?.expertise ??
+              [],
+            behavior:
+              characterData.traits?.behavior ??
+              existingUserCharacterTag.traits?.behavior ??
+              [],
+            preferences:
+              characterData.traits?.preferences ??
+              existingUserCharacterTag.traits?.preferences ??
+              [],
+          },
+          tags: characterData.tags || existingUserCharacterTag.tags,
+          usageCount: existingUserCharacterTag.usageCount + 1,
+          userRelationship:
+            characterData.userRelationship ||
+            existingUserCharacterTag.userRelationship,
+          conversationStyle:
+            characterData.conversationStyle ||
+            existingUserCharacterTag.conversationStyle,
+          metadata: {
+            version: "1.0",
+            createdBy: modelName,
+            effectiveness: 0.8,
+          },
+        })
+      } else if (!existingUserCharacterTag?.appId) {
+        // Create new user character profile (userId/guestId set, appId null)
+        userCharacterTag = await createCharacterTag({
+          agentId,
+          userId: userId || null,
+          guestId: guestId || null,
+          appId: null, // USER profile - no appId
+          name: characterData.name || "User",
+          personality: characterData.personality || "Friendly and helpful",
+          traits: characterData.traits
+            ? {
+                communication: characterData.traits.communication || [
+                  "clear",
+                  "direct",
+                ],
+                expertise: characterData.traits.expertise || [
+                  "general knowledge",
+                ],
+                behavior: characterData.traits.behavior || [
+                  "curious",
+                  "analytical",
+                ],
+                preferences: characterData.traits.preferences || [
+                  "learning",
+                  "efficiency",
+                ],
+              }
+            : {
+                communication: ["clear", "direct"],
+                expertise: ["general knowledge"],
+                behavior: ["curious", "analytical"],
+                preferences: ["learning", "efficiency"],
+              },
+          tags: characterData.tags || [],
+          usageCount: 1,
+          userRelationship: characterData.userRelationship || "collaborative",
+          conversationStyle: characterData.conversationStyle || "professional",
+          metadata: {
+            version: "1.0",
+            createdBy: modelName,
+            effectiveness: 0.8,
+          },
+          threadId,
+        })
+      }
+    } else {
+      console.log(
+        `⏭️  Skipping user character profile creation (user profile stripped from system prompt)`,
+      )
+    }
+
+    // 2. APP CHARACTER PROFILE (from character memories)
+    // Extract character traits from app memories
+    const appCharacterMemories = memories.filter(
+      (m: any) => m.category === "character",
+    )
+
+    if (appId && appCharacterMemories.length > 0) {
+      // Get existing app character profile
+      const existingAppCharacterTag = await getCharacterTag({
+        appId,
+        threadId,
+      })
+
+      // Build app character traits from memories
+      const appCharacterTraits = {
+        communication: appCharacterMemories
+          .filter(
+            (m: any) =>
+              m.content.toLowerCase().includes("tone") ||
+              m.content.toLowerCase().includes("language") ||
+              m.content.toLowerCase().includes("style"),
+          )
+          .map((m: any) => m.content.substring(0, 50)),
+        expertise: appCharacterMemories
+          .filter(
+            (m: any) =>
+              m.content.toLowerCase().includes("technical") ||
+              m.content.toLowerCase().includes("knowledge"),
+          )
+          .map((m: any) => m.content.substring(0, 50)),
+        behavior: appCharacterMemories
+          .filter(
+            (m: any) =>
+              m.content.toLowerCase().includes("asks") ||
+              m.content.toLowerCase().includes("responds") ||
+              m.content.toLowerCase().includes("behavior"),
+          )
+          .map((m: any) => m.content.substring(0, 50)),
+        preferences: appCharacterMemories
+          .filter(
+            (m: any) =>
+              m.content.toLowerCase().includes("prefers") ||
+              m.content.toLowerCase().includes("uses"),
+          )
+          .map((m: any) => m.content.substring(0, 50)),
+      }
+
+      if (existingAppCharacterTag && existingAppCharacterTag.appId) {
+        // Update existing app character profile
+        await updateCharacterTag({
+          ...existingAppCharacterTag,
+          name: `${agentId} App Character`,
+          personality:
+            appCharacterMemories[0]?.content || "AI Assistant Character",
+          traits: {
+            communication: [
+              ...(existingAppCharacterTag.traits?.communication || []),
+              ...appCharacterTraits.communication,
+            ].slice(0, 10),
+            expertise: [
+              ...(existingAppCharacterTag.traits?.expertise || []),
+              ...appCharacterTraits.expertise,
+            ].slice(0, 10),
+            behavior: [
+              ...(existingAppCharacterTag.traits?.behavior || []),
+              ...appCharacterTraits.behavior,
+            ].slice(0, 10),
+            preferences: [
+              ...(existingAppCharacterTag.traits?.preferences || []),
+              ...appCharacterTraits.preferences,
+            ].slice(0, 10),
+          },
+          tags: ["app-character", "learned"],
+          usageCount: existingAppCharacterTag.usageCount + 1,
+          metadata: {
+            version: "1.0",
+            createdBy: modelName,
+            effectiveness: 0.8,
+          },
+        })
+        console.log(`✅ Updated app character profile for app ${appId}`)
+      } else {
+        // Create new app character profile (appId set, userId/guestId null)
+        await createCharacterTag({
+          agentId,
+          userId: null, // APP profile - no userId
+          guestId: null, // APP profile - no guestId
+          appId, // APP profile - appId set
+          name: `${agentId} App Character`,
+          personality:
+            appCharacterMemories[0]?.content || "AI Assistant Character",
+          traits: appCharacterTraits,
+          tags: ["app-character", "learned"],
+          usageCount: 1,
+          userRelationship: null,
+          conversationStyle: "learned",
+          metadata: {
+            version: "1.0",
+            createdBy: modelName,
+            effectiveness: 0.8,
+          },
+          threadId,
+        })
+        console.log(`✅ Created app character profile for app ${appId}`)
+      }
     }
 
     characterTag &&

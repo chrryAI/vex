@@ -6,27 +6,18 @@
  * FalkorDB failures will NOT crash the app - PostgreSQL is source of truth
  */
 
-import { FalkorDB } from "falkordb"
+import "./sentry.config" // Initialize Sentry
+import { graph } from "./src/graph/client"
 import { captureException } from "@sentry/node"
 
-let falkorDB: any = null
-let graph: any = null
-
 async function getFalkorGraph() {
-  if (graph) return graph
-
   try {
-    falkorDB = await FalkorDB.connect({
-      socket: { host: "localhost", port: 6380 },
-    })
-    graph = falkorDB.selectGraph("chrry_ecosystem")
+    return graph
   } catch (error) {
     console.warn("⚠️ FalkorDB not available, skipping graph cleanup")
     // Don't send to Sentry - FalkorDB being down is expected in some envs
     return null
   }
-
-  return graph
 }
 
 /**
@@ -209,9 +200,9 @@ export async function syncFalkorUser(userData: {
       {
         params: {
           id: userData.id,
-          email: userData.email || "",
-          name: userData.name || "",
-          userName: userData.userName || "",
+          email: userData.email ?? null,
+          name: userData.name ?? null,
+          userName: userData.userName ?? null,
         },
       },
     )
@@ -253,8 +244,8 @@ export async function syncFalkorApp(appData: {
           id: appData.id,
           slug: appData.slug,
           name: appData.name,
-          storeId: appData.storeId || "",
-          userId: appData.userId || "",
+          storeId: appData.storeId ?? null,
+          userId: appData.userId ?? null,
         },
       },
     )
@@ -328,7 +319,7 @@ export async function syncFalkorStore(storeData: {
           id: storeData.id,
           slug: storeData.slug,
           name: storeData.name,
-          userId: storeData.userId || "",
+          userId: storeData.userId ?? null,
         },
       },
     )
@@ -382,8 +373,8 @@ export async function syncFalkorThread(threadData: {
       {
         params: {
           id: threadData.id,
-          userId: threadData.userId || "",
-          appId: threadData.appId || "",
+          userId: threadData.userId ?? null,
+          appId: threadData.appId ?? null,
         },
       },
     )
@@ -433,11 +424,9 @@ export async function syncFalkorThread(threadData: {
 
 /**
  * Close FalkorDB connection
+ * Note: Connection is managed by src/graph/client, no need to close manually
  */
 export async function closeFalkorSync() {
-  if (falkorDB) {
-    await falkorDB.close()
-    falkorDB = null
-    graph = null
-  }
+  // Connection managed by shared graph client
+  console.log("FalkorDB connection managed by src/graph/client")
 }

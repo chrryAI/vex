@@ -405,6 +405,7 @@ async function getRelevantMemoryContext({
           instruction: "📝",
           relationship: "👥",
           goal: "🎯",
+          character: "🎭",
         }[memory.category || "context"]
 
         return `${categoryEmoji} ${memory.content}`
@@ -420,6 +421,7 @@ async function getRelevantMemoryContext({
           instruction: "📝",
           relationship: "👥",
           goal: "🎯",
+          character: "🎭",
         }[memory.category || "context"]
 
         return `${categoryEmoji} ${memory.content}`
@@ -442,10 +444,36 @@ async function getRelevantMemoryContext({
       context += `\n\nRELEVANT CONTEXT ABOUT THE USER:\n${userMemoryContext}\n\nUse this context to personalize your responses when relevant.`
     }
     if (appMemoryContext) {
+      // Separate character profiles from general knowledge
+      const characterMemories = appMemories.filter(
+        (m) => m.category === "character",
+      )
+      const knowledgeMemories = appMemories.filter(
+        (m) => m.category !== "character",
+      )
+
+      const characterContext =
+        characterMemories.length > 0
+          ? `\n\n🎭 YOUR CHARACTER PROFILE (learned from interactions):\n${characterMemories.map((m) => `🎭 ${m.content}`).join("\n")}\n\n⚠️ IMPORTANT: These are observations about YOUR personality and communication style. Embody these traits naturally in your responses.`
+          : ""
+
+      const knowledgeContext =
+        knowledgeMemories.length > 0
+          ? `\n\nAPP-SPECIFIC KNOWLEDGE:\n${knowledgeMemories
+              .map((m) => {
+                const emoji =
+                  { fact: "📌", instruction: "📝" }[m.category || "fact"] ||
+                  "📌"
+                return `${emoji} ${m.content}`
+              })
+              .join("\n")}`
+          : ""
+
       const appCreatorNote = isAppCreator
         ? `\n\n🎯 APP CREATOR ACCESS: You are the creator of this app. You have enhanced access to ${appMemories.length} app memories (10x boost) to see comprehensive DNA Thread knowledge and understand what your app has learned across all user interactions. This is your app's "startup summary" - use it to understand the collective intelligence your app has gained.`
         : ""
-      context += `\n\nAPP-SPECIFIC KNOWLEDGE:\n${appMemoryContext}${appCreatorNote}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
+
+      context += `${characterContext}${knowledgeContext}${appCreatorNote}\n\n⚠️ CRITICAL: This is shared knowledge from ALL users of this app across different conversations and threads.\n- Use this knowledge to provide informed, contextual responses\n- DO NOT say "you previously asked", "you asked before", "you mentioned this earlier", or similar phrases\n- DO NOT reference timestamps or when questions were asked\n- This is NOT the current user's personal conversation history - it's collective app knowledge\n- Only mention question repetition if you see it in the CURRENT conversation thread above, not from this app knowledge`
     }
     return { context, memoryIds, isAppCreator, recentAnalytics }
   } catch (error) {

@@ -1453,6 +1453,7 @@ export const characterProfiles = pgTable(
       })
       .notNull(),
 
+    appId: uuid("appId").references(() => apps.id, { onDelete: "cascade" }),
     // Context and usage
     tags: jsonb("tags").$type<string[]>().default([]),
     usageCount: integer("usageCount").notNull().default(0),

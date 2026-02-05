@@ -1,6 +1,4 @@
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js"
-import { deleteFalkorUser } from "./falkorSync"
-
 import {
   accounts,
   affiliateLinks,
@@ -1228,6 +1226,7 @@ export const deleteUser = async (id: string) => {
     )
 
     // FalkorDB cleanup (safe - won't crash if fails)
+    const { deleteFalkorUser } = await import("./falkorSync")
     await deleteFalkorUser(deleted.id)
   }
 

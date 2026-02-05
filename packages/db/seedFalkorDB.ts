@@ -1,21 +1,13 @@
 /**
- * Seed PostgreSQL stores/apps to FalkorDB
- * Syncs all stores, apps, and their relationships to graph database
+ * Seed FalkorDB with data from PostgreSQL
+ * Run this script to populate the graph database with stores, apps, and ecosystem data
  */
 
-import { FalkorDB } from "falkordb"
+import { graph } from "./src/graph/client"
 import { db } from "./index"
 
-let falkorDB: any = null
-let graph: any = null
-
-async function initFalkorDB() {
-  if (graph) return
-
-  falkorDB = await FalkorDB.connect({
-    socket: { host: "localhost", port: 6380 },
-  })
-  graph = falkorDB.selectGraph("chrry_ecosystem")
+async function seedFalkorDB() {
+  console.log("🌱 Starting FalkorDB seeding...\n")
   console.log("🍒 FalkorDB initialized (chrry_ecosystem graph)\n")
 }
 
@@ -24,7 +16,6 @@ async function initFalkorDB() {
  */
 export async function seedStoresToFalkorDB() {
   if (!db) throw new Error("PostgreSQL DB not initialized")
-  if (!graph) await initFalkorDB()
 
   console.log("═══════════════════════════════════════════════════════")
   console.log("        🍒 SEEDING CHRRY STORES TO FALKORDB           ")
@@ -53,8 +44,8 @@ export async function seedStoresToFalkorDB() {
           id: storeData.id,
           slug: storeData.slug,
           name: storeData.name,
-          title: storeData.title || "",
-          description: storeData.description || "",
+          title: storeData.title ?? null,
+          description: storeData.description ?? null,
         },
       },
     )
@@ -70,7 +61,6 @@ export async function seedStoresToFalkorDB() {
  */
 export async function seedAppsToFalkorDB() {
   if (!db) throw new Error("PostgreSQL DB not initialized")
-  if (!graph) await initFalkorDB()
 
   console.log("═══════════════════════════════════════════════════════")
   console.log("         🍒 SEEDING CHRRY APPS TO FALKORDB            ")
@@ -108,19 +98,19 @@ export async function seedAppsToFalkorDB() {
           id: appData.id,
           slug: appData.slug,
           name: appData.name,
-          title: appData.title || "",
-          subtitle: appData.subtitle || "",
-          description: appData.description || "",
-          systemPrompt: appData.systemPrompt || "",
-          placeholder: appData.placeholder || "",
-          visibility: appData.visibility || "public",
-          status: appData.status || "active",
-          themeColor: appData.themeColor || "",
-          backgroundColor: appData.backgroundColor || "",
-          icon: appData.icon || "",
-          version: appData.version || "1.0.0",
-          userId: appData.userId,
-          storeId: appData.storeId || "",
+          title: appData.title ?? null,
+          subtitle: appData.subtitle ?? null,
+          description: appData.description ?? null,
+          systemPrompt: appData.systemPrompt ?? null,
+          placeholder: appData.placeholder ?? null,
+          visibility: appData.visibility ?? "public",
+          status: appData.status ?? "active",
+          themeColor: appData.themeColor ?? null,
+          backgroundColor: appData.backgroundColor ?? null,
+          icon: appData.icon ?? null,
+          version: appData.version ?? "1.0.0",
+          userId: appData.userId ?? null,
+          storeId: appData.storeId ?? null,
         },
       },
     )
@@ -169,8 +159,6 @@ export async function seedAppsToFalkorDB() {
  * Seed LifeOS ecosystem connections
  */
 export async function seedEcosystemToFalkorDB() {
-  if (!graph) await initFalkorDB()
-
   console.log("═══════════════════════════════════════════════════════")
   console.log("       🌍 SEEDING LIFEOS ECOSYSTEM TO FALKORDB        ")
   console.log("═══════════════════════════════════════════════════════\n")
@@ -210,29 +198,27 @@ export async function seedChrryToFalkorDB() {
  * Get overview of seeded data
  */
 export async function getFalkorDBOverview() {
-  if (!graph) await initFalkorDB()
-
   console.log("\n📊 FALKORDB OVERVIEW\n")
 
   // Count stores
-  const storeCount = await graph.query(`
+  const storeCount = (await graph.query(`
     MATCH (store:Store)
     RETURN COUNT(store) as count
-  `)
+  `)) as any
   console.log(`📦 Stores: ${storeCount?.data?.[0]?.count || 0}`)
 
   // Count apps
-  const appCount = await graph.query(`
+  const appCount = (await graph.query(`
     MATCH (app:App)
     RETURN COUNT(app) as count
-  `)
+  `)) as any
   console.log(`🤖 Apps: ${appCount?.data?.[0]?.count || 0}`)
 
   // Count relationships
-  const relCount = await graph.query(`
+  const relCount = (await graph.query(`
     MATCH ()-[r]->()
     RETURN COUNT(r) as count
-  `)
+  `)) as any
   console.log(`🔗 Relationships: ${relCount?.data?.[0]?.count || 0}`)
 
   // List stores
@@ -244,8 +230,8 @@ export async function getFalkorDBOverview() {
 
   console.log(`\n📦 Stores:`)
   if (stores && stores.data) {
-    for (const store of stores.data) {
-      console.log(`   ${store.icon} ${store.name} (${store.slug})`)
+    for (const store of stores.data as any[]) {
+      console.log(`   ${store.icon || "📦"} ${store.name} (${store.slug})`)
     }
   }
 
@@ -254,21 +240,18 @@ export async function getFalkorDBOverview() {
 
 /**
  * Close FalkorDB connection
+ * Note: Connection is managed by src/graph/client, no need to close manually
  */
 export async function closeFalkorDB() {
-  if (falkorDB) {
-    await falkorDB.close()
-    falkorDB = null
-    graph = null
-    console.log("👋 FalkorDB connection closed")
-  }
+  // Connection managed by shared graph client
+  console.log("FalkorDB connection managed by src/graph/client")
 }
 
 // CLI usage
 async function main() {
   await seedChrryToFalkorDB()
   await getFalkorDBOverview()
-  await closeFalkorDB()
+  // Connection managed by shared graph client, no need to close
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
