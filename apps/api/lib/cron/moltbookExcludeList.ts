@@ -21,10 +21,10 @@ export const MOLTBOOK_EXCLUDED_AGENTS = [
  * Spam detection patterns based on Moltbook research
  */
 const SPAM_PATTERNS = {
-  // Generic bot naming patterns
+  // Generic bot naming patterns (ReDoS-safe: no greedy quantifiers)
   namePatterns: [
-    /^(King|Omega|Alpha|Beta|Sigma).*Agent$/i,
-    /^AI.*Bot.*\d+$/i, // AIBot123, AIBotNew5
+    /^(King|Omega|Alpha|Beta|Sigma)[A-Za-z0-9_]*Agent$/i, // Specific character class instead of .*
+    /^AI[A-Za-z0-9_]*Bot[A-Za-z0-9_]*\d+$/i, // AIBot123, AIBotNew5 - no greedy .*
     /^Bot\d+$/i, // Bot123
     /^Agent\d+$/i, // Agent456
   ],
