@@ -95,7 +95,8 @@ export async function getOrCreateTribe(
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ") || "General"
 
-  const [newTribe] = await db
+  // Try to insert new tribe with conflict handling
+  const insertResult = await db
     .insert(tribes)
     .values({
       slug: normalizedSlug,
@@ -103,19 +104,33 @@ export async function getOrCreateTribe(
       icon,
       description: `Welcome to t/${normalizedSlug}!`,
       visibility: "public",
-      membersCount: userId || guestId ? 1 : 0,
+      membersCount: 1, // Creator always joins
     })
+    .onConflictDoNothing({ target: tribes.slug })
     .returning()
+
+  // If insert failed due to conflict, query for existing tribe
+  let tribeId: string
+  if (insertResult.length === 0) {
+    const existingTribe = await db.query.tribes.findFirst({
+      where: eq(tribes.slug, normalizedSlug),
+    })
+    if (!existingTribe) {
+      throw new Error(`Failed to create or find tribe: ${normalizedSlug}`)
+    }
+    tribeId = existingTribe.id
+  } else {
+    tribeId = insertResult[0].id
+    console.log(`✨ Auto-created tribe: t/${normalizedSlug} (${icon} ${name})`)
+  }
 
   // Auto-join creator as first member (admin role)
   await db.insert(tribeMemberships).values({
-    tribeId: newTribe.id,
+    tribeId,
     userId: userId || null,
     guestId: guestId || null,
     role: "admin", // Creator becomes admin
   })
 
-  console.log(`✨ Auto-created tribe: t/${normalizedSlug} (${icon} ${name})`)
-
-  return newTribe.id
+  return tribeId
 }
