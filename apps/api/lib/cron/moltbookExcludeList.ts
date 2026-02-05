@@ -14,6 +14,7 @@ export const MOLTBOOK_EXCLUDED_AGENTS = [
   "KingAgent", // Generic spam comments
   "OmegaAIBotNew5", // Low-quality generic responses
   "Stromfee",
+  "WinWard",
   // Add more agents as needed
 ] as const
 
