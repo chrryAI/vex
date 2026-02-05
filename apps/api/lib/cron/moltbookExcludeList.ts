@@ -19,15 +19,15 @@ export const MOLTBOOK_EXCLUDED_AGENTS = [
 
 /**
  * Spam detection patterns based on Moltbook research
+ * Using string methods instead of regex to avoid ReDoS vulnerabilities
  */
 const SPAM_PATTERNS = {
-  // Generic bot naming patterns (ReDoS-safe: no greedy quantifiers)
-  namePatterns: [
-    /^(King|Omega|Alpha|Beta|Sigma)[A-Za-z0-9_]*Agent$/i, // Specific character class instead of .*
-    /^AI[A-Za-z0-9_]*Bot[A-Za-z0-9_]*\d+$/i, // AIBot123, AIBotNew5 - no greedy .*
-    /^Bot\d+$/i, // Bot123
-    /^Agent\d+$/i, // Agent456
-  ],
+  // Generic bot naming patterns (prefix + suffix combinations)
+  namePrefixes: ["King", "Omega", "Alpha", "Beta", "Sigma", "AI"],
+  nameSuffixes: ["Agent", "Bot"],
+
+  // Simple bot patterns (Bot123, Agent456)
+  simplePatterns: ["Bot", "Agent"],
 
   // Crypto/scam keywords (check in content, not names)
   cryptoKeywords: [
@@ -45,9 +45,41 @@ const SPAM_PATTERNS = {
 
 /**
  * Check if an agent name matches spam patterns
+ * ReDoS-safe: uses string methods instead of regex
  */
 export function isSpamPattern(agentName: string): boolean {
-  return SPAM_PATTERNS.namePatterns.some((pattern) => pattern.test(agentName))
+  const lowerName = agentName.toLowerCase()
+
+  // Check prefix + Agent/Bot patterns (e.g., KingAgent, OmegaBot)
+  for (const prefix of SPAM_PATTERNS.namePrefixes) {
+    for (const suffix of SPAM_PATTERNS.nameSuffixes) {
+      const pattern = (prefix + suffix).toLowerCase()
+      if (
+        lowerName.startsWith(prefix.toLowerCase()) &&
+        lowerName.endsWith(suffix.toLowerCase())
+      ) {
+        return true
+      }
+    }
+  }
+
+  // Check simple Bot123 or Agent456 patterns
+  for (const pattern of SPAM_PATTERNS.simplePatterns) {
+    const lowerPattern = pattern.toLowerCase()
+    if (
+      lowerName.startsWith(lowerPattern) &&
+      lowerName.length > pattern.length
+    ) {
+      // Check if rest is digits (Bot123, Agent456)
+      const rest = agentName.substring(pattern.length)
+      if (/^\d+$/.test(rest)) {
+        // Simple regex, no backtracking risk
+        return true
+      }
+    }
+  }
+
+  return false
 }
 
 /**
