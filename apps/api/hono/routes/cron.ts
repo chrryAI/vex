@@ -427,3 +427,83 @@ cron.get("/engageWithMoltbook", async (c) => {
     timestamp: new Date().toISOString(),
   })
 })
+
+// GET /cron/runScheduledJobs - Execute scheduled jobs that are due
+cron.get("/runScheduledJobs", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  console.log("📅 Starting scheduled jobs execution...")
+
+  const { findJobsToRun, executeScheduledJob } =
+    await import("../../lib/scheduledJobs/jobScheduler")
+
+  try {
+    // Find all jobs that need to run now
+    const jobsToRun = await findJobsToRun()
+
+    if (jobsToRun.length === 0) {
+      console.log("⏭️ No scheduled jobs to run")
+      return c.json({
+        success: true,
+        message: "No scheduled jobs to run",
+        jobsExecuted: 0,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    console.log(`🚀 Found ${jobsToRun.length} jobs to execute`)
+
+    // Execute all jobs in parallel (fire-and-forget)
+    const executionPromises = jobsToRun.map((job) =>
+      executeScheduledJob({ jobId: job.id })
+        .then(() => {
+          console.log(`✅ Job executed: ${job.name}`)
+          return { jobId: job.id, name: job.name, status: "success" }
+        })
+        .catch((error) => {
+          captureException(error)
+          console.error(`❌ Job failed: ${job.name}`, error)
+          return {
+            jobId: job.id,
+            name: job.name,
+            status: "failed",
+            error: error.message,
+          }
+        }),
+    )
+
+    // Wait for all jobs to complete (with timeout)
+    const results = await Promise.race([
+      Promise.all(executionPromises),
+      new Promise(
+        (resolve) => setTimeout(() => resolve([]), 25000), // 25s timeout (Vercel limit is 30s)
+      ),
+    ])
+
+    return c.json({
+      success: true,
+      message: "Scheduled jobs execution completed",
+      jobsExecuted: jobsToRun.length,
+      results,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Scheduled jobs execution failed:", error)
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      },
+      500,
+    )
+  }
+})
