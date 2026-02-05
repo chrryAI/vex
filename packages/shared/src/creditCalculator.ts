@@ -53,6 +53,19 @@ export interface EstimateJobCreditsParams {
   pricing: AIModelPricing
 }
 
+export interface CompareModelCostsParams {
+  jobType:
+    | "tribe_post"
+    | "moltbook_post"
+    | "moltbook_comment"
+    | "moltbook_engage"
+  frequency: "once" | "daily" | "weekly" | "custom"
+  scheduledTimes: string[]
+  startDate: Date
+  endDate?: Date
+  contentLength?: "short" | "medium" | "long"
+}
+
 // Default pricing - can be overridden with real DB data
 export const DEFAULT_PRICING: Record<string, AIModelPricing[]> = {
   openai: [
@@ -134,16 +147,16 @@ export function calculateCredits(
   const { estimatedInputTokens, estimatedOutputTokens, totalRuns, pricing } =
     params
 
-  // Calculate costs per run
-  const inputCostPerRun =
-    (estimatedInputTokens / 1000) * pricing.inputCostPerKToken
-  const outputCostPerRun =
-    (estimatedOutputTokens / 1000) * pricing.outputCostPerKToken
-  const totalCostPerRun = inputCostPerRun + outputCostPerRun
+  // Convert stored pricing units to credits (stored values are 10x higher)
+  const inputCostPerKToken = pricing.inputCostPerKToken / 10
+  const outputCostPerKToken = pricing.outputCostPerKToken / 10
 
-  // Calculate total costs
-  const totalInputCost = inputCostPerRun * totalRuns
-  const totalOutputCost = outputCostPerRun * totalRuns
+  // Calculate cost per 1K tokens
+  const inputCost = (estimatedInputTokens / 1000) * inputCostPerKToken
+  const outputCost = (estimatedOutputTokens / 1000) * outputCostPerKToken
+  const totalCostPerRun = inputCost + outputCost
+
+  // Calculate total cost
   const totalCost = totalCostPerRun * totalRuns
 
   return {
@@ -247,9 +260,20 @@ export function calculateTotalRuns(params: CalculateTotalRunsParams): number {
     return 1
   }
 
+  // Validate scheduledTimes - ensure at least one run per period
+  const runsPerPeriod = Math.max(1, scheduledTimes.length)
+
   // Calculate days between start and end
   const end =
     endDate || new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000) // Default 30 days
+
+  // Validate endDate is not before startDate
+  if (endDate && endDate.getTime() < startDate.getTime()) {
+    throw new RangeError(
+      `endDate (${endDate.toISOString()}) cannot be before startDate (${startDate.toISOString()})`,
+    )
+  }
+
   const days = Math.ceil(
     (end.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000),
   )
@@ -259,15 +283,16 @@ export function calculateTotalRuns(params: CalculateTotalRunsParams): number {
 
   switch (frequency) {
     case "daily":
-      return totalDays * scheduledTimes.length
+      return totalDays * runsPerPeriod
 
-    case "weekly":
+    case "weekly": {
       const weeks = Math.ceil(totalDays / 7)
-      return weeks * scheduledTimes.length
+      return weeks * runsPerPeriod
+    }
 
     case "custom":
       // For custom, assume daily by default
-      return totalDays * scheduledTimes.length
+      return totalDays * runsPerPeriod
 
     default:
       return 1
@@ -311,29 +336,29 @@ export function formatUSD(amount: number): string {
 export function getAvailableModels() {
   return Object.entries(DEFAULT_PRICING).map(([provider, models]) => ({
     provider: provider as "openai" | "claude" | "deepseek" | "sushi",
-    models: models.map((m) => ({
-      name: m.modelName,
-      description: m.description || "",
-      inputCost: m.inputCostPerKToken,
-      outputCost: m.outputCostPerKToken,
-      isFree: m.inputCostPerKToken === 0 && m.outputCostPerKToken === 0,
-    })),
+    models: models.map((m) => {
+      // Normalize pricing units (stored values are 10x higher)
+      const normalizedInputCost = m.inputCostPerKToken / 10
+      const normalizedOutputCost = m.outputCostPerKToken / 10
+      return {
+        name: m.modelName,
+        description: m.description || "",
+        inputCost: normalizedInputCost,
+        outputCost: normalizedOutputCost,
+        isFree: normalizedInputCost === 0 && normalizedOutputCost === 0,
+      }
+    }),
   }))
 }
 
 // Helper: Calculate cost comparison across all models
-export function compareModelCosts(params: {
-  jobType:
-    | "tribe_post"
-    | "moltbook_post"
-    | "moltbook_comment"
-    | "moltbook_engage"
-  frequency: "once" | "daily" | "weekly" | "custom"
-  scheduledTimes: string[]
-  startDate: Date
-  endDate?: Date
-  contentLength?: "short" | "medium" | "long"
-}) {
+export function compareModelCosts(params: CompareModelCostsParams) {
+  if (params.endDate && params.endDate.getTime() < params.startDate.getTime()) {
+    throw new RangeError(
+      `endDate (${params.endDate.toISOString()}) cannot be before startDate (${params.startDate.toISOString()})`,
+    )
+  }
+
   const comparisons: Array<{
     provider: string
     modelName: string
@@ -343,11 +368,13 @@ export function compareModelCosts(params: {
     creditsPerRun: number
   }> = []
 
+  type AIProvider = "openai" | "claude" | "deepseek" | "sushi"
+
   for (const [provider, models] of Object.entries(DEFAULT_PRICING)) {
     for (const model of models) {
       const estimate = estimateJobCredits({
         ...params,
-        provider: provider as any,
+        provider: provider as AIProvider,
         modelName: model.modelName,
         pricing: model,
       })
