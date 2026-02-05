@@ -54,8 +54,8 @@ export default function Img({
   })
 
   const loadImage = async (url: string) => {
-    // Check if we're on web (blob URLs only work on web)
-    const isWeb = typeof window !== "undefined" && "createObjectURL" in URL
+    // Check if we're on web
+    const isWeb = typeof window !== "undefined"
 
     // Check cache first
     const cachedUrl = imageCache.get(url)
@@ -86,22 +86,10 @@ export default function Img({
         return
       }
 
-      // Web: Use blob URLs for better caching and CORS handling
-      const response = await fetch(url)
-      if (!response.ok) {
-        // Silently fail for 404s - image doesn't exist
-        if (response.status === 404) {
-          setError(null)
-          setIsLoading(false)
-          return
-        }
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
+      // Web: Use Image object to pre-load and get dimensions
+      // This uses browser cache and is much faster than fetch+blob
       const img = new Image()
-      const blob = await response.blob()
-      const blobUrl = URL.createObjectURL(blob)
-      img.src = blobUrl
+      img.src = url
 
       try {
         await img.decode()
@@ -109,11 +97,13 @@ export default function Img({
         const height = img.height
         handleDimensionsChange?.({ width, height })
         onLoad?.()
-      } catch (e) {}
 
-      // Cache the blob URL
-      imageCache.set(url, blobUrl)
-      setImageSrc(blobUrl)
+        // Cache the URL
+        imageCache.set(url, url)
+        setImageSrc(url)
+      } catch (e) {
+        // Silently fail if decode/load fails (e.g. 404)
+      }
     } catch (e) {
       // Don't show error for network/CORS issues - just fail silently
       setError(null)
