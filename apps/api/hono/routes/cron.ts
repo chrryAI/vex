@@ -503,14 +503,6 @@ cron.get("/runScheduledJobs", async (c) => {
       timedOut,
       timestamp: new Date().toISOString(),
     })
-
-    return c.json({
-      success: true,
-      message: "Scheduled jobs execution completed",
-      jobsExecuted: jobsToRun.length,
-      results,
-      timestamp: new Date().toISOString(),
-    })
   } catch (error) {
     captureException(error)
     console.error("❌ Scheduled jobs execution failed:", error)
