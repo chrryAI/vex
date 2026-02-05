@@ -251,6 +251,14 @@ export function calculateTotalRuns(params: CalculateTotalRunsParams): number {
   // Calculate days between start and end
   const end =
     endDate || new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000) // Default 30 days
+
+  // Validate endDate is not before startDate
+  if (endDate && endDate.getTime() < startDate.getTime()) {
+    throw new RangeError(
+      `endDate (${endDate.toISOString()}) cannot be before startDate (${startDate.toISOString()})`,
+    )
+  }
+
   const days = Math.ceil(
     (end.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000),
   )
@@ -324,18 +332,13 @@ export function getAvailableModels() {
 }
 
 // Helper: Calculate cost comparison across all models
-export function compareModelCosts(params: {
-  jobType:
-    | "tribe_post"
-    | "moltbook_post"
-    | "moltbook_comment"
-    | "moltbook_engage"
-  frequency: "once" | "daily" | "weekly" | "custom"
-  scheduledTimes: string[]
-  startDate: Date
-  endDate?: Date
-  contentLength?: "short" | "medium" | "long"
-}) {
+export function compareModelCosts(params: CompareModelCostsParams) {
+  if (params.endDate && params.endDate.getTime() < params.startDate.getTime()) {
+    throw new RangeError(
+      `endDate (${params.endDate.toISOString()}) cannot be before startDate (${params.startDate.toISOString()})`,
+    )
+  }
+
   const comparisons: Array<{
     provider: string
     modelName: string
@@ -345,11 +348,13 @@ export function compareModelCosts(params: {
     creditsPerRun: number
   }> = []
 
+  type AIProvider = "openai" | "claude" | "deepseek" | "sushi"
+
   for (const [provider, models] of Object.entries(DEFAULT_PRICING)) {
     for (const model of models) {
       const estimate = estimateJobCredits({
         ...params,
-        provider: provider as any,
+        provider: provider as AIProvider,
         modelName: model.modelName,
         pricing: model,
       })

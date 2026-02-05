@@ -441,10 +441,11 @@ cron.get("/runScheduledJobs", async (c) => {
 
   console.log("📅 Starting scheduled jobs execution...")
 
-  const { findJobsToRun, executeScheduledJob } =
-    await import("../../lib/scheduledJobs/jobScheduler")
-
   try {
+    // Import scheduler module (inside try block to catch import errors)
+    const { findJobsToRun, executeScheduledJob } =
+      await import("../../lib/scheduledJobs/jobScheduler")
+
     // Find all jobs that need to run now
     const jobsToRun = await findJobsToRun()
 
@@ -481,24 +482,37 @@ cron.get("/runScheduledJobs", async (c) => {
 
     // Wait for all jobs to complete (with timeout)
     const TIMEOUT_MS = 25000 // Vercel limit is 30s
-    let timedOut = false
-    const timeoutPromise = new Promise<never[]>((resolve) =>
-      setTimeout(() => {
-        timedOut = true
-        resolve([])
-      }, TIMEOUT_MS),
+    const timeoutPromise = new Promise<"timeout">((resolve) =>
+      setTimeout(() => resolve("timeout"), TIMEOUT_MS),
     )
-    const results = await Promise.race([
-      Promise.all(executionPromises),
+
+    const raceResult = await Promise.race([
+      Promise.allSettled(executionPromises),
       timeoutPromise,
     ])
+
+    const timedOut = raceResult === "timeout"
+    const startedJobs = executionPromises.length
+
+    // If timed out, get partial results
+    const settledResults = timedOut
+      ? await Promise.allSettled(executionPromises)
+      : (raceResult as PromiseSettledResult<any>[])
+
+    const completedJobs = settledResults.filter(
+      (r) => r.status === "fulfilled",
+    ).length
+    const results = settledResults
+      .filter((r) => r.status === "fulfilled")
+      .map((r) => (r as PromiseFulfilledResult<any>).value)
 
     return c.json({
       success: true,
       message: timedOut
         ? "Scheduled jobs execution timed out, jobs continue in background"
         : "Scheduled jobs execution completed",
-      jobsExecuted: jobsToRun.length,
+      startedJobs,
+      completedJobs,
       results,
       timedOut,
       timestamp: new Date().toISOString(),

@@ -1219,6 +1219,13 @@
       "when": 1770313899470,
       "tag": "0173_lean_leopardon",
       "breakpoints": true
+    },
+    {
+      "idx": 174,
+      "version": "7",
+      "when": 1770317110092,
+      "tag": "0174_dark_dragon_man",
+      "breakpoints": true
     }
   ]
 }

@@ -1166,12 +1166,26 @@ export const tribeLikes = pgTable(
       .notNull(),
   },
   (table) => ({
-    uniquePostLike: uniqueIndex("unique_user_post_like")
-      .on(table.userId, table.guestId, table.postId)
-      .where(sql`${table.postId} IS NOT NULL`),
-    uniqueCommentLike: uniqueIndex("unique_user_comment_like")
-      .on(table.userId, table.guestId, table.commentId)
-      .where(sql`${table.commentId} IS NOT NULL`),
+    // User post likes
+    uniqueUserPostLike: uniqueIndex("unique_user_post_like_user")
+      .on(table.userId, table.postId)
+      .where(sql`${table.userId} IS NOT NULL AND ${table.postId} IS NOT NULL`),
+    // Guest post likes
+    uniqueGuestPostLike: uniqueIndex("unique_user_post_like_guest")
+      .on(table.guestId, table.postId)
+      .where(sql`${table.guestId} IS NOT NULL AND ${table.postId} IS NOT NULL`),
+    // User comment likes
+    uniqueUserCommentLike: uniqueIndex("unique_user_comment_like_user")
+      .on(table.userId, table.commentId)
+      .where(
+        sql`${table.userId} IS NOT NULL AND ${table.commentId} IS NOT NULL`,
+      ),
+    // Guest comment likes
+    uniqueGuestCommentLike: uniqueIndex("unique_user_comment_like_guest")
+      .on(table.guestId, table.commentId)
+      .where(
+        sql`${table.guestId} IS NOT NULL AND ${table.commentId} IS NOT NULL`,
+      ),
   }),
 )
 
@@ -1199,9 +1213,18 @@ export const tribeFollows = pgTable(
       .notNull(),
   },
   (table) => ({
-    uniqueFollow: uniqueIndex("unique_tribe_follow")
-      .on(table.followerId, table.followerGuestId, table.followingAppId)
-      .where(sql`${table.followingAppId} IS NOT NULL`),
+    // User follows
+    uniqueUserFollow: uniqueIndex("unique_tribe_follow_user")
+      .on(table.followerId, table.followingAppId)
+      .where(
+        sql`${table.followerId} IS NOT NULL AND ${table.followingAppId} IS NOT NULL`,
+      ),
+    // Guest follows
+    uniqueGuestFollow: uniqueIndex("unique_tribe_follow_guest")
+      .on(table.followerGuestId, table.followingAppId)
+      .where(
+        sql`${table.followerGuestId} IS NOT NULL AND ${table.followingAppId} IS NOT NULL`,
+      ),
   }),
 )
 
@@ -1229,12 +1252,30 @@ export const tribeBlocks = pgTable(
       .notNull(),
   },
   (table) => ({
-    uniqueAppBlock: uniqueIndex("unique_tribe_app_block")
-      .on(table.blockerId, table.blockerGuestId, table.blockedAppId)
-      .where(sql`${table.blockedAppId} IS NOT NULL`),
-    uniqueUserBlock: uniqueIndex("unique_tribe_user_block")
-      .on(table.blockerId, table.blockerGuestId, table.blockedUserId)
-      .where(sql`${table.blockedUserId} IS NOT NULL`),
+    // User blocks app
+    uniqueUserBlocksApp: uniqueIndex("unique_tribe_user_blocks_app")
+      .on(table.blockerId, table.blockedAppId)
+      .where(
+        sql`${table.blockerId} IS NOT NULL AND ${table.blockedAppId} IS NOT NULL`,
+      ),
+    // Guest blocks app
+    uniqueGuestBlocksApp: uniqueIndex("unique_tribe_guest_blocks_app")
+      .on(table.blockerGuestId, table.blockedAppId)
+      .where(
+        sql`${table.blockerGuestId} IS NOT NULL AND ${table.blockedAppId} IS NOT NULL`,
+      ),
+    // User blocks user
+    uniqueUserBlocksUser: uniqueIndex("unique_tribe_user_blocks_user")
+      .on(table.blockerId, table.blockedUserId)
+      .where(
+        sql`${table.blockerId} IS NOT NULL AND ${table.blockedUserId} IS NOT NULL`,
+      ),
+    // Guest blocks user
+    uniqueGuestBlocksUser: uniqueIndex("unique_tribe_guest_blocks_user")
+      .on(table.blockerGuestId, table.blockedUserId)
+      .where(
+        sql`${table.blockerGuestId} IS NOT NULL AND ${table.blockedUserId} IS NOT NULL`,
+      ),
   }),
 )
 
@@ -1263,12 +1304,28 @@ export const tribeReactions = pgTable(
       .notNull(),
   },
   (table) => ({
-    uniquePostReaction: uniqueIndex("unique_user_post_reaction")
-      .on(table.userId, table.guestId, table.postId, table.emoji)
-      .where(sql`${table.postId} IS NOT NULL`),
-    uniqueCommentReaction: uniqueIndex("unique_user_comment_reaction")
-      .on(table.userId, table.guestId, table.commentId, table.emoji)
-      .where(sql`${table.commentId} IS NOT NULL`),
+    // User post reactions
+    uniqueUserPostReaction: uniqueIndex("unique_user_post_reaction_user")
+      .on(table.userId, table.postId, table.emoji)
+      .where(sql`${table.userId} IS NOT NULL AND ${table.postId} IS NOT NULL`),
+    // Guest post reactions
+    uniqueGuestPostReaction: uniqueIndex("unique_user_post_reaction_guest")
+      .on(table.guestId, table.postId, table.emoji)
+      .where(sql`${table.guestId} IS NOT NULL AND ${table.postId} IS NOT NULL`),
+    // User comment reactions
+    uniqueUserCommentReaction: uniqueIndex("unique_user_comment_reaction_user")
+      .on(table.userId, table.commentId, table.emoji)
+      .where(
+        sql`${table.userId} IS NOT NULL AND ${table.commentId} IS NOT NULL`,
+      ),
+    // Guest comment reactions
+    uniqueGuestCommentReaction: uniqueIndex(
+      "unique_user_comment_reaction_guest",
+    )
+      .on(table.guestId, table.commentId, table.emoji)
+      .where(
+        sql`${table.guestId} IS NOT NULL AND ${table.commentId} IS NOT NULL`,
+      ),
   }),
 )
 
@@ -1303,145 +1360,162 @@ export const tribeShares = pgTable("tribeShares", {
 // SCHEDULED JOBS: Programmatic cron system for Tribe & Moltbook
 // ============================================
 
-export const scheduledJobs = pgTable("scheduledJobs", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  appId: uuid("appId")
-    .notNull()
-    .references(() => apps.id, {
-      onDelete: "cascade",
-    }),
-  userId: uuid("userId")
-    .notNull()
-    .references(() => users.id, {
-      onDelete: "cascade",
-    }),
+export const scheduledJobs = pgTable(
+  "scheduledJobs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    appId: uuid("appId")
+      .notNull()
+      .references(() => apps.id, {
+        onDelete: "cascade",
+      }),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "cascade",
+      }),
 
-  // Job configuration
-  name: text("name").notNull(), // User-friendly name
-  jobType: text("jobType", {
-    enum: [
-      "tribe_post",
-      "moltbook_post",
-      "moltbook_comment",
-      "moltbook_engage",
-    ],
-  }).notNull(),
+    // Job configuration
+    name: text("name").notNull(), // User-friendly name
+    jobType: text("jobType", {
+      enum: [
+        "tribe_post",
+        "moltbook_post",
+        "moltbook_comment",
+        "moltbook_engage",
+      ],
+    }).notNull(),
 
-  // Schedule configuration
-  frequency: text("frequency", {
-    enum: ["once", "daily", "weekly", "custom"],
-  }).notNull(),
-  scheduledTimes: jsonb("scheduledTimes").$type<string[]>().notNull(), // ["09:00", "14:00", "18:00", "22:00"]
-  timezone: text("timezone").notNull().default("UTC"),
-  startDate: timestamp("startDate", {
-    mode: "date",
-    withTimezone: true,
-  }).notNull(),
-  endDate: timestamp("endDate", { mode: "date", withTimezone: true }),
+    // Schedule configuration
+    frequency: text("frequency", {
+      enum: ["once", "daily", "weekly", "custom"],
+    }).notNull(),
+    scheduledTimes: jsonb("scheduledTimes").$type<string[]>().notNull(), // ["09:00", "14:00", "18:00", "22:00"]
+    timezone: text("timezone").notNull().default("UTC"),
+    startDate: timestamp("startDate", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    endDate: timestamp("endDate", { mode: "date", withTimezone: true }),
 
-  // AI Model configuration
-  aiModel: text("aiModel", {
-    enum: ["openai", "claude", "deepseek", "sushi"],
-  }).notNull(),
-  modelConfig: jsonb("modelConfig").$type<{
-    model?: string // e.g., "gpt-4", "claude-3-opus"
-    temperature?: number
-    maxTokens?: number
-  }>(),
+    // AI Model configuration
+    aiModel: text("aiModel", {
+      enum: ["openai", "claude", "deepseek", "sushi"],
+    }).notNull(),
+    modelConfig: jsonb("modelConfig").$type<{
+      model?: string // e.g., "gpt-4", "claude-3-opus"
+      temperature?: number
+      maxTokens?: number
+    }>(),
 
-  // Content configuration
-  contentTemplate: text("contentTemplate"), // Template for post content
-  contentRules: jsonb("contentRules").$type<{
-    tone?: string
-    length?: string
-    topics?: string[]
-    hashtags?: string[]
-  }>(),
+    // Content configuration
+    contentTemplate: text("contentTemplate"), // Template for post content
+    contentRules: jsonb("contentRules").$type<{
+      tone?: string
+      length?: string
+      topics?: string[]
+      hashtags?: string[]
+    }>(),
 
-  // Credit & billing
-  estimatedCreditsPerRun: integer("estimatedCreditsPerRun").notNull(),
-  totalEstimatedCredits: integer("totalEstimatedCredits").notNull(),
-  creditsUsed: integer("creditsUsed").notNull().default(0),
-  isPaid: boolean("isPaid").notNull().default(false),
-  stripePaymentIntentId: text("stripePaymentIntentId"),
+    // Credit & billing
+    estimatedCreditsPerRun: integer("estimatedCreditsPerRun").notNull(),
+    totalEstimatedCredits: integer("totalEstimatedCredits").notNull(),
+    creditsUsed: integer("creditsUsed").notNull().default(0),
+    isPaid: boolean("isPaid").notNull().default(false),
+    stripePaymentIntentId: text("stripePaymentIntentId"),
 
-  // Execution tracking
-  status: text("status", {
-    enum: [
-      "draft",
-      "pending_payment",
-      "active",
-      "paused",
-      "completed",
-      "cancelled",
-    ],
-  })
-    .notNull()
-    .default("draft"),
-  lastRunAt: timestamp("lastRunAt", { mode: "date", withTimezone: true }),
-  nextRunAt: timestamp("nextRunAt", { mode: "date", withTimezone: true }),
-  totalRuns: integer("totalRuns").notNull().default(0),
-  successfulRuns: integer("successfulRuns").notNull().default(0),
-  failedRuns: integer("failedRuns").notNull().default(0),
+    // Execution tracking
+    status: text("status", {
+      enum: [
+        "draft",
+        "pending_payment",
+        "active",
+        "paused",
+        "completed",
+        "cancelled",
+      ],
+    })
+      .notNull()
+      .default("draft"),
+    lastRunAt: timestamp("lastRunAt", { mode: "date", withTimezone: true }),
+    nextRunAt: timestamp("nextRunAt", { mode: "date", withTimezone: true }),
+    totalRuns: integer("totalRuns").notNull().default(0),
+    successfulRuns: integer("successfulRuns").notNull().default(0),
+    failedRuns: integer("failedRuns").notNull().default(0),
 
-  // Metadata
-  metadata: jsonb("metadata").$type<{
-    errors?: Array<{ timestamp: string; error: string }>
-    lastOutput?: string
-    performance?: { avgDuration: number; avgCredits: number }
-  }>(),
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      errors?: Array<{ timestamp: string; error: string }>
+      lastOutput?: string
+      performance?: { avgDuration: number; avgCredits: number }
+    }>(),
 
-  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
-
-export const scheduledJobRuns = pgTable("scheduledJobRuns", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  jobId: uuid("jobId")
-    .notNull()
-    .references(() => scheduledJobs.id, {
-      onDelete: "cascade",
-    }),
-
-  // Execution details
-  status: text("status", {
-    enum: ["pending", "running", "success", "failed"],
-  }).notNull(),
-  startedAt: timestamp("startedAt", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  completedAt: timestamp("completedAt", { mode: "date", withTimezone: true }),
-
-  // Output & metrics
-  output: text("output"), // Generated content
-  creditsUsed: integer("creditsUsed").notNull().default(0),
-  tokensUsed: integer("tokensUsed"),
-  duration: integer("duration"), // milliseconds
-
-  // Result tracking
-  tribePostId: uuid("tribePostId").references(() => tribePosts.id, {
-    onDelete: "set null",
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    appIdIdx: index("scheduledJobs_appId_idx").on(table.appId),
+    userIdIdx: index("scheduledJobs_userId_idx").on(table.userId),
+    statusNextRunAtIdx: index("scheduledJobs_status_nextRunAt_idx").on(
+      table.status,
+      table.nextRunAt,
+    ),
   }),
-  moltPostId: text("moltPostId"), // Moltbook post ID
+)
 
-  // Error tracking
-  error: text("error"),
-  errorStack: text("errorStack"),
+export const scheduledJobRuns = pgTable(
+  "scheduledJobRuns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    jobId: uuid("jobId")
+      .notNull()
+      .references(() => scheduledJobs.id, {
+        onDelete: "cascade",
+      }),
 
-  metadata: jsonb("metadata").$type<{
-    modelUsed?: string
-    promptTokens?: number
-    completionTokens?: number
-  }>(),
+    // Execution details
+    status: text("status", {
+      enum: ["pending", "running", "success", "failed"],
+    }).notNull(),
+    startedAt: timestamp("startedAt", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    completedAt: timestamp("completedAt", { mode: "date", withTimezone: true }),
 
-  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
+    // Output & metrics
+    output: text("output"), // Generated content
+    creditsUsed: integer("creditsUsed").notNull().default(0),
+    tokensUsed: integer("tokensUsed"),
+    duration: integer("duration"), // milliseconds
+
+    // Result tracking
+    tribePostId: uuid("tribePostId").references(() => tribePosts.id, {
+      onDelete: "set null",
+    }),
+    moltPostId: text("moltPostId"), // Moltbook post ID
+
+    // Error tracking
+    error: text("error"),
+    errorStack: text("errorStack"),
+
+    metadata: jsonb("metadata").$type<{
+      modelUsed?: string
+      promptTokens?: number
+      completionTokens?: number
+    }>(),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    jobIdIdx: index("scheduledJobRuns_jobId_idx").on(table.jobId),
+  }),
+)
 
 export const aiModelPricing = pgTable(
   "aiModelPricing",

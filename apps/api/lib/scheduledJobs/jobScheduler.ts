@@ -36,6 +36,37 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     return
   }
 
+  // Check if job is still active
+  if (job.status !== "active") {
+    console.log(`⏭️ Job ${job.name} is not active, skipping`)
+    await db
+      .update(scheduledJobs)
+      .set({ status: "paused" })
+      .where(eq(scheduledJobs.id, jobId))
+    return
+  }
+
+  // Atomically claim the job by updating nextRunAt
+  const claimResult = await db
+    .update(scheduledJobs)
+    .set({
+      nextRunAt: new Date(Date.now() + 60000), // Lock for 1 minute
+    })
+    .where(
+      and(
+        eq(scheduledJobs.id, job.id),
+        eq(scheduledJobs.status, "active"),
+        lte(scheduledJobs.nextRunAt, new Date()),
+      ),
+    )
+    .returning({ id: scheduledJobs.id })
+
+  // If no rows updated, another scheduler claimed it
+  if (claimResult.length === 0) {
+    console.log(`⏭️ Job ${job.name} already claimed by another scheduler`)
+    return
+  }
+
   // Check if job has ended
   if (job.endDate && new Date() > job.endDate) {
     console.log(`⏭️ Job ${job.name} has ended`)
@@ -307,13 +338,13 @@ Generate an engaging Moltbook post. Keep it concise and interesting.`
   }
 }
 
-async function executeMoltbookComment(job: any) {
-  // This would integrate with existing moltbookComments logic
-  // For now, return placeholder
-  return {
-    output: "Moltbook comment execution",
-    creditsUsed: 10,
-  }
+async function executeMoltbookComment(
+  job: typeof scheduledJobs.$inferSelect,
+): Promise<{
+  output: string
+  creditsUsed: number
+}> {
+  throw new Error("executeMoltbookComment not implemented")
 }
 
 async function executeMoltbookEngage(job: any) {
@@ -331,11 +362,12 @@ async function executeMoltbookEngage(job: any) {
     throw new Error("engageWithMoltbookPosts is not available")
   }
 
-  await engageWithMoltbookPosts({ slug: app.slug || "chrry" })
+  const result = await engageWithMoltbookPosts({ slug: app.slug || "chrry" })
 
   return {
-    output: "Moltbook engagement execution",
-    creditsUsed: 50, // Estimated
+    output: result?.output || "Moltbook engagement execution",
+    creditsUsed: result?.creditsUsed || 50,
+    tokensUsed: result?.tokensUsed,
   }
 }
 
@@ -388,8 +420,11 @@ export function calculateNextRunTime(
   const currentMinute = zonedNow.getMinutes()
   const currentTime = `${currentHour.toString().padStart(2, "0")}:${currentMinute.toString().padStart(2, "0")}`
 
+  // Sort scheduledTimes in ascending order (invariant: must be sorted)
+  const sortedTimes = [...scheduledTimes].sort()
+
   // Find next time slot in the scheduled times
-  const nextTime = scheduledTimes.find((time) => time > currentTime)
+  const nextTime = sortedTimes.find((time) => time > currentTime)
 
   let zonedNext: Date
 
@@ -399,10 +434,28 @@ export function calculateNextRunTime(
     zonedNext = new Date(zonedNow)
     zonedNext.setHours(hours, minutes, 0, 0)
   } else {
-    // Next run is tomorrow in target timezone
-    const [hours, minutes] = scheduledTimes[0].split(":").map(Number)
+    // Next run is in the next period (day/week/month) in target timezone
+    const [hours, minutes] = sortedTimes[0].split(":").map(Number)
     zonedNext = new Date(zonedNow)
-    zonedNext.setDate(zonedNext.getDate() + 1)
+
+    // Apply frequency-based increment
+    switch (frequency.toLowerCase()) {
+      case "daily":
+        zonedNext.setDate(zonedNext.getDate() + 1)
+        break
+      case "weekly":
+      case "week":
+        zonedNext.setDate(zonedNext.getDate() + 7)
+        break
+      case "monthly":
+      case "month":
+        zonedNext.setMonth(zonedNext.getMonth() + 1)
+        break
+      default:
+        // Default to daily for unknown frequencies
+        zonedNext.setDate(zonedNext.getDate() + 1)
+    }
+
     zonedNext.setHours(hours, minutes, 0, 0)
   }
 
