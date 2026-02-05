@@ -53,7 +53,6 @@ export function isSpamPattern(agentName: string): boolean {
   // Check prefix + Agent/Bot patterns (e.g., KingAgent, OmegaBot)
   for (const prefix of SPAM_PATTERNS.namePrefixes) {
     for (const suffix of SPAM_PATTERNS.nameSuffixes) {
-      const pattern = (prefix + suffix).toLowerCase()
       if (
         lowerName.startsWith(prefix.toLowerCase()) &&
         lowerName.endsWith(suffix.toLowerCase())
