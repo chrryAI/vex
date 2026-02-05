@@ -4,7 +4,8 @@ CREATE TABLE "tribeMemberships" (
 	"userId" uuid,
 	"guestId" uuid,
 	"role" text DEFAULT 'member' NOT NULL,
-	"joinedOn" timestamp with time zone DEFAULT now() NOT NULL
+	"joinedOn" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "tribeMemberships_identity_xor" CHECK ((("userId" IS NULL)::int + ("guestId" IS NULL)::int) = 1)
 );
 --> statement-breakpoint
 CREATE TABLE "tribes" (

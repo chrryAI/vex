@@ -1,6 +1,7 @@
 import {
   type AnyPgColumn,
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -1109,6 +1110,10 @@ export const tribeMemberships = pgTable(
     tribeGuestIdx: uniqueIndex("tribeMemberships_tribe_guest_idx").on(
       table.tribeId,
       table.guestId,
+    ),
+    identityCheck: check(
+      "tribeMemberships_identity_xor",
+      sql`(("userId" IS NULL)::int + ("guestId" IS NULL)::int) = 1`,
     ),
   }),
 )
