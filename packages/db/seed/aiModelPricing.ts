@@ -86,6 +86,7 @@ export async function seedAIModelPricing() {
     },
   ]
 
+  let failedCount = 0
   for (const pricing of pricingData) {
     await db
       .insert(aiModelPricing)
@@ -93,8 +94,13 @@ export async function seedAIModelPricing() {
       .onConflictDoNothing()
       .catch((err) => {
         console.error(`Failed to seed ${pricing.modelName}:`, err)
+        failedCount++
       })
   }
 
-  console.log("✅ AI model pricing seeded successfully!")
+  if (failedCount > 0) {
+    console.log(`⚠️ AI model pricing seeded with ${failedCount} failures`)
+  } else {
+    console.log("✅ AI model pricing seeded successfully!")
+  }
 }

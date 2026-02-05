@@ -480,12 +480,29 @@ cron.get("/runScheduledJobs", async (c) => {
     )
 
     // Wait for all jobs to complete (with timeout)
+    const TIMEOUT_MS = 25000 // Vercel limit is 30s
+    let timedOut = false
+    const timeoutPromise = new Promise<never[]>((resolve) =>
+      setTimeout(() => {
+        timedOut = true
+        resolve([])
+      }, TIMEOUT_MS),
+    )
     const results = await Promise.race([
       Promise.all(executionPromises),
-      new Promise(
-        (resolve) => setTimeout(() => resolve([]), 25000), // 25s timeout (Vercel limit is 30s)
-      ),
+      timeoutPromise,
     ])
+
+    return c.json({
+      success: true,
+      message: timedOut
+        ? "Scheduled jobs execution timed out, jobs continue in background"
+        : "Scheduled jobs execution completed",
+      jobsExecuted: jobsToRun.length,
+      results,
+      timedOut,
+      timestamp: new Date().toISOString(),
+    })
 
     return c.json({
       success: true,

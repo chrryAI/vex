@@ -245,6 +245,9 @@ export function calculateTotalRuns(params: CalculateTotalRunsParams): number {
     return 1
   }
 
+  // Validate scheduledTimes - ensure at least one run per period
+  const runsPerPeriod = Math.max(1, scheduledTimes.length)
+
   // Calculate days between start and end
   const end =
     endDate || new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000) // Default 30 days
@@ -257,16 +260,16 @@ export function calculateTotalRuns(params: CalculateTotalRunsParams): number {
 
   switch (frequency) {
     case "daily":
-      return totalDays * scheduledTimes.length
+      return totalDays * runsPerPeriod
 
     case "weekly": {
       const weeks = Math.ceil(totalDays / 7)
-      return weeks * scheduledTimes.length
+      return weeks * runsPerPeriod
     }
 
     case "custom":
       // For custom, assume daily by default
-      return totalDays * scheduledTimes.length
+      return totalDays * runsPerPeriod
 
     default:
       return 1
