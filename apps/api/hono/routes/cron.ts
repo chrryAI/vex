@@ -427,3 +427,124 @@ cron.get("/engageWithMoltbook", async (c) => {
     timestamp: new Date().toISOString(),
   })
 })
+
+// GET /cron/runScheduledJobs - Execute scheduled jobs that are due
+cron.get("/runScheduledJobs", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  console.log("📅 Starting scheduled jobs execution...")
+
+  try {
+    // Import scheduler module (inside try block to catch import errors)
+    const { findJobsToRun, executeScheduledJob } =
+      await import("../../lib/scheduledJobs/jobScheduler")
+
+    // Find all jobs that need to run now
+    const jobsToRun = await findJobsToRun()
+
+    if (jobsToRun.length === 0) {
+      console.log("⏭️ No scheduled jobs to run")
+      return c.json({
+        success: true,
+        message: "No scheduled jobs to run",
+        jobsExecuted: 0,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    console.log(`🚀 Found ${jobsToRun.length} jobs to execute`)
+
+    // Execute all jobs in parallel with tracked promises
+    const trackers: Array<{
+      jobId: string
+      name: string
+      status: "pending" | "fulfilled" | "rejected"
+      value?: any
+      error?: any
+    }> = []
+
+    const executionPromises = jobsToRun.map((job, index) => {
+      const tracker = {
+        jobId: job.id,
+        name: job.name,
+        status: "pending" as "pending" | "fulfilled" | "rejected",
+        value: undefined as any,
+        error: undefined as any,
+      }
+      trackers[index] = tracker
+
+      return executeScheduledJob({ jobId: job.id })
+        .then(() => {
+          console.log(`✅ Job executed: ${job.name}`)
+          tracker.status = "fulfilled"
+          tracker.value = { jobId: job.id, name: job.name, status: "success" }
+          return tracker.value
+        })
+        .catch((error) => {
+          captureException(error)
+          console.error(`❌ Job failed: ${job.name}`, error)
+          tracker.status = "rejected"
+          tracker.error = error
+          tracker.value = {
+            jobId: job.id,
+            name: job.name,
+            status: "failed",
+            error: error.message,
+          }
+          return tracker.value
+        })
+    })
+
+    // Wait for all jobs to complete (with timeout)
+    const TIMEOUT_MS = 25000 // Vercel limit is 30s
+    const timeoutPromise = new Promise<"timeout">((resolve) =>
+      setTimeout(() => resolve("timeout"), TIMEOUT_MS),
+    )
+
+    const raceResult = await Promise.race([
+      Promise.allSettled(executionPromises),
+      timeoutPromise,
+    ])
+
+    const timedOut = raceResult === "timeout"
+    const startedJobs = executionPromises.length
+
+    // Collect results from trackers (no re-awaiting needed)
+    const completedJobs = trackers.filter(
+      (t) => t.status === "fulfilled",
+    ).length
+    const results = trackers
+      .filter((t) => t.status === "fulfilled")
+      .map((t) => t.value)
+
+    return c.json({
+      success: true,
+      message: timedOut
+        ? "Scheduled jobs execution timed out, jobs continue in background"
+        : "Scheduled jobs execution completed",
+      startedJobs,
+      completedJobs,
+      results,
+      timedOut,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (error) {
+    captureException(error)
+    console.error("❌ Scheduled jobs execution failed:", error)
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      },
+      500,
+    )
+  }
+})

@@ -6,7 +6,7 @@ reviews:
   # Auto-review settings - disabled to prevent automatic reviews
   # Use @coderabbitai review to manually trigger reviews
   auto_review:
-    enabled: false
+    enabled: true
     drafts: false
 
   # Review scope
@@ -16,6 +16,6 @@ reviews:
   collapse_walkthrough: false
 
   # File limits
-  path_instructions:
-    - path: "packages/sushi/**"
-      instructions: "This package is synced to a separate repository and doesn't need review in this PR."
+  # path_instructions:
+  #   - path: "packages/sushi/**"
+  #     instructions: "This package is synced to a separate repository and doesn't need review in this PR."

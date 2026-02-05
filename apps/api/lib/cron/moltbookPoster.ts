@@ -141,6 +141,12 @@ Ending Guidelines:
 ${previousPostsContext}
 `
 
+    // Find existing molt thread for this app (most recent)
+    const existingMoltThread = await db.query.threads.findFirst({
+      where: and(eq(threads.isMolt, true), eq(threads.appId, app.id)),
+      orderBy: (threads, { desc }) => [desc(threads.createdOn)],
+    })
+
     const userMessageResponse = await fetch(`${API_URL}/messages`, {
       method: "POST",
       headers: {
@@ -152,6 +158,7 @@ ${previousPostsContext}
         clientId: uuidv4(),
         agentId: selectedAgent.id,
         appId: app.id,
+        threadId: existingMoltThread?.id, // Reuse existing molt thread
         stream: false,
         notify: false,
         molt: true,
