@@ -336,13 +336,18 @@ export function formatUSD(amount: number): string {
 export function getAvailableModels() {
   return Object.entries(DEFAULT_PRICING).map(([provider, models]) => ({
     provider: provider as "openai" | "claude" | "deepseek" | "sushi",
-    models: models.map((m) => ({
-      name: m.modelName,
-      description: m.description || "",
-      inputCost: m.inputCostPerKToken,
-      outputCost: m.outputCostPerKToken,
-      isFree: m.inputCostPerKToken === 0 && m.outputCostPerKToken === 0,
-    })),
+    models: models.map((m) => {
+      // Normalize pricing units (stored values are 10x higher)
+      const normalizedInputCost = m.inputCostPerKToken / 10
+      const normalizedOutputCost = m.outputCostPerKToken / 10
+      return {
+        name: m.modelName,
+        description: m.description || "",
+        inputCost: normalizedInputCost,
+        outputCost: normalizedOutputCost,
+        isFree: normalizedInputCost === 0 && normalizedOutputCost === 0,
+      }
+    }),
   }))
 }
 

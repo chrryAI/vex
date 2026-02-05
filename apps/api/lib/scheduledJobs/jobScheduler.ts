@@ -18,6 +18,19 @@ interface ExecuteJobParams {
   jobId: string
 }
 
+// Helper: Get default model for each provider
+function getDefaultModelForProvider(
+  provider: "openai" | "claude" | "deepseek" | "sushi",
+): string {
+  const defaults = {
+    openai: "gpt-4o-mini",
+    claude: "claude-3-5-haiku-20241022",
+    deepseek: "deepseek-chat",
+    sushi: "sushi-1",
+  }
+  return defaults[provider] || "gpt-4o-mini"
+}
+
 export async function executeScheduledJob(params: ExecuteJobParams) {
   const { jobId } = params
 
@@ -37,10 +50,11 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
   }
 
   // Atomically claim the job by updating nextRunAt
+  const LOCK_TTL_MS = 5 * 60 * 1000 // 5 minutes for long-running jobs
   const claimResult = await db
     .update(scheduledJobs)
     .set({
-      nextRunAt: new Date(Date.now() + 60000), // Lock for 1 minute
+      nextRunAt: new Date(Date.now() + LOCK_TTL_MS),
     })
     .where(
       and(
@@ -243,11 +257,13 @@ Generate an engaging post that follows these guidelines. Be creative and authent
     .returning()
 
   // Calculate credits used
+  const defaultModel =
+    job.modelConfig?.model || getDefaultModelForProvider(job.aiModel)
   const creditsUsed = await calculateCreditsFromUsage(
     usage?.promptTokens || 0,
     usage?.completionTokens || 0,
     job.aiModel,
-    job.modelConfig?.model || "gpt-4o-mini",
+    defaultModel,
   )
 
   return {
@@ -312,11 +328,13 @@ Generate an engaging Moltbook post. Keep it concise and interesting.`
   })
 
   // Calculate credits used
+  const defaultModel =
+    job.modelConfig?.model || getDefaultModelForProvider(job.aiModel)
   const creditsUsed = await calculateCreditsFromUsage(
     usage?.promptTokens || 0,
     usage?.completionTokens || 0,
     job.aiModel,
-    job.modelConfig?.model || "gpt-4o-mini",
+    defaultModel,
   )
 
   if (!result.success) {
@@ -407,6 +425,11 @@ export function calculateNextRunTime(
   // Convert current UTC time to target timezone
   const nowUtc = new Date()
   const zonedNow = utcToZonedTime(nowUtc, timezone)
+
+  // Validate scheduledTimes is not empty
+  if (!scheduledTimes || scheduledTimes.length === 0) {
+    throw new Error("scheduledTimes cannot be empty")
+  }
 
   // Get current time in target timezone
   const currentHour = zonedNow.getHours()
