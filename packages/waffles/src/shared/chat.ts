@@ -985,7 +985,7 @@ export const chat = async ({
             nextProfile = await characterProfile.getAttribute("data-cp")
             return nextProfile && nextProfile !== profile ? nextProfile : null
           },
-          { timeout: 15000 },
+          { timeout: prompt.agentMessageTimeout || agentMessageTimeout },
         )
         .toBeTruthy()
       profile = nextProfile ?? ""

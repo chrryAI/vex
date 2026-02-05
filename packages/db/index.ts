@@ -1,4 +1,6 @@
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js"
+import { deleteFalkorUser } from "./falkorSync"
+
 import {
   accounts,
   affiliateLinks,
@@ -1224,6 +1226,9 @@ export const deleteUser = async (id: string) => {
       deleted.userName ?? undefined,
       deleted.apiKey ?? undefined,
     )
+
+    // FalkorDB cleanup (safe - won't crash if fails)
+    await deleteFalkorUser(deleted.id)
   }
 
   return deleted
@@ -1352,6 +1357,12 @@ export const deleteMessage = async ({ id }: { id: string }) => {
     .delete(messages)
     .where(eq(messages.id, id))
     .returning()
+
+  // FalkorDB cleanup (safe - won't crash if fails)
+  if (deleted) {
+    const { deleteFalkorMessage } = await import("./falkorSync")
+    await deleteFalkorMessage(deleted.id)
+  }
 
   return deleted
 }
@@ -2889,6 +2900,12 @@ export const deleteThread = async ({ id }: { id: string }) => {
     .delete(threads)
     .where(eq(threads.id, id))
     .returning()
+
+  // FalkorDB cleanup (safe - won't crash if fails)
+  if (deleted) {
+    const { deleteFalkorThread } = await import("./falkorSync")
+    await deleteFalkorThread(deleted.id)
+  }
 
   return deleted
 }
@@ -4730,6 +4747,10 @@ export const deleteApp = async ({ id }: { id: string }) => {
   // Invalidate app cache
   if (deleted) {
     await invalidateApp(deleted.id, deleted.slug)
+
+    // FalkorDB cleanup (safe - won't crash if fails)
+    const { deleteFalkorApp } = await import("./falkorSync")
+    await deleteFalkorApp(deleted.id)
   }
 
   return deleted
@@ -6190,6 +6211,10 @@ export async function deleteStore({ id }: { id: string }) {
       deleted.domain,
       deleted.appId,
     )
+
+    // FalkorDB cleanup (safe - won't crash if fails)
+    const { deleteFalkorStore } = await import("./falkorSync")
+    await deleteFalkorStore(deleted.id)
   }
 
   return deleted
@@ -6559,6 +6584,12 @@ export const updateTask = async (task: Partial<task> & { id: string }) => {
 
 export const deleteTask = async ({ id }: { id: string }) => {
   const [deleted] = await db.delete(tasks).where(eq(tasks.id, id)).returning()
+
+  // FalkorDB cleanup (safe - won't crash if fails)
+  if (deleted) {
+    const { deleteFalkorTask } = await import("./falkorSync")
+    await deleteFalkorTask(deleted.id)
+  }
 
   return deleted
 }
