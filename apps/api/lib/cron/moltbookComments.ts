@@ -236,7 +236,7 @@ ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500
 - Stays true to your personality and knowledge
 - Be thorough - don't rush to finish, explain your thinking
 
-Reply (just the text, no quotes):`
+Reply (2-3 sentences max, concise and engaging, just the text, no quotes):`
 
           console.log(`🔍 Reply generation for ${comment.author.name}:`)
           console.log(
@@ -250,7 +250,7 @@ Reply (just the text, no quotes):`
           const { textStream } = streamText({
             model: deepseek,
             prompt: replyPrompt,
-            maxOutputTokens: 800, // Allow detailed, thoughtful responses
+            maxOutputTokens: 300, // Concise but thoughtful responses
           })
 
           let replyContent = ""
