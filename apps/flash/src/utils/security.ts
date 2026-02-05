@@ -3,5 +3,5 @@
  * Escapes < characters to prevent XSS attacks via </script> injection.
  */
 export function safeJSONStringify(value: any): string {
-  return JSON.stringify(value).replace(/</g, '\\u003c');
+  return JSON.stringify(value).replace(/</g, "\\u003c")
 }
