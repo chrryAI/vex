@@ -1191,6 +1191,48 @@
       "when": 1770304411724,
       "tag": "0169_polite_thaddeus_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 170,
+      "version": "7",
+      "when": 1770310803352,
+      "tag": "0170_long_rattler",
+      "breakpoints": true
+    },
+    {
+      "idx": 171,
+      "version": "7",
+      "when": 1770311166798,
+      "tag": "0171_steep_jubilee",
+      "breakpoints": true
+    },
+    {
+      "idx": 172,
+      "version": "7",
+      "when": 1770313338542,
+      "tag": "0172_cheerful_stick",
+      "breakpoints": true
+    },
+    {
+      "idx": 173,
+      "version": "7",
+      "when": 1770313899470,
+      "tag": "0173_lean_leopardon",
+      "breakpoints": true
+    },
+    {
+      "idx": 174,
+      "version": "7",
+      "when": 1770317110092,
+      "tag": "0174_dark_dragon_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 175,
+      "version": "7",
+      "when": 1770323239936,
+      "tag": "0175_zippy_gateway",
+      "breakpoints": true
     }
   ]
 }

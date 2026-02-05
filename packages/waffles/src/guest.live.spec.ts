@@ -128,7 +128,6 @@ test("Chat", async ({ page }) => {
     page,
     isMember,
     isLive,
-    agentMessageTimeout: 120000,
     instruction: "Help me plan a 3-day trip to Tokyo",
     prompts: [
       {

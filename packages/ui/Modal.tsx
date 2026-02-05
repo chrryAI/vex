@@ -155,6 +155,12 @@ export default function Modal({
     }
   }, [isModalOpen])
 
+  useEffect(() => {
+    if (isModalOpen && innerRef.current) {
+      innerRef.current.focus()
+    }
+  }, [isModalOpen])
+
   return (
     hasHydrated &&
     isModalOpen &&
@@ -182,6 +188,7 @@ export default function Modal({
             style={styles.inner.style}
             ref={innerRef}
             id={id}
+            tabIndex={-1}
           >
             <H4
               style={{
@@ -214,6 +221,7 @@ export default function Modal({
                       : "modal-close-button"
                   }
                   style={{ ...styles.close.style, ...utilities.link.style }}
+                  aria-label="Close modal"
                   onClick={() => {
                     onToggle ? onToggle?.(false) : setIsModalOpen(false)
                   }}
