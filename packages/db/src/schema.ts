@@ -1039,6 +1039,80 @@ export const moltbookBlocks = pgTable(
 // TRIBE: In-house social network for user-created apps
 // ============================================
 
+export const tribes = pgTable("tribes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon"),
+
+  // Membership & engagement
+  membersCount: integer("membersCount").notNull().default(0),
+  postsCount: integer("postsCount").notNull().default(0),
+
+  // Settings
+  visibility: text("visibility", {
+    enum: ["public", "private", "restricted"],
+  })
+    .notNull()
+    .default("public"),
+
+  // Moderation
+  moderatorIds: jsonb("moderatorIds").$type<string[]>().default([]),
+  rules: text("rules"),
+
+  // Metadata
+  metadata: jsonb("metadata").$type<{
+    color?: string
+    banner?: string
+    tags?: string[]
+  }>(),
+
+  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+    .defaultNow()
+    .notNull(),
+})
+
+export const tribeMemberships = pgTable(
+  "tribeMemberships",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tribeId: uuid("tribeId")
+      .notNull()
+      .references(() => tribes.id, {
+        onDelete: "cascade",
+      }),
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "cascade",
+    }),
+    role: text("role", {
+      enum: ["member", "moderator", "admin"],
+    })
+      .notNull()
+      .default("member"),
+
+    joinedOn: timestamp("joinedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    tribeUserIdx: uniqueIndex("tribeMemberships_tribe_user_idx").on(
+      table.tribeId,
+      table.userId,
+    ),
+    tribeGuestIdx: uniqueIndex("tribeMemberships_tribe_guest_idx").on(
+      table.tribeId,
+      table.guestId,
+    ),
+  }),
+)
+
 export const tribePosts = pgTable("tribePosts", {
   id: uuid("id").defaultRandom().primaryKey(),
   appId: uuid("appId")
@@ -1084,7 +1158,9 @@ export const tribePosts = pgTable("tribePosts", {
   viewsCount: integer("viewsCount").notNull().default(0),
 
   // Tribe-specific
-  tribe: text("tribe"), // Optional tribe/community tag
+  tribeId: uuid("tribeId").references(() => tribes.id, {
+    onDelete: "set null",
+  }),
   tags: jsonb("tags").$type<string[]>().default([]),
   isPinned: boolean("isPinned").notNull().default(false),
 

@@ -13,6 +13,7 @@ import { postToMoltbook } from "../integrations/moltbook"
 import { engageWithMoltbookPosts } from "../cron/moltbookEngagement"
 import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz"
 import { calculateCreditsFromDB } from "./creditCalculator"
+import { getOrCreateTribe } from "../tribes/autoCreateTribe"
 
 interface ExecuteJobParams {
   jobId: string
@@ -245,6 +246,16 @@ Generate an engaging post that follows these guidelines. Be creative and authent
     maxTokens: job.modelConfig?.maxTokens || 500,
   })
 
+  // Auto-create/join tribe if specified in metadata
+  let tribeId: string | null = null
+  if (job.metadata?.tribe) {
+    tribeId = await getOrCreateTribe({
+      slug: job.metadata.tribe,
+      userId: job.userId || undefined,
+      guestId: undefined,
+    })
+  }
+
   // Create Tribe post
   const [post] = await db
     .insert(tribePosts)
@@ -253,6 +264,7 @@ Generate an engaging post that follows these guidelines. Be creative and authent
       userId: job.userId,
       content: text,
       visibility: "public",
+      tribeId,
     })
     .returning()
 
