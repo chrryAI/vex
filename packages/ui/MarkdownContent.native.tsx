@@ -64,7 +64,7 @@ const MarkdownContent = memo(
     webSearchResults,
   }: MarkdownContentProps) => {
     const [isMounted, setIsMounted] = useState(false)
-    const { addHapticFeedback, colors } = useTheme()
+    const { colors } = useTheme()
     const styles = useMarkdownContentStyles()
 
     useEffect(() => {
