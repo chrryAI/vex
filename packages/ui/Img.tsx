@@ -96,7 +96,6 @@ export default function Img({
         const width = img.width
         const height = img.height
         handleDimensionsChange?.({ width, height })
-        onLoad?.()
 
         // Cache the URL
         imageCache.set(url, url)
