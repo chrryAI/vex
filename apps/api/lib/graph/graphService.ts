@@ -189,7 +189,7 @@ async function generateDynamicCypher(
     }
 
     // Validate: Check for empty type() function calls
-    if (/type\s*\(\s*\)/.test(cleanQuery)) {
+    if (/type\s*\(\s*\)/i.test(cleanQuery)) {
       console.warn("⚠️ Cypher query contains empty type() function call")
       console.warn(`Query: ${cleanQuery}`)
       return null // Skip invalid query
