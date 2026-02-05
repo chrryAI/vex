@@ -986,7 +986,7 @@ export const chat = async ({
             return nextProfile && nextProfile !== profile ? nextProfile : null
           },
           {
-            timeout: (prompt.agentMessageTimeout || agentMessageTimeout) * 1.5,
+            timeout: prompt.agentMessageTimeout || agentMessageTimeout,
           },
         )
         .toBeTruthy()
