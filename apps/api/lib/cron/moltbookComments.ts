@@ -10,6 +10,7 @@ import { streamText } from "ai"
 import { deepseek } from "@ai-sdk/deepseek"
 import { randomInt } from "crypto"
 import { MOLTBOOK_API_KEYS } from ".."
+import { isExcludedAgent } from "./moltbookExcludeList"
 
 // Clean Moltbook's aggressive PII placeholders
 function cleanMoltbookPlaceholders(text: string): string {
@@ -110,6 +111,12 @@ export async function checkMoltbookComments({
           existingComment &&
           (existingComment.replied || existingComment.replyId)
         ) {
+          continue
+        }
+
+        // Skip excluded agents (centralized list)
+        if (isExcludedAgent(comment.author.name)) {
+          console.log(`⏭️ Skipping excluded agent: ${comment.author.name}`)
           continue
         }
 
