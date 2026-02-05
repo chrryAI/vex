@@ -1432,7 +1432,7 @@ export const scheduledJobs = pgTable(
         "active",
         "paused",
         "completed",
-        "cancelled",
+        "canceled",
       ],
     })
       .notNull()
@@ -2138,7 +2138,7 @@ export const calendarEvents = pgTable(
 
     // Status and metadata
     status: text("status", {
-      enum: ["confirmed", "tentative", "cancelled"],
+      enum: ["confirmed", "tentative", "canceled"],
     })
       .notNull()
       .default("confirmed"),
@@ -2262,7 +2262,7 @@ export const affiliateReferrals = pgTable(
       onDelete: "set null",
     }),
     status: text("status", {
-      enum: ["pending", "converted", "paid", "cancelled"],
+      enum: ["pending", "converted", "paid", "canceled"],
     })
       .default("pending")
       .notNull(),

@@ -461,24 +461,46 @@ cron.get("/runScheduledJobs", async (c) => {
 
     console.log(`🚀 Found ${jobsToRun.length} jobs to execute`)
 
-    // Execute all jobs in parallel (fire-and-forget)
-    const executionPromises = jobsToRun.map((job) =>
-      executeScheduledJob({ jobId: job.id })
+    // Execute all jobs in parallel with tracked promises
+    const trackers: Array<{
+      jobId: string
+      name: string
+      status: "pending" | "fulfilled" | "rejected"
+      value?: any
+      error?: any
+    }> = []
+
+    const executionPromises = jobsToRun.map((job, index) => {
+      const tracker = {
+        jobId: job.id,
+        name: job.name,
+        status: "pending" as "pending" | "fulfilled" | "rejected",
+        value: undefined as any,
+        error: undefined as any,
+      }
+      trackers[index] = tracker
+
+      return executeScheduledJob({ jobId: job.id })
         .then(() => {
           console.log(`✅ Job executed: ${job.name}`)
-          return { jobId: job.id, name: job.name, status: "success" }
+          tracker.status = "fulfilled"
+          tracker.value = { jobId: job.id, name: job.name, status: "success" }
+          return tracker.value
         })
         .catch((error) => {
           captureException(error)
           console.error(`❌ Job failed: ${job.name}`, error)
-          return {
+          tracker.status = "rejected"
+          tracker.error = error
+          tracker.value = {
             jobId: job.id,
             name: job.name,
             status: "failed",
             error: error.message,
           }
-        }),
-    )
+          return tracker.value
+        })
+    })
 
     // Wait for all jobs to complete (with timeout)
     const TIMEOUT_MS = 25000 // Vercel limit is 30s
@@ -494,17 +516,13 @@ cron.get("/runScheduledJobs", async (c) => {
     const timedOut = raceResult === "timeout"
     const startedJobs = executionPromises.length
 
-    // If timed out, get partial results
-    const settledResults = timedOut
-      ? await Promise.allSettled(executionPromises)
-      : (raceResult as PromiseSettledResult<any>[])
-
-    const completedJobs = settledResults.filter(
-      (r) => r.status === "fulfilled",
+    // Collect results from trackers (no re-awaiting needed)
+    const completedJobs = trackers.filter(
+      (t) => t.status === "fulfilled",
     ).length
-    const results = settledResults
-      .filter((r) => r.status === "fulfilled")
-      .map((r) => (r as PromiseFulfilledResult<any>).value)
+    const results = trackers
+      .filter((t) => t.status === "fulfilled")
+      .map((t) => t.value)
 
     return c.json({
       success: true,

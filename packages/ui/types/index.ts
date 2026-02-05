@@ -633,7 +633,7 @@ export type calendarEvent = {
     minutesBefore: number
     sent?: boolean
   }>
-  status: "confirmed" | "tentative" | "cancelled"
+  status: "confirmed" | "tentative" | "canceled"
   visibility: "private" | "public" | "shared"
   externalId: string | null
   externalSource: "google" | "outlook" | "apple" | null

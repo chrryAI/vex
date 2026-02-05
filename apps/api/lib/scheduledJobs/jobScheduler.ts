@@ -36,16 +36,6 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
     return
   }
 
-  // Check if job is still active
-  if (job.status !== "active") {
-    console.log(`⏭️ Job ${job.name} is not active, skipping`)
-    await db
-      .update(scheduledJobs)
-      .set({ status: "paused" })
-      .where(eq(scheduledJobs.id, jobId))
-    return
-  }
-
   // Atomically claim the job by updating nextRunAt
   const claimResult = await db
     .update(scheduledJobs)
@@ -56,7 +46,10 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
       and(
         eq(scheduledJobs.id, job.id),
         eq(scheduledJobs.status, "active"),
-        lte(scheduledJobs.nextRunAt, new Date()),
+        or(
+          isNull(scheduledJobs.nextRunAt),
+          lte(scheduledJobs.nextRunAt, new Date()),
+        ),
       ),
     )
     .returning({ id: scheduledJobs.id })

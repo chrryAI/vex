@@ -53,6 +53,19 @@ export interface EstimateJobCreditsParams {
   pricing: AIModelPricing
 }
 
+export interface CompareModelCostsParams {
+  jobType:
+    | "tribe_post"
+    | "moltbook_post"
+    | "moltbook_comment"
+    | "moltbook_engage"
+  frequency: "once" | "daily" | "weekly" | "custom"
+  scheduledTimes: string[]
+  startDate: Date
+  endDate?: Date
+  contentLength?: "short" | "medium" | "long"
+}
+
 // Default pricing - can be overridden with real DB data
 export const DEFAULT_PRICING: Record<string, AIModelPricing[]> = {
   openai: [
@@ -134,12 +147,14 @@ export function calculateCredits(
   const { estimatedInputTokens, estimatedOutputTokens, totalRuns, pricing } =
     params
 
-  // Calculate costs per run
-  const inputCostPerRun =
-    (estimatedInputTokens / 1000) * pricing.inputCostPerKToken
-  const outputCostPerRun =
-    (estimatedOutputTokens / 1000) * pricing.outputCostPerKToken
-  const totalCostPerRun = inputCostPerRun + outputCostPerRun
+  // Convert stored pricing units to credits (stored values are 10x higher)
+  const inputCostPerKToken = pricing.inputCostPerKToken / 10
+  const outputCostPerKToken = pricing.outputCostPerKToken / 10
+
+  // Calculate cost per 1K tokens
+  const inputCost = (estimatedInputTokens / 1000) * inputCostPerKToken
+  const outputCost = (estimatedOutputTokens / 1000) * outputCostPerKToken
+  const totalCostPerRun = inputCost + outputCost
 
   // Calculate total cost
   const totalCost = totalCostPerRun * totalRuns

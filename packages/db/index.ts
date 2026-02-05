@@ -3880,7 +3880,7 @@ export async function getCalendarEvents({
   guestId?: string
   startTime?: Date
   endTime?: Date
-  status?: "confirmed" | "tentative" | "cancelled"
+  status?: "confirmed" | "tentative" | "canceled"
 }): Promise<calendarEvent[]> {
   const result = await db
     .select()
