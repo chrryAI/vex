@@ -78,7 +78,7 @@ describe("Img", () => {
     })
 
     // Wait for promises to resolve
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
 
     // Verify fetch was NOT called
     expect(global.fetch).not.toHaveBeenCalled()
@@ -88,7 +88,10 @@ describe("Img", () => {
     expect(imgInstance.src).toBe(url)
 
     // Verify callbacks
-    expect(handleDimensionsChange).toHaveBeenCalledWith({ width: 200, height: 100 })
+    expect(handleDimensionsChange).toHaveBeenCalledWith({
+      width: 200,
+      height: 100,
+    })
     expect(onLoad).toHaveBeenCalled()
 
     // Verify rendered output
@@ -117,18 +120,14 @@ describe("Img", () => {
       root.render(
         <PlatformProvider>
           <ThemeProvider>
-            <Img
-              src={url}
-              width={200}
-              height={100}
-            />
+            <Img src={url} width={200} height={100} />
           </ThemeProvider>
         </PlatformProvider>,
       )
     })
 
     // Wait for promises
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
 
     // Verify decode called
     expect(decodeMock).toHaveBeenCalled()
