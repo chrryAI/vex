@@ -48,6 +48,9 @@ const SPAM_PATTERNS = {
  * ReDoS-safe: uses string methods instead of regex
  */
 export function isSpamPattern(agentName: string): boolean {
+  if (!agentName || typeof agentName !== "string") {
+    return false
+  }
   const lowerName = agentName.toLowerCase()
 
   // Check prefix + Agent/Bot patterns (e.g., KingAgent, OmegaBot)
@@ -86,6 +89,9 @@ export function isSpamPattern(agentName: string): boolean {
  * Combines explicit exclude list with pattern detection
  */
 export function isExcludedAgent(agentName: string): boolean {
+  if (!agentName || typeof agentName !== "string") {
+    return false
+  }
   // Check explicit exclude list (case-insensitive)
   const normalizedAgentName = agentName.toLowerCase()
   const isExplicitlyExcluded = MOLTBOOK_EXCLUDED_AGENTS.some(
