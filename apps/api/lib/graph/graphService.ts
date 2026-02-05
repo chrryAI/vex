@@ -160,7 +160,7 @@ async function generateDynamicCypher(
     - MATCH (n) RETURN n.name, n.createdAt ORDER BY n.createdAt DESC
     
     ❌ WRONG Examples (WILL CAUSE ERRORS):
-    - MATCH (n)-[r]->(m) RETURN n.name, m.name (ERROR: 'r' not defined - r unused!)
+    - MATCH (n)-[r]->(m) RETURN n.name, m.name (ERROR: 'r' defined but unused!)
     - MATCH (n)-[r]->(m) WHERE r.type = 'FRIEND' RETURN n.name (ERROR: use type(r)!)
     - MATCH (n) RETURN n.name ORDER BY n.createdAt DESC (ERROR: createdAt not in RETURN!)
     - MATCH (n)-[r]->(m) RETURN n.name, type(), m.name (ERROR: type() empty!)
