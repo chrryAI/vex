@@ -1226,6 +1226,13 @@
       "when": 1770317110092,
       "tag": "0174_dark_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 175,
+      "version": "7",
+      "when": 1770323239936,
+      "tag": "0175_zippy_gateway",
+      "breakpoints": true
     }
   ]
 }
