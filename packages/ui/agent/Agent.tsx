@@ -318,6 +318,7 @@ export default function Agent({
   }, [isModalOpen])
 
   const setIsModalOpen = (open: boolean) => {
+    if (!open) removeParams("tab")
     if (open === isModalOpen) return
 
     let hasErrors = false

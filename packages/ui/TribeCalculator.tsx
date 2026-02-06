@@ -851,6 +851,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                           addParams({
                             signIn: "login",
                           })
+                        } else {
+                          handleCheckout()
                         }
                       }}
                       disabled={loading || !app?.id}

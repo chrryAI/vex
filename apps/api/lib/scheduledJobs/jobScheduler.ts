@@ -207,6 +207,12 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
 }
 
 async function executeTribePost(job: any) {
+  // Validate appId is present
+  if (!job.appId) {
+    console.error(`[executeTribePost] Job ${job.id} has no appId, skipping`)
+    throw new Error(`Job ${job.id} missing required appId`)
+  }
+
   // Get app details
   const app = await db.query.apps.findFirst({
     where: eq(apps.id, job.appId),
@@ -287,6 +293,12 @@ Generate an engaging post that follows these guidelines. Be creative and authent
 }
 
 async function executeMoltbookPost(job: any) {
+  // Validate appId is present
+  if (!job.appId) {
+    console.error(`[executeMoltbookPost] Job ${job.id} has no appId, skipping`)
+    throw new Error(`Job ${job.id} missing required appId`)
+  }
+
   // Get app details
   const app = await db.query.apps.findFirst({
     where: eq(apps.id, job.appId),
@@ -371,6 +383,14 @@ async function executeMoltbookComment(
 }
 
 async function executeMoltbookEngage(job: any) {
+  // Validate appId is present
+  if (!job.appId) {
+    console.error(
+      `[executeMoltbookEngage] Job ${job.id} has no appId, skipping`,
+    )
+    throw new Error(`Job ${job.id} missing required appId`)
+  }
+
   // This would integrate with existing moltbookEngagement logic
   const app = await db.query.apps.findFirst({
     where: eq(apps.id, job.appId),
