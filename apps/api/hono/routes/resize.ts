@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import sharp from "sharp"
 import { upload } from "../../lib/minio"
 import crypto from "crypto"
+import { validateUrl } from "../../utils/ssrf"
 
 export const resize = new Hono()
 
@@ -60,6 +61,9 @@ resize.get("/", async (c) => {
 
     // Replace search.chrry.ai with chrry.ai for image paths
     fullUrl = fullUrl.replace("search.chrry.ai", "chrry.ai")
+
+    // Security check: Prevent SSRF
+    await validateUrl(fullUrl)
 
     console.log(`🖼️  Resizing image: ${fullUrl} → ${width}x${height}`)
 
