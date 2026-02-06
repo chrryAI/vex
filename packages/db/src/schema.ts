@@ -2020,6 +2020,8 @@ export const memories = pgTable(
         "instruction",
         "relationship",
         "goal",
+        "character",
+        "context",
       ],
     })
       .notNull()
