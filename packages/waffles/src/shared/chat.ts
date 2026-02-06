@@ -968,7 +968,7 @@ export const chat = async ({
 
         if (!profile) {
           // First time seeing a profile - store it but don't check yet
-          profile = p
+          profile = p || ""
           shouldCheckProfile = false
         } else {
           // Profile already exists - enable check for next iteration

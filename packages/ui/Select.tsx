@@ -30,6 +30,7 @@ export default function Select({
   ...rest
 }: SelectProps) {
   const styles = useSelectStyles()
+  const generatedId = React.useId()
 
   return (
     <Div style={{ ...styles.customSelect.style, ...style }}>
@@ -37,7 +38,7 @@ export default function Select({
         className={"select"}
         name={name}
         dataTestId={dataTestId}
-        id={id}
+        id={id || generatedId}
         defaultValue={defaultValue}
         value={value}
         onChange={onChange}
@@ -45,7 +46,7 @@ export default function Select({
         disabled={disabled}
         required={required}
         options={options}
-        style={styles.select.style}
+        style={{ ...styles.select.style }}
         {...styles.select.handlers}
         {...rest}
       />
