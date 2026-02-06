@@ -1,4 +1,5 @@
 import dns from "node:dns/promises"
+import net from "node:net"
 
 const getEnv = () => {
   let processEnv: Record<string, string | undefined> = {}
@@ -104,7 +105,14 @@ export async function getSafeUrl(
     const result = await dns.lookup(hostname)
     address = result.address
 
+    // Validate that the result is actually an IP address
+    if (!net.isIP(address)) {
+      throw new Error(`Invalid IP address resolved for ${hostname}`)
+    }
+
     if (isPrivateIP(address)) {
+      // Security: S5144 - This check explicitly blocks access to private IPs.
+      // We manually validate the resolved IP before allowing the connection.
       throw new Error(
         `Access to private IP ${address} (resolved from ${hostname}) denied`,
       )

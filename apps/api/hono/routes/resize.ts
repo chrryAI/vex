@@ -72,6 +72,8 @@ resize.get("/", async (c) => {
 
     // Try HTTP first, fallback to filesystem for local dev
     try {
+      // Security: Fetch using the validated IP address (safeUrl) and original Host header.
+      // This prevents DNS rebinding attacks and ensures we connect to the IP we checked.
       const response = await fetch(safeUrl, {
         headers: {
           Host: originalHost,
