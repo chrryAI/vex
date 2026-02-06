@@ -299,10 +299,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (appStatus?.part === "settings") {
       !tab && setTab("settings")
-    } else if (tab && !searchParams.get("tab")) {
-      setTab("settings")
     }
-  }, [searchParams, tab, appStatus, setTab])
+  }, [tab, appStatus, setTab])
 
   const [isAgentModalOpen, setIsAgentModalOpen] = useState<boolean>(
     appStatus?.part === "settings",
