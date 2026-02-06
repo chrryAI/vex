@@ -1529,7 +1529,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 {t(appStatus?.part ? "Description" : "About")}
               </A>
             )}
-            {isAgentModalOpen ? (
+            {appStatus?.part ? (
               <Suspense>
                 <Agent />
               </Suspense>
