@@ -12,3 +12,8 @@
 
 **Learning:** Complex custom inputs like the "SwipeableTimeControl" (minutes/seconds adjuster) often use icon-only buttons for fine-tuning. These were completely invisible to screen readers, making the timer unusable for non-visual users.
 **Action:** Always add explicit `aria-label`s to up/down chevron buttons in custom number inputs (e.g., "Increase minutes", "Decrease seconds").
+
+## 2026-03-01 - Accessible Toggle Buttons (Bookmark)
+
+**Learning:** The `Bookmark` component relied solely on visual icon changes (filled vs empty star) to indicate state. This is invisible to screen readers who just hear "button".
+**Action:** Added `aria-pressed` for state and dynamic `aria-label` for action description ("Bookmark thread" vs "Remove bookmark"). This pattern should be applied to all toggle buttons (Like, Subscribe, etc.).

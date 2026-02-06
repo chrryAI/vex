@@ -4,6 +4,7 @@ import type { thread } from "./types"
 import { isOwner } from "./utils"
 import { updateThread } from "./lib"
 import { Star } from "./icons"
+import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { Button } from "./platform"
 import { useBookmarkStyles } from "./Bookmark.styles"
@@ -30,6 +31,8 @@ export default function Bookmark({
 }) {
   const styles = useBookmarkStyles()
   const { utilities } = useStyles()
+
+  const { t } = useAppContext()
 
   const { token, user, guest, plausible } = useAuth()
 
@@ -84,6 +87,8 @@ export default function Bookmark({
         ...utilities.link.style,
         ...style,
       }}
+      aria-pressed={bookmarked}
+      aria-label={bookmarked ? t("Remove bookmark") : t("Bookmark thread")}
       data-testid={`${dataTestId}-${bookmarked ? "bookmarked" : "not-bookmarked"}`}
     >
       {bookmarked ? (
