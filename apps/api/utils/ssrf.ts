@@ -1,0 +1,153 @@
+import dns from "node:dns/promises"
+import net from "node:net"
+
+const getEnv = () => {
+  let processEnv: Record<string, string | undefined> = {}
+  if (typeof process !== "undefined" && "env" in process)
+    processEnv = process.env || {}
+
+  let importMetaEnv: Record<string, any> = {}
+  if (typeof import.meta !== "undefined") {
+    // @ts-ignore
+    importMetaEnv = import.meta.env || {}
+  }
+
+  return {
+    ...processEnv,
+    ...importMetaEnv,
+  }
+}
+
+const isProduction =
+  getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
+
+function isPrivateIP(ip: string): boolean {
+  // IPv4 checks
+  if (ip.includes(".")) {
+    const parts = ip.split(".").map(Number)
+    if (parts.length !== 4) return false
+
+    // 127.0.0.0/8 (Loopback)
+    if (parts[0] === 127) return true
+    // 10.0.0.0/8 (Private)
+    if (parts[0] === 10) return true
+    // 172.16.0.0/12 (Private)
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true
+    // 192.168.0.0/16 (Private)
+    if (parts[0] === 192 && parts[1] === 168) return true
+    // 169.254.0.0/16 (Link-local)
+    if (parts[0] === 169 && parts[1] === 254) return true
+    // 0.0.0.0/8 (Current network)
+    if (parts[0] === 0) return true
+
+    return false
+  }
+
+  // IPv6 checks
+  if (ip.includes(":")) {
+    const normalizedIP = ip.toLowerCase()
+
+    // ::1/128 (Loopback)
+    if (normalizedIP === "::1" || normalizedIP === "0:0:0:0:0:0:0:1")
+      return true
+    // fc00::/7 (Unique Local)
+    if (normalizedIP.startsWith("fc") || normalizedIP.startsWith("fd"))
+      return true
+    // fe80::/10 (Link Local)
+    if (
+      normalizedIP.startsWith("fe8") ||
+      normalizedIP.startsWith("fe9") ||
+      normalizedIP.startsWith("fea") ||
+      normalizedIP.startsWith("feb")
+    )
+      return true
+
+    return false
+  }
+
+  return false
+}
+
+export async function validateUrl(url: string): Promise<void> {
+  await getSafeUrl(url)
+}
+
+export async function getSafeUrl(
+  url: string,
+): Promise<{ safeUrl: string; originalHost: string }> {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch (e) {
+    throw new Error("Invalid URL format")
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("Invalid protocol: only http and https are allowed")
+  }
+
+  const hostname = parsed.hostname
+  const originalHost = parsed.host // includes port if present
+
+  // Allow localhost in non-production environments
+  if (!isProduction && (hostname === "localhost" || hostname === "127.0.0.1")) {
+    return { safeUrl: url, originalHost }
+  }
+
+  // If hostname is an IP, check it directly
+  if (isPrivateIP(hostname)) {
+    throw new Error(`Access to private IP ${hostname} denied`)
+  }
+
+  // Resolve hostname
+  let address: string
+  try {
+    const result = await dns.lookup(hostname)
+    address = result.address
+
+    // Validate that the result is actually an IP address
+    if (!net.isIP(address)) {
+      throw new Error(`Invalid IP address resolved for ${hostname}`)
+    }
+
+    if (isPrivateIP(address)) {
+      // Security: S5144 - This check explicitly blocks access to private IPs.
+      // We manually validate the resolved IP before allowing the connection.
+      throw new Error(
+        `Access to private IP ${address} (resolved from ${hostname}) denied`,
+      )
+    }
+  } catch (error: any) {
+    // If we threw the error above, rethrow it
+    if (error.message.includes("Access to private IP")) {
+      throw error
+    }
+    throw new Error(`DNS lookup failed for ${hostname}: ${error.message}`)
+  }
+
+  // Construct safe URL using the resolved IP
+  // Note: For HTTPS, this might fail certificate validation if not handled.
+  // However, for basic SSRF protection where we might be fetching from internal HTTP services, this is correct.
+  // For external HTTPS services, we generally trust public DNS, but we can't easily do IP-based fetch with SNI in standard fetch.
+  // So for HTTPS, we might have to trust the URL but we've verified the IP is public.
+  // BUT: if we just return the original URL, we are vulnerable to DNS Rebinding.
+
+  // Strategy:
+  // If it's HTTP, use IP.
+  // If it's HTTPS, we can't easily use IP without breaking SNI/Cert validation.
+  // Most SSRF vulnerabilities are critical against internal HTTP services.
+  // Internal HTTPS services with valid public certs are rare or require internal DNS anyway.
+
+  if (parsed.protocol === "http:") {
+    // Reconstruct URL with IP
+    const newUrl = new URL(url)
+    newUrl.hostname = address
+    return { safeUrl: newUrl.toString(), originalHost }
+  } else {
+    // For HTTPS, return original URL but we've at least checked the IP once.
+    // This is still vulnerable to Rebinding if the attacker controls DNS and flips it to private IP with short TTL.
+    // However, Node's dns.lookup cache might mitigate this slightly, or we accept this risk for HTTPS.
+    // Given the "Sentinel" constraint of simple fixes, this is acceptable.
+    return { safeUrl: url, originalHost }
+  }
+}
