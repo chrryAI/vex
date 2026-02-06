@@ -45,19 +45,25 @@ function isPrivateIP(ip: string): boolean {
     return false
   }
 
+  // Strip brackets from IPv6 addresses (e.g., [::1] -> ::1)
+  let cleanIP = ip
+  if (ip.startsWith("[") && ip.endsWith("]")) {
+    cleanIP = ip.slice(1, -1)
+  }
+
   // IPv4 checks
-  if (ip.includes(".") && !ip.includes(":")) {
-    return checkIPv4Private(ip)
+  if (cleanIP.includes(".") && !cleanIP.includes(":")) {
+    return checkIPv4Private(cleanIP)
   }
 
   // IPv6 checks
-  if (ip.includes(":")) {
-    const normalizedIP = ip.toLowerCase()
+  if (cleanIP.includes(":")) {
+    const normalizedIP = cleanIP.toLowerCase()
 
     // Check for IPv4-mapped IPv6 addresses (::ffff:x.x.x.x or ::ffff:xxxx:xxxx)
     if (normalizedIP.startsWith("::ffff:")) {
       // Extract the IPv4 part after ::ffff:
-      const ipv4Part = ip.substring(7) // Remove "::ffff:" prefix
+      const ipv4Part = normalizedIP.substring(7) // Remove "::ffff:" prefix
 
       // Check if it's in dotted-decimal notation (e.g., ::ffff:192.168.1.1)
       if (ipv4Part.includes(".")) {
