@@ -832,7 +832,7 @@ export const getUser = async ({
     }
   }
 
-  const app = appId ? await getApp({ id: appId }) : undefined
+  const app = appId ? await getPureApp({ id: appId }) : undefined
 
   const result = (
     await db
@@ -924,8 +924,9 @@ export const getUser = async ({
     : 0
 
   // If user owns the app they're using, show infinite credits (999999)
-  const creditsLeft =
-    isAppOwner && (subscription?.plan === "pro" || isDevelopment)
+  const creditsLeft = isDevelopment
+    ? OWNER_CREDITS
+    : isAppOwner && !!app?.apiKeys?.openrouter && app?.tier !== "free"
       ? OWNER_CREDITS
       : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
 

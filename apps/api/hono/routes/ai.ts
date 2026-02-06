@@ -462,8 +462,9 @@ async function getRelevantMemoryContext({
           ? `\n\nAPP-SPECIFIC KNOWLEDGE:\n${knowledgeMemories
               .map((m) => {
                 const emoji =
-                  { fact: "📌", instruction: "📝" }[m.category || "fact"] ||
-                  "📌"
+                  { fact: "📌", instruction: "📝" }[
+                    (m.category as "fact") || "fact"
+                  ] || "📌"
                 return `${emoji} ${m.content}`
               })
               .join("\n")}`
@@ -1138,12 +1139,10 @@ app.post("/", async (c) => {
   // console.log("🚀 POST /api/ai - Request received")
   // console.time("messageProcessing")
 
-  const member = await tracker.track("auth_member", () =>
-    getMember(c, { full: true, skipCache: true }),
-  )
+  const member = await tracker.track("auth_member", () => getMember(c))
   const guest = member
     ? undefined
-    : await tracker.track("auth_guest", () => getGuest(c, { skipCache: true }))
+    : await tracker.track("auth_guest", () => getGuest(c))
 
   if (!member && !guest) {
     // console.log("❌ No valid credentials")
