@@ -85,6 +85,13 @@ resize.get("/", async (c) => {
           const fs = await import("fs/promises")
           const path = await import("path")
           const absolutePath = path.resolve(process.cwd(), localPath)
+
+          // Security: Prevent path traversal
+          const publicDir = path.resolve(process.cwd(), "public")
+          if (!absolutePath.startsWith(publicDir)) {
+            throw new Error("Access denied: Path traversal detected")
+          }
+
           buffer = await fs.readFile(absolutePath)
           console.log(`✅ Loaded from filesystem: ${absolutePath}`)
         } catch (fsError: any) {
@@ -153,7 +160,7 @@ resize.get("/", async (c) => {
     // Generate unique ID for this resized image
     // v6: Added format support
     const hash = crypto
-      .createHash("md5")
+      .createHash("sha256")
       .update(`v6-${url}-${width}x${height}-${format}`)
       .digest("hex")
 
