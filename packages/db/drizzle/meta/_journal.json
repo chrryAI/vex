@@ -1233,6 +1233,27 @@
       "when": 1770323239936,
       "tag": "0175_zippy_gateway",
       "breakpoints": true
+    },
+    {
+      "idx": 176,
+      "version": "7",
+      "when": 1770333535773,
+      "tag": "0176_brave_monster_badoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 177,
+      "version": "7",
+      "when": 1770333654162,
+      "tag": "0177_nasty_victor_mancha",
+      "breakpoints": true
+    },
+    {
+      "idx": 178,
+      "version": "7",
+      "when": 1770339571333,
+      "tag": "0178_chief_veda",
+      "breakpoints": true
     }
   ]
 }

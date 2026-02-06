@@ -358,6 +358,10 @@ export type thread = {
         user: user
       }[]
     | null
+  moltUrl?: string
+  moltId?: string
+  submolt?: string
+  tribeId?: string
   isMainThread: boolean
   lastMessage?: message
   user?: user
@@ -521,6 +525,10 @@ export type message = {
     createdOn: string
   }> | null
   creditCost: number
+  moltUrl?: string
+  moltId?: string
+  submolt?: string
+  tribeId?: string
   webSearchResult: webSearchResult[] | null
   searchContext: string | null
   images: Array<{

@@ -3312,12 +3312,14 @@ export async function getCharacterTags({
   userId,
   guestId,
   threadId,
+  appId,
   id,
 }: {
   agentId?: string
   userId?: string
   guestId?: string
   threadId?: string
+  appId?: string
   id?: string
 }) {
   const result = await db
@@ -3330,6 +3332,7 @@ export async function getCharacterTags({
         agentId ? eq(characterProfiles.agentId, agentId) : undefined,
         userId ? eq(characterProfiles.userId, userId) : undefined,
         guestId ? eq(characterProfiles.guestId, guestId) : undefined,
+        appId ? eq(characterProfiles.appId, appId) : undefined,
       ),
     )
   return result
@@ -3341,16 +3344,19 @@ export async function getCharacterTag({
   userId,
   guestId,
   threadId,
+  appId,
 }: {
   id?: string
   agentId?: string
   userId?: string
   guestId?: string
   threadId?: string
+  appId?: string
 }) {
   const [result] = await getCharacterTags({
     agentId,
     userId,
+    appId,
     guestId,
     threadId,
     id,

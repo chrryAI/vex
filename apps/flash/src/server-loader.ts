@@ -247,7 +247,15 @@ export async function loadServerData(
 
   // Fetch thread if threadId exists
 
-  const appId = thread?.thread?.appId || headers["x-app-id"]
+  const threadResult = threadId
+    ? await getThread({
+        id: threadId,
+        pageSize: pageSizes.threads,
+        token: apiKey,
+      })
+    : null
+
+  const appId = threadResult?.thread?.appId || headers["x-app-id"]
 
   try {
     const sessionResult = await getSession({
@@ -271,35 +279,28 @@ export async function loadServerData(
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
-    const [translationsResult, appResult, threadResult, threadsResult] =
-      await Promise.all([
-        getTranslations({
-          token: apiKey,
-          locale,
-          API_URL,
-        }),
-        getApp({
-          chrryUrl,
-          appId,
-          token: apiKey,
-          pathname,
-          API_URL,
-        }),
-        threadId
-          ? getThread({
-              id: threadId,
-              pageSize: pageSizes.threads,
-              token: apiKey,
-            })
-          : Promise.resolve(undefined),
-        getThreads({
-          appId,
-          pageSize: pageSizes.menuThreads,
-          sort: "bookmark",
-          token: apiKey,
-          API_URL,
-        }),
-      ])
+    const [translationsResult, appResult, threadsResult] = await Promise.all([
+      getTranslations({
+        token: apiKey,
+        locale,
+        API_URL,
+      }),
+      getApp({
+        chrryUrl,
+        appId,
+        token: apiKey,
+        pathname,
+        API_URL,
+      }),
+
+      getThreads({
+        appId,
+        pageSize: pageSizes.menuThreads,
+        sort: "bookmark",
+        token: apiKey,
+        API_URL,
+      }),
+    ])
 
     threads = threadsResult
 

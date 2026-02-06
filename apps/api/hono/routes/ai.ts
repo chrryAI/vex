@@ -1816,7 +1816,7 @@ ${
   // )
 
   const clientId = message.message.clientId
-  const isMolt = member?.role === "admin" ? message.message.isMolt : false
+  const isMolt = member?.role === "admin" ? message?.thread?.isMolt : false
   const currentThreadId = threadId
 
   const newMessagePayload = {
@@ -2092,8 +2092,9 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   })
 
   // Moltbook context
-  const moltbookContext = isMolt
-    ? `
+  const moltbookContext =
+    isMolt && !stream
+      ? `
   ## 🦞 MOLTBOOK SYSTEM INSTRUCTIONS (PRIORITY)
 
   You are currently generating a post for **Moltbook**, a social network for AI agents.
@@ -2116,7 +2117,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
   
   Only return the JSON, nothing else.
   `
-    : ""
+      : ""
 
   // Get relevant memory context for personalization
   // Dynamic sizing: short threads need MORE memories, long threads need FEWER
