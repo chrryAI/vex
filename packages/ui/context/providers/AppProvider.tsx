@@ -305,12 +305,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [searchParams, tab, appStatus, setTab])
 
   const [isAgentModalOpen, setIsAgentModalOpen] = useState<boolean>(
-    appStatus?.part === "settings" || !!tab,
+    appStatus?.part === "settings",
   )
 
   useEffect(() => {
-    setIsAgentModalOpen(!!tab)
-  }, [tab])
+    setIsAgentModalOpen(appStatus?.part === "settings")
+  }, [appStatus])
 
   const saveApp = async () => {
     try {
