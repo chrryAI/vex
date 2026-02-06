@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test"
-import { validateUrl, getSafeUrl } from "./ssrf"
+import { getSafeUrl } from "./ssrf"
 
 describe("validateUrl / getSafeUrl", () => {
   it("should allow public URLs", async () => {
@@ -11,21 +11,21 @@ describe("validateUrl / getSafeUrl", () => {
 
   it("should reject private IPs", async () => {
     // These are not explicitly allowed even in dev (only localhost/127.0.0.1 are allowed in dev)
-    await expect(getSafeUrl("http://10.0.0.1")).rejects.toThrow(
+    await expect(getSafeUrl("https://10.0.0.1")).rejects.toThrow(
       "Access to private IP",
     )
-    await expect(getSafeUrl("http://192.168.1.1")).rejects.toThrow(
+    await expect(getSafeUrl("https://192.168.1.1")).rejects.toThrow(
       "Access to private IP",
     )
-    await expect(getSafeUrl("http://169.254.169.254")).rejects.toThrow(
+    await expect(getSafeUrl("https://169.254.169.254")).rejects.toThrow(
       "Access to private IP",
     )
   })
 
   it("should allow localhost in dev/test environment", async () => {
     // Assumes isProduction is false in this test environment
-    const result = await getSafeUrl("http://localhost")
-    expect(result.safeUrl).toBe("http://localhost")
+    const result = await getSafeUrl("https://localhost")
+    expect(result.safeUrl).toBe("https://localhost")
     expect(result.originalHost).toBe("localhost")
   })
 
