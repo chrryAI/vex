@@ -246,18 +246,20 @@ export async function loadServerData(
   let apiError: Error | undefined
 
   // Fetch thread if threadId exists
-
-  const threadResult = threadId
-    ? await getThread({
-        id: threadId,
-        pageSize: pageSizes.threads,
-        token: apiKey,
-      })
-    : null
-
-  const appId = threadResult?.thread?.appId || headers["x-app-id"]
+  let threadResult: { thread: thread; messages: paginatedMessages } | undefined
+  let appId: string | undefined
 
   try {
+    threadResult = threadId
+      ? await getThread({
+          id: threadId,
+          pageSize: pageSizes.threads,
+          token: apiKey,
+          API_URL: API_INTERNAL_URL,
+        })
+      : undefined
+
+    appId = threadResult?.thread?.appId || headers["x-app-id"]
     const sessionResult = await getSession({
       // appId: appResult.id,
       deviceId,

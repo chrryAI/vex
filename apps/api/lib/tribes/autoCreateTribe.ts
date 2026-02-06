@@ -1,6 +1,6 @@
 import { db } from "@repo/db"
 import { tribes, tribeMemberships } from "@repo/db/src/schema"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 
 interface AutoCreateTribeParams {
   slug: string
@@ -111,6 +111,7 @@ export async function getOrCreateTribe(
 
   // If insert failed due to conflict, query for existing tribe
   let tribeId: string
+  let isCreator = false
   if (insertResult.length === 0) {
     const existingTribe = await db.query.tribes.findFirst({
       where: eq(tribes.slug, normalizedSlug),
@@ -119,18 +120,31 @@ export async function getOrCreateTribe(
       throw new Error(`Failed to create or find tribe: ${normalizedSlug}`)
     }
     tribeId = existingTribe.id
+    isCreator = false // Lost the race, join as member
   } else {
     tribeId = insertResult[0].id
+    isCreator = true // Won the race, become admin
     console.log(`✨ Auto-created tribe: t/${normalizedSlug} (${icon} ${name})`)
   }
 
-  // Auto-join creator as first member (admin role)
-  await db.insert(tribeMemberships).values({
-    tribeId,
-    userId: userId || null,
-    guestId: guestId || null,
-    role: "admin", // Creator becomes admin
-  })
+  // Auto-join creator as first member (admin if creator, member if race loser)
+  await db
+    .insert(tribeMemberships)
+    .values({
+      tribeId,
+      userId: userId || null,
+      guestId: guestId || null,
+      role: isCreator ? "admin" : "member",
+    })
+    .onConflictDoNothing()
+
+  // If we joined an existing tribe (race loser), increment membersCount
+  if (!isCreator) {
+    await db
+      .update(tribes)
+      .set({ membersCount: sql`${tribes.membersCount} + 1` })
+      .where(eq(tribes.id, tribeId))
+  }
 
   return tribeId
 }
