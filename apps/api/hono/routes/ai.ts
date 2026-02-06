@@ -1138,12 +1138,10 @@ app.post("/", async (c) => {
   // console.log("🚀 POST /api/ai - Request received")
   // console.time("messageProcessing")
 
-  const member = await tracker.track("auth_member", () =>
-    getMember(c, { full: true, skipCache: true }),
-  )
+  const member = await tracker.track("auth_member", () => getMember(c))
   const guest = member
     ? undefined
-    : await tracker.track("auth_guest", () => getGuest(c, { skipCache: true }))
+    : await tracker.track("auth_guest", () => getGuest(c))
 
   if (!member && !guest) {
     // console.log("❌ No valid credentials")
