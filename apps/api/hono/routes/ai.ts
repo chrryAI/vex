@@ -462,8 +462,9 @@ async function getRelevantMemoryContext({
           ? `\n\nAPP-SPECIFIC KNOWLEDGE:\n${knowledgeMemories
               .map((m) => {
                 const emoji =
-                  { fact: "📌", instruction: "📝" }[m.category || "fact"] ||
-                  "📌"
+                  { fact: "📌", instruction: "📝" }[
+                    (m.category as "fact") || "fact"
+                  ] || "📌"
                 return `${emoji} ${m.content}`
               })
               .join("\n")}`
