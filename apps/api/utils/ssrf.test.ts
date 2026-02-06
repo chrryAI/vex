@@ -44,7 +44,7 @@ describe("validateUrl / getSafeUrl", () => {
 
   it("should resolve HTTP URL to IP", async () => {
     // HTTP URLs should be resolved to IP addresses
-    const result = await getSafeUrl("http://www.google.com")
+    const result = await getSafeUrl("http://www.google.com") // NOSONAR - Testing HTTP to IP resolution
     // Should return an IP-based URL (e.g., http://142.250.x.x/)
     expect(result.safeUrl).toMatch(/^http:\/\/[\d.]+(\/?|$)/)
     expect(result.originalHost).toBe("www.google.com")
@@ -72,6 +72,7 @@ describe("validateUrl / getSafeUrl", () => {
 
   it("should reject IPv4-mapped IPv6 addresses (dotted notation)", async () => {
     // ::ffff:192.168.1.1 format should be detected and blocked
+    // NOSONAR - Intentionally testing HTTP with private IPs for security validation
     await expect(getSafeUrl("http://[::ffff:192.168.1.1]")).rejects.toThrow(
       "Access to private IP",
     )
@@ -85,6 +86,7 @@ describe("validateUrl / getSafeUrl", () => {
 
   it("should reject IPv4-mapped IPv6 addresses (hex notation)", async () => {
     // ::ffff:c0a8:0101 format (192.168.1.1 in hex) should be blocked
+    // NOSONAR - Intentionally testing HTTP with private IPs for security validation
     await expect(getSafeUrl("http://[::ffff:c0a8:0101]")).rejects.toThrow(
       "Access to private IP",
     )
