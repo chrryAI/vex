@@ -43,11 +43,54 @@ describe("validateUrl / getSafeUrl", () => {
   })
 
   it("should resolve HTTP URL to IP", async () => {
-    // This depends on DNS, so we use a stable public domain
+    // HTTP URLs should be resolved to IP addresses
     const result = await getSafeUrl("http://www.google.com")
-    // Should return an IP-based URL
-    // e.g., http://142.250.x.x/
-    expect(result.safeUrl).toMatch(/^http:\/\/[\d\.]+(\/|$)/)
+    // Should return an IP-based URL (e.g., http://142.250.x.x/)
+    expect(result.safeUrl).toMatch(/^http:\/\/[\d.]+(\/?|$)/)
     expect(result.originalHost).toBe("www.google.com")
+  })
+
+  it("should keep HTTPS URLs as-is (for SNI/cert validation)", async () => {
+    // HTTPS URLs should remain unchanged to preserve SNI
+    const result = await getSafeUrl("https://www.google.com")
+    expect(result.safeUrl).toBe("https://www.google.com")
+    expect(result.originalHost).toBe("www.google.com")
+  })
+
+  it("should reject CGNAT IP range (100.64.0.0/10)", async () => {
+    // CGNAT (Carrier-Grade NAT) addresses should be blocked
+    await expect(getSafeUrl("https://100.64.0.1")).rejects.toThrow(
+      "Access to private IP",
+    )
+    await expect(getSafeUrl("https://100.127.255.254")).rejects.toThrow(
+      "Access to private IP",
+    )
+    await expect(getSafeUrl("https://100.100.100.100")).rejects.toThrow(
+      "Access to private IP",
+    )
+  })
+
+  it("should reject IPv4-mapped IPv6 addresses (dotted notation)", async () => {
+    // ::ffff:192.168.1.1 format should be detected and blocked
+    await expect(getSafeUrl("http://[::ffff:192.168.1.1]")).rejects.toThrow(
+      "Access to private IP",
+    )
+    await expect(getSafeUrl("http://[::ffff:10.0.0.1]")).rejects.toThrow(
+      "Access to private IP",
+    )
+    await expect(getSafeUrl("http://[::ffff:127.0.0.1]")).rejects.toThrow(
+      "Access to private IP",
+    )
+  })
+
+  it("should reject IPv4-mapped IPv6 addresses (hex notation)", async () => {
+    // ::ffff:c0a8:0101 format (192.168.1.1 in hex) should be blocked
+    await expect(getSafeUrl("http://[::ffff:c0a8:0101]")).rejects.toThrow(
+      "Access to private IP",
+    )
+    // ::ffff:0a00:0001 format (10.0.0.1 in hex) should be blocked
+    await expect(getSafeUrl("http://[::ffff:0a00:0001]")).rejects.toThrow(
+      "Access to private IP",
+    )
   })
 })

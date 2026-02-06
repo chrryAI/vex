@@ -64,7 +64,18 @@ resize.get("/", async (c) => {
 
     // Security check: Prevent SSRF and DNS Rebinding
     // We resolve the URL to an IP and use that IP for the request (for HTTP)
-    const { safeUrl, originalHost } = await getSafeUrl(fullUrl)
+    let safeUrl: string
+    let originalHost: string
+    try {
+      const result = await getSafeUrl(fullUrl)
+      safeUrl = result.safeUrl
+      originalHost = result.originalHost
+    } catch (error: any) {
+      // Sanitize error to prevent internal IP leakage
+      console.error("❌ SSRF validation failed:", error.message)
+      c.header("Cache-Control", "no-cache, no-store, must-revalidate")
+      return c.json({ error: "Requested URL is not allowed" }, 400)
+    }
 
     console.log(`🖼️  Resizing image: ${fullUrl} → ${width}x${height}`)
 
@@ -187,7 +198,7 @@ resize.get("/", async (c) => {
     console.log(`✅ Uploaded to MinIO: ${uploadResult.url}`)
 
     // Set aggressive cache headers since MinIO URLs are permanent
-    // The MD5 hash ensures unique URLs for different sizes/images
+    // The SHA-256 cache key ensures unique URLs for different sizes/images
     c.header("Cache-Control", "public, max-age=31536000, immutable")
     c.header("Expires", new Date(Date.now() + 31536000000).toUTCString())
 
@@ -198,6 +209,10 @@ resize.get("/", async (c) => {
     c.header("Cache-Control", "no-cache, no-store, must-revalidate")
     c.header("Pragma", "no-cache")
     c.header("Expires", "0")
-    return c.json({ error: error.message || "Failed to resize image" }, 500)
+    // Sanitize error message to prevent information leakage
+    const safeMessage = error.message?.includes("Access to private IP")
+      ? "Requested URL is not allowed"
+      : "Failed to resize image"
+    return c.json({ error: safeMessage }, 500)
   }
 })

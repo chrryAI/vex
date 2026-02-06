@@ -22,9 +22,9 @@ const isProduction =
   getEnv().NODE_ENV === "production" || getEnv().VITE_NODE_ENV === "production"
 
 function isPrivateIP(ip: string): boolean {
-  // IPv4 checks
-  if (ip.includes(".")) {
-    const parts = ip.split(".").map(Number)
+  // Helper function to check IPv4 address
+  function checkIPv4Private(ipv4: string): boolean {
+    const parts = ipv4.split(".").map(Number)
     if (parts.length !== 4) return false
 
     // 127.0.0.0/8 (Loopback)
@@ -39,13 +39,45 @@ function isPrivateIP(ip: string): boolean {
     if (parts[0] === 169 && parts[1] === 254) return true
     // 0.0.0.0/8 (Current network)
     if (parts[0] === 0) return true
+    // 100.64.0.0/10 (CGNAT - Carrier-Grade NAT)
+    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true
 
     return false
+  }
+
+  // IPv4 checks
+  if (ip.includes(".") && !ip.includes(":")) {
+    return checkIPv4Private(ip)
   }
 
   // IPv6 checks
   if (ip.includes(":")) {
     const normalizedIP = ip.toLowerCase()
+
+    // Check for IPv4-mapped IPv6 addresses (::ffff:x.x.x.x or ::ffff:xxxx:xxxx)
+    if (normalizedIP.startsWith("::ffff:")) {
+      // Extract the IPv4 part after ::ffff:
+      const ipv4Part = ip.substring(7) // Remove "::ffff:" prefix
+
+      // Check if it's in dotted-decimal notation (e.g., ::ffff:192.168.1.1)
+      if (ipv4Part.includes(".")) {
+        return checkIPv4Private(ipv4Part)
+      }
+
+      // Handle hex notation (e.g., ::ffff:c0a8:0101)
+      // Convert hex to dotted-decimal
+      const hexMatch = ipv4Part.match(/^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i)
+      if (hexMatch) {
+        const high = parseInt(hexMatch[1], 16)
+        const low = parseInt(hexMatch[2], 16)
+        const octet1 = (high >> 8) & 0xff
+        const octet2 = high & 0xff
+        const octet3 = (low >> 8) & 0xff
+        const octet4 = low & 0xff
+        const dottedIPv4 = `${octet1}.${octet2}.${octet3}.${octet4}`
+        return checkIPv4Private(dottedIPv4)
+      }
+    }
 
     // ::1/128 (Loopback)
     if (normalizedIP === "::1" || normalizedIP === "0:0:0:0:0:0:0:1")
