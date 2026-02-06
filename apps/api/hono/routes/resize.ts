@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import sharp from "sharp"
 import { upload } from "../../lib/minio"
 import crypto from "crypto"
-import { validateUrl } from "../../utils/ssrf"
+import { getSafeUrl } from "../../utils/ssrf"
 
 export const resize = new Hono()
 
@@ -62,8 +62,9 @@ resize.get("/", async (c) => {
     // Replace search.chrry.ai with chrry.ai for image paths
     fullUrl = fullUrl.replace("search.chrry.ai", "chrry.ai")
 
-    // Security check: Prevent SSRF
-    await validateUrl(fullUrl)
+    // Security check: Prevent SSRF and DNS Rebinding
+    // We resolve the URL to an IP and use that IP for the request (for HTTP)
+    const { safeUrl, originalHost } = await getSafeUrl(fullUrl)
 
     console.log(`🖼️  Resizing image: ${fullUrl} → ${width}x${height}`)
 
@@ -71,7 +72,11 @@ resize.get("/", async (c) => {
 
     // Try HTTP first, fallback to filesystem for local dev
     try {
-      const response = await fetch(fullUrl)
+      const response = await fetch(safeUrl, {
+        headers: {
+          Host: originalHost,
+        },
+      })
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }

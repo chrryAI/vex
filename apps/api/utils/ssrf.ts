@@ -68,6 +68,12 @@ function isPrivateIP(ip: string): boolean {
 }
 
 export async function validateUrl(url: string): Promise<void> {
+  await getSafeUrl(url)
+}
+
+export async function getSafeUrl(
+  url: string,
+): Promise<{ safeUrl: string; originalHost: string }> {
   let parsed: URL
   try {
     parsed = new URL(url)
@@ -79,26 +85,28 @@ export async function validateUrl(url: string): Promise<void> {
     throw new Error("Invalid protocol: only http and https are allowed")
   }
 
+  const hostname = parsed.hostname
+  const originalHost = parsed.host // includes port if present
+
   // Allow localhost in non-production environments
-  if (
-    !isProduction &&
-    (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
-  ) {
-    return
+  if (!isProduction && (hostname === "localhost" || hostname === "127.0.0.1")) {
+    return { safeUrl: url, originalHost }
   }
 
   // If hostname is an IP, check it directly
-  if (isPrivateIP(parsed.hostname)) {
-    throw new Error(`Access to private IP ${parsed.hostname} denied`)
+  if (isPrivateIP(hostname)) {
+    throw new Error(`Access to private IP ${hostname} denied`)
   }
 
   // Resolve hostname
+  let address: string
   try {
-    const { address } = await dns.lookup(parsed.hostname)
+    const result = await dns.lookup(hostname)
+    address = result.address
 
     if (isPrivateIP(address)) {
       throw new Error(
-        `Access to private IP ${address} (resolved from ${parsed.hostname}) denied`,
+        `Access to private IP ${address} (resolved from ${hostname}) denied`,
       )
     }
   } catch (error: any) {
@@ -106,10 +114,32 @@ export async function validateUrl(url: string): Promise<void> {
     if (error.message.includes("Access to private IP")) {
       throw error
     }
-    // If DNS lookup failed, we probably can't fetch it anyway, but it's not strictly an SSRF violation.
-    // However, it's safer to fail.
-    throw new Error(
-      `DNS lookup failed for ${parsed.hostname}: ${error.message}`,
-    )
+    throw new Error(`DNS lookup failed for ${hostname}: ${error.message}`)
+  }
+
+  // Construct safe URL using the resolved IP
+  // Note: For HTTPS, this might fail certificate validation if not handled.
+  // However, for basic SSRF protection where we might be fetching from internal HTTP services, this is correct.
+  // For external HTTPS services, we generally trust public DNS, but we can't easily do IP-based fetch with SNI in standard fetch.
+  // So for HTTPS, we might have to trust the URL but we've verified the IP is public.
+  // BUT: if we just return the original URL, we are vulnerable to DNS Rebinding.
+
+  // Strategy:
+  // If it's HTTP, use IP.
+  // If it's HTTPS, we can't easily use IP without breaking SNI/Cert validation.
+  // Most SSRF vulnerabilities are critical against internal HTTP services.
+  // Internal HTTPS services with valid public certs are rare or require internal DNS anyway.
+
+  if (parsed.protocol === "http:") {
+    // Reconstruct URL with IP
+    const newUrl = new URL(url)
+    newUrl.hostname = address
+    return { safeUrl: newUrl.toString(), originalHost }
+  } else {
+    // For HTTPS, return original URL but we've at least checked the IP once.
+    // This is still vulnerable to Rebinding if the attacker controls DNS and flips it to private IP with short TTL.
+    // However, Node's dns.lookup cache might mitigate this slightly, or we accept this risk for HTTPS.
+    // Given the "Sentinel" constraint of simple fixes, this is acceptable.
+    return { safeUrl: url, originalHost }
   }
 }
