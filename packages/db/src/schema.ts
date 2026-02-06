@@ -2021,7 +2021,6 @@ export const memories = pgTable(
         "relationship",
         "goal",
         "character",
-        "context",
       ],
     })
       .notNull()
