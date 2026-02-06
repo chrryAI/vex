@@ -2112,15 +2112,6 @@ export const getGuest = async ({
       })
     : undefined
 
-  const app = appId ? await getApp({ id: appId }) : undefined
-
-  const isAppOwner =
-    result &&
-    app &&
-    isOwner(app, {
-      guestId: result.id,
-    })
-
   // Calculate credits spent
   const creditsSpent = result
     ? await getCreditsSpent({
@@ -2129,10 +2120,7 @@ export const getGuest = async ({
       })
     : 0
 
-  // If guest owns the app they're using, show infinite credits (999999)
-  const creditsLeft = isAppOwner
-    ? OWNER_CREDITS
-    : Math.max(result ? result.credits - creditsSpent : 0, 0)
+  const creditsLeft = Math.max(result ? result.credits - creditsSpent : 0, 0)
 
   const guestData = result
     ? {
@@ -2149,10 +2137,9 @@ export const getGuest = async ({
         }).then((res) => res.totalCount),
         creditsLeft,
         instructions: await getInstructions({
-          appId: app?.id,
+          appId,
           guestId: result.id,
-          pageSize: 7, // 7 instructions per app
-          // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+          pageSize: 7,
         }),
 
         placeHolder: await getPlaceHolder({
