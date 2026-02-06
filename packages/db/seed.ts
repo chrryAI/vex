@@ -60,6 +60,30 @@ async function createAgents() {
   if (isProd) {
     return undefined
   }
+
+  const deepSeekAgent = await createAiAgent({
+    name: "deepSeek",
+    displayName: "DeepSeek V3",
+    version: "3.0.0",
+    apiURL: "https://api.deepseek.com/v1",
+    description: "Fast, accurate, and privacy-focused AI assistant.",
+    state: "active",
+    creditCost: 1,
+    authorization: "all",
+    modelId: "deepseek-chat",
+    maxPromptSize: 128000,
+    order: 4,
+    capabilities: {
+      text: true,
+      image: false,
+      audio: false,
+      video: false,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+      codeExecution: true,
+    },
+  })
   const chatGptAgent = await createAiAgent({
     name: "chatGPT",
     displayName: "GPT-5.1",
@@ -101,30 +125,6 @@ async function createAgents() {
       image: true,
       audio: true,
       video: true,
-      webSearch: false,
-      pdf: true,
-      imageGeneration: false,
-      codeExecution: true,
-    },
-  })
-
-  const deepSeekAgent = await createAiAgent({
-    name: "deepSeek",
-    displayName: "DeepSeek V3",
-    version: "3.0.0",
-    apiURL: "https://api.deepseek.com/v1",
-    description: "Fast, accurate, and privacy-focused AI assistant.",
-    state: "active",
-    creditCost: 1,
-    authorization: "all",
-    modelId: "deepseek-chat",
-    maxPromptSize: 128000,
-    order: 4,
-    capabilities: {
-      text: true,
-      image: false,
-      audio: false,
-      video: false,
       webSearch: false,
       pdf: true,
       imageGeneration: false,

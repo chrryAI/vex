@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { type appFormData } from "../schemas/appSchema"
 import clsx from "clsx"
 import { useAppContext } from "../context/AppContext"
@@ -26,6 +26,7 @@ import {
   PLUS_PRICE,
   PRO_PRICE,
   API_URL,
+  isE2E,
 } from "../utils"
 import Select from "../Select"
 import Checkbox from "../Checkbox"
@@ -62,11 +63,13 @@ import {
   useNavigationContext,
   useApp,
   useAuth,
+  type TabType,
 } from "../context/providers"
 import ThemeSwitcher from "../ThemeSwitcher"
 import { useTheme } from "../platform"
 import { useAgentStyles } from "./Agent.styles"
 import { useStyles } from "../context/StylesContext"
+import { TribeCalculator } from "../TribeCalculator"
 
 export default function Agent({
   style,
@@ -92,6 +95,7 @@ export default function Agent({
     appFormWatcher,
     appStatus,
     setAppStatus,
+    ...appContext
   } = useApp()
 
   const { aiAgents } = useChat()
@@ -299,37 +303,11 @@ export default function Agent({
     weatherRequiredApp,
   ])
 
-  const [tab, setTabInternal] = useState<
-    | "settings"
-    | "api"
-    | "monetization"
-    | "systemPrompt"
-    | "extends"
-    | "customModel"
-    | undefined
-  >(
-    (searchParams.get("tab") as
-      | "settings"
-      | "api"
-      | "monetization"
-      | "systemPrompt"
-      | "extends"
-      | "customModel") || undefined,
-  )
+  const tab = appContext.tab
+  const setTabInternal = appContext.setTab
 
-  useEffect(() => {
-    if (appStatus?.part === "settings") {
-      !tab && setTabInternal("settings")
-    }
-  }, [appStatus, tab])
-
-  const [isModalOpen, setIsModalOpenInternal] = useState(
-    appStatus?.part === "settings",
-  )
-
-  useEffect(() => {
-    !isModalOpen && setIsModalOpenInternal(appStatus?.part === "settings")
-  }, [appStatus, isModalOpen])
+  const isModalOpen = appContext.isAgentModalOpen
+  const setIsModalOpenInternal = appContext.setIsAgentModalOpen
 
   useEffect(() => {
     if (isModalOpen && device === "desktop" && !appFormWatcher.name) {
@@ -427,20 +405,7 @@ export default function Agent({
     }
   }
 
-  useEffect(() => {
-    setIsModalOpen(appStatus?.part === "settings")
-  }, [appStatus?.part])
-
-  const setTab = (
-    value:
-      | "settings"
-      | "api"
-      | "monetization"
-      | "systemPrompt"
-      | "extends"
-      | "customModel"
-      | "api",
-  ) => {
+  const setTab = (value: TabType) => {
     if (value) {
       setIsModalOpen(true)
       if (value === "systemPrompt") {
@@ -1771,6 +1736,7 @@ export default function Agent({
                 </Div>
               </>
             )}
+            {tab === "tribe" && <TribeCalculator />}
 
             <Div
               style={{
@@ -1850,6 +1816,46 @@ export default function Agent({
                   >
                     <Webhook size={16} /> {t("API")}
                   </Button>
+                  {isE2E && (
+                    <>
+                      <Button
+                        data-testid="tribe-tab"
+                        className="inverted"
+                        style={{
+                          ...utilities.inverted.style,
+                          ...utilities.small.style,
+                          ...(tab === "tribe"
+                            ? styles.currentTab.style
+                            : undefined),
+                        }}
+                        onClick={() => {
+                          setTab("tribe")
+                        }}
+                        type="button"
+                      >
+                        <Img icon="zarathustra" size={16} />
+                        {t("Tribe")}
+                      </Button>
+                      <Button
+                        data-testid="moltbook-tab"
+                        className="inverted"
+                        style={{
+                          ...utilities.inverted.style,
+                          ...utilities.small.style,
+                          ...(tab === "moltBook"
+                            ? styles.currentTab.style
+                            : undefined),
+                        }}
+                        onClick={() => {
+                          setTab("moltBook")
+                        }}
+                        type="button"
+                      >
+                        <Span>🦞</Span>
+                        {t("Moltbook")}
+                      </Button>
+                    </>
+                  )}
                 </>
               )}
 

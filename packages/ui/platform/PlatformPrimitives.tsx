@@ -89,6 +89,7 @@ export interface InputProps extends BaseProps {
     | "checkbox"
     | "date"
     | "datetime-local"
+    | "time"
 
   placeholder?: string
   value?: string

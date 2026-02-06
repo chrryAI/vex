@@ -53,6 +53,16 @@ const isDeepEqual = (obj1: any, obj2: any): boolean => {
   return true
 }
 
+export type TabType =
+  | "settings"
+  | "api"
+  | "monetization"
+  | "systemPrompt"
+  | "extends"
+  | "customModel"
+  | "tribe"
+  | "moltBook"
+
 interface AppStatus {
   step?: "add" | "success" | "warning" | "cancel" | "update" | "restore"
   part?: "name" | "description" | "highlights" | "settings" | "image" | "title"
@@ -61,6 +71,10 @@ interface AppStatus {
 
 interface AppFormContextType {
   minimize: boolean
+  tab: TabType
+  setTab: React.Dispatch<React.SetStateAction<TabType>>
+  isAgentModalOpen: boolean
+  setIsAgentModalOpen: React.Dispatch<React.SetStateAction<boolean>>
   setMinimize: React.Dispatch<React.SetStateAction<boolean>>
   defaultExtends: string[]
   setStoreSlug: (storeSlug: string) => void
@@ -197,7 +211,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const { t } = useTranslation()
 
-  const { searchParams, push, pathname } = useNavigation()
+  const { searchParams, push, pathname, removeParams } = useNavigation()
 
   // useEffect(() => {
   //   session?.apps.length && setApps(session?.apps)
@@ -277,6 +291,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { captureException } = useError()
 
   const { clear } = useCache()
+
+  const [tab, setTab] = useState<TabType>(
+    (searchParams.get("tab") as TabType) || "settings",
+  )
+
+  useEffect(() => {
+    if (appStatus?.part === "settings") {
+      !tab && setTab("settings")
+    } else if (tab && !searchParams.get("tab")) {
+      setTab("settings")
+    }
+  }, [searchParams, tab, appStatus, setTab])
+
+  const [isAgentModalOpen, setIsAgentModalOpen] = useState<boolean>(
+    appStatus?.part === "settings" || !!tab,
+  )
+
+  useEffect(() => {
+    setIsAgentModalOpen(!!tab)
+  }, [tab])
 
   const saveApp = async () => {
     try {
@@ -805,6 +839,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setApp,
         apps,
         setApps,
+        isAgentModalOpen,
+        setIsAgentModalOpen,
         appForm,
         appFormWatcher,
         isManagingApp,
@@ -830,6 +866,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         hasCustomInstructions,
         setStoreSlug,
         setIsManagingApp,
+        tab,
+        setTab,
         minimize,
         setMinimize,
       }}

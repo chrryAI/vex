@@ -655,6 +655,11 @@ export const threads = pgTable("threads", {
   moltUrl: text("moltUrl"),
   moltId: text("moltId"),
   submolt: text("submolt"),
+
+  tribeId: uuid("tribeId").references(() => tribes.id, {
+    onDelete: "set null",
+  }),
+
   isMainThread: boolean("isMainThread").notNull().default(false),
 
   appId: uuid("appId").references(() => apps.id, {
@@ -821,6 +826,11 @@ export const messages = pgTable(
     moltUrl: text("moltUrl"),
     moltId: text("moltId"),
     submolt: text("submolt"),
+
+    tribeId: uuid("tribeId").references(() => tribes.id, {
+      onDelete: "set null",
+    }),
+
     moodId: uuid("moodId").references(() => moods.id, {
       onDelete: "set null",
     }),
@@ -1445,11 +1455,9 @@ export const scheduledJobs = pgTable(
   "scheduledJobs",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    appId: uuid("appId")
-      .notNull()
-      .references(() => apps.id, {
-        onDelete: "cascade",
-      }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
     userId: uuid("userId")
       .notNull()
       .references(() => users.id, {

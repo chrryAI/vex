@@ -120,7 +120,7 @@ export default function Instructions({
 
   const { utilities } = useStyles()
 
-  const { defaultInstructions, isAppInstructions } = useApp()
+  const { defaultInstructions, isAppInstructions, isAgentModalOpen } = useApp()
 
   const {
     token,
@@ -1529,7 +1529,7 @@ ${t(`The more specific you are, the better AI can assist you!`)}`)
                 {t(appStatus?.part ? "Description" : "About")}
               </A>
             )}
-            {appStatus?.part ? (
+            {isAgentModalOpen ? (
               <Suspense>
                 <Agent />
               </Suspense>
