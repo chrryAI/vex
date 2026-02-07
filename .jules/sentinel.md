@@ -18,3 +18,17 @@
 **Trusted Origins:** Maintain an allowlist of trusted domains (e.g., `*.chrry.ai`, `*.chrry.dev`, `*.chrry.store`) and validate that the parsed hostname from `Origin` or `Referer` matches the trusted patterns.
 
 **Note:** For same-site subdomain communication with `SameSite=Lax`, this middleware is not required as browsers provide built-in CSRF protection. This defense-in-depth approach is specifically for `SameSite=None` scenarios where cross-site requests are intentionally allowed.
+
+## 2025-05-23 - OAuth State Parameter Validation
+
+**Vulnerability:** The Google OAuth flow was generating a `state` parameter but failed to verify it upon callback, exposing the application to Login CSRF attacks. An attacker could potentially log a victim into the attacker's account.
+
+**Learning:** Generating a `state` parameter is insufficient if it is not cryptographically bound to the user's session (e.g., via a secure cookie) and verified upon return.
+
+**Prevention:** Always implement the `state` parameter check in OAuth flows:
+1. Generate a random state.
+2. Store it in a secure, HttpOnly, SameSite cookie.
+3. Pass it to the OAuth provider.
+4. On callback, compare the returned `state` with the cookie value.
+5. Reject if they don't match.
+6. Clear the cookie after verification.
