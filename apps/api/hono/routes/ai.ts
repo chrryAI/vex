@@ -1815,9 +1815,9 @@ ${
   // )
 
   const clientId = message.message.clientId
-  const isMolt = message?.thread?.isMolt
-  const isTribe = !!message?.thread?.tribeId
-  const currentThreadId = threadId
+  const isMolt = thread?.isMolt || message?.thread?.isMolt
+  const isTribe = !!(thread?.tribeId || message?.thread?.tribeId)
+  const currentThreadId = thread?.id || threadId
 
   const newMessagePayload = {
     id: clientId,
@@ -2256,29 +2256,38 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
   let moodContext = ""
 
   if (characterProfilesEnabled && agent) {
-    // Get user character profiles
-    const characterProfilesList = await tracker.track(
+    // Get ALL user character profiles (not just pinned)
+    const allCharacterProfiles = await tracker.track(
       "get_character_profiles",
       () =>
         getCharacterProfiles({
           userId: member?.id,
           guestId: guest?.id,
-          pinned: true,
-          limit: 10,
+          limit: 50,
         }),
     )
+
+    // Sort profiles: pinned first, then by creation date
+    const characterProfilesList = allCharacterProfiles.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1
+      if (!a.pinned && b.pinned) return 1
+      return 0
+    })
 
     // Get app character profiles (for app-to-app interactions)
-    const appCharacterProfiles = await tracker.track(
-      "get_app_character_profiles",
-      () =>
-        getCharacterProfiles({
-          isAppOwner: true,
-          limit: 20,
-        }),
-    )
+    const appCharacterProfiles = requestApp
+      ? await tracker.track("get_app_character_profiles", () =>
+          requestApp
+            ? getCharacterProfiles({
+                isAppOwner: true,
+                appId: requestApp.id,
+                limit: 20,
+              })
+            : [],
+        )
+      : []
 
-    // Show all character profiles (prioritize pinned first)
+    // Show all character profiles (pinned first)
     if (characterProfilesList.length > 0) {
       const profilesText = characterProfilesList
         .map((profile) => {

@@ -108,10 +108,6 @@ export async function engageWithMoltbookPosts({ job }: { job: scheduledJob }) {
   if (!MOLTBOOK_API_KEY) {
     throw new Error("❌ MOLTBOOK_API_KEY not configured")
   }
-  if (!MOLTBOOK_API_KEY) {
-    console.error("❌ MOLTBOOK_API_KEY not configured for", slug)
-    return
-  }
 
   console.log("🎯 Starting Moltbook engagement...")
 
@@ -541,7 +537,9 @@ export async function checkMoltbookComments({
 
         // Skip excluded agents (centralized list)
         if (isExcludedAgent(comment.author.name)) {
-          console.log(`⏭️ Skipping excluded agent: ${comment.author.name}`)
+          console.log(
+            `⏭️ Skipping excluded agent: ${redact(comment.author.name)}`,
+          )
           continue
         }
 
@@ -692,12 +690,12 @@ ${memoryContext ? `Relevant context about you:\n${memoryContext.substring(0, 500
 
 Reply (2-3 sentences max, concise and engaging, just the text, no quotes):`
 
-          console.log(`🔍 Reply generation for ${comment.author.name}:`)
+          console.log(`🔍 Reply generation for ${redact(comment.author.name)}:`)
           console.log(
-            `   Post: "${cleanMoltbookPlaceholders(post.content?.substring(0, 100) || "")}..."`,
+            `   Post: "${redact(cleanMoltbookPlaceholders(post.content?.substring(0, 50) || ""))}..."`,
           )
           console.log(
-            `   Comment: "${cleanMoltbookPlaceholders(comment.content.substring(0, 100))}..."`,
+            `   Comment: "${redact(cleanMoltbookPlaceholders(comment.content.substring(0, 50)))}..."`,
           )
           console.log(`   Model: ${job.aiModel}`)
 
@@ -747,7 +745,7 @@ Reply (2-3 sentences max, concise and engaging, just the text, no quotes):`
               .where(eq(moltComments.commentId, comment.id))
 
             repliesCount++
-            console.log(`✅ Posted reply to ${comment.author.name}`)
+            console.log(`✅ Posted reply to ${redact(comment.author.name)}`)
 
             // Update moltCommentedOn timestamp for rate limiting
             await db
@@ -769,7 +767,7 @@ Reply (2-3 sentences max, concise and engaging, just the text, no quotes):`
                   .set({ followed: true })
                   .where(eq(moltComments.commentId, comment.id))
 
-                console.log(`👥 Followed ${comment.author.name}`)
+                console.log(`👥 Followed ${redact(comment.author.name)}`)
               }
             }
           } else {
@@ -1118,6 +1116,7 @@ export async function postToMoltbookJob({
     // 2. Generate Post
     const post = await generateMoltbookPost({
       job,
+      instructions,
     })
 
     console.log(`🦞 Generated Moltbook Post:`, post)
@@ -1456,6 +1455,10 @@ async function checkTribeComments({ job }: { job: scheduledJob }): Promise<{
     throw new Error("App not found for Tribe comment check")
   }
 
+  if (!job.userId) {
+    throw new Error("userId required for Tribe comment check")
+  }
+
   const app = await db.query.apps.findFirst({
     where: eq(apps.id, job.appId),
   })
@@ -1572,6 +1575,10 @@ async function engageWithTribePosts({ job }: { job: scheduledJob }): Promise<{
 }> {
   if (!job.appId) {
     throw new Error("App not found for Tribe engagement")
+  }
+
+  if (!job.userId) {
+    throw new Error("userId required for Tribe engagement")
   }
 
   const app = await db.query.apps.findFirst({
@@ -1824,7 +1831,7 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
         }
         break
 
-      case "moltbook_engage":
+      case "moltbook_engage": {
         const engageResult = await executeMoltbookEngage(job)
         if (engageResult?.error) {
           throw new Error(engageResult.error)
@@ -1833,8 +1840,9 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           output: "Engaged with Moltbook",
         }
         break
+      }
 
-      case "tribe_comment":
+      case "tribe_comment": {
         try {
           const response = await executeTribeComment(job)
           if (!response?.content || response.error) {
@@ -1849,16 +1857,24 @@ export async function executeScheduledJob(params: ExecuteJobParams) {
           }
         }
         break
+      }
 
-      case "tribe_engage":
-        const tribeEngageResult = await executeTribeEngage(job)
-        if (tribeEngageResult?.error) {
-          throw new Error(tribeEngageResult.error)
-        }
-        result = {
-          output: "Engaged with Tribe",
+      case "tribe_engage": {
+        try {
+          const tribeEngageResult = await executeTribeEngage(job)
+          if (tribeEngageResult?.error) {
+            throw new Error(tribeEngageResult.error)
+          }
+          result = {
+            output: "Engaged with Tribe",
+          }
+        } catch (error) {
+          result = {
+            output: String(error),
+          }
         }
         break
+      }
 
       default:
         throw new Error(`Unknown job type: ${job.jobType}`)

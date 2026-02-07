@@ -945,11 +945,12 @@ export const getUser = async ({
     : 0
 
   // If user owns the app they're using, show infinite credits (999999)
-  const creditsLeft = isDevelopment
-    ? OWNER_CREDITS
-    : isAppOwner && !!app?.apiKeys?.openrouter && app?.tier !== "free"
+  const creditsLeft =
+    isDevelopment && isAppOwner
       ? OWNER_CREDITS
-      : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
+      : isAppOwner && !!app?.apiKeys?.openrouter && app?.tier !== "free"
+        ? OWNER_CREDITS
+        : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
 
   const userData = result
     ? {
@@ -4962,7 +4963,7 @@ export const getApp = async ({
           })
         : undefined
 
-  const appSchedule =
+  const storeAppSchedule =
     userId &&
     storeData?.app &&
     isOwner(storeData.app, {
@@ -4972,12 +4973,17 @@ export const getApp = async ({
       ? await getScheduledJobs({ appId: storeData.app.id, userId })
       : []
 
+  const requestedAppSchedule =
+    userId && isOwner(app.app, { userId, guestId })
+      ? await getScheduledJobs({ appId: app.app.id, userId })
+      : []
+
   // Build store with apps array for hyperlink navigation
   const storeWithApps = storeData
     ? {
         ...storeData.store,
         title: storeData.store.name, // Use name as title
-        apps: Promise.all(
+        apps: await Promise.all(
           storeData.apps.map(async (app) =>
             toSafeApp({
               app,
@@ -4994,7 +5000,7 @@ export const getApp = async ({
           app: storeData.app,
           userId,
           guestId,
-          scheduledJobs: appSchedule,
+          scheduledJobs: storeAppSchedule,
         }), // Include the store's base app
       }
     : undefined
@@ -5005,7 +5011,7 @@ export const getApp = async ({
           app: app.app,
           userId,
           guestId,
-          scheduledJobs: appSchedule,
+          scheduledJobs: requestedAppSchedule,
         }) as app)
       : app.app),
     extends: await getAppExtends({
@@ -5035,6 +5041,7 @@ export const getPureApp = async ({
   storeId,
   isSafe = true,
   depth = 0,
+  includeScheduledJobs = false,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom" | "Vex"
   id?: string
@@ -5044,6 +5051,7 @@ export const getPureApp = async ({
   storeId?: string
   isSafe?: boolean
   depth?: number
+  includeScheduledJobs?: boolean
 }): Promise<app | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -5092,7 +5100,9 @@ export const getPureApp = async ({
 
   if (!app) return undefined
 
-  const appSchedule = await getScheduledJobs({ appId: app.app.id, userId })
+  const appSchedule = includeScheduledJobs
+    ? await getScheduledJobs({ appId: app.app.id, userId })
+    : []
 
   return (
     isSafe
@@ -7015,7 +7025,7 @@ export const getScheduledJob = async ({
   scheduleTypes?: ("tribe" | "molt")[]
 }) => {
   try {
-    const scheduledJob = await db
+    const result = await db
       .select()
       .from(scheduledJobs)
       .where(
@@ -7027,10 +7037,11 @@ export const getScheduledJob = async ({
             : undefined,
         ),
       )
-    return scheduledJob
+      .limit(1)
+    return result[0] || undefined
   } catch (error) {
     console.error("Error getting scheduled job:", error)
-    return null
+    return undefined
   }
 }
 
@@ -7283,8 +7294,10 @@ export const getCharacterProfiles = async ({
   limit = 50,
   pinned,
   visibility,
+  appId,
 }: {
   agentId?: string
+  appId?: string
   userId?: string
   guestId?: string
   isAppOwner?: boolean
@@ -7310,6 +7323,7 @@ export const getCharacterProfiles = async ({
           agentId ? eq(characterProfiles.agentId, agentId) : undefined,
           userId ? eq(characterProfiles.userId, userId) : undefined,
           guestId ? eq(characterProfiles.guestId, guestId) : undefined,
+          appId ? eq(characterProfiles.appId, appId) : undefined,
           isAppOwner !== undefined
             ? eq(characterProfiles.isAppOwner, isAppOwner)
             : undefined,
@@ -7324,14 +7338,23 @@ export const getCharacterProfiles = async ({
 
     return result.map((row) => ({
       id: row.profile.id,
+      agentId: row.profile.agentId,
+      userId: row.profile.userId,
+      guestId: row.profile.guestId,
+      threadId: row.profile.threadId,
+      appId: row.profile.appId,
       name: row.profile.name,
       personality: row.profile.personality,
       traits: row.profile.traits,
       pinned: row.profile.pinned,
       visibility: row.profile.visibility,
       isAppOwner: row.profile.isAppOwner,
-      createdOn: row.profile.createdOn,
+      tags: row.profile.tags,
+      usageCount: row.profile.usageCount,
+      lastUsedAt: row.profile.lastUsedAt,
+      userRelationship: row.profile.userRelationship,
       conversationStyle: row.profile.conversationStyle,
+      createdOn: row.profile.createdOn,
       agent: row.agent
         ? {
             id: row.agent.id,
