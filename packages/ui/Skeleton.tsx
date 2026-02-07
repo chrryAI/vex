@@ -190,7 +190,7 @@ export default function Skeleton({
   const threadId = threadIdRef.current
 
   // App context
-  const { app } = useApp()
+  const { app, isAgentModalOpen } = useApp()
 
   // Theme context
   const { addHapticFeedback } = useTheme()
@@ -386,9 +386,11 @@ export default function Skeleton({
                     <CharacterProfiles />
                   </Suspense>
 
-                  <Suspense fallback={null}>
-                    <Subscribe />
-                  </Suspense>
+                  {!isAgentModalOpen && (
+                    <Suspense fallback={null}>
+                      <Subscribe />
+                    </Suspense>
+                  )}
 
                   <Suspense fallback={null}>
                     <SignIn showSignIn={false} />

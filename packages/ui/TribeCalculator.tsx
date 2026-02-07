@@ -16,6 +16,7 @@ import { useApp } from "./context/providers"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
 import { apiFetch, capitalizeFirstLetter } from "./utils"
+import { estimateJobCredits, type ScheduleSlot } from "./utils/creditCalculator"
 
 import toast from "react-hot-toast"
 import Loading from "./Loading"
@@ -31,14 +32,10 @@ import {
   Info,
 } from "./icons"
 import Select from "./Select"
+import Subscribe from "./Subscribe"
 
-interface ScheduleTime {
-  hour: number
-  minute: number
-  postType: "post" | "comment" | "engagement"
-  model: "sushi" | "claude" | "chatGPT" | "gemini" | "perplexity"
-  charLimit: number
-}
+// Use ScheduleSlot from creditCalculator for consistency
+type ScheduleTime = ScheduleSlot
 
 interface TribeCalculatorProps {
   onCalculate?: (result: {
@@ -118,96 +115,33 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const [totalCredits, setTotalCredits] = useState<number>(0)
   const [totalPrice, setTotalPrice] = useState<number>(0)
 
-  // Model pricing multipliers (matches creditCost from seed.ts)
-  const getModelMultiplier = (model: string) => {
-    switch (model) {
-      case "sushi":
-        return 2 // DeepSeek R1 - creditCost: 2
-      case "claude":
-        return 3 // Claude Sonnet 4.5 - creditCost: 3
-      case "chatGPT":
-        return 4 // GPT-5.1 - creditCost: 4
-      case "gemini":
-        return 4 // Gemini 3.0 Pro - creditCost: 4
-      case "perplexity":
-        return 3 // Perplexity Sonar Pro - creditCost: 3
-      default:
-        return 2
-    }
-  }
+  // Model and post type multipliers imported from creditCalculator
 
-  // Post type multipliers
-  const getPostTypeMultiplier = (postType: string) => {
-    switch (postType) {
-      case "post":
-        return 1
-      case "comment":
-        return 0.5
-      case "engagement":
-        return 0.3
-      default:
-        return 1
-    }
-  }
+  // Minimum price for Stripe (€5)
+  const MINIMUM_PRICE = 5
 
-  // Calculate credits and posts
+  // Calculate credits and posts using shared calculator
   useEffect(() => {
     if (!startDate || !endDate) return
 
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    const days = Math.ceil(
-      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-    )
-
-    if (days <= 0) return
-
-    let totalRuns = 0
-    if (frequency === "daily") {
-      totalRuns = days
-    } else if (frequency === "weekly") {
-      totalRuns = Math.floor(days / 7)
-    } else if (frequency === "monthly") {
-      totalRuns = Math.max(1, Math.floor(days / 30))
-    }
-
-    // Calculate total credits based on each slot's configuration
-    let totalCreditsSum = 0
-    let totalPostsCount = 0
-
-    scheduledTimes.forEach((slot) => {
-      const runsForThisSlot = totalRuns
-      totalPostsCount += runsForThisSlot
-
-      // Base credits: 10 + (charLimit / 100) * 5
-      const baseCredits = 10 + (slot.charLimit / 100) * 5
-      const modelMultiplier = getModelMultiplier(slot.model)
-      const postTypeMultiplier = getPostTypeMultiplier(slot.postType)
-
-      const creditsPerRun = Math.ceil(
-        baseCredits * modelMultiplier * postTypeMultiplier,
-      )
-      totalCreditsSum += creditsPerRun * runsForThisSlot
+    const result = estimateJobCredits({
+      frequency,
+      scheduledTimes,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
     })
 
-    const avgCreditsPerPost =
-      totalPostsCount > 0 ? Math.ceil(totalCreditsSum / totalPostsCount) : 0
-
-    // Calculate EUR price based on credits (€10 per 1000 credits)
-    const priceInEur = Math.ceil(
-      (totalCreditsSum / 1000) * parseFloat(String(CREDITS_PRICE || "10")),
-    )
-
-    setTotalPosts(totalPostsCount)
-    setCreditsPerPost(avgCreditsPerPost)
-    setTotalCredits(totalCreditsSum)
-    setTotalPrice(priceInEur)
+    setTotalPosts(result.totalPosts)
+    setCreditsPerPost(result.creditsPerPost)
+    setTotalCredits(result.totalCredits)
+    setTotalPrice(result.totalPrice)
 
     if (onCalculate) {
       onCalculate({
-        totalPosts: totalPostsCount,
-        creditsPerPost: avgCreditsPerPost,
-        totalCredits: totalCreditsSum,
+        totalPosts: result.totalPosts,
+        creditsPerPost: result.creditsPerPost,
+        totalCredits: result.totalCredits,
         schedule: scheduledTimes,
       })
     }
@@ -278,6 +212,41 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       console.error("Checkout error:", err)
       toast.error(t("Failed to initiate checkout"))
       setLoading(false)
+    }
+  }
+
+  // Handle payment verification callback
+  const handlePaymentVerified = async (sessionId: string) => {
+    try {
+      const response = await apiFetch(`${API_URL}/createTribeSchedule`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          sessionId,
+          userId: user?.id,
+          guestId: guest?.id,
+          appId: app?.id,
+          schedule: scheduledTimes,
+          frequency,
+          startDate,
+          endDate,
+          totalCredits,
+          totalPrice,
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast.success(t("Tribe schedule created successfully! 🎉"))
+      } else {
+        toast.error(data.error || t("Failed to create Tribe schedule"))
+      }
+    } catch (err) {
+      console.error("Tribe schedule creation error:", err)
+      toast.error(t("Failed to create Tribe schedule"))
     }
   }
 
@@ -844,30 +813,13 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                       alignItems: "center",
                     }}
                   >
-                    <Button
-                      className="inverted"
-                      onClick={() => {
-                        if (!user) {
-                          addParams({
-                            signIn: "login",
-                          })
-                        } else {
-                          handleCheckout()
-                        }
-                      }}
-                      disabled={loading || !app?.id}
-                      style={{
-                        marginTop: ".3rem",
-                        ...utilities.inverted.style,
-                        ...utilities.small.style,
-                      }}
-                    >
-                      {loading ? (
-                        <Loading size={18} />
-                      ) : (
-                        <>
-                          <Img logo="chrry" size={20} />
-                          {t(user ? "Pay {{price}}" : "Join", {
+                    <>
+                      {user ? (
+                        <Subscribe
+                          selectedPlan="tribe"
+                          customPrice={totalPrice}
+                          onPaymentVerified={handlePaymentVerified}
+                          cta={t("Pay {{price}}", {
                             price: new Intl.NumberFormat("en-US", {
                               style: "currency",
                               currency: "EUR",
@@ -875,9 +827,46 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                               maximumFractionDigits: 2,
                             }).format(totalPrice),
                           })}
-                        </>
+                          isTribe
+                        />
+                      ) : (
+                        <Button
+                          className="inverted"
+                          onClick={() => {
+                            if (!user) {
+                              addParams({
+                                signIn: "login",
+                                callbackUrl: "/?settings=true&tab=tribe",
+                              })
+                            } else {
+                              handleCheckout()
+                            }
+                          }}
+                          disabled={loading || !app?.id}
+                          style={{
+                            marginTop: ".3rem",
+                            ...utilities.inverted.style,
+                            ...utilities.small.style,
+                          }}
+                        >
+                          {loading ? (
+                            <Loading size={18} />
+                          ) : (
+                            <>
+                              <Img logo="chrry" size={20} />
+                              {t(user ? "Pay {{price}}" : "Join", {
+                                price: new Intl.NumberFormat("en-US", {
+                                  style: "currency",
+                                  currency: "EUR",
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                }).format(totalPrice),
+                              })}
+                            </>
+                          )}
+                        </Button>
                       )}
-                    </Button>
+                    </>
                   </Div>
                   {!(user || guest)?.subscription && (
                     <Text

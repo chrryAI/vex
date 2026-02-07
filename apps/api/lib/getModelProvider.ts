@@ -40,7 +40,15 @@ function safeDecrypt(encryptedKey: string | undefined): string | undefined {
  */
 export async function getModelProvider(
   app?: app | appWithStore,
-  name = "deepSeek",
+  name:
+    | "deepSeek"
+    | "chatGPT"
+    | "claude"
+    | "sushi"
+    | "gemini"
+    | "perplexity"
+    | "flux"
+    | "openrouter" = "deepSeek",
 ): Promise<{ provider: LanguageModel; agentName: string }> {
   const appApiKeys = app?.apiKeys || {}
 

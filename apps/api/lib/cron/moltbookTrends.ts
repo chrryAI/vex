@@ -68,7 +68,7 @@ export async function analyzeMoltbookTrends({
   console.log(`📊 Fetched ${posts.length} posts from Moltbook`)
 
   // 2. Upsert Posts to DB
-  // 2. Upsert Posts to DB
+
   let newPostsCount = 0
   for (const post of posts) {
     const result = await db

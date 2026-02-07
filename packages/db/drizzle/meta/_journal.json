@@ -1254,6 +1254,48 @@
       "when": 1770339571333,
       "tag": "0178_chief_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 179,
+      "version": "7",
+      "when": 1770399917895,
+      "tag": "0179_kind_karma",
+      "breakpoints": true
+    },
+    {
+      "idx": 180,
+      "version": "7",
+      "when": 1770461493780,
+      "tag": "0180_old_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 181,
+      "version": "7",
+      "when": 1770461978472,
+      "tag": "0181_tough_retro_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 182,
+      "version": "7",
+      "when": 1770464464717,
+      "tag": "0182_young_captain_stacy",
+      "breakpoints": true
+    },
+    {
+      "idx": 183,
+      "version": "7",
+      "when": 1770479978898,
+      "tag": "0183_lumpy_butterfly",
+      "breakpoints": true
+    },
+    {
+      "idx": 184,
+      "version": "7",
+      "when": 1770481717506,
+      "tag": "0184_even_wrecking_crew",
+      "breakpoints": true
     }
   ]
 }

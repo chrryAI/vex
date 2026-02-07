@@ -395,7 +395,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.13.70"
+export const VERSION = config.version || "1.13.71"
 export type instructionBase = {
   id: string
   title: string
@@ -726,5 +726,17 @@ export type {
   AgentCapabilities,
   AgentModel,
 } from "./fileValidation"
+
+// Export credit calculator utilities
+export {
+  estimateJobCredits,
+  getModelMultiplier,
+  getPostTypeMultiplier,
+  calculateSlotCredits,
+  formatCredits,
+  creditsToUSD,
+  formatUSD,
+} from "./creditCalculator"
+export type { ScheduleSlot, EstimateJobCreditsParams } from "./creditCalculator"
 
 // Export API URL utilities

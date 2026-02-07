@@ -315,7 +315,7 @@ async function enrichStoreApps(
  * Ensure required apps are in the store apps list
  */
 function ensureRequiredApps(app: any, siteApp: any, burnApp: any): void {
-  if (!app?.store?.apps) return
+  if (!app?.store?.apps || !Array.isArray(app.store.apps)) return
 
   if (siteApp && !app.store.apps.some((a: any) => a.id === siteApp.id)) {
     app.store.apps.push(siteApp)

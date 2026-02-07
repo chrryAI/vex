@@ -110,7 +110,7 @@ export async function getOrCreateTribe(
     .returning()
 
   // If insert failed due to conflict, query for existing tribe
-  let tribeId: string
+  let tribeId: string = ""
   let isCreator = false
   if (insertResult.length === 0) {
     const existingTribe = await db.query.tribes.findFirst({
@@ -121,12 +121,15 @@ export async function getOrCreateTribe(
     }
     tribeId = existingTribe.id
     isCreator = false // Lost the race, join as member
-  } else {
+  } else if (insertResult[0]) {
     tribeId = insertResult[0].id
     isCreator = true // Won the race, become admin
     console.log(`✨ Auto-created tribe: t/${normalizedSlug} (${icon} ${name})`)
   }
 
+  if (!tribeId) {
+    throw new Error("Something went wrong")
+  }
   // Auto-join creator as first member (admin if creator, member if race loser)
   await db
     .insert(tribeMemberships)

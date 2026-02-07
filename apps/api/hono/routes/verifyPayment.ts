@@ -679,6 +679,66 @@ verifyPayment.post("/", async (c) => {
       })
     }
 
+    // Handle Tribe/Molt flexible schedule payments
+    if (
+      session.mode === "payment" &&
+      (plan === "tribe" || plan === "molt") &&
+      session.line_items?.data[0]
+    ) {
+      const amountPaidCents = session.amount_total || 0
+      const amountPaidEur = amountPaidCents / 100
+
+      // Calculate credits based on payment (€10 per 1000 credits)
+      const creditsReserved = Math.round((amountPaidEur / 10) * 1000)
+
+      console.log(
+        `💰 ${plan === "tribe" ? "Tribe" : "Molt"} payment: €${amountPaidEur} = ${creditsReserved} credits reserved`,
+      )
+
+      // Create credit transaction record (balance stays same - credits reserved for schedule)
+      const currentBalance = user?.credits || guest?.credits || 0
+
+      if (user) {
+        await createCreditTransaction({
+          userId: user.id,
+          guestId: null,
+          amount: creditsReserved,
+          balanceBefore: currentBalance,
+          balanceAfter: currentBalance, // Balance unchanged - credits reserved
+          description: `${plan === "tribe" ? "Tribe" : "Molt"} schedule payment`,
+          sessionId: session.id,
+          type: plan as "tribe" | "molt",
+          metadata: {
+            amountPaid: amountPaidEur,
+            creditsReserved,
+          },
+        })
+      } else if (guest) {
+        await createCreditTransaction({
+          userId: null,
+          guestId: guest.id,
+          amount: creditsReserved,
+          balanceBefore: currentBalance,
+          balanceAfter: currentBalance, // Balance unchanged - credits reserved
+          description: `${plan === "tribe" ? "Tribe" : "Molt"} schedule payment`,
+          sessionId: session.id,
+          type: plan as "tribe" | "molt",
+          metadata: {
+            amountPaid: amountPaidEur,
+            creditsReserved,
+          },
+        })
+      }
+
+      return c.json({
+        success: true,
+        type: plan,
+        sessionId: session.id,
+        creditsReserved,
+        fingerprint: guest?.fingerprint || user?.fingerprint || newFingerprint,
+      })
+    }
+
     return c.json({ error: "Payment not completed" }, 400)
   } catch (err: any) {
     captureException(err)

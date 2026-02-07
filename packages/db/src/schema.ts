@@ -526,8 +526,12 @@ export const creditTransactions = pgTable("creditTransactions", {
   subscriptionId: uuid("subscriptionId").references(() => subscriptions.id, {
     onDelete: "cascade",
   }),
+  sessionId: text("sessionId"), // Stripe checkout session ID for Tribe/Molt payments
+  scheduleId: uuid("scheduleId").references(() => scheduledJobs.id, {
+    onDelete: "set null",
+  }), // Link to scheduled job for Tribe/Molt
   type: text("type", {
-    enum: ["purchase", "subscription"],
+    enum: ["purchase", "subscription", "tribe", "molt"],
   })
     .notNull()
     .default("purchase"),
@@ -813,6 +817,15 @@ export type modelName =
   | "perplexity"
   | "sushi"
 
+const models = [
+  "chatGPT",
+  "claude",
+  "deepSeek",
+  "gemini",
+  "flux",
+  "perplexity",
+  "sushi",
+] as const
 export const messages = pgTable(
   "messages",
   {
@@ -1287,6 +1300,9 @@ export const tribeFollows = pgTable(
     followerId: uuid("followerId").references(() => users.id, {
       onDelete: "cascade",
     }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
     followerGuestId: uuid("followerGuestId").references(() => guests.id, {
       onDelete: "cascade",
     }),
@@ -1380,6 +1396,9 @@ export const tribeReactions = pgTable(
     guestId: uuid("guestId").references(() => guests.id, {
       onDelete: "cascade",
     }),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
     postId: uuid("postId").references(() => tribePosts.id, {
       onDelete: "cascade",
     }),
@@ -1434,6 +1453,10 @@ export const tribeShares = pgTable("tribeShares", {
     onDelete: "cascade",
   }),
 
+  appId: uuid("appId").references(() => apps.id, {
+    onDelete: "cascade",
+  }),
+
   // Share context
   comment: text("comment"), // Optional comment when sharing
   sharedTo: text("sharedTo", {
@@ -1466,12 +1489,17 @@ export const scheduledJobs = pgTable(
 
     // Job configuration
     name: text("name").notNull(), // User-friendly name
+    scheduleType: text("scheduleType", {
+      enum: ["tribe", "molt"],
+    }).notNull(), // Flexible schedule type
     jobType: text("jobType", {
       enum: [
         "tribe_post",
         "moltbook_post",
         "moltbook_comment",
         "moltbook_engage",
+        "tribe_comment", // Tribe comment checking
+        "tribe_engage", // Tribe engagement
       ],
     }).notNull(),
 
@@ -1489,7 +1517,7 @@ export const scheduledJobs = pgTable(
 
     // AI Model configuration
     aiModel: text("aiModel", {
-      enum: ["openai", "claude", "deepseek", "sushi"],
+      enum: models,
     }).notNull(),
     modelConfig: jsonb("modelConfig").$type<{
       model?: string // e.g., "gpt-4", "claude-3-opus"
@@ -1613,7 +1641,7 @@ export const aiModelPricing = pgTable(
 
     // Model identification
     provider: text("provider", {
-      enum: ["openai", "claude", "deepseek", "sushi"],
+      enum: models,
     }).notNull(),
     modelName: text("modelName").notNull(), // "gpt-4", "claude-3-opus", etc.
 
@@ -2069,6 +2097,79 @@ export const memories = pgTable(
   ],
 )
 
+export const sonarIssues = pgTable(
+  "sonarIssues",
+  {
+    id: text("id").primaryKey(), // SonarCloud issue key
+    projectKey: text("projectKey").notNull(), // e.g., "chrryAI_vex"
+    ruleKey: text("ruleKey").notNull(), // e.g., "typescript:S5332"
+    severity: text("severity", {
+      enum: ["INFO", "MINOR", "MAJOR", "CRITICAL", "BLOCKER"],
+    }).notNull(),
+    type: text("type", {
+      enum: ["BUG", "VULNERABILITY", "CODE_SMELL", "SECURITY_HOTSPOT"],
+    }).notNull(),
+    status: text("status", {
+      enum: ["OPEN", "CONFIRMED", "REOPENED", "RESOLVED", "CLOSED"],
+    }).notNull(),
+    filePath: text("filePath").notNull(),
+    lineNumber: integer("lineNumber"),
+    message: text("message").notNull(),
+    createdAt: timestamp("createdAt", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    updatedAt: timestamp("updatedAt", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    resolvedAt: timestamp("resolvedAt", {
+      mode: "date",
+      withTimezone: true,
+    }),
+    syncedAt: timestamp("syncedAt", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    projectIdx: index("sonarIssues_project_idx").on(table.projectKey),
+    statusIdx: index("sonarIssues_status_idx").on(table.status),
+    fileIdx: index("sonarIssues_file_idx").on(table.filePath),
+    typeIdx: index("sonarIssues_type_idx").on(table.type),
+    severityIdx: index("sonarIssues_severity_idx").on(table.severity),
+  }),
+)
+
+export const sonarMetrics = pgTable(
+  "sonarMetrics",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    projectKey: text("projectKey").notNull(),
+    metricKey: text("metricKey").notNull(), // e.g., "bugs", "vulnerabilities", "code_smells"
+    value: real("value").notNull(),
+    measuredAt: timestamp("measuredAt", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
+    syncedAt: timestamp("syncedAt", {
+      mode: "date",
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    projectMetricIdx: index("sonarMetrics_project_metric_idx").on(
+      table.projectKey,
+      table.metricKey,
+    ),
+    measuredAtIdx: index("sonarMetrics_measuredAt_idx").on(table.measuredAt),
+  }),
+)
+
 // Character tags and personality profiles for AI agents
 export const characterProfiles = pgTable(
   "characterProfiles",
@@ -2088,6 +2189,7 @@ export const characterProfiles = pgTable(
     })
       .notNull()
       .default("private"),
+    isAppOwner: boolean("isAppOwner").notNull().default(false),
     // Character definition
     name: text("name").notNull(),
     personality: text("personality").notNull(),

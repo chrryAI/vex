@@ -39,15 +39,7 @@ export type user = {
   imagesGeneratedToday: number
   lastImageGenerationReset: Date | null
   lastMessage?: message
-  favouriteAgent:
-    | "deepSeek"
-    | "chatGPT"
-    | "claude"
-    | "gemini"
-    | "flux"
-    | "sushi"
-    | "perplexity"
-    | string
+  favouriteAgent: modelName | string
   timezone: string | null
   tasksCount: number
   appleId: string | null
@@ -199,14 +191,7 @@ export type guest = {
   adConsent?: boolean
   pendingCollaborationThreadsCount?: number
   activeCollaborationThreadsCount?: number
-  favouriteAgent:
-    | "deepSeek"
-    | "chatGPT"
-    | "claude"
-    | "gemini"
-    | "flux"
-    | "perplexity"
-    | "sushi"
+  favouriteAgent: modelName | string
   credits: number
   isBot: boolean
   isOnline: boolean | null
@@ -435,14 +420,7 @@ export type newCollaboration = Partial<collaboration>
 // AI Agent types
 export type aiAgent = {
   id: string
-  name:
-    | "deepSeek"
-    | "chatGPT"
-    | "claude"
-    | "gemini"
-    | "flux"
-    | "perplexity"
-    | "sushi"
+  name: modelName
   displayName: string
   version: string
   apiURL: string
@@ -483,7 +461,14 @@ export type taskAnalysis = {
 }
 
 // Model name types
-export type modelName = "chatGPT" | "claude" | "deepSeek" | "gemini" | "flux"
+export type modelName =
+  | "chatGPT"
+  | "claude"
+  | "deepSeek"
+  | "gemini"
+  | "flux"
+  | "perplexity"
+  | "sushi"
 
 // Message types
 export type message = {
@@ -945,10 +930,93 @@ export type store = {
   app: appWithStore | null
 }
 
+export const models = [
+  "chatGPT",
+  "claude",
+  "deepSeek",
+  "gemini",
+  "flux",
+  "perplexity",
+  "sushi",
+] as const
+
+export type scheduledJob = {
+  id: string
+  appId: string | null
+  userId: string
+
+  // Job configuration
+  name: string
+  scheduleType: "tribe" | "molt"
+  jobType:
+    | "tribe_post"
+    | "moltbook_post"
+    | "moltbook_comment"
+    | "moltbook_engage"
+    | "tribe_comment" // Tribe comment checking
+    | "tribe_engage" // Tribe engagement
+
+  // Schedule configuration
+  frequency: "once" | "daily" | "weekly" | "custom"
+  scheduledTimes: string[] // ["09:00", "14:00", "18:00", "22:00"]
+  timezone: string
+  startDate: Date
+  endDate: Date | null
+
+  // AI Model configuration
+  aiModel: modelName
+  modelConfig: {
+    model?: string // e.g., "gpt-4", "claude-3-opus"
+    temperature?: number
+    maxTokens?: number
+  } | null
+
+  // Content configuration
+  contentTemplate: string | null
+  contentRules: {
+    tone?: string
+    length?: string
+    topics?: string[]
+    hashtags?: string[]
+  } | null
+
+  // Credit & billing
+  estimatedCreditsPerRun: number
+  totalEstimatedCredits: number
+  creditsUsed: number
+  isPaid: boolean
+  stripePaymentIntentId: string | null
+
+  // Execution tracking
+  status:
+    | "draft"
+    | "pending_payment"
+    | "active"
+    | "paused"
+    | "completed"
+    | "canceled"
+  lastRunAt: Date | null
+  nextRunAt: Date | null
+  totalRuns: number
+  successfulRuns: number
+  failedRuns: number
+
+  // Metadata
+  metadata: {
+    errors?: Array<{ timestamp: string; error: string }>
+    lastOutput?: string
+    performance?: { avgDuration: number; avgCredits: number }
+  } | null
+
+  createdOn: Date
+  updatedOn: Date
+}
+
 export type appWithStore = app & {
   store?: storeWithApps
   placeHolder?: placeHolder
   instructions?: instruction[]
+  scheduledJobs?: scheduledJob[]
 }
 
 export type storeWithApps = store & { apps: appWithStore[] }

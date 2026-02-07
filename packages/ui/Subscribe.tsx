@@ -5,7 +5,6 @@ import { user, subscription } from "./types"
 import { MotiView } from "./platform/MotiView"
 import {
   useAuth,
-  useChat,
   useNavigationContext,
   useData,
   useError,
@@ -47,15 +46,45 @@ import { useSubscribeStyles } from "./Subscribe.styles"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 
+export type selectedPlantype =
+  | "plus"
+  | "pro"
+  | "member"
+  | "credits"
+  | "coder"
+  | "code rPlus"
+  | "pear"
+  | "pearPlus"
+  | "grape"
+  | "grapePlus"
+  | "sushi"
+  | "architect"
+  | "watermelon"
+  | "watermelonPlus"
+  | "tribe"
+  | "molt"
+
 export default function Subscribe({
   customerEmail,
   style,
+  isTribe,
+  isMolt,
+  cta,
+  customPrice,
+  onPaymentVerified,
+  ...props
 }: {
   customerEmail?: string // Optional for existing customers
   onSuccess?: () => void
   onCancel?: () => void
+  onPaymentVerified?: (sessionId: string) => void | Promise<void> // Called after payment verification
   className?: string
   style?: React.CSSProperties
+  selectedPlan?: selectedPlantype
+  isTribe?: boolean
+  isMolt?: boolean
+  cta?: string
+  customPrice?: number // For Tribe/Molt dynamic pricing in EUR
 }) {
   const styles = useSubscribeStyles()
   const { utilities } = useStyles()
@@ -82,7 +111,6 @@ export default function Subscribe({
   } = useAuth()
 
   // Chat context
-  const { threadId } = useChat()
 
   // Navigation context
   const { searchParams, removeParams } = useNavigationContext()
@@ -226,6 +254,7 @@ export default function Subscribe({
           userId: user?.id,
           guestId: guest?.id,
           plan: selectedPlan,
+          customPrice, // For Tribe/Molt dynamic pricing (in EUR)
           tier:
             selectedPlan === "grape"
               ? grapeTier
@@ -243,6 +272,9 @@ export default function Subscribe({
       const data = await response.json()
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl
+      } else if (data.error) {
+        toast.error(data.error)
+        setLoading(false)
       }
     } catch (err) {
       captureException(err)
@@ -355,6 +387,8 @@ export default function Subscribe({
         email,
         appId: app?.id,
         plan: selectedPlan,
+        isTribe,
+        isMolt,
         tier:
           selectedPlan === "grape"
             ? grapeTier
@@ -388,6 +422,11 @@ export default function Subscribe({
         )
 
         setGiftedFingerPrint(data.fingerprint)
+      }
+
+      // Call onPaymentVerified callback if provided (e.g., for Tribe schedule creation)
+      if (onPaymentVerified) {
+        await onPaymentVerified(sessionId)
       }
 
       await fetchSession()
@@ -547,68 +586,401 @@ export default function Subscribe({
     }
   }
 
+  const selectedPlans = [
+    "plus",
+    "pro",
+    "member",
+    "credits",
+    "coder",
+    "code rPlus",
+    "pear",
+    "pearPlus",
+    "grape",
+    "grapePlus",
+    "sushi",
+    "architect",
+    "watermelon",
+    "watermelonPlus",
+    "molt",
+    "tribe",
+  ]
+  const selectedPlanInitial = (searchParams.get("plan") ??
+    props.selectedPlan) as selectedPlantype
+  const selectedPlanInternal = selectedPlans.includes(selectedPlanInitial)
+    ? selectedPlanInitial
+    : (user || guest)?.subscription?.plan || "plus"
+
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)
 
-  const [selectedPlan, setSelectedPlanInternal] = useState<
-    | "plus"
-    | "pro"
-    | "member"
-    | "credits"
-    | "coder"
-    | "coderPlus"
-    | "pear"
-    | "pearPlus"
-    | "grape"
-    | "grapePlus"
-    | "sushi"
-    | "architect"
-    | "watermelon"
-    | "watermelonPlus"
-  >(
-    (searchParams.get("plan") as
-      | "plus"
-      | "pro"
-      | "member"
-      | "credits"
-      | "plus") ?? "plus",
-  )
+  const [selectedPlan, setSelectedPlanInternal] =
+    useState<selectedPlantype>(selectedPlanInternal)
 
-  const setSelectedPlan = (
-    plan:
-      | "plus"
-      | "pro"
-      | "member"
-      | "credits"
-      | "coder"
-      | "coderPlus"
-      | "pear"
-      | "pearPlus"
-      | "grape"
-      | "grapePlus"
-      | "architect"
-      | "watermelon"
-      | "watermelonPlus",
-  ) => {
+  const setSelectedPlan = (plan: selectedPlantype) => {
     setSelectedPlanInternal(plan)
     updateURLParam("plan", plan)
     setAnimationKey((prev) => prev + 1)
   }
 
   useEffect(() => {
-    if (isModalOpen) return
-    if (user || guest) {
-      ;(user || guest)?.subscription?.plan &&
-        setSelectedPlan((user || guest)?.subscription?.plan ?? "plus")
+    if (selectedPlanInitial && selectedPlan !== selectedPlanInitial) {
+      setSelectedPlan(selectedPlanInitial)
     }
-  }, [user, guest, selectedPlan, isModalOpen])
+  }, [selectedPlanInitial, selectedPlan])
 
-  useEffect(() => {
-    if (searchParams.get("plan")) {
-      setSelectedPlan(
-        searchParams.get("plan") as "plus" | "pro" | "member" | "credits",
-      )
-    }
-  }, [searchParams])
+  const renderChechout = () => {
+    return (
+      <Div style={{ ...styles.checkoutButtonContainer.style, marginTop: -3 }}>
+        {selectedPlan !== "member" &&
+        (selectedPlan === "watermelon" ||
+          selectedPlan === "pro" ||
+          selectedPlan === "plus" ||
+          ["credits", "molt", "tribe"].includes(selectedPlan) ||
+          (selectedPlan === "grape" && grapeTier !== "free") ||
+          (selectedPlan === "pear" && pearTier !== "free") ||
+          (selectedPlan === "architect" && pearTier !== "free") ||
+          (selectedPlan === "coder" && sushiTier !== "free")) ? (
+          <>
+            {canDowngradeToPlus() && (
+              <ConfirmButton
+                confirm={
+                  <>
+                    {loading && part === "subscription" ? (
+                      <Loading size={20} />
+                    ) : (
+                      <>
+                        <CircleArrowDown size={20} />
+                      </>
+                    )}
+                    {t("Are you sure?")}{" "}
+                  </>
+                }
+                data-testid="subscribe-checkout"
+                onConfirm={() => {
+                  addHapticFeedback()
+                  handlePlanChange("plus")
+                }}
+                className={clsx(styles.checkoutButton, "transparent")}
+              >
+                {loading && part === "subscription" ? (
+                  <Loading size={20} color="#fff" />
+                ) : (
+                  <>
+                    <CircleArrowDown size={20} />
+                    {t("Downgrade with", {
+                      price: PLUS_PRICE,
+                    })}
+                  </>
+                )}
+              </ConfirmButton>
+            )}
+            {canUpgradeToPro() && (
+              <Button
+                data-testid="subscribe-checkout"
+                onClick={() => {
+                  addHapticFeedback()
+                  handlePlanChange("pro")
+                }}
+                style={{ ...styles.checkoutButton.style }}
+              >
+                {loading && part === "subscription" ? (
+                  <Loading size={20} color="#fff" />
+                ) : (
+                  <>
+                    <CircleArrowUp size={20} />
+                    {t("Upgrade for", {
+                      price: PRO_PRICE,
+                    })}
+                  </>
+                )}
+              </Button>
+            )}
+            {canBuyCredits() || canSubscribe() ? (
+              <Button
+                className="small"
+                data-testid="subscribe-checkout"
+                onClick={() => {
+                  addHapticFeedback()
+
+                  if (contact) {
+                    setShowContact(true)
+
+                    if (showContact) {
+                      window.location.href = "mailto:iliyan@chrry.ai"
+                      return
+                    }
+                    return
+                  }
+                  handleCheckout("subscription")
+                }}
+                style={{
+                  ...styles.checkoutButton.style,
+                  marginTop: ".5rem",
+                }}
+              >
+                {loading && part === "subscription" ? (
+                  <Loading color="#fff" />
+                ) : (
+                  <>
+                    {selectedPlan === "plus" || selectedPlan === "credits" ? (
+                      <Coins />
+                    ) : showContact ? (
+                      <AtSign />
+                    ) : (
+                      <SmilePlus />
+                    )}
+                    {["credits", "molt", "tribe"].includes(selectedPlan) ? (
+                      <Span>
+                        {cta ||
+                          t("credits_pricing", {
+                            credits: ADDITIONAL_CREDITS,
+                            price: `${CREDITS_PRICE}.00`,
+                          })}
+                      </Span>
+                    ) : (
+                      <Span>
+                        {t(showContact ? "Contact" : "pricing", {
+                          freeDays: FREE_DAYS,
+                          price:
+                            selectedPlan === "grape"
+                              ? grapeTier === "plus"
+                                ? "50" // Grape Plus: €50/month
+                                : "500" // Grape Pro: €500/month
+                              : selectedPlan === "pear"
+                                ? pearTier === "plus"
+                                  ? "50" // Pear Plus: €50/month
+                                  : "500" // Pear Pro: €500/month
+                                : selectedPlan === "coder"
+                                  ? sushiTier === "coder"
+                                    ? "50"
+                                    : "500"
+                                  : selectedPlan === "watermelon"
+                                    ? watermelonTier === "standard"
+                                      ? "1000"
+                                      : "5000"
+                                    : selectedPlan === "plus"
+                                      ? PLUS_PRICE
+                                      : PRO_PRICE,
+                        })}
+                      </Span>
+                    )}
+                  </>
+                )}
+              </Button>
+            ) : (
+              hasCurrentPlan() && (
+                <Div>
+                  {!user && guest?.subscription && (
+                    <Button
+                      data-testid="migrate-button"
+                      className="link"
+                      onClick={() => {
+                        addHapticFeedback()
+                        setSignInPart("register")
+                      }}
+                      style={{ ...utilities.link.style }}
+                    >
+                      <LogIn size={20} />
+                      {t("Migrate your subscription")}
+                    </Button>
+                  )}
+                  <ConfirmButton
+                    className="transparent"
+                    style={{
+                      ...utilities.transparent.style,
+                      ...styles.cancelSubscriptionButton.style,
+                    }}
+                    confirm={
+                      <>
+                        {isDeletingSubscription ? (
+                          <Loading width={16} height={16} />
+                        ) : (
+                          <CircleX color="var(--accent-0)" size={16} />
+                        )}
+                        {t("Are you sure?")}
+                      </>
+                    }
+                    onConfirm={async () => {
+                      if (!token) {
+                        captureException("User not authenticated")
+                        return
+                      }
+
+                      try {
+                        setIsDeletingSubscription(true)
+                        const result = await actions.deleteSubscription()
+
+                        if (result.error || !result) {
+                          toast.error(t("Failed to cancel subscription"))
+                          return
+                        }
+                      } catch (error) {
+                        captureException(error)
+                        console.error("Failed to cancel subscription:", error)
+                        toast.error(t("Failed to cancel subscription"))
+                      } finally {
+                        setIsDeletingSubscription(false)
+                      }
+
+                      toast.success(t("Subscription cancelled successfully"))
+
+                      await fetchSession()
+                    }}
+                  >
+                    <CircleX size={16} color="var(--accent-0)" />{" "}
+                    {t("Cancel subscription")}
+                    <Span style={{ marginLeft: "auto", fontSize: 13 }}>
+                      €
+                      {t("{{price}}/month", {
+                        price: selectedPlan === "pro" ? PRO_PRICE : PLUS_PRICE,
+                      })}
+                    </Span>
+                  </ConfirmButton>
+                </Div>
+              )
+            )}
+            {shouldShowGift() && (
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                {isInviting && (
+                  <Button
+                    className="transparent"
+                    style={{
+                      ...utilities.transparent.style,
+                      ...styles.backButton.style,
+                    }}
+                    onClick={() => {
+                      addHapticFeedback()
+                      setIsInviting(false)
+                    }}
+                  >
+                    <ArrowLeft size={22} />
+                  </Button>
+                )}
+                <Button
+                  className="inverted"
+                  data-testid="subscribe-gift"
+                  data-part={isInviting ? "invite" : "gift"}
+                  onClick={() => {
+                    addHapticFeedback()
+                    if (!isGifting && !isInviting) {
+                      setIsGifting(true)
+                      return
+                    }
+
+                    handleCheckout("gift")
+                  }}
+                  style={{
+                    ...utilities.inverted.style,
+                    ...styles.giftButton.style,
+                  }}
+                >
+                  {loading && part === "gift" ? (
+                    <Loading width={22} height={22} />
+                  ) : (
+                    <>
+                      <>🎁</>
+                      <Span> {isInviting ? t("Invite") : t("Gift")}</Span>
+                    </>
+                  )}
+                </Button>
+              </Div>
+            )}
+          </>
+        ) : guest ? (
+          <>
+            <Button
+              className="inverted"
+              onClick={() => {
+                addHapticFeedback()
+                setSignInPart("register")
+              }}
+              style={{
+                ...utilities.inverted.style,
+                ...styles.button.style,
+                marginTop: ".3rem",
+              }}
+            >
+              <UserRoundPlus size={20} />
+              {t("Register")}
+            </Button>
+            <Button
+              data-testid="login-button"
+              className="link"
+              onClick={() => {
+                addHapticFeedback()
+                setSignInPart("login")
+              }}
+              style={{
+                ...utilities.link.style,
+                ...styles.button.style,
+                marginTop: ".3rem",
+              }}
+            >
+              <LogIn size={18} />
+              {t("Login")}
+            </Button>
+          </>
+        ) : (
+          !user?.subscription &&
+          (selectedPlan === "member" ||
+            (selectedPlan === "grape" && grapeTier === "free") ||
+            ((selectedPlan === "sushi" ||
+              selectedPlan === "coder" ||
+              selectedPlan === "architect") &&
+              sushiTier === "free") ||
+            (selectedPlan === "pear" && pearTier === "free")) && (
+            <Button
+              className={accountApp ? "transparent" : "inverted"}
+              data-testid="current-plan"
+              style={{
+                ...styles.currentPlanButton.style,
+                marginTop: 7.5,
+                padding: "5px 10px",
+                fontSize: 15,
+              }}
+              onClick={() => {
+                if (!accountApp) {
+                  setAppStatus({
+                    part: "highlights",
+                    step: "add",
+                  })
+                  setIsModalOpen(false)
+                }
+              }}
+            >
+              {!accountApp && app ? (
+                <Img
+                  logo={
+                    selectedPlan === "grape"
+                      ? "grape"
+                      : selectedPlan === "pear"
+                        ? "pear"
+                        : selectedPlan === "coder" ||
+                            selectedPlan === "sushi" ||
+                            selectedPlan === "architect"
+                          ? "sushi"
+                          : selectedPlan === "member"
+                            ? "chrry"
+                            : "watermelon"
+                  }
+                  size={26}
+                />
+              ) : (
+                <UserRound size={20} />
+              )}{" "}
+              {t(accountApp ? "Current Plan" : "Create your agent")}
+            </Button>
+          )
+        )}
+      </Div>
+    )
+  }
 
   useEffect(() => {
     if (isModalOpen) return
@@ -653,6 +1025,7 @@ export default function Subscribe({
                       : watermelonPlusFeatures
                     : []
   const shouldShowGift = () => {
+    if (isTribe || isMolt) return false
     if (isGifting && !userToGift) return false
 
     if (userToGift?.subscription?.plan === selectedPlan) return false
@@ -678,7 +1051,9 @@ export default function Subscribe({
   const canUpgradeToPro = () =>
     selectedPlan === "pro" && currentPlan() === "plus"
   const canBuyCredits = () =>
-    selectedPlan === "credits" && !isGifting && !isInviting
+    ["credits", "molt", "tribe"].includes(selectedPlan) &&
+    !isGifting &&
+    !isInviting
 
   const isContact = !!(
     ["coder", "architect"].includes(selectedPlan) ||
@@ -715,15 +1090,6 @@ export default function Subscribe({
     !(selectedPlan === "coder" && sushiTier === "free")
   const hasCurrentPlan = () =>
     currentPlan() === selectedPlan && !isGifting && !isInviting
-  const canShowGiftButton = () =>
-    selectedPlan !== "member" &&
-    selectedPlan !== "grape" &&
-    selectedPlan !== "pear" &&
-    selectedPlan !== "coder" &&
-    (canBuyCredits() ||
-      canSubscribe() ||
-      !userToGift ||
-      !userToGift?.subscription)
 
   const [animationKey, setAnimationKey] = useState(0)
 
@@ -1115,22 +1481,6 @@ export default function Subscribe({
             )
           ) : (
             <>
-              {/* <MotiView
-                key={`0-${animationKey}`}
-                from={{ opacity: 0, translateY: 0, translateX: -10 }}
-                animate={{ opacity: 1, translateY: 0, translateX: 0 }}
-                transition={{
-                  duration: reduceMotion ? 0 : 100,
-                  delay: reduceMotion ? 0 : 0,
-                }}
-              >
-                <Div className={clsx(styles.feature, "feature")}>
-                  <A href={"mailto:iliyan@chrry.ai"} className={"link"}>
-                    <Img logo="isVivid" icon="heart" width={16} height={16} />
-                    {t("Need a white label like Vex?")}
-                  </A>
-                </Div>
-              </MotiView> */}
               <MotiView
                 key={`1000-${animationKey}`}
                 from={{ opacity: 0, translateY: 0, translateX: -10 }}
@@ -1286,38 +1636,6 @@ export default function Subscribe({
               )}
             </Button>
 
-            {/* <Button
-              className="transparent"
-              onClick={() => {
-                addHapticFeedback()
-                setSelectedPlan("coder")
-                setIsGifting(false)
-                setIsInviting(false)
-              }}
-              style={{
-                ...(selectedPlan === "coder"
-                  ? utilities.inverted.style
-                  : utilities.transparent.style),
-              }}
-            >
-              <Img logo="coder" width={18} height={18} /> {t("Coder")}
-            </Button>
-            <Button
-              className="transparent"
-              onClick={() => {
-                addHapticFeedback()
-                setSelectedPlan("architect")
-                setIsGifting(false)
-                setIsInviting(false)
-              }}
-              style={{
-                ...(selectedPlan === "architect"
-                  ? utilities.inverted.style
-                  : utilities.transparent.style),
-              }}
-            >
-              <Img logo="architect" width={18} height={18} /> {t("Architect")}
-            </Button> */}
             <Button
               className="transparent"
               onClick={() => {
@@ -1428,356 +1746,7 @@ export default function Subscribe({
             )
           )}
         </Div>
-        <Div style={{ ...styles.checkoutButtonContainer.style, marginTop: -3 }}>
-          {selectedPlan !== "member" &&
-          (selectedPlan === "watermelon" ||
-            selectedPlan === "pro" ||
-            selectedPlan === "plus" ||
-            selectedPlan === "credits" ||
-            (selectedPlan === "grape" && grapeTier !== "free") ||
-            (selectedPlan === "pear" && pearTier !== "free") ||
-            (selectedPlan === "architect" && pearTier !== "free") ||
-            (selectedPlan === "coder" && sushiTier !== "free")) ? (
-            <>
-              {canDowngradeToPlus() && (
-                <ConfirmButton
-                  confirm={
-                    <>
-                      {loading && part === "subscription" ? (
-                        <Loading size={20} />
-                      ) : (
-                        <>
-                          <CircleArrowDown size={20} />
-                        </>
-                      )}
-                      {t("Are you sure?")}{" "}
-                    </>
-                  }
-                  data-testid="subscribe-checkout"
-                  onConfirm={() => {
-                    addHapticFeedback()
-                    handlePlanChange("plus")
-                  }}
-                  className={clsx(styles.checkoutButton, "transparent")}
-                >
-                  {loading && part === "subscription" ? (
-                    <Loading size={20} color="#fff" />
-                  ) : (
-                    <>
-                      <CircleArrowDown size={20} />
-                      {t("Downgrade with", {
-                        price: PLUS_PRICE,
-                      })}
-                    </>
-                  )}
-                </ConfirmButton>
-              )}
-              {canUpgradeToPro() && (
-                <Button
-                  data-testid="subscribe-checkout"
-                  onClick={() => {
-                    addHapticFeedback()
-                    handlePlanChange("pro")
-                  }}
-                  style={{ ...styles.checkoutButton.style }}
-                >
-                  {loading && part === "subscription" ? (
-                    <Loading size={20} color="#fff" />
-                  ) : (
-                    <>
-                      <CircleArrowUp size={20} />
-                      {t("Upgrade for", {
-                        price: PRO_PRICE,
-                      })}
-                    </>
-                  )}
-                </Button>
-              )}
-              {canBuyCredits() || canSubscribe() ? (
-                <Button
-                  className="small"
-                  data-testid="subscribe-checkout"
-                  onClick={() => {
-                    addHapticFeedback()
-
-                    if (contact) {
-                      setShowContact(true)
-
-                      if (showContact) {
-                        window.location.href = "mailto:iliyan@chrry.ai"
-                        return
-                      }
-                      return
-                    }
-                    handleCheckout("subscription")
-                  }}
-                  style={{
-                    ...styles.checkoutButton.style,
-                    marginTop: ".5rem",
-                  }}
-                >
-                  {loading && part === "subscription" ? (
-                    <Loading color="#fff" />
-                  ) : (
-                    <>
-                      {selectedPlan === "plus" || selectedPlan === "credits" ? (
-                        <Coins />
-                      ) : showContact ? (
-                        <AtSign />
-                      ) : (
-                        <SmilePlus />
-                      )}
-                      {selectedPlan === "credits" ? (
-                        <Span>
-                          {t("credits_pricing", {
-                            credits: ADDITIONAL_CREDITS,
-                            price: `${CREDITS_PRICE}.00`,
-                          })}
-                        </Span>
-                      ) : (
-                        <Span>
-                          {t(showContact ? "Contact" : "pricing", {
-                            freeDays: FREE_DAYS,
-                            price:
-                              selectedPlan === "grape"
-                                ? grapeTier === "plus"
-                                  ? "50" // Grape Plus: €50/month
-                                  : "500" // Grape Pro: €500/month
-                                : selectedPlan === "pear"
-                                  ? pearTier === "plus"
-                                    ? "50" // Pear Plus: €50/month
-                                    : "500" // Pear Pro: €500/month
-                                  : selectedPlan === "coder"
-                                    ? sushiTier === "coder"
-                                      ? "50"
-                                      : "500"
-                                    : selectedPlan === "watermelon"
-                                      ? watermelonTier === "standard"
-                                        ? "1000"
-                                        : "5000"
-                                      : selectedPlan === "plus"
-                                        ? PLUS_PRICE
-                                        : PRO_PRICE,
-                          })}
-                        </Span>
-                      )}
-                    </>
-                  )}
-                </Button>
-              ) : (
-                hasCurrentPlan() && (
-                  <Div>
-                    {!user && guest?.subscription && (
-                      <Button
-                        data-testid="migrate-button"
-                        className="link"
-                        onClick={() => {
-                          addHapticFeedback()
-                          setSignInPart("register")
-                        }}
-                        style={{ ...utilities.link.style }}
-                      >
-                        <LogIn size={20} />
-                        {t("Migrate your subscription")}
-                      </Button>
-                    )}
-                    <ConfirmButton
-                      className="transparent"
-                      style={{
-                        ...utilities.transparent.style,
-                        ...styles.cancelSubscriptionButton.style,
-                      }}
-                      confirm={
-                        <>
-                          {isDeletingSubscription ? (
-                            <Loading width={16} height={16} />
-                          ) : (
-                            <CircleX color="var(--accent-0)" size={16} />
-                          )}
-                          {t("Are you sure?")}
-                        </>
-                      }
-                      onConfirm={async () => {
-                        if (!token) {
-                          captureException("User not authenticated")
-                          return
-                        }
-
-                        try {
-                          setIsDeletingSubscription(true)
-                          const result = await actions.deleteSubscription()
-
-                          if (result.error || !result) {
-                            toast.error(t("Failed to cancel subscription"))
-                            return
-                          }
-                        } catch (error) {
-                          captureException(error)
-                          console.error("Failed to cancel subscription:", error)
-                          toast.error(t("Failed to cancel subscription"))
-                        } finally {
-                          setIsDeletingSubscription(false)
-                        }
-
-                        toast.success(t("Subscription cancelled successfully"))
-
-                        await fetchSession()
-                      }}
-                    >
-                      <CircleX size={16} color="var(--accent-0)" />{" "}
-                      {t("Cancel subscription")}
-                      <Span style={{ marginLeft: "auto", fontSize: 13 }}>
-                        €
-                        {t("{{price}}/month", {
-                          price:
-                            selectedPlan === "pro" ? PRO_PRICE : PLUS_PRICE,
-                        })}
-                      </Span>
-                    </ConfirmButton>
-                  </Div>
-                )
-              )}
-              {shouldShowGift() && (
-                <Div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  {isInviting && (
-                    <Button
-                      className="transparent"
-                      style={{
-                        ...utilities.transparent.style,
-                        ...styles.backButton.style,
-                      }}
-                      onClick={() => {
-                        addHapticFeedback()
-                        setIsInviting(false)
-                      }}
-                    >
-                      <ArrowLeft size={22} />
-                    </Button>
-                  )}
-                  <Button
-                    className="inverted"
-                    data-testid="subscribe-gift"
-                    data-part={isInviting ? "invite" : "gift"}
-                    onClick={() => {
-                      addHapticFeedback()
-                      if (!isGifting && !isInviting) {
-                        setIsGifting(true)
-                        return
-                      }
-
-                      handleCheckout("gift")
-                    }}
-                    style={{
-                      ...utilities.inverted.style,
-                      ...styles.giftButton.style,
-                    }}
-                  >
-                    {loading && part === "gift" ? (
-                      <Loading width={22} height={22} />
-                    ) : (
-                      <>
-                        <>🎁</>
-                        <Span> {isInviting ? t("Invite") : t("Gift")}</Span>
-                      </>
-                    )}
-                  </Button>
-                </Div>
-              )}
-            </>
-          ) : guest ? (
-            <>
-              <Button
-                className="inverted"
-                onClick={() => {
-                  addHapticFeedback()
-                  setSignInPart("register")
-                }}
-                style={{
-                  ...utilities.inverted.style,
-                  ...styles.button.style,
-                  marginTop: ".3rem",
-                }}
-              >
-                <UserRoundPlus size={20} />
-                {t("Register")}
-              </Button>
-              <Button
-                data-testid="login-button"
-                className="link"
-                onClick={() => {
-                  addHapticFeedback()
-                  setSignInPart("login")
-                }}
-                style={{
-                  ...utilities.link.style,
-                  ...styles.button.style,
-                  marginTop: ".3rem",
-                }}
-              >
-                <LogIn size={18} />
-                {t("Login")}
-              </Button>
-            </>
-          ) : (
-            !user?.subscription &&
-            (selectedPlan === "member" ||
-              (selectedPlan === "grape" && grapeTier === "free") ||
-              ((selectedPlan === "sushi" ||
-                selectedPlan === "coder" ||
-                selectedPlan === "architect") &&
-                sushiTier === "free") ||
-              (selectedPlan === "pear" && pearTier === "free")) && (
-              <Button
-                className={accountApp ? "transparent" : "inverted"}
-                data-testid="current-plan"
-                style={{
-                  ...styles.currentPlanButton.style,
-                  marginTop: 7.5,
-                  padding: "5px 10px",
-                  fontSize: 15,
-                }}
-                onClick={() => {
-                  if (!accountApp) {
-                    setAppStatus({
-                      part: "highlights",
-                      step: "add",
-                    })
-                    setIsModalOpen(false)
-                  }
-                }}
-              >
-                {!accountApp && app ? (
-                  <Img
-                    logo={
-                      selectedPlan === "grape"
-                        ? "grape"
-                        : selectedPlan === "pear"
-                          ? "pear"
-                          : selectedPlan === "coder" ||
-                              selectedPlan === "sushi" ||
-                              selectedPlan === "architect"
-                            ? "sushi"
-                            : selectedPlan === "member"
-                              ? "chrry"
-                              : "watermelon"
-                    }
-                    size={26}
-                  />
-                ) : (
-                  <UserRound size={20} />
-                )}{" "}
-                {t(accountApp ? "Current Plan" : "Create your agent")}
-              </Button>
-            )
-          )}
-        </Div>
+        {renderChechout()}
         {isGifting ? (
           <Div style={{ ...styles.subscribeAsGuest.style }}>
             *
@@ -1845,6 +1814,8 @@ export default function Subscribe({
           <span style={{ color: "var(--accent-6)", fontSize: 11 }}>(dev)</span>
         )} */}
         </>
+      ) : isMolt || isTribe ? (
+        <>{renderChechout()}</>
       ) : (
         <Button
           className="transparent"

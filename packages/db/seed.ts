@@ -16,13 +16,16 @@ import {
   updateGuest,
   getGuest,
   deleteGuest,
-  getTasks,
+  sonarIssues,
+  sonarMetrics,
   isProd,
   isCI,
   isSeedSafe,
   user,
   updateApp,
 } from "./index"
+import { clearSonarCloudGraph } from "../../apps/api/lib/graph/sonarGraphSync"
+import { Redis } from "ioredis"
 import crypto from "crypto"
 import { eq, and, isNull, sql, inArray, lt } from "drizzle-orm"
 import {
@@ -267,6 +270,24 @@ const clearDb = async (): Promise<void> => {
   await db.delete(cities)
   await db.delete(characterProfiles)
   await db.delete(threadSummaries)
+  await db.delete(sonarIssues)
+  await db.delete(sonarMetrics)
+
+  // Clear SonarCloud data from graph database
+  await clearSonarCloudGraph()
+
+  // Clear Redis telemetry streams
+  try {
+    const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379")
+    const streams = await redis.keys("telemetry{*}")
+    if (streams.length > 0) {
+      await redis.del(...streams)
+      console.log(`🧹 Cleared ${streams.length} telemetry streams from Redis`)
+    }
+    await redis.quit()
+  } catch (error) {
+    console.warn("⚠️ Failed to clear Redis telemetry streams:", error)
+  }
 }
 
 const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL!
