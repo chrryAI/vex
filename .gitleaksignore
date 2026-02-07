@@ -8,3 +8,8 @@ apps/mobile/ios/App/Podfile.lock:generic-api-key:86
 apps/mobile/ios/App/Podfile.lock:generic-api-key:95
 apps/mobile/ios/App/Podfile.lock:generic-api-key:97
 apps/mobile/ios/App/Podfile.lock:generic-api-key:98
+
+# False positives - Documentation with REDACTED placeholders
+docs/SONARCLOUD_AUTO_SYNC.md:curl-auth-header:97
+docs/SONARCLOUD_AUTO_SYNC.md:curl-auth-header:101
+docs/SONARCLOUD_SETUP.md:curl-auth-header:40

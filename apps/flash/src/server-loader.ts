@@ -246,10 +246,20 @@ export async function loadServerData(
   let apiError: Error | undefined
 
   // Fetch thread if threadId exists
-
-  const appId = thread?.thread?.appId || headers["x-app-id"]
+  let threadResult: { thread: thread; messages: paginatedMessages } | undefined
+  let appId: string | undefined
 
   try {
+    threadResult = threadId
+      ? await getThread({
+          id: threadId,
+          pageSize: pageSizes.threads,
+          token: apiKey,
+          API_URL: API_INTERNAL_URL,
+        })
+      : undefined
+
+    appId = threadResult?.thread?.appId || headers["x-app-id"]
     const sessionResult = await getSession({
       // appId: appResult.id,
       deviceId,
@@ -271,35 +281,28 @@ export async function loadServerData(
     apiKey =
       sessionResult?.user?.token || sessionResult?.guest?.fingerprint || apiKey
 
-    const [translationsResult, appResult, threadResult, threadsResult] =
-      await Promise.all([
-        getTranslations({
-          token: apiKey,
-          locale,
-          API_URL,
-        }),
-        getApp({
-          chrryUrl,
-          appId,
-          token: apiKey,
-          pathname,
-          API_URL,
-        }),
-        threadId
-          ? getThread({
-              id: threadId,
-              pageSize: pageSizes.threads,
-              token: apiKey,
-            })
-          : Promise.resolve(undefined),
-        getThreads({
-          appId,
-          pageSize: pageSizes.menuThreads,
-          sort: "bookmark",
-          token: apiKey,
-          API_URL,
-        }),
-      ])
+    const [translationsResult, appResult, threadsResult] = await Promise.all([
+      getTranslations({
+        token: apiKey,
+        locale,
+        API_URL,
+      }),
+      getApp({
+        chrryUrl,
+        appId,
+        token: apiKey,
+        pathname,
+        API_URL,
+      }),
+
+      getThreads({
+        appId,
+        pageSize: pageSizes.menuThreads,
+        sort: "bookmark",
+        token: apiKey,
+        API_URL,
+      }),
+    ])
 
     threads = threadsResult
 
@@ -387,6 +390,10 @@ export async function loadServerData(
     get: (key: string) => searchParamsRecord[key] ?? null,
     has: (key: string) => key in searchParamsRecord,
     toString: () => new URLSearchParams(searchParamsRecord).toString(),
+  } as Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
   }
 
   return {

@@ -16,13 +16,16 @@ import {
   updateGuest,
   getGuest,
   deleteGuest,
-  getTasks,
+  sonarIssues,
+  sonarMetrics,
   isProd,
   isCI,
   isSeedSafe,
   user,
   updateApp,
 } from "./index"
+import { clearSonarCloudGraph } from "../../apps/api/lib/graph/sonarGraphSync"
+import { Redis } from "ioredis"
 import crypto from "crypto"
 import { eq, and, isNull, sql, inArray, lt } from "drizzle-orm"
 import {
@@ -60,6 +63,30 @@ async function createAgents() {
   if (isProd) {
     return undefined
   }
+
+  const deepSeekAgent = await createAiAgent({
+    name: "deepSeek",
+    displayName: "DeepSeek V3",
+    version: "3.0.0",
+    apiURL: "https://api.deepseek.com/v1",
+    description: "Fast, accurate, and privacy-focused AI assistant.",
+    state: "active",
+    creditCost: 1,
+    authorization: "all",
+    modelId: "deepseek-chat",
+    maxPromptSize: 128000,
+    order: 4,
+    capabilities: {
+      text: true,
+      image: false,
+      audio: false,
+      video: false,
+      webSearch: false,
+      pdf: true,
+      imageGeneration: false,
+      codeExecution: true,
+    },
+  })
   const chatGptAgent = await createAiAgent({
     name: "chatGPT",
     displayName: "GPT-5.1",
@@ -101,30 +128,6 @@ async function createAgents() {
       image: true,
       audio: true,
       video: true,
-      webSearch: false,
-      pdf: true,
-      imageGeneration: false,
-      codeExecution: true,
-    },
-  })
-
-  const deepSeekAgent = await createAiAgent({
-    name: "deepSeek",
-    displayName: "DeepSeek V3",
-    version: "3.0.0",
-    apiURL: "https://api.deepseek.com/v1",
-    description: "Fast, accurate, and privacy-focused AI assistant.",
-    state: "active",
-    creditCost: 1,
-    authorization: "all",
-    modelId: "deepseek-chat",
-    maxPromptSize: 128000,
-    order: 4,
-    capabilities: {
-      text: true,
-      image: false,
-      audio: false,
-      video: false,
       webSearch: false,
       pdf: true,
       imageGeneration: false,
@@ -267,6 +270,24 @@ const clearDb = async (): Promise<void> => {
   await db.delete(cities)
   await db.delete(characterProfiles)
   await db.delete(threadSummaries)
+  await db.delete(sonarIssues)
+  await db.delete(sonarMetrics)
+
+  // Clear SonarCloud data from graph database
+  await clearSonarCloudGraph()
+
+  // Clear Redis telemetry streams
+  try {
+    const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379")
+    const streams = await redis.keys("telemetry{*}")
+    if (streams.length > 0) {
+      await redis.del(...streams)
+      console.log(`🧹 Cleared ${streams.length} telemetry streams from Redis`)
+    }
+    await redis.quit()
+  } catch (error) {
+    console.warn("⚠️ Failed to clear Redis telemetry streams:", error)
+  }
 }
 
 const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL!

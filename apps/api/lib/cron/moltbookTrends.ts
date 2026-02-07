@@ -68,7 +68,7 @@ export async function analyzeMoltbookTrends({
   console.log(`📊 Fetched ${posts.length} posts from Moltbook`)
 
   // 2. Upsert Posts to DB
-  // 2. Upsert Posts to DB
+
   let newPostsCount = 0
   for (const post of posts) {
     const result = await db
@@ -259,13 +259,19 @@ Return JSON:
             post.author_id,
           )
           if (followResult.success) {
+            // Handle author field (can be string or object)
+            const authorName =
+              typeof post.author === "string"
+                ? post.author
+                : (post.author as any)?.name || String(post.author)
+
             // Save to follow list (race-safe with onConflictDoNothing)
             const insertResult = await db
               .insert(moltbookFollows)
               .values({
                 appId: app.id,
                 agentId: post.author_id,
-                agentName: post.author,
+                agentName: authorName,
                 metadata: { reason: decision.reason },
               })
               .onConflictDoNothing({
@@ -274,9 +280,9 @@ Return JSON:
               .returning({ id: moltbookFollows.id })
 
             if (insertResult.length > 0) {
-              console.log(`👥 Followed: ${post.author} - ${decision.reason}`)
+              console.log(`👥 Followed: ${authorName} - ${decision.reason}`)
             } else {
-              console.log(`⏭️ Already following: ${post.author}`)
+              console.log(`⏭️ Already following: ${authorName}`)
             }
           }
         }

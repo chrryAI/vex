@@ -2073,5 +2073,7 @@
   "Image generation is enabled. Replicate API key is required for paid tiers": "La génération d'images est activée. La clé API Replicate est nécessaire pour les niveaux payants",
   "Required or disable image generation": "Requis ou désactiver la génération d'images",
   "Earn Credits": "Gagnez des Crédits",
-  "Thread not found": "Fil de discussion non trouvé"
+  "Thread not found": "Fil de discussion non trouvé",
+  "Bookmark thread": "Marquer le fil de discussion",
+  "Remove bookmark": "Supprimer le marque-page"
 }

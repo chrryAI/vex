@@ -17,6 +17,7 @@ import { clear } from "./routes/clear"
 import { collaborations } from "./routes/collaborations"
 import { createCreditPurchase } from "./routes/createCreditPurchase"
 import { createSubscription } from "./routes/createSubscription"
+import { createTribeSchedule } from "./routes/createTribeSchedule"
 import { cron } from "./routes/cron"
 import { guest } from "./routes/guest"
 import { image } from "./routes/image"
@@ -31,6 +32,7 @@ import { pushSubscription, pushSubscriptions } from "./routes/pushSubscription"
 import { sitemap } from "./routes/sitemap"
 import { stores } from "./routes/stores"
 import { stripeWebhook } from "./routes/stripeWebhook"
+import { sonarWebhook } from "./routes/sonarWebhook"
 import { subscriptions } from "./routes/subscriptions"
 import { tasks } from "./routes/tasks"
 import { timers } from "./routes/timers"
@@ -48,6 +50,7 @@ import notify from "./routes/notify"
 import favicon from "./routes/favicon"
 import analytics from "./routes/analytics"
 import premium from "./routes/premium"
+import tribe from "./routes/tribe"
 
 import * as Sentry from "@sentry/node"
 
@@ -140,6 +143,7 @@ api.route("/clear", clear)
 api.route("/collaborations", collaborations)
 api.route("/createCreditPurchase", createCreditPurchase)
 api.route("/createSubscription", createSubscription)
+api.route("/createTribeSchedule", createTribeSchedule)
 api.route("/cron", cron)
 api.route("/guest", guest)
 api.route("/image", image)
@@ -156,6 +160,7 @@ api.route("/pushSubscriptions", pushSubscriptions)
 api.route("/sitemap.xml", sitemap)
 api.route("/stores", stores)
 api.route("/stripeWebhook", stripeWebhook)
+api.route("/sonarWebhook", sonarWebhook)
 api.route("/subscriptions", subscriptions)
 api.route("/tasks", tasks)
 api.route("/timers", timers)
@@ -171,6 +176,7 @@ api.route("/auth", authRoutes)
 api.route("/notify", notify)
 api.route("/analytics", analytics)
 api.route("/premium", premium)
+api.route("/tribe", tribe)
 
 // Mount API routes under /api
 app.route("/api", api)

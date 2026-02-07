@@ -177,7 +177,7 @@ const checkFileUploadLimits = async ({
   try {
     member &&
       (await updateUser({
-        ...member,
+        id: member.id,
         fileUploadsThisHour: newHourlyUploads,
         fileUploadsToday: newDailyUploads,
         totalFileSizeToday: Math.round(newDailySize),
@@ -194,7 +194,7 @@ const checkFileUploadLimits = async ({
 
     guest &&
       (await updateGuest({
-        ...guest,
+        id: guest.id,
         fileUploadsThisHour: newHourlyUploads,
         fileUploadsToday: newDailyUploads,
         totalFileSizeToday: Math.round(newDailySize),

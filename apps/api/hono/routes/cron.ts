@@ -17,6 +17,7 @@ import { postToMoltbookCron } from "../../lib/cron/moltbookPoster"
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"
 import { checkMoltbookComments } from "../../lib/cron/moltbookComments"
 import { engageWithMoltbookPosts } from "../../lib/cron/moltbookEngagement"
+import { syncSonarCloud } from "../../lib/cron/sonarSync"
 import { isDevelopment } from "../../lib"
 import { captureException } from "@sentry/node"
 
@@ -547,4 +548,35 @@ cron.get("/runScheduledJobs", async (c) => {
       500,
     )
   }
+})
+
+// GET /cron/syncSonarCloud - Sync SonarCloud metrics and issues
+cron.get("/syncSonarCloud", async (c) => {
+  const cronSecret = process.env.CRON_SECRET
+  const authHeader = c.req.header("authorization")
+
+  if (!isDevelopment) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      return c.json({ error: "Unauthorized" }, 401)
+    }
+  }
+
+  // Start the job in background (fire-and-forget)
+  console.log("📊 Starting SonarCloud sync job in background...")
+
+  syncSonarCloud()
+    .then(() => {
+      console.log("✅ SonarCloud sync completed successfully")
+    })
+    .catch((error) => {
+      captureException(error)
+      console.error("❌ SonarCloud sync failed:", error)
+    })
+
+  // Return immediately
+  return c.json({
+    success: true,
+    message: "SonarCloud sync job started in background",
+    timestamp: new Date().toISOString(),
+  })
 })

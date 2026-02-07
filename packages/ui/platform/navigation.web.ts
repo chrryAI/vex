@@ -86,7 +86,11 @@ export function useNavigation(): NavigationParams {
         newSearchParams.set(key, String(value))
       })
       const queryString = newSearchParams.toString()
-      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
+      // Strip any existing query string from pathname to prevent double encoding
+      const cleanPathname = pathname?.split("?")[0] || "/"
+      const newUrl = queryString
+        ? `${cleanPathname}?${queryString}`
+        : cleanPathname
 
       // Use client router for all navigation (shallow to skip view transitions)
       clientRouter.push(newUrl, { shallow: true })

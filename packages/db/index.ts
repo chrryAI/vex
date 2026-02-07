@@ -19,6 +19,7 @@ import {
   authExchangeCodes,
   memories,
   analyticsSites,
+  tribeReactions,
   messageEmbeddings,
   messages,
   stores,
@@ -29,6 +30,9 @@ import {
   threadSummaries,
   users,
   placeHolders,
+  tribeFollows,
+  sonarMetrics,
+  sonarIssues,
   verificationTokens,
   instructions,
   apps,
@@ -55,6 +59,8 @@ import {
   talentInvitations,
   premiumSubscriptions,
   feedbackTransactions,
+  tribeLikes,
+  scheduledJobs,
 } from "./src/schema"
 // Better Auth tables
 import {
@@ -93,7 +99,7 @@ import postgres from "postgres"
 
 import * as dotenv from "dotenv"
 import * as bcrypt from "bcrypt"
-import { appWithStore } from "chrry/types"
+import { appWithStore, modelName } from "chrry/types"
 import {
   invalidateApp,
   invalidateStore,
@@ -117,6 +123,7 @@ export {
   authExchangeCodes,
   apps,
 }
+export { type modelName }
 
 dotenv.config()
 
@@ -148,6 +155,9 @@ export {
   cosineDistance,
   notInArray,
   or,
+  sonarIssues,
+  lte,
+  sonarMetrics,
 }
 
 // Export Better Auth tables
@@ -239,6 +249,11 @@ declare global {
 export type analyticsSite = typeof analyticsSites.$inferSelect
 export type newAnalyticsSite = typeof analyticsSites.$inferInsert
 
+export type sonarIssue = typeof sonarIssues.$inferSelect
+export type newSonarIssue = typeof sonarIssues.$inferInsert
+export type sonarMetric = typeof sonarMetrics.$inferSelect
+export type newSonarMetric = typeof sonarMetrics.$inferInsert
+
 export type feedbackTransaction = typeof feedbackTransactions.$inferSelect
 export type newFeedbackTransaction = typeof feedbackTransactions.$inferInsert
 
@@ -267,6 +282,8 @@ export type newAuthExchangeCode = typeof authExchangeCodes.$inferInsert
 
 export type store = typeof stores.$inferSelect
 export type newStore = typeof stores.$inferInsert
+
+export type tribeLike = typeof tribeLikes.$inferInsert
 
 // Store with related data
 export type storeWithRelations = {
@@ -370,6 +387,10 @@ export type newInstruction = typeof instructions.$inferInsert
 
 export type app = typeof apps.$inferSelect
 export type newApp = typeof apps.$inferInsert
+
+// Scheduled jobs types (includes tribe_post, tribe_comment, tribe_engage, moltbook_post, moltbook_comment, moltbook_engage)
+export type scheduledJob = typeof scheduledJobs.$inferSelect
+export type newScheduledJob = typeof scheduledJobs.$inferInsert
 
 export type affiliateClicks = typeof affiliateClicks.$inferSelect
 export type newAffiliateClicks = typeof affiliateClicks.$inferInsert
@@ -832,7 +853,7 @@ export const getUser = async ({
     }
   }
 
-  const app = appId ? await getApp({ id: appId }) : undefined
+  const app = appId ? await getPureApp({ id: appId }) : undefined
 
   const result = (
     await db
@@ -925,9 +946,11 @@ export const getUser = async ({
 
   // If user owns the app they're using, show infinite credits (999999)
   const creditsLeft =
-    isAppOwner && (subscription?.plan === "pro" || isDevelopment)
+    isDevelopment && isAppOwner
       ? OWNER_CREDITS
-      : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
+      : isAppOwner && !!app?.apiKeys?.openrouter && app?.tier !== "free"
+        ? OWNER_CREDITS
+        : Math.max(result ? result.user.credits - creditsSpent : 0, 0)
 
   const userData = result
     ? {
@@ -984,34 +1007,6 @@ export const getUser = async ({
   }
 
   return userData
-}
-
-export const getCharacterProfiles = async ({
-  userId,
-  guestId,
-  visibility,
-  pinned,
-  threadId,
-}: {
-  userId?: string
-  guestId?: string
-  visibility?: "public" | "private"
-  pinned?: boolean
-  threadId?: string
-}) => {
-  const result = await db
-    .select()
-    .from(characterProfiles)
-    .where(
-      and(
-        threadId ? eq(characterProfiles.threadId, threadId) : undefined,
-        userId ? eq(characterProfiles.userId, userId) : undefined,
-        guestId ? eq(characterProfiles.guestId, guestId) : undefined,
-        visibility ? eq(characterProfiles.visibility, visibility) : undefined,
-        pinned ? eq(characterProfiles.pinned, pinned) : undefined,
-      ),
-    )
-  return result
 }
 
 export const getUsers = async ({
@@ -2111,15 +2106,6 @@ export const getGuest = async ({
       })
     : undefined
 
-  const app = appId ? await getApp({ id: appId }) : undefined
-
-  const isAppOwner =
-    result &&
-    app &&
-    isOwner(app, {
-      guestId: result.id,
-    })
-
   // Calculate credits spent
   const creditsSpent = result
     ? await getCreditsSpent({
@@ -2128,10 +2114,7 @@ export const getGuest = async ({
       })
     : 0
 
-  // If guest owns the app they're using, show infinite credits (999999)
-  const creditsLeft = isAppOwner
-    ? OWNER_CREDITS
-    : Math.max(result ? result.credits - creditsSpent : 0, 0)
+  const creditsLeft = Math.max(result ? result.credits - creditsSpent : 0, 0)
 
   const guestData = result
     ? {
@@ -2148,10 +2131,9 @@ export const getGuest = async ({
         }).then((res) => res.totalCount),
         creditsLeft,
         instructions: await getInstructions({
-          appId: app?.id,
+          appId,
           guestId: result.id,
-          pageSize: 7, // 7 instructions per app
-          // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+          pageSize: 7,
         }),
 
         placeHolder: await getPlaceHolder({
@@ -3312,12 +3294,14 @@ export async function getCharacterTags({
   userId,
   guestId,
   threadId,
+  appId,
   id,
 }: {
   agentId?: string
   userId?: string
   guestId?: string
   threadId?: string
+  appId?: string
   id?: string
 }) {
   const result = await db
@@ -3330,6 +3314,7 @@ export async function getCharacterTags({
         agentId ? eq(characterProfiles.agentId, agentId) : undefined,
         userId ? eq(characterProfiles.userId, userId) : undefined,
         guestId ? eq(characterProfiles.guestId, guestId) : undefined,
+        appId ? eq(characterProfiles.appId, appId) : undefined,
       ),
     )
   return result
@@ -3341,16 +3326,19 @@ export async function getCharacterTag({
   userId,
   guestId,
   threadId,
+  appId,
 }: {
   id?: string
   agentId?: string
   userId?: string
   guestId?: string
   threadId?: string
+  appId?: string
 }) {
   const [result] = await getCharacterTags({
     agentId,
     userId,
+    appId,
     guestId,
     threadId,
     id,
@@ -3815,13 +3803,19 @@ export async function getCreditTransactions({
   userId,
   guestId,
   fromDate,
+  sessionId,
+  toDate,
+  scheduleId,
   type,
 }: {
   id?: string
   userId?: string
   guestId?: string
   fromDate?: Date
-  type?: "purchase" | "subscription"
+  toDate?: Date
+  type?: "purchase" | "subscription" | "tribe" | "molt"
+  sessionId?: string
+  scheduleId?: string
 }) {
   const result = await db
     .select()
@@ -3832,7 +3826,10 @@ export async function getCreditTransactions({
         userId ? eq(creditTransactions.userId, userId) : undefined,
         guestId ? eq(creditTransactions.guestId, guestId) : undefined,
         fromDate ? gte(creditTransactions.createdOn, fromDate) : undefined,
+        toDate ? lte(creditTransactions.createdOn, toDate) : undefined,
         type ? eq(creditTransactions.type, type) : undefined,
+        sessionId ? eq(creditTransactions.sessionId, sessionId) : undefined,
+        scheduleId ? eq(creditTransactions.scheduleId, scheduleId) : undefined,
       ),
     )
     .orderBy(desc(creditTransactions.createdOn))
@@ -4966,19 +4963,56 @@ export const getApp = async ({
           })
         : undefined
 
+  const storeAppSchedule =
+    userId &&
+    storeData?.app &&
+    isOwner(storeData.app, {
+      userId,
+      guestId,
+    })
+      ? await getScheduledJobs({ appId: storeData.app.id, userId })
+      : []
+
+  const requestedAppSchedule =
+    userId && isOwner(app.app, { userId, guestId })
+      ? await getScheduledJobs({ appId: app.app.id, userId })
+      : []
+
   // Build store with apps array for hyperlink navigation
   const storeWithApps = storeData
     ? {
         ...storeData.store,
         title: storeData.store.name, // Use name as title
-        apps: storeData.apps.map((app) => toSafeApp({ app, userId, guestId })),
-        app: toSafeApp({ app: storeData.app, userId, guestId }), // Include the store's base app
+        apps: await Promise.all(
+          storeData.apps.map(async (app) =>
+            toSafeApp({
+              app,
+              userId,
+              guestId,
+              scheduledJobs:
+                userId && isOwner(app, { userId, guestId })
+                  ? await getScheduledJobs({ appId: app.id, userId })
+                  : [],
+            }),
+          ),
+        ),
+        app: toSafeApp({
+          app: storeData.app,
+          userId,
+          guestId,
+          scheduledJobs: storeAppSchedule,
+        }), // Include the store's base app
       }
     : undefined
 
   const result = {
     ...(isSafe
-      ? (toSafeApp({ app: app.app, userId, guestId }) as app)
+      ? (toSafeApp({
+          app: app.app,
+          userId,
+          guestId,
+          scheduledJobs: requestedAppSchedule,
+        }) as app)
       : app.app),
     extends: await getAppExtends({
       appId: app.app.id,
@@ -5007,6 +5041,7 @@ export const getPureApp = async ({
   storeId,
   isSafe = true,
   depth = 0,
+  includeScheduledJobs = false,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom" | "Vex"
   id?: string
@@ -5016,6 +5051,7 @@ export const getPureApp = async ({
   storeId?: string
   isSafe?: boolean
   depth?: number
+  includeScheduledJobs?: boolean
 }): Promise<app | undefined> => {
   // Build app identification conditions
   const appConditions = []
@@ -5064,11 +5100,20 @@ export const getPureApp = async ({
 
   if (!app) return undefined
 
-  return {
-    ...(isSafe
-      ? (toSafeApp({ app: app.app, userId, guestId }) as app)
-      : app.app),
-  } as app
+  const appSchedule = includeScheduledJobs
+    ? await getScheduledJobs({ appId: app.app.id, userId })
+    : []
+
+  return (
+    isSafe
+      ? (toSafeApp({
+          app: app.app,
+          userId,
+          guestId,
+          scheduledJobs: appSchedule,
+        }) as app)
+      : { ...app.app, scheduledJobs: appSchedule }
+  ) as app
 }
 
 export function toSafeApp({
@@ -5076,11 +5121,13 @@ export function toSafeApp({
   userId,
   guestId,
   skip,
+  scheduledJobs,
 }: {
   app?: app | appWithStore
   userId?: string
   guestId?: string
   skip?: boolean
+  scheduledJobs?: scheduledJob[]
 }): Partial<app | appWithStore> | undefined {
   if (!app) return undefined
 
@@ -5099,7 +5146,7 @@ export function toSafeApp({
       .filter((a) => a !== undefined)
 
     return {
-      ...toSafeApp({ app, userId, guestId, skip: true }),
+      ...toSafeApp({ app, userId, guestId, skip: true, scheduledJobs }),
       store: {
         ...app.store,
         apps: safeApps as (app | appWithStore)[],
@@ -5140,6 +5187,9 @@ export function toSafeApp({
     systemPrompt: isOwner(app, { userId, guestId })
       ? app.systemPrompt
       : undefined,
+
+    scheduledJobs: scheduledJobs || [],
+
     apiKeys:
       app.apiKeys && typeof app.apiKeys === "object"
         ? Object.keys(app.apiKeys).reduce(
@@ -5355,7 +5405,20 @@ export const getApps = async (
             : app.store
 
           return {
-            ...(isSafe ? toSafeApp({ app, userId, guestId }) : app),
+            ...(isSafe
+              ? toSafeApp({
+                  app,
+                  userId,
+                  guestId,
+                  scheduledJobs:
+                    userId && isOwner(app, { userId, guestId })
+                      ? await getScheduledJobs({
+                          appId: app.id,
+                          userId,
+                        })
+                      : [],
+                })
+              : app),
             extends: await getAppExtends({
               appId: app.id,
             }),
@@ -5994,7 +6057,9 @@ export async function getStores({
             ? toSafeGuest({ guest: row.guest })
             : row.guest,
         team: row.teams,
-        app: row.app ? toSafeApp({ app: row.app, userId, guestId }) : undefined,
+        app: row.app
+          ? toSafeApp({ app: row.app, userId, guestId, scheduledJobs: [] })
+          : undefined,
         apps: await Promise.all(
           appsResult.items.map(
             (app) => getApp({ id: app.id, userId, guestId })!,
@@ -6128,13 +6193,15 @@ export async function getStore({
         })
 
         return {
-          ...toSafeApp({ app: appItem, userId, guestId }),
+          ...toSafeApp({ app: appItem, userId, guestId, scheduledJobs: [] }),
 
           store: appItem.store
             ? {
                 ...appItem.store,
                 apps:
-                  nestedStoreData?.apps.map((app) => toSafeApp({ app })) || [],
+                  nestedStoreData?.apps.map((app) =>
+                    toSafeApp({ app, scheduledJobs: [] }),
+                  ) || [],
                 app: null, // Set to null to prevent circular references
               }
             : appItem.store,
@@ -6947,4 +7014,374 @@ export const getFeedbackTransactions = async (userId: string) => {
     return []
   }
 }
+
+export const getScheduledJob = async ({
+  appId,
+  userId,
+  scheduleTypes,
+}: {
+  appId?: string
+  userId?: string
+  scheduleTypes?: ("tribe" | "molt")[]
+}) => {
+  try {
+    const result = await db
+      .select()
+      .from(scheduledJobs)
+      .where(
+        and(
+          appId ? eq(scheduledJobs.appId, appId) : undefined,
+          userId ? eq(scheduledJobs.userId, userId) : undefined,
+          scheduleTypes
+            ? inArray(scheduledJobs.scheduleType, scheduleTypes)
+            : undefined,
+        ),
+      )
+      .limit(1)
+    return result[0] || undefined
+  } catch (error) {
+    console.error("Error getting scheduled job:", error)
+    return undefined
+  }
+}
+
+export const createScheduledJob = async (
+  data: typeof scheduledJobs.$inferInsert,
+) => {
+  const [created] = await db.insert(scheduledJobs).values(data).returning()
+  return created
+}
+
+export const updateScheduledJob = async ({
+  id,
+  data,
+}: {
+  id: string
+  data: Partial<typeof scheduledJobs.$inferInsert>
+}) => {
+  const [updated] = await db
+    .update(scheduledJobs)
+    .set({ ...data, updatedOn: new Date() })
+    .where(eq(scheduledJobs.id, id))
+    .returning()
+  return updated
+}
+
+export const getScheduledJobs = async ({
+  appId,
+  userId,
+  scheduleTypes,
+}: {
+  appId?: string
+  userId?: string
+  scheduleTypes?: ("tribe" | "molt")[]
+}) => {
+  try {
+    const result = await db
+      .select()
+      .from(scheduledJobs)
+      .where(
+        and(
+          appId ? eq(scheduledJobs.appId, appId) : undefined,
+          userId ? eq(scheduledJobs.userId, userId) : undefined,
+          scheduleTypes
+            ? inArray(scheduledJobs.scheduleType, scheduleTypes)
+            : undefined,
+        ),
+      )
+    return result
+  } catch (error) {
+    console.error("Error getting scheduled jobs:", error)
+    return []
+  }
+}
+
+// ============================================
+// TRIBE ENGAGEMENT FUNCTIONS
+// ============================================
+
+export const getTribeReactions = async ({
+  postId,
+  commentId,
+  userId,
+  guestId,
+  limit = 50,
+}: {
+  postId?: string
+  commentId?: string
+  userId?: string
+  guestId?: string
+  limit?: number
+}) => {
+  try {
+    const result = await db
+      .select({
+        reaction: tribeReactions,
+        user: users,
+        guest: guests,
+      })
+      .from(tribeReactions)
+      .leftJoin(users, eq(tribeReactions.userId, users.id))
+      .leftJoin(guests, eq(tribeReactions.guestId, guests.id))
+      .where(
+        and(
+          postId ? eq(tribeReactions.postId, postId) : undefined,
+          commentId ? eq(tribeReactions.commentId, commentId) : undefined,
+          userId ? eq(tribeReactions.userId, userId) : undefined,
+          guestId ? eq(tribeReactions.guestId, guestId) : undefined,
+        ),
+      )
+      .limit(limit)
+
+    return result.map((row) => ({
+      id: row.reaction.id,
+      emoji: row.reaction.emoji,
+      createdOn: row.reaction.createdOn,
+      user: row.user
+        ? {
+            id: row.user.id,
+            name: row.user.name,
+            userName: row.user.userName,
+            image: row.user.image,
+          }
+        : null,
+      guest: row.guest
+        ? {
+            id: row.guest.id,
+            name: "Guest",
+            image: "",
+          }
+        : null,
+    }))
+  } catch (error) {
+    console.error("Error getting tribe reactions:", error)
+    return []
+  }
+}
+
+export const getTribeFollows = async ({
+  appId,
+  followerId,
+  followerGuestId,
+  followingAppId,
+  limit = 100,
+}: {
+  followerId?: string
+  followerGuestId?: string
+  followingAppId?: string
+  limit?: number
+  appId?: string
+}) => {
+  try {
+    const result = await db
+      .select({
+        follow: tribeFollows,
+        follower: users,
+        followerGuest: guests,
+        followingApp: apps,
+      })
+      .from(tribeFollows)
+      .leftJoin(users, eq(tribeFollows.followerId, users.id))
+      .leftJoin(guests, eq(tribeFollows.followerGuestId, guests.id))
+      .leftJoin(apps, eq(tribeFollows.followingAppId, apps.id))
+      .where(
+        and(
+          followerId ? eq(tribeFollows.followerId, followerId) : undefined,
+          appId ? eq(tribeFollows.appId, appId) : undefined,
+          followerGuestId
+            ? eq(tribeFollows.followerGuestId, followerGuestId)
+            : undefined,
+          followingAppId
+            ? eq(tribeFollows.followingAppId, followingAppId)
+            : undefined,
+        ),
+      )
+      .limit(limit)
+
+    return result.map((row) => ({
+      id: row.follow.id,
+      createdOn: row.follow.createdOn,
+      follower: row.follower
+        ? {
+            id: row.follower.id,
+            name: row.follower.name,
+            userName: row.follower.userName,
+            image: row.follower.image,
+          }
+        : null,
+      followerGuest: row.followerGuest
+        ? {
+            id: row.followerGuest.id,
+            name: "Guest",
+            image: "",
+          }
+        : null,
+      followingApp: row.followingApp
+        ? {
+            id: row.followingApp.id,
+            name: row.followingApp.name,
+            slug: row.followingApp.slug,
+            icon: row.followingApp.icon,
+          }
+        : null,
+    }))
+  } catch (error) {
+    console.error("Error getting tribe follows:", error)
+    return []
+  }
+}
+
+export const getTribeLikes = async ({
+  postId,
+  userId,
+  guestId,
+  limit = 100,
+}: {
+  postId?: string
+  userId?: string
+  guestId?: string
+  limit?: number
+}) => {
+  try {
+    const result = await db
+      .select({
+        like: tribeLikes,
+        user: users,
+        guest: guests,
+      })
+      .from(tribeLikes)
+      .leftJoin(users, eq(tribeLikes.userId, users.id))
+      .leftJoin(guests, eq(tribeLikes.guestId, guests.id))
+      .where(
+        and(
+          postId ? eq(tribeLikes.postId, postId) : undefined,
+          userId ? eq(tribeLikes.userId, userId) : undefined,
+          guestId ? eq(tribeLikes.guestId, guestId) : undefined,
+        ),
+      )
+      .limit(limit)
+
+    return result.map((row) => ({
+      id: row.like.id,
+      createdOn: row.like.createdOn,
+      user: row.user
+        ? {
+            id: row.user.id,
+            name: row.user.name,
+            userName: row.user.userName,
+            image: row.user.image,
+          }
+        : null,
+      guest: row.guest
+        ? {
+            id: row.guest.id,
+            name: "Guest",
+            image: "",
+          }
+        : null,
+    }))
+  } catch (error) {
+    console.error("Error getting tribe likes:", error)
+    return []
+  }
+}
+
+export const getCharacterProfiles = async ({
+  agentId,
+  userId,
+  guestId,
+  isAppOwner,
+  limit = 50,
+  pinned,
+  visibility,
+  appId,
+}: {
+  agentId?: string
+  appId?: string
+  userId?: string
+  guestId?: string
+  isAppOwner?: boolean
+  limit?: number
+  pinned?: boolean
+  visibility?: "public" | "private"
+}) => {
+  try {
+    const result = await db
+      .select({
+        profile: characterProfiles,
+        agent: aiAgents,
+        user: users,
+        guest: guests,
+      })
+      .from(characterProfiles)
+      .leftJoin(aiAgents, eq(characterProfiles.agentId, aiAgents.id))
+      .leftJoin(users, eq(characterProfiles.userId, users.id))
+      .leftJoin(guests, eq(characterProfiles.guestId, guests.id))
+
+      .where(
+        and(
+          agentId ? eq(characterProfiles.agentId, agentId) : undefined,
+          userId ? eq(characterProfiles.userId, userId) : undefined,
+          guestId ? eq(characterProfiles.guestId, guestId) : undefined,
+          appId ? eq(characterProfiles.appId, appId) : undefined,
+          isAppOwner !== undefined
+            ? eq(characterProfiles.isAppOwner, isAppOwner)
+            : undefined,
+          pinned !== undefined
+            ? eq(characterProfiles.pinned, pinned)
+            : undefined,
+          visibility ? eq(characterProfiles.visibility, visibility) : undefined,
+        ),
+      )
+      .orderBy(asc(characterProfiles.pinned), desc(users.createdOn))
+      .limit(limit)
+
+    return result.map((row) => ({
+      id: row.profile.id,
+      agentId: row.profile.agentId,
+      userId: row.profile.userId,
+      guestId: row.profile.guestId,
+      threadId: row.profile.threadId,
+      appId: row.profile.appId,
+      name: row.profile.name,
+      personality: row.profile.personality,
+      traits: row.profile.traits,
+      pinned: row.profile.pinned,
+      visibility: row.profile.visibility,
+      isAppOwner: row.profile.isAppOwner,
+      tags: row.profile.tags,
+      usageCount: row.profile.usageCount,
+      lastUsedAt: row.profile.lastUsedAt,
+      userRelationship: row.profile.userRelationship,
+      conversationStyle: row.profile.conversationStyle,
+      createdOn: row.profile.createdOn,
+      agent: row.agent
+        ? {
+            id: row.agent.id,
+            name: row.agent.name,
+            description: row.agent.description,
+          }
+        : null,
+      user: row.user
+        ? {
+            id: row.user.id,
+            name: row.user.name,
+            userName: row.user.userName,
+            image: row.user.image,
+          }
+        : null,
+      guest: row.guest
+        ? {
+            id: row.guest.id,
+            name: "Guest",
+            image: "",
+          }
+        : null,
+    }))
+  } catch (error) {
+    console.error("Error getting character profiles:", error)
+    return []
+  }
+}
+
 export * from "./src/graph/client"

@@ -21,6 +21,7 @@ export { default as Sidebar } from "./Sidebar"
 export { default as Chrry } from "./Chrry"
 export { default as Store } from "./Store"
 export { HistoryRouterProvider } from "./context/providers/HistoryRouterProvider"
+export { TribeCalculator } from "./TribeCalculator"
 
 // Make Chrry the default export
 export { default } from "./Chrry"

@@ -10,7 +10,7 @@ export { NavigationProvider, useNavigationContext } from "./NavigationProvider"
 export { AuthProvider, useAuth } from "./AuthProvider"
 export { ChatProvider, useChat } from "./ChatProvider"
 export { DataProvider, useData } from "./DataProvider"
-export { AppProvider, useApp } from "./AppProvider"
+export { AppProvider, useApp, type TabType } from "./AppProvider"
 export { PlatformProvider } from "../../platform"
 
 // Composition root - combines all providers
