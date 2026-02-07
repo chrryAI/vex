@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from "uuid"
 import { API_URL, isValidUsername } from "@chrryai/chrry/utils"
 import { randomBytes } from "crypto"
 import type { Context } from "hono"
+import { getCookie, setCookie } from "hono/cookie"
 
 const authRoutes = new Hono()
 
@@ -554,6 +555,14 @@ authRoutes.get("/signin/google", async (c) => {
     const { callbackUrl, errorUrl } = getCallbackUrls(c)
     const state = createOAuthState(callbackUrl, errorUrl)
 
+    setCookie(c, "oauth_state", state, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 600,
+      sameSite: "None",
+      secure: true,
+    })
+
     const redirectUri = `${API_URL}/auth/callback/google`
     const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth")
     authUrl.searchParams.set("client_id", GOOGLE_WEB_CLIENT_ID)
@@ -580,6 +589,13 @@ authRoutes.get("/callback/google", async (c) => {
 
     const stateData = decodeOAuthState(state)
     if (!stateData) {
+      return c.redirect(`https://chrry.ai/?error=invalid_state`)
+    }
+
+    const storedState = getCookie(c, "oauth_state")
+
+    if (state !== storedState) {
+      // Redirect to static URL to prevent Open Redirect
       return c.redirect(`https://chrry.ai/?error=invalid_state`)
     }
 
@@ -630,6 +646,15 @@ authRoutes.get("/callback/google", async (c) => {
     }
 
     const token = generateToken(user.id, user.email)
+
+    setCookie(c, "oauth_state", "", {
+      httpOnly: true,
+      path: "/",
+      maxAge: 0,
+      sameSite: "None",
+      secure: true,
+    })
+
     setCookieFromUrl(c, token, stateData.callbackUrl)
 
     const authCode = await generateExchangeCode(token)
