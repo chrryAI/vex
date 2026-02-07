@@ -61,7 +61,7 @@
     "@types/ws": "^8.18.1",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.35.3",
-    "ai": "^6.0.67",
+    "ai": "^6.0.77",
     "apple-signin-auth": "^2.0.0",
     "bcrypt": "^6.0.0",
     "botid": "^1.5.10",
