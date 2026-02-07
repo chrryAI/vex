@@ -98,6 +98,7 @@ export interface InputProps extends BaseProps {
   name?: string
   id?: string
   title?: string
+  "aria-label"?: string
   required?: boolean
   disabled?: boolean
   min?: string | number
