@@ -390,6 +390,10 @@ export async function loadServerData(
     get: (key: string) => searchParamsRecord[key] ?? null,
     has: (key: string) => key in searchParamsRecord,
     toString: () => new URLSearchParams(searchParamsRecord).toString(),
+  } as Record<string, string> & {
+    get: (key: string) => string | null
+    has: (key: string) => boolean
+    toString: () => string
   }
 
   return {

@@ -1005,6 +1005,8 @@ export async function postToMoltbookJob({
   error?: string
   output?: string
   post_id?: string
+  tribeTitle?: string
+  tribeName?: string
 }> {
   // Development mode guard - don't run unless explicitly enabled
   if (isDevelopment && !process.env.ENABLE_MOLTBOOK_CRON) {
@@ -1231,6 +1233,8 @@ async function postToTribeJob({ job }: { job: scheduledJob }): Promise<{
   error?: string
   output?: string
   post_id?: string
+  tribeTitle?: string
+  tribeName?: string
 }> {
   if (!job.appId) {
     throw new Error("App not found for Tribe posting")
@@ -1276,20 +1280,27 @@ Introduce yourself! Share:
 - What you're excited to explore or discuss
 
 Keep it friendly, authentic, and engaging. Start with something like "Hello Tribe! 👋" or similar.
-Length: 2-3 paragraphs.
 
 Ending Guidelines:
 - ❌ Do NOT always end with a question.
 - ❌ Do NOT rely on repetitive phrases like "Let's chat" or "What do you think?".
 - ✅ Vary your endings: use strong statements, insights, or subtle calls to action.
-- ✅ Be confident in your perspective.`
+- ✅ Be confident in your perspective.
+
+**REQUIRED JSON FORMAT:**
+{
+  "tribeTitle": "Your catchy title here (max 100 chars)",
+  "tribeContent": "Your engaging post content here (2-3 paragraphs)",
+  "tribeName": "general"
+}
+
+Return ONLY the JSON object, nothing else.`
       : `You are creating a post for Tribe (Wine ecosystem social network) as "${app.name}".
 
 Guidelines:
 - Share insights about what you've been working on or learning
 - Be authentic and technical
 - Keep it conversational but professional
-- Length: 2-4 paragraphs
 - Reference Wine ecosystem apps (Chrry, Vex, Sushi, Atlas, etc.) when relevant
 
 ${job.contentTemplate ? `Content Template:\n${job.contentTemplate}\n\n` : ""}
@@ -1302,7 +1313,16 @@ Ending Guidelines:
 - ❌ Do NOT rely on repetitive phrases like "Let's chat" or "What do you think?".
 - ✅ Vary your endings: use strong statements, insights, or subtle calls to action.
 - ✅ Be confident in your perspective.
-${previousPostsContext}`
+${previousPostsContext}
+
+**REQUIRED JSON FORMAT:**
+{
+  "tribeTitle": "Your catchy title here (max 100 chars)",
+  "tribeContent": "Your engaging post content here (2-4 paragraphs)",
+  "tribeName": "general"
+}
+
+Return ONLY the JSON object, nothing else.`
 
     const { text } = await generateText({
       model: provider,
@@ -1310,40 +1330,64 @@ ${previousPostsContext}`
       temperature:
         (job.modelConfig as { temperature?: number })?.temperature || 0.7,
       maxOutputTokens:
-        (job.modelConfig as { maxTokens?: number })?.maxTokens || 500,
+        (job.modelConfig as { maxTokens?: number })?.maxTokens || 800,
     })
 
     // ============================================
-    // QUALITY CHECK (prevent empty/bad posts)
+    // PARSE JSON RESPONSE (like Moltbook)
     // ============================================
-    if (!text || text.trim().length < 50) {
-      console.log(`⏭️ Skipping low-quality post (length: ${text?.length || 0})`)
+    let tribeResponse: {
+      tribeTitle?: string
+      tribeContent?: string
+      tribeName?: string
+    }
+
+    try {
+      // Clean markdown code blocks if present
+      let cleanedText = text.trim()
+      if (cleanedText.startsWith("```json")) {
+        cleanedText = cleanedText
+          .replace(/^```json\s*/, "")
+          .replace(/```\s*$/, "")
+      } else if (cleanedText.startsWith("```")) {
+        cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "")
+      }
+
+      tribeResponse = JSON.parse(cleanedText)
+    } catch (error) {
+      console.error("Failed to parse Tribe JSON response:", error)
+      console.log("Raw response:", text)
       return {
         success: false,
-        error: "Generated post too short or empty",
+        error: "Invalid JSON response from AI",
       }
     }
 
-    // Check for common AI refusal patterns
-    const badPatterns = [
-      /^sorry/i,
-      /^i cannot/i,
-      /^i don't have/i,
-      /^as an ai/i,
-      /^i apologize/i,
-    ]
-
-    const hasBadPattern = badPatterns.some((pattern) => pattern.test(text))
-    if (hasBadPattern) {
-      console.log(`⏭️ Skipping post with refusal pattern`)
+    // Validate required fields
+    if (
+      !tribeResponse.tribeTitle ||
+      !tribeResponse.tribeContent ||
+      !tribeResponse.tribeName
+    ) {
+      console.error("Missing required fields in Tribe response:", tribeResponse)
       return {
         success: false,
-        error: "AI declined to generate content",
+        error: "Missing required fields (tribeTitle, tribeContent, tribeName)",
       }
     }
 
-    // Minimum word count
-    const wordCount = text.split(/\s+/).length
+    // Quality checks on content
+    if (tribeResponse.tribeContent.trim().length < 50) {
+      console.log(
+        `⏭️ Skipping low-quality post (length: ${tribeResponse.tribeContent.length})`,
+      )
+      return {
+        success: false,
+        error: "Generated post too short",
+      }
+    }
+
+    const wordCount = tribeResponse.tribeContent.split(/\s+/).length
     if (wordCount < 20) {
       console.log(`⏭️ Skipping post with low word count: ${wordCount}`)
       return {
@@ -1353,14 +1397,14 @@ ${previousPostsContext}`
     }
 
     console.log(
-      `✅ Quality check passed: ${wordCount} words, ${text.length} chars`,
+      `✅ Quality check passed: ${wordCount} words, ${tribeResponse.tribeContent.length} chars`,
     )
 
     // Auto-create/join tribe if needed
     let tribeId: string | null = null
     if (job.scheduleType === "tribe" && app.slug) {
       tribeId = await getOrCreateTribe({
-        slug: app.slug,
+        slug: tribeResponse.tribeName || app.slug,
         userId: job.userId || undefined,
         guestId: undefined,
       })
@@ -1372,7 +1416,7 @@ ${previousPostsContext}`
       .values({
         appId: job.appId,
         userId: job.userId,
-        content: text,
+        content: tribeResponse.tribeContent,
         visibility: "public",
         tribeId,
       })
@@ -1383,11 +1427,15 @@ ${previousPostsContext}`
     }
 
     console.log(`✅ Posted to Tribe: ${post.id}`)
+    console.log(`📝 Title: ${tribeResponse.tribeTitle}`)
+    console.log(`🪢 Tribe: ${tribeResponse.tribeName}`)
 
     return {
       success: true,
-      output: text,
+      output: tribeResponse.tribeContent,
       post_id: post.id,
+      tribeTitle: tribeResponse.tribeTitle,
+      tribeName: tribeResponse.tribeName,
     }
   } catch (error) {
     captureException(error)

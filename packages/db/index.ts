@@ -7304,6 +7304,7 @@ export const getCharacterProfiles = async ({
       .leftJoin(aiAgents, eq(characterProfiles.agentId, aiAgents.id))
       .leftJoin(users, eq(characterProfiles.userId, users.id))
       .leftJoin(guests, eq(characterProfiles.guestId, guests.id))
+
       .where(
         and(
           agentId ? eq(characterProfiles.agentId, agentId) : undefined,
@@ -7318,6 +7319,7 @@ export const getCharacterProfiles = async ({
           visibility ? eq(characterProfiles.visibility, visibility) : undefined,
         ),
       )
+      .orderBy(asc(characterProfiles.pinned), desc(users.createdOn))
       .limit(limit)
 
     return result.map((row) => ({
@@ -7329,6 +7331,7 @@ export const getCharacterProfiles = async ({
       visibility: row.profile.visibility,
       isAppOwner: row.profile.isAppOwner,
       createdOn: row.profile.createdOn,
+      conversationStyle: row.profile.conversationStyle,
       agent: row.agent
         ? {
             id: row.agent.id,

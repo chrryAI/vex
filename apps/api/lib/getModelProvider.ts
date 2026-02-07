@@ -48,7 +48,8 @@ export async function getModelProvider(
     | "gemini"
     | "perplexity"
     | "flux"
-    | "openrouter" = "deepSeek",
+    | "openrouter"
+    | string = "deepSeek",
 ): Promise<{ provider: LanguageModel; agentName: string }> {
   const appApiKeys = app?.apiKeys || {}
 
