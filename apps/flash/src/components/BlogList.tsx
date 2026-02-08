@@ -34,19 +34,25 @@ export default function BlogList({ posts, locale }: BlogListProps) {
   return (
     <div>
       <h1 className={styles.title}>📝 Blog</h1>
-      <ul className={styles.blogList}>
-        {posts.map((post) => (
-          <li key={post.slug} style={{ marginBottom: 24 }}>
-            <h2>
-              <a href={`/blog/${post.slug}`}>{post.title}</a>
-            </h2>
-            <p>{post.excerpt}</p>
-            <small>
-              {timeAgo(post.date)} by {post.author}
-            </small>
-          </li>
-        ))}
-      </ul>
+      {posts.length === 0 ? (
+        <p className={styles.emptyState}>
+          No posts found. Check back later! 🌱
+        </p>
+      ) : (
+        <ul className={styles.blogList}>
+          {posts.map((post) => (
+            <li key={post.slug} style={{ marginBottom: 24 }}>
+              <h2>
+                <a href={`/blog/${post.slug}`}>{post.title}</a>
+              </h2>
+              <p>{post.excerpt}</p>
+              <small>
+                {timeAgo(post.date)} by {post.author}
+              </small>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
