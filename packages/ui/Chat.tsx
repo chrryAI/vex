@@ -39,7 +39,6 @@ import {
   ClockPlus,
   Star,
   Link,
-  RefreshCw,
 } from "./icons"
 import { COLORS, useAppContext } from "./context/AppContext"
 import { validateFile, formatFileSize } from "./utils/fileValidation"
@@ -97,6 +96,7 @@ import {
   PROMPT_LIMITS,
   apiFetch,
   MAX_FILE_LIMITS,
+  MEMBER_FREE_TRIBE_CREDITS,
 } from "./utils"
 import needsWebSearch from "./utils/needsWebSearch"
 import { useWebSocket } from "./hooks/useWebSocket"
@@ -287,6 +287,7 @@ export default function Chat({
     onlyAgent,
     scrollToBottom,
     setIsNewAppChat,
+    showTribe,
   } = useChat()
 
   const {
@@ -3672,40 +3673,68 @@ export default function Chat({
                       )}
                     </Div>
                   ) : null}
-                  {empty && !threadIdRef.current && !showQuotaInfo && (
-                    <Div
-                      style={{
-                        position: "relative",
-                        top: !isChatFloating ? 32 : 0,
-                        zIndex: 50,
-                        display: "inline-flex",
-                        gap: 7.5,
-                        alignItems: "center",
-                      }}
-                    >
-                      <Grapes
-                        style={{ padding: "6px 8px" }}
-                        dataTestId="grapes-button"
-                      />
+                  {empty &&
+                    !threadIdRef.current &&
+                    !showQuotaInfo &&
+                    !showTribe && (
+                      <Div
+                        style={{
+                          position: "relative",
+                          top: !isChatFloating ? 32 : 0,
+                          zIndex: 50,
+                          display: "inline-flex",
+                          gap: 7.5,
+                          alignItems: "center",
+                        }}
+                      >
+                        {user?.tribeCredits &&
+                        isOwner(app, {
+                          userId: user.id,
+                        }) ? (
+                          <>
+                            <Button
+                              className="inverted"
+                              style={{
+                                fontSize: "0.75rem",
+                                ...utilities.xSmall.style,
+                                ...utilities.inverted.style,
+                              }}
+                            >
+                              <Coins size={14} />
 
-                      {grapes?.length ? (
-                        <Button
-                          className={"link"}
-                          onClick={() => {
-                            setShowGrapes(true)
-                          }}
-                          style={{
-                            ...utilities.link.style,
-                            fontSize: "0.75rem",
-                            order: minimize ? -1 : 0,
-                          }}
-                        >
-                          <Coins size={14} />
-                          {t("Earn Credits")}
-                        </Button>
-                      ) : null}
-                    </Div>
-                  )}
+                              {t("Create Post")}
+                            </Button>
+                            <Span style={{ fontSize: "0.75rem" }}>
+                              {MEMBER_FREE_TRIBE_CREDITS}/
+                              {user?.tribeCredits}{" "}
+                            </Span>
+                          </>
+                        ) : (
+                          <>
+                            {grapes?.length ? (
+                              <Button
+                                className={"link"}
+                                onClick={() => {
+                                  setShowGrapes(true)
+                                }}
+                                style={{
+                                  ...utilities.link.style,
+                                  fontSize: "0.75rem",
+                                  order: minimize ? -1 : 0,
+                                }}
+                              >
+                                <Coins size={14} />
+                                {t("Earn Credits")}
+                              </Button>
+                            ) : null}
+                            <Grapes
+                              style={{ padding: "6px 8px" }}
+                              dataTestId="grapes-button"
+                            />
+                          </>
+                        )}
+                      </Div>
+                    )}
                 </Div>
               </Div>
             )}
@@ -3811,42 +3840,24 @@ export default function Chat({
                       flexDirection: "row",
                     }}
                   >
-                    {back && !hasBottomOffset && isChatFloating && empty ? (
-                      <A
-                        style={{
-                          marginRight: "auto",
-                          left: 5,
-                          top: -15,
-                          gap: 7.5,
-                          position: "relative",
-                          zIndex: 300,
-                        }}
-                        href={getAppSlug(back)}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setIsPear(back)
-
-                          plausible({
-                            name: ANALYTICS_EVENTS.APP_BACK,
-                            props: {
-                              back: back.name,
-                              app: app?.name,
-                            },
-                          })
-
-                          setIsNewAppChat(back)
-                          addHapticFeedback()
-                          setAppStatus(undefined)
-                          if (e.metaKey || e.ctrlKey) {
-                            return
-                          }
-                        }}
-                      >
-                        <RefreshCw size={13} />
-                        <Img app={back} showLoading={false} size={18} />
-                      </A>
-                    ) : (
-                      <></>
+                    {!showTribe && empty && minimize && (
+                      <>
+                        <A
+                          style={{
+                            marginRight: "auto",
+                            left: 5,
+                            top: -15,
+                            gap: 7.5,
+                            position: "relative",
+                            zIndex: 300,
+                            fontSize: ".9rem",
+                          }}
+                          href={"/tribe"}
+                        >
+                          <Img icon="zarathustra" size={18} />
+                          {t("Tribe")}
+                        </A>
+                      </>
                     )}
                     {isChatFloating ||
                     exceededInitial ||
@@ -3898,32 +3909,24 @@ export default function Chat({
                         </Span>
                       </H2>
                     ) : null}
-                    {back && !hasBottomOffset && !isChatFloating && empty ? (
-                      <A
-                        style={{
-                          marginLeft: "auto",
-                          marginRight: "5px",
-                          marginBottom: "5px",
-                          gap: 5,
-                        }}
-                        href={getAppSlug(back)}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setIsPear(back)
-
-                          setIsNewAppChat(back)
-                          addHapticFeedback()
-                          setAppStatus(undefined)
-                          if (e.metaKey || e.ctrlKey) {
-                            return
-                          }
-                        }}
-                      >
-                        <RefreshCw size={13} />
-                        <Img app={back} showLoading={false} size={18} />
-                      </A>
-                    ) : (
-                      <></>
+                    {!showTribe && !isChatFloating && empty && (
+                      <>
+                        <A
+                          style={{
+                            marginRight: "auto",
+                            left: -5,
+                            top: -5,
+                            gap: 7.5,
+                            position: "relative",
+                            zIndex: 300,
+                            fontSize: ".9rem",
+                          }}
+                          href={"/tribe"}
+                        >
+                          <Img icon="zarathustra" size={18} />
+                          {t("Tribe")}
+                        </A>
+                      </>
                     )}
                   </Div>
                 )

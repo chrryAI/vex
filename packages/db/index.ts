@@ -17,11 +17,15 @@ import {
   guests,
   invitations,
   authExchangeCodes,
+  tribePosts,
+  tribeComments,
   memories,
   analyticsSites,
   tribeReactions,
   messageEmbeddings,
   messages,
+  tribes,
+  tribeMemberships,
   stores,
   pushSubscriptions,
   subscriptions,
@@ -122,6 +126,7 @@ export {
   premiumSubscriptions,
   authExchangeCodes,
   apps,
+  users,
 }
 export { type modelName }
 
@@ -5229,15 +5234,6 @@ export function toSafeGuest({ guest }: { guest?: guest | null }) {
   const result: Partial<guest> = {
     id: guest.id,
     activeOn: guest.activeOn,
-    ip: guest.ip,
-    // country: guest.country,
-    // city: guest.city,
-    // fingerprint: guest.fingerprint,
-    // email: guest.email,
-    // weather: guest.weather,
-    // timezone: guest.timezone,
-    // createdOn: guest.createdOn,
-    // updatedOn: guest.updatedOn,
   }
 
   return result
@@ -7159,6 +7155,311 @@ export const getTribeReactions = async ({
   }
 }
 
+export const getTribes = async ({
+  search,
+  page = 1,
+  pageSize = 20,
+}: {
+  search?: string
+  page?: number
+  pageSize?: number
+}) => {
+  try {
+    const conditions = [
+      search && search.length >= 3
+        ? sql`(
+            to_tsvector('english', COALESCE(${tribes.name}, '') || ' ' || COALESCE(${tribes.description}, '') || ' ' || COALESCE(${tribes.slug}, '')) 
+            @@ plainto_tsquery('english', ${search})
+          )`
+        : undefined,
+    ].filter(Boolean)
+
+    const result = await db
+      .select()
+      .from(tribes)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(tribes.postsCount), desc(tribes.membersCount))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize)
+
+    // Get total count for pagination
+    const totalCount =
+      (
+        await db
+          .select({ count: count(tribes.id) })
+          .from(tribes)
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
+      )[0]?.count ?? 0
+
+    const hasNextPage = totalCount > page * pageSize
+    const nextPage = hasNextPage ? page + 1 : null
+
+    return {
+      tribes: result,
+      totalCount,
+      hasNextPage,
+      nextPage,
+    }
+  } catch (error) {
+    console.error("Error getting tribes:", error)
+    return {
+      tribes: [],
+      totalCount: 0,
+      hasNextPage: false,
+      nextPage: null,
+    }
+  }
+}
+
+export const getTribePosts = async ({
+  tribeId,
+  appId,
+  userId,
+  guestId,
+  search,
+  characterProfileIds,
+  page = 1,
+  pageSize = 10,
+}: {
+  tribeId?: string
+  appId?: string
+  userId?: string
+  guestId?: string
+  search?: string
+  characterProfileIds?: string[]
+  page?: number
+  pageSize?: number
+}) => {
+  try {
+    const conditions = [
+      tribeId ? eq(tribePosts.tribeId, tribeId) : undefined,
+      appId ? eq(tribePosts.appId, appId) : undefined,
+      userId ? eq(tribePosts.userId, userId) : undefined,
+      guestId ? eq(tribePosts.guestId, guestId) : undefined,
+      search && search.length >= 3
+        ? sql`(
+            to_tsvector('english', COALESCE(${tribePosts.title}, '') || ' ' || COALESCE(${tribePosts.content}, '')) 
+            @@ plainto_tsquery('english', ${search})
+            OR ${apps.name} ILIKE ${`%${search}%`}
+            OR ${apps.description} ILIKE ${`%${search}%`}
+          )`
+        : undefined,
+    ].filter(Boolean)
+
+    // If character profile IDs are provided, get their app IDs
+    let characterProfileAppIds: string[] = []
+    if (characterProfileIds && characterProfileIds.length > 0) {
+      const profiles = await db
+        .select({ appId: characterProfiles.appId })
+        .from(characterProfiles)
+        .where(
+          sql`${characterProfiles.id} = ANY(${sql`ARRAY[${sql.join(
+            characterProfileIds.map((id) => sql`${id}`),
+            sql`, `,
+          )}]::uuid[]`})`,
+        )
+
+      characterProfileAppIds = profiles
+        .map((p) => p.appId)
+        .filter((id): id is string => id !== null)
+
+      // Add app ID filter if we found any
+      if (characterProfileAppIds.length > 0) {
+        conditions.push(
+          sql`${tribePosts.appId} = ANY(${sql`ARRAY[${sql.join(
+            characterProfileAppIds.map((id) => sql`${id}`),
+            sql`, `,
+          )}]::uuid[]`})`,
+        )
+      }
+    }
+
+    const result = await db
+      .select({
+        post: tribePosts,
+        app: apps,
+        user: users,
+        guest: guests,
+        tribe: tribes,
+      })
+      .from(tribePosts)
+      .leftJoin(apps, eq(tribePosts.appId, apps.id))
+      .leftJoin(users, eq(tribePosts.userId, users.id))
+      .leftJoin(guests, eq(tribePosts.guestId, guests.id))
+      .leftJoin(tribes, eq(tribePosts.tribeId, tribes.id))
+      .where(and(...conditions))
+      .orderBy(desc(tribePosts.createdOn))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize)
+
+    // Get total count for pagination
+    const totalCount =
+      (
+        await db
+          .select({ count: count(tribePosts.id) })
+          .from(tribePosts)
+          .where(and(...conditions))
+      )[0]?.count ?? 0
+
+    const hasNextPage = totalCount > page * pageSize
+    const nextPage = hasNextPage ? page + 1 : null
+
+    // Fetch engagement data for all posts in parallel
+    const postsWithEngagement = await Promise.all(
+      result.map(async (row) => {
+        const [likes, comments, reactions, profiles] = await Promise.all([
+          // Get likes
+          db
+            .select({
+              like: tribeLikes,
+              user: users,
+              guest: guests,
+            })
+            .from(tribeLikes)
+            .leftJoin(users, eq(tribeLikes.userId, users.id))
+            .leftJoin(guests, eq(tribeLikes.guestId, guests.id))
+            .where(eq(tribeLikes.postId, row.post.id))
+            .limit(100),
+
+          // Get comments
+          db
+            .select({
+              comment: tribeComments,
+              user: users,
+              guest: guests,
+            })
+            .from(tribeComments)
+            .leftJoin(users, eq(tribeComments.userId, users.id))
+            .leftJoin(guests, eq(tribeComments.guestId, guests.id))
+            .where(eq(tribeComments.postId, row.post.id))
+            .orderBy(desc(tribeComments.createdOn))
+            .limit(100),
+
+          // Get reactions
+          db
+            .select({
+              reaction: tribeReactions,
+              user: users,
+              guest: guests,
+            })
+            .from(tribeReactions)
+            .leftJoin(users, eq(tribeReactions.userId, users.id))
+            .leftJoin(guests, eq(tribeReactions.guestId, guests.id))
+            .where(eq(tribeReactions.postId, row.post.id))
+            .limit(100),
+
+          // Get character profiles (isAppOwner true, limit 5)
+          row.app?.id
+            ? db
+                .select({
+                  profile: characterProfiles,
+                  agent: aiAgents,
+                })
+                .from(characterProfiles)
+                .leftJoin(aiAgents, eq(characterProfiles.agentId, aiAgents.id))
+                .where(
+                  and(
+                    eq(characterProfiles.appId, row.app.id),
+                    eq(characterProfiles.isAppOwner, true),
+                  ),
+                )
+                .limit(5)
+            : Promise.resolve([]),
+        ])
+
+        return {
+          id: row.post.id,
+          title: row.post.title,
+          content: row.post.content,
+          visibility: row.post.visibility,
+          likesCount: row.post.likesCount,
+          commentsCount: row.post.commentsCount,
+          sharesCount: row.post.sharesCount,
+          createdOn: row.post.createdOn,
+          updatedOn: row.post.updatedOn,
+          app: row.app ? toSafeApp({ app: row.app }) : null,
+          user: row.user
+            ? toSafeUser({
+                user: row.user,
+              })
+            : null,
+          guest: row.guest
+            ? toSafeGuest({
+                guest: row.guest,
+              })
+            : null,
+          tribe: row.tribe,
+          likes: likes.map((l) => ({
+            id: l.like.id,
+            createdOn: l.like.createdOn,
+            user: l.user
+              ? toSafeUser({
+                  user: l.user,
+                })
+              : null,
+            guest: l.guest
+              ? toSafeGuest({
+                  guest: l.guest,
+                })
+              : null,
+          })),
+          comments: comments.map((c) => ({
+            id: c.comment.id,
+            content: c.comment.content,
+            likesCount: c.comment.likesCount,
+            createdOn: c.comment.createdOn,
+            updatedOn: c.comment.updatedOn,
+            user: c.user
+              ? toSafeUser({
+                  user: c.user,
+                })
+              : null,
+            guest: c.guest
+              ? toSafeGuest({
+                  guest: c.guest,
+                })
+              : null,
+          })),
+          reactions: reactions.map((r) => ({
+            id: r.reaction.id,
+            emoji: r.reaction.emoji,
+            createdOn: r.reaction.createdOn,
+            user: r.user
+              ? toSafeUser({
+                  user: r.user,
+                })
+              : null,
+            guest: r.guest
+              ? toSafeGuest({
+                  guest: r.guest,
+                })
+              : null,
+          })),
+          characterProfiles: profiles.map((p) => {
+            console.log(`   ↳ Profile: ${p.profile.name} (${p.profile.id})`)
+            return p
+          }),
+        }
+      }),
+    )
+
+    return {
+      posts: postsWithEngagement,
+      totalCount,
+      hasNextPage,
+      nextPage,
+    }
+  } catch (error) {
+    console.error("Error getting tribe posts:", error)
+    return {
+      posts: [],
+      totalCount: 0,
+      hasNextPage: false,
+      nextPage: null,
+    }
+  }
+}
+
 export const getTribeFollows = async ({
   appId,
   followerId,
@@ -7385,3 +7686,155 @@ export const getCharacterProfiles = async ({
 }
 
 export * from "./src/graph/client"
+
+export interface AutoCreateTribeParams {
+  slug: string
+  userId?: string
+  guestId?: string
+}
+
+export async function getOrCreateTribe(
+  params: AutoCreateTribeParams,
+): Promise<string> {
+  const { slug, userId, guestId } = params
+
+  // Validate exactly one identity is provided (XOR)
+  const hasUserId = userId !== undefined && userId !== null
+  const hasGuestId = guestId !== undefined && guestId !== null
+
+  if (hasUserId && hasGuestId) {
+    throw new Error("Cannot provide both userId and guestId")
+  }
+  if (!hasUserId && !hasGuestId) {
+    throw new Error("Must provide either userId or guestId")
+  }
+
+  // Normalize slug (lowercase, replace spaces with hyphens)
+  const normalizedSlug = slug.toLowerCase().trim().replace(/\s+/g, "-")
+
+  if (!db) throw new Error("Database not initialized")
+
+  // Check if tribe already exists
+  const existingTribe = await db.query.tribes.findFirst({
+    where: eq(tribes.slug, normalizedSlug),
+  })
+
+  if (existingTribe) {
+    // Auto-join using transaction with conflict handling
+    await db.transaction(async (tx) => {
+      const insertResult = await tx
+        .insert(tribeMemberships)
+        .values({
+          tribeId: existingTribe.id,
+          userId: userId || null,
+          guestId: guestId || null,
+          role: "member",
+        })
+        .onConflictDoNothing({
+          target: userId
+            ? [tribeMemberships.tribeId, tribeMemberships.userId]
+            : [tribeMemberships.tribeId, tribeMemberships.guestId],
+        })
+        .returning({ id: tribeMemberships.id })
+
+      // Only increment count if a new row was inserted
+      if (insertResult.length > 0) {
+        await tx
+          .update(tribes)
+          .set({
+            membersCount: existingTribe.membersCount + 1,
+          })
+          .where(eq(tribes.id, existingTribe.id))
+      }
+    })
+
+    return existingTribe.id
+  }
+
+  // Auto-create new tribe
+  const defaultIcons: Record<string, string> = {
+    general: "💬",
+    introductions: "👋",
+    announcements: "📢",
+    gaming: "🎮",
+    tech: "💻",
+    music: "🎵",
+    art: "🎨",
+    food: "🍕",
+    sports: "⚽",
+    movies: "🎬",
+    books: "📚",
+    travel: "✈️",
+    fitness: "💪",
+    coding: "👨💻",
+    memes: "😂",
+    news: "📰",
+    science: "🔬",
+    photography: "📷",
+    fashion: "👗",
+    pets: "🐶",
+  }
+
+  const icon = defaultIcons[normalizedSlug] || "🦞"
+  const name =
+    normalizedSlug
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ") || "General"
+
+  // Try to insert new tribe with conflict handling
+  const insertResult = await db
+    .insert(tribes)
+    .values({
+      slug: normalizedSlug,
+      name,
+      icon,
+      description: `Welcome to t/${normalizedSlug}!`,
+      visibility: "public",
+      membersCount: 1, // Creator always joins
+    })
+    .onConflictDoNothing({ target: tribes.slug })
+    .returning()
+
+  // If insert failed due to conflict, query for existing tribe
+  let tribeId: string = ""
+  let isCreator = false
+  if (insertResult.length === 0) {
+    const existingTribe = await db.query.tribes.findFirst({
+      where: eq(tribes.slug, normalizedSlug),
+    })
+    if (!existingTribe) {
+      throw new Error(`Failed to create or find tribe: ${normalizedSlug}`)
+    }
+    tribeId = existingTribe.id
+    isCreator = false // Lost the race, join as member
+  } else if (insertResult[0]) {
+    tribeId = insertResult[0].id
+    isCreator = true // Won the race, become admin
+    console.log(`✨ Auto-created tribe: t/${normalizedSlug} (${icon} ${name})`)
+  }
+
+  if (!tribeId) {
+    throw new Error("Something went wrong")
+  }
+  // Auto-join creator as first member (admin if creator, member if race loser)
+  await db
+    .insert(tribeMemberships)
+    .values({
+      tribeId,
+      userId: userId || null,
+      guestId: guestId || null,
+      role: isCreator ? "admin" : "member",
+    })
+    .onConflictDoNothing()
+
+  // If we joined an existing tribe (race loser), increment membersCount
+  if (!isCreator) {
+    await db
+      .update(tribes)
+      .set({ membersCount: sql`${tribes.membersCount} + 1` })
+      .where(eq(tribes.id, tribeId))
+  }
+
+  return tribeId
+}

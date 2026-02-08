@@ -14,6 +14,9 @@ import {
   getThread,
   getThreads,
   getTranslations,
+  getTribes,
+  getTribePosts,
+  getTribePost,
 } from "@chrryai/chrry/lib"
 import { locale, locales } from "@chrryai/chrry/locales"
 import {
@@ -21,6 +24,11 @@ import {
   thread,
   paginatedMessages,
   appWithStore,
+  paginatedTribes,
+  paginatedTribePosts,
+  tribePostWithDetails,
+  tribe,
+  tribePost,
 } from "@chrryai/chrry/types"
 import { getSiteConfig } from "@chrryai/chrry/utils/siteConfig"
 import {
@@ -74,6 +82,11 @@ export interface ServerData {
   blogPosts?: BlogPost[]
   blogPost?: BlogPostWithContent
   isBlogRoute?: boolean
+  // Tribe data
+  tribes?: paginatedTribes
+  tribePosts?: paginatedTribePosts
+  tribePost?: tribePostWithDetails
+  isTribeRoute?: boolean
   searchParams?: Record<string, string> & {
     get: (key: string) => string | null
     has: (key: string) => boolean
@@ -97,9 +110,11 @@ export async function loadServerData(
   // Fetch test configuration from API (runtime, not build-time) - only in E2E mode
   let TEST_FINGERPRINTS: string[] = []
 
-  const pathname = request.pathname.startsWith("/")
-    ? request.pathname
-    : `/${request.pathname}`
+  const pathname = (
+    (request.pathname.startsWith("/")
+      ? request.pathname
+      : `/${request.pathname}`) || "/"
+  ).split("?")?.[0]
 
   const isLocalePathname =
     pathname && locales.includes(pathname.split("/")?.[1] as locale)
@@ -347,6 +362,93 @@ export async function loadServerData(
     }
   }
 
+  // Detect tribe routes and load tribe data
+  let tribes: paginatedTribes | undefined
+  let tribePosts: paginatedTribePosts | undefined
+  let tribePost: tribePostWithDetails | undefined
+  let isTribeRoute = false
+
+  // Check if this is a tribe route OR if app slug is 'chrry'
+  const isChrryApp = app?.slug === "chrry"
+  if (
+    pathname === "/tribe" ||
+    pathname.startsWith("/tribe/") ||
+    (isChrryApp && pathname === "/")
+  ) {
+    isTribeRoute = true
+  }
+
+  try {
+    if (pathname.startsWith("/tribe/")) {
+      if (pathname.startsWith("/tribe/p/")) {
+        // Single tribe post page: /tribe/p/:id
+        const postId = pathname.replace("/tribe/p/", "")
+        tribePost = await getTribePost({
+          id: postId,
+          token: apiKey,
+          API_URL,
+        })
+      } else if (pathname.startsWith("/tribe/")) {
+        // Tribe detail page: /tribe/:slug
+        const tribeSlug = pathname.replace("/tribe/", "")
+
+        // Load tribe by slug (find in tribes list)
+        const tribesResult = await getTribes({
+          search: tribeSlug,
+          pageSize: 1,
+          page: 1,
+          token: apiKey,
+          API_URL,
+        })
+
+        // Load posts for this tribe
+        if (tribesResult?.tribes?.[0]) {
+          tribePosts = await getTribePosts({
+            tribeId: tribesResult.tribes[0].id,
+            pageSize: 10,
+            page: 1,
+            token: apiKey,
+            API_URL,
+          })
+        }
+      } else if (isChrryApp && pathname === "/") {
+        // Load tribes and posts for chrry app homepage
+        tribes = await getTribes({
+          pageSize: 20,
+          page: 1,
+          token: apiKey,
+          API_URL,
+        })
+
+        // Load recent posts from all tribes
+        tribePosts = await getTribePosts({
+          pageSize: 10,
+          page: 1,
+          token: apiKey,
+          API_URL,
+        })
+      }
+    } else {
+      // Single tribe post page: /tribe/p/:id
+      tribes = await getTribes({
+        pageSize: 15,
+        page: 1,
+        token: apiKey,
+        API_URL,
+      })
+
+      // Load recent posts from all tribes
+      tribePosts = await getTribePosts({
+        pageSize: 10,
+        page: 1,
+        token: apiKey,
+        API_URL,
+      })
+    }
+  } catch (error) {
+    console.error("❌ Tribe data loading error:", error)
+  }
+
   const result = {
     session,
     thread,
@@ -366,6 +468,10 @@ export async function loadServerData(
     blogPosts,
     blogPost,
     isBlogRoute,
+    tribes,
+    tribePosts,
+    tribePost,
+    isTribeRoute,
     pathname, // Add pathname so client knows the SSR route
   }
 

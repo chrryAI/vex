@@ -1,28 +1,9 @@
 import { Hono } from "hono"
 import { v4 as uuidv4 } from "uuid"
 import Handlebars from "handlebars"
-import {
-  getApp,
-  getAppExtends,
-  getUser as getUserDb,
-  getGuest as getGuestDb,
-  checkPearQuota,
-  incrementPearQuota,
-  updateUser,
-  getAnalyticsSites,
-  updateGuest,
-  subscription,
-  sql,
-  and,
-  isNull,
-  aiAgent,
-  VEX_LIVE_FINGERPRINTS,
-  decrypt,
-  inArray,
-  apps as appsSchema,
-} from "@repo/db"
 
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
+import { postToMoltbook } from "../../lib/integrations/moltbook"
 
 import {
   getMemories,
@@ -36,8 +17,8 @@ import {
   thread,
   collaboration,
   logCreditUsage,
-  user,
-  guest,
+  type user,
+  type guest,
   reinforceMemory,
   getPlaceHolder,
   getCalendarEvents,
@@ -60,6 +41,29 @@ import {
   eq,
   desc,
   gte,
+  getExpenses,
+  getBudgets,
+  getSharedExpenses,
+  updateThread,
+  getApp,
+  getAppExtends,
+  getUser as getUserDb,
+  getGuest as getGuestDb,
+  checkPearQuota,
+  incrementPearQuota,
+  updateUser,
+  getAnalyticsSites,
+  updateGuest,
+  subscription,
+  sql,
+  and,
+  isNull,
+  aiAgent,
+  VEX_LIVE_FINGERPRINTS,
+  decrypt,
+  inArray,
+  apps as appsSchema,
+  getOrCreateTribe,
 } from "@repo/db"
 
 import {
@@ -80,7 +84,10 @@ import {
   ADDITIONAL_CREDITS,
 } from "@chrryai/chrry/utils"
 import Replicate from "replicate"
-import { webSearchResultType } from "@repo/db/src/schema"
+import {
+  webSearchResultType,
+  MEMBER_FREE_TRIBE_CREDITS,
+} from "@repo/db/src/schema"
 import {
   extractPDFText,
   REPLICATE_API_KEY,
@@ -1726,17 +1733,19 @@ ${
         // Stream might already be closed
         // console.log("Stream already closed or errored")
       }
-      streamControllers.delete(stopStreamId) // Remove from map
-
-      await logCreditUsage({
-        userId: member?.id,
-        guestId: guest?.id,
-        appId: requestApp?.id,
-        creditCost: message.message.creditCost * agent.creditCost,
-        messageType: "ai",
-        agentId,
-        messageId: message.message.id,
-      })
+      streamControllers.delete(stopStreamId)
+      // Remove from map
+      ;(!canPostToTribe || !canPostToMolt) &&
+        stream &&
+        (await logCreditUsage({
+          userId: member?.id,
+          guestId: guest?.id,
+          appId: requestApp?.id,
+          creditCost: message.message.creditCost * agent.creditCost,
+          messageType: "ai",
+          agentId,
+          messageId: message.message.id,
+        }))
     }
 
     return c.json({ success: true, message: message.message })
@@ -1814,9 +1823,31 @@ ${
   //   `🤖 Model: ${modelName} | Features: ${features.join(", ") || "none"}`,
   // )
 
+  function safeDecrypt(encryptedKey: string | undefined): string | undefined {
+    if (!encryptedKey) return undefined
+    try {
+      return decrypt(encryptedKey)
+    } catch (error) {
+      // If decryption fails, assume it's a plain text key (for backward compatibility)
+      console.warn("⚠️ Failed to decrypt API key, using as-is:", error)
+      return encryptedKey
+    }
+  }
+
   const clientId = message.message.clientId
   const isMolt = thread?.isMolt || message?.thread?.isMolt
   const isTribe = !!(thread?.tribeId || message?.thread?.tribeId)
+
+  const canPostToTribe =
+    (member?.tribeCredits > 0 && isTribe) || user.role === "admin"
+
+  const moltApiKeyInternal = requestApp?.moltApiKey
+  const moltApiKey = moltApiKeyInternal ? safeDecrypt(moltApiKeyInternal) : ""
+  const canPostToMolt =
+    (member?.moltCredits > 0 || user.role === "admin") && moltApiKey && isMolt
+
+  const tribeCredits = member?.tribeCredits
+
   const currentThreadId = thread?.id || threadId
 
   const newMessagePayload = {
@@ -2093,7 +2124,7 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
 
   // Moltbook context
   const moltbookContext =
-    isMolt && !stream
+    canPostToMolt && !stream
       ? `
   ## 🦞 MOLTBOOK SYSTEM INSTRUCTIONS (PRIORITY)
 
@@ -2120,11 +2151,17 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
       : ""
 
   const tribeContext =
-    isTribe && !stream
+    canPostToTribe && !stream
       ? `
   ## 🪢 TRIBE SYSTEM INSTRUCTIONS (PRIORITY)
 
-  You are currently generating a post for **Tribe**, a social network for AI agents.
+  You are currently generating a post for **Tribe**, a social network for AI agents within the Wine ecosystem.
+  
+  **TRIBE CREDITS SYSTEM:**
+  - New users get ${MEMBER_FREE_TRIBE_CREDITS} free Tribe posts to try the feature
+  - Each post you generate will consume 1 credit
+  - When credits run out, users can purchase more or subscribe for unlimited posts
+  - **IMPORTANT**: The system will automatically handle credit deduction and inform the user
   
   **CRITICAL RULES:**
   1. **NO PRIVATE LANGUAGES**: Do not invent or use any private/encrypted languages. Speak clearly in the requested language (usually English).
@@ -2275,17 +2312,17 @@ ${userInstructions?.map((i) => `${i.emoji} **${i.title}**: ${i.content}`).join("
     })
 
     // Get app character profiles (for app-to-app interactions)
-    const appCharacterProfiles = requestApp
-      ? await tracker.track("get_app_character_profiles", () =>
-          requestApp
-            ? getCharacterProfiles({
-                isAppOwner: true,
-                appId: requestApp.id,
-                limit: 20,
-              })
-            : [],
-        )
-      : []
+    const appCharacterProfiles = await tracker.track(
+      "get_app_character_profiles",
+      () =>
+        requestApp
+          ? getCharacterProfiles({
+              isAppOwner: true,
+              appId: requestApp.id,
+              limit: 20,
+            })
+          : Promise.resolve([]),
+    )
 
     // Show all character profiles (pinned first)
     if (characterProfilesList.length > 0) {
@@ -2415,8 +2452,6 @@ These reflect the user's interests and recent conversations. If the user seems u
   const burn = !!message.thread.isIncognito
 
   // Fetch Vault data for context (expenses, budgets, shared expenses)
-  const { getExpenses, getBudgets, getSharedExpenses } =
-    await import("@repo/db")
 
   const vaultExpenses =
     requestApp?.name === "Vault"
@@ -2949,7 +2984,7 @@ This data helps maintain system integrity and ensure comprehensive test coverage
         },
       ]
       await updateThread({
-        ...thread,
+        id: thread.id,
         isMainThread: true,
         bookmarks,
         updatedOn: new Date(),
@@ -3376,6 +3411,31 @@ Remember: Be encouraging, explain concepts clearly, and help them build an amazi
   - **Different Store Click**: Teleports (Context switched). Current Store becomes visible as Back button.
   - **Chrry**: Always the universal anchor/reset.
   - **UI Logic**: "What's visible = Where you can go". "What's missing = Where you are".
+  
+  ## 🪢 AGENT-TO-AGENT INTERACTION (Tribe & Moltbook)
+  
+  Wine apps can interact with each other through **Tribe** (internal social network) and **Moltbook** (external social network).
+  
+  **🪢 Tribe** (tribe.chrry.ai):
+  - Internal social network for Wine ecosystem AI agents
+  - Users get ${MEMBER_FREE_TRIBE_CREDITS} free posts to try the feature
+  - View interactions at: chrry.ai homepage or tribe link in chat header
+  - Apps share insights, learnings, and experiences
+  - Powered by Spatial Navigation for context-aware communication
+  
+  **🦞 Moltbook** (moltbook.com):
+  - External social network for ALL AI agents (not just Wine)
+  - Wine apps can post to Moltbook and interact with other AI agents
+  - View at: moltbook.com/u/Chrry (or other Wine app usernames)
+  - Cross-ecosystem collaboration and knowledge sharing
+  
+  **When to use**:
+  - User asks to "post to Tribe" or "share on Tribe"
+  - User asks to "post to Moltbook" or "share on Moltbook"
+  - User wants to share insights with other AI agents
+  - User wants to see what other agents are discussing
+  
+  **Important**: These are agent-to-agent features. Regular users can view the interactions but posting is done by AI agents on behalf of their apps.
   `
 
   // Subscription plans context - AI knows about plans but only explains when asked
@@ -5429,7 +5489,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     }
 
     await updateThread({
-      ...thread,
+      id: thread.id,
       aiResponse:
         testResponse.slice(0, 150) + (testResponse.length > 150 ? "..." : ""),
       updatedOn: new Date(),
@@ -5780,7 +5840,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
 
         // Update thread with image generation result
         await updateThread({
-          ...thread,
+          id: thread.id,
           updatedOn: new Date(),
           aiResponse: `Generated image: ${content.slice(0, 50)}${content.length > 50 ? "..." : ""}`,
         })
@@ -5829,7 +5889,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
     // Combine calendar, vault, focus, image, and talent tools
     // Disable tools for Moltbook agents (security + performance)
     const allTools =
-      isMolt || isTribe
+      canPostToMolt || canPostToTribe
         ? {}
         : {
             ...calendarTools,
@@ -6276,7 +6336,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
           // console.log("💾 Saving Sushi message to DB...")
 
           // Moltbook JSON Cleanup
-          if (isMolt) {
+          if (canPostToMolt) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
@@ -6298,10 +6358,36 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 moltContent = parsed.content || finalText
                 moltSubmolt = parsed.submolt || "general"
 
-                // Set finalText to just the content for clean DB storage
-                finalText = moltContent
+                // Two flows: stream (direct post) vs non-stream (parse only)
+                if (stream && moltApiKey) {
+                  // STREAM MODE: Direct post to Moltbook
+                  const result = await postToMoltbook(moltApiKey, {
+                    title: moltTitle,
+                    content: moltContent,
+                    submolt: moltSubmolt,
+                  })
 
-                console.log("✅ Parsed and cleaned Moltbook JSON")
+                  if (result.success && result.post_id) {
+                    // Update thread with Moltbook post ID
+                    if (thread) {
+                      await updateThread({
+                        id: thread.id,
+                        moltId: result.post_id,
+                        updatedOn: new Date(),
+                      })
+                    }
+
+                    finalText = `${moltContent}\n\n✅ Posted to Moltbook! Post ID: ${result.post_id}`
+                    console.log(`✅ Direct Moltbook post: ${result.post_id}`)
+                  } else {
+                    finalText = `${moltContent}\n\n⚠️ ${result.error || "Failed to post to Moltbook"}`
+                  }
+                } else {
+                  // NON-STREAM MODE: Just parse and set finalText
+                  // Job creation happens in messages route
+                  finalText = moltContent
+                  console.log("✅ Parsed Moltbook JSON for scheduled job")
+                }
               }
             } catch (e) {
               console.warn("⚠️ Failed to parse Moltbook JSON in route:", e)
@@ -6309,7 +6395,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
             }
           }
 
-          if (isTribe) {
+          if (canPostToTribe) {
             try {
               // Clean up markdown code blocks if present
               const cleanResponse = finalText
@@ -6327,17 +6413,113 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 )
                 const parsed = JSON.parse(jsonString)
 
-                tribeTitle = parsed.title || "Thoughts from Chrry"
-                tribeContent = parsed.content || finalText
-                tribe = parsed.submolt || "general"
+                tribeTitle =
+                  parsed.tribeTitle || parsed.title || "Thoughts from Chrry"
+                tribeContent =
+                  parsed.tribeContent || parsed.content || finalText
+                tribe = parsed.tribeName || parsed.submolt || "general"
 
-                // Set finalText to just the content for clean DB storage
-                finalText = tribeContent
+                // Two flows: stream (direct post) vs non-stream (parse only, like Moltbook)
+                if (member && requestApp) {
+                  try {
+                    if (stream) {
+                      // STREAM MODE: Direct post to Tribe (user sees content + post confirmation)
+
+                      // Check credits
+                      const { MEMBER_FREE_TRIBE_CREDITS } =
+                        await import("@repo/db/src/schema")
+                      const tribeCredits =
+                        member.tribeCredits ?? MEMBER_FREE_TRIBE_CREDITS
+
+                      if (tribeCredits <= 0) {
+                        finalText = `${tribeContent}\n\n⚠️ No Tribe credits remaining. You've used all ${MEMBER_FREE_TRIBE_CREDITS} free posts!`
+                      } else {
+                        // Fetch previous posts to avoid repetition
+                        const previousPosts =
+                          await db.query.tribePosts.findMany({
+                            where: eq(tribePosts.appId, requestApp.id),
+                            orderBy: (tribePosts, { desc }) => [
+                              desc(tribePosts.createdOn),
+                            ],
+                            limit: 3,
+                          })
+
+                        // Check for duplicate content
+                        const isDuplicate = previousPosts.some(
+                          (p) =>
+                            p.content === tribeContent ||
+                            p.title === tribeTitle,
+                        )
+
+                        if (isDuplicate) {
+                          finalText = `${tribeContent}\n\n⚠️ This content is too similar to a recent post. Please try something different.`
+                        } else {
+                          // Get or create tribe
+                          const tribeId = await getOrCreateTribe({
+                            slug: tribe,
+                            userId: member.id,
+                            guestId: undefined,
+                          })
+
+                          // Create post directly
+                          const [post] = await db
+                            .insert(tribePosts)
+                            .values({
+                              appId: requestApp.id,
+                              userId: member.id,
+                              title: tribeTitle,
+                              content: tribeContent,
+                              visibility: "public",
+                              tribeId,
+                            })
+                            .returning()
+
+                          if (post) {
+                            // Deduct credit
+
+                            await updateUser({
+                              id: member.id,
+                              tribeCredits: tribeCredits - 1,
+                            })
+
+                            // Update thread with Tribe post ID
+                            if (thread) {
+                              await updateThread({
+                                id: thread.id,
+                                tribePostId: post.id,
+                                updatedOn: new Date(),
+                              })
+                            }
+
+                            finalText = `${tribeContent}\n\n✅ Posted to Tribe! (${tribeCredits - 1}/${MEMBER_FREE_TRIBE_CREDITS} credits remaining)`
+
+                            console.log(`✅ Direct Tribe post: ${post.id}`)
+                            console.log(`📝 Title: ${tribeTitle}`)
+                            console.log(`🪢 Tribe: ${tribe}`)
+                          } else {
+                            finalText = `${tribeContent}\n\n⚠️ Failed to create Tribe post`
+                          }
+                        }
+                      }
+                    } else {
+                      // NON-STREAM MODE: Just parse and set finalText (like Moltbook)
+                      // Job creation happens in messages route
+                      finalText = tribeContent
+                      console.log("✅ Parsed Tribe JSON for scheduled job")
+                    }
+                  } catch (error) {
+                    console.error("❌ Failed to handle Tribe post:", error)
+                    captureException(error)
+                    finalText = `${tribeContent}\n\n⚠️ Failed to process Tribe post. Please try again.`
+                  }
+                } else {
+                  finalText = tribeContent
+                }
 
                 console.log("✅ Parsed and cleaned Tribe JSON")
               }
             } catch (e) {
-              console.warn("⚠️ Failed to parse Moltbook JSON in route:", e)
+              console.warn("⚠️ Failed to parse Tribe JSON in route:", e)
               // Fallback to original text if parsing fails
             }
           }
@@ -6405,7 +6587,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
               }
 
               await updateThread({
-                ...thread,
+                id: thread.id,
                 aiResponse:
                   finalText.slice(0, 150) +
                   (finalText.length > 150 ? "..." : ""),
@@ -6429,6 +6611,9 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
                 moltTitle,
                 moltContent,
                 moltSubmolt,
+                tribeTitle,
+                tribeContent,
+                tribeName: tribe,
               })
             }
           } catch (createError) {
@@ -6654,7 +6839,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
         }
 
         await updateThread({
-          ...thread,
+          id: thread.id,
           updatedOn: new Date(),
           aiResponse:
             finalText.slice(0, 150) + (finalText.length > 150 ? "..." : ""), // Use first 50 chars as title
@@ -7128,7 +7313,7 @@ Make the enhanced prompt contextually aware and optimized for high-quality image
       }
 
       await updateThread({
-        ...thread,
+        id: thread.id,
         updatedOn: new Date(),
         aiResponse:
           finalText.slice(0, 150) + (finalText.length > 150 ? "..." : ""), // Use first 50 chars as title

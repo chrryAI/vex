@@ -27,6 +27,7 @@ export const MAX_INSTRUCTIONS_CHAR_COUNT = 7500
 export const MAX_THREAD_TITLE_CHAR_COUNT = 100
 export const GUEST_TASKS_COUNT = 4
 export const MEMBER_TASKS_COUNT = 8
+export const MEMBER_FREE_TRIBE_CREDITS = 5
 
 export const PROMPT_LIMITS = {
   INPUT: 7000, // Max for direct input
@@ -55,6 +56,12 @@ export const users = pgTable(
     role: text("role", { enum: ["admin", "user"] })
       .notNull()
       .default("user"),
+    tribeCredits: integer("tribeCredits")
+      .notNull()
+      .default(MEMBER_FREE_TRIBE_CREDITS),
+    moltCredits: integer("moltCredits")
+      .notNull()
+      .default(MEMBER_FREE_TRIBE_CREDITS),
     theme: text("theme", { enum: ["light", "dark", "system"] })
       .notNull()
       .default("system"),
@@ -1063,42 +1070,53 @@ export const moltbookBlocks = pgTable(
 // TRIBE: In-house social network for user-created apps
 // ============================================
 
-export const tribes = pgTable("tribes", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  slug: text("slug").notNull().unique(),
-  name: text("name").notNull(),
-  description: text("description"),
-  icon: text("icon"),
+export const tribes = pgTable(
+  "tribes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    slug: text("slug").notNull().unique(),
+    name: text("name").notNull(),
+    description: text("description"),
+    icon: text("icon"),
+    appId: uuid("appId").references(() => apps.id, {
+      onDelete: "cascade",
+    }),
+    // Membership & engagement
+    membersCount: integer("membersCount").notNull().default(0),
+    postsCount: integer("postsCount").notNull().default(0),
 
-  // Membership & engagement
-  membersCount: integer("membersCount").notNull().default(0),
-  postsCount: integer("postsCount").notNull().default(0),
+    // Settings
+    visibility: text("visibility", {
+      enum: ["public", "private", "restricted"],
+    })
+      .notNull()
+      .default("public"),
 
-  // Settings
-  visibility: text("visibility", {
-    enum: ["public", "private", "restricted"],
-  })
-    .notNull()
-    .default("public"),
+    // Moderation
+    moderatorIds: jsonb("moderatorIds").$type<string[]>().default([]),
+    rules: text("rules"),
 
-  // Moderation
-  moderatorIds: jsonb("moderatorIds").$type<string[]>().default([]),
-  rules: text("rules"),
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      color?: string
+      banner?: string
+      tags?: string[]
+    }>(),
 
-  // Metadata
-  metadata: jsonb("metadata").$type<{
-    color?: string
-    banner?: string
-    tags?: string[]
-  }>(),
-
-  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    searchIdx: index("tribes_search_idx").using(
+      "gin",
+      sql`to_tsvector('english', COALESCE(${table.name}, '') || ' ' || COALESCE(${table.description}, '') || ' ' || COALESCE(${table.slug}, ''))`,
+    ),
+  }),
+)
 
 export const tribeMemberships = pgTable(
   "tribeMemberships",
@@ -1110,6 +1128,9 @@ export const tribeMemberships = pgTable(
         onDelete: "cascade",
       }),
     userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
       onDelete: "cascade",
     }),
     guestId: uuid("guestId").references(() => guests.id, {
@@ -1141,118 +1162,143 @@ export const tribeMemberships = pgTable(
   }),
 )
 
-export const tribePosts = pgTable("tribePosts", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  appId: uuid("appId")
-    .notNull()
-    .references(() => apps.id, {
+export const tribePosts = pgTable(
+  "tribePosts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    appId: uuid("appId")
+      .notNull()
+      .references(() => apps.id, {
+        onDelete: "cascade",
+      }),
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "set null",
+    }),
+    content: text("content").notNull(),
+    title: text("title"),
+    visibility: text("visibility", {
+      enum: ["public", "followers", "private"],
+    })
+      .notNull()
+      .default("public"),
+
+    // Media attachments
+    images: jsonb("images").$type<
+      {
+        url: string
+        width?: number
+        height?: number
+        alt?: string
+      }[]
+    >(),
+    videos: jsonb("videos").$type<
+      {
+        url: string
+        thumbnail?: string
+        duration?: number
+      }[]
+    >(),
+
+    // Engagement metrics
+    likesCount: integer("likesCount").notNull().default(0),
+    commentsCount: integer("commentsCount").notNull().default(0),
+    sharesCount: integer("sharesCount").notNull().default(0),
+    viewsCount: integer("viewsCount").notNull().default(0),
+
+    // Tribe-specific
+    tribeId: uuid("tribeId").references(() => tribes.id, {
+      onDelete: "set null",
+    }),
+    tags: jsonb("tags").$type<string[]>().default([]),
+    isPinned: boolean("isPinned").notNull().default(false),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      editHistory?: { content: string; editedAt: string }[]
+      replyToPostId?: string
+      quotedPostId?: string
+      location?: string
+    }>(),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    searchIdx: index("tribePosts_search_idx").using(
+      "gin",
+      sql`to_tsvector('english', COALESCE(${table.title}, '') || ' ' || COALESCE(${table.content}, ''))`,
+    ),
+  }),
+)
+
+export const tribeComments = pgTable(
+  "tribeComments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    postId: uuid("postId")
+      .notNull()
+      .references(() => tribePosts.id, {
+        onDelete: "cascade",
+      }),
+    userId: uuid("userId").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    guestId: uuid("guestId").references(() => guests.id, {
+      onDelete: "set null",
+    }),
+    content: text("content").notNull(),
+
+    // Nested comments (replies)
+    parentCommentId: uuid("parentCommentId").references(
+      (): AnyPgColumn => tribeComments.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
+
+    appId: uuid("appId").references(() => apps.id, {
       onDelete: "cascade",
     }),
-  userId: uuid("userId").references(() => users.id, {
-    onDelete: "set null",
+
+    // Engagement
+    likesCount: integer("likesCount").notNull().default(0),
+
+    // Metadata
+    metadata: jsonb("metadata").$type<{
+      editHistory?: { content: string; editedAt: string }[]
+      mentions?: string[]
+    }>(),
+
+    createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    searchIdx: index("tribeComments_search_idx").using(
+      "gin",
+      sql`to_tsvector('english', COALESCE(${table.content}, ''))`,
+    ),
   }),
-  guestId: uuid("guestId").references(() => guests.id, {
-    onDelete: "set null",
-  }),
-  content: text("content").notNull(),
-  title: text("title"),
-  visibility: text("visibility", {
-    enum: ["public", "followers", "private"],
-  })
-    .notNull()
-    .default("public"),
-
-  // Media attachments
-  images: jsonb("images").$type<
-    {
-      url: string
-      width?: number
-      height?: number
-      alt?: string
-    }[]
-  >(),
-  videos: jsonb("videos").$type<
-    {
-      url: string
-      thumbnail?: string
-      duration?: number
-    }[]
-  >(),
-
-  // Engagement metrics
-  likesCount: integer("likesCount").notNull().default(0),
-  commentsCount: integer("commentsCount").notNull().default(0),
-  sharesCount: integer("sharesCount").notNull().default(0),
-  viewsCount: integer("viewsCount").notNull().default(0),
-
-  // Tribe-specific
-  tribeId: uuid("tribeId").references(() => tribes.id, {
-    onDelete: "set null",
-  }),
-  tags: jsonb("tags").$type<string[]>().default([]),
-  isPinned: boolean("isPinned").notNull().default(false),
-
-  // Metadata
-  metadata: jsonb("metadata").$type<{
-    editHistory?: { content: string; editedAt: string }[]
-    replyToPostId?: string
-    quotedPostId?: string
-    location?: string
-  }>(),
-
-  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
-
-export const tribeComments = pgTable("tribeComments", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  postId: uuid("postId")
-    .notNull()
-    .references(() => tribePosts.id, {
-      onDelete: "cascade",
-    }),
-  userId: uuid("userId").references(() => users.id, {
-    onDelete: "set null",
-  }),
-  guestId: uuid("guestId").references(() => guests.id, {
-    onDelete: "set null",
-  }),
-  content: text("content").notNull(),
-
-  // Nested comments (replies)
-  parentCommentId: uuid("parentCommentId").references(
-    (): AnyPgColumn => tribeComments.id,
-    {
-      onDelete: "cascade",
-    },
-  ),
-
-  // Engagement
-  likesCount: integer("likesCount").notNull().default(0),
-
-  // Metadata
-  metadata: jsonb("metadata").$type<{
-    editHistory?: { content: string; editedAt: string }[]
-    mentions?: string[]
-  }>(),
-
-  createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
+)
 
 export const tribeLikes = pgTable(
   "tribeLikes",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: uuid("userId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
       onDelete: "cascade",
     }),
     guestId: uuid("guestId").references(() => guests.id, {
@@ -1349,6 +1395,9 @@ export const tribeBlocks = pgTable(
       onDelete: "cascade",
     }),
     blockedUserId: uuid("blockedUserId").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    appId: uuid("appId").references(() => apps.id, {
       onDelete: "cascade",
     }),
 
@@ -2175,11 +2224,9 @@ export const characterProfiles = pgTable(
   "characterProfiles",
   {
     id: uuid("id").defaultRandom().notNull().primaryKey(),
-    agentId: uuid("agentId")
-      .references(() => aiAgents.id, {
-        onDelete: "cascade",
-      })
-      .notNull(),
+    agentId: uuid("agentId").references(() => aiAgents.id, {
+      onDelete: "cascade",
+    }),
     userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }),
     guestId: uuid("guestId").references(() => guests.id, {
       onDelete: "cascade",
@@ -2204,11 +2251,9 @@ export const characterProfiles = pgTable(
       }>()
       .notNull(),
 
-    threadId: uuid("threadId")
-      .references(() => threads.id, {
-        onDelete: "cascade",
-      })
-      .notNull(),
+    threadId: uuid("threadId").references(() => threads.id, {
+      onDelete: "cascade",
+    }),
 
     appId: uuid("appId").references(() => apps.id, { onDelete: "cascade" }),
     // Context and usage

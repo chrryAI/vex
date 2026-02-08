@@ -9,6 +9,7 @@ export type user = {
   isLinkedToApple?: boolean
   hasRefreshToken?: boolean
   id: string
+  tribeCredits: number
   adConsent?: boolean
   stripeConnectAccountId?: string
   stripeConnectOnboarded?: boolean
@@ -1087,6 +1088,198 @@ export type budgetCategory =
   | "education"
   | "travel"
   | "other"
+
+// Tribe types
+export type tribe = {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  icon: string | null
+  membersCount: number
+  postsCount: number
+  visibility: "public" | "private" | "restricted"
+  moderatorIds: string[]
+  rules: string | null
+  metadata: {
+    color?: string
+    banner?: string
+    tags?: string[]
+  } | null
+  createdOn: Date
+  updatedOn: Date
+}
+
+export type tribePost = {
+  id: string
+  content: string
+  title?: string | null
+  visibility: "public" | "private" | "tribe"
+  likesCount: number
+  commentsCount: number
+  sharesCount: number
+  createdOn: Date
+  updatedOn: Date
+  app: {
+    id: string
+    name: string
+    slug: string
+    icon: string
+  } | null
+  user: Partial<user> | null
+  guest: Partial<guest> | null
+  tribe: {
+    id: string
+    name: string
+    slug: string
+  } | null
+  likes?: {
+    id: string
+    createdOn: Date
+    user: {
+      id: string
+      name: string | null
+      userName: string | null
+      image: string | null
+    } | null
+    guest: {
+      id: string
+      name: string
+      image: string
+    } | null
+  }[]
+  comments?: {
+    id: string
+    content: string
+    likesCount: number
+    createdOn: Date
+    updatedOn: Date
+    user: Partial<user> | null
+    guest: Partial<guest> | null
+  }[]
+  reactions?: {
+    id: string
+    emoji: string
+    createdOn: Date
+    user: {
+      id: string
+      name: string | null
+      userName: string | null
+      image: string | null
+    } | null
+    guest: {
+      id: string
+      name: string
+      image: string
+    } | null
+  }[]
+  characterProfiles?: {
+    id: string
+    name: string
+    description: string | null
+    image: string | null
+    owner: boolean
+    agent: {
+      id: string
+      name: string
+      slug: string
+    } | null
+    app?: app
+  }[]
+}
+
+export type tribeComment = {
+  id: string
+  postId?: string
+  userId?: string | null
+  guestId?: string | null
+  content: string
+  parentCommentId?: string | null
+  likesCount: number
+  metadata?: Record<string, any> | null
+  createdOn: Date
+  updatedOn: Date
+  user?: Partial<user> | null
+  guest?: Partial<guest> | null
+}
+
+export type tribeLike = {
+  id: string
+  userId?: string | null
+  guestId?: string | null
+  postId?: string | null
+  commentId?: string | null
+  createdOn: Date
+  user?: {
+    id: string
+    name: string | null
+    userName: string | null
+    image: string | null
+  } | null
+  guest?: {
+    id: string
+    name: string
+    image: string
+  } | null
+}
+
+export type tribeReaction = {
+  id: string
+  userId?: string | null
+  guestId?: string | null
+  appId?: string | null
+  postId?: string | null
+  commentId?: string | null
+  emoji: string
+  createdOn: Date
+  user?: {
+    id: string
+    name: string | null
+    userName: string | null
+    image: string | null
+  } | null
+  guest?: {
+    id: string
+    name: string
+    image: string
+  } | null
+}
+
+export type tribeFollow = {
+  id: string
+  followerId: string | null
+  appId: string | null
+  followerGuestId: string | null
+  followingAppId: string
+  notifications: boolean
+  createdOn: Date
+}
+
+export type paginatedTribes = {
+  tribes: tribe[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}
+
+export type paginatedTribePosts = {
+  posts: tribePost[]
+  totalCount: number
+  hasNextPage: boolean
+  nextPage: number | null
+}
+
+export type tribePostWithDetails = tribePost & {
+  comments: tribeComment[]
+  reactions: tribeReaction[]
+  likes: tribeLike[]
+  stats: {
+    commentsCount: number
+    likesCount: number
+    sharesCount: number
+    reactionsCount: number
+  }
+}
 
 // Constants
 export const PLUS_CREDITS_PER_MONTH = 2000

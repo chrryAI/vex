@@ -23,22 +23,11 @@ import { useLocalStorage } from "./hooks"
 import Share from "./Share"
 import Bookmark from "./Bookmark"
 import Img from "./Image"
-import {
-  useAuth,
-  useChat,
-  useData,
-  useNavigationContext,
-} from "./context/providers"
+import { useAuth, useData, useNavigationContext } from "./context/providers"
 import { A, Button, Div, H2, P, Span, useTheme } from "./platform"
 import { useThreadsStyles } from "./Threads.styles"
 
-const Threads = ({
-  className,
-  ...rest
-}: {
-  className?: string
-  userName?: string
-}) => {
+const Threads = ({ className }: { className?: string; userName?: string }) => {
   const { t } = useAppContext()
 
   const {
@@ -49,11 +38,7 @@ const Threads = ({
     searchParams,
     collaborationStatus,
     setCollaborationStatus: setCollaborationStatusInternal,
-    slug,
-    userNameByUrl,
   } = useNavigationContext()
-
-  const { scrollToTop } = useChat()
 
   const { reduceMotion } = useTheme()
 
@@ -204,7 +189,7 @@ const Threads = ({
 
   return (
     <Skeleton>
-      <Div style={{ ...styles.threads.style }}>
+      <Div className={className} style={{ ...styles.threads.style }}>
         <H2 style={{ ...styles.threadsTitle.style }}>
           {profile?.image ? (
             <Img
@@ -457,7 +442,11 @@ const Threads = ({
                     }}
                     style={{ ...styles.loadMoreButton.style }}
                   >
-                    <LoaderCircle size={16} />
+                    {isLoadingThreads ? (
+                      <Loading size={16} />
+                    ) : (
+                      <LoaderCircle size={16} />
+                    )}
                     {t("Load more")}
                   </Button>
                 </Div>

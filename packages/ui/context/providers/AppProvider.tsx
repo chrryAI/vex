@@ -310,12 +310,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setIsAgentModalOpen = (value: boolean) => {
     setIsAgentModalOpenInternal(value)
     if (!value) {
-      removeParams(["settings", "tab"])
+      removeParams(["settings", "tab", "trial"])
     }
   }
 
   useEffect(() => {
     setIsAgentModalOpen(appStatus?.part === "settings")
+    appStatus?.part && auth.setShowTribe(false)
   }, [appStatus])
 
   useEffect(() => {
@@ -754,6 +755,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       | undefined,
   ) => {
     setMinimize(false)
+    auth.setShowTribe(false)
+    auth.setShowFocus(false)
     setAppStatusInternal(payload)
 
     plausible({
@@ -784,7 +787,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           id: undefined, // Explicitly clear id to prevent conflicts
         }
         appForm.reset(freshDefaults)
-        if ((threadId || currentStore) && chrry) {
+        if ((threadId || currentStore || pathname === "/tribe") && chrry) {
           push(auth.getAppSlug(chrry))
         }
       } else if (step === "restore") {

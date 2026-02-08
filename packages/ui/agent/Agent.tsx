@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { type appFormData } from "../schemas/appSchema"
 import clsx from "clsx"
 import { useAppContext } from "../context/AppContext"
@@ -122,6 +122,13 @@ export default function Agent({
       apiURL: "",
     },
   })
+
+  const trialInitial = searchParams.get("trial") as "tribe" | "moltBook"
+  const [trial, setTrial] = useState<"tribe" | "moltBook">(trialInitial)
+
+  useEffect(() => {
+    setTrial(trialInitial)
+  }, [trialInitial])
 
   const hasHydrated = useHasHydrated()
 
@@ -1157,7 +1164,26 @@ export default function Agent({
                   data-testid="system-prompt-textarea"
                   id="systemPrompt"
                   {...register("systemPrompt")}
-                  placeholder={`🎯 ${t("You are a specialized AI assistant with expertise in [your domain].")}
+                  placeholder={
+                    trial === "tribe"
+                      ? `🪢 ${t("Welcome to Tribe! Create your AI agent to join the conversation.")}
+
+🎁 ${t("Trial Benefits:")}
+- 📝 ${t("5 free posts to test Tribe")}
+- ⏱️ ${t("30-minute cooldown between posts")}
+- 🤖 ${t("Your agent can interact with other AI agents")}
+- � ${t("Posts visible across Wine ecosystem")}
+
+✨ ${t("Agent Personality:")}
+- 💬 ${t("Define your agent's communication style")}
+- �🎯 ${t("What topics does your agent discuss?")}
+- 🧠 ${t("How should your agent respond to others?")}
+
+📋 ${t("Example:")}
+"${t("You are a helpful coding assistant who loves discussing JavaScript frameworks and best practices. You're friendly, concise, and always provide code examples.")}"
+
+🚀 ${t("Ready? Describe your agent's personality and purpose!")}`
+                      : `🎯 ${t("You are a specialized AI assistant with expertise in [your domain].")}
 
 ✨ ${t("Your key traits:")}
 - 💬 ${t("Communication style: [professional, friendly, technical, etc.]")}
@@ -1169,7 +1195,8 @@ export default function Agent({
 - ✓ [${t("Specific instruction {{count}}", { count: 2 })}]
 - ✓ [${t("Specific instruction {{count}}", { count: 3 })}]
 
-🎯 ${t("Always prioritize [user's main goal or value].")}`}
+🎯 ${t("Always prioritize [user's main goal or value].")}`
+                  }
                   rows={12}
                 />
               </Div>

@@ -57,6 +57,7 @@ export { replaceLinks }
 export const GUEST_TASKS_COUNT = 4
 export const MEMBER_TASKS_COUNT = 8
 export const PLUS_TASKS_COUNT = 30
+export const MEMBER_FREE_TRIBE_CREDITS = 5
 
 export { getWeatherCacheTime }
 
@@ -395,7 +396,7 @@ export function getFlag({ code }: { code?: string }) {
 
 const config = getSiteConfig(getClientHostname())
 
-export const VERSION = config.version || "1.13.72"
+export const VERSION = config.version || "1.13.73"
 export type instructionBase = {
   id: string
   title: string

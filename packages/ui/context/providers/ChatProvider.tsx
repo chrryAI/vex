@@ -58,6 +58,8 @@ const ChatContext = createContext<
       placeHolderText: string | undefined
       setPlaceHolderText: (placeHolderText: string | undefined) => void
       isImageGenerationEnabled: boolean
+      setShowTribe: (show: boolean) => void
+      showTribe: boolean | undefined
       setIsImageGenerationEnabled: (
         value: boolean,
         forAgent?: aiAgent | null,
@@ -199,6 +201,7 @@ export function ChatProvider({
     showFocus,
     hourlyLimit,
     hourlyUsageLeft,
+    baseApp,
     ...auth
   } = useAuth()
 
@@ -223,14 +226,20 @@ export function ChatProvider({
 
   const isEmpty = !messages?.length
 
+  const { pathname, searchParams, addParams, removeParams, ...router } =
+    useNavigation()
+
+  const showTribe = auth.showTribe && isEmpty
+  console.log(`🚀 ~ ChatProvider ~ auth.showTribe:`, auth.showTribe)
+  console.log(`🚀 ~ ChatProvider ~ showTribe:`, showTribe)
+
+  const setShowTribe = auth.setShowTribe
+
   const { isExtension, isMobile, isTauri, isCapacitor } = usePlatform()
 
   const [shouldFetchThreads, setShouldFetchThreads] = useState(true)
 
   let userNameByUrl: string | undefined = undefined
-
-  const { pathname, searchParams, addParams, removeParams, ...router } =
-    useNavigation()
 
   const pathSegments = pathname.split("/").filter(Boolean)
 
@@ -428,6 +437,8 @@ export function ChatProvider({
     if (value) {
       setLiked(undefined)
       setShowFocus(false)
+      setShowTribe(false)
+
       setCollaborationStep(0)
       setThread(undefined)
       setProfile(undefined)
@@ -439,8 +450,6 @@ export function ChatProvider({
       setMessages([])
       threadIdRef.current = undefined
       router.push(to)
-      scrollToTop(100)
-
       refetchThreads()
     }
 
@@ -1268,6 +1277,8 @@ export function ChatProvider({
         userNameByUrl,
         shouldGetCredits,
         setShouldGetCredits,
+        showTribe,
+        setShowTribe,
       }}
     >
       {children}

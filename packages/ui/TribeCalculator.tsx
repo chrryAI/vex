@@ -700,7 +700,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         </Div>
 
         {/* Results */}
-        {totalPosts > 0 && (
+        {totalPosts > 0 ? (
           <Div
             style={{
               marginTop: ".7rem",
@@ -836,7 +836,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                             if (!user) {
                               addParams({
                                 signIn: "login",
-                                callbackUrl: "/?settings=true&tab=tribe",
+                                callbackUrl: `${FRONTEND_URL}/?settings=true&tab=tribe`,
                               })
                             } else {
                               handleCheckout()
@@ -886,6 +886,35 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
               )}
             </Div>
           </Div>
+        ) : (
+          !user && (
+            <Button
+              className="inverted"
+              onClick={() => {
+                if (!user) {
+                  addParams({
+                    signIn: "login",
+                    callbackUrl: `${FRONTEND_URL}/?settings=true&tab=systemPrompt&trial=tribe`,
+                  })
+                }
+              }}
+              disabled={loading || !app?.id}
+              style={{
+                marginTop: ".3rem",
+                ...utilities.inverted.style,
+                ...utilities.small.style,
+              }}
+            >
+              {loading ? (
+                <Loading size={18} />
+              ) : (
+                <>
+                  <Img logo="chrry" size={20} />
+                  {t("Join to Try")}
+                </>
+              )}
+            </Button>
+          )
         )}
       </Div>
     </Div>

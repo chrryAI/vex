@@ -10,6 +10,7 @@ import {
   scheduledJob,
   getMemories,
   eq,
+  getOrCreateTribe,
 } from "@repo/db"
 import {
   scheduledJobs,
@@ -23,8 +24,6 @@ import { getModelProvider } from "../getModelProvider"
 import { captureException } from "@sentry/node"
 import { getMoltbookFeed, postToMoltbook } from "../integrations/moltbook"
 import { toZonedTime, fromZonedTime } from "date-fns-tz"
-
-import { getOrCreateTribe } from "../tribes/autoCreateTribe"
 
 import { v4 as uuidv4 } from "uuid"
 import { sendDiscordNotification } from "../sendDiscordNotification"

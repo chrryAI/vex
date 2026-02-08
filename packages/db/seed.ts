@@ -50,6 +50,12 @@ import {
   realtimeAnalytics,
   expenses,
   moltQuestions,
+  tribeBlocks,
+  tribeComments,
+  tribeFollows,
+  tribePosts,
+  tribeLikes,
+  tribes,
 } from "./src/schema"
 
 import { createEvent } from "./createEvent"
@@ -272,6 +278,12 @@ const clearDb = async (): Promise<void> => {
   await db.delete(threadSummaries)
   await db.delete(sonarIssues)
   await db.delete(sonarMetrics)
+  await db.delete(tribeBlocks)
+  await db.delete(tribeComments)
+  await db.delete(tribeFollows)
+  await db.delete(tribePosts)
+  await db.delete(tribeLikes)
+  await db.delete(tribes)
 
   // Clear SonarCloud data from graph database
   await clearSonarCloudGraph()
@@ -1008,8 +1020,8 @@ const create = async () => {
     return
   }
 
-  await createRealisticUsers()
-  await createCharacterProfiles()
+  // await createRealisticUsers()
+  // await createCharacterProfiles()
 
   console.log("🌍 Creating cities...")
   await createCities()

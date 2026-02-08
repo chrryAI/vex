@@ -62,7 +62,7 @@ export default function Search({
     <Div style={{ ...styles.searchBoxWrapper.style, ...style }}>
       <SearchIcon style={{ ...styles.searchIcon.style }} />
       <Input
-        style={{ ...styles.search.style }}
+        style={{ ...styles.search.style, borderColor: style?.borderColor }}
         data-testid={dataTestId}
         type="search"
         placeholder={placeholder || "Search"}

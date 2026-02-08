@@ -342,6 +342,7 @@ export async function getApp({
   storeSlug?: string
   accountApp?: boolean
   skipCache?: boolean
+  chrryUrl
 }) {
   const startTime = Date.now()
   let resolutionPath = ""
@@ -367,7 +368,7 @@ export async function getApp({
 
   // 4. Get site config
   const chrryUrlParam = c.req.query("chrryUrl")
-  const chrryUrl = chrryUrlParam || getChrryUrl(request)
+  const chrryUrl = params.chrryUrl || chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
 
   // 5. Resolve app based on request type

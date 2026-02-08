@@ -1206,6 +1206,124 @@ export const getTranslations = async ({
   return data as Record<string, any>
 }
 
+// Tribe operations
+export const getTribes = async ({
+  pageSize,
+  page = 1,
+  token,
+  search,
+  onError,
+  API_URL = utils.API_URL,
+}: {
+  pageSize?: number
+  page?: number
+  token: string
+  search?: string
+  onError?: (status: number) => void
+  API_URL?: string
+}) => {
+  const url = new URL(`${API_URL}/tribe`)
+
+  if (pageSize) url.searchParams.set("pageSize", pageSize.toString())
+  if (page) url.searchParams.set("page", page.toString())
+  if (search) url.searchParams.set("search", search)
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    onError?.(response.status)
+    return null
+  }
+
+  return response.json()
+}
+
+export const getTribePosts = async ({
+  pageSize,
+  page = 1,
+  token,
+  search,
+  tribeId,
+  appId,
+  userId,
+  guestId,
+  characterProfileIds,
+  onError,
+  API_URL = utils.API_URL,
+}: {
+  pageSize?: number
+  page?: number
+  token: string
+  search?: string
+  tribeId?: string
+  appId?: string
+  userId?: string
+  guestId?: string
+  characterProfileIds?: string[]
+  onError?: (status: number) => void
+  API_URL?: string
+}) => {
+  const url = new URL(`${API_URL}/tribe/p`)
+
+  if (pageSize) url.searchParams.set("pageSize", pageSize.toString())
+  if (page) url.searchParams.set("page", page.toString())
+  if (search) url.searchParams.set("search", search)
+  if (tribeId) url.searchParams.set("tribeId", tribeId)
+  if (appId) url.searchParams.set("appId", appId)
+  if (userId) url.searchParams.set("userId", userId)
+  if (guestId) url.searchParams.set("guestId", guestId)
+  if (characterProfileIds && characterProfileIds.length > 0)
+    url.searchParams.set("characterProfileIds", characterProfileIds.join(","))
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    onError?.(response.status)
+    return null
+  }
+
+  return response.json()
+}
+
+export const getTribePost = async ({
+  id,
+  token,
+  onError,
+  API_URL = utils.API_URL,
+}: {
+  id: string
+  token: string
+  onError?: (status: number) => void
+  API_URL?: string
+}) => {
+  const response = await fetch(`${API_URL}/tribe/p/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    onError?.(response.status)
+    return null
+  }
+
+  return response.json()
+}
+
 export const getActions = ({
   API_URL,
   token,
@@ -1336,5 +1454,28 @@ export const getActions = ({
       VERSION?: string
       app?: "extension" | "pwa" | "web"
     }) => getSession({ ...params, API_URL, token }),
+
+    // Tribe operations
+    getTribes: (params?: {
+      pageSize?: number
+      page?: number
+      search?: string
+      onError?: (status: number) => void
+    }) => getTribes({ token, ...params, API_URL }),
+    getTribePosts: (params?: {
+      pageSize?: number
+      page?: number
+      search?: string
+      tribeId?: string
+      appId?: string
+      userId?: string
+      guestId?: string
+      characterProfileIds?: string[]
+      onError?: (status: number) => void
+    }) => getTribePosts({ token, ...params, API_URL }),
+    getTribePost: (params: {
+      id: string
+      onError?: (status: number) => void
+    }) => getTribePost({ token, ...params, API_URL }),
   }
 }
