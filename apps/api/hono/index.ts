@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import { compress } from "@hono/bun-compress"
 import { headersMiddleware } from "./middleware/headers"
 import { corsMiddleware } from "./middleware/cors"
+import { securityHeadersMiddleware } from "./middleware/securityHeaders"
 import { csrfMiddleware } from "./middleware/csrf"
 import { apiAnalyticsMiddleware } from "./middleware/analytics"
 import { session } from "./routes/session"
@@ -104,6 +105,9 @@ app.onError((err, c) => {
 
 // Apply custom CORS middleware (matching Next.js middleware)
 app.use("*", corsMiddleware)
+
+// Apply security headers middleware
+app.use("*", securityHeadersMiddleware)
 
 // Apply CSRF protection middleware (verifies Origin for state-changing requests)
 app.use("*", csrfMiddleware)
