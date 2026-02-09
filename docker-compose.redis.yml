@@ -5,15 +5,22 @@ services:
     image: redis:7.2
     container_name: vex-redis-waffles
     ports:
-      - "6381:6379"  # Waffles local DB (production data)
+      - "127.0.0.1:6381:6379"  # Bind to localhost only for security
     volumes:
       - ./redis_waffles_data:/data
     restart: unless-stopped
-    command: redis-server --appendonly no --save 60 1000
+    # Enable authentication - set REDIS_PASSWORD in .env file
+    command: >
+      sh -c "redis-server 
+      --appendonly no 
+      --save 60 1000 
+      --requirepass $${REDIS_PASSWORD:-changeme}"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
     networks:
       - vex-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
