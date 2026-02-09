@@ -1277,13 +1277,17 @@ app.post("/", async (c) => {
     ? await tracker.track("get_app", () =>
         getApp({
           id: rest.appId,
-          depth: 0,
+          depth: 1,
           userId: member?.id,
           guestId: guest?.id,
           skipCache: true,
         }),
       )
     : undefined
+
+  const appExtends = requestApp
+    ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
+    : []
   const isMolt = thread?.isMolt || message?.thread?.isMolt
   const isTribe = !!(thread?.isTribe || message.message?.isTribe)
   const canPostToTribe =
@@ -1396,12 +1400,6 @@ app.post("/", async (c) => {
     canSubmit?: boolean
   }
 
-  const appExtends = requestApp
-    ? await tracker.track("get_app_extends", () =>
-        getAppExtends({ appId: requestApp!.id, isSafe: false }),
-      )
-    : []
-
   // Build inheritance context from parent apps
   // Build inheritance context from parent apps
   const inheritanceContext = await tracker.track(
@@ -1411,9 +1409,7 @@ app.post("/", async (c) => {
 
       const parentAppsContent = await Promise.all(
         appExtends.map(async (a, index) => {
-          const parentApp = await getApp({
-            id: a.id,
-          })
+          const parentApp = a
 
           if (!parentApp) {
             return ""
@@ -1459,9 +1455,7 @@ ${parentAppsContent.join("\n")}
   )
 
   // Check if Focus is in the inheritance chain
-  const hasFocusInheritance = appExtends.some(
-    (a) => a.slug === "focus" || a.name?.toLowerCase().includes("focus"),
-  )
+  const hasFocusInheritance = appExtends.some((a) => a.slug === "focus")
 
   // Add timer tool forcing instructions if Focus is inherited
   const timerToolInstructions = hasFocusInheritance
@@ -1621,7 +1615,7 @@ ${
         relevanceScore: m.relevanceScore || 0,
       })) || []
 
-    // Recursively get parent apps knowledge if extend exists (array of parent IDs)
+    // Recursively get parent apps knowledge from store.apps (not extend placeholder)
     const parentKnowledge = {
       messages: {
         messages: [],
@@ -1635,14 +1629,15 @@ ${
       task: undefined as typeof task,
     }
 
-    if (
-      currentApp.extend &&
-      Array.isArray(currentApp.extend) &&
-      currentApp.extend.length > 0
-    ) {
+    // Get parent apps from store (filter out current app)
+    const parentApps =
+      "store" in currentApp && currentApp.store?.apps
+        ? currentApp.store.apps.filter((a) => a.id !== currentApp.id)
+        : []
+
+    if (parentApps.length > 0) {
       // Get knowledge from all parent apps (up to 5 total in chain)
-      for (const parentId of currentApp.extend.slice(0, 5 - depth)) {
-        const parentApp = await getPureApp({ id: parentId })
+      for (const parentApp of parentApps.slice(0, 5 - depth)) {
         if (parentApp) {
           const parentData = await buildAppKnowledgeBase(parentApp, depth + 1)
           parentKnowledge.messages.messages.push(
