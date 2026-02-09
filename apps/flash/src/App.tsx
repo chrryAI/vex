@@ -1,12 +1,13 @@
 import "@chrryai/chrry/globals.scss"
-import "@chrryai/chrry/globals.scss"
 import "@chrryai/chrry/styles/view-transitions.css"
 import Chrry from "chrry/Chrry"
 import { ServerData } from "./server-loader"
-import BlogList from "./components/BlogList"
-import BlogPost from "./components/BlogPost"
 import Skeleton from "chrry/Skeleton"
-import { useEffect } from "react"
+import { lazy, Suspense } from "react"
+
+// Lazy load blog components to reduce initial bundle size
+const BlogList = lazy(() => import("./components/BlogList"))
+const BlogPost = lazy(() => import("./components/BlogPost"))
 
 interface AppProps {
   serverData?: ServerData
@@ -80,14 +81,19 @@ function App({ serverData }: AppProps) {
       >
         {serverData?.isBlogRoute ? (
           <Skeleton>
-            {serverData.blogPosts ? (
-              <BlogList
-                posts={serverData.blogPosts}
-                locale={serverData.locale}
-              />
-            ) : serverData?.isBlogRoute && serverData.blogPost ? (
-              <BlogPost post={serverData.blogPost} locale={serverData.locale} />
-            ) : null}
+            <Suspense fallback={null}>
+              {serverData.blogPosts ? (
+                <BlogList
+                  posts={serverData.blogPosts}
+                  locale={serverData.locale}
+                />
+              ) : serverData?.isBlogRoute && serverData.blogPost ? (
+                <BlogPost
+                  post={serverData.blogPost}
+                  locale={serverData.locale}
+                />
+              ) : null}
+            </Suspense>
           </Skeleton>
         ) : null}
       </Chrry>
