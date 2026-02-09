@@ -535,6 +535,10 @@ export default function Subscribe({
     }
   }, [is])
 
+  // Get initial plan from URL or props (needed for sushiTier initialization)
+  const selectedPlanInitial = (searchParams.get("plan") ??
+    props.selectedPlan) as selectedPlanType
+
   const [grapeTier, setGrapeTierInternal] = useState<"free" | "plus" | "pro">(
     (searchParams.get("grapeTier") as "free" | "plus" | "pro") ?? "free",
   )
@@ -625,8 +629,6 @@ export default function Subscribe({
     return plan
   }
 
-  const selectedPlanInitial = (searchParams.get("plan") ??
-    props.selectedPlan) as selectedPlanType
   const normalizedPlan = normalizePlanAlias(selectedPlanInitial)
   const selectedPlanInternal = selectedPlans.includes(normalizedPlan)
     ? normalizedPlan
