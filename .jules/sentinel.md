@@ -36,3 +36,17 @@
   2. Checks the IP against RFC1918 (10.x, 172.16-31.x, 192.168.x) and reserved ranges (127.x, 169.254.x).
   3. Rejects the request if the IP is private (unless in `development` mode).
 - Apply this validation _before_ fetching any user-provided URL.
+
+## 2025-05-23 - OAuth State Parameter Validation
+
+**Vulnerability:** The Google OAuth flow was generating a `state` parameter but failed to verify it upon callback, exposing the application to Login CSRF attacks. An attacker could potentially log a victim into the attacker's account.
+
+**Learning:** Generating a `state` parameter is insufficient if it is not cryptographically bound to the user's session (e.g., via a secure cookie) and verified upon return.
+
+**Prevention:** Always implement the `state` parameter check in OAuth flows:
+1. Generate a random state.
+2. Store it in a secure, HttpOnly, SameSite cookie.
+3. Pass it to the OAuth provider.
+4. On callback, compare the returned `state` with the cookie value.
+5. Reject if they don't match.
+6. Clear the cookie after verification.
