@@ -302,13 +302,6 @@ export default function Subscribe({
     // Stripe session IDs should be exactly 66 characters (cs_test_...)
     const cleaned = sessionId?.split("?")?.[0]?.trim() || ""
 
-    console.log(" cleanSessionId:", {
-      original: sessionId,
-      cleaned,
-      originalLength: sessionId.length,
-      cleanedLength: cleaned.length,
-    })
-
     return cleaned
   }
 
