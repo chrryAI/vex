@@ -61,7 +61,8 @@ codebase.post("/query", async (c) => {
   }
 
   // Check daily rate limit
-  const dailyLimit = DAILY_LIMITS[member.sushiTier as keyof typeof DAILY_LIMITS] || 0
+  const dailyLimit =
+    DAILY_LIMITS[member.sushiTier as keyof typeof DAILY_LIMITS] || 0
 
   if (dailyLimit > 0) {
     const todayStart = startOfDay(new Date())
@@ -71,7 +72,9 @@ codebase.post("/query", async (c) => {
       .from(codebaseQueries)
       .where(
         and(
-          userId ? eq(codebaseQueries.userId, userId) : eq(codebaseQueries.guestId, guestId!),
+          userId
+            ? eq(codebaseQueries.userId, userId)
+            : eq(codebaseQueries.guestId, guestId!),
           gte(codebaseQueries.createdAt, todayStart),
         ),
       )
@@ -84,7 +87,9 @@ codebase.post("/query", async (c) => {
           error: "Daily codebase query limit reached",
           limit: dailyLimit,
           usage: todayUsage,
-          resetAt: new Date(todayStart.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+          resetAt: new Date(
+            todayStart.getTime() + 24 * 60 * 60 * 1000,
+          ).toISOString(),
         },
         429,
       )
@@ -103,7 +108,8 @@ codebase.post("/query", async (c) => {
 
     if (context.codeChunks.length === 0) {
       return c.json({
-        response: "I couldn't find any relevant code for your query. Try rephrasing or being more specific.",
+        response:
+          "I couldn't find any relevant code for your query. Try rephrasing or being more specific.",
         sources: [],
       })
     }
@@ -166,7 +172,8 @@ Explain how this code works, referencing specific files, functions, and line num
     const responseTime = Date.now() - startTime
 
     // Step 4: Log query for rate limiting and cost tracking
-    const tokensUsed = (usage?.promptTokens || 0) + (usage?.completionTokens || 0)
+    const tokensUsed =
+      (usage?.promptTokens || 0) + (usage?.completionTokens || 0)
     const costUSD = (tokensUsed / 1_000_000) * 0.02 // Rough estimate
 
     await db.insert(codebaseQueries).values({
@@ -224,7 +231,9 @@ codebase.get("/stats", async (c) => {
     .from(codebaseQueries)
     .where(
       and(
-        userId ? eq(codebaseQueries.userId, userId) : eq(codebaseQueries.guestId, guestId!),
+        userId
+          ? eq(codebaseQueries.userId, userId)
+          : eq(codebaseQueries.guestId, guestId!),
         gte(codebaseQueries.createdAt, todayStart),
       ),
     )

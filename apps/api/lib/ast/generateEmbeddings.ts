@@ -148,15 +148,13 @@ export async function clearOldEmbeddings(
   )
 
   try {
-    const result = await db
-      .delete(codeEmbeddings)
-      .where(
-        and(
-          eq(codeEmbeddings.repoName, repoName),
-          // Delete embeddings from different commit hashes
-          // Note: Using sql`` for NOT EQUAL comparison
-        ),
-      )
+    const result = await db.delete(codeEmbeddings).where(
+      and(
+        eq(codeEmbeddings.repoName, repoName),
+        // Delete embeddings from different commit hashes
+        // Note: Using sql`` for NOT EQUAL comparison
+      ),
+    )
 
     console.log(`✅ Cleared old embeddings`)
   } catch (error) {
@@ -173,6 +171,9 @@ export function calculateEmbeddingCost(tokenCount: number): number {
 // Estimate tokens for code chunks
 export function estimateTokens(chunks: CodeChunk[]): number {
   // Rough estimate: ~4 characters per token
-  const totalChars = chunks.reduce((sum, chunk) => sum + chunk.content.length, 0)
+  const totalChars = chunks.reduce(
+    (sum, chunk) => sum + chunk.content.length,
+    0,
+  )
   return Math.ceil(totalChars / 4)
 }

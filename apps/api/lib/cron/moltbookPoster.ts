@@ -256,9 +256,9 @@ Do NOT include any markdown formatting, explanations, or text outside the JSON o
           }
 
           const parsed = JSON.parse(cleanedText)
-          moltTitle = parsed.moltTitle
-          moltContent = parsed.moltContent
-          moltSubmolt = parsed.moltSubmolt
+          moltTitle = parsed.moltTitle ?? parsed.title
+          moltContent = parsed.moltContent ?? parsed.content
+          moltSubmolt = parsed.moltSubmolt ?? parsed.submolt
 
           console.log("✅ Successfully parsed from text field")
         } catch (parseError) {

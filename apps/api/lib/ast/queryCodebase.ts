@@ -143,7 +143,9 @@ export async function searchCodePattern(
   const results = await db
     .select()
     .from(codeEmbeddings)
-    .where(sql`${sql.join(conditions, sql` AND `)} AND content ILIKE ${`%${pattern}%`}`)
+    .where(
+      sql`${sql.join(conditions, sql` AND `)} AND content ILIKE ${`%${pattern}%`}`,
+    )
     .limit(20)
 
   return results
