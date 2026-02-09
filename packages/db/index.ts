@@ -447,9 +447,10 @@ export function safeDecrypt(
   try {
     return decrypt(encryptedKey)
   } catch (error) {
-    // If decryption fails, assume it's a plain text key (for backward compatibility)
-    console.warn("⚠️ Failed to decrypt API key, using as-is:", error)
-    return encryptedKey
+    // Security: Return undefined instead of encrypted value to prevent key leakage
+    // If decryption fails, the key is invalid or corrupted - don't expose it
+    console.error("❌ Failed to decrypt API key - key may be corrupted:", error)
+    return undefined
   }
 }
 
