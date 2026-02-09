@@ -11,7 +11,7 @@ import {
 } from "@repo/db"
 import { getMember } from "../lib/auth"
 import captureException from "../../lib/captureException"
-import { tribeScheduleSchema } from "@chrryAI/chrry/schemas/tribeScheduleSchema"
+import { tribeScheduleSchema } from "@chrryai/chrry/schemas/tribeScheduleSchema"
 import { calculateCreditsFromDB } from "../../lib/scheduledJobs/creditCalculator"
 
 export const createTribeSchedule = new Hono()
