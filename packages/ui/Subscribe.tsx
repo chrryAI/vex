@@ -46,7 +46,7 @@ import { useSubscribeStyles } from "./Subscribe.styles"
 import { useStyles } from "./context/StylesContext"
 import { useHasHydrated } from "./hooks"
 
-export type selectedPlantype =
+export type selectedPlanType =
   | "plus"
   | "pro"
   | "member"
@@ -81,7 +81,7 @@ export default function Subscribe({
   onPaymentVerified?: (sessionId: string) => void | Promise<void> // Called after payment verification
   className?: string
   style?: React.CSSProperties
-  selectedPlan?: selectedPlantype
+  selectedPlan?: selectedPlanType
   isTribe?: boolean
   isMolt?: boolean
   cta?: string
@@ -608,7 +608,7 @@ export default function Subscribe({
     "tribe",
   ]
   const selectedPlanInitial = (searchParams.get("plan") ??
-    props.selectedPlan) as selectedPlantype
+    props.selectedPlan) as selectedPlanType
   const selectedPlanInternal = selectedPlans.includes(selectedPlanInitial)
     ? selectedPlanInitial
     : (user || guest)?.subscription?.plan || "plus"
@@ -616,21 +616,15 @@ export default function Subscribe({
   // ... (keeping other lines unchanged conceptually, but replace block needs contiguous)
 
   const [selectedPlan, setSelectedPlanInternal] =
-    useState<selectedPlantype>(selectedPlanInternal)
+    useState<selectedPlanType>(selectedPlanInternal)
 
-  const setSelectedPlan = (plan: selectedPlantype) => {
+  const setSelectedPlan = (plan: selectedPlanType) => {
     setSelectedPlanInternal(plan)
     updateURLParam("plan", plan)
     setAnimationKey((prev) => prev + 1)
   }
 
-  useEffect(() => {
-    if (selectedPlanInitial && selectedPlan !== selectedPlanInitial) {
-      setSelectedPlan(selectedPlanInitial)
-    }
-  }, [selectedPlanInitial, selectedPlan])
-
-  const renderChechout = () => {
+  const renderCheckout = () => {
     return (
       <Div style={{ ...styles.checkoutButtonContainer.style, marginTop: -3 }}>
         {selectedPlan !== "member" &&
@@ -1749,7 +1743,7 @@ export default function Subscribe({
             )
           )}
         </Div>
-        {renderChechout()}
+        {renderCheckout()}
         {isGifting ? (
           <Div style={{ ...styles.subscribeAsGuest.style }}>
             *
@@ -1818,7 +1812,7 @@ export default function Subscribe({
         )} */}
         </>
       ) : isMolt || isTribe ? (
-        <>{renderChechout()}</>
+        <>{renderCheckout()}</>
       ) : (
         <Button
           className="transparent"
