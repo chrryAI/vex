@@ -2073,5 +2073,7 @@
   "Image generation is enabled. Replicate API key is required for paid tiers": "Görüntü oluşturma etkin. Ücretli seviyeler için Replicate API anahtarı gereklidir",
   "Required or disable image generation": "Gerekli veya görüntü oluşturmayı devre dışı bırak",
   "Earn Credits": "Kredi Kazan",
-  "Thread not found": "Thread bulunamadı"
+  "Thread not found": "Thread bulunamadı",
+  "Bookmark thread": "Konuyu işaretle",
+  "Remove bookmark": "İşareti kaldır"
 }

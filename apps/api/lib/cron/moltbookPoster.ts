@@ -212,7 +212,6 @@ ${previousPostsContext}
     const data = await aiMessageResponse.json()
     const aiResponse = data
     if (!aiResponse) {
-      console.log("🚀 ~ generateMoltbookPost ~ data:", data)
       throw new Error("No AI response received")
     }
 
@@ -368,7 +367,6 @@ export async function postToMoltbookCron({
     console.log(`🦞 Generated Moltbook Post:`, post)
 
     const result = await postToMoltbook(MOLTBOOK_API_KEY, post)
-    console.log(`🚀 ~ result:`, result)
 
     // 3. Mark question as asked if used
     if (questionId) {

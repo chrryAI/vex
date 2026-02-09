@@ -5,9 +5,13 @@
  * Watches for changes in .module.scss files and regenerates .styles.ts
  */
 
-const fs = require("fs")
-const path = require("node:path")
-const { execSync } = require("child_process")
+import fs from "fs"
+import path from "path"
+import { execSync } from "child_process"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const WATCH_DIR = path.join(__dirname, "../packages/ui")
 const CONVERTER_SCRIPT = path.join(__dirname, "scss-to-universal.js")

@@ -14,7 +14,15 @@ if (typeof window !== "undefined") {
 
 import React from "react"
 import AppProviders from "./context/providers"
-import { session, thread, paginatedMessages, appWithStore } from "./types"
+import {
+  session,
+  thread,
+  paginatedMessages,
+  appWithStore,
+  paginatedTribes,
+  paginatedTribePosts,
+  tribePostWithDetails,
+} from "./types"
 import { locale } from "./locales"
 import { getSiteConfig } from "./utils/siteConfig"
 
@@ -34,6 +42,10 @@ export default function Chrry({
   pathname,
   siteConfig,
   searchParams,
+  tribes,
+  tribePosts,
+  tribePost,
+  isTribeRoute,
 }: {
   translations?: Record<string, any>
   useExtensionIcon?: (slug?: string) => void
@@ -56,6 +68,10 @@ export default function Chrry({
     threads: thread[]
     totalCount: number
   }
+  tribes?: paginatedTribes
+  tribePosts?: paginatedTribePosts
+  tribePost?: tribePostWithDetails
+  isTribeRoute?: boolean
   onSetLanguage?: (pathWithoutLocale: string, language: locale) => void
 }) {
   return (
@@ -74,6 +90,10 @@ export default function Chrry({
       translations={translations}
       threads={threads}
       searchParams={searchParams}
+      tribes={tribes}
+      tribePosts={tribePosts}
+      tribePost={tribePost}
+      isTribeRoute={isTribeRoute}
     >
       {children}
     </AppProviders>

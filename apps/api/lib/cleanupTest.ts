@@ -107,7 +107,7 @@ async function cleanup({ user, guest }: { user?: user; guest?: guest }) {
       } else {
         // Just remove bookmark, don't delete thread
         return updateThread({
-          ...thread,
+          id: thread.id,
           bookmarks:
             thread?.bookmarks?.filter((bookmark) =>
               user

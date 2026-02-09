@@ -2074,5 +2074,7 @@
   "Image generation is enabled. Replicate API key is required for paid tiers": "已启用图像生成。付费等级需要复制API密钥",
   "Required or disable image generation": "需要或禁用图像生成",
   "Earn Credits": "赚取积分",
-  "Thread not found": "找不到线程"
+  "Thread not found": "找不到线程",
+  "Bookmark thread": "标记线程",
+  "Remove bookmark": "移除书签"
 }

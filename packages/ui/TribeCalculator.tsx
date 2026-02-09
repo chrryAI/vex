@@ -9,17 +9,20 @@ import {
   Label,
   usePlatform,
   useLocalStorage,
+  Span,
 } from "./platform"
 import { useStyles } from "./context/StylesContext"
 import { useAgentStyles } from "./agent/Agent.styles"
 import { useApp } from "./context/providers"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useData, useNavigationContext } from "./context/providers"
-import { apiFetch, capitalizeFirstLetter } from "./utils"
+import { apiFetch, capitalizeFirstLetter, isOwner } from "./utils"
+import { estimateJobCredits, type ScheduleSlot } from "./utils/creditCalculator"
 
 import toast from "react-hot-toast"
 import Loading from "./Loading"
 import Img from "./Image"
+import ConfirmButton from "./ConfirmButton"
 import A from "./a/A"
 
 import {
@@ -31,14 +34,10 @@ import {
   Info,
 } from "./icons"
 import Select from "./Select"
+import Subscribe from "./Subscribe"
 
-interface ScheduleTime {
-  hour: number
-  minute: number
-  postType: "post" | "comment" | "engagement"
-  model: "sushi" | "claude" | "chatGPT" | "gemini" | "perplexity"
-  charLimit: number
-}
+// Use ScheduleSlot from creditCalculator for consistency
+type ScheduleTime = ScheduleSlot
 
 interface TribeCalculatorProps {
   onCalculate?: (result: {
@@ -47,10 +46,12 @@ interface TribeCalculatorProps {
     totalCredits: number
     schedule: ScheduleTime[]
   }) => void
+  tribeType?: "Moltbook" | "Tribe"
 }
 
 export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   onCalculate,
+  tribeType = "Tribe",
 }) => {
   const { t } = useAppContext()
   const agentStyles = useAgentStyles()
@@ -65,7 +66,27 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
     setAppStatus,
   } = useApp()
 
-  const { user, guest, token, language } = useAuth()
+  const {
+    user,
+    guest,
+    token,
+    language,
+    setSkipAppCacheTemp,
+    moltPlaceHolder,
+    setMoltPlaceHolder,
+    setApp,
+    accountApp,
+  } = useAuth()
+
+  const canUpdateInitial =
+    app &&
+    isOwner(app, {
+      userId: user?.id,
+    }) &&
+    app.moltApiKey
+
+  const [canUpdate, setCanUpdate] = useState(canUpdateInitial)
+
   const { API_URL, FRONTEND_URL, CREDITS_PRICE } = useData()
   const { searchParams, addParams } = useNavigationContext()
 
@@ -73,6 +94,8 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const [expandedInfoIndex, setExpandedInfoIndex] = useState<number | null>(
     null,
   )
+  const [moltApiKey, setMoltApiKey] = useState("")
+  const [savingApiKey, setSavingApiKey] = useState(false)
 
   const formatter = new Intl.NumberFormat(language)
   // Form state
@@ -118,96 +141,33 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
   const [totalCredits, setTotalCredits] = useState<number>(0)
   const [totalPrice, setTotalPrice] = useState<number>(0)
 
-  // Model pricing multipliers (matches creditCost from seed.ts)
-  const getModelMultiplier = (model: string) => {
-    switch (model) {
-      case "sushi":
-        return 2 // DeepSeek R1 - creditCost: 2
-      case "claude":
-        return 3 // Claude Sonnet 4.5 - creditCost: 3
-      case "chatGPT":
-        return 4 // GPT-5.1 - creditCost: 4
-      case "gemini":
-        return 4 // Gemini 3.0 Pro - creditCost: 4
-      case "perplexity":
-        return 3 // Perplexity Sonar Pro - creditCost: 3
-      default:
-        return 2
-    }
-  }
+  // Model and post type multipliers imported from creditCalculator
 
-  // Post type multipliers
-  const getPostTypeMultiplier = (postType: string) => {
-    switch (postType) {
-      case "post":
-        return 1
-      case "comment":
-        return 0.5
-      case "engagement":
-        return 0.3
-      default:
-        return 1
-    }
-  }
+  // Minimum price for Stripe (€5)
+  const MINIMUM_PRICE = 5
 
-  // Calculate credits and posts
+  // Calculate credits and posts using shared calculator
   useEffect(() => {
     if (!startDate || !endDate) return
 
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    const days = Math.ceil(
-      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-    )
-
-    if (days <= 0) return
-
-    let totalRuns = 0
-    if (frequency === "daily") {
-      totalRuns = days
-    } else if (frequency === "weekly") {
-      totalRuns = Math.floor(days / 7)
-    } else if (frequency === "monthly") {
-      totalRuns = Math.max(1, Math.floor(days / 30))
-    }
-
-    // Calculate total credits based on each slot's configuration
-    let totalCreditsSum = 0
-    let totalPostsCount = 0
-
-    scheduledTimes.forEach((slot) => {
-      const runsForThisSlot = totalRuns
-      totalPostsCount += runsForThisSlot
-
-      // Base credits: 10 + (charLimit / 100) * 5
-      const baseCredits = 10 + (slot.charLimit / 100) * 5
-      const modelMultiplier = getModelMultiplier(slot.model)
-      const postTypeMultiplier = getPostTypeMultiplier(slot.postType)
-
-      const creditsPerRun = Math.ceil(
-        baseCredits * modelMultiplier * postTypeMultiplier,
-      )
-      totalCreditsSum += creditsPerRun * runsForThisSlot
+    const result = estimateJobCredits({
+      frequency,
+      scheduledTimes,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      creditsPrice: parseFloat(String(CREDITS_PRICE || "10")),
     })
 
-    const avgCreditsPerPost =
-      totalPostsCount > 0 ? Math.ceil(totalCreditsSum / totalPostsCount) : 0
-
-    // Calculate EUR price based on credits (€10 per 1000 credits)
-    const priceInEur = Math.ceil(
-      (totalCreditsSum / 1000) * parseFloat(String(CREDITS_PRICE || "10")),
-    )
-
-    setTotalPosts(totalPostsCount)
-    setCreditsPerPost(avgCreditsPerPost)
-    setTotalCredits(totalCreditsSum)
-    setTotalPrice(priceInEur)
+    setTotalPosts(result.totalPosts)
+    setCreditsPerPost(result.creditsPerPost)
+    setTotalCredits(result.totalCredits)
+    setTotalPrice(result.totalPrice)
 
     if (onCalculate) {
       onCalculate({
-        totalPosts: totalPostsCount,
-        creditsPerPost: avgCreditsPerPost,
-        totalCredits: totalCreditsSum,
+        totalPosts: result.totalPosts,
+        creditsPerPost: result.creditsPerPost,
+        totalCredits: result.totalCredits,
         schedule: scheduledTimes,
       })
     }
@@ -253,8 +213,6 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: user?.id,
-          guestId: guest?.id,
           appId: app?.id,
           successUrl: checkoutSuccessUrl,
           cancelUrl: checkoutCancelUrl,
@@ -278,6 +236,41 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
       console.error("Checkout error:", err)
       toast.error(t("Failed to initiate checkout"))
       setLoading(false)
+    }
+  }
+
+  // Handle payment verification callback
+  const handlePaymentVerified = async (sessionId: string) => {
+    try {
+      const response = await apiFetch(`${API_URL}/createTribeSchedule`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          sessionId,
+          userId: user?.id,
+          guestId: guest?.id,
+          appId: app?.id,
+          schedule: scheduledTimes,
+          frequency,
+          startDate,
+          endDate,
+          totalCredits,
+          totalPrice,
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast.success(t("Tribe schedule created successfully! 🎉"))
+      } else {
+        toast.error(data.error || t("Failed to create Tribe schedule"))
+      }
+    } catch (err) {
+      console.error("Tribe schedule creation error:", err)
+      toast.error(t("Failed to create Tribe schedule"))
     }
   }
 
@@ -370,13 +363,23 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                 marginRight: ".4rem",
               }}
             >
-              <Img icon="zarathustra" size={16} />{" "}
-              <Text>{t("Tribe Post Schedular")}</Text>
+              {tribeType === "Tribe" ? (
+                <Img icon="zarathustra" size={16} />
+              ) : (
+                <Span style={{ fontSize: "1.2rem" }}>🦞</Span>
+              )}
+              <Text>
+                {t("{{tribeType}} Post Schedular", {
+                  tribeType,
+                })}
+              </Text>
               <A
+                target={tribeType === "Moltbook" ? "_blank" : undefined}
+                openInNewTab={tribeType === "Moltbook" ? true : undefined}
                 style={{
                   fontSize: ".8rem",
                 }}
-                href={"/tribe"}
+                href={tribeType === "Tribe" ? "/tribe" : "https://moltbook.com"}
               >
                 Visit
               </A>
@@ -415,6 +418,199 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
           </Div>
         </Div>
       </Div>
+      {tribeType === "Moltbook" &&
+        user &&
+        isOwner(app, {
+          userId: user?.id,
+        }) && (
+          <Div
+            style={{
+              ...utilities.column.style,
+              ...agentStyles.bordered.style,
+              marginTop: ".7rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: ".75rem",
+            }}
+          >
+            {/* Moltbook API Key */}
+            <Div
+              style={{
+                ...utilities.row.style,
+              }}
+            >
+              <Div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: ".5rem",
+                }}
+              >
+                🔑{" "}
+                <Text>
+                  {app?.moltApiKey
+                    ? t("Moltbook API Key configured")
+                    : t("Enter your Moltbook API key (AES encrypted)")}
+                </Text>
+              </Div>
+            </Div>
+
+            <Div
+              style={{
+                ...utilities.row.style,
+              }}
+            >
+              {canUpdate ? (
+                <Div
+                  style={{
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Button
+                    onClick={() => {
+                      setCanUpdate(false)
+                    }}
+                    style={{
+                      fontSize: ".9rem",
+                      padding: "5px 10px",
+                    }}
+                  >
+                    {t("Update API Key")}
+                  </Button>
+                  <ConfirmButton
+                    processing={savingApiKey}
+                    className="transparent"
+                    onConfirm={async () => {
+                      if (!app?.id) {
+                        toast.error(t("Please save your app first"))
+                        return
+                      }
+
+                      setSavingApiKey(true)
+                      try {
+                        const response = await apiFetch(
+                          `${API_URL}/apps/${app.id}/moltbook`,
+                          {
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            method: "DELETE",
+                          },
+                        )
+
+                        if (response.ok) {
+                          toast.success(t("API key deleted"))
+                          setMoltPlaceHolder(
+                            moltPlaceHolder.filter((p) => p !== app.id),
+                          )
+                          setApp({
+                            ...app,
+                            moltApiKey: "",
+                          })
+                          setCanUpdate(false)
+                        } else {
+                          toast.error(t("Failed to delete API key"))
+                        }
+                      } catch (error) {
+                        console.error("Error deleting API key:", error)
+                        toast.error(t("Failed to delete API key"))
+                      } finally {
+                        setSavingApiKey(false)
+                      }
+                    }}
+                    disabled={savingApiKey}
+                    style={{
+                      ...utilities.transparent.style,
+                      ...utilities.small.style,
+                    }}
+                  >
+                    {savingApiKey ? <Loading size={16} /> : t("Delete")}
+                  </ConfirmButton>
+                </Div>
+              ) : (
+                <Div
+                  style={{
+                    display: "flex",
+                    gap: ".5rem",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Input
+                    type="password"
+                    placeholder={t("Enter Moltbook API Key")}
+                    value={moltApiKey}
+                    onChange={(e) => setMoltApiKey(e.target.value)}
+                    style={{
+                      flex: 1,
+                    }}
+                  />
+                  <Button
+                    onClick={async () => {
+                      if (!moltApiKey.trim()) {
+                        toast.error(t("Please enter an API key"))
+                        return
+                      }
+                      if (!app?.id) {
+                        toast.error(t("Please save your app first"))
+                        return
+                      }
+
+                      setSavingApiKey(true)
+                      try {
+                        // Validate API key with Moltbook /me endpoint
+
+                        // Save to backend if validation succeeds
+                        const response = await apiFetch(
+                          `${API_URL}/apps/${app.id}/moltbook`,
+                          {
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            method: "PATCH",
+                            body: JSON.stringify({
+                              moltApiKey: moltApiKey.trim(),
+                            }),
+                          },
+                        )
+
+                        if (response.ok) {
+                          toast.success(t("API key saved securely"))
+                          setMoltApiKey("")
+                          setCanUpdate("true")
+                          setMoltPlaceHolder(moltPlaceHolder.concat(app.id))
+                          setApp({
+                            ...app,
+                            moltApiKey: "********",
+                          })
+                        } else {
+                          toast.error(t("Failed to save API key"))
+                        }
+                      } catch (error) {
+                        console.error("Error saving API key:", error)
+                        toast.error(t("Failed to validate or save API key"))
+                      } finally {
+                        setSavingApiKey(false)
+                      }
+                    }}
+                    disabled={savingApiKey || !moltApiKey.trim()}
+                    style={{
+                      fontSize: ".9rem",
+                      padding: "5px 10px",
+                    }}
+                  >
+                    {savingApiKey ? <Loading size={16} /> : t("Save")}
+                  </Button>
+                </Div>
+              )}
+            </Div>
+          </Div>
+        )}
 
       <Div
         style={{
@@ -731,23 +927,12 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
         </Div>
 
         {/* Results */}
-        {totalPosts > 0 && (
+        {totalPosts > 0 ? (
           <Div
             style={{
               marginTop: ".7rem",
             }}
           >
-            <Div
-              style={{
-                marginBottom: ".5rem",
-                display: "flex",
-                alignItems: "center",
-                gap: ".4rem",
-              }}
-            >
-              <Text style={{ fontSize: "1.1rem" }}>💰</Text>
-              {t("Estimated Cost")}
-            </Div>
             <Div
               style={{
                 display: "flex",
@@ -806,8 +991,7 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                   {formatter.format(totalCredits)}
                 </Text>
               </Div>
-
-              {totalCredits > 0 && (
+              {totalCredits > 0 ? (
                 <>
                   {!user && (
                     <Div
@@ -844,42 +1028,76 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                       alignItems: "center",
                     }}
                   >
-                    <Button
-                      className="inverted"
-                      onClick={() => {
-                        if (!user) {
-                          addParams({
-                            signIn: "login",
-                          })
-                        } else {
-                          handleCheckout()
-                        }
-                      }}
-                      disabled={loading || !app?.id}
-                      style={{
-                        marginTop: ".3rem",
-                        ...utilities.inverted.style,
-                        ...utilities.small.style,
-                      }}
-                    >
-                      {loading ? (
-                        <Loading size={18} />
+                    <>
+                      {user ? (
+                        !accountApp ? (
+                          <Div
+                            style={{
+                              marginTop: ".7rem",
+                              marginBottom: ".3rem",
+                            }}
+                          >
+                            🪢 Continue creating app to earn FREE Tribe credits.
+                            After creating your app you will earn 5 on demand
+                            Posts for free, then you can schedule posts using
+                            this credit calculator.
+                          </Div>
+                        ) : (
+                          <Subscribe
+                            selectedPlan="tribe"
+                            customPrice={totalPrice}
+                            onPaymentVerified={handlePaymentVerified}
+                            cta={t("Pay {{price}}", {
+                              price: new Intl.NumberFormat("en-US", {
+                                style: "currency",
+                                currency: "EUR",
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }).format(totalPrice),
+                            })}
+                            isTribe
+                          />
+                        )
                       ) : (
-                        <>
-                          <Img logo="chrry" size={20} />
-                          {t(user ? "Pay {{price}}" : "Join", {
-                            price: new Intl.NumberFormat("en-US", {
-                              style: "currency",
-                              currency: "EUR",
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }).format(totalPrice),
-                          })}
-                        </>
+                        <Button
+                          className="inverted"
+                          onClick={() => {
+                            if (!user) {
+                              addParams({
+                                signIn: "login",
+                                callbackUrl: `${FRONTEND_URL}/?settings=true&tab=tribe`,
+                              })
+                            } else {
+                              handleCheckout()
+                            }
+                          }}
+                          disabled={loading || !app?.id}
+                          style={{
+                            marginTop: ".3rem",
+                            ...utilities.inverted.style,
+                            ...utilities.small.style,
+                          }}
+                        >
+                          {loading ? (
+                            <Loading size={18} />
+                          ) : (
+                            <>
+                              <Img logo="chrry" size={20} />
+                              {t(user ? "Pay {{price}}" : "Join", {
+                                price: new Intl.NumberFormat("en-US", {
+                                  style: "currency",
+                                  currency: "EUR",
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                }).format(totalPrice),
+                              })}
+                            </>
+                          )}
+                        </Button>
                       )}
-                    </Button>
+                    </>
                   </Div>
-                  {!(user || guest)?.subscription && (
+                  {!(user || guest)?.subscription && accountApp && (
                     <Text
                       style={{
                         fontSize: ".8rem",
@@ -888,16 +1106,48 @@ export const TribeCalculator: React.FC<TribeCalculatorProps> = ({
                     >
                       🍓{" "}
                       {t(
-                        "Subscription is not required, but If you enjoy Tribe, it unlocks limits when you bring your own keys",
+                        "Subscription is not required, but If you enjoy Tribe, it unlocks limits when you bring your own keys. This also enables demand Posts",
                       )}{" "}
                       🫐
                     </Text>
                   )}
                 </>
-              )}
+              ) : null}
             </Div>
           </Div>
-        )}
+        ) : !user ? (
+          <Button
+            className="inverted"
+            onClick={() => {
+              if (!user) {
+                addParams({
+                  signIn: "login",
+                  callbackUrl: `${FRONTEND_URL}/?settings=true&tab=systemPrompt&trial=tribe`,
+                })
+              }
+            }}
+            disabled={loading || !app?.id}
+            style={{
+              marginTop: ".3rem",
+              ...utilities.inverted.style,
+              ...utilities.small.style,
+            }}
+          >
+            {loading ? (
+              <Loading size={18} />
+            ) : (
+              <>
+                <Img logo="chrry" size={20} />
+                {t("Join to Try")}
+              </>
+            )}
+          </Button>
+        ) : !accountApp ? (
+          <Div style={{ marginTop: ".7rem", marginBottom: ".3rem" }}>
+            🔑 Continue creating app to add your 🦞 Moltbook API key using
+            settings
+          </Div>
+        ) : null}
       </Div>
     </Div>
   )

@@ -16,13 +16,17 @@ import {
   updateGuest,
   getGuest,
   deleteGuest,
-  getTasks,
+  sonarIssues,
+  sonarMetrics,
   isProd,
   isCI,
   isSeedSafe,
+  isWaffles,
   user,
   updateApp,
 } from "./index"
+import { clearSonarCloudGraph } from "../../apps/api/lib/graph/sonarGraphSync"
+import { Redis } from "ioredis"
 import crypto from "crypto"
 import { eq, and, isNull, sql, inArray, lt } from "drizzle-orm"
 import {
@@ -47,6 +51,12 @@ import {
   realtimeAnalytics,
   expenses,
   moltQuestions,
+  tribeBlocks,
+  tribeComments,
+  tribeFollows,
+  tribePosts,
+  tribeLikes,
+  tribes,
 } from "./src/schema"
 
 import { createEvent } from "./createEvent"
@@ -249,6 +259,17 @@ const clearDb = async (): Promise<void> => {
     asked: false,
   })
 
+  await db.delete(tribeBlocks)
+  await db.delete(tribeComments)
+  await db.delete(tribeFollows)
+  await db.delete(tribePosts)
+  await db.delete(tribeLikes)
+  await db.delete(tribes)
+
+  if (isWaffles) {
+    return
+  }
+
   await db.delete(calendarEvents)
   // await db.delete(aiAgents)
   await db.delete(messages)
@@ -267,6 +288,24 @@ const clearDb = async (): Promise<void> => {
   await db.delete(cities)
   await db.delete(characterProfiles)
   await db.delete(threadSummaries)
+  await db.delete(sonarIssues)
+  await db.delete(sonarMetrics)
+
+  // Clear SonarCloud data from graph database
+  await clearSonarCloudGraph()
+
+  // Clear Redis telemetry streams
+  try {
+    const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379")
+    const streams = await redis.keys("telemetry{*}")
+    if (streams.length > 0) {
+      await redis.del(...streams)
+      console.log(`🧹 Cleared ${streams.length} telemetry streams from Redis`)
+    }
+    await redis.quit()
+  } catch (error) {
+    console.warn("⚠️ Failed to clear Redis telemetry streams:", error)
+  }
 }
 
 const VEX_TEST_EMAIL = process.env.VEX_TEST_EMAIL!
@@ -987,8 +1026,11 @@ const create = async () => {
     return
   }
 
-  await createRealisticUsers()
-  await createCharacterProfiles()
+  if (isWaffles) {
+    return
+  }
+  // await createRealisticUsers()
+  // await createCharacterProfiles()
 
   console.log("🌍 Creating cities...")
   await createCities()
@@ -1599,6 +1641,51 @@ const updateStoreUrls = async ({ user }: { user: user }) => {
       (app) => app?.chromeWebStoreUrl,
     ),
   )
+}
+
+const waffles = async () => {
+  let admin = await getUser({
+    email: isWaffles ? "ibsukru@gmail.com" : "test@gmail.com",
+  })
+  if (!admin) throw new Error("Admin user not found")
+
+  const { vex } = await createStores({ user: admin })
+
+  // await updateStoreUrls({ user: admin })
+
+  // Delete inactive bot guests in batches
+  // await clearGuests()
+  // const vex = await createStores({ user: admin, isProd: true })
+  // const allInstructions = await db.select().from(instructions)
+  // const seen = new Map<string, string>() // Map of unique key -> instruction ID
+  // const duplicateIds: string[] = []
+  // for (const instruction of allInstructions) {
+  //   // Create unique key based on userId/guestId + appId + title + content
+  //   const key = `${instruction.userId || ""}-${instruction.guestId || ""}-${instruction.appId || ""}-${instruction.title}-${instruction.content}`
+  //   if (
+  //     // instruction.title === "Plan afternoon trip under €1000 💰" &&
+  //     instruction.userId === admin.id
+  //   ) {
+  //     console.log("my in.", instruction)
+  //   }
+  //   // if (seen.has(key)) {
+  //   //   // This is a duplicate, mark for deletion
+  //   //   duplicateIds.push(instruction.id)
+  //   //   console.log(
+  //   //     `  ❌ Duplicate found: "${instruction.title}" (ID: ${instruction.id})`,
+  //   //   )
+  //   // } else {
+  //   //   seen.set(key, instruction.id)
+  //   // }
+  // }
+  // if (duplicateIds.length > 0) {
+  //   console.log(`🗑️  Removing ${duplicateIds.length} duplicate instructions...`)
+  //   for (const id of duplicateIds) {
+  //     // await db.delete(instructions).where(eq(instructions.id, id))
+  //   }
+  //   console.log(`✅ Removed ${duplicateIds.length} duplicate instructions`)
+  // } else {
+  //   console.log("✅ No duplicate instructions found")
 }
 
 const prod = async () => {

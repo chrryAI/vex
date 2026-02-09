@@ -1,4 +1,4 @@
-import fs from "node:fs"
+import fs from "node:fs/promises"
 import path from "node:path"
 import matter from "gray-matter"
 
@@ -36,34 +36,37 @@ function sanitizeSlug(text: string): string {
 /**
  * Get all blog posts sorted by date (newest first)
  */
-export function getBlogPosts(): BlogPost[] {
+export async function getBlogPosts(): Promise<BlogPost[]> {
   // Return cached result in production
   if (process.env.NODE_ENV === "production" && cachedPosts) {
     return cachedPosts
   }
 
   try {
-    const files = fs.readdirSync(BLOG_DIR)
+    const files = await fs.readdir(BLOG_DIR)
 
-    const posts = files
-      .filter((file) => file.endsWith(".md"))
-      .map((file) => {
-        const filePath = path.join(BLOG_DIR, file)
-        const content = fs.readFileSync(filePath, "utf-8")
-        const { data } = matter(content)
+    const posts = (
+      await Promise.all(
+        files
+          .filter((file) => file.endsWith(".md"))
+          .map(async (file) => {
+            const filePath = path.join(BLOG_DIR, file)
+            const content = await fs.readFile(filePath, "utf-8")
+            const { data } = matter(content)
 
-        return {
-          slug: sanitizeSlug(file.replace(".md", "")),
-          title: data.title || "Untitled",
-          excerpt: data.excerpt || "No excerpt available",
-          date: data.date || new Date().toISOString().split("T")[0],
-          author: data.author || "Anonymous",
-          image: data.image,
-          tags: data.tags || [],
-          keywords: data.keywords || [],
-        }
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            return {
+              slug: sanitizeSlug(file.replace(".md", "")),
+              title: data.title || "Untitled",
+              excerpt: data.excerpt || "No excerpt available",
+              date: data.date || new Date().toISOString().split("T")[0],
+              author: data.author || "Anonymous",
+              image: data.image,
+              tags: data.tags || [],
+              keywords: data.keywords || [],
+            }
+          }),
+      )
+    ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
     // Cache result in production
     if (process.env.NODE_ENV === "production") {
@@ -80,7 +83,9 @@ export function getBlogPosts(): BlogPost[] {
 /**
  * Get a single blog post by slug
  */
-export function getBlogPost(slug: string): BlogPostWithContent | null {
+export async function getBlogPost(
+  slug: string,
+): Promise<BlogPostWithContent | null> {
   // Return cached result in production
   if (process.env.NODE_ENV === "production" && cachedPostContent.has(slug)) {
     return cachedPostContent.get(slug)!
@@ -89,11 +94,13 @@ export function getBlogPost(slug: string): BlogPostWithContent | null {
   try {
     const filePath = path.join(BLOG_DIR, `${slug}.md`)
 
-    if (!fs.existsSync(filePath)) {
+    try {
+      await fs.access(filePath)
+    } catch {
       return null
     }
 
-    const fileContent = fs.readFileSync(filePath, "utf-8")
+    const fileContent = await fs.readFile(filePath, "utf-8")
     const { data, content } = matter(fileContent)
 
     const post: BlogPostWithContent = {

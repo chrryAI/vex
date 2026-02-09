@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import sharp from "sharp"
 import { upload } from "../../lib/minio"
 import crypto from "crypto"
+import { getSafeUrl } from "../../utils/ssrf"
 
 export const resize = new Hono()
 
@@ -61,13 +62,34 @@ resize.get("/", async (c) => {
     // Replace search.chrry.ai with chrry.ai for image paths
     fullUrl = fullUrl.replace("search.chrry.ai", "chrry.ai")
 
+    // Security check: Prevent SSRF and DNS Rebinding
+    // We resolve the URL to an IP and use that IP for the request (for HTTP)
+    let safeUrl: string
+    let originalHost: string
+    try {
+      const result = await getSafeUrl(fullUrl)
+      safeUrl = result.safeUrl
+      originalHost = result.originalHost
+    } catch (error: any) {
+      // Sanitize error to prevent internal IP leakage
+      console.error("❌ SSRF validation failed:", error.message)
+      c.header("Cache-Control", "no-cache, no-store, must-revalidate")
+      return c.json({ error: "Requested URL is not allowed" }, 400)
+    }
+
     console.log(`🖼️  Resizing image: ${fullUrl} → ${width}x${height}`)
 
     let buffer: Buffer
 
     // Try HTTP first, fallback to filesystem for local dev
     try {
-      const response = await fetch(fullUrl)
+      // Security: Fetch using the validated IP address (safeUrl) and original Host header.
+      // This prevents DNS rebinding attacks and ensures we connect to the IP we checked.
+      const response = await fetch(safeUrl, {
+        headers: {
+          Host: originalHost,
+        },
+      })
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
@@ -81,6 +103,13 @@ resize.get("/", async (c) => {
           const fs = await import("fs/promises")
           const path = await import("path")
           const absolutePath = path.resolve(process.cwd(), localPath)
+
+          // Security: Prevent path traversal
+          const publicDir = path.resolve(process.cwd(), "public")
+          if (!absolutePath.startsWith(publicDir)) {
+            throw new Error("Access denied: Path traversal detected")
+          }
+
           buffer = await fs.readFile(absolutePath)
           console.log(`✅ Loaded from filesystem: ${absolutePath}`)
         } catch (fsError: any) {
@@ -149,7 +178,7 @@ resize.get("/", async (c) => {
     // Generate unique ID for this resized image
     // v6: Added format support
     const hash = crypto
-      .createHash("md5")
+      .createHash("sha256")
       .update(`v6-${url}-${width}x${height}-${format}`)
       .digest("hex")
 
@@ -169,7 +198,7 @@ resize.get("/", async (c) => {
     console.log(`✅ Uploaded to MinIO: ${uploadResult.url}`)
 
     // Set aggressive cache headers since MinIO URLs are permanent
-    // The MD5 hash ensures unique URLs for different sizes/images
+    // The SHA-256 cache key ensures unique URLs for different sizes/images
     c.header("Cache-Control", "public, max-age=31536000, immutable")
     c.header("Expires", new Date(Date.now() + 31536000000).toUTCString())
 
@@ -180,6 +209,10 @@ resize.get("/", async (c) => {
     c.header("Cache-Control", "no-cache, no-store, must-revalidate")
     c.header("Pragma", "no-cache")
     c.header("Expires", "0")
-    return c.json({ error: error.message || "Failed to resize image" }, 500)
+    // Sanitize error message to prevent information leakage
+    const safeMessage = error.message?.includes("Access to private IP")
+      ? "Requested URL is not allowed"
+      : "Failed to resize image"
+    return c.json({ error: safeMessage }, 500)
   }
 })

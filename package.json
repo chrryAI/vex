@@ -1,7 +1,7 @@
 {
   "name": "vex",
   "private": true,
-  "version": "1.13.70",
+  "version": "1.13.74",
   "type": "module",
   "scripts": {
     "build": "turbo build",
@@ -32,7 +32,7 @@
     "s": "node scripts/scss-to-universal.js",
     "s:all": "node scripts/scss-to-universal.js --all",
     "s:changed": "node scripts/convert-changed-scss.js",
-    "watch:scss": "node scripts/watch-scss.js",
+    "s:w": "node scripts/watch-scss.js",
     "publish": "bash scripts/publish-all.sh",
     "test:scss": "node scripts/test-scss-converter.js",
     "test": "npm run test:scss",

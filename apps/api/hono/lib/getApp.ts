@@ -76,6 +76,7 @@ async function resolveAccountApp(
     const app = await getAppDb({
       storeSlug: auth.guest.id,
       ownerId: auth.guest.id,
+      guestId: auth.guest.id,
       depth: 1,
       skipCache,
       isSafe: false,
@@ -90,6 +91,7 @@ async function resolveAccountApp(
       depth: 1,
       skipCache,
       isSafe: false,
+      userId: auth.member.id,
     })
     return { app, path: "accountApp:member" }
   }
@@ -112,6 +114,7 @@ async function resolveAppById(
     depth: 1,
     skipCache,
   })
+
   return { app, path: "appId" }
 }
 
@@ -220,6 +223,8 @@ async function getFallbackApps(
       slug: siteConfig.slug,
       storeSlug: siteConfig.storeSlug,
       skipCache,
+      userId: auth.member?.id,
+      guestId: auth.guest?.id,
     }),
     getStore({
       domain: siteConfig.store,
@@ -232,6 +237,8 @@ async function getFallbackApps(
       slug: "burn",
       skipCache,
       depth: 1,
+      userId: auth.member?.id,
+      guestId: auth.guest?.id,
     }),
   ])
 }
@@ -315,7 +322,7 @@ async function enrichStoreApps(
  * Ensure required apps are in the store apps list
  */
 function ensureRequiredApps(app: any, siteApp: any, burnApp: any): void {
-  if (!app?.store?.apps) return
+  if (!app?.store?.apps || !Array.isArray(app.store.apps)) return
 
   if (siteApp && !app.store.apps.some((a: any) => a.id === siteApp.id)) {
     app.store.apps.push(siteApp)
@@ -342,6 +349,7 @@ export async function getApp({
   storeSlug?: string
   accountApp?: boolean
   skipCache?: boolean
+  chrryUrl
 }) {
   const startTime = Date.now()
   let resolutionPath = ""
@@ -367,7 +375,7 @@ export async function getApp({
 
   // 4. Get site config
   const chrryUrlParam = c.req.query("chrryUrl")
-  const chrryUrl = chrryUrlParam || getChrryUrl(request)
+  const chrryUrl = params.chrryUrl || chrryUrlParam || getChrryUrl(request)
   const siteConfig = getSiteConfig(chrryUrl)
 
   // 5. Resolve app based on request type

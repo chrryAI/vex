@@ -432,11 +432,6 @@ The **Sato Spatial Dojo** represents a paradigm shift from traditional project m
 
 ---
 
-**Document Status:** Ready for USPTO Provisional Filing  
-**Estimated Cost:** $130 (micro-entity)  
-**Next Step:** File online at https://patentcenter.uspto.gov/  
-**Contact:** iliyan@chrry.ai
-
----
+## **Contact:** iliyan@chrry.ai
 
 _"The map is the territory, and the territory is the Dojo."_ - Sato Philosophy
